@@ -1,0 +1,4 @@
+# the employee named 'SCOTT' and all associated entities without his subordinates
+
+subject;            condition;               limit;       restrictions
+EMP;                ENAME='SCOTT';                ;       no-subordinates.csv

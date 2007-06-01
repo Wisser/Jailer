@@ -1,0 +1,4 @@
+# the employee named 'SCOTT' and all associated entities
+
+subject;            condition;               limit;       restrictions
+EMP;                ENAME='SCOTT';                ; 

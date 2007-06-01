@@ -1,0 +1,3 @@
+# associations to be excluded from model-generation
+
+Table A; Table B; first-insert; join-condition
