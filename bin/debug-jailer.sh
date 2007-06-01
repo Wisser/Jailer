@@ -17,4 +17,4 @@ CP=$CP:$LIB/args4j.jar
 CP=$CP:$LIB/spring.jar
 CP=$CP:$LIB/jailer.jar
 
-java -cp $CP -Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,address=8002,server=y,suspend=y org.jailer.SqlExportTool $@
+java -cp $CP -Xdebug -Xnoagent -Xrunjdwp:transport=dt_socket,address=8002,server=y,suspend=y org.jailer.Jailer $@
