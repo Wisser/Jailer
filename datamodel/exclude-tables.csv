@@ -1,0 +1,9 @@
+# tables to be excluded from model-generation
+
+table-name;
+
+DEPENDENCY
+ENTITY
+ENTITY_GRAPH
+ENTITY_SET_ELEMENT
+
