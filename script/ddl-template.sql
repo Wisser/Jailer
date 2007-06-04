@@ -11,7 +11,7 @@ CREATE TABLE entity_graph
    created         TIMESTAMP NOT NULL WITH DEFAULT CURRENT TIMESTAMP,
    age             INTEGER NOT NULL WITH DEFAULT 1,
 
-   CONSTRAINT pk_graph PRIMARY KEY(id)
+   CONSTRAINT j_pk_graph PRIMARY KEY(id)
 );
 
 CREATE TABLE entity
@@ -25,8 +25,8 @@ CREATE TABLE entity
    PRE_TYPE        varchar(50),
    association     INTEGER,
 
-   CONSTRAINT pk_entity PRIMARY KEY(r_entitygraph, {4}),
-   CONSTRAINT fk_graph FOREIGN KEY (r_entitygraph) REFERENCES entity_graph(id)
+   CONSTRAINT j_pk_entity PRIMARY KEY(r_entitygraph, {4}),
+   CONSTRAINT j_fk_graph_e FOREIGN KEY (r_entitygraph) REFERENCES entity_graph(id)
 );
 
 CREATE INDEX ix_entity_brthdy ON entity (r_entitygraph, birthday, type);
@@ -36,7 +36,7 @@ CREATE TABLE entity_set_element
    set_id          INTEGER NOT NULL,
    {0},
 
-   CONSTRAINT pk_entity PRIMARY KEY(set_id, {4})
+   CONSTRAINT j_pk_entityset PRIMARY KEY(set_id, {4})
 );
 
 CREATE TABLE dependency
@@ -45,7 +45,7 @@ CREATE TABLE dependency
    {2},
    {3},   
 
-   CONSTRAINT fk_graph FOREIGN KEY (r_entitygraph) REFERENCES entity_graph(id)
+   CONSTRAINT j_fk_graph_d FOREIGN KEY (r_entitygraph) REFERENCES entity_graph(id)
 );
 
 CREATE INDEX ix_dependency_from ON dependency (r_entitygraph, {5});
