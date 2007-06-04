@@ -1,5 +1,0 @@
-# generated file. Do not edit!
-
-Table A; Table B; first-insert; cardinality (opt); join-condition; name (opt); author (opt)
-DEPARTMENT; EMPLOYEE; A; 1:n; A.DEPTNO=B.DEPTNO;   ; IBM DB2 JDBC Universal Driver Architecture;
-EMPLOYEE; EMPLOYEE; A; 1:n; A.EMPNO=B.BOSS;   ; IBM DB2 JDBC Universal Driver Architecture;
