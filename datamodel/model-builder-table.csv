@@ -1,3 +1,6 @@
 # generated file. Do not edit!
 
 Name; upsert; primary key;
+DEPARTMENT; N; DEPTNO INTEGER;   ;IBM DB2 JDBC Universal Driver Architecture;
+EMPLOYEE; N; EMPNO INTEGER;   ;IBM DB2 JDBC Universal Driver Architecture;
+SALARYGRADE; N; GRADE INTEGER;LOSAL INTEGER;HISAL INTEGER;   ;IBM DB2 JDBC Universal Driver Architecture;
