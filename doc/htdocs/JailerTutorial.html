@@ -30,7 +30,8 @@
         </li>
       </ul>
       </td>
-      <td style="text-align: right; vertical-align: top;"> </td>
+      <td style="text-align: right; vertical-align: top;"> <br>
+      </td>
     </tr>
   </tbody>
 </table>
@@ -157,15 +158,12 @@ Make sure that the script runs successfully.<br>
     <tr>
       <td
  style="background-color: rgb(230, 255, 230); vertical-align: top;"><span
- style="font-family: monospace;">$db2 connect to </span><span
+ style="font-family: monospace;">$db2 connect to wisser </span><span
+ style="font-family: monospace;">user scott </span><span
+ style="font-family: monospace;">using tiger<span
+ style="font-family: mon;"><span style="font-style: italic;"></span></span></span><span
  style="font-family: monospace;"><span
- style="font-style: italic; color: rgb(51, 51, 255);">schema</span></span><span
- style="font-family: monospace;"> user </span><span
- style="font-family: monospace;"><span
- style="font-style: italic; color: rgb(51, 51, 255);">user</span></span><span
- style="font-family: monospace;"> using </span><span
- style="font-family: monospace;"><span
- style="font-style: italic; color: rgb(51, 51, 255);">password</span></span><br>
+ style="font-style: italic; color: rgb(51, 51, 255);"></span></span><br>
       <span style="font-family: monospace;">$db2 -tvf
 script/scott-tiger.sql<br>
       </span><span style="font-family: monospace;"></span></td>
@@ -275,12 +273,12 @@ EMPLOYEE;&nbsp;&nbsp; EMPLOYEE; A; 1:n; A.EMPNO=B.BOSS;&nbsp; &nbsp;
   </tbody>
 </table>
 <br>
-We copy these definitions into the files <big><span
+Copy the definitions into the files <big><span
  style="font-family: monospace;">datamodel/table.csv</span></big> and <big><span
  style="font-family: monospace;">datamodel/association.csv</span>.</big><br>
-But
-one association is still missing: depending on his salary an employee
-is classified into a salary grade. We add this definition manually.<br>
+One association is still missing: depending on his salary an employee
+is classified into a salary grade. <br>
+Add this definition manually.<br>
 <br>
 <table style="background-color: rgb(51, 102, 255); text-align: left;"
  border="0" cellpadding="2" cellspacing="0">
