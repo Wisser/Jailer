@@ -10,7 +10,7 @@ CREATE TABLE EMPLOYEE(
     job        VARCHAR(9),
     boss       INTEGER,
     hiredate   DATE,
-    sal        DECIMAL(7, 2),
+    salary     DECIMAL(7, 2),
     comm       DECIMAL(7, 2),
     deptno     INTEGER
 );
