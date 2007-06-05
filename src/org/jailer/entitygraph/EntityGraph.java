@@ -184,7 +184,7 @@ public class EntityGraph {
     public long getSize() throws SQLException {
         final int[] size = new int[1];
         size[0] = -1;
-        statementExecutor.executeQuery("Select count(*) From " + ENTITY + " Where r_entitygraph=" + graphID + "", new StatementExecutor.ResultSetReader() {
+        statementExecutor.executeQuery("Select count(*) From " + ENTITY + " Where r_entitygraph=" + graphID + " and birthday >= 0", new StatementExecutor.ResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 size[0] = resultSet.getInt(1);
             }
@@ -335,7 +335,7 @@ public class EntityGraph {
         }
         statementExecutor.executeUpdate(
                 "Update " + ENTITY + " set birthday=0 " +
-                "Where r_entitygraph=" + graphID + " and " +
+                "Where r_entitygraph=" + graphID + " and birthday>0 and " +
                        "not exists (Select * from " + DEPENDENCY + " D " +
                            "Where D.r_entitygraph=" +graphID + " and " +
                                  fromEqualsPK + ")");
