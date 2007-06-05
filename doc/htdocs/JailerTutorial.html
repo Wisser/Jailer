@@ -37,7 +37,8 @@
 </table>
 <h2><br>
 Step 1. Setup Jailer</h2>
-<h3>1.1 Unpack jailer.zip</h3>
+Unpack jailer.zip:<br>
+<br>
 <table style="width: 100%; text-align: left;" border="0" cellpadding="0"
  cellspacing="0">
   <tbody>
@@ -82,9 +83,10 @@ users&nbsp;&nbsp; 96 2007-06-01 10:10 src</span><br>
   </tbody>
 </table>
 <br>
-<h3><span style="font-weight: bold;"></span>1.2 Register the JDBC-Driver</h3>
-Edit the file <span style="font-family: monospace;">bin/jailer.sh</span>
-and put the JDBC-Driver into the class-path<br>
+<br>
+Register the JDBC-Driver. Edit the file <span
+ style="font-family: monospace;">bin/jailer.sh</span>
+and put the JDBC-Driver into the class-path:<br>
 <br>
 <table style="background-color: rgb(51, 102, 255); text-align: left;"
  border="0" cellpadding="2" cellspacing="0">
@@ -209,6 +211,7 @@ with EMPLOYEE<br>
   </tbody>
 </table>
 <br>
+<br>
 Jailer finds the following tables
 and associations:<br>
 <br>
@@ -273,6 +276,7 @@ EMPLOYEE;&nbsp;&nbsp; EMPLOYEE; A; 1:n; A.EMPNO=B.BOSS;&nbsp; &nbsp;
   </tbody>
 </table>
 <br>
+<br>
 Copy the definitions into the files <big><span
  style="font-family: monospace;">datamodel/table.csv</span></big> and <big><span
  style="font-family: monospace;">datamodel/association.csv</span>.</big><br>
@@ -312,6 +316,468 @@ SALARYGRADE; ; n:1; A.SALARY BETWEEN B.LOSAL AND B.HISAL; ; Wisser</span><br>
   </tbody>
 </table>
 <br>
+<br>
+<h2>Step 4.&nbsp; Examine the data model</h2>
+Let's see what Jailer knows now about the model.<br>
+<br>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0"
+ cellspacing="0">
+  <tbody>
+    <tr>
+      <td
+ style="background-color: rgb(230, 255, 230); vertical-align: top;"><span
+ style="font-family: monospace;">$ sh bin/jailer.sh print-datamodel<br>
+DEPARTMENT (DEPTNO INTEGER NOT NULL)<br>
+      <br>
+&nbsp; has dependent:<br>
+&nbsp;&nbsp;&nbsp;
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:n on A.DEPTNO=B.DEPTNO<br>
+      <br>
+EMPLOYEE (EMPNO INTEGER NOT NULL)<br>
+      <br>
+&nbsp; depends on:<br>
+&nbsp;&nbsp;&nbsp;
+DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+n:1 on B.DEPTNO=A.DEPTNO<br>
+&nbsp;&nbsp;&nbsp;
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+n:1 on B.EMPNO=A.BOSS<br>
+      <br>
+&nbsp; has dependent:<br>
+&nbsp;&nbsp;&nbsp;
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:n on A.EMPNO=B.BOSS<br>
+      <br>
+&nbsp; is associated with:<br>
+&nbsp;&nbsp;&nbsp;
+SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+n:1 on A.SALARY BETWEEN B.LOSAL AND B.HISAL<br>
+      <br>
+SALARYGRADE (GRADE INTEGER NOT NULL, LOSAL INTEGER NOT NULL, HISAL
+INTEGER NOT NULL)<br>
+      <br>
+&nbsp; is associated with:<br>
+&nbsp;&nbsp;&nbsp;
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:n on B.SALARY BETWEEN A.LOSAL AND A.HISAL<br>
+      <br>
+      <br>
+tables in dependent-cycle: EMPLOYEE<br>
+      <br>
+excluding following tables from component-analysis:&nbsp; {&nbsp; }<br>
+      <br>
+1 components:<br>
+&nbsp;{ DEPARTMENT, EMPLOYEE, SALARYGRADE }<br>
+      </span></td>
+    </tr>
+  </tbody>
+</table>
+<br>
+Note that each association is listed twice. While associations are
+undirected, restrictions on them are directed. We will see later for
+what restrictions are good for and how to define them.<br>
+<br>
+<h2>Step 5. Export evil Scott (unrestricted)</h2>
+Now export the employee named Scott. To do that we need an <span
+ style="font-style: italic;">extraction-model</span>. Create a file
+named <big><span style="font-family: monospace;">extractionmodel/scott.csv</span></big>.<br>
+<br>
+<table style="background-color: rgb(51, 102, 255); text-align: left;"
+ border="0" cellpadding="2" cellspacing="0">
+  <tbody>
+    <tr>
+      <td
+ style="height: 24px; background-color: rgb(202, 225, 235); vertical-align: top;"><big><span
+ style="font-family: monospace;"><span style="font-weight: bold;">extractionmodel/scott.csv</span>
+      </span><span style="font-family: monospace;"></span></big><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0"
+ cellspacing="0">
+  <tbody>
+    <tr>
+      <td colspan="2" rowspan="1"
+ style="background-color: rgb(202, 225, 235); vertical-align: top;"><span
+ style="font-family: monospace;"># the employee named 'SCOTT' and all
+associated entities<br>
+      <br>
+subject;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+condition;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+limit;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; restrictions<br>
+EMPLOYEE;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+NAME='SCOTT';&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+;<br>
+      </span></td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+This extraction model describes a set of entities containing employees
+named 'SCOTT', entities associated with these employees, entities
+associated with these entities and so forth.<br>
+<br>
+Export this set:<br>
+<br>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0"
+ cellspacing="0">
+  <tbody>
+    <tr>
+      <td
+ style="background-color: rgb(230, 255, 230); vertical-align: top;"><span
+ style="font-family: monospace;">$ sh bin/jailer.sh export -e scott.sql
+extractionmodel/scott.csv com.ibm.db2.jcc.DB2Driver
+jdbc:db2://localhost:50001/wisser scott tiger<br>
+2007-06-04 13:27:25,123 [main] INFO&nbsp;&nbsp; - exporting EMPLOYEE
+Where NAME='SCOTT'<br>
+...<br>
+2007-06-04 13:27:25,249 [main] INFO&nbsp;&nbsp; - export
+statistic:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+22<br>
+2007-06-04 13:27:25,299 [main] INFO&nbsp;&nbsp; -
+DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+3<br>
+2007-06-04 13:27:25,299 [main] INFO&nbsp;&nbsp; -
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+14<br>
+2007-06-04 13:27:25,299 [main] INFO&nbsp;&nbsp; -
+SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+5<br>
+...<br>
+      </span></td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+A file <a href="scott.sql.html"><big><span
+ style="font-family: monospace;">scott.sql</span></big></a> is created
+containing <big><span style="font-family: monospace;">Insert</span></big>-statements
+for Scott, for his evil boss, for the manager and for scott's
+department and salary-grade.<br>
+<br>
+But why are there also statements for all other employees? (Bad luck
+for innocent James!)<br>
+<br>
+Let Jailer explain why:<br>
+<br>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0"
+ cellspacing="0">
+  <tbody>
+    <tr>
+      <td
+ style="background-color: rgb(230, 255, 230); vertical-align: top;"><span
+ style="font-family: monospace;">$ sh bin/jailer.sh export -e scott.sql
+      <span style="color: rgb(255, 0, 0);">-explain</span>
+extractionmodel/scott.csv com.ibm.db2.jcc.DB2Driver
+jdbc:db2://localhost:50001/wisser scott tiger &gt; /dev/null<br>
+$ cat explain.log<br>
+EMPLOYEE(7788) --3--&gt; SALARYGRADE(4, 2001, 3000) --6--&gt;
+EMPLOYEE(7698) --1--&gt; DEPARTMENT(30).<br>
+EMPLOYEE(7788) --3--&gt; SALARYGRADE(4, 2001, 3000) --6--&gt;
+EMPLOYEE(7698) --2--&gt; EMPLOYEE(7521).<br>
+EMPLOYEE(7788) --3--&gt; SALARYGRADE(4, 2001, 3000) --6--&gt;
+EMPLOYEE(7698) --2--&gt; EMPLOYEE(7844) --3--&gt; SALARYGRADE(3, 1401,
+2000).<br>
+EMPLOYEE(7788) --4--&gt; EMPLOYEE(7566) --4--&gt; EMPLOYEE(7839)
+--1--&gt; DEPARTMENT(10).<br>
+EMPLOYEE(7788) --4--&gt; EMPLOYEE(7566) --4--&gt; EMPLOYEE(7839)
+--3--&gt; SALARYGRADE(5, 3001, 9999).<br>
+EMPLOYEE(7788) --1--&gt; DEPARTMENT(20) --5--&gt; EMPLOYEE(7369).<br>
+EMPLOYEE(7788) --3--&gt; SALARYGRADE(4, 2001, 3000) --6--&gt;
+EMPLOYEE(7698) --2--&gt; EMPLOYEE(7654).<br>
+      <span style="color: rgb(255, 0, 0);">EMPLOYEE(7788) --2--&gt;
+EMPLOYEE(7876) --3--&gt; SALARYGRADE(1, 700, 1200) --6--&gt;
+EMPLOYEE(7900).</span><br>
+EMPLOYEE(7788) --3--&gt; SALARYGRADE(4, 2001, 3000) --6--&gt;
+EMPLOYEE(7782) --2--&gt; EMPLOYEE(7934) --3--&gt; SALARYGRADE(2, 1201,
+1400).<br>
+EMPLOYEE(7788) --3--&gt; SALARYGRADE(4, 2001, 3000) --6--&gt;
+EMPLOYEE(7698) --2--&gt; EMPLOYEE(7499).<br>
+EMPLOYEE(7788) --1--&gt; DEPARTMENT(20) --5--&gt; EMPLOYEE(7902).<br>
+      <br>
+#&nbsp;&nbsp;&nbsp; 1
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-&gt;
+DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+n:1 on B.DEPTNO=A.DEPTNO<br>
+#&nbsp;&nbsp;&nbsp; 2
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-&gt; EMPLOYEE &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:n on A.EMPNO=B.BOSS<br>
+#&nbsp;&nbsp;&nbsp; 3
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-&gt;
+SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+n:1 on A.SALARY BETWEEN B.LOSAL AND B.HISAL<br>
+#&nbsp;&nbsp;&nbsp; 4
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-&gt; EMPLOYEE &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; n:1 on B.EMPNO=A.BOSS<br>
+#&nbsp;&nbsp;&nbsp; 5
+DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-&gt;
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:n on A.DEPTNO=B.DEPTNO<br>
+#&nbsp;&nbsp;&nbsp; 6
+SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-&gt;
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:n on B.SALARY BETWEEN A.LOSAL AND A.HISAL<br>
+      </span></td>
+    </tr>
+  </tbody>
+</table>
+<br>
+Aha, Adams is Scotts subordinate and James and Adams are both
+classified in the same salary-grade.<br>
+<br>
+<h2>Step 6. Export evil Scott (restricted)</h2>
+If we export an employee we must export his boss and department too!
+Otherwise the set of exported entities would not be consistent (due to
+the foreign key constraints). Excluding the salary-grade from export
+causes no constraint violation when importing the set but the set would
+also be inconsistent.<br>
+<br>
+To exclude subordinates, 'same department'-members and 'same
+salary-grade'-employees, we must restrict some associations. To do so,
+define a <span style="font-style: italic;">restriction-model:</span><br>
+<br>
+<table style="background-color: rgb(51, 102, 255); text-align: left;"
+ border="0" cellpadding="2" cellspacing="0">
+  <tbody>
+    <tr>
+      <td
+ style="height: 24px; background-color: rgb(202, 225, 235); vertical-align: top;"><big><span
+ style="font-family: monospace;"><span style="font-weight: bold;">restrictionmodel/no-subordinates.csv</span>
+      </span><span style="font-family: monospace;"></span></big><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0"
+ cellspacing="0">
+  <tbody>
+    <tr>
+      <td colspan="2" rowspan="1"
+ style="background-color: rgb(202, 225, 235); vertical-align: top;"><span
+ style="font-family: monospace;">from A (or association name); to
+B;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; restriction-condition<br>
+SUBORDINATE;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ignore<br>
+DEPARTMENT;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+EMPLOYEE;&nbsp;&nbsp; ignore<br>
+SALARYGRADE;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+EMPLOYEE;&nbsp;&nbsp; ignore<br>
+      </span></td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+The <span style="font-style: italic;">restriction-condition</span> is
+an extension of the associations join-condition (expressed in
+SQL-syntax) for one direction of an association. <br>
+"ignore" stands for an unsatisfiable condition.<br>
+<br>
+Note that the association between DEPARTMENT and EMPLOYEE is restricted
+in that direction by designating the source and destination table. It's
+obviously not possible to restrict reflexive associations the same way,
+so we have to give the <span style="font-style: italic;">'subordinate
+of</span>'-association a name.<br>
+<br>
+<table style="background-color: rgb(51, 102, 255); text-align: left;"
+ border="0" cellpadding="2" cellspacing="0">
+  <tbody>
+    <tr>
+      <td
+ style="height: 24px; background-color: rgb(202, 225, 235); vertical-align: top;"><big><span
+ style="font-family: monospace;"><span style="font-weight: bold;">datamodel/association.csv</span>
+      </span><span style="font-family: monospace;"></span></big><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0"
+ cellspacing="0">
+  <tbody>
+    <tr>
+      <td colspan="2" rowspan="1"
+ style="background-color: rgb(202, 225, 235); vertical-align: top;"><span
+ style="font-family: monospace;">Table A;&nbsp;&nbsp;&nbsp; Table
+B;&nbsp; first-insert; cardinality (opt); join-condition; name (opt);
+author<br>
+DEPARTMENT; EMPLOYEE; A; 1:n; A.DEPTNO=B.DEPTNO;&nbsp;&nbsp; ; IBM DB2
+JDBC Driver;<br>
+EMPLOYEE;&nbsp;&nbsp; EMPLOYEE; A; 1:n; A.EMPNO=B.BOSS; </span><span
+ style="font-family: monospace; color: rgb(255, 0, 0);">SUBORDINATE</span><span
+ style="font-family: monospace;">; IBM DB2 JDBC Driver;<br>
+      <span style="color: rgb(0, 0, 0);">EMPLOYEE;&nbsp;&nbsp;
+SALARYGRADE; ; n:1; A.SALARY BETWEEN B.LOSAL AND B.HISAL; ; Wisser</span><br>
+      </span></td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+You can examine the restrictions the same way you examined the data
+model:<br>
+<br>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0"
+ cellspacing="0">
+  <tbody>
+    <tr>
+      <td
+ style="background-color: rgb(230, 255, 230); vertical-align: top;"><span
+ style="font-family: monospace;">$ sh bin/jailer.sh print-datamodel <span
+ style="color: rgb(204, 0, 0);">restrictionmodel/no-subordinates.csv</span><br>
+restricted by: [restrictionmodel/no-subordinates.csv]<br>
+DEPARTMENT (DEPTNO INTEGER NOT NULL)<br>
+      <br>
+&nbsp; ignored:<br>
+&nbsp;&nbsp;&nbsp;
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:n on A.DEPTNO=B.DEPTNO<br>
+      <br>
+EMPLOYEE (EMPNO INTEGER NOT NULL)<br>
+      <br>
+&nbsp; depends on:<br>
+&nbsp;&nbsp;&nbsp;
+DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+n:1 on B.DEPTNO=A.DEPTNO<br>
+&nbsp;&nbsp;&nbsp; EMPLOYEE(inverse-SUBORDINATE)&nbsp; n:1 on
+B.EMPNO=A.BOSS<br>
+      <br>
+&nbsp; is associated with:<br>
+&nbsp;&nbsp;&nbsp;
+SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+n:1 on A.SALARY BETWEEN B.LOSAL AND B.HISAL<br>
+      <br>
+&nbsp; ignored:<br>
+&nbsp;&nbsp;&nbsp; EMPLOYEE(SUBORDINATE)&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:n on A.EMPNO=B.BOSS<br>
+      <br>
+SALARYGRADE (GRADE INTEGER NOT NULL, LOSAL INTEGER NOT NULL, HISAL
+INTEGER NOT NULL)<br>
+      <br>
+&nbsp; ignored:<br>
+&nbsp;&nbsp;&nbsp;
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:n on B.SALARY BETWEEN A.LOSAL AND A.HISAL<br>
+      <br>
+      <br>
+tables in dependent-cycle: EMPLOYEE<br>
+      <br>
+excluding following tables from component-analysis:&nbsp; { DEPARTMENT,
+SALARYGRADE }<br>
+      <br>
+1 components:<br>
+&nbsp;{ EMPLOYEE }<br>
+      </span></td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+A restriction-model is part of the extraction-model. Create a new
+extraction-model:<br>
+<br>
+<table style="background-color: rgb(51, 102, 255); text-align: left;"
+ border="0" cellpadding="2" cellspacing="0">
+  <tbody>
+    <tr>
+      <td
+ style="height: 24px; background-color: rgb(202, 225, 235); vertical-align: top;"><big><span
+ style="font-family: monospace;"><span style="font-weight: bold;">extractionmodel/scott-without-subordinates.csv</span>
+      </span><span style="font-family: monospace;"></span></big><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0"
+ cellspacing="0">
+  <tbody>
+    <tr>
+      <td colspan="2" rowspan="1"
+ style="background-color: rgb(202, 225, 235); vertical-align: top;"><span
+ style="font-family: monospace;"># the employee named 'SCOTT' and all
+associated entities<br>
+      <br>
+subject;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+condition;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+limit;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; restrictions<br>
+EMPLOYEE;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+NAME='SCOTT';&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span
+ style="font-family: monospace; color: rgb(255, 0, 0);">no-subordinates.csv</span></td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+and look what Jailer extracts now:<br>
+<br>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0"
+ cellspacing="0">
+  <tbody>
+    <tr>
+      <td
+ style="background-color: rgb(230, 255, 230); vertical-align: top;"><span
+ style="font-family: monospace;">$ sh bin/jailer.sh export -e scott.sql
+      <span style="color: rgb(204, 0, 0);">extractionmodel/scott-without-subordinates.csv</span>
+com.ibm.db2.jcc.DB2Driver jdbc:db2://localhost:50001/wisser xbcsetup
+1234 &gt; /dev/null<br>
+$ cat scott.sql<br>
+      </span><span style="font-family: monospace;">-- generated by
+Jailer at Mon Jun 04 15:08:15 CEST 2007 from wisser@u19<br>
+--<br>
+-- extraction model:&nbsp; EMPLOYEE where NAME='SCOTT'
+(extractionmodel/scott-without-subordinates.csv)<br>
+-- database URL:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+jdbc:db2://localhost:50001/wisser<br>
+-- database user:&nbsp;&nbsp;&nbsp;&nbsp; scott<br>
+-- exported entities: 7<br>
+--&nbsp;&nbsp;&nbsp;&nbsp;
+DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+2<br>
+--&nbsp;&nbsp;&nbsp;&nbsp;
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+3<br>
+--&nbsp;&nbsp;&nbsp;&nbsp;
+SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+2<br>
+      <br>
+      <br>
+      <br>
+Insert into SALARYGRADE(GRADE, LOSAL, HISAL) <br>
+&nbsp; values (4, 2001, 3000), <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (5, 3001, 9999);<br>
+Insert into DEPARTMENT(DEPTNO, NAME, LOCATION) <br>
+&nbsp; values (20, 'RESEARCH', 'DALLAS'), <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (10, 'ACCOUNTING',
+'NEW YORK');<br>
+Insert into EMPLOYEE(EMPNO, NAME, JOB, BOSS, HIREDATE, SALARY, COMM,
+DEPTNO) <br>
+&nbsp; values (7839, 'KING', 'PRESIDENT', null, '1981-11-17', 5000.00,
+null, 10);<br>
+Insert into EMPLOYEE(EMPNO, NAME, JOB, BOSS, HIREDATE, SALARY, COMM,
+DEPTNO) <br>
+&nbsp; values (7566, 'JONES', 'MANAGER', 7839, '1981-04-02', 2975.00,
+null, 20);<br>
+Insert into EMPLOYEE(EMPNO, NAME, JOB, BOSS, HIREDATE, SALARY, COMM,
+DEPTNO) <br>
+&nbsp; values (7788, 'SCOTT', 'ANALYST', 7566, '1982-12-09', 3000.00,
+null, 20);<br>
+      </span></td>
+    </tr>
+  </tbody>
+</table>
+<br>
+Freedom for the innocent!<br>
 <br>
 <br>
 <br>

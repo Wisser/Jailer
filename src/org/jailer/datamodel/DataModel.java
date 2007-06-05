@@ -261,7 +261,6 @@ public class DataModel {
                 str.append("  closure =");
                 str.append(PrintUtil.tableSetAsString(table.closure(true)) + "\n");
             }
-            str.append("\n");
         }
         return str.toString();
     }
