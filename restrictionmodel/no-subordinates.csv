@@ -1,6 +1,6 @@
 # Restricts references from employees to their subordinates.
 
 from A (or association name); to B;       restriction-condition
-SUBORDINATES;                 ;           ignore
+SUBORDINATES;                 ;           A.NAME='SCOTT'
 DEPARTMENT;                   EMPLOYEE;   ignore
 SALARYGRADE;                  EMPLOYEE;   ignore
