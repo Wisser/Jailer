@@ -168,7 +168,6 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
             table.setAuthor(selectTablesScript);
             tables.add(table);
         }
-        System.out.println(pkColumns);
         return tables;
     }
 
