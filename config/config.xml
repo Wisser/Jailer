@@ -8,11 +8,11 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-2.0.xsd
 http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd">
 
-    <!-- Script-enhancer adds application specific extensions to generated SQL-scripts -->
+    <!-- script-enhancer adds application specific extensions to generated SQL-scripts -->
     <util:list id="script-enhancer">
     </util:list>
 
-    <!-- Model-finder reads table- and association definitions from meta-data sources -->
+    <!-- model-finder reads table- and association definitions from meta-data sources -->
     <util:list id="model-finder">
 <!--
 		<bean class="org.jailer.modelbuilder.DBMetaDataBasedModelElementFinder">
@@ -21,13 +21,14 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		</bean>
 -->
 		<bean class="org.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder"/>
-	
 	</util:list>
 
-    <!-- Keeps the DB table statistics for the working-tables up-to-date.
+    <!-- keeps the DB table statistics for the working-tables up-to-date.
          Optional but recommended.
     -->
     <bean name="statistic-renovator" class="org.jailer.database.DB2ShellScriptBasedStatisticRenovator">
+<!-- only for IBM db2:
         <constructor-arg value="sh script/db2/runstats.sh"/>
+-->
     </bean>
 </beans>
