@@ -2,6 +2,6 @@
 # Note that the reflexive association of EMPLOYEE has a name. We need that name to refer to the assocation in the direction from bosses to subordinates.
 
 Table A; Table B; first-insert; cardinality (opt); join-condition; name (opt); author(opt)
-DEPARTMENT; EMPLOYEE; A; 1:n; A.DEPTNO=B.DEPTNO;   ; IBM DB2 JDBC Driver;
-EMPLOYEE;   EMPLOYEE; A; 1:n; A.EMPNO=B.BOSS;      ; IBM DB2 JDBC Driver;
+DEPARTMENT; EMPLOYEE; A; 1:n; A.DEPTNO=B.DEPTNO;           ; IBM DB2 JDBC Driver;
+EMPLOYEE;   EMPLOYEE; A; 1:n; A.EMPNO=B.BOSS;  SUBORDINATES; IBM DB2 JDBC Driver;
 EMPLOYEE; SALARYGRADE; ; n:1; A.SALARY BETWEEN B.LOSAL AND B.HISAL; ; Wisser
