@@ -371,7 +371,7 @@ public class Jailer {
      * @param sqlScriptFile the name of the sql-script to write the data to
      * @param progress set of tables to account for extraction
      */
-    public void writeEntities(String sqlScriptFile, ScriptType scriptType, final Set<Table> progress, StatementExecutor statementExecutor) throws Exception {
+    public void writeEntities(String sqlScriptFile, final ScriptType scriptType, final Set<Table> progress, StatementExecutor statementExecutor) throws Exception {
         OutputStream outputStream = new FileOutputStream(sqlScriptFile);
         if (sqlScriptFile.toLowerCase().endsWith(".zip") || sqlScriptFile.toLowerCase().endsWith(".gz")) {
             outputStream = new GZIPOutputStream(outputStream);
@@ -401,8 +401,8 @@ public class Jailer {
             for (final Table table: dependentTables) {
                 jobs.add(new JobManager.Job() {
                     public void run() throws Exception {
-                        ExportReader exportReader = new ExportReader(table, result, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities);
-                        entityGraph.readIndependentEntities(table, exportReader);
+                        ResultSetReader reader = scriptType==ScriptType.INSERT? new ExportReader(table, result, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities) : new DeletionReader(table, result, CommandLineParser.getInstance().numberOfEntities);
+                        entityGraph.readIndependentEntities(table, reader);
                     }
                 });
             }
@@ -631,7 +631,7 @@ public class Jailer {
 
     /**
      * Calculates D=(E-T)-C*(U-(E-T)) where E is the entity-graph of this export-tool,
-     * see http://intra.acoreus.de/dokuwiki/doku.php?id=projekte:sql-export-tool-phase2.
+     * see http://intra.*.de/dokuwiki/doku.php?id=projekte:sql-export-tool-phase2.
      * 
      * @param subjects set of tables containing subjects of extraction-tasks
      * @param allTables set of tables from which there are entities in E
