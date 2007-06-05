@@ -1,4 +1,4 @@
--- SQL Export Tool
+-- Jailer
 
 drop table entity;
 drop table dependency;
