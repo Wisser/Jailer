@@ -58,7 +58,7 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 
 /**
- * Utility for extracting small consistent portions of data out of
+ * Utility for extracting small consistent row-sets from
  * relational databases.
  * 
  * @author Wisser
