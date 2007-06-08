@@ -16,31 +16,32 @@
  alt="" src="jailer.jpg"
  style="border: 0px solid ; width: 220px; height: 95px;"></a></h1>
       <h1><a href="http://sourceforge.net/projects/jailer/"><img
- src="http://sflogo.sourceforge.net/sflogo.php?group_id=197260&amp;type=5"
- alt="SourceForge.net Logo"
+ src="sflogo.php" alt="SourceForge.net Logo"
  style="border: 0px solid ; width: 210px; height: 62px;"></a></h1>
       </td>
       <td style="vertical-align: top;">
-      <h1>Jailer<br>
-      </h1>
-      <p>Jailer is a data extraction tool that enables you to<br>
-      </p>
+      <h1>Jailer Architecture</h1>
+      <br>
+      <img alt="" src="arch.png" style="width: 544px; height: 370px;"><br>
+      <br>
+      <br>
       <ul>
         <li class="level1">
-          <div class="li">extract small consistent (referentially
-integer) sets of rows from your productive database and import the
-data into your development and test environment.<br>
-          </div>
+          <div class="li"> <strong>Datamodel.</strong> Describes
+tables and associations.<strong></strong></div>
         </li>
         <li class="level1">
-          <div class="li">remove and archive obsolete data from your
-productive database.</div>
+          <div class="li"><strong>Restrictionmodel.</strong> Restricts
+associations to control the exportation.<br>
+          </div>
+        </li>
+        <li class="level1"><strong>Extractionmodel.</strong> Defines
+the subject and determines the restriction models.<br>
         </li>
       </ul>
-Take a look at the <a href="JailerTutorial.html">tutorial</a> or the <a
- href="tec-spec/tech-spec.html">Technical Specification</a>.<br>
+      <br>
       </td>
-      <td style="text-align: right; vertical-align: top;"> <br>
+      <td style="text-align: right; vertical-align: top;"><br>
       </td>
     </tr>
   </tbody>
