@@ -8,11 +8,17 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-2.0.xsd
 http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd">
 
-    <!-- script-enhancer adds application specific extensions to generated SQL-scripts -->
+	
+	
+    <!-- Script-enhancer 
+		 adds application specific extensions to generated SQL-scripts -->
     <util:list id="script-enhancer">
     </util:list>
 
-    <!-- model-finder reads table- and association definitions from meta-data sources -->
+	
+	
+    <!-- Model-finder 
+		 reads table- and association definitions from meta-data sources -->
     <util:list id="model-finder">
 <!--
 		<bean class="org.jailer.modelbuilder.DBMetaDataBasedModelElementFinder">
@@ -23,12 +29,20 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<bean class="org.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder"/>
 	</util:list>
 
-    <!-- keeps the DB table statistics for the working-tables up-to-date.
+
+	
+	<!-- Statistic-renovator
+		 keeps the DB table statistics for the working-tables up-to-date.
          Optional but recommended.
     -->
+<!-- for IBM DB2:
     <bean name="statistic-renovator" class="org.jailer.database.DB2ShellScriptBasedStatisticRenovator">
-<!-- only for IBM db2:
         <constructor-arg value="sh script/db2/runstats.sh"/>
--->
     </bean>
+-->
+<!-- for Oracle:
+    <bean name="statistic-renovator" class="org.jailer.database.SqlScriptBasedStatisticRenovator">
+        <constructor-arg value="script/oracle/gatherStatistics.sql"/>
+    </bean>
+-->
 </beans>
