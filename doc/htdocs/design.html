@@ -3,264 +3,289 @@
 <head>
   <meta content="text/html; charset=ISO-8859-1"
  http-equiv="content-type">
-  <title>Open Jail. The Jailer project web site.</title>
+  <title>Open Jail. The Jailer Project Web Site.</title>
   <link href="styles.css" rel="stylesheet" type="text/css">
 </head>
 <body>
-<h1>Jailer project web site </h1>
-<table border="0" cellspacing="0" cellpadding="0">
-  <tr>
-    <td valign="top"><table width="140" border="1" cellpadding="14" cellspacing="0" bordercolor="#DDDDDD">
-      <tr>
-        <td width="106"><p><a href="index.html">Introduction</a><br>
-                  <a href="JailerTutorial.html">Tutorial</a><br>
-                  <a>Documentation</a>
-          <table>
+<h1>Open Jail <small><small style="font-style: italic;">The Jailer
+Project Web Site<br>
+</small></small>
+<hr style="width: 100%; height: 1px;"></h1>
+<h1> </h1>
+<table border="0" cellpadding="0" cellspacing="0">
+  <tbody>
+    <tr>
+      <td valign="top">
+      <table border="1" bordercolor="#dddddd" cellpadding="14"
+ cellspacing="0" width="140">
+        <tbody>
+          <tr>
+            <td width="106">
+            <p><a href="index.html">Introduction</a><br>
+            <a href="JailerTutorial.html">Tutorial</a><br>
+            <a>Documentation</a>
+            <table>
+              <tbody>
                 <tr>
                   <td>&nbsp;&nbsp; </td>
-                  <td><a href="terms.html">Terms</a> <a href="architecture.html"><br>
-                    Architecture</a><br>
-                    <a href="design.html">Design</a><br>
-                    <a href="files.html">File Formats</a> </td>
+                  <td><a href="terms.html">Terms</a> <a
+ href="architecture.html"><br>
+Architecture</a><br>
+                  <a href="design.html">Design</a><br>
+                  <a href="files.html">File Formats</a> </td>
                 </tr>
-              </table>
-          <a href="http://sourceforge.net/project/showfiles.php?group_id=197260">Download</a><br>
-              <a href="http://sourceforge.net/projects/jailer/">Homepage</a><br>
-              </p>
+              </tbody>
+            </table>
+            <a
+ href="http://sourceforge.net/project/showfiles.php?group_id=197260">Download</a><br>
+            <a href="http://sourceforge.net/projects/jailer/">Homepage</a><br>
+            </p>
             <a href="http://sourceforge.net/projects/jailer/"><img
  src="http://sflogo.sourceforge.net/sflogo.php?group_id=197260&amp;type=1"
- alt="SourceForge.net Logo"
- style="border: 0px solid ;"></a> </td>
-      </tr>
-    </table></td>
-    <td width="0%" valign="top">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-    <td width="100%" valign="top"><h2>Design</h2>
+ alt="SourceForge.net Logo" style="border: 0px solid ;"></a> </td>
+          </tr>
+        </tbody>
+      </table>
+      </td>
+      <td valign="top" width="0%">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+      <td valign="top" width="100%">
+      <h2>Design</h2>
       <h3><a name="modell_des_entitaetsgraphen"
  id="modell_des_entitaetsgraphen">The Entity Graph</a></h3>
       <div class="level3">
-        <p>During exportation a graph of entities will be produced inside
-          the database. For this three tables are required: </p>
-        <ul>
-          <li class="level1">
-            <div class="li"> <strong>EntityGraph</strong> the graph<br>
-            </div>
-          </li>
-          <li class="level1">
-            <div class="li"> <strong>Entity</strong> entity in the graph<br>
-            </div>
-          </li>
-          <li class="level1">
-            <div class="li"> <strong>Dependency</strong> dependencies
-              between entities</div>
-          </li>
-        </ul>
-        <p>For each entity in the graph the primary-key <em></em>and the
-          type<em></em><span style="font-style: italic;"> </span>(as table name)
-          ist stored. The <em>birthday</em> of an entity is the day of the
-          insertion into the graph. </p>
+      <p>During exportation a graph of entities will be produced inside
+the database. For this three tables are required: </p>
+      <ul>
+        <li class="level1">
+          <div class="li"> <strong>EntityGraph</strong> the graph<br>
+          </div>
+        </li>
+        <li class="level1">
+          <div class="li"> <strong>Entity</strong> entity in the graph<br>
+          </div>
+        </li>
+        <li class="level1">
+          <div class="li"> <strong>Dependency</strong> dependencies
+between entities</div>
+        </li>
+      </ul>
+      <p>For each entity in the graph the primary-key <em></em>and the
+type<em></em><span style="font-style: italic;"> </span>(as table name)
+ist stored. The <em>birthday</em> of an entity is the day of the
+insertion into the graph. </p>
       </div>
       <h3><a name="berechnung_des_transitiven_abschlusses"
  id="berechnung_des_transitiven_abschlusses">Finding the transitive
-        closure</a></h3>
+closure</a></h3>
       <div class="level3">
-        <p>The graph will be constructed day after day (step-by-step)
-          starting at day 1: </p>
-        <ul>
-          <li class="level1">
-            <div class="li">at day 1 all subject entities are inserted
-              into the graph<br>
-            </div>
-          </li>
-          <li class="level1">at day <big style="font-style: italic;"><span
+      <p>The graph will be constructed day after day (step-by-step)
+starting at day 1: </p>
+      <ul>
+        <li class="level1">
+          <div class="li">at day 1 all subject entities are inserted
+into the graph<br>
+          </div>
+        </li>
+        <li class="level1">at day <big style="font-style: italic;"><span
  style="font-family: monospace;">n</span></big> all entities referenced
-            by one of the entities born at day <big
+by one of the entities born at day <big
  style="font-style: italic; font-family: monospace;">n-1</big> are
-            inserted into the graph. Dependencies between entities are stored.<br>
-          </li>
-        </ul>
-        <p>The <em>progression set</em> of a day is the set of all
-          tables from which entities are inserted at that day. The progession set
-          of day 1 is the subject set. The process stops if the progression set
-          of a day is empty.<br>
-        </p>
+inserted into the graph. Dependencies between entities are stored.<br>
+        </li>
+      </ul>
+      <p>The <em>progression set</em> of a day is the set of all
+tables from which entities are inserted at that day. The progession set
+of day 1 is the subject set. The process stops if the progression set
+of a day is empty.<br>
+      </p>
       </div>
       <h4><a name="algorithmus" id="algorithmus">Algorithm</a></h4>
       <div class="level4">
-        <ol>
-          <li class="level1">
-            <div class="li"> insert <big><span
- style="font-family: monospace; font-style: italic;">subject</span></big> into graph<br>
-            </div>
-          </li>
-          <li class="level2">
-            <div class="li"> <em><big><span
+      <ol>
+        <li class="level1">
+          <div class="li"> insert <big><span
+ style="font-family: monospace; font-style: italic;">subject</span></big>
+into graph<br>
+          </div>
+        </li>
+        <li class="level2">
+          <div class="li"> <em><big><span
  style="font-family: monospace;">progression-set := subject</span></big><br>
-            </em></div>
-          </li>
-          <li class="level2">
-            <div class="li"> while <big><em
+          </em></div>
+        </li>
+        <li class="level2">
+          <div class="li"> while <big><em
  style="font-family: monospace;">progression-set != {}</em></big></div>
-            <ol>
-              <li style="font-family: monospace;" class="level5">
-                <div class="li"><big> <em>progression-of-today := {}</em></big></div>
-                <big></big></li>
-              <li class="level5">
-                <div class="li"> for all restricted associations <em>A
-                  between tables T<small>1</small> and T<small>2</small></em><span
- style="font-style: italic;">, if</span><em> T<small>1</small></em> oder <em>T<small>2</small></em> in <em>progression-set:</em></div>
-                <ol>
-                  <li class="level10">
-                    <div class="li"> if <em>T<small>2</small></em> <span
- style="font-style: italic;">(T<small>1</small>) </span>depends on <em>T<small>1 <big>(T<small>2</small>)</big></small></em>: add
-                      dependencies from <em>T<small>2</small></em>(T<small>1</small>)-entities
-                      born yesterday to the entities they are associated with according to <span
+          <ol>
+            <li style="font-family: monospace;" class="level5">
+              <div class="li"><big> <em>progression-of-today := {}</em></big></div>
+            </li>
+            <li class="level5">
+              <div class="li"> for all restricted associations <em>A
+between tables T<small>1</small> and T<small>2</small></em><span
+ style="font-style: italic;">, if</span><em> T<small>1</small></em>
+oder <em>T<small>2</small></em> in <em>progression-set:</em></div>
+              <ol>
+                <li class="level10">
+                  <div class="li"> if <em>T<small>2</small></em> <span
+ style="font-style: italic;">(T<small>1</small>) </span>depends on <em>T<small>1
+                  <big>(T<small>2</small>)</big></small></em>: add
+dependencies from <em>T<small>2</small></em>(T<small>1</small>)-entities
+born yesterday to the entities they are associated with according to <span
  style="font-style: italic;">A</span></div>
-                  </li>
-                  <li class="level10">
-                    <div class="li"> insert all entities of <em>T<small>1</small> (T<small>2</small>)</em>, which are associated according to <span
+                </li>
+                <li class="level10">
+                  <div class="li"> insert all entities of <em>T<small>1</small>
+(T<small>2</small>)</em>, which are associated according to <span
  style="font-style: italic;">A</span> with an entity of <span
- style="font-style: italic;">T<small>2</small> (T<small>1</small>)</span> born yesterday</div>
-                  </li>
-                  <li class="level10">
-                    <div class="li"> if at least one entity of T<small>1</small> (T<small>2</small>) is inserted then <big><em
+ style="font-style: italic;">T<small>2</small> (T<small>1</small>)</span>
+born yesterday</div>
+                </li>
+                <li class="level10">
+                  <div class="li"> if at least one entity of T<small>1</small>
+(T<small>2</small>) is inserted then <big><em
  style="font-family: monospace;">progression-of-today :=
-                      progression-of-today + {&nbsp;</em><span style="font-family: monospace;"> T<small>1</small> (T<small>2</small>)</span><em
+progression-of-today + {&nbsp;</em><span style="font-family: monospace;">
+T<small>1</small> (T<small>2</small>)</span><em
  style="font-family: monospace;"> }</em></big></div>
-                  </li>
-                </ol>
-              </li>
-              <li style="font-family: monospace;" class="level5">
-                <div class="li"><big> <em>progression-set :=
-                  progression-of-today</em></big></div>
-                <big></big></li>
-            </ol>
-          </li>
-        </ol>
+                </li>
+              </ol>
+            </li>
+            <li style="font-family: monospace;" class="level5">
+              <div class="li"><big> <em>progression-set :=
+progression-of-today</em></big></div>
+            </li>
+          </ol>
+        </li>
+      </ol>
       </div>
       <h4><a name="beispiel" id="beispiel"></a></h4>
       <h4><a name="beispiel" id="beispiel"></a></h4>
       <div class="level4">
-        <p><br>
-            <big>Example</big><br>
-        </p>
-        <p>Subject = <em>{ A<small>1</small></em>, <em>A<small>2</small></em> } </p>
-        <p> <a
+      <p><br>
+      <big>Example</big><br>
+      </p>
+      <p>Subject = <em>{ A<small>1</small></em>, <em>A<small>2</small></em>
+} </p>
+      <p> <a
  href="http://intra.acoreus.de/dokuwiki/lib/exe/detail.php?id=projekte%3Aphase_1_datenextraktion&amp;cache=cache&amp;media=development:documentation:example.png"><img
  alt="desing" src="example.png"
  style="border: 0px solid ; width: 753px; height: 455px;"></a><br>
-            <br>
-          <a
+      <br>
+      <a
  href="http://intra.acoreus.de/dokuwiki/lib/exe/detail.php?id=projekte%3Aphase_1_datenextraktion&amp;cache=cache&amp;media=development:documentation:example.png"
  class="media" title="development:documentation:example.png"> </a></p>
-        <table class="inline" border="1" cellpadding="2" cellspacing="0">
-          <tbody>
-            <tr>
-              <td style="background-color: rgb(153, 255, 255);"><strong>day</strong></td>
-              <td style="background-color: rgb(153, 255, 255);"><strong>progression
-                set</strong></td>
-              <td style="background-color: rgb(153, 255, 255);"><strong>entities</strong></td>
-              <td style="background-color: rgb(153, 255, 255);"><strong>dependencies</strong></td>
-            </tr>
-            <tr>
-              <td>1</td>
-              <td>A</td>
-              <td>A1, A2</td>
-              <td><br>
-              </td>
-            </tr>
-            <tr>
-              <td>2</td>
-              <td>B, C</td>
-              <td> + B1, B2, C3, C4</td>
-              <td>A2&#8594;C3, A2&#8594;C4</td>
-            </tr>
-            <tr>
-              <td>3</td>
-              <td>B, C</td>
-              <td> + C1, C2, B3, B5</td>
-              <td> + B1&#8594;C1, B1&#8594;C2</td>
-            </tr>
-            <tr>
-              <td>4</td>
-              <td>B</td>
-              <td> + B6</td>
-              <td><em>no change</em> </td>
-            </tr>
-            <tr>
-              <td>5</td>
-              <td><br>
-              </td>
-              <td><em>no change</em><em></em> </td>
-              <td><em>no change</em> </td>
-            </tr>
-          </tbody>
-        </table>
+      <table class="inline" border="1" cellpadding="2" cellspacing="0">
+        <tbody>
+          <tr>
+            <td style="background-color: rgb(153, 255, 255);"><strong>day</strong></td>
+            <td style="background-color: rgb(153, 255, 255);"><strong>progression
+set</strong></td>
+            <td style="background-color: rgb(153, 255, 255);"><strong>entities</strong></td>
+            <td style="background-color: rgb(153, 255, 255);"><strong>dependencies</strong></td>
+          </tr>
+          <tr>
+            <td>1</td>
+            <td>A</td>
+            <td>A1, A2</td>
+            <td><br>
+            </td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td>B, C</td>
+            <td> + B1, B2, C3, C4</td>
+            <td>A2&#8594;C3, A2&#8594;C4</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td>B, C</td>
+            <td> + C1, C2, B3, B5</td>
+            <td> + B1&#8594;C1, B1&#8594;C2</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>B</td>
+            <td> + B6</td>
+            <td><em>no change</em> </td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td><br>
+            </td>
+            <td><em>no change</em><em></em> </td>
+            <td><em>no change</em> </td>
+          </tr>
+        </tbody>
+      </table>
       </div>
       <h4><br>
       </h4>
       <h4><a name="sql-anweisungen" id="sql-anweisungen">SQL-Statements</a></h4>
-      Line 1, insert subject<br>
+Line 1, insert subject<br>
       <span style="font-family: monospace;"><br>
 INSERT INTO Entity(PK, birthday, type)</span><br
  style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp; SELECT
+      <span style="font-family: monospace;">&nbsp; SELECT
 &lt;subject&gt;.PK, 1, '&lt;subject&gt;' </span><br
  style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp; FROM &lt;subject&gt;</span><br
+      <span style="font-family: monospace;">&nbsp; FROM &lt;subject&gt;</span><br
  style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; WHERE
+      <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; WHERE
 (&lt;condition&gt; AND 103</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 NOT EXISTS (SELECT * FROM Entity WHERE &lt;subject&gt;.PK=Entity.PK)</span><br
  style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; [fetch
+      <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp; [fetch
 first &lt;limit&gt; rows only]</span><br style="font-family: monospace;">
-<br>
-<br>
+      <br>
+      <br>
 Line 3.2.1, adding dependencies<br>
-<br>
-<span style="font-family: monospace;">INSERT INTO
+      <br>
+      <span style="font-family: monospace;">INSERT INTO
 Dependency(from_PK, to_PK)</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp; SELECT
+      <span style="font-family: monospace;">&nbsp; SELECT
 &lt;T2&gt;.PK, &lt;T1&gt;.PK</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp; FROM Entity E1,
+      <span style="font-family: monospace;">&nbsp; FROM Entity E1,
 Entity E2,</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 &lt;T2&gt; JOIN &lt;T1&gt; ON &lt;join-condition&gt;</span><br
  style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp; WHERE
+      <span style="font-family: monospace;">&nbsp; WHERE
 E1.type='&lt;T1&gt;' AND E2.type='&lt;T2&gt;'</span><br
  style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 AND E1.PK=&lt;T1&gt;.PK</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 AND E2.PK=&lt;T2&gt;.PK<br>
-<br>
-<br>
-</span>Line 3.2.2, adding referenced entities<br>
-<br>
-<span style="font-family: monospace;">INSERT INTO Entity(PK,
+      <br>
+      <br>
+      </span>Line 3.2.2, adding referenced entities<br>
+      <br>
+      <span style="font-family: monospace;">INSERT INTO Entity(PK,
 birthday, type)</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp; SELECT DISTINCT
+      <span style="font-family: monospace;">&nbsp; SELECT DISTINCT
 &lt;T2&gt;.PK, &lt;today&gt;, '&lt;T2&gt;'</span><br
  style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp; FROM &lt;T1&gt; JOIN
+      <span style="font-family: monospace;">&nbsp; FROM &lt;T1&gt; JOIN
 &lt;T2&gt; ON &lt;join-condition&gt;,</span><br
  style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Entity</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp; WHERE
+      <span style="font-family: monospace;">&nbsp; WHERE
 &lt;T1&gt;.PK=Entity.PK AND Entity.birthday = &lt;yesterday&gt;</span><br
  style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 AND NOT EXISTS</span><br style="font-family: monospace;">
-<span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 (SELECT * FROM Entity WHERE &lt;T2&gt;.PK=Entity.PK)</span><br
  style="font-family: monospace;">
-<br>
-<h2>&nbsp;</h2>
-        <h2>&nbsp;</h2></td>
-  </tr>
+      <br>
+      <h2>&nbsp;</h2>
+      <h2>&nbsp;</h2>
+      </td>
+    </tr>
+  </tbody>
 </table>
 </body>
 </html>
