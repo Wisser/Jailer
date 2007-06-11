@@ -3,83 +3,118 @@
 <head>
   <meta content="text/html; charset=ISO-8859-1"
  http-equiv="content-type">
-  <title>Open Jail. The Jailer project web site.</title>
+  <title>Open Jail. The Jailer Project Web Site.</title>
   <link href="styles.css" rel="stylesheet" type="text/css">
 </head>
 <body>
-<h1>Jailer project web site </h1>
-<table border="0" cellspacing="0" cellpadding="0">
-  <tr>
-    <td valign="top"><table width="140" border="1" cellpadding="14" cellspacing="0" bordercolor="#DDDDDD">
-      <tr>
-        <td width="106"><p><a href="index.html">Introduction</a><br>
-                  <a href="JailerTutorial.html">Tutorial</a><br>
-                  <a>Documentation</a>
-          <table>
-            <tr>
+<h1>Open Jail <small><small style="font-style: italic;">The Jailer
+Project Web Site</small></small>
+<hr style="width: 100%; height: 1px;"></h1>
+<table border="0" cellpadding="0" cellspacing="0">
+  <tbody>
+    <tr>
+      <td valign="top">
+      <table border="1" bordercolor="#dddddd" cellpadding="14"
+ cellspacing="0" width="140">
+        <tbody>
+          <tr>
+            <td width="106">
+            <p><a href="index.html">Introduction</a><br>
+            <a href="JailerTutorial.html">Tutorial</a><br>
+            <a>Documentation</a>
+            <table>
+              <tbody>
+                <tr>
                   <td>&nbsp;&nbsp; </td>
-              <td><a href="terms.html">Terms</a> <a href="architecture.html"><br>
-                Architecture</a><br>
-                <a href="design.html">Design</a><br>
-                <a href="files.html">File Formats</a> </td>
-            </tr>
-          </table>
-          <a href="http://sourceforge.net/project/showfiles.php?group_id=197260">Download</a><br>
-              <a href="http://sourceforge.net/projects/jailer/">Homepage</a><br>
-              </p>
+                  <td><a href="terms.html">Terms</a> <a
+ href="architecture.html"><br>
+Architecture</a><br>
+                  <a href="design.html">Design</a><br>
+                  <a href="files.html">File Formats</a> </td>
+                </tr>
+              </tbody>
+            </table>
+            <a
+ href="http://sourceforge.net/project/showfiles.php?group_id=197260">Download</a><br>
+            <a href="http://sourceforge.net/projects/jailer/">Homepage</a><br>
+            </p>
             <a href="http://sourceforge.net/projects/jailer/"><img
  src="http://sflogo.sourceforge.net/sflogo.php?group_id=197260&amp;type=1"
- alt="SourceForge.net Logo"
- style="border: 0px solid ;"></a> </td>
-      </tr>
-    </table></td>
-    <td width="0%" valign="top">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
-    <td width="100%" valign="top"><h2>Terms
-        </h2>
+ alt="SourceForge.net Logo" style="border: 0px solid ;"></a> </td>
+          </tr>
+        </tbody>
+      </table>
+      </td>
+      <td valign="top" width="0%">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+      <td valign="top" width="100%">
+      <h2>Terms </h2>
       <ul>
-          <li><big><em>Entity <span style="font-family: monospace;">E</span></em> </big>- a row inside a database table<em></em>.</li>
-          <li><big><em>Reference <span style="font-family: monospace;">{E</span><small
+        <li><big><em>Entity <span style="font-family: monospace;">E</span></em>
+          </big>- a row inside a database table<em></em>.</li>
+        <li><big><em>Reference <span style="font-family: monospace;">(E</span><small
  style="font-family: monospace;"><small><small>1</small></small></small><span
  style="font-family: monospace;">, E</span><small
- style="font-family: monospace;"><small><small>2</small></small></small><span
- style="font-family: monospace;">}</span></em>&nbsp; - </big>unordered
-            pair of two Entities <em style="font-family: monospace;">E<small><small>1</small></small></em><span
+ style="font-family: monospace;"><small><small>2<big><span
+ style="font-family: monospace;">)</span></big></small></small></small><span
+ style="font-family: monospace;"></span></em>&nbsp; - </big>ordered
+pair of two Entities <em style="font-family: monospace;">E<small><small>1</small></small></em><span
  style="font-family: monospace;"> </span>and <em
  style="font-family: monospace;">E<small><small>2</small></small></em><span
  style="font-family: monospace;">.</span></li>
-          <li><big><em>Association</em> </big>- set of references.</li>
-          <li><big><span style="font-style: italic;">Join condition</span></big> <span style="font-family: monospace;">c</span> of Association <span style="font-family: monospace;">A</span> - specifies an
-            association between two tables: <br>
-            <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-              A:={{E<small>1</small>, E<small>2</small>}|E<small>1</small></span><strong
+        <li><big><em>Association</em> </big>- symetrical set of
+references. <big><em><span style="font-family: monospace;">(E</span><small
+ style="font-family: monospace;"><small><small>1</small></small></small><span
+ style="font-family: monospace;">, E</span><small
+ style="font-family: monospace;"><small><small>2<big><span
+ style="font-family: monospace;">) &lt;=&gt; </span></big></small></small></small></em></big><big><em><span
+ style="font-family: monospace;">(E</span><small
+ style="font-family: monospace;"><small><small><span
+ style="font-family: monospace;">2</span></small></small></small><span
+ style="font-family: monospace;">, E</span><small
+ style="font-family: monospace;"><small><small>1<big><span
+ style="font-family: monospace;">)</span></big></small></small></small></em></big></li>
+        <li><big><span style="font-style: italic;">Join condition</span></big>
+          <span style="font-family: monospace;">JC</span> of
+Association <span style="font-family: monospace;">A</span> - specifies
+an association between two tables: <br>
+          <span style="font-family: monospace;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+A:={(E<small>1</small>, E<small>2<span style="font-family: monospace;">(</span></small>|E<small>1</small></span><strong
  style="font-family: monospace;">&#8712;</strong><strong
  style="font-family: monospace; font-weight: normal;">T<small>1</small></strong><strong
  style="font-family: monospace;">, </strong><span
  style="font-family: monospace;">E<small><span style="font-family: mon;">2</span></small></span><strong
  style="font-family: monospace;"></strong><strong
  style="font-family: monospace; font-weight: normal;">&#8712;T<small>2</small>,
-                c(</strong><span style="font-family: monospace;">{E<small>1</small>, E<small>2</small>})}</span></li>
-          <li><em><big>Restriction</big> on an Association <span
+JC(</strong><span style="font-family: monospace;">E<small>1</small>, E<small>2</small>)
+or JC(</span><big><em><span style="font-family: monospace;">E</span><small
+ style="font-family: monospace;"><small><small>2</small></small></small><span
+ style="font-family: monospace;">, E</span><small
+ style="font-family: monospace;"><small><small>1<big><span
+ style="font-family: monospace;"></span></big></small></small></small></em></big><span
+ style="font-family: monospace;">)</span><span
+ style="font-family: monospace;">}</span></li>
+        <li><em><big>Restriction</big> on an Association <span
  style="font-family: monospace;">A </span></em>- subset of <span
  style="font-family: monospace;">A.</span></li>
-          <li><em><big>Restriction condition</big></em><em> c - specifies
-            a restriction <span style="font-family: monospace;">R</span> on <span
- style="font-family: monospace;">A</span>: <span
+        <li><em><big>Restriction condition</big></em><em> <small>RC</small>
+- specifies a restriction <span style="font-family: monospace;">R</span>
+on <span style="font-family: monospace;">A</span>: <span
  style="font-family: monospace;">R:={(E<small>1</small>, E<small>2</small>)|{E<small>1</small>,
-              E<small>2</small>}</span></em><strong style="font-family: monospace;">&#8712;</strong><span
- style="font-family: monospace;">A, c</span><em
+E<small>2</small>}</span></em><strong style="font-family: monospace;">&#8712;</strong><span
+ style="font-family: monospace;">A, RC</span><em
  style="font-family: monospace;">(E<small>1</small>, E<small>2</small></em><span
  style="font-family: monospace;">)}</span></li>
-          <li><em><big>Subject<small> - set of Entities to be exported.</small></big></em></li>
-          <li><big><small><big><span style="font-style: italic;">transitive
-            closure</span></big> of S - smallest set containing S and all entities
-            referenced by an entity inside the closure. The transitive closure of
-            the subject </small></big><big><small>according to the resticted
-              associations is exactly the set that Jailer will export.</small></big></li>
+        <li><em><big>Subject<small> - set of Entities to be exported.</small></big></em></li>
+        <li><big><small><big><span style="font-style: italic;">transitive
+closure</span></big> of S - smallest set containing S and all entities
+referenced by an entity inside the closure. The transitive closure of
+the subject </small></big><big><small>according to the resticted
+associations is exactly the set that Jailer will export.</small></big></li>
       </ul>
-     <h2>&nbsp;</h2>
-    </td>
-  </tr>
+      <h2>&nbsp;</h2>
+      </td>
+    </tr>
+  </tbody>
 </table>
 <br>
 <h2><br>
