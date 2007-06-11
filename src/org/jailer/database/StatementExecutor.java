@@ -248,6 +248,18 @@ public class StatementExecutor {
     }
     
     /**
+     * Executes a SQL-Statement without returning any result.
+     * 
+     * @param sql the SQL-Statement
+     */
+    public void execute(String sql) throws SQLException {
+        _log.debug(sql);
+        Statement statement = connectionFactory.getConnection().createStatement();
+        statement.execute(sql);
+        statement.close();
+    }
+    
+    /**
      * Gets DB meta data.
      * 
      * @return DB meta data
