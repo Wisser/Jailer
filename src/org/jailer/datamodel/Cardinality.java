@@ -66,7 +66,7 @@ public enum Cardinality {
             return null;
         }
         for (Cardinality card: Cardinality.values()) {
-            if (card.name.equals(cardinality)) {
+            if (card.name.equalsIgnoreCase(cardinality)) {
                 return card;
             }
         }
