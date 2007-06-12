@@ -13,6 +13,14 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
     <!-- Script-enhancer 
 		 adds application specific extensions to generated SQL-scripts -->
     <util:list id="script-enhancer">
+		<!--
+          Inserts the content of the files
+           - prolog/[INSERT|DELETE]/<TABLE>.sql
+           - epilog/[INSERT|DELETE]/<TABLE>.sql
+          at top/bottom of the generated script for each table <TABLE>
+          for which at least one row is inserted/deleted.
+        -->
+		<bean class="org.jailer.enhancer.FileBasedScriptEnhancer"/>
     </util:list>
 
 	
