@@ -31,7 +31,13 @@ import org.jailer.entitygraph.EntityGraph;
 
 
 /**
- * Enhances a script with the content of a <code>prolog/*.sql</code> or <code>epilog/*.sql</code> file.
+ * Inserts the content of the files
+ * <ul>
+ * <li><code>prolog/[INSERT|DELETE]/&lt;TABLE&gt;.sql</code></li> 
+ * <li><code>epilog/[INSERT|DELETE]/&lt;TABLE&gt;.sql</code></li>
+ * </ul>
+ * at top/bottom of the generated script for each table &lt;TABLE&gt;
+ * for which at least one row is inserted/deleted.
  * 
  * @author Wisser
  */
@@ -49,7 +55,7 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
      */
     public void addEpilog(Writer script, ScriptType scriptType, StatementExecutor statementExecutor, EntityGraph entityGraph, 
             Set<Table> progress) throws IOException, SQLException {
-        addEnhancement(script, progress, new File("epilog"));
+        addEnhancement(script, progress, new File("epilog" + File.separatorChar + scriptType));
     }
 
     /**
@@ -57,7 +63,7 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
      */
     public void addProlog(Writer script, ScriptType scriptType, StatementExecutor statementExecutor, EntityGraph entityGraph, 
             Set<Table> progress) throws IOException, SQLException {
-        addEnhancement(script, progress, new File("prolog"));
+        addEnhancement(script, progress, new File("prolog" + File.separatorChar + scriptType));
     }
 
     /**
