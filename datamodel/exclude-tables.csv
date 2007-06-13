@@ -1,6 +1,6 @@
 # tables to be excluded when building model
 
-table-name;
+# table-name;
 
 DEPENDENCY
 ENTITY

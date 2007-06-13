@@ -1,4 +1,4 @@
 # the employee named 'SCOTT' and all associated entities without his subordinates
 
-subject;            condition;               limit;       restrictions
-EMPLOYEE;                NAME='SCOTT';                ;       no-subordinates.csv
+# subject;            condition;               limit;       restrictions
+EMPLOYEE;             NAME='SCOTT';                 ;       no-subordinates.csv
