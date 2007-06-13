@@ -1,20 +1,19 @@
 -- Jailer
 
-drop table entity;
-drop table dependency;
-drop table entity_set_element;
-drop table entity_graph;
+DROP TABLE ENTITY;
+DROP TABLE DEPENDENCY;
+DROP TABLE ENTITY_SET_ELEMENT;
+DROP TABLE ENTITY_GRAPH;
 
-CREATE TABLE entity_graph
+CREATE TABLE ENTITY_GRAPH
 (
    id              INTEGER NOT NULL,
-   created         TIMESTAMP NOT NULL WITH DEFAULT CURRENT TIMESTAMP,
-   age             INTEGER NOT NULL WITH DEFAULT 1,
+   age             INTEGER NOT NULL DEFAULT 1,
 
    CONSTRAINT j_pk_graph PRIMARY KEY(id)
 );
 
-CREATE TABLE entity
+CREATE TABLE ENTITY
 (
    r_entitygraph   INTEGER NOT NULL,
    {0},
@@ -31,7 +30,7 @@ CREATE TABLE entity
 
 CREATE INDEX ix_entity_brthdy ON entity (r_entitygraph, birthday, type);
 
-CREATE TABLE entity_set_element
+CREATE TABLE ENTITY_SET_ELEMENT
 (
    set_id          INTEGER NOT NULL,
    {0},
@@ -39,7 +38,7 @@ CREATE TABLE entity_set_element
    CONSTRAINT j_pk_entityset PRIMARY KEY(set_id, {4})
 );
 
-CREATE TABLE dependency
+CREATE TABLE DEPENDENCY
 (
    r_entitygraph   INTEGER NOT NULL,
    {2},
