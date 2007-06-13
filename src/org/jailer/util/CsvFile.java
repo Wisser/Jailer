@@ -72,7 +72,6 @@ public class CsvFile {
         BufferedReader reader = new BufferedReader(new FileReader(csvFile));
         String line = null;
         int lineNr = 0;
-        boolean titleFound = false;
         while ((line = reader.readLine()) != null) {
             ++lineNr;
             if (line.trim().length() == 0) {
@@ -84,10 +83,6 @@ public class CsvFile {
                 continue;
             }
             if (line.trim().startsWith("#")) {
-                continue;
-            }
-            if (!titleFound) {
-                titleFound = true;
                 continue;
             }
             List<String> row = new ArrayList<String>();

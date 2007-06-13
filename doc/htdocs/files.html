@@ -49,7 +49,18 @@ Architecture</a><br>
       <td valign="top" width="100%">
       <h2>File Formats<br>
       </h2>
-      <h2>Datamodel<br>
+&nbsp;A Jailer model is stored as an extended CSV file <small>('</small><small>Comma
+Separated Values')</small><br>
+      <ul>
+        <li>the separating character is ';'</li>
+        <li>empty lines are ignored</li>
+        <li>Lines starting with '#' are comments and will be ignored</li>
+        <li>Lines starting with '#include' will be replaced with the
+content of the file specified thereafter.<br>
+        </li>
+      </ul>
+      <h2><br>
+Datamodel<br>
       </h2>
       <h3> <a name="table-datei" id="table-datei">Table-File<span
  style="font-family: monospace;"> (datamodel/table.csv)</span><br>
