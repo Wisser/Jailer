@@ -519,7 +519,9 @@ public class Jailer {
         CommandLineParser clp = CommandLineParser.getInstance();
         
         String command = clp.arguments.get(0);
-        if ("print-datamodel".equalsIgnoreCase(command)) {
+        if ("render-datamodel".equalsIgnoreCase(command)) {
+            renderDataModel(clp.arguments, clp.withClosures);
+        } else if ("print-datamodel".equalsIgnoreCase(command)) {
             printDataModel(clp.arguments, clp.withClosures);
         } else if ("export".equalsIgnoreCase(command)) {
             if (clp.arguments.size() != 6) {
@@ -556,6 +558,27 @@ public class Jailer {
     }
 
     /**
+     * Render the data model.
+     */
+    private static void renderDataModel(List<String> restrictionModels, boolean withClosures) throws Exception {
+    	DataModel dataModel = new DataModel();
+        for (String rm: restrictionModels.subList(1, restrictionModels.size())) {
+            if (dataModel.getRestrictionModel() == null) {
+                dataModel.setRestrictionModel(new RestrictionModel(dataModel));
+            }
+            dataModel.getRestrictionModel().addRestrictionDefinition(rm);
+        }
+//        DataModelRenderer renderer = new HtmlDataModelRenderer();
+        File renderDir = new File("datemodel.html");
+        File index = new File(renderDir, "index.html");
+        if (!index.createNewFile()) {
+        	throw new RuntimeException("can't create folder '" + index.getName() + "'");
+        }
+        
+        // renderer.render(dataModel);
+    }
+
+	/**
      * Exports entities.
      */
     private static void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, String driverClassName, String dbUrl, String dbUser, String dbPassword, boolean explain, int threads) throws Exception {
