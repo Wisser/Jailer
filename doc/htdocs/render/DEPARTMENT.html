@@ -1,0 +1,188 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>JailerModel</title>
+  <link href="styles.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<h1 style="font-style: italic;"><small><a href="index.html">DEPARTMENT(DEPTNO INTEGER)</a></small></h1>
+<hr style="width: 100%; height: 1px;">
+<table style="width: 100%; height: 30px; text-align: left;" border="0" cellpadding="0"
+ cellspacing="1">
+  <tbody>
+    <tr>
+      <td
+ style="vertical-align: top; width: 1px;">
+      </td>
+      <td
+ style="vertical-align: middle; font-weight: bold; background-color: rgb(180, 255, 255);">DEPARTMENT</td>
+    </tr>
+  </tbody>
+</table>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0"
+ cellspacing="1">
+  <tbody>
+        <tr>
+      <td style="vertical-align: top; width: 1px;"><br>
+      </td>
+      <td colspan="4" rowspan="1" style="vertical-align: top; width: 1px;color: rgb(153, 51, 0);">ignored</td>
+      <td style="vertical-align: top;width: 100%"><br>
+      </td>
+    </tr>
+ 
+    <tr>
+      <td style="vertical-align: top; width: 1px;"><br>
+      </td>
+      <td style="vertical-align: top; width: 1px;">&nbsp;&nbsp;<a href="EMPLOYEE.html">EMPLOYEE</a></td>
+      <td style="vertical-align: top; width: 10px;"><br>
+      </td>
+	  <td style="vertical-align: top; width: 1px;">&nbsp;&nbsp;1:n<br>
+      </td>
+      <td style="vertical-align: top; width: 1px;color: rgb(153, 51, 0);">&nbsp;on&nbsp;<br>
+      </td>
+      <td style="vertical-align: top;width: 100%;">A.DEPTNO=<a href="EMPLOYEE.html">B.</a>DEPTNO<br>
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+<br>
+<hr style="width: 100%; height: 1px;"><br>
+<table style="width: 100%; height: 30px; text-align: left;" border="0" cellpadding="0"
+ cellspacing="1">
+  <tbody>
+    <tr>
+      <td
+ style="vertical-align: top; width: 1px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+      </td>
+      <td
+ style="vertical-align: middle; font-weight: bold; background-color: rgb(180, 255, 255);"><a href="EMPLOYEE.html">EMPLOYEE</a></td>
+    </tr>
+  </tbody>
+</table>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0"
+ cellspacing="1">
+  <tbody>
+        <tr>
+      <td style="vertical-align: top; width: 1px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+      </td>
+      <td colspan="4" rowspan="1" style="vertical-align: top; width: 1px;color: rgb(153, 51, 0);">depends&nbsp;on</td>
+      <td style="vertical-align: top;width: 100%"><br>
+      </td>
+    </tr>
+ 
+    <tr>
+      <td style="vertical-align: top; width: 1px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+      </td>
+      <td style="vertical-align: top; width: 1px;">&nbsp;&nbsp;DEPARTMENT</td>
+      <td style="vertical-align: top; width: 10px;"><br>
+      </td>
+	  <td style="vertical-align: top; width: 1px;">&nbsp;&nbsp;n:1<br>
+      </td>
+      <td style="vertical-align: top; width: 1px;color: rgb(153, 51, 0);">&nbsp;on&nbsp;<br>
+      </td>
+      <td style="vertical-align: top;width: 100%;">B.DEPTNO=A.DEPTNO<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; width: 1px;background-color: rgb(255, 255, 200);">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+      </td>
+      <td style="vertical-align: top; width: 1px;background-color: rgb(255, 255, 200);">&nbsp;&nbsp;<a href="EMPLOYEE.html">EMPLOYEE</a></td>
+      <td style="vertical-align: top; width: 10px;background-color: rgb(255, 255, 200);"><br>
+      </td>
+	  <td style="vertical-align: top; width: 1px;background-color: rgb(255, 255, 200);">&nbsp;&nbsp;n:1<br>
+      </td>
+      <td style="vertical-align: top; width: 1px;color: rgb(153, 51, 0);background-color: rgb(255, 255, 200);">&nbsp;on&nbsp;<br>
+      </td>
+      <td style="vertical-align: top;background-color: rgb(255, 255, 200);width: 100%;"><a href="EMPLOYEE.html">B.</a>EMPNO=A.BOSS<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; width: 1px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+      </td>
+      <td colspan="4" rowspan="1" style="vertical-align: top; width: 1px;color: rgb(153, 51, 0);"><small><small>&nbsp;<br></small></small>has&nbsp;dependent</td>
+      <td style="vertical-align: top;width: 100%"><br>
+      </td>
+    </tr>
+ 
+    <tr>
+      <td style="vertical-align: top; width: 1px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+      </td>
+      <td style="vertical-align: top; width: 1px;">&nbsp;&nbsp;<a href="EMPLOYEE.html">EMPLOYEE</a></td>
+      <td style="vertical-align: top; width: 10px;"><br>
+      </td>
+	  <td style="vertical-align: top; width: 1px;">&nbsp;&nbsp;1:n<br>
+      </td>
+      <td style="vertical-align: top; width: 1px;color: rgb(153, 51, 0);">&nbsp;on&nbsp;<br>
+      </td>
+      <td style="vertical-align: top;width: 100%;">A.EMPNO=<a href="EMPLOYEE.html">B.</a>BOSS <span style="color: rgb(153, 51, 0);">restricted by</span> (A.NAME='SCOTT')<br>
+      </td>
+    </tr>
+    <tr>
+      <td style="vertical-align: top; width: 1px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+      </td>
+      <td colspan="4" rowspan="1" style="vertical-align: top; width: 1px;color: rgb(153, 51, 0);"><small><small>&nbsp;<br></small></small>is&nbsp;associated&nbsp;with</td>
+      <td style="vertical-align: top;width: 100%"><br>
+      </td>
+    </tr>
+ 
+    <tr>
+      <td style="vertical-align: top; width: 1px;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<br>
+      </td>
+      <td style="vertical-align: top; width: 1px;">&nbsp;&nbsp;<a href="SALARYGRADE.html">SALARYGRADE</a></td>
+      <td style="vertical-align: top; width: 10px;"><br>
+      </td>
+	  <td style="vertical-align: top; width: 1px;">&nbsp;&nbsp;n:1<br>
+      </td>
+      <td style="vertical-align: top; width: 1px;color: rgb(153, 51, 0);">&nbsp;on&nbsp;<br>
+      </td>
+      <td style="vertical-align: top;width: 100%;">A.SALARY BETWEEN <a href="SALARYGRADE.html">B.</a>LOSAL AND <a href="SALARYGRADE.html">B.</a>HISAL<br>
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+<br>
+
+<br>
+<hr style="width: 100%; height: 1px;">
+
+<table style="width: 100%; height: 30px; text-align: left;" border="0" cellpadding="0"
+ cellspacing="1">
+  <tbody>
+    <tr>
+      <td
+ style="vertical-align: top; width: 1px;">
+      </td>
+      <td
+ style="vertical-align: middle; font-weight: bold; background-color: rgb(180, 255, 255);">Closure(DEPARTMENT)</td>
+    </tr>
+  </tbody>
+</table>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0"
+ cellspacing="1">
+  <tbody>
+        <tr>
+      <td style="vertical-align: top; width: 1px;"><br>
+      </td>
+      <td style="vertical-align: top; width: 1px;color: rgb(153, 51, 0);">distance&nbsp;0</td>
+      <td style="vertical-align: top; width: 10px;"><br>
+      </td>
+	  <td style="vertical-align: top; width: 1px;"><br>
+      </td>
+      <td style="vertical-align: top; width: 1px;color: rgb(153, 51, 0);">&nbsp;<br>
+      </td>
+      <td style="vertical-align: top;width: 100%;">DEPARTMENT<br>
+      </td>
+    </tr>
+
+  </tbody>
+</table>
+<br>
+
+<br>
+<br>
+</body>
+</html>
