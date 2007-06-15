@@ -1,0 +1,24 @@
+<style type="text/css">
+<!--
+/* CSS Style-Sheet-Specifications       */
+/* created with (X)HTML-Format */
+/* http://www.openwebsuite.org */
+
+//-->
+A	{
+		font-weight: bold;
+		}
+A:link	{
+		color: #000080;
+		text-decoration: none;
+		}
+A:visited	{
+		color: #000040;
+		text-decoration: none;
+		}
+A:hover	{
+		color: #CC0000;
+		text-decoration: underline;
+		}
+
+</style>
