@@ -35,7 +35,7 @@ import org.jailer.datamodel.Column;
 import org.jailer.datamodel.DataModel;
 import org.jailer.datamodel.PrimaryKeyFactory;
 import org.jailer.datamodel.Table;
-import org.jailer.util.SqlUtil;
+import org.jailer.util.PrintUtil;
 
 
 /**
@@ -105,7 +105,7 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
      */
     private Collection<Association> findAssociations(final DataModel dataModel, final String sqlFileName, StatementExecutor statementExecutor) throws Exception {
         final List<Association> associations = new ArrayList<Association>();
-        String select = SqlUtil.applyTemplate(sqlFileName, new Object[] { statementExecutor.getSchemaName() });
+        String select = PrintUtil.applyTemplate(sqlFileName, new Object[] { statementExecutor.getSchemaName() });
         statementExecutor.executeQuery(select, new StatementExecutor.AbstractResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 String tableA = resultSet.getString(1);
@@ -138,7 +138,7 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
     public Set<Table> findTables(StatementExecutor statementExecutor) throws Exception {
         final PrimaryKeyFactory primaryKeyFactory = new PrimaryKeyFactory();
         final Set<Table> tables = new TreeSet<Table>();
-        String select = SqlUtil.applyTemplate(selectTablesScript, new Object[] { statementExecutor.getSchemaName() });
+        String select = PrintUtil.applyTemplate(selectTablesScript, new Object[] { statementExecutor.getSchemaName() });
         final Map<String, Map<Integer, Column>> pkColumns = new HashMap<String, Map<Integer, Column>>();
         statementExecutor.executeQuery(select, new StatementExecutor.AbstractResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {

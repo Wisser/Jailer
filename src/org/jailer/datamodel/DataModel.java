@@ -259,7 +259,7 @@ public class DataModel {
             str.append(table);
             if (printClosures) {
                 str.append("  closure =");
-                str.append(PrintUtil.tableSetAsString(table.closure(true)) + "\n");
+                str.append(PrintUtil.tableSetAsString(table.closure(true)) + "\n\n");
             }
         }
         return str.toString();

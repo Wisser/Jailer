@@ -16,6 +16,13 @@
 
 package org.jailer.util;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -66,6 +73,26 @@ public class PrintUtil {
         }
         str.append(" }");
         return str.toString();
+    }
+
+    /**
+     * Applies arguments to template.
+     * 
+     * @param template file name of template
+     * @param arguments the arguments
+     * 
+     * @return template with arguments filled in
+     */
+    public static String applyTemplate(String template, Object[] arguments) throws FileNotFoundException, IOException {
+        BufferedReader reader = new BufferedReader(new FileReader(template));
+        String line = null;
+        StringBuffer sb = new StringBuffer();
+        while ((line = reader.readLine()) != null) {
+            sb.append(line + "\n");
+        }
+        reader.close();
+        
+        return MessageFormat.format(sb.toString(), arguments);
     }
 
 }

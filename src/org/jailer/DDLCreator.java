@@ -17,7 +17,7 @@
 package org.jailer;
 
 import org.jailer.datamodel.DataModel;
-import org.jailer.util.SqlUtil;
+import org.jailer.util.PrintUtil;
 
 /**
  * Creates the DDL for the working-tables.
@@ -42,7 +42,7 @@ public class DDLCreator {
                 dataModel.getUniversalPrimaryKey().columnList("FROM_"),
                 dataModel.getUniversalPrimaryKey().columnList("TO_")
             };
-        String ddl = SqlUtil.applyTemplate(template, arguments);
+        String ddl = PrintUtil.applyTemplate(template, arguments);
         
         System.out.println(ddl);
     }

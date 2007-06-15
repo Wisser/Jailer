@@ -84,6 +84,9 @@ public class CommandLineParser {
         System.out.println("    -c with closures ");
         System.out.println("    -t excludes 'tabu'-tables from component-analysis");
         System.out.println();
+        System.out.println("  Jailer render-datamodel [options] {<restriction-model>}*");
+        System.out.println("    generates a HTML render of the restricted data-model into directory 'render'");
+        System.out.println();
         System.out.println("  Jailer find-association [options] <source-table> <destination-table> {<restriction-model>}*");
         System.out.println("    finds the shortest path of associations between two tables");
         System.out.println("    -u considers associations as un-directed");

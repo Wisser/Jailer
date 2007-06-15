@@ -182,6 +182,29 @@ public class Association extends ModelElement {
     }
 
     /**
+     * Stringifies the join condition.
+     * 
+     * @param restrictionSeparator separates join-condition from restriction condition in the result
+     */
+    public String renderJoinCondition(String restrictionSeparator) {
+        RestrictionModel restrictionModel = dataModel.getRestrictionModel();
+        String restriction = "";
+        if (restrictionModel != null) {
+            String r = restrictionModel.getRestriction(this);
+            if (r != null && r != RestrictionModel.IGNORE) {
+                restriction = " " + restrictionSeparator + " " + r;
+            }
+        }
+        String jc = joinCondition;
+        String r = restriction;
+        if (reversed) {
+            jc = SqlUtil.reversRestrictionCondition(jc);
+            r = SqlUtil.reversRestrictionCondition(r);
+        }
+        return jc + r;
+    }
+
+    /**
      * Sets the name of the association.
      * 
      * @param name the name of the association
