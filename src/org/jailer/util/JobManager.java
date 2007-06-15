@@ -115,7 +115,9 @@ public class JobManager {
             runnersList.add(jobRunner);
             String threadName = "job-runner " + (i + 1);
             _log.debug("starting " + threadName);
-            new Thread(jobRunner, threadName).start();
+            Thread thread = new Thread(jobRunner, threadName);
+            thread.setDaemon(true);
+            thread.start();
         }
     }
 

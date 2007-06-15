@@ -48,6 +48,7 @@ import org.jailer.enhancer.ScriptEnhancer;
 import org.jailer.entitygraph.EntityGraph;
 import org.jailer.extractionmodel.ExtractionModel;
 import org.jailer.modelbuilder.ModelBuilder;
+import org.jailer.render.DataModelRenderer;
 import org.jailer.restrictionmodel.RestrictionModel;
 import org.jailer.util.CsvFile;
 import org.jailer.util.JobManager;
@@ -520,7 +521,7 @@ public class Jailer {
         
         String command = clp.arguments.get(0);
         if ("render-datamodel".equalsIgnoreCase(command)) {
-            renderDataModel(clp.arguments, clp.withClosures);
+            new Jailer(1).renderDataModel(clp.arguments, clp.withClosures);
         } else if ("print-datamodel".equalsIgnoreCase(command)) {
             printDataModel(clp.arguments, clp.withClosures);
         } else if ("export".equalsIgnoreCase(command)) {
@@ -560,7 +561,7 @@ public class Jailer {
     /**
      * Render the data model.
      */
-    private static void renderDataModel(List<String> restrictionModels, boolean withClosures) throws Exception {
+    private void renderDataModel(List<String> restrictionModels, boolean withClosures) throws Exception {
     	DataModel dataModel = new DataModel();
         for (String rm: restrictionModels.subList(1, restrictionModels.size())) {
             if (dataModel.getRestrictionModel() == null) {
@@ -568,14 +569,11 @@ public class Jailer {
             }
             dataModel.getRestrictionModel().addRestrictionDefinition(rm);
         }
-//        DataModelRenderer renderer = new HtmlDataModelRenderer();
-        File renderDir = new File("datemodel.html");
-        File index = new File(renderDir, "index.html");
-        if (!index.createNewFile()) {
-        	throw new RuntimeException("can't create folder '" + index.getName() + "'");
+        DataModelRenderer renderer = (DataModelRenderer) applicationContext.getBean("renderer");
+        if (renderer == null) {
+            throw new RuntimeException("no renderer found in config/config.xml");
         }
-        
-        // renderer.render(dataModel);
+        renderer.render(dataModel);
     }
 
 	/**

@@ -140,7 +140,11 @@ public class StatementExecutor {
                 if (con == null) {
                     con = DriverManager.getConnection(dbUrl, user, password);
                     con.setAutoCommit(true);
-                    con.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+                    try {
+                        con.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+                    } catch (SQLException e) {
+                        _log.info("can't set isolation level to UR. Reason: " + e.getMessage());
+                    }
                     connection.set(con);
                     connections.add(con);
                 }

@@ -16,11 +16,6 @@
 
 package org.jailer.util;
 
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.text.MessageFormat;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -117,26 +112,6 @@ public class SqlUtil {
             return "'" + qvalue + "'";
         }
         return content.toString();
-    }
-    
-    /**
-     * Applies arguments to template.
-     * 
-     * @param template file name of template
-     * @param arguments the arguments
-     * 
-     * @return template with arguments filled in
-     */
-    public static String applyTemplate(String template, Object[] arguments) throws FileNotFoundException, IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(template));
-        String line = null;
-        StringBuffer sb = new StringBuffer();
-        while ((line = reader.readLine()) != null) {
-            sb.append(line + "\n");
-        }
-        reader.close();
-        
-        return MessageFormat.format(sb.toString(), arguments);
     }
 
 }
