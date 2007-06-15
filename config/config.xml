@@ -7,50 +7,49 @@
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
 http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-2.0.xsd
 http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd">
-
 	
-	
-    <!-- Script-enhancer 
-		 adds application specific extensions to generated SQL-scripts -->
-    <util:list id="script-enhancer">
+	<!-- Script-enhancer 
+	adds application specific extensions to generated SQL-scripts -->
+	<util:list id="script-enhancer">
 		<!--
-          Inserts the content of the files
-           - prolog/[INSERT|DELETE]/<TABLE>.sql
-           - epilog/[INSERT|DELETE]/<TABLE>.sql
-          at top/bottom of the generated script for each table <TABLE>
-          for which at least one row is inserted/deleted.
-        -->
+		Inserts the content of the files
+		  - prolog/[INSERT|DELETE]/<TABLE>.sql
+		  - epilog/[INSERT|DELETE]/<TABLE>.sql
+		at top/bottom of the generated script for each table <TABLE>
+		for which at least one row is inserted/deleted.
+		-->
 		<bean class="org.jailer.enhancer.FileBasedScriptEnhancer"/>
-    </util:list>
-
+	</util:list>
 	
-	
-    <!-- Model-finder 
-		 reads table- and association definitions from meta-data sources -->
-    <util:list id="model-finder">
-<!--
+	<!-- Model-finder 
+	reads table- and association definitions from meta-data sources -->
+	<util:list id="model-finder">
+		<!--
 		<bean class="org.jailer.modelbuilder.DBMetaDataBasedModelElementFinder">
 			<constructor-arg value="script/db2/selectTables.sql"/>
 			<constructor-arg value="script/db2/selectAssociations.sql"/>
 		</bean>
--->
+		-->
 		<bean class="org.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder"/>
 	</util:list>
 
-
-	
+	<bean name="renderer" class="org.jailer.render.HtmlDataModelRenderer">
+		<constructor-arg value="render"/>
+		<constructor-arg value="1"/>
+	</bean>
+		
 	<!-- Statistic-renovator
 		 keeps the DB table statistics for the working-tables up-to-date.
-         Optional but recommended.
-    -->
-<!-- for IBM DB2:
-    <bean name="statistic-renovator" class="org.jailer.database.DB2ShellScriptBasedStatisticRenovator">
-        <constructor-arg value="sh script/db2/runstats.sh"/>
-    </bean>
--->
-<!-- for Oracle:
-    <bean name="statistic-renovator" class="org.jailer.database.SqlScriptBasedStatisticRenovator">
-        <constructor-arg value="script/oracle/gatherStatistics.sql"/>
-    </bean>
--->
+		 Optional but recommended.
+	-->
+	<!-- for IBM DB2:
+	<bean name="statistic-renovator" class="org.jailer.database.DB2ShellScriptBasedStatisticRenovator">
+		<constructor-arg value="sh script/db2/runstats.sh"/>
+	</bean>
+	-->
+	<!-- for Oracle:
+	<bean name="statistic-renovator" class="org.jailer.database.SqlScriptBasedStatisticRenovator">
+		<constructor-arg value="script/oracle/gatherStatistics.sql"/>
+	</bean>
+	-->
 </beans>
