@@ -152,10 +152,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
         return lines.toString();
     }
 
-    private boolean excludeFromClosure(Table table) {
-//        return table.getName().equals("VALUE_TYPE")
-//            || table.getName().equals("VAT")
-//            || table.getName().startsWith("BUSINESSEVENT");
+    protected boolean excludeFromClosure(Table table) {
         return false;
     }
 
