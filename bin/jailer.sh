@@ -5,7 +5,6 @@ CP=.:out:out/jailer.jar
 # JDBC-driver
 CP=$CP:$JDBCLIB/db2jcc.jar
 CP=$CP:$JDBCLIB/db2jcc_license_cu.jar
-CP=$CP:/home/wisser/mysql-connector-java-5.0.6/mysql-connector-java-5.0.6-bin.jar
 
 # configuration files in the config directory
 CP=$CP:config
