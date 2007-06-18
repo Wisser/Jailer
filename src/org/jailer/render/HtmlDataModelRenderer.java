@@ -49,6 +49,8 @@ import org.jailer.util.SqlUtil;
  */
 public class HtmlDataModelRenderer implements DataModelRenderer {
 
+    private static final String COLOR_KEYWORDS = "font-style: italic; color: rgb(120, 0, 0);";
+
     /**
      * The directory to put the HTML-render in.
      */
@@ -90,12 +92,12 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
             for (Table table: tableList) {
                 listItems.append(PrintUtil.applyTemplate("template" + File.separatorChar + "index_table.html", new Object[] { linkTo(table) }));
                 String closure = renderClosure(table);
-                closure = PrintUtil.applyTemplate("template" + File.separatorChar + "table.html", new Object[] { "Closure(" + table.getName() + ")", "", closure });
+                closure = PrintUtil.applyTemplate("template" + File.separatorChar + "table.html", new Object[] { "Closure", "", closure });
                 String columns = generateColumnsTable(table, statementExecutor);
-                if (columns != null) {
-                    closure = columns + closure;
+                if (columns == null) {
+                    closure = "";
                 }
-                writeFile(new File(outputDir, table.getName() + ".html"), PrintUtil.applyTemplate("template/tableframe.html", new Object[] { table.getName() + "<small><small><small> (" + table.primaryKey.toSQL(null, false) + ")</small></small></small>", renderTableBody(table, table, 0, 1, new HashSet<Table>()), closure }));
+                writeFile(new File(outputDir, table.getName() + ".html"), PrintUtil.applyTemplate("template/tableframe.html", new Object[] { table.getName(), renderTableBody(table, table, 0, 1, new HashSet<Table>()), closure, columns }));
             }
             
             String restrictions = "none";
@@ -156,7 +158,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
                 firstTime = false;
             }
             if (!cl.isEmpty()) {
-                lines.append(PrintUtil.applyTemplate("template/table_line.html", new Object[] { "", "&nbsp;&nbsp;distance&nbsp;" + distance, "", "&nbsp;", ts.toString(), "color: rgb(153, 51, 0);", distance % 2 != 0? "class=\"highlightedrow\"" : "" }));
+                lines.append(PrintUtil.applyTemplate("template/table_line.html", new Object[] { "", "&nbsp;&nbsp;distance&nbsp;" + distance, "", "&nbsp;", ts.toString(), COLOR_KEYWORDS, distance % 2 != 0? "class=\"highlightedrow\"" : "" }));
             }
             ++distance;
             closure.addAll(associatedTables);
@@ -248,16 +250,26 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
             }
         }
 
-        StringBuffer result = new StringBuffer(PrintUtil.applyTemplate("template/table.html", new Object[] { table.equals(current)? table.getName() : linkTo(table), indentSpaces(indent), lines.toString() }));
+        StringBuffer result = new StringBuffer(PrintUtil.applyTemplate("template/table.html", new Object[] { table.equals(current)? "Associations" : linkTo(table), indentSpaces(indent), lines.toString() }));
         
         if (depth < maxDepth) {
             if (depth == 0) {
-                result.append("<br><hr style=\"width: 100%; height: 1px;\"><small>Neighborhood</small><br><br>");
+                result.append("<br>"
+                        + PrintUtil.applyTemplate("template/table.html", new Object[] { "Neighborhood", indentSpaces(1), "" })
+                        + "<br>");
             }
             Set<Table> rendered = new HashSet<Table>();
+            boolean firstTime = true;
             for (Association association: all) {
                 if (!rendered.contains(association.destination)) {
-                    result.append(renderTableBody(association.destination, current, depth + 1, indent + 1, alreadyRendered));
+                    String tableBody = renderTableBody(association.destination, current, depth + 1, indent + 1, alreadyRendered);
+                    if (tableBody.length() > 0) {
+                        if (!firstTime) {
+                            result.append("<br>");
+                        }
+                        firstTime = false;
+                    }
+                    result.append(tableBody);
                     rendered.add(association.destination);
                 }
             }
@@ -273,7 +285,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
      * @return a row in the table render
      */
     private String tableRow(int indent, String content) throws FileNotFoundException, IOException {
-        return PrintUtil.applyTemplate("template/table_top_line.html", new Object[] { indentSpaces(indent), content, "", "", "", "color: rgb(153, 51, 0);", "" });
+        return PrintUtil.applyTemplate("template/table_top_line.html", new Object[] { indentSpaces(indent), content, "", "", "", COLOR_KEYWORDS, "" });
     }
 
     /**
@@ -284,7 +296,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
      * @return a row in the table render
      */
     private String tableRow(int indent, Association association, Table current, boolean highlighted) throws FileNotFoundException, IOException {
-        String jc = association.renderJoinCondition("<span style=\"color: rgb(153, 51, 0);\">restricted by</span>");
+        String jc = association.renderJoinCondition("<span style=\"" + COLOR_KEYWORDS + "\">restricted by</span>");
         if (!association.destination.equals(current)) {
             jc = jc.replaceAll("B\\.", linkTo(association.destination, "B."));
         }
@@ -315,11 +327,11 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
             for (Column c: table.primaryKey.getColumns()) {
                 isPK = isPK || c.name.equalsIgnoreCase(COLUMN_NAME);
             }
-            result.append(PrintUtil.applyTemplate("template/table_line.html", new Object[] { indentSpaces(1), "&nbsp;&nbsp;" + COLUMN_NAME, type, "", constraint, isPK? "color: rgb(153, 51, 0);" : "", count % 2 == 0? "class=\"highlightedrow\"" : "" }));
+            result.append(PrintUtil.applyTemplate("template/table_line.html", new Object[] { indentSpaces(1), "&nbsp;&nbsp;" + COLUMN_NAME, type, "", constraint, isPK? COLOR_KEYWORDS : "", count % 2 == 0? "class=\"highlightedrow\"" : "" }));
         }
         rs.close();
         
-        return count == 0? null : (PrintUtil.applyTemplate("template" + File.separatorChar + "table.html", new Object[] { "Columns(" + table.getName() + ")", "", result.toString() }) + "<br><hr style=\"width: 100%; height: 1px;\">");
+        return count == 0? null : (PrintUtil.applyTemplate("template" + File.separatorChar + "table.html", new Object[] { "Columns", "", result.toString() }));
     }
 
     /**
@@ -330,7 +342,9 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
     private String indentSpaces(int indent) {
         StringBuffer result = new StringBuffer();
         for (int i = 1; i < indent; ++i) {
-            result.append("&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+            for (int j = 0; j < 10; ++j) {
+                result.append("&nbsp;");
+            }
         }
         return result.toString();
     }
