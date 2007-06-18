@@ -16,7 +16,10 @@
 
 package org.jailer.util;
 
+import java.sql.Types;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 import org.jailer.datamodel.DataModel;
@@ -113,5 +116,26 @@ public class SqlUtil {
         }
         return content.toString();
     }
-
+    
+    public final static Map<Integer, String> SQL_TYPE;
+    
+    static {
+        SQL_TYPE = new HashMap<Integer, String>();
+        SQL_TYPE.put(Types.BIGINT, "BIGINT");
+        SQL_TYPE.put(Types.BINARY, "BINARY");
+        SQL_TYPE.put(Types.BIT, "BIT");
+        SQL_TYPE.put(Types.CHAR, "CHAR");
+        SQL_TYPE.put(Types.DATE, "DATE");
+        SQL_TYPE.put(Types.DECIMAL, "DECIMAL");
+        SQL_TYPE.put(Types.DOUBLE, "DOUBLE");
+        SQL_TYPE.put(Types.FLOAT, "FLOAT");
+        SQL_TYPE.put(Types.INTEGER, "INTEGER");
+        SQL_TYPE.put(Types.NUMERIC, "NUMERIC");
+        SQL_TYPE.put(Types.TIME, "TIME");
+        SQL_TYPE.put(Types.TIMESTAMP, "TIMESTAMP");
+        SQL_TYPE.put(Types.TINYINT, "TINYINT");
+        SQL_TYPE.put(Types.VARCHAR, "VARCHAR");
+        SQL_TYPE.put(Types.SMALLINT, "SMALLINT");
+    };
+    
 }

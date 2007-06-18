@@ -521,7 +521,11 @@ public class Jailer {
         
         String command = clp.arguments.get(0);
         if ("render-datamodel".equalsIgnoreCase(command)) {
-            new Jailer(1).renderDataModel(clp.arguments, clp.withClosures);
+            if (clp.arguments.size() <= 4) {
+                CommandLineParser.printUsage();
+            } else {
+                new Jailer(1).renderDataModel(clp.arguments, clp.withClosures);
+            }
         } else if ("print-datamodel".equalsIgnoreCase(command)) {
             printDataModel(clp.arguments, clp.withClosures);
         } else if ("export".equalsIgnoreCase(command)) {
@@ -561,9 +565,10 @@ public class Jailer {
     /**
      * Render the data model.
      */
-    private void renderDataModel(List<String> restrictionModels, boolean withClosures) throws Exception {
+    private void renderDataModel(List<String> arguments, boolean withClosures) throws Exception {
     	DataModel dataModel = new DataModel();
-        for (String rm: restrictionModels.subList(1, restrictionModels.size())) {
+        StatementExecutor statementExecutor = new StatementExecutor(arguments.get(1), arguments.get(2), arguments.get(3), arguments.get(4));
+        for (String rm: arguments.subList(1 + 4, arguments.size())) {
             if (dataModel.getRestrictionModel() == null) {
                 dataModel.setRestrictionModel(new RestrictionModel(dataModel));
             }
@@ -573,7 +578,7 @@ public class Jailer {
         if (renderer == null) {
             throw new RuntimeException("no renderer found in config/config.xml");
         }
-        renderer.render(dataModel);
+        renderer.render(dataModel, statementExecutor);
     }
 
 	/**
