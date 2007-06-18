@@ -10,3 +10,8 @@
   CSV files don't have a title-line anymore.
 - removed the 'scott'-model from jailer.zip,
   so that the tutorial can be done without resetting the model first.
+
+0.9.3
+
+- HTML rendering of data model.
+
