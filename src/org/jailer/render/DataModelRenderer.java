@@ -16,6 +16,7 @@
 
 package org.jailer.render;
 
+import org.jailer.database.StatementExecutor;
 import org.jailer.datamodel.DataModel;
 
 /**
@@ -29,7 +30,8 @@ public interface DataModelRenderer {
      * Generates a human readable representation of the data-model.
      * 
      * @param dataModel the data-model
+     * @param statementExecutor for accessing the DB
      */
-    void render(DataModel dataModel);
+    void render(DataModel dataModel, StatementExecutor statementExecutor);
 
 }

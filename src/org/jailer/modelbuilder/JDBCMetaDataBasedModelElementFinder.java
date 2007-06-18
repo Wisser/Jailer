@@ -37,6 +37,7 @@ import org.jailer.datamodel.DataModel;
 import org.jailer.datamodel.PrimaryKey;
 import org.jailer.datamodel.PrimaryKeyFactory;
 import org.jailer.datamodel.Table;
+import org.jailer.util.SqlUtil;
 
 
 /**
@@ -51,30 +52,6 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
      */
     private static final Logger _log = Logger.getLogger(JDBCMetaDataBasedModelElementFinder.class);
 
-    private final Map<Integer, String> SQL_TYPE;
-    
-    /**
-     * Constructor.
-     */
-    public JDBCMetaDataBasedModelElementFinder() {
-        SQL_TYPE = new HashMap<Integer, String>();
-        SQL_TYPE.put(Types.BIGINT, "BIGINT");
-        SQL_TYPE.put(Types.BINARY, "BINARY");
-        SQL_TYPE.put(Types.BIT, "BIT");
-        SQL_TYPE.put(Types.CHAR, "CHAR");
-        SQL_TYPE.put(Types.DATE, "DATE");
-        SQL_TYPE.put(Types.DECIMAL, "DECIMAL");
-        SQL_TYPE.put(Types.DOUBLE, "DOUBLE");
-        SQL_TYPE.put(Types.FLOAT, "FLOAT");
-        SQL_TYPE.put(Types.INTEGER, "INTEGER");
-        SQL_TYPE.put(Types.NUMERIC, "NUMERIC");
-        SQL_TYPE.put(Types.TIME, "TIME");
-        SQL_TYPE.put(Types.TIMESTAMP, "TIMESTAMP");
-        SQL_TYPE.put(Types.TINYINT, "TINYINT");
-        SQL_TYPE.put(Types.VARCHAR, "VARCHAR");
-        SQL_TYPE.put(Types.SMALLINT, "SMALLINT");
-    }
-    
     /**
      * Finds associations by reading the databases meta-data.
      * 
@@ -150,7 +127,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR) {
                     length = resultSet.getInt(7);
                 }
-                String sqlType = SQL_TYPE.get(type);
+                String sqlType = SqlUtil.SQL_TYPE.get(type);
                 if (sqlType == null) {
                     throw new RuntimeException("unknown SQL type: " + type);
                 }

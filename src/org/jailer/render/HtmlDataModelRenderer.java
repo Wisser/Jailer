@@ -21,6 +21,9 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -31,10 +34,13 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.jailer.CommandLineParser;
+import org.jailer.database.StatementExecutor;
 import org.jailer.datamodel.Association;
+import org.jailer.datamodel.Column;
 import org.jailer.datamodel.DataModel;
 import org.jailer.datamodel.Table;
 import org.jailer.util.PrintUtil;
+import org.jailer.util.SqlUtil;
 
 /**
  * Generates a human readable HTML-representation of the data-model.
@@ -67,28 +73,34 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
     public HtmlDataModelRenderer(String outputDir, int maxDepth) {
         this.outputDir = new File(outputDir);
         this.maxDepth = maxDepth;
-     }
+    }
     
     /** 
      * Generates a human readable HTML-representation of the data-model.
      * 
      * @param dataModel the data-model
+     * @param statementExecutor for accessing the DB
      */
-    public void render(DataModel dataModel) {
+    public void render(DataModel dataModel, StatementExecutor statementExecutor) {
         try {
             List<Table> tableList = new ArrayList<Table>(dataModel.getTables());
             Collections.sort(tableList);
             StringBuffer listItems = new StringBuffer();
             
             for (Table table: tableList) {
-                listItems.append(PrintUtil.applyTemplate("template/index_table.html", new Object[] { linkTo(table) }));
+                listItems.append(PrintUtil.applyTemplate("template" + File.separatorChar + "index_table.html", new Object[] { linkTo(table) }));
                 String closure = renderClosure(table);
-                closure = PrintUtil.applyTemplate("template/table.html", new Object[] { "Closure(" + table.getName() + ")", "", closure });
-                writeFile(new File(outputDir, table.getName() + ".html"), PrintUtil.applyTemplate("template/tableframe.html", new Object[] { table.getName() + "(" + table.primaryKey.toSQL(null, false) + ")", renderTableBody(table, table, 0, 1, new HashSet<Table>()), closure }));
+                closure = PrintUtil.applyTemplate("template" + File.separatorChar + "table.html", new Object[] { "Closure(" + table.getName() + ")", "", closure });
+                String columns = generateColumnsTable(table, statementExecutor);
+                if (columns != null) {
+                    closure = columns + closure;
+                }
+                writeFile(new File(outputDir, table.getName() + ".html"), PrintUtil.applyTemplate("template/tableframe.html", new Object[] { table.getName() + "<small><small><small> (" + table.primaryKey.toSQL(null, false) + ")</small></small></small>", renderTableBody(table, table, 0, 1, new HashSet<Table>()), closure }));
             }
             
             String restrictions = "none";
             List<String> restrictionModels = CommandLineParser.getInstance().arguments;
+            restrictionModels = restrictionModels.subList(4, restrictionModels.size());
             if (!restrictionModels.isEmpty()) {
                 restrictionModels = restrictionModels.subList(1, restrictionModels.size());
             }
@@ -97,7 +109,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
                 restrictions = restrictions.substring(1, restrictions.length() - 1);
             }
             
-            writeFile(new File(outputDir, "index.html"), PrintUtil.applyTemplate("template/index.html", new Object[] { new Date(), listItems.toString(), restrictions }));
+            writeFile(new File(outputDir, "index.html"), PrintUtil.applyTemplate("template" + File.separatorChar + "index.html", new Object[] { new Date(), listItems.toString(), restrictions }));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -144,7 +156,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
                 firstTime = false;
             }
             if (!cl.isEmpty()) {
-                lines.append(PrintUtil.applyTemplate("template/table_line.html", new Object[] { "", "distance&nbsp;" + distance, "", "&nbsp;", ts.toString(), "color: rgb(153, 51, 0);", distance % 2 != 0? "background-color: rgb(255, 255, 200);" : "" }));
+                lines.append(PrintUtil.applyTemplate("template/table_line.html", new Object[] { "", "&nbsp;&nbsp;distance&nbsp;" + distance, "", "&nbsp;", ts.toString(), "color: rgb(153, 51, 0);", distance % 2 != 0? "class=\"highlightedrow\"" : "" }));
             }
             ++distance;
             closure.addAll(associatedTables);
@@ -240,7 +252,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
         
         if (depth < maxDepth) {
             if (depth == 0) {
-                result.append("<hr style=\"width: 100%; height: 1px;\"><br>");
+                result.append("<br><hr style=\"width: 100%; height: 1px;\"><small>Neighborhood</small><br><br>");
             }
             Set<Table> rendered = new HashSet<Table>();
             for (Association association: all) {
@@ -276,9 +288,40 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
         if (!association.destination.equals(current)) {
             jc = jc.replaceAll("B\\.", linkTo(association.destination, "B."));
         }
-        return PrintUtil.applyTemplate("template/table_line.html", new Object[] { indentSpaces(indent), "&nbsp;&nbsp;" + (association.destination.equals(current)? association.destination.getName() : linkTo(association.destination)), "&nbsp;&nbsp;" + (association.getCardinality() != null? association.getCardinality() : ""), "&nbsp;on&nbsp;", jc, "", highlighted? "background-color: rgb(255, 255, 200);" : "" });
+        return PrintUtil.applyTemplate("template/table_line.html", new Object[] { indentSpaces(indent), "&nbsp;&nbsp;" + (association.destination.equals(current)? association.destination.getName() : linkTo(association.destination)), "&nbsp;&nbsp;" + (association.getCardinality() != null? association.getCardinality() : ""), "&nbsp;on&nbsp;", jc, "", highlighted? "class=\"highlightedrow\"" : "" });
     }
     
+    /**
+     * Generates a HTML render of a table schema.
+     * 
+     * @param table the table
+     * @param statementExecutor for accessing the DB
+     * @return HTML render of table schema
+     */
+    private String generateColumnsTable(Table table, StatementExecutor statementExecutor) throws SQLException, FileNotFoundException, IOException {
+        DatabaseMetaData metaData = statementExecutor.getMetaData();
+        StringBuffer result = new StringBuffer();
+        
+        ResultSet rs = metaData.getColumns(null, statementExecutor.dbUser.toUpperCase(), table.getName(), null);
+        int count = 0;
+        while (rs.next()) {
+            ++count;
+            String COLUMN_NAME = rs.getString("COLUMN_NAME");
+            String SQL_TYPE = SqlUtil.SQL_TYPE.get(rs.getInt("DATA_TYPE"));
+            boolean nullable = "columnNullable".equals(rs.getString("NULLABLE"));
+            String type = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + SQL_TYPE;
+            String constraint = (!nullable ? "&nbsp;&nbsp;&nbsp;&nbsp;<small>NOT&nbsp;NULL</small>" : "");
+            boolean isPK = false;
+            for (Column c: table.primaryKey.getColumns()) {
+                isPK = isPK || c.name.equalsIgnoreCase(COLUMN_NAME);
+            }
+            result.append(PrintUtil.applyTemplate("template/table_line.html", new Object[] { indentSpaces(1), "&nbsp;&nbsp;" + COLUMN_NAME, type, "", constraint, isPK? "color: rgb(153, 51, 0);" : "", count % 2 == 0? "class=\"highlightedrow\"" : "" }));
+        }
+        rs.close();
+        
+        return count == 0? null : (PrintUtil.applyTemplate("template" + File.separatorChar + "table.html", new Object[] { "Columns(" + table.getName() + ")", "", result.toString() }) + "<br><hr style=\"width: 100%; height: 1px;\">");
+    }
+
     /**
      * Returns Space-string of given length.
      * 

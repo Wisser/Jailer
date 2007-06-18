@@ -84,7 +84,7 @@ public class CommandLineParser {
         System.out.println("    -c with closures ");
         System.out.println("    -t excludes 'tabu'-tables from component-analysis");
         System.out.println();
-        System.out.println("  Jailer render-datamodel [options] {<restriction-model>}*");
+        System.out.println("  Jailer render-datamodel [options] <jdbc-driver-class> <db-URL> <db-user> <db-password> {<restriction-model>}* ");
         System.out.println("    generates a HTML render of the restricted data-model into directory 'render'");
         System.out.println();
         System.out.println("  Jailer find-association [options] <source-table> <destination-table> {<restriction-model>}*");
