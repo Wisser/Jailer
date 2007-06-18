@@ -170,6 +170,10 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
         return false;
     }
 
+    protected boolean excludeFromNeighborhood(Table table) {
+        return false;
+    }
+
     /**
      * Renders a table.
      * 
@@ -262,15 +266,17 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
             boolean firstTime = true;
             for (Association association: all) {
                 if (!rendered.contains(association.destination)) {
-                    String tableBody = renderTableBody(association.destination, current, depth + 1, indent + 1, alreadyRendered);
-                    if (tableBody.length() > 0) {
-                        if (!firstTime) {
-                            result.append("<br>");
+                    if (!excludeFromNeighborhood(association.destination)) {
+                        String tableBody = renderTableBody(association.destination, current, depth + 1, indent + 1, alreadyRendered);
+                        if (tableBody.length() > 0) {
+                            if (!firstTime) {
+                                result.append("<br>");
+                            }
+                            firstTime = false;
                         }
-                        firstTime = false;
+                        result.append(tableBody);
+                        rendered.add(association.destination);
                     }
-                    result.append(tableBody);
-                    rendered.add(association.destination);
                 }
             }
         }
