@@ -1,6 +1,6 @@
 JDBCLIB=/opt/IBM/db2/V8.1/java
 LIB=lib
-CP=.:out:out/jailer.jar
+CP=.:out/classes:out/jailer.jar
 
 # JDBC-driver
 CP=$CP:$JDBCLIB/db2jcc.jar
