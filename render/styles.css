@@ -21,4 +21,12 @@ A:hover	{
 		text-decoration: underline;
 		}
 
+.titlebar {
+		vertical-align: middle; font-weight: bold; background-color: rgb(220, 220, 255);
+		}
+
+.highlightedrow {
+		background-color: rgb(230, 220, 220);
+		}
+
 </style>
