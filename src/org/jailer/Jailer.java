@@ -44,6 +44,7 @@ import org.jailer.datamodel.Association;
 import org.jailer.datamodel.Cardinality;
 import org.jailer.datamodel.DataModel;
 import org.jailer.datamodel.Table;
+import org.jailer.domainmodel.DomainModel;
 import org.jailer.enhancer.ScriptEnhancer;
 import org.jailer.entitygraph.EntityGraph;
 import org.jailer.extractionmodel.ExtractionModel;
@@ -520,7 +521,16 @@ public class Jailer {
         CommandLineParser clp = CommandLineParser.getInstance();
         
         String command = clp.arguments.get(0);
-        if ("render-datamodel".equalsIgnoreCase(command)) {
+        if ("check-domainmodel".equalsIgnoreCase(command)) {
+            DataModel dataModel = new DataModel();
+            for (String rm: clp.arguments.subList(1, clp.arguments.size())) {
+                if (dataModel.getRestrictionModel() == null) {
+                    dataModel.setRestrictionModel(new RestrictionModel(dataModel));
+                }
+                dataModel.getRestrictionModel().addRestrictionDefinition(rm);
+            }
+           new DomainModel(dataModel).check();
+        } else if ("render-datamodel".equalsIgnoreCase(command)) {
             if (clp.arguments.size() <= 4) {
                 CommandLineParser.printUsage();
             } else {
