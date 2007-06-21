@@ -102,6 +102,8 @@ public class CommandLineParser {
         System.out.println("  Jailer build-model <jdbc-driver-class> <db-URL> <db-user> <db-password>");
         System.out.println("    automatically retrieves datamodel elements using the 'model-finder' beans");
         System.out.println();
+        System.out.println("  Jailer check-domainmodel [options] {<restriction-model>}*");
+        System.out.println("    checks the domain model (directory 'domainmodel')");
         System.out.println("options:");
         cmdLineParser.printUsage(System.out);
         System.out.println();

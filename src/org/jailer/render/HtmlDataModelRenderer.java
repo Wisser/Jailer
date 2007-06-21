@@ -39,6 +39,8 @@ import org.jailer.datamodel.Association;
 import org.jailer.datamodel.Column;
 import org.jailer.datamodel.DataModel;
 import org.jailer.datamodel.Table;
+import org.jailer.domainmodel.Domain;
+import org.jailer.domainmodel.DomainModel;
 import org.jailer.util.PrintUtil;
 import org.jailer.util.SqlUtil;
 
@@ -88,16 +90,23 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
             List<Table> tableList = new ArrayList<Table>(dataModel.getTables());
             Collections.sort(tableList);
             StringBuffer listItems = new StringBuffer();
+            DomainModel domainModel = new DomainModel(dataModel);
             
             for (Table table: tableList) {
                 listItems.append(PrintUtil.applyTemplate("template" + File.separatorChar + "index_table.html", new Object[] { linkTo(table) }));
-                String closure = renderClosure(table);
+                StringBuffer legend = new StringBuffer();
+                String closure = renderClosure(domainModel, table, legend);
                 closure = PrintUtil.applyTemplate("template" + File.separatorChar + "table.html", new Object[] { "Closure", "", closure });
                 String columns = generateColumnsTable(table, statementExecutor);
                 if (columns == null) {
-                    closure = "";
+                    columns = "";
                 }
-                writeFile(new File(outputDir, table.getName() + ".html"), PrintUtil.applyTemplate("template/tableframe.html", new Object[] { table.getName(), renderTableBody(table, table, 0, 1, new HashSet<Table>()), closure, columns }));
+                String domainSuffix = "";
+                Domain domain = domainModel.getDomain(table);
+                if (domain != null) {
+                    domainSuffix = " <small>(" + linkTo(domain) + ")</small>";
+                }
+                writeFile(new File(outputDir, table.getName() + ".html"), PrintUtil.applyTemplate("template/tableframe.html", new Object[] { "Table " + table.getName(), renderTableBody(table, table, 0, 1, new HashSet<Table>()), closure + legend, columns, domainSuffix }));
             }
             
             String restrictions = "none";
@@ -111,7 +120,12 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
                 restrictions = restrictions.substring(1, restrictions.length() - 1);
             }
             
-            writeFile(new File(outputDir, "index.html"), PrintUtil.applyTemplate("template" + File.separatorChar + "index.html", new Object[] { new Date(), listItems.toString(), restrictions }));
+            String domains = "";
+            if (!domainModel.getDomains().isEmpty()) {
+                domains = renderDomainModel(domainModel) + "<br>";
+            }
+            
+            writeFile(new File(outputDir, "index.html"), PrintUtil.applyTemplate("template" + File.separatorChar + "index.html", new Object[] { new Date(), listItems.toString(), restrictions, domains }));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -123,11 +137,13 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
      * @param table the table
      * @return render of table's closure
      */
-    private String renderClosure(Table table) throws FileNotFoundException, IOException {
+    private String renderClosure(DomainModel domainModel, Table table, StringBuffer legend) throws FileNotFoundException, IOException {
         StringBuffer lines = new StringBuffer();
         int distance = 0;
         Set<Table> closure = new HashSet<Table>();
         Set<Table> associatedTables = new HashSet<Table>();
+        boolean printLegend = false;
+        Domain domain = domainModel.getDomain(table);
         do {
             associatedTables.clear();
             if (distance == 0) {
@@ -154,7 +170,30 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
                 if (!firstTime) {
                     ts.append(", ");
                 }
+                Domain dtDomain = domainModel.getDomain(dt);
+                boolean differentDomains = false;
+                boolean subDomain = false;
+                if (dtDomain == null && domain == null) {
+                    differentDomains = false;
+                } else if (dtDomain == null || domain == null) {
+                    differentDomains = true;
+                } else {
+                    differentDomains = !domain.equals(dtDomain);
+                    subDomain = dtDomain.isSubDomainOf(domain);
+                }
+                
+                if (differentDomains && !subDomain) {
+                    ts.append("<span style=\"font-style: italic;\">");
+                    printLegend = true;
+                }
                 ts.append(dt.equals(table)? dt.getName() : linkTo(dt));
+                if (subDomain) {
+                    ts.append("*");
+                    printLegend = true;
+                }
+                if (differentDomains && !subDomain) {
+                    ts.append("**</span>");
+                }
                 firstTime = false;
             }
             if (!cl.isEmpty()) {
@@ -163,6 +202,9 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
             ++distance;
             closure.addAll(associatedTables);
         } while (!associatedTables.isEmpty());
+        if (printLegend) {
+            legend.append(PrintUtil.applyTemplate("template" + File.separatorChar + "legend.html", new Object[0]));
+        }
         return lines.toString();
     }
 
@@ -341,6 +383,93 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
     }
 
     /**
+     * Generates a HTML table.
+     */
+    private String generateHTMLTable(String title, List<Integer> indents, List<String> column1, List<String> column2) throws FileNotFoundException, IOException {
+        StringBuffer result = new StringBuffer();
+        for (int i = 0; i < column1.size(); ++i) {
+            result.append(PrintUtil.applyTemplate("template/table_line.html", new Object[] { "", indentSpaces(indents == null? 1 : indents.get(i)) + column1.get(i), column2 == null? "" : column2.get(i), "", "", "", i % 2 == 0? "class=\"highlightedrow\"" : "" }));
+        }
+        return column1.isEmpty()? null : (PrintUtil.applyTemplate("template" + File.separatorChar + "table.html", new Object[] { title, "", result.toString() }));
+    }
+
+    /** 
+     * Generates a human readable HTML-representation of the domain-model.
+     * 
+     * @param domainModel the domain model
+     */
+    public String renderDomainModel(DomainModel domainModel) throws FileNotFoundException, IOException {
+        List<String> column1 = new ArrayList<String>();
+        List<String> column2 = new ArrayList<String>();
+        List<Integer> indent = new ArrayList<Integer>();
+        for (Domain domain: domainModel.getDomains().values()) {
+            if (domain.getSuperDomains().isEmpty()) {
+                appendDomainTree(domain, column1, column2, 1, indent, domainModel.getDomains().size() + 2);
+            }
+            List<String> column = new ArrayList<String>();
+            for (Domain subDomain: domain.getSubDomains()) {
+                column.add(linkTo(subDomain));
+            }
+            String containsTable = generateHTMLTable("Contains", null, column, null);
+            String content = ""; 
+            if (containsTable != null) {
+                content += containsTable + "<br>";
+            }
+            column.clear();
+            for (Domain superDomain: domain.getSuperDomains()) {
+                column.add(linkTo(superDomain));
+            }
+            String partOfTable = generateHTMLTable("Part of", null, column, null);
+            if (partOfTable != null) {
+                content += partOfTable + "<br>";
+            }
+            column.clear();
+            StringBuffer line = new StringBuffer();
+            for (Table table: domain.tables) {
+                if (line.length() > 0) {
+                    line.append(",&nbsp;");
+                }
+                line.append(linkTo(table));
+                if (line.length() > 100) {
+                    column.add(line.toString());
+                    line = new StringBuffer();
+                }
+            }
+            if (line.length() > 0) {
+                column.add(line.toString());
+            }
+            String tablesTable = generateHTMLTable("Tables", null, column, null);
+            if (tablesTable != null) {
+                content += tablesTable + "<br>";
+            }
+            
+            writeFile(new File(outputDir, domain.name + "_DOMAIN.html"), PrintUtil.applyTemplate("template/tableframe.html", new Object[] { "Domain " + domain.name, content, "", "", "" }));
+        }
+        return generateHTMLTable("Domains", indent, column1, column2);
+    }
+
+    /**
+     * Puts lines into HTML render table for the domain model. 
+     * 
+     * @param domain root domain
+     * @param column1 domain name
+     * @param column2 domain description
+     * @param level current indent level
+     * @param indent indent level for each line
+     */
+    private void appendDomainTree(Domain domain, List<String> column1, List<String> column2, int level, List<Integer> indent, int maxLevel) {
+        if (level > maxLevel) {
+            throw new RuntimeException("cyclic domain containment: '" + domain.name + "'");
+        }
+        column1.add(linkTo(domain) + "&nbsp;&nbsp;&nbsp;");
+        column2.add("&nbsp;&nbsp;<small>" + domain.tables.size() + "&nbsp;Tables</small>&nbsp;&nbsp;");
+        indent.add(level);
+        for (Domain subDomain: domain.getSubDomains()) {
+            appendDomainTree(subDomain, column1, column2, level + 1, indent, maxLevel);
+        }
+    }
+
+    /**
      * Returns Space-string of given length.
      * 
      * @param indent the lenght
@@ -348,11 +477,21 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
     private String indentSpaces(int indent) {
         StringBuffer result = new StringBuffer();
         for (int i = 1; i < indent; ++i) {
-            for (int j = 0; j < 10; ++j) {
+            for (int j = 0; j < 8; ++j) {
                 result.append("&nbsp;");
             }
         }
         return result.toString();
+    }
+
+    /**
+     * Returns a HTML-hyper link to the render of a given domain. 
+     * 
+     * @param domain the domain
+     * @return HTML-hyper link to the render of domain
+     */
+    private String linkTo(Domain domain) {
+        return "<a href=\"" + domain.name + "_DOMAIN.html\">" + domain.name + "</a>";
     }
 
     /**
