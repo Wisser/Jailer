@@ -34,6 +34,7 @@ Architecture</a><br>
                 </tr>
               </tbody>
             </table>
+            <a href="domainmodel.html">Addendum</a><br>
             <a
  href="http://sourceforge.net/project/showfiles.php?group_id=197260">Download</a><br>
             <a href="http://sourceforge.net/projects/jailer/">Homepage</a><br>
@@ -60,7 +61,7 @@ content of the file specified thereafter.<br>
         </li>
       </ul>
       <h2><br>
-Datamodel<br>
+Data Model<br>
       </h2>
       <h3> <a name="table-datei" id="table-datei">Table-File<span
  style="font-family: monospace;"> (datamodel/table.csv)</span><br>
@@ -227,7 +228,8 @@ B.HISAL </small></td>
       </table>
       </div>
       <br>
-      <h2><a name="restriktionsmodell" id="restriktionsmodell">Restrictionmodel</a></h2>
+      <h2><a name="restriktionsmodell" id="restriktionsmodell">Restriction
+Model</a></h2>
       <div class="level2">
       <p>Restricts some associations in order to control the
 exportation (and deletion).</p>
@@ -275,7 +277,8 @@ Example: </p>
       </div>
       <br>
       <br>
-      <h2><a name="extraktionsmodell" id="extraktionsmodell">Extractionsmodel</a></h2>
+      <h2><a name="extraktionsmodell" id="extraktionsmodell">Extraction
+Model</a></h2>
       <div class="level2">
       <p> Defines the subject set and specifies which restriction
 models to take into account.<br>
@@ -330,7 +333,118 @@ no-subordinates.csv</td>
         </tbody>
       </table>
       </div>
-      <h2>&nbsp;</h2>
+      <h2><br>
+      </h2>
+      <h2>Domain Model</h2>
+Each file named <span style="font-family: monospace;"><span
+ style="font-style: italic;">&lt;domainname&gt;</span>.csv</span> in
+the directory <span style="font-family: monospace;">domainmodel</span>
+defines a <a href="domainmodel.html"><img alt="" src="arrow.gif"
+ style="border: 0px solid ; width: 13px; height: 13px;" hspace="4">domain</a>
+of tables named <span style="font-style: italic;">domainname</span>.<br>
+      <p>The first row is a ';'-separated list of sub-domains. Don't
+forget the single ';' if the domain has no sub-domains!<br>
+      </p>
+      <p>Columns:<br>
+      </p>
+      <ul>
+        <li><span style="font-weight: bold;">table</span> name of
+domain's tables (or composites)<br>
+        </li>
+      </ul>
+      <p><br>
+Example:</p>
+      <p><span style="font-family: monospace;">DEPARTMENTS.cvs</span><br>
+      </p>
+      <table class="inline" border="1" cellpadding="2" cellspacing="0">
+        <tbody>
+          <tr>
+            <td style="background-color: rgb(153, 255, 255);"
+ class="leftalign"><strong>table</strong></td>
+          </tr>
+          <tr>
+            <td>;</td>
+          </tr>
+          <tr>
+            <td>DEPARTMENTS</td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+      <span style="font-family: monospace;"><br>
+SALARY_GRADES.csv<br>
+      <br>
+      </span>
+      <table class="inline" border="1" cellpadding="2" cellspacing="0">
+        <tbody>
+          <tr>
+            <td style="background-color: rgb(153, 255, 255);"
+ class="leftalign"><strong>table</strong></td>
+          </tr>
+          <tr>
+            <td>; <br>
+            </td>
+          </tr>
+          <tr>
+            <td>DEPARTMENT</td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+      <br>
+      <span style="font-family: monospace;">EMPLOYEES.csv</span>
+      <p> </p>
+      <table class="inline" border="1" cellpadding="2" cellspacing="0">
+        <tbody>
+          <tr>
+            <td style="background-color: rgb(153, 255, 255);"
+ class="leftalign"><strong>table</strong></td>
+          </tr>
+          <tr>
+            <td>DEPARTMENTS; SALARY_GRADES<br>
+            </td>
+          </tr>
+          <tr>
+            <td>EMPLOYEE</td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+      <br>
+      <h2>Composites Model<br>
+      </h2>
+The file <span style="font-family: monospace;">domainmodel/composites.csv</span>
+defines all composites.<br>
+      <p>Columns:<br>
+      </p>
+      <ul>
+        <li><span style="font-weight: bold;">main table</span> the main
+table of the composite</li>
+        <li><span style="font-weight: bold;">component 1</span> the
+first component table</li>
+        <li style="font-weight: bold;">...</li>
+        <li><span style="font-weight: bold;">component n</span> the
+last component table</li>
+      </ul>
+      <p><br>
+Example:</p>
+      <table class="inline" border="1" cellpadding="2" cellspacing="0">
+        <tbody>
+          <tr>
+            <td style="background-color: rgb(153, 255, 255);"><strong>main
+table<br>
+            </strong></td>
+            <td style="background-color: rgb(153, 255, 255);"
+ class="rightalign"><strong>component 1</strong><br>
+            </td>
+          </tr>
+          <tr>
+            <td>EMPLOYEE</td>
+            <td class="rightalign">EMPLOYEE_HISTORY </td>
+          </tr>
+        </tbody>
+      </table>
+      <span style="font-family: monospace;"></span><br>
       </td>
     </tr>
   </tbody>
