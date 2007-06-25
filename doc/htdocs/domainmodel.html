@@ -1,0 +1,320 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Open Jail. The Jailer Project Web Site.</title>
+  <link href="styles.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<h1>Open Jail <small><small style="font-style: italic;">The Jailer
+Project Web Site<br>
+</small></small>
+<hr style="width: 100%; height: 1px;"></h1>
+<h1> </h1>
+<table border="0" cellpadding="0" cellspacing="0">
+  <tbody>
+    <tr>
+      <td valign="top">
+      <table border="1" bordercolor="#dddddd" cellpadding="14"
+ cellspacing="0" width="140">
+        <tbody>
+          <tr>
+            <td width="106"> <a href="index.html">Introduction</a><br>
+            <a href="JailerTutorial.html">Tutorial</a><br>
+            <a>Documentation</a>
+            <table>
+              <tbody>
+                <tr>
+                  <td>&nbsp;&nbsp; </td>
+                  <td><a href="terms.html">Terms</a> <a
+ href="architecture.html"><br>
+Architecture</a><br>
+                  <a href="design.html">Design</a><br>
+                  <a href="files.html">File Formats</a> </td>
+                </tr>
+              </tbody>
+            </table>
+Addendum
+            <table>
+              <tbody>
+                <tr>
+                  <td>&nbsp;&nbsp; </td>
+                  <td>DomainModel<a href="files.html"><br>
+                  </a> </td>
+                </tr>
+                <tr>
+                  <td style="vertical-align: top;"><br>
+                  </td>
+                  <td style="vertical-align: top;"><a
+ href="rendering.html">Rendering</a><br>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+            <a
+ href="http://sourceforge.net/project/showfiles.php?group_id=197260">Download</a><br>
+            <a href="http://sourceforge.net/projects/jailer/">Homepag</a><a
+ href="http://sourceforge.net/projects/jailer/"><img
+ src="http://sflogo.sourceforge.net/sflogo.php?group_id=197260&amp;type=1"
+ alt="SourceForge.net Logo" style="border: 0px solid ;"></a> </td>
+          </tr>
+        </tbody>
+      </table>
+      </td>
+      <td valign="top" width="0%">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
+      <td valign="top" width="100%">
+      <h2>Domain Model<br>
+      </h2>
+      <p> The definition of a domain model helps you to define the
+restriction and extraction models and makes the <acronym
+ title="HyperText Markup Language">HTML</acronym> data model render
+more compact and concise. A domain model does&#8217;t influence the export
+behaviour and is not needed to do data exports. </p>
+      <p>A domain model is a partitioning of the entire data model into
+smaller
+sets of functionally related tables.<br>
+      </p>
+      <p><span style="font-weight: bold;">Definition</span><br>
+      </p>
+      <ul>
+        <li class="level1">
+          <div class="li"> <strong>Domain</strong> a set of
+functionally related tables.</div>
+        </li>
+        <li class="level1">
+          <div class="li"> <strong>Domain Model</strong> set of
+domains <strong>D</strong> with a partial order <em>part-of</em> &#8838; <strong>D</strong>&sup2;</div>
+        </li>
+        <li class="level1">
+          <div class="li"> <strong>Top-level domain</strong> domain
+which is not <em>part-of</em> another domain.</div>
+        </li>
+        <li class="level1">
+          <div class="li"> <strong>Subdomain</strong> domain which is
+not a Top-level domain.</div>
+        </li>
+        <li class="level1">
+          <div class="li"> <strong>Extension E(d)</strong> of a domain
+is the set of all tables of <em>d</em> and <em>d</em>&#8216;s subdomains. <em>E(d)=d&#8746;{t|&#8707;d&#8217;:d&#8217;
+part-of d &#8743; t&#8712;d&#8217;}</em></div>
+        </li>
+        <li class="level1">
+          <div class="li"> two different domains are disjoint.</div>
+        </li>
+        <li class="level1">
+          <div class="li"> the union of all domains is the set of all
+tables.<br>
+          <br>
+          </div>
+        </li>
+      </ul>
+      <p> <strong>Example</strong> </p>
+      <ul>
+        <li class="level1">
+          <div class="li"> <strong>Tables</strong></div>
+          <ul>
+            <li class="level2">
+              <div class="li"> ADDRESS</div>
+            </li>
+            <li class="level2">
+              <div class="li"> DEPARTMENT</div>
+            </li>
+            <li class="level2">
+              <div class="li"> EMPLOYEE</div>
+            </li>
+          </ul>
+        </li>
+        <li class="level1">
+          <div class="li"> <strong>Associations</strong></div>
+          <ul>
+            <li class="level2">
+              <div class="li"> DEPARTMENT &#8594; ADDRESS</div>
+            </li>
+            <li class="level2">
+              <div class="li"> EMPLOYEE &#8594; ADDRESS</div>
+            </li>
+            <li class="level2">
+              <div class="li"> EMPLOYEE &#8594; DEPARTMENT</div>
+            </li>
+          </ul>
+        </li>
+        <li class="level1">
+          <div class="li"> <strong>Domains</strong></div>
+          <ul>
+            <li class="level2">
+              <div class="li"> DEPARTMENTS={DEPARTMENT}</div>
+            </li>
+            <li class="level2">
+              <div class="li"> EMPLOYEES={EMPLOYEE}</div>
+            </li>
+            <li class="level2">
+              <div class="li"> ADDRESSES={ADDRESS}</div>
+            </li>
+            <li class="level2">
+              <div class="li"> <em>ADDRESSES</em> part-of <em>DEPARTMENTS</em></div>
+            </li>
+            <li class="level2">
+              <div class="li"> <em>ADDRESSES</em> part-of <em>EMPLOYEES</em></div>
+            </li>
+            <li class="level2">
+              <div class="li"> <em>DEPARTMENTS</em> part-of <em>EMPLOYEES</em></div>
+            </li>
+          </ul>
+        </li>
+        <li class="level1">
+          <div class="li"> <strong>Extensions</strong></div>
+          <ul>
+            <li class="level2">
+              <div class="li"> E(ADDRESSES)={ADDRESS}</div>
+            </li>
+            <li class="level2">
+              <div class="li"> E(DEPARTMENTS)={DEPARTMENT, ADDRESS}</div>
+            </li>
+            <li class="level2">
+              <div class="no"> E(EMPLOYEES)={EMPLOYEE, DEPARTMENT,
+ADDRESS}</div>
+            </li>
+          </ul>
+        </li>
+      </ul>
+      <h2><a name="composites" id="composites"><br>
+Composites</a></h2>
+      <div class="level2">
+      <p> A composite is a group of tables to be treated in the same
+way as a single table. A composite consists of a <em>main table</em>
+representing the entire composition and several component tables. The
+name of a composite is the name of the main table. Components are not
+mentioned in the domain model but are implicitly part of the main
+table&#8217;s
+domain. </p>
+      </div>
+      <div class="secedit">
+      <form class="button" method="post" action="/dokuwiki/doku.php">
+        <div class="no"><input name="do" value="edit" type="hidden"><input
+ name="lines" value="1443-1810" type="hidden"><input name="rev"
+ value="1182779110" type="hidden"><input name="id"
+ value="projekte:sqlexportdomains" type="hidden"></div>
+      </form>
+      </div>
+      <h2><a name="generating_domain_specific_restriction_models"
+ id="generating_domain_specific_restriction_models"></a></h2>
+      <h2><a name="generating_domain_specific_restriction_models"
+ id="generating_domain_specific_restriction_models"><br>
+Generating domain specific restriction models</a></h2>
+      <div class="level2">
+      <p> It is possible to automatically generate a restriction model
+for each domain restricting the entry into the domain. A restriction
+model for a domain contains restrictions for each association from a
+table outside of <em>d</em> to a table in <em>d</em>. Note that
+dependencies are unrestrictable. </p>
+      <p> <strong>Example</strong> </p>
+      <table class="inline" border="1" cellpadding="2" cellspacing="0">
+        <tbody>
+          <tr>
+            <th colspan="3"
+ style="background-color: rgb(204, 255, 255); text-align: left;"><strong>NO-ADDRESSES.csv</strong></th>
+          </tr>
+          <tr>
+            <td>DEPARTMENT</td>
+            <td>ADDRESS</td>
+            <td>ignore</td>
+          </tr>
+          <tr>
+            <td>EMPLOYEE</td>
+            <td>ADDRESS</td>
+            <td>ignore</td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+      <table class="inline" border="1" cellpadding="2" cellspacing="0">
+        <tbody>
+          <tr>
+            <th colspan="3"
+ style="background-color: rgb(204, 255, 255); text-align: left;"><strong>NO-DEPARTMENTS.csv</strong></th>
+          </tr>
+          <tr>
+            <td>EMPLOYEE</td>
+            <td>DEPARTMENT</td>
+            <td>ignore</td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+      <table class="inline" border="1" cellpadding="2" cellspacing="0">
+        <tbody>
+          <tr>
+            <th colspan="3"
+ style="background-color: rgb(204, 255, 255); text-align: left;"><strong>NO-EMPLOYEES.csv</strong></th>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      <div class="secedit">
+      <form class="button" method="post" action="/dokuwiki/doku.php">
+        <div class="no"><input name="do" value="edit" type="hidden"><input
+ name="lines" value="1811-2335" type="hidden"><input name="rev"
+ value="1182779110" type="hidden"><input name="id"
+ value="projekte:sqlexportdomains" type="hidden"></div>
+      </form>
+      </div>
+      <h2><a name="generating_domain_specific_extraction_models"
+ id="generating_domain_specific_extraction_models"><br>
+Generating domain
+specific extraction models</a></h2>
+      <div class="level2">
+      <p> It is also possible to automatically generate an extraction
+model (without subject-definition of course) for each domain including
+all restriction models of other domains except sub-domains. </p>
+      <p> <strong>Example</strong> </p>
+      <table class="inline" border="1" cellpadding="2" cellspacing="0">
+        <tbody>
+          <tr>
+            <th colspan="5"
+ style="background-color: rgb(204, 255, 255); text-align: left;"><strong>ADDRESSES</strong></th>
+          </tr>
+          <tr>
+            <td>&lt;subject&gt;</td>
+            <td>&lt;condition&gt;</td>
+            <td>&lt;limit&gt;</td>
+            <td>NO-EMPLOYEES.csv;NO-DEPARTMENTS.csv</td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+      <table class="inline" border="1" cellpadding="2" cellspacing="0">
+        <tbody>
+          <tr>
+            <th colspan="5"
+ style="background-color: rgb(204, 255, 255); text-align: left;"><strong>DEPARTMENTS</strong></th>
+          </tr>
+          <tr>
+            <td>&lt;subject&gt;</td>
+            <td>&lt;condition&gt;</td>
+            <td>&lt;limit&gt;</td>
+            <td>NO-EMPLOYEES.csv</td>
+          </tr>
+        </tbody>
+      </table>
+      <br>
+      <table class="inline" border="1" cellpadding="2" cellspacing="0">
+        <tbody>
+          <tr>
+            <th colspan="5"
+ style="background-color: rgb(204, 255, 255); text-align: left;"><strong>EMPLOYEES</strong></th>
+          </tr>
+        </tbody>
+      </table>
+      <h4><br>
+      </h4>
+      <span style="font-family: monospace;"></span><br>
+      <h2>&nbsp;</h2>
+      <h2>&nbsp;</h2>
+      </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>
