@@ -1,0 +1,7 @@
+# Composites.
+
+# A composite is a group of tables to be treated in the same way as a single table
+# for rendering and domain model analysis.
+
+# Main table; component 1; component 2; ...
+

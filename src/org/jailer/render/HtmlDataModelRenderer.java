@@ -39,6 +39,7 @@ import org.jailer.datamodel.Association;
 import org.jailer.datamodel.Column;
 import org.jailer.datamodel.DataModel;
 import org.jailer.datamodel.Table;
+import org.jailer.domainmodel.Composite;
 import org.jailer.domainmodel.Domain;
 import org.jailer.domainmodel.DomainModel;
 import org.jailer.util.PrintUtil;
@@ -89,24 +90,36 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
         try {
             List<Table> tableList = new ArrayList<Table>(dataModel.getTables());
             Collections.sort(tableList);
-            StringBuffer listItems = new StringBuffer();
+            List<String> tablesColumn = new ArrayList<String>();
+            List<String> domainsColumn = new ArrayList<String>();
             DomainModel domainModel = new DomainModel(dataModel);
             
-            for (Table table: tableList) {
-                listItems.append(PrintUtil.applyTemplate("template" + File.separatorChar + "index_table.html", new Object[] { linkTo(table) }));
+            for (Table table: dataModel.getTables()) {
+                Composite composite = domainModel.composites.get(table);
+                if (composite != null) {
+                    tablesColumn.add(linkTo(table));
+                }
+                Domain domain = domainModel.getDomain(table);
+                domainsColumn.add(domain == null? "" : "&nbsp;&nbsp;&nbsp;<small>" + linkTo(domain) + "</small>");
                 StringBuffer legend = new StringBuffer();
-                String closure = renderClosure(domainModel, table, legend);
+                String closure = renderClosure(domainModel, composite == null? domainModel.getComposite(table) : composite, legend);
                 closure = PrintUtil.applyTemplate("template" + File.separatorChar + "table.html", new Object[] { "Closure", "", closure });
                 String columns = generateColumnsTable(table, statementExecutor);
                 if (columns == null) {
                     columns = "";
+                } else {
+                    columns += "<br>";
+                }
+                String components = "";
+                if (composite != null && composite.componentTables.size() > 0) {
+                    components = generateComponentsTable(composite) + "<br>";
                 }
                 String domainSuffix = "";
-                Domain domain = domainModel.getDomain(table);
                 if (domain != null) {
                     domainSuffix = " <small>(" + linkTo(domain) + ")</small>";
                 }
-                writeFile(new File(outputDir, table.getName() + ".html"), PrintUtil.applyTemplate("template/tableframe.html", new Object[] { "Table " + table.getName(), renderTableBody(table, table, 0, 1, new HashSet<Table>()), closure + legend, columns, domainSuffix }));
+                String title = composite == null? "Component " + table.getName() : composite.toString();
+                writeFile(new File(outputDir, table.getName() + ".html"), PrintUtil.applyTemplate("template/tableframe.html", new Object[] { title, renderTableBody(table, table, 0, 1, new HashSet<Table>()), closure + legend, components + columns, domainSuffix }));
             }
             
             String restrictions = "none";
@@ -125,36 +138,37 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
                 domains = renderDomainModel(domainModel) + "<br>";
             }
             
-            writeFile(new File(outputDir, "index.html"), PrintUtil.applyTemplate("template" + File.separatorChar + "index.html", new Object[] { new Date(), listItems.toString(), restrictions, domains }));
+            writeFile(new File(outputDir, "index.html"), PrintUtil.applyTemplate("template" + File.separatorChar + "index.html", new Object[] { new Date(), generateHTMLTable("Tables", null, tablesColumn, domainsColumn), restrictions, domains }));
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }
 
     /**
-     * Renders the closure of a table.
+     * Renders the closure of a composite.
      * 
-     * @param table the table
-     * @return render of table's closure
+     * @param composite the composite
+     * @return render of composite's closure
      */
-    private String renderClosure(DomainModel domainModel, Table table, StringBuffer legend) throws FileNotFoundException, IOException {
+    private String renderClosure(DomainModel domainModel, Composite composite, StringBuffer legend) throws FileNotFoundException, IOException {
         StringBuffer lines = new StringBuffer();
         int distance = 0;
-        Set<Table> closure = new HashSet<Table>();
-        Set<Table> associatedTables = new HashSet<Table>();
+        Set<Composite> closure = new HashSet<Composite>();
+        Set<Composite> associatedComposites = new HashSet<Composite>();
         boolean printLegend = false;
-        Domain domain = domainModel.getDomain(table);
+        Domain domain = domainModel.getDomain(composite.mainTable);
         do {
-            associatedTables.clear();
+            associatedComposites.clear();
             if (distance == 0) {
-                associatedTables.add(table);
+                associatedComposites.add(composite);
             } else {
-                for (Table t: closure) {
-                    for (Association a: t.associations) {
+                for (Composite c: closure) {
+                    for (Association a: c.getAssociations()) {
                         if (a.getJoinCondition() != null) {
-                            if (!closure.contains(a.destination)) {
+                            Composite destinationComposite = domainModel.getComposite(a.destination);
+                            if (!closure.contains(destinationComposite)) {
                                 if (!excludeFromClosure(a.destination)) {
-                                    associatedTables.add(a.destination);
+                                    associatedComposites.add(destinationComposite);
                                 }
                             }
                         }
@@ -162,15 +176,19 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
                 }
             }
             
-            List<Table> cl = new ArrayList<Table>(associatedTables);
-            Collections.sort(cl);
+            List<Composite> cl = new ArrayList<Composite>(associatedComposites);
+            Collections.sort(cl, new Comparator<Composite>() {
+                public int compare(Composite o1, Composite o2) {
+                    return o1.mainTable.compareTo(o2.mainTable);
+                }
+            });
             StringBuffer ts = new StringBuffer();
             boolean firstTime = true;
-            for (Table dt: cl) {
+            for (Composite dt: cl) {
                 if (!firstTime) {
                     ts.append(", ");
                 }
-                Domain dtDomain = domainModel.getDomain(dt);
+                Domain dtDomain = domainModel.getDomain(dt.mainTable);
                 boolean differentDomains = false;
                 boolean subDomain = false;
                 if (dtDomain == null && domain == null) {
@@ -186,7 +204,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
                     ts.append("<span style=\"font-style: italic;\">");
                     printLegend = true;
                 }
-                ts.append(dt.equals(table)? dt.getName() : linkTo(dt));
+                ts.append(dt.equals(composite)? dt.mainTable.getName() : linkTo(dt.mainTable));
                 if (subDomain) {
                     ts.append("*");
                     printLegend = true;
@@ -200,8 +218,8 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
                 lines.append(PrintUtil.applyTemplate("template/table_line.html", new Object[] { "", "&nbsp;&nbsp;distance&nbsp;" + distance, "", "&nbsp;", ts.toString(), COLOR_KEYWORDS, distance % 2 != 0? "class=\"highlightedrow\"" : "" }));
             }
             ++distance;
-            closure.addAll(associatedTables);
-        } while (!associatedTables.isEmpty());
+            closure.addAll(associatedComposites);
+        } while (!associatedComposites.isEmpty());
         if (printLegend) {
             legend.append(PrintUtil.applyTemplate("template" + File.separatorChar + "legend.html", new Object[0]));
         }
@@ -381,14 +399,29 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
         
         return count == 0? null : (PrintUtil.applyTemplate("template" + File.separatorChar + "table.html", new Object[] { "Columns", "", result.toString() }));
     }
-
+    
+    /**
+     * Generates a HTML render of a components table.
+     * 
+     * @param composite the composite
+     * @return HTML render
+     */
+    private String generateComponentsTable(Composite composite) throws SQLException, FileNotFoundException, IOException {
+        List<String> componentNames = new ArrayList<String>();
+        
+        for (Table component: composite.componentTables) {
+            componentNames.add(linkTo(component));
+        }
+        return generateHTMLTable("Components", null, componentNames, null);
+    }
+    
     /**
      * Generates a HTML table.
      */
     private String generateHTMLTable(String title, List<Integer> indents, List<String> column1, List<String> column2) throws FileNotFoundException, IOException {
         StringBuffer result = new StringBuffer();
         for (int i = 0; i < column1.size(); ++i) {
-            result.append(PrintUtil.applyTemplate("template/table_line.html", new Object[] { "", indentSpaces(indents == null? 1 : indents.get(i)) + column1.get(i), column2 == null? "" : column2.get(i), "", "", "", i % 2 == 0? "class=\"highlightedrow\"" : "" }));
+            result.append(PrintUtil.applyTemplate("template/table_line.html", new Object[] { "", indentSpaces(indents == null? 1 : indents.get(i)) + column1.get(i), column2 == null? "" : column2.get(i), "", "", "", i % 2 != 0? "class=\"highlightedrow\"" : "" }));
         }
         return column1.isEmpty()? null : (PrintUtil.applyTemplate("template" + File.separatorChar + "table.html", new Object[] { title, "", result.toString() }));
     }
@@ -410,7 +443,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
             for (Domain subDomain: domain.getSubDomains()) {
                 column.add(linkTo(subDomain));
             }
-            String containsTable = generateHTMLTable("Contains", null, column, null);
+            String containsTable = generateHTMLTable("contains", null, column, null);
             String content = ""; 
             if (containsTable != null) {
                 content += containsTable + "<br>";
@@ -424,19 +457,10 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
                 content += partOfTable + "<br>";
             }
             column.clear();
-            StringBuffer line = new StringBuffer();
             for (Table table: domain.tables) {
-                if (line.length() > 0) {
-                    line.append(",&nbsp;");
+                if (domainModel.composites.get(table) != null) {
+                    column.add(linkTo(table));
                 }
-                line.append(linkTo(table));
-                if (line.length() > 100) {
-                    column.add(line.toString());
-                    line = new StringBuffer();
-                }
-            }
-            if (line.length() > 0) {
-                column.add(line.toString());
             }
             String tablesTable = generateHTMLTable("Tables", null, column, null);
             if (tablesTable != null) {

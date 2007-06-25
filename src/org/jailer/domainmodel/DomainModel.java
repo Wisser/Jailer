@@ -17,13 +17,17 @@ package org.jailer.domainmodel;
 
 import java.io.File;
 import java.io.FilenameFilter;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.apache.log4j.Logger;
+import org.jailer.datamodel.Association;
 import org.jailer.datamodel.DataModel;
 import org.jailer.datamodel.Table;
 import org.jailer.util.CsvFile;
@@ -52,6 +56,11 @@ public class DomainModel {
     private final DataModel dataModel;
 
     /**
+     * Maps each table to the composite where the table is the main table.
+     */
+    public final Map<Table, Composite> composites;
+    
+    /**
      * The logger.
      */
     private static final Logger _log = Logger.getLogger(DomainModel.class);
@@ -63,6 +72,8 @@ public class DomainModel {
      */
     public DomainModel(DataModel dataModel) throws Exception {
         this.dataModel = dataModel;
+        composites = new TreeMap<Table, Composite>();
+        loadComposites();
         
         // load files
         Map<String, CsvFile> csvFiles = new HashMap<String, CsvFile>();
@@ -72,7 +83,7 @@ public class DomainModel {
         }
         for (File domainFile: domainModelDirectory.listFiles(new FilenameFilter() {
             public boolean accept(File dir, String name) {
-                return name.toLowerCase().endsWith(".csv");
+                return !"composites.csv".equalsIgnoreCase(name) && name.toLowerCase().endsWith(".csv");
             }
         })) {
             _log.info("loading domain " + domainFile);
@@ -89,7 +100,7 @@ public class DomainModel {
         
         // create domains
         for (String domainName: csvFiles.keySet()) {
-            Set<Table> tables = new HashSet<Table>();
+            Set<Table> tables = new TreeSet<Table>();
             CsvFile csvFile = csvFiles.get(domainName);
             for (int line = 1; line < csvFile.getLines().size(); ++line) {
                 Line csvLine = csvFile.getLines().get(line);
@@ -97,6 +108,11 @@ public class DomainModel {
                 Table table = dataModel.getTable(tableName);
                 if (table == null) {
                     throw new RuntimeException(csvLine.location + ": unknown table '" + tableName + "'");
+                }
+                if (composites.get(table) == null) {
+                    throw new RuntimeException(csvLine.location + ": table '" + tableName + "' is component of " + getComposite(table) + ".");
+                } else {
+                    tables.addAll(composites.get(table).componentTables);
                 }
                 tables.add(table);
             }
@@ -122,6 +138,51 @@ public class DomainModel {
     }
     
     /**
+     * Loads the composites definition file.
+     */
+    private void loadComposites() throws Exception {
+        File compositesDefinition = new File("domainmodel" + File.separator + "composites.csv");
+        Map<Table, CsvFile.Line> compositeDefinitionOfTable = new HashMap<Table, Line>();
+        if (compositesDefinition.exists()) {
+            CsvFile compostitesCsvFile = new CsvFile(compositesDefinition);
+            for (CsvFile.Line line: compostitesCsvFile.getLines()) {
+                Table table = dataModel.getTable(line.cells.get(0));
+                if (table == null) {
+                    throw new RuntimeException("unknown table '" + line.cells.get(0) + "'");
+                }
+                if (compositeDefinitionOfTable.containsKey(table)) {
+                    throw new RuntimeException("duplicate composite definition for '" + line.cells.get(0) + "'");
+                }
+                compositeDefinitionOfTable.put(table, line);
+            }
+        } else {
+            _log.info("no composites definition (" + compositesDefinition + ")");
+        }
+        Set<Table> allComponents = new HashSet<Table>();
+        for (Table table: dataModel.getTables()) {
+            CsvFile.Line line = compositeDefinitionOfTable.get(table);
+            if (line != null) {
+                allComponents.add(table);
+                List<Table> components = new ArrayList<Table>();
+                for (int i = 1; line.cells.get(i).length() > 0; ++i) {
+                    Table component = dataModel.getTable(line.cells.get(i));
+                    if (component == null) {
+                        throw new RuntimeException("unknown table '" + line.cells.get(i) + "'");
+                    }
+                    allComponents.add(component);
+                    components.add(component);
+                }
+                composites.put(table, new Composite(table, components));
+            }
+        }
+        for (Table table: dataModel.getTables()) {
+            if (!allComponents.contains(table)) {
+                composites.put(table, new Composite(table, new ArrayList<Table>()));
+            }
+        }
+    }
+
+    /**
      * Gets all domains.
      * 
      * @return a map from domain names to domains
@@ -146,6 +207,30 @@ public class DomainModel {
     }
     
     /**
+     * Cache for {@link #getComposite(Table)}.
+     */
+    private Map<Table, Composite> componentCache = new HashMap<Table, Composite>();
+    
+    /**
+     * Gets composite in which a given table is contained.
+     *
+     * @param table the table
+     * @return composite in which a table is contained
+     */
+    public Composite getComposite(Table table) {
+        if (componentCache.containsKey(table)) {
+            return componentCache.get(table);
+        }
+        for (Composite composite: composites.values()) {
+            if (composite.mainTable.equals(table) || composite.componentTables.contains(table)) {
+                componentCache.put(table, composite);
+                return composite;
+            }
+        }
+        return null;
+    }
+    
+    /**
      * Checks model invariants:
      * <ul>
      *   <li>two different domains are disjoint.
@@ -155,13 +240,69 @@ public class DomainModel {
      * @return <code>true</code> if no errors are found
      */
     public boolean check() {
-        boolean ok = true;
+        Set<Table> withoutDomain = new TreeSet<Table>();
+        for (Table table: dataModel.getTables()) {
+            Set<Domain> domainsOfTable = new TreeSet<Domain>();
+            for (Domain domain: domains.values()) {
+                if (domain.tables.contains(table)) {
+                    domainsOfTable.add(domain);
+                }
+            }
+            if (domainsOfTable.size() == 0) {
+                withoutDomain.add(table);
+            }
+            if (domainsOfTable.size() > 1) {
+                printError("Table '" + table.getName() + "' in more than 1 domain: " + domainsOfTable);
+            }
+        }
+        if (withoutDomain.size() > 0) {
+            warn("Tables without domain: " + PrintUtil.tableSetAsString(withoutDomain, "    "));
+        }
         
+        // escape analysis
+        for (Domain domain: domains.values()) {
+            for (Table table: domain.tables) {
+                for (Association association: table.associations) {
+                    if (!association.isIgnored()) {
+                        Domain destinationDomain = getDomain(association.destination);
+                        if (destinationDomain == null || (!destinationDomain.equals(domain) && !destinationDomain.isSubDomainOf(domain))) {
+                            String associationName = association.source.getName() + "->" + association.destination.getName();
+                            warn((association.isInsertDestinationBeforeSource()? "dependency '" : "association '") + associationName + "' deserts " + domain + (destinationDomain != null? " to " + destinationDomain : ""));
+                        }
+                    }
+                }
+            }
+        }
+
+        System.out.println(numberOfErrors + " errors");
+        System.out.println(numberOfWarnings + " warnings");
         
-        
-        return true;
+        return numberOfErrors == 0;
     }
     
+    private int numberOfWarnings = 0;
+    private int numberOfErrors = 0;
+    
+    /**
+     * Prints warning message.
+     * 
+     * @param message the message
+     */
+    private void warn(String message) {
+        System.out.println("warning: " + message);
+        ++numberOfWarnings;
+    }
+
+    /**
+     * Prints error message.
+     * 
+     * @param message the message
+     */
+    private void printError(String message) {
+        System.out.println("error: " + message);
+        ++numberOfErrors;
+    }
+
     /**
      * Stringifies the model.
      */
