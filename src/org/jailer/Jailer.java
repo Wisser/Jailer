@@ -821,10 +821,16 @@ public class Jailer {
             }
         }
         if (successor.containsKey(source)) {
+            String joinedSelect = "Select * From " + source.getName();
             System.out.println(source.getName());
             for (Table table = source; !table.equals(destination); table = successor.get(table)) {
-                System.out.println(outgoingAssociation.get(table));
+                Association association = outgoingAssociation.get(table);
+                System.out.println(association);
+                joinedSelect += " join " + association.destination.getName() + " on " + 
+                    SqlUtil.replaceAliases(association.getJoinCondition(), association.source.getName(), association.destination.getName());
             }
+            System.out.println();
+            System.out.println(joinedSelect);
         } else {
             System.out.println("tables are not associated");
         }

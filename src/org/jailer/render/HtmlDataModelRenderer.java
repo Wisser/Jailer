@@ -94,13 +94,13 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
             List<String> domainsColumn = new ArrayList<String>();
             DomainModel domainModel = new DomainModel(dataModel);
             
-            for (Table table: dataModel.getTables()) {
+            for (Table table: tableList) {
                 Composite composite = domainModel.composites.get(table);
+                Domain domain = domainModel.getDomain(table);
                 if (composite != null) {
                     tablesColumn.add(linkTo(table));
+                    domainsColumn.add(domain == null? "" : "&nbsp;&nbsp;&nbsp;<small>" + linkTo(domain) + "</small>");
                 }
-                Domain domain = domainModel.getDomain(table);
-                domainsColumn.add(domain == null? "" : "&nbsp;&nbsp;&nbsp;<small>" + linkTo(domain) + "</small>");
                 StringBuffer legend = new StringBuffer();
                 String closure = renderClosure(domainModel, composite == null? domainModel.getComposite(table) : composite, legend);
                 closure = PrintUtil.applyTemplate("template" + File.separatorChar + "table.html", new Object[] { "Closure", "", closure });
@@ -363,9 +363,14 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
      */
     private String tableRow(int indent, Association association, Table current, boolean highlighted) throws FileNotFoundException, IOException {
         String jc = association.renderJoinCondition("<span style=\"" + COLOR_KEYWORDS + "\">restricted by</span>");
-        if (!association.destination.equals(current)) {
-            jc = jc.replaceAll("B\\.", linkTo(association.destination, "B."));
+        String aliasA = "A", aliasB = "B";
+        if (!association.source.equals(association.destination)) {
+            aliasA = association.source.getName();
+            aliasB = association.destination.getName();
         }
+        aliasA = linkTo(association.source, aliasA);
+        aliasB = linkTo(association.destination, aliasB);
+        jc = SqlUtil.replaceAliases(jc, aliasA, aliasB);
         return PrintUtil.applyTemplate("template/table_line.html", new Object[] { indentSpaces(indent), "&nbsp;&nbsp;" + (association.destination.equals(current)? association.destination.getName() : linkTo(association.destination)), "&nbsp;&nbsp;" + (association.getCardinality() != null? association.getCardinality() : ""), "&nbsp;on&nbsp;", jc, "", highlighted? "class=\"highlightedrow\"" : "" });
     }
     
@@ -386,7 +391,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
             ++count;
             String COLUMN_NAME = rs.getString("COLUMN_NAME");
             String SQL_TYPE = SqlUtil.SQL_TYPE.get(rs.getInt("DATA_TYPE"));
-            boolean nullable = "columnNullable".equals(rs.getString("NULLABLE"));
+            boolean nullable = DatabaseMetaData.columnNullable == rs.getInt("NULLABLE");
             String type = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + SQL_TYPE;
             String constraint = (!nullable ? "&nbsp;&nbsp;&nbsp;&nbsp;<small>NOT&nbsp;NULL</small>" : "");
             boolean isPK = false;
