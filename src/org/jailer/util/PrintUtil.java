@@ -25,7 +25,10 @@ import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.jailer.datamodel.Table;
@@ -76,6 +79,11 @@ public class PrintUtil {
     }
 
     /**
+     * Cache for {@link #applyTemplate(String, Object[])}.
+     */
+    private static Map<String, StringBuffer> templateCache = new HashMap<String, StringBuffer>();
+    
+    /**
      * Applies arguments to template.
      * 
      * @param template file name of template
@@ -84,13 +92,17 @@ public class PrintUtil {
      * @return template with arguments filled in
      */
     public static String applyTemplate(String template, Object[] arguments) throws FileNotFoundException, IOException {
-        BufferedReader reader = new BufferedReader(new FileReader(template));
-        String line = null;
-        StringBuffer sb = new StringBuffer();
-        while ((line = reader.readLine()) != null) {
-            sb.append(line + "\n");
+        StringBuffer sb = templateCache.get(template);
+        if (sb == null) {
+            sb = new StringBuffer();
+            BufferedReader reader = new BufferedReader(new FileReader(template));
+            String line = null;
+            while ((line = reader.readLine()) != null) {
+                sb.append(line + "\n");
+            }
+            reader.close();
+            templateCache.put(template, sb);
         }
-        reader.close();
         
         return MessageFormat.format(sb.toString(), arguments);
     }

@@ -58,6 +58,32 @@ public class SqlUtil {
     }
     
     /**
+     * Replaces the aliases A and B with given aliases  ina SQL-condition.
+     * 
+     * @param condition the condition
+     * @param aliasA alias for A
+     * @param aliasB alias for B
+     * @return condition with replaced aliases
+     */
+    public static String replaceAliases(String condition, String aliasA, String aliasB) {
+        final String chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_";
+        StringBuffer result = new StringBuffer("");
+        for (int i = 0; i < condition.length(); ++i) {
+            char c = condition.charAt(i);
+            if (c == 'A' || c == 'B') {
+                if (i + 1 < condition.length() && condition.charAt(i + 1) == '.') {
+                    if (i == 0 || chars.indexOf(condition.charAt(i - 1)) < 0) {
+                        result.append(c == 'A'? aliasA : aliasB);
+                        continue;
+                    }
+                }
+            }
+            result.append(c);
+        }
+        return result.toString();
+    }
+    
+    /**
      * Reads a table-list from CSV-file.
      * 
      * @param dataModel to get tables from
