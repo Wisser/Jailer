@@ -440,9 +440,10 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
         List<String> column1 = new ArrayList<String>();
         List<String> column2 = new ArrayList<String>();
         List<Integer> indent = new ArrayList<Integer>();
+        Set<Domain> renderedDomains = new HashSet<Domain>();
         for (Domain domain: domainModel.getDomains().values()) {
             if (domain.getSuperDomains().isEmpty()) {
-                appendDomainTree(domain, column1, column2, 1, indent, domainModel.getDomains().size() + 2);
+                appendDomainTree(domain, column1, column2, 1, indent, domainModel.getDomains().size() + 2, domain.name, renderedDomains);
             }
             List<String> column = new ArrayList<String>();
             for (Domain subDomain: domain.getSubDomains()) {
@@ -485,16 +486,24 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
      * @param column2 domain description
      * @param level current indent level
      * @param indent indent level for each line
+     * @param renderedDomains set of already rendered domains (to prevent duplicate rendering)
      */
-    private void appendDomainTree(Domain domain, List<String> column1, List<String> column2, int level, List<Integer> indent, int maxLevel) {
+    private void appendDomainTree(Domain domain, List<String> column1, List<String> column2, int level, List<Integer> indent, int maxLevel, String path, Set<Domain> renderedDomains) {
         if (level > maxLevel) {
-            throw new RuntimeException("cyclic domain containment: '" + domain.name + "'");
+            throw new RuntimeException("cyclic domain containment: " + path);
         }
-        column1.add(linkTo(domain) + "&nbsp;&nbsp;&nbsp;");
+        String suffix = "";
+        if (renderedDomains.contains(domain) && !domain.getSubDomains().isEmpty()) {
+            suffix = "&nbsp;&#x2191;";
+        }
+        column1.add(linkTo(domain) + suffix + "&nbsp;&nbsp;&nbsp;");
         column2.add("&nbsp;&nbsp;<small>" + domain.tables.size() + "&nbsp;Tables</small>&nbsp;&nbsp;");
         indent.add(level);
-        for (Domain subDomain: domain.getSubDomains()) {
-            appendDomainTree(subDomain, column1, column2, level + 1, indent, maxLevel);
+        if (!renderedDomains.contains(domain)) {
+            renderedDomains.add(domain);
+            for (Domain subDomain: domain.getSubDomains()) {
+                appendDomainTree(subDomain, column1, column2, level + 1, indent, maxLevel, path + "->" + subDomain.name, renderedDomains);
+            }
         }
     }
 
