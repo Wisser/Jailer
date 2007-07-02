@@ -374,6 +374,8 @@ public class Jailer {
      * @param progress set of tables to account for extraction
      */
     public void writeEntities(String sqlScriptFile, final ScriptType scriptType, final Set<Table> progress, StatementExecutor statementExecutor) throws Exception {
+        System.out.println("writing file '" + sqlScriptFile + "'...");
+
         OutputStream outputStream = new FileOutputStream(sqlScriptFile);
         if (sqlScriptFile.toLowerCase().endsWith(".zip") || sqlScriptFile.toLowerCase().endsWith(".gz")) {
             outputStream = new GZIPOutputStream(outputStream);
@@ -426,6 +428,7 @@ public class Jailer {
         if (rest > 0) {
             throw new RuntimeException(rest + " entities not exported due to cyclic dependencies");
         }
+        System.out.println("file '" + sqlScriptFile + "' written.");
     }
 
     /**
@@ -515,60 +518,65 @@ public class Jailer {
      * 
      * @param args arguments
      */
-    public static void main(String[] args) throws Exception {
-        
-        CommandLineParser.parse(args);
-        CommandLineParser clp = CommandLineParser.getInstance();
-        
-        String command = clp.arguments.get(0);
-        if ("check-domainmodel".equalsIgnoreCase(command)) {
-            DataModel dataModel = new DataModel();
-            for (String rm: clp.arguments.subList(1, clp.arguments.size())) {
-                if (dataModel.getRestrictionModel() == null) {
-                    dataModel.setRestrictionModel(new RestrictionModel(dataModel));
+    public static void main(String[] args) {
+        try {
+            CommandLineParser.parse(args);
+            CommandLineParser clp = CommandLineParser.getInstance();
+            
+            String command = clp.arguments.get(0);
+            if ("check-domainmodel".equalsIgnoreCase(command)) {
+                DataModel dataModel = new DataModel();
+                for (String rm: clp.arguments.subList(1, clp.arguments.size())) {
+                    if (dataModel.getRestrictionModel() == null) {
+                        dataModel.setRestrictionModel(new RestrictionModel(dataModel));
+                    }
+                    dataModel.getRestrictionModel().addRestrictionDefinition(rm);
                 }
-                dataModel.getRestrictionModel().addRestrictionDefinition(rm);
-            }
-           new DomainModel(dataModel).check();
-        } else if ("render-datamodel".equalsIgnoreCase(command)) {
-            if (clp.arguments.size() <= 4) {
-                CommandLineParser.printUsage();
-            } else {
-                new Jailer(1).renderDataModel(clp.arguments, clp.withClosures);
-            }
-        } else if ("print-datamodel".equalsIgnoreCase(command)) {
-            printDataModel(clp.arguments, clp.withClosures);
-        } else if ("export".equalsIgnoreCase(command)) {
-            if (clp.arguments.size() != 6) {
-                CommandLineParser.printUsage();
-            } else {
-                if (clp.maxNumberOfEntities > 0) {
-                    EntityGraph.maxTotalRowcount = clp.maxNumberOfEntities;
-                    _log.info("max-rowcount=" + EntityGraph.maxTotalRowcount);
-                }
-                if (clp.exportScriptFileName == null) {
-                    System.out.println("missing '-e' option");
+               new DomainModel(dataModel).check();
+            } else if ("render-datamodel".equalsIgnoreCase(command)) {
+                if (clp.arguments.size() <= 4) {
                     CommandLineParser.printUsage();
                 } else {
-                    export(clp.arguments.get(1), clp.exportScriptFileName, clp.deleteScriptFileName, clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4), clp.arguments.get(5), clp.explain, clp.numberOfThreads);
+                    new Jailer(1).renderDataModel(clp.arguments, clp.withClosures);
                 }
-            }
-        } else if ("find-association".equalsIgnoreCase(command)) {
-            if (clp.arguments.size() < 3) {
-                CommandLineParser.printUsage();
+            } else if ("print-datamodel".equalsIgnoreCase(command)) {
+                printDataModel(clp.arguments, clp.withClosures);
+            } else if ("export".equalsIgnoreCase(command)) {
+                if (clp.arguments.size() != 6) {
+                    CommandLineParser.printUsage();
+                } else {
+                    if (clp.maxNumberOfEntities > 0) {
+                        EntityGraph.maxTotalRowcount = clp.maxNumberOfEntities;
+                        _log.info("max-rowcount=" + EntityGraph.maxTotalRowcount);
+                    }
+                    if (clp.exportScriptFileName == null) {
+                        System.out.println("missing '-e' option");
+                        CommandLineParser.printUsage();
+                    } else {
+                        export(clp.arguments.get(1), clp.exportScriptFileName, clp.deleteScriptFileName, clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4), clp.arguments.get(5), clp.explain, clp.numberOfThreads);
+                    }
+                }
+            } else if ("find-association".equalsIgnoreCase(command)) {
+                if (clp.arguments.size() < 3) {
+                    CommandLineParser.printUsage();
+                } else {
+                    findAssociation(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.subList(3, clp.arguments.size()), clp.undirected);
+                }
+            } else if ("create-ddl".equalsIgnoreCase(command)) {
+                DDLCreator.createDDL();
+            } else if ("build-model".equalsIgnoreCase(command)) {
+                if (clp.arguments.size() != 5) {
+                    CommandLineParser.printUsage();
+                } else {
+                    ModelBuilder.build(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4));
+                }
             } else {
-                findAssociation(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.subList(3, clp.arguments.size()), clp.undirected);
-            }
-        } else if ("create-ddl".equalsIgnoreCase(command)) {
-            DDLCreator.createDDL();
-        } else if ("build-model".equalsIgnoreCase(command)) {
-            if (clp.arguments.size() != 5) {
                 CommandLineParser.printUsage();
-            } else {
-                ModelBuilder.build(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4));
             }
-        } else {
-            CommandLineParser.printUsage();
+        } catch (Exception e) {
+            _log.error(e.getMessage(), e);
+            System.out.println("Error: " + e.getMessage());
+            System.out.println("See 'export.log' for more information");
         }
     }
 
@@ -595,6 +603,9 @@ public class Jailer {
      * Exports entities.
      */
     private static void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, String driverClassName, String dbUrl, String dbUser, String dbPassword, boolean explain, int threads) throws Exception {
+        System.out.println("exporting '" + extractionModelFileName + "' to '" + scriptFile + "'");
+        System.out.println("See 'export.log' for more information.");
+
         StatementExecutor statementExecutor = new StatementExecutor(driverClassName, dbUrl, dbUser, dbPassword);
         ExtractionModel extractionModel = new ExtractionModel(extractionModelFileName);
         EntityGraph entityGraph = EntityGraph.create(EntityGraph.createUniqueGraphID(), statementExecutor, extractionModel.getTasks().get(0).dataModel.getUniversalPrimaryKey());

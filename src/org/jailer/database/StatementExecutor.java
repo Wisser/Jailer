@@ -124,9 +124,8 @@ public class StatementExecutor {
      * @param dbUrl the database URL
      * @param user the DB-user
      * @param password the DB-password
-     * @throws ClassNotFoundException 
      */
-    public StatementExecutor(String driverClassName, final String dbUrl, final String user, final String password) throws ClassNotFoundException {
+    public StatementExecutor(String driverClassName, final String dbUrl, final String user, final String password) throws Exception {
         _log.info("connect to user " + user + " at "+ dbUrl);
         Class.forName(driverClassName);
         this.schemaName = user;
@@ -151,6 +150,8 @@ public class StatementExecutor {
                 return con;
             }
         };
+        // fail fast
+        connectionFactory.getConnection();
     }
 
     /**

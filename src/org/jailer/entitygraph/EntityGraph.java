@@ -79,7 +79,7 @@ public class EntityGraph {
      * @param statementExecutor for executing SQL-Statements
      * @param universalPrimaryKey the universal primary key
      */
-    private EntityGraph(int graphID, StatementExecutor statementExecutor, PrimaryKey universalPrimaryKey) throws SQLException {
+    private EntityGraph(int graphID, StatementExecutor statementExecutor, PrimaryKey universalPrimaryKey) {
         this.graphID = graphID;
         this.statementExecutor = statementExecutor;
         this.universalPrimaryKey = universalPrimaryKey;
@@ -93,9 +93,15 @@ public class EntityGraph {
      * @param universalPrimaryKey the universal primary key
      * @return the newly created entity-graph
      */
-    public static EntityGraph create(int graphID, StatementExecutor statementExecutor, PrimaryKey universalPrimaryKey) throws SQLException {
+    public static EntityGraph create(int graphID, StatementExecutor statementExecutor, PrimaryKey universalPrimaryKey) {
         EntityGraph entityGraph = new EntityGraph(graphID, statementExecutor, universalPrimaryKey);
-        statementExecutor.executeUpdate("Insert into " + ENTITY_GRAPH + "(id) values (" + graphID + ")");
+        try {
+            statementExecutor.executeUpdate("Insert into " + ENTITY_GRAPH + "(id, age) values (" + graphID + ", 1)");
+        } catch (SQLException e) {
+            throw new RuntimeException("Can't find working tables! " +
+                    "Run 'bin/jailer.sh create-ddl' " +
+                    "and execute the DDL-script first!", e);
+        }
         return entityGraph;
     }
 
