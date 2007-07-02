@@ -8,7 +8,7 @@ DROP TABLE ENTITY_GRAPH;
 CREATE TABLE ENTITY_GRAPH
 (
    id              INTEGER NOT NULL,
-   age             INTEGER NOT NULL DEFAULT 1,
+   age             INTEGER NOT NULL,
 
    CONSTRAINT j_pk_graph PRIMARY KEY(id)
 );
