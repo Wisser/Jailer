@@ -528,6 +528,10 @@ public class Jailer {
             CommandLineParser.parse(args);
             CommandLineParser clp = CommandLineParser.getInstance();
             
+            _log.info("***");
+            _log.info("Jailer " + VERSION);
+            _log.info("***");
+            
             String command = clp.arguments.get(0);
             if ("check-domainmodel".equalsIgnoreCase(command)) {
                 DataModel dataModel = new DataModel();
@@ -573,6 +577,9 @@ public class Jailer {
                 if (clp.arguments.size() != 5) {
                     CommandLineParser.printUsage();
                 } else {
+                    printGreeting();
+                    System.out.println("Building data model.");
+                    System.out.println("See 'export.log' for more information.");
                     ModelBuilder.build(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4));
                 }
             } else {
@@ -596,7 +603,8 @@ public class Jailer {
      * Render the data model.
      */
     private void renderDataModel(List<String> arguments, boolean withClosures) throws Exception {
-    	DataModel dataModel = new DataModel();
+    	printGreeting();
+        DataModel dataModel = new DataModel();
         StatementExecutor statementExecutor = new StatementExecutor(arguments.get(1), arguments.get(2), arguments.get(3), arguments.get(4));
         for (String rm: arguments.subList(1 + 4, arguments.size())) {
             if (dataModel.getRestrictionModel() == null) {
@@ -803,6 +811,7 @@ public class Jailer {
      * Prints shortest association between two tables.
      */
     private static void findAssociation(String from, String to, List<String> restModels, boolean undirected) throws Exception {
+        printGreeting();
         DataModel dataModel = new DataModel();
         for (String rm: restModels) {
             if (dataModel.getRestrictionModel() == null) {
