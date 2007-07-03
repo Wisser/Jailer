@@ -212,8 +212,14 @@ automatically from introspection of the relational database.<br>
           <tr>
             <td
  style="background-color: rgb(230, 255, 230); vertical-align: top;"><span
- style="font-family: monospace;">$sh bin/jailer.sh build-model
+ style="font-family: monospace;">$ sh bin/jailer.sh build-model
 com.ibm.db2.jcc.DB2Driver jdbc:db2://localhost:50001/wisser scott tiger<br>
+Jailer 0.9.5<br>
+            <br>
+Building data model.<br>
+See 'export.log' for more information.<br>
+            <br>
+$ cat export.log<br>
 2007-06-01 15:51:30,308 [main] INFO&nbsp;&nbsp; - find tables with
 org.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder@16fe0f4<br>
 2007-06-01 15:51:32,115 [main] INFO&nbsp;&nbsp; - file
@@ -490,6 +496,14 @@ Export this set:<br>
  style="font-family: monospace;">$ sh bin/jailer.sh export -e scott.sql
 extractionmodel/scott.csv com.ibm.db2.jcc.DB2Driver
 jdbc:db2://localhost:50001/wisser scott tiger<br>
+Jailer 0.9.5<br>
+            <br>
+exporting 'extractionmodel/scott.csv' to 'scott.sql'<br>
+See 'export.log' for more information.<br>
+writing file 'scott.sql'...<br>
+file 'scott.sql' written.<br>
+            <br>
+$ cat export.log<br>
 2007-06-04 13:27:25,123 [main] INFO&nbsp;&nbsp; - exporting EMPLOYEE
 Where NAME='SCOTT'<br>
 ...<br>
