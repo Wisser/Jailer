@@ -68,6 +68,11 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
 public class Jailer {
     
     /**
+     * The Jailer version.
+     */
+    private static final String VERSION = "0.9.5";
+    
+    /**
      * The relational data model.
      */
     private DataModel datamodel;
@@ -462,7 +467,7 @@ public class Jailer {
     }
     
     /**
-     * Prevent multiple shutdowns.
+     * Prevents multiple shutdowns.
      */
     private boolean isDown = false;
     
@@ -581,6 +586,13 @@ public class Jailer {
     }
 
     /**
+     * Prints greetings.
+     */
+    private static void printGreeting() {
+        System.out.println("Jailer " + VERSION + "\n");
+    }
+    
+    /**
      * Render the data model.
      */
     private void renderDataModel(List<String> arguments, boolean withClosures) throws Exception {
@@ -603,6 +615,7 @@ public class Jailer {
      * Exports entities.
      */
     private static void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, String driverClassName, String dbUrl, String dbUser, String dbPassword, boolean explain, int threads) throws Exception {
+        printGreeting();
         System.out.println("exporting '" + extractionModelFileName + "' to '" + scriptFile + "'");
         System.out.println("See 'export.log' for more information.");
 
@@ -851,6 +864,7 @@ public class Jailer {
      * Prints restricted data-model.
      */
     private static void printDataModel(List<String> restrictionModels, boolean printClosures) throws Exception {
+        printGreeting();
         DataModel dataModel = new DataModel();
         if (printClosures) {
             DataModel.printClosures = true;
