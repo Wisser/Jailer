@@ -37,11 +37,9 @@ CREATE TABLE entity_graph<br>
 &nbsp;&nbsp;
 id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 INTEGER NOT NULL,<br>
-&nbsp;&nbsp; created&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-TIMESTAMP NOT NULL WITH DEFAULT CURRENT TIMESTAMP,<br>
 &nbsp;&nbsp;
 age&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-INTEGER NOT NULL WITH DEFAULT 1,<br>
+INTEGER NOT NULL,<br>
       <br>
 &nbsp;&nbsp; CONSTRAINT j_pk_graph PRIMARY KEY(id)<br>
 );<br>
