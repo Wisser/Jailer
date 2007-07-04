@@ -1,5 +1,10 @@
+0.9.5
+- made Jailer compatible with Firebird DBMS.
+- better logging and error handling.
+- improved HTML rendering.
+
 0.9.4
-- Means for modeling domains and Composites.
+- Means for modeling domains and composites.
 
 0.9.3
 - HTML rendering of data model.
