@@ -78,7 +78,14 @@ public class Settings  {
             settings.put(name.trim(), setting);
             currentSetting = name;
             try {
-                ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(FILENAME));
+                File file = new File(FILENAME);
+                file.delete();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            try {
+                File file = new File(FILENAME);
+                ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
                 out.writeObject(settings);
                 out.writeObject(currentSetting);
                 out.close();
