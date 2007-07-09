@@ -81,7 +81,7 @@ public class PrintUtil {
     /**
      * Cache for {@link #applyTemplate(String, Object[])}.
      */
-    private static Map<String, StringBuffer> templateCache = new HashMap<String, StringBuffer>();
+    private static Map<String, String> templateCache = new HashMap<String, String>();
     
     /**
      * Applies arguments to template.
@@ -92,19 +92,33 @@ public class PrintUtil {
      * @return template with arguments filled in
      */
     public static String applyTemplate(String template, Object[] arguments) throws FileNotFoundException, IOException {
-        StringBuffer sb = templateCache.get(template);
+        String sb = templateCache.get(template);
         if (sb == null) {
-            sb = new StringBuffer();
-            BufferedReader reader = new BufferedReader(new FileReader(template));
-            String line = null;
-            while ((line = reader.readLine()) != null) {
-                sb.append(line + "\n");
-            }
-            reader.close();
+            sb = loadFile(template);
             templateCache.put(template, sb);
         }
         
-        return MessageFormat.format(sb.toString(), arguments);
+        return MessageFormat.format(sb, arguments);
+    }
+
+    /**
+     * Loads a file.
+     * 
+     * @param file the file to load
+     * @return content of file
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public static String loadFile(String file) throws FileNotFoundException, IOException {
+        StringBuffer sb;
+        sb = new StringBuffer();
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+            sb.append(line + "\n");
+        }
+        reader.close();
+        return sb.toString();
     }
 
 }
