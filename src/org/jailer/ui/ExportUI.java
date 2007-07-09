@@ -1,3 +1,18 @@
+/*
+ * Copyright 2007 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jailer.ui;
 
 import java.awt.BorderLayout;
@@ -7,18 +22,18 @@ import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.File;
-import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
@@ -52,6 +67,7 @@ public class ExportUI extends javax.swing.JPanel {
     private JButton findInsertScript = null;
     private JButton findExtractionModel = null;
     private JButton findDeleteScript = null;
+    private JCheckBox explain = null;
     
     /**
      * This method initializes 
@@ -70,7 +86,7 @@ public class ExportUI extends javax.swing.JPanel {
         BorderLayout borderLayout = new BorderLayout();
         borderLayout.setHgap(0);
         this.setLayout(borderLayout);
-        this.setSize(new Dimension(491, 255));
+        this.setSize(new Dimension(491, 295));
         this.add(getJContentPane(), BorderLayout.NORTH);
         getSettings().setEditable(true);
         Map<String, JTextField> fields = new HashMap<String, JTextField>();
@@ -111,38 +127,49 @@ public class ExportUI extends javax.swing.JPanel {
             public void actionPerformed(ActionEvent e) {
                 String name = "" + getSettings().getSelectedItem();
                 theSettings.save(name);
+                
+                List<String> args = new ArrayList<String>();
+                args.add("export");
+                if (getExplain().isSelected()) {
+                    args.add("-explain");
+                }
+                if (getInsertScript().getText().trim().length() > 0) {
+                    args.add("-e");
+                    args.add(getInsertScript().getText());
+                }
+                if (getDeleteScript().getText().trim().length() > 0) {
+                    args.add("-d");
+                    args.add(getDeleteScript().getText());
+                }
+                args.add(getExtractionModel().getText());
+                args.add(getJdbcDriver().getText());
+                args.add(getDbURL().getText());
+                args.add(getDbUser().getText());
+                args.add(getDbPassword().getText());
+                UIUtil.runJailer(args, true, true, getExplain().isSelected());
             }
         });
         getFindExtractionModel().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                JFileChooser fileChooser = new JFileChooser("extractionmodel");
-                javax.swing.filechooser.FileFilter filter = new javax.swing.filechooser.FileFilter() {
-                    public boolean accept(File pathname) {
-                        return pathname.getName().toLowerCase().endsWith(".csv");
-                    }
-
-                    @Override
-                    public String getDescription() {
-                        return "extraction models";
-                    }
-                };
-                fileChooser.setFileFilter(filter);
-                int returnVal = fileChooser.showOpenDialog(ExportUI.this);
-                if (returnVal == JFileChooser.APPROVE_OPTION) {
-                    String fn = "";
-                    try {
-                        File f = fileChooser.getSelectedFile();
-                        String work = new File(".").getCanonicalPath();
-                        fn = f.getName();
-                        f = f.getParentFile();
-                        while (f != null && !f.getCanonicalPath().equals(work)) {
-                            fn = f.getName() + File.separator + fn;
-                            f = f.getParentFile();
-                        }
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
+                String fn = UIUtil.choseFile("extractionmodel", "extraction models", "csv", ExportUI.this);
+                if (fn != null) {
                     getExtractionModel().setText(fn);
+                }
+            }
+        });
+        getFindDeleteScript().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String fn = UIUtil.choseFile(".", "delete script", "sql", ExportUI.this);
+                if (fn != null) {
+                    getDeleteScript().setText(fn);
+                }
+            }
+        });
+        getFindInsertScript().addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String fn = UIUtil.choseFile(".", "insert script", "sql", ExportUI.this);
+                if (fn != null) {
+                    getInsertScript().setText(fn);
                 }
             }
         });
@@ -155,6 +182,10 @@ public class ExportUI extends javax.swing.JPanel {
      */
     private JPanel getJContentPane() {
         if (jContentPane == null) {
+            GridBagConstraints gridBagConstraints27 = new GridBagConstraints();
+            gridBagConstraints27.gridx = 1;
+            gridBagConstraints27.anchor = GridBagConstraints.WEST;
+            gridBagConstraints27.gridy = 11;
             GridBagConstraints gridBagConstraints25 = new GridBagConstraints();
             gridBagConstraints25.gridx = 3;
             gridBagConstraints25.gridy = 10;
@@ -182,8 +213,9 @@ public class ExportUI extends javax.swing.JPanel {
             GridBagConstraints gridBagConstraints19 = new GridBagConstraints();
             gridBagConstraints19.gridx = 2;
             gridBagConstraints19.fill = GridBagConstraints.HORIZONTAL;
-            gridBagConstraints19.gridy = 11;
+            gridBagConstraints19.gridy = 12;
             gridBagConstraints19.gridwidth = 2;
+            gridBagConstraints19.weighty = 1.0;
             gridBagConstraints19.insets = new Insets(10, 10, 0, 0);
             GridBagConstraints gridBagConstraints18 = new GridBagConstraints();
             gridBagConstraints18.fill = GridBagConstraints.BOTH;
@@ -330,6 +362,7 @@ public class ExportUI extends javax.swing.JPanel {
             jContentPane.add(getFindInsertScript(), gridBagConstraints23);
             jContentPane.add(getFindExtractionModel(), gridBagConstraints24);
             jContentPane.add(getFindDeleteScript(), gridBagConstraints25);
+            jContentPane.add(getExplain(), gridBagConstraints27);
         }
         return jContentPane;
     }
@@ -493,6 +526,19 @@ public class ExportUI extends javax.swing.JPanel {
             findDeleteScript.setText("...");
         }
         return findDeleteScript;
+    }
+
+    /**
+     * This method initializes explain	
+     * 	
+     * @return javax.swing.JCheckBox	
+     */
+    private JCheckBox getExplain() {
+        if (explain == null) {
+            explain = new JCheckBox();
+            explain.setText("explain");
+        }
+        return explain;
     }
 
     public static void main(String args[]) throws FileNotFoundException, IOException {
