@@ -1,13 +1,29 @@
+/*
+ * Copyright 2007 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jailer.ui;
 
 import java.awt.Dimension;
+import java.awt.Font;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
+import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
 import org.jailer.util.PrintUtil;
-import javax.swing.JScrollPane;
 
 public class FileView extends javax.swing.JFrame {
 
@@ -28,10 +44,11 @@ public class FileView extends javax.swing.JFrame {
      * 
      */
     private void initialize() {
-        this.setSize(new Dimension(491, 286));
+        this.setSize(new Dimension(700, 600));
         this.setContentPane(getJScrollPane());
         this.setTitle("Jailer");
-    		
+        setLocation(100, 100);
+        getJTextPane().setFont(new Font("Monospaced", Font.PLAIN, 12));
     }
 
     /**
@@ -59,11 +76,12 @@ public class FileView extends javax.swing.JFrame {
         return jTextPane;
     }
 
-    public static void main(String args[]) throws FileNotFoundException, IOException {
-        FileView jailerUI = new FileView();
-        jailerUI.setVisible(true);
-        
-        jailerUI.getJTextPane().setText(PrintUtil.applyTemplate("export.log", null));
+    public FileView(String file) throws FileNotFoundException, IOException {
+        super();
+        initialize();
+        setTitle(file);
+        getJTextPane().setText(PrintUtil.loadFile(file));
+        setVisible(true);
     }
 
 }  //  @jve:decl-index=0:visual-constraint="10,10"
