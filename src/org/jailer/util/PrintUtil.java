@@ -18,15 +18,12 @@ package org.jailer.util;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -110,12 +107,26 @@ public class PrintUtil {
      * @throws IOException
      */
     public static String loadFile(String file) throws FileNotFoundException, IOException {
+        return loadFile(file, false);
+    }
+    
+    /**
+     * Loads a file.
+     * 
+     * @param file the file to load
+     * @return content of file
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public static String loadFile(String file, boolean ignoreComments) throws FileNotFoundException, IOException {
         StringBuffer sb;
         sb = new StringBuffer();
         BufferedReader reader = new BufferedReader(new FileReader(file));
         String line = null;
         while ((line = reader.readLine()) != null) {
-            sb.append(line + "\n");
+            if (!ignoreComments || (line.trim().length() > 0 && !line.startsWith("#"))) {
+                sb.append(line + "\n");
+            }
         }
         reader.close();
         return sb.toString();
