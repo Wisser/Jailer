@@ -519,11 +519,21 @@ public class Jailer {
     }
 
     /**
-     * Main-method.
+     * Main-method for CLI.
      * 
      * @param args arguments
      */
     public static void main(String[] args) {
+        jailerMain(args);
+    }
+    
+    /**
+     * Main-method for GUI.
+     * 
+     * @param args arguments
+     * @return <code>false</code> iff sonething went wrong 
+     */
+    public static boolean jailerMain(String[] args) {
         try {
             CommandLineParser.parse(args);
             CommandLineParser clp = CommandLineParser.getInstance();
@@ -584,11 +594,14 @@ public class Jailer {
                 }
             } else {
                 CommandLineParser.printUsage();
+                return false;
             }
+            return true;
         } catch (Exception e) {
             _log.error(e.getMessage(), e);
             System.out.println("Error: " + e.getMessage());
             System.out.println("See 'export.log' for more information");
+            return false;
         }
     }
 
@@ -860,7 +873,9 @@ public class Jailer {
                 Association association = outgoingAssociation.get(table);
                 System.out.println(association);
                 joinedSelect += " join " + association.destination.getName() + " on " + 
-                    SqlUtil.replaceAliases(association.getJoinCondition(), association.source.getName(), association.destination.getName());
+                    (association.reversed?
+                            SqlUtil.replaceAliases(association.getJoinCondition(), association.destination.getName(), association.source.getName())
+                          : SqlUtil.replaceAliases(association.getJoinCondition(), association.source.getName(), association.destination.getName()));
             }
             System.out.println();
             System.out.println(joinedSelect);
