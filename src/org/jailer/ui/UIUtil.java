@@ -38,11 +38,11 @@ public class UIUtil {
     /**
      * File chooser.
      */
-    public static String choseFile(String startDir, final String description, final String extension, Component parent) {
+    public static String chooseFile(String startDir, final String description, final String extension, Component parent) {
         JFileChooser fileChooser = new JFileChooser(startDir);
         javax.swing.filechooser.FileFilter filter = new javax.swing.filechooser.FileFilter() {
             public boolean accept(File pathname) {
-                return pathname.getName().toLowerCase().endsWith(extension);
+                return pathname.isDirectory() || pathname.getName().toLowerCase().endsWith(extension);
             }
             public String getDescription() {
                 return description;

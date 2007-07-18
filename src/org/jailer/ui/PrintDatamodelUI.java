@@ -115,7 +115,7 @@ public class PrintDatamodelUI extends javax.swing.JPanel {
         });
         getFindRestrictionModel().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String fn = UIUtil.choseFile("restrictionmodel", "restriction models", "csv", PrintDatamodelUI.this);
+                String fn = UIUtil.chooseFile("restrictionmodel", "restriction models", "csv", PrintDatamodelUI.this);
                 if (fn != null) {
                     getRestrictionModel().setText(fn);
                 }

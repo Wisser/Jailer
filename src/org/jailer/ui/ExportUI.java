@@ -151,7 +151,7 @@ public class ExportUI extends javax.swing.JPanel {
         });
         getFindExtractionModel().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String fn = UIUtil.choseFile("extractionmodel", "extraction models", "csv", ExportUI.this);
+                String fn = UIUtil.chooseFile("extractionmodel", "extraction models", "csv", ExportUI.this);
                 if (fn != null) {
                     getExtractionModel().setText(fn);
                 }
@@ -159,7 +159,7 @@ public class ExportUI extends javax.swing.JPanel {
         });
         getFindDeleteScript().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String fn = UIUtil.choseFile(".", "delete script", "sql", ExportUI.this);
+                String fn = UIUtil.chooseFile(".", "delete script", "sql", ExportUI.this);
                 if (fn != null) {
                     getDeleteScript().setText(fn);
                 }
@@ -167,7 +167,7 @@ public class ExportUI extends javax.swing.JPanel {
         });
         getFindInsertScript().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String fn = UIUtil.choseFile(".", "insert script", "sql", ExportUI.this);
+                String fn = UIUtil.chooseFile(".", "insert script", "sql", ExportUI.this);
                 if (fn != null) {
                     getInsertScript().setText(fn);
                 }

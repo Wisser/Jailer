@@ -20,15 +20,15 @@ Project Web Site</small></small>
           <tr>
             <td width="106">
             <p><a href="index.html">Introduction</a><br>
-Tutorial
+Tutorial<br>
             <table>
               <tbody>
                 <tr>
                   <td>&nbsp;&nbsp; </td>
-                  <td><a href="JailerGuiTutorial.html">GUI</a><a
+                  <td><a
+ href="file:///home/wisser/sf_workspace/trunk/doc/htdocs/JailerGuiTutorial.html">GUI</a><a
  href="JailerTutorial.html"><br>
-CLI</a><a href="files.html"><br>
-                  </a> </td>
+CLI</a><a href="files.html"> </a> </td>
                 </tr>
               </tbody>
             </table>
@@ -59,7 +59,7 @@ Architecture</a><br>
       </td>
       <td valign="top" width="0%">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</td>
       <td valign="top" width="100%">
-      <h2>Tutorial <small>(using Command Line Interface)</small><br>
+      <h2>Tutorial<small> (using Graphical User Interface)</small><br>
       </h2>
       <h3>Prerequisites</h3>
       <ul>
@@ -68,6 +68,9 @@ Architecture</a><br>
         </li>
         <li>jailer_1.0.zip</li>
       </ul>
+Note that the GUI currently doesn't make all Jailer-features available.
+It's mainly intended to help you to get started with Jailer.<br>
+      <br>
       <h3>Step 1. Setup Jailer</h3>
 Unpack jailer.zip:<br>
       <br>
@@ -77,7 +80,7 @@ Unpack jailer.zip:<br>
           <tr>
             <td
  style="background-color: rgb(230, 255, 230); vertical-align: top;"><span
- style="font-family: monospace;">$unzip jailer_0.9.6.zip<br>
+ style="font-family: monospace;">$unzip jailer.zip<br>
 $cd jailer<br style="font-family: monospace;">
             </span> <span style="font-family: monospace;">$ll</span><br
  style="font-family: monospace;">
@@ -115,73 +118,30 @@ wisser users&nbsp;&nbsp; 96 2007-06-01 10:10 src</span><br>
         </tbody>
       </table>
       <br>
-Register the JDBC-Driver. Edit the file <span
- style="font-family: monospace;">jailer.sh</span> and put the
-JDBC-Driver into the class-path:<br>
       <br>
-      <table
- style="background-color: rgb(51, 102, 255); text-align: left;"
- border="0" cellpadding="2" cellspacing="0">
-        <tbody>
-          <tr>
-            <td
- style="height: 24px; background-color: rgb(202, 225, 235); vertical-align: top;"><big><span
- style="font-family: monospace;"><span style="font-weight: bold;">jailer.sh</span>
-            </span><span style="font-family: monospace;"></span></big><br>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+Start the GUI (on Windows start <span style="font-family: monospace;">jailerGUI.bat):</span><br>
+      <br>
       <table style="width: 100%; text-align: left;" border="0"
  cellpadding="0" cellspacing="0">
         <tbody>
           <tr>
-            <td colspan="2" rowspan="1"
- style="background-color: rgb(202, 225, 235); vertical-align: top;"><span
- style="font-family: monospace;">JDBCLIB=<span
- style="font-style: italic; color: rgb(51, 51, 255);">path to the
-JDBC-Driver-jar</span></span><br style="font-family: monospace;">
-            <span style="font-family: monospace;">LIB=lib</span><br
- style="font-family: monospace;">
-            <span style="font-family: monospace;">CP=.:out:out/jailer.jar</span><br
- style="font-family: monospace;">
-            <br style="font-family: monospace;">
-            <span style="font-family: monospace;"># JDBC-driver</span><br
- style="font-family: monospace;">
-            <span style="font-family: monospace;">CP=$CP:$JDBCLIB/</span><span
- style="font-family: monospace;"><span
- style="font-style: italic; color: rgb(51, 51, 255);">JDBC-Driver-jar</span></span><br
- style="font-family: monospace;">
-            <span style="font-family: monospace;"></span><br
- style="font-family: monospace;">
-            <span style="font-family: monospace;"># configuration files
-in the config directory</span><br style="font-family: monospace;">
-            <span style="font-family: monospace;">CP=$CP:config</span><br
- style="font-family: monospace;">
-            <br style="font-family: monospace;">
-            <span style="font-family: monospace;"># the libraries</span><br
- style="font-family: monospace;">
-            <span style="font-family: monospace;">CP=$CP:$LIB/junit.jar</span><br
- style="font-family: monospace;">
-            <span style="font-family: monospace;">CP=$CP:$LIB/commons-logging.jar</span><br
- style="font-family: monospace;">
-            <span style="font-family: monospace;">CP=$CP:$LIB/log4j.jar</span><br
- style="font-family: monospace;">
-            <span style="font-family: monospace;">CP=$CP:$LIB/args4j.jar</span><br
- style="font-family: monospace;">
-            <span style="font-family: monospace;">CP=$CP:$LIB/spring.jar</span><br
- style="font-family: monospace;">
-            <span style="font-family: monospace;">CP=$CP:$LIB/jailer.jar</span><br
- style="font-family: monospace;">
-            <br style="font-family: monospace;">
-            <span style="font-family: monospace;">java -cp $CP
-org.jailer.Jailer $@</span><br>
+            <td
+ style="background-color: rgb(230, 255, 230); vertical-align: top;"><span
+ style="font-family: monospace;">$ sh jailerGUI.sh</span><span
+ style="font-family: monospace;"></span><br>
             </td>
           </tr>
         </tbody>
       </table>
+      <span style="font-family: monospace;"></span><br>
+      <img alt="" src="sc_21.png" style="width: 510px; height: 243px;"><br>
       <br>
-      <h3>Step 2. Setup the Database</h3>
+Select the the JDBC-Driver jar-file and click<span
+ style="font-style: italic;"> "Ok"</span>. The main window appears then:<br>
+      <br>
+      <img alt="" src="sxr_1.png" style="width: 520px; height: 231px;"><br>
+      <h3><br>
+Step 2. Setup the Database</h3>
 Create a new schema and execute <a href="scott-tiger.sql.html"><img
  alt="" src="arrow.gif"
  style="border: 0px solid ; width: 13px; height: 13px;" hspace="4"><big><span
@@ -218,114 +178,29 @@ we must tell him. Tables are defined in <big><span
 Fortunately most of the model definitions can be generated
 automatically from introspection of the relational database.<br>
       <br>
-      <table style="width: 100%; text-align: left;" border="0"
- cellpadding="0" cellspacing="0">
-        <tbody>
-          <tr>
-            <td
- style="background-color: rgb(230, 255, 230); vertical-align: top;"><span
- style="font-family: monospace;">$ sh jailer.sh build-model
-com.ibm.db2.jcc.DB2Driver jdbc:db2://localhost:50001/wisser scott tiger<br>
-Jailer 0.9.5<br>
-            <br>
-Building data model.<br>
-See 'export.log' for more information.<br>
-            <br>
-$ cat export.log<br>
-2007-06-01 15:51:30,308 [main] INFO&nbsp;&nbsp; - find tables with
-org.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder@16fe0f4<br>
-2007-06-01 15:51:32,115 [main] INFO&nbsp;&nbsp; - file
-'datamodel/model-builder-table.csv' written<br>
-2007-06-01 15:51:32,175 [main] INFO&nbsp;&nbsp; - find associations
-with org.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder@16fe0f4<br>
-2007-06-01 15:51:32,298 [main] INFO&nbsp;&nbsp; - find associations
-with DEPARTMENT<br>
-2007-06-01 15:51:32,323 [main] INFO&nbsp;&nbsp; - find associations
-with SALARYGRADE<br>
-2007-06-01 15:51:32,328 [main] INFO&nbsp;&nbsp; - find associations
-with EMPLOYEE<br>
-2007-06-01 15:51:32,369 [main] INFO&nbsp;&nbsp; - file
-'datamodel/model-builder-association.csv' written<br>
-            </span><span style="font-family: monospace;"><span
- style="font-style: italic; color: rgb(51, 51, 255);"></span></span></td>
-          </tr>
-        </tbody>
-      </table>
+Enter the DB-URL, the user and password and click on "Build Datamodel":<br>
+      <br>
+      <img alt="" src="scr_2.png" style="width: 520px; height: 231px;"><br>
+      <br>
+Jailer found three tables and two associations:<br>
+      <br>
+      <img alt="" src="sc_4.png" style="width: 933px; height: 337px;"><br>
+      <br>
+"Accept" the newly found elements, click on <span
+ style="font-style: italic;">"Accept All"</span> to move the content of
+the <span style="font-family: monospace;">model-builder-*</span> files
+to <span style="font-family: monospace;">table.csv</span> and <span
+ style="font-family: monospace;">association.csv:</span><br>
       <br>
       <br>
-Jailer finds the following tables
-and associations:<br>
+      <img alt="" src="sc_5.png" style="width: 933px; height: 337px;"><br>
       <br>
-      <table
- style="background-color: rgb(51, 102, 255); text-align: left;"
- border="0" cellpadding="2" cellspacing="0">
-        <tbody>
-          <tr>
-            <td
- style="height: 24px; background-color: rgb(202, 225, 235); vertical-align: top;"><big><span
- style="font-family: monospace;"><span style="font-weight: bold;">datamodel/model-builder-table.csv</span>
-            </span><span style="font-family: monospace;"></span></big><br>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <table style="width: 100%; text-align: left;" border="0"
- cellpadding="0" cellspacing="0">
-        <tbody>
-          <tr>
-            <td colspan="2" rowspan="1"
- style="background-color: rgb(202, 225, 235); vertical-align: top;"><span
- style="font-family: monospace;"># Name;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-upsert; primary key;&nbsp;&nbsp;&nbsp; ; author<br>
-DEPARTMENT;&nbsp; N;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DEPTNO INTEGER; ;IBM
-DB2 JDBC Driver;<br>
-EMPLOYEE;&nbsp;&nbsp;&nbsp; N;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; EMPNO
-INTEGER;&nbsp; ;IBM DB2 JDBC Driver;<br>
-SALARYGRADE; N;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GRADE INTEGER;LOSAL
-INTEGER;HISAL INTEGER;&nbsp;&nbsp; ;IBM DB2 JDBC Driver;<br>
-            </span><span style="font-family: monospace;"></span></td>
-          </tr>
-        </tbody>
-      </table>
+Close the window.<br>
       <br>
-      <table
- style="background-color: rgb(51, 102, 255); text-align: left;"
- border="0" cellpadding="2" cellspacing="0">
-        <tbody>
-          <tr>
-            <td
- style="height: 24px; background-color: rgb(202, 225, 235); vertical-align: top;"><big><span
- style="font-family: monospace;"><span style="font-weight: bold;">datamodel/model-builder-association.csv</span>
-            </span><span style="font-family: monospace;"></span></big><br>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-      <table style="width: 100%; text-align: left;" border="0"
- cellpadding="0" cellspacing="0">
-        <tbody>
-          <tr>
-            <td colspan="2" rowspan="1"
- style="background-color: rgb(202, 225, 235); vertical-align: top;"><span
- style="font-family: monospace;"># Table A;&nbsp;&nbsp;&nbsp; Table
-B;&nbsp; first-insert; cardinality (opt); join-condition; name (opt);
-author<br>
-DEPARTMENT; EMPLOYEE; A; 1:n; A.DEPTNO=B.DEPTNO;&nbsp;&nbsp; ; IBM DB2
-JDBC Driver;<br>
-EMPLOYEE;&nbsp;&nbsp; EMPLOYEE; A; 1:n; A.EMPNO=B.BOSS;&nbsp; &nbsp;
-&nbsp; ; IBM DB2 JDBC Driver;<br>
-            </span></td>
-          </tr>
-        </tbody>
-      </table>
-      <br>
-      <br>
-Copy the definitions into the files <big><span
- style="font-family: monospace;">datamodel/table.csv</span></big> and <big><span
- style="font-family: monospace;">datamodel/association.csv</span>.</big><br>
 One association is still missing: depending on his salary an employee
 is classified into a salary grade. <br>
-Add this definition manually.<br>
+Add this definition manually (by using a text editor, there is no
+GUI-support for that right now).<br>
       <br>
       <table
  style="background-color: rgb(51, 102, 255); text-align: left;"
@@ -362,6 +237,7 @@ SALARYGRADE; ; n:1; A.SALARY BETWEEN B.LOSAL AND B.HISAL; ; Wisser</span><br>
       <br>
 Note that Jailer now knows more about the data model than the DBMS.<br>
       <br>
+      <br>
       <table>
         <tbody>
           <tr>
@@ -372,61 +248,13 @@ Note that Jailer now knows more about the data model than the DBMS.<br>
           </tr>
         </tbody>
       </table>
-Let's see what Jailer knows now about the model.<br>
+Let's see what Jailer knows now about the model. Select the <span
+ style="font-style: italic;">"Print Model"</span> tab and click on <span
+ style="font-style: italic;">"Print Datamodel"</span>:<br>
       <br>
-      <table style="width: 100%; text-align: left;" border="0"
- cellpadding="0" cellspacing="0">
-        <tbody>
-          <tr>
-            <td
- style="background-color: rgb(230, 255, 230); vertical-align: top;"><span
- style="font-family: monospace;">$ sh jailer.sh print-datamodel<br>
-DEPARTMENT (DEPTNO INTEGER NOT NULL)<br>
-            <br>
-&nbsp; has dependent:<br>
-&nbsp;&nbsp;&nbsp;
-EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-1:n on A.DEPTNO=B.DEPTNO<br>
-            <br>
-EMPLOYEE (EMPNO INTEGER NOT NULL)<br>
-            <br>
-&nbsp; depends on:<br>
-&nbsp;&nbsp;&nbsp;
-DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-n:1 on B.DEPTNO=A.DEPTNO<br>
-&nbsp;&nbsp;&nbsp;
-EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-n:1 on B.EMPNO=A.BOSS<br>
-            <br>
-&nbsp; has dependent:<br>
-&nbsp;&nbsp;&nbsp;
-EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-1:n on A.EMPNO=B.BOSS<br>
-            <br>
-&nbsp; is associated with:<br>
-&nbsp;&nbsp;&nbsp;
-SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-n:1 on A.SALARY BETWEEN B.LOSAL AND B.HISAL<br>
-            <br>
-SALARYGRADE (GRADE INTEGER NOT NULL, LOSAL INTEGER NOT NULL, HISAL
-INTEGER NOT NULL)<br>
-            <br>
-&nbsp; is associated with:<br>
-&nbsp;&nbsp;&nbsp;
-EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-1:n on B.SALARY BETWEEN A.LOSAL AND A.HISAL<br>
-            <br>
-            <br>
-tables in dependent-cycle: EMPLOYEE<br>
-            <br>
-excluding following tables from component-analysis:&nbsp; {&nbsp; }<br>
-            <br>
-1 components:<br>
-&nbsp;{ DEPARTMENT, EMPLOYEE, SALARYGRADE }<br>
-            </span></td>
-          </tr>
-        </tbody>
-      </table>
+      <img alt="" src="sc_6.png" style="width: 500px; height: 189px;"><br>
+      <br>
+      <img alt="" src="sc_7.png" style="width: 683px; height: 516px;"><br>
       <br>
 Note that each association is listed twice. While associations are
 undirected, restrictions on them are directed. We will see later for
@@ -438,25 +266,19 @@ The structure of these tables depends on the data-model, so we have to
 create the tables after building the data-model files. (You can easily
 re-create the tables after any model-changes)<br>
       <br>
-      <table style="width: 100%; text-align: left;" border="0"
- cellpadding="0" cellspacing="0">
-        <tbody>
-          <tr>
-            <td
- style="background-color: rgb(230, 255, 230); vertical-align: top;"><span
- style="font-family: monospace;">$ sh jailer.sh create-ddl &gt; <a
- href="jailer-ddl.sql.html"><img alt="" src="arrow.gif"
- style="border: 0px solid ; width: 13px; height: 13px;" hspace="4">jailer-ddl.sql</a><br>
-$ db2 -tvf jailer-ddl.sql<br>
-            </span></td>
-          </tr>
-        </tbody>
-      </table>
+Select the<span style="font-style: italic;">"Create DDL"</span> tab and
+click on<span style="font-style: italic;"> "Create DDL"</span> button.
+Copy the DDL-Statements and execute them using an appropriate DB-tool:<br>
+      <br>
+      <img alt="" src="sc_8.png" style="width: 402px; height: 130px;"><br>
+      <br>
+      <img alt="" src="sc_9.png" style="width: 680px; height: 820px;"><br>
       <h3><br>
 Step 6. Export evil Scott (unrestricted)</h3>
 Now export the employee named Scott. To do that we need an <span
  style="font-style: italic;">extraction-model</span>. Create a file
-named <big><span style="font-family: monospace;">extractionmodel/scott.csv</span></big>.<br>
+named <big><span style="font-family: monospace;">extractionmodel/scott.csv</span></big>.
+(Also no GUI support for that).<br>
       <br>
       <table
  style="background-color: rgb(51, 102, 255); text-align: left;"
@@ -499,43 +321,13 @@ associated with these entities and so forth.<br>
       <br>
 Export this set:<br>
       <br>
-      <table style="width: 100%; text-align: left;" border="0"
- cellpadding="0" cellspacing="0">
-        <tbody>
-          <tr>
-            <td
- style="background-color: rgb(230, 255, 230); vertical-align: top;"><span
- style="font-family: monospace;">$ sh jailer.sh export -e scott.sql
-extractionmodel/scott.csv com.ibm.db2.jcc.DB2Driver
-jdbc:db2://localhost:50001/wisser scott tiger<br>
-Jailer 0.9.5<br>
-            <br>
-exporting 'extractionmodel/scott.csv' to 'scott.sql'<br>
-See 'export.log' for more information.<br>
-writing file 'scott.sql'...<br>
-file 'scott.sql' written.<br>
-            <br>
-$ cat export.log<br>
-2007-06-04 13:27:25,123 [main] INFO&nbsp;&nbsp; - exporting EMPLOYEE
-Where NAME='SCOTT'<br>
-...<br>
-2007-06-04 13:27:25,249 [main] INFO&nbsp;&nbsp; - export
-statistic:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-22<br>
-2007-06-04 13:27:25,299 [main] INFO&nbsp;&nbsp; -
-DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-3<br>
-2007-06-04 13:27:25,299 [main] INFO&nbsp;&nbsp; -
-EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-14<br>
-2007-06-04 13:27:25,299 [main] INFO&nbsp;&nbsp; -
-SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-5<br>
-...<br>
-            </span></td>
-          </tr>
-        </tbody>
-      </table>
+      <img alt="" src="sc_13.png" style="width: 499px; height: 324px;"><br>
+      <br>
+      <img alt="" src="sc_11.png" style="width: 540px; height: 198px;"><br>
+      <br>
+Open <span style="font-family: monospace;">Export.log</span>:<br>
+      <br>
+      <img alt="" src="sc_12.png" style="width: 752px; height: 205px;"><br>
       <br>
       <br>
 A file <a href="scott.sql.html"><img alt="" src="arrow.gif"
@@ -550,73 +342,13 @@ for innocent James!)<br>
       <br>
 Let Jailer explain why:<br>
       <br>
-      <table style="width: 100%; text-align: left;" border="0"
- cellpadding="0" cellspacing="0">
-        <tbody>
-          <tr>
-            <td
- style="background-color: rgb(230, 255, 230); vertical-align: top;"><span
- style="font-family: monospace;">$ sh jailer.sh export -e scott.sql <span
- style="color: rgb(204, 0, 0);">-explain </span>extractionmodel/scott.csv
-com.ibm.db2.jcc.DB2Driver jdbc:db2://localhost:50001/wisser scott tiger
-&gt; /dev/null<br>
-$ cat explain.log<br>
-EMPLOYEE(7788) --3--&gt; SALARYGRADE(4, 2001, 3000) --6--&gt;
-EMPLOYEE(7698) --1--&gt; DEPARTMENT(30).<br>
-EMPLOYEE(7788) --3--&gt; SALARYGRADE(4, 2001, 3000) --6--&gt;
-EMPLOYEE(7698) --2--&gt; EMPLOYEE(7521).<br>
-EMPLOYEE(7788) --3--&gt; SALARYGRADE(4, 2001, 3000) --6--&gt;
-EMPLOYEE(7698) --2--&gt; EMPLOYEE(7844) --3--&gt; SALARYGRADE(3, 1401,
-2000).<br>
-EMPLOYEE(7788) --4--&gt; EMPLOYEE(7566) --4--&gt; EMPLOYEE(7839)
---1--&gt; DEPARTMENT(10).<br>
-EMPLOYEE(7788) --4--&gt; EMPLOYEE(7566) --4--&gt; EMPLOYEE(7839)
---3--&gt; SALARYGRADE(5, 3001, 9999).<br>
-EMPLOYEE(7788) --1--&gt; DEPARTMENT(20) --5--&gt; EMPLOYEE(7369).<br>
-EMPLOYEE(7788) --3--&gt; SALARYGRADE(4, 2001, 3000) --6--&gt;
-EMPLOYEE(7698) --2--&gt; EMPLOYEE(7654).<br>
-            <span style="color: rgb(204, 0, 0);">EMPLOYEE(7788)
---2--&gt; EMPLOYEE(7876) --3--&gt; SALARYGRADE(1, 700, 1200) --6--&gt;
-EMPLOYEE(7900).</span><br style="color: rgb(204, 0, 0);">
-EMPLOYEE(7788) --3--&gt; SALARYGRADE(4, 2001, 3000) --6--&gt;
-EMPLOYEE(7782) --2--&gt; EMPLOYEE(7934) --3--&gt; SALARYGRADE(2, 1201,
-1400).<br>
-EMPLOYEE(7788) --3--&gt; SALARYGRADE(4, 2001, 3000) --6--&gt;
-EMPLOYEE(7698) --2--&gt; EMPLOYEE(7499).<br>
-EMPLOYEE(7788) --1--&gt; DEPARTMENT(20) --5--&gt; EMPLOYEE(7902).<br>
-            <br>
-#&nbsp;&nbsp;&nbsp; 1
-EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
--&gt;
-DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-n:1 on B.DEPTNO=A.DEPTNO<br>
-#&nbsp;&nbsp;&nbsp; 2
-EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
--&gt;
-EMPLOYEE(SUBORDINATES)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-1:n on A.EMPNO=B.BOSS<br>
-#&nbsp;&nbsp;&nbsp; 3
-EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
--&gt;
-SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-n:1 on A.SALARY BETWEEN B.LOSAL AND B.HISAL<br>
-#&nbsp;&nbsp;&nbsp; 4
-EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
--&gt; EMPLOYEE(inverse-SUBORDINATES) n:1 on B.EMPNO=A.BOSS<br>
-#&nbsp;&nbsp;&nbsp; 5
-DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
--&gt;
-EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-1:n on A.DEPTNO=B.DEPTNO<br>
-#&nbsp;&nbsp;&nbsp; 6
-SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
--&gt;
-EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-1:n on B.SALARY BETWEEN A.LOSAL AND A.HISAL<br>
-            </span></td>
-          </tr>
-        </tbody>
-      </table>
+      <img alt="" src="sc_14.png" style="width: 499px; height: 324px;"><br>
+      <br>
+      <img alt="" src="sc_15.png" style="width: 522px; height: 222px;"><br>
+      <br>
+Open the <span style="font-family: monospace;">Explain.log</span>:<br>
+      <br>
+      <img alt="" src="sc_16.png" style="width: 812px; height: 345px;"><br>
       <br>
 Adams is Scotts subordinate and James and Adams are both
 classified in the same salary-grade.<br>
@@ -631,7 +363,8 @@ also be inconsistent.<br>
       <br>
 To exclude subordinates, 'same department'-members and 'same
 salary-grade'-employees, we must restrict some associations. To do so,
-define a <span style="font-style: italic;">restriction-model:</span><br>
+define a <span style="font-style: italic;">restriction-model: </span>(with
+text-editor, no GUI support)<br>
       <br>
       <table
  style="background-color: rgb(51, 102, 255); text-align: left;"
@@ -716,63 +449,9 @@ SALARYGRADE; ; n:1; A.SALARY BETWEEN B.LOSAL AND B.HISAL; ; Wisser</span><br>
 You can examine the restrictions the same way you examined the data
 model:<br>
       <br>
-      <table style="width: 100%; text-align: left;" border="0"
- cellpadding="0" cellspacing="0">
-        <tbody>
-          <tr>
-            <td
- style="background-color: rgb(230, 255, 230); vertical-align: top;"><span
- style="font-family: monospace;">$ sh jailer.sh print-datamodel <span
- style="color: rgb(204, 0, 0);">restrictionmodel/no-subordinates.csv</span><br>
-restricted by: [restrictionmodel/no-subordinates.csv]<br>
-DEPARTMENT (DEPTNO INTEGER NOT NULL)<br>
-            <br>
-&nbsp; ignored:<br>
-&nbsp;&nbsp;&nbsp;
-EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-1:n on A.DEPTNO=B.DEPTNO<br>
-            <br>
-EMPLOYEE (EMPNO INTEGER NOT NULL)<br>
-            <br>
-&nbsp; depends on:<br>
-&nbsp;&nbsp;&nbsp;
-DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-n:1 on B.DEPTNO=A.DEPTNO<br>
-&nbsp;&nbsp;&nbsp; EMPLOYEE(inverse-SUBORDINATE)&nbsp; n:1 on
-B.EMPNO=A.BOSS<br>
-            <br>
-&nbsp; is associated with:<br>
-&nbsp;&nbsp;&nbsp;
-SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-n:1 on A.SALARY BETWEEN B.LOSAL AND B.HISAL<br>
-            <br>
-&nbsp; <span style="color: rgb(255, 0, 0);">ignored:</span><br
- style="color: rgb(255, 0, 0);">
-            <span style="color: rgb(255, 0, 0);">&nbsp;&nbsp;&nbsp;
-EMPLOYEE(SUBORDINATE)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-1:n on A.EMPNO=B.BOSS</span><br>
-            <br>
-SALARYGRADE (GRADE INTEGER NOT NULL, LOSAL INTEGER NOT NULL, HISAL
-INTEGER NOT NULL)<br>
-            <br>
-&nbsp; ignored:<br>
-&nbsp;&nbsp;&nbsp;
-EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-1:n on B.SALARY BETWEEN A.LOSAL AND A.HISAL<br>
-            <br>
-            <br>
-tables in dependent-cycle: EMPLOYEE<br>
-            <br>
-excluding following tables from component-analysis:&nbsp; { DEPARTMENT,
-SALARYGRADE }<br>
-            <br>
-1 components: <br>
-&nbsp;{ EMPLOYEE }<br>
-            </span></td>
-          </tr>
-        </tbody>
-      </table>
+      <img alt="" src="sc_17.png" style="width: 449px; height: 192px;"><br>
       <br>
+      <img alt="" src="sc_20.png" style="width: 632px; height: 526px;"><br>
       <br>
 A restriction-model is part of the extraction-model. Create a new
 extraction-model:<br>
@@ -810,21 +489,32 @@ NAME='SCOTT';&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&
         </tbody>
       </table>
       <br>
+      <span style="font-style: italic;">Choose extraction model </span><span
+ style="font-family: monospace;">scott-without-subordinates.csv,</span><span
+ style="font-style: italic;"> "Export"</span> again and look what
+Jailer extracts now:<br>
       <br>
-and look what Jailer extracts now:<br>
-      <br>
+      <table
+ style="background-color: rgb(51, 102, 255); text-align: left;"
+ border="0" cellpadding="2" cellspacing="0">
+        <tbody>
+          <tr>
+            <td
+ style="height: 24px; background-color: rgb(202, 225, 235); vertical-align: top;"><big><span
+ style="font-family: monospace;"><span style="font-weight: bold;"><span
+ style="font-family: monospace;">scott.sql </span></span></span><span
+ style="font-family: monospace;"></span></big><br>
+            </td>
+          </tr>
+        </tbody>
+      </table>
       <table style="width: 100%; text-align: left;" border="0"
  cellpadding="0" cellspacing="0">
         <tbody>
           <tr>
-            <td
- style="background-color: rgb(230, 255, 230); vertical-align: top;"><span
- style="font-family: monospace;">$ sh jailer.sh export -e scott.sql <span
- style="color: rgb(204, 0, 0);">extractionmodel/scott-without-subordinates.csv</span>
-com.ibm.db2.jcc.DB2Driver jdbc:db2://localhost:50001/wisser xbcsetup
-1234 &gt; /dev/null<br>
-$ cat scott.sql<br>
-            </span><span style="font-family: monospace;">-- generated
+            <td colspan="2" rowspan="1"
+ style="background-color: rgb(202, 225, 235); vertical-align: top;"><span
+ style="font-family: monospace;">-- generated
 by Jailer at Mon Jun 04 15:08:15 CEST 2007 from wisser@u19<br>
 --<br>
 -- extraction model:&nbsp; EMPLOYEE where NAME='SCOTT'
@@ -863,8 +553,8 @@ null, 20);<br>
 Insert into EMPLOYEE(EMPNO, NAME, JOB, BOSS, HIREDATE, SALARY, COMM,
 DEPTNO) <br>
 &nbsp; values (7788, 'SCOTT', 'ANALYST', 7566, '1982-12-09', 3000.00,
-null, 20);<br>
-            </span></td>
+null, 20);</span><span
+ style="font-family: monospace; color: rgb(255, 0, 0);"></span></td>
           </tr>
         </tbody>
       </table>
@@ -875,19 +565,32 @@ Freedom for the innocent!<br>
 It is also possible to create DML-scripts for deletion of exported
 entities:<br>
       <br>
+      <img alt="" src="sc_19.png" style="width: 490px; height: 322px;"><br>
+      <br>
+      <table
+ style="background-color: rgb(51, 102, 255); text-align: left;"
+ border="0" cellpadding="2" cellspacing="0">
+        <tbody>
+          <tr>
+            <td
+ style="height: 24px; background-color: rgb(202, 225, 235); vertical-align: top;"><big><span
+ style="font-family: monospace;"><span style="font-weight: bold;"><span
+ style="font-family: monospace;">delete-scott.sql </span></span></span><span
+ style="font-family: monospace;"></span></big><br>
+            </td>
+          </tr>
+        </tbody>
+      </table>
       <table style="width: 100%; text-align: left;" border="0"
  cellpadding="0" cellspacing="0">
         <tbody>
           <tr>
-            <td
- style="background-color: rgb(230, 255, 230); vertical-align: top;"><span
- style="font-family: monospace;">$ sh jailer.sh export -e scott.sql <span
- style="color: rgb(204, 0, 0);">-d delete-scott.sql</span>
-extractionmodel/scott-without-subordinates.csv
-com.ibm.db2.jcc.DB2Driver jdbc:db2://localhost:50001/wisser scott tiger
-&gt; /dev/null<br>
-$ cat delete-scott.sql<br>
--- generated by Jailer at Tue Jun 05 10:20:40 CEST 2007 from wisser@u19<br>
+            <td colspan="2" rowspan="1"
+ style="background-color: rgb(202, 225, 235); vertical-align: top;"><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace; color: rgb(255, 0, 0);"></span><span
+ style="font-family: monospace;">-- generated by Jailer at Tue Jun 05
+10:20:40 CEST 2007 from wisser@u19<br>
 --<br>
 -- extraction model:&nbsp; EMPLOYEE where NAME='SCOTT'
 (extractionmodel/scott-without-subordinates.csv)<br>
@@ -908,8 +611,7 @@ SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nb
 -- Tabu-tables:&nbsp; {&nbsp; }<br>
 --<br>
 -- entities to delete: 0<br>
-            <br>
-            </span><span style="font-family: monospace;"></span></td>
+            </span></td>
           </tr>
         </tbody>
       </table>
@@ -957,23 +659,32 @@ EMPLOYEE;&nbsp;&nbsp; ignore<br>
         </tbody>
       </table>
       <br>
-and repeat the exportation:<br>
+and <span style="font-style: italic;">"Export"</span> again:<br>
       <br>
+      <table
+ style="background-color: rgb(51, 102, 255); text-align: left;"
+ border="0" cellpadding="2" cellspacing="0">
+        <tbody>
+          <tr>
+            <td
+ style="height: 24px; background-color: rgb(202, 225, 235); vertical-align: top;"><big><span
+ style="font-family: monospace;"><span style="font-weight: bold;"><span
+ style="font-family: monospace;">delete-scott.sql </span></span></span><span
+ style="font-family: monospace;"></span></big><br>
+            </td>
+          </tr>
+        </tbody>
+      </table>
       <table style="width: 100%; text-align: left;" border="0"
  cellpadding="0" cellspacing="0">
         <tbody>
           <tr>
-            <td
- style="background-color: rgb(230, 255, 230); vertical-align: top;"><span
- style="font-family: monospace;">$ sh jailer.sh export -e <a
- href="scott.sql.2.html"><img alt="" src="arrow.gif"
- style="border: 0px solid ; width: 13px; height: 13px;" hspace="4">scott.sql</a>
-            <span style="color: rgb(0, 0, 0);">-d delete-scott.sql</span>
-extractionmodel/scott-without-subordinates.csv
-com.ibm.db2.jcc.DB2Driver jdbc:db2://localhost:50001/wisser scott tiger
-&gt; /dev/null<br>
-$ cat delete-scott.sql<br>
--- generated by Jailer at Tue Jun 05 10:50:03 CEST 2007 from wisser@u19<br>
+            <td colspan="2" rowspan="1"
+ style="background-color: rgb(202, 225, 235); vertical-align: top;"><span
+ style="font-family: monospace;"></span><span
+ style="font-family: monospace; color: rgb(255, 0, 0);"></span><span
+ style="font-family: monospace;">-- generated by Jailer at Tue Jun 05
+10:50:03 CEST 2007 from wisser@u19<br>
 --<br>
 -- extraction model:&nbsp; EMPLOYEE where NAME='SCOTT'
 (extractionmodel/scott-without-subordinates.csv)<br>
@@ -1001,8 +712,8 @@ EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
             <br>
             <br>
 Delete from EMPLOYEE Where EMPNO in (7876);<br>
-Delete from EMPLOYEE Where EMPNO in (7788);<br>
-            </span></td>
+Delete from EMPLOYEE Where EMPNO in (7788);</span><span
+ style="font-family: monospace;"> </span></td>
           </tr>
         </tbody>
       </table>
