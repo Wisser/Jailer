@@ -70,7 +70,7 @@ public class Jailer {
     /**
      * The Jailer version.
      */
-    public static final String VERSION = "0.9.5";
+    public static final String VERSION = "1.0";
     
     /**
      * The relational data model.
@@ -599,7 +599,7 @@ public class Jailer {
             return true;
         } catch (Exception e) {
             _log.error(e.getMessage(), e);
-            System.out.println("Error: " + e.getMessage());
+            System.out.println("Error: " + e.getClass().getName() + ": " + e.getMessage());
             System.out.println("See 'export.log' for more information");
             return false;
         }

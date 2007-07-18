@@ -1,10 +1,9 @@
-JDBCLIB=/opt/IBM/db2/V8.1/java
+#JDBCLIB=...
 LIB=lib
 CP=.:out:out/classes:out/jailer.jar
 
 # JDBC-driver
-CP=$CP:$JDBCLIB/db2jcc.jar
-CP=$CP:$JDBCLIB/db2jcc_license_cu.jar
+# CP=$CP:$JDBCLIB/<driver-jar>
 
 # configuration files in the config directory
 CP=$CP:config

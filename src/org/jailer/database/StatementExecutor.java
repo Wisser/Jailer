@@ -22,13 +22,16 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.Driver;
 import java.sql.DriverManager;
+import java.sql.DriverPropertyInfo;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
@@ -118,6 +121,39 @@ public class StatementExecutor {
     public final String dbPassword;
 
     /**
+     * Classloader to load Jdbc-Driver with.
+     */
+    public static ClassLoader classLoaderForJdbcDriver = null;
+    
+    /**
+     * Wraps a Jdbc-Driver.
+     */
+    private static class DriverShim implements Driver {
+        private Driver driver;
+        DriverShim(Driver d) {
+            this.driver = d;
+        }
+        public boolean acceptsURL(String u) throws SQLException {
+            return this.driver.acceptsURL(u);
+        }
+        public Connection connect(String u, Properties p) throws SQLException {
+            return this.driver.connect(u, p);
+        }
+        public int getMajorVersion() {
+            return this.driver.getMajorVersion();
+        }
+        public int getMinorVersion() {
+            return this.driver.getMinorVersion();
+        }
+        public DriverPropertyInfo[] getPropertyInfo(String u, Properties p) throws SQLException {
+            return this.driver.getPropertyInfo(u, p);
+        }
+        public boolean jdbcCompliant() {
+            return this.driver.jdbcCompliant();
+        }
+    }
+
+    /**
      * Constructor.
      * 
      * @param driverClassName name of JDBC-driver class
@@ -127,7 +163,12 @@ public class StatementExecutor {
      */
     public StatementExecutor(String driverClassName, final String dbUrl, final String user, final String password) throws Exception {
         _log.info("connect to user " + user + " at "+ dbUrl);
-        Class.forName(driverClassName);
+        if (classLoaderForJdbcDriver != null) {
+            Driver d = (Driver)Class.forName(driverClassName, true, classLoaderForJdbcDriver).newInstance();
+            DriverManager.registerDriver(new DriverShim(d));
+        } else {
+            Class.forName(driverClassName);
+        }
         this.schemaName = user;
         this.dbUrl = dbUrl;
         this.dbUser = user;
@@ -273,7 +314,17 @@ public class StatementExecutor {
         Connection connection = connectionFactory.getConnection();
         return connection.getMetaData();
     }
+
+    /**
+     * Sets Classloader to load Jdbc-Driver with.
+     * 
+     * @param classLoader Classloader to load Jdbc-Driver with
+     */
+    public static void setClassLoaderForJdbcDriver(ClassLoader classLoader) {
+        classLoaderForJdbcDriver = classLoader;
+    }
     
+
     /**
      * Closes all connections.
      */
