@@ -63,7 +63,11 @@ public class UIUtil {
                 }
                 return fn;
             } catch (IOException e1) {
-                e1.printStackTrace();
+                try {
+					return fileChooser.getSelectedFile().getCanonicalPath();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
             }
         }
         return null;
