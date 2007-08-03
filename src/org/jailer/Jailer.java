@@ -58,7 +58,6 @@ import org.jailer.util.SqlUtil;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
-
 /**
  * Utility for extracting small consistent row-sets from
  * relational databases.
