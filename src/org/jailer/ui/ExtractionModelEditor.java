@@ -8,6 +8,8 @@ package org.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -26,7 +28,6 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
@@ -34,6 +35,7 @@ import org.jailer.datamodel.Association;
 import org.jailer.datamodel.DataModel;
 import org.jailer.datamodel.ModelElement;
 import org.jailer.datamodel.Table;
+import org.jailer.util.SqlUtil;
 
 /**
  * 
@@ -41,6 +43,8 @@ import org.jailer.datamodel.Table;
  */
 public class ExtractionModelEditor extends javax.swing.JPanel {
 
+	private RestrictionEditor restrictionEditor;
+	
 	/** Creates new form ModelTree */
 	public ExtractionModelEditor() {
 		try {
@@ -53,6 +57,24 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		initComponents();
 		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		tree.setExpandsSelectedPaths(true);
+		restrictionEditor = new RestrictionEditor();
+		inspectorHolder.add(restrictionEditor);
+		restrictionEditor.apply.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				onApply();
+			}
+		});
+		restrictionEditor.ignore.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				onApply();
+			}
+		});
+		restrictionEditor.jump.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				onJump();
+			}
+		});
+		initRestrictionEditor(null, null);
 	}
 
 	/**
@@ -70,7 +92,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
         legende = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
         dependsOn = new javax.swing.JLabel();
         hasDependent = new javax.swing.JLabel();
         associatedWith = new javax.swing.JLabel();
@@ -80,12 +101,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        inspectorHolder.setLayout(new javax.swing.BoxLayout(inspectorHolder, javax.swing.BoxLayout.X_AXIS));
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weighty = 1.0;
         add(inspectorHolder, gridBagConstraints);
 
@@ -98,38 +118,56 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         add(jPanel1, gridBagConstraints);
 
-        legende.setLayout(new javax.swing.BoxLayout(legende, javax.swing.BoxLayout.Y_AXIS));
-
-        jLabel1.setFont(new java.awt.Font("Dialog", 0, 12));
-        jLabel1.setText("Legende:");
-        legende.add(jLabel1);
+        legende.setLayout(new java.awt.GridBagLayout());
 
         dependsOn.setFont(new java.awt.Font("Dialog", 0, 12));
         dependsOn.setForeground(new java.awt.Color(153, 0, 0));
         dependsOn.setText("   depends on");
-        legende.add(dependsOn);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        legende.add(dependsOn, gridBagConstraints);
 
         hasDependent.setFont(new java.awt.Font("Dialog", 0, 12));
         hasDependent.setForeground(new java.awt.Color(0, 0, 204));
         hasDependent.setText("   has dependent");
-        legende.add(hasDependent);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        legende.add(hasDependent, gridBagConstraints);
 
         associatedWith.setFont(new java.awt.Font("Dialog", 0, 12));
         associatedWith.setForeground(new java.awt.Color(0, 153, 51));
         associatedWith.setText("   associated with");
-        legende.add(associatedWith);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        legende.add(associatedWith, gridBagConstraints);
 
         ignored.setFont(new java.awt.Font("Dialog", 0, 12));
         ignored.setForeground(new java.awt.Color(153, 153, 153));
         ignored.setText("   ignored");
-        legende.add(ignored);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        legende.add(ignored, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(legende, gridBagConstraints);
 
         jScrollPane1.setAutoscrolls(true);
@@ -156,7 +194,89 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
     private void treeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_treeValueChanged
     	if (evt.getNewLeadSelectionPath() != null) {
-	    	Object selection = ((DefaultMutableTreeNode) evt.getNewLeadSelectionPath().getLastPathComponent()).getUserObject();
+    		DefaultMutableTreeNode node = ((DefaultMutableTreeNode) evt.getNewLeadSelectionPath().getLastPathComponent());
+			Object selection = node.getUserObject();
+	    	if (selection instanceof Association) {
+	    		initRestrictionEditor((Association) selection, node);
+	    	}
+	    	if (selection instanceof Table) {
+	    		initRestrictionEditor(null, null);
+	    	}
+    	}
+    }//GEN-LAST:event_treeValueChanged
+
+    private Association currentAssociation;
+    
+    /**
+     * Initializes the restriction model.
+     * 
+     * @param association the association on which a restriction can be edited
+     * @param node selected tree node
+     */
+    private void initRestrictionEditor(Association association, DefaultMutableTreeNode node) {
+    	currentAssociation = association;
+		if (association == null) {
+			restrictionEditor.setVisible(false);
+		} else {
+			DefaultMutableTreeNode mainNode = (DefaultMutableTreeNode) treeModel.getRoot();
+			for (DefaultMutableTreeNode n: treeNodes) {
+				if (!n.isLeaf()) {
+					if (((Association) n.getUserObject()).equals(association)) {
+						mainNode = n;
+						break;
+					}
+				}
+			}
+			if (mainNode != null && !node.equals(mainNode)) {
+				restrictionEditor.jump.setEnabled(true);
+			} else {
+				restrictionEditor.jump.setEnabled(false);
+			}
+			restrictionEditor.setVisible(true);
+
+			String type = "Association ";
+			boolean editable = true;
+			if (association.isInsertDestinationBeforeSource()) {
+				type = "Dependency ";
+				editable = false;
+			} else if (association.isInsertSourceBeforeDestination()) {
+				type = "Inverse dependency ";
+			}
+			restrictionEditor.source.setText(association.source.getName());
+			restrictionEditor.destination.setText(association.destination.getName());
+			restrictionEditor.cardinality.setText(association.getCardinality() == null? "unknown" : association.getCardinality().toString());
+			restrictionEditor.type.setText(type);
+			restrictionEditor.joinCondition.setText(association.getUnrestrictedJoinCondition());
+			restrictionEditor.restriction.setText(association.getRestrictionCondition());
+			restrictionEditor.ignore.getModel().setPressed(association.isIgnored());
+			restrictionEditor.restriction.setEnabled(editable);
+			restrictionEditor.ignore.setEnabled(editable);
+			restrictionEditor.apply.setEnabled(editable);
+			String joinCondition = association.getUnrestrictedJoinCondition();
+			if (association.reversed) {
+				joinCondition = SqlUtil.reversRestrictionCondition(joinCondition);
+			}
+			boolean singleCondition = true;
+			for (Association represented: representant.keySet()) {
+				if (association.equals(representant.get(represented))) {
+					String jc = represented.getUnrestrictedJoinCondition();
+					if (represented.reversed) {
+						jc = SqlUtil.reversRestrictionCondition(jc);
+					}
+					if (singleCondition) {
+						joinCondition = "(" + joinCondition + ")";
+					}
+					singleCondition = false;
+					joinCondition += "\nor\n(" + jc + ")";
+				}
+			}
+			restrictionEditor.joinCondition.setText(joinCondition);
+		}
+	}
+
+	private void onJump() {
+    	if (tree.getLeadSelectionPath() != null) {
+    		Object selection = ((DefaultMutableTreeNode) tree.getLeadSelectionPath().getLastPathComponent()).getUserObject();
 	    	if (selection instanceof Association) {
 	    		jumpTo(((Association) selection).destination);
 	    	}
@@ -164,8 +284,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	    		jumpTo(subject);
 	    	}
     	}
-    }//GEN-LAST:event_treeValueChanged
+    }
 
+    private void onApply() {
+    	
+    }
+    
 	private void jumpTo(Table table) {
 		DefaultMutableTreeNode toSelect = (DefaultMutableTreeNode) treeModel.getRoot();
 		for (DefaultMutableTreeNode n: treeNodes) {
@@ -206,7 +330,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				for (ModelElement cand: toNode.keySet()) {
 					if (cand instanceof Association) {
 						Association candRep = (Association) cand;
-						if (a.getName() == null && candRep.getName() == null
+						if ((a.getName() == null || candRep.getName() == null)
 						 && a.source.equals(candRep.source) && a.destination.equals(candRep.destination)) {
 							rep = candRep;
 							break;
@@ -230,7 +354,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				}
 			}
 		}
-		
 		treeModel = new DefaultTreeModel(root);
 		return treeModel;
 	}
@@ -326,7 +449,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JPanel inspectorHolder;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel legende;

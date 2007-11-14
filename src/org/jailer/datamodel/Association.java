@@ -205,6 +205,34 @@ public class Association extends ModelElement {
     }
 
     /**
+     * Gets join-condition without any restrictions.
+     * 
+     * @return join-condition as defined in data model
+     */
+	public String getUnrestrictedJoinCondition() {
+		return joinCondition;
+	}
+    
+    /**
+     * Gets restriction-condition.
+     * 
+     * @return restriction-condition, <code>null</code> if association is not restricted
+     */
+	public String getRestrictionCondition() {
+		RestrictionModel restrictionModel = dataModel.getRestrictionModel();
+	    if (restrictionModel != null) {
+	        String r = restrictionModel.getRestriction(this);
+	        if (r != null) {
+	        	if (r == RestrictionModel.IGNORE) {
+	        		return "false";
+	        	}
+	        	return r;
+	        }
+	    }
+	    return null;
+    }
+    
+    /**
      * Sets the name of the association.
      * 
      * @param name the name of the association
@@ -262,5 +290,5 @@ public class Association extends ModelElement {
         }
         return false;
     }
-    
+
 }
