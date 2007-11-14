@@ -39,10 +39,10 @@ import org.jailer.datamodel.Table;
  * 
  * @author wisser
  */
-public class ModelEditor extends javax.swing.JPanel {
+public class ExtractionModelEditor extends javax.swing.JPanel {
 
 	/** Creates new form ModelTree */
-	public ModelEditor() {
+	public ExtractionModelEditor() {
 		try {
 			dataModel = new DataModel(null, null);
 			subject = dataModel.getTable("LINE");
