@@ -76,7 +76,6 @@ public class MainUI extends javax.swing.JFrame {
             jTabbedPane.addTab("Print Model", null, getPrintDatamodelUI(), null);
             jTabbedPane.addTab("Create DDL", null, getCreateDDLUI(), null);
             jTabbedPane.addTab("Export", null, getExportUI(), null);
-            jTabbedPane.addTab("Model Editor", null, new ExtractionModelEditor(), null);
         }
         return jTabbedPane;
     }
