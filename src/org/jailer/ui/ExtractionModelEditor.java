@@ -113,15 +113,21 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         associatedWith = new javax.swing.JLabel();
         ignored = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
-        jLabel4 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         tableList = new javax.swing.JList();
         jScrollPane1 = new javax.swing.JScrollPane();
         tree = new javax.swing.JTree();
-        jPanel3 = new javax.swing.JPanel();
-        jLabel3 = new javax.swing.JLabel();
         inspectorHolder = new javax.swing.JPanel();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel6 = new javax.swing.JLabel();
+        subjectTable = new javax.swing.JComboBox();
+        jLabel7 = new javax.swing.JLabel();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        restrictionsTable = new javax.swing.JTable();
+        jLabel8 = new javax.swing.JLabel();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        Condition = new javax.swing.JTextPane();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -173,23 +179,16 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        jLabel4.setFont(new java.awt.Font("Dialog", 2, 14));
-        jLabel4.setText("Table                             ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel2.add(jLabel4, gridBagConstraints);
-
-        jLabel2.setFont(new java.awt.Font("Dialog", 2, 14));
-        jLabel2.setText("Association");
+        jLabel2.setText("                                  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         jPanel2.add(jLabel2, gridBagConstraints);
 
+        jScrollPane2.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Table", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 2, 12)));
         tableList.setModel(getTableListModel());
+        tableList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         tableList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 tableListValueChanged(evt);
@@ -199,12 +198,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jScrollPane2.setViewportView(tableList);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
         jPanel2.add(jScrollPane2, gridBagConstraints);
 
+        jScrollPane1.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Association", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 2, 12)));
         jScrollPane1.setAutoscrolls(true);
         tree.setCellRenderer(getTreeCellRenderer());
         tree.setModel(getModel());
@@ -217,12 +217,96 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jScrollPane1.setViewportView(tree);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         jPanel2.add(jScrollPane1, gridBagConstraints);
+
+        inspectorHolder.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
+
+        inspectorHolder.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Restriction on association", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 2, 12)));
+        inspectorHolder.setMinimumSize(new java.awt.Dimension(100, 400));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        jPanel2.add(inspectorHolder, gridBagConstraints);
+
+        jPanel3.setLayout(new java.awt.GridBagLayout());
+
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Subject", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 2, 12)));
+        jLabel6.setText("Subject Table ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel3.add(jLabel6, gridBagConstraints);
+
+        subjectTable.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        jPanel3.add(subjectTable, gridBagConstraints);
+
+        jLabel7.setText("Condition");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        jPanel3.add(jLabel7, gridBagConstraints);
+
+        jScrollPane4.setBorder(null);
+        restrictionsTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane4.setViewportView(restrictionsTable);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 1.0;
+        jPanel3.add(jScrollPane4, gridBagConstraints);
+
+        jLabel8.setFont(new java.awt.Font("Dialog", 2, 14));
+        jLabel8.setText("Restrictions");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
+        jPanel3.add(jLabel8, gridBagConstraints);
+
+        jScrollPane5.setViewportView(Condition);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jPanel3.add(jScrollPane5, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        jPanel2.add(jPanel3, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -233,25 +317,17 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         add(jPanel2, gridBagConstraints);
 
-        jPanel3.setLayout(new java.awt.BorderLayout());
-
-        jLabel3.setFont(new java.awt.Font("Dialog", 2, 14));
-        jLabel3.setText("Restriction");
-        jPanel3.add(jLabel3, java.awt.BorderLayout.NORTH);
-
-        inspectorHolder.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
-
-        inspectorHolder.setMinimumSize(new java.awt.Dimension(100, 400));
-        jPanel3.add(inspectorHolder, java.awt.BorderLayout.CENTER);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(jPanel3, gridBagConstraints);
-
     }// </editor-fold>//GEN-END:initComponents
+
+    private void tableListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_tableListValueChanged
+        if (tableList.getSelectedValue() != null) {
+            Table selection = dataModel.getTable((String) tableList.getSelectedValue());
+            if (selection != null && selection != root) {
+                root = selection;
+                tree.setModel(getModel());
+            }
+        }
+    }//GEN-LAST:event_tableListValueChanged
 
     private ListModel getTableListModel() {
     	DefaultListModel model = new DefaultListModel();
@@ -267,16 +343,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     	return model;
     }
     
-    private void tableListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_tableListValueChanged
-    	if (tableList.getSelectedValue() != null) {
-    		Table selection = dataModel.getTable((String) tableList.getSelectedValue());
-    		if (selection != null && selection != root) {
-    			root = selection;
-    			tree.setModel(getModel());
-    		}
-    	}
-    }//GEN-LAST:event_tableListValueChanged
-
     private void treeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_treeValueChanged
     	if (evt.getNewLeadSelectionPath() != null) {
     		DefaultMutableTreeNode node = ((DefaultMutableTreeNode) evt.getNewLeadSelectionPath().getLastPathComponent());
@@ -571,6 +637,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     }
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JTextPane Condition;
     private javax.swing.JLabel associatedWith;
     private javax.swing.JLabel dependsOn;
     private javax.swing.JLabel hasDependent;
@@ -580,14 +647,19 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
     private javax.swing.JPanel legende;
+    private javax.swing.JTable restrictionsTable;
+    private javax.swing.JComboBox subjectTable;
     private javax.swing.JList tableList;
     private javax.swing.JTree tree;
     // End of variables declaration//GEN-END:variables

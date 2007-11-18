@@ -31,6 +31,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         description = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         ignore = new javax.swing.JCheckBox();
+        jLabel7 = new javax.swing.JLabel();
         restriction = new javax.swing.JTextField();
         jPanel1 = new javax.swing.JPanel();
         apply = new javax.swing.JButton();
@@ -45,6 +46,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         type = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         aName = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -85,6 +87,12 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 11;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(ignore, gridBagConstraints);
+
+        jLabel7.setText("   ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 14;
+        add(jLabel7, gridBagConstraints);
 
         restriction.setText("jTextField1");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -184,6 +192,12 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(aName, gridBagConstraints);
 
+        jLabel6.setText("   ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 0;
+        add(jLabel6, gridBagConstraints);
+
     }// </editor-fold>//GEN-END:initComponents
     
     
@@ -199,6 +213,8 @@ public class RestrictionEditor extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
