@@ -209,7 +209,19 @@ public class RestrictionModel {
      * @param condition the restriction-condition
      * @param location location in CSV-file
      */
-    private void addRestriction(Table source, Association association, String condition, String location) {
+    public void addRestriction(Table source, Association association, String condition, String location) {
+    	addRestriction(source, association, condition, location, false);
+    }
+    	
+    /**
+     * Adds a restriction to a association.
+     * 
+     * @param association the association
+     * @param condition the restriction-condition
+     * @param location location in CSV-file
+     * @param removePreviousRestriction if <code>true</code>, remove any restriction on the association before adding the new one
+     */
+    public void addRestriction(Table source, Association association, String condition, String location, boolean removePreviousRestriction) {
         if (association.isInsertDestinationBeforeSource()) {
             String aName = source == null? association.getName() : (source.getName() + "->" + association.destination.getName());
             throw new RuntimeException(location + ": can't restrict dependency: " + aName + " condition: " + condition);
@@ -220,7 +232,10 @@ public class RestrictionModel {
         if (condition != null && association.reversed) {
             condition = SqlUtil.reversRestrictionCondition(condition);
         }
-        if (!restriction.containsKey(association)) {
+        if (removePreviousRestriction && "".equals(condition)) {
+        	restriction.remove(association);
+        }
+        else if (removePreviousRestriction || !restriction.containsKey(association)) {
             restriction.put(association, condition == null? null : "(" + condition + ")");
         } else {
             String oldCondition = restriction.get(association);
