@@ -226,6 +226,12 @@ public class Association extends ModelElement {
 	        	if (r == RestrictionModel.IGNORE) {
 	        		return "false";
 	        	}
+	        	if (reversed) {
+	        		r = SqlUtil.reversRestrictionCondition(r);
+	        	}
+	        	if (r.startsWith("(") && r.endsWith(")")) {
+	        		r = r.substring(1, r.length() - 1);
+	        	}
 	        	return r;
 	        }
 	    }
@@ -290,5 +296,5 @@ public class Association extends ModelElement {
         }
         return false;
     }
-
+    
 }
