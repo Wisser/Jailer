@@ -64,7 +64,7 @@ public class JailerUI extends JDialog {
         setLocation(200, 200);
         getSelectDriverJar().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String fn = UIUtil.chooseFile(".", "Jdbc Driver", ".jar", JailerUI.this);
+                String fn = UIUtil.choseFile(null, ".", "Jdbc Driver", ".jar", JailerUI.this, true, true);
                 if (fn != null) {
                     getDriverJar().setText(fn);
                 }
@@ -72,7 +72,7 @@ public class JailerUI extends JDialog {
         });
         getSelectSecDriverJar().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String fn = UIUtil.chooseFile(".", "Jdbc Driver", ".jar", JailerUI.this);
+                String fn = UIUtil.choseFile(null, ".", "Jdbc Driver", ".jar", JailerUI.this, true, true);
                 if (fn != null) {
                     getSecDriverJar().setText(fn);
                 }

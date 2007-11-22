@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.jailer.extractionmodel;
 
 import java.io.File;
@@ -30,7 +29,7 @@ import org.jailer.util.CsvFile;
  * Extraction-model, defines the subject and the {@link RestrictionModel}
  * of an extraction.
  * 
- * @author wisser
+ * @author Wisser
  */
 public class ExtractionModel {
 
@@ -76,6 +75,18 @@ public class ExtractionModel {
     }
     
     /**
+     * Constructor for empty restriction models.
+     * 
+     * @param dataModel the data model to restrict
+     */
+    public ExtractionModel(DataModel dataModel) throws Exception {
+    	Table subject = dataModel.getTables().iterator().next();
+        String condition = "";
+        dataModel.setRestrictionModel(new RestrictionModel(dataModel));
+        tasks.add(new ExtractionTask(subject, condition, -1, dataModel));
+    }
+
+    /**
      * Constructor.
      * 
      * @param the name of the model-file
@@ -109,7 +120,8 @@ public class ExtractionModel {
             }
             String condition = line.cells.get(1);
             if ("".equals(condition)) {
-                throw new RuntimeException(location + ": no condition");
+            	condition = "1=1";
+                // throw new RuntimeException(location + ": no condition");
             }
             long limit = 0;
             if (!"".equals(line.cells.get(2))) {
@@ -119,18 +131,25 @@ public class ExtractionModel {
                     throw new RuntimeException(location, e);
                 }
             }
+            boolean embedded = false;
             for (int i = 3; line.cells.get(i).length() > 0; ++i) {
                 if (dataModel.getRestrictionModel() == null) {
                     dataModel.setRestrictionModel(new RestrictionModel(dataModel));
                 }
                 try {
-                    dataModel.getRestrictionModel().addRestrictionDefinition(line.cells.get(i));
+                	if (line.cells.get(i).equals(RestrictionModel.EMBEDDED)) {
+                		embedded = true;
+                	}
+                    dataModel.getRestrictionModel().addRestrictionDefinition(line.cells.get(i), fileName);
                 } catch (Exception e) {
                     throw new RuntimeException(location, e);
                 }
             }
             tasks.add(new ExtractionTask(subject, condition, limit, dataModel));
+            if (embedded) {
+            	break;
+            }
         }
     }
-  
+    
 }

@@ -83,6 +83,11 @@ public class RestrictionModel {
      * "ignore the association" - restriction.
      */
     public static final String IGNORE = new String("ignore");
+
+    /**
+     * Special name for restriction models embedded into extraction model.
+     */
+	public static final Object EMBEDDED = ".embedded";
     
     /**
      * Gets the restriction (in SQL) for an association.
@@ -111,13 +116,31 @@ public class RestrictionModel {
      * 
      * @param fileName the name of the restriction-file
      */
-    public void addRestrictionDefinition(String fileName) throws Exception {
-        File file = new File(fileName);
+    public void addRestrictionDefinition(String fileName, String extractionModelFileName) throws Exception {
+        File file;
+        boolean embedded = false;
+        if (EMBEDDED.equals(fileName)) {
+        	file = new File(extractionModelFileName);
+        	embedded = true;
+        } else {
+        	file = new File(fileName);
+        }
+        if (!file.exists()) {
+        	try {
+        		file = new File(new File(extractionModelFileName).getParent(), fileName);
+        	} catch (Exception e) {
+        	}
+        }
         if (!file.exists()) {
             file = new File("restrictionmodel/" + fileName);
         }
         List<CsvFile.Line> lines = new CsvFile(file).getLines();
+        int nr = 0;
         for (CsvFile.Line line: lines) {
+        	++nr;
+        	if (nr == 1 && embedded) {
+        		continue;
+        	}
             String location = line.location;
             if ("".equals(line.cells.get(1))) {
                 Association association = dataModel.namedAssociations.get(line.cells.get(0));
