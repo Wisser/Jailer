@@ -25,6 +25,7 @@ import java.io.StringWriter;
 import java.util.List;
 
 import javax.swing.JFileChooser;
+import javax.swing.JOptionPane;
 
 import org.jailer.Jailer;
 
@@ -38,18 +39,23 @@ public class UIUtil {
     /**
      * File chooser.
      */
-    public static String chooseFile(String startDir, final String description, final String extension, Component parent) {
+    public static String choseFile(File selectedFile, String startDir, final String description, final String extension, Component parent, boolean addExtension, boolean forLoad) {
         JFileChooser fileChooser = new JFileChooser(startDir);
         javax.swing.filechooser.FileFilter filter = new javax.swing.filechooser.FileFilter() {
             public boolean accept(File pathname) {
                 return pathname.isDirectory() || pathname.getName().toLowerCase().endsWith(extension);
             }
             public String getDescription() {
-                return description;
+                return "*" + extension;
             }
         };
         fileChooser.setFileFilter(filter);
-        int returnVal = fileChooser.showOpenDialog(parent);
+        fileChooser.setDialogTitle(description);
+        if (selectedFile != null) {
+        	fileChooser.setSelectedFile(selectedFile);
+        }
+        fileChooser.setDialogType(forLoad? JFileChooser.OPEN_DIALOG : JFileChooser.SAVE_DIALOG);
+        int returnVal = forLoad? fileChooser.showOpenDialog(parent) : fileChooser.showSaveDialog(parent);
         if (returnVal == JFileChooser.APPROVE_OPTION) {
             String fn = "";
             try {
@@ -60,6 +66,9 @@ public class UIUtil {
                 while (f != null && !f.getCanonicalPath().equals(work)) {
                     fn = f.getName() + File.separator + fn;
                     f = f.getParentFile();
+                }
+                if (addExtension && !fn.endsWith(extension)) {
+                	fn += extension;
                 }
                 return fn;
             } catch (IOException e1) {
@@ -123,5 +132,18 @@ public class UIUtil {
             outputView.setText(sw.getBuffer().toString());
         }
     }
+
+    /**
+     * Shows an exception.
+     * 
+     * @param e the exception.
+     */
+	public static void showException(Component parent, String title, Throwable t) {
+		t.printStackTrace();
+		while (t.getCause() != null && t != t.getCause()) {
+			t = t.getCause();
+		}
+		JOptionPane.showMessageDialog(parent, t.getMessage(), title, JOptionPane.ERROR_MESSAGE);
+	}
 
 }

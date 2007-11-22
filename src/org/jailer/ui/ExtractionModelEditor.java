@@ -1,9 +1,18 @@
 /*
- * ModelTree.java
+ * Copyright 2007 the original author or authors.
  *
- * Created on 12. November 2007, 15:02
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package org.jailer.ui;
 
 import java.awt.Color;
@@ -11,6 +20,8 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,12 +35,8 @@ import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.ComboBoxModel;
-
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultListModel;
-import javax.swing.JTable;
 import javax.swing.JTree;
-import javax.swing.ListModel;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -55,7 +62,7 @@ import org.jailer.util.SqlUtil;
 /**
  * Editor for {@link RestrictionModel}s.
  * 
- * @author wisser
+ * @author Wisser
  */
 public class ExtractionModelEditor extends javax.swing.JPanel {
 
@@ -64,28 +71,63 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 */
 	private RestrictionEditor restrictionEditor;
 	
+	/**
+	 * Holds restrictions.
+	 */
 	private ExtractionModel extractionModel;
+	
+	/**
+	 * The data model.
+	 */
 	private DataModel dataModel;
+	
+	/**
+	 * Subject table.
+	 */
 	private Table subject;
+	
+	/**
+	 * Root of 'associations'-tree.
+	 */
 	private Table root;
+	
 	private Map<Association, Association> representant;
 	private Map<ModelElement, DefaultMutableTreeNode> toNode;
 	private DefaultTreeModel treeModel;
 	private Collection<DefaultMutableTreeNode> treeNodes;
 	private boolean suppressRestrictionSelection = false;
+	boolean needsSave = false;
+	ExtractionModelFrame extractionModelFrame;
+	String extractionModelFile;
 	
 	/** 
 	 * Creates new form ModelTree.
 	 *  
 	 * @param extractionModelFile file containing the model
      */
-	public ExtractionModelEditor(String extractionModelFile) {
+	public ExtractionModelEditor(String extractionModelFile, ExtractionModelFrame extractionModelFrame) {
+		this.extractionModelFrame = extractionModelFrame;
+		this.extractionModelFile = extractionModelFile;
 		try {
-			extractionModel = new ExtractionModel(extractionModelFile);
+			dataModel = new DataModel();
+		} catch (Exception e) {
+			UIUtil.showException(this, "Error in Data Model", e);
+			return;
+		}
+		try {
+			if (extractionModelFile == null || !new File(extractionModelFile).exists()) {
+				needsSave = extractionModelFile != null;
+				dataModel = new DataModel();
+				extractionModel = new ExtractionModel(dataModel);
+			} else {
+				extractionModel = new ExtractionModel(extractionModelFile);
+			}
 			subject = extractionModel.getTasks().get(0).subject;
 			dataModel = extractionModel.getTasks().get(0).dataModel;
+			extractionModelFrame.updateTitle(needsSave);
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			UIUtil.showException(this, extractionModelFile == null? "Error creating new Model" : "Error in " + new File(extractionModelFile).getName(), e);
+			return;
 		}
 
 		initComponents();
@@ -118,6 +160,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 		});
 		initRestrictionEditor(null, null);
+		subjectTable.setSelectedItem(extractionModel.getTasks().get(0).subject.getName());
+		condition.setText(extractionModel.getTasks().get(0).condition);
 	}
 
 	/**
@@ -130,10 +174,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jPanel1 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jLabel1 = new javax.swing.JLabel();
-        jButton2 = new javax.swing.JButton();
         legende = new javax.swing.JPanel();
         dependsOn = new javax.swing.JLabel();
         hasDependent = new javax.swing.JLabel();
@@ -155,23 +195,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         tree = new javax.swing.JTree();
 
         setLayout(new java.awt.GridBagLayout());
-
-        jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
-
-        jButton1.setText("Save");
-        jPanel1.add(jButton1);
-
-        jLabel1.setText(" ");
-        jPanel1.add(jLabel1);
-
-        jButton2.setText("Cancel");
-        jPanel1.add(jButton2);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        add(jPanel1, gridBagConstraints);
 
         legende.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
@@ -228,6 +251,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         subjectTable.setModel(subjectListModel());
         subjectTable.setMaximumRowCount(32);
+        subjectTable.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                onNewSubject(evt);
+            }
+        });
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -314,6 +343,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
     }// </editor-fold>//GEN-END:initComponents
 
+    private void onNewSubject(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_onNewSubject
+        rootTable.setSelectedItem(subjectTable.getSelectedItem());
+    }//GEN-LAST:event_onNewSubject
+
     private void rootTableItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rootTableItemStateChanged
     	if (evt.getItem() != null) {
     		Table table = dataModel.getTable(evt.getItem().toString());
@@ -383,6 +416,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
     private Association currentAssociation;
     private DefaultMutableTreeNode currentNode;
+    private String initialRestrictionCondition = null;
     
     /**
      * Initializes the restriction editor.
@@ -393,6 +427,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private void initRestrictionEditor(Association association, DefaultMutableTreeNode node) {
     	currentAssociation = association;
     	currentNode = node;
+    	initialRestrictionCondition = null;
 		if (association == null) {
 			int l = currentRestrictionDefinitions == null? -1 : currentRestrictionDefinitions.size();
 			if (l > 0) {
@@ -466,6 +501,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			if (restrictionCondition != null && restrictionCondition.startsWith("(") && restrictionCondition.endsWith(")")) {
 				restrictionCondition = restrictionCondition.substring(1, restrictionCondition.length() - 1);
 			}
+			initialRestrictionCondition = association.isIgnored()? null : restrictionCondition;
 			restrictionEditor.restriction.setText(restrictionCondition);
 			restrictionEditor.ignore.getModel().setSelected(association.isIgnored());
 			restrictionEditor.restriction.setEditable(editable && !association.isIgnored());
@@ -490,9 +526,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				}
 			}
 			restrictionEditor.joinCondition.setText(joinCondition);
+			tree.grabFocus();
 		}
 	}
 
+    /**
+     * Jump-button clicked.
+     */
 	private void onJump() {
     	if (tree.getLeadSelectionPath() != null) {
     		Object selection = ((DefaultMutableTreeNode) tree.getLeadSelectionPath().getLastPathComponent()).getUserObject();
@@ -510,12 +550,20 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 */
     private void onApply(boolean applyButtonKlicked) {
     	if (currentAssociation != null) {
+    		if (!needsSave) {
+    			needsSave = true;
+    			extractionModelFrame.updateTitle(needsSave);
+    		}
     		String condition;
     		if (restrictionEditor.ignore.getModel().isSelected()) {
     			condition = "ignore";
     		} else {
     			if (!applyButtonKlicked) {
-    				condition = "";
+    				if (initialRestrictionCondition != null) {
+    					condition = initialRestrictionCondition;
+    				} else {
+    					condition = "";
+    				}
     			} else {
     				condition = restrictionEditor.restriction.getText().trim();
     			}
@@ -523,7 +571,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			dataModel.getRestrictionModel().addRestriction(currentAssociation.source, currentAssociation, condition, "GUI", true);
     		tree.repaint();
 			restrictionsTable.setModel(restrictionTableModel());
+			String saveInitialRestrictionCondition = initialRestrictionCondition;
 			initRestrictionEditor(currentAssociation, currentNode);
+			initialRestrictionCondition = saveInitialRestrictionCondition;
     	}
     }
     
@@ -558,6 +608,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		while (!agenda.isEmpty()) {
 			Association a = agenda.get(0);
 			agenda.remove(0);
+			if (extractionModelFrame.hideIgnored() && a.isIgnored()) {
+				continue;
+			}
 			if (toNode.get(a) == null) {
 				Association rep = null;
 				for (ModelElement cand: toNode.keySet()) {
@@ -651,6 +704,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				} else if (node.getUserObject() instanceof Association) {
 					Association association = (Association) node.getUserObject();
 					text = association.destination.getName();
+					if (!association.isIgnored() && association.isRestricted()) {
+						text += "*";
+					} else {
+						text += "  ";
+					}
 					if (association.isIgnored()) {
 						setTextSelectionColor(ignored.getForeground());
 						setTextNonSelectionColor(ignored.getForeground());
@@ -681,6 +739,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
      * @param restrictionDefinition the restriction to select
      */
 	private void select(RestrictionDefinition restrictionDefinition) {
+		if (extractionModelFrame.hideIgnored() && restrictionDefinition.isIgnored) {
+			return;
+		}
 		if (!suppressRestrictionSelection) {
 			suppressRestrictionSelection = true;
 			try {
@@ -710,7 +771,55 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 	}
 
-    /**
+	/**
+	 * Saves the model.
+	 * 
+	 * @param selectNewFile <code>true</code> for 'save as...'
+	 */
+	public boolean save(boolean selectNewFile) {
+		if (currentRestrictionDefinitions == null) {
+			return false;
+		}
+		if (selectNewFile || extractionModelFile == null) {
+			String startDir = ".";
+			if (extractionModelFile != null) {
+				startDir = new File(extractionModelFile).getParent();
+				if (startDir == null) {
+					startDir = ".";
+				}
+			}
+			String newFile = UIUtil.choseFile(extractionModelFile == null? null : new File(extractionModelFile), startDir, "Save Extraction Model", ".csv", this, true, false);
+			if (newFile == null) {
+				return false;
+			}
+			extractionModelFile = newFile;
+		}
+		File extractionModel = new File(extractionModelFile);
+		try {
+			PrintWriter out = new PrintWriter(extractionModel);
+			out.println("# subject; condition;  limit; restrictions");
+			out.println(subjectTable.getSelectedItem() + "; " + condition.getText() + "; ; " + RestrictionModel.EMBEDDED);
+			out.println();
+			out.println("# from A (or association name); to B; restriction-condition");
+			for (RestrictionDefinition rd: currentRestrictionDefinitions) {
+				String condition = rd.isIgnored? "ignore" : rd.condition;
+				if (rd.name == null || rd.name.trim().length() == 0) {
+					out.println(rd.from.getName() + "; " + rd.to.getName() + "; " + condition);
+				} else {
+					out.println(rd.name + "; ; " + condition);
+				}
+			}
+			out.close();
+			needsSave = false;
+			extractionModelFrame.updateTitle(needsSave);
+		} catch (IOException e) {
+			UIUtil.showException(this, "Could not save " + new File(extractionModelFile).getName(), e);
+			return false;
+		}
+		return true;
+	}
+
+	/**
      * Gets set of all association which are not editable due to ambiguity.
      */
     private Set<Association> getAmbiguousNonames() {
@@ -734,20 +843,32 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         return ambiguousNonames;
     }
         
-    // Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables
+    /**
+     * Refreshed associations tree.
+     */
+	public void refresh() {
+		tree.setModel(getModel());
+	}
+	
+	/**
+	 * Expands all node in associations tree.
+	 */
+	public void expand() {
+		for (DefaultMutableTreeNode node: treeNodes) {
+			tree.expandPath(new TreePath(node.getPath()));
+		}
+	}
+	
+	// Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables
     private javax.swing.JLabel associatedWith;
     private javax.swing.JTextField condition;
     private javax.swing.JLabel dependsOn;
     private javax.swing.JLabel hasDependent;
     private javax.swing.JLabel ignored;
     private javax.swing.JPanel inspectorHolder;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;

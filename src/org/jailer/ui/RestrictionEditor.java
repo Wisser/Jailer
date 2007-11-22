@@ -1,14 +1,24 @@
 /*
- * RestrictionEditor.java
+ * Copyright 2007 the original author or authors.
  *
- * Created on 14. November 2007, 13:29
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
-
 package org.jailer.ui;
 
 /**
+ * Editor for 1 restricted association.
  *
- * @author  wisser
+ * @author Wisser
  */
 public class RestrictionEditor extends javax.swing.JPanel {
     
@@ -73,6 +83,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         add(description, gridBagConstraints);
 
         jLabel2.setText("Restricted by  ");
+        jLabel2.setToolTipText(getConditionToolTip());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 10;
@@ -95,6 +106,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         add(jLabel7, gridBagConstraints);
 
         restriction.setText("jTextField1");
+        restriction.setToolTipText(getConditionToolTip());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 10;
@@ -200,7 +212,12 @@ public class RestrictionEditor extends javax.swing.JPanel {
         add(aName, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
-    
+
+    private String getConditionToolTip() {
+        return "use 'A' as alias for source-table, " +
+               "use 'B' as alias for destination table, " +
+               "(upper case, no space between A/B and dot!)";
+    }
     
     // Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables
     public javax.swing.JLabel aName;

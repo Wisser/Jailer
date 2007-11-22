@@ -537,9 +537,8 @@ public class Jailer {
             CommandLineParser.parse(args);
             CommandLineParser clp = CommandLineParser.getInstance();
             
-            _log.info("***");
             _log.info("Jailer " + VERSION);
-            _log.info("***");
+            _log.info("");
             
             String command = clp.arguments.get(0);
             if ("check-domainmodel".equalsIgnoreCase(command)) {
@@ -548,7 +547,7 @@ public class Jailer {
                     if (dataModel.getRestrictionModel() == null) {
                         dataModel.setRestrictionModel(new RestrictionModel(dataModel));
                     }
-                    dataModel.getRestrictionModel().addRestrictionDefinition(rm);
+                    dataModel.getRestrictionModel().addRestrictionDefinition(rm, null);
                 }
                new DomainModel(dataModel).check();
             } else if ("render-datamodel".equalsIgnoreCase(command)) {
@@ -622,7 +621,7 @@ public class Jailer {
             if (dataModel.getRestrictionModel() == null) {
                 dataModel.setRestrictionModel(new RestrictionModel(dataModel));
             }
-            dataModel.getRestrictionModel().addRestrictionDefinition(rm);
+            dataModel.getRestrictionModel().addRestrictionDefinition(rm, null);
         }
         DataModelRenderer renderer = (DataModelRenderer) applicationContext.getBean("renderer");
         if (renderer == null) {
@@ -829,7 +828,7 @@ public class Jailer {
             if (dataModel.getRestrictionModel() == null) {
                 dataModel.setRestrictionModel(new RestrictionModel(dataModel));
             }
-            dataModel.getRestrictionModel().addRestrictionDefinition(rm);
+            dataModel.getRestrictionModel().addRestrictionDefinition(rm, null);
         }
         Table source = dataModel.getTable(from);
         if (source == null) {
@@ -896,7 +895,7 @@ public class Jailer {
             if (dataModel.getRestrictionModel() == null) {
                 dataModel.setRestrictionModel(new RestrictionModel(dataModel));
             }
-            dataModel.getRestrictionModel().addRestrictionDefinition(rm);
+            dataModel.getRestrictionModel().addRestrictionDefinition(rm, null);
         }
 
         System.out.println(dataModel);
