@@ -128,9 +128,9 @@ public class StatementExecutor {
     /**
      * Wraps a Jdbc-Driver.
      */
-    private static class DriverShim implements Driver {
+    public static class DriverShim implements Driver {
         private Driver driver;
-        DriverShim(Driver d) {
+        public DriverShim(Driver d) {
             this.driver = d;
         }
         public boolean acceptsURL(String u) throws SQLException {

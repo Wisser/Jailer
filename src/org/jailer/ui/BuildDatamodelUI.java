@@ -122,7 +122,7 @@ public class BuildDatamodelUI extends javax.swing.JPanel {
                 args.add(getDbURL().getText());
                 args.add(getDbUser().getText());
                 args.add(getDbPassword().getText());
-                if (UIUtil.runJailer(args, true, false, false)) {
+                if (UIUtil.runJailer(args, true, false, false, false)) {
                     new AcceptDatamodelUI().setVisible(true);
                 }
             }

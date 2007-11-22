@@ -799,16 +799,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			PrintWriter out = new PrintWriter(extractionModel);
 			out.println("# subject; condition;  limit; restrictions");
 			out.println(subjectTable.getSelectedItem() + "; " + condition.getText() + "; ; " + RestrictionModel.EMBEDDED);
-			out.println();
-			out.println("# from A (or association name); to B; restriction-condition");
-			for (RestrictionDefinition rd: currentRestrictionDefinitions) {
-				String condition = rd.isIgnored? "ignore" : rd.condition;
-				if (rd.name == null || rd.name.trim().length() == 0) {
-					out.println(rd.from.getName() + "; " + rd.to.getName() + "; " + condition);
-				} else {
-					out.println(rd.name + "; ; " + condition);
-				}
-			}
+			saveRestrictions(out);
 			out.close();
 			needsSave = false;
 			extractionModelFrame.updateTitle(needsSave);
@@ -817,6 +808,35 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * Saves restrictions only.
+	 * 
+	 * @param out to save restrictions into
+	 */
+	private void saveRestrictions(PrintWriter out) {
+		out.println();
+		out.println("# from A (or association name); to B; restriction-condition");
+		for (RestrictionDefinition rd: currentRestrictionDefinitions) {
+			String condition = rd.isIgnored? "ignore" : rd.condition;
+			if (rd.name == null || rd.name.trim().length() == 0) {
+				out.println(rd.from.getName() + "; " + rd.to.getName() + "; " + condition);
+			} else {
+				out.println(rd.name + "; ; " + condition);
+			}
+		}
+	}
+
+	/**
+	 * Saves restrictions only.
+	 * 
+	 * @param file to save restrictions into
+	 */
+	public void saveRestrictions(File file) throws Exception {
+		PrintWriter out = new PrintWriter(file);
+		saveRestrictions(out);
+		out.close();
 	}
 
 	/**

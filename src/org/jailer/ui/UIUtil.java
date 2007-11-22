@@ -88,7 +88,7 @@ public class UIUtil {
      * @param parent parent of OutputView.
      * @param args jailer arguments
      */
-    public static boolean runJailer(List<String> args, boolean showLogfileButton, boolean printCommandLine, boolean showExplainLogButton) {
+    public static boolean runJailer(List<String> args, boolean showLogfileButton, boolean printCommandLine, boolean showExplainLogButton, boolean closeOutputWindow) {
         StringBuffer arglist = new StringBuffer();
         String[] argsarray = new String[args.size()];
         int i = 0;
@@ -121,11 +121,15 @@ public class UIUtil {
                     out.close();
                 }
             } catch (Exception e) {
-                e.printStackTrace();
+                UIUtil.showException(null, "Error", e);
             }
-            return Jailer.jailerMain(argsarray);
+            boolean result = Jailer.jailerMain(argsarray);
+            if (closeOutputWindow) {
+            	outputView.setVisible(false);
+            }
+            return result;
         } catch (Throwable t) {
-            t.printStackTrace();
+            UIUtil.showException(null, "Error", t);
             return false;
         } finally {
             System.setOut(originalOut);
@@ -143,7 +147,7 @@ public class UIUtil {
 		while (t.getCause() != null && t != t.getCause()) {
 			t = t.getCause();
 		}
-		JOptionPane.showMessageDialog(parent, t.getMessage(), title, JOptionPane.ERROR_MESSAGE);
+		JOptionPane.showMessageDialog(parent, t.getClass().getName() + "\n" + t.getMessage(), title, JOptionPane.ERROR_MESSAGE);
 	}
 
 }
