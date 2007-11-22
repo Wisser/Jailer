@@ -63,7 +63,7 @@ public class CreateDDLUI extends javax.swing.JPanel {
             public void actionPerformed(ActionEvent e) {
                 List<String> args = new ArrayList<String>();
                 args.add("create-ddl");
-                UIUtil.runJailer(args, false, false, false);
+                UIUtil.runJailer(args, false, false, false, false);
             }
         });
      }
