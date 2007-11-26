@@ -85,12 +85,12 @@ public class ModelBuilder {
     /**
      * Name of CSV file for generated table definitions.
      */
-    private static final String MODEL_BUILDER_TABLES_CSV = "datamodel/model-builder-table.csv";
+    public static final String MODEL_BUILDER_TABLES_CSV = "datamodel/model-builder-table.csv";
 
     /**
      * Name of CSV file for generated association definitions.
      */
-    private static final String MODEL_BUILDER_ASSOCIATIONS_CSV = "datamodel/model-builder-association.csv";
+    public static final String MODEL_BUILDER_ASSOCIATIONS_CSV = "datamodel/model-builder-association.csv";
 
     /**
      * The exclude-tables file.

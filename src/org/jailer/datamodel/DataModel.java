@@ -41,7 +41,7 @@ import org.jailer.util.PrintUtil;
  */
 public class DataModel {
 
-    /**
+	/**
      * Maps table-names to Tables;
      */
     private Map<String, Table> tables = new HashMap<String, Table>();
@@ -60,7 +60,17 @@ public class DataModel {
      * For creation of primary-keys.
      */
     private final PrimaryKeyFactory PrimaryKeyFactory = new PrimaryKeyFactory();
-    
+
+    /**
+     * Name of file containing the table definitions.
+     */
+    public static final String TABLES_FILE = "datamodel/table.csv";
+
+    /**
+     * Name of file containing the association definitions.
+     */
+	public static final String ASSOCIATIONS_FILE = "datamodel/association.csv";
+
     /**
      * Gets a table by name.
      * 
@@ -97,7 +107,7 @@ public class DataModel {
         // tables
         Pattern typeWithSize = Pattern.compile("([^ ]+) +([^ \\(]+)\\(([0-9]+)\\)");
         Pattern typeWithoutSize = Pattern.compile("([^ ]+) +([^ \\(]+)");
-        CsvFile tablesFile = new CsvFile(new File("datamodel/table.csv"));
+        CsvFile tablesFile = new CsvFile(new File(TABLES_FILE));
         List<CsvFile.Line> tableList = new ArrayList<CsvFile.Line>(tablesFile.getLines());
         if (additionalTablesFile != null) {
             tableList.addAll(new CsvFile(new File(additionalTablesFile)).getLines());
@@ -129,7 +139,7 @@ public class DataModel {
         }
         
         // associations
-        List<CsvFile.Line> associationList = new ArrayList<CsvFile.Line>(new CsvFile(new File("datamodel/association.csv")).getLines());
+        List<CsvFile.Line> associationList = new ArrayList<CsvFile.Line>(new CsvFile(new File(ASSOCIATIONS_FILE)).getLines());
         if (additionalAssociationsFile != null) {
             associationList.addAll(new CsvFile(new File(additionalAssociationsFile)).getLines());
         }

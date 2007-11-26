@@ -45,6 +45,11 @@ public class CsvFile {
         public final List<String> cells;
         
         /**
+         * Length of the line.
+         */
+        public final int length;
+        
+        /**
          * Constructor.
          * 
          * @param location describes the position of the line in a file
@@ -53,8 +58,17 @@ public class CsvFile {
         Line(String location, List<String> cells) {
             this.location = location;
             this.cells = cells;
+            int num = 0;
+            int l = 0;
+            for (String s : cells) {
+            	++num;
+            	if (s != null && s.trim().length() > 0) {
+            		l = num;
+            	}
+            }
+            this.length = l;
         }
-        
+
     };
     
     /**
