@@ -1,1 +1,5 @@
 # name;      upsert; primary key;    ; author
+DEPARTMENT;  N;      DEPTNO INTEGER; ;IBM DB2 JDBC Driver;
+EMPLOYEE;    N;      EMPNO INTEGER;  ;IBM DB2 JDBC Driver;
+SALARYGRADE; N;      GRADE INTEGER;LOSAL INTEGER;HISAL INTEGER;   ;IBM DB2 JDBC Driver;
+
