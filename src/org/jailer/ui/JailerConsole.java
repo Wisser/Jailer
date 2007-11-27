@@ -17,51 +17,46 @@ package org.jailer.ui;
 
 import java.awt.Dimension;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 
-public class OutputView extends javax.swing.JFrame {
+/**
+ * Jailer console window.
+ * 
+ * @author Wisser
+ */
+public class JailerConsole extends javax.swing.JDialog {
 
-    private JTextPane content = null;
     private JTextPane jTextPane = null;
     private JPanel jPanel = null;
     private JScrollPane jScrollPane = null;
     private JButton loadExportLog = null;
     private JButton loadSqlLog = null;
     private JButton loadExplainLog = null;
-    /**
-     * This method initializes 
-     * 
-     */
-    public OutputView() {
-        super();
-        initialize();
-    }
 
     /**
      * This method initializes this
      * 
      */
     private void initialize() {
-        this.setSize(new Dimension(700, 640));
+        this.setSize(new Dimension(950, 640));
         this.setContentPane(getJPanel());
-        this.setTitle("Jailer");
+        this.setTitle("Jailer Console - in progress");
         getJTextPane().setFont(new Font("Monospaced", Font.PLAIN, 12));
         
         getLoadExportLog().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    new FileView("export.log");
+                    new FileView(JailerConsole.this, "export.log");
                 } catch (Exception e1) {
                     e1.printStackTrace();
                 }
@@ -70,7 +65,7 @@ public class OutputView extends javax.swing.JFrame {
         getLoadSqlLog().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    new FileView("sql.log");
+                    new FileView(JailerConsole.this, "sql.log");
                 } catch (Exception e1) {
                     e1.printStackTrace();
                 }
@@ -79,7 +74,7 @@ public class OutputView extends javax.swing.JFrame {
         getLoadExplainLog().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    new FileView("explain.log");
+                    new FileView(JailerConsole.this, "explain.log");
                 } catch (Exception e1) {
                     e1.printStackTrace();
                 }
@@ -95,29 +90,40 @@ public class OutputView extends javax.swing.JFrame {
     private JTextPane getJTextPane() {
         if (jTextPane == null) {
             jTextPane = new JTextPane();
+            jTextPane.setEditable(false);
         }
         return jTextPane;
     }
 
-    public OutputView(boolean showLogfileButton, boolean showExplainLogButton) {
-        super();
+    public JailerConsole(Frame owner, boolean showLogfileButton, boolean showExplainLogButton) {
+        super(owner);
         initialize();
-        setLocation(300, 50);
-        setTitle("Jailer Output");
-        if (!showLogfileButton) {
-            getLoadExportLog().setVisible(false);
+        getJTextPane().setAutoscrolls(true);
+        setModal(true);
+        setLocation(100, 50);
+        setDefaultCloseOperation(0);
+        getLoadExplainLog().setEnabled(false);
+    	getLoadSqlLog().setEnabled(false);
+        getLoadExportLog().setVisible(false);
+    	if (!showLogfileButton) {
+            // getLoadExportLog().setVisible(false);
             getLoadSqlLog().setVisible(false);
         }
         if (!showExplainLogButton) {
             getLoadExplainLog().setVisible(false);
         }
-        setVisible(true);
     }
 
-    public void setText(String output) {
-        getJTextPane().setText(output);
+    public void appendText(String output) {
+        getJTextPane().setText(getJTextPane().getText() + output);
     }
 
+    public void finish(boolean ok) {
+    	getLoadSqlLog().setEnabled(true);
+    	getLoadExplainLog().setEnabled(true);
+        this.setTitle("Jailer Console - " + (ok? "finished" : "failed!"));
+    }
+    
     /**
      * This method initializes jPanel	
      * 	
@@ -126,6 +132,7 @@ public class OutputView extends javax.swing.JFrame {
     private JPanel getJPanel() {
         if (jPanel == null) {
             GridBagConstraints gridBagConstraints28 = new GridBagConstraints();
+            gridBagConstraints28.anchor = GridBagConstraints.WEST;
             gridBagConstraints28.gridx = 4;
             gridBagConstraints28.gridy = 1;
             gridBagConstraints28.insets = new Insets(0, 4, 0, 0);
@@ -163,7 +170,6 @@ public class OutputView extends javax.swing.JFrame {
     private JScrollPane getJScrollPane() {
         if (jScrollPane == null) {
             jScrollPane = new JScrollPane();
-            jScrollPane.setViewportView(getJTextPane());
             jScrollPane.setViewportView(getJTextPane());
         }
         return jScrollPane;

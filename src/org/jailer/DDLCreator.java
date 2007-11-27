@@ -16,8 +16,13 @@
 
 package org.jailer;
 
+import java.io.File;
+import java.io.PrintWriter;
+
+import org.jailer.database.StatementExecutor;
 import org.jailer.datamodel.DataModel;
 import org.jailer.util.PrintUtil;
+import org.jailer.util.SqlScriptExecutor;
 
 /**
  * Creates the DDL for the working-tables.
@@ -29,7 +34,7 @@ public class DDLCreator {
     /**
      * Creates the DDL for the working-tables.
      */
-    public static void createDDL() throws Exception {
+    public static boolean createDDL(String driverClass, String dbUrl, String user, String password) throws Exception {
         DataModel dataModel = new DataModel();
         
         String template = "script/ddl-template.sql";
@@ -45,6 +50,21 @@ public class DDLCreator {
         String ddl = PrintUtil.applyTemplate(template, arguments);
         
         System.out.println(ddl);
+        
+        if (driverClass != null) {
+        	StatementExecutor statementExecutor = new StatementExecutor(driverClass, dbUrl, user, password);
+        	try {
+        		File tmp = new File("tmp" + System.currentTimeMillis() + ".sql");
+        		PrintWriter pw = new PrintWriter(tmp);
+        		pw.println(ddl);
+        		pw.close();
+        		SqlScriptExecutor.executeScript(tmp.getCanonicalPath(), statementExecutor);
+        	} finally {
+        		statementExecutor.shutDown();
+        	}
+        }
+        
+        return true;
     }
 
 }

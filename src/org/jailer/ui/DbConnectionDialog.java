@@ -48,7 +48,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         super(parent, true);
         initComponents();
         setLocation(100, 150);
-        setSize(500, 250);
+        setSize(500, 256);
         Map<String, JTextField> fields = new HashMap<String, JTextField>();
         fields.put("password", password);
         fields.put("dbUrl", dbUrl);
@@ -128,6 +128,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         password = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
+        jLabel10 = new javax.swing.JLabel();
 
         getContentPane().setLayout(new java.awt.CardLayout());
 
@@ -279,7 +280,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
         jPanel2.add(jButton1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -290,6 +291,12 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         jPanel1.add(jPanel2, gridBagConstraints);
+
+        jLabel10.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        jPanel1.add(jLabel10, gridBagConstraints);
 
         getContentPane().add(jPanel1, "card2");
 
@@ -378,6 +385,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     private javax.swing.JButton jButton1;
     private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;

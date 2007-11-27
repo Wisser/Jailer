@@ -15,6 +15,7 @@
  */
 package org.jailer.ui;
 
+import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.io.FileNotFoundException;
@@ -25,7 +26,7 @@ import javax.swing.JTextPane;
 
 import org.jailer.util.PrintUtil;
 
-public class FileView extends javax.swing.JFrame {
+public class FileView extends javax.swing.JDialog {
 
     private JTextPane content = null;
     private JScrollPane jScrollPane = null;
@@ -34,9 +35,10 @@ public class FileView extends javax.swing.JFrame {
      * This method initializes 
      * 
      */
-    public FileView() {
-    	super();
+    public FileView(Dialog owner) {
+    	super(owner);
     	initialize();
+    	setModal(true);
     }
 
     /**
@@ -76,8 +78,9 @@ public class FileView extends javax.swing.JFrame {
         return jTextPane;
     }
 
-    public FileView(String file) throws FileNotFoundException, IOException {
-        super();
+    public FileView(Dialog owner, String file) throws FileNotFoundException, IOException {
+        super(owner);
+        setModal(true);
         initialize();
         setTitle(file);
         getJTextPane().setText(PrintUtil.loadFile(file));

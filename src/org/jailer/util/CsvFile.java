@@ -32,7 +32,7 @@ public class CsvFile {
     /**
      * A line in a CSV-file.
      */
-    public class Line {
+    public static class Line {
         
         /**
          * Describes the position of the line in a file.
@@ -47,7 +47,7 @@ public class CsvFile {
         /**
          * Length of the line.
          */
-        public final int length;
+        public int length;
         
         /**
          * Constructor.
@@ -55,7 +55,7 @@ public class CsvFile {
          * @param location describes the position of the line in a file
          * @param cells the cells
          */
-        Line(String location, List<String> cells) {
+        public Line(String location, List<String> cells) {
             this.location = location;
             this.cells = cells;
             int num = 0;

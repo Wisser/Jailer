@@ -24,16 +24,18 @@ public class SqlScriptExecutor {
     public static void executeScript(String scriptFileName, StatementExecutor statementExecutor) throws IOException, SQLException {
         BufferedReader reader = new BufferedReader(new FileReader(scriptFileName));
         String line = null;
+        StringBuffer currentStatement = new StringBuffer();
         while ((line = reader.readLine()) != null) {
             line = line.trim();
             if (line.length() == 0 || line.startsWith("#") || line.startsWith("--")) {
-                // comment or empty line
                 continue;
             }
             if (line.endsWith(";")) {
-                line = line.substring(0, line.length() - 1);
+                statementExecutor.execute(currentStatement + line.substring(0, line.length() - 1));
+                currentStatement.setLength(0);
+            } else {
+                currentStatement.append(line + " ");
             }
-            statementExecutor.execute(line);
         }
         reader.close();
     }

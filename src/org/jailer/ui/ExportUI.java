@@ -146,7 +146,7 @@ public class ExportUI extends javax.swing.JPanel {
                 args.add(getDbURL().getText());
                 args.add(getDbUser().getText());
                 args.add(getDbPassword().getText());
-                UIUtil.runJailer(args, true, true, getExplain().isSelected(), false);
+                UIUtil.runJailer(null, args, true, true, getExplain().isSelected(), false, null);
             }
         });
         getFindExtractionModel().addActionListener(new ActionListener() {

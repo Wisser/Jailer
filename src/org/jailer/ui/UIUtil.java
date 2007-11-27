@@ -16,6 +16,7 @@
 package org.jailer.ui;
 
 import java.awt.Component;
+import java.awt.Frame;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -26,6 +27,8 @@ import java.util.List;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import javax.swing.WindowConstants;
 
 import org.jailer.Jailer;
 
@@ -88,26 +91,38 @@ public class UIUtil {
      * @param parent parent of OutputView.
      * @param args jailer arguments
      */
-    public static boolean runJailer(List<String> args, boolean showLogfileButton, boolean printCommandLine, boolean showExplainLogButton, boolean closeOutputWindow) {
+    public static boolean runJailer(Frame ownerOfConsole, List<String> args, boolean showLogfileButton, boolean printCommandLine, boolean showExplainLogButton, final boolean closeOutputWindow, String continueOnErrorQuestion) {
         StringBuffer arglist = new StringBuffer();
-        String[] argsarray = new String[args.size()];
+        final String[] argsarray = new String[args.size()];
         int i = 0;
         for (String arg: args) {
             arglist.append(" " + arg);
             argsarray[i++] = arg.trim();
         }
-        final StringWriter sw = new StringWriter();
+        final JailerConsole outputView = new JailerConsole(ownerOfConsole, showLogfileButton, showExplainLogButton);
         final PrintStream originalOut = System.out;
         System.setOut(new PrintStream(new OutputStream() {
+        	StringBuffer buffer = new StringBuffer();
             public void write(int b) throws IOException {
                 originalOut.write(b);
-                sw.write(b);
+                synchronized (buffer) {
+                	buffer.append((char) b);
+                }
+                if ((char) b == '\n') {
+                	SwingUtilities.invokeLater(new Runnable() {
+		            	public void run() {
+		            		synchronized (buffer) {
+		                        outputView.appendText(buffer.toString());
+		                        buffer.setLength(0);
+		            		}
+		            	}
+                	});
+                }
             }
         }));
         if (printCommandLine) {
-            System.out.println("Jailer" + arglist);
+            System.out.println("$ jailer" + arglist);
         }
-        OutputView outputView = new OutputView(showLogfileButton, showExplainLogButton);
         try {
             try {
                 File exportLog = new File("export.log");
@@ -123,17 +138,40 @@ public class UIUtil {
             } catch (Exception e) {
                 UIUtil.showException(null, "Error", e);
             }
-            boolean result = Jailer.jailerMain(argsarray);
-            if (closeOutputWindow) {
-            	outputView.setVisible(false);
+            final boolean[] result = new boolean[] { false };
+            final Throwable[] exp = new Throwable[1];
+            new Thread(new Runnable() {
+				public void run() {
+		            try {
+		            	result[0] = Jailer.jailerMain(argsarray);
+		            } catch (Throwable t) {
+		            	exp[0] = t;
+		            }
+		            SwingUtilities.invokeLater(new Runnable() {
+		            	public void run() {
+		            		outputView.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		                    if (closeOutputWindow && result[0] && exp[0] == null) {
+		                    	outputView.setVisible(false);
+		                    } else {
+		                    	outputView.finish(result[0] && exp[0] == null);
+		                    }
+		            	}
+		            });
+				}
+            }, "jailer-main").start();
+            outputView.setVisible(true);
+            if (exp[0] != null) {
+            	throw exp[0];
             }
-            return result;
+            if (!result[0] && continueOnErrorQuestion != null) {
+            	result[0] = JOptionPane.showConfirmDialog(outputView, continueOnErrorQuestion, "Error", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+            }
+            return result[0];
         } catch (Throwable t) {
             UIUtil.showException(null, "Error", t);
             return false;
         } finally {
             System.setOut(originalOut);
-            outputView.setText(sw.getBuffer().toString());
         }
     }
 
