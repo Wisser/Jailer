@@ -111,7 +111,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu4 = new javax.swing.JMenu();
         connectDb = new javax.swing.JCheckBoxMenuItem();
         disconnectDb = new javax.swing.JMenuItem();
+        jMenu5 = new javax.swing.JMenu();
+        updateDataModel = new javax.swing.JMenuItem();
+        openDataModelEditor = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
+        dataExport = new javax.swing.JMenuItem();
+        jSeparator5 = new javax.swing.JSeparator();
         renderHtml = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -256,7 +261,39 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenuBar2.add(jMenu4);
 
+        jMenu5.setLabel("Data Model");
+        updateDataModel.setText("Update Data Model");
+        updateDataModel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                updateDataModelActionPerformed(evt);
+            }
+        });
+
+        jMenu5.add(updateDataModel);
+
+        openDataModelEditor.setText("Data Model Editor");
+        openDataModelEditor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openDataModelEditorActionPerformed(evt);
+            }
+        });
+
+        jMenu5.add(openDataModelEditor);
+
+        jMenuBar2.add(jMenu5);
+
         jMenu3.setText("Tools");
+        dataExport.setText("Data Export");
+        dataExport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dataExportActionPerformed(evt);
+            }
+        });
+
+        jMenu3.add(dataExport);
+
+        jMenu3.add(jSeparator5);
+
         renderHtml.setText("HTML Rendering");
         renderHtml.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -284,6 +321,63 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void openDataModelEditorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openDataModelEditorActionPerformed
+    	try {
+    		if (saveIfNeeded("edit data model")) {
+       			new DataModelEditor(this, false).setVisible(true);
+       			// TODO: reload
+    		}
+        } catch (Exception e) {
+        	UIUtil.showException(this, "Error", e);
+        }
+    }//GEN-LAST:event_openDataModelEditorActionPerformed
+
+    private void updateDataModelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateDataModelActionPerformed
+    	try {
+    		if (saveIfNeeded("update data model")) {
+	        	if (connectToDBIfNeeded()) {
+		        	List<String> args = new ArrayList<String>();
+		        	args.add("build-model");
+		        	dbConnectionDialog.addDbArgs(args);
+	        		if (UIUtil.runJailer(this, args, false, true, false, true, null)) {
+	        			new DataModelEditor(this, true).setVisible(true);
+	        			// TODO: reload
+	        		}
+	        	}
+    		}
+        } catch (Exception e) {
+        	UIUtil.showException(this, "Error", e);
+        }
+    }//GEN-LAST:event_updateDataModelActionPerformed
+
+    private void dataExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataExportActionPerformed
+    	try {
+    		if (saveIfNeeded("export data")) {
+	        	if (connectToDBIfNeeded()) {
+		        	List<String> args = new ArrayList<String>();
+		        	args.add("export");
+		        	args.add(extractionModelEditor.extractionModelFile);
+		        	dbConnectionDialog.addDbArgs(args);
+		        	ExportDialog exportDialog = new ExportDialog(this);
+		        	if (exportDialog.isOk()) {
+		        		exportDialog.fillCLIArgs(args);
+			        	List<String> ddlArgs = new ArrayList<String>();
+			        	ddlArgs.add("create-ddl");
+			        	dbConnectionDialog.addDbArgs(ddlArgs);
+		        		if (UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
+		        				"Automatic creation of working tables failed!\n" +
+		        				"Please execute the Jailer-DDL manually.\n\n" +
+		        				"Continue Data Export?")) {
+		        			UIUtil.runJailer(this, args, true, true, exportDialog.explain.isSelected(), false, null);
+		        		}
+		        	}
+	        	}
+    		}
+        } catch (Exception e) {
+        	UIUtil.showException(this, "Error", e);
+        }
+    }//GEN-LAST:event_dataExportActionPerformed
 
     private void disconnectDbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disconnectDbActionPerformed
     	dbConnectionDialog.isConnected = false;
@@ -316,7 +410,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	        	}
 	        	extractionModelEditor.saveRestrictions(file);
 	        	args.add(file.getName());
-	        	UIUtil.runJailer(args, false, true, false, true);
+	        	UIUtil.runJailer(this, args, false, true, false, true, null);
 	        	BrowserLauncher.openURL("render/index.html");
         	}
         } catch (Exception e) {
@@ -481,6 +575,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     // Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables
     private javax.swing.JMenuItem collapseAll;
     private javax.swing.JCheckBoxMenuItem connectDb;
+    private javax.swing.JMenuItem dataExport;
     private javax.swing.JMenuItem disconnectDb;
     private javax.swing.JPanel editorPanel;
     private javax.swing.JMenuItem exit;
@@ -491,18 +586,22 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
+    private javax.swing.JMenu jMenu5;
     private javax.swing.JMenuBar jMenuBar2;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
+    private javax.swing.JSeparator jSeparator5;
     private javax.swing.JMenuItem load;
     private javax.swing.JMenuItem newModel;
+    private javax.swing.JMenuItem openDataModelEditor;
     private javax.swing.JMenuItem refresh;
     private javax.swing.JMenuItem renderHtml;
     private javax.swing.JMenuItem save;
     private javax.swing.JMenuItem saveAs;
+    private javax.swing.JMenuItem updateDataModel;
     // Ende der Variablendeklaration//GEN-END:variables
     
 }

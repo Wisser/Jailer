@@ -110,7 +110,7 @@ public class PrintDatamodelUI extends javax.swing.JPanel {
                 if (rm != null && rm.trim().length() > 0) {
                     args.add(rm);
                 }
-                UIUtil.runJailer(args, false, false, false, false);
+                UIUtil.runJailer(null, args, false, false, false, false, null);
             }
         });
         getFindRestrictionModel().addActionListener(new ActionListener() {

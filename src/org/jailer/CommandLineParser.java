@@ -78,30 +78,30 @@ public class CommandLineParser {
 
     public static void printUsage() {
         System.out.println("usage:");
-        System.out.println("  Jailer print-datamodel [options] {<restriction-model>}*");
+        System.out.println("  jailer print-datamodel [options] {<restriction-model>}*");
         System.out.println("    prints restricted data-model");
         System.out.println("    -c with closures ");
         System.out.println("    -t excludes 'tabu'-tables from component-analysis");
         System.out.println();
-        System.out.println("  Jailer render-datamodel [options] <jdbc-driver-class> <db-URL> <db-user> <db-password> {<restriction-model>}* ");
+        System.out.println("  jailer render-datamodel [options] <jdbc-driver-class> <db-URL> <db-user> <db-password> {<restriction-model>}* ");
         System.out.println("    generates a HTML render of the restricted data-model into directory 'render'");
         System.out.println();
-        System.out.println("  Jailer find-association [options] <source-table> <destination-table> {<restriction-model>}*");
+        System.out.println("  jailer find-association [options] <source-table> <destination-table> {<restriction-model>}*");
         System.out.println("    finds the shortest path of associations between two tables");
         System.out.println("    -u considers associations as un-directed");
         System.out.println("    -t ignores 'tabu'-tables");
         System.out.println();
-        System.out.println("  Jailer export [options] <extraction-model> <jdbc-driver-class> <db-URL> <db-user> <db-password>");
+        System.out.println("  jailer export [options] <extraction-model> <jdbc-driver-class> <db-URL> <db-user> <db-password>");
         System.out.println("    extracts data (see option '-e') and optionally creates a delete-script (see option '-d')");
         System.out.println("    -t prevents deletion of entities from 'tabu'-tables");
         System.out.println();
-        System.out.println("  Jailer create-ddl");
+        System.out.println("  jailer create-ddl");
         System.out.println("    creates the DDL for the working-tables");
         System.out.println();
-        System.out.println("  Jailer build-model <jdbc-driver-class> <db-URL> <db-user> <db-password>");
+        System.out.println("  jailer build-model <jdbc-driver-class> <db-URL> <db-user> <db-password>");
         System.out.println("    automatically retrieves datamodel elements using the 'model-finder' beans");
         System.out.println();
-        System.out.println("  Jailer check-domainmodel [options] {<restriction-model>}*");
+        System.out.println("  jailer check-domainmodel [options] {<restriction-model>}*");
         System.out.println("    checks the domain model (directory 'domainmodel')");
         System.out.println("options:");
         cmdLineParser.printUsage(System.out);

@@ -72,7 +72,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 Table fkTable = dataModel.getTable(resultSet.getString(7));
                 String fkColumn = resultSet.getString(8);
                 if (pkTable != null && fkTable != null) {
-                    Association association = new Association(pkTable, fkTable, true, false, "A." + pkColumn + "=B." + fkColumn, dataModel, false, Cardinality.ONE_TO_MANY);
+                    Association association = new Association(fkTable, pkTable, false, true, "A." + fkColumn + "=B." + pkColumn, dataModel, false, Cardinality.MANY_TO_ONE);
                     association.setAuthor(metaData.getDriverName());
                     associations.add(association);
                 }

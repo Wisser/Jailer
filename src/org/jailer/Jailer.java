@@ -168,7 +168,7 @@ public class Jailer {
      */
     public Set<Table> export(Table table, String condition, Collection<Table> progressOfYesterday, long limit) throws Exception {
         _log.info("exporting " + table.getName() + " Where " + condition);
-        _log.info("using data-model:\n" + datamodel);
+//        _log.info("using data-model:\n" + datamodel);
 
         if (table == null) {
             throw new RuntimeException("unknown table: " + table.getName());
@@ -530,17 +530,18 @@ public class Jailer {
      * Main-method for GUI.
      * 
      * @param args arguments
-     * @return <code>false</code> iff sonething went wrong 
+     * @return <code>false</code> iff something went wrong 
      */
     public static boolean jailerMain(String[] args) {
         try {
             CommandLineParser.parse(args);
             CommandLineParser clp = CommandLineParser.getInstance();
             
-            _log.info("Jailer " + VERSION);
-            _log.info("");
-            
             String command = clp.arguments.get(0);
+            if (!"create-ddl".equalsIgnoreCase(command)) {
+	            _log.info("Jailer " + VERSION);
+            }
+            
             if ("check-domainmodel".equalsIgnoreCase(command)) {
                 DataModel dataModel = new DataModel();
                 for (String rm: clp.arguments.subList(1, clp.arguments.size())) {
@@ -580,14 +581,16 @@ public class Jailer {
                     findAssociation(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.subList(3, clp.arguments.size()), clp.undirected);
                 }
             } else if ("create-ddl".equalsIgnoreCase(command)) {
-                DDLCreator.createDDL();
+            	if (clp.arguments.size() == 5) {
+            		return DDLCreator.createDDL(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4));
+            	}
+                return DDLCreator.createDDL(null, null, null, null);
             } else if ("build-model".equalsIgnoreCase(command)) {
                 if (clp.arguments.size() != 5) {
                     CommandLineParser.printUsage();
                 } else {
                     printGreeting();
-                    System.out.println("Building data model.");
-                    System.out.println("See 'export.log' for more information.");
+                    _log.info("Building data model.");
                     ModelBuilder.build(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4));
                 }
             } else {
@@ -607,7 +610,7 @@ public class Jailer {
      * Prints greetings.
      */
     private static void printGreeting() {
-        System.out.println("Jailer " + VERSION + "\n");
+//        System.out.println("Jailer " + VERSION + "\n");
     }
     
     /**
