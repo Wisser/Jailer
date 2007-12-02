@@ -17,4 +17,4 @@ set CP=%CP%;%LIB%\jailer.jar
 
 echo %CP%
 
-java -cp %CP% org.jailer.ui.JailerUI
+java -cp %CP% net.sf.jailer.ui.ExtractionModelFrame %*

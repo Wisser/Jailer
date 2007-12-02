@@ -1,9 +1,5 @@
-# tables to be excluded when building model
-
-# table-name;
-
-DEPENDENCY
-ENTITY
-ENTITY_GRAPH
-ENTITY_SET_ELEMENT
-
+# tables to be excluded from model-building
+JL_GRAPH
+JL_SET
+JL_ENTITY
+JL_DEPENDENCY

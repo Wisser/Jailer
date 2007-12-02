@@ -1,19 +1,19 @@
 -- Jailer
 
-DROP TABLE ENTITY;
-DROP TABLE DEPENDENCY;
-DROP TABLE ENTITY_SET_ELEMENT;
-DROP TABLE ENTITY_GRAPH;
+DROP TABLE JL_ENTITY;
+DROP TABLE JL_DEPENDENCY;
+DROP TABLE JL_SET;
+DROP TABLE JL_GRAPH;
 
-CREATE TABLE ENTITY_GRAPH
+CREATE TABLE JL_GRAPH
 (
    id              INTEGER NOT NULL,
    age             INTEGER NOT NULL,
 
-   CONSTRAINT j_pk_graph PRIMARY KEY(id)
+   CONSTRAINT jl_pk_graph PRIMARY KEY(id)
 );
 
-CREATE TABLE ENTITY
+CREATE TABLE JL_ENTITY
 (
    r_entitygraph   INTEGER NOT NULL,
    {0},
@@ -24,29 +24,29 @@ CREATE TABLE ENTITY
    PRE_TYPE        varchar(50),
    association     INTEGER,
 
-   CONSTRAINT j_pk_entity PRIMARY KEY(r_entitygraph, {4}),
-   CONSTRAINT j_fk_graph_e FOREIGN KEY (r_entitygraph) REFERENCES entity_graph(id)
+   CONSTRAINT jl_pk_entity PRIMARY KEY(r_entitygraph, {4}),
+   CONSTRAINT jl_fk_graph_e FOREIGN KEY (r_entitygraph) REFERENCES JL_GRAPH(id)
 );
 
-CREATE INDEX ix_entity_brthdy ON entity (r_entitygraph, birthday, type);
+CREATE INDEX jl_enty_brthdy ON JL_ENTITY (r_entitygraph, birthday, type);
 
-CREATE TABLE ENTITY_SET_ELEMENT
+CREATE TABLE JL_SET
 (
    set_id          INTEGER NOT NULL,
    {0},
 
-   CONSTRAINT j_pk_entityset PRIMARY KEY(set_id, {4})
+   CONSTRAINT jl_pk_set PRIMARY KEY(set_id, {4})
 );
 
-CREATE TABLE DEPENDENCY
+CREATE TABLE JL_DEPENDENCY
 (
    r_entitygraph   INTEGER NOT NULL,
    {2},
    {3},   
 
-   CONSTRAINT j_fk_graph_d FOREIGN KEY (r_entitygraph) REFERENCES entity_graph(id)
+   CONSTRAINT jl_fk_graph_d FOREIGN KEY (r_entitygraph) REFERENCES JL_GRAPH(id)
 );
 
-CREATE INDEX ix_dependency_from ON dependency (r_entitygraph, {5});
-CREATE INDEX ix_dependency_to ON dependency (r_entitygraph, {6});
+CREATE INDEX jl_dep_from ON JL_DEPENDENCY (r_entitygraph, {5});
+CREATE INDEX jl_dep_to ON JL_DEPENDENCY (r_entitygraph, {6});
 

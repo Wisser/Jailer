@@ -1,5 +1,4 @@
-# name;      upsert; primary key;    ; author
-DEPARTMENT;  N;      DEPTNO INTEGER; ;IBM DB2 JDBC Driver;
-EMPLOYEE;    N;      EMPNO INTEGER;  ;IBM DB2 JDBC Driver;
-SALARYGRADE; N;      GRADE INTEGER;LOSAL INTEGER;HISAL INTEGER;   ;IBM DB2 JDBC Driver;
-
+# Name; Upsert; Primary key; ; Author
+department; N; deptno INTEGER; ; PostgreSQL Native Driver; ; 
+employee; N; empno INTEGER; ; PostgreSQL Native Driver; ; 
+salarygrade; N; grade INTEGER; losal INTEGER; ; PostgreSQL Native Driver; ; 

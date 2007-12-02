@@ -1,3 +1,9 @@
+2.0
+ - New full-featured Graphical User Interface
+   - Extraction Model Editor
+   - Data Model Editor
+   - DB Introspector
+
 1.0.1
  - Fixed a bug in file-selector on windows platform
 
