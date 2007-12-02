@@ -1,4 +1,5 @@
-# Table A;    Table B;  first-insert; cardinality (opt); join-condition; name (opt); author
-DEPARTMENT; EMPLOYEE; A; 1:n; A.DEPTNO=B.DEPTNO;   ; IBM DB2 JDBC Driver;
-EMPLOYEE;   EMPLOYEE; A; 1:n; A.EMPNO=B.BOSS;      ; IBM DB2 JDBC Driver;
-EMPLOYEE;   SALARYGRADE; ; n:1; A.SALARY BETWEEN B.LOSAL AND B.HISAL; ; Wisser
+# Table A; Table B; First-insert; Cardinality; Join-condition; Name; Author
+employee; department; B; n:1; A.deptno=B.deptno; employee_to_department; PostgreSQL Native Driver; ; 
+employee; department; B; n:1; A.egrade=B.deptno; employee_to_department_1; PostgreSQL Native Driver; ; 
+employee; employee; B; n:1; A.boss=B.empno; employee_to_employee; PostgreSQL Native Driver; ; 
+employee; salarygrade; B; n:1; (A.egrade=B.grade) and (A.elosal=B.losal); employee_to_salarygrade; PostgreSQL Native Driver; ; 

@@ -15,4 +15,4 @@ set CP=%CP%;%LIB%\args4j.jar
 set CP=%CP%;%LIB%\spring.jar
 set CP=%CP%;%LIB%\jailer.jar
 
-java -cp %CP% org.jailer.Jailer %*
+java -cp %CP% net.sf.jailer.Jailer %*

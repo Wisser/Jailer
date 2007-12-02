@@ -1,8 +1,8 @@
 -- keeps DB-statistic up-to-date for the following tables:
--- ENTITY
--- ENTITY_GRAPH
--- DEPENDENCY
--- ENTITY_SET_ELEMENT
+-- JL_ENTITY
+-- JL_GRAPH
+-- JL_DEPENDENCY
+-- JL_SET
 
 -- todo: insert statements necessary to do the job
 

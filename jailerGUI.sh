@@ -16,4 +16,4 @@ CP=$CP:$LIB/args4j.jar
 CP=$CP:$LIB/spring.jar
 CP=$CP:$LIB/jailer.jar
 
-java -cp $CP org.jailer.ui.JailerUI $@
+java -cp $CP net.sf.jailer.ui.ExtractionModelFrame $@

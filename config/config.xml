@@ -18,22 +18,22 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		at top/bottom of the generated script for each table <TABLE>
 		for which at least one row is inserted/deleted.
 		-->
-		<bean class="org.jailer.enhancer.FileBasedScriptEnhancer"/>
+		<bean class="net.sf.jailer.enhancer.FileBasedScriptEnhancer"/>
 	</util:list>
 	
 	<!-- Model-finder 
 	reads table- and association definitions from meta-data sources -->
 	<util:list id="model-finder">
 		<!--
-		<bean class="org.jailer.modelbuilder.DBMetaDataBasedModelElementFinder">
+		<bean class="net.sf.jailer.modelbuilder.DBMetaDataBasedModelElementFinder">
 			<constructor-arg value="script/db2/selectTables.sql"/>
 			<constructor-arg value="script/db2/selectAssociations.sql"/>
 		</bean>
 		-->
-		<bean class="org.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder"/>
+		<bean class="net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder"/>
 	</util:list>
 
-	<bean name="renderer" class="org.jailer.render.HtmlDataModelRenderer">
+	<bean name="renderer" class="net.sf.jailer.render.HtmlDataModelRenderer">
 		<constructor-arg value="render"/>
 		<constructor-arg value="1"/>
 	</bean>
@@ -42,14 +42,23 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		 keeps the DB table statistics for the working-tables up-to-date.
 		 Optional but recommended.
 	-->
-	<!-- for IBM DB2:
-	<bean name="statistic-renovator" class="org.jailer.database.DB2ShellScriptBasedStatisticRenovator">
-		<constructor-arg value="sh script/db2/runstats.sh"/>
-	</bean>
-	-->
-	<!-- for Oracle:
-	<bean name="statistic-renovator" class="org.jailer.database.SqlScriptBasedStatisticRenovator">
-		<constructor-arg value="script/oracle/gatherStatistics.sql"/>
-	</bean>
-	-->
+	<util:list id="statistic-renovator">
+		<!-- for IBM DB2 -->
+		<bean class="net.sf.jailer.database.DB2ShellScriptBasedStatisticRenovator">
+			<constructor-arg value="jdbc:db2.*"/>
+			<constructor-arg value="sh script/db2/runstats.sh"/>
+		</bean>
+	
+		<!-- for Oracle -->
+		<bean name="statistic-renovator" class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
+			<constructor-arg value="jdbc:oracle.*"/>
+			<constructor-arg value="script/oracle/gatherStatistics.sql"/>
+		</bean>
+
+		<!-- for PostgreSQL -->
+		<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
+			<constructor-arg value="jdbc:postgres.*"/>
+			<constructor-arg value="script/postgres/update_statistics.sql"/>
+		</bean>
+	</util:list>
 </beans>
