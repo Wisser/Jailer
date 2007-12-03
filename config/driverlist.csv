@@ -25,4 +25,6 @@ PostgreSQL (v6.5 and earlier);jdbc:postgresql://<HOST>:<PORT>/<DB>;postgresql.Dr
 PostgreSQL (v7.0 and later);jdbc:postgresql://<HOST>:<PORT>/<DB>;org.postgresql.Driver
 Sybase (jConnect 4.2 and earlier);jdbc:sybase:Tds:<HOST>:<PORT>;com.sybase.jdbc.SybDriver
 Sybase (jConnect 5.2);jdbc:sybase:Tds:<HOST>:<PORT>;com.sybase.jdbc2.jdbc.SybDriver 
+Derby;jdbc:derby://<HOST>:<PORT>/<DB>;org.apache.derby.jdbc.ClientDriver
+Derby embedded;jdbc:derby:<DB>;org.apache.derby.jdbc.EmbeddedDriver
 

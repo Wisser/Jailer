@@ -3,6 +3,3 @@
 -- JL_GRAPH
 -- JL_DEPENDENCY
 -- JL_SET
-
--- todo: insert statements necessary to do the job
-

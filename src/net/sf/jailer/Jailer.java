@@ -602,7 +602,7 @@ public class Jailer {
                 } else {
                     printGreeting();
                     _log.info("Building data model.");
-                    ModelBuilder.build(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4), warnings);
+                    ModelBuilder.build(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4), clp.schema, warnings);
                 }
             } else {
                 CommandLineParser.printUsage();

@@ -1,4 +1,4 @@
 # subject; condition;  limit; restrictions
-department; ; ; .embedded
+DEPARTMENT; ; ; .embedded
 
 # from A (or association name); to B; restriction-condition

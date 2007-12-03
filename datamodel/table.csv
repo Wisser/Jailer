@@ -1,4 +1,4 @@
 # Name; Upsert; Primary key; ; Author
-department; N; deptno INTEGER; ; PostgreSQL Native Driver; ; 
-employee; N; empno INTEGER; ; PostgreSQL Native Driver; ; 
-salarygrade; N; grade INTEGER; losal INTEGER; ; PostgreSQL Native Driver; ; 
+DEPARTMENT; N; DEPTNO INTEGER; ; Apache Derby Network Client JDBC Driver; ; 
+EMPLOYEE; N; EMPNO INTEGER; ; Apache Derby Network Client JDBC Driver; ; 
+SALARYGRADE; N; GRADE INTEGER; ; Apache Derby Network Client JDBC Driver; ; 

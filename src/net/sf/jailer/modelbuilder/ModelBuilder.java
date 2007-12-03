@@ -24,9 +24,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import net.sf.jailer.database.StatementExecutor;
@@ -40,6 +42,8 @@ import net.sf.jailer.util.CsvFile;
 import org.apache.log4j.Logger;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
+
+import com.sun.java.swing.plaf.windows.WindowsInternalFrameTitlePane.ScalableIconUIResource;
 
 
 /**
@@ -119,10 +123,12 @@ public class ModelBuilder {
      * @param dbUrl URL of the DB
      * @param dbUser name of DB-user
      * @param dbPassword DB-password
+     * @param string 
      * @param warnings string-buffer to print warnings into, may be <code>null</code>
      */
-    public static void build(String driverClassName, String dbUrl, String dbUser, String dbPassword, StringBuffer warnings) throws Exception {
-        statementExecutor = new StatementExecutor(driverClassName, dbUrl, dbUser, dbPassword);
+    public static void build(String driverClassName, String dbUrl, String dbUser, String dbPassword, String schema, StringBuffer warnings) throws Exception {
+    	statementExecutor = new StatementExecutor(driverClassName, dbUrl, dbUser, dbPassword);
+    	statementExecutor.setIntrospectionSchema(schema);
 
         resetFiles();
 
@@ -175,9 +181,10 @@ public class ModelBuilder {
         dataModel = new DataModel(MODEL_BUILDER_TABLES_CSV, MODEL_BUILDER_ASSOCIATIONS_CSV);
 
         Collection<Association> associations = new ArrayList<Association>();
+        Map<Association, String> namingSuggestion = new HashMap<Association, String>();
         for (ModelElementFinder finder: modelElementFinder) {
             _log.info("find associations with " + finder);
-            associations.addAll(finder.findAssociations(dataModel, statementExecutor));
+            associations.addAll(finder.findAssociations(dataModel, namingSuggestion, statementExecutor));
         }
 
         Collection<Association> associationsToWrite = new ArrayList<Association>();
@@ -221,6 +228,9 @@ public class ModelBuilder {
             	sep = "_TO_";
             }
             String name = association.source.getName() + sep + association.destination.getName();
+            if (namingSuggestion.containsKey(association)) {
+            	name = namingSuggestion.get(association);
+            }
             if (names.contains(name)) {
             	for (int i = 1; ; ++i) {
             		String nameWithSuffix = name + "_" + i;

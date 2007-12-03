@@ -60,5 +60,43 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<constructor-arg value="jdbc:postgres.*"/>
 			<constructor-arg value="script/postgres/update_statistics.sql"/>
 		</bean>
+
+		<!-- for Cloudscape -->
+		<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
+			<constructor-arg value="jdbc:cloudscape.*"/>
+			<constructor-arg value="script/cloudscape/update_statistics.sql"/>
+		</bean>
+
+		<!-- for Firebird -->
+		<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
+			<constructor-arg value="jdbc:firebirdsql.*"/>
+			<constructor-arg value="script/firebird/update_statistics.sql"/>
+		</bean>
+
+		<!-- for MS SQL -->
+		<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
+			<constructor-arg value="jdbc:weblogic:mssqlserver.*"/>
+			<constructor-arg value="script/mssql/update_statistics.sql"/>
+		</bean>
+		<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
+			<constructor-arg value="jdbc:JTurbo.*"/>
+			<constructor-arg value="script/mssql/update_statistics.sql"/>
+		</bean>
+		<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
+			<constructor-arg value="jdbc:inetdae.*"/>
+			<constructor-arg value="script/mssql/update_statistics.sql"/>
+		</bean>
+
+		<!-- for MySQL -->
+		<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
+			<constructor-arg value="jdbc:mysql.*"/>
+			<constructor-arg value="script/mysql/update_statistics.sql"/>
+		</bean>
+
+		<!-- for Derby -->
+		<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
+			<constructor-arg value="jdbc:derby.*"/>
+			<constructor-arg value="script/derby/update_statistics.sql"/>
+		</bean>
 	</util:list>
 </beans>

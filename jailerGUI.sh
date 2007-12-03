@@ -1,9 +1,8 @@
-#JDBCLIB=...
 LIB=lib
 CP=.:out:out/classes:out/jailer.jar
 
 # JDBC-driver
-# CP=$CP:$JDBCLIB/<driver-jar>
+# CP=$CP:<driver-jar>
 
 # configuration files in the config directory
 CP=$CP:config

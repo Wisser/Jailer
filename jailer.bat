@@ -1,8 +1,7 @@
 set LIB=lib
-set CP=.;out;out\classes;out\jailer.jar
 
 rem JDBC-driver
-rem set CP=%CP%;%JDBCLIB%\<jdbc-driver>.jar
+rem set CP=%CP%;<jdbc-driver>.jar
 
 rem configuration files in the config directory
 set CP=%CP%;config

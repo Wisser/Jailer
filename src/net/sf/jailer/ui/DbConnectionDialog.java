@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -24,6 +25,7 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -32,9 +34,11 @@ import java.util.Map;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 
 import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
 
@@ -177,6 +181,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
         jLabel10 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
 
         getContentPane().setLayout(new java.awt.CardLayout());
 
@@ -184,14 +189,14 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText("Settings ");
+        jLabel1.setText(" Settings ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel1, gridBagConstraints);
 
-        jLabel2.setText("JDBC Driver JAR ");
+        jLabel2.setText(" JDBC Driver JAR ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 20;
@@ -207,7 +212,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(jComboBox1, gridBagConstraints);
 
-        jLabel3.setText("JDBC Driver JAR 2 ");
+        jLabel3.setText(" JDBC Driver JAR 2 ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 40;
@@ -225,28 +230,28 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 45;
         jPanel1.add(jLabel5, gridBagConstraints);
 
-        jLabel6.setText("Driver-Class");
+        jLabel6.setText(" Driver-Class");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 50;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel6, gridBagConstraints);
 
-        jLabel7.setText("DB-URL");
+        jLabel7.setText(" DB-URL");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 60;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel7, gridBagConstraints);
 
-        jLabel8.setText("User");
+        jLabel8.setText(" User");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 70;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel8, gridBagConstraints);
 
-        jLabel9.setText("Password");
+        jLabel9.setText(" Password");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 80;
@@ -346,6 +351,12 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 0;
         jPanel1.add(jLabel10, gridBagConstraints);
 
+        jLabel11.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 10;
+        jPanel1.add(jLabel11, gridBagConstraints);
+
         getContentPane().add(jPanel1, "card2");
 
         pack();
@@ -416,6 +427,33 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     }
 
     /**
+     * Selects the DB-schema to for introspection.
+     * 
+     * @return the DB-schema to for introspection
+     */
+	public String selectDBSchema(Component parent) throws Exception {
+		StatementExecutor statementExecutor = new StatementExecutor(driverClass.getText(), dbUrl.getText(), user.getText(), password.getText());
+		List<String> schemas = JDBCMetaDataBasedModelElementFinder.getSchemas(statementExecutor);
+		statementExecutor.shutDown();
+		if (schemas.size() == 1) {
+			return schemas.get(0);
+		}
+		if (schemas.isEmpty()) {
+			return null;
+		}
+		for (String s: schemas) {
+			if (s.equalsIgnoreCase(user.getText().trim())) {
+				return s;
+			}
+		}
+		String s = (String) JOptionPane.showInputDialog(parent, "Select schema to introspect", "Schema", JOptionPane.QUESTION_MESSAGE, null, schemas.toArray(), schemas.get(0));
+		if (s == null) {
+			return "";
+		}
+		return s;
+	}
+    
+    /**
      * Adds jailer cli-arguments for DB connection.
      * 
      * @param args the arg-list to add arguments to
@@ -434,6 +472,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     private javax.swing.JComboBox jComboBox1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -451,5 +490,5 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     public javax.swing.JTextField password;
     public javax.swing.JTextField user;
     // Ende der Variablendeklaration//GEN-END:variables
-    
+
 }
