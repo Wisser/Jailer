@@ -925,8 +925,8 @@ public class Jailer {
      * @param dataModel the data-model
      */
     private static void printCycles(DataModel dataModel) {
-        Set<Table> tables = new HashSet<Table>(dataModel.getTables());
         Set<Table> independentTables;
+        Set<Table> tables = new HashSet<Table>(dataModel.getTables());
         do {
              independentTables = dataModel.getIndependentTables(tables);
              tables.removeAll(independentTables);
@@ -1011,7 +1011,7 @@ public class Jailer {
         }
         return result;
     }
-
+    
     // initialize log4j
     static {
         PropertyConfigurator.configure("config/log4j.properties");
