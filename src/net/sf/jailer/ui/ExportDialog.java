@@ -98,6 +98,7 @@ public class ExportDialog extends javax.swing.JDialog {
         upsertCheckbox = new javax.swing.JCheckBox();
         explain = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
 
         getContentPane().setLayout(new java.awt.CardLayout());
 
@@ -105,14 +106,14 @@ public class ExportDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        exportLabel.setText("Export into *");
+        exportLabel.setText(" Export into *");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 20;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(exportLabel, gridBagConstraints);
 
-        jLabel3.setText("Generate delete-script *");
+        jLabel3.setText(" Generate delete-script *");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 40;
@@ -125,7 +126,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 45;
         jPanel1.add(jLabel5, gridBagConstraints);
 
-        jLabel6.setText("Number of Threads ");
+        jLabel6.setText(" Number of Threads ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 50;
@@ -193,7 +194,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jPanel2.add(jButton1, gridBagConstraints);
 
         jLabel2.setFont(new java.awt.Font("Dialog", 0, 12));
-        jLabel2.setText("* *.sql.zip for compressed SQL files");
+        jLabel2.setText(" * *.sql.zip for compressed SQL files");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -235,6 +236,12 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(jLabel1, gridBagConstraints);
+
+        jLabel4.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 20;
+        jPanel1.add(jLabel4, gridBagConstraints);
 
         getContentPane().add(jPanel1, "card2");
 
@@ -296,6 +303,7 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JPanel jPanel1;

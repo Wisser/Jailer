@@ -24,6 +24,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -58,14 +59,15 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
      * 
      * @param statementExecutor the statement executor for executing SQL-statements 
      * @param dataModel model containing already known elements
+     * @param namingSuggestion to put naming suggestions for associations into
      * @return found associations
      */
-    public Collection<Association> findAssociations(DataModel dataModel, StatementExecutor statementExecutor) throws Exception {
+    public Collection<Association> findAssociations(DataModel dataModel, Map<Association, String> namingSuggestion, StatementExecutor statementExecutor) throws Exception {
         Collection<Association> associations = new ArrayList<Association>();
         DatabaseMetaData metaData = statementExecutor.getMetaData();
         ResultSet resultSet;
         for (Table table: dataModel.getTables()) {
-            resultSet = metaData.getExportedKeys(null, null, table.getName());
+            resultSet = metaData.getExportedKeys(null, statementExecutor.getIntrospectionSchema(), table.getName());
             _log.info("find associations with " + table.getName());
             Map<String, Association> fkMap = new HashMap<String, Association>();
             while (resultSet.next()) {
@@ -83,6 +85,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	                    association.setAuthor(metaData.getDriverName());
 	                    associations.add(association);
 	                    fkMap.put(fkName, association);
+	                    if (foreignKey != null) {
+	                    	namingSuggestion.put(association, fkTable.getName() + "." + foreignKey);
+	                    }
 	                }
                 }
             }
@@ -102,18 +107,19 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         Set<Table> tables = new HashSet<Table>();
         DatabaseMetaData metaData = statementExecutor.getMetaData();
         ResultSet resultSet;
-        resultSet = metaData.getTables(null, null, "%", null);
+        resultSet = metaData.getTables(null, statementExecutor.getIntrospectionSchema(), "%", new String[] { "TABLE" });
         List<String> tableNames = new ArrayList<String>();
         while (resultSet.next()) {
             String tableName = resultSet.getString(3);
             if ("TABLE".equalsIgnoreCase(resultSet.getString(4))) {
                 tableNames.add(tableName);
+                _log.info("found table " + tableName);
             }
         }
         resultSet.close();
         Map<String, Map<Integer, Column>> pkColumns = new HashMap<String, Map<Integer, Column>>();
         for (String tableName: tableNames) {
-            resultSet = metaData.getPrimaryKeys(null, null, tableName);
+            resultSet = metaData.getPrimaryKeys(null, statementExecutor.getIntrospectionSchema(), tableName);
             Map<Integer, Column> pk = pkColumns.get(tableName);
             if (pk == null) {
                 pk = new HashMap<Integer, Column>();
@@ -122,10 +128,11 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
             while (resultSet.next()) {
                 pk.put(resultSet.getInt(5), new Column(resultSet.getString(4), "", 0));
             }    
+            _log.info("found primary key for table " + tableName);
             resultSet.close();
         }
         for (String tableName: tableNames) {
-            resultSet = metaData.getColumns(null, null, tableName, null);
+            resultSet = metaData.getColumns(null, statementExecutor.getIntrospectionSchema(), tableName, null);
             Map<Integer, Column> pk = pkColumns.get(tableName);
             while (resultSet.next()) {
                 String colName = resultSet.getString(4);
@@ -146,6 +153,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 }
             }
             resultSet.close();
+            _log.info("found columns for table " + tableName);
             
             List<Integer> keySeqs = new ArrayList<Integer>(pk.keySet());
             Collections.sort(keySeqs);
@@ -160,6 +168,30 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         }
 
         return tables;
+    }
+
+    /**
+     * Finds all non-empty schemas in DB.
+     * 
+     * @param statementExecutor the statement executor for executing SQL-statements
+     */ 
+    public static List<String> getSchemas(StatementExecutor statementExecutor) throws Exception {
+    	List<String> schemas = new ArrayList<String>();
+    	DatabaseMetaData metaData = statementExecutor.getMetaData();
+    	ResultSet rs = metaData.getSchemas();
+    	while (rs.next()) {
+    		schemas.add(rs.getString("TABLE_SCHEM"));
+    	}
+    	rs.close();
+    	for (Iterator<String> i = schemas.iterator(); i.hasNext(); ) {
+    		String schema = i.next();
+    		rs = metaData.getTables(null, schema, "%", new String[] { "TABLE" });
+    		if (!rs.next()) {
+    			i.remove();
+    		}
+    		rs.close();
+    	}
+    	return schemas;
     }
 
 }

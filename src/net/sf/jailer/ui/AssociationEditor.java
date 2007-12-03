@@ -90,6 +90,7 @@ public class AssociationEditor extends javax.swing.JDialog {
         jLabel3 = new javax.swing.JLabel();
         jButton2 = new javax.swing.JButton();
         jLabel4 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
 
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
@@ -129,14 +130,14 @@ public class AssociationEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         getContentPane().add(cardinality, gridBagConstraints);
 
-        jLabel1.setText("Name ");
+        jLabel1.setText(" Name ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         getContentPane().add(jLabel1, gridBagConstraints);
 
-        jLabel2.setText("Join condition* ");
+        jLabel2.setText(" Join condition* ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 9;
@@ -157,21 +158,21 @@ public class AssociationEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 0;
         getContentPane().add(jLabel5, gridBagConstraints);
 
-        jLabel6.setText("From ");
+        jLabel6.setText(" From ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         getContentPane().add(jLabel6, gridBagConstraints);
 
-        jLabel7.setText("To");
+        jLabel7.setText(" To");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         getContentPane().add(jLabel7, gridBagConstraints);
 
-        jLabel8.setText("Type");
+        jLabel8.setText(" Type");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -186,7 +187,7 @@ public class AssociationEditor extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         getContentPane().add(nameField, gridBagConstraints);
 
-        jLabel9.setText("Cardinality ");
+        jLabel9.setText(" Cardinality ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 6;
@@ -211,7 +212,7 @@ public class AssociationEditor extends javax.swing.JDialog {
         jPanel1.add(jButton1, gridBagConstraints);
 
         jLabel3.setFont(new java.awt.Font("Dialog", 0, 12));
-        jLabel3.setText("*use 'A' as alias for From, use 'B' as alias for To.           ");
+        jLabel3.setText(" *use 'A' as alias for From, use 'B' as alias for To.           ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -242,7 +243,7 @@ public class AssociationEditor extends javax.swing.JDialog {
         jPanel1.add(jButton2, gridBagConstraints);
 
         jLabel4.setFont(new java.awt.Font("Dialog", 0, 12));
-        jLabel4.setText(" Upper case, no space between A/B and dot!");
+        jLabel4.setText("  Upper case, no space between A/B and dot!");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -257,6 +258,12 @@ public class AssociationEditor extends javax.swing.JDialog {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         getContentPane().add(jPanel1, gridBagConstraints);
+
+        jLabel10.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 20;
+        gridBagConstraints.gridy = 0;
+        getContentPane().add(jLabel10, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -392,6 +399,7 @@ public class AssociationEditor extends javax.swing.JDialog {
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;

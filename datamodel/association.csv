@@ -1,5 +1,3 @@
 # Table A; Table B; First-insert; Cardinality; Join-condition; Name; Author
-employee; department; B; n:1; A.deptno=B.deptno; employee_to_department; PostgreSQL Native Driver; ; 
-employee; department; B; n:1; A.egrade=B.deptno; employee_to_department_1; PostgreSQL Native Driver; ; 
-employee; employee; B; n:1; A.boss=B.empno; employee_to_employee; PostgreSQL Native Driver; ; 
-employee; salarygrade; B; n:1; (A.egrade=B.grade) and (A.elosal=B.losal); employee_to_salarygrade; PostgreSQL Native Driver; ; 
+EMPLOYEE; DEPARTMENT; B; n:1; A.DEPTNO=B.DEPTNO; EMPLOYEE.DEPARTMENT; Apache Derby Network Client JDBC Driver; ; 
+EMPLOYEE; EMPLOYEE; B; n:1; A.BOSS=B.EMPNO; EMPLOYEE.BOSS; Apache Derby Network Client JDBC Driver; ; 

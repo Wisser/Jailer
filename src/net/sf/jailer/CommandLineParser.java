@@ -99,8 +99,9 @@ public class CommandLineParser {
         System.out.println("  jailer create-ddl [<jdbc-driver-class> <db-URL> <db-user> <db-password>]");
         System.out.println("    creates the DDL for the working-tables [and execute DDL]");
         System.out.println();
-        System.out.println("  jailer build-model <jdbc-driver-class> <db-URL> <db-user> <db-password>");
+        System.out.println("  jailer build-model [-schema <schema>] <jdbc-driver-class> <db-URL> <db-user> <db-password>");
         System.out.println("    automatically retrieves datamodel elements using the 'model-finder' beans");
+        System.out.println("    reduces JDBC-Introspection to schema <schema>");
         System.out.println();
         System.out.println("  jailer check-domainmodel [options] {<restriction-model>}*");
         System.out.println("    checks the domain model (directory 'domainmodel')");
@@ -141,6 +142,9 @@ public class CommandLineParser {
     
     @Option(name="-e",usage="name of the export-script file (compressed if ending with '.zip' or '.gz')", metaVar="export-script")
     public String exportScriptFileName = null;
+
+    @Option(name="-schema",usage="schema to reduce JDBC-Introspection to", metaVar="export-script")
+    public String schema = null;
 
     @Option(name="-d",usage="name of the delete-script file (compressed if ending with '.zip' or '.gz')", metaVar="delete-script")
     public String deleteScriptFileName = null;

@@ -121,6 +121,11 @@ public class StatementExecutor {
     public final String dbPassword;
 
     /**
+     * Optional schema for introspection.
+     */
+    private String introspectionSchema;
+    
+    /**
      * Classloader to load Jdbc-Driver with.
      */
     public static ClassLoader classLoaderForJdbcDriver = null;
@@ -332,6 +337,24 @@ public class StatementExecutor {
         for (Connection con: connections) {
             con.close();
         }
+    }
+    
+    /**
+     * Gets optional schema for introspection.
+     * 
+     * @return optional schema for introspection
+     */
+    public String getIntrospectionSchema() {
+    	return introspectionSchema;
+    }
+    
+    /**
+     * Sets optional schema for introspection.
+     * 
+     * @param introspectionSchema optional schema for introspection
+     */
+    public void setIntrospectionSchema(String introspectionSchema) {
+    	this.introspectionSchema = introspectionSchema;
     }
     
 }
