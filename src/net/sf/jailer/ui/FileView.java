@@ -86,10 +86,14 @@ public class FileView extends javax.swing.JDialog {
     public FileView(Dialog owner, String file) throws FileNotFoundException, IOException {
         super(owner);
         setModal(true);
-        initialize();
-        setTitle(file);
-        getJTextPane().setText(PrintUtil.loadFile(file));
-        setVisible(true);
+        try {
+			initialize();
+			setTitle(file);
+			getJTextPane().setText(PrintUtil.loadFile(file));
+			setVisible(true);
+		} catch (Throwable t) {
+			UIUtil.showException(owner, "Error", t);
+		}
     }
 
 }  //  @jve:decl-index=0:visual-constraint="10,10"

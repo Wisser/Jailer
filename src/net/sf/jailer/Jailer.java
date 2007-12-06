@@ -566,7 +566,7 @@ public class Jailer {
                 if (clp.arguments.size() <= 4) {
                     CommandLineParser.printUsage();
                 } else {
-                    new Jailer(1).renderDataModel(clp.arguments, clp.withClosures);
+                    new Jailer(1).renderDataModel(clp.arguments, clp.withClosures, clp.schema);
                 }
             } else if ("print-datamodel".equalsIgnoreCase(command)) {
                 printDataModel(clp.arguments, clp.withClosures);
@@ -626,11 +626,13 @@ public class Jailer {
     
     /**
      * Render the data model.
+     * @param schema schema to introspect
      */
-    private void renderDataModel(List<String> arguments, boolean withClosures) throws Exception {
+    private void renderDataModel(List<String> arguments, boolean withClosures, String schema) throws Exception {
     	printGreeting();
         DataModel dataModel = new DataModel();
         StatementExecutor statementExecutor = new StatementExecutor(arguments.get(1), arguments.get(2), arguments.get(3), arguments.get(4));
+        statementExecutor.setIntrospectionSchema(schema);
         for (String rm: arguments.subList(1 + 4, arguments.size())) {
             if (dataModel.getRestrictionModel() == null) {
                 dataModel.setRestrictionModel(new RestrictionModel(dataModel));

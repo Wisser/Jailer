@@ -52,6 +52,6 @@ public interface ModelElementFinder {
      * 
      * @throws Exception on each error
      */
-    Collection<Association> findAssociations(DataModel dataModel, Map<Association, String> namingSuggestion, StatementExecutor statementExecutor) throws Exception;
+    Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestions, StatementExecutor statementExecutor) throws Exception;
     
 }

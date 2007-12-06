@@ -386,7 +386,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
         DatabaseMetaData metaData = statementExecutor.getMetaData();
         StringBuffer result = new StringBuffer();
         
-        ResultSet rs = metaData.getColumns(null, null, table.getName(), null);
+        ResultSet rs = metaData.getColumns(null, statementExecutor.getIntrospectionSchema(), table.getName(), null);
         int count = 0;
         while (rs.next()) {
             ++count;

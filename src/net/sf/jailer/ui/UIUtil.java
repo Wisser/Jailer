@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import javax.swing.JFileChooser;
@@ -90,8 +91,8 @@ public class UIUtil {
      * @param parent parent of OutputView.
      * @param args jailer arguments
      */
-    public static boolean runJailer(Frame ownerOfConsole, List<String> args, boolean showLogfileButton, boolean printCommandLine, boolean showExplainLogButton, final boolean closeOutputWindow, String continueOnErrorQuestion) {
-        StringBuffer arglist = new StringBuffer();
+    public static boolean runJailer(Frame ownerOfConsole, List<String> args, boolean showLogfileButton, final boolean printCommandLine, boolean showExplainLogButton, final boolean closeOutputWindow, String continueOnErrorQuestion) {
+        final StringBuffer arglist = new StringBuffer();
         final String[] argsarray = new String[args.size()];
         int i = 0;
         for (String arg: args) {
@@ -100,28 +101,53 @@ public class UIUtil {
         }
         final JailerConsole outputView = new JailerConsole(ownerOfConsole, showLogfileButton, showExplainLogButton);
         final PrintStream originalOut = System.out;
+        final boolean[] ready = new boolean[] { true };
         System.setOut(new PrintStream(new OutputStream() {
+        	private int lineNr = 0;
         	StringBuffer buffer = new StringBuffer();
-            public void write(int b) throws IOException {
+        	
+        	public synchronized void write(byte[] arg0, int arg1, int arg2)
+					throws IOException {
+				super.write(arg0, arg1, arg2);
+			}
+			
+        	public void write(int b) throws IOException {
                 originalOut.write(b);
+                boolean wasReady;
                 synchronized (buffer) {
+                	wasReady = ready[0];
                 	buffer.append((char) b);
                 }
                 if ((char) b == '\n') {
-                	SwingUtilities.invokeLater(new Runnable() {
-		            	public void run() {
-		            		synchronized (buffer) {
-		                        outputView.appendText(buffer.toString());
-		                        buffer.setLength(0);
-		            		}
-		            	}
-                	});
+                	++lineNr;
+                	if (wasReady) {
+                		synchronized (buffer) {
+                			ready[0] = false;
+                		}
+	                	try {
+							SwingUtilities.invokeAndWait(new Runnable() {
+								public void run() {
+									synchronized (buffer) {
+							            if (buffer.length() > 0) {
+							    			outputView.appendText(buffer.toString());
+							                buffer.setLength(0);
+							                ready[0] = true;
+							            }
+									}
+								}
+							});
+							if (lineNr % 10 == 0) {
+								Thread.sleep(100);
+							}
+						} catch (InterruptedException e) {
+							e.printStackTrace();
+						} catch (InvocationTargetException e) {
+							e.printStackTrace();
+						}
+                	}
                 }
             }
         }));
-        if (printCommandLine) {
-            System.out.println("$ jailer" + arglist);
-        }
         try {
             try {
                 File exportLog = new File("export.log");
@@ -143,6 +169,9 @@ public class UIUtil {
             new Thread(new Runnable() {
 				public void run() {
 		            try {
+		                if (printCommandLine) {
+		                    System.out.println("$ jailer" + arglist);
+		                }
 		            	result[0] = Jailer.jailerMain(argsarray, warnings);
 		            } catch (Throwable t) {
 		            	exp[0] = t;

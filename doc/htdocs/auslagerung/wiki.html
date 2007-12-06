@@ -1,0 +1,195 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="de" dir="ltr"
+ lang="de">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>datenauslagerung</title>
+  <meta name="generator" content="DokuWiki Release 2006-11-06">
+  <meta name="robots" content="index,follow">
+  <meta name="date" content="2007-05-15T11:44:43+0200">
+  <link rel="stylesheet" media="print" type="text/css"
+ href="wiki-Dateien/css.php">
+  <script type="text/javascript" charset="utf-8"
+ src="wiki-Dateien/js.php"></script>
+</head>
+<body>
+<div class="dokuwiki">
+<div class="page">
+<h1><a name="sql-export-tool_datenauslagerung"
+ id="sql-export-tool_datenauslagerung">Datenauslagerung</a></h1>
+<div class="level1">
+<p> Eine Datenauslagerung ist eine Extraktion einer Enititätenmenge
+gefolgt von einer Löschung eines Teils dieser Menge. Dazu wird
+zunächst, wie in ? beschrieben, ein konsistente Entitätsmenge anhand
+eines
+Extraktionsmodells erstellt. Im Anschluss daran wird die größte
+Teilmenge davon ermittelt, die man entfernen kann, ohne die Konsistenz
+der verbleibenden Entitäten zu verletzen. Zudem werden die Entitäten
+einiger bestimmter Tabellen (mandantenbezogene Stammdaten)
+grundsätzlich nicht gelöscht.</p>
+</div>
+<h2><a name="begriffe" id="begriffe">Begriffe</a></h2>
+<div class="level2">
+<ol>
+  <li class="level1">
+    <div class="li"> <strong>U</strong> ist die Menge aller Entitäten
+in einer Datenbank. (das <em>Universum</em>)</div>
+  </li>
+  <li class="level1">
+    <div class="li"> <strong>V</strong> ist die Menge aller Referenzen
+bzgl. des restringierten Datenmodels. (a,b)∈V ⇔ a referenziert b.</div>
+  </li>
+  <li class="level1">
+    <div class="li"> <strong>C°(M)={a | ∃n∈ℵ: a∈C_n(M)}</strong> ist
+der transitive Abschluss der Menge M bzgl. der Referenzenmenge V.</div>
+    <ol>
+      <li class="level2">
+        <div class="li"> <strong>C_0(M)=M</strong></div>
+      </li>
+      <li class="level2">
+        <div class="li"> <strong>C_n+1(M)=C_n(M) ∪ {b | ∃a∈C_n(M):
+(a,b)∈V}</strong></div>
+      </li>
+      <li class="level2">
+        <div class="li"> Insbesondere ist</div>
+        <ol>
+          <li class="level3">
+            <div class="li"> ∀(a,b)∈V: a∈C°(M)→b∈C°(M)</div>
+          </li>
+          <li class="level3">
+            <div class="li"> ∀a∈C°(M)-M: ∃P={(e_1, e_2), (e_2,
+e_3), ..., (e_n-1, e_n)}⊆V: e_n=a ∧ e_1∈M ∧ ∀1≤i≤n: e_i∈C°(M) mit
+paarweise verschiedenenen e_i <em>(es gibt für jede Entität des
+Abschlusses von M, das nicht selbst in M ist, einen zyklenfreien
+Referenzenpfad von einem Element aus M zu diesem)</em></div>
+          </li>
+        </ol>
+      </li>
+    </ol>
+  </li>
+  <li class="level1">
+    <div class="li"> <strong>M ist konsistent bzgl. V</strong> gdw.
+∀a∈M: ∀b∈U: (a,b)∈V → b∈M</div>
+  </li>
+  <li class="level1">
+    <div class="li"> <strong>V¯¹</strong> ist die Umkehrung einer
+Referenzenmenge. (a,b)∈V¯¹ ⇔ (b,a)∈V</div>
+  </li>
+  <li class="level1">
+    <div class="li"> <strong>E</strong> ist die Menge
+der Entitäten, die anhand des Extraktionsmodells erstellt wurde. Einen
+möglichst grossen Teil davon gilt es zu löschen.</div>
+  </li>
+  <li class="level1">
+    <div class="li"> <strong>T</strong> ist die Menge der Entitäten,
+die niemals gelöscht werden dürfen (die <em>Tabumenge</em>, z.B.
+Carrier)</div>
+  </li>
+</ol>
+</div>
+<h2><a name="verfahren" id="verfahren">Verfahren</a></h2>
+<div class="level2">
+<p> Sei <strong>D=(E-T)-C°(U-(E-T))</strong>.
+</p>
+<p>
+<strong>D</strong> enthält keine Entität aus <strong>T</strong>. <strong>U-D</strong>
+ist konsistent bzgl <strong>V</strong>, denn ∀a∈U-D: ∀(a,b)∈V:
+</p>
+<ul>
+  <li class="level1">
+    <div class="li"> wenn a∉E-T: a∈U-(E-T) ⇒ a∈C°(U-(E-T)) ⇒
+b∈C°(U-(E-T)) ⇒ b∉D ⇒ b∈U-D</div>
+  </li>
+  <li class="level1">
+    <div class="li"> wenn a∈E-T: a∈C°(U-(E-T)) <em>(da a nicht in D)</em>
+⇒ b∈C°(U-(E-T)) ⇒ b∉D ⇒ b∈U-D</div>
+  </li>
+</ul>
+<p> Ferner ist <strong>D</strong> die größte (inklusionsmaximale)
+Teilmenge von <strong>E-T</strong>, so dass <strong>U-D</strong>
+konsistent ist, denn wenn D’=D∪{b}, b∈E-T, b∉D dann
+</p>
+<ul>
+  <li class="level1">
+    <div class="li"> b∈C°(U-(E-T)) <em>(da b in E-T, aber nicht in D)</em>
+∧ b∉U-(E-T) </div>
+  </li>
+  <li class="level1">
+    <div class="li"> ∃{(e_1, e_2), (e_2, e_3), ..., (a, b)}⊆V:
+a∈C°(U-(E-T)) ∧ (a,b)∈V ∧ a≠b <em>(3.III.b)</em> </div>
+  </li>
+  <li class="level1">
+    <div class="li"> ∃a∈C°(U-(E-T)): (a,b)∈V</div>
+  </li>
+  <li class="level1">
+    <div class="li"> a∈C°(U-(E-T)) ⇒ a∉D ⇒ a∉D’ <em>(da a≠b)</em> ⇒
+a∈U-D’</div>
+  </li>
+  <li class="level1">
+    <div class="li"> a∈U-D’ ∧ b∉U-D’ ∧ (a,b)∈V ⇒ U-D’ ist nicht
+konsistent <em>(4)</em></div>
+  </li>
+</ul>
+<hr>
+<p>Sei <strong>D_0=E-T</strong> und <strong>D_n+1=D_n-{b∈D_n|∃(a,b)∈V:
+a∉D_n}</strong>, dann ist <strong>D°:={a|∀n∈ℵ: a∈D_n}=D</strong>
+</p>
+<p>
+Da D_0⊇D_1⊇D_2... und D_n+1 eine Funktion von D_n ist, ist D_n=D° wenn
+D_n=D_n+1. Daraus leitet sich folgender Algorithmus ab (die D_i werden
+sukzessive berechnet, bis sich keine Änderung mehr ergibt): </p>
+<ol>
+  <li class="level1">
+    <div class="li"> D:=E-T</div>
+  </li>
+  <li class="level1">
+    <div class="li"> do</div>
+    <ol>
+      <li class="level2">
+        <div class="li"> R:={b∈D|∃(a,b)∈V: a∉D}</div>
+      </li>
+      <li class="level2">
+        <div class="li"> D:=D-R</div>
+      </li>
+    </ol>
+  </li>
+  <li class="level1">
+    <div class="li"> while R≠∅</div>
+  </li>
+  <li class="level1">
+    <div class="li"> <em>topologische Sortierung von D gemäß V¯¹ und
+Erstellung der Delete-Statements in dieser Reihenfolge</em></div>
+  </li>
+</ol>
+</div>
+</div>
+</div>
+<div class="footerinc"><br>
+<!--
+
+<rdf:RDF xmlns="http://web.resource.org/cc/"
+    xmlns:dc="http://purl.org/dc/elements/1.1/"
+    xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+<Work rdf:about="">
+   <dc:type rdf:resource="http://purl.org/dc/dcmitype/Text" />
+   <license rdf:resource="http://creativecommons.org/licenses/by-nc-sa/2.0/" />
+</Work>
+
+<License rdf:about="http://creativecommons.org/licenses/by-nc-sa/2.0/">
+   <permits rdf:resource="http://web.resource.org/cc/Reproduction" />
+   <permits rdf:resource="http://web.resource.org/cc/Distribution" />
+   <requires rdf:resource="http://web.resource.org/cc/Notice" />
+   <requires rdf:resource="http://web.resource.org/cc/Attribution" />
+   <prohibits rdf:resource="http://web.resource.org/cc/CommercialUse" />
+   <permits rdf:resource="http://web.resource.org/cc/DerivativeWorks" />
+   <requires rdf:resource="http://web.resource.org/cc/ShareAlike" />
+</License>
+
+</rdf:RDF>
+
+-->
+</div>
+<div class="no"><img src="wiki-Dateien/indexer.php" alt="" height="1"
+ width="1"></div>
+</body>
+</html>

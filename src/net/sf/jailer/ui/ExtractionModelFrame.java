@@ -34,6 +34,7 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
 import net.sf.jailer.Jailer;
+import net.sf.jailer.datamodel.DataModel;
 
 /**
  * Main frame of Extraction-Model-Editor.
@@ -139,11 +140,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         connectDb = new javax.swing.JCheckBoxMenuItem();
         disconnectDb = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
+        dataExport = new javax.swing.JMenuItem();
+        jSeparator6 = new javax.swing.JSeparator();
         updateDataModel = new javax.swing.JMenuItem();
         openDataModelEditor = new javax.swing.JMenuItem();
-        jSeparator6 = new javax.swing.JSeparator();
-        dataExport = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JSeparator();
+        printDatamodel = new javax.swing.JMenuItem();
         renderHtml = new javax.swing.JMenuItem();
         view = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
@@ -290,6 +292,17 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenuBar2.add(jMenu4);
 
         jMenu3.setText("Tools");
+        dataExport.setLabel("Export Data");
+        dataExport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dataExportActionPerformed(evt);
+            }
+        });
+
+        jMenu3.add(dataExport);
+
+        jMenu3.add(jSeparator6);
+
         updateDataModel.setText("Introspect DB");
         updateDataModel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -308,18 +321,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu3.add(openDataModelEditor);
 
-        jMenu3.add(jSeparator6);
+        jMenu3.add(jSeparator5);
 
-        dataExport.setLabel("Export Data");
-        dataExport.addActionListener(new java.awt.event.ActionListener() {
+        printDatamodel.setLabel("Print Data Model");
+        printDatamodel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                dataExportActionPerformed(evt);
+                printDatamodelActionPerformed(evt);
             }
         });
 
-        jMenu3.add(dataExport);
-
-        jMenu3.add(jSeparator5);
+        jMenu3.add(printDatamodel);
 
         renderHtml.setText("HTML Rendering");
         renderHtml.addActionListener(new java.awt.event.ActionListener() {
@@ -351,6 +362,18 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void printDatamodelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printDatamodelActionPerformed
+    	try {
+        	List<String> args = new ArrayList<String>();
+        	args.add("print-datamodel");
+        	File file = saveRestrictions();
+        	args.add(file.getName());
+        	UIUtil.runJailer(this, args, false, true, false, false, null);
+        } catch (Exception e) {
+        	UIUtil.showException(this, "Error", e);
+        }
+	}//GEN-LAST:event_printDatamodelActionPerformed
 
     /**
      * Sets Look&Feel.
@@ -467,28 +490,45 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         	if (connectToDBIfNeeded("Html rendering")) {
 	        	List<String> args = new ArrayList<String>();
 	        	args.add("render-datamodel");
-	        	dbConnectionDialog.addDbArgs(args);
-	        	File file;
-	        	String extractionModelFile = extractionModelEditor.extractionModelFile;
-				if (extractionModelFile == null) {
-	        		file = new File("tmp_restrictions.csv");
-	        	} else {
-	        		extractionModelFile = new File(extractionModelFile).getName();
-	        		if (extractionModelFile.toLowerCase().endsWith(".csv")) {
-	        			file = new File(extractionModelFile.substring(0, extractionModelFile.length() - 4) + "-restrictions.csv");
-	        		} else {
-	        			file = new File(extractionModelFile + "-restrictions.csv");
+	        	String schema = dbConnectionDialog.selectDBSchema(this);
+        		if (!"".equals(schema)) {
+	        		if (schema != null) {
+	        			args.add("-schema");
+	        			args.add(schema);
 	        		}
-	        	}
-	        	extractionModelEditor.saveRestrictions(file);
-	        	args.add(file.getName());
-	        	UIUtil.runJailer(this, args, false, true, false, true, null);
-	        	BrowserLauncher.openURL("render/index.html");
+	        		dbConnectionDialog.addDbArgs(args);
+		        	File file = saveRestrictions();
+		        	args.add(file.getName());
+		        	UIUtil.runJailer(this, args, false, true, false, true, null);
+		        	BrowserLauncher.openURL("render/index.html");
+        		}
         	}
         } catch (Exception e) {
         	UIUtil.showException(this, "Error", e);
         }
     }//GEN-LAST:event_renderHtmlActionPerformed
+
+    /**
+     * Saves restrictions of current extraction model.
+     * 
+     * @return restrictions file
+     */
+	private File saveRestrictions() throws Exception {
+		File file;
+		String extractionModelFile = extractionModelEditor.extractionModelFile;
+		if (extractionModelFile == null) {
+			file = new File("tmp_restrictions.csv");
+		} else {
+			extractionModelFile = new File(extractionModelFile).getName();
+			if (extractionModelFile.toLowerCase().endsWith(".csv")) {
+				file = new File(extractionModelFile.substring(0, extractionModelFile.length() - 4) + "-restrictions.csv");
+			} else {
+				file = new File(extractionModelFile + "-restrictions.csv");
+			}
+		}
+		extractionModelEditor.saveRestrictions(file);
+		return file;
+	}
 
     /**
      * Opens connection dialog to establish DB-connection.
@@ -645,6 +685,22 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(final String args[]) {
+    	try {
+    		// create initial data-model files
+    		File file = new File("datamodel");
+    		if (!file.exists()) {
+    			file.mkdir();
+    		}
+    		file = new File(DataModel.TABLES_FILE);
+    		if (!file.exists()) {
+    			file.createNewFile();
+    		}
+    		file = new File(DataModel.ASSOCIATIONS_FILE);
+    		if (!file.exists()) {
+    			file.createNewFile();
+    		}
+    	} catch (Exception e) {
+    	}
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
                 ExtractionModelFrame extractionModelFrame = new ExtractionModelFrame(args.length > 0? args[0] : null);
@@ -695,6 +751,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem load;
     private javax.swing.JMenuItem newModel;
     private javax.swing.JMenuItem openDataModelEditor;
+    private javax.swing.JMenuItem printDatamodel;
     private javax.swing.JMenuItem refresh;
     private javax.swing.JMenuItem renderHtml;
     private javax.swing.JMenuItem save;

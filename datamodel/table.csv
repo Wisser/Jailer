@@ -1,4 +1,1 @@
 # Name; Upsert; Primary key; ; Author
-DEPARTMENT; N; DEPTNO INTEGER; ; Apache Derby Network Client JDBC Driver; ; 
-EMPLOYEE; N; EMPNO INTEGER; ; Apache Derby Network Client JDBC Driver; ; 
-SALARYGRADE; N; GRADE INTEGER; ; Apache Derby Network Client JDBC Driver; ; 

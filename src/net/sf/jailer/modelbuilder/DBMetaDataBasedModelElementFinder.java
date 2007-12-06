@@ -80,7 +80,7 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
      * @param namingSuggestion to put naming suggestions for associations into
      * @return found associations
      */
-    public Collection<Association> findAssociations(DataModel dataModel, Map<Association, String> namingSuggestion, StatementExecutor statementExecutor) throws Exception {
+    public Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestion, StatementExecutor statementExecutor) throws Exception {
         Collection<Association> associations = new ArrayList<Association>();
         associations.addAll(findAssociations(dataModel, selectForeignKeysScript, statementExecutor));
         return associations;

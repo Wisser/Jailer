@@ -129,19 +129,25 @@ public class JobManager {
      */
     public void executeJobs(Collection<Job> jobs) throws Exception {
         int jobCount = jobs.size();
-        setJobs(new LinkedList<Job>(jobs));
         _log.info("starting " + jobCount + " jobs");
-        while (getJobsDoneCounter() < jobCount || getJobsInExecutionCounter() > 0) {
-            Thread.sleep(100);
-            Exception e = getException();
-            if (e != null) {
-                _log.error("Job-error", e);
-                // wait for other jobs
-                while (getJobsInExecutionCounter() > 0) {
-                    Thread.sleep(500);
-                }
-                throw e;
-            }
+        if (runnersList.size() == 1) {
+        	for (Job job: jobs) {
+        		job.run();
+        	}
+        } else {
+	        setJobs(new LinkedList<Job>(jobs));
+	        while (getJobsDoneCounter() < jobCount || getJobsInExecutionCounter() > 0) {
+	            Thread.sleep(100);
+	            Exception e = getException();
+	            if (e != null) {
+	                _log.error("Job-error", e);
+	                // wait for other jobs
+	                while (getJobsInExecutionCounter() > 0) {
+	                    Thread.sleep(500);
+	                }
+	                throw e;
+	            }
+	        }
         }
         _log.info("executed " + jobCount + " jobs");
     }
