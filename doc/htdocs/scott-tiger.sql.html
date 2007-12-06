@@ -27,9 +27,9 @@
  style="background-color: rgb(202, 225, 235); vertical-align: top;"><span
  style="font-family: monospace;">-- creates some test-tables and data<br>
       <br>
-DROP TABLE EMPLOYEE;<br>
-DROP TABLE DEPARTMENT;<br>
-DROP TABLE SALARYGRADE;<br>
+-- DROP TABLE EMPLOYEE;<br>
+-- DROP TABLE DEPARTMENT;<br>
+-- DROP TABLE SALARYGRADE;<br>
       <br>
 CREATE TABLE EMPLOYEE(<br>
 &nbsp;&nbsp;&nbsp; empno&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INTEGER NOT NULL,<br>
@@ -38,8 +38,7 @@ CREATE TABLE EMPLOYEE(<br>
 VARCHAR(9),<br>
 &nbsp;&nbsp;&nbsp; boss&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INTEGER,<br>
 &nbsp;&nbsp;&nbsp; hiredate&nbsp;&nbsp; DATE,<br>
-&nbsp;&nbsp;&nbsp; sal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-DECIMAL(7, 2),<br>
+&nbsp;&nbsp;&nbsp; salary&nbsp;&nbsp;&nbsp;&nbsp; DECIMAL(7, 2),<br>
 &nbsp;&nbsp;&nbsp; comm&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DECIMAL(7,
 2),<br>
 &nbsp;&nbsp;&nbsp; deptno&nbsp;&nbsp;&nbsp;&nbsp; INTEGER<br>
@@ -66,17 +65,22 @@ ALTER TABLE DEPARTMENT<br>
 &nbsp; ADD CONSTRAINT dept_pk<br>
 &nbsp; PRIMARY KEY (deptno);<br>
       <br>
+ALTER TABLE SALARYGRADE<br>
+&nbsp; ADD CONSTRAINT salgrade_pk<br>
+&nbsp; PRIMARY KEY (grade);<br>
+      <br>
 -- EMPLOYEE to DEPARTMENT<br>
 ALTER TABLE EMPLOYEE<br>
-&nbsp; ADD CONSTRAINT emp_dept_fk<br>
+&nbsp; ADD CONSTRAINT department<br>
 &nbsp; FOREIGN KEY (deptno)<br>
 &nbsp; REFERENCES DEPARTMENT (deptno);<br>
       <br>
 -- EMPLOYEE to EMPLOYEE<br>
 ALTER TABLE EMPLOYEE <br>
-&nbsp; ADD CONSTRAINT emp_emp_fk<br>
+&nbsp; ADD CONSTRAINT boss<br>
 &nbsp; FOREIGN KEY (boss)<br>
 &nbsp; REFERENCES EMPLOYEE (empno);<br>
+      <br>
       <br>
 INSERT INTO DEPARTMENT VALUES (10, 'ACCOUNTING', 'NEW YORK');<br>
 INSERT INTO DEPARTMENT VALUES (20, 'RESEARCH',&nbsp;&nbsp; 'DALLAS');<br>
@@ -89,25 +93,25 @@ NULL, '1981-11-17', 5000, NULL, 10);<br>
 &nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES (7566, 'JONES',&nbsp;
 'MANAGER',&nbsp;&nbsp; 7839, '1981-04-02',&nbsp; 2975, NULL, 20);<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES(7788,
-'SCOTT',&nbsp; 'ANALYST',&nbsp;&nbsp; 7566, '1982-12-09', 3000,
-NULL, 20);<br>
+'SCOTT',&nbsp; 'ANALYST',&nbsp;&nbsp; 7566, '1982-12-09', 3000, NULL,
+20);<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INSERT INTO EMPLOYEE
 VALUES(7876, 'ADAMS',&nbsp; 'CLERK',&nbsp;&nbsp;&nbsp;&nbsp; 7788,
 '1983-01-12', 1100, NULL, 20);<br>
-&nbsp;&nbsp; &nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES(7902,
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES(7902,
 'FORD',&nbsp;&nbsp; 'ANALYST',&nbsp;&nbsp; 7566, '1981-12-03',&nbsp;
 3000, NULL, 20);<br>
-&nbsp;&nbsp;&nbsp; &nbsp; &nbsp;&nbsp; INSERT INTO EMPLOYEE
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INSERT INTO EMPLOYEE
 VALUES(7369, 'SMITH',&nbsp; 'CLERK',&nbsp;&nbsp;&nbsp;&nbsp; 7902,
 '1980-12-17',&nbsp; 800, NULL, 20);<br>
 &nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES (7698, 'BLAKE',&nbsp;
 'MANAGER',&nbsp;&nbsp; 7839, '1981-05-01',&nbsp; 2850, NULL, 30);<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES(7499,
-'ALLEN',&nbsp; 'SALESMAN',&nbsp; 7698, '1981-02-20', 1600,&nbsp;
-300, 30);<br>
+'ALLEN',&nbsp; 'SALESMAN',&nbsp; 7698, '1981-02-20', 1600,&nbsp; 300,
+30);<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES(7521,
-'WARD',&nbsp;&nbsp; 'SALESMAN',&nbsp; 7698, '1981-02-22',
-1250,&nbsp; 500, 30);<br>
+'WARD',&nbsp;&nbsp; 'SALESMAN',&nbsp; 7698, '1981-02-22', 1250,&nbsp;
+500, 30);<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES(7654,
 'MARTIN', 'SALESMAN',&nbsp; 7698, '1981-09-28', 1250, 1400, 30);<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES(7844,
@@ -119,8 +123,8 @@ VALUES(7369, 'SMITH',&nbsp; 'CLERK',&nbsp;&nbsp;&nbsp;&nbsp; 7902,
 &nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES(7782, 'CLARK',&nbsp;
 'MANAGER',&nbsp;&nbsp; 7839, '1981-06-09',&nbsp; 2450, NULL, 10);<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES(7934,
-'MILLER', 'CLERK',&nbsp;&nbsp;&nbsp;&nbsp; 7782, '1982-01-23',
-1300, NULL, 10);<br>
+'MILLER', 'CLERK',&nbsp;&nbsp;&nbsp;&nbsp; 7782, '1982-01-23', 1300,
+NULL, 10);<br>
       <br>
 INSERT INTO SALARYGRADE VALUES (1,&nbsp; 700, 1200);<br>
 INSERT INTO SALARYGRADE VALUES (2, 1201, 1400);<br>

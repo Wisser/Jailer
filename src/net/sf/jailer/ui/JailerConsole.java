@@ -115,7 +115,18 @@ public class JailerConsole extends javax.swing.JDialog {
     }
 
     public void appendText(String output) {
-        getJTextPane().setText(getJTextPane().getText() + output);
+    	final int MAXLENGTH = 100000;
+        StringBuffer newText = new StringBuffer(getJTextPane().getText() + output);
+        if (newText.length() > MAXLENGTH) {
+        	int fll = newText.indexOf("\n");
+        	String firstLine = "";
+        	if (fll > 0) {
+        		firstLine = newText.substring(0, fll);
+        	}
+        	int start = newText.length() - (3 * MAXLENGTH / 4);
+        	newText = new StringBuffer(firstLine + "\n...\n" + newText.substring(start, newText.length()));
+        }
+		getJTextPane().setText(newText.toString());
     }
 
     public void finish(boolean ok) {

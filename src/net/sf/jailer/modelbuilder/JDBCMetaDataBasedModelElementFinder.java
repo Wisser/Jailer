@@ -62,7 +62,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
      * @param namingSuggestion to put naming suggestions for associations into
      * @return found associations
      */
-    public Collection<Association> findAssociations(DataModel dataModel, Map<Association, String> namingSuggestion, StatementExecutor statementExecutor) throws Exception {
+    public Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestion, StatementExecutor statementExecutor) throws Exception {
         Collection<Association> associations = new ArrayList<Association>();
         DatabaseMetaData metaData = statementExecutor.getMetaData();
         ResultSet resultSet;
@@ -86,7 +86,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	                    associations.add(association);
 	                    fkMap.put(fkName, association);
 	                    if (foreignKey != null) {
-	                    	namingSuggestion.put(association, fkTable.getName() + "." + foreignKey);
+	                    	namingSuggestion.put(association, new String[] { foreignKey, fkTable.getName() + "." + foreignKey });
 	                    }
 	                }
                 }
@@ -174,8 +174,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
      * Finds all non-empty schemas in DB.
      * 
      * @param statementExecutor the statement executor for executing SQL-statements
+     * @param userName schema with this name may be empty
      */ 
-    public static List<String> getSchemas(StatementExecutor statementExecutor) throws Exception {
+    public static List<String> getSchemas(StatementExecutor statementExecutor, String userName) throws Exception {
     	List<String> schemas = new ArrayList<String>();
     	DatabaseMetaData metaData = statementExecutor.getMetaData();
     	ResultSet rs = metaData.getSchemas();
@@ -185,11 +186,13 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     	rs.close();
     	for (Iterator<String> i = schemas.iterator(); i.hasNext(); ) {
     		String schema = i.next();
-    		rs = metaData.getTables(null, schema, "%", new String[] { "TABLE" });
-    		if (!rs.next()) {
-    			i.remove();
+    		if (!schema.equalsIgnoreCase(userName.trim())) {
+	    		rs = metaData.getTables(null, schema, "%", new String[] { "TABLE" });
+	    		if (!rs.next()) {
+	    			i.remove();
+	    		}
+	    		rs.close();
     		}
-    		rs.close();
     	}
     	return schemas;
     }

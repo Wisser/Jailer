@@ -1,3 +1,1 @@
 # Table A; Table B; First-insert; Cardinality; Join-condition; Name; Author
-EMPLOYEE; DEPARTMENT; B; n:1; A.DEPTNO=B.DEPTNO; EMPLOYEE.DEPARTMENT; Apache Derby Network Client JDBC Driver; ; 
-EMPLOYEE; EMPLOYEE; B; n:1; A.BOSS=B.EMPNO; EMPLOYEE.BOSS; Apache Derby Network Client JDBC Driver; ; 

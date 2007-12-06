@@ -27,4 +27,4 @@ Sybase (jConnect 4.2 and earlier);jdbc:sybase:Tds:<HOST>:<PORT>;com.sybase.jdbc.
 Sybase (jConnect 5.2);jdbc:sybase:Tds:<HOST>:<PORT>;com.sybase.jdbc2.jdbc.SybDriver 
 Derby;jdbc:derby://<HOST>:<PORT>/<DB>;org.apache.derby.jdbc.ClientDriver
 Derby embedded;jdbc:derby:<DB>;org.apache.derby.jdbc.EmbeddedDriver
-
+<new setting>;

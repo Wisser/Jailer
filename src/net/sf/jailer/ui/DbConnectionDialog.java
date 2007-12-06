@@ -433,7 +433,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
      */
 	public String selectDBSchema(Component parent) throws Exception {
 		StatementExecutor statementExecutor = new StatementExecutor(driverClass.getText(), dbUrl.getText(), user.getText(), password.getText());
-		List<String> schemas = JDBCMetaDataBasedModelElementFinder.getSchemas(statementExecutor);
+		List<String> schemas = JDBCMetaDataBasedModelElementFinder.getSchemas(statementExecutor, user.getText());
 		statementExecutor.shutDown();
 		if (schemas.size() == 1) {
 			return schemas.get(0);

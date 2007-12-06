@@ -43,8 +43,6 @@ import org.apache.log4j.Logger;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
-import com.sun.java.swing.plaf.windows.WindowsInternalFrameTitlePane.ScalableIconUIResource;
-
 
 /**
  * Automatically builds a data-model using several {@link ModelElementFinder}.
@@ -181,7 +179,7 @@ public class ModelBuilder {
         dataModel = new DataModel(MODEL_BUILDER_TABLES_CSV, MODEL_BUILDER_ASSOCIATIONS_CSV);
 
         Collection<Association> associations = new ArrayList<Association>();
-        Map<Association, String> namingSuggestion = new HashMap<Association, String>();
+        Map<Association, String[]> namingSuggestion = new HashMap<Association, String[]>();
         for (ModelElementFinder finder: modelElementFinder) {
             _log.info("find associations with " + finder);
             associations.addAll(finder.findAssociations(dataModel, namingSuggestion, statementExecutor));
@@ -229,7 +227,12 @@ public class ModelBuilder {
             }
             String name = association.source.getName() + sep + association.destination.getName();
             if (namingSuggestion.containsKey(association)) {
-            	name = namingSuggestion.get(association);
+            	for (String nameSuggestion: namingSuggestion.get(association)) {
+            		name = nameSuggestion;
+            		if (!names.contains(name)) {
+            			break;
+            		}
+            	}
             }
             if (names.contains(name)) {
             	for (int i = 1; ; ++i) {
