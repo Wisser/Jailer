@@ -1,3 +1,6 @@
+2.1
+ - Support for CLOB/BLOB
+
 2.0
  - New full-featured Graphical User Interface
    - Extraction Model Editor

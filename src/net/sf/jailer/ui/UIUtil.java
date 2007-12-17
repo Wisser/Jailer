@@ -46,9 +46,14 @@ public class UIUtil {
         JFileChooser fileChooser = new JFileChooser(startDir);
         javax.swing.filechooser.FileFilter filter = new javax.swing.filechooser.FileFilter() {
             public boolean accept(File pathname) {
-                return pathname.isDirectory() || pathname.getName().toLowerCase().endsWith(extension);
+                return pathname.isDirectory() || pathname.getName().toLowerCase().endsWith(extension)
+                	|| pathname.getName().toLowerCase().endsWith(extension + ".gz")
+                	|| pathname.getName().toLowerCase().endsWith(extension + ".zip");
             }
             public String getDescription() {
+            	if (extension.endsWith(".sql")) {
+            		return "*" + extension + " *" + extension + ".zip";
+            	}
                 return "*" + extension;
             }
         };

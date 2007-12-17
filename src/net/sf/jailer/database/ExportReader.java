@@ -17,15 +17,24 @@
 package net.sf.jailer.database;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.util.Base64;
+import net.sf.jailer.util.SqlScriptExecutor;
 import net.sf.jailer.util.SqlUtil;
 
 
@@ -58,6 +67,16 @@ public class ExportReader implements ResultSetReader {
     private String[] columnLabel = null;
 
     /**
+     * Lob columns.
+     */
+    private List<String> lobColumns = null;
+
+    /**
+     * Lob columns indexes.
+     */
+    private List<Integer> lobColumnIndexes = null;
+
+    /**
      * Labels of columns as comma separated list.
      */
     private String labelCSL;
@@ -83,6 +102,16 @@ public class ExportReader implements ResultSetReader {
     private final int maxBodySize;
     
     /**
+     * Counts the exported entities. (GUI support)
+     */
+    public static long numberOfExportedEntities;
+    
+    /**
+     * Counts the exported LOBs. (GUI support)
+     */
+    public static long numberOfExportedLOBs;
+    
+    /**
      * Constructor.
      * 
      * @param table the table to read from
@@ -102,37 +131,44 @@ public class ExportReader implements ResultSetReader {
      * Reads result-set and writes into export-script.
      */
     public void readCurrentRow(ResultSet resultSet) throws SQLException {
+    	++numberOfExportedEntities;
         if (columnLabel == null) {
             columnCount = resultSet.getMetaData().getColumnCount();
             columnLabel = new String[columnCount + 1];
+            lobColumns = new ArrayList<String>();
+            lobColumnIndexes = new ArrayList<Integer>();
             labelCSL = "";
-            int li = 1;
             for (int i = 1; i <= columnCount; ++i) {
                 String mdColumnLabel = resultSet.getMetaData().getColumnLabel(i);
-                if (table.getName().equals("ADDRESS") && mdColumnLabel.equals("STREETNOADDITION")) {
-                    // ignore column ADDRESS.STREETNOADDITION in crmapp-db
-                    // TODO: fix schema-error and remove this fix
-                    --columnCount;
+                int mdColumnType = resultSet.getMetaData().getColumnType(i);
+                
+                if (mdColumnType == Types.BLOB || mdColumnType == Types.CLOB) {
+                	lobColumnIndexes.add(i);
+                	lobColumns.add(mdColumnLabel);
                     continue;
                 }
-                columnLabel[li] = mdColumnLabel;
-                if (li > 1) {
+                columnLabel[i] = mdColumnLabel;
+                if (labelCSL.length() > 0) {
                     labelCSL += ", ";
                 }
                 labelCSL += columnLabel[i];
-                li++;
             }
         }
         try {
             StringBuffer valueList = new StringBuffer("");
+            boolean f = true;
             for (int i = 1; i <= columnCount; ++i) {
-                Object content = resultSet.getObject(i);
+                if (columnLabel[i] == null) {
+                	continue;
+                }
+            	Object content = resultSet.getObject(i);
                 if (resultSet.wasNull()) {
                     content = null;
                 }
-                if (i > 1) {
+                if (!f) {
                     valueList.append(", ");
                 }
+                f = false;
                 valueList.append(SqlUtil.toSql(content));
             }
             if (table.upsert || upsertOnly) {
@@ -142,7 +178,11 @@ public class ExportReader implements ResultSetReader {
                 Map<String, String> val = new HashMap<String, String>();
                 StringBuffer valuesWONull = new StringBuffer("");
                 StringBuffer columnsWONull = new StringBuffer("");
+                f = true;
                 for (int i = 1; i <= columnCount; ++i) {
+                    if (columnLabel[i] == null) {
+                    	continue;
+                    }
                     Object content = resultSet.getObject(i);
                     if (resultSet.wasNull()) {
                         content = null;
@@ -150,10 +190,11 @@ public class ExportReader implements ResultSetReader {
                     String cVal = SqlUtil.toSql(content);
                     val.put(columnLabel[i], cVal);
                     if (content != null) {
-                        if (i > 1) {
+                        if (!f) {
                             valuesWONull.append(", ");
                             columnsWONull.append(", ");
                         }
+                        f = false;
                         valuesWONull.append(cVal);
                         columnsWONull.append(columnLabel[i]);
                     }
@@ -163,7 +204,7 @@ public class ExportReader implements ResultSetReader {
                                     + "Select * From (values ";
                 StringBuffer terminator = new StringBuffer(") as Q(" + columnsWONull + ") Where not exists (Select * from " + table.getName() + " T "
                         + "Where ");
-                boolean f = true;
+                f = true;
                 StringBuffer whereForTerminator = new StringBuffer("");
                 StringBuffer where = new StringBuffer("");
                 for (Column pk: table.primaryKey.getColumns()) {
@@ -209,15 +250,96 @@ public class ExportReader implements ResultSetReader {
                 }
                 insertStatementBuilder.append(insertSchema, item, ", ", ";\n");
             }
+            
+            exportLobs(table, resultSet);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     /**
+     * Exports the (c|b)lob content.
+     * 
+     * @param resultSet export current row
+     */
+    private void exportLobs(Table table, ResultSet resultSet) throws IOException, SQLException {
+		for (int i = 0; i < lobColumnIndexes.size(); ++i) {
+			Object lob = resultSet.getObject(lobColumnIndexes.get(i));
+			Map<String, String> val = new HashMap<String, String>();
+			for (int j = 1; j <= columnCount; ++j) {
+                if (columnLabel[j] == null) {
+                	continue;
+                }
+                Object content = resultSet.getObject(j);
+                if (resultSet.wasNull()) {
+                    content = null;
+                }
+                String cVal = SqlUtil.toSql(content);
+                val.put(columnLabel[j], cVal);
+            }
+			boolean f = true;
+            StringBuffer where = new StringBuffer("");
+            for (Column pk: table.primaryKey.getColumns()) {
+            	if (!f) {
+                    where.append(" and ");
+                }
+                f = false;
+                where.append(pk.name + "=" + val.get(pk.name));
+            }
+            if (lob instanceof Clob) {
+            	++numberOfExportedLOBs;
+            	flush();
+				Clob clob = (Clob) lob;
+				writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "CLOB " + table.getName() + ", " + lobColumns.get(i) + ", " + where + "\n");
+				Reader in = clob.getCharacterStream();
+				int c;
+				StringBuffer line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
+				while ((c = in.read()) != -1) {
+					if ((char) c == '\n') {
+						writeToScriptFile(line.toString() + "\\n\n");
+						line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
+					} else {
+						line.append((char) c);
+						if ((char) c == '\\') {
+							line.append((char) c);
+						}
+					}
+					if (line.length() >= 100) {
+						writeToScriptFile(line.toString() + "\n");
+						line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
+					}
+				}
+				in.close();
+				writeToScriptFile(line.toString() + "\n" + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "\n");
+			}
+            if (lob instanceof Blob) {
+            	++numberOfExportedLOBs;
+            	flush();
+				Blob blob = (Blob) lob;
+				writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "BLOB " + table.getName() + ", " + lobColumns.get(i) + ", " + where + "\n");
+				InputStream in = blob.getBinaryStream();
+				int b;
+				StringBuffer line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
+				byte[] buffer = new byte[64];
+				int size = 0;
+				while ((b = in.read()) != -1) {
+					buffer[size++] = (byte) b;
+					if (size == buffer.length) {
+						writeToScriptFile(line.toString() + Base64.encodeBytes(buffer, Base64.DONT_BREAK_LINES) + "\n");
+						line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
+						size = 0;
+					}
+				}
+				in.close();
+				writeToScriptFile(line.toString() + Base64.encodeBytes(buffer, 0, size, Base64.DONT_BREAK_LINES) + "\n" + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "\n");
+			}
+		}
+	}
+
+	/**
      * Flushes the export-reader.
      */
-    public void close() {
+    public void flush() {
         try {
             writeToScriptFile(insertStatementBuilder.build());
             for (StatementBuilder sb: upsertInsertStatementBuilder.values()) {
@@ -226,6 +348,13 @@ public class ExportReader implements ResultSetReader {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+    
+	/**
+     * Flushes the export-reader.
+     */
+    public void close() {
+    	flush();
     }
     
     /**

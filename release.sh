@@ -18,6 +18,8 @@ rm *.sql
 rm svn-commit.tmp
 rm -rf .connect.ui .buildmodel.ui.original .classpath .export.ui .project .buildmodel.ui.r133 .cp.ui .plaf.ui .buildmodel.ui.r135 .exportdata.ui .printmodel.ui
 rm datamodel/model-builder-association.csv datamodel/model-builder-table.csv
+rm -r restrictionmodel/*
+rm -r extractionmodel/*
 ls jailer.jar
 cd ..
 rm $1.zip
