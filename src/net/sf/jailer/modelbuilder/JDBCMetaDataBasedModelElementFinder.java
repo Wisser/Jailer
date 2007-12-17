@@ -18,6 +18,7 @@ package net.sf.jailer.modelbuilder;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -143,7 +144,8 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 }
                 String sqlType = SqlUtil.SQL_TYPE.get(type);
                 if (sqlType == null) {
-                    throw new RuntimeException("unknown SQL type: " + type);
+                	sqlType = "-unknown-";
+                    // throw new RuntimeException("unknown SQL type: " + type);
                 }
                 Column column = new Column(colName, sqlType, length);
                 for (int i: pk.keySet()) {
@@ -178,23 +180,30 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
      */ 
     public static List<String> getSchemas(StatementExecutor statementExecutor, String userName) throws Exception {
     	List<String> schemas = new ArrayList<String>();
-    	DatabaseMetaData metaData = statementExecutor.getMetaData();
-    	ResultSet rs = metaData.getSchemas();
-    	while (rs.next()) {
-    		schemas.add(rs.getString("TABLE_SCHEM"));
-    	}
-    	rs.close();
-    	for (Iterator<String> i = schemas.iterator(); i.hasNext(); ) {
-    		String schema = i.next();
-    		if (!schema.equalsIgnoreCase(userName.trim())) {
-	    		rs = metaData.getTables(null, schema, "%", new String[] { "TABLE" });
-	    		if (!rs.next()) {
-	    			i.remove();
-	    		}
-	    		rs.close();
-    		}
-    	}
-    	return schemas;
+		try {
+			DatabaseMetaData metaData = statementExecutor.getMetaData();
+			ResultSet rs = metaData.getSchemas();
+			while (rs.next()) {
+				schemas.add(rs.getString("TABLE_SCHEM"));
+			}
+			rs.close();
+			for (Iterator<String> i = schemas.iterator(); i.hasNext(); ) {
+				String schema = i.next();
+				if (!schema.equalsIgnoreCase(userName.trim())) {
+					rs = metaData.getTables(null, schema, "%", new String[] { "TABLE" });
+					if (!rs.next()) {
+						i.remove();
+					}
+					rs.close();
+				}
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			if (userName != null) {
+				schemas.add(userName);
+			}
+		}
+		return schemas;
     }
 
 }

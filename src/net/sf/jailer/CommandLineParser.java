@@ -105,6 +105,10 @@ public class CommandLineParser {
         System.out.println();
         System.out.println("  jailer check-domainmodel [options] {<restriction-model>}*");
         System.out.println("    checks the domain model (directory 'domainmodel')");
+        System.out.println();
+        System.out.println("  jailer import <sql-script> <jdbc-driver-class> <db-URL> <db-user> <db-password>");
+        System.out.println("    imports data (with C|BLOB support)");
+        System.out.println();
         System.out.println("options:");
         cmdLineParser.printUsage(System.out);
         System.out.println();

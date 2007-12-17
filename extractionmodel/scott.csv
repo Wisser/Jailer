@@ -1,4 +1,4 @@
 # subject; condition;  limit; restrictions
-CONTACT_INFO; ; ; .embedded
+MANDATORS; ; ; .embedded
 
 # from A (or association name); to B; restriction-condition

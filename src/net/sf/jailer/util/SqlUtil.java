@@ -162,6 +162,8 @@ public class SqlUtil {
         SQL_TYPE.put(Types.TINYINT, "TINYINT");
         SQL_TYPE.put(Types.VARCHAR, "VARCHAR");
         SQL_TYPE.put(Types.SMALLINT, "SMALLINT");
+        SQL_TYPE.put(Types.CLOB, "CLOB");
+        SQL_TYPE.put(Types.BLOB, "BLOB");
     };
     
 }

@@ -1,1 +1,2 @@
 # Table A; Table B; First-insert; Cardinality; Join-condition; Name; Author
+SHORT_MESSAGES; MANDATORS; B; n:1; A.R_MANDATOR=B.ID; FK_MANDATOR; IBM DB2 JDBC Universal Driver Architecture; ; 

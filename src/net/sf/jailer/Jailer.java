@@ -53,6 +53,7 @@ import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.JobManager;
 import net.sf.jailer.util.PrintUtil;
+import net.sf.jailer.util.SqlScriptExecutor;
 import net.sf.jailer.util.SqlUtil;
 
 import org.apache.log4j.Logger;
@@ -71,7 +72,7 @@ public class Jailer {
     /**
      * The Jailer version.
      */
-    public static final String VERSION = "2.0";
+    public static final String VERSION = "2.1";
     
     /**
      * The relational data model.
@@ -567,6 +568,12 @@ public class Jailer {
                     CommandLineParser.printUsage();
                 } else {
                     new Jailer(1).renderDataModel(clp.arguments, clp.withClosures, clp.schema);
+                }
+            } else if ("import".equalsIgnoreCase(command)) {
+                if (clp.arguments.size() != 6) {
+                    CommandLineParser.printUsage();
+                } else {
+                    SqlScriptExecutor.executeScript(clp.arguments.get(1), new StatementExecutor(clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4), clp.arguments.get(5)));
                 }
             } else if ("print-datamodel".equalsIgnoreCase(command)) {
                 printDataModel(clp.arguments, clp.withClosures);

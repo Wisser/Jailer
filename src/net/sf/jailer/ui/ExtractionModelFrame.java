@@ -34,6 +34,7 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
 import net.sf.jailer.Jailer;
+import net.sf.jailer.database.ExportReader;
 import net.sf.jailer.datamodel.DataModel;
 
 /**
@@ -141,6 +142,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         disconnectDb = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
         dataExport = new javax.swing.JMenuItem();
+        dataImport = new javax.swing.JMenuItem();
         jSeparator6 = new javax.swing.JSeparator();
         updateDataModel = new javax.swing.JMenuItem();
         openDataModelEditor = new javax.swing.JMenuItem();
@@ -301,6 +303,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu3.add(dataExport);
 
+        dataImport.setText("Import Data");
+        dataImport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dataImportActionPerformed(evt);
+            }
+        });
+
+        jMenu3.add(dataImport);
+
         jMenu3.add(jSeparator6);
 
         updateDataModel.setText("Introspect DB");
@@ -362,6 +373,25 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void dataImportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataImportActionPerformed
+    	try {
+    		String sqlFile = UIUtil.choseFile(null, ".", "Data Import", ".sql", this, false, true);
+    		if (sqlFile != null) {
+    			disconnect();
+    			if (connectToDBIfNeeded("Data Import")) {
+    				List<String> args = new ArrayList<String>();
+    				args.add("import");
+    				args.add(sqlFile);
+    				dbConnectionDialog.addDbArgs(args);
+    				disconnect();
+    				UIUtil.runJailer(this, args, false, true, false, false, null);
+    			}
+    		}
+    	} catch (Exception e) {
+        	UIUtil.showException(this, "Error", e);
+        }
+    }//GEN-LAST:event_dataImportActionPerformed
 
     private void printDatamodelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printDatamodelActionPerformed
     	try {
@@ -459,11 +489,21 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				        	List<String> ddlArgs = new ArrayList<String>();
 				        	ddlArgs.add("create-ddl");
 				        	dbConnectionDialog.addDbArgs(ddlArgs);
-			        		if (UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
+				        	ExportReader.numberOfExportedEntities = 0;
+				        	ExportReader.numberOfExportedLOBs = 0;
+				            if (UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
 			        				"Automatic creation of working-tables failed!\n" +
 			        				"Please execute the Jailer-DDL manually (jailer_ddl.sql)\n\n" +
 			        				"Continue Data Export?")) {
-			        			UIUtil.runJailer(this, args, true, true, exportDialog.explain.isSelected(), false, null);
+			        			if (UIUtil.runJailer(this, args, true, true, exportDialog.explain.isSelected(), !exportDialog.explain.isSelected(), null)) {
+			        				String message = "Exported " + ExportReader.numberOfExportedEntities + " entities.";
+			        				if (ExportReader.numberOfExportedLOBs > 0) {
+			        					message += "\nExported " + ExportReader.numberOfExportedLOBs + " CLOBs/BLOBs.\n\n" +
+			        					           "Note that the CLOBs/BLOBs can only\n" +
+			        							   "be imported with the 'Import Data'-tool!";
+			        				}
+		        					JOptionPane.showMessageDialog(this, message);
+			        			}
 			        		}
 			        	}
 		        	}
@@ -475,13 +515,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_dataExportActionPerformed
 
     private void disconnectDbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disconnectDbActionPerformed
-    	dbConnectionDialog.isConnected = false;
-    	updateMenuItems();
+    	disconnect();
     }//GEN-LAST:event_disconnectDbActionPerformed
 
-    private void connectDbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectDbActionPerformed
-    	dbConnectionDialog.isConnected = false;
+	private void disconnect() {
+		dbConnectionDialog.isConnected = false;
     	updateMenuItems();
+	}
+
+    private void connectDbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectDbActionPerformed
+    	disconnect();
     	connectToDBIfNeeded(null);
     }//GEN-LAST:event_connectDbActionPerformed
 
@@ -680,6 +723,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	boolean hideIgnored() {
 		return hideIgnored.isSelected();
 	}
+
+	void setHideIgnored(boolean b) {
+		hideIgnored.setSelected(b);
+		extractionModelEditor.refresh();
+	}
 	
 	/**
      * @param args the command line arguments
@@ -730,6 +778,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem collapseAll;
     private javax.swing.JCheckBoxMenuItem connectDb;
     private javax.swing.JMenuItem dataExport;
+    private javax.swing.JMenuItem dataImport;
     private javax.swing.JMenuItem disconnectDb;
     private javax.swing.JPanel editorPanel;
     private javax.swing.JMenuItem exit;

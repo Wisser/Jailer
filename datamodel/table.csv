@@ -1,1 +1,3 @@
 # Name; Upsert; Primary key; ; Author
+MANDATORS; N; ID INTEGER; ; IBM DB2 JDBC Universal Driver Architecture; ; 
+SHORT_MESSAGES; N; ID INTEGER; ; IBM DB2 JDBC Universal Driver Architecture; ; 

@@ -768,7 +768,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
      */
 	private void select(RestrictionDefinition restrictionDefinition) {
 		if (extractionModelFrame.hideIgnored() && restrictionDefinition.isIgnored) {
-			return;
+			extractionModelFrame.setHideIgnored(false);
 		}
 		if (!suppressRestrictionSelection) {
 			suppressRestrictionSelection = true;

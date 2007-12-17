@@ -18,13 +18,17 @@ package net.sf.jailer.database;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -298,6 +302,32 @@ public class StatementExecutor {
         return rowCount;
     }
     
+    /**
+     * Inserts a CLob.
+     */
+    public void insertClob(String table, String column, String where, File lobFile) throws SQLException, FileNotFoundException {
+    	String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
+        _log.debug(sqlUpdate);
+        PreparedStatement statement = null;
+        statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
+        statement.setCharacterStream(1, new InputStreamReader(new FileInputStream(lobFile)), (int) lobFile.length());
+        statement.execute();
+        statement.close();
+    }
+
+    /**
+     * Inserts a BLob.
+     */
+    public void insertBlob(String table, String column, String where, File lobFile) throws SQLException, FileNotFoundException {
+    	String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
+        _log.debug(sqlUpdate);
+        PreparedStatement statement = null;
+        statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
+        statement.setBinaryStream(1, new FileInputStream(lobFile), (int) lobFile.length());
+        statement.execute();
+        statement.close();
+    }
+
     /**
      * Executes a SQL-Statement without returning any result.
      * 
