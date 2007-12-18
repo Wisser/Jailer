@@ -72,7 +72,7 @@ public class Jailer {
     /**
      * The Jailer version.
      */
-    public static final String VERSION = "2.1";
+    public static final String VERSION = "2.1.1";
     
     /**
      * The relational data model.
@@ -953,18 +953,11 @@ public class Jailer {
      * @param dataModel the data-model
      */
     private static void printComponents(DataModel dataModel) {
-        Set<Table> tablesToIgnore = getTablesToIgnoreFromComponentAnalysis(dataModel);
-        
-        System.out.println();
-        System.out.println("excluding following tables from component-analysis: " + PrintUtil.tableSetAsString(tablesToIgnore));
-        System.out.println();
-        
         List<Set<Table>> components = new ArrayList<Set<Table>>();
         Set<Table> tables = new HashSet<Table>(dataModel.getTables());
-        tables.removeAll(tablesToIgnore);
         while (!tables.isEmpty()) {
             Table table = tables.iterator().next();
-            Set<Table> closure = table.closure(tablesToIgnore, false);
+            Set<Table> closure = table.closure(new HashSet<Table>(), false);
             components.add(closure);
             tables.removeAll(closure);
         }
@@ -972,20 +965,6 @@ public class Jailer {
         for (Set<Table> component: components) {
             System.out.println(PrintUtil.tableSetAsString(component));
         }
-    }
-
-    /**
-     * Gets set of tables which should not taken into account for component-analysis.
-     */
-    private static Set<Table> getTablesToIgnoreFromComponentAnalysis(DataModel dataModel) {
-        Set<Table> tablesToIgnore = CommandLineParser.getInstance().getTabuTables(dataModel);
-        for (Table table: dataModel.getTables()) {
-            if (incomingAssociations(table, false).size() > 0 &&
-                outgoingAssociations(table).isEmpty()) {
-                tablesToIgnore.add(table);
-            }
-        }
-        return tablesToIgnore;
     }
 
     /**

@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 
 import javax.swing.DefaultListCellRenderer;
@@ -499,7 +500,7 @@ public class DataModelEditor extends javax.swing.JDialog {
     			toDelete.add(tables.get(i));
     		}
     	}
-    	Collection<CsvFile.Line> assToDelete = new ArrayList<CsvFile.Line>();
+    	Collection<CsvFile.Line> assToDelete = new HashSet<CsvFile.Line>();
     	for (CsvFile.Line t: toDelete) {
     		for (CsvFile.Line a: associations) {
     			if (a.cells.get(0).equalsIgnoreCase(t.cells.get(0)) || a.cells.get(1).equalsIgnoreCase(t.cells.get(0))) {
