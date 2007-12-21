@@ -281,7 +281,7 @@ public class EntityGraph {
             (source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, '" + source.getName() + "' AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
             " From " + table.getName() + " " + alias +
             (joinedTable != null? " join " + joinedTable.getName() + " " + joinedTableAlias + " on " + joinCondition : "") +
-            " left join " + ENTITY + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and " +
+            " left join " + ENTITY + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type='" + table.getName() + "' and " +
             pkEqualsEntityID(table, alias, "Duplicate") + 
             (joinWithEntity? ", " + ENTITY + " E" : "") +
             " Where (" + condition + ") and Duplicate." + universalPrimaryKey.getColumns().get(0).name + " is null" +
@@ -315,8 +315,8 @@ public class EntityGraph {
      * @param condition condition of dependency
      */
     public void addDependencies(Table from, String fromAlias, Table to, String toAlias, String condition) throws SQLException {
-        String insert = "Insert into " + DEPENDENCY + "(r_entitygraph, " + universalPrimaryKey.columnList("FROM_") + ", " + universalPrimaryKey.columnList("TO_") + ") " +
-            "Select " + graphID + ", " + pkList(from, fromAlias, "FROM") + ", " + pkList(to, toAlias, "TO") +
+        String insert = "Insert into " + DEPENDENCY + "(r_entitygraph, from_type, to_type, " + universalPrimaryKey.columnList("FROM_") + ", " + universalPrimaryKey.columnList("TO_") + ") " +
+            "Select " + graphID + ", '" + from.getName() + "', '" + to.getName() + "', " + pkList(from, fromAlias, "FROM") + ", " + pkList(to, toAlias, "TO") +
             " From " + ENTITY + " E1, " + ENTITY + " E2, " + from.getName() + " " + fromAlias + " join " + to.getName() + " " + toAlias + " on " + condition +
             " Where E1.r_entitygraph=" + graphID + " and E2.r_entitygraph=" + graphID + "" +
             " and E1.type='" + from.getName() + "' and E2.type='" + to.getName() + "'" +
@@ -341,7 +341,7 @@ public class EntityGraph {
                 "Update " + ENTITY + " set birthday=0 " +
                 "Where r_entitygraph=" + graphID + " and birthday>0 and " +
                        "not exists (Select * from " + DEPENDENCY + " D " +
-                           "Where D.r_entitygraph=" +graphID + " and " +
+                           "Where D.r_entitygraph=" +graphID + " and D.from_type=type and " +
                                  fromEqualsPK + ")");
     }
 
@@ -417,14 +417,14 @@ public class EntityGraph {
                 "Where D.r_entitygraph=" + graphID + " and " + 
                       "exists (Select * from " + ENTITY + " E Where " + 
                           "E.r_entitygraph=" + graphID + " and " +
-                          fromEqualsPK + " and " +
+                          fromEqualsPK + " and D.from_type=E.type and " +
                           "E.birthday=0)");
         statementExecutor.executeUpdate(
                 "Delete From " + DEPENDENCY + " D " +
                 "Where D.r_entitygraph=" + graphID + " and " + 
                       "exists (Select * from " + ENTITY + " E Where " + 
                           "E.r_entitygraph=" + graphID + " and " +
-                          toEqualsPK + " and " +
+                          toEqualsPK + " and D.to_type=E.type and " +
                           "E.birthday=0)");
         statementExecutor.executeUpdate(
                 "Delete From " + ENTITY + " " +
@@ -481,8 +481,8 @@ public class EntityGraph {
                 sourceAlias = "A";
             }
             int setId = getNextSetId();
-            String remove = "Insert into " + ENTITY_SET_ELEMENT + "(set_id, " + universalPrimaryKey.columnList(null) + ") " +
-                "Select distinct " + setId + ", " + universalPrimaryKey.columnList("EB.") + " from " + ENTITY + " EB " +
+            String remove = "Insert into " + ENTITY_SET_ELEMENT + "(set_id, type, " + universalPrimaryKey.columnList(null) + ") " +
+                "Select distinct " + setId + ", EB.type, " + universalPrimaryKey.columnList("EB.") + " from " + ENTITY + " EB " +
                 "join " + association.destination.getName() + " " + destAlias + " on "+ pkEqualsEntityID(association.destination, destAlias, "EB") + " " +
                 "join " + association.source.getName() + " " + sourceAlias + " on " + association.getJoinCondition() + " " +
                 (deletedEntitiesAreMarked? "join " : "left join ") + ENTITY + " EA on EA.r_entitygraph=" + graphID + " and EA.type='" + association.source.getName() + "' and " + pkEqualsEntityID(association.source, sourceAlias, "EA") + " " +
@@ -499,7 +499,7 @@ public class EntityGraph {
                     sEqualsE.append("S." + column.name + "=E." + column.name);
                 }
                 remove = "Update " + ENTITY + " E set E.birthday=-1 Where E.r_entitygraph=" + graphID + " and E.type='" + association.destination.getName() + "' " +
-                          "and exists (Select * from " + ENTITY_SET_ELEMENT + " S where S.set_id=" + setId + " and " + sEqualsE + ")";
+                          "and exists (Select * from " + ENTITY_SET_ELEMENT + " S where S.set_id=" + setId + " and E.type=S.type and " + sEqualsE + ")";
                 statementExecutor.executeUpdate(remove);
                 statementExecutor.executeUpdate("Delete from " + ENTITY_SET_ELEMENT + " where set_id=" + setId + "");
             }
