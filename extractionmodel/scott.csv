@@ -1,6 +1,0 @@
-# subject; condition;  limit; restrictions
-DEPARTMENT; ; ; .embedded
-
-# from A (or association name); to B; restriction-condition
-inverse-DEPARTMENT; ; ignore
-inverse-xxx; ; ignore
