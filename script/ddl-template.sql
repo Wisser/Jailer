@@ -24,7 +24,7 @@ CREATE TABLE JL_ENTITY
    PRE_TYPE        varchar(50),
    association     INTEGER,
 
-   CONSTRAINT jl_pk_entity PRIMARY KEY(r_entitygraph, {4}),
+   CONSTRAINT jl_pk_entity PRIMARY KEY(r_entitygraph, {4}, type),
    CONSTRAINT jl_fk_graph_e FOREIGN KEY (r_entitygraph) REFERENCES JL_GRAPH(id)
 );
 
@@ -33,14 +33,17 @@ CREATE INDEX jl_enty_brthdy ON JL_ENTITY (r_entitygraph, birthday, type);
 CREATE TABLE JL_SET
 (
    set_id          INTEGER NOT NULL,
+   type            varchar(50) NOT NULL,
    {0},
 
-   CONSTRAINT jl_pk_set PRIMARY KEY(set_id, {4})
+   CONSTRAINT jl_pk_set PRIMARY KEY(set_id, {4}, type)
 );
 
 CREATE TABLE JL_DEPENDENCY
 (
    r_entitygraph   INTEGER NOT NULL,
+   from_type       varchar(50) NOT NULL,
+   to_type         varchar(50) NOT NULL,
    {2},
    {3},   
 
