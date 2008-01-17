@@ -178,6 +178,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 		});
 		
+		exportButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				ExtractionModelEditor.this.extractionModelFrame.dataExportActionPerformed(e);
+			}
+    	});
+		
 		needsSave = saveNeedsSave;
 		extractionModelFrame.updateTitle(needsSave);
 	}

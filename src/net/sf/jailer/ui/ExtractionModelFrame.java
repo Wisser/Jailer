@@ -68,12 +68,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         initComponents();
         editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelFile, this), "editor");
         extractionModelEditor.extractionModelFile = extractionModelFile;
-    	extractionModelEditor.exportButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				dataExportActionPerformed(e);
-			}
-    	});
-        fileMenu.setMnemonic('f');
+    	fileMenu.setMnemonic('f');
         newModel.setMnemonic('n');
         load.setMnemonic('o');
         save.setMnemonic('s');
@@ -515,7 +510,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_updateDataModelActionPerformed
 
-	private void dataExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataExportActionPerformed
+	void dataExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataExportActionPerformed
     	try {
     		if (saveIfNeeded("Export data", false)) {
     			if (extractionModelEditor.extractionModelFile != null || extractionModelEditor.save(true, "Export data")) {
