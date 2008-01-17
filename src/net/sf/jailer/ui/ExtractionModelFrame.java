@@ -68,7 +68,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         initComponents();
         editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelFile, this), "editor");
         extractionModelEditor.extractionModelFile = extractionModelFile;
-    	fileMenu.setMnemonic('f');
+    	extractionModelEditor.exportButton.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				dataExportActionPerformed(e);
+			}
+    	});
+        fileMenu.setMnemonic('f');
         newModel.setMnemonic('n');
         load.setMnemonic('o');
         save.setMnemonic('s');
@@ -131,6 +136,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         saveAs = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JSeparator();
         exit = new javax.swing.JMenuItem();
+        jMenu5 = new javax.swing.JMenu();
+        ignoreAll = new javax.swing.JMenuItem();
+        removeAllRestrictions = new javax.swing.JMenuItem();
         jMenu1 = new javax.swing.JMenu();
         collapseAll = new javax.swing.JMenuItem();
         expandAll = new javax.swing.JMenuItem();
@@ -230,6 +238,27 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         fileMenu.add(exit);
 
         jMenuBar2.add(fileMenu);
+
+        jMenu5.setText("Restriction");
+        ignoreAll.setLabel("Restrict all associations");
+        ignoreAll.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                ignoreAllActionPerformed(evt);
+            }
+        });
+
+        jMenu5.add(ignoreAll);
+
+        removeAllRestrictions.setLabel("Remove all restrictions");
+        removeAllRestrictions.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                removeAllRestrictionsActionPerformed(evt);
+            }
+        });
+
+        jMenu5.add(removeAllRestrictions);
+
+        jMenuBar2.add(jMenu5);
 
         jMenu1.setText("Association");
         collapseAll.setText("Collapse all");
@@ -373,6 +402,18 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void removeAllRestrictionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeAllRestrictionsActionPerformed
+    	if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Remove all restrictions?", "Remove restrictions", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+    		extractionModelEditor.removeAllRestrictions();
+    	}
+    }//GEN-LAST:event_removeAllRestrictionsActionPerformed
+
+    private void ignoreAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ignoreAllActionPerformed
+    	if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Add restriction for each association (except dependencies)?", "Add restrictions", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+    		extractionModelEditor.ignoreAll();
+    	}
+    }//GEN-LAST:event_ignoreAllActionPerformed
 
     private void dataImportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataImportActionPerformed
     	try {
@@ -785,10 +826,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem expandAll;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JCheckBoxMenuItem hideIgnored;
+    private javax.swing.JMenuItem ignoreAll;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
+    private javax.swing.JMenu jMenu5;
     private javax.swing.JMenuBar jMenuBar2;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JSeparator jSeparator1;
@@ -802,6 +845,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem openDataModelEditor;
     private javax.swing.JMenuItem printDatamodel;
     private javax.swing.JMenuItem refresh;
+    private javax.swing.JMenuItem removeAllRestrictions;
     private javax.swing.JMenuItem renderHtml;
     private javax.swing.JMenuItem save;
     private javax.swing.JMenuItem saveAs;

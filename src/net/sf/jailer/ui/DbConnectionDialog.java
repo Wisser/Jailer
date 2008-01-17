@@ -177,11 +177,11 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         driverClass = new javax.swing.JTextField();
         dbUrl = new javax.swing.JTextField();
         user = new javax.swing.JTextField();
-        password = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
+        password = new javax.swing.JPasswordField();
 
         getContentPane().setLayout(new java.awt.CardLayout());
 
@@ -310,14 +310,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(user, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 80;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel1.add(password, gridBagConstraints);
-
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
         jButton1.setText("Connect");
@@ -356,6 +348,14 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 10;
         jPanel1.add(jLabel11, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 80;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(password, gridBagConstraints);
 
         getContentPane().add(jPanel1, "card2");
 
@@ -487,7 +487,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     private javax.swing.JTextField jar2;
     private javax.swing.JButton loadJar1;
     private javax.swing.JButton loadJar2;
-    public javax.swing.JTextField password;
+    private javax.swing.JPasswordField password;
     public javax.swing.JTextField user;
     // Ende der Variablendeklaration//GEN-END:variables
 

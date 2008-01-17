@@ -256,8 +256,7 @@ public class RestrictionModel {
         }
         if (removePreviousRestriction && "".equals(condition)) {
         	restriction.remove(association);
-        }
-        else if (removePreviousRestriction || !restriction.containsKey(association)) {
+        } else if (removePreviousRestriction || !restriction.containsKey(association)) {
             restriction.put(association, condition == null? null : "(" + condition + ")");
         } else {
             String oldCondition = restriction.get(association);
