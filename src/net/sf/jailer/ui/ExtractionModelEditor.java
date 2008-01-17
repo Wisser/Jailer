@@ -207,6 +207,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         restrictionsTable = new javax.swing.JTable();
         jLabel8 = new javax.swing.JLabel();
         condition = new javax.swing.JTextField();
+        exportButton = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         rootTable = new javax.swing.JComboBox();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -260,7 +261,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Subject", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 2, 12)));
         jPanel3.setMaximumSize(new java.awt.Dimension(2147483647, 2147483647));
         jPanel3.setMinimumSize(new java.awt.Dimension(158, 122));
-        jLabel6.setText("Extract from ");
+        jLabel6.setText("Export from ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -295,7 +296,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -306,7 +307,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jLabel8.setText("Restrictions");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
@@ -318,6 +319,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel3.add(condition, gridBagConstraints);
+
+        exportButton.setText("Export Data");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
+        jPanel3.add(exportButton, gridBagConstraints);
 
         jPanel2.add(jPanel3);
 
@@ -362,7 +371,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void onNewSubject(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_onNewSubject
-        rootTable.setSelectedItem(subjectTable.getSelectedItem());
+    	Object selectedItem = subjectTable.getSelectedItem();
+		if (selectedItem instanceof String) {
+			if (dataModel.getTable(selectedItem.toString()) != null) {
+				subject = dataModel.getTable(selectedItem.toString());
+			}
+		}
+    	rootTable.setModel(getTableListModel());
+    	rootTable.setSelectedItem(null);
+    	rootTable.setSelectedItem(selectedItem);
         if (!needsSave) {
 			needsSave = true;
 			extractionModelFrame.updateTitle(needsSave);
@@ -906,11 +923,54 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			tree.expandPath(new TreePath(node.getPath()));
 		}
 	}
+
+	/**
+	 * Removes all restrictions from extraction model.
+	 */
+	public void removeAllRestrictions() {
+		for (Table table: dataModel.getTables()) {
+			for (Association association: table.associations) {
+				if (!association.isInsertDestinationBeforeSource()) {
+					dataModel.getRestrictionModel().addRestriction(table, association, "", "GUI", true);
+				}
+			}
+		}
+		if (!needsSave) {
+			needsSave = true;
+			extractionModelFrame.updateTitle(needsSave);
+		}
+		tree.repaint();
+		restrictionsTable.setModel(restrictionTableModel());
+		initRestrictionEditor(currentAssociation, currentNode);
+	}
 	
+	/**
+	 * Add restriction for each non-dependency.
+	 */
+	public void ignoreAll() {
+		for (Table table: dataModel.getTables()) {
+			for (Association association: table.associations) {
+				if (!association.isInsertDestinationBeforeSource()) {
+					if (association.getName() != null && !"".equals(association.getName().trim())) {
+						dataModel.getRestrictionModel().addRestriction(table, association, "false", "GUI", true);
+					}
+				}
+			}
+		}
+		if (!needsSave) {
+			needsSave = true;
+			extractionModelFrame.updateTitle(needsSave);
+		}
+		tree.repaint();
+		restrictionsTable.setModel(restrictionTableModel());
+		initRestrictionEditor(currentAssociation, currentNode);
+	}
+
     // Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables
     private javax.swing.JLabel associatedWith;
     private javax.swing.JTextField condition;
     private javax.swing.JLabel dependsOn;
+    public javax.swing.JButton exportButton;
     private javax.swing.JLabel hasDependent;
     private javax.swing.JLabel ignored;
     private javax.swing.JPanel inspectorHolder;
