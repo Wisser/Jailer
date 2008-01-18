@@ -155,6 +155,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         view = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem2 = new javax.swing.JMenuItem();
 
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
@@ -391,12 +392,25 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu2.add(jMenuItem1);
 
+        jMenuItem2.setText("Software Update");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
+
+        jMenu2.add(jMenuItem2);
+
         jMenuBar2.add(jMenu2);
 
         setJMenuBar(jMenuBar2);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+    	UIUtil.lookForUpdate(this);
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     private void removeAllRestrictionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeAllRestrictionsActionPerformed
     	if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Remove all restrictions?", "Remove restrictions", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
@@ -626,7 +640,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	}
 
 	private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-    	JOptionPane.showMessageDialog(this, "Jailer " + Jailer.VERSION + "\nhttp://jailer.sourceforge.net", "About Jailer", JOptionPane.INFORMATION_MESSAGE);
+		About about = new About(this, true);
+		about.setTitle("Jailer " + Jailer.VERSION);
+		about.pack();
+		about.setLocation(getLocation().x + (getSize().width - about.getSize().width) / 2, getLocation().y + (getSize().height - about.getSize().height) / 2);
+		about.setVisible(true);
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void loadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadActionPerformed
@@ -829,6 +847,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu5;
     private javax.swing.JMenuBar jMenuBar2;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
