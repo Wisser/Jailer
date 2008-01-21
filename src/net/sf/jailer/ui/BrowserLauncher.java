@@ -20,7 +20,7 @@ import java.lang.reflect.Method;
 /**
  * Browser launcher.
  * 
- * Note: this class should be replaced by JDK 1.6 Desktop#browse.
+ * Note: this class should be replaced with JDK 1.6 Desktop#browse.
  */
 public class BrowserLauncher {
 

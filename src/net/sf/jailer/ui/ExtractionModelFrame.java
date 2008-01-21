@@ -22,6 +22,7 @@ import java.awt.event.InputEvent;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
@@ -154,8 +155,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         renderHtml = new javax.swing.JMenuItem();
         view = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
-        jMenuItem1 = new javax.swing.JMenuItem();
+        helpContent = new javax.swing.JMenuItem();
+        tutorial = new javax.swing.JMenuItem();
+        jSeparator7 = new javax.swing.JSeparator();
         jMenuItem2 = new javax.swing.JMenuItem();
+        jSeparator8 = new javax.swing.JSeparator();
+        jMenuItem1 = new javax.swing.JMenuItem();
 
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
@@ -383,14 +388,25 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenuBar2.add(view);
 
         jMenu2.setText("Help");
-        jMenuItem1.setText("About Jailer");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+        helpContent.setText("Content");
+        helpContent.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem1ActionPerformed(evt);
+                helpContentActionPerformed(evt);
             }
         });
 
-        jMenu2.add(jMenuItem1);
+        jMenu2.add(helpContent);
+
+        tutorial.setLabel("Tutorial");
+        tutorial.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tutorialActionPerformed(evt);
+            }
+        });
+
+        jMenu2.add(tutorial);
+
+        jMenu2.add(jSeparator7);
 
         jMenuItem2.setText("Software Update");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
@@ -401,12 +417,39 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu2.add(jMenuItem2);
 
+        jMenu2.add(jSeparator8);
+
+        jMenuItem1.setText("About Jailer");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+
+        jMenu2.add(jMenuItem1);
+
         jMenuBar2.add(jMenu2);
 
         setJMenuBar(jMenuBar2);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void tutorialActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tutorialActionPerformed
+    	try {
+			BrowserLauncher.openURL(new File("doc" + File.separator + "htdocs" + File.separator + "JailerGuiTutorial.html").getCanonicalPath());
+		} catch (IOException e) {
+			UIUtil.showException(this, "Error", e);
+		}
+    }//GEN-LAST:event_tutorialActionPerformed
+
+    private void helpContentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpContentActionPerformed
+    	try {
+			BrowserLauncher.openURL(new File("doc" + File.separator + "htdocs" + File.separator + "index.html").getCanonicalPath());
+		} catch (IOException e) {
+			UIUtil.showException(this, "Error", e);
+		}
+    }//GEN-LAST:event_helpContentActionPerformed
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
     	UIUtil.lookForUpdate(this);
@@ -838,6 +881,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem exit;
     private javax.swing.JMenuItem expandAll;
     private javax.swing.JMenu fileMenu;
+    private javax.swing.JMenuItem helpContent;
     private javax.swing.JCheckBoxMenuItem hideIgnored;
     private javax.swing.JMenuItem ignoreAll;
     private javax.swing.JMenu jMenu1;
@@ -854,6 +898,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator4;
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JSeparator jSeparator6;
+    private javax.swing.JSeparator jSeparator7;
+    private javax.swing.JSeparator jSeparator8;
     private javax.swing.JMenuItem load;
     private javax.swing.JMenuItem newModel;
     private javax.swing.JMenuItem openDataModelEditor;
@@ -863,6 +909,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem renderHtml;
     private javax.swing.JMenuItem save;
     private javax.swing.JMenuItem saveAs;
+    private javax.swing.JMenuItem tutorial;
     private javax.swing.JMenuItem updateDataModel;
     private javax.swing.JMenu view;
     // Ende der Variablendeklaration//GEN-END:variables
