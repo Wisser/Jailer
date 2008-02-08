@@ -1,0 +1,10 @@
+Jailer is a data extraction tool that enables you to
+
+ * extract small consistent (referentially intact) parts of data 
+   from your productive environment and import the data into your 
+   development and test environment.
+ * remove and archive obsolete data from your productive environment.
+
+Home:    http://jailer.sourceforge.net/
+Forum:   https://sourceforge.net/forum/?group_id=197260
+Support: rwisser@users.sourceforge.net

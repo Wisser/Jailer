@@ -1,0 +1,58 @@
+<project name="jailer" default="help" basedir=".">
+	<target name="help">
+	    <echo>
+available targets:
+
+     - help                     (this page)
+     - compile                  (compiles sources)
+     - package                  (generates jailer.jar)
+		</echo>
+	</target>
+	
+	<property name="BUILD_DIR" location="out"/>
+	<property name="COMPILE_DIR" location="${BUILD_DIR}/classes"/>
+	<property name="SRC_DIR" location="src"/>
+	<property name="JAR" location="jailer.jar"/>
+	
+	<path id="default.classpath">
+		<fileset dir="lib">
+			<include name="**/*.jar"/>
+		</fileset>
+	</path>
+	
+	<target name="clean" description="Cleans up the whole build area.">
+		<delete dir="${BUILD_DIR}"/>
+	</target>
+	
+	<target name="compile" depends="clean">
+		<delete file="${JAR}"/>
+		<mkdir dir="${COMPILE_DIR}"/>
+		<javac source="5" destdir="${COMPILE_DIR}"
+			srcdir="${SRC_DIR}" debug="on" deprecation="off"
+			encoding="ISO-8859-1">
+			<classpath>
+				<path refid="default.classpath"/>
+			</classpath>
+			<include name="**/*.java"/>
+		</javac>
+	</target>
+	
+	<target name="package" depends="compile">
+		<jar destfile="${JAR}" basedir="${COMPILE_DIR}">
+			<manifest>
+			    <attribute name="Main-Class" value="net.sf.jailer.ui.ExtractionModelFrame"/>
+			    <attribute name="Class-Path" value="lib/junit.jar lib/commons-logging.jar lib/log4j.jar lib/args4j.jar lib/spring.jar"/>
+			</manifest>
+		</jar>
+	</target>
+	
+	<target name="release-jar">
+		<jar destfile="${JAR}" basedir="${BUILD_DIR}">
+			<manifest>
+			    <attribute name="Main-Class" value="net.sf.jailer.ui.ExtractionModelFrame"/>
+			    <attribute name="Class-Path" value="lib/junit.jar lib/commons-logging.jar lib/log4j.jar lib/args4j.jar lib/spring.jar"/>
+			</manifest>
+		</jar>
+	</target>
+		
+</project>

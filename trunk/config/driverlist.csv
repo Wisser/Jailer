@@ -1,0 +1,30 @@
+IBM DB2 Alias;jdbc:db2://<HOST>:<PORT>/<DB>;COM.ibm.db2.jdbc.app.DB2Driver
+IBM DB2 Universal Type 2;jdbc:db2:<DB>;com.ibm.db2.jcc.DB2Driver
+IBM DB2 Universal Type 4;jdbc:db2://<HOST>:<PORT>/<DB>;com.ibm.db2.jcc.DB2Driver
+JDBC-ODBC Bridge;jdbc:odbc:<DB>;sun.jdbc.odbc.JdbcOdbcDriver
+Microsoft SQL Server;jdbc:weblogic:mssqlserver4:<DB>@<HOST>:<PORT>;weblogic.jdbc.mssqlserver4.Driver
+Oracle Thin;jdbc:oracle:thin:@<HOST>:<PORT>:<SID>;oracle.jdbc.driver.OracleDriver
+PointBase Embedded Server;jdbc:pointbase://embedded[:<PORT>]/<DB>;com.pointbase.jdbc.jdbcUniversalDriver
+Cloudscape;jdbc:cloudscape:<DB>;COM.cloudscape.core.JDBCDriver
+Cloudscape RMI;jdbc:rmi://<HOST>:<PORT>/jdbc:cloudscape:<DB>;RmiJdbc.RJDriver
+Firebird (JCA/JDBC Driver);jdbc:firebirdsql:[//<HOST>[:<PORT>]/]<DB>;org.firebirdsql.jdbc.FBDriver
+IDS Server;jdbc:ids://<HOST>:<PORT>/conn?dsn='<ODBC_DSN_NAME>';ids.sql.IDSDriver
+Informix Dynamic Server;jdbc:informix-sqli://<HOST>:<PORT>/<DB>:INFORMIXSERVER=<SERVER_NAME>;com.informix.jdbc.IfxDriver
+InstantDB (v3.13 and earlier);jdbc:idb:<DB>;jdbc.idbDriver
+InstantDB (v3.14 and later);jdbc:idb:<DB>;org.enhydra.instantdb.jdbc.idbDriver
+Interbase (InterClient Driver);jdbc:interbase://<HOST>/<DB>;interbase.interclient.Driver
+Hypersonic SQL (v1.2 and earlier);jdbc:HypersonicSQL:<DB>;hSql.hDriver
+Hypersonic SQL (v1.3 and later);jdbc:HypersonicSQL:<DB>;org.hsql.jdbcDriver
+Microsoft SQL Server (JTurbo Driver);jdbc:JTurbo://<HOST>:<PORT>/<DB>;com.ashna.jturbo.driver.Driver
+Microsoft SQL Server (Sprinta Driver);jdbc:inetdae:<HOST>:<PORT>?database=<DB>;com.inet.tds.TdsDriver
+Microsoft SQL Server 2000 (Microsoft Driver);jdbc:microsoft:sqlserver://<HOST>:<PORT>[\;DatabaseName=<DB>];com.microsoft.jdbc.sqlserver.SQLServerDriver
+MySQL (MM.MySQL Driver);jdbc:mysql://<HOST>:<PORT>/<DB>;org.gjt.mm.mysql.Driver
+Oracle OCI 8i;jdbc:oracle:oci8:@<SID>;oracle.jdbc.driver.OracleDriver
+Oracle OCI 9i;jdbc:oracle:oci:@<SID>;oracle.jdbc.driver.OracleDriver
+PostgreSQL (v6.5 and earlier);jdbc:postgresql://<HOST>:<PORT>/<DB>;postgresql.Driver
+PostgreSQL (v7.0 and later);jdbc:postgresql://<HOST>:<PORT>/<DB>;org.postgresql.Driver
+Sybase (jConnect 4.2 and earlier);jdbc:sybase:Tds:<HOST>:<PORT>;com.sybase.jdbc.SybDriver
+Sybase (jConnect 5.2);jdbc:sybase:Tds:<HOST>:<PORT>;com.sybase.jdbc2.jdbc.SybDriver 
+Derby;jdbc:derby://<HOST>:<PORT>/<DB>;org.apache.derby.jdbc.ClientDriver
+Derby embedded;jdbc:derby:<DB>;org.apache.derby.jdbc.EmbeddedDriver
+<new setting>;

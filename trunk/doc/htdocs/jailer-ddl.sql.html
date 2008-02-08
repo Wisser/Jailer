@@ -1,0 +1,106 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Open Jail. The Jailer Project Web Site.</title>
+</head>
+<body>
+<table style="background-color: rgb(51, 102, 255); text-align: left;"
+ border="0" cellpadding="2" cellspacing="0">
+  <tbody>
+    <tr>
+      <td
+ style="height: 24px; background-color: rgb(202, 225, 235); vertical-align: top;"><big><span
+ style="font-family: monospace;"><span style="font-weight: bold;"><span
+ style="font-family: monospace;">jailer-ddl.sql </span></span></span><span
+ style="font-family: monospace;"></span></big><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0"
+ cellspacing="0">
+  <tbody>
+    <tr>
+      <td colspan="2" rowspan="1"
+ style="background-color: rgb(202, 225, 235); vertical-align: top;"><span
+ style="font-family: monospace;">-- Jailer<br>
+      <br>
+drop table entity;<br>
+drop table dependency;<br>
+drop table entity_set_element;<br>
+drop table entity_graph;<br>
+      <br>
+CREATE TABLE entity_graph<br>
+(<br>
+&nbsp;&nbsp;
+id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+INTEGER NOT NULL,<br>
+&nbsp;&nbsp;
+age&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+INTEGER NOT NULL,<br>
+      <br>
+&nbsp;&nbsp; CONSTRAINT j_pk_graph PRIMARY KEY(id)<br>
+);<br>
+      <br>
+CREATE TABLE entity<br>
+(<br>
+&nbsp;&nbsp; r_entitygraph&nbsp;&nbsp; INTEGER NOT NULL,<br>
+&nbsp;&nbsp; PK0 INTEGER NOT NULL, PK1 INTEGER NOT NULL, PK2 INTEGER
+NOT NULL,<br>
+&nbsp;&nbsp; birthday&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INTEGER
+NOT NULL,<br>
+&nbsp;&nbsp;
+type&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+varchar(50) NOT NULL,<br>
+      <br>
+&nbsp;&nbsp; PRE_PK0 INTEGER, PRE_PK1 INTEGER, PRE_PK2 INTEGER,<br>
+&nbsp;&nbsp; PRE_TYPE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+varchar(50),<br>
+&nbsp;&nbsp; association&nbsp;&nbsp;&nbsp;&nbsp; INTEGER,<br>
+      <br>
+&nbsp;&nbsp; CONSTRAINT j_pk_entity PRIMARY KEY(r_entitygraph, PK0,
+PK1, PK2),<br>
+&nbsp;&nbsp; CONSTRAINT j_fk_graph_e FOREIGN KEY (r_entitygraph)
+REFERENCES entity_graph(id)<br>
+);<br>
+      <br>
+CREATE INDEX ix_entity_brthdy ON entity (r_entitygraph, birthday, type);<br>
+      <br>
+CREATE TABLE entity_set_element<br>
+(<br>
+&nbsp;&nbsp;
+set_id&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INTEGER
+NOT NULL,<br>
+&nbsp;&nbsp; PK0 INTEGER NOT NULL, PK1 INTEGER NOT NULL, PK2 INTEGER
+NOT NULL,<br>
+      <br>
+&nbsp;&nbsp; CONSTRAINT j_pk_entityset PRIMARY KEY(set_id, PK0, PK1,
+PK2)<br>
+);<br>
+      <br>
+CREATE TABLE dependency<br>
+(<br>
+&nbsp;&nbsp; r_entitygraph&nbsp;&nbsp; INTEGER NOT NULL,<br>
+&nbsp;&nbsp; FROM_PK0 INTEGER NOT NULL, FROM_PK1 INTEGER NOT NULL,
+FROM_PK2 INTEGER NOT NULL,<br>
+&nbsp;&nbsp; TO_PK0 INTEGER NOT NULL, TO_PK1 INTEGER NOT NULL, TO_PK2
+INTEGER NOT NULL,&nbsp;&nbsp; <br>
+      <br>
+&nbsp;&nbsp; CONSTRAINT j_fk_graph_d FOREIGN KEY (r_entitygraph)
+REFERENCES entity_graph(id)<br>
+);<br>
+      <br>
+CREATE INDEX ix_dependency_from ON dependency (r_entitygraph, FROM_PK0,
+FROM_PK1, FROM_PK2);<br>
+CREATE INDEX ix_dependency_to ON dependency (r_entitygraph, TO_PK0,
+TO_PK1, TO_PK2);<br>
+      </span></td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<br>
+</body>
+</html>
