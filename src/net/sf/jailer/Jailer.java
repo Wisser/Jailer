@@ -352,7 +352,7 @@ public class Jailer {
     /**
      * Writes entities into extract-SQL-script.
      * 
-     * @param table the name of the sql-script to write the data to
+     * @param scriptType the name of the sql-script to write the data to
      * @param table write entities from this table only
      * @param result a writer for the extract-script
      */
