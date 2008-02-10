@@ -19,13 +19,9 @@ import java.awt.Component;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.Connection;
-import java.sql.Driver;
 import java.sql.DriverManager;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -41,6 +37,7 @@ import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
+import net.sf.jailer.drivermanager.JDBCDriverManager;
 
 /**
  * "Connect with DB" dialog.
@@ -375,20 +372,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         if (d2.length() == 0) {
             d2 = null;
         }
+
         try {
-            StatementExecutor.setClassLoaderForJdbcDriver(addJarToClasspath(d1, d2));
-        } catch (Exception e) {
-            UIUtil.showException(this, "Error loading driver jars", e);
-            return;
-        }
-        
-        try {
-	        if (StatementExecutor.classLoaderForJdbcDriver != null) {
-	            Driver d = (Driver)Class.forName(driverClass.getText(), true, StatementExecutor.classLoaderForJdbcDriver).newInstance();
-	            DriverManager.registerDriver(new StatementExecutor.DriverShim(d));
-	        } else {
-	            Class.forName(driverClass.getText());
-	        }
+			DriverManager.registerDriver(JDBCDriverManager.getDriver(driverClass.getText()));
 	        Connection con = DriverManager.getConnection(dbUrl.getText(), user.getText(), password.getText());
 	        con.close();
 	        isConnected = true;
@@ -400,32 +386,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         
     }//GEN-LAST:event_jButton1ActionPerformed
     
-    /**
-     * Adds one or two jars to classpath.
-     * 
-     * @param jarName1 filename of jar 1
-     * @param jarName2 filename of jar 2
-     */
-    private URLClassLoader addJarToClasspath(String jarName1, String jarName2) throws Exception {
-        URL[] urls;
-        if (jarName1 == null) {
-            if (jarName2 == null) {
-                return null;
-            }
-            jarName1 = jarName2;
-            jarName2 = null;
-        }
-        System.out.println("add '" + jarName1 + "' to classpath");
-        if (jarName2 == null) {
-            urls = new URL[] {new URL("file", null, jarName1)};
-        } else {
-            System.out.println("add '" + jarName2 + "' to classpath");
-            urls = new URL[] {new URL("file", null, jarName1), new URL("file", null, jarName2)};
-        }
-        URLClassLoader urlLoader = new URLClassLoader(urls);
-        return urlLoader;
-    }
-
     /**
      * Selects the DB-schema to for introspection.
      * 
