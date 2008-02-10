@@ -1,17 +1,17 @@
 package net.sf.jailer.drivermanager;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.sql.Driver;
-import java.sql.SQLException;
-import java.sql.Connection;
-import java.sql.DriverPropertyInfo;
-import java.util.Properties;
+import java.io.IOException;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.lang.reflect.InvocationTargetException;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverPropertyInfo;
+import java.sql.SQLException;
+import java.util.Properties;
 
 /**
  * This object manages the list of databases drivers. It performs loading of
@@ -145,10 +145,9 @@ public final class JDBCDriverManager {
 	 * initialized or if a driver instance could not be created.
 	 * @throws DriverNotFoundException If no {@link java.sql.Driver}s has been
 	 * found for the specified serverName.
-	 * @throws IOException If a driver library could not be loaded.
 	 */
 	public static Driver getDriver(String serverName)
-	throws RuntimeException, DriverNotFoundException, IOException {
+	throws RuntimeException, DriverNotFoundException {
 		if (!initialized) {
 			initialize(DEFAULT_DRIVERS_LIST_FILE, DEFAULT_DRIVERS_DIRECTORY);
 		}
@@ -175,9 +174,9 @@ public final class JDBCDriverManager {
 	}
 
 	private static Driver createDriverInstance(String libraryFileName, String className)
-	throws IOException, ClassNotFoundException, InstantiationException,
-				IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+	throws MalformedURLException, ClassNotFoundException {
 		URL libraryURL = new File(libraryFileName).toURI().toURL();
+		System.err.println("Loading driver from " + libraryURL);
 		// Adding libraryFileName to a system ClassLoader.
 		ClassLoader loader = new URLClassLoader(new URL[] {libraryURL},
 					ClassLoader.getSystemClassLoader());

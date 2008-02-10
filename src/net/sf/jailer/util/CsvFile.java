@@ -151,8 +151,8 @@ public class CsvFile {
     /**
      * Checks if a certain line can be found in this file.
      * 
-     * @param the line
-     * @return <code>true</code> iff this file contains the line 
+     * @param line the line
+     * @return <code>true</code> if this file contains the line 
      */
     public boolean contains(String[] line) {
         for (Line l: getLines()) {
