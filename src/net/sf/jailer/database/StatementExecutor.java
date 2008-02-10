@@ -16,37 +16,34 @@
 
 package net.sf.jailer.database;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.sql.*;
-import java.util.*;
-import java.text.MessageFormat;
-
-import org.apache.log4j.Logger;
 import net.sf.jailer.drivermanager.JDBCDriverManager;
+import org.apache.log4j.Logger;
+
+import java.io.*;
+import java.sql.*;
+import java.text.MessageFormat;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Executes SQL-Statements.
  * Holds connections to the database on a 'per thread' basis.
  * 
  * @author Wisser
+ * @author Vladimir "Dair T'arg" Bekutov
  */
 public class StatementExecutor {
 
     /**
      * Hold a connection for each thread.
      */
-    private final ThreadLocal<Connection> connection = new ThreadLocal<Connection>();
+    private final ThreadLocal<Connection> myConnection = new ThreadLocal<Connection>();
     
     /**
      * Holds all connections.
      */
-    private final Collection<Connection> connections = Collections.synchronizedCollection(new ArrayList<Connection>());
+    private final Collection<Connection> myConnections = Collections.synchronizedCollection(new ArrayList<Connection>());
     
     /**
      * Reads a JDBC-result-set.
@@ -57,6 +54,7 @@ public class StatementExecutor {
          * Reads current row of a result-set.
          * 
          * @param resultSet the result-set
+		 * @throws SQLException If the reading has been executed with errors.
          */
         void readCurrentRow(ResultSet resultSet) throws SQLException;
 
@@ -82,118 +80,86 @@ public class StatementExecutor {
      * The logger.
      */
     private static final Logger myLog = Logger.getLogger("sql");
- 
-    /**
-     * Connection factory.
-     */
-    private interface ConnectionFactory {
-        Connection getConnection() throws SQLException;
-    }
-    
-    /**
-     * Connection factory.
-     */
-    private final ConnectionFactory connectionFactory;
 
-    /**
+	/**
      * The DB schema name.
      */
     private final String schemaName;
 
-    /**
-     * The DB URL.
-     */
-    public final String dbUrl;
-    
-    /**
-     * The DB user.
-     */
-    public final String dbUser;
-    
-    /**
-     * The DB password.
-     */
-    public final String dbPassword;
-
-    /**
+	/**
      * Optional schema for introspection.
      */
     private String introspectionSchema;
     
     /**
-     * Classloader to load Jdbc-Driver with.
-     */
-    //public static ClassLoader myJDBCDriverLoader = null;
-    
-    /**
-     * Wraps a Jdbc-Driver.
-     */
-    public static class DriverShim implements Driver {
-        private Driver driver;
-        public DriverShim(Driver d) {
-            this.driver = d;
-        }
-        public boolean acceptsURL(String u) throws SQLException {
-            return this.driver.acceptsURL(u);
-        }
-        public Connection connect(String u, Properties p) throws SQLException {
-            return this.driver.connect(u, p);
-        }
-        public int getMajorVersion() {
-            return this.driver.getMajorVersion();
-        }
-        public int getMinorVersion() {
-            return this.driver.getMinorVersion();
-        }
-        public DriverPropertyInfo[] getPropertyInfo(String u, Properties p) throws SQLException {
-            return this.driver.getPropertyInfo(u, p);
-        }
-        public boolean jdbcCompliant() {
-            return this.driver.jdbcCompliant();
-        }
-    }
-
-    /**
      * Constructs {@code StatementExecutor} for executing statements at
 	 * specified DB-server with specified DB-driver and authorizes using
 	 * specified DB-username and DB-password.
      * 
-     * @param driverClassName Name of JDBC-driver class
+     * @param serverType A type of sql server.
      * @param host The database host URL
      * @param user The DB-user
      * @param password The DB-password
+	 *
+	 * @throws Exception
      */
-    public StatementExecutor(String driverClassName, final String host, final String user, final String password)
+    public StatementExecutor(String serverType, final String host, final String user, final String password)
 	throws Exception {
 		// todo: replace with locale string
 		myLog.info("connecting to db-server at " + host + " with user " + user + ";");
 		// Loading and registering a driver.
-		DriverManager.registerDriver(JDBCDriverManager.getDriver(driverClassName));
+		DriverManager.registerDriver(JDBCDriverManager.getDriver(serverType));
         this.schemaName = user;
-        this.dbUrl = host;
-        this.dbUser = user;
-        this.dbPassword = password;
-        connectionFactory = new ConnectionFactory() {
-            public Connection getConnection() throws SQLException {
-                Connection con = connection.get();
-                
-                if (con == null) {
-                    con = DriverManager.getConnection(host, user, password);
-                    con.setAutoCommit(true);
-                    try {
-                        con.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
-                    } catch (SQLException e) {
-                        myLog.info("can't set isolation level to UR. Reason: " + e.getMessage());
-                    }
-                    connection.set(con);
-                    connections.add(con);
-                }
-                return con;
-            }
-        };
-        // fail fast
-        connectionFactory.getConnection();
+		myHost = host;
+		myUsername = user;
+		myPassword = password;
+		getConnection();
     }
+
+	///////////////////////////
+	// Default DB server url //
+	///////////////////////////
+
+	private String myHost;
+
+	/**
+	 * Returns a sql-server host.
+	 *
+	 * @return A sql-server host.
+	 */
+	public String getHost() {
+		return myHost;
+	}
+
+	//////////////////////
+	// Default username //
+	//////////////////////
+
+	private String myUsername;
+
+	/**
+	 * Returns a username.
+	 *
+	 * @return A username.
+	 */
+	public String getUsername() {
+		return myUsername;
+	}
+
+	//////////////////////
+	// Default password //
+	//////////////////////
+
+	private String myPassword;
+
+	/**
+	 * Returns a password.
+	 *
+	 * @return A password.
+	 */
+	public String getPassword() {
+		return myPassword;
+	}
 
     /**
      * Gets DB schema name.
@@ -212,7 +178,7 @@ public class StatementExecutor {
      */
     public void executeQuery(String sqlQuery, ResultSetReader reader) throws SQLException {
         myLog.debug(sqlQuery);
-        Statement statement = connectionFactory.getConnection().createStatement();
+        Statement statement = getConnection().createStatement();
         ResultSet resultSet = statement.executeQuery(sqlQuery);
         while (resultSet.next()) {
             reader.readCurrentRow(resultSet);
@@ -267,7 +233,7 @@ public class StatementExecutor {
         while (!ok) {
             Statement statement = null;
             try {
-                statement = connectionFactory.getConnection().createStatement();
+                statement = getConnection().createStatement();
                 if (serializeAccess) {
                     synchronized (DB_LOCK) {
                         rowCount = statement.executeUpdate(sqlUpdate);
@@ -296,12 +262,17 @@ public class StatementExecutor {
     
     /**
      * Inserts a CLob.
-     */
+	 *
+	 * @param table
+	 * @param column
+	 * @param where
+	 * @param lobFile
+	 */
     public void insertClob(String table, String column, String where, File lobFile) throws SQLException, FileNotFoundException {
     	String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
         myLog.debug(sqlUpdate);
         PreparedStatement statement = null;
-        statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
+        statement = getConnection().prepareStatement(sqlUpdate);
         statement.setCharacterStream(1, new InputStreamReader(new FileInputStream(lobFile)), (int) lobFile.length());
         statement.execute();
         statement.close();
@@ -309,12 +280,17 @@ public class StatementExecutor {
 
     /**
      * Inserts a BLob.
+	 *
+	 * @param table
+	 * @param column
+	 * @param where
+	 * @param lobFile
      */
     public void insertBlob(String table, String column, String where, File lobFile) throws SQLException, FileNotFoundException {
     	String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
         myLog.debug(sqlUpdate);
         PreparedStatement statement = null;
-        statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
+        statement = getConnection().prepareStatement(sqlUpdate);
         statement.setBinaryStream(1, new FileInputStream(lobFile), (int) lobFile.length());
         statement.execute();
         statement.close();
@@ -327,7 +303,7 @@ public class StatementExecutor {
      */
     public void execute(String sql) throws SQLException {
         myLog.debug(sql);
-        Statement statement = connectionFactory.getConnection().createStatement();
+        Statement statement = getConnection().createStatement();
         statement.execute(sql);
         statement.close();
     }
@@ -338,15 +314,16 @@ public class StatementExecutor {
      * @return DB meta data
      */
     public DatabaseMetaData getMetaData() throws SQLException {
-        Connection connection = connectionFactory.getConnection();
+        Connection connection = getConnection();
         return connection.getMetaData();
     }
 
     /**
      * Closes all connections.
-     */
+	 * @throws java.sql.SQLException
+	 */
     public void shutDown() throws SQLException {
-        for (Connection con: connections) {
+        for (Connection con: myConnections) {
             con.close();
         }
     }
@@ -411,5 +388,28 @@ public class StatementExecutor {
 		}
 		myMaxFailures = maxFailures;
 	}
-    
+
+	/**
+	 * Returns a connection to a database server.
+	 *
+	 * @return A connection to a database server.
+	 * 
+	 * @throws SQLException If some SQL errors occured.
+	 */
+	public Connection getConnection()
+	throws SQLException {
+		Connection connection = myConnection.get();
+		if (connection == null) {
+			connection = DriverManager.getConnection(myHost, myUsername, myPassword);
+			connection.setAutoCommit(true);
+			try {
+				connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+			} catch (SQLException e) {
+				myLog.info("can't set isolation level to UR. Reason: " + e.getMessage());
+			}
+			myConnection.set(connection);
+			myConnections.add(connection);
+		}
+		return connection;
+	}
 }

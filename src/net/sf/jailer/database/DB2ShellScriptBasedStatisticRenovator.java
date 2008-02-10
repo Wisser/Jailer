@@ -42,16 +42,16 @@ public class DB2ShellScriptBasedStatisticRenovator extends ShellScriptBasedStati
      * @return shell-invocation
      */
     protected String getScriptInvocation(StatementExecutor statementExecutor) throws Exception {
-        int indexOf = statementExecutor.dbUrl.indexOf("://");
+        int indexOf = statementExecutor.getHost().indexOf("://");
         String dbName;
         if (indexOf >= 0) {
-			String s = statementExecutor.dbUrl.substring(indexOf + 3);
+			String s = statementExecutor.getHost().substring(indexOf + 3);
 	        dbName = s.substring(s.indexOf("/") + 1);
         } else {
-			String s = statementExecutor.dbUrl;
+			String s = statementExecutor.getHost();
         	dbName = s.substring(s.lastIndexOf(":") + 1);
         }
-        return super.getScriptInvocation(statementExecutor) + " " + dbName + " " + statementExecutor.dbUser + " " + statementExecutor.dbPassword;
+        return super.getScriptInvocation(statementExecutor) + " " + dbName + " " + statementExecutor.getUsername() + " " + statementExecutor.getPassword();
     }
 
 }

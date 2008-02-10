@@ -16,26 +16,22 @@
 
 package net.sf.jailer.database;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.Reader;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.Base64;
 import net.sf.jailer.util.SqlScriptExecutor;
 import net.sf.jailer.util.SqlUtil;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStreamWriter;
+import java.io.Reader;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -287,53 +283,59 @@ public class ExportReader implements ResultSetReader {
                 where.append(pk.name + "=" + val.get(pk.name));
             }
             if (lob instanceof Clob) {
-            	++numberOfExportedLOBs;
-            	flush();
-				Clob clob = (Clob) lob;
-				writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "CLOB " + table.getName() + ", " + lobColumns.get(i) + ", " + where + "\n");
-				Reader in = clob.getCharacterStream();
-				int c;
-				StringBuffer line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
-				while ((c = in.read()) != -1) {
-					if ((char) c == '\n') {
-						writeToScriptFile(line.toString() + "\\n\n");
-						line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
-					} else {
-						line.append((char) c);
-						if ((char) c == '\\') {
-							line.append((char) c);
-						}
-					}
-					if (line.length() >= 100) {
-						writeToScriptFile(line.toString() + "\n");
-						line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
-					}
-				}
-				in.close();
-				writeToScriptFile(line.toString() + "\n" + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "\n");
+				extractClob((Clob)lob, table, where, lobColumns.get(i));
 			}
             if (lob instanceof Blob) {
-            	++numberOfExportedLOBs;
-            	flush();
-				Blob blob = (Blob) lob;
-				writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "BLOB " + table.getName() + ", " + lobColumns.get(i) + ", " + where + "\n");
-				InputStream in = blob.getBinaryStream();
-				int b;
-				StringBuffer line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
-				byte[] buffer = new byte[64];
-				int size = 0;
-				while ((b = in.read()) != -1) {
-					buffer[size++] = (byte) b;
-					if (size == buffer.length) {
-						writeToScriptFile(line.toString() + Base64.encodeBytes(buffer, Base64.DONT_BREAK_LINES) + "\n");
-						line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
-						size = 0;
-					}
-				}
-				in.close();
-				writeToScriptFile(line.toString() + Base64.encodeBytes(buffer, 0, size, Base64.DONT_BREAK_LINES) + "\n" + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "\n");
+				extractBlob((Blob)lob, table, where, lobColumns.get(i));
 			}
 		}
+	}
+
+	private void extractClob(Clob clob, Table table, StringBuffer where, String columns) throws IOException, SQLException {
+		++numberOfExportedLOBs;
+		flush();
+		writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "CLOB " + table.getName() + ", " + columns + ", " + where + "\n");
+		Reader in = clob.getCharacterStream();
+		int c;
+		StringBuffer line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
+		while ((c = in.read()) != -1) {
+			if ((char) c == '\n') {
+				writeToScriptFile(line.toString() + "\\n\n");
+				line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
+			} else {
+				line.append((char) c);
+				if ((char) c == '\\') {
+					line.append((char) c);
+				}
+			}
+			if (line.length() >= 100) {
+				writeToScriptFile(line.toString() + "\n");
+				line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
+			}
+		}
+		in.close();
+		writeToScriptFile(line.toString() + "\n" + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "\n");
+	}
+
+	private void extractBlob(Blob blob, Table table, StringBuffer where, String columns) throws IOException, SQLException {
+		++numberOfExportedLOBs;
+		flush();
+		writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "BLOB " + table.getName() + ", " + columns + ", " + where + "\n");
+		InputStream input = blob.getBinaryStream();
+		int b;
+		StringBuffer line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
+		byte[] buffer = new byte[64];
+		int size = 0;
+		while ((b = input.read()) != -1) {
+			buffer[size++] = (byte) b;
+			if (size == buffer.length) {
+				writeToScriptFile(line.toString() + Base64.encodeBytes(buffer, Base64.DONT_BREAK_LINES) + "\n");
+				line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
+				size = 0;
+			}
+		}
+		input.close();
+		writeToScriptFile(line.toString() + Base64.encodeBytes(buffer, 0, size, Base64.DONT_BREAK_LINES) + "\n" + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "\n");
 	}
 
 	/**

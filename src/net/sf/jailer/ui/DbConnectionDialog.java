@@ -15,29 +15,21 @@
  */
 package net.sf.jailer.ui;
 
-import java.awt.Component;
+import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.drivermanager.JDBCDriverManager;
+import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
+import net.sf.jailer.util.CsvFile;
+import net.sf.jailer.util.CsvFile.Line;
+
+import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JOptionPane;
-import javax.swing.JTextField;
-
-import net.sf.jailer.database.StatementExecutor;
-import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
-import net.sf.jailer.util.CsvFile;
-import net.sf.jailer.util.CsvFile.Line;
-import net.sf.jailer.drivermanager.JDBCDriverManager;
 
 /**
  * "Connect with DB" dialog.
@@ -67,8 +59,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         setLocation(100, 150);
         Map<String, JTextField> fields = new HashMap<String, JTextField>();
         fields.put("password", password);
-        fields.put("dbUrl", dbUrl);
-        fields.put("dbUser", user);
+        fields.put("host", dbUrl);
+        fields.put("username", user);
         fields.put("driver", driverClass);
         fields.put("jar1", jar1);
         fields.put("jar2", jar2);
@@ -376,7 +368,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         try {
 			DriverManager.registerDriver(JDBCDriverManager.getDriver(driverClass.getText()));
 	        Connection con = DriverManager.getConnection(dbUrl.getText(), user.getText(), password.getText());
-	        con.close();
+			con.close();
 	        isConnected = true;
 	        setVisible(false);
         } catch (Exception e) {

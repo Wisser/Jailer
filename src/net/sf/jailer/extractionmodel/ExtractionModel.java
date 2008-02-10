@@ -15,14 +15,14 @@
  */
 package net.sf.jailer.extractionmodel;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.CsvFile;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 
 /**
@@ -89,7 +89,7 @@ public class ExtractionModel {
     /**
      * Constructor.
      * 
-     * @param the name of the model-file
+     * @param fileName the name of the model-file
      */
     public ExtractionModel(String fileName) throws Exception {
         readModel(fileName);
