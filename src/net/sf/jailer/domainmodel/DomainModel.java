@@ -26,9 +26,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import net.sf.jailer.datamodel.Association;
-import net.sf.jailer.datamodel.DataModel;
-import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.datamodel.*;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.CsvFile.Line;
