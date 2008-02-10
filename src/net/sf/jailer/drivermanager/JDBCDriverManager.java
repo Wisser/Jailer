@@ -28,7 +28,7 @@ public final class JDBCDriverManager {
 	/**
 	 * A default configuration file path.
 	 */
-	public final static String DEFAULT_DRIVERS_LIST_FILE = "drivers/drivers.list";
+	public final static String DEFAULT_DRIVERS_LIST_FILE = "config/drivers.list";
 
 	/**
 	 * A default drivers directory.
