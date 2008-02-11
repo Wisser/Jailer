@@ -34,6 +34,15 @@ public final class DatabaseAliasManager {
 	}
 
 	/**
+	 * Gets the names of all registered {@link DatabaseAlias}es.
+	 * 
+	 * @return a list of the names of all registered {@link DatabaseAlias}es
+	 */
+	public static List<String> getAliases() {
+		...
+	}
+
+	/**
 	 * Removes a {@link DatabaseAlias}.
 	 * 
 	 * @param name the name under which the alias to be removed has been registered
