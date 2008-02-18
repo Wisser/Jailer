@@ -128,7 +128,8 @@ public final class JDBCDriverManager {
 
 	private static void loadDriverList(String configurationFile)
 	throws IOException {
-		myDriversList.load(new FileReader(configurationFile));
+// TODO: adjust following call
+//		myDriversList.load(new FileReader(configurationFile));
 	}
 
 	/////////
@@ -209,11 +210,12 @@ public final class JDBCDriverManager {
 			return;
 		}
 		myDriversList.setProperty(serverType, libraryName + "#" + className);
-		try {
-			myDriversList.store(new FileWriter(myConfigurationFile), "");
-		} catch (IOException exception) {
-			throw new RuntimeException("Driver list could not be written", exception);
-		}
+//		try {
+			// TODO: adjust following call
+//			myDriversList.store(new FileWriter(myConfigurationFile), "");
+//		} catch (IOException exception) {
+//			throw new RuntimeException("Driver list could not be written", exception);
+//		}
 	}
 
 	/**

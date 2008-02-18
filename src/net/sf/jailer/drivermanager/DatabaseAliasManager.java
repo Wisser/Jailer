@@ -2,6 +2,7 @@ package net.sf.jailer.drivermanager;
 
 import java.sql.Connection;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Manages {@link DatabaseAlias}es
@@ -20,7 +21,7 @@ public final class DatabaseAliasManager {
 	 * @param alias the alias to register
 	 */
 	public static void registerAlias(String name, DatabaseAlias alias) {
-		...
+//		...
 	}
 
 	/**
@@ -30,7 +31,8 @@ public final class DatabaseAliasManager {
 	 * @return the alias or null, if no alias has been registered under given name
 	 */
 	public static DatabaseAlias getAlias(String name) {
-		...
+//		...
+		return null;
 	}
 
 	/**
@@ -39,7 +41,8 @@ public final class DatabaseAliasManager {
 	 * @return a list of the names of all registered {@link DatabaseAlias}es
 	 */
 	public static List<String> getAliases() {
-		...
+//		...
+		return null;
 	}
 
 	/**
@@ -48,7 +51,7 @@ public final class DatabaseAliasManager {
 	 * @param name the name under which the alias to be removed has been registered
 	 */
 	public static void removeAlias(String name) {
-		...
+//		...
 	}
 
 	/**
@@ -61,7 +64,8 @@ public final class DatabaseAliasManager {
 	 * @throws SQLException if connection cannot be established
 	 */
 	public static Connection connect(DatabaseAlias alias, String password) throws SQLException {
-		...
+//		...
+		return null;
 	}
 	
 }
