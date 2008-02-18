@@ -19,7 +19,10 @@ public class GraphicalDataModelView extends javax.swing.JFrame {
     public GraphicalDataModelView() {
         setDefaultCloseOperation(3);
         try {
-			getContentPane().add(createModelView(new DataModel()));
+			DataModel dataModel = new DataModel();
+			// default constructor reads the files 'datamodel/tables.csv' and 'datamodel/association.csv'
+			
+			getContentPane().add(createModelView(dataModel));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -36,8 +39,10 @@ public class GraphicalDataModelView extends javax.swing.JFrame {
     private Component createModelView(DataModel dataModel) {
     	JTextArea view = new JTextArea();
     	
+    	// Iterates over all tables in data model
     	for (Table table: dataModel.getTables()) {
     		view.append("Table " + table.getName() + "\n");
+    		// Iterates over all associations starting at table
     		for (Association association: table.associations) {
     			String type;
     			if (association.isIgnored()) {
