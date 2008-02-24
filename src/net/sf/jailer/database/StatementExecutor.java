@@ -16,7 +16,8 @@
 
 package net.sf.jailer.database;
 
-import net.sf.jailer.drivermanager.JDBCDriverManager;
+import net.sf.jailer.aliases.DriverNotFoundException;
+import net.sf.jailer.aliases.JDBCDriverManager;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -400,7 +401,11 @@ public class StatementExecutor {
 	throws SQLException {
 		Connection connection = myConnection.get();
 		if (connection == null) {
-			connection = DriverManager.getConnection(myHost, myUsername, myPassword);
+			try {
+				connection = JDBCDriverManager.getConnection(myHost, myUsername, myPassword);
+			} catch (DriverNotFoundException exception) {
+				throw new SQLException("No drivers has been found for the specified jdbc subprotocol", exception);
+			}
 			connection.setAutoCommit(true);
 			try {
 				connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);

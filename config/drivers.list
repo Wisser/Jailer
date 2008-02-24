@@ -1,2 +1,2 @@
 # MySQL driver for Java 1.5
-MySQL=mysql-connector-java-5.1.5-bin.jar#org.gjt.mm.mysql.Driver
+mysql=mysql-connector-java-5.1.5-bin.jar#org.gjt.mm.mysql.Driver

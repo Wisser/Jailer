@@ -1,4 +1,4 @@
-package net.sf.jailer.drivermanager;
+package net.sf.jailer.aliases;
 
 import java.io.File;
 import java.io.FileReader;
@@ -128,8 +128,7 @@ public final class JDBCDriverManager {
 
 	private static void loadDriverList(String configurationFile)
 	throws IOException {
-// TODO: adjust following call
-//		myDriversList.load(new FileReader(configurationFile));
+		myDriversList.load(new FileReader(configurationFile));
 	}
 
 	/////////
@@ -166,6 +165,11 @@ public final class JDBCDriverManager {
 		}
 	}
 
+	public static Driver getDriverForURL(String url)
+	throws DriverNotFoundException {
+		return getDriver(getSubprotocol(url));
+	}
+
 	private static String getLibraryName(String fullName) {
 		return fullName.substring(0, fullName.indexOf('#'));
 	}
@@ -177,7 +181,6 @@ public final class JDBCDriverManager {
 	private static Driver createDriverInstance(String libraryFileName, String className)
 	throws MalformedURLException, ClassNotFoundException {
 		URL libraryURL = new File(libraryFileName).toURI().toURL();
-		System.err.println("Loading driver from " + libraryURL);
 		// Adding libraryFileName to a system ClassLoader.
 		ClassLoader loader = new URLClassLoader(new URL[] {libraryURL},
 					ClassLoader.getSystemClassLoader());
@@ -210,12 +213,11 @@ public final class JDBCDriverManager {
 			return;
 		}
 		myDriversList.setProperty(serverType, libraryName + "#" + className);
-//		try {
-			// TODO: adjust following call
-//			myDriversList.store(new FileWriter(myConfigurationFile), "");
-//		} catch (IOException exception) {
-//			throw new RuntimeException("Driver list could not be written", exception);
-//		}
+		try {
+			myDriversList.store(new FileWriter(myConfigurationFile), "");
+		} catch (IOException exception) {
+			throw new RuntimeException("Driver list could not be written", exception);
+		}
 	}
 
 	/**
@@ -233,6 +235,28 @@ public final class JDBCDriverManager {
 		}
 		return myDriversList.containsKey(serverType)
 				&& myDriversList.getProperty(serverType).length() != 0;
+	}
+
+	public static Connection getConnection(String url, String name, String password)
+	throws SQLException, DriverNotFoundException {
+		Driver driver = getDriver(getSubprotocol(url));
+		Properties properties = new Properties();
+		properties.setProperty("user", name);
+		properties.setProperty("password", password);
+		return driver.connect(url, properties);
+	}
+
+	private static String getSubprotocol(String url)
+	throws IllegalArgumentException {
+		int start = url.indexOf(':');
+		if (start == -1) {
+			throw new IllegalArgumentException("Invalid url string");
+		}
+		int finish = url.indexOf(':', start + 1);
+		if (finish == -1) {
+			throw new IllegalArgumentException("Invalid url string");
+		}
+		return url.substring(start + 1, finish);
 	}
 
 	//////////////////
