@@ -15,8 +15,8 @@
  */
 package net.sf.jailer.ui;
 
+import net.sf.jailer.aliases.JDBCDriverManager;
 import net.sf.jailer.database.StatementExecutor;
-import net.sf.jailer.drivermanager.JDBCDriverManager;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
@@ -27,7 +27,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.util.*;
 import java.util.List;
 
@@ -366,8 +365,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         }
 
         try {
-			DriverManager.registerDriver(JDBCDriverManager.getDriver(driverClass.getText()));
-	        Connection con = DriverManager.getConnection(dbUrl.getText(), user.getText(), password.getText());
+			Connection con = JDBCDriverManager.getConnection(dbUrl.getText(), user.getText(), password.getText());
 			con.close();
 	        isConnected = true;
 	        setVisible(false);
