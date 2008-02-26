@@ -212,7 +212,7 @@ public final class JDBCDriverManager {
 	 * @throws RuntimeException If there were some problems with writing drivers
 	 * list to a file.
 	 */
-	public static void setDriver(String serverType, String libraryName, String className)
+	public static void дsetDriver(String serverType, String libraryName, String className)
 	throws RuntimeException {
 		if (!initialized) {
 			initialize(DEFAULT_DRIVERS_LIST_FILE, DEFAULT_DRIVERS_DIRECTORY);
