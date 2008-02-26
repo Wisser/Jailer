@@ -16,6 +16,7 @@
 
 package net.sf.jailer.database;
 
+import net.sf.jailer.aliases.DatabaseAlias;
 import net.sf.jailer.aliases.DriverNotFoundException;
 import net.sf.jailer.aliases.JDBCDriverManager;
 import org.apache.log4j.Logger;
@@ -108,8 +109,7 @@ public class StatementExecutor {
 	throws Exception {
 		// todo: replace with locale string
 		myLog.info("connecting to db-server at " + host + " with user " + user + ";");
-		// Loading and registering a driver.
-		DriverManager.registerDriver(JDBCDriverManager.getDriver(JDBCDriverManager.getSubprotocol(host)));
+		databaseAlias = new DatabaseAlias(host, user, password);
         this.schemaName = user;
 		myHost = host;
 		myUsername = user;
@@ -121,6 +121,11 @@ public class StatementExecutor {
 	// Default DB server url //
 	///////////////////////////
 
+    /**
+     * The database alias.
+     */
+    private final DatabaseAlias databaseAlias;
+    
 	private String myHost;
 
 	/**
@@ -401,11 +406,7 @@ public class StatementExecutor {
 	throws SQLException {
 		Connection connection = myConnection.get();
 		if (connection == null) {
-			try {
-				connection = JDBCDriverManager.getConnection(myHost, myUsername, myPassword);
-			} catch (DriverNotFoundException exception) {
-				throw new RuntimeException("No drivers has been found for the specified jdbc subprotocol", exception);
-			}
+			connection = databaseAlias.getConnection();
 			connection.setAutoCommit(true);
 			try {
 				connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
