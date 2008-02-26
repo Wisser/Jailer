@@ -97,19 +97,19 @@ public class StatementExecutor {
 	 * specified DB-server with specified DB-driver and authorizes using
 	 * specified DB-username and DB-password.
      * 
-     * @param serverType A type of sql server.
+     * @param driverClass name of driver class
      * @param host The database host URL
      * @param user The DB-user
      * @param password The DB-password
 	 *
 	 * @throws Exception
      */
-    public StatementExecutor(String serverType, final String host, final String user, final String password)
+    public StatementExecutor(String driverClass, final String host, final String user, final String password)
 	throws Exception {
 		// todo: replace with locale string
 		myLog.info("connecting to db-server at " + host + " with user " + user + ";");
 		// Loading and registering a driver.
-		DriverManager.registerDriver(JDBCDriverManager.getDriver(serverType));
+		DriverManager.registerDriver(JDBCDriverManager.getDriver(JDBCDriverManager.getSubprotocol(host)));
         this.schemaName = user;
 		myHost = host;
 		myUsername = user;
