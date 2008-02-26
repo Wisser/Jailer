@@ -248,7 +248,7 @@ public final class JDBCDriverManager {
 		return driver.connect(url, properties);
 	}
 
-	private static String getSubprotocol(String url)
+	public static String getSubprotocol(String url)
 	throws IllegalArgumentException {
 		int start = url.indexOf(':');
 		if (start == -1) {

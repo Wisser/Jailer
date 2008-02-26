@@ -53,7 +53,7 @@ public class DatabaseAlias {
 		return getConnection(myPassword);
 	}
 
-	/* Use in paranoya mode - no password is storied. */
+	/* Use in paranoya mode - no password is stored. */
 	public Connection getConnection(String password)
 	throws SQLException {
 		Properties properties = new Properties();
