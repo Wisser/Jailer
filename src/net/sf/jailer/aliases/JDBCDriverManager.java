@@ -1,6 +1,8 @@
 package net.sf.jailer.aliases;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -128,7 +130,7 @@ public final class JDBCDriverManager {
 
 	private static void loadDriverList(String configurationFile)
 	throws IOException {
-		myDriversList.load(new FileReader(configurationFile));
+		myDriversList.load(new FileInputStream(configurationFile));
 	}
 
 	/////////
@@ -214,7 +216,7 @@ public final class JDBCDriverManager {
 		}
 		myDriversList.setProperty(serverType, libraryName + "#" + className);
 		try {
-			myDriversList.store(new FileWriter(myConfigurationFile), "");
+			myDriversList.store(new FileOutputStream(myConfigurationFile), "");
 		} catch (IOException exception) {
 			throw new RuntimeException("Driver list could not be written", exception);
 		}

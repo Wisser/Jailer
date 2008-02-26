@@ -404,7 +404,7 @@ public class StatementExecutor {
 			try {
 				connection = JDBCDriverManager.getConnection(myHost, myUsername, myPassword);
 			} catch (DriverNotFoundException exception) {
-				throw new SQLException("No drivers has been found for the specified jdbc subprotocol", exception);
+				throw new RuntimeException("No drivers has been found for the specified jdbc subprotocol", exception);
 			}
 			connection.setAutoCommit(true);
 			try {
