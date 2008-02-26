@@ -17,8 +17,6 @@
 package net.sf.jailer.database;
 
 import net.sf.jailer.aliases.DatabaseAlias;
-import net.sf.jailer.aliases.DriverNotFoundException;
-import net.sf.jailer.aliases.JDBCDriverManager;
 import org.apache.log4j.Logger;
 
 import java.io.*;
@@ -109,11 +107,8 @@ public class StatementExecutor {
 	throws Exception {
 		// todo: replace with locale string
 		myLog.info("connecting to db-server at " + host + " with user " + user + ";");
-		databaseAlias = new DatabaseAlias(host, user, password);
+		myDatabaseAlias = new DatabaseAlias(host, user, password);
         this.schemaName = user;
-		myHost = host;
-		myUsername = user;
-		myPassword = password;
 		getConnection();
     }
 
@@ -124,9 +119,9 @@ public class StatementExecutor {
     /**
      * The database alias.
      */
-    private final DatabaseAlias databaseAlias;
+    private final DatabaseAlias myDatabaseAlias;
     
-	private String myHost;
+	//private String myHost;
 
 	/**
 	 * Returns a sql-server host.
@@ -134,14 +129,14 @@ public class StatementExecutor {
 	 * @return A sql-server host.
 	 */
 	public String getHost() {
-		return myHost;
+		return myDatabaseAlias.getURL();
 	}
 
 	//////////////////////
 	// Default username //
 	//////////////////////
 
-	private String myUsername;
+	//private String myUsername;
 
 	/**
 	 * Returns a username.
@@ -149,14 +144,14 @@ public class StatementExecutor {
 	 * @return A username.
 	 */
 	public String getUsername() {
-		return myUsername;
+		return myDatabaseAlias.getUser();
 	}
 
 	//////////////////////
 	// Default password //
 	//////////////////////
 
-	private String myPassword;
+	//private String myPassword;
 
 	/**
 	 * Returns a password.
@@ -164,7 +159,7 @@ public class StatementExecutor {
 	 * @return A password.
 	 */
 	public String getPassword() {
-		return myPassword;
+		return myDatabaseAlias.getPassword();
 	}
 
     /**
@@ -406,7 +401,7 @@ public class StatementExecutor {
 	throws SQLException {
 		Connection connection = myConnection.get();
 		if (connection == null) {
-			connection = databaseAlias.getConnection();
+			connection = myDatabaseAlias.getConnection();
 			connection.setAutoCommit(true);
 			try {
 				connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
