@@ -14,6 +14,10 @@ public class DriverNotFoundException extends Exception {
 		myRequestedServer = requestedServer;
 	}
 
+	public DriverNotFoundException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
 	/**
 	 * Returns a server type for which driver has been requested.
 	 *

@@ -3,8 +3,6 @@ package net.sf.jailer.aliases;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -20,6 +18,10 @@ import java.util.Properties;
  * appropriate drivers during connection to a database server.
  *
  * Also, this object registers and unregisters a drivers.
+ *
+ *
+ * Note, that a library with a driver for some protocol has already been loaded
+ * to classpath then the driver will be 
  *
  * @author Vladimir "Dair T'arg" Berkutov
  * @date: 08.02.2008
@@ -160,7 +162,11 @@ public final class JDBCDriverManager {
 		String libraryName = myDriversDirectory + getLibraryName(fullName);
 		String className = getClassName(fullName);
 		try {
-			return createDriverInstance(libraryName, className);
+			if ((libraryName == null) || libraryName.isEmpty()) {
+				return new DriverProxy((Driver)ClassLoader.getSystemClassLoader().loadClass(className).newInstance());
+			} else {
+				return createDriverInstance(libraryName, className);
+			}
 		} catch (Exception exception) {
 			System.err.println(exception);
 			throw new RuntimeException("Could not load database server driver", exception);

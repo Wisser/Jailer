@@ -15,17 +15,17 @@
  */
 package net.sf.jailer.restrictionmodel;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.SqlUtil;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 /**
@@ -81,7 +81,7 @@ public class RestrictionModel {
     /**
      * "ignore the association" - restriction.
      */
-    public static final String IGNORE = new String("ignore");
+    public static final String IGNORE = "ignore";
 
     /**
      * Special name for restriction models embedded into extraction model.
