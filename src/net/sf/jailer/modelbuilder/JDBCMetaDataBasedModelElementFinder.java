@@ -113,8 +113,12 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         while (resultSet.next()) {
             String tableName = resultSet.getString(3);
             if ("TABLE".equalsIgnoreCase(resultSet.getString(4))) {
-                tableNames.add(tableName);
-                _log.info("found table " + tableName);
+            	if (isValidName(tableName)) {
+	            	tableNames.add(tableName);
+	            	_log.info("found table " + tableName);
+	            } else {
+	            	_log.info("skip table " + tableName);
+	            }
             }
         }
         resultSet.close();
@@ -171,6 +175,16 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 
         return tables;
     }
+
+    /**
+     * Checks syntactical correctness of names.
+     * 
+     * @param name a table or column name
+     * @return <code>true</code> if name is syntactically correct
+     */
+    private boolean isValidName(String name) {
+		return name != null && !name.contains("$");
+	}
 
     /**
      * Finds all non-empty schemas in DB.

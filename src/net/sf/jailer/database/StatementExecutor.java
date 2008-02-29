@@ -109,8 +109,26 @@ public class StatementExecutor {
 		myLog.info("connecting to db-server at " + host + " with user " + user + ";");
 		myDatabaseAlias = new DatabaseAlias(host, user, password);
         this.schemaName = user;
-		getConnection();
-    }
+        Connection connection = getConnection();
+	    logDriverInfo(connection);
+	}
+	
+	/**
+	 * Logs driver info
+	 * 
+	 * @param connection connection to DB
+	 */
+	private void logDriverInfo(Connection connection) {
+		try {
+			DatabaseMetaData meta = connection.getMetaData();
+			myLog.info("driver name:    " + meta.getDriverName());
+			myLog.info("driver version: " + meta.getDriverVersion());
+			myLog.info("DB name:        " + meta.getDatabaseProductName());
+			myLog.info("DB version:     " + meta.getDatabaseProductVersion());
+		} catch (Exception e) {
+			// ignore exceptions
+		}
+	}
 
 	///////////////////////////
 	// Default DB server url //
