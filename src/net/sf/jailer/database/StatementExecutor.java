@@ -201,10 +201,28 @@ public class StatementExecutor {
             }
         };
         // fail fast
-        connectionFactory.getConnection();
+        Connection connection = connectionFactory.getConnection();
+        logDriverInfo(connection);
     }
 
     /**
+     * Logs driver info
+     * 
+     * @param connection connection to DB
+     */
+    private void logDriverInfo(Connection connection) {
+		try {
+			DatabaseMetaData meta = connection.getMetaData();
+			_log.info("driver name:    " + meta.getDriverName());
+			_log.info("driver version: " + meta.getDriverVersion());
+			_log.info("DB name:        " + meta.getDatabaseProductName());
+			_log.info("DB version:     " + meta.getDatabaseProductVersion());
+		} catch (Exception e) {
+			// ignore exceptions
+		}
+	}
+
+	/**
      * Gets DB schema name.
      * 
      * @return DB schema name

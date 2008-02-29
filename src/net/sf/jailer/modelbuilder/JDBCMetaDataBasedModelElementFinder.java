@@ -68,7 +68,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         DatabaseMetaData metaData = statementExecutor.getMetaData();
         ResultSet resultSet;
         for (Table table: dataModel.getTables()) {
-            resultSet = metaData.getExportedKeys(null, statementExecutor.getIntrospectionSchema(), table.getName());
+        	resultSet = metaData.getExportedKeys(null, statementExecutor.getIntrospectionSchema(), table.getName());
             _log.info("find associations with " + table.getName());
             Map<String, Association> fkMap = new HashMap<String, Association>();
             while (resultSet.next()) {
@@ -113,8 +113,12 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         while (resultSet.next()) {
             String tableName = resultSet.getString(3);
             if ("TABLE".equalsIgnoreCase(resultSet.getString(4))) {
-                tableNames.add(tableName);
-                _log.info("found table " + tableName);
+                if (isValidName(tableName)) {
+                	tableNames.add(tableName);
+                	_log.info("found table " + tableName);
+                } else {
+                	_log.info("skip table " + tableName);
+                }
             }
         }
         resultSet.close();
@@ -173,6 +177,16 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     }
 
     /**
+     * Checks syntactical correctness of names.
+     * 
+     * @param name a table or column name
+     * @return <code>true</code> if name is syntactically correct
+     */
+    private boolean isValidName(String name) {
+		return name != null && !name.contains("$");
+	}
+
+	/**
      * Finds all non-empty schemas in DB.
      * 
      * @param statementExecutor the statement executor for executing SQL-statements

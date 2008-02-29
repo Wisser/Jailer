@@ -1,3 +1,6 @@
+2.1.7
+ - fixed a bug concerning incompatibilities with Oracle 10g
+
 2.1.6
  - fixed a bug concerning incompatibilities with MySQL
 
