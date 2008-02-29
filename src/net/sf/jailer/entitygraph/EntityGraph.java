@@ -406,25 +406,25 @@ public class EntityGraph {
             if (fromEqualsPK.length() > 0) {
                 fromEqualsPK.append(" and ");
             }
-            fromEqualsPK.append("D.FROM_" + column.name + "=" + column.name);
+            fromEqualsPK.append(DEPENDENCY + ".FROM_" + column.name + "=" + column.name);
             if (toEqualsPK.length() > 0) {
                 toEqualsPK.append(" and ");
             }
-            toEqualsPK.append("D.TO_" + column.name + "=" + column.name);
+            toEqualsPK.append(DEPENDENCY + ".TO_" + column.name + "=" + column.name);
         }
         statementExecutor.executeUpdate(
-                "Delete From " + DEPENDENCY + " D " +
-                "Where D.r_entitygraph=" + graphID + " and " + 
+                "Delete From " + DEPENDENCY + " " +
+                "Where " + DEPENDENCY + ".r_entitygraph=" + graphID + " and " + 
                       "exists (Select * from " + ENTITY + " E Where " + 
                           "E.r_entitygraph=" + graphID + " and " +
-                          fromEqualsPK + " and D.from_type=E.type and " +
+                          fromEqualsPK + " and " + DEPENDENCY + ".from_type=E.type and " +
                           "E.birthday=0)");
         statementExecutor.executeUpdate(
-                "Delete From " + DEPENDENCY + " D " +
-                "Where D.r_entitygraph=" + graphID + " and " + 
+                "Delete From " + DEPENDENCY + " " +
+                "Where " + DEPENDENCY + ".r_entitygraph=" + graphID + " and " + 
                       "exists (Select * from " + ENTITY + " E Where " + 
                           "E.r_entitygraph=" + graphID + " and " +
-                          toEqualsPK + " and D.to_type=E.type and " +
+                          toEqualsPK + " and " + DEPENDENCY + ".to_type=E.type and " +
                           "E.birthday=0)");
         statementExecutor.executeUpdate(
                 "Delete From " + ENTITY + " " +
@@ -509,7 +509,7 @@ public class EntityGraph {
     }
     
     /**
-     * Gets a SQL comparision expression for comparing rows with entities.
+     * Gets a SQL comparition expression for comparing rows with entities.
      * 
      * @param table the table
      * 
