@@ -15,31 +15,25 @@
  */
 package net.sf.jailer.ui;
 
-import java.awt.CardLayout;
+import net.sf.jailer.Jailer;
+import net.sf.jailer.aliases.DatabaseAlias;
+import net.sf.jailer.database.ExportReader;
+import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
+
+import javax.swing.*;
+import javax.swing.UIManager.LookAndFeelInfo;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.KeyStroke;
-import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UIManager.LookAndFeelInfo;
-
-import net.sf.jailer.Jailer;
-import net.sf.jailer.database.ExportReader;
-import net.sf.jailer.datamodel.DataModel;
-
 /**
- * Main frame of Extraction-Model-Editor.
+ * Main frame of Extraction-Model-Editor.z
  * 
  * @author Wisser
  */
@@ -53,8 +47,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	/**
 	 * Dialog for DB-connects.
 	 */
-	private final DbConnectionDialog dbConnectionDialog;
-	
+	//private final DbConnectionDialog dbConnectionDialog;
+
+	private DatabaseAlias myDatabaseAlias = null;
+
 	/**
 	 * File in which plaf-setting is stored.
 	 */
@@ -88,8 +84,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         hideIgnored.setAccelerator(KeyStroke.getKeyStroke('H', InputEvent.CTRL_MASK));
         pack();
         updateTitle(extractionModelEditor.needsSave);
-        dbConnectionDialog = new DbConnectionDialog(this);
-        try {
+		myDatabaseAlias = null;
+		try {
 	        for (final LookAndFeelInfo lfInfo: UIManager.getInstalledLookAndFeels()) {
 	        	JMenuItem mItem = new JMenuItem();
 	        	mItem.setText(lfInfo.getName());
@@ -109,7 +105,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      * Updates state of some menu items.
      */
     private void updateMenuItems() {
-		connectDb.setSelected(dbConnectionDialog.isConnected);
+		connectDb.setSelected(myDatabaseAlias != null);
 	}
 
 	/** This method is called from within the constructor to
@@ -476,7 +472,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     				List<String> args = new ArrayList<String>();
     				args.add("import");
     				args.add(sqlFile);
-    				dbConnectionDialog.addDbArgs(args);
+    				myDatabaseAlias.addDbArgs(args);
     				disconnect();
     				UIUtil.runJailer(this, args, false, true, false, false, null);
     			}
@@ -545,8 +541,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	        	if (connectToDBIfNeeded("Introspect DB")) {
 		        	List<String> args = new ArrayList<String>();
 		        	args.add("build-model");
-		        	dbConnectionDialog.addDbArgs(args);
-	        		String schema = dbConnectionDialog.selectDBSchema(this);
+		        	myDatabaseAlias.addDbArgs(args);
+	        		String schema = selectDBSchema(this);
 	        		if (!"".equals(schema)) {
 		        		if (schema != null) {
 		        			args.add("-schema");
@@ -575,13 +571,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        	List<String> args = new ArrayList<String>();
 			        	args.add("export");
 			        	args.add(extractionModelEditor.extractionModelFile);
-			        	dbConnectionDialog.addDbArgs(args);
+			        	myDatabaseAlias.addDbArgs(args);
 			        	ExportDialog exportDialog = new ExportDialog(this);
 			        	if (exportDialog.isOk()) {
 			        		exportDialog.fillCLIArgs(args);
 				        	List<String> ddlArgs = new ArrayList<String>();
 				        	ddlArgs.add("create-ddl");
-				        	dbConnectionDialog.addDbArgs(ddlArgs);
+				        	myDatabaseAlias.addDbArgs(ddlArgs);
 				        	ExportReader.numberOfExportedEntities = 0;
 				        	ExportReader.numberOfExportedLOBs = 0;
 				            if (UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
@@ -612,8 +608,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_disconnectDbActionPerformed
 
 	private void disconnect() {
-		dbConnectionDialog.isConnected = false;
-    	updateMenuItems();
+		myDatabaseAlias = null;
+		updateMenuItems();
 	}
 
     private void connectDbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectDbActionPerformed
@@ -626,13 +622,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         	if (connectToDBIfNeeded("Html rendering")) {
 	        	List<String> args = new ArrayList<String>();
 	        	args.add("render-datamodel");
-	        	String schema = dbConnectionDialog.selectDBSchema(this);
+	        	String schema = selectDBSchema(this);
         		if (!"".equals(schema)) {
 	        		if (schema != null) {
 	        			args.add("-schema");
 	        			args.add(schema);
 	        		}
-	        		dbConnectionDialog.addDbArgs(args);
+	        		myDatabaseAlias.addDbArgs(args);
 		        	File file = saveRestrictions();
 		        	args.add(file.getName());
 		        	UIUtil.runJailer(this, args, false, true, false, true, null);
@@ -673,8 +669,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      */
     private boolean connectToDBIfNeeded(String reason) {
     	try {
-    		if (!dbConnectionDialog.isConnected) {
-	    		return dbConnectionDialog.connect(reason);
+    		if (myDatabaseAlias == null) {
+	    		return (myDatabaseAlias = ConnectionDialog.showDialog(this)) != null;
     		}
     		return true;
     	} finally {
@@ -913,5 +909,33 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem updateDataModel;
     private javax.swing.JMenu view;
     // Ende der Variablendeklaration//GEN-END:variables
-    
+
+
+	/**
+	 * Selects the DB-schema to for introspection.
+	 *
+	 * @return the DB-schema to for introspection
+	 */
+	public String selectDBSchema(Component parent) throws Exception {
+		StatementExecutor statementExecutor = new StatementExecutor(myDatabaseAlias.getURL(), myDatabaseAlias.getUser(), myDatabaseAlias.getPassword());
+		List<String> schemas = JDBCMetaDataBasedModelElementFinder.getSchemas(statementExecutor, myDatabaseAlias.getUser());
+		statementExecutor.shutDown();
+		if (schemas.size() == 1) {
+			return schemas.get(0);
+		}
+		if (schemas.isEmpty()) {
+			return null;
+		}
+		for (String s: schemas) {
+			if (s.equalsIgnoreCase(myDatabaseAlias.getUser().trim())) {
+				return s;
+			}
+		}
+		String s = (String) JOptionPane.showInputDialog(parent, "Select schema to introspect", "Schema", JOptionPane.QUESTION_MESSAGE, null, schemas.toArray(), schemas.get(0));
+		if (s == null) {
+			return "";
+		}
+		return s;
+	}
+
 }

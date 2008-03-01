@@ -136,32 +136,32 @@ public final class JDBCDriverManager {
 		myDriversList.load(new FileInputStream(configurationFile));
 	}
 
-	/////////
-	// API //
-	/////////
+	/////////////////////
+	// Getting Drivers //
+	/////////////////////
 
 	/**
 	 * Returns a {@link java.sql.Driver} instance for requested server type.
 	 *
-	 * @param serverName A database server type.
+	 * @param subprotocol A database server type.
 	 * @return A {@link java.sql.Driver} instance for requested server type.
 	 *
 	 * @throws RuntimeException If the {@code JDBCDriverManager} engine has not been
 	 * initialized or if a driver instance could not be created.
 	 * @throws DriverNotFoundException If no {@link java.sql.Driver}s has been
-	 * found for the specified serverName.
+	 * found for the specified subprotocol.
 	 */
-	public static Driver getDriver(String serverName)
+	public static Driver getDriver(String subprotocol)
 	throws RuntimeException, DriverNotFoundException {
 		if (!initialized) {
 			initialize(DEFAULT_DRIVERS_LIST_FILE, DEFAULT_DRIVERS_DIRECTORY);
 		}
-		if (!myDriversList.containsKey(serverName)) {
-			throw new DriverNotFoundException(serverName);
+		if (!myDriversList.containsKey(subprotocol)) {
+			throw new DriverNotFoundException(subprotocol);
 		}
-		String fullName = myDriversList.getProperty(serverName);
-		String libraryName = myDriversDirectory + getLibraryName(fullName);
-		String className = getClassName(fullName);
+		String fullName = myDriversList.getProperty(subprotocol);
+		String libraryName = myDriversDirectory + JDBCUtil.getLibraryName(fullName);
+		String className = JDBCUtil.getClassName(fullName);
 		try {
 			if ((libraryName == null) || libraryName.isEmpty()) {
 				return new DriverProxy((Driver)ClassLoader.getSystemClassLoader().loadClass(className).newInstance());
@@ -176,15 +176,7 @@ public final class JDBCDriverManager {
 
 	public static Driver getDriverForURL(String url)
 	throws DriverNotFoundException {
-		return getDriver(getSubprotocol(url));
-	}
-
-	private static String getLibraryName(String fullName) {
-		return fullName.substring(0, fullName.indexOf('#'));
-	}
-
-	private static String getClassName(String fullName) {
-		return fullName.substring(fullName.indexOf("#") + 1);
+		return getDriver(JDBCUtil.getSubprotocol(url));
 	}
 
 	private static Driver createDriverInstance(String libraryFileName, String className)
@@ -200,6 +192,18 @@ public final class JDBCDriverManager {
 			throw new ClassNotFoundException("Specified class is not an extension of java.sql.Driver", exception);
 		}
 	}
+
+	public static String getDriverClassNameForURL(String url) {
+		String subprotocol = JDBCUtil.getSubprotocol(url);
+		if (!initialized) {
+			initialize(DEFAULT_DRIVERS_LIST_FILE, DEFAULT_DRIVERS_DIRECTORY);
+		}
+		return JDBCUtil.getClassName(myDriversList.getProperty(subprotocol, ""));
+	}
+
+	/////////////////////
+	// Setting Drivers //
+	/////////////////////
 
 	public static void setDriver(String subprotocol, String complexClassName) {
 		int indexOfCell = Math.max(complexClassName.indexOf('#'), 0);
@@ -232,23 +236,12 @@ public final class JDBCDriverManager {
 		if (!isDriverExists(subprotocol)) {
 			return;
 		}
-		myDriversList.setProperty(subprotocol, implode(jarPaths, ":") + "#" + className);
+		myDriversList.setProperty(subprotocol, JDBCUtil.implode(jarPaths, ":") + "#" + className);
 		try {
 			myDriversList.store(new FileOutputStream(myConfigurationFile), "");
 		} catch (IOException exception) {
 			throw new RuntimeException("Driver list could not be written", exception);
 		}
-	}
-
-	private static String implode(String strings[], String delimeter) {
-		if (strings == null) {
-			return "";
-		}
-		String result = strings[0];
-		for (int i = 1; i < strings.length; i++) {
-			result += delimeter + strings[i];
-		}
-		return result;
 	}
 
 	/**
@@ -270,24 +263,11 @@ public final class JDBCDriverManager {
 
 	public static Connection getConnection(String url, String name, String password)
 	throws SQLException, DriverNotFoundException {
-		Driver driver = getDriver(getSubprotocol(url));
+		Driver driver = getDriver(JDBCUtil.getSubprotocol(url));
 		Properties properties = new Properties();
 		properties.setProperty("user", name);
 		properties.setProperty("password", password);
 		return driver.connect(url, properties);
-	}
-
-	public static String getSubprotocol(String url)
-	throws IllegalArgumentException {
-		int start = url.indexOf(':');
-		if (start == -1) {
-			throw new IllegalArgumentException("Invalid url string");
-		}
-		int finish = url.indexOf(':', start + 1);
-		if (finish == -1) {
-			throw new IllegalArgumentException("Invalid url string");
-		}
-		return url.substring(start + 1, finish);
 	}
 
 	//////////////////

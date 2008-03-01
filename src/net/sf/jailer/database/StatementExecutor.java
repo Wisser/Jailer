@@ -102,10 +102,26 @@ public class StatementExecutor {
      * @param password The DB-password
 	 *
 	 * @throws Exception
+	 *
+	 * @see net.sf.jailer.database.StatementExecutor#StatementExecutor(String, String, String)
      */
     public StatementExecutor(String driverClass, final String host, final String user, final String password)
 	throws Exception {
-		// todo: replace with locale string
+		this(host, user, password);
+	}
+
+	/**
+	 * Constructs {@code StatementExecutor} for executing statements at
+	 * specified DB-server and authorizes usingspecified DB-username and DB-password.
+	 *
+	 * @param host The database host URL
+	 * @param user The DB-user
+	 * @param password The DB-password
+	 *
+	 * @throws Exception
+	 */
+	public StatementExecutor(String host, String user, String password)
+	throws Exception {
 		myLog.info("connecting to db-server at " + host + " with user " + user + ";");
 		myDatabaseAlias = new DatabaseAlias(host, user, password);
         this.schemaName = user;

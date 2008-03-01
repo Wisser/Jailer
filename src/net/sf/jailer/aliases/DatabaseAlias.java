@@ -3,6 +3,7 @@ package net.sf.jailer.aliases;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Properties;
 
 /**
@@ -186,6 +187,60 @@ public class DatabaseAlias {
 		return myDriver.connect(getURL(), properties);
 	}
 
+	/**
+	 * Return a connection to the database with this {@code DatabaseAlias}
+	 * properties.
+	 *
+	 * @return A connection to the database.
+	 *
+	 * @throws SQLException If the connection to the database could not be
+	 * established with current data.
+	 *
+	 * @deprecated Use #getConnection() instead.
+	 */
+	@Deprecated
+	public Connection connect()
+	throws SQLException {
+		return getConnection();
+	}
+
+	/**
+	 * Return a connection to the database with this {@code DatabaseAlias}
+	 * properties and enforced password.
+	 *
+	 * @param password A password for database access.
+	 * @return A connection to the database.
+	 *
+	 * @throws SQLException If the connection to the database could not be
+	 * established with current data.
+	 *
+	 * @deprecated Use #getConnection(java.lang.String) instead.
+	 */
+	@Deprecated
+	public Connection connect(String password)
+	throws SQLException {
+		return getConnection(password);
+	}
+
+	/**
+	 * Return a connection to the database with this {@code DatabaseAlias}
+	 * properties and enforced password.
+	 *
+	 * @param user A user of the database.
+	 * @param password A password for database access.
+	 * @return A connection to the database.
+	 *
+	 * @throws SQLException If the connection to the database could not be
+	 * established with current data.
+	 *
+	 * @deprecated Use #getConnection(java.lang.String) instead.
+	 */
+	@Deprecated
+	public Connection connect(String user, String password)
+	throws SQLException {
+		return getConnection(user, password);
+	}
+
 	/////////
 	// URL //
 	/////////
@@ -244,6 +299,14 @@ public class DatabaseAlias {
 
 	public String toString() {
 		return "DatabaseAlias [url=" + getURL() + "; user=" + getUser() + "]";
+	}
+
+	@Deprecated
+	public void addDbArgs(List<String> list) {
+		list.add(JDBCDriverManager.getDriverClassNameForURL(myUrl));
+		list.add(myUrl);
+		list.add(myUser);
+		list.add(myPassword);
 	}
 
 }
