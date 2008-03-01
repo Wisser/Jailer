@@ -65,7 +65,7 @@ public final class ConnectionDialog extends JDialog {
 	
 	private DatabaseAlias myAlias = null;
 
-	public DatabaseAlias getDatabaseAlias() {
+	public final DatabaseAlias getDatabaseAlias() {
 		return myAlias;
 	}
 
@@ -218,11 +218,11 @@ public final class ConnectionDialog extends JDialog {
 		myJarsListField = new JTextField();
 		myJarsListField.setBorder(BorderFactory.createCompoundBorder(myJarsListField.getBorder(), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
 		hbox.add(myJarsListField);
-		hbox.add(Box.createHorizontalStrut(3));
-		JButton selectJarsButton = new JButton("Select");
-		selectJarsButton.setEnabled(false);
-		selectJarsButton.setFocusable(false);
-		hbox.add(selectJarsButton);
+//		hbox.add(Box.createHorizontalStrut(3));
+//		JButton selectJarsButton = new JButton("Select");
+//		selectJarsButton.setEnabled(false);
+//		selectJarsButton.setFocusable(false);
+//		hbox.add(selectJarsButton);
 		hbox.add(Box.createHorizontalStrut(6));
 		box.add(hbox);
 		return box;
@@ -242,11 +242,11 @@ public final class ConnectionDialog extends JDialog {
 		myDriverClassField = new JTextField();
 		myDriverClassField.setBorder(BorderFactory.createCompoundBorder(myDriverClassField.getBorder(), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
 		hbox.add(myDriverClassField);
-		hbox.add(Box.createHorizontalStrut(3));
-		JButton selectClassButton = new JButton("Select");
-		selectClassButton.setEnabled(false);
-		selectClassButton.setFocusable(false);
-		hbox.add(selectClassButton);
+//		hbox.add(Box.createHorizontalStrut(3));
+//		JButton selectClassButton = new JButton("Select");
+//		selectClassButton.setEnabled(false);
+//		selectClassButton.setFocusable(false);
+//		hbox.add(selectClassButton);
 		hbox.add(Box.createHorizontalStrut(6));
 		box.add(hbox);
 		return box;
@@ -322,9 +322,5 @@ public final class ConnectionDialog extends JDialog {
 			myOwner.dispose();
 		}
 	}
-
-
-	//////////
-	// Misc //
-	//////////
+	
 }
