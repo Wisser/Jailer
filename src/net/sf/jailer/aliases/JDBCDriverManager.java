@@ -27,6 +27,7 @@ import java.util.Properties;
  * @date: 08.02.2008
  * @time: 14:49:29
  */
+// todo: shold be tested with multy jar driver libraries
 public final class JDBCDriverManager {
 
 	/**
@@ -200,32 +201,54 @@ public final class JDBCDriverManager {
 		}
 	}
 
+	public static void setDriver(String subprotocol, String complexClassName) {
+		int indexOfCell = Math.max(complexClassName.indexOf('#'), 0);
+		String librariesPart = complexClassName.substring(0, indexOfCell);
+		String className = complexClassName.substring(indexOfCell + 1, complexClassName.length());
+		setDriver(subprotocol, librariesPart, className);
+	}
+
+	public static void setDriver(String subprotocol, String jarPaths, String className) {
+		setDriver(subprotocol, jarPaths.split(":"), className);
+	}
+
 	/**
 	 * Sets a driver for the server type. This method just adds a record to a
 	 * drivers list and flushes it to a file.
 	 *
-	 * @param serverType A type of server - just a key for a driver.
-	 * @param libraryName A name of .jar file with a library.
+	 * @param subprotocol A type of server - just a key for a driver.
+	 * @param jarPaths An array of .jar files with a library.
 	 * @param className A name of class from a library which implements
 	 * {@link java.sql.Driver}.
 	 *
 	 * @throws RuntimeException If there were some problems with writing drivers
 	 * list to a file.
 	 */
-	public static void setDriver(String serverType, String libraryName, String className)
+	public static void setDriver(String subprotocol, String jarPaths[], String className)
 	throws RuntimeException {
 		if (!initialized) {
 			initialize(DEFAULT_DRIVERS_LIST_FILE, DEFAULT_DRIVERS_DIRECTORY);
 		}
-		if (!isDriverExists(serverType)) {
+		if (!isDriverExists(subprotocol)) {
 			return;
 		}
-		myDriversList.setProperty(serverType, libraryName + "#" + className);
+		myDriversList.setProperty(subprotocol, implode(jarPaths, ":") + "#" + className);
 		try {
 			myDriversList.store(new FileOutputStream(myConfigurationFile), "");
 		} catch (IOException exception) {
 			throw new RuntimeException("Driver list could not be written", exception);
 		}
+	}
+
+	private static String implode(String strings[], String delimeter) {
+		if (strings == null) {
+			return "";
+		}
+		String result = strings[0];
+		for (int i = 1; i < strings.length; i++) {
+			result += delimeter + strings[i];
+		}
+		return result;
 	}
 
 	/**

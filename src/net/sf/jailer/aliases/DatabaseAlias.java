@@ -11,6 +11,10 @@ import java.util.Properties;
  * @time: 0:05:42
  */
 public class DatabaseAlias {
+	
+	//////////////////
+	// Constructors //
+	//////////////////
 
 	/**
 	 * Constructs a {@code DatabaseAlias} for a database at the specified
