@@ -165,6 +165,8 @@ public final class ConnectionDialog extends JDialog {
 		hbox = Box.createHorizontalBox();
 		myJDBCURLField = new JTextField(myLastConnected == null ? "" : myLastConnected.getURL());
 		myJDBCURLField.setBorder(BorderFactory.createCompoundBorder(myJDBCURLField.getBorder(), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
+		myJDBCURLField.addKeyListener(new DialogExitAction(this));
+		myJDBCURLField.addKeyListener(new DialogConnectAction(this));
 		hbox.add(myJDBCURLField);
 //		hbox.add(Box.createHorizontalStrut(4));
 //		JButton helpButton = new JButton(new ImageIcon("icons/help.png"));
@@ -188,6 +190,8 @@ public final class ConnectionDialog extends JDialog {
 		hbox = Box.createHorizontalBox();
 		myUserField = new JTextField(myLastConnected == null ? "" : myLastConnected.getUser(), 25);
 		myUserField.setBorder(BorderFactory.createCompoundBorder(myUserField.getBorder(), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
+		myUserField.addKeyListener(new DialogExitAction(this));
+		myUserField.addKeyListener(new DialogConnectAction(this));
 		hbox.add(myUserField);
 		box.add(hbox);
 		return box;
@@ -205,6 +209,8 @@ public final class ConnectionDialog extends JDialog {
 		hbox = Box.createHorizontalBox();
 		myPasswordField = new JPasswordField(myLastConnected == null ? "" : myLastConnected.getPassword(), 25);
 		myPasswordField.setBorder(BorderFactory.createCompoundBorder(myPasswordField.getBorder(), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
+		myPasswordField.addKeyListener(new DialogExitAction(this));
+		myPasswordField.addKeyListener(new DialogConnectAction(this));
 		hbox.add(myPasswordField);
 		box.add(hbox);
 		return box;
@@ -239,6 +245,8 @@ public final class ConnectionDialog extends JDialog {
 			myJarsListField.setText(((DatabaseAliasExternal)myLastConnected).getJars());
 		}
 		myJarsListField.setBorder(BorderFactory.createCompoundBorder(myJarsListField.getBorder(), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
+		myJarsListField.addKeyListener(new DialogExitAction(this));
+		myJarsListField.addKeyListener(new DialogConnectAction(this));
 		hbox.add(myJarsListField);
 //		hbox.add(Box.createHorizontalStrut(3));
 //		JButton selectJarsButton = new JButton("Select");
@@ -268,6 +276,8 @@ public final class ConnectionDialog extends JDialog {
 			myDriverClassField.setText(((DatabaseAliasExternal)myLastConnected).getClassName());
 		}
 		myDriverClassField.setBorder(BorderFactory.createCompoundBorder(myDriverClassField.getBorder(), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
+		myDriverClassField.addKeyListener(new DialogExitAction(this));
+		myDriverClassField.addKeyListener(new DialogConnectAction(this));
 		hbox.add(myDriverClassField);
 //		hbox.add(Box.createHorizontalStrut(3));
 //		JButton selectClassButton = new JButton("Select");
@@ -298,40 +308,46 @@ public final class ConnectionDialog extends JDialog {
 	// Listeners //
 	///////////////
 
+	long lastActionTime = 0;
+	long minActionTime = 200;
+	
 	private final class DialogExitAction implements ActionListener, KeyListener {
 		private ConnectionDialog myOwner;
 		public DialogExitAction(ConnectionDialog owner) {myOwner = owner;}
-		public void keyTyped(KeyEvent e) {if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {execute();}}
-		public void keyPressed(KeyEvent e) {}
-		public void keyReleased(KeyEvent e) {if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {execute();}}
+		public void keyTyped(KeyEvent e) {}
+		public void keyPressed(KeyEvent e) {if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {execute();}}
+		public void keyReleased(KeyEvent e) {}
 		public void actionPerformed(ActionEvent e) {execute();}
-		
 		private void execute() {
+			if (System.currentTimeMillis() - lastActionTime < minActionTime) return;
+			lastActionTime = System.currentTimeMillis();
 			myAlias = null;
 			myOwner.dispose();
 		}
 	}
 
+
 	private final class ShowAndHideAction implements ChangeListener {
 		private JCheckBox myFlag;
 		private JComponent myComponent;
 		public ShowAndHideAction(JCheckBox flag, JComponent component) {myFlag = flag; myComponent = component;}
-
 		public void stateChanged(ChangeEvent e) {
 			myComponent.setVisible(myFlag.isSelected());
 			pack();
 		}
 	}
 
+
 	private final class DialogConnectAction implements ActionListener, KeyListener {
 		private ConnectionDialog myOwner;
 		public DialogConnectAction(ConnectionDialog owner) {myOwner = owner;}
-		public void keyTyped(KeyEvent e) {if (e.getKeyCode() == KeyEvent.VK_ENTER) {execute();}}
-		public void keyPressed(KeyEvent e) {}
-		public void keyReleased(KeyEvent e) {if (e.getKeyCode() == KeyEvent.VK_ENTER) {execute();}}
+		public void keyTyped(KeyEvent e) {}
+		public void keyPressed(KeyEvent e) {if (e.getKeyCode() == KeyEvent.VK_ENTER) {execute();}}
+		public void keyReleased(KeyEvent e) {}
 		public void actionPerformed(ActionEvent e) {execute();}
-
 		private void execute() {
+			if (System.currentTimeMillis() - lastActionTime < minActionTime) return;
+			lastActionTime = System.currentTimeMillis();
 			try {
 				myAlias = generateDatabaseAlias();
 			} catch (Exception exception) {

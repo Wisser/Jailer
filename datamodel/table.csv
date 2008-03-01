@@ -1,2 +1,5 @@
 # Name; Upsert; Primary key; ; Author
-sample; N; A INTEGER; ; Data Model Editor; ; 
+messages; N; id INTEGER; ; Data Model Editor; ; 
+systems; N; id INTEGER; ; Data Model Editor; ; 
+players; N; id INTEGER; ; Data Model Editor; ; 
+users; N; id INTEGER; ; Data Model Editor; ; 
