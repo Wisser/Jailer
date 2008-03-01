@@ -1,8 +1,6 @@
 package net.sf.jailer.ui;
 
-import net.sf.jailer.aliases.DatabaseAlias;
-import net.sf.jailer.aliases.DriverNotFoundException;
-import net.sf.jailer.aliases.JDBCDriverManager;
+import net.sf.jailer.aliases.*;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -62,10 +60,11 @@ public final class ConnectionDialog extends JDialog {
 	///////////////////
 	// DatabaseAlias //
 	///////////////////
-	
+
+	private static DatabaseAlias myLastConnected = null;
 	private DatabaseAlias myAlias = null;
 
-	public final DatabaseAlias getDatabaseAlias() {
+	private DatabaseAlias getDatabaseAlias() {
 		return myAlias;
 	}
 
@@ -80,9 +79,11 @@ public final class ConnectionDialog extends JDialog {
 		if (myUseExternalDriverCheckBox.isSelected()) {
 			String jars[] = myJarsListField.getText().trim().split(":");
 			String className = myDriverClassField.getText();
-			JDBCDriverManager.setDriver(JDBCDriverManager.getSubprotocol(url), jars, className);
+			JDBCDriverManager.setDriver(JDBCUtil.getSubprotocol(url), jars, className);
+			return new DatabaseAliasExternal(url, user, password, jars, className);
+		} else {
+			return new DatabaseAlias(url, user, password, JDBCDriverManager.getDriverForURL(url));
 		}
-		return new DatabaseAlias(url, user, password, JDBCDriverManager.getDriverForURL(url));
 	}
 
 	/////////////////////
@@ -107,10 +108,26 @@ public final class ConnectionDialog extends JDialog {
 		setAlwaysOnTop(true);
 		setResizable(false);
 		pack();
+		genLocation();
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setVisible(true);
+		if (myLastConnected != null) {
+			myJDBCURLField.setText(myLastConnected.getURL());
+			myUserField.setText(myLastConnected.getUser());
+			myPasswordField.setText(myLastConnected.getPassword());
+			if (myLastConnected instanceof DatabaseAliasExternal) {
+				myUseExternalDriverCheckBox.setSelected(true);
+				myJarsListField.setText(((DatabaseAliasExternal)myLastConnected).getJars());
+				myDriverClassField.setText(((DatabaseAliasExternal)myLastConnected).getClassName());
+			}
+		}
 	}
 
+	private void genLocation() {
+		int x = (getParent().getWidth() - getWidth()) / 2;
+		int y = (getParent().getHeight() - getHeight()) / 2;
+		setLocation(x, y);
+	}
 	private Box createUI() {
 		Box box = Box.createVerticalBox();
 		box.setBorder(BorderFactory.createEmptyBorder(6, 6, 6, 6));
@@ -122,7 +139,7 @@ public final class ConnectionDialog extends JDialog {
 		box.add(Box.createVerticalStrut(12));
 			Box hbox = Box.createHorizontalBox();
 			myUseExternalDriverCheckBox = new JCheckBox("Use non-default driver", false);
-			myUseExternalDriverCheckBox.setFocusable(false);
+			myUseExternalDriverCheckBox.setFocusable(myLastConnected == null || !(myLastConnected instanceof DatabaseAliasExternal));
 			hbox.add(myUseExternalDriverCheckBox);
 			hbox.add(Box.createHorizontalGlue());
 			box.add(hbox);
@@ -146,7 +163,7 @@ public final class ConnectionDialog extends JDialog {
 		box.add(hbox);
 		box.add(Box.createVerticalStrut(3));
 		hbox = Box.createHorizontalBox();
-		myJDBCURLField = new JTextField();
+		myJDBCURLField = new JTextField(myLastConnected == null ? "" : myLastConnected.getURL());
 		myJDBCURLField.setBorder(BorderFactory.createCompoundBorder(myJDBCURLField.getBorder(), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
 		hbox.add(myJDBCURLField);
 //		hbox.add(Box.createHorizontalStrut(4));
@@ -169,7 +186,7 @@ public final class ConnectionDialog extends JDialog {
 		box.add(hbox);
 		box.add(Box.createVerticalStrut(3));
 		hbox = Box.createHorizontalBox();
-		myUserField = new JTextField(25);
+		myUserField = new JTextField(myLastConnected == null ? "" : myLastConnected.getUser(), 25);
 		myUserField.setBorder(BorderFactory.createCompoundBorder(myUserField.getBorder(), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
 		hbox.add(myUserField);
 		box.add(hbox);
@@ -186,7 +203,7 @@ public final class ConnectionDialog extends JDialog {
 		box.add(hbox);
 		box.add(Box.createVerticalStrut(3));
 		hbox = Box.createHorizontalBox();
-		myPasswordField = new JPasswordField(25);
+		myPasswordField = new JPasswordField(myLastConnected == null ? "" : myLastConnected.getPassword(), 25);
 		myPasswordField.setBorder(BorderFactory.createCompoundBorder(myPasswordField.getBorder(), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
 		hbox.add(myPasswordField);
 		box.add(hbox);
@@ -216,6 +233,11 @@ public final class ConnectionDialog extends JDialog {
 		hbox = Box.createHorizontalBox();
 		hbox.add(Box.createHorizontalStrut(6));
 		myJarsListField = new JTextField();
+		if (myLastConnected == null || !(myLastConnected instanceof DatabaseAliasExternal)) {
+			myJarsListField.setText("");
+		} else {
+			myJarsListField.setText(((DatabaseAliasExternal)myLastConnected).getJars());
+		}
 		myJarsListField.setBorder(BorderFactory.createCompoundBorder(myJarsListField.getBorder(), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
 		hbox.add(myJarsListField);
 //		hbox.add(Box.createHorizontalStrut(3));
@@ -240,6 +262,11 @@ public final class ConnectionDialog extends JDialog {
 		hbox = Box.createHorizontalBox();
 		hbox.add(Box.createHorizontalStrut(6));
 		myDriverClassField = new JTextField();
+		if (myLastConnected == null || !(myLastConnected instanceof DatabaseAliasExternal)) {
+			myDriverClassField.setText("");
+		} else {
+			myDriverClassField.setText(((DatabaseAliasExternal)myLastConnected).getClassName());
+		}
 		myDriverClassField.setBorder(BorderFactory.createCompoundBorder(myDriverClassField.getBorder(), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
 		hbox.add(myDriverClassField);
 //		hbox.add(Box.createHorizontalStrut(3));
@@ -319,6 +346,10 @@ public final class ConnectionDialog extends JDialog {
 				JOptionPane.showMessageDialog(myOwner, "Could not establish a test connection");
 				return;
 			}
+			//noinspection EmptyCatchBlock
+			try {
+				myLastConnected = generateDatabaseAlias();
+			} catch (Exception e) {}
 			myOwner.dispose();
 		}
 	}
