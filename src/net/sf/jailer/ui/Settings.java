@@ -15,16 +15,11 @@
  */
 package net.sf.jailer.ui;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import javax.swing.*;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
-
-import javax.swing.JTextField;
 
 /**
  * Manages settings of dialogs.
@@ -133,5 +128,5 @@ public class Settings  {
             }
         }
     }
-    
+
 }
