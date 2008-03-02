@@ -5,10 +5,12 @@ import net.sf.jailer.aliases.*;
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.io.File;
 import java.sql.SQLException;
 
 /**
@@ -140,12 +142,14 @@ public final class ConnectionDialog extends JDialog {
 			Box hbox = Box.createHorizontalBox();
 			myUseExternalDriverCheckBox = new JCheckBox("Use non-default driver", false);
 			myUseExternalDriverCheckBox.setFocusable(myLastConnected == null || !(myLastConnected instanceof DatabaseAliasExternal));
+			myUseExternalDriverCheckBox.addKeyListener(new DialogExitAction(this));
 			hbox.add(myUseExternalDriverCheckBox);
 			hbox.add(Box.createHorizontalGlue());
 			box.add(hbox);
 		box.add(Box.createVerticalStrut(6));
 		Box driverSelectionBox = createDriverSelectionBox();
 		myUseExternalDriverCheckBox.addChangeListener(new ShowAndHideAction(myUseExternalDriverCheckBox, driverSelectionBox));
+		myUseExternalDriverCheckBox.addKeyListener(new ShowAndHideAction(myUseExternalDriverCheckBox, driverSelectionBox));
 		driverSelectionBox.setVisible(false);
 		box.add(driverSelectionBox);
 		box.add(Box.createVerticalStrut(12));
@@ -157,13 +161,13 @@ public final class ConnectionDialog extends JDialog {
 		Box box = Box.createVerticalBox();
 		Box hbox = Box.createHorizontalBox();
 		hbox.add(Box.createHorizontalStrut(6));
-		JLabel label = new JLabel("Jdbc url:");
+		JLabel label = new JLabel("jdbc database url:");
 		hbox.add(label);
 		hbox.add(Box.createHorizontalGlue());
 		box.add(hbox);
 		box.add(Box.createVerticalStrut(3));
 		hbox = Box.createHorizontalBox();
-		myJDBCURLField = new JTextField(myLastConnected == null ? "" : myLastConnected.getURL());
+		myJDBCURLField = new JTextField(myLastConnected == null ? "jdbc:" : myLastConnected.getURL());
 		myJDBCURLField.setBorder(BorderFactory.createCompoundBorder(myJDBCURLField.getBorder(), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
 		myJDBCURLField.addKeyListener(new DialogExitAction(this));
 		myJDBCURLField.addKeyListener(new DialogConnectAction(this));
@@ -238,7 +242,7 @@ public final class ConnectionDialog extends JDialog {
 		box.add(Box.createVerticalStrut(3));
 		hbox = Box.createHorizontalBox();
 		hbox.add(Box.createHorizontalStrut(6));
-		myJarsListField = new JTextField();
+		myJarsListField = new JTextField(20);
 		if (myLastConnected == null || !(myLastConnected instanceof DatabaseAliasExternal)) {
 			myJarsListField.setText("");
 		} else {
@@ -248,11 +252,12 @@ public final class ConnectionDialog extends JDialog {
 		myJarsListField.addKeyListener(new DialogExitAction(this));
 		myJarsListField.addKeyListener(new DialogConnectAction(this));
 		hbox.add(myJarsListField);
-//		hbox.add(Box.createHorizontalStrut(3));
-//		JButton selectJarsButton = new JButton("Select");
-//		selectJarsButton.setEnabled(false);
-//		selectJarsButton.setFocusable(false);
-//		hbox.add(selectJarsButton);
+		hbox.add(Box.createHorizontalStrut(3));
+		JButton selectJarsButton = new JButton("Select");
+		selectJarsButton.addActionListener(new ChoosJarsAction(this));
+		selectJarsButton.addKeyListener(new DialogExitAction(this));
+		selectJarsButton.addKeyListener(new ChoosJarsAction(this));
+		hbox.add(selectJarsButton);
 		hbox.add(Box.createHorizontalStrut(6));
 		box.add(hbox);
 		return box;
@@ -293,12 +298,13 @@ public final class ConnectionDialog extends JDialog {
 		Box box = Box.createHorizontalBox();
 		box.add(Box.createHorizontalGlue());
 		JButton myConnectButton = new JButton("Connect");
-		myConnectButton.setFocusable(false);
+		myConnectButton.addKeyListener(new DialogExitAction(this));
+		myConnectButton.addKeyListener(new DialogConnectAction(this));
 		myConnectButton.addActionListener(new DialogConnectAction(this));
 		box.add(myConnectButton);
 		box.add(Box.createHorizontalStrut(6));
 		JButton myCancelButton = new JButton("Cancel");
-		myCancelButton.setFocusable(false);
+		myCancelButton.addKeyListener(new DialogExitAction(this, true));
 		myCancelButton.addActionListener(new DialogExitAction(this));
 		box.add(myCancelButton);
 		return box;
@@ -311,12 +317,15 @@ public final class ConnectionDialog extends JDialog {
 	long lastActionTime = 0;
 	long minActionTime = 200;
 	
-	private final class DialogExitAction implements ActionListener, KeyListener {
+	private final class DialogExitAction extends KeyAdapter implements ActionListener {
 		private ConnectionDialog myOwner;
+		private boolean myAcceptAllActions;
 		public DialogExitAction(ConnectionDialog owner) {myOwner = owner;}
-		public void keyTyped(KeyEvent e) {}
-		public void keyPressed(KeyEvent e) {if (e.getKeyCode() == KeyEvent.VK_ESCAPE) {execute();}}
-		public void keyReleased(KeyEvent e) {}
+		public DialogExitAction(ConnectionDialog owner, boolean acceptAllActions) {
+			this(owner);
+			myAcceptAllActions = acceptAllActions;
+		}
+		public void keyPressed(KeyEvent e) {if (e.getKeyCode() == KeyEvent.VK_ESCAPE || myAcceptAllActions) {execute();}}
 		public void actionPerformed(ActionEvent e) {execute();}
 		private void execute() {
 			if (System.currentTimeMillis() - lastActionTime < minActionTime) return;
@@ -327,10 +336,15 @@ public final class ConnectionDialog extends JDialog {
 	}
 
 
-	private final class ShowAndHideAction implements ChangeListener {
+	private final class ShowAndHideAction extends KeyAdapter implements ChangeListener {
 		private JCheckBox myFlag;
 		private JComponent myComponent;
 		public ShowAndHideAction(JCheckBox flag, JComponent component) {myFlag = flag; myComponent = component;}
+		public void keyPressed(KeyEvent e) {
+			if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+				myUseExternalDriverCheckBox.setSelected(!myUseExternalDriverCheckBox.isSelected());
+			}
+		}
 		public void stateChanged(ChangeEvent e) {
 			myComponent.setVisible(myFlag.isSelected());
 			pack();
@@ -338,12 +352,10 @@ public final class ConnectionDialog extends JDialog {
 	}
 
 
-	private final class DialogConnectAction implements ActionListener, KeyListener {
+	private final class DialogConnectAction extends KeyAdapter implements ActionListener {
 		private ConnectionDialog myOwner;
 		public DialogConnectAction(ConnectionDialog owner) {myOwner = owner;}
-		public void keyTyped(KeyEvent e) {}
 		public void keyPressed(KeyEvent e) {if (e.getKeyCode() == KeyEvent.VK_ENTER) {execute();}}
-		public void keyReleased(KeyEvent e) {}
 		public void actionPerformed(ActionEvent e) {execute();}
 		private void execute() {
 			if (System.currentTimeMillis() - lastActionTime < minActionTime) return;
@@ -367,6 +379,42 @@ public final class ConnectionDialog extends JDialog {
 				myLastConnected = generateDatabaseAlias();
 			} catch (Exception e) {}
 			myOwner.dispose();
+		}
+	}
+
+
+	private final class ChoosJarsAction extends KeyAdapter implements ActionListener {
+		private ConnectionDialog myOwner;
+		public ChoosJarsAction(ConnectionDialog owner) {myOwner = owner;}
+		public void actionPerformed(ActionEvent e) {execute();}
+		public void keyPressed(KeyEvent e) {if (e.getKeyCode() == KeyEvent.VK_ENTER) execute();}
+		private void execute() {
+			if (System.currentTimeMillis() - lastActionTime < minActionTime) return;
+			lastActionTime = System.currentTimeMillis();
+			// Jar Files selection
+			JFileChooser fileChooser = new JFileChooser("./");
+			FileNameExtensionFilter filter = new FileNameExtensionFilter("Java library files (*.jar)", "jar", "JAR");
+			fileChooser.setFileFilter(filter);
+			fileChooser.setMultiSelectionEnabled(true);
+			int result = fileChooser.showOpenDialog(myOwner);
+			if (result == JFileChooser.APPROVE_OPTION) {
+				File jars[] = fileChooser.getSelectedFiles();
+				if (jars.length == 0) {
+					return;
+				}
+				String string = myJarsListField.getText();
+				if (!string.isEmpty()) {
+					string += JDBCDriverManager.JARPATH_DELIMETER;
+				} else {
+					string = "";
+				}
+				string += jars[0].getPath();
+				for (int i = 1; i < jars.length; i++) {
+					string += JDBCDriverManager.JARPATH_DELIMETER + jars[i].getPath();
+				}
+				myJarsListField.setScrollOffset(1000);
+				myJarsListField.setText(string);
+			}
 		}
 	}
 	

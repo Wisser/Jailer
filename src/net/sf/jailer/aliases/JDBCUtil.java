@@ -34,10 +34,10 @@ public final class JDBCUtil {
 	}
 
 	public static String getLibraryName(String fullName) {
-		return fullName.substring(0, fullName.indexOf('#'));
+		return fullName.substring(0, fullName.indexOf(JDBCDriverManager.GLOBAL_DELIMETER));
 	}
 
 	public static String getClassName(String fullName) {
-		return fullName.substring(fullName.indexOf("#") + 1);
+		return fullName.substring(fullName.indexOf(JDBCDriverManager.GLOBAL_DELIMETER) + 1);
 	}
 }

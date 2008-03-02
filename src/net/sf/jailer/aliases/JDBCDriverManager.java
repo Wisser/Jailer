@@ -40,6 +40,10 @@ public final class JDBCDriverManager {
 	 */
 	public final static String DEFAULT_DRIVERS_DIRECTORY = "drivers/";
 
+	public final static String JARPATH_DELIMETER = ":";
+
+	public final static String GLOBAL_DELIMETER = "#";
+
 	/**
 	 * Initializes the {@code JDBCDriverManager} engine.
 	 *
@@ -160,7 +164,12 @@ public final class JDBCDriverManager {
 			throw new DriverNotFoundException(subprotocol);
 		}
 		String fullName = myDriversList.getProperty(subprotocol);
-		String libraryName = myDriversDirectory + JDBCUtil.getLibraryName(fullName);
+		String libraryName = JDBCUtil.getLibraryName(fullName);
+		// If the libraryName is not valid unix or win full path then it is
+		// subpath at myDriversDirectory.
+		if (!(libraryName.startsWith("/") || libraryName.startsWith("\\"))) {
+			libraryName = myDriversDirectory + libraryName;
+		}
 		String className = JDBCUtil.getClassName(fullName);
 		try {
 			if ((libraryName == null) || libraryName.isEmpty()) {
@@ -206,14 +215,14 @@ public final class JDBCDriverManager {
 	/////////////////////
 
 	public static void setDriver(String subprotocol, String complexClassName) {
-		int indexOfCell = Math.max(complexClassName.indexOf('#'), 0);
+		int indexOfCell = Math.max(complexClassName.indexOf(GLOBAL_DELIMETER), 0);
 		String librariesPart = complexClassName.substring(0, indexOfCell);
 		String className = complexClassName.substring(indexOfCell + 1, complexClassName.length());
 		setDriver(subprotocol, librariesPart, className);
 	}
 
 	public static void setDriver(String subprotocol, String jarPaths, String className) {
-		setDriver(subprotocol, jarPaths.split(":"), className);
+		setDriver(subprotocol, jarPaths.split(JARPATH_DELIMETER), className);
 	}
 
 	/**
@@ -236,7 +245,7 @@ public final class JDBCDriverManager {
 		if (!isDriverExists(subprotocol)) {
 			return;
 		}
-		myDriversList.setProperty(subprotocol, JDBCUtil.implode(jarPaths, ":") + "#" + className);
+		myDriversList.setProperty(subprotocol, JDBCUtil.implode(jarPaths, JARPATH_DELIMETER) + GLOBAL_DELIMETER + className);
 		try {
 			myDriversList.store(new FileOutputStream(myConfigurationFile), "");
 		} catch (IOException exception) {

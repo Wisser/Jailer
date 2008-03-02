@@ -1,2 +1,3 @@
-# MySQL driver for Java 1.5
-mysql=mysql-connector-java-5.1.5-bin.jar#org.gjt.mm.mysql.Driver
+#
+#Sun Mar 02 09:42:28 MSK 2008
+mysql=/home/vladimir/programming/Java/Jailer/trunk/drivers/mysql-connector-java-5.1.5-bin.jar\#org.gjt.mm.mysql.Driver
