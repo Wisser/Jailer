@@ -48,12 +48,11 @@ public class DatabaseAlias {
 	 * 
 	 * @throws DriverNotFoundException If no {@link java.sql.Driver}s for the
 	 * specified subprotocol has been found.
-	 * @throws SQLException If the error occured during the test connection.
 	 *
 	 * @see net.sf.jailer.aliases.DatabaseAlias#DatabaseAlias(String, String, String, java.sql.Driver)
 	 */
 	public DatabaseAlias(String url, String user, String password)
-	throws DriverNotFoundException, SQLException {
+	throws DriverNotFoundException {
 		this(url, user, password, JDBCDriverManager.getDriverForURL(url));
 	}
 
@@ -99,18 +98,22 @@ public class DatabaseAlias {
 		myUser = user;
 		myPassword = password;
 		// Driver
+		setDriver(driver);
+	}
+
+	protected DatabaseAlias() {}
+
+	protected void setDriver(Driver driver)
+	throws DriverNotFoundException {
 		if (driver == null) {
 			myDriver = null;
 		} else {
 			try {
-				if (driver.acceptsURL(url)) {
+				if (driver.acceptsURL(myUrl)) {
 					myDriver = driver;
 				} else {
 					throw new SQLException("The url string is not acceptible by the specified driver");
 				}
-				// Testing connection
-				Connection connection = getConnection();
-				connection.close();
 			} catch (SQLException exception) {
 				throw new DriverNotFoundException("Unacceptible url string", exception);
 			}
@@ -121,7 +124,7 @@ public class DatabaseAlias {
 	// Driver //
 	////////////
 
-	private Driver myDriver;
+	protected Driver myDriver;
 
 	/**
 	 * Return a connection to the database with this {@code DatabaseAlias}

@@ -1,6 +1,9 @@
 package net.sf.jailer.ui;
 
-import net.sf.jailer.aliases.*;
+import net.sf.jailer.aliases.DatabaseAlias;
+import net.sf.jailer.aliases.DatabaseAliasExternal;
+import net.sf.jailer.aliases.DriverNotFoundException;
+import net.sf.jailer.aliases.JDBCDriverManager;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -88,7 +91,6 @@ public final class ConnectionDialog extends JDialog {
 		if (myUseExternalDriverCheckBox.isSelected()) {
 			String jars[] = myJarsListField.getText().trim().split(":");
 			String className = myDriverClassField.getText();
-			JDBCDriverManager.setDriver(JDBCUtil.getSubprotocol(url), jars, className);
 			return new DatabaseAliasExternal(url, user, password, jars, className);
 		} else {
 			return new DatabaseAlias(url, user, password, JDBCDriverManager.getDriverForURL(url));
@@ -273,7 +275,7 @@ public final class ConnectionDialog extends JDialog {
 		myJarsListField.addKeyListener(new DialogConnectAction(this));
 		hbox.add(myJarsListField);
 		hbox.add(Box.createHorizontalStrut(3));
-		JButton selectJarsButton = new JButton("Select");
+		JButton selectJarsButton = new JButton("Add");
 		selectJarsButton.addActionListener(new ChoosJarsAction(this));
 		selectJarsButton.addKeyListener(new DialogExitAction(this));
 		selectJarsButton.addKeyListener(new ChoosJarsAction(this));
@@ -378,6 +380,7 @@ public final class ConnectionDialog extends JDialog {
 			try {
 				myAlias = generateDatabaseAlias();
 			} catch (Exception exception) {
+				exception.printStackTrace(System.err);
 				myAlias = null;
 				JOptionPane.showMessageDialog(myOwner, "Could not find a driver for the specified url");
 				return;
@@ -385,6 +388,7 @@ public final class ConnectionDialog extends JDialog {
 			try {
 				myAlias.getConnection();
 			} catch (SQLException sqlException) {
+				sqlException.printStackTrace(System.err);
 				myAlias = null;
 				JOptionPane.showMessageDialog(myOwner, "Could not establish a test connection");
 				return;
