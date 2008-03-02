@@ -242,7 +242,7 @@ public final class ConnectionDialog extends JDialog {
 		box.add(Box.createVerticalStrut(3));
 		hbox = Box.createHorizontalBox();
 		hbox.add(Box.createHorizontalStrut(6));
-		myJarsListField = new JTextField(20);
+		myJarsListField = new JTextField(10);
 		if (myLastConnected == null || !(myLastConnected instanceof DatabaseAliasExternal)) {
 			myJarsListField.setText("");
 		} else {
