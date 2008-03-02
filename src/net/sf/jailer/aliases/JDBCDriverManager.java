@@ -178,7 +178,7 @@ public final class JDBCDriverManager {
 				return createDriverInstance(libraryName, className);
 			}
 		} catch (Exception exception) {
-			System.err.println(exception);
+			exception.printStackTrace(System.err);
 			throw new RuntimeException("Could not load database server driver", exception);
 		}
 	}
@@ -188,7 +188,7 @@ public final class JDBCDriverManager {
 		return getDriver(JDBCUtil.getSubprotocol(url));
 	}
 
-	private static Driver createDriverInstance(String libraryFileName, String className)
+	public static Driver createDriverInstance(String libraryFileName, String className)
 	throws MalformedURLException, ClassNotFoundException {
 		URL libraryURL = new File(libraryFileName).toURI().toURL();
 		// Adding libraryFileName to a system ClassLoader.
@@ -197,7 +197,7 @@ public final class JDBCDriverManager {
 		try {
 			return new DriverProxy((Driver)loader.loadClass(className).newInstance());
 		} catch (Exception exception) {
-			System.err.println(exception);
+			exception.printStackTrace(System.err);
 			throw new ClassNotFoundException("Specified class is not an extension of java.sql.Driver", exception);
 		}
 	}
