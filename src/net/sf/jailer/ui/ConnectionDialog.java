@@ -11,7 +11,11 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.sql.SQLException;
+import java.util.Properties;
 
 /**
  * {@code ConnectionDialog} performs a way to create
@@ -63,7 +67,10 @@ public final class ConnectionDialog extends JDialog {
 	// DatabaseAlias //
 	///////////////////
 
-	private static DatabaseAlias myLastConnected = null;
+	private Properties myProperties = new Properties();
+	private final static String CONNECTION_SETTINGS_LOG = ".lastconnection.properties";
+
+
 	private DatabaseAlias myAlias = null;
 
 	private DatabaseAlias getDatabaseAlias() {
@@ -106,6 +113,7 @@ public final class ConnectionDialog extends JDialog {
 	private ConnectionDialog(JFrame owner) {
 		super(owner, "Database Connection", true);
 		getContentPane().add(createUI());
+		load(CONNECTION_SETTINGS_LOG);
 		addKeyListener(new DialogExitAction(this));
 		setAlwaysOnTop(true);
 		setResizable(false);
@@ -113,15 +121,33 @@ public final class ConnectionDialog extends JDialog {
 		genLocation();
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setVisible(true);
-		if (myLastConnected != null) {
-			myJDBCURLField.setText(myLastConnected.getURL());
-			myUserField.setText(myLastConnected.getUser());
-			myPasswordField.setText(myLastConnected.getPassword());
-			if (myLastConnected instanceof DatabaseAliasExternal) {
-				myUseExternalDriverCheckBox.setSelected(true);
-				myJarsListField.setText(((DatabaseAliasExternal)myLastConnected).getJars());
-				myDriverClassField.setText(((DatabaseAliasExternal)myLastConnected).getClassName());
-			}
+	}
+
+	private void load(String filename) {
+		//noinspection EmptyCatchBlock
+		try {
+			myProperties.load(new FileInputStream(filename));
+		} catch (IOException exception) {
+		}
+		myJDBCURLField.setText(myProperties.getProperty("url", "jdbc:"));
+		myUserField.setText(myProperties.getProperty("user", ""));
+		myPasswordField.setText(myProperties.getProperty("password", ""));
+		myUseExternalDriverCheckBox.setSelected(myProperties.getProperty("useexternal", "false").equals("true"));
+		myJarsListField.setText(myProperties.getProperty("jars", ""));
+		myDriverClassField.setText(myProperties.getProperty("class", ""));
+	}
+
+	private void save(String filename) {
+		myProperties.setProperty("url", myJDBCURLField.getText());
+		myProperties.setProperty("user", myUserField.getText());
+		myProperties.setProperty("password", new String(myPasswordField.getPassword()));
+		myProperties.setProperty("useexternal", myUseExternalDriverCheckBox.isSelected() ? "true" : "false");
+		myProperties.setProperty("jars", myJarsListField.getText());
+		myProperties.setProperty("class", myDriverClassField.getText());
+		//noinspection EmptyCatchBlock
+		try {
+			myProperties.store(new FileOutputStream(filename), "");
+		} catch (IOException exception) {
 		}
 	}
 
@@ -141,7 +167,6 @@ public final class ConnectionDialog extends JDialog {
 		box.add(Box.createVerticalStrut(12));
 			Box hbox = Box.createHorizontalBox();
 			myUseExternalDriverCheckBox = new JCheckBox("Use non-default driver", false);
-			myUseExternalDriverCheckBox.setFocusable(myLastConnected == null || !(myLastConnected instanceof DatabaseAliasExternal));
 			myUseExternalDriverCheckBox.addKeyListener(new DialogExitAction(this));
 			hbox.add(myUseExternalDriverCheckBox);
 			hbox.add(Box.createHorizontalGlue());
@@ -167,7 +192,7 @@ public final class ConnectionDialog extends JDialog {
 		box.add(hbox);
 		box.add(Box.createVerticalStrut(3));
 		hbox = Box.createHorizontalBox();
-		myJDBCURLField = new JTextField(myLastConnected == null ? "jdbc:" : myLastConnected.getURL());
+		myJDBCURLField = new JTextField("jdbc:");
 		myJDBCURLField.setBorder(BorderFactory.createCompoundBorder(myJDBCURLField.getBorder(), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
 		myJDBCURLField.addKeyListener(new DialogExitAction(this));
 		myJDBCURLField.addKeyListener(new DialogConnectAction(this));
@@ -192,7 +217,7 @@ public final class ConnectionDialog extends JDialog {
 		box.add(hbox);
 		box.add(Box.createVerticalStrut(3));
 		hbox = Box.createHorizontalBox();
-		myUserField = new JTextField(myLastConnected == null ? "" : myLastConnected.getUser(), 25);
+		myUserField = new JTextField("", 25);
 		myUserField.setBorder(BorderFactory.createCompoundBorder(myUserField.getBorder(), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
 		myUserField.addKeyListener(new DialogExitAction(this));
 		myUserField.addKeyListener(new DialogConnectAction(this));
@@ -211,7 +236,7 @@ public final class ConnectionDialog extends JDialog {
 		box.add(hbox);
 		box.add(Box.createVerticalStrut(3));
 		hbox = Box.createHorizontalBox();
-		myPasswordField = new JPasswordField(myLastConnected == null ? "" : myLastConnected.getPassword(), 25);
+		myPasswordField = new JPasswordField("", 25);
 		myPasswordField.setBorder(BorderFactory.createCompoundBorder(myPasswordField.getBorder(), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
 		myPasswordField.addKeyListener(new DialogExitAction(this));
 		myPasswordField.addKeyListener(new DialogConnectAction(this));
@@ -243,11 +268,6 @@ public final class ConnectionDialog extends JDialog {
 		hbox = Box.createHorizontalBox();
 		hbox.add(Box.createHorizontalStrut(6));
 		myJarsListField = new JTextField(10);
-		if (myLastConnected == null || !(myLastConnected instanceof DatabaseAliasExternal)) {
-			myJarsListField.setText("");
-		} else {
-			myJarsListField.setText(((DatabaseAliasExternal)myLastConnected).getJars());
-		}
 		myJarsListField.setBorder(BorderFactory.createCompoundBorder(myJarsListField.getBorder(), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
 		myJarsListField.addKeyListener(new DialogExitAction(this));
 		myJarsListField.addKeyListener(new DialogConnectAction(this));
@@ -275,11 +295,6 @@ public final class ConnectionDialog extends JDialog {
 		hbox = Box.createHorizontalBox();
 		hbox.add(Box.createHorizontalStrut(6));
 		myDriverClassField = new JTextField();
-		if (myLastConnected == null || !(myLastConnected instanceof DatabaseAliasExternal)) {
-			myDriverClassField.setText("");
-		} else {
-			myDriverClassField.setText(((DatabaseAliasExternal)myLastConnected).getClassName());
-		}
 		myDriverClassField.setBorder(BorderFactory.createCompoundBorder(myDriverClassField.getBorder(), BorderFactory.createEmptyBorder(2, 2, 2, 2)));
 		myDriverClassField.addKeyListener(new DialogExitAction(this));
 		myDriverClassField.addKeyListener(new DialogConnectAction(this));
@@ -375,9 +390,7 @@ public final class ConnectionDialog extends JDialog {
 				return;
 			}
 			//noinspection EmptyCatchBlock
-			try {
-				myLastConnected = generateDatabaseAlias();
-			} catch (Exception e) {}
+			save(CONNECTION_SETTINGS_LOG);
 			myOwner.dispose();
 		}
 	}
