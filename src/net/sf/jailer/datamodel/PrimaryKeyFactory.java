@@ -123,11 +123,11 @@ public class PrimaryKeyFactory {
 	private void guessNullValues(PrimaryKey primaryKey, StatementExecutor statementExecutor) {
 		Object[] potNulls = new Object[] {
 		    new Character('0'),
-		    new Byte((byte) 0),
 			new Integer(0),
+			new Date(new java.util.Date().getTime()),
+		    new Byte((byte) 0),
 			BigInteger.ZERO,
 			new BigDecimal(0),
-			new Date(new java.util.Date().getTime()),
 			new Timestamp(new java.util.Date().getTime()),
 			"0",
 			new Double(0.0),
@@ -162,6 +162,8 @@ public class PrimaryKeyFactory {
 						}
 					});
 					if (sb.length() > 0) {
+						statementExecutor.executeUpdate("DELETE FROM JL_TMP");
+						statementExecutor.executeUpdate("INSERT INTO JL_TMP(c) VALUES(" + sb.toString() + ")");
 						column.nullValue = sb.toString();
 						_log.info("null value for " + column + " is " + column.nullValue);
 						break;
