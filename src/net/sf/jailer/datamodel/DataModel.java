@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.PrintUtil;
@@ -187,11 +188,21 @@ public class DataModel {
 
     /**
      * Gets the primary-key to be used for the entity-table.
+     *
+     * @param statementExecutor for null value guessing
+     * @return the universal primary key
+     */
+    public PrimaryKey getUniversalPrimaryKey(StatementExecutor statementExecutor) {
+        return PrimaryKeyFactory.getUniversalPrimaryKey(statementExecutor);
+    }
+
+    /**
+     * Gets the primary-key to be used for the entity-table.
      * 
      * @return the universal primary key
      */
     public PrimaryKey getUniversalPrimaryKey() {
-        return PrimaryKeyFactory.getUniversalPrimaryKey();
+        return getUniversalPrimaryKey(null);
     }
 
     /**

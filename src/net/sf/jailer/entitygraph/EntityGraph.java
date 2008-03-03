@@ -15,8 +15,11 @@
  */
 package net.sf.jailer.entitygraph;
 
+import java.sql.Date;
 import java.sql.ResultSet;
+import java.sql.SQLData;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,6 +30,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.util.SqlUtil;
 
 /**
  * A persistent graph of entities. 
@@ -549,7 +553,7 @@ public class EntityGraph {
      * 
      * @param table the table
      * @param tableAlias the alias for table
-     * @return PK-column list for table
+     * @return columnAliasPrefix optional prefix for column names
      */
     private String pkList(Table table, String tableAlias, String columnAliasPrefix) {
         Map<Column, Column> match = universalPrimaryKey.match(table.primaryKey);

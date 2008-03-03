@@ -16,8 +16,20 @@
 
 package net.sf.jailer.datamodel;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.sql.Date;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.apache.log4j.Logger;
+
+import net.sf.jailer.ExplainTool;
+import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.util.SqlUtil;
 
 /**
  * Factory for {@link PrimaryKey}s.
@@ -26,6 +38,11 @@ import java.util.List;
  * @author Wisser
  */
 public class PrimaryKeyFactory {
+
+	/**
+     * The logger.
+     */
+    private static final Logger _log = Logger.getLogger(ExplainTool.class);;
 
     /**
      * {@link #getUniversalPrimaryKey()} closes the factory, no further creation of PKs is allowed then.
@@ -86,12 +103,80 @@ public class PrimaryKeyFactory {
 
     /**
      * Gets the primary-key to be used for the entity-table and closes the factory.
-     * 
+     *
+     * @param statementExecutor for guessing null-values of columns
      * @return the universal primary key
      */
-    public PrimaryKey getUniversalPrimaryKey() {
+    public PrimaryKey getUniversalPrimaryKey(StatementExecutor statementExecutor) {
         closed = true;
+        if (statementExecutor != null) {
+        	guessNullValues(universalPrimaryKey, statementExecutor);
+        }
         return universalPrimaryKey;
     }
+
+    /**
+     * Guesses null-values for each column of a primary key.
+     * 
+     * @param primaryKey the primary key
+     */
+	private void guessNullValues(PrimaryKey primaryKey, StatementExecutor statementExecutor) {
+		Object[] potNulls = new Object[] {
+		    new Character('0'),
+		    new Byte((byte) 0),
+			new Integer(0),
+			BigInteger.ZERO,
+			new BigDecimal(0),
+			new Date(new java.util.Date().getTime()),
+			new Timestamp(new java.util.Date().getTime()),
+			"0",
+			new Double(0.0),
+		    new Float(0.0f)
+		};
+
+		_log.info("begin guessing null values");
+		String drop = "DROP TABLE JL_TMP";
+		for (Column column: primaryKey.getColumns()) {
+			String create = "CREATE TABLE JL_TMP(c " + column.type + ")";
+			try {
+				statementExecutor.execute(drop);
+			} catch (Exception e) {
+				_log.info(e.getMessage());
+			}
+			try {
+				statementExecutor.execute(create);
+			} catch (Exception e) {
+				_log.info(e.getMessage());
+			}
+			for (Object potNull: potNulls) {
+				try {
+					final StringBuffer sb = new StringBuffer();
+					statementExecutor.executeUpdate("DELETE FROM JL_TMP");
+					statementExecutor.executeUpdate("INSERT INTO JL_TMP(c) VALUES(?)", new Object[] { potNull });
+					statementExecutor.executeQuery("SELECT c FROM JL_TMP", new StatementExecutor.ResultSetReader() {
+						public void readCurrentRow(ResultSet resultSet) throws SQLException {
+							sb.setLength(0);
+							sb.append(SqlUtil.toSql(resultSet.getObject(1)));
+						}
+						public void close() {
+						}
+					});
+					if (sb.length() > 0) {
+						column.nullValue = sb.toString();
+						_log.info("null value for " + column + " is " + column.nullValue);
+						break;
+					}
+				} catch (Exception e) {
+					_log.info(e.getMessage());
+				}
+			}
+		}
+		try {
+			statementExecutor.execute(drop);
+		} catch (Exception e) {
+			_log.info(e.getMessage());
+		}
+		_log.info("end guessing null values");
+	}
     
 }
