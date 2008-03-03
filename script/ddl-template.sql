@@ -9,7 +9,7 @@ CREATE TABLE JL_GRAPH
 (
    id              INTEGER NOT NULL,
    age             INTEGER NOT NULL,
-
+      
    CONSTRAINT jl_pk_graph PRIMARY KEY(id)
 );
 
