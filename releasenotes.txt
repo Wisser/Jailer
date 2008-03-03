@@ -1,3 +1,6 @@
+2.1.8.rc1
+ - fixed a bug concerning primary key columns of type DATE (release candidate)
+
 2.1.7
  - fixed a bug concerning incompatibilities with Oracle 10g
 

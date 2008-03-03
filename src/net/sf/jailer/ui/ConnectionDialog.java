@@ -85,7 +85,7 @@ public final class ConnectionDialog extends JDialog {
 		String url = myJDBCURLField.getText();
 		String user = myUserField.getText();
 		String password = new String(myPasswordField.getPassword());
-		if (password.isEmpty()) {
+		if ("".equals(password)) {
 			password = null;
 		}
 		if (myUseExternalDriverCheckBox.isSelected()) {
@@ -420,7 +420,7 @@ public final class ConnectionDialog extends JDialog {
 					return;
 				}
 				String string = myJarsListField.getText();
-				if (!string.isEmpty()) {
+				if (!"".equals(string)) {
 					string += JDBCDriverManager.JARPATH_DELIMETER;
 				} else {
 					string = "";

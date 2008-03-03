@@ -16,6 +16,9 @@
 
 package net.sf.jailer.datamodel;
 
+import java.util.HashMap;
+import java.util.Map;
+
 
 /**
  * Describes a column of a table.
@@ -38,6 +41,21 @@ public class Column {
      * The length (for VARCHAR, DECIMAL, ...) or <code>0</code> if type-length is not variable
      */
     public final int length;
+    
+    /**
+     * Maps columns types in SQL syntax to 'null'-value of this type.
+     */
+    private static Map<String, String> nullValues = new HashMap<String, String>();
+    static {
+    	nullValues.put("VARCHAR", "'0'");
+    	nullValues.put("VARCHAR2", "'0'");
+    	nullValues.put("CHAR", "'0'");
+    }
+
+    /**
+     * Null-value for this column, or <code>null</code> if null-value is not known. (use nullValues then)
+     */
+    protected String nullValue = null;
     
     /**
      * Constructor.
@@ -93,8 +111,12 @@ public class Column {
      * @return a 'null'-value
      */
     public String getNullValue() {
-        if ("VARCHAR".equals(type)) {
-            return "'0'";
+    	if (nullValue != null) {
+    		return nullValue;
+    	}
+        String nv = nullValues.get(type.toUpperCase());
+    	if (nv != null) {
+            return nv;
         }
         return "0";
     }

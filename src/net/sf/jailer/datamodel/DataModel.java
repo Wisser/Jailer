@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.PrintUtil;
@@ -157,6 +158,9 @@ public class DataModel {
                 boolean insertSourceBeforeDestination = "A".equalsIgnoreCase(line.cells.get(2)); 
                 boolean insertDestinationBeforeSource = "B".equalsIgnoreCase(line.cells.get(2));
                 Cardinality cardinality = Cardinality.parse(line.cells.get(3).trim());
+                if (cardinality == null) {
+                	cardinality = Cardinality.MANY_TO_MANY;
+                }
                 String joinCondition = line.cells.get(4);
                 String name = line.cells.get(5);
                 if ("".equals(name)) {
@@ -187,11 +191,21 @@ public class DataModel {
 
     /**
      * Gets the primary-key to be used for the entity-table.
+     *
+     * @param statementExecutor for null value guessing
+     * @return the universal primary key
+     */
+    public PrimaryKey getUniversalPrimaryKey(StatementExecutor statementExecutor) {
+        return PrimaryKeyFactory.getUniversalPrimaryKey(statementExecutor);
+    }
+
+    /**
+     * Gets the primary-key to be used for the entity-table.
      * 
      * @return the universal primary key
      */
     public PrimaryKey getUniversalPrimaryKey() {
-        return PrimaryKeyFactory.getUniversalPrimaryKey();
+        return getUniversalPrimaryKey(null);
     }
 
     /**

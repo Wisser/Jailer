@@ -172,7 +172,7 @@ public final class JDBCDriverManager {
 		}
 		String className = JDBCUtil.getClassName(fullName);
 		try {
-			if ((libraryName == null) || libraryName.isEmpty()) {
+			if ((libraryName == null) || "".equals(libraryName)) {
 				return new DriverProxy((Driver)ClassLoader.getSystemClassLoader().loadClass(className).newInstance());
 			} else {
 				return createDriverInstance(libraryName, className);
