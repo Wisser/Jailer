@@ -651,7 +651,7 @@ public class Jailer {
 
         StatementExecutor statementExecutor = new StatementExecutor(driverClassName, dbUrl, dbUser, dbPassword);
         ExtractionModel extractionModel = new ExtractionModel(extractionModelFileName);
-        EntityGraph entityGraph = EntityGraph.create(EntityGraph.createUniqueGraphID(), statementExecutor, extractionModel.getTasks().get(0).dataModel.getUniversalPrimaryKey());
+        EntityGraph entityGraph = EntityGraph.create(EntityGraph.createUniqueGraphID(), statementExecutor, extractionModel.getTasks().get(0).dataModel.getUniversalPrimaryKey(statementExecutor));
         entityGraph.setExplain(explain);
         final Jailer jailer = new Jailer(threads);
         
@@ -665,7 +665,7 @@ public class Jailer {
             jailer.appendCommentHeader("database URL:      " + dbUrl);
             jailer.appendCommentHeader("database user:     " + dbUser);
         
-            EntityGraph graph = firstTask? entityGraph : EntityGraph.create(EntityGraph.createUniqueGraphID(), statementExecutor, task.dataModel.getUniversalPrimaryKey());
+            EntityGraph graph = firstTask? entityGraph : EntityGraph.create(EntityGraph.createUniqueGraphID(), statementExecutor, task.dataModel.getUniversalPrimaryKey(statementExecutor));
             jailer.setEntityGraph(graph);
             jailer.setDataModel(task.dataModel);
             jailer.runstats(statementExecutor);

@@ -296,6 +296,34 @@ public class StatementExecutor {
     }
     
     /**
+     * Executes a SQL-Update (INSERT, DELETE or UPDATE) with parameters.
+     * 
+     * @param sqlUpdate the update in SQL
+     * @param parameter the parameters
+     * 
+     * @return update-count
+     */
+    public int executeUpdate(String sqlUpdate, Object[] parameter) throws SQLException {
+        myLog.debug(sqlUpdate);
+        int rowCount = 0;
+        PreparedStatement statement = null;
+        try {
+        	statement = getConnection().prepareStatement(sqlUpdate);
+            int i = 1;
+        	for (Object p: parameter) {
+            	statement.setObject(i++, p);
+            }
+        	rowCount = statement.executeUpdate();
+            myLog.debug("" + rowCount + " row(s)");
+        } finally {
+            if (statement != null) {
+                statement.close();
+            }
+        }
+        return rowCount;
+    }
+
+    /**
      * Inserts a CLob.
 	 *
 	 * @param table
