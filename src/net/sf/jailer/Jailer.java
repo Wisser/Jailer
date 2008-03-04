@@ -29,6 +29,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -72,7 +73,7 @@ public class Jailer {
     /**
      * The Jailer version.
      */
-    public static final String VERSION = "2.1.8.rc1";
+    public static final String VERSION = "2.1.8.rc2";
     
     /**
      * The relational data model.
@@ -545,7 +546,7 @@ public class Jailer {
      * @return <code>false</code> iff something went wrong 
      */
     public static boolean jailerMain(String[] args, StringBuffer warnings) {
-        try {
+    	try {
             CommandLineParser.parse(args);
             CommandLineParser clp = CommandLineParser.getInstance();
             

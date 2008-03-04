@@ -158,6 +158,9 @@ public class DataModel {
                 boolean insertSourceBeforeDestination = "A".equalsIgnoreCase(line.cells.get(2)); 
                 boolean insertDestinationBeforeSource = "B".equalsIgnoreCase(line.cells.get(2));
                 Cardinality cardinality = Cardinality.parse(line.cells.get(3).trim());
+                if (cardinality == null) {
+                	cardinality = Cardinality.MANY_TO_MANY;
+                }
                 String joinCondition = line.cells.get(4);
                 String name = line.cells.get(5);
                 if ("".equals(name)) {

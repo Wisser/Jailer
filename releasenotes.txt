@@ -1,4 +1,4 @@
-2.1.8.rc1
+2.1.8.rc(n)
  - fixed a bug concerning primary key columns of type DATE (release candidate)
 
 2.1.7

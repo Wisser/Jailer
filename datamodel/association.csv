@@ -1,1 +1,11 @@
 # Table A; Table B; First-insert; Cardinality; Join-condition; Name; Author
+BRANDS; MANDATORS; B; n:1; A.R_MANDATOR=B.ID; FK_MANDATOR; IBM DB2 JDBC Universal Driver Architecture; ; 
+CAMPAIGNS; BRANDS; B; n:1; A.R_BRAND=B.ID; FK_BRAND; IBM DB2 JDBC Universal Driver Architecture; ; 
+EMPLOYEE; DEPARTMENT; B; n:1; A.DEPTNO=B.DEPTNO; DEPARTMENT; IBM DB2 JDBC Universal Driver Architecture; ; 
+EMPLOYEE; EMPLOYEE; B; n:1; A.BOSS=B.EMPNO; BOSS; IBM DB2 JDBC Universal Driver Architecture; ; 
+HANDYCODES; HANDYCODE_GROUPS; B; n:1; A.R_HANDYCODE_GROUP=B.ID; FK_HCGROUP; IBM DB2 JDBC Universal Driver Architecture; ; 
+HANDYCODE_GROUPS; BRANDS; B; n:1; A.R_BRAND=B.ID; HANDYCODE_GROUPS.FK_BRAND; IBM DB2 JDBC Universal Driver Architecture; ; 
+PARAMETERS; SALES_PROMOTIONS; B; n:1; A.R_SALES_PROMOTION=B.ID; FK_PROMO; IBM DB2 JDBC Universal Driver Architecture; ; 
+PENDING_TOKENS; TOKENS; B; n:1; A.R_TOKEN=B.ID; FK_TOKEN; IBM DB2 JDBC Universal Driver Architecture; ; 
+SALES_PROMOTIONS; CAMPAIGNS; B; n:1; A.R_CAMPAIGN=B.ID; FK_CAMPAIGN; IBM DB2 JDBC Universal Driver Architecture; ; 
+TOKENS; SALES_PROMOTIONS; B; n:1; A.R_SALES_PROMOTION=B.ID; TOKENS.FK_PROMO; IBM DB2 JDBC Universal Driver Architecture; ; 

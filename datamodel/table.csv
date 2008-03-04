@@ -1,1 +1,19 @@
 # Name; Upsert; Primary key; ; Author
+BRANDS; N; ID VARCHAR(100); ; Data Model Editor; ; 
+CAMPAIGNS; N; ID INTEGER; ; IBM DB2 JDBC Universal Driver Architecture; ; 
+DEPARTMENT; N; DEPTNO INTEGER; ; IBM DB2 JDBC Universal Driver Architecture; ; 
+EMPLOYEE; N; EMPNO INTEGER; ; IBM DB2 JDBC Universal Driver Architecture; ; 
+HANDYCODES; N; ID INTEGER; ; IBM DB2 JDBC Universal Driver Architecture; ; 
+HANDYCODE_GROUPS; N; ID INTEGER; ; IBM DB2 JDBC Universal Driver Architecture; ; 
+MANDATORS; N; ID INTEGER; ; IBM DB2 JDBC Universal Driver Architecture; ; 
+PARAMETERS; N; ID INTEGER; ; IBM DB2 JDBC Universal Driver Architecture; ; 
+PENDING_TOKENS; N; ID INTEGER; ; IBM DB2 JDBC Universal Driver Architecture; ; 
+SALARYGRADE; N; GRADE INTEGER; ; IBM DB2 JDBC Universal Driver Architecture; ; 
+SALES_PROMOTIONS; N; ID INTEGER; ; IBM DB2 JDBC Universal Driver Architecture; ; 
+TOKENS; N; ID INTEGER; ; IBM DB2 JDBC Universal Driver Architecture; ; 
+ZC; N; X CHAR(10); ; IBM DB2 JDBC Universal Driver Architecture; ; 
+ZDATE; N; X DATE; ; IBM DB2 JDBC Universal Driver Architecture; ; 
+ZTS; N; X TIMESTAMP; ; IBM DB2 JDBC Universal Driver Architecture; ; 
+klein; N; XX INTEGER; ; IBM DB2 JDBC Universal Driver Architecture; ; 
+x#x; N; XX INTEGER; ; IBM DB2 JDBC Universal Driver Architecture; ; 
+x\!x; N; XX INTEGER; ; IBM DB2 JDBC Universal Driver Architecture; ; 
