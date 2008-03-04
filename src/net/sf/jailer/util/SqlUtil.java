@@ -17,8 +17,11 @@
 package net.sf.jailer.util;
 
 import java.sql.Types;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -106,6 +109,16 @@ public class SqlUtil {
     }
     
     /**
+     * To be used for date formatting.
+     */
+    public static DateFormat dateFormat = null;
+    
+    /**
+     * To be used for time stamp formatting.
+     */
+    public static DateFormat timestampFormat = null;
+    
+    /**
      * Converts a cell-content to valid SQL-literal.
      * 
      * @param object the content
@@ -117,9 +130,15 @@ public class SqlUtil {
         }
 
         if (content instanceof java.sql.Date) {
+        	if (dateFormat != null) {
+        		return "'" + dateFormat.format((Date) content) + "'";
+        	}
             return "'" + content + "'";
         }
         if (content instanceof java.sql.Timestamp) {
+        	if (timestampFormat != null) {
+        		return "'" + timestampFormat.format((Date) content) + "'";
+        	}
             return "'" + content + "'";
         }
         if (content instanceof String) {
