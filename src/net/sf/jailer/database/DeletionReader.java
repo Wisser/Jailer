@@ -20,6 +20,8 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
@@ -50,6 +52,8 @@ public class DeletionReader implements ResultSetReader {
      */
     private StatementBuilder deleteStatementBuilder;
     
+    private Map<String, Integer> typeCache = new HashMap<String, Integer>();
+
     /**
      * Constructor.
      * 
@@ -72,18 +76,21 @@ public class DeletionReader implements ResultSetReader {
             String item;
             if (table.primaryKey.getColumns().size() == 1) {
                 deleteHead = "Delete from " + table.getName() + " Where " + table.primaryKey.getColumns().get(0).name + " in (";
-                item = SqlUtil.toSql(resultSet.getObject(table.primaryKey.getColumns().get(0).name));
+                item = SqlUtil.toSql(SqlUtil.getObject(resultSet, table.primaryKey.getColumns().get(0).name, typeCache));
             } else {
                 deleteHead = "Delete from " + table.getName() + " Where (";
                 item = "(";
                 boolean firstTime = true;
                 for (Column pkColumn: table.primaryKey.getColumns()) {
                     deleteHead += (firstTime? "" : ", ") + pkColumn.name;
-                    item += (firstTime? "" : ", ") + SqlUtil.toSql(resultSet.getObject(pkColumn.name));
+                    item += (firstTime? "" : ", ") + SqlUtil.toSql(SqlUtil.getObject(resultSet, pkColumn.name, typeCache));
                     firstTime = false;
                 }
                 item += ")";
-                deleteHead += ") in (values ";
+                deleteHead += ") in (";
+                if (SQLDialect.currentDialect.needsValuesKeywordForDeletes) {
+                	deleteHead += "values ";
+                }
             }
             if (!deleteStatementBuilder.isAppendable(deleteHead, item)) {
                 writeToScriptFile(deleteStatementBuilder.build());
@@ -109,6 +116,7 @@ public class DeletionReader implements ResultSetReader {
     public void close() {
         try {
             writeToScriptFile(deleteStatementBuilder.build());
+            typeCache = new HashMap<String, Integer>();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

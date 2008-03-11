@@ -55,7 +55,7 @@ public class Column {
     /**
      * Null-value for this column, or <code>null</code> if null-value is not known. (use nullValues then)
      */
-    protected String nullValue = null;
+    public String nullValue = null;
     
     /**
      * Constructor.

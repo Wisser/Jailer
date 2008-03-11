@@ -19,6 +19,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		for which at least one row is inserted/deleted.
 		-->
 		<bean class="net.sf.jailer.enhancer.FileBasedScriptEnhancer"/>
+		<bean class="net.sf.jailer.enhancer.HelperTableEnhancer"/>
 	</util:list>
 	
 	<!-- Model-finder 

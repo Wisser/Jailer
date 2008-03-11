@@ -22,6 +22,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -79,12 +80,13 @@ public class ExplainTool {
         String selectLeafs = "Select TYPE, " + graph.getUniversalPrimaryKey().columnList(null) + " From " + EntityGraph.ENTITY + " E Where E.r_entitygraph=" + graph.graphID +
             " and not exists (Select * from " + EntityGraph.ENTITY + " Succ Where Succ.r_entitygraph=" + graph.graphID + " and Succ.PRE_TYPE=E.TYPE and " + succEqualsE + ")";
         statementExecutor.executeQuery(selectLeafs, new StatementExecutor.AbstractResultSetReader() {
-            public void readCurrentRow(ResultSet resultSet) throws SQLException {
+            Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
+        	public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 String type = resultSet.getString(1);
                 List<String> keys = new ArrayList<String>();
                 int i = 2;
                 for (Column column: graph.getUniversalPrimaryKey().getColumns()) {
-                    keys.add(SqlUtil.toSql(resultSet.getObject(i++)));
+                    keys.add(SqlUtil.toSql(SqlUtil.getObject(resultSet, i++, typeCache)));
                 }
                 if (!namesOfTablesToIgnore.contains(type)) {
                     try {
@@ -136,12 +138,13 @@ public class ExplainTool {
         final List<String> preKeys = new ArrayList<String>();
         final Integer associationID[] = new Integer[1];
         statementExecutor.executeQuery(selectPredecessor, new StatementExecutor.AbstractResultSetReader() {
-            public void readCurrentRow(ResultSet resultSet) throws SQLException {
+            private Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
+			public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 preType[0] = resultSet.getString(1);
                 associationID[0] = resultSet.getInt(2);
                 int i = 3;
                 for (Column column: graph.getUniversalPrimaryKey().getColumns()) {
-                    preKeys.add(SqlUtil.toSql(resultSet.getObject(i++)));
+                    preKeys.add(SqlUtil.toSql(SqlUtil.getObject(resultSet, i++, typeCache)));
                 }
             }
         });
