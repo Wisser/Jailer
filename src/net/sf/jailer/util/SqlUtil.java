@@ -16,6 +16,9 @@
 
 package net.sf.jailer.util;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.DateFormat;
 import java.util.Date;
@@ -118,6 +121,10 @@ public class SqlUtil {
      */
     public static DateFormat timestampFormat = null;
     
+    public static boolean appendNanosToTimestamp = true;
+    public static boolean appendMillisToTimestamp = false;
+	public static char nanoSep = '.';
+    
     /**
      * Converts a cell-content to valid SQL-literal.
      * 
@@ -137,7 +144,11 @@ public class SqlUtil {
         }
         if (content instanceof java.sql.Timestamp) {
         	if (timestampFormat != null) {
-        		return "'" + timestampFormat.format((Date) content) + "'";
+        		String format = timestampFormat.format((Date) content);
+        		if (appendNanosToTimestamp) {
+        			format += getNanoString((Timestamp) content, !appendMillisToTimestamp);
+        		}
+				return "'" + format + "'";
         	}
             return "'" + content + "'";
         }
@@ -162,6 +173,98 @@ public class SqlUtil {
         return content.toString();
     }
     
+    /**
+     * Gets nano string suffix of a timestamp.
+     * 
+     * @param timestamp the timestamp
+     */
+    private static String getNanoString(Timestamp timestamp, boolean full) {
+    	String zeros = "000000000";
+    	int nanos = timestamp.getNanos();
+    	String nanosString = Integer.toString(nanos);
+    	
+    	// Add leading zeros
+    	nanosString = zeros.substring(0, (9-nanosString.length())) + nanosString;
+    	
+    	// Truncate trailing zeros
+    	char[] nanosChar = new char[nanosString.length()];
+    	nanosString.getChars(0, nanosString.length(), nanosChar, 0);
+    	int truncIndex = 8;
+    	while (truncIndex > 0 && nanosChar[truncIndex] == '0') {
+    		truncIndex--;
+    	}
+    
+    	nanosString = nanoSep + new String(nanosChar, 0, truncIndex + 1);
+    	
+    	if (!full) {
+    		if (nanosString.length() > 4) {
+    			return nanosString.substring(0, 4);
+    		}
+    	}
+    	return nanosString;
+    }
+
+    /**
+     * Gets object from result-set.
+     * 
+     * @param resultSet result-set
+     * @param i column index
+     * @param typeCache for caching types
+     * @return object
+     */
+	public static Object getObject(ResultSet resultSet, int i, Map<Integer, Integer> typeCache) throws SQLException {
+		Integer type = typeCache.get(i);
+		if (type == null) {
+			try {
+				type = resultSet.getMetaData().getColumnType(i);
+			} catch (Exception e) {
+				type = Types.OTHER;
+			}
+			typeCache.put(i, type);
+		}
+		if (type == Types.TIMESTAMP) {
+			return resultSet.getTimestamp(i);
+		}
+		if (type == Types.DATE) {
+			Date date = resultSet.getDate(i);
+			return date;
+		}
+		return resultSet.getObject(i);
+	};
+	
+    /**
+     * Gets object from result-set.
+     * 
+     * @param resultSet result-set
+     * @param columnName column name
+     * @param typeCache for caching types
+     * @return object
+     */
+	public static Object getObject(ResultSet resultSet, String columnName, Map<String, Integer> typeCache) throws SQLException {
+		Integer type = typeCache.get(columnName);
+		if (type == null) {
+			try {
+				type = Types.OTHER;
+				for (int i = resultSet.getMetaData().getColumnCount(); i > 0; --i) {
+					if (columnName.equalsIgnoreCase(resultSet.getMetaData().getColumnName(i))) {
+						type = resultSet.getMetaData().getColumnType(i);
+						break;
+					}
+				}
+			} catch (Exception e) {
+			}
+			typeCache.put(columnName, type);
+		}
+		if (type == Types.TIMESTAMP) {
+			return resultSet.getTimestamp(columnName);
+		}
+		if (type == Types.DATE) {
+			Date date = resultSet.getDate(columnName);
+			return date;
+		}
+		return resultSet.getObject(columnName);
+	};
+
     public final static Map<Integer, String> SQL_TYPE;
     
     static {
@@ -183,6 +286,6 @@ public class SqlUtil {
         SQL_TYPE.put(Types.SMALLINT, "SMALLINT");
         SQL_TYPE.put(Types.CLOB, "CLOB");
         SQL_TYPE.put(Types.BLOB, "BLOB");
-    };
+    }
     
 }

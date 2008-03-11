@@ -115,5 +115,14 @@ public class StatementBuilder {
         this.separator = separator;
         body.add(item);
     }
+
+    /**
+     * Checks if builder is empty.
+     * 
+     * @return <code>true</code> if builder is empty
+     */
+	public boolean isEmpty() {
+		return body.isEmpty();
+	}
     
 }
