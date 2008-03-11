@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.jailer.database.SQLDialect.UPSERT_MODE;
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
@@ -111,6 +112,8 @@ public class ExportReader implements ResultSetReader {
      */
     public static long numberOfExportedLOBs;
     
+    private Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
+
     /**
      * Constructor.
      * 
@@ -124,7 +127,7 @@ public class ExportReader implements ResultSetReader {
         this.upsertOnly = upsertOnly;
         this.table = table;
         this.scriptFileWriter = scriptFileWriter;
-        this.insertStatementBuilder = new StatementBuilder(maxBodySize);
+        this.insertStatementBuilder = new StatementBuilder(SQLDialect.currentDialect.supportsMultiRowInserts? maxBodySize : 1);
     }
     
     /**
@@ -156,25 +159,26 @@ public class ExportReader implements ResultSetReader {
         }
         try {
             StringBuffer valueList = new StringBuffer("");
+            StringBuffer namedValues = new StringBuffer("");
             boolean f = true;
             for (int i = 1; i <= columnCount; ++i) {
                 if (columnLabel[i] == null) {
                 	continue;
                 }
-            	Object content = resultSet.getObject(i);
+            	Object content = SqlUtil.getObject(resultSet, i, typeCache);
                 if (resultSet.wasNull()) {
                     content = null;
                 }
                 if (!f) {
-                    valueList.append(", ");
+                	namedValues.append(", ");
+                	valueList.append(", ");
                 }
                 f = false;
-                valueList.append(SqlUtil.toSql(content));
+                String cVal = SqlUtil.toSql(content);
+                valueList.append(cVal);
+                namedValues.append(cVal + " " + columnLabel[i]);
             }
             if (table.upsert || upsertOnly) {
-                // Select * From (values(397, '30080000', 'Dresdner Bank')) 
-                // AS Q(OID, A, B) Where not exists 
-                // (Select * from BANK T Where T.OID=Q.OID)
                 Map<String, String> val = new HashMap<String, String>();
                 StringBuffer valuesWONull = new StringBuffer("");
                 StringBuffer columnsWONull = new StringBuffer("");
@@ -183,7 +187,7 @@ public class ExportReader implements ResultSetReader {
                     if (columnLabel[i] == null) {
                     	continue;
                     }
-                    Object content = resultSet.getObject(i);
+                    Object content = SqlUtil.getObject(resultSet, i, typeCache);
                     if (resultSet.wasNull()) {
                         content = null;
                     }
@@ -191,7 +195,7 @@ public class ExportReader implements ResultSetReader {
                     val.put(columnLabel[i], cVal);
                     if (content != null) {
                         if (!f) {
-                            valuesWONull.append(", ");
+                        	valuesWONull.append(", ");
                             columnsWONull.append(", ");
                         }
                         f = false;
@@ -200,13 +204,12 @@ public class ExportReader implements ResultSetReader {
                     }
                 }
                 
-                String insertHead = "Insert into " + table.getName() + "(" + columnsWONull + ") "
-                                    + "Select * From (values ";
-                StringBuffer terminator = new StringBuffer(") as Q(" + columnsWONull + ") Where not exists (Select * from " + table.getName() + " T "
-                        + "Where ");
+                String insertHead = "Insert into " + table.getName() + "(" + columnsWONull + ") ";
                 f = true;
                 StringBuffer whereForTerminator = new StringBuffer("");
                 StringBuffer where = new StringBuffer("");
+                
+                // assemble 'where' for sub-select and update
                 for (Column pk: table.primaryKey.getColumns()) {
                     if (!f) {
                         whereForTerminator.append(" and ");
@@ -214,34 +217,118 @@ public class ExportReader implements ResultSetReader {
                     }
                     f = false;
                     whereForTerminator.append("T." + pk.name + "=Q." + pk.name);
-                    where.append("T." + pk.name + "=" + val.get(pk.name));
-                }
-                terminator.append(whereForTerminator + ");\n");
-                
-                StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
-                if (sb == null) {
-                    sb = new StatementBuilder(maxBodySize);
-                    upsertInsertStatementBuilder.put(insertHead, sb);
-                }
-            
-                String item = "(" + valuesWONull + ")";
-                if (!sb.isAppendable(insertHead, item)) {
-                    writeToScriptFile(sb.build());
-                }
-                sb.append(insertHead, item, ", ", terminator.toString());
-                
-                StringBuffer insert = new StringBuffer("");
-                insert.append("Update " + table.getName() + " T set ");
-                f = true;
-                for (Map.Entry<String, String> e: val.entrySet()) {
-                    if (!f) {
-                        insert.append(", ");
+                    String value;
+                    if (val.containsKey(pk.name)) {
+                    	value = val.get(pk.name);
+                    } else if (val.containsKey(pk.name.toLowerCase())) {
+                    	value = val.get(pk.name.toLowerCase());
+                    } else {
+                    	value = val.get(pk.name.toUpperCase());
                     }
-                    f = false;
-                    insert.append(e.getKey() + "=" + e.getValue());
+                    where.append("T." + pk.name + "=" + value);
                 }
-                insert.append(" Where " + where + ";\n");
-                writeToScriptFile(insert.toString());
+
+                if (SQLDialect.currentDialect.upsertMode == UPSERT_MODE.ORACLE) {
+                	// MERGE INTO JL_TMP T USING (SELECT 1 c1, 2 c2 from dual) incoming 
+                	// ON (T.c1 = incoming.c1) 
+                	// WHEN MATCHED THEN UPDATE SET T.c2 = incoming.c2 
+                	// WHEN NOT MATCHED THEN INSERT (T.c1, T.c2) VALUES (incoming.c1, incoming.c2)
+                	insertHead = "MERGE INTO " + table.getName() + " T USING(";
+                    StringBuffer terminator = new StringBuffer(") Q ON(" + whereForTerminator + ") ");
+	                
+                    StringBuffer sets = new StringBuffer();
+                    StringBuffer tSchema = new StringBuffer();
+                    StringBuffer iSchema = new StringBuffer();
+	                for (int i = 1; i <= columnCount; ++i) {
+	                    if (columnLabel[i] == null) {
+	                    	continue;
+	                    }
+	                    if  (!isPrimaryKeyColumn(columnLabel[i])) {
+		                    if (sets.length() > 0) {
+		                    	sets.append(", ");
+		                    }
+		                    sets.append("T." + columnLabel[i] + "=Q." + columnLabel[i]);
+	                    }
+	                    if (tSchema.length() > 0) {
+	                    	tSchema.append(", ");
+	                    }
+	                    tSchema.append("T." + columnLabel[i]);
+	                    if (iSchema.length() > 0) {
+	                    	iSchema.append(", ");
+	                    }
+	                    iSchema.append("Q." + columnLabel[i]);
+	                }
+	                if (sets.length() > 0) {
+	                	terminator.append("WHEN MATCHED THEN UPDATE SET " + sets + " ");
+	                }
+                	terminator.append("WHEN NOT MATCHED THEN INSERT (" + tSchema + ") VALUES(" + iSchema + ");\n");
+
+	                StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
+	                if (sb == null) {
+	                    sb = new StatementBuilder(maxBodySize);
+	                    upsertInsertStatementBuilder.put(insertHead, sb);
+	                }
+	            
+	                String item = "Select " + valueList + " from dual";
+	                if (!sb.isAppendable(insertHead, item)) {
+	                    writeToScriptFile(sb.build());
+	                }
+	                if (sb.isEmpty()) {
+	                	item = "Select " + namedValues + " from dual";
+	                }
+                	sb.append(insertHead, item, " UNION ALL ", terminator.toString());
+                } else if (SQLDialect.currentDialect.upsertMode == UPSERT_MODE.DB2) {
+                	insertHead += "Select * From (values ";
+	                StringBuffer terminator = new StringBuffer(") as Q(" + columnsWONull + ") Where not exists (Select * from " + table.getName() + " T "
+	                        + "Where ");
+	                terminator.append(whereForTerminator + ");\n");
+	                
+	                StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
+	                if (sb == null) {
+	                    sb = new StatementBuilder(maxBodySize);
+	                    upsertInsertStatementBuilder.put(insertHead, sb);
+	                }
+	            
+	                String item = "(" + valuesWONull + ")";
+	                if (!sb.isAppendable(insertHead, item)) {
+	                    writeToScriptFile(sb.build());
+	                }
+	                sb.append(insertHead, item, ", ", terminator.toString());
+                } else {
+                	String item = "Select " + valuesWONull + " From " + (SQLDialect.currentDialect.upsertMode == UPSERT_MODE.FROM_DUAL? "dual" : "JL_DUAL");
+                	StringBuffer terminator = new StringBuffer(" Where not exists (Select * from " + table.getName() + " T "
+	                        + "Where ");
+	                terminator.append(where + ");\n");
+	                
+	                StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
+	                if (sb == null) {
+	                    sb = new StatementBuilder(1);
+	                    upsertInsertStatementBuilder.put(insertHead, sb);
+	                }
+	            
+	                if (!sb.isAppendable(insertHead, item)) {
+	                    writeToScriptFile(sb.build());
+	                }
+	                sb.append(insertHead, item, ", ", terminator.toString());
+                }
+                
+                if (SQLDialect.currentDialect.upsertMode != UPSERT_MODE.ORACLE) {
+	                StringBuffer insert = new StringBuffer("");
+	                insert.append("Update " + table.getName() + " T set ");
+	                f = true;
+	                for (int i = 1; i <= columnCount; ++i) {
+	                    if (columnLabel[i] == null) {
+	                    	continue;
+	                    }
+	                    if (!f) {
+	                        insert.append(", ");
+	                    }
+	                    f = false;
+	                    insert.append(columnLabel[i] + "=" + val.get(columnLabel[i]));
+	                }
+	                insert.append(" Where " + where + ";\n");
+	                writeToScriptFile(insert.toString());
+                }
             } else {
                 String insertSchema = "Insert into " + table.getName() + "(" + labelCSL + ") values ";
                 String item = "(" + valueList + ")";
@@ -258,6 +345,21 @@ public class ExportReader implements ResultSetReader {
     }
 
     /**
+     * Checks if columns is part of primary key.
+     * 
+     * @param column the column
+     * @return <code>true</code> if column is part of primary key
+     */
+    private boolean isPrimaryKeyColumn(String column) {
+    	for (Column c: table.primaryKey.getColumns()) {
+    		if (c.name.equalsIgnoreCase(column)) {
+    			return true;
+    		}
+    	}
+		return false;
+	}
+
+	/**
      * Exports the (c|b)lob content.
      * 
      * @param resultSet export current row
@@ -270,7 +372,7 @@ public class ExportReader implements ResultSetReader {
                 if (columnLabel[j] == null) {
                 	continue;
                 }
-                Object content = resultSet.getObject(j);
+                Object content = SqlUtil.getObject(resultSet, j, typeCache);
                 if (resultSet.wasNull()) {
                     content = null;
                 }

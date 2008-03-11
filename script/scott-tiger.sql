@@ -9,7 +9,7 @@ CREATE TABLE EMPLOYEE(
     name       VARCHAR(10),
     job        VARCHAR(9),
     boss       INTEGER,
-    hiredate   DATE,
+    hiredate   varchar(12),
     salary     DECIMAL(7, 2),
     comm       DECIMAL(7, 2),
     deptno     INTEGER

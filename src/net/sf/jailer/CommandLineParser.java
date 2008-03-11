@@ -96,8 +96,8 @@ public class CommandLineParser {
         System.out.println("    extracts data (see option '-e') and optionally creates a delete-script (see option '-d')");
         System.out.println("    -t prevents deletion of entities from 'tabu'-tables");
         System.out.println();
-        System.out.println("  jailer create-ddl [<jdbc-driver-class> <db-URL> <db-user> <db-password>]");
-        System.out.println("    creates the DDL for the working-tables [and execute DDL]");
+        System.out.println("  jailer create-ddl");
+        System.out.println("    creates the DDL for the working-tables");
         System.out.println();
         System.out.println("  jailer build-model [-schema <schema>] <jdbc-driver-class> <db-URL> <db-user> <db-password>");
         System.out.println("    automatically retrieves datamodel elements using the 'model-finder' beans");
@@ -159,8 +159,8 @@ public class CommandLineParser {
     @Option(name="-threads",usage="number of threads (default is 10)", metaVar="#threads")
     public int numberOfThreads = 10;
     
-    @Option(name="-entities",usage="maximum number of entities per insert-statement (in export-file, default is 50)", metaVar="#entities")
-    public int numberOfEntities = 50;
+    @Option(name="-entities",usage="maximum number of entities per insert-statement (in export-file, default is 10)", metaVar="#entities")
+    public int numberOfEntities = 10;
     
     @Option(name="-upsert-only",usage="generate 'upsert'-statements for all entities (in export-file)")
     public boolean upsertOnly = false;

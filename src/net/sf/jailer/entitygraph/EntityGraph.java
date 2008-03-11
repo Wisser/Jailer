@@ -299,7 +299,7 @@ public class EntityGraph {
                 }
                 max += "max(PRE_" + column.name + ")";
             }
-            select = "Select GRAPH_ID, " + universalPrimaryKey.columnList(null) + ", TODAY, TYPE, ASSOCIATION, max(SOURCE_TYPE), " + max + " From (" + select + ") AS Q " +
+            select = "Select GRAPH_ID, " + universalPrimaryKey.columnList(null) + ", TODAY, TYPE, ASSOCIATION, max(SOURCE_TYPE), " + max + " From (" + select + ") Q " +
                      "Group by GRAPH_ID, " + universalPrimaryKey.columnList(null) + ", TODAY, TYPE, ASSOCIATION";
         }
         
