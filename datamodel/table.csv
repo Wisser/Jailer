@@ -1,5 +1,19 @@
 # Name; Upsert; Primary key; ; Author
-messages; N; id INTEGER; ; Data Model Editor; ; 
-systems; N; id INTEGER; ; Data Model Editor; ; 
-players; N; id INTEGER; ; Data Model Editor; ; 
-users; N; id INTEGER; ; Data Model Editor; ; 
+columns_priv; N; Host CHAR(60); Db CHAR(64); User CHAR(16); Table_name CHAR(64); Column_name CHAR(64); ; MySQL-AB JDBC Driver; ; 
+db; N; Host CHAR(60); Db CHAR(64); User CHAR(16); ; MySQL-AB JDBC Driver; ; 
+func; N; name CHAR(64); ; MySQL-AB JDBC Driver; ; 
+help_category; N; help_category_id SMALLINT; ; MySQL-AB JDBC Driver; ; 
+help_keyword; N; help_keyword_id INTEGER; ; MySQL-AB JDBC Driver; ; 
+help_relation; N; help_keyword_id INTEGER; help_topic_id INTEGER; ; MySQL-AB JDBC Driver; ; 
+help_topic; N; help_topic_id INTEGER; ; MySQL-AB JDBC Driver; ; 
+host; N; Host CHAR(60); Db CHAR(64); ; MySQL-AB JDBC Driver; ; 
+proc; N; db CHAR(64); name CHAR(64); type CHAR(9); ; MySQL-AB JDBC Driver; ; 
+procs_priv; N; Host CHAR(60); Db CHAR(64); User CHAR(16); Routine_name CHAR(64); Routine_type CHAR(9); ; MySQL-AB JDBC Driver; ; 
+tables_priv; N; Host CHAR(60); Db CHAR(64); User CHAR(16); Table_name CHAR(64); ; MySQL-AB JDBC Driver; ; 
+time_zone; N; Time_zone_id INTEGER; ; MySQL-AB JDBC Driver; ; 
+time_zone_leap_second; N; Transition_time BIGINT; ; MySQL-AB JDBC Driver; ; 
+time_zone_name; N; Name CHAR(64); ; MySQL-AB JDBC Driver; ; 
+time_zone_transition; N; Time_zone_id INTEGER; Transition_time BIGINT; ; MySQL-AB JDBC Driver; ; 
+time_zone_transition_type; N; Time_zone_id INTEGER; Transition_type_id INTEGER; ; MySQL-AB JDBC Driver; ; 
+user; N; Host CHAR(60); User CHAR(16); ; MySQL-AB JDBC Driver; ; 
+user_info; N; User VARCHAR(16); ; MySQL-AB JDBC Driver; ; 

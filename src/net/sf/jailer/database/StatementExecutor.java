@@ -16,7 +16,7 @@
 
 package net.sf.jailer.database;
 
-import net.sf.jailer.aliases.DatabaseAlias;
+import net.sf.jailer.aliases.database.DatabaseAlias;
 import org.apache.log4j.Logger;
 
 import java.io.*;
