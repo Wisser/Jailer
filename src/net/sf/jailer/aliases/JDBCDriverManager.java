@@ -1,5 +1,7 @@
 package net.sf.jailer.aliases;
 
+import net.sf.jailer.aliases.driver.DriverNotFoundException;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;

@@ -15,8 +15,9 @@
  */
 package net.sf.jailer.ui;
 
+import com.digitprop.tonic.TonicLookAndFeel;
 import net.sf.jailer.Jailer;
-import net.sf.jailer.aliases.DatabaseAlias;
+import net.sf.jailer.aliases.database.DatabaseAlias;
 import net.sf.jailer.database.ExportReader;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.datamodel.DataModel;
@@ -670,7 +671,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private boolean connectToDBIfNeeded(String reason) {
     	try {
     		if (myDatabaseAlias == null) {
-	    		return (myDatabaseAlias = ConnectionDialog.showDialog(this)) != null;
+	    		return false;//(myDatabaseAlias = DatabaseAliasManager.showDialog(this)) != null;
     		}
     		return true;
     	} finally {
@@ -850,7 +851,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	    		BufferedReader in = new BufferedReader(new FileReader(plafSetting));
     	    		String plaf = in.readLine();
     	    		in.close();
-    	    		UIManager.setLookAndFeel(plaf);
+//    	    		UIManager.setLookAndFeel(plaf);
+					try {
+						UIManager.setLookAndFeel(new TonicLookAndFeel());
+						JFrame.setDefaultLookAndFeelDecorated(true);
+					} catch (UnsupportedLookAndFeelException exception) {
+					}
     		    	SwingUtilities.updateComponentTreeUI(extractionModelFrame);
     	    	} catch (Exception x) {
     	    	}

@@ -1,5 +1,11 @@
-package net.sf.jailer.aliases;
+package net.sf.jailer.aliases.database;
 
+import net.sf.jailer.aliases.JDBCDriverManager;
+import net.sf.jailer.aliases.driver.DriverAlias;
+import net.sf.jailer.aliases.driver.DriverNotFoundException;
+
+import java.io.OutputStream;
+import java.io.PrintStream;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.SQLException;
@@ -27,10 +33,10 @@ public class DatabaseAlias {
 	 * @param url An url string of the database.
 	 * @param user A user of the database.
 	 *
-	 * @throws DriverNotFoundException If there were no drivers found at the
+	 * @throws net.sf.jailer.aliases.driver.DriverNotFoundException If there were no drivers found at the
 	 * drivers repository.
 	 *
-	 * @see net.sf.jailer.aliases.DatabaseAlias#DatabaseAlias(String, String, java.sql.Driver)
+	 * @see DatabaseAlias#DatabaseAlias(String, String, java.sql.Driver)
 	 */
 	public DatabaseAlias(String url, String user)
 	throws DriverNotFoundException {
@@ -49,7 +55,7 @@ public class DatabaseAlias {
 	 * @throws DriverNotFoundException If no {@link java.sql.Driver}s for the
 	 * specified subprotocol has been found.
 	 *
-	 * @see net.sf.jailer.aliases.DatabaseAlias#DatabaseAlias(String, String, String, java.sql.Driver)
+	 * @see DatabaseAlias#DatabaseAlias(String, String, String, java.sql.Driver)
 	 */
 	public DatabaseAlias(String url, String user, String password)
 	throws DriverNotFoundException {
@@ -69,7 +75,7 @@ public class DatabaseAlias {
 	 * @throws DriverNotFoundException If the specified url string is
 	 * unacceptible by the specified driver.
 	 *
-	 * @see net.sf.jailer.aliases.DatabaseAlias#DatabaseAlias(String, String, String, java.sql.Driver)
+	 * @see DatabaseAlias#DatabaseAlias(String, String, String, java.sql.Driver)
 	 */
 	public DatabaseAlias(String url, String user, Driver driver)
 	throws DriverNotFoundException {
@@ -101,6 +107,13 @@ public class DatabaseAlias {
 		setDriver(driver);
 	}
 
+	public DatabaseAlias(String name, String url, String user, String password) {
+		setName(name);
+		myUrl = url;
+		myUser = user;
+		myPassword = password;
+	}
+
 	protected DatabaseAlias() {}
 
 	protected void setDriver(Driver driver)
@@ -120,6 +133,44 @@ public class DatabaseAlias {
 		}
 	}
 
+	//////////
+	// Name //
+	//////////
+
+	/**
+	 * The alias name.
+	 */
+	protected String myName;
+
+	/**
+	 * Returns the alias name.
+	 * <p>
+	 * If the alias name is not set then the jdbc url will be returned.
+	 * </p>
+	 *
+	 * @return The alias name. If the alias name is not set then the jdbc url
+	 * will be returned.
+	 */
+	public String getName() {
+		if (myName == null || myName.equals("")) {
+			return myUrl;
+		}
+		return myName;
+	}
+
+	/**
+	 * Sets the alias name.
+	 *
+	 * @param name Any string.
+	 */
+	public void setName(String name) {
+		if (name.equals("")) {
+			myName = null;
+		} else {
+			myName = name;
+		}
+	}
+	
 	////////////
 	// Driver //
 	////////////
@@ -135,7 +186,7 @@ public class DatabaseAlias {
 	 * @throws SQLException If the connection to the database could not be
 	 * established with current data.
 	 *
-	 * @see net.sf.jailer.aliases.DatabaseAlias#getConnection(String)
+	 * @see DatabaseAlias#getConnection(String)
 	 */
 	public Connection getConnection()
 	throws SQLException {
@@ -155,7 +206,7 @@ public class DatabaseAlias {
 	 * @throws SQLException If the connection to the database could not be
 	 * established with current data.
 	 *
-	 * @see net.sf.jailer.aliases.DatabaseAlias#getConnection(String, String) 
+	 * @see DatabaseAlias#getConnection(String, String)
 	 */
 	public Connection getConnection(String password)
 	throws SQLException {
@@ -310,6 +361,35 @@ public class DatabaseAlias {
 		list.add(myUrl);
 		list.add(myUser);
 		list.add(myPassword);
+	}
+
+	/**
+	 * Returns if the last test connection has been successful or not.
+	 *
+	 * @return {@code true} if the last test connection has been successful and
+	 * {@code false} otherways.
+	 */
+	public boolean isValid() {
+		return false;
+	}
+
+	private DriverAlias driverAlias;
+
+	/**
+	 * Prints this alias to the specified {@link java.io.OutputStream}.
+	 *
+	 * @param output An {@link java.io.OutputStream} to which this alias will be
+	 * printed.
+	 */
+	public void printTo(OutputStream output) {
+		PrintStream printStream = new PrintStream(output);
+		printStream.println("<alias name=\"" + getName() + "\">");
+		printStream.println("<database url=\"" + getURL() + "\"/>");
+		printStream.println("<user name=\"" + getUser() + "\" password=\"" + getPassword() + "\"/>");
+		if (driverAlias != null && driverAlias.isValid()) {
+			driverAlias.printTo(output);
+		}
+		printStream.println("</alias>");
 	}
 
 }

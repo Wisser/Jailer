@@ -1,4 +1,4 @@
-package net.sf.jailer.aliases;
+package net.sf.jailer.aliases.driver;
 
 /**
  * @author Vladimir "Dair T'arg" Berkutov
