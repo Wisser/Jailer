@@ -19,8 +19,8 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 	public static void main(String argv[]) {
 		try {
 			UIManager.setLookAndFeel(new TonicLookAndFeel());
-			JFrame.setDefaultLookAndFeelDecorated(true);
 		} catch (UnsupportedLookAndFeelException exception) {
+			JFrame.setDefaultLookAndFeelDecorated(true);
 		}
 		DatabaseAliasManagerDialog dialog = new DatabaseAliasManagerDialog(null);
 		dialog.showDialog();
@@ -47,6 +47,7 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 		setAlwaysOnTop(true);
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setTitle("Database Aliases Manager");
+		setMinimumSize(getSize());
 		setVisible(true);
 	}
 
@@ -128,6 +129,13 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 		return panel;
 	}
 
+	/**
+	 * Creates a buttons panel with "OK", "Apply" and "Cancel" buttons.
+	 *
+	 * This panel fits all width. Buttons are right-aligned.
+	 *
+	 * @return A created panel.
+	 */
 	private JComponent createButtonsBox() {
 		Box box = Box.createHorizontalBox();
 		box.add(Box.createHorizontalGlue());
@@ -350,17 +358,41 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 	/////////////////////////
 
 	/**
-	 * @author Vladimir "Dair T'arg" Berkutov
-	 * @date: 04.03.2008
-	 * @time: 22:43:33
+	 * This object is editor panel for
+	 * {@link net.sf.jailer.aliases.database.DatabaseAlias}.
 	 */
 	public final class DatabaseAliasEditor extends JPanel {
 
+		/**
+		 * The title of the editing
+		 * {@link net.sf.jailer.aliases.database.DatabaseAlias}.
+		 *
+		 * @see #getTitle()
+		 */
 		private JTextField title = new JTextField(25);
-		private JComboBox serversList = new JComboBox(getServerList());
 
+		/**
+		 * The url of the editing
+		 * {@link net.sf.jailer.aliases.database.DatabaseAlias}
+		 *
+		 * @see #getUrl();
+		 */
+		private JTextField url = new JTextField(25);
+
+		/**
+		 * A field for the database user.
+		 */
 		private JTextField user = new JTextField(25);
+
 		private JPasswordField password = new JPasswordField(25);
+		private JTextField libraries = new JTextField(20);
+		private JTextField className = new JTextField(20);
+
+		@SuppressWarnings({"FieldCanBeLocal"})
+		private JComponent externalDriverPanel;
+
+		@SuppressWarnings({"FieldCanBeLocal"})
+		private JCheckBox useExternalDriver;
 
 		private DatabaseAliasManagerDialog.AliasListItem listItem;
 
@@ -371,10 +403,61 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 		DatabaseAliasEditor(DatabaseAlias alias) {
 			super(new VFlowLayout());
 			createUI();
+			if (alias != null) {
+				title.setText(alias.getUser() + "@" + alias.getURL());
+				url.setText(alias.getURL());
+				user.setText(alias.getUser());
+				password.setText(alias.getPassword());
+				// todo: implement some DA methods
+//				useExternalDriver.setSelected(alias.isUseExternalDriver());
+//				if (alias.isUseExternalDriver()) {
+//					libraries.setText(alias.getExternalLibrariesAsString());
+//					libraries.setText(alias.getDriverClassName());
+//				}
+			}
 		}
 
+		/**
+		 * Returns the currently entered title for this
+		 * {@link net.sf.jailer.aliases.database.DatabaseAlias}
+		 *
+		 * @return The current name.
+		 */
 		public String getTitle() {
+			assert (title != null): "UI has not been initialized properly";
 			return title.getText();
+		}
+
+		/**
+		 * Returns the currently entered jdbc url of the database.
+		 *
+		 * The jdbc url consists of 3 parts -
+		 * <protocol>:<subprotocol>:<subname>.
+		 * The <protocol> is always "jdbc". The subprotocol is the string unique
+		 * to each of the sql servers.
+		 * Subname is the identifier of database. The format of this string
+		 * depends only of driver which is used.
+		 *
+		 * The more documentation on jdbc url could be found on
+		 * <a href="http://java.sun.com/j2se/1.3/docs/guide/jdbc/getstart/connection.html#997649">
+		 * http://java.sun.com/j2se/1.3/docs/guide/jdbc/getstart/connection.html#997649
+		 * </a>
+		 *
+		 * @return An entered url.
+		 */
+		public String getUrl() {
+			assert (url != null): "UI has not been initialized properly";
+			return url.getText();
+		}
+
+		/**
+		 * Returns the entered user's name.
+		 *
+		 * @return The entered user name.
+		 */
+		public String getUser() {
+			assert (url != null): "UI has not been initialized properly";
+			return user.getText();
 		}
 
 		public void setListItem(DatabaseAliasManagerDialog.AliasListItem  listItem) {
@@ -390,8 +473,15 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 					listItem.revalidate();
 				}
 			});
-			addPadding(serversList, 2, 2, 2, 2);
-			add(createTitledJComponent(serversList, "Server"));
+			addPadding(url, 2, 2, 2, 2);
+			add(createTitledJComponent(url, "JDBC URL:"));
+			Box hbox = Box.createHorizontalBox();
+			useExternalDriver = new JCheckBox("Use External Driver", false);
+			hbox.add(useExternalDriver);
+			hbox.add(Box.createHorizontalGlue());
+			add(hbox);
+			externalDriverPanel = createExternalDriverPanel();
+			add(externalDriverPanel);
 			addPadding(user, 2, 2, 2, 2);
 			add(createTitledJComponent(user, "User:"));
 			addPadding(password, 2, 2, 2, 2);
@@ -399,17 +489,52 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 			add(Box.createVerticalGlue());
 		}
 
-		private String[] getServerList() {
-			return new String[] {
-				"MySQL",
-				"Custom SQL Server"
-			};
+		private JComponent createExternalDriverPanel() {
+			JPanel panel = new JPanel(new GridLayout(2, 1, 6, 6));
+			addPadding(panel, 2, 2, 2, 2);
+			Border border = panel.getBorder();
+			border = BorderFactory.createCompoundBorder(BorderFactory.createTitledBorder("External Driver"), border);
+			panel.setBorder(border);
+			panel.add(createLibrariesField());
+			panel.add(createClassField());
+			return panel;
+		}
+
+		private JComponent createLibrariesField() {
+			JPanel panel = new JPanel(new VFlowLayout());
+			Box hbox = Box.createHorizontalBox();
+			hbox.add(new JLabel("Driver Libraries:"));
+			hbox.add(Box.createHorizontalGlue());
+			panel.add(hbox);
+			panel.add(Box.createVerticalStrut(3));
+			hbox = Box.createHorizontalBox();
+			addPadding(libraries, 2, 2, 2, 2);
+			hbox.add(libraries);
+			hbox.add(Box.createHorizontalStrut(3));
+			JButton selectLibrariesButton = new JButton("Select");
+			hbox.add(selectLibrariesButton);
+			panel.add(hbox);
+			return panel;
+		}
+
+		private JComponent createClassField() {
+			JPanel panel = new JPanel(new VFlowLayout());
+			Box hbox = Box.createHorizontalBox();
+			hbox.add(new JLabel("Class Name:"));
+			hbox.add(Box.createHorizontalGlue());
+			panel.add(hbox);
+			panel.add(Box.createVerticalStrut(3));
+			hbox = Box.createHorizontalBox();
+			addPadding(className, 2, 2, 2, 2);
+			hbox.add(className);
+			hbox.add(Box.createHorizontalStrut(3));
+			panel.add(hbox);
+			return panel;
 		}
 
 		public DatabaseAliasEditor duplicate() {
 			DatabaseAliasEditor editor = new DatabaseAliasEditor();
 			editor.title.setText(title.getText());
-			editor.serversList.setSelectedIndex(serversList.getSelectedIndex());
 			editor.user.setText(user.getText());
 			editor.password.setText(new String(password.getPassword()));
 			return editor;
