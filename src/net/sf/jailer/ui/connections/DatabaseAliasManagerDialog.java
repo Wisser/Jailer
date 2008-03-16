@@ -5,6 +5,8 @@ import net.sf.jailer.aliases.database.DatabaseAlias;
 
 import javax.swing.*;
 import javax.swing.border.Border;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Comparator;
@@ -226,13 +228,30 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 	// Active AliasListItem //
 	//////////////////////////
 
+	/**
+	 * The active {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem}.
+	 *
+	 * Most of actions such as copying and removing are performed on the active
+	 * {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem}.
+	 */
 	private AliasListItem activeItem;
 
-	public AliasListItem getActiveItem() {
+	/**
+	 * Returns a selected {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem}
+	 *
+	 * @return A selected {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem}
+	 */
+	AliasListItem getActiveItem() {
 		return activeItem;
 	}
 
-	public void setActiveItem(AliasListItem item) {
+	/**
+	 * Sets the active {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem}
+	 * and performs appropriate ui changes.
+	 *
+	 * @param item Sets the active {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem}
+	 */
+	void setActiveItem(AliasListItem item) {
 		if (activeItem != null) {
 			activeItem.setSelected(false);
 		}
@@ -254,8 +273,31 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 	// AliasListItem //
 	///////////////////
 
+	/**
+	 * The list of the {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem}s
+	 * of this {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog}.
+	 *
+	 * Every of this items is associated with appropriate
+	 * {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.DatabaseAliasEditor}.
+	 *
+	 * @see net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem
+	 * @see net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.DatabaseAliasEditor
+	 * @see #addAliasListItem(net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem)
+	 * @see #removeAliasListItem(net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem)
+	 * @see #removeAllAliasListItems()
+	 */
 	private JComponent aliasesList;
 
+	/**
+	 * Carefully adds {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem}
+	 * to the list, so ui is still valid.
+	 *
+	 * @param item An {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem}
+	 * to be added to the items list.
+	 *
+	 * @see #removeAliasListItem(net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem)
+	 * @see #removeAllAliasListItems() 
+	 */
 	void addAliasListItem(AliasListItem item) {
 		if (item == null) {
 			return;
@@ -265,6 +307,16 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 		aliasesList.repaint();
 	}
 
+	/**
+	 * Carefully removes {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem}
+	 * from the aliases list, so ui is still valid.
+	 *
+	 * @param item An {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem}
+	 * to be removed from aliases list.
+	 *
+	 * @see #addAliasListItem(net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem)
+	 * @see #removeAllAliasListItems()
+	 */
 	void removeAliasListItem(AliasListItem item) {
 		if (item == null) {
 			return;
@@ -274,19 +326,64 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 		aliasesList.repaint();
 	}
 
+	/**
+	 * Removes all {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem}s
+	 * from the aliases list, so ui is valid and no aliases left in the list.
+	 *
+	 * @see #addAliasListItem(net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem)
+	 * @see #removeAliasListItem(net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem)
+	 */
 	void removeAllAliasListItems() {
 		aliasesList.removeAll();
 		aliasesList.revalidate();
 		aliasesList.repaint();
 	}
 
+	/**
+	 * The instance of this class represents a editing database alias in the
+	 * right list of the aliases.
+	 *
+	 * Every {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem} has the link to the
+	 * associated {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.DatabaseAliasEditor}
+	 * which must be not null.
+	 */
 	public final class AliasListItem extends Box {
 
+		/**
+		 * The {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.DatabaseAliasEditor} associated with this
+		 * {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem}. Must be not-null.
+		 */
 		private DatabaseAliasEditor editor;
+
+		/**
+		 * A label with the title of this {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem}.
+		 */
 		private JLabel title;
+
 		private boolean selected;
 		private AliasListItem self = this;
 
+		/**
+		 * Constructs the {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem} with the empty
+		 * {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.DatabaseAliasEditor} associated with it.
+		 *
+		 * @see net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem#AliasListItem(net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.DatabaseAliasEditor)
+		 */
+		public AliasListItem() {
+			this(null);
+		}
+
+		/**
+		 * Constructs the {@link AliasListItem} for the specified
+		 * {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.DatabaseAliasEditor}.
+		 *
+		 * If the {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.DatabaseAliasEditor} is {@code null}
+		 * then a new one will be created.
+		 *
+		 * @param editor A {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.DatabaseAliasEditor} to be
+		 * associated with this {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem}. If the
+		 * editor is {@code null} then a new one will be created.
+		 */
 		public AliasListItem(DatabaseAliasEditor editor) {
 			super(BoxLayout.X_AXIS);
 			if (editor == null) {
@@ -294,8 +391,12 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 			} else {
 				this.editor = editor;
 			}
-			this.title = new JLabel(this.editor.getTitle());
+			createUI();
+		}
+
+		private void createUI() {
 			add(Box.createHorizontalStrut(2));
+			title = new JLabel(editor.getTitle());
 			add(title);
 			add(Box.createHorizontalStrut(2));
 			add(Box.createHorizontalGlue());
@@ -312,20 +413,39 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 					repaint();
 				}
 			});
-			setBorder(BorderFactory.createEmptyBorder(1, 1, 1, 1));
-			addPadding(this, 1, 0, 1, 0);
-			this.editor.setListItem(this);
+			addPadding(this, 2, 1, 2, 1);
+			editor.setListItem(this);
 			revalidate();
 		}
 
+		/**
+		 * Returns a {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.DatabaseAliasEditor}
+		 * associated with this aliases list item.
+		 *
+		 * @return A {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.DatabaseAliasEditor}
+		 * associated with this aliases list item.
+		 */
 		public DatabaseAliasEditor getEditor() {
 			return editor;
 		}
 
+		/**
+		 * Returns whether this item is selected or not.
+		 *
+		 * @return {@code true} if this list item is selected and {@code false}
+		 * if this item is not selected.
+		 */
 		public boolean isSelected() {
 			return selected;
 		}
 
+		/**
+		 * Sets the selection state of this list item and updates ui
+		 * accordinately.
+		 *
+		 * @param flag The new value of the selection flag.
+		 */
+		// todo: extract ui changes to another method.
 		public void setSelected(boolean flag) {
 			selected = flag;
 			if (isSelected()) {
@@ -336,6 +456,12 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 			addPadding(this, 1, 0, 1, 0);
 		}
 
+		/**
+		 * Revalidates user interface.
+		 *
+		 * This method revalidates some showing labels texts and calls default
+		 * parent {@link javax.swing.Box#revalidate()} method.
+		 */
 		public void revalidate() {
 			if (editor != null) {
 				String str = editor.getTitle();
@@ -358,7 +484,7 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 	/////////////////////////
 
 	/**
-	 * This object is editor panel for
+	 * This object is a editor panel for
 	 * {@link net.sf.jailer.aliases.database.DatabaseAlias}.
 	 */
 	public final class DatabaseAliasEditor extends JPanel {
@@ -369,15 +495,15 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 		 *
 		 * @see #getTitle()
 		 */
-		private JTextField title = new JTextField(25);
+		private JTextField title;
 
 		/**
 		 * The url of the editing
 		 * {@link net.sf.jailer.aliases.database.DatabaseAlias}
 		 *
-		 * @see #getUrl();
+		 * @see #getUrl() 
 		 */
-		private JTextField url = new JTextField(25);
+		private JTextField url;
 
 		/**
 		 * A field for the database user.
@@ -464,29 +590,51 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 			this.listItem = listItem;
 		}
 
+		/**
+		 * Creates UI for the {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.DatabaseAliasEditor}
+		 */
 		private void createUI() {
 			addMargin(this, 6, 6, 6, 6);
-			addPadding(title, 2, 2, 2, 2);
-			add(createTitledJComponent(title, "Title:"));
-			title.addKeyListener(new KeyAdapter() {
-				public void keyReleased(KeyEvent e) {
-					listItem.revalidate();
-				}
-			});
-			addPadding(url, 2, 2, 2, 2);
-			add(createTitledJComponent(url, "JDBC URL:"));
-			Box hbox = Box.createHorizontalBox();
-			useExternalDriver = new JCheckBox("Use External Driver", false);
-			hbox.add(useExternalDriver);
-			hbox.add(Box.createHorizontalGlue());
-			add(hbox);
-			externalDriverPanel = createExternalDriverPanel();
-			add(externalDriverPanel);
+			add(createTitleField());
+			add(createURLField());
+			add(createUseExternalDriverCheckBox());
+			add(externalDriverPanel = createExternalDriverPanel());
 			addPadding(user, 2, 2, 2, 2);
 			add(createTitledJComponent(user, "User:"));
 			addPadding(password, 2, 2, 2, 2);
 			add(createTitledJComponent(password, "Password:"));
 			add(Box.createVerticalGlue());
+		}
+
+		private JComponent createTitleField() {
+			title = new JTextField(25);
+			addPadding(title, 2, 2, 2, 2);
+			title.addKeyListener(new KeyAdapter() {
+				public void keyReleased(KeyEvent e) {
+					listItem.revalidate();
+				}
+			});
+			return createTitledJComponent(title, "Title:");
+		}
+
+		private JComponent createURLField() {
+			url = new JTextField(25);
+			addPadding(url, 2, 2, 2, 2);
+			return createTitledJComponent(url, "JDBC URL:");
+		}
+
+		private JComponent createUseExternalDriverCheckBox() {
+			Box hbox = Box.createHorizontalBox();
+			useExternalDriver = new JCheckBox("Use External Driver", false);
+			useExternalDriver.addChangeListener(new ChangeListener() {
+				public void stateChanged(ChangeEvent e) {
+					externalDriverPanel.setVisible(useExternalDriver.isSelected());
+					getParent().validate();
+				}
+			});
+			hbox.add(useExternalDriver);
+			hbox.add(Box.createHorizontalGlue());
+			return hbox;
 		}
 
 		private JComponent createExternalDriverPanel() {
@@ -532,6 +680,11 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 			return panel;
 		}
 
+		/**
+		 * Duplicates this {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.DatabaseAliasEditor}.
+		 *
+		 * @return The copy of the {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.DatabaseAliasEditor}.
+		 */
 		public DatabaseAliasEditor duplicate() {
 			DatabaseAliasEditor editor = new DatabaseAliasEditor();
 			editor.title.setText(title.getText());
