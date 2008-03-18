@@ -1,7 +1,15 @@
 package net.sf.jailer.aliases.driver;
 
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.helpers.XMLReaderFactory;
+
 import java.io.*;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.Vector;
 
 /**
@@ -122,14 +130,89 @@ public final class DriverAliasManager {
 	 * input problems.
 	 */
 	public static void load(File file)
-	throws IOException {
+	throws IOException, SAXException {
 		FileInputStream inputStream = new FileInputStream(file);
 		load(inputStream);
 		inputStream.close();
 	}
 
-	public static void load(InputStream input) {
+	/**
+	 * Loads {@link net.sf.jailer.aliases.driver.DriverAlias}es list from the specified input stream.
+	 * The {@link net.sf.jailer.aliases.driver.DriverAlias}es list is stored as XML.
+	 *
+	 * @param input An {@link java.io.InputStream} from which the {@link net.sf.jailer.aliases.driver.DriverAlias}es
+	 * list will be loaded.
+	 * @throws IOException
+	 * @throws SAXException If there is no default SAX handler found.
+	 */
+	public static void load(InputStream input)
+	throws IOException, SAXException {
+		XMLReader reader = XMLReaderFactory.createXMLReader();
+		DriverAliasSAXHandler handler = new DriverAliasSAXHandler();
+		reader.setContentHandler(handler);
+		reader.parse(new InputSource(input));
 		/* SAX XML parsing... */
 	}
 
+	/////////////////////////////
+	// DriverAliasSAXHandler //
+	/////////////////////////////
+
+	private static final class DriverAliasSAXHandler extends DefaultHandler {
+		public DriverAliasSAXHandler() {}
+
+		private boolean loaded = false;
+
+		/**
+		 * Returns whether or not the {@link net.sf.jailer.aliases.driver.DriverAlias}es list is loaded.
+		 *
+		 * @return {@code true} if the {@link net.sf.jailer.aliases.driver.DriverAlias}es list is loaded and
+		 * {@code false} otherwise.
+		 */
+		public boolean isLoaded() {
+			return loaded;
+		}
+
+		private Vector<DriverAlias> loadedAliases;
+
+		private static DriverAlias buildAlias(Properties properties) {
+			return new DriverAlias();
+		}
+
+		private Properties properties;
+
+		///////////////
+		// Listeners //
+		///////////////
+
+		public void startDocument()
+		throws SAXException {
+			if (isLoaded()) {
+				return;
+			}
+			loadedAliases = new Vector<DriverAlias>();
+		}
+
+		public void startElement (String uri, String localName, String qName, Attributes attributes)
+		throws SAXException {
+			if (isLoaded()) {
+				return;
+			}
+			if (localName.equals("alias")) {
+				properties = new Properties();
+			}
+		}
+
+		public void endElement (String uri, String localName, String qName)
+		throws SAXException {
+			if (isLoaded()) {
+				return;
+			}
+			if (localName.equals("aliases")) {
+				loaded = true;
+			} else if (localName.equals("alias")) {
+				
+			}
+		}
+	}
 }

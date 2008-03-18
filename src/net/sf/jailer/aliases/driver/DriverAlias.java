@@ -2,10 +2,17 @@ package net.sf.jailer.aliases.driver;
 
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 
 /**
+ * Includes all information about one JDBC Driver.
+ *
+ * Since the driver could accept more than one type of the jdbc subprotocol, there is no jdbc subprotocol field in the
+ * {@code DriverAlias}. Whether driver could accept some JDBC URL or not could be checked by
+ * {@link net.sf.jailer.aliases.driver.DriverAlias#isAcceptibleURL(String)} method.
+ *
  * @author Vladimir "Dair T'arg" Berkutov
  * @date: 06.03.2008
  * @time: 22:42:59
@@ -34,5 +41,35 @@ public class DriverAlias {
 		}
 		printStream.println("	</libraries>");
 		printStream.println("</driver>");
+	}
+
+	/**
+	 * Alias to {@link net.sf.jailer.aliases.driver.DriverAlias#acceptURL(String)}.
+	 * 
+	 * Retrieves whether the driver pointed by this {@link net.sf.jailer.aliases.driver.DriverAlias} thinks that it
+	 * could accept the specified JDBC {@code url} of a database or not.
+	 *
+	 * @param url The url of a database.
+	 * @return {@code true} if the driver understands the subprotocol and {@code false} otherwise.
+	 *
+	 * @throws SQLException If a database access error occurs.
+	 */
+	public boolean isAcceptibleURL(String url)
+	throws SQLException {
+		return acceptURL(url);
+	}
+
+	/**
+	 * Retrieves whether the driver pointed by this {@link net.sf.jailer.aliases.driver.DriverAlias} thinks that it
+	 * could accept the specified JDBC {@code url} of a database or not.
+	 * 
+	 * @param url The url of a database.
+	 * @return {@code true} if the driver understands the subprotocol and {@code false} otherwise.
+	 *
+	 * @throws SQLException If a database access error occurs.
+	 */
+	public boolean acceptURL(String url)
+	throws SQLException {
+		throw new RuntimeException("Not implemented yet");
 	}
 }
