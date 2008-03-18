@@ -373,7 +373,7 @@ public class DatabaseAlias {
 		return false;
 	}
 
-	private DriverAlias driverAlias;
+	DriverAlias driverAlias;
 
 	/**
 	 * Prints this alias to the specified {@link java.io.OutputStream}.
@@ -386,7 +386,7 @@ public class DatabaseAlias {
 		printStream.println("<alias name=\"" + getName() + "\">");
 		printStream.println("<database url=\"" + getURL() + "\"/>");
 		printStream.println("<user name=\"" + getUser() + "\" password=\"" + getPassword() + "\"/>");
-		if (driverAlias != null && driverAlias.isValid()) {
+		if (driverAlias != null) {
 			driverAlias.printTo(output);
 		}
 		printStream.println("</alias>");

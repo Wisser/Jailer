@@ -176,7 +176,7 @@ public final class DriverAliasManager {
 		private Vector<DriverAlias> loadedAliases;
 
 		private static DriverAlias buildAlias(Properties properties) {
-			return new DriverAlias();
+			return null;
 		}
 
 		private Properties properties;
