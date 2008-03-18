@@ -4,6 +4,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Iterator;
 
 /**
@@ -19,6 +20,21 @@ import java.util.Iterator;
  */
 public class DriverAlias {
 
+	public DriverAlias(Collection<String> urls)
+	throws SQLException {
+		this(urls.toArray(new String[urls.size()]));
+	}
+	
+	public DriverAlias(String urls[])
+	throws SQLException {
+		libraries = new ArrayList<String>();
+		for (int i = 0; i < urls.length; i++) {
+//			if (acceptURL(urls[i])) {
+				libraries.add(urls[i]);
+//			}
+		}
+	}
+
 	protected String myClassName;
 	public String getClassName() {
 		return myClassName;
@@ -28,18 +44,18 @@ public class DriverAlias {
 		return false;
 	}
 	
-	protected ArrayList<String> myLibraries;
+	protected ArrayList<String> libraries;
 
 	public void printTo(OutputStream output) {
 		PrintStream printStream = new PrintStream(output);
 		printStream.println("<driver class=\"" + getClassName() + "\">");
-		printStream.println("	</libraries>");
-		Iterator<String> librariesIterator = myLibraries.iterator();
+		printStream.println("<libraries>");
+		Iterator<String> librariesIterator = libraries.iterator();
 		//noinspection WhileLoopReplaceableByForEach
 		while (librariesIterator.hasNext()) {
-			printStream.println("		<library url=\"" + librariesIterator.next() + "\"/>");
+			printStream.println("<library url=\"" + librariesIterator.next() + "\"/>");
 		}
-		printStream.println("	</libraries>");
+		printStream.println("</libraries>");
 		printStream.println("</driver>");
 	}
 

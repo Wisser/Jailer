@@ -1,5 +1,6 @@
 package net.sf.jailer.aliases.database;
 
+import net.sf.jailer.aliases.driver.DriverAlias;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -8,6 +9,7 @@ import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.helpers.XMLReaderFactory;
 
 import java.io.*;
+import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -21,9 +23,11 @@ public final class DatabaseAliasManager {
 		try {
 			DatabaseAliasManager.load(new File("config/connections/aliases.xml"));
 			DatabaseAlias[] aliases = DatabaseAliasManager.getAllDatabaseAliases();
+			System.out.println("<aliases>");
 			for (DatabaseAlias alias : aliases) {
 				alias.printTo(System.out);
 			}
+			System.out.println("</aliases>");
 		} catch (Throwable throwable) {
 			throwable.printStackTrace();
 		}
@@ -208,20 +212,18 @@ public final class DatabaseAliasManager {
 
 		private Vector<DatabaseAlias> loadedAliases;
 
-		private static DatabaseAlias buildAlias(Properties properties) {
-			String url = properties.getProperty("alias.database.url", "undefined");
-			String user = properties.getProperty("alias.user.name", "undefined");
-			String password = properties.getProperty("alias.user.password", "undefined");
+		private DatabaseAlias buildAlias(Properties properties) {
 			DatabaseAlias alias = new DatabaseAlias();
-			alias.myUrl = url;
-			alias.myUser = user;
-			alias.myPassword = password;
+			alias.myUrl = properties.getProperty("alias.database.url", "undefined");
+			alias.myUser = properties.getProperty("alias.user.name", "undefined");
+			alias.myPassword = properties.getProperty("alias.user.password", "undefined");
 			alias.setName(properties.getProperty("alias.name", "undefined"));
+			alias.driverAlias = driverAlias;
 			return alias;
 		}
 
 		public Vector<DatabaseAlias> getAliases() {
-			if (isLoaded()) {
+			if (!isLoaded()) {
 				throw new RuntimeException("DatabaseAliases list is not loaded yet");
 			}
 			Vector<DatabaseAlias> list = loadedAliases;
@@ -230,6 +232,8 @@ public final class DatabaseAliasManager {
 		}
 
 		private Properties properties;
+		private DriverAlias driverAlias;
+		private Vector<String> libraries;
 
 		///////////////
 		// Listeners //
@@ -256,6 +260,12 @@ public final class DatabaseAliasManager {
 			} else if (localName.equals("user")) {
 				properties.setProperty("alias.user.name", attributes.getValue(uri, "name"));
 				properties.setProperty("alias.user.password", attributes.getValue(uri, "password"));
+			} else if (localName.equals("driver")) {
+				properties.setProperty("alias.driver.external", "true");
+			} else if (localName.equals("libraries")) {
+				libraries = new Vector<String>();
+			} else if (localName.equals("library")) {
+				libraries.addElement(attributes.getValue(uri, "url"));
 			}
 		}
 
@@ -269,6 +279,13 @@ public final class DatabaseAliasManager {
 			} else if (localName.equals("alias")) {
 				loadedAliases.addElement(buildAlias(properties));
 				properties = null;
+				driverAlias = null;
+			} else if (localName.equals("libraries")) {
+				try {
+					driverAlias = new DriverAlias(libraries);
+				} catch (SQLException exception) {
+					throw new SAXException("Unable check url(s)");
+				}
 			}
 		}
 	}
