@@ -30,6 +30,7 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 
 	/**
 	 * Shows the {@code DatabaseAliasManagerDialog}.
+	 *
 	 * Use this method for simple calls rather than construction.
 	 *
 	 * @param owner An parent frame for this dialog.
@@ -62,7 +63,7 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 		return box;
 	}
 
-	JPanel editorPane;
+	private JPanel editorPane;
 	private JComponent createSplitPane() {
 		Box box = Box.createHorizontalBox();
 		JSplitPane splitPane = new JSplitPane();
@@ -241,6 +242,7 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 	 *
 	 * @return A selected {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem}
 	 */
+	@SuppressWarnings({"WeakerAccess"})
 	AliasListItem getActiveItem() {
 		return activeItem;
 	}
@@ -251,6 +253,7 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 	 *
 	 * @param item Sets the active {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem}
 	 */
+	@SuppressWarnings({"WeakerAccess"})
 	void setActiveItem(AliasListItem item) {
 		if (activeItem != null) {
 			activeItem.setSelected(false);
@@ -274,8 +277,8 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 	///////////////////
 
 	/**
-	 * The list of the {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem}s
-	 * of this {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog}.
+	 * The list of the {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem}s of this
+	 * {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog}.
 	 *
 	 * Every of this items is associated with appropriate
 	 * {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.DatabaseAliasEditor}.
@@ -298,6 +301,7 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 	 * @see #removeAliasListItem(net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem)
 	 * @see #removeAllAliasListItems() 
 	 */
+	@SuppressWarnings({"WeakerAccess"})
 	void addAliasListItem(AliasListItem item) {
 		if (item == null) {
 			return;
@@ -317,6 +321,7 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 	 * @see #addAliasListItem(net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem)
 	 * @see #removeAllAliasListItems()
 	 */
+	@SuppressWarnings({"WeakerAccess"})
 	void removeAliasListItem(AliasListItem item) {
 		if (item == null) {
 			return;
@@ -353,7 +358,7 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 		 * The {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.DatabaseAliasEditor} associated with this
 		 * {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem}. Must be not-null.
 		 */
-		private DatabaseAliasEditor editor;
+		private final DatabaseAliasEditor editor;
 
 		/**
 		 * A label with the title of this {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem}.
@@ -361,7 +366,7 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 		private JLabel title;
 
 		private boolean selected;
-		private AliasListItem self = this;
+		private final AliasListItem self = this;
 
 		/**
 		 * Constructs the {@link net.sf.jailer.ui.connections.DatabaseAliasManagerDialog.AliasListItem} with the empty
@@ -508,11 +513,11 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 		/**
 		 * A field for the database user.
 		 */
-		private JTextField user = new JTextField(25);
+		private final JTextField user = new JTextField(25);
 
-		private JPasswordField password = new JPasswordField(25);
-		private JTextField libraries = new JTextField(20);
-		private JTextField className = new JTextField(20);
+		private final JPasswordField password = new JPasswordField(25);
+		private final JTextField libraries = new JTextField(20);
+		private final JTextField className = new JTextField(20);
 
 		@SuppressWarnings({"FieldCanBeLocal"})
 		private JComponent externalDriverPanel;
@@ -557,17 +562,13 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 		/**
 		 * Returns the currently entered jdbc url of the database.
 		 *
-		 * The jdbc url consists of 3 parts -
-		 * <protocol>:<subprotocol>:<subname>.
-		 * The <protocol> is always "jdbc". The subprotocol is the string unique
-		 * to each of the sql servers.
-		 * Subname is the identifier of database. The format of this string
-		 * depends only of driver which is used.
+		 * The jdbc url consists of 3 parts - <protocol>:<subprotocol>:<subname>. The <protocol> is always "jdbc".
+		 * The subprotocol is the string unique to each of the sql servers. Subname is the identifier of database.
+		 * The format of this string depends only of driver which is used.
 		 *
 		 * The more documentation on jdbc url could be found on
 		 * <a href="http://java.sun.com/j2se/1.3/docs/guide/jdbc/getstart/connection.html#997649">
-		 * http://java.sun.com/j2se/1.3/docs/guide/jdbc/getstart/connection.html#997649
-		 * </a>
+		 * http://java.sun.com/j2se/1.3/docs/guide/jdbc/getstart/connection.html#997649</a>
 		 *
 		 * @return An entered url.
 		 */

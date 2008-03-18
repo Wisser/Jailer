@@ -1,10 +1,14 @@
 package net.sf.jailer.aliases.database;
 
+import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
+import org.xml.sax.XMLReader;
+import org.xml.sax.helpers.DefaultHandler;
+import org.xml.sax.helpers.XMLReaderFactory;
+
 import java.io.*;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Vector;
+import java.util.*;
 
 /**
  * @author Vladimir "Dair T'arg" Berkutov
@@ -12,6 +16,18 @@ import java.util.Vector;
  * @time: 21:27:25
  */
 public final class DatabaseAliasManager {
+
+	public static void main(String argv[]) {
+		try {
+			DatabaseAliasManager.load(new File("config/connections/aliases.xml"));
+			DatabaseAlias[] aliases = DatabaseAliasManager.getAllDatabaseAliases();
+			for (DatabaseAlias alias : aliases) {
+				alias.printTo(System.out);
+			}
+		} catch (Throwable throwable) {
+			throwable.printStackTrace();
+		}
+	}
 
 	private DatabaseAliasManager() {}
 
@@ -142,16 +158,118 @@ public final class DatabaseAliasManager {
 	 *
 	 * @throws IOException If the list has not been loaded properly during some
 	 * input problems.
+	 * @throws SAXException If there is no default SAX handler found.
 	 */
 	public static void load(File file)
-	throws IOException {
+	throws IOException, SAXException {
 		FileInputStream inputStream = new FileInputStream(file);
 		load(inputStream);
 		inputStream.close();
 	}
 
-	public static void load(InputStream input) {
-		/* SAX XML parsing... */
+	/**
+	 * Loads {@link net.sf.jailer.aliases.driver.DriverAlias}es list from the specified input stream.
+	 * The {@link net.sf.jailer.aliases.driver.DriverAlias}es list is stored as XML.
+	 *
+	 * @param input An {@link java.io.InputStream} from which the {@link net.sf.jailer.aliases.driver.DriverAlias}es
+	 * list will be loaded.
+	 *
+	 * @throws IOException If the list has not been loaded properly during some
+	 * input problems.
+	 * @throws SAXException If there is no default SAX handler found.
+	 */
+	public static void load(InputStream input)
+	throws IOException, SAXException {
+		XMLReader reader = XMLReaderFactory.createXMLReader();
+		DatabaseAliasSAXHandler handler = new DatabaseAliasSAXHandler();
+		reader.setContentHandler(handler);
+		reader.parse(new InputSource(input));
+		databaseAliases.addAll(handler.getAliases());
 	}
 
+	/////////////////////////////
+	// DriverAliasSAXHandler //
+	/////////////////////////////
+
+	private static final class DatabaseAliasSAXHandler extends DefaultHandler {
+		public DatabaseAliasSAXHandler() {}
+
+		private boolean loaded = false;
+
+		/**
+		 * Returns whether or not the {@link net.sf.jailer.aliases.driver.DriverAlias}es list is loaded.
+		 *
+		 * @return {@code true} if the {@link net.sf.jailer.aliases.driver.DriverAlias}es list is loaded and
+		 * {@code false} otherwise.
+		 */
+		public boolean isLoaded() {
+			return loaded;
+		}
+
+		private Vector<DatabaseAlias> loadedAliases;
+
+		private static DatabaseAlias buildAlias(Properties properties) {
+			String url = properties.getProperty("alias.database.url", "undefined");
+			String user = properties.getProperty("alias.user.name", "undefined");
+			String password = properties.getProperty("alias.user.password", "undefined");
+			DatabaseAlias alias = new DatabaseAlias();
+			alias.myUrl = url;
+			alias.myUser = user;
+			alias.myPassword = password;
+			alias.setName(properties.getProperty("alias.name", "undefined"));
+			return alias;
+		}
+
+		public Vector<DatabaseAlias> getAliases() {
+			if (isLoaded()) {
+				throw new RuntimeException("DatabaseAliases list is not loaded yet");
+			}
+			Vector<DatabaseAlias> list = loadedAliases;
+			loadedAliases = null;
+			return list;
+		}
+
+		private Properties properties;
+
+		///////////////
+		// Listeners //
+		///////////////
+
+		public void startDocument()
+		throws SAXException {
+			if (isLoaded()) {
+				return;
+			}
+			loadedAliases = new Vector<DatabaseAlias>();
+		}
+
+		public void startElement (String uri, String localName, String qName, Attributes attributes)
+		throws SAXException {
+			if (isLoaded()) {
+				return;
+			}
+			if (localName.equals("alias")) {
+				properties = new Properties();
+				properties.setProperty("alias.name", attributes.getValue(uri, "name"));
+			} else if (localName.equals("database")) {
+				properties.setProperty("alias.database.url", attributes.getValue(uri, "url"));
+			} else if (localName.equals("user")) {
+				properties.setProperty("alias.user.name", attributes.getValue(uri, "name"));
+				properties.setProperty("alias.user.password", attributes.getValue(uri, "password"));
+			}
+		}
+
+		public void endElement (String uri, String localName, String qName)
+		throws SAXException {
+			if (isLoaded()) {
+				return;
+			}
+			if (localName.equals("aliases")) {
+				loaded = true;
+			} else if (localName.equals("alias")) {
+				loadedAliases.addElement(buildAlias(properties));
+				properties = null;
+			}
+		}
+	}
 }
