@@ -10,7 +10,9 @@ import org.xml.sax.helpers.XMLReaderFactory;
 
 import java.io.*;
 import java.sql.SQLException;
-import java.util.*;
+import java.util.Iterator;
+import java.util.Properties;
+import java.util.Vector;
 
 /**
  * @author Vladimir "Dair T'arg" Berkutov
@@ -19,19 +21,6 @@ import java.util.*;
  */
 public final class DatabaseAliasManager {
 
-	public static void main(String argv[]) {
-		try {
-			DatabaseAliasManager.load(new File("config/connections/aliases.xml"));
-			DatabaseAlias[] aliases = DatabaseAliasManager.getAllDatabaseAliases();
-			System.out.println("<aliases>");
-			for (DatabaseAlias alias : aliases) {
-				alias.printTo(System.out);
-			}
-			System.out.println("</aliases>");
-		} catch (Throwable throwable) {
-			throwable.printStackTrace();
-		}
-	}
 
 	private DatabaseAliasManager() {}
 
@@ -46,29 +35,9 @@ public final class DatabaseAliasManager {
 	 *
 	 * @return A full list of {@link DatabaseAlias}es which are avaliable.
 	 */
-	public static DatabaseAlias[] getAllDatabaseAliases() {
+	public static DatabaseAlias[] getDatabaseAliases() {
 		int size = databaseAliases.size();
 		return databaseAliases.toArray(new DatabaseAlias[size]);
-	}
-
-	/**
-	 * Returns a list of the valid {@link DatabaseAlias}es. Valid
-	 * {@link DatabaseAlias} is an alias using which the connection with a
-	 * database could be established.
-	 *
-	 * @return A list of the valid {@link DatabaseAlias}es.
-	 */
-	public static DatabaseAlias[] getActiveDatabaseAliases() {
-		Iterator<DatabaseAlias> aliasesIterator = databaseAliases.iterator();
-		List<DatabaseAlias> validAliases = new LinkedList<DatabaseAlias>();
-		while (aliasesIterator.hasNext()) {
-			DatabaseAlias alias = aliasesIterator.next();
-			if (alias.isValid()) {
-				validAliases.add(alias);
-			}
-		}
-		int size = validAliases.size();
-		return validAliases.toArray(new DatabaseAlias[size]);
 	}
 
 	/**
@@ -188,6 +157,9 @@ public final class DatabaseAliasManager {
 		DatabaseAliasSAXHandler handler = new DatabaseAliasSAXHandler();
 		reader.setContentHandler(handler);
 		reader.parse(new InputSource(input));
+		if (databaseAliases == null) {
+			databaseAliases = new Vector<DatabaseAlias>();
+		}
 		databaseAliases.addAll(handler.getAliases());
 	}
 
@@ -210,7 +182,12 @@ public final class DatabaseAliasManager {
 			return loaded;
 		}
 
-		private Vector<DatabaseAlias> loadedAliases;
+		public Vector<DatabaseAlias> getAliases() {
+			if (!isLoaded()) {
+				throw new RuntimeException("DatabaseAliases list is not loaded yet");
+			}
+			return loadedAliases;
+		}
 
 		private DatabaseAlias buildAlias(Properties properties) {
 			DatabaseAlias alias = new DatabaseAlias();
@@ -218,26 +195,19 @@ public final class DatabaseAliasManager {
 			alias.myUser = properties.getProperty("alias.user.name", "undefined");
 			alias.myPassword = properties.getProperty("alias.user.password", "undefined");
 			alias.setName(properties.getProperty("alias.name", "undefined"));
+			alias.setUsingExternalDriver(properties.getProperty("alias.driver.external", "false").equals("true"));
 			alias.driverAlias = driverAlias;
 			return alias;
 		}
 
-		public Vector<DatabaseAlias> getAliases() {
-			if (!isLoaded()) {
-				throw new RuntimeException("DatabaseAliases list is not loaded yet");
-			}
-			Vector<DatabaseAlias> list = loadedAliases;
-			loadedAliases = null;
-			return list;
-		}
-
-		private Properties properties;
-		private DriverAlias driverAlias;
-		private Vector<String> libraries;
-
 		///////////////
 		// Listeners //
 		///////////////
+
+		private Vector<DatabaseAlias> loadedAliases;
+		private Properties properties;
+		private DriverAlias driverAlias;
+		private Vector<String> libraries;
 
 		public void startDocument()
 		throws SAXException {
@@ -262,6 +232,7 @@ public final class DatabaseAliasManager {
 				properties.setProperty("alias.user.password", attributes.getValue(uri, "password"));
 			} else if (localName.equals("driver")) {
 				properties.setProperty("alias.driver.external", "true");
+				properties.setProperty("alias.driver.class", attributes.getValue("class"));
 			} else if (localName.equals("libraries")) {
 				libraries = new Vector<String>();
 			} else if (localName.equals("library")) {
@@ -283,6 +254,7 @@ public final class DatabaseAliasManager {
 			} else if (localName.equals("libraries")) {
 				try {
 					driverAlias = new DriverAlias(libraries);
+					driverAlias.setClassName(properties.getProperty("alias.driver.class"));
 				} catch (SQLException exception) {
 					throw new SAXException("Unable check url(s)");
 				}

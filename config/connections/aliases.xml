@@ -1,15 +1,15 @@
 <aliases>
-<alias name="mysql - modx">
-<database url="jdbc:mysql://localhost:3306/modx"/>
-<user name="root" password="gbpltw"/>
-<driver class="null">
-	<libraries>
-		<library url="/home/vladimir/programming/Java/Jailer/trunk/drivers/mysql-connector-java-5.1.5-bin.jar"/>
-	</libraries>
-</driver>
-</alias>
-<alias name="mysql - modx with def driver">
-<database url="jdbc:mysql://localhost:3306/modx"/>
-<user name="root" password="gbpltw"/>
-</alias>
+	<alias name="mysql - modx">
+		<database url="jdbc:mysql://localhost:3306/modx"/>
+		<user name="root" password="gbpltw"/>
+		<driver class="org.gjt.mm.mysql.Driver">
+			<libraries>
+				<library url="/home/vladimir/programming/Java/Jailer/trunk/drivers/mysql-connector-java-5.1.5-bin.jar"/>
+			</libraries>
+		</driver>
+	</alias>
+	<alias name="mysql - modx with def driver">
+		<database url="jdbc:mysql://localhost:3306/modx"/>
+		<user name="root" password="gbpltw"/>
+	</alias>
 </aliases>

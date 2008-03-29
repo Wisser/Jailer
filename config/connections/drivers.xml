@@ -1,16 +1,6 @@
-<!--
-A list of the default drivers for various.
--->
-
 <drivers>
-	<!-- Driver description. Driver description must have appropriate classpath
-	otherways the description will be ignored. -->
 	<driver class="org.gjt.mm.mysql.Driver">
-		<!-- A list of the jar libraries. -->
 		<libraries>
-			<!-- Every library must have at least one attribute - url of the
-			library jar file itself. All libraries are used into driver
-			loading. -->
 			<library url="/home/vladimir/programming/Java/Jailer/trunk/drivers/mysql-connector-java-5.1.5-bin.jar"/>
 		</libraries>
 	</driver>
