@@ -13,6 +13,23 @@ import java.util.List;
 import java.util.Properties;
 
 /**
+ * This is a class of objects, which are represent the sql server databases links.
+ * <p>The DatabaseAlias is the extension for raw String JDBC URL.</p>
+ *
+ * <p>The DatabaseAlias could be created from simple JDBC URL String. During creation the alias could request or set
+ * some default arguments. Here is their list:</p>
+ *
+ * <ul>
+ * <li>If the alias name is not set then the database name itself will be used as a name for the alias. This is the
+ * default value;</li>
+ * <li>If the user is specified during the construction, then it will be used to connect to the database;</li>
+ * <li>If there is not only user, but the password too is specified, then the whole access will be </li>
+ * <li>If the external driver is specified then it will be used to get connection via
+ * {@link java.sql.Driver#connect(String, java.util.Properties)} method;</li>
+ * </ul>
+ *
+ * <p>Also, this class has validation method (@see #isValid()}, so it could be validated.</p>
+ *
  * @author Vladimir "Dair T'arg" Berkutov
  * @date: 12.02.2008
  * @time: 0:05:42
@@ -38,6 +55,7 @@ public class DatabaseAlias {
 	 *
 	 * @see DatabaseAlias#DatabaseAlias(String, String, java.sql.Driver)
 	 */
+	@Deprecated
 	public DatabaseAlias(String url, String user)
 	throws DriverNotFoundException {
 		this(url, user, JDBCDriverManager.getDriverForURL(url));
@@ -57,6 +75,7 @@ public class DatabaseAlias {
 	 *
 	 * @see DatabaseAlias#DatabaseAlias(String, String, String, java.sql.Driver)
 	 */
+	@Deprecated
 	public DatabaseAlias(String url, String user, String password)
 	throws DriverNotFoundException {
 		this(url, user, password, JDBCDriverManager.getDriverForURL(url));
@@ -77,6 +96,7 @@ public class DatabaseAlias {
 	 *
 	 * @see DatabaseAlias#DatabaseAlias(String, String, String, java.sql.Driver)
 	 */
+	@Deprecated
 	public DatabaseAlias(String url, String user, Driver driver)
 	throws DriverNotFoundException {
 		this(url, user, null, driver);
@@ -96,6 +116,7 @@ public class DatabaseAlias {
 	 * @throws DriverNotFoundException If the specified url string is
 	 * unacceptible by the specified driver or a test connection has failed.
 	 */
+	@Deprecated
 	public DatabaseAlias(String url, String user, String password, Driver driver)
 	throws DriverNotFoundException {
 		super();
@@ -107,6 +128,7 @@ public class DatabaseAlias {
 		setDriver(driver);
 	}
 
+	@Deprecated
 	public DatabaseAlias(String name, String url, String user, String password) {
 		setName(name);
 		myUrl = url;
@@ -392,4 +414,22 @@ public class DatabaseAlias {
 		printStream.println("</alias>");
 	}
 
+
+	boolean useExternalDriver = false;
+
+	public boolean isUsingExternalDriver() {
+		return useExternalDriver;
+	}
+
+	public void setUsingExternalDriver(boolean flag) {
+		useExternalDriver = flag;
+	}
+
+	public String getExternalLibrariesAsString() {
+		return driverAlias.getLibrariesAsString();
+	}
+
+	public String getDriverClassName() {
+		return driverAlias.getClassName();
+	}
 }

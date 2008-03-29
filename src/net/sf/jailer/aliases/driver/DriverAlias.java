@@ -36,6 +36,10 @@ public class DriverAlias {
 	}
 
 	protected String myClassName;
+	public void setClassName(String className) {
+		myClassName = className;
+	}
+	
 	public String getClassName() {
 		return myClassName;
 	}
@@ -45,6 +49,10 @@ public class DriverAlias {
 	}
 	
 	protected ArrayList<String> libraries;
+
+	public int getLibrariesCount() {
+		return libraries.size();
+	}
 
 	public void printTo(OutputStream output) {
 		PrintStream printStream = new PrintStream(output);
@@ -87,5 +95,19 @@ public class DriverAlias {
 	public boolean acceptURL(String url)
 	throws SQLException {
 		throw new RuntimeException("Not implemented yet");
+	}
+
+	public String getLibrariesAsString() {
+		if (libraries.size() == 0) {
+			return "";
+		}
+		String result = libraries.get(0);
+		Iterator<String> iterator = libraries.iterator();
+		iterator.next();
+		//noinspection WhileLoopReplaceableByForEach
+		while (iterator.hasNext()) {
+			result += "; " + iterator.next();
+		}
+		return result;
 	}
 }

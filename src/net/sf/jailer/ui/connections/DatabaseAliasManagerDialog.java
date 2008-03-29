@@ -2,6 +2,7 @@ package net.sf.jailer.ui.connections;
 
 import com.digitprop.tonic.TonicLookAndFeel;
 import net.sf.jailer.aliases.database.DatabaseAlias;
+import net.sf.jailer.aliases.database.DatabaseAliasManager;
 
 import javax.swing.*;
 import javax.swing.border.Border;
@@ -9,6 +10,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
 import java.util.Comparator;
 
 /**
@@ -23,6 +25,12 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 			UIManager.setLookAndFeel(new TonicLookAndFeel());
 		} catch (UnsupportedLookAndFeelException exception) {
 			JFrame.setDefaultLookAndFeelDecorated(true);
+		}
+		try {
+			File f = new File("config/connections/aliases.xml");
+			DatabaseAliasManager.load(f);
+		} catch (Throwable throwable) {
+			throwable.printStackTrace();
 		}
 		DatabaseAliasManagerDialog dialog = new DatabaseAliasManagerDialog(null);
 		dialog.showDialog();
@@ -39,6 +47,22 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 		new DatabaseAliasManagerDialog(owner).showDialog();
 	}
 
+	/**
+	 * Adds all loaded {@link DatabaseAlias}es, taken via
+	 * {@link net.sf.jailer.aliases.database.DatabaseAliasManager#getDatabaseAliases()} method, to this dialog.
+	 *
+	 * During the adding, a gui forms are created for each of aliases.
+	 */
+	private void insertEditorsForStoredAliases() {
+		DatabaseAlias aliases[] = DatabaseAliasManager.getDatabaseAliases();
+		//noinspection ForLoopReplaceableByForEach
+		for (int i = 0; i < aliases.length; i++) {
+			DatabaseAliasEditor editor = new DatabaseAliasEditor(aliases[i]);
+			AliasListItem item = new AliasListItem(editor);
+			addAliasListItem(item);
+		}
+	}
+
 	private DatabaseAliasManagerDialog(Frame owner) {
 		super(owner, true);
 	}
@@ -51,6 +75,7 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 		setDefaultCloseOperation(DISPOSE_ON_CLOSE);
 		setTitle("Database Aliases Manager");
 		setMinimumSize(getSize());
+		insertEditorsForStoredAliases();
 		setVisible(true);
 	}
 
@@ -303,9 +328,8 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 	 */
 	@SuppressWarnings({"WeakerAccess"})
 	void addAliasListItem(AliasListItem item) {
-		if (item == null) {
-			return;
-		}
+		assert (item != null): "Trying to add null-pointer to items list";
+		assert (aliasesList != null): "User interface has not been properly initialized";
 		aliasesList.add(item);
 		aliasesList.revalidate();
 		aliasesList.repaint();
@@ -323,9 +347,8 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 	 */
 	@SuppressWarnings({"WeakerAccess"})
 	void removeAliasListItem(AliasListItem item) {
-		if (item == null) {
-			return;
-		}
+		assert (item != null): "Trying to add null-pointer to items list";
+		assert (aliasesList != null): "User interface has not been properly initialized";
 		aliasesList.remove(item);
 		aliasesList.revalidate();
 		aliasesList.repaint();
@@ -523,7 +546,7 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 		private JComponent externalDriverPanel;
 
 		@SuppressWarnings({"FieldCanBeLocal"})
-		private JCheckBox useExternalDriver;
+		private JCheckBox useExternalDriver = new JCheckBox("Use External Driver");;
 
 		private DatabaseAliasManagerDialog.AliasListItem listItem;
 
@@ -535,16 +558,16 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 			super(new VFlowLayout());
 			createUI();
 			if (alias != null) {
-				title.setText(alias.getUser() + "@" + alias.getURL());
+				title.setText(alias.getName());
 				url.setText(alias.getURL());
 				user.setText(alias.getUser());
 				password.setText(alias.getPassword());
-				// todo: implement some DA methods
-//				useExternalDriver.setSelected(alias.isUseExternalDriver());
-//				if (alias.isUseExternalDriver()) {
-//					libraries.setText(alias.getExternalLibrariesAsString());
-//					libraries.setText(alias.getDriverClassName());
-//				}
+				useExternalDriver.setSelected(alias.isUsingExternalDriver());
+				externalDriverPanel.setVisible(useExternalDriver.isSelected());
+				if (alias.isUsingExternalDriver()) {
+					libraries.setText(alias.getExternalLibrariesAsString());
+					className.setText(alias.getDriverClassName());
+				}
 			}
 		}
 
@@ -626,11 +649,12 @@ public final class DatabaseAliasManagerDialog extends JDialog {
 
 		private JComponent createUseExternalDriverCheckBox() {
 			Box hbox = Box.createHorizontalBox();
-			useExternalDriver = new JCheckBox("Use External Driver", false);
 			useExternalDriver.addChangeListener(new ChangeListener() {
 				public void stateChanged(ChangeEvent e) {
 					externalDriverPanel.setVisible(useExternalDriver.isSelected());
-					getParent().validate();
+					if (getParent() != null) {
+						getParent().validate();
+					}
 				}
 			});
 			hbox.add(useExternalDriver);
