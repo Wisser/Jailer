@@ -86,7 +86,7 @@ public class DatabaseAliasHandler extends DefaultHandler {
 		if (alias == null) {
 			return;
 		}
-		aliases.push(alias);
+		aliases.add(alias);
 	}
 
 	public void onAliasStarts(String name) {
