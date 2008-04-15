@@ -474,6 +474,8 @@ public class GraphicalDataModelView extends JPanel {
 					Node an = g.addNode();
 					an.set("association", a);
 					an.setString("label", "");
+					g.addEdge(tableNodes.get(a.source), tableNodes.get(a.source));
+					g.addEdge(tableNodes.get(a.source), an);
 					Edge ae = g.addEdge(tableNodes.get(a.source), an);
 					Edge be = g.addEdge(an, tableNodes.get(a.destination));
 				}
