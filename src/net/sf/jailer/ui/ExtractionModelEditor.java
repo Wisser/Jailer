@@ -15,8 +15,22 @@
  */
 package net.sf.jailer.ui;
 
-import java.awt.Color;
-import java.awt.Component;
+import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.ModelElement;
+import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.extractionmodel.ExtractionModel;
+import net.sf.jailer.restrictionmodel.RestrictionModel;
+import net.sf.jailer.ui.test.GraphicalDataModelView;
+import net.sf.jailer.util.SqlUtil;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableModel;
+import javax.swing.tree.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -24,42 +38,8 @@ import java.awt.event.KeyListener;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.Vector;
-
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JTree;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
-import javax.swing.tree.DefaultMutableTreeNode;
-import javax.swing.tree.DefaultTreeCellRenderer;
-import javax.swing.tree.DefaultTreeModel;
-import javax.swing.tree.MutableTreeNode;
-import javax.swing.tree.TreeCellRenderer;
-import javax.swing.tree.TreeModel;
-import javax.swing.tree.TreePath;
-import javax.swing.tree.TreeSelectionModel;
-
-import net.sf.jailer.datamodel.Association;
-import net.sf.jailer.datamodel.DataModel;
-import net.sf.jailer.datamodel.ModelElement;
-import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.extractionmodel.ExtractionModel;
-import net.sf.jailer.restrictionmodel.RestrictionModel;
-import net.sf.jailer.util.SqlUtil;
 
 /**
  * Editor for {@link RestrictionModel}s.
@@ -106,6 +86,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * Creates new form ModelTree.
 	 *  
 	 * @param extractionModelFile file containing the model
+	 * @param extractionModelFrame
      */
 	public ExtractionModelEditor(String extractionModelFile, ExtractionModelFrame extractionModelFrame) {
 		this.extractionModelFrame = extractionModelFrame;
@@ -136,6 +117,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		tree.setExpandsSelectedPaths(true);
 		restrictionEditor = new RestrictionEditor();
+		
+		GraphicalDataModelView graphView = new GraphicalDataModelView(dataModel);
+		graphContainer.add(graphView);
+		
 		restrictionsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		restrictionsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
 			public void valueChanged(ListSelectionEvent e) {
@@ -216,8 +201,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         exportButton = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         rootTable = new javax.swing.JComboBox();
+        jSplitPane1 = new javax.swing.JSplitPane();
         jScrollPane1 = new javax.swing.JScrollPane();
         tree = new javax.swing.JTree();
+        graphContainer = new javax.swing.JPanel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -349,6 +336,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jPanel4.add(rootTable, java.awt.BorderLayout.NORTH);
 
+        jSplitPane1.setOrientation(0);
         jScrollPane1.setAutoscrolls(true);
         jScrollPane1.setBorder(null);
         tree.setAutoscrolls(true);
@@ -362,7 +350,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jScrollPane1.setViewportView(tree);
 
-        jPanel4.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+        jSplitPane1.setLeftComponent(jScrollPane1);
+
+        graphContainer.setLayout(new java.awt.BorderLayout());
+
+        jSplitPane1.setRightComponent(graphContainer);
+
+        jPanel4.add(jSplitPane1, java.awt.BorderLayout.CENTER);
 
         jPanel2.add(jPanel4);
 
@@ -977,6 +971,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JTextField condition;
     private javax.swing.JLabel dependsOn;
     public javax.swing.JButton exportButton;
+    private javax.swing.JPanel graphContainer;
     private javax.swing.JLabel hasDependent;
     private javax.swing.JLabel ignored;
     private javax.swing.JPanel inspectorHolder;
@@ -988,6 +983,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JPanel legende;
     private javax.swing.JTable restrictionsTable;
     private javax.swing.JComboBox rootTable;
