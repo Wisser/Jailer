@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.0" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+<Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <NonVisualComponents>
     <Container class="javax.swing.JScrollPane" name="jScrollPane2">
 
@@ -8,7 +8,9 @@
     </Container>
   </NonVisualComponents>
   <AuxValues>
+    <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_generateMnemonicsCode" type="java.lang.Boolean" value="false"/>
+    <AuxValue name="FormSettings_i18nAutoMode" type="java.lang.Boolean" value="false"/>
     <AuxValue name="FormSettings_layoutCodeTarget" type="java.lang.Integer" value="2"/>
     <AuxValue name="FormSettings_listenerGenerationStyle" type="java.lang.Integer" value="0"/>
     <AuxValue name="FormSettings_variablesLocal" type="java.lang.Boolean" value="false"/>
@@ -115,10 +117,10 @@
                     </Component>
                     <Component class="javax.swing.JComboBox" name="subjectTable">
                       <Properties>
+                        <Property name="maximumRowCount" type="int" value="32"/>
                         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                           <Connection code="subjectListModel()" type="code"/>
                         </Property>
-                        <Property name="maximumRowCount" type="int" value="32"/>
                       </Properties>
                       <Events>
                         <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="onNewSubject"/>
@@ -140,11 +142,6 @@
                       </Constraints>
                     </Component>
                     <Container class="javax.swing.JScrollPane" name="jScrollPane4">
-                      <Properties>
-                        <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
-                          <Border info="null"/>
-                        </Property>
-                      </Properties>
                       <AuxValues>
                         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
                       </AuxValues>
@@ -220,10 +217,10 @@
                   <SubComponents>
                     <Component class="javax.swing.JComboBox" name="rootTable">
                       <Properties>
+                        <Property name="maximumRowCount" type="int" value="32"/>
                         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                           <Connection code="getTableListModel()" type="code"/>
                         </Property>
-                        <Property name="maximumRowCount" type="int" value="32"/>
                       </Properties>
                       <Events>
                         <EventHandler event="itemStateChanged" listener="java.awt.event.ItemListener" parameters="java.awt.event.ItemEvent" handler="rootTableItemStateChanged"/>
@@ -236,10 +233,10 @@
                     </Component>
                     <Container class="javax.swing.JScrollPane" name="jScrollPane1">
                       <Properties>
-                        <Property name="autoscrolls" type="boolean" value="true"/>
                         <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                           <Border info="null"/>
                         </Property>
+                        <Property name="autoscrolls" type="boolean" value="true"/>
                       </Properties>
                       <AuxValues>
                         <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
@@ -294,7 +291,7 @@
               <Font name="Dialog" size="12" style="0"/>
             </Property>
             <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-              <Color blue="0" green="0" red="99" type="rgb"/>
+              <Color blue="0" green="0" red="aa" type="rgb"/>
             </Property>
             <Property name="text" type="java.lang.String" value="depends on"/>
           </Properties>
@@ -305,7 +302,7 @@
               <Font name="Dialog" size="12" style="0"/>
             </Property>
             <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-              <Color blue="cc" green="0" red="0" type="rgb"/>
+              <Color blue="0" green="70" red="0" type="rgb"/>
             </Property>
             <Property name="text" type="java.lang.String" value="   has dependent"/>
           </Properties>
@@ -316,7 +313,7 @@
               <Font name="Dialog" size="12" style="0"/>
             </Property>
             <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-              <Color blue="33" green="99" red="0" type="rgb"/>
+              <Color blue="e4" green="0" red="0" type="rgb"/>
             </Property>
             <Property name="text" type="java.lang.String" value="   associated with"/>
           </Properties>

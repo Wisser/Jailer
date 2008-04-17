@@ -99,7 +99,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 		sortLineList(associations);
 		initComponents();
 		setSize(900, 700);
-		setLocation(100, 100);
+		setLocation(100, 32);
 		if (merge) {
 			info.setText("Found " + newTables + " new tables and " + newAssociations + " new associations");
 			if (!linesFromModelFinder.isEmpty()) {
