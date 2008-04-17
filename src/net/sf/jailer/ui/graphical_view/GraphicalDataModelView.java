@@ -120,7 +120,7 @@ public class GraphicalDataModelView extends JPanel {
                 double y = item.getY();
                 if ( Double.isNaN(y) || Double.isInfinite(y) )
                     y = 0;
-                double width = 20 * item.getSize();
+                double width = 10 * item.getSize();
                 
                 // Center the shape around the specified x and y
                 if ( width > 1 ) {
@@ -435,7 +435,7 @@ public class GraphicalDataModelView extends JPanel {
         VisualGraph vg = m_vis.addGraph(graph, g);
         VisualItem f = (VisualItem)vg.getNode(0);
 		Font font = f.getFont();
-	    f.setFont(FontLib.getFont(font.getName(), Font.BOLD, font.getSize()));
+	    f.setFont(FontLib.getFont(font.getName(), Font.ITALIC, font.getSize()));
 		
         m_vis.getGroup(Visualization.FOCUS_ITEMS).setTuple(f);
         f.setFixed(false);
