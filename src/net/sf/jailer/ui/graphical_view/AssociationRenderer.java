@@ -76,7 +76,7 @@ public class AssociationRenderer extends EdgeRenderer {
 		
 		// create the arrow head, if needed
 		EdgeItem e = (EdgeItem)item;
-		if ( e.isDirected() && m_edgeArrow != Constants.EDGE_ARROW_NONE && type != Constants.EDGE_TYPE_CURVE) {
+		if ( e.isDirected() && m_edgeArrow != Constants.EDGE_ARROW_NONE) {
 		    // get starting and ending edge endpoints
 		    boolean forward = (m_edgeArrow == Constants.EDGE_ARROW_FORWARD);
 		    Point2D start = null, end = null;
@@ -95,9 +95,13 @@ public class AssociationRenderer extends EdgeRenderer {
 		    
 		    // update the endpoints for the edge shape
 		    // need to bias this by arrow head size
-		    Point2D lineEnd = m_tmpPoints[forward?1:0]; 
-		    lineEnd.setLocation(0, -m_arrowHeight);
-		    at.transform(lineEnd, lineEnd);
+		    if (type != Constants.EDGE_TYPE_CURVE) {
+		    	Point2D lineEnd = m_tmpPoints[forward?1:0]; 
+		    	lineEnd.setLocation(0, -m_arrowHeight);
+		    	at.transform(lineEnd, lineEnd);
+		    } else {
+		    	m_curArrow = null;
+		    }
 		} else {
 		    m_curArrow = null;
 		}

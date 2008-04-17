@@ -113,14 +113,14 @@ public class GraphicalDataModelView extends JPanel {
         
         final ShapeRenderer sr = new ShapeRenderer() {
         	protected Shape getRawShape(VisualItem item) {
-        		item.setFillColor(ColorLib.rgb(160, 160, 160));
+        		item.setFillColor(ColorLib.rgba(255,255,0,120));
                 double x = item.getX();
                 if ( Double.isNaN(x) || Double.isInfinite(x) )
                     x = 0;
                 double y = item.getY();
                 if ( Double.isNaN(y) || Double.isInfinite(y) )
                     y = 0;
-                double width = 10 * item.getSize();
+                double width = 14 * item.getSize();
                 
                 // Center the shape around the specified x and y
                 if ( width > 1 ) {
@@ -207,8 +207,8 @@ public class GraphicalDataModelView extends JPanel {
 
         ColorAction fill = new ColorAction(nodes, 
                 VisualItem.FILLCOLOR, ColorLib.rgba(255,255,0,120));
-        fill.add(VisualItem.FIXED, ColorLib.rgba(200,200,0,120));
-        fill.add(VisualItem.HIGHLIGHT, ColorLib.rgb(255,200,125));
+        fill.add(VisualItem.FIXED, ColorLib.rgba(220,220,0,140));
+        fill.add(VisualItem.HIGHLIGHT, ColorLib.rgba(255,220,0,120));
         
         ActionList draw = new ActionList();
         draw.add(filter);
