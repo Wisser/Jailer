@@ -26,6 +26,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.LogManager;
+import java.util.logging.Logger;
 
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -291,6 +294,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu1.add(jSeparator4);
 
+        hideIgnored.setSelected(true);
         hideIgnored.setText("Hide ignored");
         hideIgnored.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -729,15 +733,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_expandAllActionPerformed
 
     private void hideIgnoredActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hideIgnoredActionPerformed
-        extractionModelEditor.refresh();
+        extractionModelEditor.refresh(true);
     }//GEN-LAST:event_hideIgnoredActionPerformed
 
     private void collapseAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_collapseAllActionPerformed
-        extractionModelEditor.refresh();
+        extractionModelEditor.refresh(false);
+        extractionModelEditor.resetGraphEditor();
     }//GEN-LAST:event_collapseAllActionPerformed
 
     private void refreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshActionPerformed
-    	extractionModelEditor.refresh();
+    	extractionModelEditor.refresh(true);
     }//GEN-LAST:event_refreshActionPerformed
 
     private void saveAsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsActionPerformed
@@ -823,13 +828,19 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	void setHideIgnored(boolean b) {
 		hideIgnored.setSelected(b);
-		extractionModelEditor.refresh();
+		extractionModelEditor.refresh(true);
 	}
 	
 	/**
      * @param args the command line arguments
      */
     public static void main(final String args[]) {
+    	// turn of logging for prefuse library
+    	try {
+			Logger.getLogger("prefuse").setLevel(Level.OFF);
+		} catch (SecurityException e1) {
+			e1.printStackTrace();
+		}
     	try {
     		// create initial data-model files
     		File file = new File("datamodel");
