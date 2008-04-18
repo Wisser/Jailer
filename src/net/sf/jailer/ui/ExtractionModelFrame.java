@@ -244,7 +244,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenuBar2.add(fileMenu);
 
         jMenu5.setText("Restriction");
-        ignoreAll.setLabel("Restrict all associations");
+        ignoreAll.setActionCommand("Disable all associations");
+        ignoreAll.setLabel("Disable all associations");
         ignoreAll.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ignoreAllActionPerformed(evt);
@@ -295,6 +296,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu1.add(jSeparator4);
 
         hideIgnored.setSelected(true);
+        hideIgnored.setActionCommand("Hide disabled associations");
         hideIgnored.setText("Hide ignored");
         hideIgnored.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -501,6 +503,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         	UIUtil.showException(this, "Error", e);
         }
 	}//GEN-LAST:event_printDatamodelActionPerformed
+
+	/**
+	 * Looks up "show disabled associations" setting.
+	 * 
+	 * @return true if "show disabled associations" is set
+	 */
+	public boolean showDisabledAssociations() {
+		return !hideIgnored();
+	}
 
     /**
      * Sets Look&Feel.

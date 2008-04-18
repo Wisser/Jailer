@@ -33,8 +33,8 @@ import prefuse.action.layout.graph.ForceDirectedLayout;
 import prefuse.activity.Activity;
 import prefuse.controls.DragControl;
 import prefuse.controls.FocusControl;
-import prefuse.controls.NeighborHighlightControl;
 import prefuse.controls.PanControl;
+import prefuse.controls.ToolTipControl;
 import prefuse.controls.WheelZoomControl;
 import prefuse.controls.ZoomControl;
 import prefuse.controls.ZoomToFitControl;
@@ -89,6 +89,8 @@ public class GraphicalDataModelView extends JPanel {
     private CompositeAssociationRenderer associationRenderer;
     private final ExtractionModelEditor modelEditor;
     
+    private ForceDirectedLayout layout;
+    
 //    private static Map<String, double[]> nodePositions = Collections.synchronizedMap(new HashMap<String, double[]>());
 //    private Map<String, VisualItem> visualItems = Collections.synchronizedMap(new HashMap<String, VisualItem>());
     
@@ -113,7 +115,7 @@ public class GraphicalDataModelView extends JPanel {
         
         final ShapeRenderer sr = new ShapeRenderer() {
         	protected Shape getRawShape(VisualItem item) {
-        		item.setFillColor(ColorLib.rgba(255,255,0,120));
+        		item.setFillColor(ColorLib.rgb(220,210,0));
                 double x = item.getX();
                 if ( Double.isNaN(x) || Double.isInfinite(x) )
                     x = 0;
@@ -150,7 +152,7 @@ public class GraphicalDataModelView extends JPanel {
         };
         associationRenderer = new CompositeAssociationRenderer();
         
-        tr.setRoundedCorner(4, 4);
+        tr.setRoundedCorner(3, 3);
         tr.setVerticalPadding(3);
         tr.setHorizontalPadding(3);
         m_vis.setRendererFactory(new RendererFactory() {
@@ -206,8 +208,8 @@ public class GraphicalDataModelView extends JPanel {
         final GraphDistanceFilter filter = new GraphDistanceFilter(graph, hops);
 
         ColorAction fill = new ColorAction(nodes, 
-                VisualItem.FILLCOLOR, ColorLib.rgba(255,255,0,120));
-        fill.add(VisualItem.FIXED, ColorLib.rgba(220,220,0,140));
+                VisualItem.FILLCOLOR, ColorLib.rgba(210,190,0,120));
+        fill.add(VisualItem.FIXED, ColorLib.rgba(170,150,0,120));
         fill.add(VisualItem.HIGHLIGHT, ColorLib.rgba(255,220,0,120));
         
         ActionList draw = new ActionList();
@@ -219,13 +221,13 @@ public class GraphicalDataModelView extends JPanel {
         draw.add(new ColorAction(edges, VisualItem.STROKECOLOR, ColorLib.gray(200)));
         
         ActionList animate = new ActionList(Activity.INFINITY);
-        ForceDirectedLayout l = new ForceDirectedLayout(graph);
-        for (Force force: l.getForceSimulator().getForces()) {
+        layout = new ForceDirectedLayout(graph);
+        for (Force force: layout.getForceSimulator().getForces()) {
         	if (force instanceof NBodyForce) {
         		((NBodyForce) force).setParameter(NBodyForce.GRAVITATIONAL_CONST, -40.0f);
         	}
         }
-        l.getForceSimulator().setIntegrator(new Integrator() {
+        layout.getForceSimulator().setIntegrator(new Integrator() {
         	public void integrate(ForceSimulator sim, long timestep) {                
         		float speedLimit = sim.getSpeedLimit();
                 float vx, vy, v, coeff;
@@ -343,8 +345,8 @@ public class GraphicalDataModelView extends JPanel {
             
         	}
         });
-        l.setVisualization(m_vis);
-        animate.add(l);
+        layout.setVisualization(m_vis);
+        animate.add(layout);
         animate.add(fill);
         animate.add(new RepaintAction());
         
@@ -416,18 +418,24 @@ public class GraphicalDataModelView extends JPanel {
         display.addControlListener(new ZoomControl());
         display.addControlListener(new WheelZoomControl());
         display.addControlListener(new ZoomToFitControl());
-        display.addControlListener(new NeighborHighlightControl());
+        display.addControlListener(new ToolTipControl("tooltip"));
+//        display.addControlListener(new NeighborHighlightControl());
 
         display.setForeground(Color.GRAY);
         display.setBackground(Color.WHITE);
        
         // now we run our action list
         m_vis.run("draw");
-        l.run();
+        layout.run();
         
         add(display);
     }
     
+	public void close() {
+		m_vis.reset();
+		layout.cancel();
+	}
+
     private void setGraph(Graph g, String label) {
         // update graph
     	inInitialization = true;
@@ -435,8 +443,7 @@ public class GraphicalDataModelView extends JPanel {
         VisualGraph vg = m_vis.addGraph(graph, g);
         VisualItem f = (VisualItem)vg.getNode(0);
 		Font font = f.getFont();
-	    f.setFont(FontLib.getFont(font.getName(), Font.ITALIC, font.getSize()));
-		
+	    f.setFont(FontLib.getFont(font.getName(), Font.BOLD, font.getSize()));
         m_vis.getGroup(Visualization.FOCUS_ITEMS).setTuple(f);
         f.setFixed(false);
 
@@ -469,7 +476,7 @@ public class GraphicalDataModelView extends JPanel {
     					List<Association> path = modelEditor.getPathToRoot(selectedAssociation);
     					int lastVisible = -1;
     					for (int i = path.size() - 1; i >= 0; --i) {
-    						if (renderedAssociations.containsKey(selectedAssociation)) {
+    						if (renderedAssociations.containsKey(path.get(i))) {
     							lastVisible = i;
     							break;
     						}		
@@ -499,18 +506,32 @@ public class GraphicalDataModelView extends JPanel {
 		Graph g = new Graph(true);
 		Schema s = new Schema();
 		s.addColumn("label", String.class);
+		s.addColumn("tooltip", String.class);
 		s.addColumn("association", Association.class);
 		s.addColumn("full", Boolean.class);
 		g.addColumns(s);
 		
 		Table table = root;
-		Node n = g.addNode();
-		n.setString("label", table.getName());
-		tableNodes.put(table, n);
-		
+		showTable(g, table);
 		expandTable(g, table);
 		
     	return g;
+	}
+	
+	/**
+	 * Creates visible node for given table.
+	 * 
+	 * @param graph the graph
+	 * @param table the table to show
+	 */
+	private void showTable(Graph graph, Table table) {
+		if (!tableNodes.containsKey(table)) {
+			Node n = graph.addNode();
+			n.setString("label", table.getName());
+			String tooltip = table.getName() + " (" + table.primaryKey.toSQL(null, false) + ")";
+			n.setString("tooltip", tooltip);
+			tableNodes.put(table, n);
+		}
 	}
 	
 	/**
@@ -607,7 +628,7 @@ public class GraphicalDataModelView extends JPanel {
 	 * @param toRender is not null, the only association to make visible 
 	 */
 	private void expandTable(Graph g, net.sf.jailer.datamodel.Table table, Association toRender) {
-		if (table != null && !expandedTables.contains(table)) {
+		if (table != null && (!expandedTables.contains(table) || toRender != null)) {
 			List<Table> toCheck = new ArrayList<Table>();
 			addEdges(g, table, toRender, toCheck);
 			// expandedTables.add(table);
@@ -620,6 +641,9 @@ public class GraphicalDataModelView extends JPanel {
 			if (!expandedTables.contains(t)) {
 				boolean isExpanded = true;
 				for (Association a: t.associations) {
+					if (!isVisualizable(a)) {
+						continue;
+					}
 					if (a.source != t && !tableNodes.containsKey(a.source) && !toCheck.contains(a.source)) {
 						isExpanded = false;
 						break;
@@ -637,45 +661,109 @@ public class GraphicalDataModelView extends JPanel {
 		}
 	}
 
+	private void checkForCollapsed(Graph g, java.util.Collection<Table> toCheck) {
+		for (Table t: toCheck) {
+			if (expandedTables.contains(t)) {
+				boolean isExpanded = true;
+				for (Association a: t.associations) {
+					if (!isVisualizable(a)) {
+						continue;
+					}
+					if (!renderedAssociations.containsKey(a) && !renderedAssociations.containsKey(a.reversalAssociation)) {
+						isExpanded = false;
+						break;
+					}
+				}
+				if (!isExpanded) {
+					expandedTables.remove(t);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Removes a node representing a table from view.
+	 * 
+	 * @param g the graph
+	 * @param table the table node
+	 */
+	private void hideTable(Graph g, net.sf.jailer.datamodel.Table table) {
+		Node node = tableNodes.get(table);
+		if (node != null) {
+			List<Table> toCheck = new ArrayList<Table>();
+			for (Association a: table.associations) {
+				toCheck.add(a.source);
+				toCheck.add(a.destination);
+				Edge e = renderedAssociations.get(a);
+				if (e != null) {
+					g.removeEdge(e);
+					renderedAssociations.remove(a);
+				}
+				e = renderedAssociations.get(a.reversalAssociation);
+				if (e != null) {
+					g.removeEdge(e);
+					renderedAssociations.remove(a.reversalAssociation);
+				}
+				Node n = renderedAssociationsAsNode.get(a);
+				if (n != null) {
+					g.removeNode(n);
+					renderedAssociationsAsNode.remove(a);
+				}
+				n = renderedAssociationsAsNode.get(a.reversalAssociation);
+				if (n != null) {
+					g.removeNode(n);
+					renderedAssociationsAsNode.remove(a.reversalAssociation);
+				}
+			}
+
+			g.removeNode(node);
+			tableNodes.remove(table);
+			expandedTables.remove(table);
+			
+			checkForCollapsed(g, toCheck);
+		}
+	}
+
 	/**
 	 * @param toRender is not null, the only association to make visible 
 	 */
 	private void addEdges(Graph g, net.sf.jailer.datamodel.Table table,
 			Association toRender, List<Table> toCheck) {
+		toCheck.add(table);
 		for (Association a: table.associations) {
 			if (toRender != null && toRender != a) {
+				continue;
+			}
+			if (!isVisualizable(a) && (toRender == null || a != toRender)) {
 				continue;
 			}
 			if (!renderedAssociations.containsKey(a) && !renderedAssociations.containsKey(a.reversalAssociation)) {
 				toCheck.add(a.destination);
 				toCheck.add(a.source);
-				if (!tableNodes.containsKey(a.source)) {
-					Node n = g.addNode();
-					n.setString("label", a.source.getName());
-					tableNodes.put(a.source, n);
-				}
-				if (!tableNodes.containsKey(a.destination)) {
-					Node n = g.addNode();
-					n.setString("label", a.destination.getName());
-					tableNodes.put(a.destination, n);
-				}
+				showTable(g, a.source);
+				showTable(g, a.destination);
+				String tooltip = a.getJoinCondition();
 				if (!associationIsUnique(a)) {
 					Node an = g.addNode();
 					an.set("association", a);
 					an.setString("label", a.getName() + "#");
+					an.setString("tooltip", tooltip);
 					renderedAssociationsAsNode.put(a, an);
 					Edge ae = g.addEdge(an, tableNodes.get(a.source));
 					ae.set("association", a.reversalAssociation);
 					ae.set("full", Boolean.FALSE);
+					ae.setString("tooltip", tooltip);
 					renderedAssociations.put(a.reversalAssociation, ae);
 					Edge be = g.addEdge(an, tableNodes.get(a.destination));
 					be.set("association", a);
 					be.set("full", Boolean.FALSE);
+					be.setString("tooltip", tooltip);
 					renderedAssociations.put(a, be);
 				} else {
 					Edge e = g.addEdge(tableNodes.get(a.source), tableNodes.get(a.destination));
 					e.set("association", a);
 					e.set("full", Boolean.TRUE);
+					e.setString("tooltip", tooltip);
 					renderedAssociations.put(a, e);
 				}
 			}
@@ -738,18 +826,51 @@ public class GraphicalDataModelView extends JPanel {
 			associationFullRenderer.setBounds(item);
 		}
 	}
-    
-	/**
-	 * Current subject table.
-	 */
-	private Table subject;
 	
 	/**
-	 * Update visual item when subject changes.
+	 * Looks up "show disabled associations" setting and
+	 * decides whether an association is visualizable.
 	 * 
-	 * @param item
+	 * @param association the association to check
+	 * @return true if association is visualizable
 	 */
-	private void updateSubjectRender(VisualItem item) {
+	private boolean isVisualizable(Association association) {
+		return modelEditor.extractionModelFrame.showDisabledAssociations()
+			|| !association.isIgnored();
+	}
+
+	/**
+	 * Expands all tables.
+	 */
+	public void expandAll() {
+		if (modelEditor.extractionModelFrame.showDisabledAssociations()) {
+			for (Table table: model.getTables()) {
+				expandTable(theGraph, table);
+			}
+		} else {
+			Set<Table> toExpand = new HashSet<Table>();
+			for (Table table: tableNodes.keySet()) {
+				toExpand.addAll(table.closure(true));
+			}
+			for (Table table: toExpand) {
+				expandTable(theGraph, table);
+			}
+		}
+	}
+	
+	/**
+	 * Refresh. Removes all tables from view which are not in closure of root.
+	 * 
+	 * @param keepVisible set of tables to keep visible, hides all other tables
+	 */
+	public void refresh(Set<Table> keepVisible) {
+		if (!modelEditor.extractionModelFrame.showDisabledAssociations()) {
+			for (Table table: model.getTables()) {
+				if (keepVisible.contains(table)) {
+					expandTable(theGraph, table);
+				}
+			}
+		}
 	}
 	
 }

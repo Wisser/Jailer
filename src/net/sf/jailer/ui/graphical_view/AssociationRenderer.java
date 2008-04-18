@@ -83,6 +83,17 @@ public class AssociationRenderer extends EdgeRenderer {
 		    start = m_tmpPoints[forward?0:1];
 		    end   = m_tmpPoints[forward?1:0];
 		    
+		    if (type == Constants.EDGE_TYPE_CURVE) {
+			    AffineTransform t = new AffineTransform();
+		    	t.setToRotation(Math.PI/4 * (reversedCurve? 1 : -1));
+		    	Point2D p = new Point2D.Double(), shift = new Point2D.Double();
+		    	double d = start.distance(end) / 5.0;
+		    	p.setLocation((end.getX() - start.getX()) / d, (end.getY() - start.getY()) / d);
+		    	t.transform(p, shift);
+		    	start.setLocation(start.getX() + shift.getX(), start.getY() + shift.getY());
+		    	end.setLocation(end.getX() + shift.getX(), end.getY() + shift.getY());
+		    }
+	    	
 		    // compute the intersection with the target bounding box
 		    VisualItem dest = forward ? e.getTargetItem() : e.getSourceItem();
 		    int i = GraphicsLib.intersectLineRectangle(start, end,
@@ -95,13 +106,12 @@ public class AssociationRenderer extends EdgeRenderer {
 		    
 		    // update the endpoints for the edge shape
 		    // need to bias this by arrow head size
-		    if (type != Constants.EDGE_TYPE_CURVE) {
-		    	Point2D lineEnd = m_tmpPoints[forward?1:0]; 
-		    	lineEnd.setLocation(0, -m_arrowHeight);
-		    	at.transform(lineEnd, lineEnd);
-		    } else {
+		    if (type == Constants.EDGE_TYPE_CURVE) {
 		    	m_curArrow = null;
 		    }
+	    	Point2D lineEnd = m_tmpPoints[forward?1:0]; 
+	    	lineEnd.setLocation(0, type == Constants.EDGE_TYPE_CURVE? 0 : -m_arrowHeight);
+	    	at.transform(lineEnd, lineEnd);
 		} else {
 		    m_curArrow = null;
 		}
@@ -112,25 +122,9 @@ public class AssociationRenderer extends EdgeRenderer {
 		double n1y = m_tmpPoints[0].getY();
 		double n2x = m_tmpPoints[1].getX();
 		double n2y = m_tmpPoints[1].getY();
-		switch ( type ) {
-		    case Constants.EDGE_TYPE_LINE:          
-		        m_line.setLine(n1x, n1y, n2x, n2y);
-		        shape = m_line;
-		        break;
-		    case Constants.EDGE_TYPE_CURVE:
-		    	AffineTransform t = new AffineTransform();
-		    	t.setToRotation(Math.PI/4 * (reversedCurve? 1 : -1));
-		    	Point2D p = new Point2D.Double(), shift = new Point2D.Double();
-		    	double d = m_tmpPoints[0].distance(m_tmpPoints[1]) / 5.0;
-		    	p.setLocation((n1x - n2x) / d, (n1y -n2y) / d);
-		    	t.transform(p, shift);
-		    	m_line.setLine(n1x + shift.getX(), n1y + shift.getY(), n2x + shift.getX(), n2y + shift.getY());
-		    	shape = m_line;
-		        break;
-		    default:
-		        throw new IllegalStateException("Unknown edge type");
-		}
-		
+        m_line.setLine(n1x, n1y, n2x, n2y);
+        shape = m_line;
+        
 		return shape;
 	}
 
@@ -157,10 +151,15 @@ public class AssociationRenderer extends EdgeRenderer {
 		item.setSize(isSelected? 3 : 1);
 		int color;
 		if (!Boolean.TRUE.equals(item.get("full"))) {
-			color = full? associationColor(association) : ColorLib.rgba(0, 0, 0, 0);
+			if (!full) {
+				return;
+			}
+			color = associationColor(association);
 		} else {
-			color = full? ColorLib.rgba(0, 0, 0, 0): reversed? 
-					associationColor(association.reversalAssociation) : associationColor(association);
+			if (full) {
+				return;
+			}
+			color = reversed? associationColor(association.reversalAssociation) : associationColor(association);
 		}
 		item.setFillColor(color);
 		item.setStrokeColor(color);

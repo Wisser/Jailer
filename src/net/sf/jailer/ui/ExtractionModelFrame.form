@@ -67,7 +67,8 @@
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="ignoreAll">
               <Properties>
-                <Property name="label" type="java.lang.String" value="Restrict all associations"/>
+                <Property name="actionCommand" type="java.lang.String" value="Disable all associations"/>
+                <Property name="label" type="java.lang.String" value="Disable all associations"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="ignoreAllActionPerformed"/>
@@ -117,6 +118,7 @@
             <MenuItem class="javax.swing.JCheckBoxMenuItem" name="hideIgnored">
               <Properties>
                 <Property name="selected" type="boolean" value="true"/>
+                <Property name="actionCommand" type="java.lang.String" value="Hide disabled associations"/>
                 <Property name="text" type="java.lang.String" value="Hide ignored"/>
               </Properties>
               <Events>
