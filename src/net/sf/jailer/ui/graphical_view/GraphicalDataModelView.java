@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 
@@ -76,6 +77,11 @@ import prefuse.visual.VisualItem;
  */
 public class GraphicalDataModelView extends JPanel {
 
+	/**
+	 * Maximum number of tables to make visible during expansion.
+	 */
+	private final int EXPAND_LIMIT = 50;
+	
 	/**
 	 * The selected association.
 	 */
@@ -908,9 +914,16 @@ public class GraphicalDataModelView extends JPanel {
 	public void expandAll() {
 		List<Table> toExpand = new ArrayList<Table>();
 		toExpand.addAll(tableNodes.keySet());
+		boolean ask = tableNodes.size() <= EXPAND_LIMIT;
 		while (!toExpand.isEmpty()) {
 			Table table = toExpand.remove(0);
 			toExpand.addAll(expandTable(theGraph, table));
+			if (tableNodes.size() > EXPAND_LIMIT) {
+				if (ask && JOptionPane.NO_OPTION != JOptionPane.showConfirmDialog(modelEditor.extractionModelFrame, "More than " + EXPAND_LIMIT + " visible tables!\nStop expansion?", "", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE)) {
+					break;
+				}
+				ask = false;
+			}
 		}
 	}
 	
