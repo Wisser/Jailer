@@ -744,16 +744,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_expandAllActionPerformed
 
     private void hideIgnoredActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hideIgnoredActionPerformed
-        extractionModelEditor.refresh(true);
+        extractionModelEditor.refresh(true, false);
     }//GEN-LAST:event_hideIgnoredActionPerformed
 
     private void collapseAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_collapseAllActionPerformed
-        extractionModelEditor.refresh(false);
-        extractionModelEditor.resetGraphEditor();
+        extractionModelEditor.refresh(false, true);
+        extractionModelEditor.resetGraphEditor(true);
     }//GEN-LAST:event_collapseAllActionPerformed
 
     private void refreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshActionPerformed
-    	extractionModelEditor.refresh(true);
+    	extractionModelEditor.refresh(true, true);
     }//GEN-LAST:event_refreshActionPerformed
 
     private void saveAsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsActionPerformed
@@ -839,7 +839,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	void setHideIgnored(boolean b) {
 		hideIgnored.setSelected(b);
-		extractionModelEditor.refresh(true);
+		extractionModelEditor.refresh(true, true);
 	}
 	
 	/**

@@ -184,11 +184,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	/**
 	 * Resets the graphical editor.
 	 */
-	public void resetGraphEditor() {
-		graphView.close();
-		graphContainer.remove(graphView);
-		graphView = new GraphicalDataModelView(dataModel, this, root);
-		graphContainer.add(graphView);
+	public void resetGraphEditor(boolean full) {
+		if (full) {
+			graphView.close();
+			graphContainer.remove(graphView);
+			graphView = new GraphicalDataModelView(dataModel, this, root);
+			graphContainer.add(graphView);
+		} else {
+			// TODO
+		}
 		validate();
 	}
 	
@@ -431,7 +435,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     		if (table != null) {
     			root = table;
     			tree.setModel(getModel());
-    			resetGraphEditor();
+    			resetGraphEditor(true);
     		}
     	}
     }//GEN-LAST:event_rootTableItemStateChanged
@@ -1079,10 +1083,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     /**
      * Refreshed associations tree.
      */
-	public void refresh(boolean restoreSelection) {
+	public void refresh(boolean restoreSelection, boolean fullGraphModelReset) {
 		Association association = currentAssociation;
 		tree.setModel(getModel());
-		resetGraphEditor();
+		resetGraphEditor(fullGraphModelReset);
 		if (restoreSelection) {
 			select(association);
 		}

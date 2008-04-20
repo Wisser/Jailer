@@ -4,8 +4,10 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Point;
 import java.awt.Shape;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -175,7 +177,7 @@ public class GraphicalDataModelView extends JPanel {
         // register the data with a visualization
         
         // adds graph to visualization and sets renderer label field
-        setGraph(theGraph, "label");
+        setGraph(theGraph);
         
         // fix selected focus nodes
         TupleSet focusGroup = m_vis.getGroup(Visualization.FOCUS_ITEMS); 
@@ -416,7 +418,18 @@ public class GraphicalDataModelView extends JPanel {
         });
         display.addControlListener(new PanControl());
         display.addControlListener(new ZoomControl());
-        display.addControlListener(new WheelZoomControl());
+        display.addControlListener(new WheelZoomControl(){
+            /**
+             * @see java.awt.event.MouseWheelListener#mouseWheelMoved(java.awt.event.MouseWheelEvent)
+             */
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                Display display = (Display)e.getComponent();
+                Point p = e.getPoint();
+                zoom(display, p,
+                     1 + 0.1f * e.getWheelRotation(), false);
+            }
+
+        });
         display.addControlListener(new ZoomToFitControl());
         display.addControlListener(new ToolTipControl("tooltip"));
 //        display.addControlListener(new NeighborHighlightControl());
@@ -436,7 +449,12 @@ public class GraphicalDataModelView extends JPanel {
 		layout.cancel();
 	}
 
-    private void setGraph(Graph g, String label) {
+	/**
+	 * Sets visual graph.
+	 * 
+	 * @param g the (non-visual) model graph
+	 */
+    private void setGraph(Graph g) {
         // update graph
     	inInitialization = true;
         m_vis.removeGroup(graph);
@@ -445,7 +463,7 @@ public class GraphicalDataModelView extends JPanel {
 		Font font = f.getFont();
 	    f.setFont(FontLib.getFont(font.getName(), Font.BOLD, font.getSize()));
         m_vis.getGroup(Visualization.FOCUS_ITEMS).setTuple(f);
-        f.setFixed(false);
+        f.setFixed(true);
 
         inInitialization = false;
     }
