@@ -9,6 +9,7 @@ import java.awt.Shape;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,6 +20,8 @@ import java.util.Set;
 
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+
+import com.sun.org.apache.bcel.internal.generic.NEWARRAY;
 
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
@@ -33,6 +36,7 @@ import prefuse.action.assignment.ColorAction;
 import prefuse.action.filter.GraphDistanceFilter;
 import prefuse.action.layout.graph.ForceDirectedLayout;
 import prefuse.activity.Activity;
+import prefuse.controls.Control;
 import prefuse.controls.DragControl;
 import prefuse.controls.FocusControl;
 import prefuse.controls.PanControl;
@@ -53,6 +57,8 @@ import prefuse.render.RendererFactory;
 import prefuse.render.ShapeRenderer;
 import prefuse.util.ColorLib;
 import prefuse.util.FontLib;
+import prefuse.util.GraphicsLib;
+import prefuse.util.display.DisplayLib;
 import prefuse.util.force.Force;
 import prefuse.util.force.ForceItem;
 import prefuse.util.force.ForceSimulator;
@@ -81,7 +87,8 @@ public class GraphicalDataModelView extends JPanel {
     private static final String edges = "graph.edges";
 
     // prefuse visualization
-    private Visualization m_vis;
+    private Visualization visualization;
+    private VisualGraph visualGraph;
     private Display display;
     private boolean inInitialization = false;
     
@@ -110,7 +117,7 @@ public class GraphicalDataModelView extends JPanel {
     	theGraph = getModelGraph(model);
     	
         // create a new, empty visualization for our data
-        m_vis = new Visualization();
+        visualization = new Visualization();
         
         // --------------------------------------------------------------------
         // set up the renderers
@@ -157,7 +164,7 @@ public class GraphicalDataModelView extends JPanel {
         tr.setRoundedCorner(3, 3);
         tr.setVerticalPadding(3);
         tr.setHorizontalPadding(3);
-        m_vis.setRendererFactory(new RendererFactory() {
+        visualization.setRendererFactory(new RendererFactory() {
 			public Renderer getRenderer(VisualItem item) {
 //				String label = item.getString("label");
 //				if (label != null) {
@@ -180,7 +187,7 @@ public class GraphicalDataModelView extends JPanel {
         setGraph(theGraph);
         
         // fix selected focus nodes
-        TupleSet focusGroup = m_vis.getGroup(Visualization.FOCUS_ITEMS); 
+        TupleSet focusGroup = visualization.getGroup(Visualization.FOCUS_ITEMS); 
         focusGroup.addTupleSetListener(new TupleSetListener() {
             public void tupleSetChanged(TupleSet ts, Tuple[] add, Tuple[] rem)
             {
@@ -347,7 +354,7 @@ public class GraphicalDataModelView extends JPanel {
             
         	}
         });
-        layout.setVisualization(m_vis);
+        layout.setVisualization(visualization);
         animate.add(layout);
         animate.add(fill);
         animate.add(new RepaintAction());
@@ -355,23 +362,24 @@ public class GraphicalDataModelView extends JPanel {
         // finally, we register our ActionList with the Visualization.
         // we can later execute our Actions by invoking a method on our
         // Visualization, using the name we've chosen below.
-        m_vis.putAction("draw", draw);
-        m_vis.putAction("layout", animate);
+        visualization.putAction("draw", draw);
+        visualization.putAction("layout", animate);
 
-        m_vis.putAction("expand", new Action() {
+        visualization.putAction("expand", new Action() {
 			@Override
 			public void run(double frac) {
 				expandTable(theGraph, tableToExpandNext);
+				m_vis.invalidateAll();
 			}
         });
         
-        m_vis.runAfter("draw", "layout");
+        visualization.runAfter("draw", "layout");
         
         
         // --------------------------------------------------------------------
         // set up a display to show the visualization
         
-        display = new Display(m_vis);
+        display = new Display(visualization);
         display.setSize(300,150);
         display.pan(300, 150);
         display.setForeground(Color.GRAY);
@@ -399,11 +407,11 @@ public class GraphicalDataModelView extends JPanel {
             			collapseTable(theGraph, table);
             			display.pan(1, 0);
             			display.pan(0, 1);
-						display.repaint();
+            			visualization.invalidateAll();
             		} else {
 	    	            // expandTable(theGraph, table);
             			tableToExpandNext = table;
-            			m_vis.run("expand");
+            			visualization.run("expand");
             		}
 	            }
             	super.itemPressed(item, e);
@@ -430,7 +438,8 @@ public class GraphicalDataModelView extends JPanel {
             }
 
         });
-        display.addControlListener(new ZoomToFitControl());
+        ZoomToFitControl zoomToFitControl = new ZoomToFitControl(Visualization.ALL_ITEMS, 50, 800, Control.RIGHT_MOUSE_BUTTON);
+		display.addControlListener(zoomToFitControl);
         display.addControlListener(new ToolTipControl("tooltip"));
 //        display.addControlListener(new NeighborHighlightControl());
 
@@ -438,14 +447,35 @@ public class GraphicalDataModelView extends JPanel {
         display.setBackground(Color.WHITE);
        
         // now we run our action list
-        m_vis.run("draw");
+        visualization.run("draw");
         layout.run();
         
         add(display);
+        
+        new Thread() {
+        	public void run() {
+        			try {
+						Thread.sleep(1000);
+					} catch (InterruptedException e) {
+					}
+	                Visualization vis = display.getVisualization();
+	                Rectangle2D bounds = vis.getBounds(Visualization.ALL_ITEMS);
+	                GraphicsLib.expand(bounds, 50 + (int)(1/display.getScale()));
+	                double pw = display.getWidth() / display.getScale() - bounds.getWidth();
+	                double ph = display.getHeight() / display.getScale() - bounds.getHeight();
+	                if (pw > 0) {
+	                	bounds.setRect(bounds.getX() - pw / 2, bounds.getY(), bounds.getWidth() + pw, bounds.getHeight());
+	                }
+	                if (ph > 0) {
+	                	bounds.setRect(bounds.getX(), bounds.getY() - ph / 2, bounds.getWidth(), bounds.getHeight() + ph);
+	                }
+	                DisplayLib.fitViewToBounds(display, bounds, 400);
+        		}
+        }.start();
     }
     
 	public void close() {
-		m_vis.reset();
+		visualization.reset();
 		layout.cancel();
 	}
 
@@ -457,12 +487,12 @@ public class GraphicalDataModelView extends JPanel {
     private void setGraph(Graph g) {
         // update graph
     	inInitialization = true;
-        m_vis.removeGroup(graph);
-        VisualGraph vg = m_vis.addGraph(graph, g);
-        VisualItem f = (VisualItem)vg.getNode(0);
+        visualization.removeGroup(graph);
+        visualGraph = visualization.addGraph(graph, g);
+        VisualItem f = (VisualItem)visualGraph.getNode(0);
 		Font font = f.getFont();
 	    f.setFont(FontLib.getFont(font.getName(), Font.BOLD, font.getSize()));
-        m_vis.getGroup(Visualization.FOCUS_ITEMS).setTuple(f);
+        visualization.getGroup(Visualization.FOCUS_ITEMS).setTuple(f);
         f.setFixed(true);
 
         inInitialization = false;
@@ -542,14 +572,16 @@ public class GraphicalDataModelView extends JPanel {
 	 * @param graph the graph
 	 * @param table the table to show
 	 */
-	private void showTable(Graph graph, Table table) {
+	private boolean showTable(Graph graph, Table table) {
 		if (!tableNodes.containsKey(table)) {
 			Node n = graph.addNode();
 			n.setString("label", table.getName());
 			String tooltip = table.getName() + " (" + table.primaryKey.toSQL(null, false) + ")";
 			n.setString("tooltip", tooltip);
 			tableNodes.put(table, n);
+			return true;
 		}
+		return false;
 	}
 	
 	/**
@@ -633,9 +665,11 @@ public class GraphicalDataModelView extends JPanel {
 	 * 
 	 * @param g the graph
 	 * @param table the table node
+	 * 
+	 * @return list of newly rendered tables
 	 */
-	private void expandTable(Graph g, net.sf.jailer.datamodel.Table table) {
-		expandTable(g, table, null);
+	private List<Table> expandTable(Graph g, net.sf.jailer.datamodel.Table table) {
+		return expandTable(g, table, null);
 	}
 
 	/**
@@ -643,15 +677,19 @@ public class GraphicalDataModelView extends JPanel {
 	 * 
 	 * @param g the graph
 	 * @param table the table node
-	 * @param toRender is not null, the only association to make visible 
+	 * @param toRender is not null, the only association to make visible
+	 *  
+	 * @return list of newly rendered tables
 	 */
-	private void expandTable(Graph g, net.sf.jailer.datamodel.Table table, Association toRender) {
+	private List<Table>  expandTable(Graph g, net.sf.jailer.datamodel.Table table, Association toRender) {
+		List<Table> result = new ArrayList<Table>();
 		if (table != null && (!expandedTables.contains(table) || toRender != null)) {
 			List<Table> toCheck = new ArrayList<Table>();
-			addEdges(g, table, toRender, toCheck);
+			result = addEdges(g, table, toRender, toCheck);
 			// expandedTables.add(table);
 			checkForExpansion(g, toCheck);
 		}
+		return result;
 	}
 
 	private void checkForExpansion(Graph g, java.util.Collection<Table> toCheck) {
@@ -744,9 +782,11 @@ public class GraphicalDataModelView extends JPanel {
 
 	/**
 	 * @param toRender is not null, the only association to make visible 
+	 * @return list of newly rendered tables
 	 */
-	private void addEdges(Graph g, net.sf.jailer.datamodel.Table table,
+	private List<Table> addEdges(Graph g, net.sf.jailer.datamodel.Table table,
 			Association toRender, List<Table> toCheck) {
+		List<Table> result = new ArrayList<Table>();
 		toCheck.add(table);
 		for (Association a: table.associations) {
 			if (toRender != null && toRender != a) {
@@ -758,8 +798,12 @@ public class GraphicalDataModelView extends JPanel {
 			if (!renderedAssociations.containsKey(a) && !renderedAssociations.containsKey(a.reversalAssociation)) {
 				toCheck.add(a.destination);
 				toCheck.add(a.source);
-				showTable(g, a.source);
-				showTable(g, a.destination);
+				if (showTable(g, a.source)) {
+					result.add(a.source);
+				}
+				if (showTable(g, a.destination)) {
+					result.add(a.destination);
+				}
 				String tooltip = a.getJoinCondition();
 				if (!associationIsUnique(a)) {
 					Node an = g.addNode();
@@ -786,6 +830,7 @@ public class GraphicalDataModelView extends JPanel {
 				}
 			}
 		}
+		return result;
 	}
 
 	/**
@@ -861,18 +906,11 @@ public class GraphicalDataModelView extends JPanel {
 	 * Expands all tables.
 	 */
 	public void expandAll() {
-		if (modelEditor.extractionModelFrame.showDisabledAssociations()) {
-			for (Table table: model.getTables()) {
-				expandTable(theGraph, table);
-			}
-		} else {
-			Set<Table> toExpand = new HashSet<Table>();
-			for (Table table: tableNodes.keySet()) {
-				toExpand.addAll(table.closure(true));
-			}
-			for (Table table: toExpand) {
-				expandTable(theGraph, table);
-			}
+		List<Table> toExpand = new ArrayList<Table>();
+		toExpand.addAll(tableNodes.keySet());
+		while (!toExpand.isEmpty()) {
+			Table table = toExpand.remove(0);
+			toExpand.addAll(expandTable(theGraph, table));
 		}
 	}
 	
@@ -889,6 +927,28 @@ public class GraphicalDataModelView extends JPanel {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Resets expanded/collapsed status of each visible table.
+	 */
+	public void resetExpandedState() {
+		checkForCollapsed(theGraph, tableNodes.keySet());
+		checkForExpansion(theGraph, tableNodes.keySet());
+		visualization.invalidateAll();
+	}
+
+	/**
+	 * Sets fix property of all visual nodes.
+	 * 
+	 * @param fix the property value
+	 */
+	public void setFix(boolean fix) {
+		for (int i = visualGraph.getNodeCount() - 1; i >= 0; --i) {
+			VisualItem n = (VisualItem) visualGraph.getNode(i);
+			n.setFixed(fix);
+		}
+		
 	}
 	
 }

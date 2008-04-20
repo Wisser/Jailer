@@ -191,7 +191,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			graphView = new GraphicalDataModelView(dataModel, this, root);
 			graphContainer.add(graphView);
 		} else {
-			// TODO
+			graphView.resetExpandedState();
 		}
 		validate();
 	}
@@ -1081,7 +1081,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     }
         
     /**
-     * Refreshed associations tree.
+     * Refreshes associations tree.
      */
 	public void refresh(boolean restoreSelection, boolean fullGraphModelReset) {
 		Association association = currentAssociation;
@@ -1120,6 +1120,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		tree.repaint();
 		restrictionsTable.setModel(restrictionTableModel());
 		initRestrictionEditor(currentAssociation, currentNode);
+		graphView.resetExpandedState();
 	}
 	
 	/**
@@ -1142,6 +1143,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		tree.repaint();
 		restrictionsTable.setModel(restrictionTableModel());
 		initRestrictionEditor(currentAssociation, currentNode);
+		graphView.resetExpandedState();
 	}
 
     // Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables
