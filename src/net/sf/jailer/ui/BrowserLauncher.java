@@ -19,11 +19,20 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URI;
 
+import net.sf.jailer.extractionmodel.ExtractionModel;
+
+import org.apache.log4j.Logger;
+
 /**
  * Browser launcher.
  */
 public class BrowserLauncher {
 
+	/**
+     * The logger.
+     */
+    private static final Logger _log = Logger.getLogger(BrowserLauncher.class);
+ 
 	/**
 	 * Opens URL in browser.
 	 * 
@@ -55,6 +64,7 @@ public class BrowserLauncher {
 	 * @param url the url to open
 	 */
 	private static void openURL1_5(String url) {
+		_log.info("open browser fall-back for " + url);
 		String osName = System.getProperty("os.name");
 		try {
 			if (osName.startsWith("Mac OS")) {
