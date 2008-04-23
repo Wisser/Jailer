@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.sf.jailer.database;
 
 import java.io.IOException;
@@ -52,6 +51,9 @@ public class DeletionReader implements ResultSetReader {
      */
     private StatementBuilder deleteStatementBuilder;
     
+    /**
+     * Maps clear text SQL-types to {@link java.sql.Types}.
+     */
     private Map<String, Integer> typeCache = new HashMap<String, Integer>();
 
     /**
@@ -69,6 +71,8 @@ public class DeletionReader implements ResultSetReader {
     
     /**
      * Reads result-set and writes into export-script.
+     * 
+     * @param resultSet the result set
      */
     public void readCurrentRow(ResultSet resultSet) throws SQLException {
         try {

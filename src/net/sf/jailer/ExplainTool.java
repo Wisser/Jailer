@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.sf.jailer;
 
 import java.io.FileWriter;
@@ -37,7 +36,6 @@ import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.util.SqlUtil;
 
 import org.apache.log4j.Logger;
-
 
 /**
  * Creates a listing of all association-paths of exported entities 

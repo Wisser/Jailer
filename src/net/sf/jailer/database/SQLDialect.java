@@ -64,6 +64,9 @@ public class SQLDialect {
 	public final boolean needsValuesKeywordForDeletes;
 	public final boolean supportsMultiRowInserts;
 	
+	/**
+	 * Statements for upserts (overwrites).
+	 */
 	public static enum UPSERT_MODE { 
 		DB2("Select * From (values (1, 2), (3, 4)) as Q(c1, c2) Where not exists (Select * from JL_TMP T Where T.c1=Q.c1)"), 
 		FROM_DUAL("Select 1, 2 From dual where not exists(Select * from JL_TMP T where T.c1=1)"),
@@ -148,6 +151,7 @@ public class SQLDialect {
 	public static void guessDialect(PrimaryKey primaryKey,
 			StatementExecutor statementExecutor) {
 		log("begin guessing SQL dialect");
+		statementExecutor.setSilent(true);
 		
 		String drop = "DROP TABLE JL_TMP";
 		String create = "CREATE TABLE JL_TMP(c1 INTEGER, c2 INTEGER)";
@@ -229,8 +233,9 @@ public class SQLDialect {
 			guessDummyValues(column, statementExecutor);
 		}
 		// force date format guessing
-		guessDummyValues(new Column("C", "DATE", 0), statementExecutor);
-		guessDummyValues(new Column("C", "TIMESTAMP", 0), statementExecutor);
+		guessDummyValues(new Column("C", "DATE", 0, -1), statementExecutor);
+		guessDummyValues(new Column("C", "TIMESTAMP", 0, -1), statementExecutor);
+		statementExecutor.setSilent(false);
 		log("end guessing dummy values");
 	}
 
@@ -345,7 +350,7 @@ public class SQLDialect {
 	}
 
 	/**
-	 * Inserts a null value into JL_TMP.
+	 * Inserts a null (dummy) value into JL_TMP.
 	 * 
 	 * @param column
 	 *            the column to insert into

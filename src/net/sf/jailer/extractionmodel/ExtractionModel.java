@@ -19,11 +19,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.CsvFile;
-
 
 /**
  * Extraction-model, defines the subject and the {@link RestrictionModel}
@@ -38,6 +39,11 @@ public class ExtractionModel {
      */
     private List<ExtractionTask> tasks = new ArrayList<ExtractionTask>();
     
+    /**
+     * The logger.
+     */
+    private static final Logger _log = Logger.getLogger(ExtractionModel.class);
+ 
     /**
      * One extraction-task.
      */
@@ -116,7 +122,7 @@ public class ExtractionModel {
             DataModel dataModel = new DataModel();
             Table subject = dataModel.getTable(line.cells.get(0));
             if (subject == null) {
-                throw new RuntimeException(location + ": unknown table " + line.cells.get(0));
+            	_log.warn(location + ": unknown table " + line.cells.get(0));
             }
             String condition = line.cells.get(1);
             if ("".equals(condition)) {

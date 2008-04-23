@@ -111,7 +111,10 @@ public class ExportReader implements ResultSetReader {
      * Counts the exported LOBs. (GUI support)
      */
     public static long numberOfExportedLOBs;
-    
+
+    /**
+     * Maps clear text SQL-types to {@link java.sql.Types}.
+     */
     private Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
 
     /**

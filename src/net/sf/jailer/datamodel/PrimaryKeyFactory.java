@@ -61,13 +61,28 @@ public class PrimaryKeyFactory {
 			for (int i = 0; i < universalPrimaryKey.getColumns().size(); ++i) {
 				Column uPKColumn = universalPrimaryKey.getColumns().get(i);
 				Column column = columns.get(n);
-				if (uPKColumn.type.equals(column.type)) {
+				if (uPKColumn.type.equalsIgnoreCase(column.type) && column.precision < 0 && uPKColumn.precision < 0) {
 					if (column.length > 0 && column.length > uPKColumn.length) {
-						// increase size
+						// increase length
 						universalPrimaryKey.getColumns().set(
 								i,
 								new Column(uPKColumn.name, uPKColumn.type,
-										column.length));
+										column.length, column.precision));
+					}
+					++n;
+					if (n >= columns.size()) {
+						break;
+					}
+				}
+				if (uPKColumn.type.equalsIgnoreCase(column.type) && column.precision >= 0 && uPKColumn.precision >= 0
+						&& (column.length >= uPKColumn.length && column.precision >= uPKColumn.precision
+						 || column.length <= uPKColumn.length && column.precision <= uPKColumn.precision)) {
+					if (column.length > 0 && column.length > uPKColumn.length) {
+						// increase length
+						universalPrimaryKey.getColumns().set(
+								i,
+								new Column(uPKColumn.name, uPKColumn.type,
+										column.length, column.precision));
 					}
 					++n;
 					if (n >= columns.size()) {
@@ -81,7 +96,7 @@ public class PrimaryKeyFactory {
 			Column column = columns.get(n);
 			universalPrimaryKey.getColumns().add(
 					new Column(createUniqueUPKName(), column.type,
-							column.length));
+							column.length, column.precision));
 		}
 		return primaryKey;
 	}

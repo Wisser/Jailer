@@ -30,7 +30,6 @@ import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 import org.kohsuke.args4j.Option;
 
-
 /**
  * Commandline-parser for {@link Jailer}.
  * 
@@ -77,6 +76,9 @@ public class CommandLineParser {
         }
     }
 
+    /**
+     * Prints out usage.
+     */
     public static void printUsage() {
         System.out.println("usage:");
         System.out.println("  jailer print-datamodel [options] {<restriction-model>}*");
@@ -173,5 +175,8 @@ public class CommandLineParser {
      */
     private CsvFile tabuTableNames = null;
     
+    /**
+     * The singleton.
+     */
     private static CmdLineParser cmdLineParser;
 }

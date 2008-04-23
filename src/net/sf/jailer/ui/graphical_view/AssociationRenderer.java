@@ -1,3 +1,18 @@
+/*
+ * Copyright 2007 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package net.sf.jailer.ui.graphical_view;
 
 import java.awt.BasicStroke;
@@ -10,11 +25,9 @@ import java.awt.geom.Point2D;
 import net.sf.jailer.datamodel.Association;
 import prefuse.Constants;
 import prefuse.render.EdgeRenderer;
-import prefuse.util.ColorLib;
 import prefuse.util.GraphicsLib;
 import prefuse.visual.EdgeItem;
 import prefuse.visual.VisualItem;
-
 
 /**
  * Renderer for {@link Association}s.
@@ -23,13 +36,14 @@ import prefuse.visual.VisualItem;
  */
 public class AssociationRenderer extends EdgeRenderer {
 
+	// color setting
 	public static Color COLOR_IGNORED;
 	public static Color COLOR_ASSOCIATION;
 	public static Color COLOR_DEPENDENCY;
 	public static Color COLOR_REVERSE_DEPENDENCY;
 	
 	/**
-	 * <code>true</code> for revered rendering.
+	 * <code>true</code> for reversed rendering.
 	 */
 	boolean reversed;
 
@@ -37,16 +51,31 @@ public class AssociationRenderer extends EdgeRenderer {
 	 * <code>true</code> for full rendering (for setting bounds).
 	 */
 	boolean full = false;
-	
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param reversed <code>true</code> for reversed rendering
+	 */
 	public AssociationRenderer(boolean reversed) {
 		super(Constants.EDGE_TYPE_LINE, reversed? Constants.EDGE_ARROW_REVERSE : Constants.EDGE_ARROW_FORWARD);
 		this.reversed = reversed;
 	}
 
+	/**
+	 * Constructor.
+	 */
 	public AssociationRenderer() {
 		full = true;
 	}
-
+    
+	/**
+     * Return a non-transformed shape for the visual representation of the
+     * {@link Association}.
+     * 
+     * @param item the VisualItem being drawn
+     * @return the "raw", untransformed shape
+     */
 	@Override
 	protected Shape getRawShape(VisualItem item) {
 		EdgeItem   edge = (EdgeItem)item;
@@ -145,7 +174,14 @@ public class AssociationRenderer extends EdgeRenderer {
         }
         return m_arrowTrans;
     }
-    
+
+    /**
+     * Renders an {@link Association}.
+     * 
+     * @param g the 2D graphics
+     * @param item visual item for the association
+     * @param isSelected <code>true</code> for selected association
+     */
     public void render(Graphics2D g, VisualItem item, boolean isSelected) {
 		Association association = (Association) item.get("association");
 		item.setSize(isSelected? 3 : 1);
@@ -180,6 +216,12 @@ public class AssociationRenderer extends EdgeRenderer {
 		render(g, item);
 	}
 
+    /**
+     * Gets color for association.
+     * 
+     * @param association the association
+     * @return the color for the association
+     */
 	private int associationColor(Association association) {
 		if (association.isIgnored()) {
 			return COLOR_IGNORED.getRGB();
@@ -193,6 +235,15 @@ public class AssociationRenderer extends EdgeRenderer {
 		return COLOR_ASSOCIATION.getRGB();
 	}
 
+	 /**
+     * Returns true if the Point is located inside the extents of the item.
+     * This calculation matches against the exact item shape, and so is more
+     * sensitive than just checking within a bounding box.
+     * 
+     * @param p the point to test for containment
+     * @param item the item to test containment against
+     * @return true if the point is contained within the the item, else false
+     */
 	@Override
 	public boolean locatePoint(Point2D p, VisualItem item) {
 		Shape s = getShape(item);

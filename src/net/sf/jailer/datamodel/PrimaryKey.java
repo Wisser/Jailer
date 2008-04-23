@@ -22,7 +22,7 @@ import java.util.Map;
 
 
 /**
- * Primary-key description of a {@link Table}.
+ * Primary-key of a {@link Table}.
  * 
  * @author Wisser
  */

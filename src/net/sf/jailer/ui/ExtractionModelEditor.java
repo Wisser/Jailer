@@ -15,6 +15,48 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JLabel;
+import javax.swing.JTable;
+import javax.swing.JTree;
+import javax.swing.ListSelectionModel;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableModel;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.MutableTreeNode;
+import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
+import javax.swing.tree.TreePath;
+import javax.swing.tree.TreeSelectionModel;
+
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.ModelElement;
@@ -25,26 +67,8 @@ import net.sf.jailer.ui.graphical_view.AssociationRenderer;
 import net.sf.jailer.ui.graphical_view.GraphicalDataModelView;
 import net.sf.jailer.util.SqlUtil;
 
-import javax.swing.*;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableModel;
-import javax.swing.tree.*;
-
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.util.*;
-import java.util.List;
-
 /**
- * Editor for {@link RestrictionModel}s.
+ * Editor for {@link ExtractionModel}s.
  * 
  * @author Wisser
  */
@@ -61,7 +85,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	private ExtractionModel extractionModel;
 	
 	/**
-	 * The data model.
+	 * The restricted data model.
 	 */
 	DataModel dataModel;
 	
@@ -74,22 +98,57 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * Root of 'associations'-tree.
 	 */
 	private Table root;
-	
+
+	/**
+	 * Maps unnamed {@link Association}s to one {@link Association} having same source and destination.
+	 */
 	private Map<Association, Association> representant;
+	
+	/**
+	 * Maps {@link Association}s and Root-table to tree-nodes.
+	 */
 	private Map<ModelElement, DefaultMutableTreeNode> toNode;
+	
+	/**
+	 * Model of tree-view.
+	 */
 	private DefaultTreeModel treeModel;
+	
+	/**
+	 * Collection of all nodes of treeModel.
+	 */
 	private Collection<DefaultMutableTreeNode> treeNodes;
+	
+	/**
+	 * For making {@link #select(Association)} re-entrant.
+	 */
 	private boolean suppressRestrictionSelection = false;
+	
+	/**
+	 * <code>true</code> iff model is modified after last saving.
+	 */
 	boolean needsSave = false;
+	
+	/**
+	 * The enclosing frame.
+	 */
 	public ExtractionModelFrame extractionModelFrame;
+	
+	/**
+	 * Name of file containing the currently edited model.
+	 */
 	String extractionModelFile;
+	
+	/**
+	 * The graphical model view.
+	 */
 	GraphicalDataModelView graphView; 
 	
 	/** 
 	 * Creates new form ModelTree.
 	 *  
 	 * @param extractionModelFile file containing the model
-	 * @param extractionModelFrame
+	 * @param extractionModelFrame the enclosing frame
      */
 	public ExtractionModelEditor(String extractionModelFile, ExtractionModelFrame extractionModelFrame) {
 		this.extractionModelFrame = extractionModelFrame;
@@ -137,6 +196,23 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				}
 			}
 		});
+		final TableCellRenderer defaultTableCellRenderer = restrictionsTable.getDefaultRenderer(String.class);
+		final Color BG1 = new Color(255, 255, 255);
+		final Color BG2 = new Color(230, 255, 255);
+		restrictionsTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
+			public Component getTableCellRendererComponent(JTable table,
+					Object value, boolean isSelected, boolean hasFocus,
+					int row, int column) {
+				Component render = defaultTableCellRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+				if (render instanceof JLabel && !isSelected) {
+					((JLabel) render).setBackground(row % 2 == 0? BG1 : BG2);
+				}
+				return render;
+			}
+		});
+		
+		restrictionsTable.setShowGrid(false);
+		
 		inspectorHolder.add(restrictionEditor);
 		inspectorHolder.setMinimumSize(inspectorHolder.getPreferredSize());
 		restrictionEditor.apply.addActionListener(new ActionListener() {
@@ -432,13 +508,22 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private void rootTableItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rootTableItemStateChanged
     	if (evt.getItem() != null) {
     		Table table = dataModel.getTable(evt.getItem().toString());
-    		if (table != null) {
-    			root = table;
-    			tree.setModel(getModel());
-    			resetGraphEditor(true);
-    		}
+    		setRoot(table);
     	}
     }//GEN-LAST:event_rootTableItemStateChanged
+
+    /**
+     * Sets the root table
+     * 
+     * @param table the new root
+     */
+	public void setRoot(Table table) {
+		if (table != null) {
+			root = table;
+			tree.setModel(getModel());
+			resetGraphEditor(true);
+		}
+	}
 
     /**
      * {@link RestrictionDefinition}s currently rendered in restrictions-table.
@@ -455,11 +540,16 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     	Object[][] data = new Object[currentRestrictionDefinitions.size()][];
     	int i = 0;
     	for (RestrictionDefinition def: currentRestrictionDefinitions) {
-    		data[i++] = new Object[] { def.from.getName(), def.to.getName(), def.name == null? "" : def.name, def.condition};
+    		data[i++] = new Object[] { def.from.getName(), def.to.getName(), def.name == null? "" : def.name, def.condition };
     	}
         return new DefaultTableModel(data, new Object[] { "From", "To", "Name", "Condition" });
     }
     
+    /**
+     * Gets list model for the subject-combobox.
+     * 
+     * @return list model for the subject-combobox
+     */
     private ComboBoxModel subjectListModel() {
     	Vector<String> tableNames = new Vector<String>();
     	for (Table table: dataModel.getTables()) {
@@ -469,7 +559,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     	DefaultComboBoxModel model = new DefaultComboBoxModel(tableNames);
         return model;
     }
-    
+
+    /**
+     * Gets list model for the root-combobox.
+     * 
+     * @return list model for the root-combobox
+     */
     private ComboBoxModel getTableListModel() {
     	Vector<String> tableNames = new Vector<String>();
     	for (Table table: dataModel.getTables()) {
@@ -483,7 +578,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     	DefaultComboBoxModel model = new DefaultComboBoxModel(tableNames);
         return model;
     }
-    
+
+    /**
+     * Reacts on changes of selection of tree-view.
+     */
     private void treeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_treeValueChanged
     	if (evt.getNewLeadSelectionPath() != null) {
     		DefaultMutableTreeNode node = ((DefaultMutableTreeNode) evt.getNewLeadSelectionPath().getLastPathComponent());
@@ -692,6 +790,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 		
 		DefaultMutableTreeNode root = new DefaultMutableTreeNode(this.root);
+		treeNodes.add(root);
+		
 		Map<Association, DefaultMutableTreeNode> parent = new HashMap<Association, DefaultMutableTreeNode>();
 		List<Association> agenda = new LinkedList<Association>();
 
@@ -760,7 +860,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	}
 
 	/**
-	 * Removes all ignored associations from tree.
+	 * Removes all disabled associations from tree.
 	 * 
 	 * @param root the root of the tree
 	 * @param exceptions don't remove these nodes
@@ -835,6 +935,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 	}
 
+	/**
+	 * Renderer for the tree-view.
+	 */
 	private TreeCellRenderer getTreeCellRenderer(TreeCellRenderer treeCellRenderer) {
 		return new DefaultTreeCellRenderer() {
 			public Component getTreeCellRendererComponent(JTree tree,
@@ -880,6 +983,37 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
      */
     private Set<Association> ambiguousNonames = null;
 
+    /**
+     * Selects a table in tree view.
+     * 
+     * @param table the table to select
+     */
+	public void select(Table table) {
+		for (DefaultMutableTreeNode node: treeNodes) {
+			if (node.getChildCount() > 0) {
+				Table t = null;
+				Association a = null;
+				if (node.getUserObject() instanceof Association) {
+					a = (Association) node.getUserObject();
+					t = a.destination;
+				} else if (node.getUserObject() instanceof Table) {
+					if (node.getChildCount() > 0) {
+						if (((DefaultMutableTreeNode) node.getChildAt(0)).getUserObject() instanceof Association) {
+							a = (Association) ((DefaultMutableTreeNode) node.getChildAt(0)).getUserObject();
+							t = a.source;
+						}
+					}
+				}
+				
+				if (t != null && a != null && table.equals(t)) {
+					select(a);
+					tree.expandPath(new TreePath(node.getPath()));
+					break;
+				}
+			}
+		}
+	}
+	
     /**
      * Selects a restriction.
      * 
@@ -1144,6 +1278,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		restrictionsTable.setModel(restrictionTableModel());
 		initRestrictionEditor(currentAssociation, currentNode);
 		graphView.resetExpandedState();
+	}
+
+	/**
+	 * Zooms graphical view to fit.
+	 */
+	public void zoomToFit() {
+		graphView.zoomToFit();
 	}
 
     // Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables

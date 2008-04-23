@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
@@ -45,7 +44,11 @@ import net.sf.jailer.Jailer;
 public class UIUtil {
 
     /**
-     * File chooser.
+     * Opens file chooser.
+     * 
+     * @param selectedFile if not <code>null</code> this file will be selected initially
+     * @param startDir directory to start with
+     * @param description description of file to chose
      */
     public static String choseFile(File selectedFile, String startDir, final String description, final String extension, Component parent, boolean addExtension, boolean forLoad) {
         JFileChooser fileChooser = new JFileChooser(startDir);
@@ -96,17 +99,28 @@ public class UIUtil {
     }
 
     /**
-     * Runs Jailer.
+     * Calls the Jailer export engine via CLI.
      * 
-     * @param parent parent of OutputView.
-     * @param args jailer arguments
+     * @param ownerOfConsole owner component of jailer console
+     * @param args CLI arguments
+     * @param showLogfileButton console property
+     * @param printCommandLine if true, print CLI command line
+     * @param showExplainLogButton console property
+     * @param closeOutputWindow if <code>true</code>, close console immediately after call
+     * @param continueOnErrorQuestion to ask when call fails
+     * @param password CLI argument to print as "*****"
+     * @return <code>true</code> iff call succeeded
      */
-    public static boolean runJailer(Frame ownerOfConsole, List<String> args, boolean showLogfileButton, final boolean printCommandLine, boolean showExplainLogButton, final boolean closeOutputWindow, String continueOnErrorQuestion) {
+    public static boolean runJailer(Frame ownerOfConsole, List<String> args, boolean showLogfileButton, final boolean printCommandLine, boolean showExplainLogButton, final boolean closeOutputWindow, String continueOnErrorQuestion, String password) {
         final StringBuffer arglist = new StringBuffer();
         final String[] argsarray = new String[args.size()];
         int i = 0;
         for (String arg: args) {
-            arglist.append(" " + arg);
+        	if (arg != null && arg.equals(password)) {
+        		arglist.append(" *****");
+        	} else {
+        		arglist.append(" " + arg);
+        	}
             argsarray[i++] = arg.trim();
         }
         final JailerConsole outputView = new JailerConsole(ownerOfConsole, showLogfileButton, showExplainLogButton);
@@ -220,7 +234,9 @@ public class UIUtil {
     /**
      * Shows an exception.
      * 
-     * @param e the exception.
+     * @param parent parent component of option pane
+     * @param title title of option pane
+     * @param t the exception
      */
 	public static void showException(Component parent, String title, Throwable t) {
 		t.printStackTrace();

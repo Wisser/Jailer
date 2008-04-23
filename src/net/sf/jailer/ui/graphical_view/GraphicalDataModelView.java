@@ -1,3 +1,18 @@
+/*
+ * Copyright 2007 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package net.sf.jailer.ui.graphical_view;
 
 import java.awt.BorderLayout;
@@ -6,6 +21,8 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Shape;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseWheelEvent;
 import java.awt.geom.Point2D;
@@ -18,11 +35,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
-
-import com.sun.org.apache.bcel.internal.generic.NEWARRAY;
 
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
@@ -43,7 +61,6 @@ import prefuse.controls.FocusControl;
 import prefuse.controls.PanControl;
 import prefuse.controls.ToolTipControl;
 import prefuse.controls.WheelZoomControl;
-import prefuse.controls.ZoomControl;
 import prefuse.controls.ZoomToFitControl;
 import prefuse.data.Edge;
 import prefuse.data.Graph;
@@ -65,13 +82,14 @@ import prefuse.util.force.ForceItem;
 import prefuse.util.force.ForceSimulator;
 import prefuse.util.force.Integrator;
 import prefuse.util.force.NBodyForce;
+import prefuse.util.ui.UILib;
 import prefuse.visual.EdgeItem;
 import prefuse.visual.NodeItem;
 import prefuse.visual.VisualGraph;
 import prefuse.visual.VisualItem;
 
 /**
- * Graphical restriction model editor.
+ * Graphical restriction model view and editor.
  * 
  * @author Wisser
  */
@@ -98,16 +116,35 @@ public class GraphicalDataModelView extends JPanel {
     private Display display;
     private boolean inInitialization = false;
     
+    /**
+     * The root table.
+     */
     private final Table root;
+    
+    /**
+     * Input for "expand" action.
+     */
     private Table tableToExpandNext;
-    
+
+    /**
+     * Association renderer.
+     */
     private CompositeAssociationRenderer associationRenderer;
+
+    /**
+     * The enclosing model editor.
+     */
     private final ExtractionModelEditor modelEditor;
-    
+
+    /**
+     * Layouts the model graph.
+     */
     private ForceDirectedLayout layout;
     
-//    private static Map<String, double[]> nodePositions = Collections.synchronizedMap(new HashMap<String, double[]>());
-//    private Map<String, VisualItem> visualItems = Collections.synchronizedMap(new HashMap<String, VisualItem>());
+    /**
+     * Zooms to fit on mouse click.
+     */
+    private ZoomToFitControlExtension zoomToFitControl;
     
     /**
      * Constructor.
@@ -125,6 +162,8 @@ public class GraphicalDataModelView extends JPanel {
         // create a new, empty visualization for our data
         visualization = new Visualization();
         
+        final ZoomBoxControl zoomBoxControl = new ZoomBoxControl();
+		
         // --------------------------------------------------------------------
         // set up the renderers
         
@@ -172,10 +211,9 @@ public class GraphicalDataModelView extends JPanel {
         tr.setHorizontalPadding(3);
         visualization.setRendererFactory(new RendererFactory() {
 			public Renderer getRenderer(VisualItem item) {
-//				String label = item.getString("label");
-//				if (label != null) {
-//					visualItems.put(label, item);
-//				}
+				if (zoomBoxControl.getRenderer().isBoxItem(item)) {
+					return zoomBoxControl.getRenderer();
+				}
 				if (item instanceof EdgeItem) {
 					return associationRenderer;
 				}
@@ -186,9 +224,6 @@ public class GraphicalDataModelView extends JPanel {
 			}
         });
 
-        // --------------------------------------------------------------------
-        // register the data with a visualization
-        
         // adds graph to visualization and sets renderer label field
         setGraph(theGraph);
         
@@ -236,10 +271,14 @@ public class GraphicalDataModelView extends JPanel {
         draw.add(new ColorAction(edges, VisualItem.STROKECOLOR, ColorLib.gray(200)));
         
         ActionList animate = new ActionList(Activity.INFINITY);
-        layout = new ForceDirectedLayout(graph);
+        layout = new ForceDirectedLayout(graph) {
+        	protected float getMassValue(VisualItem n) {
+                return zoomBoxControl.getRenderer().isBoxItem(n)? 0.01f : 1.0f;
+            }
+        };
         for (Force force: layout.getForceSimulator().getForces()) {
         	if (force instanceof NBodyForce) {
-        		((NBodyForce) force).setParameter(NBodyForce.GRAVITATIONAL_CONST, -40.0f);
+        		((NBodyForce) force).setParameter(NBodyForce.GRAVITATIONAL_CONST, -60.0f);
         	}
         }
         layout.getForceSimulator().setIntegrator(new Integrator() {
@@ -394,36 +433,54 @@ public class GraphicalDataModelView extends JPanel {
         // main display controls
         display.addControlListener(new FocusControl(1));
         display.addControlListener(new DragControl() {
+			@Override
+			public void itemClicked(VisualItem item, MouseEvent e) {
+				// context menu
+                if (SwingUtilities.isRightMouseButton(e)) {
+                	Table table = model.getTable(item.getString("label"));
+                	if (table != null) {
+						JPopupMenu popup = createPopupMenu(table);
+						Display display = (Display)e.getComponent();
+				        popup.show(display, e.getX(), e.getY());
+                	}
+                }
+                super.itemClicked(item, e);
+			}
+
 			public void itemPressed(VisualItem item, MouseEvent e) {
-            	Association association = (Association) item.get("association");
-            	if (association != null) {
-            		if (Boolean.TRUE.equals(item.get("full"))) {
-            			associationRenderer.useAssociationRendererForLocation = true;
-            			VisualItem findItem = display.findItem(e.getPoint());
-						if (findItem == null || !findItem.equals(item)) {
-            				association = association.reversalAssociation;
-            			}
-            			associationRenderer.useAssociationRendererForLocation = false;
-            		}
-            		setSelection(association);
-            	}
-            	Table table = model.getTable(item.getString("label"));
-            	if (table != null && e.getClickCount() > 1) {
-            		if (expandedTables.contains(table)) {
-            			collapseTable(theGraph, table);
-            			display.pan(1, 0);
-            			display.pan(0, 1);
-            			visualization.invalidateAll();
-            		} else {
-	    	            // expandTable(theGraph, table);
-            			tableToExpandNext = table;
-            			visualization.run("expand");
-            		}
-	            }
+				if (UILib.isButtonPressed(e, LEFT_MOUSE_BUTTON)) {
+					Association association = (Association) item.get("association");
+	            	if (association != null) {
+	            		if (Boolean.TRUE.equals(item.get("full"))) {
+	            			associationRenderer.useAssociationRendererForLocation = true;
+	            			VisualItem findItem = display.findItem(e.getPoint());
+							if (findItem == null || !findItem.equals(item)) {
+	            				association = association.reversalAssociation;
+	            			}
+	            			associationRenderer.useAssociationRendererForLocation = false;
+	            		}
+	            		setSelection(association);
+	            	}
+	            	Table table = model.getTable(item.getString("label"));
+	            	if (table != null && e.getClickCount() > 1) {
+	            		if (expandedTables.contains(table)) {
+	            			collapseTable(theGraph, table);
+	            			display.pan(1, 0);
+	            			display.pan(0, 1);
+	            			visualization.invalidateAll();
+	            		} else {
+		    	            // expandTable(theGraph, table);
+	            			tableToExpandNext = table;
+	            			visualization.run("expand");
+	            		}
+		            }
+				}
             	super.itemPressed(item, e);
 			}
+			
 			public void itemReleased(VisualItem item, MouseEvent e) {
-        		super.itemReleased(item, e);
+				// fix after drag
+				super.itemReleased(item, e);
                 if (!SwingUtilities.isLeftMouseButton(e)) return;
                 if (item instanceof NodeItem) {
                 	item.setFixed(true);
@@ -431,7 +488,7 @@ public class GraphicalDataModelView extends JPanel {
         	}
         });
         display.addControlListener(new PanControl());
-        display.addControlListener(new ZoomControl());
+        display.addControlListener(zoomBoxControl);
         display.addControlListener(new WheelZoomControl(){
             /**
              * @see java.awt.event.MouseWheelListener#mouseWheelMoved(java.awt.event.MouseWheelEvent)
@@ -444,10 +501,9 @@ public class GraphicalDataModelView extends JPanel {
             }
 
         });
-        ZoomToFitControl zoomToFitControl = new ZoomToFitControl(Visualization.ALL_ITEMS, 50, 800, Control.RIGHT_MOUSE_BUTTON);
-		display.addControlListener(zoomToFitControl);
+        zoomToFitControl = new ZoomToFitControlExtension(Visualization.ALL_ITEMS, 50, 800, Control.RIGHT_MOUSE_BUTTON,	model);
+        display.addControlListener(zoomToFitControl);
         display.addControlListener(new ToolTipControl("tooltip"));
-//        display.addControlListener(new NeighborHighlightControl());
 
         display.setForeground(Color.GRAY);
         display.setBackground(Color.WHITE);
@@ -480,9 +536,55 @@ public class GraphicalDataModelView extends JPanel {
         }.start();
     }
     
+    /**
+     * Creates popup menu.
+     *
+     * @param table the table for which the menu pops up
+     * @return the popup menu
+     */
+	protected JPopupMenu createPopupMenu(final Table table) {
+		JPopupMenu popup = new JPopupMenu();
+		
+		JMenuItem select = new JMenuItem("Select");
+		select.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				modelEditor.select(table);
+			}
+		});
+		JMenuItem selectAsRoot = new JMenuItem("Select as root");
+		selectAsRoot.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				modelEditor.setRoot(table);
+			}
+		});
+		JMenuItem zoomToFit = new JMenuItem("Zoom to fit");
+		zoomToFit.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				zoomToFit();
+			}
+		});
+
+		popup.add(select);
+		popup.add(selectAsRoot);
+		popup.add(new JSeparator());
+		popup.add(zoomToFit);
+		
+		return popup;
+	}
+
+	/**
+	 * Closes the view.
+	 */
 	public void close() {
 		visualization.reset();
 		layout.cancel();
+	}
+
+	/**
+	 * Zooms to fit.
+	 */
+	public void zoomToFit() {
+		zoomToFitControl.zoomToFit();
 	}
 
 	/**
@@ -495,12 +597,15 @@ public class GraphicalDataModelView extends JPanel {
     	inInitialization = true;
         visualization.removeGroup(graph);
         visualGraph = visualization.addGraph(graph, g);
-        VisualItem f = (VisualItem)visualGraph.getNode(0);
-		Font font = f.getFont();
-	    f.setFont(FontLib.getFont(font.getName(), Font.BOLD, font.getSize()));
-        visualization.getGroup(Visualization.FOCUS_ITEMS).setTuple(f);
-        f.setFixed(true);
-
+        if (visualGraph.getNodeCount() > 1) {
+	        VisualItem f = (VisualItem) visualGraph.getNode(1);
+			Font font = f.getFont();
+		    f.setFont(FontLib.getFont(font.getName(), Font.BOLD, font.getSize()));
+	        visualization.getGroup(Visualization.FOCUS_ITEMS).setTuple(f);
+	        f.setFixed(true);
+	        ((VisualItem) visualGraph.getNode(0)).setFixed(true);
+        }
+        
         inInitialization = false;
     }
     
@@ -509,10 +614,25 @@ public class GraphicalDataModelView extends JPanel {
      */
     private Graph theGraph;
     
+    /**
+     * Maps tables to their graph nodes.
+     */
     private Map<net.sf.jailer.datamodel.Table, Node> tableNodes = new HashMap<net.sf.jailer.datamodel.Table, Node>();
+
+    /**
+     * Set of all tables which are currently expanded.
+     */
     private Set<net.sf.jailer.datamodel.Table> expandedTables = new HashSet<net.sf.jailer.datamodel.Table>();
+    
+    /**
+     * Maps associations to their edges.
+     */
     private Map<Association, Edge> renderedAssociations = new HashMap<Association, Edge>();
     private Map<Association, Node> renderedAssociationsAsNode = new HashMap<Association, Node>();
+
+    /**
+     * The data model.
+     */
     private DataModel model = null;
 
     /**
@@ -565,6 +685,9 @@ public class GraphicalDataModelView extends JPanel {
 		s.addColumn("full", Boolean.class);
 		g.addColumns(s);
 		
+		Node zoomBox = g.addNode();
+		zoomBox.setString("label", ZoomBoxControl.BOX_ITEM_LABEL);
+		
 		Table table = root;
 		showTable(g, table);
 		expandTable(g, table);
@@ -579,7 +702,7 @@ public class GraphicalDataModelView extends JPanel {
 	 * @param table the table to show
 	 */
 	private boolean showTable(Graph graph, Table table) {
-		if (!tableNodes.containsKey(table)) {
+		if (table != null && !tableNodes.containsKey(table)) {
 			Node n = graph.addNode();
 			n.setString("label", table.getName());
 			String tooltip = table.getName() + " (" + table.primaryKey.toSQL(null, false) + ")";
@@ -698,6 +821,12 @@ public class GraphicalDataModelView extends JPanel {
 		return result;
 	}
 
+	/**
+	 * Checks whether some tables are still expanded.
+	 * 
+	 * @param g the graph
+	 * @param toCheck set of tables to check
+	 */
 	private void checkForExpansion(Graph g, java.util.Collection<Table> toCheck) {
 		for (Table t: toCheck) {
 			if (!expandedTables.contains(t)) {
@@ -723,6 +852,12 @@ public class GraphicalDataModelView extends JPanel {
 		}
 	}
 
+	/**
+	 * Checks whether some tables are still collapsed.
+	 * 
+	 * @param g the graph
+	 * @param toCheck set of tables to check
+	 */
 	private void checkForCollapsed(Graph g, java.util.Collection<Table> toCheck) {
 		for (Table t: toCheck) {
 			if (expandedTables.contains(t)) {
@@ -744,54 +879,14 @@ public class GraphicalDataModelView extends JPanel {
 	}
 
 	/**
-	 * Removes a node representing a table from view.
+	 * Adds edges for all associations of a table.
 	 * 
-	 * @param g the graph
-	 * @param table the table node
-	 */
-	private void hideTable(Graph g, net.sf.jailer.datamodel.Table table) {
-		Node node = tableNodes.get(table);
-		if (node != null) {
-			List<Table> toCheck = new ArrayList<Table>();
-			for (Association a: table.associations) {
-				toCheck.add(a.source);
-				toCheck.add(a.destination);
-				Edge e = renderedAssociations.get(a);
-				if (e != null) {
-					g.removeEdge(e);
-					renderedAssociations.remove(a);
-				}
-				e = renderedAssociations.get(a.reversalAssociation);
-				if (e != null) {
-					g.removeEdge(e);
-					renderedAssociations.remove(a.reversalAssociation);
-				}
-				Node n = renderedAssociationsAsNode.get(a);
-				if (n != null) {
-					g.removeNode(n);
-					renderedAssociationsAsNode.remove(a);
-				}
-				n = renderedAssociationsAsNode.get(a.reversalAssociation);
-				if (n != null) {
-					g.removeNode(n);
-					renderedAssociationsAsNode.remove(a.reversalAssociation);
-				}
-			}
-
-			g.removeNode(node);
-			tableNodes.remove(table);
-			expandedTables.remove(table);
-			
-			checkForCollapsed(g, toCheck);
-		}
-	}
-
-	/**
-	 * @param toRender is not null, the only association to make visible 
+	 * @param table the table
+	 * @param toRender is not null, the only association to make visible
+	 * 
 	 * @return list of newly rendered tables
 	 */
-	private List<Table> addEdges(Graph g, net.sf.jailer.datamodel.Table table,
-			Association toRender, List<Table> toCheck) {
+	private List<Table> addEdges(Graph g, Table table, Association toRender, List<Table> toCheck) {
 		List<Table> result = new ArrayList<Table>();
 		toCheck.add(table);
 		for (Association a: table.associations) {
@@ -865,6 +960,44 @@ public class GraphicalDataModelView extends JPanel {
 		return true;
 	}
 
+	/**
+	 * Extention of {@link ZoomToFitControl}.
+	 */
+	private final class ZoomToFitControlExtension extends ZoomToFitControl {
+		private final DataModel model;
+		private final long duration;
+
+		private ZoomToFitControlExtension(String group, int margin,
+				long duration, int button, DataModel model) {
+			super(group, margin, duration, button);
+			this.duration = duration;
+			this.model = model;
+		}
+
+		@Override
+		public void itemClicked(VisualItem item, MouseEvent e) {
+			// click on table opens pop-up menu
+			if (model.getTable(item.getString("label")) != null) {
+				return;
+			}
+			super.itemClicked(item, e);
+		}
+
+		/**
+		 * Zooms to fit.
+		 */
+		public void zoomToFit() {
+	        Visualization vis = display.getVisualization();
+	        Rectangle2D bounds = vis.getBounds(Visualization.ALL_ITEMS);
+	        GraphicsLib.expand(bounds, 50 + (int)(1/display.getScale()));
+	        DisplayLib.fitViewToBounds(display, bounds, duration);
+		}
+		
+	}
+
+	/**
+	 * Renderer for {@link Association}s.
+	 */
 	private final class CompositeAssociationRenderer implements Renderer {
 		private AssociationRenderer associationRenderer = new AssociationRenderer(false);
 		private AssociationRenderer reversedAssociationRenderer = new AssociationRenderer(true);

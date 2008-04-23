@@ -15,11 +15,8 @@
  */
 package net.sf.jailer.entitygraph;
 
-import java.sql.Date;
 import java.sql.ResultSet;
-import java.sql.SQLData;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,10 +27,9 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.util.SqlUtil;
 
 /**
- * A persistent graph of entities. 
+ * Persistent graph of entities. 
  * 
  * @author Wisser
  */

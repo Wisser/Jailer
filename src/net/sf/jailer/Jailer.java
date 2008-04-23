@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.sf.jailer;
 
 import java.io.File;
@@ -29,7 +28,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
@@ -65,6 +63,8 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
 /**
  * Utility for extracting small consistent row-sets from
  * relational databases.
+ * <br>
+ * <a href="http://jailer.sourceforge.net/">http://jailer.sourceforge.net</a>
  * 
  * @author Wisser
  */
@@ -73,7 +73,7 @@ public class Jailer {
     /**
      * The Jailer version.
      */
-    public static final String VERSION = "2.1.8";
+    public static final String VERSION = "2.2.0";
     
     /**
      * The relational data model.

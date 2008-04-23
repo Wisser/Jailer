@@ -36,16 +36,34 @@ import javax.swing.JTextPane;
  */
 public class JailerConsole extends javax.swing.JDialog {
 
-    private JTextPane jTextPane = null;
-    private JPanel jPanel = null;
-    private JScrollPane jScrollPane = null;
-    private JButton loadExportLog = null;
-    private JButton loadSqlLog = null;
-    private JButton loadExplainLog = null;
+    /**
+     * Constructor.
+     * 
+     * @param owner the enclosing component
+     * @param showLogfileButton <code>true</code> for offering a button to open the log-file
+     * @param showExplainLogButton <code>true</code> for offering a button to open the explain-log-file
+     */
+	public JailerConsole(Frame owner, boolean showLogfileButton, boolean showExplainLogButton) {
+        super(owner);
+        initialize();
+        getJTextPane().setAutoscrolls(true);
+        setModal(true);
+        setLocation(100, 50);
+        setDefaultCloseOperation(0);
+        getLoadExplainLog().setEnabled(false);
+    	getLoadSqlLog().setEnabled(false);
+        getLoadExportLog().setVisible(false);
+    	if (!showLogfileButton) {
+            // getLoadExportLog().setVisible(false);
+            getLoadSqlLog().setVisible(false);
+        }
+        if (!showExplainLogButton) {
+            getLoadExplainLog().setVisible(false);
+        }
+    }
 
     /**
-     * This method initializes this
-     * 
+     * Initializes components.
      */
     private void initialize() {
         this.setSize(new Dimension(950, 640));
@@ -95,25 +113,11 @@ public class JailerConsole extends javax.swing.JDialog {
         return jTextPane;
     }
 
-    public JailerConsole(Frame owner, boolean showLogfileButton, boolean showExplainLogButton) {
-        super(owner);
-        initialize();
-        getJTextPane().setAutoscrolls(true);
-        setModal(true);
-        setLocation(100, 50);
-        setDefaultCloseOperation(0);
-        getLoadExplainLog().setEnabled(false);
-    	getLoadSqlLog().setEnabled(false);
-        getLoadExportLog().setVisible(false);
-    	if (!showLogfileButton) {
-            // getLoadExportLog().setVisible(false);
-            getLoadSqlLog().setVisible(false);
-        }
-        if (!showExplainLogButton) {
-            getLoadExplainLog().setVisible(false);
-        }
-    }
-
+    /**
+     * Appends text to console window.
+     * 
+     * @param output the text
+     */
     public void appendText(String output) {
     	final int MAXLENGTH = 100000;
         StringBuffer newText = new StringBuffer(getJTextPane().getText() + output);
@@ -129,6 +133,11 @@ public class JailerConsole extends javax.swing.JDialog {
 		getJTextPane().setText(newText.toString());
     }
 
+    /**
+     * Sets status of console to "finished".
+     * 
+     * @param ok indicates errors
+     */
     public void finish(boolean ok) {
     	getLoadSqlLog().setEnabled(true);
     	getLoadExplainLog().setEnabled(true);
@@ -225,4 +234,11 @@ public class JailerConsole extends javax.swing.JDialog {
         return loadExplainLog;
     }
     
+    private JTextPane jTextPane = null;
+    private JPanel jPanel = null;
+    private JScrollPane jScrollPane = null;
+    private JButton loadExportLog = null;
+    private JButton loadSqlLog = null;
+    private JButton loadExplainLog = null;
+
 }  //  @jve:decl-index=0:visual-constraint="10,10"

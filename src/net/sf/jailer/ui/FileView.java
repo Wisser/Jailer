@@ -27,18 +27,26 @@ import javax.swing.JTextPane;
 import net.sf.jailer.util.PrintUtil;
 
 /**
- * Visualizes files.
+ * Visualizes text files.
  * 
  * @author Wisser
  */
 public class FileView extends javax.swing.JDialog {
 
-    private JTextPane content = null;
-    private JScrollPane jScrollPane = null;
-    private JTextPane jTextPane = null;
     /**
-     * This method initializes 
+     * Component for rendering the file content.
+     */
+	private JTextPane jTextPane = null;
+	
+	/**
+	 * Scroll-pane around content.
+	 */
+    private JScrollPane jScrollPane = null;
+    
+    /**
+     * Constructor. 
      * 
+     * @param owner the enclosing component.
      */
     public FileView(Dialog owner) {
     	super(owner);
@@ -47,8 +55,26 @@ public class FileView extends javax.swing.JDialog {
     }
 
     /**
-     * This method initializes this
+     * Constructor. 
      * 
+     * @param owner the enclosing component.
+     * @param file the file to render
+     */
+    public FileView(Dialog owner, String file) throws FileNotFoundException, IOException {
+        super(owner);
+        setModal(true);
+        try {
+			initialize();
+			setTitle(file);
+			getJTextPane().setText(PrintUtil.loadFile(file));
+			setVisible(true);
+		} catch (Throwable t) {
+			UIUtil.showException(owner, "Error", t);
+		}
+    }
+
+    /**
+     * Creates components.
      */
     private void initialize() {
         this.setSize(new Dimension(700, 600));
@@ -81,19 +107,6 @@ public class FileView extends javax.swing.JDialog {
             jTextPane = new JTextPane();
         }
         return jTextPane;
-    }
-
-    public FileView(Dialog owner, String file) throws FileNotFoundException, IOException {
-        super(owner);
-        setModal(true);
-        try {
-			initialize();
-			setTitle(file);
-			getJTextPane().setText(PrintUtil.loadFile(file));
-			setVisible(true);
-		} catch (Throwable t) {
-			UIUtil.showException(owner, "Error", t);
-		}
     }
 
 }  //  @jve:decl-index=0:visual-constraint="10,10"

@@ -58,6 +58,11 @@ public class StatementExecutor {
     private final Collection<Connection> connections = Collections.synchronizedCollection(new ArrayList<Connection>());
     
     /**
+     * No SQL-Exceptions will be logged in silent mode. 
+     */
+    private boolean silent = false;
+    
+    /**
      * Reads a JDBC-result-set.
      */
     public interface ResultSetReader {
@@ -133,7 +138,7 @@ public class StatementExecutor {
      * Classloader to load Jdbc-Driver with.
      */
     public static ClassLoader classLoaderForJdbcDriver = null;
-    
+
     /**
      * Wraps a Jdbc-Driver.
      */
@@ -206,6 +211,15 @@ public class StatementExecutor {
     }
 
     /**
+     * No SQL-Exceptions will be logged in silent mode.
+     * 
+     * @param silent <code>true</code> for silence
+     */
+    public void setSilent(boolean silent) {
+    	this.silent = silent;
+    }
+
+    /**
      * Logs driver info
      * 
      * @param connection connection to DB
@@ -239,14 +253,21 @@ public class StatementExecutor {
      */
     public void executeQuery(String sqlQuery, ResultSetReader reader) throws SQLException {
         _log.debug(sqlQuery);
-        Statement statement = connectionFactory.getConnection().createStatement();
-        ResultSet resultSet = statement.executeQuery(sqlQuery);
-        while (resultSet.next()) {
-            reader.readCurrentRow(resultSet);
+        try {
+	        Statement statement = connectionFactory.getConnection().createStatement();
+	        ResultSet resultSet = statement.executeQuery(sqlQuery);
+	        while (resultSet.next()) {
+	            reader.readCurrentRow(resultSet);
+	        }
+	        reader.close();
+	        resultSet.close();
+	        statement.close();
+        } catch (SQLException e) {
+        	if (!silent) {
+        		_log.error("Error executing query", e);
+        	}
+        	throw e;
         }
-        reader.close();
-        resultSet.close();
-        statement.close();
     }
 
     /**
@@ -287,37 +308,44 @@ public class StatementExecutor {
      */
     public int executeUpdate(String sqlUpdate) throws SQLException {
         _log.debug(sqlUpdate);
-        int rowCount = 0;
-        int failures = 0;
-        boolean ok = false;
-        boolean serializeAccess = false;
-        while (!ok) {
-            Statement statement = null;
-            try {
-                statement = connectionFactory.getConnection().createStatement();
-                if (serializeAccess) {
-                    synchronized (DB_LOCK) {
-                        rowCount = statement.executeUpdate(sqlUpdate);
-                    }
-                } else {
-                    rowCount = statement.executeUpdate(sqlUpdate);
-                }
-                ok = true;
-                _log.debug("" + rowCount + " row(s)");
-            } catch (SQLException e) {
-                if (++failures > 10 || e.getErrorCode() != -911) {
-                    throw e;
-                }
-                // deadlock
-                serializeAccess = true;
-                _log.info("Deadlock! Try again.");
-            } finally {
-                if (statement != null) {
-                    statement.close();
-                }
-            }
-        }
-        return rowCount;
+        try {
+	        int rowCount = 0;
+	        int failures = 0;
+	        boolean ok = false;
+	        boolean serializeAccess = false;
+	        while (!ok) {
+	            Statement statement = null;
+	            try {
+	                statement = connectionFactory.getConnection().createStatement();
+	                if (serializeAccess) {
+	                    synchronized (DB_LOCK) {
+	                        rowCount = statement.executeUpdate(sqlUpdate);
+	                    }
+	                } else {
+	                    rowCount = statement.executeUpdate(sqlUpdate);
+	                }
+	                ok = true;
+	                _log.debug("" + rowCount + " row(s)");
+	            } catch (SQLException e) {
+	                if (++failures > 10 || e.getErrorCode() != -911) {
+	                    throw e;
+	                }
+	                // deadlock
+	                serializeAccess = true;
+	                _log.info("Deadlock! Try again.");
+	            } finally {
+	                if (statement != null) {
+	                    statement.close();
+	                }
+	            }
+	        }
+	        return rowCount;
+	    } catch (SQLException e) {
+	    	if (!silent) {
+	    		_log.error("Error executing statement", e);
+	    	}
+	    	throw e;
+	    }
     }
     
     /**
@@ -330,22 +358,29 @@ public class StatementExecutor {
      */
     public int executeUpdate(String sqlUpdate, Object[] parameter) throws SQLException {
         _log.debug(sqlUpdate);
-        int rowCount = 0;
-        PreparedStatement statement = null;
         try {
-        	statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
-            int i = 1;
-        	for (Object p: parameter) {
-            	statement.setObject(i++, p);
-            }
-        	rowCount = statement.executeUpdate();
-            _log.debug("" + rowCount + " row(s)");
-        } finally {
-            if (statement != null) {
-                statement.close();
-            }
-        }
-        return rowCount;
+	        int rowCount = 0;
+	        PreparedStatement statement = null;
+	        try {
+	        	statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
+	            int i = 1;
+	        	for (Object p: parameter) {
+	            	statement.setObject(i++, p);
+	            }
+	        	rowCount = statement.executeUpdate();
+	            _log.debug("" + rowCount + " row(s)");
+	        } finally {
+	            if (statement != null) {
+	                statement.close();
+	            }
+	        }
+	        return rowCount;
+	    } catch (SQLException e) {
+	    	if (!silent) {
+	    		_log.error("Error executing statement", e);
+	    	}
+	    	throw e;
+	    }
     }
 
     /**
@@ -381,9 +416,16 @@ public class StatementExecutor {
      */
     public void execute(String sql) throws SQLException {
         _log.debug(sql);
-        Statement statement = connectionFactory.getConnection().createStatement();
-        statement.execute(sql);
-        statement.close();
+        try {
+	        Statement statement = connectionFactory.getConnection().createStatement();
+	        statement.execute(sql);
+	        statement.close();
+	    } catch (SQLException e) {
+	    	if (!silent) {
+    			_log.error("Error executing statement", e);
+	    	}
+	    	throw e;
+	    }
     }
     
     /**
@@ -405,7 +447,6 @@ public class StatementExecutor {
         classLoaderForJdbcDriver = classLoader;
     }
     
-
     /**
      * Closes all connections.
      */

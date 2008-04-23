@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.sf.jailer.util;
 
 import java.sql.ResultSet;
@@ -24,13 +23,13 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
+import prefuse.data.expression.parser.JavaCharStream;
+
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
-
 
 /**
  * Some utility methods.
@@ -265,8 +264,10 @@ public class SqlUtil {
 		return resultSet.getObject(columnName);
 	};
 
+	/**
+	 * Maps SQL types from {@link java.sql.Types} to clear text types.
+	 */
     public final static Map<Integer, String> SQL_TYPE;
-    
     static {
         SQL_TYPE = new HashMap<Integer, String>();
         SQL_TYPE.put(Types.BIGINT, "BIGINT");

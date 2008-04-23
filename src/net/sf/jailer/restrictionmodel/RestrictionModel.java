@@ -21,12 +21,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.SqlUtil;
-
 
 /**
  * Restricts association-definions in a {@link DataModel}.
@@ -55,6 +56,11 @@ public class RestrictionModel {
      */
     private boolean transposed = false;
     
+    /**
+     * The logger.
+     */
+    private static final Logger _log = Logger.getLogger(RestrictionModel.class);
+ 
     /**
      * Constructor.
      * 
@@ -144,11 +150,13 @@ public class RestrictionModel {
             if ("".equals(line.cells.get(1))) {
                 Association association = dataModel.namedAssociations.get(line.cells.get(0));
                 if (association == null) {
-                    throw new RuntimeException(location + ": unknown association '" + line.cells.get(0) + "'");
+                    _log.warn(location + ": unknown association '" + line.cells.get(0) + "'");
+                    continue;
                 }
                 String condition = line.cells.get(2);
                 if ("".equals(condition)) {
-                    throw new RuntimeException(location + ": missing condition");
+                	_log.warn(location + ": missing condition");
+                    continue;
                 }
                 addRestriction(null, association, condition, location);
                 continue;
@@ -165,7 +173,8 @@ public class RestrictionModel {
                     from = dataModel.getTable(line.cells.get(0));
                 }
                 if (from == null) {
-                    throw new RuntimeException(location + ": unknown table '" + line.cells.get(0) + "'");
+                	_log.warn(location + ": unknown table '" + line.cells.get(0) + "'");
+                    continue;
                 }
             }
             Table to;
@@ -178,14 +187,16 @@ public class RestrictionModel {
                     t = t.trim();
                     Table excludeTable = dataModel.getTable(t);
                     if (excludeTable == null) {
-                        throw new RuntimeException(location + ": unknown table '" + t + "'");
+                    	_log.warn(location + ": unknown table '" + t + "'");
+                        continue;
                     }
                     excludeTo.add(excludeTable);
                 }
             } else {
                 to = dataModel.getTable(line.cells.get(1));
                 if (to == null) {
-                    throw new RuntimeException(location + ": unknown table '" + line.cells.get(1) + "'");
+                	_log.warn(location + ": unknown table '" + line.cells.get(1) + "'");
+                    continue;
                 }
             }
             String condition = line.cells.get(2);

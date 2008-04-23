@@ -101,7 +101,7 @@ public class StatementBuilder {
     /**
      * Appends an item.
      * 
-     * @param head same head as previouslly appended, if any
+     * @param head same head as previously appended, if any
      * @param item the item
      * @param separator separates the items
      * @param terminator terminates the statement

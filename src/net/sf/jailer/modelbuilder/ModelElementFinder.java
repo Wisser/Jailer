@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.sf.jailer.modelbuilder;
 
 import java.util.Collection;
@@ -23,7 +22,6 @@ import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
-
 
 /**
  * Finds model-elements (tables and associations).

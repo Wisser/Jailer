@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.sf.jailer.modelbuilder;
 
 import java.sql.ResultSet;
@@ -155,7 +154,7 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
                 String type = resultSet.getString(3);
                 int size = resultSet.getInt(4);
                 int keySeq = resultSet.getInt(5);
-                pk.put(new Integer(keySeq), new Column(name, type, size));
+                pk.put(new Integer(keySeq), new Column(name, type, size, -1));
             }
         });
         

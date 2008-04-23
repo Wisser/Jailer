@@ -26,10 +26,11 @@ import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.ListCellRenderer;
 
+import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.util.CsvFile.Line;
 
 /**
- * Editor for single tables.
+ * Editor for single tables. Part of {@link DataModelEditor}.
  *
  * @author Wisser
  */
@@ -272,6 +273,9 @@ public class AssociationEditor extends javax.swing.JDialog {
     	setVisible(false);
     }//GEN-LAST:event_jButton2ActionPerformed
 
+    /**
+     * On OK.
+     */
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
     	String msg = null;
     	if (nameField.getText().trim().length() == 0) {
@@ -335,7 +339,14 @@ public class AssociationEditor extends javax.swing.JDialog {
     	return renderer;
     }
     
+    /**
+     * Set to <code>true</code> if ok-button is clicked.
+     */
     private boolean isOk;
+    
+    /**
+     * Currently edited {@link Association}.
+     */
     private Line currentAssociation;
     
     /**

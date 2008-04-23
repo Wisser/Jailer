@@ -25,7 +25,6 @@ import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -49,7 +48,14 @@ import net.sf.jailer.util.CsvFile.Line;
  */
 public class DbConnectionDialog extends javax.swing.JDialog {
 
+	/**
+	 * <code>true</code> if valid connection is available.
+	 */
 	boolean isConnected = false;
+	
+	/**
+	 * Form settings.
+	 */
 	private Settings theSettings;
 	
 	/**
@@ -401,13 +407,22 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_jButton1ActionPerformed
     
     /**
+     * Holds all class-loader in order to prevent loading a jar twice.
+     */
+    private Map<String, URLClassLoader> classloaders = new HashMap<String, URLClassLoader>();
+    
+    /**
      * Adds one or two jars to classpath.
      * 
      * @param jarName1 filename of jar 1
      * @param jarName2 filename of jar 2
      */
     private URLClassLoader addJarToClasspath(String jarName1, String jarName2) throws Exception {
-        URL[] urls;
+    	String mapKey = jarName1 + "," + jarName2;
+    	if (classloaders.containsKey(mapKey)) {
+    		return classloaders.get(mapKey);
+    	}
+    	URL[] urls;
         if (jarName1 == null) {
             if (jarName2 == null) {
                 return null;
@@ -423,6 +438,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
             urls = new URL[] {new URL("file", null, jarName1), new URL("file", null, jarName2)};
         }
         URLClassLoader urlLoader = new URLClassLoader(urls);
+        classloaders.put(mapKey, urlLoader);
         return urlLoader;
     }
 
@@ -490,5 +506,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     private javax.swing.JPasswordField password;
     public javax.swing.JTextField user;
     // Ende der Variablendeklaration//GEN-END:variables
+
+	public String getPassword() {
+		return password.getText();
+	}
 
 }

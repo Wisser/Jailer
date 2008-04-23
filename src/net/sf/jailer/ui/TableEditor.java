@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -24,7 +25,7 @@ import javax.swing.JOptionPane;
 import net.sf.jailer.util.CsvFile.Line;
 
 /**
- * Editor for single tables.
+ * Editor for single tables. Part of {@link DataModelEditor}.
  *
  * @author Wisser
  */
@@ -40,16 +41,30 @@ public class TableEditor extends javax.swing.JDialog {
 	 */
 	private Collection<Line> associations;
 	
+    /**
+     * List of tables to be excluded from deletion.
+     */
+    private List<String> excludeFromDeletionList = new ArrayList<String>();
+    
+    /**
+     * List of tables to export entirely if in closure of subject.
+     */
+    private List<String> initialDataTablesList = new ArrayList<String>();
+ 
     /** 
      * Creates new form TableEditor
      * 
      * @param tables all tables (as csv-lines)
      * @param associations all associations (as csv-line)
+     * @param excludeFromDeletionList list of tables to be excluded from deletion
+     * @param initialDataTablesList list of tables to export entirely if in closure of subject
      */
-    public TableEditor(java.awt.Dialog parent, Collection<Line> tables, List<Line> associations) {
-        super(parent, true);
+    public TableEditor(java.awt.Dialog parent, Collection<Line> tables, List<Line> associations, List<String> excludeFromDeletionList, List<String> initialDataTablesList) {
+    	super(parent, true);
         this.tables = tables;
         this.associations = associations;
+        this.excludeFromDeletionList = excludeFromDeletionList;
+        this.initialDataTablesList = initialDataTablesList;
         initComponents();
         pack();
         setSize(getSize().width + 8, getSize().height + 8);
@@ -78,6 +93,8 @@ public class TableEditor extends javax.swing.JDialog {
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
+        excludeFromDeletion = new javax.swing.JCheckBox();
+        exportAllRows = new javax.swing.JCheckBox();
 
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
@@ -121,6 +138,7 @@ public class TableEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 10;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         getContentPane().add(upsertCheckbox, gridBagConstraints);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
@@ -141,7 +159,7 @@ public class TableEditor extends javax.swing.JDialog {
         jPanel1.add(jButton1, gridBagConstraints);
 
         jLabel3.setFont(new java.awt.Font("Dialog", 0, 12));
-        jLabel3.setText(" *comma-separated typed columns");
+        jLabel3.setText(" *semicolon-separated typed columns");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -167,7 +185,7 @@ public class TableEditor extends javax.swing.JDialog {
         jPanel1.add(jButton2, gridBagConstraints);
 
         jLabel4.setFont(new java.awt.Font("Dialog", 0, 12));
-        jLabel4.setText(" example: A VARCHAR(10), B INTEGER");
+        jLabel4.setText(" example: A VARCHAR(10); B INTEGER");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -195,8 +213,38 @@ public class TableEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 10;
         getContentPane().add(jLabel6, gridBagConstraints);
 
+        excludeFromDeletion.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        excludeFromDeletion.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        excludeFromDeletion.setText(" exclude from deletion");
+        excludeFromDeletion.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                excludeFromDeletionActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 14;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        getContentPane().add(excludeFromDeletion, gridBagConstraints);
+
+        exportAllRows.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        exportAllRows.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        exportAllRows.setText(" export all rows if in closure of subject");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 18;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        getContentPane().add(exportAllRows, gridBagConstraints);
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void excludeFromDeletionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_excludeFromDeletionActionPerformed
+// TODO Ihre Ereignisbehandlung hier einfügen:
+    }//GEN-LAST:event_excludeFromDeletionActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
     	String msg = null;
@@ -213,8 +261,8 @@ public class TableEditor extends javax.swing.JDialog {
     	if (pkField.getText().trim().length() == 0) {
     		msg = "No primary key";
     	} else {
-    		Pattern pkPattern = Pattern.compile("([A-Z_0-9]+ +[A-Z]+(\\([0-9]+\\))?)");
-    		for (String col: pkField.getText().trim().toUpperCase().split(",")) {
+    		Pattern pkPattern = Pattern.compile("([A-Z_0-9]+ +[A-Z]+ *(\\( *[0-9]+( *, *[0-9]+)? *\\))?)");
+    		for (String col: pkField.getText().trim().toUpperCase().split(";")) {
 	    		if (!pkPattern.matcher(col.trim()).matches()) {
 	    			msg = "Syntax error in primary key";
 	    		}
@@ -249,7 +297,7 @@ public class TableEditor extends javax.swing.JDialog {
 				break;
 			}
 			if (pk.length() != 0) {
-				pk += ", ";
+				pk += "; ";
 			}
 			pk += line.cells.get(i);
 		}
@@ -257,17 +305,30 @@ public class TableEditor extends javax.swing.JDialog {
 		pkField.setText(pk);
 		upsertCheckbox.setSelected("Y".equals(line.cells.get(1)));
 		
-		String origName = nameField.getText();
+		String origName = nameField.getText().trim();
 		String origPk = pkField.getText();
 		boolean origUpsert = upsertCheckbox.isSelected();
 		isOk = false;
+
+		boolean origExcludeSet = excludeFromDeletionList.contains(origName);
+		excludeFromDeletion.setSelected(origExcludeSet);
+		boolean origExportAllSet = initialDataTablesList.contains(origName);
+		exportAllRows.setSelected(origExportAllSet);
+
 		setVisible(true);
-		if (isOk && !(origName.equals(nameField.getText()) && origPk.equals(pkField.getText()) && origUpsert == upsertCheckbox.isSelected())) {
-			int l = line.length;
+		boolean excludeSet = excludeFromDeletion.isSelected();
+		boolean exportAllSet = exportAllRows.isSelected();
+
+		if (isOk && 
+			    !(origName.equals(nameField.getText()) 
+				&& origPk.equals(pkField.getText()) 
+				&& origUpsert == upsertCheckbox.isSelected()
+				&& origExcludeSet == excludeSet
+				&& origExportAllSet == exportAllSet)) {
 			line.cells.set(0, nameField.getText().trim());
 			line.cells.set(1, upsertCheckbox.isSelected()? "Y" : "N");
 			int c = 2;
-			for (String col: pkField.getText().split(",")) {
+			for (String col: pkField.getText().split(";")) {
 				line.cells.set(c++, col);
 			}
 			line.cells.set(c++, "");
@@ -283,12 +344,25 @@ public class TableEditor extends javax.swing.JDialog {
 					a.cells.set(1, nameField.getText().trim());
 				}
 			}
+			
+			excludeFromDeletionList.remove(origName);
+			initialDataTablesList.remove(origName);
+			
+			if (excludeSet) {
+				excludeFromDeletionList.add(nameField.getText().trim());
+			}
+			if (exportAllSet) {
+				initialDataTablesList.add(nameField.getText().trim());
+			}
+			
 			return true;
 		}
 		return false;
 	}
     
     // Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables
+    private javax.swing.JCheckBox excludeFromDeletion;
+    private javax.swing.JCheckBox exportAllRows;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;

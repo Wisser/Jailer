@@ -27,7 +27,7 @@ import java.util.TreeMap;
 import javax.swing.JTextField;
 
 /**
- * Manages settings of dialogs.
+ * Persists settings of formular fields.
  * 
  * @author Wisser
  */

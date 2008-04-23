@@ -38,9 +38,14 @@ public class Column {
     public final String type;
     
     /**
-     * The length (for VARCHAR, DECIMAL, ...) or <code>0</code> if type-length is not variable
+     * The length (for VARCHAR, DECIMAL, ...) or <code>0</code> if type-length is not variable.
      */
     public final int length;
+    
+    /**
+     * The precision (for DECIMAL, NUMBER ...) or <code>-1</code> if precision is not variable.
+     */
+    public final int precision;
     
     /**
      * Maps columns types in SQL syntax to 'null'-value of this type.
@@ -63,11 +68,13 @@ public class Column {
      * @param name the name (upper-case)
      * @param type the type (in SQL)
      * @param length the length (for VARCHAR, DECIMAL, ...) or <code>0</code> if type-length is not variable
+     * @param precision the precision (for DECIMAL, NUMBER ...) or <code>-1</code> if precision is not variable
      */
-    public Column(String name, String type, int length) {
+    public Column(String name, String type, int length, int precision) {
         this.name = name;
         this.type = type;
         this.length = length;
+        this.precision = precision;
     }
  
     /**
@@ -94,7 +101,8 @@ public class Column {
      * @param columnPrefix an optional prefix for each PK-column
      */
     public String toSQL(String columnPrefix) {
-        return (columnPrefix == null? "": columnPrefix) + name + " " + type + (length == 0? "" : "(" + length + ")");
+        return (columnPrefix == null? "": columnPrefix) + name + " " + type + (length == 0? "" : 
+        	"(" + length + (precision >= 0? ", " + precision : "") + ")");
     }
  
     /**

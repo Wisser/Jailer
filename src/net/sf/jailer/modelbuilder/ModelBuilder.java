@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.sf.jailer.modelbuilder;
 
 import java.io.File;
@@ -43,7 +42,6 @@ import org.apache.log4j.Logger;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
-
 /**
  * Automatically builds a data-model using several {@link ModelElementFinder}.
  * 
@@ -52,8 +50,7 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
  *   <li>datamodel/model-builder-table.csv<li>
  *   <li>datamodel/model-builder-association.csv<li>
  * <ul>
- * 
- * expect the already known elements (table.csv/association.csv)
+ * except the already known elements (table.csv/association.csv)
  * and the excluded elements listet in datamodel/exclude-[tables|associations].csv
  * 
  * @author Wisser
@@ -160,7 +157,7 @@ public class ModelBuilder {
         	if (!EXCLUDE_TABLES_CSV.contains(new String[] { table.getName()}) && 
         	    !EXCLUDE_TABLES_CSV.contains(new String[] { table.getName().toUpperCase() })) {
                 if (table.primaryKey.getColumns().isEmpty()) {
-            		String warning = "Table " + table.getName() + " has no primary key!";
+            		String warning = "Table " + table.getName() + " rejected: no primary key";
             		warnings.append(warning + "\n");
 					_log.warn(warning);
                 } else {

@@ -43,7 +43,7 @@ import net.sf.jailer.util.PrintUtil;
 public class DataModel {
 
 	/**
-     * Maps table-names to Tables;
+     * Maps table-names to tables;
      */
     private Map<String, Table> tables = new HashMap<String, Table>();
     
@@ -72,6 +72,16 @@ public class DataModel {
      */
 	public static final String ASSOCIATIONS_FILE = "datamodel/association.csv";
 
+	/**
+	 * List of tables to be exported completely if in closure from subject.
+	 */
+	public static final String INITIAL_DATA_TABLES_FILE = "datamodel/initial_data_tables.csv";
+	
+	/**
+	 * List of tables to be excluded from deletion.
+	 */
+	public static final String EXCLUDE_FROM_DELETION_FILE = "datamodel/exclude-from-deletion.csv";
+	
     /**
      * Gets a table by name.
      * 
@@ -103,10 +113,14 @@ public class DataModel {
     /**
      * Reads in <code>table.csv</code> and <code>association.csv</code>
      * and builds the relational data model.
+     * 
+     * @param additionalTablesFile table file to read too
+     * @param additionalAssociationsFile association file to read too
      */
     public DataModel(String additionalTablesFile, String additionalAssociationsFile) throws Exception {
         // tables
-        Pattern typeWithSize = Pattern.compile("([^ ]+) +([^ \\(]+)\\(([0-9]+)\\)");
+    	Pattern typeWithSizeAndPrecision = Pattern.compile("([^ ]+) +([^ \\(]+) *\\( *([0-9]+) *, *([0-9]+) *\\)");
+    	Pattern typeWithSize = Pattern.compile("([^ ]+) +([^ \\(]+) *\\( *([0-9]+) *\\)");
         Pattern typeWithoutSize = Pattern.compile("([^ ]+) +([^ \\(]+)");
         CsvFile tablesFile = new CsvFile(new File(TABLES_FILE));
         List<CsvFile.Line> tableList = new ArrayList<CsvFile.Line>(tablesFile.getLines());
@@ -120,21 +134,30 @@ public class DataModel {
                 String col = line.cells.get(j).trim();
                 String name, type;
                 int size = 0;
-                Matcher matcher = typeWithSize.matcher(col);
+                int precision = -1;
+                Matcher matcher = typeWithSizeAndPrecision.matcher(col);
                 if (matcher.matches()) {
                     name = matcher.group(1);
                     type = matcher.group(2);
                     size = Integer.parseInt(matcher.group(3));
+                    precision = Integer.parseInt(matcher.group(4));
                 } else {
-                    matcher = typeWithoutSize.matcher(col);
+                    matcher = typeWithSize.matcher(col);
                     if (matcher.matches()) {
                         name = matcher.group(1);
                         type = matcher.group(2);
+                        size = Integer.parseInt(matcher.group(3));
                     } else {
-                        throw new RuntimeException(line.location + ": can't parse primary-key");
+	                    matcher = typeWithoutSize.matcher(col);
+	                    if (matcher.matches()) {
+	                        name = matcher.group(1);
+	                        type = matcher.group(2);
+	                    } else {
+	                        throw new RuntimeException(line.location + ": can't parse primary-key");
+	                    }
                     }
                 }
-                pk.add(new Column(name, type, size));
+                pk.add(new Column(name, type, size, precision));
             }
             tables.put(line.cells.get(0), new Table(line.cells.get(0), PrimaryKeyFactory.createPrimaryKey(pk), upsert));
         }
@@ -294,6 +317,12 @@ public class DataModel {
      */
     public static boolean printClosures = false;
 
+    /**
+     * Normalizes a set of tables.
+     * 
+     * @param tables set of tables
+     * @return set of all tables from this model for which a table with same name exists in <code>tables</code> 
+     */
     public Set<Table> normalize(Set<Table> tables) {
         Set<Table> result = new HashSet<Table>();
         for (Table table: tables) {

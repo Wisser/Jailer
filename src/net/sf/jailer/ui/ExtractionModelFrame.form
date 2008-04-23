@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.2" maxVersion="1.2" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
+<Form version="1.0" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
   <NonVisualComponents>
     <Menu class="javax.swing.JMenuBar" name="jMenuBar2">
       <SubComponents>
@@ -172,6 +172,18 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="refreshActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="zoomToFit">
+              <Properties>
+                <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
+                  <KeyStroke key="Ctrl+Z"/>
+                </Property>
+                <Property name="text" type="java.lang.String" value="Zoom to fit"/>
+                <Property name="verifyInputWhenFocusTarget" type="boolean" value="false"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="zoomToFitActionPerformed"/>
               </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JSeparator" name="jSeparator9">

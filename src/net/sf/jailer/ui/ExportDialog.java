@@ -27,13 +27,17 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTextField;
 
 /**
- * Data Export Dialog.
+ * "Data Export" Dialog.
  *
  * @author Wisser
  */
 public class ExportDialog extends javax.swing.JDialog {
 
 	boolean isOk = false;
+	
+	/**
+	 * The form field setting.
+	 */
 	private Settings theSettings;
 	
     /** Creates new form DbConnectionDialog */
