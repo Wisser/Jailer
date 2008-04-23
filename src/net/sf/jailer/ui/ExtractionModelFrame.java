@@ -16,6 +16,7 @@
 package net.sf.jailer.ui;
 
 import java.awt.CardLayout;
+import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -29,6 +30,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -932,6 +934,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	    		UIManager.setLookAndFeel(plaf);
     		    	SwingUtilities.updateComponentTreeUI(extractionModelFrame);
     	    	} catch (Exception x) {
+    	    	}
+    	    	try {
+    	    		extractionModelFrame.setIconImage(new ImageIcon(extractionModelFrame.getClass().getResource("/jailer.gif")).getImage());
+    	    	} catch (Throwable t) {
     	    	}
                 extractionModelFrame.setLocation(40, 40);
                 extractionModelFrame.setSize(960, 660);
