@@ -19,6 +19,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Point;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
@@ -35,6 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -190,23 +192,7 @@ public class GraphicalDataModelView extends JPanel {
         	}
         };
         
-        final LabelRenderer tr = new LabelRenderer() {
-        	@Override
-			public void render(Graphics2D g, VisualItem item) {
-				// workaround for 'no-text-color' bug
-        		item.setTextColor(ColorLib.rgb(0, 0, 0));
-				super.render(g, item);
-			}
-
-			protected String getText(VisualItem item) {
-                String s = super.getText(item);
-                net.sf.jailer.datamodel.Table table = model.getTable(item.getString("label"));
-                if (table != null && !expandedTables.contains(table)) {
-                	s = "+ " + s;
-                }
-                return s + " ";
-            }
-        };
+        final TableRenderer tr = new TableRenderer(model, this);
         associationRenderer = new CompositeAssociationRenderer();
         
         tr.setRoundedCorner(3, 3);
@@ -626,7 +612,7 @@ public class GraphicalDataModelView extends JPanel {
     /**
      * Set of all tables which are currently expanded.
      */
-    private Set<net.sf.jailer.datamodel.Table> expandedTables = new HashSet<net.sf.jailer.datamodel.Table>();
+    Set<net.sf.jailer.datamodel.Table> expandedTables = new HashSet<net.sf.jailer.datamodel.Table>();
     
     /**
      * Maps associations to their edges.
