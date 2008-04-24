@@ -464,7 +464,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 		if (image == null) {
 			return 1;
 		}
-		return m_textDim.height / (double) image.getHeight(null) * 0.8;
+		return m_textDim.height / (double) image.getHeight(null);
 	}
 
 	private final void drawString(Graphics2D g, FontMetrics fm, String text,
@@ -768,13 +768,13 @@ public class TableRenderer extends AbstractShapeRenderer {
 	 * @return the image for the item, or null for no image
 	 */
 	protected Image[] getImage(VisualItem item) {
-		return new Image[] { excludeFromDeletionImage, excludeFromDeletionImage }; 
+		return new Image[] { excludeFromDeletionImage }; 
 	}
 	
 	private Image excludeFromDeletionImage = null;
 	{
 		try {
-			excludeFromDeletionImage = new ImageIcon(getClass().getResource("/jailer.gif")).getImage();
+			excludeFromDeletionImage = new ImageIcon(getClass().getResource("/database-lock.png")).getImage();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
