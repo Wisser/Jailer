@@ -113,7 +113,7 @@ public class GraphicalDataModelView extends JPanel {
     // prefuse visualization
     private Visualization visualization;
     private VisualGraph visualGraph;
-    private Display display;
+    public Display display;
     private boolean inInitialization = false;
     
     /**
@@ -150,8 +150,11 @@ public class GraphicalDataModelView extends JPanel {
      * Constructor.
      * 
      * @param model the restricted data model
+     * @param modelEditor enclosing model editor
+     * @param width
+     * @param height initial size
      */
-    public GraphicalDataModelView(final DataModel model, ExtractionModelEditor modelEditor, Table subject) {
+    public GraphicalDataModelView(final DataModel model, ExtractionModelEditor modelEditor, Table subject, int width, int height) {
     	super(new BorderLayout());
     	this.model = model;
     	this.modelEditor = modelEditor;
@@ -425,8 +428,8 @@ public class GraphicalDataModelView extends JPanel {
         // set up a display to show the visualization
         
         display = new Display(visualization);
-        display.setSize(300,150);
-        display.pan(300, 150);
+        display.setSize(width, height);
+        display.pan(width / 2, height / 2);
         display.setForeground(Color.GRAY);
         display.setBackground(Color.WHITE);
         
@@ -464,7 +467,7 @@ public class GraphicalDataModelView extends JPanel {
 	            	Table table = model.getTable(item.getString("label"));
 	            	if (table != null && e.getClickCount() > 1) {
 	            		if (expandedTables.contains(table)) {
-	            			collapseTable(theGraph, table);
+	            			collapseTable(theGraph, table, false);
 	            			display.pan(1, 0);
 	            			display.pan(0, 1);
 	            			visualization.invalidateAll();
@@ -513,27 +516,6 @@ public class GraphicalDataModelView extends JPanel {
         layout.run();
         
         add(display);
-        
-        new Thread() {
-        	public void run() {
-        			try {
-						Thread.sleep(1000);
-					} catch (InterruptedException e) {
-					}
-	                Visualization vis = display.getVisualization();
-	                Rectangle2D bounds = vis.getBounds(Visualization.ALL_ITEMS);
-	                GraphicsLib.expand(bounds, 50 + (int)(1/display.getScale()));
-	                double pw = display.getWidth() / display.getScale() - bounds.getWidth();
-	                double ph = display.getHeight() / display.getScale() - bounds.getHeight();
-	                if (pw > 0) {
-	                	bounds.setRect(bounds.getX() - pw / 2, bounds.getY(), bounds.getWidth() + pw, bounds.getHeight());
-	                }
-	                if (ph > 0) {
-	                	bounds.setRect(bounds.getX(), bounds.getY() - ph / 2, bounds.getWidth(), bounds.getHeight() + ph);
-	                }
-	                DisplayLib.fitViewToBounds(display, bounds, 400);
-        		}
-        }.start();
     }
     
     /**
@@ -545,7 +527,7 @@ public class GraphicalDataModelView extends JPanel {
 	protected JPopupMenu createPopupMenu(final Table table) {
 		JPopupMenu popup = new JPopupMenu();
 		
-		JMenuItem select = new JMenuItem("Select");
+		JMenuItem select = new JMenuItem("Select " + table.getName());
 		select.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				modelEditor.select(table);
@@ -563,13 +545,35 @@ public class GraphicalDataModelView extends JPanel {
 				zoomToFit();
 			}
 		});
-
+		JMenuItem hide = new JMenuItem("Hide");
+		hide.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				hideTable(table);
+				display.invalidate();
+			}
+		});
+		if (table.equals(root)) {
+			hide.setEnabled(false);
+		}
+		
 		popup.add(select);
 		popup.add(selectAsRoot);
 		popup.add(new JSeparator());
+		popup.add(hide);
 		popup.add(zoomToFit);
 		
 		return popup;
+	}
+
+	/**
+	 * Hides a table.
+	 * 
+	 * @param table the table to hide
+	 */
+	protected void hideTable(Table table) {
+		synchronized (visualization) {
+			collapseTable(theGraph, table, true);
+		}
 	}
 
 	/**
@@ -641,28 +645,30 @@ public class GraphicalDataModelView extends JPanel {
      * @param association the association to select or <code>null</code> to deselect
      */
     public void setSelection(Association association) {
-    	if (selectedAssociation == null || association == null || !selectedAssociation.equals(association)) {
-    		if (selectedAssociation != null || association != null) {
-    			selectedAssociation = association;
-    			modelEditor.select(association);
-    			if (selectedAssociation != null) {
-    				if (!renderedAssociations.containsKey(selectedAssociation)) {
-    					List<Association> path = modelEditor.getPathToRoot(selectedAssociation);
-    					int lastVisible = -1;
-    					for (int i = path.size() - 1; i >= 0; --i) {
-    						if (renderedAssociations.containsKey(path.get(i))) {
-    							lastVisible = i;
-    							break;
-    						}		
-    					}
-    					for (int i = lastVisible + 1; i < path.size(); ++i) {
-    						expandTable(theGraph, path.get(i).source, path.get(i));
-    						expandTable(theGraph, path.get(i).destination, path.get(i));
-    					}
-    				}
-    			}
-    			repaint();
-    		}
+    	synchronized (visualization) {
+	    	if (selectedAssociation == null || association == null || !selectedAssociation.equals(association)) {
+	    		if (selectedAssociation != null || association != null) {
+	    			selectedAssociation = association;
+	    			modelEditor.select(association);
+	    			if (selectedAssociation != null) {
+	    				if (!renderedAssociations.containsKey(selectedAssociation)) {
+	    					List<Association> path = modelEditor.getPathToRoot(selectedAssociation);
+	    					int lastVisible = -1;
+	    					for (int i = path.size() - 1; i >= 0; --i) {
+	    						if (renderedAssociations.containsKey(path.get(i))) {
+	    							lastVisible = i;
+	    							break;
+	    						}		
+	    					}
+	    					for (int i = lastVisible + 1; i < path.size(); ++i) {
+	    						expandTable(theGraph, path.get(i).source, path.get(i));
+	    						expandTable(theGraph, path.get(i).destination, path.get(i));
+	    					}
+	    				}
+	    			}
+	    			invalidate();
+	    		}
+	    	}
     	}
     }
     
@@ -718,13 +724,20 @@ public class GraphicalDataModelView extends JPanel {
 	 * 
 	 * @param g the graph
 	 * @param table the table node
+	 * @param hideTable if <code>true</code>, hide table too
 	 */
-	private void collapseTable(Graph g, net.sf.jailer.datamodel.Table table) {
-		if (table != null && expandedTables.contains(table)) {
+	private void collapseTable(Graph g, Table table, boolean hideTable) {
+		if (table == null || (expandedTables.contains(table) || hideTable)) {
 			Set<Association> associationsToKeep = new HashSet<Association>();
 			Set<Table> tablesToKeep = new HashSet<Table>();
 			
 			collect(root, table, associationsToKeep, tablesToKeep);
+			if (hideTable && table != null) {
+				for (Association a: table.associations) {
+					associationsToKeep.remove(a);
+					associationsToKeep.remove(a.reversalAssociation);
+				}
+			}
 			for (Table t: model.getTables()) {
 				for (Association a: t.associations) {
 					if (!associationsToKeep.contains(a)) {
@@ -748,7 +761,7 @@ public class GraphicalDataModelView extends JPanel {
 				}
 			}
 			for (Table t: model.getTables()) {
-				if (t != table && !tablesToKeep.contains(t)) {
+				if ((t != table || hideTable) && !tablesToKeep.contains(t)) {
 					Node n = tableNodes.get(t);
 					if (n != null) {
 						g.removeNode(n);
@@ -760,8 +773,12 @@ public class GraphicalDataModelView extends JPanel {
 					}
 				}
 			}
-			expandedTables.remove(table);
-			tablesToKeep.add(table);
+			if (table != null) {
+				expandedTables.remove(table);
+				if (!hideTable) {
+					tablesToKeep.add(table);
+				}
+			}
 			checkForExpansion(theGraph, tablesToKeep);
 		}
 	}
@@ -779,7 +796,7 @@ public class GraphicalDataModelView extends JPanel {
 		if (root != ignore && !tablesToKeep.contains(root)) {
 			tablesToKeep.add(root);
 			for (Association a: root.associations) {
-				if (renderedAssociations.containsKey(a) || renderedAssociations.containsKey(a.reversalAssociation)) {
+				if (isVisualizable(a) && (renderedAssociations.containsKey(a) || renderedAssociations.containsKey(a.reversalAssociation))) {
 					associationsToKeep.add(a);
 					associationsToKeep.add(a.reversalAssociation);
 					collect(a.destination, ignore, associationsToKeep, tablesToKeep);
@@ -814,7 +831,7 @@ public class GraphicalDataModelView extends JPanel {
 		List<Table> result = new ArrayList<Table>();
 		if (table != null && (!expandedTables.contains(table) || toRender != null)) {
 			List<Table> toCheck = new ArrayList<Table>();
-			result = addEdges(g, table, toRender, toCheck);
+			result = addEdges(g, table, toRender, toCheck, false);
 			// expandedTables.add(table);
 			checkForExpansion(g, toCheck);
 		}
@@ -830,6 +847,7 @@ public class GraphicalDataModelView extends JPanel {
 	private void checkForExpansion(Graph g, java.util.Collection<Table> toCheck) {
 		for (Table t: toCheck) {
 			if (!expandedTables.contains(t)) {
+				addEdges(g, t, null, new ArrayList<Table>(), true);
 				boolean isExpanded = true;
 				for (Association a: t.associations) {
 					if (!isVisualizable(a)) {
@@ -846,7 +864,6 @@ public class GraphicalDataModelView extends JPanel {
 				}
 				if (isExpanded) {
 					expandedTables.add(t);
-					addEdges(g, t, null, new ArrayList<Table>());
 				}
 			}
 		}
@@ -886,7 +903,7 @@ public class GraphicalDataModelView extends JPanel {
 	 * 
 	 * @return list of newly rendered tables
 	 */
-	private List<Table> addEdges(Graph g, Table table, Association toRender, List<Table> toCheck) {
+	private List<Table> addEdges(Graph g, Table table, Association toRender, List<Table> toCheck, boolean visibleDestinationRequired) {
 		List<Table> result = new ArrayList<Table>();
 		toCheck.add(table);
 		for (Association a: table.associations) {
@@ -894,6 +911,9 @@ public class GraphicalDataModelView extends JPanel {
 				continue;
 			}
 			if (!isVisualizable(a) && (toRender == null || a != toRender)) {
+				continue;
+			}
+			if (visibleDestinationRequired && !tableNodes.containsKey(a.destination)) {
 				continue;
 			}
 			if (!renderedAssociations.containsKey(a) && !renderedAssociations.containsKey(a.reversalAssociation)) {
@@ -1045,43 +1065,42 @@ public class GraphicalDataModelView extends JPanel {
 	 * Expands all tables.
 	 */
 	public void expandAll() {
+		boolean stop = false;
 		List<Table> toExpand = new ArrayList<Table>();
 		toExpand.addAll(tableNodes.keySet());
-		boolean ask = tableNodes.size() <= EXPAND_LIMIT;
-		while (!toExpand.isEmpty()) {
-			Table table = toExpand.remove(0);
-			toExpand.addAll(expandTable(theGraph, table));
-			if (tableNodes.size() > EXPAND_LIMIT) {
-				if (ask && JOptionPane.NO_OPTION != JOptionPane.showConfirmDialog(modelEditor.extractionModelFrame, "More than " + EXPAND_LIMIT + " visible tables!\nStop expansion?", "", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE)) {
-					break;
+		while (!stop) {
+			boolean askNow = false;
+			synchronized (visualization) {
+				boolean ask = tableNodes.size() <= EXPAND_LIMIT;
+				while (!toExpand.isEmpty()) {
+					Table table = toExpand.remove(0);
+					toExpand.addAll(expandTable(theGraph, table));
+					if (ask && tableNodes.size() > EXPAND_LIMIT) {
+						askNow = true;
+						break;
+					}
 				}
-				ask = false;
+			}
+			if (askNow) {
+				if (JOptionPane.NO_OPTION != JOptionPane.showConfirmDialog(modelEditor.extractionModelFrame, "More than " + EXPAND_LIMIT + " visible tables!\nStop expansion?", "", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE)) {
+					stop = true;
+				}
+			} else {
+				stop = true;
 			}
 		}
 	}
 	
 	/**
-	 * Refresh. Removes all tables from view which are not in closure of root.
-	 * 
-	 * @param keepVisible set of tables to keep visible, hides all other tables
-	 */
-	public void refresh(Set<Table> keepVisible) {
-		if (!modelEditor.extractionModelFrame.showDisabledAssociations()) {
-			for (Table table: model.getTables()) {
-				if (keepVisible.contains(table)) {
-					expandTable(theGraph, table);
-				}
-			}
-		}
-	}
-
-	/**
 	 * Resets expanded/collapsed status of each visible table.
 	 */
 	public void resetExpandedState() {
-		checkForCollapsed(theGraph, tableNodes.keySet());
-		checkForExpansion(theGraph, tableNodes.keySet());
-		visualization.invalidateAll();
+		synchronized (visualization) {
+			hideTable(null);
+			checkForCollapsed(theGraph, tableNodes.keySet());
+			checkForExpansion(theGraph, tableNodes.keySet());
+			visualization.invalidateAll();
+		}
 	}
 
 	/**
@@ -1090,11 +1109,12 @@ public class GraphicalDataModelView extends JPanel {
 	 * @param fix the property value
 	 */
 	public void setFix(boolean fix) {
-		for (int i = visualGraph.getNodeCount() - 1; i >= 0; --i) {
-			VisualItem n = (VisualItem) visualGraph.getNode(i);
-			n.setFixed(fix);
+		synchronized (visualization) {
+			for (int i = visualGraph.getNodeCount() - 1; i >= 0; --i) {
+				VisualItem n = (VisualItem) visualGraph.getNode(i);
+				n.setFixed(fix);
+			}
 		}
-		
 	}
 	
 }

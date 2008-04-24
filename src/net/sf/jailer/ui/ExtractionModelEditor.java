@@ -180,7 +180,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		tree.setExpandsSelectedPaths(true);
 		restrictionEditor = new RestrictionEditor();
 		
-		graphView = new GraphicalDataModelView(dataModel, this, subject);
+		graphView = new GraphicalDataModelView(dataModel, this, subject, 948, 379);
 		graphContainer.add(graphView);
 		
 		AssociationRenderer.COLOR_ASSOCIATION = associatedWith.getForeground();
@@ -264,7 +264,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		if (full) {
 			graphView.close();
 			graphContainer.remove(graphView);
-			graphView = new GraphicalDataModelView(dataModel, this, root);
+			graphView = new GraphicalDataModelView(dataModel, this, root, graphView.display.getWidth(), graphView.display.getHeight());
 			graphContainer.add(graphView);
 		} else {
 			graphView.resetExpandedState();
@@ -989,6 +989,17 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
      * @param table the table to select
      */
 	public void select(Table table) {
+		if (root != null) {
+			if (root.equals(table)) {
+				Object r = tree.getModel().getRoot();
+				if (r != null && r instanceof DefaultMutableTreeNode) {
+					TreePath treePath = new TreePath(((DefaultMutableTreeNode) r).getPath());
+					tree.setSelectionPath(treePath);
+					tree.scrollPathToVisible(treePath);
+					return;
+				}
+			}
+		}
 		for (DefaultMutableTreeNode node: treeNodes) {
 			if (node.getChildCount() > 0) {
 				Table t = null;
@@ -996,21 +1007,28 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				if (node.getUserObject() instanceof Association) {
 					a = (Association) node.getUserObject();
 					t = a.destination;
-				} else if (node.getUserObject() instanceof Table) {
-					if (node.getChildCount() > 0) {
-						if (((DefaultMutableTreeNode) node.getChildAt(0)).getUserObject() instanceof Association) {
-							a = (Association) ((DefaultMutableTreeNode) node.getChildAt(0)).getUserObject();
-							t = a.source;
-						}
-					}
 				}
-				
 				if (t != null && a != null && table.equals(t)) {
 					select(a);
-					tree.expandPath(new TreePath(node.getPath()));
-					break;
+					TreePath treePath = new TreePath(node.getPath());
+					tree.expandPath(treePath);
+					for (int i = 0; i < node.getChildCount(); ++i) {
+						DefaultMutableTreeNode c = (DefaultMutableTreeNode) node.getChildAt(i);
+						tree.collapsePath(new TreePath(c.getPath()));
+					}
+					tree.scrollPathToVisible(treePath);
+					return;
 				}
 			}
+		}
+		Association first = null;
+		for (Association a: table.associations) {
+			if (first == null || first.destination.getName().compareTo(a.destination.getName()) < 0) {
+				first = a;
+			}
+		}
+		if (first != null) {
+			select(first);
 		}
 	}
 	
@@ -1024,7 +1042,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			suppressRestrictionSelection = true;
 			try {
 				DefaultMutableTreeNode toSelect = null;
-				for (int i = 0; i < 2; ++i) {
+				for (int i = 0; i < 3; ++i) {
 					for (DefaultMutableTreeNode node: treeNodes) {
 						if (node.getUserObject() instanceof Association) {
 							Association a = (Association) node.getUserObject();
@@ -1044,6 +1062,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 						break;
 					}
 					
+					if (i == 2) {
+						setRoot(restrictionDefinition.from);
+						break;
+					}
 					// make association part of tree
 					for (Table t: dataModel.getTables()) {
 						for (Association a: t.associations) {

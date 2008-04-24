@@ -888,11 +888,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	boolean hideIgnored() {
 		return hideIgnored.isSelected();
 	}
-
-	void setHideIgnored(boolean b) {
-		hideIgnored.setSelected(b);
-		extractionModelEditor.refresh(true, true);
-	}
 	
 	/**
      * @param args the command line arguments
