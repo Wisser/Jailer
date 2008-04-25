@@ -48,7 +48,6 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.ExtractionModelEditor;
 import prefuse.Display;
 import prefuse.Visualization;
-import prefuse.action.Action;
 import prefuse.action.ActionList;
 import prefuse.action.RepaintAction;
 import prefuse.action.assignment.ColorAction;
