@@ -19,8 +19,6 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.net.URI;
 
-import net.sf.jailer.extractionmodel.ExtractionModel;
-
 import org.apache.log4j.Logger;
 
 /**

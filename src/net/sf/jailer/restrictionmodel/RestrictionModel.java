@@ -21,13 +21,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.SqlUtil;
+
+import org.apache.log4j.Logger;
 
 /**
  * Restricts association-definions in a {@link DataModel}.

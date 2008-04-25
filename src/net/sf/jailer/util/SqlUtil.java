@@ -26,8 +26,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import prefuse.data.expression.parser.JavaCharStream;
-
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 

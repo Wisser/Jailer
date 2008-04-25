@@ -19,12 +19,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.log4j.Logger;
-
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.CsvFile;
+
+import org.apache.log4j.Logger;
 
 /**
  * Extraction-model, defines the subject and the {@link RestrictionModel}
