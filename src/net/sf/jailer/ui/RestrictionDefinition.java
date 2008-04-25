@@ -27,7 +27,7 @@ import net.sf.jailer.extractionmodel.ExtractionModel;
 /**
  * Defines a restriction on an association.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class RestrictionDefinition {
 

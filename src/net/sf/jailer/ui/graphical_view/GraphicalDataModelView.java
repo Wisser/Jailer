@@ -19,7 +19,6 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Font;
 import java.awt.Graphics2D;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
@@ -36,7 +35,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -71,7 +69,6 @@ import prefuse.data.Schema;
 import prefuse.data.Tuple;
 import prefuse.data.event.TupleSetListener;
 import prefuse.data.tuple.TupleSet;
-import prefuse.render.LabelRenderer;
 import prefuse.render.Renderer;
 import prefuse.render.RendererFactory;
 import prefuse.render.ShapeRenderer;
@@ -93,7 +90,7 @@ import prefuse.visual.VisualItem;
 /**
  * Graphical restriction model view and editor.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class GraphicalDataModelView extends JPanel {
 
@@ -124,10 +121,10 @@ public class GraphicalDataModelView extends JPanel {
     private final Table root;
     
     /**
-     * Input for "expand" action.
+     * Table renderer.
      */
-    private Table tableToExpandNext;
-
+    private TableRenderer tableRenderer;
+    
     /**
      * Association renderer.
      */
@@ -162,6 +159,7 @@ public class GraphicalDataModelView extends JPanel {
     	this.modelEditor = modelEditor;
     	this.root = subject;
     	
+        tableRenderer = new TableRenderer(model, this);
     	theGraph = getModelGraph(model);
     	
         // create a new, empty visualization for our data
@@ -192,12 +190,11 @@ public class GraphicalDataModelView extends JPanel {
         	}
         };
         
-        final TableRenderer tr = new TableRenderer(model, this);
         associationRenderer = new CompositeAssociationRenderer();
         
-        tr.setRoundedCorner(3, 3);
-        tr.setVerticalPadding(3);
-        tr.setHorizontalPadding(3);
+        tableRenderer.setRoundedCorner(3, 3);
+        tableRenderer.setVerticalPadding(3);
+        tableRenderer.setHorizontalPadding(3);
         visualization.setRendererFactory(new RendererFactory() {
 			public Renderer getRenderer(VisualItem item) {
 				if (zoomBoxControl.getRenderer().isBoxItem(item)) {
@@ -209,7 +206,7 @@ public class GraphicalDataModelView extends JPanel {
 				if (item.get("association") != null) {
 					return sr;
 				}
-				return tr;
+				return tableRenderer;
 			}
         });
 
@@ -398,14 +395,6 @@ public class GraphicalDataModelView extends JPanel {
         // Visualization, using the name we've chosen below.
         visualization.putAction("draw", draw);
         visualization.putAction("layout", animate);
-
-        visualization.putAction("expand", new Action() {
-			@Override
-			public void run(double frac) {
-				expandTable(theGraph, tableToExpandNext);
-				m_vis.invalidateAll();
-			}
-        });
         
         visualization.runAfter("draw", "layout");
         
@@ -457,10 +446,10 @@ public class GraphicalDataModelView extends JPanel {
 	            			display.pan(1, 0);
 	            			display.pan(0, 1);
 	            			visualization.invalidateAll();
+	            			display.invalidate();
 	            		} else {
-		    	            // expandTable(theGraph, table);
-	            			tableToExpandNext = table;
-	            			visualization.run("expand");
+		    	            expandTable(theGraph, table);
+	            			visualization.invalidateAll();
 	            		}
 		            }
 				}
@@ -697,7 +686,7 @@ public class GraphicalDataModelView extends JPanel {
 		if (table != null && !tableNodes.containsKey(table)) {
 			Node n = graph.addNode();
 			n.setString("label", table.getName());
-			String tooltip = table.getName() + " (" + table.primaryKey.toSQL(null, false) + ")";
+			String tooltip = tableRenderer.getToolTip(table);
 			n.setString("tooltip", tooltip);
 			tableNodes.put(table, n);
 			return true;

@@ -48,7 +48,7 @@ import org.apache.log4j.Logger;
 /**
  * Generates a human readable HTML-representation of the data-model.
  *  
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class HtmlDataModelRenderer implements DataModelRenderer {
 

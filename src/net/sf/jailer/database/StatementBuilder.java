@@ -25,7 +25,7 @@ import java.util.List;
  *  
  * (for instance an 'INSERT' with a 'values'-list)
  *  
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class StatementBuilder {
 

@@ -24,7 +24,7 @@ import java.util.Map;
 /**
  * Primary-key of a {@link Table}.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class PrimaryKey {
     

@@ -44,7 +44,7 @@ import net.sf.jailer.util.CsvFile.Line;
 /**
  * "Connect with DB" dialog.
  *
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class DbConnectionDialog extends javax.swing.JDialog {
 

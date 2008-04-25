@@ -17,11 +17,8 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -45,7 +42,7 @@ import net.sf.jailer.util.CsvFile.Line;
 /**
  * Data Model Editor.
  *
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class DataModelEditor extends javax.swing.JDialog {
 
@@ -91,8 +88,8 @@ public class DataModelEditor extends javax.swing.JDialog {
         super(parent, true);
         tables = new CsvFile(new File(DataModel.TABLES_FILE)).getLines();
         associations = new CsvFile(new File(DataModel.ASSOCIATIONS_FILE)).getLines();
-        loadTableList(excludeFromDeletion, DataModel.EXCLUDE_FROM_DELETION_FILE);
-        loadTableList(initialDataTables, DataModel.INITIAL_DATA_TABLES_FILE);
+        UIUtil.loadTableList(excludeFromDeletion, DataModel.EXCLUDE_FROM_DELETION_FILE);
+        UIUtil.loadTableList(initialDataTables, DataModel.INITIAL_DATA_TABLES_FILE);
         int newTables = 0;
         int newAssociations = 0;
         File modelFinderTablesFile = new File(ModelBuilder.MODEL_BUILDER_TABLES_CSV);
@@ -187,27 +184,6 @@ public class DataModelEditor extends javax.swing.JDialog {
         associationsList.setCellRenderer(associationsListItemRenderer);
     }
     
-    /**
-     * Loads table list file and fill a list.
-     * 
-     * @param list to fill
-     * @param fileName name of file
-     */
-    private void loadTableList(List<String> list, String fileName) throws IOException {
-    	File file = new File(fileName);
-    	if (file.exists()) {
-    		BufferedReader in = new BufferedReader(new FileReader(file));
-    		String line;
-    		while ((line = in.readLine()) != null) {
-    			line = line.trim();
-    			if (line.length() > 0) {
-    				list.add(line);
-    			}
-    		}
-    		in.close();
-    	}
-	}
-
 	/**
      * Marks data model as modified.
      */
@@ -530,9 +506,14 @@ public class DataModelEditor extends javax.swing.JDialog {
 
     private void deleteTablesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteTablesActionPerformed
     	Collection<CsvFile.Line> toDelete = new ArrayList<CsvFile.Line>();
+    	Collection<String> namesOfTablesToDelete = new ArrayList<String>();
     	for (int i = 0; i < tables.size(); ++i) {
     		if (tablesList.getSelectionModel().isSelectedIndex(i)) {
-    			toDelete.add(tables.get(i));
+    			Line table = tables.get(i);
+    			if (table != null) {
+    				toDelete.add(table);
+    				namesOfTablesToDelete.add(table.cells.get(0));
+    			}
     		}
     	}
     	Collection<CsvFile.Line> assToDelete = new HashSet<CsvFile.Line>();
@@ -545,6 +526,8 @@ public class DataModelEditor extends javax.swing.JDialog {
     	}
     	if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Delete " + toDelete.size() + " tables with\n" + assToDelete.size() + " related associations?", "Delete Table", JOptionPane.YES_NO_OPTION)) {
 	    	tables.removeAll(toDelete);
+	    	excludeFromDeletion.removeAll(namesOfTablesToDelete);
+	    	initialDataTables.removeAll(namesOfTablesToDelete);
 	    	tablesList.setModel(createTablesListModel());
 	    	associations.removeAll(assToDelete);
 	    	associationsList.setModel(createAssociationsListModel());

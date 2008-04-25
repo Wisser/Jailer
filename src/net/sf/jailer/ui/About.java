@@ -18,7 +18,7 @@ package net.sf.jailer.ui;
 /**
  * The "About" dialog.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class About extends javax.swing.JDialog {
     

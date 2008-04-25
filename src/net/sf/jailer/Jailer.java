@@ -66,7 +66,7 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
  * <br>
  * <a href="http://jailer.sourceforge.net/">http://jailer.sourceforge.net</a>
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class Jailer {
     

@@ -26,7 +26,7 @@ import net.sf.jailer.datamodel.Table;
 /**
  * Finds model-elements (tables and associations).
  *  
- * @author Wisser
+ * @author Ralf Wisser
  */
 public interface ModelElementFinder {
 

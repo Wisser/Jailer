@@ -43,7 +43,7 @@ import net.sf.jailer.util.SqlUtil;
  * A {@link ResultSetReader} that writes the read rows as SQL-INSERT-statements 
  * into the export-script.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class ExportReader implements ResultSetReader {
 

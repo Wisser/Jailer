@@ -35,7 +35,7 @@ import org.apache.log4j.Logger;
 /**
  * Reads in and executes SQL-scripts.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class SqlScriptExecutor {
 

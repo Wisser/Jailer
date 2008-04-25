@@ -20,7 +20,7 @@ package net.sf.jailer.database;
  * Renews the DB2 table statistics for the working-tables
  * by executing a shell-script.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class DB2ShellScriptBasedStatisticRenovator extends ShellScriptBasedStatisticRenovator {
 

@@ -29,7 +29,7 @@ import javax.swing.JTextField;
 /**
  * Persists settings of formular fields.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class Settings  {
 

@@ -17,8 +17,10 @@ package net.sf.jailer.ui;
 
 import java.awt.Component;
 import java.awt.Frame;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -39,7 +41,7 @@ import net.sf.jailer.Jailer;
 /**
  * Some utility methods.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class UIUtil {
 
@@ -269,6 +271,27 @@ public class UIUtil {
 		} catch (Exception e) {
 			showException(parent, "Error accessing project site", e);
 		}
+	}
+
+    /**
+     * Loads table list file and fill a list.
+     * 
+     * @param list to fill
+     * @param fileName name of file
+     */
+    public static void loadTableList(List<String> list, String fileName) throws IOException {
+    	File file = new File(fileName);
+    	if (file.exists()) {
+    		BufferedReader in = new BufferedReader(new FileReader(file));
+    		String line;
+    		while ((line = in.readLine()) != null) {
+    			line = line.trim();
+    			if (line.length() > 0) {
+    				list.add(line);
+    			}
+    		}
+    		in.close();
+    	}
 	}
 
 }

@@ -37,7 +37,7 @@ import org.apache.log4j.Logger;
 /**
  * Description of the DBMS's SQL dialect.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class SQLDialect {
 

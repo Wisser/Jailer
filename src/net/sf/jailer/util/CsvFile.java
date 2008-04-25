@@ -24,7 +24,7 @@ import java.util.List;
 /**
  * Parser for CSV-files.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class CsvFile {
 

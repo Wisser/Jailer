@@ -22,7 +22,7 @@ import net.sf.jailer.util.SqlUtil;
 /**
  * Describes an association between two database-tables.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class Association extends ModelElement {
 

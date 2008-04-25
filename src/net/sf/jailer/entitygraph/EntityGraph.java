@@ -31,7 +31,7 @@ import net.sf.jailer.datamodel.Table;
 /**
  * Persistent graph of entities. 
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class EntityGraph {
 

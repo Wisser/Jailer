@@ -32,7 +32,7 @@ import net.sf.jailer.datamodel.Table;
 /**
  * Utility for printing.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class PrintUtil {
     

@@ -44,7 +44,7 @@ import net.sf.jailer.datamodel.DataModel;
 /**
  * Main frame of Extraction-Model-Editor.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class ExtractionModelFrame extends javax.swing.JFrame {
 

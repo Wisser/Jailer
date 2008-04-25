@@ -21,7 +21,7 @@ import net.sf.jailer.datamodel.DataModel;
 /**
  * Generates a human readable representation of the data-model.
  *  
- * @author Wisser
+ * @author Ralf Wisser
  */
 public interface DataModelRenderer {
 

@@ -32,7 +32,7 @@ import net.sf.jailer.util.SqlUtil;
 /**
  * Restricts association-definions in a {@link DataModel}.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class RestrictionModel {
 

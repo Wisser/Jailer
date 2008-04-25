@@ -44,7 +44,7 @@ import org.apache.log4j.Logger;
 /**
  * Finds associations and tables by introspection of the JDBC meta data.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 

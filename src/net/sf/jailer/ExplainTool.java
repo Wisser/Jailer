@@ -41,7 +41,7 @@ import org.apache.log4j.Logger;
  * Creates a listing of all association-paths of exported entities 
  * back to a subject in an entity-graph (the 'explain.log' file)
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class ExplainTool {
 

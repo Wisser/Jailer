@@ -31,7 +31,7 @@ import net.sf.jailer.entitygraph.EntityGraph;
 /**
  * Inserts DDL for helper tables.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class HelperTableEnhancer implements ScriptEnhancer {
 

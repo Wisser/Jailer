@@ -29,7 +29,7 @@ import javax.swing.JTextField;
 /**
  * "Data Export" Dialog.
  *
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class ExportDialog extends javax.swing.JDialog {
 

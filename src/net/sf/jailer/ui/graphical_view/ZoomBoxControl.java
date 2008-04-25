@@ -31,7 +31,7 @@ import prefuse.visual.VisualItem;
 /**
  * Zoom control for model view.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class ZoomBoxControl extends AbstractZoomControl {
     

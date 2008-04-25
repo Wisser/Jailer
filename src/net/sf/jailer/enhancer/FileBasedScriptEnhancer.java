@@ -38,7 +38,7 @@ import net.sf.jailer.entitygraph.EntityGraph;
  * at top/bottom of the generated script for each table &lt;TABLE&gt;
  * for which at least one row is inserted/deleted.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class FileBasedScriptEnhancer implements ScriptEnhancer {
 

@@ -26,7 +26,7 @@ import net.sf.jailer.util.SqlScriptExecutor;
 /**
  * Creates the DDL for the working-tables.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class DDLCreator {
 

@@ -23,7 +23,7 @@ import java.util.Map;
 /**
  * Describes a column of a table.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class Column {
 

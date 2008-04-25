@@ -38,7 +38,7 @@ import net.sf.jailer.util.PrintUtil;
 /**
  * Model of the relational data.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class DataModel {
 

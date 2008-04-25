@@ -29,7 +29,7 @@ import net.sf.jailer.util.PrintUtil;
 /**
  * Visualizes text files.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class FileView extends javax.swing.JDialog {
 

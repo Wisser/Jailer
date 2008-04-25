@@ -33,7 +33,7 @@ import org.kohsuke.args4j.Option;
 /**
  * Commandline-parser for {@link Jailer}.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class CommandLineParser {
 

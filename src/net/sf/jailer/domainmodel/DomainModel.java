@@ -42,7 +42,7 @@ import org.apache.log4j.Logger;
  * The definition of a domain model helps you to 
  * define the restriction and extraction models.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class DomainModel {
 

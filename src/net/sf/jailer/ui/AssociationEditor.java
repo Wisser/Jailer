@@ -32,7 +32,7 @@ import net.sf.jailer.util.CsvFile.Line;
 /**
  * Editor for single tables. Part of {@link DataModelEditor}.
  *
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class AssociationEditor extends javax.swing.JDialog {
     

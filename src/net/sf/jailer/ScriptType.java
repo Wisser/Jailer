@@ -19,7 +19,7 @@ package net.sf.jailer;
 /**
  * Enumeration of SQL-script types.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public enum ScriptType {
 

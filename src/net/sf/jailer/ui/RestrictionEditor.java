@@ -18,7 +18,7 @@ package net.sf.jailer.ui;
 /**
  * Editor for a restricted association.
  *
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class RestrictionEditor extends javax.swing.JPanel {
     

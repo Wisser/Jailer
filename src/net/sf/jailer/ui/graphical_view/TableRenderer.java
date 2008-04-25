@@ -1,3 +1,18 @@
+/*
+ * Copyright 2007 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package net.sf.jailer.ui.graphical_view;
 
 import java.awt.Dimension;
@@ -11,10 +26,14 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
 import java.awt.geom.RoundRectangle2D;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.ImageIcon;
 
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.UIUtil;
 import prefuse.Constants;
 import prefuse.render.AbstractShapeRenderer;
 import prefuse.render.ImageFactory;
@@ -25,6 +44,13 @@ import prefuse.util.GraphicsLib;
 import prefuse.util.StringLib;
 import prefuse.visual.VisualItem;
 
+/**
+ * Renders {@link Table}s.
+ * <br>
+ * Copy of {@link LabelRenderer}, added support for multi-image rendering.
+ * 
+ * @author Ralf Wisser
+ */
 public class TableRenderer extends AbstractShapeRenderer {
 	
     protected ImageFactory m_images = null;
@@ -113,12 +139,12 @@ public class TableRenderer extends AbstractShapeRenderer {
      * @param item the item to represent as a <code>String</code>
      * @return a <code>String</code> to draw
      */
-    protected String getText0(VisualItem item) {
+    protected String getText(VisualItem item) {
         String s = null;
         if ( item.canGetString(m_labelName) ) {
-            return item.getString(m_labelName);            
+            return item.getString(m_labelName) + " ";            
         }
-        return s;
+        return " ";
     }
 
     // ------------------------------------------------------------------------
@@ -248,8 +274,11 @@ public class TableRenderer extends AbstractShapeRenderer {
         // get image dimensions
         double iw=0, ih=0;
         for (Image i: img) {
-            ih = i.getHeight(null) * imgScale(item);
-            iw += i.getWidth(null) * imgScale(item);
+        	if (i == null) {
+        		continue;
+        	}
+            ih = i.getHeight(null) * imgScale(i);
+            iw += i.getWidth(null) * imgScale(i) + 2;
         }
         
         // get bounding box dimensions
@@ -340,9 +369,12 @@ public class TableRenderer extends AbstractShapeRenderer {
         double y = shape.getMinY() + size*m_vertBorder;
         
         // render image
-        for (Image i: img) {            
-            double w = size * i.getWidth(null) * imgScale(item);
-            double h = size * i.getHeight(null) * imgScale(item);
+        for (Image i: img) {
+        	if (i == null) {
+        		continue;
+        	}
+            double w = size * i.getWidth(null) * imgScale(i);
+            double h = size * i.getHeight(null) * imgScale(i);
             double ix=x, iy=y;
             
             // determine one co-ordinate based on the image position
@@ -396,7 +428,7 @@ public class TableRenderer extends AbstractShapeRenderer {
                 break;
             }
             
-            m_transform.setTransform(size * imgScale(item),0,0,size * imgScale(item),ix,iy);
+            m_transform.setTransform(size * imgScale(i),0,0,size * imgScale(i),ix,iy);
             g.drawImage(i, m_transform, null);
         }
         
@@ -458,13 +490,11 @@ public class TableRenderer extends AbstractShapeRenderer {
         }
     }
     
-    private double imgScale(VisualItem item) {
-		// TODO Auto-generated method stub
-		Image image = getImage(item)[0];
+    private double imgScale(Image image) {
 		if (image == null) {
 			return 1;
 		}
-		return m_textDim.height / (double) image.getHeight(null);
+		return m_textDim.height / (double) image.getHeight(null) * (image == collapsedImage? 1.0 : 1.2);
 	}
 
 	private final void drawString(Graphics2D g, FontMetrics fm, String text,
@@ -744,20 +774,33 @@ public class TableRenderer extends AbstractShapeRenderer {
 
 	private final DataModel model;
 	private final GraphicalDataModelView graphicalDataModelView;
-	
+
+	/**
+     * List of tables to be excluded from deletion.
+     */
+    private List<String> excludeFromDeletion = new ArrayList<String>();
+    
+    /**
+     * List of tables to export entirely if in closure of subject.
+     */
+    private List<String> initialDataTables = new ArrayList<String>();
+    
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param model
+	 * @param graphicalDataModelView
+	 */
 	public TableRenderer(DataModel model, GraphicalDataModelView graphicalDataModelView) {
 		this.model = model;
 		this.graphicalDataModelView = graphicalDataModelView;
-	}
-
-	protected String getText(VisualItem item) {
-		String s = getText0(item);
-		net.sf.jailer.datamodel.Table table = model.getTable(item
-				.getString("label"));
-		if (table != null && !graphicalDataModelView.expandedTables.contains(table)) {
-			s = s + " +";
+		try {
+			UIUtil.loadTableList(excludeFromDeletion, DataModel.EXCLUDE_FROM_DELETION_FILE);
+			UIUtil.loadTableList(initialDataTables, DataModel.INITIAL_DATA_TABLES_FILE);
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
-		return s + " ";
 	}
 
 	/**
@@ -768,13 +811,73 @@ public class TableRenderer extends AbstractShapeRenderer {
 	 * @return the image for the item, or null for no image
 	 */
 	protected Image[] getImage(VisualItem item) {
-		return new Image[] { excludeFromDeletionImage }; 
+		Image[] img = new Image[4];
+		int i = 0;
+		Table table = model.getTable(item
+				.getString("label"));
+		if (table != null) {
+			if (!graphicalDataModelView.expandedTables.contains(table)) {
+				img[i++] = collapsedImage;
+			}
+			if (excludeFromDeletion.contains(table.getName())) {
+				img[i++] = excludeFromDeletionImage;
+			}
+			if (initialDataTables.contains(table.getName())) {
+				img[i++] = allRowsImage;
+			}
+			if (table.upsert) {
+				img[i++] = upsertImage;
+			}
+		}
+		return img;
+	}
+
+	/**
+	 * Get tool tip text for a table.
+	 * 
+	 * @param table the table
+	 * @return tool tip text
+	 */
+	public String getToolTip(Table table) {
+		String tt = "";
+
+		if (excludeFromDeletion.contains(table.getName())) {
+			tt += "Excluded from Deletion. ";
+		}
+		if (initialDataTables.contains(table.getName())) {
+			tt += "Export all Rows. ";
+		}
+		if (table.upsert) {
+			tt += "Upsert Rows (overwrite). ";
+		}
+		
+		return tt + table.getName() + " (" + table.primaryKey.toSQL(null, false) + ")";
 	}
 	
+	// images
 	private Image excludeFromDeletionImage = null;
+	private Image allRowsImage = null;
+	private Image collapsedImage = null;
+	private Image upsertImage = null;
 	{
+		// load images
 		try {
 			excludeFromDeletionImage = new ImageIcon(getClass().getResource("/database-lock.png")).getImage();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			allRowsImage = new ImageIcon(getClass().getResource("/all-rows.png")).getImage();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			collapsedImage = new ImageIcon(getClass().getResource("/collapsed.png")).getImage();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			upsertImage = new ImageIcon(getClass().getResource("/upsert.png")).getImage();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -22,7 +22,7 @@ import net.sf.jailer.util.SqlScriptExecutor;
  * Renews the statistics for the working-tables
  * by executing a SQL-script.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class SqlScriptBasedStatisticRenovator implements StatisticRenovator {
 

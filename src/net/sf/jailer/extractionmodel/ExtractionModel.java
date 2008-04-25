@@ -30,7 +30,7 @@ import net.sf.jailer.util.CsvFile;
  * Extraction-model, defines the subject and the {@link RestrictionModel}
  * of an extraction.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class ExtractionModel {
 

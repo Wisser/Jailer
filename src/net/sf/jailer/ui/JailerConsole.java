@@ -32,7 +32,7 @@ import javax.swing.JTextPane;
 /**
  * Jailer console window.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class JailerConsole extends javax.swing.JDialog {
 

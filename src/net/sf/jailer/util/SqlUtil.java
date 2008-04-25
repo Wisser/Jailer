@@ -34,7 +34,7 @@ import net.sf.jailer.datamodel.Table;
 /**
  * Some utility methods.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class SqlUtil {
     

@@ -32,7 +32,7 @@ import prefuse.visual.VisualItem;
 /**
  * Renderer for {@link Association}s.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class AssociationRenderer extends EdgeRenderer {
 

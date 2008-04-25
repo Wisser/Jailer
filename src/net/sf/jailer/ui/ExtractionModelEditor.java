@@ -70,7 +70,7 @@ import net.sf.jailer.util.SqlUtil;
 /**
  * Editor for {@link ExtractionModel}s.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class ExtractionModelEditor extends javax.swing.JPanel {
 

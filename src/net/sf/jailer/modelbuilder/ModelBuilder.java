@@ -53,7 +53,7 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
  * except the already known elements (table.csv/association.csv)
  * and the excluded elements listet in datamodel/exclude-[tables|associations].csv
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class ModelBuilder {
 

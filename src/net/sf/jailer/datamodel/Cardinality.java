@@ -20,7 +20,7 @@ package net.sf.jailer.datamodel;
 /**
  * Enumeration of associations cardinality.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public enum Cardinality {
     

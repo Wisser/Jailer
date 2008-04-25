@@ -43,7 +43,7 @@ import org.apache.log4j.Logger;
  * Executes SQL-Statements.
  * Holds connections to the database on a 'per thread' basis.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class StatementExecutor {
 

@@ -25,7 +25,7 @@ import org.apache.log4j.Logger;
  * Renews the DB table statistics for the working-tables
  * by executing a shell-script.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class ShellScriptBasedStatisticRenovator implements StatisticRenovator {
 

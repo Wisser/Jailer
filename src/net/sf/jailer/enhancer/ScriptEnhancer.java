@@ -29,7 +29,7 @@ import net.sf.jailer.entitygraph.EntityGraph;
 /**
  * Enhances the generated SQL-export-script with statements or comments.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public interface ScriptEnhancer {
 

@@ -42,7 +42,7 @@ import org.apache.log4j.Logger;
  * Finds associations and tables by reading the databases meta-data tables
  * via SQL-script.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
 

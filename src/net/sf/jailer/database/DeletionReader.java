@@ -32,7 +32,7 @@ import net.sf.jailer.util.SqlUtil;
  * A {@link ResultSetReader} that writes the read rows as SQL-DELETE-statements 
  * into the deletion-script.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class DeletionReader implements ResultSetReader {
 

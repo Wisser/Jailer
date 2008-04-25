@@ -28,7 +28,7 @@ import net.sf.jailer.datamodel.Table;
  * A group of tables to be treated in the same way as a single table
  * for rendering and domain model analysis.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class Composite {
 

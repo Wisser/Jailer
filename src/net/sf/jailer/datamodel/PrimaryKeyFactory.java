@@ -26,7 +26,7 @@ import net.sf.jailer.database.StatementExecutor;
  * Factory for {@link PrimaryKey}s. Builds the universal primary key as a
  * super-set of all created primary key.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class PrimaryKeyFactory {
 
