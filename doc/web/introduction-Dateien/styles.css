@@ -1,0 +1,106 @@
+.spacer
+{
+	HEIGHT:2px;
+	BACKGROUND-COLOR:#FFCC00;
+}
+.lmenu
+{
+	BACKGROUND-COLOR:#FFCC00;
+}
+BODY
+{
+	FONT-SIZE:13px;
+	COLOR:#000022;
+	FONT-FAMILY:Tahoma;
+}
+A.tlink:link
+{
+	COLOR:#FFFFFF;
+	TEXT-DECORATION:none;
+	FONT-WEIGHT:normal;
+	FONT-SIZE:14px;
+}
+A.tlink:visited
+{
+	COLOR:#FFFFFF;
+	TEXT-DECORATION:none;
+	FONT-WEIGHT:normal;
+	FONT-SIZE:14px;
+}
+A.tlink:hover
+{
+	TEXT-DECORATION:underline;
+}
+A.llink:link
+{
+	COLOR:#003399;
+	TEXT-DECORATION:none;
+	FONT-WEIGHT:normal;
+	FONT-SIZE:13px;
+}
+A.llink:visited
+{
+	COLOR:#003399;
+	TEXT-DECORATION:none;
+	FONT-WEIGHT:normal;
+	FONT-SIZE:13px;
+}
+A.llink:hover
+{
+	TEXT-DECORATION:underline;
+}
+.llinkA
+{
+	COLOR:#003399;
+	TEXT-DECORATION:none;
+	FONT-WEIGHT:bold;
+	FONT-SIZE:14px;
+}
+.tlinkA
+{
+	COLOR:#FFFFFF;
+	TEXT-DECORATION:none;
+	FONT-WEIGHT:bold;
+	FONT-SIZE:15px;
+}
+.content
+{
+	padding-top:3px;
+	padding-left:10px;
+	margin-left:10px;
+	margin-right:2px;
+}
+.footer
+{
+	padding-top:3px;
+	font-size:8px;
+	padding-left:20px;
+	margin-left:10px;
+	text-align:center;
+	border-top:1px solid #003399;
+}
+.bannerbackground
+{
+	background-color:#003293;
+}
+.contentbackground
+{
+	background-color:#FFFFFF;
+}
+.lmenucontainer
+{
+	background-image:url(./vgradp.gif);
+}
+.nav1background
+{
+	background-image:url(./bg1.JPG);
+}
+.slogan
+{
+	color:#FFFFFF;
+}
+.content2background
+{
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:12px;
+}
