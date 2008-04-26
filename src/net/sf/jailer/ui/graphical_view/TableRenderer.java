@@ -140,7 +140,6 @@ public class TableRenderer extends AbstractShapeRenderer {
      * @return a <code>String</code> to draw
      */
     protected String getText(VisualItem item) {
-        String s = null;
         if ( item.canGetString(m_labelName) ) {
             return item.getString(m_labelName) + " ";            
         }
@@ -811,13 +810,16 @@ public class TableRenderer extends AbstractShapeRenderer {
 	 * @return the image for the item, or null for no image
 	 */
 	protected Image[] getImage(VisualItem item) {
-		Image[] img = new Image[4];
+		Image[] img = new Image[5];
 		int i = 0;
 		Table table = model.getTable(item
 				.getString("label"));
 		if (table != null) {
 			if (!graphicalDataModelView.expandedTables.contains(table)) {
 				img[i++] = collapsedImage;
+			}
+			if (table.equals(graphicalDataModelView.modelEditor.getSubject())) {
+				img[i++] = subjectImage;
 			}
 			if (excludeFromDeletion.contains(table.getName())) {
 				img[i++] = excludeFromDeletionImage;
@@ -859,6 +861,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 	private Image allRowsImage = null;
 	private Image collapsedImage = null;
 	private Image upsertImage = null;
+	private Image subjectImage = null;
 	{
 		// load images
 		try {
@@ -878,6 +881,11 @@ public class TableRenderer extends AbstractShapeRenderer {
 		}
 		try {
 			upsertImage = new ImageIcon(getClass().getResource("/upsert.png")).getImage();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			subjectImage = new ImageIcon(getClass().getResource("/subject.png")).getImage();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

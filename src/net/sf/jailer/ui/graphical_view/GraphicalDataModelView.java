@@ -17,7 +17,6 @@ package net.sf.jailer.ui.graphical_view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Shape;
@@ -72,7 +71,6 @@ import prefuse.render.Renderer;
 import prefuse.render.RendererFactory;
 import prefuse.render.ShapeRenderer;
 import prefuse.util.ColorLib;
-import prefuse.util.FontLib;
 import prefuse.util.GraphicsLib;
 import prefuse.util.display.DisplayLib;
 import prefuse.util.force.Force;
@@ -132,7 +130,7 @@ public class GraphicalDataModelView extends JPanel {
     /**
      * The enclosing model editor.
      */
-    private final ExtractionModelEditor modelEditor;
+    public final ExtractionModelEditor modelEditor;
 
     /**
      * Layouts the model graph.
@@ -577,9 +575,7 @@ public class GraphicalDataModelView extends JPanel {
         visualGraph = visualization.addGraph(graph, g);
         if (visualGraph.getNodeCount() > 1) {
 	        VisualItem f = (VisualItem) visualGraph.getNode(1);
-			Font font = f.getFont();
-		    f.setFont(FontLib.getFont(font.getName(), Font.BOLD, font.getSize()));
-	        visualization.getGroup(Visualization.FOCUS_ITEMS).setTuple(f);
+		    visualization.getGroup(Visualization.FOCUS_ITEMS).setTuple(f);
 	        f.setFixed(true);
 	        ((VisualItem) visualGraph.getNode(0)).setFixed(true);
         }
