@@ -1,0 +1,330 @@
+<html><head><title>Data Export Tool</title>
+
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="keywords" content="Data Export Tool">
+<meta name="description" content="Data Export Tool">
+<meta name="GENERATOR" content="Ewisoft Website Builder eCommerce Software from http://www.ewisoft.com/">
+<link rel="stylesheet" type="text/css" href="cli-tutorial-Dateien/styles.css"></head><body left-margin="0" top-margin="0">
+<div align="left">
+<table style="text-align: left; position: absolute; left: 0pt; top: 0pt;" border="0" cellpadding="0" cellspacing="0" height="407" width="100%">
+<tbody><tr>
+<td colspan="2" class="bannerbackground" height="33" width="100%"><table border="0" cellpadding="0" cellspacing="0">
+<tbody><tr>
+<td><img src="cli-tutorial-Dateien/logo.png" hspace="10"></td>
+<td class="slogan">Data Export Tool</td></tr></tbody></table>
+<b><font color="#ffffff">&nbsp; </font></b></td></tr>
+<tr>
+<td colspan="2" class="nav1background" height="33" width="100%">&nbsp; <b><font color="#ffffff">
+<a href="file:///C:/Users/ralf/Documents/Open%20Jail.%20The%20Jailer%20Project%20Web%20Site/local/preview/pages/home.htm" target="_self" class="tlink">Home</a> &nbsp;&nbsp;&nbsp; 
+<a href="file:///C:/Users/ralf/Documents/Open%20Jail.%20The%20Jailer%20Project%20Web%20Site/local/preview/pages/tutorial.htm" target="_self" class="tlinkA">Tutorial</a> &nbsp;&nbsp;&nbsp; <a href="file:///C:/Users/ralf/Documents/Open%20Jail.%20The%20Jailer%20Project%20Web%20Site/local/preview/pages/documentation.htm" target="_self" class="tlink">Documentation</a> &nbsp;&nbsp;&nbsp; <a href="file:///C:/Users/ralf/Documents/Open%20Jail.%20The%20Jailer%20Project%20Web%20Site/local/preview/pages/download.htm" target="_self" class="tlink">Download</a> &nbsp;&nbsp;&nbsp; <a href="http://www.ewisoft.com/" target="_self" class="tlink">Website Builder</a>&nbsp;&nbsp;&nbsp;</font></b></td></tr>
+<tr>
+<td colspan="2" class="spacer" height="21" width="100%"></td></tr>
+<tr>
+<td class="lmenucontainer" height="100%" valign="top" width="14%">
+<div align="center">
+<center>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody><tr>
+<td width="100%"></td></tr></tbody></table></center></div>
+<ul>
+<li><a href="file:///C:/Users/ralf/Documents/Open%20Jail.%20The%20Jailer%20Project%20Web%20Site/local/preview/pages/exporting-data.htm" target="_self" class="llink">Exporting Data</a></li>
+<li><a href="file:///C:/Users/ralf/Documents/Open%20Jail.%20The%20Jailer%20Project%20Web%20Site/local/preview/pages/deleting-data.htm" target="_self" class="llink">Deleting Data</a></li>
+<li><a href="file:///C:/Users/ralf/Documents/Open%20Jail.%20The%20Jailer%20Project%20Web%20Site/local/preview/pages/exclude-del.htm" target="_self" class="llink">exclude-del</a></li>
+<li><a href="file:///C:/Users/ralf/Documents/Open%20Jail.%20The%20Jailer%20Project%20Web%20Site/local/preview/pages/export-all.htm" target="_self" class="llink">export-all</a></li>
+<li><a href="file:///C:/Users/ralf/Documents/Open%20Jail.%20The%20Jailer%20Project%20Web%20Site/local/preview/pages/cli-tutorial.htm" target="_self" class="llinkA">cli-tutorial</a></li></ul>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+<tbody><tr>
+<td class="content2background"><!-- rule--></td></tr></tbody></table><p>&nbsp;</p></td>
+<td class="contentbackground" height="418" valign="top" width="86%">
+<div align="right">
+<table border="0" cellpadding="0" cellspacing="0" height="542" width="98%">
+<tbody><tr>
+<td class="contentbackground" height="21" width="100%"></td></tr>
+<tr>
+<td class="content" height="520" valign="top" width="100%"><p>&nbsp;</p>
+<table border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td valign="top" width="100%">
+<h2>Tutorial <small>(using Command Line Interface)</small><br></h2>
+<h3>Prerequisites</h3>
+<ul>
+<li>Java JRE 1.5 or above (<a href="http://java.sun.com/javase/downloads/index.jsp"><img style="border: 0px solid ; width: 13px; height: 13px;" src="cli-tutorial-Dateien/arrow.gif" hspace="4">download</a>) </li><li>R-DBMS with JDBC-driver<br>
+</li><li>jailer_1.0.zip </li></ul>
+<h3><br></h3>
+<h3>Step 1. Setup Jailer</h3>Unpack jailer.zip:<br><br>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; background-color: rgb(230, 255, 230);"><span style="font-family: monospace;">$unzip jailer_0.9.6.zip<br>$cd jailer<br style="font-family: monospace;"></span><span style="font-family: monospace;">$ll</span><br style="font-family: monospace;"><span style="font-family: monospace;">drwxr-xr-x&nbsp; 3 wisser users&nbsp; 136 2007-06-01 10:12 jailer.sh</span><br style="font-family: monospace;"><span style="font-family: monospace;">-rw-r--r--&nbsp; 1 wisser users 1175 2007-06-01 10:10 build.xml</span><br style="font-family: monospace;"><span style="font-family: monospace;">drwxr-xr-x&nbsp; 3 wisser users&nbsp; 136 2007-06-01 10:10 config</span><br style="font-family: monospace;"><span style="font-family: monospace;">drwxr-xr-x&nbsp; 3 wisser users&nbsp; 344 2007-06-01 10:10 datamodel</span><br style="font-family: monospace;"><span style="font-family: monospace;">drwxr-xr-x&nbsp; 3 wisser users&nbsp; 184 2007-06-01 10:10 example</span><br style="font-family: monospace;"><span style="font-family: monospace;">drwxr-xr-x&nbsp; 3 wisser users&nbsp; 160 2007-06-01 10:10 extractionmodel</span><br style="font-family: monospace;"><span style="font-family: monospace;">drwxr-xr-x&nbsp; 3 wisser users&nbsp; 272 2007-06-01 10:11 lib</span><br style="font-family: monospace;"><span style="font-family: monospace;">drwxr-xr-x&nbsp; 3 wisser users&nbsp; 112 2007-06-01 10:10 restrictionmodel</span><br style="font-family: monospace;"><span style="font-family: monospace;">drwxr-xr-x&nbsp; 4 wisser users&nbsp; 160 2007-06-01 10:10 script</span><br style="font-family: monospace;"><span style="font-family: monospace;">drwxr-xr-x&nbsp; 4 wisser users&nbsp;&nbsp; 96 2007-06-01 10:10 src</span><br></td></tr></tbody></table><br>Register the JDBC-Driver. Edit the file <span style="font-family: monospace;">jailer.sh</span> and put the JDBC-Driver into the class-path:<br><br>
+<table style="background-color: rgb(51, 102, 255); text-align: left;" border="0" cellpadding="2" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; height: 24px; background-color: rgb(202, 225, 235);"><big><span style="font-family: monospace;"><span style="font-weight: bold;">jailer.sh</span></span><span style="font-family: monospace;"></span></big><br></td></tr></tbody></table>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; background-color: rgb(202, 225, 235);" colspan="2"><span style="font-family: monospace;">JDBCLIB=<span style="color: rgb(51, 51, 255); font-style: italic;">path to the JDBC-Driver-jar</span></span><br style="font-family: monospace;"><span style="font-family: monospace;">LIB=lib</span><br style="font-family: monospace;"><span style="font-family: monospace;">CP=.:out:out/jailer.jar</span><br style="font-family: monospace;"><br style="font-family: monospace;"><span style="font-family: monospace;"># JDBC-driver</span><br style="font-family: monospace;"><span style="font-family: monospace;">CP=$CP:$JDBCLIB/</span><span style="font-family: monospace;"><span style="color: rgb(51, 51, 255); font-style: italic;">JDBC-Driver-jar</span></span><br style="font-family: monospace;"><span style="font-family: monospace;"></span><br style="font-family: monospace;"><span style="font-family: monospace;"># configuration files in the config directory</span><br style="font-family: monospace;"><span style="font-family: monospace;">CP=$CP:config</span><br style="font-family: monospace;"><br style="font-family: monospace;"><span style="font-family: monospace;"># the libraries</span><br style="font-family: monospace;"><span style="font-family: monospace;">CP=$CP:$LIB/junit.jar</span><br style="font-family: monospace;"><span style="font-family: monospace;">CP=$CP:$LIB/commons-logging.jar</span><br style="font-family: monospace;"><span style="font-family: monospace;">CP=$CP:$LIB/log4j.jar</span><br style="font-family: monospace;"><span style="font-family: monospace;">CP=$CP:$LIB/args4j.jar</span><br style="font-family: monospace;"><span style="font-family: monospace;">CP=$CP:$LIB/spring.jar</span><br style="font-family: monospace;"><span style="font-family: monospace;">CP=$CP:$LIB/jailer.jar</span><br style="font-family: monospace;"><br style="font-family: monospace;"><span style="font-family: monospace;">java -cp $CP net.sf.jailer.Jailer $@</span><br></td></tr></tbody></table><br>
+<h3>Step 2. Setup the Database</h3>Create a new schema and execute <a href="file:///C:/Users/ralf/Documents/Open%20Jail.%20The%20Jailer%20Project%20Web%20Site/local/user/bin/scott-tiger.sql.html"><img style="border: 0px solid ; width: 13px; height: 13px;" src="cli-tutorial-Dateien/arrow.gif" hspace="4"><big><span style="font-family: monospace;">script/scott-tiger.sql</span></big></a>. Make sure that the script runs successfully.<br><br>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; background-color: rgb(230, 255, 230);"><span style="font-family: monospace;">$db2 connect to wisser </span><span style="font-family: monospace;">user scott </span><span style="font-family: monospace;">using tiger<span style="font-family: mon;"><span style="font-style: italic;"></span></span></span><span style="font-family: monospace;"><span style="color: rgb(51, 51, 255); font-style: italic;"></span></span><br><span style="font-family: monospace;">$db2 -tvf script/scott-tiger.sql<br></span><span style="font-family: monospace;"></span></td></tr></tbody></table><br>
+<h3>Step 3. Building the data model</h3>Jailer needs to know all the tables and all associations between them, so we must tell him. Tables are defined in <big><span style="font-family: monospace;">datamodel/table.csv</span><small>,</small></big><small></small>associations in <big><span style="font-family: monospace;">datamodel/association.csv</span>.</big><br><br>Fortunately most of the model definitions can be generated automatically from introspection of the relational database.<br><br>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; background-color: rgb(230, 255, 230);"><span style="font-family: monospace;">$ sh jailer.sh build-model com.ibm.db2.jcc.DB2Driver jdbc:db2://localhost:50001/wisser scott tiger<br>Jailer 0.9.5<br><br>Building data model.<br>See 'export.log' for more information.<br><br>$ cat export.log<br>2007-06-01
+15:51:30,308 [main] INFO&nbsp;&nbsp; - find tables with
+net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder@16fe0f4<br>2007-06-01 15:51:32,115 [main] INFO&nbsp;&nbsp; - file 'datamodel/model-builder-table.csv' written<br>2007-06-01
+15:51:32,175 [main] INFO&nbsp;&nbsp; - find associations with
+net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder@16fe0f4<br>2007-06-01 15:51:32,298 [main] INFO&nbsp;&nbsp; - find associations with DEPARTMENT<br>2007-06-01 15:51:32,323 [main] INFO&nbsp;&nbsp; - find associations with SALARYGRADE<br>2007-06-01 15:51:32,328 [main] INFO&nbsp;&nbsp; - find associations with EMPLOYEE<br>2007-06-01 15:51:32,369 [main] INFO&nbsp;&nbsp; - file 'datamodel/model-builder-association.csv' written<br></span><span style="font-family: monospace;"><span style="color: rgb(51, 51, 255); font-style: italic;"></span></span></td></tr></tbody></table><br><br>
+<table>
+<tbody>
+<tr>
+<td>Jailer finds the following tables and associations: </td>
+<td style="vertical-align: top;"><small><a href="file:///C:/Users/ralf/workspace/jailer/doc/htdocs/JailerTutorial.html#footnote">2</a></small></td></tr></tbody></table><br>
+<table style="background-color: rgb(51, 102, 255); text-align: left;" border="0" cellpadding="2" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; height: 24px; background-color: rgb(202, 225, 235);"><big><span style="font-family: monospace;"><span style="font-weight: bold;">datamodel/model-builder-table.csv</span></span><span style="font-family: monospace;"></span></big><br></td></tr></tbody></table>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; background-color: rgb(202, 225, 235);" colspan="2"><span style="font-family: monospace;"># Name;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; upsert; primary key;&nbsp;&nbsp;&nbsp; ; author<br>DEPARTMENT;&nbsp; N;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DEPTNO INTEGER; ;IBM DB2 JDBC Driver;<br>EMPLOYEE;&nbsp;&nbsp;&nbsp; N;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; EMPNO INTEGER;&nbsp; ;IBM DB2 JDBC Driver;<br>SALARYGRADE; N;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; GRADE INTEGER;LOSAL INTEGER;HISAL INTEGER;&nbsp;&nbsp; ;IBM DB2 JDBC Driver;<br></span><span style="font-family: monospace;"></span></td></tr></tbody></table><br>
+<table style="background-color: rgb(51, 102, 255); text-align: left;" border="0" cellpadding="2" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; height: 24px; background-color: rgb(202, 225, 235);"><big><span style="font-family: monospace;"><span style="font-weight: bold;">datamodel/model-builder-association.csv</span></span><span style="font-family: monospace;"></span></big><br></td></tr></tbody></table>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; background-color: rgb(202, 225, 235);" colspan="2"><span style="font-family: monospace;"># Table A;&nbsp;&nbsp;&nbsp; Table B;&nbsp; first-insert; cardinality (opt); join-condition; name (opt); author<br>DEPARTMENT; EMPLOYEE; A; 1:n; A.DEPTNO=B.DEPTNO;&nbsp;&nbsp; ; IBM DB2 JDBC Driver;<br>EMPLOYEE;&nbsp;&nbsp; EMPLOYEE; A; 1:n; A.EMPNO=B.BOSS;&nbsp; &nbsp; &nbsp; ; IBM DB2 JDBC Driver;<br></span></td></tr></tbody></table><br><br>Copy the definitions into the files <big><span style="font-family: monospace;">datamodel/table.csv</span></big> and <big><span style="font-family: monospace;">datamodel/association.csv</span>.</big><br>One association is still missing: depending on his salary an employee is classified into a salary grade. <br>Add this definition manually.<br><br>
+<table style="background-color: rgb(51, 102, 255); text-align: left;" border="0" cellpadding="2" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; height: 24px; background-color: rgb(202, 225, 235);"><big><span style="font-family: monospace;"><span style="font-weight: bold;">datamodel/association.csv</span></span><span style="font-family: monospace;"></span></big><br></td></tr></tbody></table>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; background-color: rgb(202, 225, 235);" colspan="2"><span style="font-family: monospace;"># Table A;&nbsp;&nbsp;&nbsp; Table B;&nbsp; first-insert; cardinality (opt); join-condition; name (opt); author<br>DEPARTMENT; EMPLOYEE; A; 1:n; A.DEPTNO=B.DEPTNO;&nbsp;&nbsp; ; IBM DB2 JDBC Driver;<br>EMPLOYEE;&nbsp;&nbsp; EMPLOYEE; A; 1:n; A.EMPNO=B.BOSS;&nbsp; &nbsp; &nbsp; ; IBM DB2 JDBC Driver;<br><span style="color: rgb(153, 0, 0);">EMPLOYEE;&nbsp;&nbsp; SALARYGRADE; ; n:1; A.SALARY BETWEEN B.LOSAL AND B.HISAL; ; Wisser</span><br></span></td></tr></tbody></table><br>Note that Jailer now knows more about the data model than the DBMS.<br><br>
+<table>
+<tbody>
+<tr>
+<td>
+<h3>Step 4.&nbsp; Examine the data model</h3></td>
+<td style="vertical-align: top;"><small><a href="file:///C:/Users/ralf/workspace/jailer/doc/htdocs/JailerTutorial.html#footnote">1</a></small></td></tr></tbody></table>Let's see what Jailer knows now about the model.<br><br>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; background-color: rgb(230, 255, 230);"><span style="font-family: monospace;">$ sh jailer.sh print-datamodel<br>DEPARTMENT (DEPTNO INTEGER NOT NULL)<br><br>&nbsp; has dependent:<br>&nbsp;&nbsp;&nbsp;
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:n on A.DEPTNO=B.DEPTNO<br><br>EMPLOYEE (EMPNO INTEGER NOT NULL)<br><br>&nbsp; depends on:<br>&nbsp;&nbsp;&nbsp;
+DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+n:1 on B.DEPTNO=A.DEPTNO<br>&nbsp;&nbsp;&nbsp;
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+n:1 on B.EMPNO=A.BOSS<br><br>&nbsp; has dependent:<br>&nbsp;&nbsp;&nbsp;
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:n on A.EMPNO=B.BOSS<br><br>&nbsp; is associated with:<br>&nbsp;&nbsp;&nbsp;
+SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+n:1 on A.SALARY BETWEEN B.LOSAL AND B.HISAL<br><br>SALARYGRADE (GRADE INTEGER NOT NULL, LOSAL INTEGER NOT NULL, HISAL INTEGER NOT NULL)<br><br>&nbsp; is associated with:<br>&nbsp;&nbsp;&nbsp;
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:n on B.SALARY BETWEEN A.LOSAL AND A.HISAL<br><br><br>tables in dependent-cycle: EMPLOYEE<br><br>excluding following tables from component-analysis:&nbsp; {&nbsp; }<br><br>1 components:<br>&nbsp;{ DEPARTMENT, EMPLOYEE, SALARYGRADE }<br></span></td></tr></tbody></table><br>Note
+that each association is listed twice. While associations are
+undirected, restrictions on them are directed. We will see later for
+what restrictions are good for and how to define them.<br><br>
+<h3>Step 5. Prepare the DB for exports</h3>Jailer uses some tables for
+collecting entities inside the data base. The structure of these tables
+depends on the data-model, so we have to create the tables after
+building the data-model files. (You can easily re-create the tables
+after any model-changes)<br><br>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; background-color: rgb(230, 255, 230);"><span style="font-family: monospace;">$ sh jailer.sh create-ddl &gt; <a href="file:///C:/Users/ralf/Documents/Open%20Jail.%20The%20Jailer%20Project%20Web%20Site/local/user/bin/jailer-ddl.sql.html"><img style="border: 0px solid ; width: 13px; height: 13px;" src="cli-tutorial-Dateien/arrow.gif" hspace="4">jailer-ddl.sql</a><br>$ db2 -tvf jailer-ddl.sql<br></span></td></tr></tbody></table>
+<h3><br>Step 6. Export evil Scott (unrestricted)</h3>Now export the employee named Scott. To do that we need an <span style="font-style: italic;">extraction-model</span>. Create a file named <big><span style="font-family: monospace;">extractionmodel/scott.csv</span></big>.<br><br>
+<table style="background-color: rgb(51, 102, 255); text-align: left;" border="0" cellpadding="2" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; height: 24px; background-color: rgb(202, 225, 235);"><big><span style="font-family: monospace;"><span style="font-weight: bold;">extractionmodel/scott.csv</span></span><span style="font-family: monospace;"></span></big><br></td></tr></tbody></table>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; background-color: rgb(202, 225, 235);" colspan="2"><span style="font-family: monospace;"># the employee named 'SCOTT' and all associated entities<br><br>#
+subject;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+condition;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+limit;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; restrictions<br>EMPLOYEE;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+NAME='SCOTT';&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+;<br></span></td></tr></tbody></table><br><br>This extraction model
+describes a set of entities containing (the) employee(s) named 'SCOTT',
+entities associated with these employees, entities associated with
+these entities and so forth.<br><br>Export this set:<br><br>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; background-color: rgb(230, 255, 230);"><span style="font-family: monospace;">$
+sh jailer.sh export -e scott.sql extractionmodel/scott.csv
+com.ibm.db2.jcc.DB2Driver jdbc:db2://localhost:50001/wisser scott tiger<br>Jailer 0.9.5<br><br>exporting 'extractionmodel/scott.csv' to 'scott.sql'<br>See 'export.log' for more information.<br>writing file 'scott.sql'...<br>file 'scott.sql' written.<br><br>$ cat export.log<br>2007-06-04 13:27:25,123 [main] INFO&nbsp;&nbsp; - exporting EMPLOYEE Where NAME='SCOTT'<br>...<br>2007-06-04
+13:27:25,249 [main] INFO&nbsp;&nbsp; - export
+statistic:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+22<br>2007-06-04 13:27:25,299 [main] INFO&nbsp;&nbsp; -
+DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+3<br>2007-06-04 13:27:25,299 [main] INFO&nbsp;&nbsp; -
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+14<br>2007-06-04 13:27:25,299 [main] INFO&nbsp;&nbsp; -
+SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+5<br>...<br></span></td></tr></tbody></table><br><br>A file <a href="file:///C:/Users/ralf/Documents/Open%20Jail.%20The%20Jailer%20Project%20Web%20Site/local/user/bin/scott.sql.html"><img style="border: 0px solid ; width: 13px; height: 13px;" src="cli-tutorial-Dateien/arrow.gif" hspace="4"><big><span style="font-family: monospace;">scott.sql</span></big></a> is created containing <big><span style="font-family: monospace;">Insert</span></big>-statements for Scott, for his evil boss, for the president and for scott's department and salary-grade.<br><br>But why are there also statements for all other employees? (Bad luck for innocent James!)<br><br>Let Jailer explain why:<br><br>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; background-color: rgb(230, 255, 230);"><span style="font-family: monospace;">$ sh jailer.sh export -e scott.sql <span style="color: rgb(204, 0, 0);">-explain </span>extractionmodel/scott.csv com.ibm.db2.jcc.DB2Driver jdbc:db2://localhost:50001/wisser scott tiger &gt; /dev/null<br>$ cat explain.log<br>EMPLOYEE(7788) --3--&gt; SALARYGRADE(4, 2001, 3000) --6--&gt; EMPLOYEE(7698) --1--&gt; DEPARTMENT(30).<br>EMPLOYEE(7788) --3--&gt; SALARYGRADE(4, 2001, 3000) --6--&gt; EMPLOYEE(7698) --2--&gt; EMPLOYEE(7521).<br>EMPLOYEE(7788)
+--3--&gt; SALARYGRADE(4, 2001, 3000) --6--&gt; EMPLOYEE(7698) --2--&gt;
+EMPLOYEE(7844) --3--&gt; SALARYGRADE(3, 1401, 2000).<br>EMPLOYEE(7788) --4--&gt; EMPLOYEE(7566) --4--&gt; EMPLOYEE(7839) --1--&gt; DEPARTMENT(10).<br>EMPLOYEE(7788) --4--&gt; EMPLOYEE(7566) --4--&gt; EMPLOYEE(7839) --3--&gt; SALARYGRADE(5, 3001, 9999).<br>EMPLOYEE(7788) --1--&gt; DEPARTMENT(20) --5--&gt; EMPLOYEE(7369).<br>EMPLOYEE(7788) --3--&gt; SALARYGRADE(4, 2001, 3000) --6--&gt; EMPLOYEE(7698) --2--&gt; EMPLOYEE(7654).<br><span style="color: rgb(204, 0, 0);">EMPLOYEE(7788) --2--&gt; EMPLOYEE(7876) --3--&gt; SALARYGRADE(1, 700, 1200) --6--&gt; EMPLOYEE(7900).</span><br style="color: rgb(204, 0, 0);">EMPLOYEE(7788)
+--3--&gt; SALARYGRADE(4, 2001, 3000) --6--&gt; EMPLOYEE(7782) --2--&gt;
+EMPLOYEE(7934) --3--&gt; SALARYGRADE(2, 1201, 1400).<br>EMPLOYEE(7788) --3--&gt; SALARYGRADE(4, 2001, 3000) --6--&gt; EMPLOYEE(7698) --2--&gt; EMPLOYEE(7499).<br>EMPLOYEE(7788) --1--&gt; DEPARTMENT(20) --5--&gt; EMPLOYEE(7902).<br><br>#&nbsp;&nbsp;&nbsp;
+1
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-&gt;
+DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+n:1 on B.DEPTNO=A.DEPTNO<br>#&nbsp;&nbsp;&nbsp; 2
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-&gt;
+EMPLOYEE(SUBORDINATES)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:n on A.EMPNO=B.BOSS<br>#&nbsp;&nbsp;&nbsp; 3
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-&gt;
+SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+n:1 on A.SALARY BETWEEN B.LOSAL AND B.HISAL<br>#&nbsp;&nbsp;&nbsp; 4
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-&gt; EMPLOYEE(inverse-SUBORDINATES) n:1 on B.EMPNO=A.BOSS<br>#&nbsp;&nbsp;&nbsp;
+5
+DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-&gt;
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:n on A.DEPTNO=B.DEPTNO<br>#&nbsp;&nbsp;&nbsp; 6
+SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+-&gt;
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:n on B.SALARY BETWEEN A.LOSAL AND A.HISAL<br></span></td></tr></tbody></table><br>Adams is Scotts subordinate and James and Adams are both classified in the same salary-grade.<br><br>
+<h3>Step 7. Export evil Scott (restricted)</h3>If we export an employee
+we must export his boss and department too! Otherwise the set of
+exported entities would not be consistent (due to the foreign key
+constraints). No constraint prevents us from excluding the salary-grade
+from export, but we should'nt do that becauses the resulting set would
+also be inconsistent.<br><br>To exclude subordinates, 'same
+department'-members and 'same salary-grade'-employees, we must restrict
+some associations. To do so, define a <span style="font-style: italic;">restriction-model:</span><br><br>
+<table style="background-color: rgb(51, 102, 255); text-align: left;" border="0" cellpadding="2" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; height: 24px; background-color: rgb(202, 225, 235);"><big><span style="font-family: monospace;"><span style="font-weight: bold;">restrictionmodel/no-subordinates.csv</span></span><span style="font-family: monospace;"></span></big><br></td></tr></tbody></table>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; background-color: rgb(202, 225, 235);" colspan="2"><span style="font-family: monospace;"># from A (or association name); to B;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; restriction-condition<br>SUBORDINATE;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; ignore<br>DEPARTMENT;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+EMPLOYEE;&nbsp;&nbsp; ignore<br>SALARYGRADE;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+EMPLOYEE;&nbsp;&nbsp; ignore<br></span></td></tr></tbody></table><br><br>The <span style="font-style: italic;">restriction-condition</span> is an extension of the associations join-condition (expressed in SQL-syntax) for one direction of an association. <br>"ignore" stands for an unsatisfiable condition.<br><br>Note
+that the association between DEPARTMENT and EMPLOYEE is restricted in
+that direction by designating the source and destination table. It's
+obviously not possible to restrict reflexive associations the same way,
+so we have to give the <span style="font-style: italic;">'subordinate of</span>'-association a name.<br><br>
+<table style="background-color: rgb(51, 102, 255); text-align: left;" border="0" cellpadding="2" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; height: 24px; background-color: rgb(202, 225, 235);"><big><span style="font-family: monospace;"><span style="font-weight: bold;">datamodel/association.csv</span></span><span style="font-family: monospace;"></span></big><br></td></tr></tbody></table>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; background-color: rgb(202, 225, 235);" colspan="2"><span style="font-family: monospace;"># Table A;&nbsp;&nbsp;&nbsp; Table B;&nbsp; first-insert; cardinality (opt); join-condition; name (opt); author<br>DEPARTMENT; EMPLOYEE; A; 1:n; A.DEPTNO=B.DEPTNO;&nbsp;&nbsp; ; IBM DB2 JDBC Driver;<br>EMPLOYEE;&nbsp;&nbsp; EMPLOYEE; A; 1:n; A.EMPNO=B.BOSS; </span><span style="color: rgb(255, 0, 0); font-family: monospace;">SUBORDINATE</span><span style="font-family: monospace;">; IBM DB2 JDBC Driver;<br><span style="color: rgb(0, 0, 0);">EMPLOYEE;&nbsp;&nbsp; SALARYGRADE; ; n:1; A.SALARY BETWEEN B.LOSAL AND B.HISAL; ; Wisser</span><br></span></td></tr></tbody></table><br><br>You can examine the restrictions the same way you examined the data model:<br><br>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; background-color: rgb(230, 255, 230);"><span style="font-family: monospace;">$ sh jailer.sh print-datamodel <span style="color: rgb(204, 0, 0);">restrictionmodel/no-subordinates.csv</span><br>restricted by: [restrictionmodel/no-subordinates.csv]<br>DEPARTMENT (DEPTNO INTEGER NOT NULL)<br><br>&nbsp; ignored:<br>&nbsp;&nbsp;&nbsp;
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:n on A.DEPTNO=B.DEPTNO<br><br>EMPLOYEE (EMPNO INTEGER NOT NULL)<br><br>&nbsp; depends on:<br>&nbsp;&nbsp;&nbsp;
+DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+n:1 on B.DEPTNO=A.DEPTNO<br>&nbsp;&nbsp;&nbsp; EMPLOYEE(inverse-SUBORDINATE)&nbsp; n:1 on B.EMPNO=A.BOSS<br><br>&nbsp; is associated with:<br>&nbsp;&nbsp;&nbsp;
+SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+n:1 on A.SALARY BETWEEN B.LOSAL AND B.HISAL<br><br>&nbsp; <span style="color: rgb(255, 0, 0);">ignored:</span><br style="color: rgb(255, 0, 0);"><span style="color: rgb(255, 0, 0);">&nbsp;&nbsp;&nbsp; EMPLOYEE(SUBORDINATE)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 1:n on A.EMPNO=B.BOSS</span><br><br>SALARYGRADE (GRADE INTEGER NOT NULL, LOSAL INTEGER NOT NULL, HISAL INTEGER NOT NULL)<br><br>&nbsp; ignored:<br>&nbsp;&nbsp;&nbsp;
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1:n on B.SALARY BETWEEN A.LOSAL AND A.HISAL<br><br><br>tables in dependent-cycle: EMPLOYEE<br><br>excluding following tables from component-analysis:&nbsp; { DEPARTMENT, SALARYGRADE }<br><br>1 components: <br>&nbsp;{ EMPLOYEE }<br></span></td></tr></tbody></table><br><br>A restriction-model is part of the extraction-model. Create a new extraction-model:<br><br>
+<table style="background-color: rgb(51, 102, 255); text-align: left;" border="0" cellpadding="2" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; height: 24px; background-color: rgb(202, 225, 235);"><big><span style="font-family: monospace;"><span style="font-weight: bold;">extractionmodel/scott-without-subordinates.csv</span></span><span style="font-family: monospace;"></span></big><br></td></tr></tbody></table>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; background-color: rgb(202, 225, 235);" colspan="2"><span style="font-family: monospace;"># the employee named 'SCOTT' and all associated entities<br><br>#
+subject;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+condition;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+limit;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; restrictions<br>EMPLOYEE;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+NAME='SCOTT';&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; </span><span style="color: rgb(255, 0, 0); font-family: monospace;">no-subordinates.csv</span></td></tr></tbody></table><br><br>and look what Jailer extracts now:<br><br>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; background-color: rgb(230, 255, 230);"><span style="font-family: monospace;">$ sh jailer.sh export -e scott.sql <span style="color: rgb(204, 0, 0);">extractionmodel/scott-without-subordinates.csv</span> com.ibm.db2.jcc.DB2Driver jdbc:db2://localhost:50001/wisser xbcsetup 1234 &gt; /dev/null<br>$ cat scott.sql<br></span><span style="font-family: monospace;">-- generated by Jailer at Mon Jun 04 15:08:15 CEST 2007 from wisser@u19<br>--<br>-- extraction model:&nbsp; EMPLOYEE where NAME='SCOTT' (extractionmodel/scott-without-subordinates.csv)<br>-- database URL:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; jdbc:db2://localhost:50001/wisser<br>-- database user:&nbsp;&nbsp;&nbsp;&nbsp; scott<br>-- exported entities: 7<br>--&nbsp;&nbsp;&nbsp;&nbsp;
+DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+2<br>--&nbsp;&nbsp;&nbsp;&nbsp;
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+3<br>--&nbsp;&nbsp;&nbsp;&nbsp;
+SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+2<br><br><br><br>Insert into SALARYGRADE(GRADE, LOSAL, HISAL) <br>&nbsp; values (4, 2001, 3000), <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (5, 3001, 9999);<br>Insert into DEPARTMENT(DEPTNO, NAME, LOCATION) <br>&nbsp; values (20, 'RESEARCH', 'DALLAS'), <br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; (10, 'ACCOUNTING', 'NEW YORK');<br>Insert into EMPLOYEE(EMPNO, NAME, JOB, BOSS, HIREDATE, SALARY, COMM, DEPTNO) <br>&nbsp; values (7839, 'KING', 'PRESIDENT', null, '1981-11-17', 5000.00, null, 10);<br>Insert into EMPLOYEE(EMPNO, NAME, JOB, BOSS, HIREDATE, SALARY, COMM, DEPTNO) <br>&nbsp; values (7566, 'JONES', 'MANAGER', 7839, '1981-04-02', 2975.00, null, 20);<br>Insert into EMPLOYEE(EMPNO, NAME, JOB, BOSS, HIREDATE, SALARY, COMM, DEPTNO) <br>&nbsp; values (7788, 'SCOTT', 'ANALYST', 7566, '1982-12-09', 3000.00, null, 20);<br></span></td></tr></tbody></table><br>Freedom for the innocent!<br><br>
+<h3>Step 8. Delete Scott (unsuccessful)</h3>It is also possible to create DML-scripts for deletion of exported entities:<br><br>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; background-color: rgb(230, 255, 230);"><span style="font-family: monospace;">$ sh jailer.sh export -e scott.sql <span style="color: rgb(204, 0, 0);">-d delete-scott.sql</span>
+extractionmodel/scott-without-subordinates.csv
+com.ibm.db2.jcc.DB2Driver jdbc:db2://localhost:50001/wisser scott tiger
+&gt; /dev/null<br>$ cat delete-scott.sql<br>-- generated by Jailer at Tue Jun 05 10:20:40 CEST 2007 from wisser@u19<br>--<br>-- extraction model:&nbsp; EMPLOYEE where NAME='SCOTT' (extractionmodel/scott-without-subordinates.csv)<br>-- database URL:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; jdbc:db2://localhost:50001/wisser<br>-- database user:&nbsp;&nbsp;&nbsp;&nbsp; scott<br>-- exported entities: 7<br>--&nbsp;&nbsp;&nbsp;&nbsp;
+DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+2<br>--&nbsp;&nbsp;&nbsp;&nbsp;
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+3<br>--&nbsp;&nbsp;&nbsp;&nbsp;
+SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+2<br>--<br>-- Tabu-tables:&nbsp; {&nbsp; }<br>--<br>-- entities to delete: 0<br><br></span><span style="font-family: monospace;"></span></td></tr></tbody></table><br>Jailer
+has exported 7 entities but didn't delete anything! That's because
+deleting Scott but not Scotts subordinate (who is not in the set
+defined by the extraction-model!) would violate the integrity of the
+data base.<br><br>
+<h3>Step 9. Delete Scott</h3>
+<p>In order to delete Scott, me must delete his subordinate too. To do so, relax the restriction on the <span style="font-style: italic;">SUBORDINATE</span>-association:</p>
+<table style="background-color: rgb(51, 102, 255); text-align: left;" border="0" cellpadding="2" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; height: 24px; background-color: rgb(202, 225, 235);"><big><span style="font-family: monospace;"><span style="font-weight: bold;">restrictionmodel/no-subordinates.csv</span></span><span style="font-family: monospace;"></span></big><br></td></tr></tbody></table>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; background-color: rgb(202, 225, 235);" colspan="2"><span style="font-family: monospace;"># from A (or association name); to B;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; restriction-condition<br>SUBORDINATE;&nbsp;
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span style="color: rgb(204, 0, 0);">A.NAME='SCOTT'</span><br>DEPARTMENT;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+EMPLOYEE;&nbsp;&nbsp; ignore<br>SALARYGRADE;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+EMPLOYEE;&nbsp;&nbsp; ignore<br></span></td></tr></tbody></table><br>and repeat the exportation:<br><br>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; background-color: rgb(230, 255, 230);"><span style="font-family: monospace;">$ sh jailer.sh export -e <a href="file:///C:/Users/ralf/Documents/Open%20Jail.%20The%20Jailer%20Project%20Web%20Site/local/user/bin/scott.sql.2.html"><img style="border: 0px solid ; width: 13px; height: 13px;" src="cli-tutorial-Dateien/arrow.gif" hspace="4">scott.sql</a>
+<span style="color: rgb(0, 0, 0);">-d delete-scott.sql</span>
+extractionmodel/scott-without-subordinates.csv
+com.ibm.db2.jcc.DB2Driver jdbc:db2://localhost:50001/wisser scott tiger
+&gt; /dev/null<br>$ cat delete-scott.sql<br>-- generated by Jailer at Tue Jun 05 10:50:03 CEST 2007 from wisser@u19<br>--<br>-- extraction model:&nbsp; EMPLOYEE where NAME='SCOTT' (extractionmodel/scott-without-subordinates.csv)<br>-- database URL:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; jdbc:db2://localhost:50001/wisser<br>-- database user:&nbsp;&nbsp;&nbsp;&nbsp; scott<br>-- exported entities: 9<br>--&nbsp;&nbsp;&nbsp;&nbsp;
+DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+2<br>--&nbsp;&nbsp;&nbsp;&nbsp;
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+4<br>--&nbsp;&nbsp;&nbsp;&nbsp;
+SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+3<br>--<br>-- Tabu-tables:&nbsp; {&nbsp; }<br>--<br>-- entities to delete: 2<br>--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+2 (-2)<br><br><br><br>Delete from EMPLOYEE Where EMPNO in (7876);<br>Delete from EMPLOYEE Where EMPNO in (7788);<br></span></td></tr></tbody></table><br>The file <big><span style="font-family: monospace;">delete-scott.sql</span></big> contains <big><span style="font-family: monospace;">Delete</span></big>-statements for Scott and Adams.<br>Note that <big><span style="font-family: monospace;">scott.sql</span></big> now contains <big><span style="font-family: monospace;">Insert</span></big>-statements for Adams and his salary-grade too.<br><br></td></tr></tbody></table><br>
+<hr style="width: 100%; height: 1px;">
+<a name="footnote"></a>1) Since 0.9.3 it is also possible to render the data model as HTML. Click<a href="file:///C:/Users/ralf/Documents/Open%20Jail.%20The%20Jailer%20Project%20Web%20Site/local/user/bin/index.html"><img style="border: 0px solid ; width: 13px; height: 13px;" src="cli-tutorial-Dateien/arrow.gif" hspace="4">here</a> to see how the tutorial's model would look like in HTML.<br>2) Since 2.0 all associations in <big><span style="font-family: monospace;"><font size="4">datamodel/model-builder-association.csv </font></span></big>have names.<big><span style="font-family: monospace;"></span></big><br></td></tr></tbody></table></div>
+<p>&nbsp; </p></td></tr>
+<tr>
+<td height="12" valign="top" width="14%"></td>
+<td class="footer" height="12" valign="top" width="86%"><font color="#c0c0c0">Powered by Ewisoft <a href="http://www.ewisoft.com/free-website-builder.htm" style="text-decoration: none; color: rgb(192, 192, 192);">Website Builder</a> &amp; <a href="http://www.ewisoft-ecommerce.com/" style="text-decoration: none; color: rgb(192, 192, 192);">eCommerce Website Design</a> Software</font></td></tr></tbody></table></div></body></html>
