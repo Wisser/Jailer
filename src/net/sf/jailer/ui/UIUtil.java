@@ -138,14 +138,20 @@ public class UIUtil {
 			}
 			
         	public void write(int b) throws IOException {
-                originalOut.write(b);
+        		if (b != '@') {
+        			originalOut.write(b);
+        		}
                 boolean wasReady;
                 synchronized (buffer) {
                 	wasReady = ready[0];
-                	buffer.append((char) b);
+                	if (b != '@') {
+                		buffer.append((char) b);
+                	}
                 }
                 if ((char) b == '\n') {
                 	++lineNr;
+                }
+                if ((char) b == '\n' && lineNr % 30 == 0 || (char) b == '@') {
                 	if (wasReady) {
                 		synchronized (buffer) {
                 			ready[0] = false;
@@ -157,14 +163,11 @@ public class UIUtil {
 							            if (buffer.length() > 0) {
 							    			outputView.appendText(buffer.toString());
 							                buffer.setLength(0);
-							                ready[0] = true;
-							            }
+							             }
 									}
+								    ready[0] = true;
 								}
 							});
-							if (lineNr % 10 == 0) {
-								Thread.sleep(100);
-							}
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						} catch (InvocationTargetException e) {
@@ -192,6 +195,25 @@ public class UIUtil {
             final boolean[] result = new boolean[] { false };
             final Throwable[] exp = new Throwable[1];
             final StringBuffer warnings = new StringBuffer();
+            final boolean[] fin = new boolean[] { false };
+            
+            new Thread(new Runnable() {
+				public void run() {
+					for (int i = 0; ; ++i) {
+						try {
+							Thread.sleep(i == 0? 500 : 1000);
+						} catch (InterruptedException e) {
+						}
+						synchronized (fin) {
+							if (fin[0]) {
+								break;
+							}
+							System.out.print("@");
+						}
+					}
+				}
+            }).start();
+            
             new Thread(new Runnable() {
 				public void run() {
 		            try {
@@ -199,8 +221,14 @@ public class UIUtil {
 		                    System.out.println("$ jailer" + arglist);
 		                }
 		            	result[0] = Jailer.jailerMain(argsarray, warnings);
+		            	// flush
+		            	System.out.println("@");
 		            } catch (Throwable t) {
 		            	exp[0] = t;
+		            } finally {
+		            	synchronized (fin) {
+		            		fin[0] = true;
+		            	}
 		            }
 		            SwingUtilities.invokeLater(new Runnable() {
 		            	public void run() {

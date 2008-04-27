@@ -574,9 +574,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     		if (saveIfNeeded("edit data model", true)) {
        			DataModelEditor dataModelEditor = new DataModelEditor(this, false);
 				dataModelEditor.setVisible(true);
-       			if (dataModelEditor.saved) {
+       		//	if (dataModelEditor.saved) {
        				reload();
-       			}
+       		//	}
+       			askForDataModel(this);
     		}
         } catch (Exception e) {
         	UIUtil.showException(this, "Error", e);
@@ -599,9 +600,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        	if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword())) {
 		        			DataModelEditor dataModelEditor = new DataModelEditor(this, true);
 							dataModelEditor.setVisible(true);
-		           			if (dataModelEditor.saved) {
+		           //			if (dataModelEditor.saved) {
 		           				reload();
-		           			}
+		           //			}
+		           			askForDataModel(this);
 		        		}
 	        		}
 	        	}
@@ -936,17 +938,23 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
                 extractionModelFrame.setLocation(40, 40);
                 extractionModelFrame.setSize(960, 660);
                 extractionModelFrame.setVisible(true);
-                if (extractionModelFrame.extractionModelEditor.dataModel.getTables().isEmpty()) {
-                	switch (JOptionPane.showOptionDialog(extractionModelFrame, "No Data Model found.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Introspect DB", "Data Model Editor", "Demo" }, null)) {
-                		case 0: extractionModelFrame.updateDataModelActionPerformed(null); break;
-	                   	case 1: extractionModelFrame.openDataModelEditorActionPerformed(null); break;
-	                   	case 2: demo(extractionModelFrame); break;
-                	}
-                }
+                askForDataModel(extractionModelFrame);
             }
+
         });
     }
-
+    
+    private static void askForDataModel(
+			ExtractionModelFrame extractionModelFrame) {
+		if (extractionModelFrame.extractionModelEditor.dataModel.getTables().isEmpty()) {
+        	switch (JOptionPane.showOptionDialog(extractionModelFrame, "No Data Model found.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Introspect DB", "Data Model Editor", "Demo" }, null)) {
+        		case 0: extractionModelFrame.updateDataModelActionPerformed(null); break;
+               	case 1: extractionModelFrame.openDataModelEditorActionPerformed(null); break;
+               	case 2: demo(extractionModelFrame); break;
+        	}
+        }
+	}
+    
     /**
      * Creates demo datamodel and loads demo extraction model.
      * 
