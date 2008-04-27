@@ -22,11 +22,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.log4j.Logger;
+
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.util.SqlScriptExecutor;
 
 /**
  * Persistent graph of entities. 
@@ -64,7 +67,12 @@ public class EntityGraph {
      * For executing SQL-Statements.
      */
     public final StatementExecutor statementExecutor;
-    
+
+	/**
+     * The logger.
+     */
+    private static final Logger _log = Logger.getLogger(SqlScriptExecutor.class);
+
     /**
      * The universal primary key.
      */
@@ -491,16 +499,32 @@ public class EntityGraph {
             long rc = statementExecutor.executeUpdate(remove);
             totalRowcount += rc;
             if (rc > 0) {
-                StringBuffer sEqualsE = new StringBuffer();
+            	StringBuffer sEqualsE = new StringBuffer();
+            	StringBuffer sEqualsEWoAlias = new StringBuffer();
                 for (Column column: universalPrimaryKey.getColumns()) {
-                    if (sEqualsE.length() > 0) {
+                	if (sEqualsE.length() > 0) {
                         sEqualsE.append(" and ");
                     }
                     sEqualsE.append("S." + column.name + "=E." + column.name);
+                    if (sEqualsEWoAlias.length() > 0) {
+                    	sEqualsEWoAlias.append(" and ");
+                    }
+                    sEqualsEWoAlias.append("S." + column.name + "=" + ENTITY + "." + column.name);
                 }
                 remove = "Update " + ENTITY + " E set E.birthday=-1 Where E.r_entitygraph=" + graphID + " and E.type='" + association.destination.getName() + "' " +
                           "and exists (Select * from " + ENTITY_SET_ELEMENT + " S where S.set_id=" + setId + " and E.type=S.type and " + sEqualsE + ")";
-                statementExecutor.executeUpdate(remove);
+                try {
+                	statementExecutor.setSilent(true);
+                	statementExecutor.executeUpdate(remove);
+                } catch (SQLException e) {
+                	// postgreSQL
+                	StatementExecutor._log.debug("failed, retry without alias (" + e.getMessage() + ")");
+                	remove = "Update " + ENTITY + " set birthday=-1 Where " + ENTITY + ".r_entitygraph=" + graphID + " and " + ENTITY + ".type='" + association.destination.getName() + "' " +
+                    "and exists (Select * from " + ENTITY_SET_ELEMENT + " S where S.set_id=" + setId + " and " + ENTITY + ".type=S.type and " + sEqualsEWoAlias + ")";
+                	statementExecutor.executeUpdate(remove);
+                } finally {
+                	statementExecutor.setSilent(false);
+                }
                 statementExecutor.executeUpdate("Delete from " + ENTITY_SET_ELEMENT + " where set_id=" + setId + "");
             }
             return rc;

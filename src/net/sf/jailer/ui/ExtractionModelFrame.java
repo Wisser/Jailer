@@ -965,6 +965,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		tables.delete();
 		File associations = new File(DataModel.ASSOCIATIONS_FILE);
 		associations.delete();
+		File exDel = new File(DataModel.EXCLUDE_FROM_DELETION_FILE);
+		exDel.delete();
 		try {
 			PrintWriter out = new PrintWriter(new FileOutputStream(tables));
 			out.println("# Name; Upsert; Primary key; ; Author");
@@ -980,12 +982,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			out.println("EMPLOYEE; DEPARTMENT; B; n:1; A.DEPTNO=B.DEPTNO; DEPARTMENT; Demo; ; ");
 			out.println("EMPLOYEE; EMPLOYEE; B; n:1; A.BOSS=B.EMPNO; BOSS; Demo; ; ");
 			out.close();
+			out = new PrintWriter(new FileOutputStream(exDel));
+			out.println("DEPARTMENT");
+			out.println("SALARYGRADE");
+			out.close();
 			extractionModelFrame.load("extractionmodel/demo.csv");
 		} catch (Exception e) {
 			UIUtil.showException(extractionModelFrame, "Error", e);
 		}
 	}
-    
+	
     // Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables
     private javax.swing.JMenuItem collapseAll;
     private javax.swing.JCheckBoxMenuItem connectDb;

@@ -95,7 +95,7 @@ public class StatementExecutor {
     /**
      * The logger.
      */
-    private static final Logger _log = Logger.getLogger("sql");
+    public static final Logger _log = Logger.getLogger("sql");
  
     /**
      * Connection factory.
@@ -215,7 +215,7 @@ public class StatementExecutor {
      * 
      * @param silent <code>true</code> for silence
      */
-    public void setSilent(boolean silent) {
+    public synchronized void setSilent(boolean silent) {
     	this.silent = silent;
     }
 
