@@ -218,7 +218,7 @@ SERVICEUSER; N; OID BIGINT; ; script/db2/selectTables.sql; ;
 SERVICEUSERS; N; OID BIGINT; ; script/db2/selectTables.sql; ; 
 SERVICEUSER_PROPERTY; N; R_SERVICEUSER BIGINT; NAME VARCHAR(60); ; script/db2/selectTables.sql; ; 
 SERVICEUSER_TO_DELETE; N; OID BIGINT; ; script/db2/selectTables.sql; ; 
-SERVICE_OCCURRENCE; N; OID BIGINT; ; script/db2/selectTables.sql; ; 
+SERVICE_OCCURRENCE; Y; OID BIGINT; ; Data Model Editor; ; 
 SERVICE_OCCURRENCE_PROPERTY; N; R_SERVICE_OCCURRENCE BIGINT; NAME VARCHAR(60); ; script/db2/selectTables.sql; ; 
 SERVICE_PROPERTY; N; R_SERVICE BIGINT; NAME VARCHAR(60); ; script/db2/selectTables.sql; ; 
 SERVICE_TERMS; N; OID BIGINT; ; script/db2/selectTables.sql; ; 
