@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.sf.jailer;
 
 import java.io.File;
@@ -27,7 +26,7 @@ import net.sf.jailer.util.SqlScriptExecutor;
 /**
  * Creates the DDL for the working-tables.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class DDLCreator {
 

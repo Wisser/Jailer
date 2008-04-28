@@ -13,22 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.sf.jailer.modelbuilder;
+
+import java.util.Collection;
+import java.util.Map;
 
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 
-import java.util.Collection;
-import java.util.Map;
-
-
 /**
  * Finds model-elements (tables and associations).
  *  
- * @author Wisser
+ * @author Ralf Wisser
  */
 public interface ModelElementFinder {
 
@@ -47,7 +45,7 @@ public interface ModelElementFinder {
      * 
      * @param dataModel model containing already known elements. 
      * @param statementExecutor the statement executor for executing SQL-statements 
-     * @param namingSuggestions to put naming suggestions for associations into
+     * @param namingSuggestion to put naming suggestions for associations into
      * @return a set of {@link Association}s
      * 
      * @throws Exception on each error

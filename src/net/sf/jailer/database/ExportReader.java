@@ -43,7 +43,7 @@ import net.sf.jailer.util.SqlUtil;
  * A {@link ResultSetReader} that writes the read rows as SQL-INSERT-statements 
  * into the export-script.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class ExportReader implements ResultSetReader {
 
@@ -111,7 +111,10 @@ public class ExportReader implements ResultSetReader {
      * Counts the exported LOBs. (GUI support)
      */
     public static long numberOfExportedLOBs;
-    
+
+    /**
+     * Maps clear text SQL-types to {@link java.sql.Types}.
+     */
     private Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
 
     /**

@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.sf.jailer.enhancer;
 
 import java.io.IOException;
@@ -32,7 +31,7 @@ import net.sf.jailer.entitygraph.EntityGraph;
 /**
  * Inserts DDL for helper tables.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class HelperTableEnhancer implements ScriptEnhancer {
 

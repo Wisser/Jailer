@@ -15,28 +15,35 @@
  */
 package net.sf.jailer.ui;
 
-import com.digitprop.tonic.TonicLookAndFeel;
-import net.sf.jailer.Jailer;
-import net.sf.jailer.aliases.database.DatabaseAlias;
-import net.sf.jailer.database.ExportReader;
-import net.sf.jailer.database.StatementExecutor;
-import net.sf.jailer.datamodel.DataModel;
-import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
-
-import javax.swing.*;
-import javax.swing.UIManager.LookAndFeelInfo;
-import java.awt.*;
+import java.awt.CardLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.InputEvent;
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.swing.ImageIcon;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
+
+import net.sf.jailer.Jailer;
+import net.sf.jailer.database.ExportReader;
+import net.sf.jailer.datamodel.DataModel;
 
 /**
- * Main frame of Extraction-Model-Editor.z
+ * Main frame of Extraction-Model-Editor.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class ExtractionModelFrame extends javax.swing.JFrame {
 
@@ -48,10 +55,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	/**
 	 * Dialog for DB-connects.
 	 */
-	//private final DbConnectionDialog dbConnectionDialog;
-
-	private DatabaseAlias myDatabaseAlias = null;
-
+	private final DbConnectionDialog dbConnectionDialog;
+	
 	/**
 	 * File in which plaf-setting is stored.
 	 */
@@ -66,27 +71,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         initComponents();
         editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelFile, this), "editor");
         extractionModelEditor.extractionModelFile = extractionModelFile;
-    	fileMenu.setMnemonic('f');
-        newModel.setMnemonic('n');
-        load.setMnemonic('o');
-        save.setMnemonic('s');
-        saveAs.setMnemonic('a');
-        newModel.setAccelerator(KeyStroke.getKeyStroke('N', InputEvent.CTRL_MASK));
-        load.setAccelerator(KeyStroke.getKeyStroke('O', InputEvent.CTRL_MASK));
-        save.setAccelerator(KeyStroke.getKeyStroke('S', InputEvent.CTRL_MASK));
-        saveAs.setAccelerator(KeyStroke.getKeyStroke('A', InputEvent.CTRL_MASK));
-        jMenu1.setMnemonic('a');
-        collapseAll.setMnemonic('l');
-        expandAll.setMnemonic('p');
-        refresh.setMnemonic('r');
-        hideIgnored.setMnemonic('h');
-        expandAll.setAccelerator(KeyStroke.getKeyStroke('P', InputEvent.CTRL_MASK));
-        refresh.setAccelerator(KeyStroke.getKeyStroke('R', InputEvent.CTRL_MASK));
-        hideIgnored.setAccelerator(KeyStroke.getKeyStroke('H', InputEvent.CTRL_MASK));
         pack();
         updateTitle(extractionModelEditor.needsSave);
-		myDatabaseAlias = null;
-		try {
+        dbConnectionDialog = new DbConnectionDialog(this);
+        try {
 	        for (final LookAndFeelInfo lfInfo: UIManager.getInstalledLookAndFeels()) {
 	        	JMenuItem mItem = new JMenuItem();
 	        	mItem.setText(lfInfo.getName());
@@ -106,7 +94,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      * Updates state of some menu items.
      */
     private void updateMenuItems() {
-		connectDb.setSelected(myDatabaseAlias != null);
+		connectDb.setSelected(dbConnectionDialog.isConnected);
 	}
 
 	/** This method is called from within the constructor to
@@ -128,6 +116,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         save = new javax.swing.JMenuItem();
         saveAs = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JSeparator();
+        connectDb = new javax.swing.JCheckBoxMenuItem();
+        disconnectDb = new javax.swing.JMenuItem();
+        jSeparator10 = new javax.swing.JSeparator();
         exit = new javax.swing.JMenuItem();
         jMenu5 = new javax.swing.JMenu();
         ignoreAll = new javax.swing.JMenuItem();
@@ -135,12 +126,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu1 = new javax.swing.JMenu();
         collapseAll = new javax.swing.JMenuItem();
         expandAll = new javax.swing.JMenuItem();
+        jMenuItem3 = new javax.swing.JMenuItem();
+        jMenuItem4 = new javax.swing.JMenuItem();
         refresh = new javax.swing.JMenuItem();
-        jSeparator4 = new javax.swing.JSeparator();
+        zoomToFit = new javax.swing.JMenuItem();
+        jSeparator9 = new javax.swing.JSeparator();
         hideIgnored = new javax.swing.JCheckBoxMenuItem();
-        jMenu4 = new javax.swing.JMenu();
-        connectDb = new javax.swing.JCheckBoxMenuItem();
-        disconnectDb = new javax.swing.JMenuItem();
+        jSeparator11 = new javax.swing.JSeparator();
+        view = new javax.swing.JMenu();
         jMenu3 = new javax.swing.JMenu();
         dataExport = new javax.swing.JMenuItem();
         dataImport = new javax.swing.JMenuItem();
@@ -150,7 +143,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jSeparator5 = new javax.swing.JSeparator();
         printDatamodel = new javax.swing.JMenuItem();
         renderHtml = new javax.swing.JMenuItem();
-        view = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
         helpContent = new javax.swing.JMenuItem();
         tutorial = new javax.swing.JMenuItem();
@@ -161,8 +153,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        setTitle("Extraction Model Editor");
         setDefaultCloseOperation(0);
+        setTitle("Extraction Model Editor");
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
@@ -184,6 +176,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
 
+        newModel.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
         newModel.setText("New Model");
         newModel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -195,6 +188,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         fileMenu.add(jSeparator3);
 
+        load.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         load.setText("Load");
         load.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -206,6 +200,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         fileMenu.add(jSeparator1);
 
+        save.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         save.setText("Save");
         save.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -215,6 +210,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         fileMenu.add(save);
 
+        saveAs.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_A, java.awt.event.InputEvent.CTRL_MASK));
         saveAs.setText("Save as...");
         saveAs.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -225,6 +221,26 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         fileMenu.add(saveAs);
 
         fileMenu.add(jSeparator2);
+
+        connectDb.setText("Connect database");
+        connectDb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                connectDbActionPerformed(evt);
+            }
+        });
+
+        fileMenu.add(connectDb);
+
+        disconnectDb.setText("Disconnect");
+        disconnectDb.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                disconnectDbActionPerformed(evt);
+            }
+        });
+
+        fileMenu.add(disconnectDb);
+
+        fileMenu.add(jSeparator10);
 
         exit.setText("Exit");
         exit.addActionListener(new java.awt.event.ActionListener() {
@@ -238,7 +254,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenuBar2.add(fileMenu);
 
         jMenu5.setText("Restriction");
-        ignoreAll.setLabel("Restrict all associations");
+        ignoreAll.setActionCommand("Disable all associations");
+        ignoreAll.setLabel("Disable all associations");
         ignoreAll.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ignoreAllActionPerformed(evt);
@@ -258,7 +275,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenuBar2.add(jMenu5);
 
-        jMenu1.setText("Association");
+        jMenu1.setText("View");
+        collapseAll.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
         collapseAll.setText("Collapse all");
         collapseAll.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -268,6 +286,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu1.add(collapseAll);
 
+        expandAll.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_E, java.awt.event.InputEvent.CTRL_MASK));
         expandAll.setLabel("Expand all");
         expandAll.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -277,7 +296,28 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu1.add(expandAll);
 
-        refresh.setText("Refresh");
+        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem3.setText("Fix all");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
+
+        jMenu1.add(jMenuItem3);
+
+        jMenuItem4.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_U, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem4.setText("Unfix all");
+        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem4ActionPerformed(evt);
+            }
+        });
+
+        jMenu1.add(jMenuItem4);
+
+        refresh.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
+        refresh.setText("Reset");
         refresh.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 refreshActionPerformed(evt);
@@ -286,9 +326,22 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu1.add(refresh);
 
-        jMenu1.add(jSeparator4);
+        zoomToFit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z, java.awt.event.InputEvent.CTRL_MASK));
+        zoomToFit.setText("Zoom to fit");
+        zoomToFit.setVerifyInputWhenFocusTarget(false);
+        zoomToFit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                zoomToFitActionPerformed(evt);
+            }
+        });
 
-        hideIgnored.setText("Hide ignored");
+        jMenu1.add(zoomToFit);
+
+        jMenu1.add(jSeparator9);
+
+        hideIgnored.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_MASK));
+        hideIgnored.setSelected(true);
+        hideIgnored.setText("Hide disabled associations");
         hideIgnored.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 hideIgnoredActionPerformed(evt);
@@ -297,28 +350,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu1.add(hideIgnored);
 
+        jMenu1.add(jSeparator11);
+
+        view.setLabel("Look&Feel");
+        jMenu1.add(view);
+
         jMenuBar2.add(jMenu1);
-
-        jMenu4.setLabel("Database");
-        connectDb.setText("Connect");
-        connectDb.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                connectDbActionPerformed(evt);
-            }
-        });
-
-        jMenu4.add(connectDb);
-
-        disconnectDb.setText("Disconnect");
-        disconnectDb.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                disconnectDbActionPerformed(evt);
-            }
-        });
-
-        jMenu4.add(disconnectDb);
-
-        jMenuBar2.add(jMenu4);
 
         jMenu3.setText("Tools");
         dataExport.setLabel("Export Data");
@@ -381,9 +418,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenuBar2.add(jMenu3);
 
-        view.setLabel("Look&Feel");
-        jMenuBar2.add(view);
-
         jMenu2.setText("Help");
         helpContent.setText("Content");
         helpContent.addActionListener(new java.awt.event.ActionListener() {
@@ -432,6 +466,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void zoomToFitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zoomToFitActionPerformed
+    	extractionModelEditor.zoomToFit();
+    }//GEN-LAST:event_zoomToFitActionPerformed
+
     private void tutorialActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tutorialActionPerformed
     	try {
 			BrowserLauncher.openURL(new File("doc" + File.separator + "htdocs" + File.separator + "JailerGuiTutorial.html").getCanonicalPath());
@@ -459,7 +497,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_removeAllRestrictionsActionPerformed
 
     private void ignoreAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ignoreAllActionPerformed
-    	if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Add restriction for each association (except dependencies)?", "Add restrictions", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+    	if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Disable each association (except dependencies)?", "Add restrictions", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
     		extractionModelEditor.ignoreAll();
     	}
     }//GEN-LAST:event_ignoreAllActionPerformed
@@ -473,9 +511,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     				List<String> args = new ArrayList<String>();
     				args.add("import");
     				args.add(sqlFile);
-    				myDatabaseAlias.addDbArgs(args);
+    				dbConnectionDialog.addDbArgs(args);
     				disconnect();
-    				UIUtil.runJailer(this, args, false, true, false, false, null);
+    				UIUtil.runJailer(this, args, false, true, false, false, null, dbConnectionDialog.getPassword());
     			}
     		}
     	} catch (Exception e) {
@@ -489,11 +527,20 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         	args.add("print-datamodel");
         	File file = saveRestrictions();
         	args.add(file.getName());
-        	UIUtil.runJailer(this, args, false, true, false, false, null);
+        	UIUtil.runJailer(this, args, false, true, false, false, null, dbConnectionDialog.getPassword());
         } catch (Exception e) {
         	UIUtil.showException(this, "Error", e);
         }
 	}//GEN-LAST:event_printDatamodelActionPerformed
+
+	/**
+	 * Looks up "show disabled associations" setting.
+	 * 
+	 * @return true if "show disabled associations" is set
+	 */
+	public boolean showDisabledAssociations() {
+		return !hideIgnored();
+	}
 
     /**
      * Sets Look&Feel.
@@ -527,9 +574,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     		if (saveIfNeeded("edit data model", true)) {
        			DataModelEditor dataModelEditor = new DataModelEditor(this, false);
 				dataModelEditor.setVisible(true);
-       			if (dataModelEditor.saved) {
+       		//	if (dataModelEditor.saved) {
        				reload();
-       			}
+       		//	}
+       			askForDataModel(this);
     		}
         } catch (Exception e) {
         	UIUtil.showException(this, "Error", e);
@@ -542,19 +590,20 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	        	if (connectToDBIfNeeded("Introspect DB")) {
 		        	List<String> args = new ArrayList<String>();
 		        	args.add("build-model");
-		        	myDatabaseAlias.addDbArgs(args);
-	        		String schema = selectDBSchema(this);
+		        	dbConnectionDialog.addDbArgs(args);
+	        		String schema = dbConnectionDialog.selectDBSchema(this);
 	        		if (!"".equals(schema)) {
 		        		if (schema != null) {
 		        			args.add("-schema");
 		        			args.add(schema);
 		        		}
-			        	if (UIUtil.runJailer(this, args, false, true, false, true, null)) {
+			        	if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword())) {
 		        			DataModelEditor dataModelEditor = new DataModelEditor(this, true);
 							dataModelEditor.setVisible(true);
-		           			if (dataModelEditor.saved) {
+		           //			if (dataModelEditor.saved) {
 		           				reload();
-		           			}
+		           //			}
+		           			askForDataModel(this);
 		        		}
 	        		}
 	        	}
@@ -572,27 +621,33 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        	List<String> args = new ArrayList<String>();
 			        	args.add("export");
 			        	args.add(extractionModelEditor.extractionModelFile);
-			        	myDatabaseAlias.addDbArgs(args);
+			        	dbConnectionDialog.addDbArgs(args);
 			        	ExportDialog exportDialog = new ExportDialog(this);
 			        	if (exportDialog.isOk()) {
 			        		exportDialog.fillCLIArgs(args);
+			        		File excludeFromDeletion = new File(DataModel.EXCLUDE_FROM_DELETION_FILE);
+			        		if (excludeFromDeletion.exists()) {
+			        			args.add("-t");
+			        			args.add(DataModel.EXCLUDE_FROM_DELETION_FILE);
+			        		}
 				        	List<String> ddlArgs = new ArrayList<String>();
 				        	ddlArgs.add("create-ddl");
-				        	myDatabaseAlias.addDbArgs(ddlArgs);
+				        	dbConnectionDialog.addDbArgs(ddlArgs);
 				        	ExportReader.numberOfExportedEntities = 0;
 				        	ExportReader.numberOfExportedLOBs = 0;
 				            if (UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
 			        				"Automatic creation of working-tables failed!\n" +
 			        				"Please execute the Jailer-DDL manually (jailer_ddl.sql)\n\n" +
-			        				"Continue Data Export?")) {
-			        			if (UIUtil.runJailer(this, args, true, true, exportDialog.explain.isSelected(), !exportDialog.explain.isSelected(), null)) {
-			        				String message = "Exported " + ExportReader.numberOfExportedEntities + " entities.";
+			        				"Continue Data Export?", dbConnectionDialog.getPassword())) {
+			        			if (UIUtil.runJailer(this, args, true, true, exportDialog.explain.isSelected(), !exportDialog.explain.isSelected(), null, dbConnectionDialog.getPassword())) {
+			        				String message = Jailer.statistic.toString();
 			        				if (ExportReader.numberOfExportedLOBs > 0) {
 			        					message += "\nExported " + ExportReader.numberOfExportedLOBs + " CLOBs/BLOBs.\n\n" +
 			        					           "Note that the CLOBs/BLOBs can only\n" +
 			        							   "be imported with the 'Import Data'-tool!";
 			        				}
-		        					JOptionPane.showMessageDialog(this, message);
+		        					// JOptionPane.showMessageDialog(this, message, "Export Statistic", JOptionPane.INFORMATION_MESSAGE);
+			        				new StatisticDialog(this, message);
 			        			}
 			        		}
 			        	}
@@ -609,8 +664,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_disconnectDbActionPerformed
 
 	private void disconnect() {
-		myDatabaseAlias = null;
-		updateMenuItems();
+		dbConnectionDialog.isConnected = false;
+    	updateMenuItems();
 	}
 
     private void connectDbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectDbActionPerformed
@@ -623,16 +678,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         	if (connectToDBIfNeeded("Html rendering")) {
 	        	List<String> args = new ArrayList<String>();
 	        	args.add("render-datamodel");
-	        	String schema = selectDBSchema(this);
+	        	String schema = dbConnectionDialog.selectDBSchema(this);
         		if (!"".equals(schema)) {
 	        		if (schema != null) {
 	        			args.add("-schema");
 	        			args.add(schema);
 	        		}
-	        		myDatabaseAlias.addDbArgs(args);
+	        		dbConnectionDialog.addDbArgs(args);
 		        	File file = saveRestrictions();
 		        	args.add(file.getName());
-		        	UIUtil.runJailer(this, args, false, true, false, true, null);
+		        	UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword());
 		        	BrowserLauncher.openURL("render/index.html");
         		}
         	}
@@ -670,8 +725,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      */
     private boolean connectToDBIfNeeded(String reason) {
     	try {
-    		if (myDatabaseAlias == null) {
-	    		return false;//(myDatabaseAlias = DatabaseAliasManager.showDialog(this)) != null;
+    		if (!dbConnectionDialog.isConnected) {
+	    		return dbConnectionDialog.connect(reason);
     		}
     		return true;
     	} finally {
@@ -691,15 +746,24 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	if (saveIfNeeded("loading", true)) {
     		String modelFile = UIUtil.choseFile(null, "extractionmodel", "Load Extraction Model", ".csv", this, true, true);
     		if (modelFile != null) {
-	    		extractionModelEditor.extractionModelFrame = null;
-	    		editorPanel.remove(extractionModelEditor);
-	    		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(modelFile, this), "editor");
-	    		((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
-	    		validate();
-	    		updateTitle(extractionModelEditor.needsSave);
+	    		load(modelFile);
     		}
     	}
     }//GEN-LAST:event_loadActionPerformed
+
+    /**
+     * Loads an extraction model.
+     * 
+     * @param modelFile name of model file
+     */
+	private void load(String modelFile) {
+		extractionModelEditor.extractionModelFrame = null;
+		editorPanel.remove(extractionModelEditor);
+		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(modelFile, this), "editor");
+		((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
+		validate();
+		updateTitle(extractionModelEditor.needsSave);
+	}
 
     private void newModelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newModelActionPerformed
     	if (saveIfNeeded("creating new model", true)) {
@@ -726,15 +790,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_expandAllActionPerformed
 
     private void hideIgnoredActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hideIgnoredActionPerformed
-        extractionModelEditor.refresh();
+        extractionModelEditor.refresh(true, false);
     }//GEN-LAST:event_hideIgnoredActionPerformed
 
     private void collapseAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_collapseAllActionPerformed
-        extractionModelEditor.refresh();
+        extractionModelEditor.refresh(false, true);
+        extractionModelEditor.resetGraphEditor(true);
     }//GEN-LAST:event_collapseAllActionPerformed
 
     private void refreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshActionPerformed
-    	extractionModelEditor.refresh();
+    	extractionModelEditor.refresh(true, true);
     }//GEN-LAST:event_refreshActionPerformed
 
     private void saveAsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsActionPerformed
@@ -794,6 +859,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
     private void fileMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileMenuActionPerformed
     }//GEN-LAST:event_fileMenuActionPerformed
+
+    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+        extractionModelEditor.graphView.setFix(true);
+    }//GEN-LAST:event_jMenuItem3ActionPerformed
+
+    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+        extractionModelEditor.graphView.setFix(false);
+    }//GEN-LAST:event_jMenuItem4ActionPerformed
     
     /**
      * Updates title.
@@ -817,16 +890,20 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	boolean hideIgnored() {
 		return hideIgnored.isSelected();
 	}
-
-	void setHideIgnored(boolean b) {
-		hideIgnored.setSelected(b);
-		extractionModelEditor.refresh();
-	}
 	
 	/**
      * @param args the command line arguments
      */
     public static void main(final String args[]) {
+    	// turn of logging for prefuse library
+    	try {
+			Logger.getLogger("prefuse").setLevel(Level.OFF);
+			
+			// trigger log4j initialization
+			Jailer.class.getName();
+		} catch (SecurityException e1) {
+			e1.printStackTrace();
+		}
     	try {
     		// create initial data-model files
     		File file = new File("datamodel");
@@ -851,28 +928,76 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	    		BufferedReader in = new BufferedReader(new FileReader(plafSetting));
     	    		String plaf = in.readLine();
     	    		in.close();
-//    	    		UIManager.setLookAndFeel(plaf);
-					try {
-						UIManager.setLookAndFeel(new TonicLookAndFeel());
-						JFrame.setDefaultLookAndFeelDecorated(true);
-					} catch (UnsupportedLookAndFeelException exception) {
-					}
+    	    		UIManager.setLookAndFeel(plaf);
     		    	SwingUtilities.updateComponentTreeUI(extractionModelFrame);
     	    	} catch (Exception x) {
+    	    	}
+    	    	try {
+    	    		extractionModelFrame.setIconImage(new ImageIcon(extractionModelFrame.getClass().getResource("/jailer.gif")).getImage());
+    	    	} catch (Throwable t) {
     	    	}
                 extractionModelFrame.setLocation(40, 40);
                 extractionModelFrame.setSize(960, 660);
                 extractionModelFrame.setVisible(true);
-                if (extractionModelFrame.extractionModelEditor.dataModel.getTables().isEmpty()) {
-                	switch (JOptionPane.showOptionDialog(extractionModelFrame, "No Data Model found.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Introspect DB", "Data Model Editor" }, null)) {
-                		case 0: extractionModelFrame.updateDataModelActionPerformed(null); break;
-	                   	case 1: extractionModelFrame.openDataModelEditorActionPerformed(null); break;
-                	}
-                }
+                askForDataModel(extractionModelFrame);
             }
+
         });
     }
     
+    private static void askForDataModel(
+			ExtractionModelFrame extractionModelFrame) {
+		if (extractionModelFrame.extractionModelEditor.dataModel.getTables().isEmpty()) {
+        	switch (JOptionPane.showOptionDialog(extractionModelFrame, "No Data Model found.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Introspect DB", "Data Model Editor", "Demo" }, null)) {
+        		case 0: extractionModelFrame.updateDataModelActionPerformed(null); break;
+               	case 1: extractionModelFrame.openDataModelEditorActionPerformed(null); break;
+               	case 2: demo(extractionModelFrame); break;
+        	}
+        }
+	}
+    
+    /**
+     * Creates demo datamodel and loads demo extraction model.
+     * 
+     * @param extractionModelFrame the editor frame
+     */
+	private static void demo(ExtractionModelFrame extractionModelFrame) {
+		File tables = new File(DataModel.TABLES_FILE);
+		tables.delete();
+		File associations = new File(DataModel.ASSOCIATIONS_FILE);
+		associations.delete();
+		File exDel = new File(DataModel.EXCLUDE_FROM_DELETION_FILE);
+		exDel.delete();
+		File iData= new File(DataModel.INITIAL_DATA_TABLES_FILE);
+		iData.delete();
+		try {
+			PrintWriter out = new PrintWriter(new FileOutputStream(tables));
+			out.println("# Name; Upsert; Primary key; ; Author");
+			out.println("BONUS; N; ENAME VARCHAR(10); JOB VARCHAR(9); ; Demo; ; ");
+			out.println("DEPARTMENT; N; DEPTNO INTEGER; ; Demo; ; ");
+			out.println("EMPLOYEE; N; EMPNO INTEGER; ; Demo; ; ");
+			out.println("SALARYGRADE; N; GRADE INTEGER; ; Demo; ; ");
+			out.close();
+			out = new PrintWriter(new FileOutputStream(associations));
+			out.println("# Table A; Table B; First-insert; Cardinality; Join-condition; Name; Author");
+			out.println("EMPLOYEE; BONUS; ; 1:1; A.NAME=B.ENAME and A.JOB=B.JOB; BONUS; Demo; ; ");
+			out.println("SALARYGRADE; EMPLOYEE; ; 1:n; B.SALARY BETWEEN A.LOSAL and A.HISAL; SALARY; Demo; ; ");
+			out.println("EMPLOYEE; DEPARTMENT; B; n:1; A.DEPTNO=B.DEPTNO; DEPARTMENT; Demo; ; ");
+			out.println("EMPLOYEE; EMPLOYEE; B; n:1; A.BOSS=B.EMPNO; BOSS; Demo; ; ");
+			out.close();
+			out = new PrintWriter(new FileOutputStream(exDel));
+			out.println("DEPARTMENT");
+			out.println("SALARYGRADE");
+			out.close();
+			out = new PrintWriter(new FileOutputStream(iData));
+			out.println("SALARYGRADE");
+			out.close();
+			extractionModelFrame.load("extractionmodel/demo.csv");
+		} catch (Exception e) {
+			UIUtil.showException(extractionModelFrame, "Error", e);
+		}
+	}
+	
     // Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables
     private javax.swing.JMenuItem collapseAll;
     private javax.swing.JCheckBoxMenuItem connectDb;
@@ -889,19 +1014,22 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
-    private javax.swing.JMenu jMenu4;
     private javax.swing.JMenu jMenu5;
     private javax.swing.JMenuBar jMenuBar2;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
+    private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JSeparator jSeparator10;
+    private javax.swing.JSeparator jSeparator11;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
-    private javax.swing.JSeparator jSeparator4;
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JSeparator jSeparator6;
     private javax.swing.JSeparator jSeparator7;
     private javax.swing.JSeparator jSeparator8;
+    private javax.swing.JSeparator jSeparator9;
     private javax.swing.JMenuItem load;
     private javax.swing.JMenuItem newModel;
     private javax.swing.JMenuItem openDataModelEditor;
@@ -914,34 +1042,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem tutorial;
     private javax.swing.JMenuItem updateDataModel;
     private javax.swing.JMenu view;
+    private javax.swing.JMenuItem zoomToFit;
     // Ende der Variablendeklaration//GEN-END:variables
-
-
-	/**
-	 * Selects the DB-schema to for introspection.
-	 *
-	 * @return the DB-schema to for introspection
-	 */
-	public String selectDBSchema(Component parent) throws Exception {
-		StatementExecutor statementExecutor = new StatementExecutor(myDatabaseAlias.getURL(), myDatabaseAlias.getUser(), myDatabaseAlias.getPassword());
-		List<String> schemas = JDBCMetaDataBasedModelElementFinder.getSchemas(statementExecutor, myDatabaseAlias.getUser());
-		statementExecutor.shutDown();
-		if (schemas.size() == 1) {
-			return schemas.get(0);
-		}
-		if (schemas.isEmpty()) {
-			return null;
-		}
-		for (String s: schemas) {
-			if (s.equalsIgnoreCase(myDatabaseAlias.getUser().trim())) {
-				return s;
-			}
-		}
-		String s = (String) JOptionPane.showInputDialog(parent, "Select schema to introspect", "Schema", JOptionPane.QUESTION_MESSAGE, null, schemas.toArray(), schemas.get(0));
-		if (s == null) {
-			return "";
-		}
-		return s;
-	}
-
+    
 }

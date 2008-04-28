@@ -1,4 +1,0 @@
-# Name; Upsert; Primary key; ; Author
-DEPARTMENT; N; DEPTNO INTEGER; ; IBM DB2 JDBC Universal Driver Architecture; ; 
-EMPLOYEE; N; EMPNO INTEGER; ; IBM DB2 JDBC Universal Driver Architecture; ; 
-SALARYGRADE; N; GRADE INTEGER; ; IBM DB2 JDBC Universal Driver Architecture; ; 

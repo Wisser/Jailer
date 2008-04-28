@@ -17,14 +17,15 @@ package net.sf.jailer.ui;
 
 import java.awt.Component;
 import java.awt.Frame;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
@@ -40,12 +41,16 @@ import net.sf.jailer.Jailer;
 /**
  * Some utility methods.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class UIUtil {
 
     /**
-     * File chooser.
+     * Opens file chooser.
+     * 
+     * @param selectedFile if not <code>null</code> this file will be selected initially
+     * @param startDir directory to start with
+     * @param description description of file to chose
      */
     public static String choseFile(File selectedFile, String startDir, final String description, final String extension, Component parent, boolean addExtension, boolean forLoad) {
         JFileChooser fileChooser = new JFileChooser(startDir);
@@ -96,17 +101,28 @@ public class UIUtil {
     }
 
     /**
-     * Runs Jailer.
+     * Calls the Jailer export engine via CLI.
      * 
-     * @param parent parent of OutputView.
-     * @param args jailer arguments
+     * @param ownerOfConsole owner component of jailer console
+     * @param args CLI arguments
+     * @param showLogfileButton console property
+     * @param printCommandLine if true, print CLI command line
+     * @param showExplainLogButton console property
+     * @param closeOutputWindow if <code>true</code>, close console immediately after call
+     * @param continueOnErrorQuestion to ask when call fails
+     * @param password CLI argument to print as "*****"
+     * @return <code>true</code> iff call succeeded
      */
-    public static boolean runJailer(Frame ownerOfConsole, List<String> args, boolean showLogfileButton, final boolean printCommandLine, boolean showExplainLogButton, final boolean closeOutputWindow, String continueOnErrorQuestion) {
+    public static boolean runJailer(Frame ownerOfConsole, List<String> args, boolean showLogfileButton, final boolean printCommandLine, boolean showExplainLogButton, final boolean closeOutputWindow, String continueOnErrorQuestion, String password) {
         final StringBuffer arglist = new StringBuffer();
         final String[] argsarray = new String[args.size()];
         int i = 0;
         for (String arg: args) {
-            arglist.append(" " + arg);
+        	if (arg != null && arg.equals(password)) {
+        		arglist.append(" *****");
+        	} else {
+        		arglist.append(" " + arg);
+        	}
             argsarray[i++] = arg.trim();
         }
         final JailerConsole outputView = new JailerConsole(ownerOfConsole, showLogfileButton, showExplainLogButton);
@@ -122,14 +138,20 @@ public class UIUtil {
 			}
 			
         	public void write(int b) throws IOException {
-                originalOut.write(b);
+        		if (b != '@') {
+        			originalOut.write(b);
+        		}
                 boolean wasReady;
                 synchronized (buffer) {
                 	wasReady = ready[0];
-                	buffer.append((char) b);
+                	if (b != '@') {
+                		buffer.append((char) b);
+                	}
                 }
                 if ((char) b == '\n') {
                 	++lineNr;
+                }
+                if ((char) b == '\n' && lineNr % 60 == 0 || (char) b == '@') {
                 	if (wasReady) {
                 		synchronized (buffer) {
                 			ready[0] = false;
@@ -141,14 +163,11 @@ public class UIUtil {
 							            if (buffer.length() > 0) {
 							    			outputView.appendText(buffer.toString());
 							                buffer.setLength(0);
-							                ready[0] = true;
-							            }
+							             }
 									}
+								    ready[0] = true;
 								}
 							});
-							if (lineNr % 10 == 0) {
-								Thread.sleep(100);
-							}
 						} catch (InterruptedException e) {
 							e.printStackTrace();
 						} catch (InvocationTargetException e) {
@@ -176,6 +195,25 @@ public class UIUtil {
             final boolean[] result = new boolean[] { false };
             final Throwable[] exp = new Throwable[1];
             final StringBuffer warnings = new StringBuffer();
+            final boolean[] fin = new boolean[] { false };
+            
+            new Thread(new Runnable() {
+				public void run() {
+					for (int i = 0; ; ++i) {
+						try {
+							Thread.sleep(i == 0? 500 : 1000);
+						} catch (InterruptedException e) {
+						}
+						synchronized (fin) {
+							if (fin[0]) {
+								break;
+							}
+							System.out.print("@");
+						}
+					}
+				}
+            }).start();
+            
             new Thread(new Runnable() {
 				public void run() {
 		            try {
@@ -183,8 +221,14 @@ public class UIUtil {
 		                    System.out.println("$ jailer" + arglist);
 		                }
 		            	result[0] = Jailer.jailerMain(argsarray, warnings);
+		            	// flush
+		            	System.out.println("@");
 		            } catch (Throwable t) {
 		            	exp[0] = t;
+		            } finally {
+		            	synchronized (fin) {
+		            		fin[0] = true;
+		            	}
 		            }
 		            SwingUtilities.invokeLater(new Runnable() {
 		            	public void run() {
@@ -220,7 +264,9 @@ public class UIUtil {
     /**
      * Shows an exception.
      * 
-     * @param e the exception.
+     * @param parent parent component of option pane
+     * @param title title of option pane
+     * @param t the exception
      */
 	public static void showException(Component parent, String title, Throwable t) {
 		t.printStackTrace();
@@ -253,6 +299,27 @@ public class UIUtil {
 		} catch (Exception e) {
 			showException(parent, "Error accessing project site", e);
 		}
+	}
+
+    /**
+     * Loads table list file and fill a list.
+     * 
+     * @param list to fill
+     * @param fileName name of file
+     */
+    public static void loadTableList(List<String> list, String fileName) throws IOException {
+    	File file = new File(fileName);
+    	if (file.exists()) {
+    		BufferedReader in = new BufferedReader(new FileReader(file));
+    		String line;
+    		while ((line = in.readLine()) != null) {
+    			line = line.trim();
+    			if (line.length() > 0) {
+    				list.add(line);
+    			}
+    		}
+    		in.close();
+    	}
 	}
 
 }

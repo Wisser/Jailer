@@ -27,7 +27,7 @@ import net.sf.jailer.extractionmodel.ExtractionModel;
 /**
  * Defines a restriction on an association.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class RestrictionDefinition {
 
@@ -83,7 +83,7 @@ public class RestrictionDefinition {
 		for (Table table: extractionModel.getTasks().get(0).dataModel.getTables()) {
 			for (Association association: table.associations) {
 				if (association.isRestricted()) {
-					list.add(new RestrictionDefinition(association.source, association.destination, association.getName(), association.isIgnored()? "false (ignored)" : association.getRestrictionCondition(), association.isIgnored()));
+					list.add(new RestrictionDefinition(association.source, association.destination, association.getName(), association.isIgnored()? "disabled" : association.getRestrictionCondition(), association.isIgnored()));
 				}
 			}
 		}

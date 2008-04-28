@@ -1,5 +1,3 @@
--- Jailer
-
 DROP TABLE JL_ENTITY;
 DROP TABLE JL_DEPENDENCY;
 DROP TABLE JL_SET;
@@ -9,7 +7,7 @@ CREATE TABLE JL_GRAPH
 (
    id              INTEGER NOT NULL,
    age             INTEGER NOT NULL,
-
+      
    CONSTRAINT jl_pk_graph PRIMARY KEY(id)
 );
 

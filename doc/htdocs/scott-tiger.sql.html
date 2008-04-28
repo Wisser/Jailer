@@ -25,11 +25,13 @@
     <tr>
       <td colspan="2" rowspan="1"
  style="background-color: rgb(202, 225, 235); vertical-align: top;"><span
- style="font-family: monospace;">-- creates some test-tables and data<br>
+ style="font-family: monospace;"><br>
+-- creates some test-tables and data<br>
       <br>
--- DROP TABLE EMPLOYEE;<br>
--- DROP TABLE DEPARTMENT;<br>
--- DROP TABLE SALARYGRADE;<br>
+--&nbsp; DROP TABLE EMPLOYEE;<br>
+--&nbsp; DROP TABLE DEPARTMENT;<br>
+--&nbsp; DROP TABLE SALARYGRADE;<br>
+--&nbsp; DROP TABLE BONUS;<br>
       <br>
 CREATE TABLE EMPLOYEE(<br>
 &nbsp;&nbsp;&nbsp; empno&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INTEGER NOT NULL,<br>
@@ -37,7 +39,7 @@ CREATE TABLE EMPLOYEE(<br>
 &nbsp;&nbsp;&nbsp; job&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 VARCHAR(9),<br>
 &nbsp;&nbsp;&nbsp; boss&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INTEGER,<br>
-&nbsp;&nbsp;&nbsp; hiredate&nbsp;&nbsp; DATE,<br>
+&nbsp;&nbsp;&nbsp; hiredate&nbsp;&nbsp; varchar(12),<br>
 &nbsp;&nbsp;&nbsp; salary&nbsp;&nbsp;&nbsp;&nbsp; DECIMAL(7, 2),<br>
 &nbsp;&nbsp;&nbsp; comm&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DECIMAL(7,
 2),<br>
@@ -56,6 +58,17 @@ CREATE TABLE SALARYGRADE(<br>
 &nbsp;&nbsp;&nbsp; hisal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INTEGER NOT NULL<br>
 );<br>
       <br>
+CREATE TABLE BONUS (<br>
+&nbsp;&nbsp;&nbsp; ename&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARCHAR(10) NOT
+NULL,<br>
+&nbsp;&nbsp;&nbsp; job&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+VARCHAR(9) NOT NULL,<br>
+&nbsp;&nbsp;&nbsp; sal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+DECIMAL(7, 2),<br>
+&nbsp;&nbsp;&nbsp; comm&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DECIMAL(7,
+2)<br>
+);<br>
+      <br>
 -- Primary Keys<br>
 ALTER TABLE EMPLOYEE<br>
 &nbsp; ADD CONSTRAINT emp_pk<br>
@@ -69,6 +82,10 @@ ALTER TABLE SALARYGRADE<br>
 &nbsp; ADD CONSTRAINT salgrade_pk<br>
 &nbsp; PRIMARY KEY (grade);<br>
       <br>
+ALTER TABLE BONUS<br>
+&nbsp; ADD CONSTRAINT bonus_pk<br>
+&nbsp; PRIMARY KEY (ename, job);<br>
+&nbsp; <br>
 -- EMPLOYEE to DEPARTMENT<br>
 ALTER TABLE EMPLOYEE<br>
 &nbsp; ADD CONSTRAINT department<br>
@@ -76,7 +93,7 @@ ALTER TABLE EMPLOYEE<br>
 &nbsp; REFERENCES DEPARTMENT (deptno);<br>
       <br>
 -- EMPLOYEE to EMPLOYEE<br>
-ALTER TABLE EMPLOYEE <br>
+ALTER TABLE EMPLOYEE<br>
 &nbsp; ADD CONSTRAINT boss<br>
 &nbsp; FOREIGN KEY (boss)<br>
 &nbsp; REFERENCES EMPLOYEE (empno);<br>
@@ -130,7 +147,7 @@ INSERT INTO SALARYGRADE VALUES (1,&nbsp; 700, 1200);<br>
 INSERT INTO SALARYGRADE VALUES (2, 1201, 1400);<br>
 INSERT INTO SALARYGRADE VALUES (3, 1401, 2000);<br>
 INSERT INTO SALARYGRADE VALUES (4, 2001, 3000);<br>
-INSERT INTO SALARYGRADE VALUES (5, 3001, 9999); <br>
+INSERT INTO SALARYGRADE VALUES (5, 3001, 9999);<br>
       <br>
       </span></td>
     </tr>

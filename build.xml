@@ -27,7 +27,7 @@ available targets:
 	<target name="compile" depends="clean">
 		<delete file="${JAR}"/>
 		<mkdir dir="${COMPILE_DIR}"/>
-		<javac source="5" destdir="${COMPILE_DIR}"
+		<javac source="5" target="5" destdir="${COMPILE_DIR}"
 			srcdir="${SRC_DIR}" debug="on" deprecation="off"
 			encoding="ISO-8859-1">
 			<classpath>

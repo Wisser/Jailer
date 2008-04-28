@@ -13,14 +13,31 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.sf.jailer;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.zip.GZIPOutputStream;
 
 import net.sf.jailer.database.DeletionReader;
 import net.sf.jailer.database.ExportReader;
 import net.sf.jailer.database.StatementExecutor;
-import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.database.StatisticRenovator;
+import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.DataModel;
@@ -32,35 +49,31 @@ import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.render.DataModelRenderer;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
-import net.sf.jailer.util.*;
+import net.sf.jailer.util.CsvFile;
+import net.sf.jailer.util.JobManager;
+import net.sf.jailer.util.PrintUtil;
+import net.sf.jailer.util.SqlScriptExecutor;
+import net.sf.jailer.util.SqlUtil;
+
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
 import org.springframework.context.support.AbstractXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.sql.SQLException;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.zip.GZIPOutputStream;
-
 /**
  * Utility for extracting small consistent row-sets from
  * relational databases.
+ * <br>
+ * <a href="http://jailer.sourceforge.net/">http://jailer.sourceforge.net</a>
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class Jailer {
     
     /**
      * The Jailer version.
      */
-    public static final String VERSION = "2.1.7";
+    public static final String VERSION = "2.2.0";
     
     /**
      * The relational data model.
@@ -91,6 +104,11 @@ public class Jailer {
      * Comment header of the export-script.
      */
     private StringBuffer commentHeader = new StringBuffer();
+    
+    /**
+     * Holds statistical information.
+     */
+    public static StringBuffer statistic = new StringBuffer();
     
     /**
      * The scipt-enhancer.
@@ -191,8 +209,14 @@ public class Jailer {
         boolean firstLine = true;
         for (String line: entityGraph.getStatistics()) {
             _log.info(line);
-            appendCommentHeader((firstLine ? "exported entities: " : "    ") + line);
-            firstLine = false;
+            String l = (firstLine ? "Exported Entities: " : "    ") + line;
+			appendCommentHeader(l);
+			if (firstLine) {
+				statistic.append(l + "\n\n");
+			} else {
+				statistic.append("   " + l.trim().replaceFirst(" +", ": ") + "\n");
+			}
+			firstLine = false;
         }
         
         return totalProgress;
@@ -227,8 +251,13 @@ public class Jailer {
      * @return the initial-data-tables list
      */
     private Set<Table> readInitialDataTables() throws Exception {
-        Set<Table> idTables = SqlUtil.readTableList(new CsvFile(new File("datamodel/initial_data_tables.csv")), datamodel);
-        return idTables;
+        File file = new File("datamodel/initial_data_tables.csv");
+        if (file.exists()) {
+			Set<Table> idTables = SqlUtil.readTableList(new CsvFile(file), datamodel);
+	        return idTables;
+        } else {
+        	return new HashSet<Table>();
+        }
     }
 
     /**
@@ -352,7 +381,7 @@ public class Jailer {
     /**
      * Writes entities into extract-SQL-script.
      * 
-     * @param scriptType the name of the sql-script to write the data to
+     * @param sqlScriptFile the name of the sql-script to write the data to
      * @param table write entities from this table only
      * @param result a writer for the extract-script
      */
@@ -503,7 +532,7 @@ public class Jailer {
             if (applicationContext.containsBean("statistic-renovator")) {
                 List<StatisticRenovator> statisticRenovators = (List<StatisticRenovator>) applicationContext.getBean("statistic-renovator");  
                 for (StatisticRenovator statisticRenovator: statisticRenovators) {
-                	if (Pattern.matches(statisticRenovator.getUrlPattern(), statementExecutor.getHost())) {
+                	if (Pattern.matches(statisticRenovator.getUrlPattern(), statementExecutor.dbUrl)) {
 		                _log.info("gather statistics after " + lastRunstats + " inserted rows...");
 		                try {
 		                	statisticRenovator.renew(statementExecutor);
@@ -533,7 +562,8 @@ public class Jailer {
      * @return <code>false</code> iff something went wrong 
      */
     public static boolean jailerMain(String[] args, StringBuffer warnings) {
-        try {
+    	statistic.setLength(0);
+    	try {
             CommandLineParser.parse(args);
             CommandLineParser clp = CommandLineParser.getInstance();
             
@@ -815,6 +845,7 @@ public class Jailer {
         
         _log.info("entities to delete:");
         appendCommentHeader("");
+		statistic.append("\n\n");
         boolean firstLine = true;
         for (String line: entityGraph.getStatistics()) {
             if (!firstLine) {
@@ -824,7 +855,13 @@ public class Jailer {
                 }
             }
             _log.info(line);
-            appendCommentHeader((firstLine ? "entities to delete: " : "     ") + line);
+            String l = (firstLine ? "Deleted Entities: " : "     ") + line;
+			appendCommentHeader(l);
+			if (firstLine) {
+				statistic.append(l + "\n\n");
+			} else {
+				statistic.append("   " + l.trim().replaceFirst(" +", ": ") + "\n");
+			}
             firstLine = false;               
         }
     }

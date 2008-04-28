@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.sf.jailer.util;
 
 import java.io.BufferedReader;
@@ -23,9 +22,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * The content of a CSV-file.
+ * Parser for CSV-files.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class CsvFile {
 
@@ -98,7 +97,6 @@ public class CsvFile {
      * Constructor.
      * 
      * @param csvFile the csv file
-     * @throws Exception
      */
     public CsvFile(File csvFile) throws Exception {
         BufferedReader reader = new BufferedReader(new FileReader(csvFile));
@@ -151,8 +149,8 @@ public class CsvFile {
     /**
      * Checks if a certain line can be found in this file.
      * 
-     * @param line the line
-     * @return <code>true</code> if this file contains the line 
+     * @param the line
+     * @return <code>true</code> iff this file contains the line 
      */
     public boolean contains(String[] line) {
         for (Line l: getLines()) {

@@ -17,7 +17,6 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.HeadlessException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -43,7 +42,7 @@ import net.sf.jailer.util.CsvFile.Line;
 /**
  * Data Model Editor.
  *
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class DataModelEditor extends javax.swing.JDialog {
 
@@ -63,6 +62,16 @@ public class DataModelEditor extends javax.swing.JDialog {
     private List<CsvFile.Line> linesFromModelFinder = new ArrayList<CsvFile.Line>();
     
     /**
+     * List of tables to be excluded from deletion.
+     */
+    private List<String> excludeFromDeletion = new ArrayList<String>();
+    
+    /**
+     * List of tables to export entirely if in closure of subject.
+     */
+    private List<String> initialDataTables = new ArrayList<String>();
+    
+    /**
      * <code>true</code> iff model is modified.
      */
     private boolean needsSave = false;
@@ -79,6 +88,8 @@ public class DataModelEditor extends javax.swing.JDialog {
         super(parent, true);
         tables = new CsvFile(new File(DataModel.TABLES_FILE)).getLines();
         associations = new CsvFile(new File(DataModel.ASSOCIATIONS_FILE)).getLines();
+        UIUtil.loadTableList(excludeFromDeletion, DataModel.EXCLUDE_FROM_DELETION_FILE);
+        UIUtil.loadTableList(initialDataTables, DataModel.INITIAL_DATA_TABLES_FILE);
         int newTables = 0;
         int newAssociations = 0;
         File modelFinderTablesFile = new File(ModelBuilder.MODEL_BUILDER_TABLES_CSV);
@@ -99,7 +110,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 		sortLineList(associations);
 		initComponents();
 		setSize(900, 700);
-		setLocation(100, 100);
+		setLocation(100, 32);
 		if (merge) {
 			info.setText("Found " + newTables + " new tables and " + newAssociations + " new associations");
 			if (!linesFromModelFinder.isEmpty()) {
@@ -173,7 +184,7 @@ public class DataModelEditor extends javax.swing.JDialog {
         associationsList.setCellRenderer(associationsListItemRenderer);
     }
     
-    /**
+	/**
      * Marks data model as modified.
      */
     private void markDirty() {
@@ -454,7 +465,7 @@ public class DataModelEditor extends javax.swing.JDialog {
     		cells.add("");
     	}
 		CsvFile.Line line = new CsvFile.Line("?", cells);
-    	if (new TableEditor(this, tables, associations).edit(line)) {
+    	if (new TableEditor(this, tables, associations, excludeFromDeletion, initialDataTables).edit(line)) {
     		tables.add(0, line);
     		tablesList.setModel(createTablesListModel());
     		markDirty();
@@ -471,7 +482,7 @@ public class DataModelEditor extends javax.swing.JDialog {
     		}
     	}
     	if (line != null) {
-	    	if (new TableEditor(this, tables, associations).edit(line)) {
+	    	if (new TableEditor(this, tables, associations, excludeFromDeletion, initialDataTables).edit(line)) {
 	    		markDirty();
 	    		repaint();
 	    	}
@@ -495,9 +506,14 @@ public class DataModelEditor extends javax.swing.JDialog {
 
     private void deleteTablesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteTablesActionPerformed
     	Collection<CsvFile.Line> toDelete = new ArrayList<CsvFile.Line>();
+    	Collection<String> namesOfTablesToDelete = new ArrayList<String>();
     	for (int i = 0; i < tables.size(); ++i) {
     		if (tablesList.getSelectionModel().isSelectedIndex(i)) {
-    			toDelete.add(tables.get(i));
+    			Line table = tables.get(i);
+    			if (table != null) {
+    				toDelete.add(table);
+    				namesOfTablesToDelete.add(table.cells.get(0));
+    			}
     		}
     	}
     	Collection<CsvFile.Line> assToDelete = new HashSet<CsvFile.Line>();
@@ -510,6 +526,8 @@ public class DataModelEditor extends javax.swing.JDialog {
     	}
     	if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Delete " + toDelete.size() + " tables with\n" + assToDelete.size() + " related associations?", "Delete Table", JOptionPane.YES_NO_OPTION)) {
 	    	tables.removeAll(toDelete);
+	    	excludeFromDeletion.removeAll(namesOfTablesToDelete);
+	    	initialDataTables.removeAll(namesOfTablesToDelete);
 	    	tablesList.setModel(createTablesListModel());
 	    	associations.removeAll(assToDelete);
 	    	associationsList.setModel(createAssociationsListModel());
@@ -575,7 +593,9 @@ public class DataModelEditor extends javax.swing.JDialog {
     		if (needsSave) {
 		    	save(tables, DataModel.TABLES_FILE, "# Name; Upsert; Primary key; ; Author");
 		    	save(associations, DataModel.ASSOCIATIONS_FILE, "# Table A; Table B; First-insert; Cardinality; Join-condition; Name; Author");
-	    		saved = true;
+	    		saveTableList(excludeFromDeletion, DataModel.EXCLUDE_FROM_DELETION_FILE);
+	    		saveTableList(initialDataTables, DataModel.INITIAL_DATA_TABLES_FILE);
+		    	saved = true;
     		}
     	} catch (Throwable t) {
     		UIUtil.showException(this, "Error", t);
@@ -584,6 +604,20 @@ public class DataModelEditor extends javax.swing.JDialog {
     }
     
     /**
+     * Save a table list.
+     * 
+     * @param tableList list to save
+     * @param fileName the file to save into
+     */
+    private void saveTableList(List<String> tableList, String fileName)  throws FileNotFoundException {
+    	PrintWriter out = new PrintWriter(fileName);
+		for (String table: tableList) {
+			out.println(table);
+		}
+		out.close();
+	}
+
+	/**
      * Saves a list of csv-lines.
      * 
      * @param lines the lines
@@ -599,25 +633,6 @@ public class DataModelEditor extends javax.swing.JDialog {
 		out.close();
 	}
 
-	/**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-					new DataModelEditor(new javax.swing.JFrame(), true).setVisible(true);
-				} catch (HeadlessException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (Exception e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-            }
-        });
-    }
-    
     // Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables
     private javax.swing.JList associationsList;
     private javax.swing.JButton cancelButton;
