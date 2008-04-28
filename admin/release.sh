@@ -3,9 +3,9 @@ rm -rf ~/tmp/$1.co
 mkdir ~/tmp/$1
 mkdir ~/tmp/$1.co
 cd ~/tmp/$1.co
-svn co https://jailer.svn.sf.net/svnroot/jailer/trunk_ui
+svn co https://jailer.svn.sf.net/svnroot/jailer/trunk
 cd ..
-mv $1.co/trunk_ui/* $1
+mv $1.co/trunk/* $1
 cd $1
 cp doc/web/home.htm doc/web/index.html
 rm -rf doc/htdocs
