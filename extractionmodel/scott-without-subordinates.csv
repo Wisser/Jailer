@@ -1,4 +1,0 @@
-# subject; condition;  limit; restrictions
-SALARYGRADE; ; ; .embedded
-
-# from A (or association name); to B; restriction-condition
