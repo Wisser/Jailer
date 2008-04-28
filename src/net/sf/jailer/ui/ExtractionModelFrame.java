@@ -640,13 +640,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        				"Please execute the Jailer-DDL manually (jailer_ddl.sql)\n\n" +
 			        				"Continue Data Export?", dbConnectionDialog.getPassword())) {
 			        			if (UIUtil.runJailer(this, args, true, true, exportDialog.explain.isSelected(), !exportDialog.explain.isSelected(), null, dbConnectionDialog.getPassword())) {
-			        				String message = "Exported " + ExportReader.numberOfExportedEntities + " entities.";
+			        				String message = Jailer.statistic.toString();
 			        				if (ExportReader.numberOfExportedLOBs > 0) {
 			        					message += "\nExported " + ExportReader.numberOfExportedLOBs + " CLOBs/BLOBs.\n\n" +
 			        					           "Note that the CLOBs/BLOBs can only\n" +
 			        							   "be imported with the 'Import Data'-tool!";
 			        				}
-		        					JOptionPane.showMessageDialog(this, message);
+		        					// JOptionPane.showMessageDialog(this, message, "Export Statistic", JOptionPane.INFORMATION_MESSAGE);
+			        				new StatisticDialog(this, message);
 			        			}
 			        		}
 			        	}

@@ -106,6 +106,11 @@ public class Jailer {
     private StringBuffer commentHeader = new StringBuffer();
     
     /**
+     * Holds statistical information.
+     */
+    public static StringBuffer statistic = new StringBuffer();
+    
+    /**
      * The scipt-enhancer.
      */
     private final List<ScriptEnhancer> scriptEnhancer;
@@ -204,8 +209,14 @@ public class Jailer {
         boolean firstLine = true;
         for (String line: entityGraph.getStatistics()) {
             _log.info(line);
-            appendCommentHeader((firstLine ? "exported entities: " : "    ") + line);
-            firstLine = false;
+            String l = (firstLine ? "Exported Entities: " : "    ") + line;
+			appendCommentHeader(l);
+			if (firstLine) {
+				statistic.append(l + "\n\n");
+			} else {
+				statistic.append("   " + l.trim().replaceFirst(" +", ": ") + "\n");
+			}
+			firstLine = false;
         }
         
         return totalProgress;
@@ -240,8 +251,13 @@ public class Jailer {
      * @return the initial-data-tables list
      */
     private Set<Table> readInitialDataTables() throws Exception {
-        Set<Table> idTables = SqlUtil.readTableList(new CsvFile(new File("datamodel/initial_data_tables.csv")), datamodel);
-        return idTables;
+        File file = new File("datamodel/initial_data_tables.csv");
+        if (file.exists()) {
+			Set<Table> idTables = SqlUtil.readTableList(new CsvFile(file), datamodel);
+	        return idTables;
+        } else {
+        	return new HashSet<Table>();
+        }
     }
 
     /**
@@ -546,6 +562,7 @@ public class Jailer {
      * @return <code>false</code> iff something went wrong 
      */
     public static boolean jailerMain(String[] args, StringBuffer warnings) {
+    	statistic.setLength(0);
     	try {
             CommandLineParser.parse(args);
             CommandLineParser clp = CommandLineParser.getInstance();
@@ -828,6 +845,7 @@ public class Jailer {
         
         _log.info("entities to delete:");
         appendCommentHeader("");
+		statistic.append("\n\n");
         boolean firstLine = true;
         for (String line: entityGraph.getStatistics()) {
             if (!firstLine) {
@@ -837,7 +855,13 @@ public class Jailer {
                 }
             }
             _log.info(line);
-            appendCommentHeader((firstLine ? "entities to delete: " : "     ") + line);
+            String l = (firstLine ? "Deleted Entities: " : "     ") + line;
+			appendCommentHeader(l);
+			if (firstLine) {
+				statistic.append(l + "\n\n");
+			} else {
+				statistic.append("   " + l.trim().replaceFirst(" +", ": ") + "\n");
+			}
             firstLine = false;               
         }
     }

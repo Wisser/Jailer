@@ -1,0 +1,8 @@
+# tables to be excluded from DB introspection
+JL_GRAPH
+JL_SET
+JL_ENTITY
+JL_DEPENDENCY
+JL_TMP
+JL_DUAL
+

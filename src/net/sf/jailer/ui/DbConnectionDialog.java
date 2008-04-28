@@ -218,7 +218,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(jComboBox1, gridBagConstraints);
 
-        jLabel3.setText(" JDBC Driver JAR 2 ");
+        jLabel3.setText(" secondary JAR ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 40;

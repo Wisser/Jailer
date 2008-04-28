@@ -22,8 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JTextField;
 
 /**
@@ -50,8 +48,8 @@ public class ExportDialog extends javax.swing.JDialog {
         fields.put("insert", insert);
         fields.put("delete", delete);
         fields.put("threads", threads);
+        fields.put("rowsPerThread", rowsPerThread);
         theSettings = new Settings(".exportdata.ui", fields);
-        ComboBoxModel aModel = new DefaultComboBoxModel(theSettings.getSettingNames());
         selectInsert.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 String fn = UIUtil.choseFile(null, ".", "SQL Import Script", ".sql", ExportDialog.this, true, false);
@@ -71,6 +69,9 @@ public class ExportDialog extends javax.swing.JDialog {
         theSettings.restore("default");
         if (threads.getText().length() == 0) {
         	threads.setText("1");
+        }
+        if (rowsPerThread.getText().length() == 0) {
+        	rowsPerThread.setText("50");
         }
         pack();
         setSize(getSize().width + 8, getSize().height + 8);
@@ -95,7 +96,11 @@ public class ExportDialog extends javax.swing.JDialog {
         selectInsert = new javax.swing.JButton();
         delete = new javax.swing.JTextField();
         selectDelete = new javax.swing.JButton();
+        jPanel3 = new javax.swing.JPanel();
         threads = new javax.swing.JTextField();
+        jLabel10 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        rowsPerThread = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
@@ -103,6 +108,7 @@ public class ExportDialog extends javax.swing.JDialog {
         explain = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
 
         getContentPane().setLayout(new java.awt.CardLayout());
 
@@ -130,11 +136,12 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 45;
         jPanel1.add(jLabel5, gridBagConstraints);
 
-        jLabel6.setText(" Number of Threads ");
+        jLabel6.setText(" Threads ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 50;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         jPanel1.add(jLabel6, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -171,13 +178,46 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 40;
         jPanel1.add(selectDelete, gridBagConstraints);
 
+        jPanel3.setLayout(new java.awt.GridBagLayout());
+
         threads.setMinimumSize(new java.awt.Dimension(44, 19));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel3.add(threads, gridBagConstraints);
+
+        jLabel10.setText("  ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.weightx = 1.0;
+        jPanel3.add(jLabel10, gridBagConstraints);
+
+        jLabel9.setText("           ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        jPanel3.add(jLabel9, gridBagConstraints);
+
+        rowsPerThread.setText("jTextField1");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel3.add(rowsPerThread, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 50;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel1.add(threads, gridBagConstraints);
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel1.add(jPanel3, gridBagConstraints);
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
@@ -198,7 +238,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jPanel2.add(jButton1, gridBagConstraints);
 
         jLabel2.setFont(new java.awt.Font("Dialog", 0, 12));
-        jLabel2.setText(" * *.sql.zip for compressed SQL files");
+        jLabel2.setText(" * '.zip' extension for compressed SQL files");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -216,12 +256,13 @@ public class ExportDialog extends javax.swing.JDialog {
 
         upsertCheckbox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         upsertCheckbox.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        upsertCheckbox.setText("generate 'Upsert'-statements for all exported rows");
+        upsertCheckbox.setText("generate Upsert-statements (overwrite) for all rows");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 44;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
         jPanel1.add(upsertCheckbox, gridBagConstraints);
 
         explain.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -231,7 +272,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 45;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 4, 0);
         jPanel1.add(explain, gridBagConstraints);
 
         jLabel1.setText(" ");
@@ -246,6 +287,14 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 20;
         jPanel1.add(jLabel4, gridBagConstraints);
+
+        jLabel8.setText(" Rows per statement");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 51;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        jPanel1.add(jLabel8, gridBagConstraints);
 
         getContentPane().add(jPanel1, "card2");
 
@@ -296,6 +345,14 @@ public class ExportDialog extends javax.swing.JDialog {
     		}
     	} catch (Exception e) {
     	}
+    	try {
+    		int nt = Integer.parseInt(rowsPerThread.getText().trim());
+    		if (nt > 0) {
+    			args.add("-entities");
+    			args.add("" + nt);
+    		}
+    	} catch (Exception e) {
+    	}
     }
     
     // Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables
@@ -305,13 +362,18 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JTextField insert;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JTextField rowsPerThread;
     private javax.swing.JButton selectDelete;
     private javax.swing.JButton selectInsert;
     private javax.swing.JTextField threads;

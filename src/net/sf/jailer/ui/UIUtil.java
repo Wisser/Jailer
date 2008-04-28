@@ -151,7 +151,7 @@ public class UIUtil {
                 if ((char) b == '\n') {
                 	++lineNr;
                 }
-                if ((char) b == '\n' && lineNr % 30 == 0 || (char) b == '@') {
+                if ((char) b == '\n' && lineNr % 60 == 0 || (char) b == '@') {
                 	if (wasReady) {
                 		synchronized (buffer) {
                 			ready[0] = false;
