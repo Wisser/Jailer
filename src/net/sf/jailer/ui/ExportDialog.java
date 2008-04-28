@@ -201,7 +201,6 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 3;
         jPanel3.add(jLabel9, gridBagConstraints);
 
-        rowsPerThread.setText("jTextField1");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;

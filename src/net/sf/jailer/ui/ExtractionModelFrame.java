@@ -992,7 +992,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			out = new PrintWriter(new FileOutputStream(iData));
 			out.println("SALARYGRADE");
 			out.close();
-			extractionModelFrame.load("extractionmodel/demo.csv");
+			extractionModelFrame.load("extractionmodel/Demo.csv");
 		} catch (Exception e) {
 			UIUtil.showException(extractionModelFrame, "Error", e);
 		}
