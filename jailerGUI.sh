@@ -13,6 +13,7 @@ CP=$CP:$LIB/commons-logging.jar
 CP=$CP:$LIB/log4j.jar
 CP=$CP:$LIB/args4j.jar
 CP=$CP:$LIB/spring.jar
+CP=$CP:$LIB/prefuse.jar
 CP=$CP:jailer.jar
 
 java -cp $CP net.sf.jailer.ui.ExtractionModelFrame $@

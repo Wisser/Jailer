@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.sf.jailer.render;
 
 import java.io.File;
@@ -49,7 +48,7 @@ import org.apache.log4j.Logger;
 /**
  * Generates a human readable HTML-representation of the data-model.
  *  
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class HtmlDataModelRenderer implements DataModelRenderer {
 

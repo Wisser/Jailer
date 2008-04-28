@@ -24,7 +24,7 @@ import net.sf.jailer.datamodel.Table;
 /**
  * Set of functionally related tables. Part of a {@link DomainModel}.
  *  
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class Domain implements Comparable<Domain> {
 

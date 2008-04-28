@@ -15,29 +15,47 @@
  */
 package net.sf.jailer.ui;
 
-import net.sf.jailer.aliases.JDBCDriverManager;
+import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.sql.Connection;
+import java.sql.Driver;
+import java.sql.DriverManager;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
+import javax.swing.JOptionPane;
+import javax.swing.JTextField;
+
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
 
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.File;
-import java.sql.Connection;
-import java.util.*;
-import java.util.List;
-
 /**
  * "Connect with DB" dialog.
  *
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class DbConnectionDialog extends javax.swing.JDialog {
 
+	/**
+	 * <code>true</code> if valid connection is available.
+	 */
 	boolean isConnected = false;
+	
+	/**
+	 * Form settings.
+	 */
 	private Settings theSettings;
 	
 	/**
@@ -58,8 +76,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         setLocation(100, 150);
         Map<String, JTextField> fields = new HashMap<String, JTextField>();
         fields.put("password", password);
-        fields.put("host", dbUrl);
-        fields.put("username", user);
+        fields.put("dbUrl", dbUrl);
+        fields.put("dbUser", user);
         fields.put("driver", driverClass);
         fields.put("jar1", jar1);
         fields.put("jar2", jar2);
@@ -200,7 +218,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(jComboBox1, gridBagConstraints);
 
-        jLabel3.setText(" JDBC Driver JAR 2 ");
+        jLabel3.setText(" secondary JAR ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 40;
@@ -363,10 +381,22 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         if (d2.length() == 0) {
             d2 = null;
         }
-
         try {
-			Connection con = JDBCDriverManager.getConnection(dbUrl.getText(), user.getText(), password.getText());
-			con.close();
+            StatementExecutor.setClassLoaderForJdbcDriver(addJarToClasspath(d1, d2));
+        } catch (Exception e) {
+            UIUtil.showException(this, "Error loading driver jars", e);
+            return;
+        }
+        
+        try {
+	        if (StatementExecutor.classLoaderForJdbcDriver != null) {
+	            Driver d = (Driver)Class.forName(driverClass.getText(), true, StatementExecutor.classLoaderForJdbcDriver).newInstance();
+	            DriverManager.registerDriver(new StatementExecutor.DriverShim(d));
+	        } else {
+	            Class.forName(driverClass.getText());
+	        }
+	        Connection con = DriverManager.getConnection(dbUrl.getText(), user.getText(), password.getText());
+	        con.close();
 	        isConnected = true;
 	        setVisible(false);
         } catch (Exception e) {
@@ -376,6 +406,42 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         
     }//GEN-LAST:event_jButton1ActionPerformed
     
+    /**
+     * Holds all class-loader in order to prevent loading a jar twice.
+     */
+    private Map<String, URLClassLoader> classloaders = new HashMap<String, URLClassLoader>();
+    
+    /**
+     * Adds one or two jars to classpath.
+     * 
+     * @param jarName1 filename of jar 1
+     * @param jarName2 filename of jar 2
+     */
+    private URLClassLoader addJarToClasspath(String jarName1, String jarName2) throws Exception {
+    	String mapKey = jarName1 + "," + jarName2;
+    	if (classloaders.containsKey(mapKey)) {
+    		return classloaders.get(mapKey);
+    	}
+    	URL[] urls;
+        if (jarName1 == null) {
+            if (jarName2 == null) {
+                return null;
+            }
+            jarName1 = jarName2;
+            jarName2 = null;
+        }
+        System.out.println("add '" + jarName1 + "' to classpath");
+        if (jarName2 == null) {
+            urls = new URL[] {new URL("file", null, jarName1)};
+        } else {
+            System.out.println("add '" + jarName2 + "' to classpath");
+            urls = new URL[] {new URL("file", null, jarName1), new URL("file", null, jarName2)};
+        }
+        URLClassLoader urlLoader = new URLClassLoader(urls);
+        classloaders.put(mapKey, urlLoader);
+        return urlLoader;
+    }
+
     /**
      * Selects the DB-schema to for introspection.
      * 
@@ -440,5 +506,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     private javax.swing.JPasswordField password;
     public javax.swing.JTextField user;
     // Ende der Variablendeklaration//GEN-END:variables
+
+	public String getPassword() {
+		return password.getText();
+	}
 
 }

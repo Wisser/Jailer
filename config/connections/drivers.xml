@@ -1,7 +1,0 @@
-<drivers>
-	<driver class="org.gjt.mm.mysql.Driver">
-		<libraries>
-			<library url="/home/vladimir/programming/Java/Jailer/trunk/drivers/mysql-connector-java-5.1.5-bin.jar"/>
-		</libraries>
-	</driver>
-</drivers>

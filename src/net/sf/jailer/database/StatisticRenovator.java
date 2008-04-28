@@ -20,7 +20,7 @@ package net.sf.jailer.database;
 /**
  * Renews the DB table statistics for the working-tables.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public interface StatisticRenovator {
 

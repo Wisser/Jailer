@@ -25,7 +25,7 @@ import java.util.List;
  *  
  * (for instance an 'INSERT' with a 'values'-list)
  *  
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class StatementBuilder {
 
@@ -101,7 +101,7 @@ public class StatementBuilder {
     /**
      * Appends an item.
      * 
-     * @param head same head as previouslly appended, if any
+     * @param head same head as previously appended, if any
      * @param item the item
      * @param separator separates the items
      * @param terminator terminates the statement

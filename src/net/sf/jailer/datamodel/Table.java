@@ -26,7 +26,7 @@ import java.util.Set;
 /**
  * Describes a database-table.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class Table extends ModelElement implements Comparable<Table> {
 

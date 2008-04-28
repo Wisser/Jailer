@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.sf.jailer.modelbuilder;
 
 import java.sql.DatabaseMetaData;
@@ -42,11 +41,10 @@ import net.sf.jailer.util.SqlUtil;
 
 import org.apache.log4j.Logger;
 
-
 /**
- * Finds associations and tables by inspecting the JDBC meta data.
+ * Finds associations and tables by introspection of the JDBC meta data.
  * 
- * @author Wisser
+ * @author Ralf Wisser
  */
 public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 
@@ -68,7 +66,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         DatabaseMetaData metaData = statementExecutor.getMetaData();
         ResultSet resultSet;
         for (Table table: dataModel.getTables()) {
-            resultSet = metaData.getExportedKeys(null, statementExecutor.getIntrospectionSchema(), table.getName());
+        	resultSet = metaData.getExportedKeys(null, statementExecutor.getIntrospectionSchema(), table.getName());
             _log.info("find associations with " + table.getName());
             Map<String, Association> fkMap = new HashMap<String, Association>();
             while (resultSet.next()) {
@@ -113,12 +111,12 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         while (resultSet.next()) {
             String tableName = resultSet.getString(3);
             if ("TABLE".equalsIgnoreCase(resultSet.getString(4))) {
-            	if (isValidName(tableName)) {
-	            	tableNames.add(tableName);
-	            	_log.info("found table " + tableName);
-	            } else {
-	            	_log.info("skip table " + tableName);
-	            }
+                if (isValidName(tableName)) {
+                	tableNames.add(tableName);
+                	_log.info("found table " + tableName);
+                } else {
+                	_log.info("skip table " + tableName);
+                }
             }
         }
         resultSet.close();
@@ -131,7 +129,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 pkColumns.put(tableName, pk);
             }
             while (resultSet.next()) {
-                pk.put(resultSet.getInt(5), new Column(resultSet.getString(4), "", 0));
+                pk.put(resultSet.getInt(5), new Column(resultSet.getString(4), "", 0, -1));
             }    
             _log.info("found primary key for table " + tableName);
             resultSet.close();
@@ -143,15 +141,22 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 String colName = resultSet.getString(4);
                 int type = resultSet.getInt(5);
                 int length = 0;
+                int precision = -1;
                 if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR) {
                     length = resultSet.getInt(7);
+                }
+                if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR) {
+                    precision = resultSet.getInt(9);
+                    if (resultSet.wasNull() || precision == 0) {
+                    	precision = -1;
+                    }
                 }
                 String sqlType = SqlUtil.SQL_TYPE.get(type);
                 if (sqlType == null) {
                 	sqlType = "-unknown-";
                     // throw new RuntimeException("unknown SQL type: " + type);
                 }
-                Column column = new Column(colName, sqlType, length);
+                Column column = new Column(colName, sqlType, length, precision);
                 for (int i: pk.keySet()) {
                     if (pk.get(i).name.equals(column.name)) {
                         pk.put(i, column);
@@ -186,7 +191,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		return name != null && !name.contains("$");
 	}
 
-    /**
+	/**
      * Finds all non-empty schemas in DB.
      * 
      * @param statementExecutor the statement executor for executing SQL-statements
