@@ -52,6 +52,7 @@ public class FileView extends javax.swing.JDialog {
     	super(owner);
     	initialize();
     	setModal(true);
+        UIUtil.initPeer();
     }
 
     /**
@@ -67,6 +68,7 @@ public class FileView extends javax.swing.JDialog {
 			initialize();
 			setTitle(file);
 			getJTextPane().setText(PrintUtil.loadFile(file));
+	        UIUtil.initPeer();
 			setVisible(true);
 		} catch (Throwable t) {
 			UIUtil.showException(owner, "Error", t);

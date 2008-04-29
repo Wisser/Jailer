@@ -60,6 +60,7 @@ public class JailerConsole extends javax.swing.JDialog {
         if (!showExplainLogButton) {
             getLoadExplainLog().setVisible(false);
         }
+        UIUtil.initPeer();
     }
 
     /**

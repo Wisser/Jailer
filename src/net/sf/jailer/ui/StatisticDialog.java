@@ -36,6 +36,7 @@ public class StatisticDialog extends javax.swing.JDialog {
         setLocation(Math.max(0, parent.getX() + parent.getWidth() / 2 - w / 2),
                     Math.max(0, parent.getY() + parent.getHeight() / 2 - h / 2));
         invalidate();
+        UIUtil.initPeer();
         setVisible(true);
     }
 

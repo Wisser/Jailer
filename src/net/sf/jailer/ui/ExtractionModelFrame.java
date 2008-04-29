@@ -472,7 +472,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
     private void tutorialActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tutorialActionPerformed
     	try {
-			BrowserLauncher.openURL(new File("doc" + File.separator + "htdocs" + File.separator + "JailerGuiTutorial.html").getCanonicalPath());
+			BrowserLauncher.openURL(new File("doc" + File.separator + "web" + File.separator + "tutorial.htm").getCanonicalPath());
 		} catch (IOException e) {
 			UIUtil.showException(this, "Error", e);
 		}
@@ -480,7 +480,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
     private void helpContentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpContentActionPerformed
     	try {
-			BrowserLauncher.openURL(new File("doc" + File.separator + "htdocs" + File.separator + "index.html").getCanonicalPath());
+			BrowserLauncher.openURL(new File("doc" + File.separator + "web" + File.separator + "home.htm").getCanonicalPath());
 		} catch (IOException e) {
 			UIUtil.showException(this, "Error", e);
 		}
@@ -573,7 +573,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	try {
     		if (saveIfNeeded("edit data model", true)) {
        			DataModelEditor dataModelEditor = new DataModelEditor(this, false);
-				dataModelEditor.setVisible(true);
+       			dataModelEditor.setVisible(true);
        		//	if (dataModelEditor.saved) {
        				reload();
        		//	}
@@ -615,6 +615,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	void dataExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataExportActionPerformed
     	try {
+    		if (extractionModelEditor.subject == null) {
+    			askForDataModel(this);
+    			return;
+    		}
     		if (saveIfNeeded("Export data", false)) {
     			if (extractionModelEditor.extractionModelFile != null || extractionModelEditor.save(true, "Export data")) {
 		        	if (connectToDBIfNeeded("Export data")) {

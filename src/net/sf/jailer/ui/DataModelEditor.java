@@ -183,6 +183,7 @@ public class DataModelEditor extends javax.swing.JDialog {
         tablesList.setCellRenderer(tablesListItemRenderer);
         associationsList.setCellRenderer(associationsListItemRenderer);
 		invalidate();
+		UIUtil.initPeer();
     }
     
 	/**

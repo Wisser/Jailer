@@ -92,7 +92,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	/**
 	 * Subject table.
 	 */
-	private Table subject;
+	Table subject;
 	
 	/**
 	 * Root of 'associations'-tree.
@@ -169,6 +169,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 			subject = extractionModel.getTasks().get(0).subject;
 			dataModel = extractionModel.getTasks().get(0).dataModel;
+			if (subject == null && dataModel != null && !dataModel.getTables().isEmpty()) {
+				subject = dataModel.getTables().iterator().next();
+				needsSave = true;
+			}
 		} catch (Exception e) {
 			UIUtil.showException(this, extractionModelFile == null? "Error creating new Model" : "Error in " + new File(extractionModelFile).getName(), e);
 			return;

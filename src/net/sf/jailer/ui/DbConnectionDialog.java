@@ -128,6 +128,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         	jComboBox1.setSelectedIndex(0);
         }
         pack();
+        UIUtil.initPeer();
  	}
     
     /**

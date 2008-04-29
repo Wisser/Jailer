@@ -69,6 +69,7 @@ public class TableEditor extends javax.swing.JDialog {
         pack();
         setLocation(parent.getLocation().x + parent.getSize().width/2 - getPreferredSize().width/2,
     			parent.getLocation().y + parent.getSize().height/2 - getPreferredSize().height/2);
+        UIUtil.initPeer();
     }
     
     /** This method is called from within the constructor to
@@ -243,7 +244,7 @@ public class TableEditor extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void excludeFromDeletionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_excludeFromDeletionActionPerformed
-// TODO Ihre Ereignisbehandlung hier einfügen:
+// TODO Ihre Ereignisbehandlung hier einfï¿½gen:
     }//GEN-LAST:event_excludeFromDeletionActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
