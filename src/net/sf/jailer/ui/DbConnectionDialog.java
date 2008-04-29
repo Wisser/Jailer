@@ -128,8 +128,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         	jComboBox1.setSelectedIndex(0);
         }
         pack();
-        setSize((int)(getSize().width * 1.2), getSize().height + 8);
-	}
+ 	}
     
     /**
      * Initializes JDBC-settings.

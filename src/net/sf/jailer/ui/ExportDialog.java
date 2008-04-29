@@ -74,7 +74,6 @@ public class ExportDialog extends javax.swing.JDialog {
         	rowsPerThread.setText("50");
         }
         pack();
-        setSize(getSize().width + 8, getSize().height + 8);
         setVisible(true);
 	}
 

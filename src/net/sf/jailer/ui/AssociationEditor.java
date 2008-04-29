@@ -59,9 +59,8 @@ public class AssociationEditor extends javax.swing.JDialog {
         initComponents();
         type.setRenderer(createTypeRenderer());
         pack();
-        setSize(getSize().width + 8, getSize().height + 8);
-        setLocation(parent.getLocation().x + parent.getSize().width/2 - getSize().width/2,
-    			parent.getLocation().y + parent.getSize().height/2 - getSize().height/2);
+        setLocation(parent.getLocation().x + parent.getSize().width/2 - getPreferredSize().width/2,
+    			parent.getLocation().y + parent.getSize().height/2 - getPreferredSize().height/2);
     }
     
     /** This method is called from within the constructor to
@@ -73,6 +72,7 @@ public class AssociationEditor extends javax.swing.JDialog {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        jPanel2 = new javax.swing.JPanel();
         source = new javax.swing.JComboBox();
         type = new javax.swing.JComboBox();
         destination = new javax.swing.JComboBox();
@@ -97,11 +97,16 @@ public class AssociationEditor extends javax.swing.JDialog {
 
         setTitle("Association");
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        getContentPane().add(jPanel2, gridBagConstraints);
+
         source.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         source.setMaximumRowCount(20);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
         getContentPane().add(source, gridBagConstraints);
@@ -162,7 +167,7 @@ public class AssociationEditor extends javax.swing.JDialog {
         jLabel6.setText(" From ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         getContentPane().add(jLabel6, gridBagConstraints);
 
@@ -420,6 +425,7 @@ public class AssociationEditor extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
     private javax.swing.JTextField joinCondition;
     private javax.swing.JTextField nameField;
     private javax.swing.JComboBox source;
