@@ -242,7 +242,7 @@ public class GraphicalDataModelView extends JPanel {
 
         ColorAction fill = new ColorAction(nodes, 
                 VisualItem.FILLCOLOR, ColorLib.rgba(210,190,0,120));
-        fill.add(VisualItem.FIXED, ColorLib.rgba(170,150,0,120));
+ //       fill.add(VisualItem.FIXED, ColorLib.rgba(170,150,0,120));
         fill.add(VisualItem.HIGHLIGHT, ColorLib.rgba(255,220,0,120));
         
         ActionList draw = new ActionList();
