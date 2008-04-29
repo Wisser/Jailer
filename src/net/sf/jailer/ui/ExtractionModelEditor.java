@@ -461,7 +461,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         legende.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
         dependsOn.setFont(new java.awt.Font("Dialog", 0, 12));
-        dependsOn.setForeground(new java.awt.Color(255, 38, 47));
+        dependsOn.setForeground(new java.awt.Color(170, 0, 0));
         dependsOn.setText("depends on");
         legende.add(dependsOn);
 
