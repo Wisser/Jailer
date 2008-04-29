@@ -104,8 +104,16 @@ public class ModelBuilder {
     
     static {
         try {
-            EXCLUDE_TABLES_CSV = new CsvFile(new File("datamodel/exclude-tables.csv"));
-            EXCLUDE_ASSOCIATION_CSV = new CsvFile(new File("datamodel/exclude-associations.csv"));
+            File exTFile = new File("datamodel/exclude-tables.csv");
+            File exAFile = new File("datamodel/exclude-associations.csv");
+            if (!exTFile.exists()) {
+            	exTFile.createNewFile();
+            }
+            if (!exAFile.exists()) {
+            	exAFile.createNewFile();
+            }
+			EXCLUDE_TABLES_CSV = new CsvFile(exTFile);
+            EXCLUDE_ASSOCIATION_CSV = new CsvFile(exAFile);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

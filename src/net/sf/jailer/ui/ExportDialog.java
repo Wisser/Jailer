@@ -74,6 +74,7 @@ public class ExportDialog extends javax.swing.JDialog {
         	rowsPerThread.setText("50");
         }
         pack();
+        UIUtil.initPeer();
         setVisible(true);
 	}
 

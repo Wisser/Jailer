@@ -322,4 +322,19 @@ public class UIUtil {
     	}
 	}
 
+    /**
+     * Initializes peer of newly created window.
+     * 
+     * Should not be neccassary, but there is a strange bug in
+     * AWT of jre 6 on multi-core/processor systems. Sleeping a
+     * little after creating peer and before making peer visible
+     * seems to help. 
+     */
+    public static void initPeer() {
+    	try {
+			Thread.sleep(100);
+		} catch (InterruptedException e) {
+		}
+    }
+    
 }
