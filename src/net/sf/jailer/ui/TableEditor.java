@@ -67,9 +67,8 @@ public class TableEditor extends javax.swing.JDialog {
         this.initialDataTablesList = initialDataTablesList;
         initComponents();
         pack();
-        setSize(getSize().width + 8, getSize().height + 8);
-        setLocation(parent.getLocation().x + parent.getSize().width/2 - getSize().width/2,
-    			parent.getLocation().y + parent.getSize().height/2 - getSize().height/2);
+        setLocation(parent.getLocation().x + parent.getSize().width/2 - getPreferredSize().width/2,
+    			parent.getLocation().y + parent.getSize().height/2 - getPreferredSize().height/2);
     }
     
     /** This method is called from within the constructor to
@@ -120,6 +119,7 @@ public class TableEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         getContentPane().add(nameField, gridBagConstraints);
 
         pkField.setText("jTextField2");

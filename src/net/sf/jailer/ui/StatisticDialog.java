@@ -28,9 +28,13 @@ public class StatisticDialog extends javax.swing.JDialog {
         	addLine(line);
         }
         Dimension ps = contentPane.getPreferredSize();
-        setSize(Math.max(getWidth(), 250), Math.min(Math.max(getHeight() + ps.height, 100), 300));
-        setLocation(Math.max(0, parent.getX() + parent.getWidth() / 2 - getWidth() / 2),
-                    Math.max(0, parent.getY() + parent.getHeight() / 2 - getHeight() / 2));
+        if (ps == null) {
+        	ps = new Dimension(100, 100);
+        }
+        int w = 250, h = Math.min(Math.max(70 + ps.height, 100), 300);
+        setSize(w, h);
+        setLocation(Math.max(0, parent.getX() + parent.getWidth() / 2 - w / 2),
+                    Math.max(0, parent.getY() + parent.getHeight() / 2 - h / 2));
         invalidate();
         setVisible(true);
     }
