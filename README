@@ -1,9 +1,8 @@
-Jailer is a data extraction tool that enables you to
+Model-based Data Export Tool
 
- * extract small consistent (referentially intact) parts of data 
-   from your productive environment and import the data into your 
-   development and test environment.
- * remove and archive obsolete data from your productive environment.
+Extracts small consistent and referentially intact row-sets from your productive database 
+and imports the data into your development and test environment.
+Removes and archives obsolete data from your productive database. 
 
 Home:    http://jailer.sourceforge.net/
 Forum:   https://sourceforge.net/forum/?group_id=197260
