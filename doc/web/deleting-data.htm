@@ -34,7 +34,7 @@
     <tr>
       <td colspan="2" class="nav1background" height="33" width="100%">&nbsp;
       <b><font color="#ffffff"><a href="home.htm" target="_self"
- class="tlink">Home</a> &nbsp;&nbsp;&nbsp; <a href="tutorial.htm"
+ class="tlink">Home</a> &nbsp;&nbsp;&nbsp; <a href="exporting-data.htm"
  target="_self" class="tlinkA">Tutorial</a> &nbsp;&nbsp;&nbsp; <a
  href="documentation.htm" target="_self" class="tlink">Documentation</a>
 &nbsp;&nbsp;&nbsp; <a
@@ -65,9 +65,6 @@
 Data</a></li>
         <li><a href="deleting-data.htm" target="_self" class="llinkA">Deleting
 Data</a></li>
-        <li><a href="exclude-del.htm" target="_self" class="llink">exclude-del</a></li>
-        <li><a href="export-all.htm" target="_self" class="llink">export-all</a></li>
-        <li><a href="cli-tutorial.htm" target="_self" class="llink">cli-tutorial</a></li>
       </ul>
       <table border="0" cellpadding="5" cellspacing="0" width="100%">
         <tbody>
@@ -96,27 +93,26 @@ This tutorial shows you how to delete rows from database without
 violating integrity of the remaining data.<br>
             <br>
 The generation of a <span style="font-style: italic;">delete-script</span>
-is an optional step after the exportation of data.<br>
+is an optional step after export.<br>
 A delete-script contains DELETE statements for all exported rows which
 are not associated<br>
-with any non-exported row according to the restricted data model. In
-addition tables can <br>
+with any non-exported row according to the restricted data model.
+Additionally tables can <br>
 be excluded from deletion so that their rows will never be deleted, see
 step 3.<br>
             <h3><br>
-Step 1. Delete Scott (unsuccessful)</h3>
-            <p>Open the extraction model <big><span
- style="font-family: monospace;">scott.csv</span></big> from previous
+            </h3>
+            <h4>Step 1. Delete Scott (unsuccessful)</h4>
+Open the extraction model <big><span style="font-family: monospace;">scott.csv</span></big>
+from previous
 tutorial. Use <span style="font-style: italic;">Tools-&gt;Export Data</span>
 again and enter <big><span style="font-family: monospace;">delete-scott.sql</span></big>
 as name of delete-script:<br>
-            <br>
-            <img style="width: 558px; height: 180px;"
+            <p> <img style="width: 558px; height: 180px;"
  src="deleting-data-Dateien/screen17.png"><br>
             </p>
             <p><br>
 Jailer will now generate the following script too:<br>
-            <br>
             <br>
             <table
  style="background-color: rgb(51, 102, 255); text-align: left;"
@@ -174,10 +170,11 @@ defined by the extraction-model!) would violate the integrity of the
 remaining data.<br>
             <br>
             </p>
-            <h3>Step 2. Delete Scott</h3>
-            <p>In order to delete Scott, me must delete his subordinate
+            <h4>Step 2. Delete Scott<br>
+            </h4>
+In order to delete Scott, me must delete his subordinate
 too. To do so, relax the restriction on the <span
- style="font-style: italic;">inverse-BOSS</span>-association:</p>
+ style="font-style: italic;">inverse-BOSS</span>-association:
             <p><img style="width: 939px; height: 323px;"
  src="deleting-data-Dateien/screen18.png"><br>
             <br>
@@ -249,7 +246,7 @@ now contains <big><span style="font-family: monospace;"><font size="4">Insert</f
 for Adams and his salary-grade too. <br>
             <br>
             </p>
-            <h3>Step 3. Delete all employees but no department</h3>
+            <h4>Step 3. Delete all employees but no department</h4>
 Replace the <span style="font-style: italic;">where</span>-condition
 of the extraction model with '<big><span style="font-family: monospace;">1=1</span></big>',
 or clear the field. Repeat the exportation. Jailer exports all
