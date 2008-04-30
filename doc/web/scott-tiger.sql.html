@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <title>Open Jail. The Jailer Project Web Site.</title>
+</head>
+<body>
+<table style="background-color: rgb(51, 102, 255); text-align: left;"
+ border="0" cellpadding="2" cellspacing="0">
+  <tbody>
+    <tr>
+      <td
+ style="height: 24px; background-color: rgb(202, 225, 235); vertical-align: top;"><big><span
+ style="font-family: monospace;"><span style="font-weight: bold;">script/<span
+ style="font-family: monospace;">scott-tiger.sql </span></span></span><span
+ style="font-family: monospace;"></span></big><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0"
+ cellspacing="0">
+  <tbody>
+    <tr>
+      <td colspan="2" rowspan="1"
+ style="background-color: rgb(202, 225, 235); vertical-align: top;"><span
+ style="font-family: monospace;"><br>
+-- creates some test-tables and data<br>
+      <br>
+--&nbsp; DROP TABLE EMPLOYEE;<br>
+--&nbsp; DROP TABLE DEPARTMENT;<br>
+--&nbsp; DROP TABLE SALARYGRADE;<br>
+--&nbsp; DROP TABLE BONUS;<br>
+      <br>
+CREATE TABLE EMPLOYEE(<br>
+&nbsp;&nbsp;&nbsp; empno&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INTEGER NOT NULL,<br>
+&nbsp;&nbsp;&nbsp; name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARCHAR(10),<br>
+&nbsp;&nbsp;&nbsp; job&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+VARCHAR(9),<br>
+&nbsp;&nbsp;&nbsp; boss&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INTEGER,<br>
+&nbsp;&nbsp;&nbsp; hiredate&nbsp;&nbsp; varchar(12),<br>
+&nbsp;&nbsp;&nbsp; salary&nbsp;&nbsp;&nbsp;&nbsp; DECIMAL(7, 2),<br>
+&nbsp;&nbsp;&nbsp; comm&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DECIMAL(7,
+2),<br>
+&nbsp;&nbsp;&nbsp; deptno&nbsp;&nbsp;&nbsp;&nbsp; INTEGER<br>
+);<br>
+      <br>
+CREATE TABLE DEPARTMENT(<br>
+&nbsp;&nbsp;&nbsp; deptno&nbsp;&nbsp;&nbsp;&nbsp; INTEGER NOT NULL,<br>
+&nbsp;&nbsp;&nbsp; name&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARCHAR(14),<br>
+&nbsp;&nbsp;&nbsp; location&nbsp;&nbsp; VARCHAR(13)<br>
+);<br>
+      <br>
+CREATE TABLE SALARYGRADE(<br>
+&nbsp;&nbsp;&nbsp; grade&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INTEGER NOT NULL,<br>
+&nbsp;&nbsp;&nbsp; losal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INTEGER NOT NULL,<br>
+&nbsp;&nbsp;&nbsp; hisal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INTEGER NOT NULL<br>
+);<br>
+      <br>
+CREATE TABLE BONUS (<br>
+&nbsp;&nbsp;&nbsp; ename&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; VARCHAR(10) NOT
+NULL,<br>
+&nbsp;&nbsp;&nbsp; job&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+VARCHAR(9) NOT NULL,<br>
+&nbsp;&nbsp;&nbsp; sal&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+DECIMAL(7, 2),<br>
+&nbsp;&nbsp;&nbsp; comm&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; DECIMAL(7,
+2)<br>
+);<br>
+      <br>
+-- Primary Keys<br>
+ALTER TABLE EMPLOYEE<br>
+&nbsp; ADD CONSTRAINT emp_pk<br>
+&nbsp; PRIMARY KEY (empno);<br>
+      <br>
+ALTER TABLE DEPARTMENT<br>
+&nbsp; ADD CONSTRAINT dept_pk<br>
+&nbsp; PRIMARY KEY (deptno);<br>
+      <br>
+ALTER TABLE SALARYGRADE<br>
+&nbsp; ADD CONSTRAINT salgrade_pk<br>
+&nbsp; PRIMARY KEY (grade);<br>
+      <br>
+ALTER TABLE BONUS<br>
+&nbsp; ADD CONSTRAINT bonus_pk<br>
+&nbsp; PRIMARY KEY (ename, job);<br>
+&nbsp; <br>
+-- EMPLOYEE to DEPARTMENT<br>
+ALTER TABLE EMPLOYEE<br>
+&nbsp; ADD CONSTRAINT department<br>
+&nbsp; FOREIGN KEY (deptno)<br>
+&nbsp; REFERENCES DEPARTMENT (deptno);<br>
+      <br>
+-- EMPLOYEE to EMPLOYEE<br>
+ALTER TABLE EMPLOYEE<br>
+&nbsp; ADD CONSTRAINT boss<br>
+&nbsp; FOREIGN KEY (boss)<br>
+&nbsp; REFERENCES EMPLOYEE (empno);<br>
+      <br>
+      <br>
+INSERT INTO DEPARTMENT VALUES (10, 'ACCOUNTING', 'NEW YORK');<br>
+INSERT INTO DEPARTMENT VALUES (20, 'RESEARCH',&nbsp;&nbsp; 'DALLAS');<br>
+INSERT INTO DEPARTMENT VALUES (30,
+'SALES',&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 'CHICAGO');<br>
+INSERT INTO DEPARTMENT VALUES (40, 'OPERATIONS', 'BOSTON');<br>
+      <br>
+INSERT INTO EMPLOYEE VALUES (7839, 'KING',&nbsp;&nbsp; 'PRESIDENT',
+NULL, '1981-11-17', 5000, NULL, 10);<br>
+&nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES (7566, 'JONES',&nbsp;
+'MANAGER',&nbsp;&nbsp; 7839, '1981-04-02',&nbsp; 2975, NULL, 20);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES(7788,
+'SCOTT',&nbsp; 'ANALYST',&nbsp;&nbsp; 7566, '1982-12-09', 3000, NULL,
+20);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INSERT INTO EMPLOYEE
+VALUES(7876, 'ADAMS',&nbsp; 'CLERK',&nbsp;&nbsp;&nbsp;&nbsp; 7788,
+'1983-01-12', 1100, NULL, 20);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES(7902,
+'FORD',&nbsp;&nbsp; 'ANALYST',&nbsp;&nbsp; 7566, '1981-12-03',&nbsp;
+3000, NULL, 20);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INSERT INTO EMPLOYEE
+VALUES(7369, 'SMITH',&nbsp; 'CLERK',&nbsp;&nbsp;&nbsp;&nbsp; 7902,
+'1980-12-17',&nbsp; 800, NULL, 20);<br>
+&nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES (7698, 'BLAKE',&nbsp;
+'MANAGER',&nbsp;&nbsp; 7839, '1981-05-01',&nbsp; 2850, NULL, 30);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES(7499,
+'ALLEN',&nbsp; 'SALESMAN',&nbsp; 7698, '1981-02-20', 1600,&nbsp; 300,
+30);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES(7521,
+'WARD',&nbsp;&nbsp; 'SALESMAN',&nbsp; 7698, '1981-02-22', 1250,&nbsp;
+500, 30);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES(7654,
+'MARTIN', 'SALESMAN',&nbsp; 7698, '1981-09-28', 1250, 1400, 30);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES(7844,
+'TURNER', 'SALESMAN',&nbsp; 7698, '1981-09-08',&nbsp;
+1500,&nbsp;&nbsp;&nbsp; 0, 30);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES(7900,
+'JAMES',&nbsp; 'CLERK',&nbsp;&nbsp;&nbsp;&nbsp; 7698,
+'1981-12-03',&nbsp;&nbsp; 950, NULL, 30);<br>
+&nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES(7782, 'CLARK',&nbsp;
+'MANAGER',&nbsp;&nbsp; 7839, '1981-06-09',&nbsp; 2450, NULL, 10);<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; INSERT INTO EMPLOYEE VALUES(7934,
+'MILLER', 'CLERK',&nbsp;&nbsp;&nbsp;&nbsp; 7782, '1982-01-23', 1300,
+NULL, 10);<br>
+      <br>
+INSERT INTO SALARYGRADE VALUES (1,&nbsp; 700, 1200);<br>
+INSERT INTO SALARYGRADE VALUES (2, 1201, 1400);<br>
+INSERT INTO SALARYGRADE VALUES (3, 1401, 2000);<br>
+INSERT INTO SALARYGRADE VALUES (4, 2001, 3000);<br>
+INSERT INTO SALARYGRADE VALUES (5, 3001, 9999);<br>
+      <br>
+      </span></td>
+    </tr>
+  </tbody>
+</table>
+<br>
+<h2><br>
+</h2>
+</body>
+</html>
