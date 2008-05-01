@@ -985,7 +985,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			out = new PrintWriter(new FileOutputStream(associations));
 			out.println("# Table A; Table B; First-insert; Cardinality; Join-condition; Name; Author");
 			out.println("EMPLOYEE; BONUS; ; 1:1; A.NAME=B.ENAME and A.JOB=B.JOB; BONUS; Demo; ; ");
-			out.println("SALARYGRADE; EMPLOYEE; ; 1:n; B.SALARY BETWEEN A.LOSAL and A.HISAL; SALARY; Demo; ; ");
+			out.println("EMPLOYEE; SALARYGRADE; ; n:1; A.SALARY BETWEEN B.LOSAL and B.HISAL; SALARY; Demo; ; ");
 			out.println("EMPLOYEE; DEPARTMENT; B; n:1; A.DEPTNO=B.DEPTNO; DEPARTMENT; Demo; ; ");
 			out.println("EMPLOYEE; EMPLOYEE; B; n:1; A.BOSS=B.EMPNO; BOSS; Demo; ; ");
 			out.close();
