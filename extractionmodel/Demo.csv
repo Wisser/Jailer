@@ -2,5 +2,3 @@
 EMPLOYEE; NAME='SCOTT'; ; .embedded
 
 # from A (or association name); to B; restriction-condition
-inverse-DEPARTMENT; ; ignore
-SALARY; ; ignore

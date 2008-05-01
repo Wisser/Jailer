@@ -332,7 +332,7 @@ public class UIUtil {
      */
     public static void initPeer() {
     	try {
-			Thread.sleep(100);
+			Thread.sleep(200);
 		} catch (InterruptedException e) {
 		}
     }

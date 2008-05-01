@@ -140,7 +140,7 @@ on windows platform)<br>
               </tbody>
             </table>
             <br>
-            <img style="width: 304px; height: 119px;"
+            <img 
  src="exporting-data-Dateien/screen1.png"><br>
             </p>
             <p><br>
@@ -153,7 +153,7 @@ the database schema.<br>
             <br>
 Click on<span style="font-style: italic;"> Introspect DB</span><br>
             <br>
-            <img style="width: 529px; height: 258px;"
+            <img 
  src="exporting-data-Dateien/screen2.png"><br>
             <br>
             <br>
@@ -165,7 +165,7 @@ Click on<span style="font-style: italic;"> Connect</span><big
  style="font-style: italic;">.</span>
 Jailer finds four tables and two associations:<br>
             <br>
-            <img style="width: 756px; height: 254px;"
+            <img 
  src="exporting-data-Dateien/screen3.png"><br>
             <br>
             <br>
@@ -177,8 +177,10 @@ Add the definitions manually (<big><span style="font-family: monospace;"><span
  style="font-family: mon;"><span style="font-style: italic;">Add</span>-</span></span></big>Button
 under <big><span style="font-family: monospace;"><font size="4">Associations</font></span></big>):<br>
             <br>
-            <img style="width: 484px; height: 217px;"
+            <img 
  src="exporting-data-Dateien/screen4.png"><br>
+            <br><img 
+ src="exporting-data-Dateien/screen42.png"><br>
             <br>
 Note that Jailer now knows more about the data model than the DBMS.<br>
             <br>
@@ -193,7 +195,7 @@ as table to extract from and type <span style="font-family: monospace;">NAME</sp
  style="font-family: monospace;"><font size="4">='SCOTT'</font></span></big>
 into the <span style="font-style: italic;">Where</span>-field:<br>
             <br>
-            <img style="width: 739px; height: 322px;"
+            <img 
  src="exporting-data-Dateien/screen8.png"><br>
             <br>
             <br>
@@ -205,9 +207,9 @@ entities associated with these entities and so forth.<br>
 Export this set (<span style="font-style: italic;">Export Data</span>-Button
 or <span style="font-style: italic;">T</span><span
  style="font-style: italic;">ools-&gt;Export Data</span>).
-Jailer first asks for a file name for the new extraction model:<br>
+Jailer first asks for a file name for the new extraction model. Call it <big><span style="font-family: monospace;"><font size="4">scott.csv</font></span></big><br>
             <br>
-            <img style="width: 558px; height: 180px;"
+            <img 
  src="exporting-data-Dateien/screen7.png"><br>
             <br>
             <br>
@@ -217,7 +219,7 @@ generated. <br>
             <br>
 Click on <span style="font-style: italic;">Export Data</span>:<br>
             <br>
-            <img style="width: 783px; height: 481px;"
+            <img 
  src="exporting-data-Dateien/screen9.png"><br>
             <br>
             <br>
@@ -233,16 +235,16 @@ But why are there also statements for all other employees?<br>
             <br>
 Let Jailer explain why:<br>
             <br>
-            <img style="width: 558px; height: 180px;"
+            <img 
  src="exporting-data-Dateien/screen10.png"><br>
             <br>
-            <img style="width: 716px; height: 238px;"
+            <img 
  src="exporting-data-Dateien/screen11.png"><br>
             <br>
             <br>
 Open the <span style="font-family: monospace;">Explain.log</span>:<br>
             <br>
-            <img style="width: 806px; height: 327px;"
+            <img 
  src="exporting-data-Dateien/screen12.png"><br>
             <br>
 Scotts is Adams boss and James and Adams are both classified in the
@@ -264,15 +266,10 @@ subordinates, 'same department'-members and 'same
 salary-grade'-employees, we must restrict some associations. To do so,
 define some <span style="font-style: italic;">restrictions:</span><br>
             <br>
-            <img style="width: 950px; height: 322px;"
+            <img 
  src="exporting-data-Dateien/screen13.png"><br>
             <br>
-            <img style="width: 950px; height: 322px;"
- src="exporting-data-Dateien/screen14.png"><br>
-            <br>
-            <img style="width: 950px; height: 322px;"
- src="exporting-data-Dateien/screen15.png"><br>
-            <br>
+            
             <br>
 The <span style="font-style: italic;">restriction-condition</span> is
 an extension of the associations join-condition (in
