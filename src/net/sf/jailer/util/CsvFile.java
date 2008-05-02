@@ -19,6 +19,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -82,7 +83,7 @@ public class CsvFile {
             }
             StringBuffer sb = new StringBuffer();
             for (int i = 0; i <= l; ++i) {
-            	sb.append(cells.get(i) + "; ");
+            	sb.append(encodeCell(cells.get(i)) + "; ");
             }
             return sb.toString();
         }
@@ -116,17 +117,9 @@ public class CsvFile {
                 continue;
             }
             List<String> row = new ArrayList<String>();
-            final String NOSEP = "///--n-o-s-e-p--///";
-            line = line.replace("\\;", NOSEP);
-            String[] col = line.split(";");
+            String[] col = decodeLine(line);
             for (int i = 0; i < col.length; ++i) {
-                String s = col[i].replace(NOSEP, ";");
-                if (s.startsWith("\"")) {
-                    s = s.substring(1);
-                }
-                if (s.endsWith("\"")) {
-                    s = s.substring(0, s.length() - 1);
-                }
+                String s = col[i];
                 row.add(s.trim());
             }
             while (row.size() < 100) {
@@ -138,6 +131,64 @@ public class CsvFile {
     }
     
     /**
+     * Decodes and splits csv-line.
+     * 
+     * @param line the line to decode
+     * @return decoded and splitted line
+     */
+    private static String[] decodeLine(String line) {
+    	List<String> cells = new ArrayList<String>();
+    	StringBuilder sb = new StringBuilder();
+    	boolean esc = false;
+    	for (int i = 0; i < line.length(); ++i) {
+    		char c = line.charAt(i);
+    		if (c == '\\') {
+    			if (esc) {
+    				esc = false;
+    			} else {
+    				esc = true;
+    				continue;
+    			}
+    		}
+    		if (!esc && c == ';') {
+    			cells.add(sb.toString());
+    			sb.setLength(0);
+    		} else {
+    			if (esc && c == 'n') {
+    				c = '\n';
+    			}
+    			sb.append(c);
+    		}
+    		esc = false;
+    	}
+    	cells.add(sb.toString());
+    	return (String[]) cells.toArray(new String[cells.size()]);
+	}
+
+    /**
+     * Encodes and csv-cell.
+     * 
+     * @param cell the cell to encode
+     * @return encoded cell
+     */
+    public static String encodeCell(String cell) {
+    	StringBuilder sb = new StringBuilder();
+    	for (int i = 0; i < cell.length(); ++i) {
+    		char c = cell.charAt(i);
+    		if (c == ';') {
+    			sb.append("\\;");
+    		} else if (c == '\\') {
+        		sb.append("\\\\");
+    		} else if (c == '\n') {
+        		sb.append("\\n");
+        	} else {
+        		sb.append(c);
+        	}
+    	}
+    	return sb.toString();
+    }
+
+	/**
      * Gets the list of lines.
      * 
      * @return list of lists of cell-contents

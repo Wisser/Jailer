@@ -65,6 +65,7 @@ import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.ui.graphical_view.AssociationRenderer;
 import net.sf.jailer.ui.graphical_view.GraphicalDataModelView;
+import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -1175,7 +1176,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		try {
 			PrintWriter out = new PrintWriter(extractionModel);
 			out.println("# subject; condition;  limit; restrictions");
-			out.println(subjectTable.getSelectedItem() + "; " + condition.getText() + "; ; " + RestrictionModel.EMBEDDED);
+			out.println(CsvFile.encodeCell("" + subjectTable.getSelectedItem()) + "; " + CsvFile.encodeCell(condition.getText()) + "; ; " + RestrictionModel.EMBEDDED);
 			saveRestrictions(out);
 			out.close();
 			needsSave = false;
@@ -1198,9 +1199,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		for (RestrictionDefinition rd: currentRestrictionDefinitions) {
 			String condition = rd.isIgnored? "ignore" : rd.condition;
 			if (rd.name == null || rd.name.trim().length() == 0) {
-				out.println(rd.from.getName() + "; " + rd.to.getName() + "; " + condition);
+				out.println(CsvFile.encodeCell(rd.from.getName()) + "; " + CsvFile.encodeCell(rd.to.getName()) + "; " + CsvFile.encodeCell(condition));
 			} else {
-				out.println(rd.name + "; ; " + condition);
+				out.println(CsvFile.encodeCell(rd.name) + "; ; " + CsvFile.encodeCell(condition));
 			}
 		}
 	}

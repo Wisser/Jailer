@@ -295,9 +295,10 @@ public class Jailer {
                 JobManager.Job job = new JobManager.Job() {
                     public void run() throws Exception {
                         runstats(entityGraph.statementExecutor);
+                        _log.info("resolving " + table.getName() + " -> " + association.toString(0) + "...");
                         long rc = entityGraph.resolveAssociation(table, association, today);
                         if (rc >= 0) {
-                            _log.info(rc + " entities found resolving " + table.getName() + " -> " + association);
+                            _log.info(rc + " entities found resolving " + table.getName() + " -> " + association.toString(0));
                         }
                         synchronized (progress) {
                             if (rc > 0) {
@@ -398,7 +399,7 @@ public class Jailer {
      * @param progress set of tables to account for extraction
      */
     public void writeEntities(String sqlScriptFile, final ScriptType scriptType, final Set<Table> progress, StatementExecutor statementExecutor) throws Exception {
-        System.out.println("writing file '" + sqlScriptFile + "'...");
+        _log.info("writing file '" + sqlScriptFile + "'...");
 
         OutputStream outputStream = new FileOutputStream(sqlScriptFile);
         if (sqlScriptFile.toLowerCase().endsWith(".zip") || sqlScriptFile.toLowerCase().endsWith(".gz")) {
@@ -452,7 +453,7 @@ public class Jailer {
         if (rest > 0) {
             throw new RuntimeException(rest + " entities not exported due to cyclic dependencies");
         }
-        System.out.println("file '" + sqlScriptFile + "' written.");
+        _log.info("file '" + sqlScriptFile + "' written.");
     }
 
     /**
@@ -676,9 +677,8 @@ public class Jailer {
      */
     private static void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, String driverClassName, String dbUrl, String dbUser, String dbPassword, boolean explain, int threads) throws Exception {
         printGreeting();
-        System.out.println("exporting '" + extractionModelFileName + "' to '" + scriptFile + "'");
-        System.out.println("See 'export.log' for more information.");
-
+        _log.info("exporting '" + extractionModelFileName + "' to '" + scriptFile + "'");
+        
         StatementExecutor statementExecutor = new StatementExecutor(driverClassName, dbUrl, dbUser, dbPassword);
         ExtractionModel extractionModel = new ExtractionModel(extractionModelFileName);
         EntityGraph entityGraph = EntityGraph.create(EntityGraph.createUniqueGraphID(), statementExecutor, extractionModel.getTasks().get(0).dataModel.getUniversalPrimaryKey(statementExecutor));
