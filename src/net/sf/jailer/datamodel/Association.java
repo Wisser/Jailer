@@ -152,6 +152,13 @@ public class Association extends ModelElement {
      * Stringifies the association.
      */
     public String toString() {
+    	return toString(30);
+    }
+    
+    /**
+     * Stringifies the association.
+     */
+    public String toString(int maxGab) {
         RestrictionModel restrictionModel = dataModel.getRestrictionModel();
         String restriction = "";
         if (restrictionModel != null) {
@@ -163,9 +170,9 @@ public class Association extends ModelElement {
         String gap = "";
         String aName = destination.getName();
         if (name != null) {
-            aName += "(" + name + ")";
+            aName += " (" + name + ")";
         }
-        while ((aName + gap).length() < 30) {
+        while ((aName + gap).length() < maxGab) {
             gap += " ";
         }
         String jc = joinCondition;
