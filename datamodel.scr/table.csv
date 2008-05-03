@@ -1,0 +1,9 @@
+# Name; Upsert; Primary key; ; Author
+ACTOR; Y; ID INTEGER; ; Data Model Editor; ; 
+ACTOR_ROLES; N; ID INTEGER; ; Data Model Editor; ; 
+CERTIFICATE; Y; ID INTEGER; ; Data Model Editor; ; 
+GENRE; N; ID INTEGER; ; Data Model Editor; ; 
+MOVIE_TITLE; N; ID INTEGER; ; Data Model Editor; ; 
+MOVIE_TITLE_PRODUCER; N; ID INTEGER; ; Data Model Editor; ; 
+PRODUCER; N; ID INTEGER; ; Data Model Editor; ; 
+ROLE_TYPE; N; ID INTEGER; ; Data Model Editor; ; 
