@@ -16,6 +16,7 @@ rm -rf admin
 rm -rf out
 rm svn-commit.tmp
 mv datamodel.def datamodel
+rm -rf datamodel.scr
 ls jailer.jar
 cd ..
 rm $1.zip
