@@ -1,8 +1,0 @@
-# Table A; Table B; First-insert; Cardinality; Join-condition; Name; Author
-ACTOR_ROLES; ROLE_TYPE; B; n:1; aa; aaaa; Data Model Editor; ; 
-ACTOR_ROLES; ACTOR; ; n:1; a; aa; Data Model Editor; ; 
-MOVIE_TITLE; ACTOR_ROLES; ; 1:n; a; a; Data Model Editor; ; 
-MOVIE_TITLE; CERTIFICATE; B; n:1; A.CERTIFICATE=B.ID; CERTIFICATE; Data Model Editor; ; 
-MOVIE_TITLE; GENRE; A; n:1; A.GENRE=B.ID; GENRE; Data Model Editor; ; 
-MOVIE_TITLE_PRODUCER; MOVIE_TITLE; A; n:1; A.MOVIE=B.ID; MOVIE; Data Model Editor; ; 
-MOVIE_TITLE_PRODUCER; PRODUCER; B; n:1; A.PRODUCER=B.ID; PRODUCER; Data Model Editor; ; 
