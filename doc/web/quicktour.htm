@@ -44,7 +44,7 @@
 &nbsp;&nbsp;&nbsp;</font></b></td>
     </tr>
     <tr>
-      <td colspan="2" class="spacer" width="100%"> <br>
+      <td colspan="2" class="spacer" width="100%">
       </td>
     </tr>
     <tr>
@@ -62,7 +62,7 @@
       </center>
       </div>
       <ul>
-        <li><a href="architecture.htm" target="_self" class="llinkA">Quick
+        <li><a href="quicktour.htm" target="_self" class="llinkA">Quick
 Tour</a></li>
         <li><a href="design.htm" target="_self" class="llink">Design</a></li>
         <li><a href="file-formats.htm" target="_self" class="llink">File
@@ -94,18 +94,247 @@ Formats</a></li>
             <h4><small><small>&nbsp;</small></small><br>
 Extraction Model Editor</h4>
             <img style="width: 794px; height: 575px;" alt=""
- src="qt1.gif"></td>
+ src="qt1.gif"><br>
+            <br>
+            <ol>
+              <li><span style="font-style: italic;">Subject table.</span>
+                <br>
+              </li>
+              <li><span style="font-style: italic;">Subject condition.</span>
+Exportation starts with rows of subject table where this condition
+holds.</li>
+              <li style="font-style: italic;">Export restrictions.</li>
+              <li style="font-style: italic;">Focus table.</li>
+              <li style="font-style: italic;">Outline of focus table.</li>
+              <li><span style="font-style: italic;">Restrictions
+editor. </span>Edit restriction on currently selected association
+here. Note that dependencies cannot be restricted!<br>
+              </li>
+              <li style="font-style: italic;">Starts export.</li>
+              <li><span style="font-style: italic;">Model-graph panel.</span><br>
+              </li>
+              <ul>
+                <li><span style="font-style: italic;">Panning</span> -
+drag with left mouse-button.</li>
+                <li><span style="font-style: italic;">Zooming</span> -
+drag with right mouse-button on empty space.</li>
+                <li><span style="font-style: italic;">Zoom to fit</span>
+- click with right mouse-button on empty space.</li>
+                <li><span style="font-style: italic;">Context menu</span>
+- click with right mouse-button on table.</li>
+                <li><span style="font-style: italic;">Select association</span>
+- click with left mouse-button on association.</li>
+                <li><span style="font-style: italic;">Expand table</span>
+- double-click with right mouse-button on collapsed table.</li>
+                <li><span style="font-style: italic;">Collapse table</span>
+- double-click with right mouse-button on expanded table.</li>
+                <li><span style="font-style: italic;">Move table</span>
+- drag with left mouse-button on table.</li>
+              </ul>
+              <li style="font-style: italic;">Subject table.</li>
+              <li style="font-style: italic;">Currently selected
+association.</li>
+              <li><span style="font-style: italic;">Collapsed table.</span>
+Table with hidden associations.</li>
+            </ol>
+            <br>
+            <br>
+            <h4>Data Model Editor</h4>
+            <img style="width: 730px; height: 281px;" alt=""
+ src="qt2.gif"><br>
+            <br>
+            <ol style="font-style: italic;">
+              <li>List of all tables.</li>
+              <li>List of all associations.</li>
+            </ol>
+            <br>
+            <br>
+            <h4>Table Editor</h4>
+            <p><img style="width: 421px; height: 181px;" alt=""
+ src="qt3.gif"><br>
+            <br>
+            </p>
+            <ol>
+              <li style="font-style: italic;">Table name.</li>
+              <li style="font-style: italic;">Primary key.</li>
+              <li><span style="font-style: italic;">Insert/Upsert
+selection.</span> Use Upserts if exported rows may already exists in
+the database in which you want to import them.</li>
+              <li><span style="font-style: italic;">Exclude from
+deletion. </span>If switched-on, no delete-statements will be
+generated for the rows of this table.</li>
+              <li><span style="font-style: italic;">Export all rows. </span>If
+switched-on, all rows of this table will be exported if the table is
+directly or indirectly associated with the subject table. This is
+essentially a performance optimization. Excluding tables with few rows
+which are associated with many other rows can speed-up the
+export-process a lot.<br>
+              </li>
+            </ol>
+            <br>
+            <h4>Association Editor</h4>
+            <p><img style="width: 476px; height: 224px;" alt=""
+ src="qt4.gif"><br>
+            <br>
+            </p>
+            <ol>
+              <li style="font-style: italic;">Source table.</li>
+              <li><span style="font-style: italic;">Type.</span>
+"associates", "depends on" and "has dependent".<br>
+              </li>
+              <li style="font-style: italic;">Destination table.</li>
+              <li><span style="font-style: italic;">Cardinality.</span>
+If you're not very sure what the cardinality of the association is, it
+is better to leave this field blank!</li>
+              <li><span style="font-style: italic;">Join Condition.</span>
+Condition which is fulfilled by a pair of rows if and only if the two
+rows are associated with each other.</li>
+              <li><span style="font-style: italic;">Name.</span> Unique
+name of association. Associations from introspection are named after
+the foreign key contraints.<br>
+              </li>
+            </ol>
+            <br>
+            <h4>Data Export Dialog</h4>
+            <img style="width: 556px; height: 220px;" alt=""
+ src="qt5.gif"><br>
+            <br>
+            <ol>
+              <li><span style="font-style: italic;">Export into.</span>
+Name of SQL-script containing INSERT-statements for exported rows. If
+the name ends with '.zip', then a zip-compressed file will be generated.</li>
+              <li><span style="font-style: italic;">Generate
+delete-script.</span> Name of SQL-script containing DELETE-statements
+for rows to be deleted. If the name ends with '.zip', then a
+zip-compressed file
+will be generated.</li>
+              <li><span style="font-style: italic;">Upsert all rows.</span>
+Generate Upsert (Overwrite) Statements for all exported rows instead of
+following the table-settings.</li>
+              <li><span style="font-style: italic;">Explain.</span>
+Gerate an explain-log which shows the connection of each exported row
+to a subject row. Note that explaining is very expensive. Don't use it
+if you are already sure that there are no unintensionally exported rows.</li>
+              <li><span style="font-style: italic;">Thread.</span>
+Number of thread/concurrent connections to be used for export-process.
+Set this number to 1 if you encounter problems with concurrent
+connections.</li>
+              <li><span style="font-style: italic;">Rows per statement.</span>
+Maximum number of rows to be inserted with singe INSERT-statement (if
+your DBMS supports multi-row inserts).<br>
+              </li>
+            </ol>
+            <br>
+            <br>
+            <h4>Menu</h4>
+            <ul>
+              <li style="font-style: italic;">File</li>
+              <ul>
+                <li><span style="font-style: italic;">New Model.</span>
+Creates new empty extraction model.<br>
+                </li>
+                <li><span style="font-style: italic;">Load.</span> Load
+extraction model.<br>
+                </li>
+                <li><span style="font-style: italic;">Save.</span>
+Saves. extraction model.</li>
+                <li><span style="font-style: italic;">Save as...</span>
+Asks for file name and saves extraction model.</li>
+                <li><span style="font-style: italic;">Connect database.</span>
+Connect or Re-connect to a database.<br>
+                </li>
+                <li><span style="font-style: italic;">Disconnect.</span>
+Disconnect from database.<br>
+                </li>
+                <li><span style="font-style: italic;">Exit.</span><br>
+                </li>
+              </ul>
+              <li style="font-style: italic;">Restriction</li>
+              <ul>
+                <li><span style="font-style: italic;">Disable all
+associations.</span> Creates a "disabled"-restriction for each
+association. Use this if you want to explicitly tell Jailer what you <span
+ style="font-weight: bold;">want</span> to export, instead of telling
+him what you <span style="font-weight: bold;">don't want</span>.<br>
+                </li>
+                <li><span style="font-style: italic;">Remove all
+restrictions.</span> Removes all previously defined restrictions from
+model.<br>
+                </li>
+              </ul>
+              <li style="font-style: italic;">View</li>
+              <ul>
+                <li><span style="font-style: italic;">Collapse all. </span>Collapses
+all tables in model-graph panel.<br>
+                </li>
+                <li><span style="font-style: italic;">Expand all. </span>Expands
+all tables in model-graph panel.</li>
+                <li><span style="font-style: italic;">Fix all. </span>Fix
+the positions of all tables in model-graph panel.</li>
+                <li><span style="font-style: italic;">Unfix all. </span>Unfix
+the positions of all tables in model-graph panel.</li>
+                <li><span style="font-style: italic;">Reset. </span>Resets
+model-graph panel so that only subject table is visible.<br>
+                </li>
+                <li><span style="font-style: italic;">Zoom to fix. </span>Sets
+zoom scale of model-graph panel so that all tables fits into display.<br>
+                </li>
+                <li><span style="font-style: italic;">Hide disabled
+associations.</span> If enabled, don't show disabled association and
+dont expand over disables associations. You may use <span
+ style="font-style: italic;">Reset</span> + <span
+ style="font-style: italic;">Expand all</span> then to see the closure
+of the subject.<br>
+                </li>
+                <li><span style="font-style: italic;">Look&amp;Feel.</span>
+Changes the GUI Look&amp;Feel.<br>
+                </li>
+              </ul>
+              <li style="font-style: italic;">Tools</li>
+              <ul>
+                <li><span style="font-style: italic;">Export Data.</span>
+Opens Export Data Dialog.<br>
+                </li>
+                <li><span style="font-style: italic;">Import Data. </span>Imports
+data into database.<br>
+                </li>
+                <li><span style="font-style: italic;">Introspect DB.</span>
+Introspects DB and opens data model editor.<br>
+                </li>
+                <li><span style="font-style: italic;">Data Model Editor.</span>
+Opens data model editor.</li>
+                <li><span style="font-style: italic;">Print Data Model.</span>
+Prints out data model as plain text.<br>
+                </li>
+                <li><span style="font-style: italic;">HTML Rendering. </span>Generates
+HTML pages for all tables showing restrictions and associations.<br>
+                </li>
+              </ul>
+              <li style="font-style: italic;">Help</li>
+              <ul>
+                <li><span style="font-style: italic;">Content.</span>
+Opens web site in browser.<br>
+                </li>
+                <li><span style="font-style: italic;">Tutorial. </span>Opens
+tutorial page in browser.<br>
+                </li>
+                <li><span style="font-style: italic;">Software Update.</span>
+Looks for software update at jailer.sourceforge.net.<br>
+                </li>
+                <li><span style="font-style: italic;">About.</span><br>
+                </li>
+              </ul>
+            </ul>
+            <br>
+            </td>
           </tr>
         </tbody>
       </table>
       </div>
       <p>&nbsp;<br>
       </p>
-      <p><img style="width: 730px; height: 281px;" alt="" src="qt2.gif"><br>
+      <p><br>
       </p>
-      <p><img style="width: 421px; height: 181px;" alt="" src="qt3.gif"></p>
-      <p><img style="width: 476px; height: 224px;" alt="" src="qt4.gif"></p>
-      <img style="width: 556px; height: 220px;" alt="" src="qt5.gif">
       <p></p>
       <p><br>
       </p>
