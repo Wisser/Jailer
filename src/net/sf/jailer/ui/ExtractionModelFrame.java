@@ -472,7 +472,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
     private void tutorialActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tutorialActionPerformed
     	try {
-			BrowserLauncher.openURL(new File("doc" + File.separator + "web" + File.separator + "tutorial.htm").getCanonicalPath());
+			BrowserLauncher.openURL(new File("doc" + File.separator + "web" + File.separator + "exporting-data.htm").getCanonicalPath());
 		} catch (IOException e) {
 			UIUtil.showException(this, "Error", e);
 		}
