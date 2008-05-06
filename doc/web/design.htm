@@ -8,8 +8,7 @@
  content="data export referential integrity java jdbc dbms">
   <link rel="stylesheet" type="text/css"
  href="design-Dateien/styles.css">
-<link rel="shortcut icon" href="favicon.ico" >
-
+  <link rel="shortcut icon" href="favicon.ico">
 </head>
 <body left-margin="0" top-margin="0">
 <div align="left">
@@ -135,8 +134,8 @@ dependencies between entities</div>
               </li>
             </ul>
             <p>For each entity in the graph the primary-key <em></em>and
-the type<em></em><span style="font-style: italic;"></span>(as table
-name) ist stored. The <em>birthday</em> of an entity is the day of the
+the type <em></em><span style="font-style: italic;"></span>(as table
+name) is stored. The <em>birthday</em> of an entity is the day of the
 insertion into the graph.<br>
             <br>
             <br>
@@ -169,57 +168,58 @@ empty.<br>
             <br>
             </p>
             </div>
-            <h5><a name="algorithmus">Algorithm</a></h5>
-            <div style="font-family: arial;" class="level4">
-            <ol>
-              <li class="level1">insert<span style="font-style: italic;">
-                </span><font style="font-style: italic;" size="4"><small>subject</small></font>
-into graph&nbsp;<em></em></li>
-              <li style="font-style: italic;" class="level1"><small><small><em><font
- size="4"><small>progression-set := subject</small></font></em></small>&nbsp;</small></li>
-              <li class="level1">while <em><font size="4"><small>progression-set
-!= {}</small></font></em><small>&nbsp;</small><big><em></em></big></li>
-              <ol>
-                <li class="level1"><em><font size="4"><small>progression-of-today
-:= {}</small></font></em></li>
-                <li class="level2">for all (restricted) associations <em>A
+            <h5>Algorithm</h5>
+            <div style="font-family: arial;" class="level4">&nbsp;&nbsp;
+1. insert<span style="font-style: italic;"> </span><font
+ style="font-style: italic;" size="4"><small>subject</small></font>
+into graph&nbsp;<em></em><br>
+            <small><small><em><font size="4"><small>&nbsp;&nbsp; 2.
+progression-set := { subject }</small></font></em></small>&nbsp;</small><br>
+&nbsp;&nbsp; 3. while <em><font size="4"><small>progression-set
+!= {}</small></font></em><small>&nbsp;</small><big><em></em></big><br>
+            <em><font size="4"><small>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1. progression-of-today
+:= {}</small></font></em><br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2. for all
+(restricted) associations <em>A
 between tables T<small><font size="2">1</font></small> and T<small><font
  size="2">2</font></small></em><span style="font-style: italic;">, if</span><em>
 T<small><font size="2">1</font></small></em> oder <em>T<small><font
- size="2">2</font></small></em> in <em>progression-set:</em></li>
-              </ol>
-              <ol>
-                <ol>
-                  <li class="level2"><em></em>if <em>T<small><font
- size="2">2</font></small></em> <span style="font-style: italic;">(T<small><font
- size="2">1</font></small>) </span>depends on <em>T<small><font
- size="2">1 <big>(T<small>2</small>)</big></font></small></em>: add
+ size="2">2</font></small></em> in <em>progression-set:</em><br>
+            <em></em>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+1. if <em>T<small><font size="2">2</font></small></em> <span
+ style="font-style: italic;">(T<small><font size="2">1</font></small>) </span>depends
+on <em>T<small><font size="2">1 <big>(T<small>2</small>)</big></font></small></em>:
+            <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+add
 dependencies from <em>T<small><font size="2">2</font></small></em>(T<small><font
- size="2">1</font></small>)-entities born yesterday to the entities
-they are associated with according to <span style="font-style: italic;">A</span></li>
-                  <li class="level2"><span style="font-style: italic;"></span>insert
+ size="2">1</font></small>)-entities born yesterday <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+to the entities
+they are associated with according to <span style="font-style: italic;">A</span><br>
+            <span style="font-style: italic;"></span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+2. insert
 all entities of <em>T<small><font size="2">1</font></small> (T<small><font
  size="2">2</font></small>)</em>, which are associated according to <span
  style="font-style: italic;">A</span> with an entity of <span
  style="font-style: italic;">T<small><font size="2">2</font></small> (T<small><font
- size="2">1</font></small>)</span> born yesterday</li>
-                  <li class="level2">
-                    <div class="li">if at least one entity of T<small><font
- size="2">1</font></small> (T<small><font size="2">2</font></small>) is
+ size="2">1</font></small>)</span> born yesterday
+            <div class="li">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+3. if at least one entity of T<small><font size="2">1</font></small> (T<small><font
+ size="2">2</font></small>) is
 inserted then <em><font size="4"><small>progression-of-today :=
 progression-of-today + {&nbsp;</small></font></em><font size="4"><small>
 T</small></font><small>1</small><font size="4"><small> (T</small></font><small>2</small><font
  size="4"><small>)</small></font><em><font size="4"><small> }</small></font></em></div>
-                  </li>
-                  <li class="level2">
-                    <div class="li"><em></em><em><font size="4"><small>progression-set
-:= progression-of-today</small></font></em></div>
-                  </li>
-                </ol>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <em><font
+ size="4"><small>3. progression-set
+:= progression-of-today</small></font></em>
+            <ol>
+              <ol>
               </ol>
             </ol>
             </div>
-            <br>
             <br>
             <div class="level4">
             <p><font size="4">&nbsp; Example<br>
@@ -234,10 +234,9 @@ T</small></font><small>1</small><font size="4"><small> (T</small></font><small>2
                 <tr>
                   <td style="vertical-align: top;">&nbsp;&nbsp; <br>
                   </td>
-                  <td style="vertical-align: top;"><a
- href="http://intra.acoreus.de/dokuwiki/lib/exe/detail.php?id=projekte%3Aphase_1_datenextraktion&amp;cache=cache&amp;media=development:documentation:example.png"><img
+                  <td style="vertical-align: top;"><img
  style="border: 0px solid ; width: 753px; height: 455px;" alt="desing"
- src="design-Dateien/example.png"></a></td>
+ src="design-Dateien/example.png"></td>
                 </tr>
               </tbody>
             </table>
