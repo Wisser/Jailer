@@ -6,14 +6,14 @@
 		<MASTER_PAD_INFO>Portable Application Description, or PAD for short, is a data set that is used by shareware authors to disseminate information to anyone interested in their software products. To find out more go to http://www.asp-shareware.org/pad</MASTER_PAD_INFO>
 	</MASTER_PAD_VERSION_INFO>
 	<Company_Info>
-		<Company_Name />
+		<Company_Name>sourceforge</Company_Name>
 		<Address_1 />
 		<Address_2 />
 		<City_Town />
 		<State_Province />
 		<Zip_Postal_Code />
 		<Country />
-		<Company_WebSite_URL />
+		<Company_WebSite_URL>http://jailer.sourceforge.net</Company_WebSite_URL>
 		<Contact_Info>
 			<Author_First_Name>Ralf</Author_First_Name>
 			<Author_Last_Name>Wisser</Author_Last_Name>
@@ -78,8 +78,8 @@
 			<Keywords>data export referential integrity java jdbc dbms schema browsing</Keywords>
 			<Char_Desc_45>Model-based Data Export Tool</Char_Desc_45>
 			<Char_Desc_80 />
-			<Char_Desc_250>Exports consistent and referentially intact row-sets from your productive database and imports the data into your development and test environment.  Removes and archives obsolete data from your productive database without violating integrity.   Open </Char_Desc_250>
-			<Char_Desc_450 />
+			<Char_Desc_250>Exports consistent and referentially intact row-sets from your productive database and imports the data into your development and test environment.  Removes and archives obsolete data from your productive database without violating integrity.</Char_Desc_250>
+			<Char_Desc_450>Exports consistent and referentially intact row-sets from your productive database and imports the data into your development and test environment.  Removes and archives obsolete data from your productive database without violating integrity.   Open Source. Entirely written in Java. Database agnostic. Platform independent.</Char_Desc_450>
 			<Char_Desc_2000 />
 		</English>
 	</Program_Descriptions>
