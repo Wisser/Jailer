@@ -41,7 +41,7 @@
 		<Program_Cost_Dollars />
 		<Program_Cost_Other_Code />
 		<Program_Cost_Other />
-		<Program_Type>Freeware</Program_Type>
+		<Program_Type>Open Source</Program_Type>
 		<Program_Release_Status>Major Update</Program_Release_Status>
 		<Program_Install_Support />
 		<Program_OS_Support>Win 3.1x,Win95,Win98,WinME,WinNT 3.x,WinXP,Windows2000,Windows2003,Unix,Linux,Linux Console,Linux Gnome,Linux Open Source,Mac PPC,Mac OS X,Mac Other,Java</Program_OS_Support>
@@ -51,7 +51,7 @@
 		<Program_Category_Class>Development::Other</Program_Category_Class>
 		<Program_Categories>Data Export</Program_Categories>
 		<Program_System_Requirements>Java JRE 6.0</Program_System_Requirements>
-		<Includes_JAVA_VM>N</Includes_JAVA_VM>
+		<Includes_JAVA_VM>Y</Includes_JAVA_VM>
 		<Includes_VB_Runtime>N</Includes_VB_Runtime>
 		<Includes_DirectX>N</Includes_DirectX>
 		<File_Info>
@@ -77,10 +77,10 @@
 		<English>
 			<Keywords>data export referential integrity java jdbc dbms schema browsing</Keywords>
 			<Char_Desc_45>Model-based Data Export Tool</Char_Desc_45>
-			<Char_Desc_80 />
+			<Char_Desc_80>Model-based Data Export Tool</Char_Desc_80>
 			<Char_Desc_250>Exports consistent and referentially intact row-sets from your productive database and imports the data into your development and test environment.  Removes and archives obsolete data from your productive database without violating integrity.</Char_Desc_250>
 			<Char_Desc_450>Exports consistent and referentially intact row-sets from your productive database and imports the data into your development and test environment.  Removes and archives obsolete data from your productive database without violating integrity.   Open Source. Entirely written in Java. Database agnostic. Platform independent.</Char_Desc_450>
-			<Char_Desc_2000 />
+			<Char_Desc_2000></Exports consistent and referentially intact row-sets from your productive database and imports the data into your development and test environment.  Removes and archives obsolete data from your productive database without violating integrity.   Open Source. Entirely written in Java. Database agnostic. Platform independent.</Char_Desc_2000>
 		</English>
 	</Program_Descriptions>
 	<Web_Info>
