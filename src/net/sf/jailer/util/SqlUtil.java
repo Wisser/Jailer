@@ -61,7 +61,7 @@ public class SqlUtil {
     }
     
     /**
-     * Replaces the aliases A and B with given aliases  ina SQL-condition.
+     * Replaces the aliases A and B with given aliases in a SQL-condition.
      * 
      * @param condition the condition
      * @param aliasA alias for A
@@ -135,15 +135,20 @@ public class SqlUtil {
 
         if (content instanceof java.sql.Date) {
         	if (dateFormat != null) {
-        		return "'" + dateFormat.format((Date) content) + "'";
+        		synchronized(dateFormat) {
+        			return "'" + dateFormat.format((Date) content) + "'";
+        		}
         	}
             return "'" + content + "'";
         }
         if (content instanceof java.sql.Timestamp) {
         	if (timestampFormat != null) {
-        		String format = timestampFormat.format((Date) content);
-        		if (appendNanosToTimestamp) {
-        			format += getNanoString((Timestamp) content, !appendMillisToTimestamp);
+        		String format;
+        		synchronized(timestampFormat) {
+	        		format = timestampFormat.format((Date) content);
+	        		if (appendNanosToTimestamp) {
+	        			format += getNanoString((Timestamp) content, !appendMillisToTimestamp);
+	        		}
         		}
 				return "'" + format + "'";
         	}
