@@ -73,7 +73,7 @@ public class Jailer {
     /**
      * The Jailer version.
      */
-    public static final String VERSION = "2.2.1";
+    public static final String VERSION = "2.2.2";
     
     /**
      * The relational data model.
@@ -295,7 +295,9 @@ public class Jailer {
                 JobManager.Job job = new JobManager.Job() {
                     public void run() throws Exception {
                         runstats(entityGraph.statementExecutor);
-                        _log.info("resolving " + table.getName() + " -> " + association.toString(0) + "...");
+                        if (association.getJoinCondition() != null) {
+                        	_log.info("resolving " + table.getName() + " -> " + association.toString(0) + "...");
+                        }
                         long rc = entityGraph.resolveAssociation(table, association, today);
                         if (rc >= 0) {
                             _log.info(rc + " entities found resolving " + table.getName() + " -> " + association.toString(0));
