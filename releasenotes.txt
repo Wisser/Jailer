@@ -1,3 +1,6 @@
+2.2.2
+ - improved logging
+
 2.2.1
  - fixed a bug that occurred when more than one connection to dbms is used simultaniously during exportation due to lack of thread safeness of java.text.DateFormat
 
