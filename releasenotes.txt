@@ -1,5 +1,5 @@
 2.2.3
- - improved documenation
+ - improved documentation
  - minor bug fixes
 
 2.2.2
