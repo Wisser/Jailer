@@ -19,7 +19,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -95,18 +94,42 @@ public class CsvFile {
     private List<Line> rows = new ArrayList<Line>();
     
     /**
+     * Indicates start of block inside a CSV file.
+     */
+    public static String BLOCK_INDICATOR = "#! block ";
+
+    /**
      * Constructor.
      * 
      * @param csvFile the csv file
      */
     public CsvFile(File csvFile) throws Exception {
+    	this(csvFile, null);
+    }
+
+    /**
+     * Constructor.
+     * 
+     * @param csvFile the csv file
+     * @param block the block to read, <code>null</code> to read default block
+     */
+    public CsvFile(File csvFile, String block) throws Exception {
         BufferedReader reader = new BufferedReader(new FileReader(csvFile));
         String line = null;
         int lineNr = 0;
+        boolean inBlock = block == null;
         while ((line = reader.readLine()) != null) {
             ++lineNr;
             if (line.trim().length() == 0) {
                 continue;
+            }
+            if (line.trim().startsWith(BLOCK_INDICATOR)) {
+            	if (inBlock) {
+            		break;
+            	}
+                String blockName = line.trim().substring(BLOCK_INDICATOR.length()).trim();
+            	inBlock = block.equals(blockName);
+            	continue;
             }
             if (line.trim().startsWith("#include ")) {
                 String includeFile = line.trim().substring(9).trim();
@@ -115,6 +138,9 @@ public class CsvFile {
             }
             if (line.trim().startsWith("#")) {
                 continue;
+            }
+            if (!inBlock) {
+            	continue;
             }
             List<String> row = new ArrayList<String>();
             String[] col = decodeLine(line);

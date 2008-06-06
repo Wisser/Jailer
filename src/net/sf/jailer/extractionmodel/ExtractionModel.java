@@ -19,6 +19,8 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.jailer.datamodel.AggregationSchema;
+import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
@@ -152,6 +154,25 @@ public class ExtractionModel {
                 }
             }
             tasks.add(new ExtractionTask(subject, condition, limit, dataModel));
+            
+            // read xml mapping
+            List<CsvFile.Line> xmlMapping = new CsvFile(new File(fileName), "xml-mapping").getLines();
+            for (CsvFile.Line xmLine: xmlMapping) {
+                location = line.location;
+				String name = xmLine.cells.get(0);
+				String tag = xmLine.cells.get(1);
+				AggregationSchema aggregationSchema = AggregationSchema.valueOf(xmLine.cells.get(2));
+                Association association = dataModel.namedAssociations.get(name);
+                if (association == null) {
+                	_log.warn("unknown association '" + name + "'");
+                } else {
+                	if (aggregationSchema != null) {
+                		association.setAggregationSchema(aggregationSchema);
+                	}
+                	association.setAggregationTagName(tag);
+                }
+            }
+            
             if (embedded) {
             	break;
             }
