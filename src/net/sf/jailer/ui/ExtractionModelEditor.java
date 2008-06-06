@@ -57,6 +57,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.ModelElement;
@@ -218,7 +219,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		
 		restrictionsTable.setShowGrid(false);
 		
-		inspectorHolder.add(restrictionEditor);
+		java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        inspectorHolder.add(restrictionEditor, gridBagConstraints);
 		inspectorHolder.setMinimumSize(inspectorHolder.getPreferredSize());
 		restrictionEditor.apply.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -300,7 +307,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jSplitPane1 = new javax.swing.JSplitPane();
         graphContainer = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
-        inspectorHolder = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jLabel6 = new javax.swing.JLabel();
@@ -315,6 +321,16 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         rootTable = new javax.swing.JComboBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         tree = new javax.swing.JTree();
+        inspectorHolder = new javax.swing.JPanel();
+        jPanel6 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        aggregationCombobox = new javax.swing.JComboBox();
+        tagField = new javax.swing.JTextField();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        xmlSketch = new javax.swing.JTextArea();
+        xmlMappingApplyButton = new javax.swing.JButton();
         legende = new javax.swing.JPanel();
         dependsOn = new javax.swing.JLabel();
         hasDependent = new javax.swing.JLabel();
@@ -324,21 +340,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         setLayout(new java.awt.GridBagLayout());
 
         jSplitPane1.setOrientation(0);
+        jSplitPane1.setContinuousLayout(true);
         graphContainer.setLayout(new java.awt.BorderLayout());
 
         jSplitPane1.setBottomComponent(graphContainer);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
-
-        inspectorHolder.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
-
-        inspectorHolder.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Restriction on association", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 2, 12)));
-        inspectorHolder.setMinimumSize(new java.awt.Dimension(100, 400));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        jPanel1.add(inspectorHolder, gridBagConstraints);
 
         jPanel2.setLayout(new java.awt.GridLayout(1, 4));
 
@@ -354,8 +361,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel3.add(jLabel6, gridBagConstraints);
 
-        subjectTable.setMaximumRowCount(32);
         subjectTable.setModel(subjectListModel());
+        subjectTable.setMaximumRowCount(32);
         subjectTable.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 onNewSubject(evt);
@@ -445,6 +452,100 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jPanel2.add(jPanel4);
 
+        inspectorHolder.setLayout(new java.awt.GridBagLayout());
+
+        inspectorHolder.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Restriction on association", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 2, 12)));
+        inspectorHolder.setMinimumSize(new java.awt.Dimension(100, 400));
+        jPanel2.add(inspectorHolder);
+
+        jPanel6.setLayout(new java.awt.GridBagLayout());
+
+        jPanel6.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "XML Mapping", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 2, 12)));
+        jLabel1.setText(" Aggregation ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel6.add(jLabel1, gridBagConstraints);
+
+        jLabel2.setText(" Tag ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel6.add(jLabel2, gridBagConstraints);
+
+        jLabel3.setText(" Sketch ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
+        jPanel6.add(jLabel3, gridBagConstraints);
+
+        aggregationCombobox.setModel(getAggregationModel());
+        aggregationCombobox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                aggregationComboboxActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        jPanel6.add(aggregationCombobox, gridBagConstraints);
+
+        tagField.setMinimumSize(new java.awt.Dimension(250, 19));
+        tagField.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tagFieldActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 4);
+        jPanel6.add(tagField, gridBagConstraints);
+
+        xmlSketch.setColumns(10);
+        xmlSketch.setEditable(false);
+        xmlSketch.setRows(5);
+        xmlSketch.setOpaque(false);
+        jScrollPane3.setViewportView(xmlSketch);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 20, 0, 4);
+        jPanel6.add(jScrollPane3, gridBagConstraints);
+
+        xmlMappingApplyButton.setText("apply");
+        xmlMappingApplyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                xmlMappingApplyButtonActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 12;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
+        jPanel6.add(xmlMappingApplyButton, gridBagConstraints);
+
+        jPanel2.add(jPanel6);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -493,6 +594,36 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         add(legende, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
+
+    private void xmlMappingApplyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_xmlMappingApplyButtonActionPerformed
+    	if (currentAssociation != null) {
+    		String tag = tagField.getText().trim();
+    		if (tag.length() == 0) {
+    			tag = null;
+    		}
+    		if (!currentAssociation.getAggregationTagName().equals(tag)) {
+    			currentAssociation.setAggregationTagName(tag);
+        		tagField.setText(currentAssociation.getAggregationTagName());
+				needsSave = true;
+				ExtractionModelEditor.this.extractionModelFrame.updateTitle(needsSave);
+    		}
+    	}
+    }//GEN-LAST:event_xmlMappingApplyButtonActionPerformed
+
+    private void aggregationComboboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aggregationComboboxActionPerformed
+    	tagField.setEnabled(AggregationSchema.NONE != aggregationCombobox.getSelectedItem());
+    	tagField.setEditable(AggregationSchema.NONE != aggregationCombobox.getSelectedItem());
+		if (currentAssociation != null) {
+    		if (currentAssociation.getAggregationSchema() != aggregationCombobox.getSelectedItem()) {
+    			currentAssociation.setAggregationSchema((AggregationSchema) aggregationCombobox.getSelectedItem());
+    			needsSave = true;
+				ExtractionModelEditor.this.extractionModelFrame.updateTitle(needsSave);
+			}
+    	}
+    }//GEN-LAST:event_aggregationComboboxActionPerformed
+
+    private void tagFieldActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tagFieldActionPerformed
+    }//GEN-LAST:event_tagFieldActionPerformed
 
     private void onNewSubject(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_onNewSubject
     	Object selectedItem = subjectTable.getSelectedItem();
@@ -616,7 +747,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     	currentAssociation = association;
     	currentNode = node;
     	initialRestrictionCondition = null;
-		if (association == null) {
+    	initXmlMappingEditor(association);
+    	if (association == null) {
 			int l = currentRestrictionDefinitions == null? -1 : currentRestrictionDefinitions.size();
 			if (l > 0) {
 				restrictionsTable.removeRowSelectionInterval(0, l - 1);
@@ -719,6 +851,29 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		graphView.setSelection(association);
 	}
 
+    /**
+     * Initializes the XML mapping editor.
+     * 
+     * @param association the association on which mapping can be edited
+     */
+    private void initXmlMappingEditor(Association association) {
+    	if (association == null) {
+    		aggregationCombobox.setSelectedItem(AggregationSchema.NONE);
+    		tagField.setText("");
+    		aggregationCombobox.setEnabled(false);
+    		tagField.setEnabled(false);
+    		tagField.setEditable(false);
+    		xmlMappingApplyButton.setEnabled(false);
+    	} else {
+    		aggregationCombobox.setSelectedItem(association.getAggregationSchema());
+    		tagField.setText(association.getAggregationTagName());
+    		aggregationCombobox.setEnabled(true);
+    		tagField.setEnabled(AggregationSchema.NONE != association.getAggregationSchema());
+    		tagField.setEditable(AggregationSchema.NONE != association.getAggregationSchema());
+   			xmlMappingApplyButton.setEnabled(true);
+    	}
+    }
+    
     /**
      * Jump-button clicked.
      */
@@ -1174,10 +1329,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 		File extractionModel = new File(extractionModelFile);
 		try {
+			// TODO: refaktoring, move save-functionality into Model-class
 			PrintWriter out = new PrintWriter(extractionModel);
 			out.println("# subject; condition;  limit; restrictions");
 			out.println(CsvFile.encodeCell("" + subjectTable.getSelectedItem()) + "; " + CsvFile.encodeCell(condition.getText()) + "; ; " + RestrictionModel.EMBEDDED);
 			saveRestrictions(out);
+			saveXmlMapping(out);
 			out.close();
 			needsSave = false;
 			extractionModelFrame.updateTitle(needsSave);
@@ -1186,6 +1343,24 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * Saves xml mappings.
+	 * 
+	 * @param out to save xml mappings into
+	 */
+	private void saveXmlMapping(PrintWriter out) {
+		out.println();
+		out.println(CsvFile.BLOCK_INDICATOR + "xml-mapping");
+		for (Table table: dataModel.getTables()) {
+			for (Association a: table.associations) {
+				String name = a.getName();
+				String tag = a.getAggregationTagName();
+				String aggregation = a.getAggregationSchema().name();
+				out.println(CsvFile.encodeCell(name) + ";" + CsvFile.encodeCell(tag) + ";" + CsvFile.encodeCell(aggregation));
+			}
+		}
 	}
 
 	/**
@@ -1314,7 +1489,19 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		graphView.zoomToFit();
 	}
 
+    /**
+     * Model for aggregation combobox.
+     */
+    private ComboBoxModel getAggregationModel() {
+        DefaultComboBoxModel model = new DefaultComboBoxModel();
+        for (AggregationSchema aggregation: AggregationSchema.values()) {
+        	model.addElement(aggregation);
+        }
+        return model;
+    }
+        
     // Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables
+    private javax.swing.JComboBox aggregationCombobox;
     private javax.swing.JLabel associatedWith;
     private javax.swing.JTextField condition;
     private javax.swing.JLabel dependsOn;
@@ -1323,6 +1510,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JLabel hasDependent;
     private javax.swing.JLabel ignored;
     private javax.swing.JPanel inspectorHolder;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
@@ -1330,15 +1520,20 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel6;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JPanel legende;
     private javax.swing.JTable restrictionsTable;
     private javax.swing.JComboBox rootTable;
     private javax.swing.JComboBox subjectTable;
+    private javax.swing.JTextField tagField;
     private javax.swing.JTree tree;
+    private javax.swing.JButton xmlMappingApplyButton;
+    private javax.swing.JTextArea xmlSketch;
     // Ende der Variablendeklaration//GEN-END:variables
 
 }

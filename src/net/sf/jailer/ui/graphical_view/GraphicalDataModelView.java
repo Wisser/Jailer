@@ -505,7 +505,7 @@ public class GraphicalDataModelView extends JPanel {
 				modelEditor.select(table);
 			}
 		});
-		JMenuItem selectAsRoot = new JMenuItem("Select as root");
+		JMenuItem selectAsRoot = new JMenuItem("focus " + table.getName());
 		selectAsRoot.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				modelEditor.setRoot(table);

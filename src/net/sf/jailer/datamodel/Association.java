@@ -74,6 +74,16 @@ public class Association extends ModelElement {
     public Association reversalAssociation = null;
     
     /**
+     * The XML aggregation schema.
+     */
+    private AggregationSchema aggregationSchema = AggregationSchema.NONE;
+    
+    /**
+     * Name of XML-tag used for aggregation.
+     */
+    private String aggregationTagName;
+    
+    /**
      * Data-model containing this association.
      */
     private final DataModel dataModel;
@@ -316,5 +326,44 @@ public class Association extends ModelElement {
 			joinCondition = "(" + joinCondition + ") and (" + condition + ")";
 		}
 	}
+    
+    /**
+     * Gets the XML aggregation schema.
+     * 
+     * @return the XML aggregation schema
+     */
+    public AggregationSchema getAggregationSchema() {
+    	return aggregationSchema;
+    }
+    
+    /**
+     * Gets name of XML-tag used for aggregation.
+     * 
+     * @return name of XML-tag used for aggregation
+     */
+    public String getAggregationTagName() {
+    	if (aggregationTagName == null) {
+    		return name;
+    	}
+    	return aggregationTagName;
+    }
+    
+    /**
+     * Sets the XML aggregation schema.
+     * 
+     * @param aggregationSchema the XML aggregation schema
+     */
+    public void setAggregationSchema(AggregationSchema aggregationSchema) {
+    	this.aggregationSchema = aggregationSchema;
+    }
+    
+    /**
+     * Sets name of XML-tag used for aggregation.
+     * 
+     * @param aggregationTagName name of XML-tag used for aggregation
+     */
+    public void setAggregationTagName(String aggregationTagName) {
+    	this.aggregationTagName = aggregationTagName;
+    }
     
 }

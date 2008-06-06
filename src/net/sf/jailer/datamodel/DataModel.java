@@ -101,7 +101,6 @@ public class DataModel {
         return tables.values();
     }
     
-
     /**
      * Reads in <code>table.csv</code> and <code>association.csv</code>
      * and builds the relational data model.
