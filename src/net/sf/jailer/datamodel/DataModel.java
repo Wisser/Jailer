@@ -26,6 +26,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -50,7 +51,7 @@ public class DataModel {
     /**
      * Maps association-names to associations;
      */
-    public Map<String, Association> namedAssociations = new HashMap<String, Association>();
+    public Map<String, Association> namedAssociations = new TreeMap<String, Association>();
     
     /**
      * The restriction model.
@@ -329,5 +330,15 @@ public class DataModel {
         }
         return result;
     }
+
+    /**
+     * Assigns a unique ID to each association.
+     */
+	public void assignAssociationIDs() {
+		int n = 1;
+		for (Map.Entry<String, Association> e: namedAssociations.entrySet()) {
+			e.getValue().id = n++;
+		}
+	}
 
 }

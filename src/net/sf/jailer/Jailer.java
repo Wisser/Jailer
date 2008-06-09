@@ -24,6 +24,8 @@ import java.net.UnknownHostException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,6 +40,7 @@ import net.sf.jailer.database.ExportReader;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.database.StatisticRenovator;
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
+import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.DataModel;
@@ -73,7 +76,7 @@ public class Jailer {
     /**
      * The Jailer version.
      */
-    public static final String VERSION = "2.2.3";
+    public static final String VERSION = "2.3.0";
     
     /**
      * The relational data model.
@@ -346,32 +349,34 @@ public class Jailer {
      * 
      * @param progress set of tables to take into account
      */
-    public void addDependencies(Set<Table> progress) throws Exception {
+    public void addDependencies(Set<Table> progress, boolean treatAggregationAsDependency) throws Exception {
         List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
-        _log.info("cyclic dependencies for: " + asString(progress));
         for (final Table table: progress) {
             for (final Association association: table.associations) {
                 if (progress.contains(association.destination)) {
+                	final int associationId = treatAggregationAsDependency? association.getId() : 0;
                     final String jc = association.getJoinCondition();
-                    if (jc != null && association.isInsertDestinationBeforeSource()) {
+                    if (!treatAggregationAsDependency && (jc != null && association.isInsertDestinationBeforeSource())
+                      || treatAggregationAsDependency && (jc != null && association.getAggregationSchema() != AggregationSchema.NONE)) {
                         jobs.add(new JobManager.Job() {
                             public void run() throws Exception {
                                 _log.info("find dependencies " + table.getName() + " -> " + association.destination.getName() + " on " + jc);
                                 String fromAlias, toAlias;
                                 fromAlias = association.reversed? "B" : "A";
                                 toAlias = association.reversed? "A" : "B";
-                                entityGraph.addDependencies(table, fromAlias, association.destination, toAlias, jc);
+                                entityGraph.addDependencies(table, fromAlias, association.destination, toAlias, jc, associationId);
                             }
                         });
                     }
-                    if (jc != null && association.isInsertSourceBeforeDestination()) {
-                        jobs.add(new JobManager.Job() {
+                    if (!treatAggregationAsDependency && (jc != null && association.isInsertSourceBeforeDestination())
+                      || treatAggregationAsDependency && (jc != null && association.reversalAssociation.getAggregationSchema() != AggregationSchema.NONE)) {
+                    	jobs.add(new JobManager.Job() {
                             public void run() throws Exception {
                                 _log.info("find dependencies " + association.destination.getName() + " -> " + table.getName() + " on " + jc);
                                 String fromAlias, toAlias;
                                 fromAlias = association.reversed? "B" : "A";
                                 toAlias = association.reversed? "A" : "B";
-                                entityGraph.addDependencies(association.destination, toAlias, table, fromAlias, jc);
+                                entityGraph.addDependencies(association.destination, toAlias, table, fromAlias, jc, associationId);
                             }
                         });
                     }
@@ -423,7 +428,8 @@ public class Jailer {
         final Set<Table> dependentTables = writeEntitiesOfIndependentTables(result, scriptType, progress);
         
         // then write entities of tables having cyclic-dependencies
-        addDependencies(dependentTables);
+        _log.info("cyclic dependencies for: " + asString(dependentTables));
+        addDependencies(dependentTables, false);
         
         long rest = entityGraph.getSize();
         for (;;) {
@@ -433,7 +439,7 @@ public class Jailer {
                 jobs.add(new JobManager.Job() {
                     public void run() throws Exception {
                         ResultSetReader reader = scriptType==ScriptType.INSERT? new ExportReader(table, result, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities) : new DeletionReader(table, result, CommandLineParser.getInstance().numberOfEntities);
-                        entityGraph.readIndependentEntities(table, reader);
+                        entityGraph.readMarkedEntities(table, reader);
                     }
                 });
             }
@@ -456,6 +462,44 @@ public class Jailer {
             throw new RuntimeException(rest + " entities not exported due to cyclic dependencies");
         }
         _log.info("file '" + sqlScriptFile + "' written.");
+    }
+
+    /**
+     * Writes entities into XML-document.
+     * 
+     * @param xmlFile the name of the xml-file to write the data to
+     * @param progress set of tables to account for extraction
+     */
+    public void writeEntitiesAsXml(String xmlFile, final ScriptType scriptType, final Set<Table> progress, StatementExecutor statementExecutor) throws Exception {
+        _log.info("writing file '" + xmlFile + "'...");
+
+        OutputStream outputStream = new FileOutputStream(xmlFile);
+        if (xmlFile.toLowerCase().endsWith(".zip") || xmlFile.toLowerCase().endsWith(".gz")) {
+            outputStream = new GZIPOutputStream(outputStream);
+        }
+        final OutputStreamWriter result = new OutputStreamWriter(outputStream);
+        result.append(commentHeader);
+        result.append(System.getProperty("line.separator"));
+        
+        // then write entities of tables having cyclic-dependencies
+        _log.info("create hierarchy for: " + asString(progress));
+        addDependencies(progress, true);
+        
+        List<Table> sortedTables = new ArrayList<Table>(progress);
+        Collections.sort(sortedTables, new Comparator<Table>() {
+			public int compare(Table t1, Table t2) {
+				return t1.getName().compareTo(t2.getName());
+			}
+        });
+        
+        entityGraph.markRoots();
+        for (Table table: sortedTables) {
+            ResultSetReader reader = new ExportReader(table, result, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities);
+            entityGraph.readMarkedEntities(table, reader);
+        }
+        
+        result.close();
+        _log.info("file '" + xmlFile + "' written.");
     }
 
     /**
@@ -610,7 +654,7 @@ public class Jailer {
                         System.out.println("missing '-e' option");
                         CommandLineParser.printUsage();
                     } else {
-                        export(clp.arguments.get(1), clp.exportScriptFileName, clp.deleteScriptFileName, clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4), clp.arguments.get(5), clp.explain, clp.numberOfThreads);
+                        export(clp.arguments.get(1), clp.exportScriptFileName, clp.deleteScriptFileName, clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4), clp.arguments.get(5), clp.explain, clp.numberOfThreads, clp.asXml);
                     }
                 }
             } else if ("find-association".equalsIgnoreCase(command)) {
@@ -677,7 +721,7 @@ public class Jailer {
 	/**
      * Exports entities.
      */
-    private static void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, String driverClassName, String dbUrl, String dbUser, String dbPassword, boolean explain, int threads) throws Exception {
+    private static void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, String driverClassName, String dbUrl, String dbUser, String dbPassword, boolean explain, int threads, boolean asXML) throws Exception {
         printGreeting();
         _log.info("exporting '" + extractionModelFileName + "' to '" + scriptFile + "'");
         
@@ -724,7 +768,11 @@ public class Jailer {
         }
         
         jailer.setEntityGraph(entityGraph);
-        jailer.writeEntities(scriptFile, ScriptType.INSERT, totalProgress, statementExecutor);
+        if (asXML) {
+        	jailer.writeEntitiesAsXml(scriptFile, ScriptType.XML, totalProgress, statementExecutor);
+        } else {
+        	jailer.writeEntities(scriptFile, ScriptType.INSERT, totalProgress, statementExecutor);
+        }
         entityGraph.delete();
         
         if (deleteScriptFileName != null) {
