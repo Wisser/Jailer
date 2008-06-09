@@ -31,6 +31,11 @@ public enum ScriptType {
     /**
      * Type of scripts containing DELETE-Statements for removal of extracted entities. 
      */
-    DELETE
+    DELETE,
+    
+    /**
+     * XML document containing extracted entities. 
+     */
+    XML
     
 }

@@ -324,6 +324,10 @@ public class ExportDialog extends javax.swing.JDialog {
      * @param args the argument-list to fill
      */
     public void fillCLIArgs(List<String> args) {
+    	
+    	// TODO
+    	args.add("-xml");
+    	
     	args.add("-e");
     	args.add(insert.getText());
     	if (delete.getText().trim().length() > 0) {

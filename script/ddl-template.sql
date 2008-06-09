@@ -40,6 +40,7 @@ CREATE TABLE JL_SET
 CREATE TABLE JL_DEPENDENCY
 (
    r_entitygraph   INTEGER NOT NULL,
+   assoc           INTEGER NOT NULL,
    from_type       varchar(50) NOT NULL,
    to_type         varchar(50) NOT NULL,
    {2},
@@ -48,6 +49,6 @@ CREATE TABLE JL_DEPENDENCY
    CONSTRAINT jl_fk_graph_d FOREIGN KEY (r_entitygraph) REFERENCES JL_GRAPH(id)
 );
 
-CREATE INDEX jl_dep_from ON JL_DEPENDENCY (r_entitygraph, {5});
+CREATE INDEX jl_dep_from ON JL_DEPENDENCY (r_entitygraph, assoc, {5});
 CREATE INDEX jl_dep_to ON JL_DEPENDENCY (r_entitygraph, {6});
 

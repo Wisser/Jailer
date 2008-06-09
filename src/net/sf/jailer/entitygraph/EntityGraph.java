@@ -25,6 +25,7 @@ import java.util.Map;
 import org.apache.log4j.Logger;
 
 import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.PrimaryKey;
@@ -321,10 +322,11 @@ public class EntityGraph {
      * @param to destination of dependency
      * @param toAlias alias for to-table
      * @param condition condition of dependency
+     * @param associationId id of dependency association, 0 if not applicable
      */
-    public void addDependencies(Table from, String fromAlias, Table to, String toAlias, String condition) throws SQLException {
-        String insert = "Insert into " + DEPENDENCY + "(r_entitygraph, from_type, to_type, " + universalPrimaryKey.columnList("FROM_") + ", " + universalPrimaryKey.columnList("TO_") + ") " +
-            "Select " + graphID + ", '" + from.getName() + "', '" + to.getName() + "', " + pkList(from, fromAlias, "FROM") + ", " + pkList(to, toAlias, "TO") +
+    public void addDependencies(Table from, String fromAlias, Table to, String toAlias, String condition, int associationId) throws SQLException {
+        String insert = "Insert into " + DEPENDENCY + "(r_entitygraph, assoc, from_type, to_type, " + universalPrimaryKey.columnList("FROM_") + ", " + universalPrimaryKey.columnList("TO_") + ") " +
+            "Select " + graphID + ", " + associationId  + ", '" + from.getName() + "', '" + to.getName() + "', " + pkList(from, fromAlias, "FROM") + ", " + pkList(to, toAlias, "TO") +
             " From " + ENTITY + " E1, " + ENTITY + " E2, " + from.getName() + " " + fromAlias + " join " + to.getName() + " " + toAlias + " on " + condition +
             " Where E1.r_entitygraph=" + graphID + " and E2.r_entitygraph=" + graphID + "" +
             " and E1.type='" + from.getName() + "' and E2.type='" + to.getName() + "'" +
@@ -334,7 +336,7 @@ public class EntityGraph {
     }
     
     /**
-     * Marks all entities which dont dependent on other entities,
+     * Marks all entities which don't dependent on other entities,
      * s.t. they can be read and deleted.
      */
     public void markIndependentEntities() throws SQLException {
@@ -349,10 +351,43 @@ public class EntityGraph {
                 "Update " + ENTITY + " set birthday=0 " +
                 "Where r_entitygraph=" + graphID + " and birthday>0 and " +
                        "not exists (Select * from " + DEPENDENCY + " D " +
-                           "Where D.r_entitygraph=" +graphID + " and D.from_type=type and " +
+                           "Where D.r_entitygraph=" +graphID + " and assoc=0 and D.from_type=type and " +
                                  fromEqualsPK + ")");
     }
 
+    /**
+     * Marks all rows which are not target of a dependency.
+     */
+    public void markRoots() throws SQLException {
+        StringBuffer toEqualsPK = new StringBuffer();
+        for (Column column: universalPrimaryKey.getColumns()) {
+            if (toEqualsPK.length() > 0) {
+                toEqualsPK.append(" and ");
+            }
+            toEqualsPK.append("D.TO_" + column.name + "=" + column.name);
+        }
+        statementExecutor.executeUpdate(
+                "Update " + ENTITY + " set birthday=0 " +
+                "Where r_entitygraph=" + graphID + " and birthday>0 and " +
+                       "not exists (Select * from " + DEPENDENCY + " D " +
+                           "Where D.r_entitygraph=" +graphID + " and D.to_type=type and " +
+                                 toEqualsPK + ")");
+    }
+
+    /**
+     * Reads all entities of a given table which are marked as independent or as roots.
+     * 
+     * @param reader for reading the result-set
+     * @param table the table
+     */
+    public void readMarkedEntities(Table table, StatementExecutor.ResultSetReader reader) throws SQLException {
+        statementExecutor.executeQuery(
+                "Select " + table.getName() + ".* From " + ENTITY + " E join " + table.getName() + " on " +
+                pkEqualsEntityID(table, table.getName(), "E") +
+                " Where E.birthday=0 and E.r_entitygraph=" + graphID + " and E.type='" + table.getName() + "'",
+                reader);
+    }
+    
     /**
      * Unites the graph with another one and deletes the other graph.
      * 
@@ -374,20 +409,6 @@ public class EntityGraph {
                 e1EqualsE2 +
                 ")");
         graph.delete();
-    }
-    
-    /**
-     * Reads all entities of a given table which are marked as independent.
-     * 
-     * @param reader for reading the result-set
-     * @param table the table
-     */
-    public void readIndependentEntities(Table table, StatementExecutor.ResultSetReader reader) throws SQLException {
-        statementExecutor.executeQuery(
-                "Select " + table.getName() + ".* From " + ENTITY + " E join " + table.getName() + " on " +
-                pkEqualsEntityID(table, table.getName(), "E") +
-                " Where E.birthday=0 and E.r_entitygraph=" + graphID + " and E.type='" + table.getName() + "'",
-                reader);
     }
     
     /**
@@ -422,14 +443,14 @@ public class EntityGraph {
         }
         statementExecutor.executeUpdate(
                 "Delete From " + DEPENDENCY + " " +
-                "Where " + DEPENDENCY + ".r_entitygraph=" + graphID + " and " + 
+                "Where " + DEPENDENCY + ".r_entitygraph=" + graphID + " and assoc=0 and " + 
                       "exists (Select * from " + ENTITY + " E Where " + 
                           "E.r_entitygraph=" + graphID + " and " +
                           fromEqualsPK + " and " + DEPENDENCY + ".from_type=E.type and " +
                           "E.birthday=0)");
         statementExecutor.executeUpdate(
                 "Delete From " + DEPENDENCY + " " +
-                "Where " + DEPENDENCY + ".r_entitygraph=" + graphID + " and " + 
+                "Where " + DEPENDENCY + ".r_entitygraph=" + graphID + " and assoc=0 and " + 
                       "exists (Select * from " + ENTITY + " E Where " + 
                           "E.r_entitygraph=" + graphID + " and " +
                           toEqualsPK + " and " + DEPENDENCY + ".to_type=E.type and " +

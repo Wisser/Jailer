@@ -89,6 +89,11 @@ public class Association extends ModelElement {
     private final DataModel dataModel;
     
     /**
+     * Unique association ID. -1 if id is not yet given.
+     */
+    int id = -1;
+    
+    /**
      * Constructor.
      * 
      * @param source the source table
@@ -365,5 +370,17 @@ public class Association extends ModelElement {
     public void setAggregationTagName(String aggregationTagName) {
     	this.aggregationTagName = aggregationTagName;
     }
+
+    /**
+     * Gets unique ID.
+     * 
+     * @return unique ID
+     */
+	public int getId() {
+		if (id < 0) {
+			dataModel.assignAssociationIDs();
+		}
+		return id;
+	}
     
 }

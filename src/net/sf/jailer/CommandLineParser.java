@@ -96,6 +96,7 @@ public class CommandLineParser {
         System.out.println();
         System.out.println("  jailer export [options] <extraction-model> <jdbc-driver-class> <db-URL> <db-user> <db-password>");
         System.out.println("    extracts data (see option '-e') and optionally creates a delete-script (see option '-d')");
+        System.out.println("    -xml export entities into XML file (instead of SQL)");
         System.out.println("    -t prevents deletion of entities from 'tabu'-tables");
         System.out.println();
         System.out.println("  jailer create-ddl");
@@ -134,6 +135,9 @@ public class CommandLineParser {
         tabuTableNames = new CsvFile(file);
     }
 
+    @Option(name="-xml",usage="export entities into XML file (instead of SQL)")
+    public boolean asXml = false;
+    
     @Option(name="-c",usage="print restricted data-model with closures")
     public boolean withClosures = false;
     
