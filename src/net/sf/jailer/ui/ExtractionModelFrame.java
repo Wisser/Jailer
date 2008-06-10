@@ -36,6 +36,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
+import net.sf.jailer.DDLCreator;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.database.ExportReader;
 import net.sf.jailer.datamodel.DataModel;
@@ -639,7 +640,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				        	dbConnectionDialog.addDbArgs(ddlArgs);
 				        	ExportReader.numberOfExportedEntities = 0;
 				        	ExportReader.numberOfExportedLOBs = 0;
-				            if (UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
+				            if (DDLCreator.isUptodate(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4)) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
 			        				"Automatic creation of working-tables failed!\n" +
 			        				"Please execute the Jailer-DDL manually (jailer_ddl.sql)\n\n" +
 			        				"Continue Data Export?", dbConnectionDialog.getPassword())) {

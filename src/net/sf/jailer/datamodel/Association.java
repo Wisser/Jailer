@@ -382,5 +382,12 @@ public class Association extends ModelElement {
 		}
 		return id;
 	}
-    
+
+	/**
+     * Gets data-model to which this association belongs to.
+     */
+    public DataModel getDataModel() {
+    	return dataModel;
+    }
+        
 }

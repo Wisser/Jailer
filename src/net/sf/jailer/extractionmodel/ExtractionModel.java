@@ -17,6 +17,7 @@ package net.sf.jailer.extractionmodel;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import net.sf.jailer.datamodel.AggregationSchema;
@@ -81,7 +82,7 @@ public class ExtractionModel {
             this.dataModel = dataModel;
         }
     }
-    
+	
     /**
      * Constructor for empty restriction models.
      * 
@@ -171,6 +172,13 @@ public class ExtractionModel {
                 	}
                 	association.setAggregationTagName(tag);
                 }
+            }
+
+            // read export modus
+            List<CsvFile.Line> exportModusFile = new CsvFile(new File(fileName), "export modus").getLines();
+            Iterator<CsvFile.Line> i = exportModusFile.iterator();
+            if (i.hasNext()) {
+            	dataModel.setExportModus(i.next().cells.get(0));
             }
             
             if (embedded) {

@@ -18,10 +18,12 @@ package net.sf.jailer.ui.graphical_view;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Polygon;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 
+import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import prefuse.Constants;
 import prefuse.render.EdgeRenderer;
@@ -136,7 +138,9 @@ public class AssociationRenderer extends EdgeRenderer {
 		    // update the endpoints for the edge shape
 		    // need to bias this by arrow head size
 		    if (type == Constants.EDGE_TYPE_CURVE) {
-		    	m_curArrow = null;
+		    	if (!"XML".equals(association.getDataModel().getExportModus()) || !isAggregation(association)) {
+		    		m_curArrow = null;
+		    	}
 		    }
 	    	Point2D lineEnd = m_tmpPoints[forward?1:0]; 
 	    	lineEnd.setLocation(0, type == Constants.EDGE_TYPE_CURVE? 0 : -m_arrowHeight);
@@ -213,9 +217,20 @@ public class AssociationRenderer extends EdgeRenderer {
 				item.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit()));
 			}
 		}
+		if ("XML".equals(association.getDataModel().getExportModus())) {
+			m_arrowHead = updateArrowHead(m_arrowWidth, m_arrowHeight, association, isSelected);
+			arrowIsPotAggregation = true;
+		} else {
+			if (arrowIsPotAggregation) {
+				m_arrowHead = updateArrowHead(m_arrowWidth, m_arrowHeight);
+			}
+			arrowIsPotAggregation = false;
+		}
 		render(g, item);
 	}
 
+    private boolean arrowIsPotAggregation = false;
+    
     /**
      * Gets color for association.
      * 
@@ -256,6 +271,43 @@ public class AssociationRenderer extends EdgeRenderer {
 		                        p.getY()-halfWidth,
 		                        width,width);
 		}
+	}
+
+	/**
+	 * Render aggregation symbols.
+	 */
+	protected Polygon updateArrowHead(int w, int h, Association association, boolean isSelected) {
+		if (isAggregation(association)) {
+			if ( m_arrowHead == null ) {
+			    m_arrowHead = new Polygon();
+			} else {
+			    m_arrowHead.reset();
+			}
+			double ws = 0.9;
+			double hs = 2.0/3.0;
+			if (isSelected) {
+				ws /= 1.3;
+				hs /= 1.3;
+			}
+			m_arrowHead.addPoint(0, 0);
+			m_arrowHead.addPoint((int) (ws*-w), (int) (hs*(-h)));
+			m_arrowHead.addPoint( 0, (int) (hs*(-2*h)));
+			m_arrowHead.addPoint((int) (ws*w), (int) (hs*(-h)));
+			m_arrowHead.addPoint(0, 0);
+			return m_arrowHead;
+		} else {
+			return updateArrowHead(w, h);
+		}
+	}
+
+	/**
+	 * Checks whether association must be rendered as aggregation.
+	 * 
+	 * @param association the association to check
+	 * @return <code>true</code> if association must be rendered as aggregation
+	 */
+	private boolean isAggregation(Association association) {
+		return association.reversalAssociation.getAggregationSchema() != AggregationSchema.NONE;
 	}
 	
 }

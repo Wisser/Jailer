@@ -84,6 +84,11 @@ public class DataModel {
 	public static final String EXCLUDE_FROM_DELETION_FILE = "datamodel/exclude-from-deletion.csv";
 	
     /**
+	 * Export modus, SQL or XML. (GUI support).
+	 */
+	private String exportModus;
+	
+    /**
      * Gets a table by name.
      * 
      * @param name the name of the table
@@ -339,6 +344,20 @@ public class DataModel {
 		for (Map.Entry<String, Association> e: namedAssociations.entrySet()) {
 			e.getValue().id = n++;
 		}
+	}
+
+    /**
+	 * Gets export modus, SQL or XML. (GUI support).
+	 */
+	public String getExportModus() {
+		return exportModus;
+	}
+	
+    /**
+	 * Sets export modus, SQL or XML. (GUI support).
+	 */
+	public void setExportModus(String modus) {
+		exportModus = modus;
 	}
 
 }

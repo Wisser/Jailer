@@ -22,8 +22,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
-
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.datamodel.Association;
@@ -31,6 +29,9 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.SqlScriptExecutor;
+import net.sf.jailer.util.SqlUtil;
+
+import org.apache.log4j.Logger;
 
 /**
  * Persistent graph of entities. 
@@ -554,20 +555,71 @@ public class EntityGraph {
     }
     
     /**
+     * Reads all entities which depends on given entity. 
+     * 
+     * @param table the table from which to read entities
+     * @param association the dependency
+     * @param resultSet current row is given entity
+     * @param reader reads the entities
+     */
+    public void readDependentEntities(Table table, Association association, ResultSet resultSet, ResultSetReader reader, Map<String, Integer> typeCache) throws SQLException {
+    	String select = "Select T.* from " + table.getName() + " T join " + DEPENDENCY + " D on " +
+    		 pkEqualsEntityID(table, "T", "D", "TO_") + " and D.TO_TYPE='" + table.getName() + "'" +
+    		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", typeCache) +
+    	     " and D.FROM_TYPE='" + association.source.getName() + "' and assoc=" + association.reversalAssociation.getId() +
+    	     " and D.R_ENTITYGRAPH=" + graphID;
+    	statementExecutor.executeQuery(select, reader);
+    }
+    
+    /**
+     * Gets a SQL comparition expression for comparing rows with given entity.
+     * 
+     * @param table the table
+     * @param resultSet
+     * @return a SQL comparition expression for comparing rows of <code>table</code> with current row of resultSet
+     */
+    private String pkEqualsEntityID(Table table, ResultSet resultSet, String alias, String columnPrefix, Map<String, Integer> typeCache) throws SQLException {
+    	Map<Column, Column> match = universalPrimaryKey.match(table.primaryKey);
+        StringBuffer sb = new StringBuffer();
+        for (Column column: universalPrimaryKey.getColumns()) {
+            if (sb.length() > 0) {
+                sb.append(" and ");
+            }
+            sb.append(alias + "." + columnPrefix + column.name + "=");
+            Column tableColumn = match.get(column);
+            if (tableColumn != null) {
+                sb.append(SqlUtil.toSql(SqlUtil.getObject(resultSet, tableColumn.name, typeCache)));
+            } else {
+                sb.append(column.getNullValue());
+            }
+        }
+        return sb.toString();
+    }
+
+    /**
      * Gets a SQL comparition expression for comparing rows with entities.
      * 
      * @param table the table
-     * 
-     * @return a SQL comparision expression for comparing rows of <code>table</code> with entities
+     * @return a SQL comparition expression for comparing rows of <code>table</code> with entities
      */
     private String pkEqualsEntityID(Table table, String tableAlias, String entityAlias) {
+    	return pkEqualsEntityID(table, tableAlias, entityAlias, "");
+    }
+
+    /**
+     * Gets a SQL comparition expression for comparing rows with entities.
+     * 
+     * @param table the table
+     * @return a SQL comparition expression for comparing rows of <code>table</code> with entities
+     */
+    private String pkEqualsEntityID(Table table, String tableAlias, String entityAlias, String columnPrefix) {
         Map<Column, Column> match = universalPrimaryKey.match(table.primaryKey);
         StringBuffer sb = new StringBuffer();
         for (Column column: universalPrimaryKey.getColumns()) {
             if (sb.length() > 0) {
                 sb.append(" and ");
             }
-            sb.append(entityAlias + "." + column.name + "=");
+            sb.append(entityAlias + "." + columnPrefix + column.name + "=");
             Column tableColumn = match.get(column);
             if (tableColumn != null) {
                 sb.append(tableAlias + "." + tableColumn.name);
@@ -594,7 +646,7 @@ public class EntityGraph {
      * 
      * @param table the table
      * @param tableAlias the alias for table
-     * @return columnAliasPrefix optional prefix for column names
+     * @param columnAliasPrefix optional prefix for column names
      */
     private String pkList(Table table, String tableAlias, String columnAliasPrefix) {
         Map<Column, Column> match = universalPrimaryKey.match(table.primaryKey);

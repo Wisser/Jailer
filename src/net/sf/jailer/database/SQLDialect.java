@@ -28,7 +28,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import net.sf.jailer.ExplainTool;
+import net.sf.jailer.Jailer;
 import net.sf.jailer.datamodel.Column;
+import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.util.SqlUtil;
 
@@ -150,85 +152,104 @@ public class SQLDialect {
 	 */
 	public static void guessDialect(PrimaryKey primaryKey,
 			StatementExecutor statementExecutor) {
-		log("begin guessing SQL dialect");
-		statementExecutor.setSilent(true);
 		
-		String drop = "DROP TABLE JL_TMP";
-		String create = "CREATE TABLE JL_TMP(c1 INTEGER, c2 INTEGER)";
-		try {
-			statementExecutor.execute(drop);
-		} catch (Exception e) {
-			_sqllog.info(e.getMessage());
-		}
-		try {
-			statementExecutor.execute(create);
-		} catch (Exception e) {
-			_sqllog.info(e.getMessage());
-		}
-		try {
-			statementExecutor.execute("DROP TABLE JL_DUAL");
-		} catch (Exception e) {
-			_sqllog.info(e.getMessage());
-		}
-		try {
-			statementExecutor.execute("CREATE TABLE JL_DUAL(D INTEGER)");
-		} catch (Exception e) {
-			_sqllog.info(e.getMessage());
+		String dialectName = readConfigValue("sqldialect", statementExecutor);
+		SQLDialect dialect = null;
+		if (dialectName != null) {
+			for (SQLDialect sqlDialect: sqlDialects) {
+				if (sqlDialect.name.equals(dialectName)) {
+					dialect = sqlDialect;
+					break;
+				}
+			}	
 		}
 		
-		for (SQLDialect sqlDialect: sqlDialects) {
-			boolean ok = true;
+		if (dialect != null) {
+			currentDialect = dialect;
+			log("SQL dialect is " + dialect.name);
+		} else {
+			log("begin guessing SQL dialect");
+			statementExecutor.setSilent(true);
+			
+			String drop = "DROP TABLE JL_TMP";
+			String create = "CREATE TABLE JL_TMP(c1 INTEGER, c2 INTEGER)";
 			try {
-				String values = sqlDialect.needsValuesKeywordForDeletes? "values " : "";
-				statementExecutor.execute("DELETE FROM JL_TMP where (c1, c2) IN (" + values + "(1,2), (3,4))");
+				statementExecutor.execute(drop);
 			} catch (Exception e) {
-				ok = false;
 				_sqllog.info(e.getMessage());
 			}
-			if (!ok) {
-				continue;
-			}
-			boolean multiRow;
 			try {
-				statementExecutor.execute("INSERT INTO JL_TMP(c1, c2) values (1,2), (3,4)");
-				multiRow = true;
+				statementExecutor.execute(create);
 			} catch (Exception e) {
-				multiRow = false;
 				_sqllog.info(e.getMessage());
 			}
-			if (multiRow != sqlDialect.supportsMultiRowInserts) {
-				ok = false;
-			}
-			if (!ok) {
-				continue;
-			}
 			try {
-				statementExecutor.execute(sqlDialect.upsertMode.testSQL);
+				statementExecutor.execute("DROP TABLE JL_DUAL");
 			} catch (Exception e) {
-				ok = false;
 				_sqllog.info(e.getMessage());
 			}
-			if (!ok) {
-				continue;
+			try {
+				statementExecutor.execute("CREATE TABLE JL_DUAL(D INTEGER)");
+			} catch (Exception e) {
+				_sqllog.info(e.getMessage());
 			}
 			
-			currentDialect = sqlDialect;
-			log("SQL dialect is " + sqlDialect.name);
-			break;
-		}
-		try {
-			statementExecutor.execute("DROP TABLE JL_DUAL");
-		} catch (Exception e) {
-			_sqllog.info(e.getMessage());
-		}
-		try {
-			statementExecutor.execute(drop);
-		} catch (Exception e) {
-			_sqllog.info(e.getMessage());
-		}
-		log("end guessing SQL dialect");
+			for (SQLDialect sqlDialect: sqlDialects) {
+				boolean ok = true;
+				try {
+					String values = sqlDialect.needsValuesKeywordForDeletes? "values " : "";
+					statementExecutor.execute("DELETE FROM JL_TMP where (c1, c2) IN (" + values + "(1,2), (3,4))");
+				} catch (Exception e) {
+					ok = false;
+					_sqllog.info(e.getMessage());
+				}
+				if (!ok) {
+					continue;
+				}
+				boolean multiRow;
+				try {
+					statementExecutor.execute("INSERT INTO JL_TMP(c1, c2) values (1,2), (3,4)");
+					multiRow = true;
+				} catch (Exception e) {
+					multiRow = false;
+					_sqllog.info(e.getMessage());
+				}
+				if (multiRow != sqlDialect.supportsMultiRowInserts) {
+					ok = false;
+				}
+				if (!ok) {
+					continue;
+				}
+				try {
+					statementExecutor.execute(sqlDialect.upsertMode.testSQL);
+				} catch (Exception e) {
+					ok = false;
+					_sqllog.info(e.getMessage());
+				}
+				if (!ok) {
+					continue;
+				}
+				
+				currentDialect = sqlDialect;
+				setConfigValue("sqldialect", sqlDialect.name, statementExecutor);
+				log("SQL dialect is " + sqlDialect.name);
+				break;
+			}
 		
-		log("begin guessing dummy-values");
+			try {
+				statementExecutor.execute("DROP TABLE JL_DUAL");
+			} catch (Exception e) {
+				_sqllog.info(e.getMessage());
+			}
+			try {
+				statementExecutor.execute(drop);
+			} catch (Exception e) {
+				_sqllog.info(e.getMessage());
+			}
+			log("end guessing SQL dialect");
+		}
+		
+		log("begin guessing PK-values");
 		for (Column column : primaryKey.getColumns()) {
 			guessDummyValues(column, statementExecutor);
 		}
@@ -236,7 +257,7 @@ public class SQLDialect {
 		guessDummyValues(new Column("C", "DATE", 0, -1), statementExecutor);
 		guessDummyValues(new Column("C", "TIMESTAMP", 0, -1), statementExecutor);
 		statementExecutor.setSilent(false);
-		log("end guessing dummy values");
+		log("end guessing PK-values");
 	}
 
 	/**
@@ -247,6 +268,13 @@ public class SQLDialect {
 	 */
 	private static void guessDummyValues(Column column,
 			StatementExecutor statementExecutor) {
+		
+		String nullValue = readConfigValue(column.toSQL(null), statementExecutor);
+		if (nullValue != null) {
+			column.nullValue = nullValue;
+			return;
+		}
+		
 		Calendar cal = Calendar.getInstance();
 		cal.set(2000, 0, 30, 9, 59, 30);
 		cal.set(Calendar.MILLISECOND, 456);
@@ -334,7 +362,8 @@ public class SQLDialect {
 						}
 					}
 					if (column.nullValue != null) {
-						log("dummy value for " + column + " is " + column.nullValue);
+						log("PK-value for " + column + " is " + column.nullValue);
+						setConfigValue(column.toSQL(null), column.nullValue, statementExecutor);
 						break;
 					}
 				}
@@ -366,6 +395,43 @@ public class SQLDialect {
 		column.nullValue = nv;
 	}
 
+	/**
+	 * Reads value from JL_CONFIG table.
+	 * 
+	 * @param key key for value lookup
+	 * @param statementExecutor for executing sql statements
+	 * @return value for given key or <code>null</code> if no value for given key can be found
+	 */
+	private static String readConfigValue(String key, StatementExecutor statementExecutor) {
+		try {
+			final String[] value = new String[] { null };
+			statementExecutor.executeQuery("Select jvalue from JL_CONFIG where jversion='" + Jailer.VERSION + "' and jkey='" + key + "'", new StatementExecutor.ResultSetReader() {
+				public void readCurrentRow(ResultSet resultSet) throws SQLException {
+					value[0] = resultSet.getString(1);
+				}
+				public void close() {
+				}
+			});
+			return value[0];
+		} catch (Exception e) {
+			return null;
+		}
+	}
+	
+	/**
+	 * Sets value from JL_CONFIG table.
+	 * 
+	 * @param key key for value
+	 * @param value for given key or <code>null</code> if no value for given key can be found
+	 * @param statementExecutor for executing sql statements
+	 */
+	private static void setConfigValue(String key, String value, StatementExecutor statementExecutor) {
+		try {
+			statementExecutor.executeUpdate("Insert into JL_CONFIG(jversion, jkey, jvalue) values ('" + Jailer.VERSION + "', " + SqlUtil.toSql(key) + ", " + SqlUtil.toSql(value) + ")");
+		} catch (Exception e) {
+		}
+	}
+	
 	/**
 	 * Logs a message.
 	 * 

@@ -17,8 +17,10 @@ package net.sf.jailer.ui.graphical_view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -482,10 +484,12 @@ public class GraphicalDataModelView extends JPanel {
 
         display.setForeground(Color.GRAY);
         display.setBackground(Color.WHITE);
-       
+        
         // now we run our action list
         visualization.run("draw");
         layout.run();
+        
+        display.setHighQuality(true);
         
         add(display);
     }

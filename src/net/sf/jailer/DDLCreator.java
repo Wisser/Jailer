@@ -17,6 +17,9 @@ package net.sf.jailer;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.List;
 
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.datamodel.DataModel;
@@ -37,14 +40,16 @@ public class DDLCreator {
         DataModel dataModel = new DataModel();
         
         String template = "script/ddl-template.sql";
-        Object[] arguments = new Object[] { 
-                dataModel.getUniversalPrimaryKey().toSQL(null),
+        String universalPrimaryKey = dataModel.getUniversalPrimaryKey().toSQL(null);
+		Object[] arguments = new Object[] { 
+                universalPrimaryKey,
                 dataModel.getUniversalPrimaryKey().toSQL("PRE_", false),
                 dataModel.getUniversalPrimaryKey().toSQL("FROM_"),
                 dataModel.getUniversalPrimaryKey().toSQL("TO_"),
                 dataModel.getUniversalPrimaryKey().columnList(null),
                 dataModel.getUniversalPrimaryKey().columnList("FROM_"),
-                dataModel.getUniversalPrimaryKey().columnList("TO_")
+                dataModel.getUniversalPrimaryKey().columnList("TO_"),
+                Jailer.VERSION
             };
         String ddl = PrintUtil.applyTemplate(template, arguments);
         
@@ -65,5 +70,38 @@ public class DDLCreator {
         
         return true;
     }
+    
+    /**
+     * Checks whether working-tables schema is up-to-date.
+     * 
+     * @return <code>true</code> if working-tables schema is up-to-date
+     */
+	public static boolean isUptodate(String driverClass, String dbUrl, String user, String password) {
+		try {
+			if (driverClass != null) {
+	        	StatementExecutor statementExecutor = new StatementExecutor(driverClass, dbUrl, user, password);
+	        	try {
+	        		final boolean[] uptodate = new boolean[] { false };
+	        		final DataModel datamodel = new DataModel();
+	        		statementExecutor.executeQuery("Select jvalue from JL_CONFIG where jversion='" + Jailer.VERSION + "' and jkey='upk'", new StatementExecutor.ResultSetReader() {
+						public void readCurrentRow(ResultSet resultSet) throws SQLException {
+							uptodate[0] = resultSet.getString(1).equals(datamodel.getUniversalPrimaryKey().toSQL(null));
+						}
+						public void close() {
+						}
+	        		});
+	        		return uptodate[0];
+	        	} catch (Exception e) {
+	        		return false;
+	        	} finally {
+						statementExecutor.shutDown();
+	        	}
+	        }
+		} catch (Exception e) {
+			return false;
+		}
+        
+        return false;
+	}
 
 }

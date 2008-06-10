@@ -2,6 +2,7 @@ DROP TABLE JL_ENTITY;
 DROP TABLE JL_DEPENDENCY;
 DROP TABLE JL_SET;
 DROP TABLE JL_GRAPH;
+DROP TABLE JL_CONFIG;
 
 CREATE TABLE JL_GRAPH
 (
@@ -51,4 +52,13 @@ CREATE TABLE JL_DEPENDENCY
 
 CREATE INDEX jl_dep_from ON JL_DEPENDENCY (r_entitygraph, assoc, {5});
 CREATE INDEX jl_dep_to ON JL_DEPENDENCY (r_entitygraph, {6});
+
+CREATE TABLE JL_CONFIG
+(
+   jversion        varchar(10) NOT NULL,
+   jkey            varchar(200),
+   jvalue          varchar(500)
+);
+
+INSERT INTO JL_CONFIG(jversion, jkey, jvalue) values(''{7}'', ''upk'', ''{0}'');
 
