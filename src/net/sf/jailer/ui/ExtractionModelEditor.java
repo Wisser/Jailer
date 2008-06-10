@@ -146,6 +146,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 */
 	GraphicalDataModelView graphView; 
 	
+	private boolean exportAsXml = false;
+	
 	/** 
 	 * Creates new form ModelTree.
 	 *  
@@ -267,6 +269,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		
 		needsSave = saveNeedsSave;
 		extractionModelFrame.updateTitle(needsSave);
+		
+		if ("XML".equals(dataModel.getExportModus())) {
+			exportAsXml = true;
+			asXml.setSelected(true);
+		} else {
+			exportAsXml = false;
+			asSql.setSelected(true);
+		}
+		onExportModusChanged(null);
 	}
 
 	/**
@@ -304,10 +315,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jScrollPane2 = new javax.swing.JScrollPane();
+        buttonGroup1 = new javax.swing.ButtonGroup();
         jSplitPane1 = new javax.swing.JSplitPane();
         graphContainer = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
+        editorPanel = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jLabel6 = new javax.swing.JLabel();
         subjectTable = new javax.swing.JComboBox();
@@ -317,12 +329,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jLabel8 = new javax.swing.JLabel();
         condition = new javax.swing.JTextField();
         exportButton = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        asXml = new javax.swing.JRadioButton();
+        asSql = new javax.swing.JRadioButton();
         jPanel4 = new javax.swing.JPanel();
         rootTable = new javax.swing.JComboBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         tree = new javax.swing.JTree();
         inspectorHolder = new javax.swing.JPanel();
-        jPanel6 = new javax.swing.JPanel();
+        xmlMappingPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -347,7 +362,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jPanel2.setLayout(new java.awt.GridLayout(1, 4));
+        editorPanel.setLayout(new java.awt.GridLayout(1, 4));
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
@@ -388,7 +403,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 14;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -399,7 +414,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jLabel8.setText("Restrictions");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 13;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
@@ -415,12 +430,54 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         exportButton.setText("Export Data");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 2);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 2);
         jPanel3.add(exportButton, gridBagConstraints);
 
-        jPanel2.add(jPanel3);
+        jLabel4.setText("As");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel3.add(jLabel4, gridBagConstraints);
+
+        buttonGroup1.add(asXml);
+        asXml.setSelected(true);
+        asXml.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        asXml.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        asXml.setText("XML");
+        asXml.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                onExportModusChanged(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel3.add(asXml, gridBagConstraints);
+
+        buttonGroup1.add(asSql);
+        asSql.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        asSql.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        asSql.setText("SQL");
+        asSql.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                asSqlActionPerformed(evt);
+            }
+        });
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel3.add(asSql, gridBagConstraints);
+
+        editorPanel.add(jPanel3);
 
         jPanel4.setLayout(new java.awt.BorderLayout(0, 4));
 
@@ -450,23 +507,23 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jPanel4.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
-        jPanel2.add(jPanel4);
+        editorPanel.add(jPanel4);
 
         inspectorHolder.setLayout(new java.awt.GridBagLayout());
 
         inspectorHolder.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Restriction on association", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 2, 12)));
         inspectorHolder.setMinimumSize(new java.awt.Dimension(100, 400));
-        jPanel2.add(inspectorHolder);
+        editorPanel.add(inspectorHolder);
 
-        jPanel6.setLayout(new java.awt.GridBagLayout());
+        xmlMappingPanel.setLayout(new java.awt.GridBagLayout());
 
-        jPanel6.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "XML Mapping", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 2, 12)));
+        xmlMappingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "XML Mapping", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 2, 12)));
         jLabel1.setText(" Aggregation ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel6.add(jLabel1, gridBagConstraints);
+        xmlMappingPanel.add(jLabel1, gridBagConstraints);
 
         jLabel2.setText(" Tag ");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -474,7 +531,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        jPanel6.add(jLabel2, gridBagConstraints);
+        xmlMappingPanel.add(jLabel2, gridBagConstraints);
 
         jLabel3.setText(" Sketch ");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -482,7 +539,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
-        jPanel6.add(jLabel3, gridBagConstraints);
+        xmlMappingPanel.add(jLabel3, gridBagConstraints);
 
         aggregationCombobox.setModel(getAggregationModel());
         aggregationCombobox.addActionListener(new java.awt.event.ActionListener() {
@@ -497,7 +554,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
-        jPanel6.add(aggregationCombobox, gridBagConstraints);
+        xmlMappingPanel.add(aggregationCombobox, gridBagConstraints);
 
         tagField.setMinimumSize(new java.awt.Dimension(250, 19));
         tagField.addActionListener(new java.awt.event.ActionListener() {
@@ -512,7 +569,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 4);
-        jPanel6.add(tagField, gridBagConstraints);
+        xmlMappingPanel.add(tagField, gridBagConstraints);
 
         xmlSketch.setColumns(10);
         xmlSketch.setEditable(false);
@@ -528,7 +585,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 20, 0, 4);
-        jPanel6.add(jScrollPane3, gridBagConstraints);
+        xmlMappingPanel.add(jScrollPane3, gridBagConstraints);
 
         xmlMappingApplyButton.setText("apply");
         xmlMappingApplyButton.addActionListener(new java.awt.event.ActionListener() {
@@ -542,9 +599,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 12;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
-        jPanel6.add(xmlMappingApplyButton, gridBagConstraints);
+        xmlMappingPanel.add(xmlMappingApplyButton, gridBagConstraints);
 
-        jPanel2.add(jPanel6);
+        editorPanel.add(xmlMappingPanel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -552,7 +609,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        jPanel1.add(jPanel2, gridBagConstraints);
+        jPanel1.add(editorPanel, gridBagConstraints);
 
         jSplitPane1.setTopComponent(jPanel1);
 
@@ -594,6 +651,24 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         add(legende, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
+
+    private void asSqlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_asSqlActionPerformed
+    	onExportModusChanged(evt);
+    }//GEN-LAST:event_asSqlActionPerformed
+
+    private void onExportModusChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_onExportModusChanged
+    	if (asXml.isSelected()) {
+    		exportAsXml = true;
+    		editorPanel.add(xmlMappingPanel);
+    		validate();
+    		dataModel.setExportModus("XML");
+    	} else {
+    		exportAsXml = false;
+    		editorPanel.remove(xmlMappingPanel);
+    		validate();
+    		dataModel.setExportModus("SQL");
+    	}
+    }//GEN-LAST:event_onExportModusChanged
 
     private void xmlMappingApplyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_xmlMappingApplyButtonActionPerformed
     	if (currentAssociation != null) {
@@ -1335,6 +1410,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			out.println(CsvFile.encodeCell("" + subjectTable.getSelectedItem()) + "; " + CsvFile.encodeCell(condition.getText()) + "; ; " + RestrictionModel.EMBEDDED);
 			saveRestrictions(out);
 			saveXmlMapping(out);
+			out.println();
+			out.println(CsvFile.BLOCK_INDICATOR + "export modus");
+			out.println(exportAsXml? "XML" : "SQL");
 			out.close();
 			needsSave = false;
 			extractionModelFrame.updateTitle(needsSave);
@@ -1502,9 +1580,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         
     // Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables
     private javax.swing.JComboBox aggregationCombobox;
+    private javax.swing.JRadioButton asSql;
+    private javax.swing.JRadioButton asXml;
     private javax.swing.JLabel associatedWith;
+    private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JTextField condition;
     private javax.swing.JLabel dependsOn;
+    private javax.swing.JPanel editorPanel;
     public javax.swing.JButton exportButton;
     private javax.swing.JPanel graphContainer;
     private javax.swing.JLabel hasDependent;
@@ -1513,14 +1595,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel6;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
@@ -1533,6 +1614,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JTextField tagField;
     private javax.swing.JTree tree;
     private javax.swing.JButton xmlMappingApplyButton;
+    private javax.swing.JPanel xmlMappingPanel;
     private javax.swing.JTextArea xmlSketch;
     // Ende der Variablendeklaration//GEN-END:variables
 

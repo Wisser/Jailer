@@ -57,6 +57,7 @@ import net.sf.jailer.util.JobManager;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.SqlScriptExecutor;
 import net.sf.jailer.util.SqlUtil;
+import net.sf.jailer.xml.XmlExportReader;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -494,7 +495,8 @@ public class Jailer {
         
         entityGraph.markRoots();
         for (Table table: sortedTables) {
-            ResultSetReader reader = new ExportReader(table, result, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities);
+            ResultSetReader reader = new XmlExportReader(table, result, entityGraph, progress);
+            _log.info("exporting table " + table.getName());
             entityGraph.readMarkedEntities(table, reader);
         }
         
