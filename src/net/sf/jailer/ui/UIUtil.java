@@ -221,11 +221,11 @@ public class UIUtil {
 		                    System.out.println("$ jailer" + arglist);
 		                }
 		            	result[0] = Jailer.jailerMain(argsarray, warnings);
-		            	// flush
-		            	System.out.println("@");
 		            } catch (Throwable t) {
 		            	exp[0] = t;
 		            } finally {
+		            	// flush
+		            	System.out.println("@");
 		            	synchronized (fin) {
 		            		fin[0] = true;
 		            	}
@@ -273,7 +273,7 @@ public class UIUtil {
 		while (t.getCause() != null && t != t.getCause()) {
 			t = t.getCause();
 		}
-		JOptionPane.showMessageDialog(parent, t.getClass().getName() + "\n" + t.getMessage(), title, JOptionPane.ERROR_MESSAGE);
+		JOptionPane.showMessageDialog(parent, t.getMessage(), title + " - " + t.getClass().getName(), JOptionPane.ERROR_MESSAGE);
 	}
 
 	/**

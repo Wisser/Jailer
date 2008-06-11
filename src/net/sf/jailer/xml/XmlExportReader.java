@@ -21,6 +21,8 @@ import java.io.OutputStreamWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,7 +34,10 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
+import net.sf.jailer.util.SqlScriptExecutor;
 import net.sf.jailer.util.SqlUtil;
+
+import org.apache.log4j.Logger;
 
 /**
  * A {@link ResultSetReader} that writes the read rows into an XML file.
@@ -97,10 +102,25 @@ public class XmlExportReader implements ResultSetReader {
 	private final Set<Table> totalProgress;
 	
 	/**
+	 * Set of all cyclic aggregated tables.
+	 */
+	private final Set<Table> cyclicAggregatedTables;
+	
+	/**
+     * The logger.
+     */
+    private static final Logger _log = Logger.getLogger(SqlScriptExecutor.class);
+
+    /**
 	 * Maps clear text SQL-types to {@link java.sql.Types}.
 	 */
 	private Map<Table, Map<String, Integer>> typeCache = new HashMap<Table, Map<String,Integer>>();
 
+	/**
+	 * Holds sorted lists of associations per table.
+	 */
+	private Map<Table, List<Association>> sortedAssociations = new HashMap<Table, List<Association>>();
+	
 	/**
 	 * Constructor.
 	 * 
@@ -112,11 +132,12 @@ public class XmlExportReader implements ResultSetReader {
 	 * @param totalProgress set of all tables for which entities exist in entityGraph
 	 */
 	public XmlExportReader(Table table, OutputStreamWriter scriptFileWriter,
-			EntityGraph entityGraph, Set<Table> totalProgress) {
+			EntityGraph entityGraph, Set<Table> totalProgress, Set<Table> cyclicAggregatedTables) {
 		this.table = table;
 		this.scriptFileWriter = scriptFileWriter;
 		this.entityGraph = entityGraph;
 		this.totalProgress = totalProgress;
+		this.cyclicAggregatedTables = cyclicAggregatedTables;
 	}
 
 	/**
@@ -164,24 +185,45 @@ public class XmlExportReader implements ResultSetReader {
 			throw new RuntimeException(e);
 		}
 
-		for (final Association association: table.associations) {
+		for (final Association association: getSortedAssociations(table)) {
 			if (totalProgress.contains(association.destination)) {
-				ResultSetReader reader = new ResultSetReader() {
-					public void readCurrentRow(ResultSet resultSet) throws SQLException {
-						writeEntity(association.destination, resultSet, ancestors);
-					}
-					public void close() {
-					}
-				};
 				if (association.getAggregationSchema() != AggregationSchema.NONE) {
+					ResultSetReader reader = new ResultSetReader() {
+						public void readCurrentRow(ResultSet resultSet) throws SQLException {
+							writeEntity(association.destination, resultSet, ancestors);
+						}
+						public void close() {
+						}
+					};
 					entityGraph.readDependentEntities(association.destination, association, resultSet, reader, getTypeCache(association.destination));
+					if (cyclicAggregatedTables.contains(association.destination)) {
+						entityGraph.markDependentEntitiesAsTraversed(association, resultSet, getTypeCache(association.destination));
+					}
 				}
 			}
 		}
-		
-		// rec call
 
 		ancestors.remove(ancestors.size() - 1);
+	}
+
+	/**
+	 * Gets sorted list of associations for a table.
+	 * 
+	 * @param table the table
+	 * @return sorted list table's associations
+	 */
+	private List<Association> getSortedAssociations(Table table) {
+		List<Association> sorted = sortedAssociations.get(table);
+		if (sorted == null) {
+			sorted = new ArrayList<Association>(table.associations);
+			Collections.sort(sorted, new Comparator<Association>() {
+				public int compare(Association o1, Association o2) {
+					return o1.destination.getName().compareTo(o2.destination.getName());
+				}
+			});
+			sortedAssociations.put(table, sorted);
+		}
+		return sorted;
 	}
 
 	/**
