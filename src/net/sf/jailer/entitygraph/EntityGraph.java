@@ -566,7 +566,36 @@ public class EntityGraph {
     	String select = "Select T.* from " + table.getName() + " T join " + DEPENDENCY + " D on " +
     		 pkEqualsEntityID(table, "T", "D", "TO_") + " and D.TO_TYPE='" + table.getName() + "'" +
     		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", typeCache) +
-    	     " and D.FROM_TYPE='" + association.source.getName() + "' and assoc=" + association.reversalAssociation.getId() +
+    	     " and D.FROM_TYPE='" + association.source.getName() + "' and assoc=" + association.getId() +
+    	     " and D.R_ENTITYGRAPH=" + graphID;
+    	statementExecutor.executeQuery(select, reader);
+    }
+    
+    /**
+     * Marks all entities which depends on given entity as traversed. 
+     * 
+     * @param table the table from which to read entities
+     * @param association the dependency
+     * @param resultSet current row is given entity
+     */
+    public void markDependentEntitiesAsTraversed(Association association, ResultSet resultSet, Map<String, Integer> typeCache) throws SQLException {
+    	String update = "Update " + DEPENDENCY + " D set traversed=1" +
+    		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", typeCache) +
+    	     " and D.FROM_TYPE='" + association.source.getName() + "' and assoc=" + association.getId() +
+    	     " and D.R_ENTITYGRAPH=" + graphID;
+    	statementExecutor.executeUpdate(update);
+    }
+    
+    /**
+     * Reads all non-traversed dependencies. 
+     * 
+     * @param table the source of dependencies to look for
+     * @param reader reads the entities
+     */
+    public void readNonTraversedDependencies(Table table, ResultSetReader reader) throws SQLException {
+    	String select = "Select * from " + DEPENDENCY + " D " +
+    		 " Where (traversed is null or traversed <> 1)" +
+    	     " and D.FROM_TYPE='" + table.getName() + "'" +
     	     " and D.R_ENTITYGRAPH=" + graphID;
     	statementExecutor.executeQuery(select, reader);
     }
