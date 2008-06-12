@@ -164,9 +164,9 @@ public class XmlRowWriter {
 					value = o.toString();
 				}
 				
-				transformerHandler.startElement(null, null, cNames[i], null);
+				transformerHandler.startElement(null, null, asElementName(cNames[i]), null);
 				transformerHandler.characters(value.toCharArray(), 0, value.length());
-				transformerHandler.endElement(null, null, cNames[i]);
+				transformerHandler.endElement(null, null, asElementName(cNames[i]));
 			}
 		}
 	}
