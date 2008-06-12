@@ -13,11 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.sf.jailer.xml;
 
-import java.io.IOException;
-import java.io.OutputStreamWriter;
+import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -27,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.xml.transform.TransformerConfigurationException;
 
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.datamodel.AggregationSchema;
@@ -38,6 +38,7 @@ import net.sf.jailer.util.SqlScriptExecutor;
 import net.sf.jailer.util.SqlUtil;
 
 import org.apache.log4j.Logger;
+import org.xml.sax.SAXException;
 
 /**
  * A {@link ResultSetReader} that writes the read rows into an XML file.
@@ -49,12 +50,12 @@ public class XmlExportReader implements ResultSetReader {
 	/**
 	 * The table to read from.
 	 */
-	private final Table table;
+	private Table table;
 
 	/**
-	 * The file to write to.
+	 * For writing rows as xml.
 	 */
-	private final OutputStreamWriter scriptFileWriter;
+	private final XmlRowWriter xmlRowWriter;
 
 	/**
 	 * Number of columns.
@@ -120,21 +121,22 @@ public class XmlExportReader implements ResultSetReader {
 	 * Holds sorted lists of associations per table.
 	 */
 	private Map<Table, List<Association>> sortedAssociations = new HashMap<Table, List<Association>>();
-	
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param table
-	 *            the table to read from
-	 * @param scriptFileWriter
-	 *            the file to write to
+	 * @param out to write the xml into
+	 * @param commentHeader comment at top of document
 	 * @param entityGraph the entity graph
 	 * @param totalProgress set of all tables for which entities exist in entityGraph
+	 * @param rootTag root tag name
+	 * @param datePattern pattern for dates
+	 * @param timestampPattern pattern for time-stamps
 	 */
-	public XmlExportReader(Table table, OutputStreamWriter scriptFileWriter,
-			EntityGraph entityGraph, Set<Table> totalProgress, Set<Table> cyclicAggregatedTables) {
-		this.table = table;
-		this.scriptFileWriter = scriptFileWriter;
+	public XmlExportReader(OutputStream out, String commentHeader,
+			EntityGraph entityGraph, Set<Table> totalProgress, Set<Table> cyclicAggregatedTables,
+			String rootTag, String datePattern, String timestampPattern) throws TransformerConfigurationException, SAXException {
+		this.xmlRowWriter = new XmlRowWriter(out, commentHeader, rootTag, datePattern, timestampPattern);
 		this.entityGraph = entityGraph;
 		this.totalProgress = totalProgress;
 		this.cyclicAggregatedTables = cyclicAggregatedTables;
@@ -144,19 +146,23 @@ public class XmlExportReader implements ResultSetReader {
 	 * Reads result-set and writes into export-script.
 	 */
 	public void readCurrentRow(ResultSet resultSet) throws SQLException {
-		writeEntity(table, resultSet, new ArrayList<String>());
+		try {
+			writeEntity(table, null, resultSet, new ArrayList<String>());
+		} catch (SAXException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**
 	 * Writes entity as XML hierarchy.
 	 * 
-	 * @param resultSet
-	 *            current row contains entity to write out
-	 * @param ancestors
-	 *            ancestors of entity to write out
+	 * @param table entitie's table
+	 * @param association association to parent, <code>null</code> for top-level entities
+	 * @param resultSet current row contains entity to write out
+	 * @param ancestors ancestors of entity to write out
 	 */
-	private void writeEntity(Table table, ResultSet resultSet, final List<String> ancestors)
-			throws SQLException {
+	private void writeEntity(Table table, Association association, ResultSet resultSet, final List<String> ancestors)
+			throws SQLException, SAXException {
 		StringBuilder sb = new StringBuilder(table.getName() + "(");
 		boolean f = true;
 		for (Column pk : table.primaryKey.getColumns()) {
@@ -176,32 +182,42 @@ public class XmlExportReader implements ResultSetReader {
 		}
 
 		ancestors.add(primaryKey);
-		try {
-			for (int i = 0; i < ancestors.size(); ++i) {
-				writeToScriptFile("  ");
-			}
-			writeToScriptFile(primaryKey + "\n");
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
+		
+		xmlRowWriter.startRow(resultSet, table, association);
+		
+//		try {
+//			for (int i = 0; i < ancestors.size(); ++i) {
+//				writeToScriptFile("  ");
+//			}
+//			writeToScriptFile(primaryKey + "\n");
+//		} catch (IOException e) {
+//			throw new RuntimeException(e);
+//		}
 
-		for (final Association association: getSortedAssociations(table)) {
-			if (totalProgress.contains(association.destination)) {
-				if (association.getAggregationSchema() != AggregationSchema.NONE) {
+		for (final Association sa: getSortedAssociations(table)) {
+			if (totalProgress.contains(sa.destination)) {
+				if (sa.getAggregationSchema() != AggregationSchema.NONE) {
 					ResultSetReader reader = new ResultSetReader() {
 						public void readCurrentRow(ResultSet resultSet) throws SQLException {
-							writeEntity(association.destination, resultSet, ancestors);
+							try {
+								writeEntity(sa.destination, sa, resultSet, ancestors);
+							} catch (SAXException e) {
+								throw new RuntimeException(e);
+							}
 						}
 						public void close() {
 						}
 					};
-					entityGraph.readDependentEntities(association.destination, association, resultSet, reader, getTypeCache(association.destination));
-					if (cyclicAggregatedTables.contains(association.destination)) {
-						entityGraph.markDependentEntitiesAsTraversed(association, resultSet, getTypeCache(association.destination));
+					xmlRowWriter.startList(sa);
+					entityGraph.readDependentEntities(sa.destination, sa, resultSet, reader, getTypeCache(sa.destination));
+					if (cyclicAggregatedTables.contains(sa.destination)) {
+						entityGraph.markDependentEntitiesAsTraversed(sa, resultSet, getTypeCache(sa.destination));
 					}
+					xmlRowWriter.endList(sa);
 				}
 			}
 		}
+		xmlRowWriter.endRow(table, association);
 
 		ancestors.remove(ancestors.size() - 1);
 	}
@@ -232,7 +248,7 @@ public class XmlExportReader implements ResultSetReader {
 	 * @param table the table
 	 * @return type cache for table
 	 */
-	private Map<String, Integer> getTypeCache(Table table2) {
+	private Map<String, Integer> getTypeCache(Table table) {
 		Map<String, Integer> cache = typeCache.get(table);
 		if (cache == null) {
 			cache = new HashMap<String, Integer>();
@@ -242,19 +258,17 @@ public class XmlExportReader implements ResultSetReader {
 	}
 
 	/**
-	 * Checks if columns is part of primary key.
-	 * 
-	 * @param column
-	 *            the column
-	 * @return <code>true</code> if column is part of primary key
+	 * Sets the table to read from.
 	 */
-	private boolean isPrimaryKeyColumn(String column) {
-		for (Column c : table.primaryKey.getColumns()) {
-			if (c.name.equalsIgnoreCase(column)) {
-				return true;
-			}
-		}
-		return false;
+	public void setTable(Table table) {
+		this.table = table;
+	}
+
+	/**
+	 * Closes the XML document.
+	 */
+	public void endDocument() throws SAXException {
+		xmlRowWriter.close();
 	}
 
 	/**
@@ -262,14 +276,5 @@ public class XmlExportReader implements ResultSetReader {
 	 */
 	public void close() {
 	}
-
-	/**
-	 * Writes into script.
-	 */
-	private void writeToScriptFile(String content) throws IOException {
-		synchronized (scriptFileWriter) {
-			scriptFileWriter.write(content);
-		}
-	}
-
+	
 }

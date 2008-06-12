@@ -61,7 +61,7 @@ public class UIUtil {
                 	|| pathname.getName().toLowerCase().endsWith(extension + ".zip");
             }
             public String getDescription() {
-            	if (extension.endsWith(".sql")) {
+            	if (extension.endsWith(".sql") || extension.endsWith(".xml")) {
             		return "*" + extension + " *" + extension + ".zip";
             	}
                 return "*" + extension;

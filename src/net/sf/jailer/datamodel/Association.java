@@ -347,10 +347,25 @@ public class Association extends ModelElement {
      * @return name of XML-tag used for aggregation
      */
     public String getAggregationTagName() {
+    	String tag;
     	if (aggregationTagName == null) {
-    		return name;
+    		if (name.startsWith("inverse-")) {
+    			tag = destination.getName();
+    		} else {
+    			tag = name;
+    		}
+    	} else {
+    		tag = aggregationTagName;
     	}
-    	return aggregationTagName;
+
+    	StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < tag.length(); ++i) {
+			char c = tag.charAt(i);
+			if (Character.isUpperCase(c) || Character.isLowerCase(c) || Character.isDigit(c) || c == '-' || c == '_') {
+				sb.append(c);
+			}
+		}
+		return sb.toString();
     }
     
     /**

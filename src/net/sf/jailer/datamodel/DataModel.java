@@ -88,6 +88,20 @@ public class DataModel {
 	 */
 	private String exportModus;
 	
+	/**
+	 * Holds XML settings for exportation into XML files.
+	 */
+	public static class XmlSettings {
+		public String datePattern = "yyyy-MM-dd";
+		public String timestampPattern = "yyyy-MM-dd-HH.mm.ss";
+		public String rootTag = "ENTITIES";
+	}
+
+	/**
+	 * XML settings for exportation into XML files.
+	 */
+	private XmlSettings xmlSettings = new XmlSettings();
+	
     /**
      * Gets a table by name.
      * 
@@ -358,6 +372,20 @@ public class DataModel {
 	 */
 	public void setExportModus(String modus) {
 		exportModus = modus;
+	}
+
+	/**
+	 * Gets XML settings for exportation into XML files.
+	 */
+	public XmlSettings getXmlSettings() {
+		return xmlSettings;
+	}
+
+	/**
+	 * Sets XML settings for exportation into XML files.
+	 */
+	public void setXmlSettings(XmlSettings xmlSettings) {
+		this.xmlSettings = xmlSettings;
 	}
 
 }

@@ -24,6 +24,8 @@ import java.util.Map;
 
 import javax.swing.JTextField;
 
+import net.sf.jailer.datamodel.DataModel;
+
 /**
  * "Data Export" Dialog.
  *
@@ -33,14 +35,18 @@ public class ExportDialog extends javax.swing.JDialog {
 
 	boolean isOk = false;
 	
+	private boolean xml;
+	private final DataModel dataModel;
+	
 	/**
 	 * The form field setting.
 	 */
 	private Settings theSettings;
 	
     /** Creates new form DbConnectionDialog */
-    public ExportDialog(java.awt.Frame parent) {
+    public ExportDialog(java.awt.Frame parent, DataModel dataModel) {
         super(parent, true);
+        this.dataModel = dataModel;
         initComponents();
         setModal(true);
         setLocation(100, 150);
@@ -49,10 +55,16 @@ public class ExportDialog extends javax.swing.JDialog {
         fields.put("delete", delete);
         fields.put("threads", threads);
         fields.put("rowsPerThread", rowsPerThread);
+        
+        xml = "XML".equals(dataModel.getExportModus());
+        
+        upsertCheckbox.setEnabled(!xml);
+        rowsPerThread.setEnabled(!xml);
+        
         theSettings = new Settings(".exportdata.ui", fields);
         selectInsert.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String fn = UIUtil.choseFile(null, ".", "SQL Import Script", ".sql", ExportDialog.this, true, false);
+                String fn = UIUtil.choseFile(null, ".", xml? "XML Export" : "SQL Import Script", xml? ".xml" : ".sql", ExportDialog.this, true, false);
                 if (fn != null) {
                     insert.setText(fn);
                 }
@@ -237,7 +249,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jPanel2.add(jButton1, gridBagConstraints);
 
         jLabel2.setFont(new java.awt.Font("Dialog", 0, 12));
-        jLabel2.setText(" * '.zip' extension for compressed SQL files");
+        jLabel2.setText(" * '.zip' extension for compressed files");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -325,9 +337,6 @@ public class ExportDialog extends javax.swing.JDialog {
      */
     public void fillCLIArgs(List<String> args) {
     	
-    	// TODO
-    	args.add("-xml");
-    	
     	args.add("-e");
     	args.add(insert.getText());
     	if (delete.getText().trim().length() > 0) {
@@ -355,6 +364,16 @@ public class ExportDialog extends javax.swing.JDialog {
     			args.add("" + nt);
     		}
     	} catch (Exception e) {
+    	}
+    	
+    	if (xml) {
+    		args.add("-xml");
+    		args.add("-xml-root");
+    		args.add(dataModel.getXmlSettings().rootTag);
+    		args.add("-xml-date");
+    		args.add(dataModel.getXmlSettings().datePattern);
+    		args.add("-xml-timestamp");
+    		args.add(dataModel.getXmlSettings().timestampPattern);
     	}
     }
     

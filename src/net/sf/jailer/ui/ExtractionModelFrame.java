@@ -39,6 +39,7 @@ import javax.swing.UIManager.LookAndFeelInfo;
 import net.sf.jailer.DDLCreator;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.database.ExportReader;
+import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 
 /**
@@ -616,6 +617,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	void dataExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataExportActionPerformed
     	try {
+    		if (extractionModelEditor.dataModel != null && !extractionModelEditor.exportAsXml) {
+    			Association restrictedDependency = findRestrictedDependency(extractionModelEditor.dataModel);
+    			if (restrictedDependency != null && JOptionPane.showConfirmDialog(this, 
+    					"Dependency from '" + restrictedDependency.source.getName() + "' to '" + restrictedDependency.destination.getName() + "'\n" +
+    					"is restricted.\nReferential integrity is not guaranteed!\n\nProceed?", "Restricted Dependency", JOptionPane.YES_NO_OPTION) != JOptionPane.YES_OPTION) {
+    				return;
+    			}
+    		}
     		if (extractionModelEditor.subject == null) {
     			askForDataModel(this);
     			return;
@@ -627,7 +636,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        	args.add("export");
 			        	args.add(extractionModelEditor.extractionModelFile);
 			        	dbConnectionDialog.addDbArgs(args);
-			        	ExportDialog exportDialog = new ExportDialog(this);
+			        	ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel);
 			        	if (exportDialog.isOk()) {
 			        		exportDialog.fillCLIArgs(args);
 			        		File excludeFromDeletion = new File(DataModel.EXCLUDE_FROM_DELETION_FILE);
@@ -664,7 +673,19 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         }
     }//GEN-LAST:event_dataExportActionPerformed
 
-    private void disconnectDbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disconnectDbActionPerformed
+	/**
+	 * Finds restricted dependency.
+	 */
+    private Association findRestrictedDependency(DataModel dataModel) {
+    	for (Association association: dataModel.namedAssociations.values()) {
+    		if (association.isInsertDestinationBeforeSource() && association.isRestricted()) {
+    			return association;
+    		}
+    	}
+		return null;
+	}
+
+	private void disconnectDbActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disconnectDbActionPerformed
     	disconnect();
     }//GEN-LAST:event_disconnectDbActionPerformed
 

@@ -255,10 +255,10 @@ public class RestrictionModel {
      * @param removePreviousRestriction if <code>true</code>, remove any restriction on the association before adding the new one
      */
     public void addRestriction(Table source, Association association, String condition, String location, boolean removePreviousRestriction) {
-        if (association.isInsertDestinationBeforeSource()) {
-            String aName = source == null? association.getName() : (source.getName() + "->" + association.destination.getName());
-            throw new RuntimeException(location + ": can't restrict dependency: " + aName + " condition: " + condition);
-        }
+//        if (association.isInsertDestinationBeforeSource()) {
+//            String aName = source == null? association.getName() : (source.getName() + "->" + association.destination.getName());
+//            throw new RuntimeException(location + ": can't restrict dependency: " + aName + " condition: " + condition);
+//        }
         if ("ignore".equalsIgnoreCase(condition) || "false".equalsIgnoreCase(condition)) {
             condition = null;
         }
