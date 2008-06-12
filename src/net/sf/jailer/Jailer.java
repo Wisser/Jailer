@@ -15,12 +15,15 @@
  */
 package net.sf.jailer;
 
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.Writer;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -35,6 +38,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
+
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
 
 import net.sf.jailer.database.DeletionReader;
 import net.sf.jailer.database.ExportReader;
@@ -492,9 +502,6 @@ public class Jailer {
         if (xmlFile.toLowerCase().endsWith(".zip") || xmlFile.toLowerCase().endsWith(".gz")) {
             outputStream = new GZIPOutputStream(outputStream);
         }
-        final OutputStreamWriter result = new OutputStreamWriter(outputStream);
-        result.append(commentHeader);
-        result.append(System.getProperty("line.separator"));
         
         // then write entities of tables having cyclic-dependencies
         _log.info("create hierarchy for: " + asString(progress));
@@ -518,14 +525,20 @@ public class Jailer {
         Set<Table> cyclicAggregatedTables = getCyclicAggregatedTables(progress);
 		_log.info("cyclic aggregated tables: " + PrintUtil.tableSetAsString(cyclicAggregatedTables));
         
+		XmlExportReader reader = new XmlExportReader(outputStream, commentHeader.toString(), entityGraph, progress, cyclicAggregatedTables, 
+        		CommandLineParser.getInstance().xmlRootTag,
+        		CommandLineParser.getInstance().xmlDatePattern,
+        		CommandLineParser.getInstance().xmlTimeStampPattern);
+        
         entityGraph.markRoots();
         for (Table table: sortedTables) {
-            ResultSetReader reader = new XmlExportReader(table, result, entityGraph, progress, cyclicAggregatedTables);
             _log.info("exporting table " + table.getName());
+            reader.setTable(table);
             entityGraph.readMarkedEntities(table, reader);
         }
+        reader.endDocument();
         
-        result.close();
+        outputStream.close();
         checkCompletenessOfXmlExport(cyclicAggregatedTables);
         _log.info("file '" + xmlFile + "' written.");
     }

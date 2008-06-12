@@ -180,6 +180,16 @@ public class ExtractionModel {
             if (i.hasNext()) {
             	dataModel.setExportModus(i.next().cells.get(0));
             }
+
+            // read xml settings
+            List<CsvFile.Line> xmlSettingsFile = new CsvFile(new File(fileName), "xml settings").getLines();
+            i = xmlSettingsFile.iterator();
+            if (i.hasNext()) {
+            	List<String> cells = i.next().cells;
+    			dataModel.getXmlSettings().datePattern = cells.get(0);
+    			dataModel.getXmlSettings().timestampPattern = cells.get(1);
+    			dataModel.getXmlSettings().rootTag = cells.get(2);
+            }
             
             if (embedded) {
             	break;

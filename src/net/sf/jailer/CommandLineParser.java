@@ -97,6 +97,9 @@ public class CommandLineParser {
         System.out.println("  jailer export [options] <extraction-model> <jdbc-driver-class> <db-URL> <db-user> <db-password>");
         System.out.println("    extracts data (see option '-e') and optionally creates a delete-script (see option '-d')");
         System.out.println("    -xml export entities into XML file (instead of SQL)");
+        System.out.println("    -xml-root root tag of XML export file");
+        System.out.println("    -xml-date pattern for dates in XML export file");
+        System.out.println("    -xml-timestamp pattern for time-stamps in XML export file");
         System.out.println("    -t prevents deletion of entities from 'tabu'-tables");
         System.out.println();
         System.out.println("  jailer create-ddl");
@@ -113,6 +116,7 @@ public class CommandLineParser {
         System.out.println("    imports data (with C|BLOB support)");
         System.out.println();
         System.out.println("options:");
+        cmdLineParser.setUsageWidth(120);
         cmdLineParser.printUsage(System.out);
         System.out.println();
     }
@@ -138,6 +142,15 @@ public class CommandLineParser {
     @Option(name="-xml",usage="export entities into XML file (instead of SQL)")
     public boolean asXml = false;
     
+    @Option(name="-xml-root",usage="root tag of XML export file")
+    public String xmlRootTag = "entities";
+
+    @Option(name="-xml-date",usage="pattern for dates in XML export file")
+    public String xmlDatePattern = "yyyy-MM-dd";
+
+    @Option(name="-xml-timestamp",usage="pattern for time-stamps in XML export file")
+    public String xmlTimeStampPattern = "yyyy-MM-dd-HH.mm.ss";
+    
     @Option(name="-c",usage="print restricted data-model with closures")
     public boolean withClosures = false;
     
@@ -150,13 +163,13 @@ public class CommandLineParser {
     @Option(name="-m",usage="abort export if number of entities is greater than this limit", metaVar="max-number-of-entities")
     public int maxNumberOfEntities = 0;
     
-    @Option(name="-e",usage="name of the export-script file (compressed if ending with '.zip' or '.gz')", metaVar="export-script")
+    @Option(name="-e",usage="name of the export-script file (compressed if it ends with '.zip' or '.gz')", metaVar="export-script")
     public String exportScriptFileName = null;
 
     @Option(name="-schema",usage="schema to reduce JDBC-Introspection to", metaVar="export-script")
     public String schema = null;
 
-    @Option(name="-d",usage="name of the delete-script file (compressed if ending with '.zip' or '.gz')", metaVar="delete-script")
+    @Option(name="-d",usage="name of the delete-script file (compressed if it ends with '.zip' or '.gz')", metaVar="delete-script")
     public String deleteScriptFileName = null;
 
     @Option(name="-t",usage="name of the 'tabu' file (for 'print-datamodel or 'find-association')", metaVar="'tabu'-file")

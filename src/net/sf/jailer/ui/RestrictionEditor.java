@@ -57,6 +57,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         source = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         destination = new javax.swing.JLabel();
+        restrictedDependencyWarning = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -231,6 +232,16 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jPanel3, gridBagConstraints);
 
+        restrictedDependencyWarning.setForeground(new java.awt.Color(255, 0, 51));
+        restrictedDependencyWarning.setText("Restricted Dependency! ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 30;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        add(restrictedDependencyWarning, gridBagConstraints);
+
     }// </editor-fold>//GEN-END:initComponents
 
     private void ignoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ignoreActionPerformed
@@ -262,6 +273,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     public javax.swing.JTextArea joinCondition;
     public javax.swing.JButton jump;
+    public javax.swing.JLabel restrictedDependencyWarning;
     public javax.swing.JTextField restriction;
     public javax.swing.JLabel source;
     public javax.swing.JLabel type;
