@@ -60,7 +60,7 @@ public class ExtractionModel {
         /**
          * The SQL-condition.
          */
-        public final String condition;
+        public String condition;
         
         /**
          * A limit for the number of subject-entities. (0 for unlimited)

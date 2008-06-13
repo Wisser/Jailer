@@ -636,7 +636,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        	args.add("export");
 			        	args.add(extractionModelEditor.extractionModelFile);
 			        	dbConnectionDialog.addDbArgs(args);
-			        	ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel);
+			        	ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition());
 			        	if (exportDialog.isOk()) {
 			        		exportDialog.fillCLIArgs(args);
 			        		File excludeFromDeletion = new File(DataModel.EXCLUDE_FROM_DELETION_FILE);

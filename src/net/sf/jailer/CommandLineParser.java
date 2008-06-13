@@ -96,6 +96,7 @@ public class CommandLineParser {
         System.out.println();
         System.out.println("  jailer export [options] <extraction-model> <jdbc-driver-class> <db-URL> <db-user> <db-password>");
         System.out.println("    extracts data (see option '-e') and optionally creates a delete-script (see option '-d')");
+        System.out.println("    -where subject condition. Optional, overrides condition in extraction-model");
         System.out.println("    -xml export entities into XML file (instead of SQL)");
         System.out.println("    -xml-root root tag of XML export file");
         System.out.println("    -xml-date pattern for dates in XML export file");
@@ -142,13 +143,13 @@ public class CommandLineParser {
     @Option(name="-xml",usage="export entities into XML file (instead of SQL)")
     public boolean asXml = false;
     
-    @Option(name="-xml-root",usage="root tag of XML export file")
+    @Option(name="-xml-root",usage="root tag of XML export file",metaVar="tag-name")
     public String xmlRootTag = "entities";
 
-    @Option(name="-xml-date",usage="pattern for dates in XML export file")
+    @Option(name="-xml-date",usage="pattern for dates in XML export file",metaVar="pattern")
     public String xmlDatePattern = "yyyy-MM-dd";
 
-    @Option(name="-xml-timestamp",usage="pattern for time-stamps in XML export file")
+    @Option(name="-xml-timestamp",usage="pattern for time-stamps in XML export file",metaVar="pattern")
     public String xmlTimeStampPattern = "yyyy-MM-dd-HH.mm.ss";
     
     @Option(name="-c",usage="print restricted data-model with closures")
@@ -174,6 +175,9 @@ public class CommandLineParser {
 
     @Option(name="-t",usage="name of the 'tabu' file (for 'print-datamodel or 'find-association')", metaVar="'tabu'-file")
     public String tabuFileName = null;
+
+    @Option(name="-where",usage="subject condition", metaVar="SQL-expression")
+    public String where = null;
     
     @Option(name="-threads",usage="number of threads (default is 10)", metaVar="#threads")
     public int numberOfThreads = 10;

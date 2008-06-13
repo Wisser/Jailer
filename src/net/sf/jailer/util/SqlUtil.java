@@ -235,6 +235,27 @@ public class SqlUtil {
 	};
 	
     /**
+     * Gets type of column from result-set.
+     * 
+     * @param resultSet result-set
+     * @param i column index
+     * @param typeCache for caching types
+     * @return type according to {@link Types}
+     */
+	public static int getColumnType(ResultSet resultSet, int i, Map<Integer, Integer> typeCache) throws SQLException {
+		Integer type = typeCache.get(i);
+		if (type == null) {
+			try {
+				type = resultSet.getMetaData().getColumnType(i);
+			} catch (Exception e) {
+				type = Types.OTHER;
+			}
+			typeCache.put(i, type);
+		}
+		return type;
+	};
+	
+    /**
      * Gets object from result-set.
      * 
      * @param resultSet result-set

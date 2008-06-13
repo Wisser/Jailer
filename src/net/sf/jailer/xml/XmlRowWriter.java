@@ -22,6 +22,7 @@ import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.sql.Types;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
@@ -152,6 +153,11 @@ public class XmlRowWriter {
 			typeCaches.put(table, typeCache);
 		}
 		for (int i = 0; i < cNames.length; ++i) {
+			int type = SqlUtil.getColumnType(resultSet, i + 1, typeCache);
+			if (type == Types.BLOB || type == Types.CLOB) {
+				// (C|B)LOB is not yet supported
+				continue;
+			}
 			Object o = SqlUtil.getObject(resultSet, i + 1, typeCache);
 			if (o != null) {
 				String value;

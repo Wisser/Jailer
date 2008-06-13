@@ -121,7 +121,19 @@ public class UIUtil {
         	if (arg != null && arg.equals(password)) {
         		arglist.append(" *****");
         	} else {
-        		arglist.append(" " + arg);
+        		if (arg.contains(" ") || arg.contains("<") || arg.contains(">") || arg.contains("*") || arg.contains("?") || arg.contains("|") || arg.contains("$") || arg.contains("\"") || arg.contains("'") || arg.contains("\\")) {
+        			arglist.append(" \"");
+        			for (int j = 0; j < arg.length(); ++j) {
+        				char c = arg.charAt(j);
+        				if (c == '\"') {
+        					arglist.append("\\");
+        				}
+        				arglist.append(c);
+        			}
+        			arglist.append("\"");
+        		} else {
+        			arglist.append(" " + arg);
+        		}
         	}
             argsarray[i++] = arg.trim();
         }
