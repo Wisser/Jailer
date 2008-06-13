@@ -33,10 +33,30 @@ import net.sf.jailer.datamodel.DataModel;
  */
 public class ExportDialog extends javax.swing.JDialog {
 
+	/**
+	 * true iff ok-button was clicked.
+	 */
 	boolean isOk = false;
 	
+	/**
+	 * Xml/Sql switch.
+	 */
 	private boolean xml;
+	
+	/**
+	 * Restricted data model.
+	 */
 	private final DataModel dataModel;
+	
+	/**
+	 * Previous subject condition.
+	 */
+	private static String previousSubjectCondition;
+
+	/**
+	 * Previous initial subject condition.
+	 */
+	private static String previousInitialSubjectCondition;
 	
 	/**
 	 * The form field setting.
@@ -44,7 +64,7 @@ public class ExportDialog extends javax.swing.JDialog {
 	private Settings theSettings;
 	
     /** Creates new form DbConnectionDialog */
-    public ExportDialog(java.awt.Frame parent, DataModel dataModel) {
+    public ExportDialog(java.awt.Frame parent, DataModel dataModel, net.sf.jailer.datamodel.Table subject, String subjectCondition) {
         super(parent, true);
         this.dataModel = dataModel;
         initComponents();
@@ -85,9 +105,21 @@ public class ExportDialog extends javax.swing.JDialog {
         if (rowsPerThread.getText().length() == 0) {
         	rowsPerThread.setText("50");
         }
+        
+        subjectTable.setText(subject.getName());
+        if (subjectCondition.equals(previousInitialSubjectCondition)) {
+        	where.setText(previousSubjectCondition);
+        } else {
+        	where.setText(subjectCondition);
+        }
+        
         pack();
         UIUtil.initPeer();
         setVisible(true);
+        if (isOk) {
+        	previousInitialSubjectCondition = subjectCondition;
+        	previousSubjectCondition = where.getText();
+        }
 	}
 
     /** This method is called from within the constructor to
@@ -100,6 +132,7 @@ public class ExportDialog extends javax.swing.JDialog {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel1 = new javax.swing.JPanel();
+        where = new javax.swing.JTextField();
         exportLabel = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
@@ -121,6 +154,11 @@ public class ExportDialog extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        jPanel4 = new javax.swing.JPanel();
+        subjectTable = new javax.swing.JLabel();
+        jLabel12 = new javax.swing.JLabel();
 
         getContentPane().setLayout(new java.awt.CardLayout());
 
@@ -128,14 +166,23 @@ public class ExportDialog extends javax.swing.JDialog {
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        exportLabel.setText(" Export into *");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 18;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        jPanel1.add(where, gridBagConstraints);
+
+        exportLabel.setText(" Into*");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 20;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(exportLabel, gridBagConstraints);
 
-        jLabel3.setText(" Generate delete-script *");
+        jLabel3.setText(" Generate delete-script* ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 40;
@@ -307,6 +354,37 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         jPanel1.add(jLabel8, gridBagConstraints);
 
+        jLabel7.setText(" Export from");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 15;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        jPanel1.add(jLabel7, gridBagConstraints);
+
+        jLabel11.setText(" Where");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 18;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        jPanel1.add(jLabel11, gridBagConstraints);
+
+        jPanel4.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
+
+        subjectTable.setFont(new java.awt.Font("Dialog", 0, 12));
+        subjectTable.setText("jLabel11");
+        jPanel4.add(subjectTable);
+
+        jLabel12.setText("  as T");
+        jPanel4.add(jLabel12);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 15;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel1.add(jPanel4, gridBagConstraints);
+
         getContentPane().add(jPanel1, "card2");
 
         pack();
@@ -366,6 +444,9 @@ public class ExportDialog extends javax.swing.JDialog {
     	} catch (Exception e) {
     	}
     	
+    	args.add("-where");
+    	args.add(where.getText());
+    	
     	if (xml) {
     		args.add("-xml");
     		args.add("-xml-root");
@@ -385,21 +466,27 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JTextField rowsPerThread;
     private javax.swing.JButton selectDelete;
     private javax.swing.JButton selectInsert;
+    private javax.swing.JLabel subjectTable;
     private javax.swing.JTextField threads;
     private javax.swing.JCheckBox upsertCheckbox;
+    private javax.swing.JTextField where;
     // Ende der Variablendeklaration//GEN-END:variables
     
 }

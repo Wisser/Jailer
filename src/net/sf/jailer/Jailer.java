@@ -15,15 +15,12 @@
  */
 package net.sf.jailer;
 
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.io.Writer;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.nio.charset.Charset;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -38,13 +35,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
-
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXTransformerFactory;
-import javax.xml.transform.sax.TransformerHandler;
-import javax.xml.transform.stream.StreamResult;
 
 import net.sf.jailer.database.DeletionReader;
 import net.sf.jailer.database.ExportReader;
@@ -829,6 +819,11 @@ public class Jailer {
         Set<Table> subjects = new HashSet<Table>();
         boolean firstTask = true;
         for (ExtractionModel.ExtractionTask task: extractionModel.getTasks()) {
+        	
+        	if (CommandLineParser.getInstance().where != null && CommandLineParser.getInstance().where.trim().length() > 0) {
+        		task.condition = CommandLineParser.getInstance().where;
+        	}
+        	
             jailer.appendCommentHeader("");
             jailer.appendCommentHeader("extraction model:  " + task.subject.getName() + " where " + task.condition + " (" + extractionModelFileName + ")");
             jailer.appendCommentHeader("database URL:      " + dbUrl);
