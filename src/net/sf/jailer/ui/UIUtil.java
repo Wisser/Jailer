@@ -285,7 +285,7 @@ public class UIUtil {
 		while (t.getCause() != null && t != t.getCause()) {
 			t = t.getCause();
 		}
-		JOptionPane.showMessageDialog(parent, t.getMessage(), title + " - " + t.getClass().getName(), JOptionPane.ERROR_MESSAGE);
+		JOptionPane.showMessageDialog(parent, t.getMessage() + "\n(" + t.getClass().getSimpleName() + ")", title + " - " + t.getClass().getName(), JOptionPane.ERROR_MESSAGE);
 	}
 
 	/**
