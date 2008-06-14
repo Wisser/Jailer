@@ -1,3 +1,6 @@
+2.3.0_beta
+ - exports data to hierarchically structured XML. Currently in beta, needs testing.
+
 2.2.3
  - improved documentation
  - minor bug fixes
