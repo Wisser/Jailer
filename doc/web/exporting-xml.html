@@ -67,7 +67,7 @@
       <ul>
         <li><a href="exporting-data.htm" target="_self" class="llink">Exporting
 Data</a></li>
-        <li><a href="exporting-xml.htm" target="_self" class="llinkA">Defining
+        <li><a href="exporting-xml.html" target="_self" class="llinkA">Defining
 the <br>
 XML structure<br>
           </a></li>
@@ -98,73 +98,37 @@ Data</a></li>
           <tr>
             <td class="content" height="520" valign="top" width="100%">
             <small><small>&nbsp;</small></small><br>
-This tutorial shows you how to export consistent sets
-of rows from relational databases.<br>
+This tutorial shows you how to export data to XML and how to define the
+structure of the XML document.<br>
             <br>
-            <h4>Step 1. Setup the database<br>
+            <h4>Step 1. Switch to XML-mode.<br>
             </h4>
-            <p>Create a new database schema and execute <a
- href="scott-tiger.sql.html"><img
- style="border: 0px solid ; width: 13px; height: 13px;"
- src="exporting-data-Dateien/arrow.gif" hspace="4"><big><span
- style="font-family: monospace;"><font size="4">script/scott-tiger.sql</font></span></big></a>.
-Make sure that the script runs successfully.<br>
-            <br>
-            <table style="width: 100%; text-align: left;" border="0"
- cellpadding="0" cellspacing="0">
-              <tbody>
-                <tr>
-                  <td
- style="vertical-align: top; background-color: rgb(230, 255, 230);"><span
- style="font-family: monospace;">$ db2 connect to wisser </span><span
- style="font-family: monospace;">user scott </span><span
- style="font-family: monospace;">using tiger<span
- style="font-family: mon;"><span style="font-style: italic;"></span></span></span><span
- style="font-family: monospace;"><span
- style="color: rgb(51, 51, 255); font-style: italic;"></span></span><br>
-                  <span style="font-family: monospace;">$ db2 -tvf
-script/scott-tiger.sql<br>
-                  </span><span style="font-family: monospace;"></span></td>
-                </tr>
-              </tbody>
-            </table>
-            <br>
+            <p>Load the model <big><span
+ style="font-family: monospace;">scott.csv</span></big> from previous
+tutorial and switch to XML mode. An additional panel named "XML
+Mapping" will appear.<br>
             </p>
-            <h4>Step 2. Building the data model<br>
-            </h4>
-Start the Tool (<span style="font-family: monospace;">Jailer.exe </span>or
-            <span style="font-family: monospace;">jailerGUI.bat</span>
-on windows platform)<br>
-            <p>
-            <table style="width: 100%; text-align: left;" border="0"
- cellpadding="0" cellspacing="0">
-              <tbody>
-                <tr>
-                  <td
- style="vertical-align: top; background-color: rgb(230, 255, 230);"><span
- style="font-family: monospace;">$ sh jailerGUI.sh</span><span
- style="font-family: monospace;"></span><br>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <br>
-            <img src="exporting-data-Dateien/screen1.png"><br>
+            <p><img alt="" src="xmlt1.gif"
+ style="width: 963px; height: 587px;"><br>
             </p>
             <p><br>
-The first time you start Jailer you will be asked for a data model.<br>
-            <br>
-A data model holds information about the tables in the database and all
-associations between them.<br>
-Most of the information can be retrieved automatically by introspecting
-the database schema.<br>
-            <br>
-Click on<span style="font-style: italic;"> Introspect DB</span><br>
-            <br>
-            <img src="exporting-data-Dateien/screen2.png"><br>
-            <br>
-            <br>
-Select the setting for your DBMS and enter the connection parameter.<br>
+            </p>
+            <h4>Step 2. Export Scott to flat XML<br>
+            </h4>
+            <p>Export data into a file <a href="scott-1.xml"><img
+ style="border: 0px solid ; width: 13px; height: 13px;"
+ src="exporting-data-Dateien/arrow.gif" hspace="4"><big><span
+ style="font-family: monospace;"><font size="4">scott-1.xml</font></span></big></a>.
+The XML file contains a simple list of all exported rows, starting with
+rows from subject table followed by all other rows in alphabetical
+order of their table names.<br>
+            </p>
+            <p><br>
+            </p>
+            <p><br>
+            </p>
+            <p>Select the setting for your DBMS and enter the
+connection parameter.<br>
 You may change the setting name if you like.<br>
             <br>
 Click on<span style="font-style: italic;"> Connect</span><big
