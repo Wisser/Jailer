@@ -50,16 +50,16 @@ public class XmlSketchBuilder {
 			});
 
 			if (depth == 0) {
-				sb.append("<" + table.getName() + ">\n");
+				sb.append("<" + table.getName().toLowerCase() + ">\n");
 				sb.append("    -- elements of " + table.getName() + " --\n");
 			}
 			String indent = "    ";
 			for (Association a: sortedSourceAssociations) {
 				if (a.getAggregationSchema() == AggregationSchema.EXPLICIT_LIST) {
 					sb.append(indent + "<" + a.getAggregationTagName() + ">\n");
-					sb.append(indent + "    <" + a.destination.getName() + "/>\n");
+					sb.append(indent + "    <" + a.destination.getName().toLowerCase() + "/>\n");
 					if (a.getCardinality() != Cardinality.MANY_TO_ONE && a.getCardinality() != Cardinality.ONE_TO_ONE) {
-						sb.append(indent + "    <" + a.destination.getName() + "/>\n");
+						sb.append(indent + "    <" + a.destination.getName().toLowerCase() + "/>\n");
 						sb.append(indent + "      ...\n");
 					}
 					sb.append(indent + "</" + a.getAggregationTagName() + ">\n");
@@ -79,7 +79,7 @@ public class XmlSketchBuilder {
 				}
 			}
 			if (depth == 0) {
-				sb.append("</" + table.getName() + ">\n");
+				sb.append("</" + table.getName().toLowerCase() + ">\n");
 			}
 		}
 		

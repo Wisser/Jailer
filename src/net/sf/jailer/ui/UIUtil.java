@@ -38,12 +38,19 @@ import javax.swing.WindowConstants;
 
 import net.sf.jailer.Jailer;
 
+import org.apache.log4j.Logger;
+
 /**
  * Some utility methods.
  * 
  * @author Ralf Wisser
  */
 public class UIUtil {
+
+	/**
+     * The logger.
+     */
+    private static final Logger _log = Logger.getLogger(UIUtil.class);
 
     /**
      * Opens file chooser.
@@ -121,7 +128,7 @@ public class UIUtil {
         	if (arg != null && arg.equals(password)) {
         		arglist.append(" *****");
         	} else {
-        		if (arg.contains(" ") || arg.contains("<") || arg.contains(">") || arg.contains("*") || arg.contains("?") || arg.contains("|") || arg.contains("$") || arg.contains("\"") || arg.contains("'") || arg.contains("\\")) {
+        		if ("".equals(arg) || arg.contains(" ") || arg.contains("<") || arg.contains(">") || arg.contains("*") || arg.contains("?") || arg.contains("|") || arg.contains("$") || arg.contains("\"") || arg.contains("'") || arg.contains("\\")) {
         			arglist.append(" \"");
         			for (int j = 0; j < arg.length(); ++j) {
         				char c = arg.charAt(j);
@@ -230,7 +237,7 @@ public class UIUtil {
 				public void run() {
 		            try {
 		                if (printCommandLine) {
-		                    System.out.println("$ jailer" + arglist);
+		                    _log.info("arguments: " + arglist.toString().trim());
 		                }
 		            	result[0] = Jailer.jailerMain(argsarray, warnings);
 		            } catch (Throwable t) {

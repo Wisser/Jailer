@@ -27,10 +27,8 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.List;
 
-import net.sf.jailer.ExplainTool;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.datamodel.Column;
-import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.util.SqlUtil;
 
@@ -46,7 +44,7 @@ public class SQLDialect {
 	/**
 	 * The logger.
 	 */
-	private static final Logger _log = Logger.getLogger(ExplainTool.class);;
+	private static final Logger _log = Logger.getLogger(SQLDialect.class);;
 
 	/**
 	 * The sql logger.

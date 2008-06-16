@@ -24,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -149,6 +150,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         helpContent = new javax.swing.JMenuItem();
         tutorial = new javax.swing.JMenuItem();
         jSeparator7 = new javax.swing.JSeparator();
+        helpForum = new javax.swing.JMenuItem();
         jMenuItem2 = new javax.swing.JMenuItem();
         jSeparator8 = new javax.swing.JSeparator();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -441,6 +443,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu2.add(jSeparator7);
 
+        helpForum.setLabel("Help Forum");
+        helpForum.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                helpForumActionPerformed(evt);
+            }
+        });
+
+        jMenu2.add(helpForum);
+
         jMenuItem2.setText("Software Update");
         jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -467,6 +478,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void helpForumActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpForumActionPerformed
+    	try {
+			BrowserLauncher.openURL(new URI("https://sourceforge.net/forum/?group_id=197260"));
+		} catch (Exception e) {
+			UIUtil.showException(this, "Error", e);
+		}
+    }//GEN-LAST:event_helpForumActionPerformed
 
     private void zoomToFitActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_zoomToFitActionPerformed
     	extractionModelEditor.zoomToFit();
@@ -1035,6 +1054,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem expandAll;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem helpContent;
+    private javax.swing.JMenuItem helpForum;
     private javax.swing.JCheckBoxMenuItem hideIgnored;
     private javax.swing.JMenuItem ignoreAll;
     private javax.swing.JMenu jMenu1;

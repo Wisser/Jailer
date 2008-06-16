@@ -442,7 +442,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel3.add(condition, gridBagConstraints);
 
-        jLabel4.setText("As");
+        jLabel4.setText("To");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
@@ -1000,7 +1000,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     		tagField.setEditable(false);
     		xmlMappingApplyButton.setEnabled(false);
     	} else {
-    		aggregationCombobox.setEditable(association.reversalAssociation.getAggregationSchema() == AggregationSchema.NONE);
+    		aggregationCombobox.setEditable(false); // association.reversalAssociation.getAggregationSchema() == AggregationSchema.NONE);
     		aggregationCombobox.setEnabled(association.reversalAssociation.getAggregationSchema() == AggregationSchema.NONE);
     		aggregationCombobox.setSelectedItem(association.getAggregationSchema());
     		tagField.setText(association.getAggregationTagName());
