@@ -104,3 +104,18 @@ A.llink:hover
 	font-family:Arial, Helvetica, sans-serif;
 	font-size:12px;
 }
+
+/*** Highlight Markup Styles ***/
+#vc_markup .num  { color: #000000; }
+#vc_markup .esc  { color: #bd8d8b; }
+#vc_markup .str  { color: #bd8d8b; }
+#vc_markup .dstr { color: #bd8d8b; }
+#vc_markup .slc  { color: #ac2020; font-style: italic; }
+#vc_markup .com  { color: #ac2020; font-style: italic; }
+#vc_markup .dir  { color: #000000; }
+#vc_markup .sym  { color: #000000; }
+#vc_markup .line { color: #555555; }
+#vc_markup .kwa  { color: #9c20ee; font-weight: bold; }
+#vc_markup .kwb  { color: #208920; }
+#vc_markup .kwc  { color: #0000ff; }
+#vc_markup .kwd  { color: #404040; }
