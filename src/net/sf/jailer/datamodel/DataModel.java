@@ -94,7 +94,7 @@ public class DataModel {
 	public static class XmlSettings {
 		public String datePattern = "yyyy-MM-dd";
 		public String timestampPattern = "yyyy-MM-dd-HH.mm.ss";
-		public String rootTag = "ENTITIES";
+		public String rootTag = "entities";
 	}
 
 	/**

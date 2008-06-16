@@ -34,6 +34,23 @@ public class BrowserLauncher {
 	/**
 	 * Opens URL in browser.
 	 * 
+	 * @param uri the uri to open
+	 */
+	public static void openURL(URI uri) throws Exception {
+		Class desktop = Class.forName("java.awt.Desktop");
+		if (desktop != null) {
+			Method getDesktop = desktop.getMethod("getDesktop");
+			Method browse = desktop.getMethod("browse", URI.class);
+			if (getDesktop != null && browse != null) {
+				browse.invoke(getDesktop.invoke(null), uri);
+				return;
+			}
+		}
+	}
+
+	/**
+	 * Opens URL in browser.
+	 * 
 	 * @param url the url to open
 	 */
 	public static void openURL(String url) {

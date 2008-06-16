@@ -129,12 +129,12 @@ public class XmlRowWriter {
 	 */
 	public void startRow(ResultSet resultSet, Table table, Association association) throws SAXException, SQLException {
 		if (association == null) {
-			transformerHandler.startElement(null, null, asElementName(table.getName()), null);
+			transformerHandler.startElement(null, null, asElementName(table.getName()).toLowerCase(), null);
 		} else {
 			if (association.getAggregationSchema() == AggregationSchema.IMPLICIT_LIST) {
 				transformerHandler.startElement(null, null, association.getAggregationTagName(), null);
 			} else if (association.getAggregationSchema() == AggregationSchema.EXPLICIT_LIST) {
-				transformerHandler.startElement(null, null, asElementName(table.getName()), null);
+				transformerHandler.startElement(null, null, asElementName(table.getName()).toLowerCase(), null);
 			}
 		}
 		String[] cNames;
@@ -170,9 +170,9 @@ public class XmlRowWriter {
 					value = o.toString();
 				}
 				
-				transformerHandler.startElement(null, null, asElementName(cNames[i]), null);
+				transformerHandler.startElement(null, null, asElementName(cNames[i]).toLowerCase(), null);
 				transformerHandler.characters(value.toCharArray(), 0, value.length());
-				transformerHandler.endElement(null, null, asElementName(cNames[i]));
+				transformerHandler.endElement(null, null, asElementName(cNames[i]).toLowerCase());
 			}
 		}
 	}
@@ -185,12 +185,12 @@ public class XmlRowWriter {
 	 */
 	public void endRow(Table table, Association association) throws SAXException {
 		if (association == null) {
-			transformerHandler.endElement(null, null, asElementName(table.getName()));
+			transformerHandler.endElement(null, null, asElementName(table.getName().toLowerCase()));
 		} else {
 			if (association.getAggregationSchema() == AggregationSchema.IMPLICIT_LIST) {
 				transformerHandler.endElement(null, null, association.getAggregationTagName());
 			} else if (association.getAggregationSchema() == AggregationSchema.EXPLICIT_LIST) {
-				transformerHandler.endElement(null, null, asElementName(table.getName()));
+				transformerHandler.endElement(null, null, asElementName(table.getName().toLowerCase()));
 			}
 		}
 	}
