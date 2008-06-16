@@ -4,8 +4,7 @@
   <title>Jailer</title>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="description" content="Data Export Tool">
-<link rel="shortcut icon" href="favicon.ico" >
-
+  <link rel="shortcut icon" href="favicon.ico">
   <meta name="keywords"
  content="data export referential integrity java jdbc dbms">
   <link rel="stylesheet" type="text/css"
@@ -36,17 +35,19 @@
     <tr>
       <td colspan="2" class="nav1background" height="33" width="100%">&nbsp;
       <b><font color="#ffffff"><a href="home.htm" target="_self"
- class="tlink">Home</a> &nbsp;&nbsp;&nbsp; <a
- href="quicktour.htm" target="_self" class="tlink">Documentation</a> &nbsp;&nbsp;&nbsp; <a href="exporting-data.htm"
- target="_self" class="tlinkA">Tutorial</a>
-&nbsp;&nbsp;&nbsp; <a href="http://sourceforge.net/forum/?group_id=197260" target="_self" class="tlink">Forum</a>
+ class="tlink">Home</a> &nbsp;&nbsp;&nbsp; <a href="quicktour.htm"
+ target="_self" class="tlink">Documentation</a> &nbsp;&nbsp;&nbsp; <a
+ href="exporting-data.htm" target="_self" class="tlinkA">Tutorial</a>
+&nbsp;&nbsp;&nbsp; <a
+ href="http://sourceforge.net/forum/?group_id=197260" target="_self"
+ class="tlink">Forum</a>
 &nbsp;&nbsp;&nbsp; <a
  href="http://sourceforge.net/project/showfiles.php?group_id=197260"
  target="_self" class="tlink">Download</a>
 &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</font></b></td>
     </tr>
     <tr>
-      <td colspan="2" class="spacer" width="100%">
+      <td colspan="2" class="spacer" width="100%"> <br>
       </td>
     </tr>
     <tr>
@@ -66,6 +67,10 @@
       <ul>
         <li><a href="exporting-data.htm" target="_self" class="llinkA">Exporting
 Data</a></li>
+        <li><a href="exporting-xml.htm" target="_self" class="llink">Defining
+the <br>
+XML structure<br>
+          </a></li>
         <li><a href="deleting-data.htm" target="_self" class="llink">Deleting
 Data</a></li>
       </ul>
@@ -127,7 +132,8 @@ script/scott-tiger.sql<br>
             </p>
             <h4>Step 2. Building the data model<br>
             </h4>
-Start the Tool (<span style="font-family: monospace;">jailerGUI.bat</span>
+Start the Tool (<span style="font-family: monospace;">Jailer.exe </span>or
+            <span style="font-family: monospace;">jailerGUI.bat</span>
 on windows platform)<br>
             <p>
             <table style="width: 100%; text-align: left;" border="0"
@@ -328,8 +334,7 @@ Insert into DEPARTMENT(DEPTNO, NAME, LOCATION) values (20, 'RESEARCH',
 Insert into SALARYGRADE(GRADE, LOSAL, HISAL) values (4, 2001, 3000),
 (5, 3001, 9999);<br>
 Insert
-into EMPLOYEE(EMPNO, NAME, JOB, BOSS, HIREDATE, SALARY, COMM, DEPTNO)
-                  <br>
+into EMPLOYEE(EMPNO, NAME, JOB, BOSS, HIREDATE, SALARY, COMM, DEPTNO) <br>
 &nbsp; &nbsp; &nbsp; values (7839, 'KING', 'PRESIDENT', null,
 '1981-11-17', 5000.00, null,
 10);<br>
