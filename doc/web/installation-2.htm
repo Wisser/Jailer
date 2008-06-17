@@ -8,8 +8,7 @@
  content="data export referential integrity java jdbc dbms">
   <link rel="stylesheet" type="text/css"
  href="installation-2-Dateien/styles.css">
-<link rel="shortcut icon" href="favicon.ico" >
-
+  <link rel="shortcut icon" href="favicon.ico">
 </head>
 <body left-margin="0" top-margin="0">
 <div align="left">
@@ -36,12 +35,13 @@
     <tr>
       <td colspan="2" class="nav1background" height="33" width="100%">&nbsp;
       <b><font color="#ffffff"><a href="home.htm" target="_self"
- class="tlinkA">Home</a> 
-&nbsp;&nbsp;&nbsp; <a href="quicktour.htm" target="_self"
- class="tlink">Documentation</a>
+ class="tlinkA">Home</a> &nbsp;&nbsp;&nbsp; <a href="quicktour.htm"
+ target="_self" class="tlink">Documentation</a>
+&nbsp;&nbsp;&nbsp; <a href="exporting-data.htm" target="_self"
+ class="tlink">Tutorial</a>
 &nbsp;&nbsp;&nbsp; <a
- href="exporting-data.htm" target="_self" class="tlink">Tutorial</a>
-&nbsp;&nbsp;&nbsp; <a href="http://sourceforge.net/forum/?group_id=197260" target="_self" class="tlink">Forum</a>
+ href="http://sourceforge.net/forum/?group_id=197260" target="_self"
+ class="tlink">Forum</a>
 &nbsp;&nbsp;&nbsp; <a
  href="http://sourceforge.net/project/showfiles.php?group_id=197260"
  target="_self" class="tlink">Download</a>
@@ -96,7 +96,7 @@
           <tr>
             <td class="content" height="520" valign="top" width="100%">
             <p><small><small>&nbsp;</small></small><br>
-Unpack the file <span style="font-style: italic;">jailer_2.2.0.zip. </span>You
+Unpack the file <span style="font-style: italic;">jailer_2.3.0.zip. </span>You
 will get the following files:<br>
             </p>
             <table style="width: 100%; text-align: left;" border="0"
@@ -105,62 +105,51 @@ will get the following files:<br>
                 <tr>
                   <td
  style="vertical-align: top; background-color: rgb(230, 255, 230);"><span
- style="font-family: monospace;">$unzip jailer_2.2.0.zip<br>
-$cd jailer_2.2.0<br style="font-family: monospace;">
+ style="font-family: monospace;">$unzip jailer_2.3.0.zip<br>
+$cd jailer_2.3.0<br style="font-family: monospace;">
                   </span><span style="font-family: monospace;">$ll</span><br
  style="font-family: monospace;">
-                  <span style="font-family: monospace;">-rw-r--r--&nbsp;
-1 wisser users&nbsp;&nbsp; 1765 2008-04-28 12:52 build.xml<br>
-drwxr-xr-x&nbsp; 2 wisser users&nbsp;&nbsp;&nbsp; 536 2008-04-28 12:52
-config<br>
-drwxr-xr-x&nbsp; 2 wisser users&nbsp;&nbsp;&nbsp; 232 2008-04-28 12:52
-datamodel<br>
-drwxr-xr-x&nbsp; 4 wisser users&nbsp;&nbsp;&nbsp;&nbsp; 96 2008-04-28
-12:52 doc<br>
-drwxr-xr-x&nbsp; 2 wisser users&nbsp;&nbsp;&nbsp;&nbsp; 80 2008-04-28
-12:52 domainmodel<br>
-drwxr-xr-x&nbsp; 4 wisser users&nbsp;&nbsp;&nbsp;&nbsp; 96 2008-04-28
-12:52 epilog<br>
-drwxr-xr-x&nbsp; 2 wisser users&nbsp;&nbsp;&nbsp; 120 2008-04-28 12:52
+                  <span style="font-family: monospace;">drwxr-xr-x&nbsp;
+5 wisser users&nbsp;&nbsp;&nbsp; 152 2008-05-06 10:10 doc<br>
+drwxr-xr-x&nbsp; 5 wisser users&nbsp;&nbsp;&nbsp; 120 2008-04-28 16:17
+epilog<br>
+drwxr-xr-x&nbsp; 3 wisser users&nbsp;&nbsp;&nbsp; 232 2008-06-16 13:00
 extractionmodel<br>
--rw-r--r--&nbsp; 1 wisser users&nbsp;&nbsp;&nbsp; 381 2008-04-28 12:52
+-rw-r--r--&nbsp; 1 wisser users&nbsp;&nbsp;&nbsp; 381 2008-04-28 16:18
 jailer.bat<br>
--rw-r--r--&nbsp; 1 wisser users&nbsp;&nbsp;&nbsp; 442 2008-04-28 12:52
+-rwxr-xr-x&nbsp; 1 wisser users&nbsp; 29184 2008-06-16 08:41 Jailer.exe<br>
+-rw-r--r--&nbsp; 1 wisser users&nbsp;&nbsp;&nbsp; 449 2008-05-23 14:30
 jailerGUI.bat<br>
--rw-r--r--&nbsp; 1 wisser users&nbsp;&nbsp;&nbsp; 378 2008-04-28 12:52
+-rw-r--r--&nbsp; 1 wisser users&nbsp;&nbsp;&nbsp; 378 2008-04-28 16:18
 jailerGUI.sh<br>
--rw-r--r--&nbsp; 1 wisser users 335934 2008-04-28 12:53 jailer.jar<br>
--rw-r--r--&nbsp; 1 wisser users&nbsp;&nbsp;&nbsp; 335 2008-04-28 12:52
+-rw-r--r--&nbsp; 1 wisser users&nbsp;&nbsp;&nbsp; 102 2008-06-16 08:41
+Jailer.html<br>
+-rw-r--r--&nbsp; 1 wisser users 379148 2008-06-16 13:00 jailer.jar<br>
+-rw-r--r--&nbsp; 1 wisser users&nbsp;&nbsp;&nbsp; 335 2008-04-28 16:18
 jailer.sh<br>
-drwxr-xr-x&nbsp; 2 wisser users&nbsp;&nbsp;&nbsp; 248 2008-04-28 12:52
+drwxr-xr-x&nbsp; 3 wisser users&nbsp;&nbsp;&nbsp; 272 2008-04-28 16:18
 lib<br>
--rw-r--r--&nbsp; 1 wisser users&nbsp;&nbsp; 1573 2008-04-28 12:52
+-rw-r--r--&nbsp; 1 wisser users&nbsp;&nbsp; 1573 2008-04-28 16:18
 license-prefuse.txt<br>
--rw-r--r--&nbsp; 1 wisser users&nbsp; 10172 2008-04-28 12:52 license.txt<br>
-drwxr-xr-x&nbsp; 4 wisser users&nbsp;&nbsp;&nbsp;&nbsp; 96 2008-04-28
-12:52 prolog<br>
--rw-r--r--&nbsp; 1 wisser users&nbsp;&nbsp;&nbsp; 440 2008-04-28 12:52
+-rw-r--r--&nbsp; 1 wisser users&nbsp; 10172 2008-04-28 16:18 license.txt<br>
+drwxr-xr-x&nbsp; 5 wisser users&nbsp;&nbsp;&nbsp; 120 2008-04-28 16:17
+prolog<br>
+-rw-r--r--&nbsp; 1 wisser users&nbsp;&nbsp;&nbsp; 398 2008-05-02 09:03
 README<br>
--rw-r--r--&nbsp; 1 wisser users&nbsp;&nbsp; 1259 2008-04-28 12:52
+-rw-r--r--&nbsp; 1 wisser users&nbsp;&nbsp; 1733 2008-06-17 08:42
 releasenotes.txt<br>
-drwxr-xr-x&nbsp; 2 wisser users&nbsp;&nbsp;&nbsp;&nbsp; 80 2008-04-28
-12:52 render<br>
-drwxr-xr-x&nbsp; 2 wisser users&nbsp;&nbsp;&nbsp;&nbsp; 88 2008-04-28
-12:52 restrictionmodel<br>
-drwxr-xr-x 10 wisser users&nbsp;&nbsp;&nbsp; 312 2008-04-28 12:52 script<br>
-drwxr-xr-x&nbsp; 3 wisser users&nbsp;&nbsp;&nbsp;&nbsp; 72 2008-04-28
-12:52 src<br>
-drwxr-xr-x&nbsp; 2 wisser users&nbsp;&nbsp;&nbsp; 312 2008-04-28 12:52
-template</span><span style="font-family: monospace;"></span><br>
-                  </td>
+                  </span></td>
                 </tr>
               </tbody>
             </table>
-            <p>You can start Jailer by double-clicking on the<span
- style="font-style: italic;"> jailer.jar</span> file (Windows)<br>
-or by executing the script <span style="font-style: italic;">jailerGUI.sh</span>
-(jailerGUI.bat on Windows platform).<br>
-            </p>
+            <p><br>
+On windows platform execute <span style="font-style: italic;">Jailer.exe</span>.
+You can also start <span style="font-style: italic;">jailerGUI.bat</span>
+or start Jailer by double-clicking on the<span
+ style="font-style: italic;"> jailer.jar</span> file.</p>
+            <p>On Unix/Linux platform execute the script <span
+ style="font-style: italic;">jailerGUI.sh</span> or use <span
+ style="font-style: italic;">java -jar jailer.jar</span> </p>
             <p><br>
             </p>
             </td>
