@@ -143,6 +143,13 @@ public class GraphicalDataModelView extends JPanel {
     private ZoomToFitControlExtension zoomToFitControl;
     
     /**
+     * Table details mode.
+     */
+    private boolean showTableDetails;
+
+    private NBodyForce force;
+    
+    /**
      * Constructor.
      * 
      * @param model the restricted data model
@@ -256,14 +263,18 @@ public class GraphicalDataModelView extends JPanel {
         ActionList animate = new ActionList(Activity.INFINITY);
         layout = new ForceDirectedLayout(graph) {
         	protected float getMassValue(VisualItem n) {
-                return zoomBoxControl.getRenderer().isBoxItem(n)? 0.01f : 1.0f;
+                return zoomBoxControl.getRenderer().isBoxItem(n)? 0.01f : showTableDetails? 2.0f : 1.0f;
             }
         };
         for (Force force: layout.getForceSimulator().getForces()) {
         	if (force instanceof NBodyForce) {
-        		((NBodyForce) force).setParameter(NBodyForce.GRAVITATIONAL_CONST, -1200.0f);
+        		this.force = (NBodyForce) force;
         	}
         }
+		if (force != null) {
+			force.setParameter(NBodyForce.GRAVITATIONAL_CONST, -100.0f);
+		}
+        updateTableDetailsMode();
         layout.getForceSimulator().setIntegrator(new Integrator() {
         	public void integrate(ForceSimulator sim, long timestep) {                
         		float speedLimit = sim.getSpeedLimit();
@@ -507,7 +518,7 @@ public class GraphicalDataModelView extends JPanel {
 				modelEditor.select(table);
 			}
 		});
-		JMenuItem selectAsRoot = new JMenuItem("focus " + table.getName());
+		JMenuItem selectAsRoot = new JMenuItem("Focus " + table.getName());
 		selectAsRoot.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				modelEditor.setRoot(table);
@@ -519,7 +530,7 @@ public class GraphicalDataModelView extends JPanel {
 				zoomToFit();
 			}
 		});
-		JMenuItem hide = new JMenuItem("Hide");
+		JMenuItem hide = new JMenuItem("Hide " + table.getName());
 		hide.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				hideTable(table);
@@ -529,7 +540,21 @@ public class GraphicalDataModelView extends JPanel {
 		if (table.equals(root)) {
 			hide.setEnabled(false);
 		}
+		JMenuItem toggleDetails = new JMenuItem(showDetails(table)? "Hide details" : "Show details");
+		toggleDetails.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				if (reversedShowDetailsTables.contains(table)) {
+					reversedShowDetailsTables.remove(table);
+				} else {
+					reversedShowDetailsTables.add(table);
+				}
+				visualization.invalidateAll();
+				display.invalidate();
+			}
+		});
 		
+		popup.add(toggleDetails);
+		popup.add(new JSeparator());
 		popup.add(select);
 		popup.add(selectAsRoot);
 		popup.add(new JSeparator());
@@ -1087,6 +1112,31 @@ public class GraphicalDataModelView extends JPanel {
 				n.setFixed(fix);
 			}
 		}
+	}
+
+	private Set<Table> reversedShowDetailsTables = new HashSet<Table>();
+	
+	/**
+	 * Decides whether to show details of a table.
+	 * 
+	 * @param table the table
+	 * @return <code>true</code> iff details are shown
+	 */
+	public boolean showDetails(Table table) {
+		if (reversedShowDetailsTables.contains(table)) {
+			return !showTableDetails;
+		}
+		return showTableDetails;
+	}
+	
+	/**
+	 * Updates table details mode.
+	 */
+	public void updateTableDetailsMode() {
+		showTableDetails = modelEditor.extractionModelFrame.showTableDetails();
+		reversedShowDetailsTables.clear();
+		visualization.invalidateAll();
+		visualization.repaint();
 	}
 	
 }

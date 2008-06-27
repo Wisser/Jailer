@@ -265,18 +265,20 @@ public class ModelBuilder {
         for (Table table: allTables) {
         	if (!EXCLUDE_TABLES_CSV.contains(new String[] { table.getName()}) && 
         		!EXCLUDE_TABLES_CSV.contains(new String[] { table.getName().toUpperCase() })) {
-		        for (ModelElementFinder finder: modelElementFinder) {
-		            _log.info("find colums with " + finder);
-            		List<Column> columns = finder.findColumns(table, statementExecutor);
-            		if (!columns.isEmpty()) {
-            			columnsDefinition.append(table.getName() + "; ");
-            			for (Column c: columns) {
-            				columnsDefinition.append(c.toSQL(null) + "; ");
-            			}
-            			columnsDefinition.append("\n");
-            			break;
-            		}
-            	}
+        		if (!table.primaryKey.getColumns().isEmpty()) {
+	        		for (ModelElementFinder finder: modelElementFinder) {
+			            _log.info("find colums with " + finder);
+	            		List<Column> columns = finder.findColumns(table, statementExecutor);
+	            		if (!columns.isEmpty()) {
+	            			columnsDefinition.append(table.getName() + "; ");
+	            			for (Column c: columns) {
+	            				columnsDefinition.append(c.toSQL(null) + "; ");
+	            			}
+	            			columnsDefinition.append("\n");
+	            			break;
+	            		}
+	            	}
+        		}
             }
         }
         resetColumnsFile(columnsDefinition.toString());

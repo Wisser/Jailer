@@ -134,7 +134,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         refresh = new javax.swing.JMenuItem();
         zoomToFit = new javax.swing.JMenuItem();
         jSeparator9 = new javax.swing.JSeparator();
-        hideIgnored = new javax.swing.JCheckBoxMenuItem();
+        showIgnored = new javax.swing.JCheckBoxMenuItem();
+        showTableDetails = new javax.swing.JCheckBoxMenuItem();
         jSeparator11 = new javax.swing.JSeparator();
         view = new javax.swing.JMenu();
         jMenu3 = new javax.swing.JMenu();
@@ -343,16 +344,26 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu1.add(jSeparator9);
 
-        hideIgnored.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_MASK));
-        hideIgnored.setSelected(true);
-        hideIgnored.setText("Hide disabled associations");
-        hideIgnored.addActionListener(new java.awt.event.ActionListener() {
+        showIgnored.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_MASK));
+        showIgnored.setText("Show disabled associations");
+        showIgnored.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                hideIgnoredActionPerformed(evt);
+                showIgnoredActionPerformed(evt);
             }
         });
 
-        jMenu1.add(hideIgnored);
+        jMenu1.add(showIgnored);
+
+        showTableDetails.setSelected(true);
+        showTableDetails.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_D, java.awt.event.InputEvent.CTRL_MASK));
+        showTableDetails.setText("Show table details");
+        showTableDetails.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                showTableDetailsActionPerformed(evt);
+            }
+        });
+
+        jMenu1.add(showTableDetails);
 
         jMenu1.add(jSeparator11);
 
@@ -478,6 +489,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void showTableDetailsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showTableDetailsActionPerformed
+    	extractionModelEditor.graphView.updateTableDetailsMode();
+    }//GEN-LAST:event_showTableDetailsActionPerformed
 
     private void helpForumActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpForumActionPerformed
     	try {
@@ -834,9 +849,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	extractionModelEditor.expand();
     }//GEN-LAST:event_expandAllActionPerformed
 
-    private void hideIgnoredActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hideIgnoredActionPerformed
+        private void showIgnoredActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showIgnoredActionPerformed
         extractionModelEditor.refresh(true, false);
-    }//GEN-LAST:event_hideIgnoredActionPerformed
+        }//GEN-LAST:event_showIgnoredActionPerformed
 
     private void collapseAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_collapseAllActionPerformed
         extractionModelEditor.refresh(false, true);
@@ -933,7 +948,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	}
 
 	boolean hideIgnored() {
-		return hideIgnored.isSelected();
+		return !showIgnored.isSelected();
+	}
+	
+	public boolean showTableDetails() {
+		return showTableDetails.isSelected();
 	}
 	
 	/**
@@ -1014,6 +1033,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	private static void demo(ExtractionModelFrame extractionModelFrame) {
 		File tables = new File(DataModel.TABLES_FILE);
 		tables.delete();
+		File columns = new File(DataModel.COLUMNS_FILE);
+		columns.delete();
 		File associations = new File(DataModel.ASSOCIATIONS_FILE);
 		associations.delete();
 		File exDel = new File(DataModel.EXCLUDE_FROM_DELETION_FILE);
@@ -1034,6 +1055,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			out.println("EMPLOYEE; SALARYGRADE; ; n:1; A.SALARY BETWEEN B.LOSAL and B.HISAL; SALARY; Demo; ; ");
 			out.println("EMPLOYEE; DEPARTMENT; B; n:1; A.DEPTNO=B.DEPTNO; DEPARTMENT; Demo; ; ");
 			out.println("EMPLOYEE; EMPLOYEE; B; n:1; A.BOSS=B.EMPNO; BOSS; Demo; ; ");
+			out.close();
+			out = new PrintWriter(new FileOutputStream(columns));
+			out.println("# Table; Columns");
+			out.println("BONUS; ENAME VARCHAR(10); JOB VARCHAR(9); SAL DECIMAL(7, 2); COMM DECIMAL(7, 2); ;");
+			out.println("DEPARTMENT; DEPTNO INTEGER; NAME VARCHAR(14); LOCATION VARCHAR(13); ;");
+			out.println("EMPLOYEE; EMPNO INTEGER; NAME VARCHAR(10); JOB VARCHAR(9); BOSS INTEGER; HIREDATE VARCHAR(12); SALARY DECIMAL(7, 2); COMM DECIMAL(7, 2); DEPTNO INTEGER; ;");
+			out.println("SALARYGRADE; GRADE INTEGER; LOSAL INTEGER; HISAL INTEGER; ;");
 			out.close();
 			out = new PrintWriter(new FileOutputStream(exDel));
 			out.println("DEPARTMENT");
@@ -1060,7 +1088,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem helpContent;
     private javax.swing.JMenuItem helpForum;
-    private javax.swing.JCheckBoxMenuItem hideIgnored;
     private javax.swing.JMenuItem ignoreAll;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
@@ -1090,6 +1117,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem renderHtml;
     private javax.swing.JMenuItem save;
     private javax.swing.JMenuItem saveAs;
+    private javax.swing.JCheckBoxMenuItem showIgnored;
+    private javax.swing.JCheckBoxMenuItem showTableDetails;
     private javax.swing.JMenuItem tutorial;
     private javax.swing.JMenuItem updateDataModel;
     private javax.swing.JMenu view;
