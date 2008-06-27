@@ -164,7 +164,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 }
             }
             resultSet.close();
-            _log.info("found columns for table " + tableName);
+            _log.info("found primary key for table " + tableName);
             
             List<Integer> keySeqs = new ArrayList<Integer>(pk.keySet());
             Collections.sort(keySeqs);
@@ -223,6 +223,43 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			}
 		}
 		return schemas;
+    }
+
+    /**
+     * Finds the {@link Column}s of a given {@link Table}.
+     *
+     * @param table the table
+     * @param statementExecutor the statement executor for executing SQL-statements 
+     * 
+     * @throws Exception on each error
+     */
+    public List<Column> findColumns(Table table, StatementExecutor statementExecutor) throws Exception {
+    	List<Column> columns = new ArrayList<Column>();
+    	DatabaseMetaData metaData = statementExecutor.getMetaData();
+        ResultSet resultSet = metaData.getColumns(null, statementExecutor.getIntrospectionSchema(), table.getName(), null);
+        while (resultSet.next()) {
+            String colName = resultSet.getString(4);
+            int type = resultSet.getInt(5);
+            int length = 0;
+            int precision = -1;
+            if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR) {
+                length = resultSet.getInt(7);
+            }
+            if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR) {
+                precision = resultSet.getInt(9);
+                if (resultSet.wasNull() || precision == 0) {
+                	precision = -1;
+                }
+            }
+            String sqlType = SqlUtil.SQL_TYPE.get(type);
+            if (sqlType == null) {
+            	sqlType = "-unknown-";
+            }
+            columns.add(new Column(colName, sqlType, length, precision));
+        }
+        resultSet.close();
+        _log.info("found columns for table " + table.getName());
+        return columns;
     }
 
 }

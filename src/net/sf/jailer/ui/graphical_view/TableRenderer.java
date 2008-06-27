@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui.graphical_view;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -27,10 +28,13 @@ import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
 import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.ImageIcon;
 
+import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.UIUtil;
@@ -61,10 +65,10 @@ public class TableRenderer extends AbstractShapeRenderer {
     
     protected int m_xAlign = Constants.CENTER;
     protected int m_yAlign = Constants.CENTER;
-    protected int m_hTextAlign = Constants.CENTER;
-    protected int m_vTextAlign = Constants.CENTER;
+    protected int m_hTextAlign = Constants.LEFT;
+    protected int m_vTextAlign = Constants.TOP;
     protected int m_hImageAlign = Constants.CENTER;
-    protected int m_vImageAlign = Constants.CENTER;
+    protected int m_vImageAlign = Constants.TOP;
     protected int m_imagePos = Constants.LEFT;
     
     protected int m_horizBorder = 2;
@@ -82,8 +86,10 @@ public class TableRenderer extends AbstractShapeRenderer {
     protected RectangularShape m_bbox  = new Rectangle2D.Double();
     protected Point2D m_pt = new Point2D.Double(); // temp point
     protected Font    m_font; // temp font holder
+    protected Font    m_font2; // temp font holder
     protected String    m_text; // label text
     protected Dimension m_textDim = new Dimension(); // text width / height
+    protected Dimension m_headerDim = new Dimension(); // text width / height of header
     
     // ------------------------------------------------------------------------
     
@@ -134,14 +140,39 @@ public class TableRenderer extends AbstractShapeRenderer {
     }
     
     /**
+     * Caches texts.
+     */
+    private Map<String, String> textCache = new HashMap<String, String>();
+    
+    /**
      * Returns the text to draw. Subclasses can override this class to
      * perform custom text selection.
      * @param item the item to represent as a <code>String</code>
      * @return a <code>String</code> to draw
      */
     protected String getText(VisualItem item) {
-        if ( item.canGetString(m_labelName) ) {
-            return item.getString(m_labelName) + " ";            
+        if (item.canGetString(m_labelName) ) {
+        	String tableName = item.getString(m_labelName);
+        	Table table = model.getTable(tableName);
+        	if (table != null) {
+        		if (textCache.containsKey(table.getName())) {
+        			return textCache.get(table.getName());
+        		}
+        		StringBuilder sb = new StringBuilder(table.getName() + " \n-\n");
+        		for (Column c: table.getColumns()) {
+        			for (Column pk: table.primaryKey.getColumns()) {
+        				if (pk.name.equals(c.name)) {
+        					sb.append("+");
+        					break;
+        				}
+        			}
+        			String sql = c.toSQL(null);
+        			sb.append(c.name).append("  \t").append(sql.substring(c.name.length()).trim()).append(" \n");
+        		}
+        		textCache.put(table.getName(), sb.toString());
+        		return sb.toString();
+        	}
+            return tableName + " ";
         }
         return " ";
     }
@@ -210,16 +241,25 @@ public class TableRenderer extends AbstractShapeRenderer {
             m_font = FontLib.getFont(m_font.getName(), m_font.getStyle(),
                                      size*m_font.getSize());
         }
+        m_font2 = FontLib.getFont(m_font.getName(), m_font.getStyle(),
+                size*m_font.getSize() * 0.8);
         
         FontMetrics fm = DEFAULT_GRAPHICS.getFontMetrics(m_font);
+        FontMetrics fm2 = DEFAULT_GRAPHICS.getFontMetrics(m_font2);
         StringBuffer str = null;
         
         // compute the number of lines and the maximum width
         int nlines = 1, w = 0, start = 0, end = text.indexOf(m_delim);
+        if (text.endsWith("\n")) {
+        	--nlines;
+        }
         m_textDim.width = 0;
+        m_headerDim.width = 0;
         String line;
+        boolean f = true;
         for ( ; end >= 0; ++nlines ) {
-            w = fm.stringWidth(line=text.substring(start,end));
+            w = (f? fm : fm2).stringWidth(line=text.substring(start,end));
+            f = false;
             // abbreviate line as needed
             if ( m_maxTextWidth > -1 && w > m_maxTextWidth ) {
                 if ( str == null )
@@ -235,7 +275,7 @@ public class TableRenderer extends AbstractShapeRenderer {
             start = end+1;
             end = text.indexOf(m_delim, start);
         }
-        w = fm.stringWidth(line=text.substring(start));
+        w = (f? fm : fm2).stringWidth(line=text.substring(start));
         // abbreviate line as needed
         if ( m_maxTextWidth > -1 && w > m_maxTextWidth ) {
             if ( str == null )
@@ -249,7 +289,10 @@ public class TableRenderer extends AbstractShapeRenderer {
         m_textDim.width = Math.max(m_textDim.width, w);
         
         // compute the text height
-        m_textDim.height = fm.getHeight() * nlines;
+        m_textDim.height = fm.getHeight() + fm2.getHeight() * (nlines - 1);
+        
+        m_headerDim.width = m_textDim.width;
+        m_headerDim.height = fm.getHeight();
         
         return str==null ? text : str.toString();
     }
@@ -474,13 +517,43 @@ public class TableRenderer extends AbstractShapeRenderer {
             
             // render each line of text
             int lh = fm.getHeight(); // the line height
+            boolean f = true;
             int start = 0, end = text.indexOf(m_delim);
             for ( ; end >= 0; y += lh ) {
-                drawString(g, fm, text.substring(start, end), useInt, x, y, tw);
+            	g.setPaint(ColorLib.getColor(textColor));
+            	String line = text.substring(start, end);
+            	String a, b;
+            	int tab = line.indexOf('\t');
+            	if (tab < 0) {
+            		a = line;
+            		b = null;
+            	} else {
+            		a = line.substring(0, tab);
+            		b = line.substring(tab + 1);
+            		if (a.startsWith("+")) {
+                    	g.setPaint(Color.RED);
+                    	a = a.substring(1);
+            		}
+            	}
+            	if ("-".equals(line)) {
+            		g.drawLine((int) x, (int) y - lh/2 + 1, (int) x + (int) tw, (int) y - lh/2 + 1);
+            	} else {
+	                drawString(g, fm, a, useInt, x, y, tw, Constants.LEFT);
+	                if (b != null) {
+	                	g.setPaint(Color.GRAY);
+	                    drawString(g, fm, b, useInt, x, y, tw, Constants.RIGHT);
+	                }
+            	}
                 start = end+1;
-                end = text.indexOf(m_delim, start);   
+                end = text.indexOf(m_delim, start);
+                if (f) {
+	                g.setFont(m_font2);
+	                fm = DEFAULT_GRAPHICS.getFontMetrics(m_font2);
+	                lh = fm.getHeight();
+                }
+                f = false;
             }
-            drawString(g, fm, text.substring(start), useInt, x, y, tw);
+            drawString(g, fm, text.substring(start), useInt, x, y, tw, Constants.LEFT);
         }
     
         // draw border
@@ -493,15 +566,19 @@ public class TableRenderer extends AbstractShapeRenderer {
 		if (image == null) {
 			return 1;
 		}
-		return m_textDim.height / (double) image.getHeight(null) * (image == collapsedImage? 1.0 : 1.2);
+		return m_headerDim.height / (double) image.getHeight(null) * (image == collapsedImage? 1.0 : 1.2);
 	}
 
 	private final void drawString(Graphics2D g, FontMetrics fm, String text,
-            boolean useInt, double x, double y, double w)
+            boolean useInt, double x, double y, double w, int hTextAlign)
     {
+		if (text.length() == 0) {
+			return;
+		}
+		
         // compute the x-coordinate
         double tx;
-        switch ( m_hTextAlign ) {
+        switch (hTextAlign ) {
         case Constants.LEFT:
             tx = x;
             break;

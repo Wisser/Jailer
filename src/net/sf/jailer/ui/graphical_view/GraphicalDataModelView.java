@@ -261,7 +261,7 @@ public class GraphicalDataModelView extends JPanel {
         };
         for (Force force: layout.getForceSimulator().getForces()) {
         	if (force instanceof NBodyForce) {
-        		((NBodyForce) force).setParameter(NBodyForce.GRAVITATIONAL_CONST, -60.0f);
+        		((NBodyForce) force).setParameter(NBodyForce.GRAVITATIONAL_CONST, -1200.0f);
         	}
         }
         layout.getForceSimulator().setIntegrator(new Integrator() {
@@ -363,7 +363,7 @@ public class GraphicalDataModelView extends JPanel {
                     l[3][1] = coeff*item.force[1];
                     float dx = (k[0][0]+k[3][0])/6.0f + (k[1][0]+k[2][0])/3.0f;
                     float dy = (k[0][1]+k[3][1])/6.0f + (k[1][1]+k[2][1])/3.0f;
-                    if (dx*dx+dy*dy < 3) {
+                    if (dx*dx+dy*dy < 6) {
                     	dx = dy = 0;
                     }
 					item.location[0] = p[0] + dx;
