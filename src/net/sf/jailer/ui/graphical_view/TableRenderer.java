@@ -154,7 +154,7 @@ public class TableRenderer extends AbstractShapeRenderer {
         if (item.canGetString(m_labelName) ) {
         	String tableName = item.getString(m_labelName);
         	Table table = model.getTable(tableName);
-        	if (table != null) {
+        	if (table != null && graphicalDataModelView.showDetails(table)) {
         		if (textCache.containsKey(table.getName())) {
         			return textCache.get(table.getName());
         		}

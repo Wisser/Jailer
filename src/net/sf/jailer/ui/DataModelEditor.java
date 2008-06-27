@@ -587,6 +587,9 @@ public class DataModelEditor extends javax.swing.JDialog {
 	    	tablesList.setModel(createTablesListModel());
 	    	associations.removeAll(assToDelete);
 	    	associationsList.setModel(createAssociationsListModel());
+	    	for (Line l: toDelete) {
+	    		columns.remove(l.cells.get(0));
+	    	}
     		markDirty();
     	}
     }//GEN-LAST:event_deleteTablesActionPerformed
