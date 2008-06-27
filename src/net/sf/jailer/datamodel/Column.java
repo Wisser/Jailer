@@ -18,6 +18,8 @@ package net.sf.jailer.datamodel;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 /**
@@ -77,6 +79,47 @@ public class Column {
         this.precision = precision;
     }
  
+    private static Pattern typeWithSizeAndPrecision = Pattern.compile("([^ ]+) +([^ \\(]+) *\\( *([0-9]+) *, *([0-9]+) *\\)");
+    private static Pattern typeWithSize = Pattern.compile("([^ ]+) +([^ \\(]+) *\\( *([0-9]+) *\\)");
+    private static Pattern typeWithoutSize = Pattern.compile("([^ ]+) +([^ \\(]+)");
+	
+    /**
+     * Parses a column declaration in SQL syntax.
+     * 
+     * @param columnDeclaration the column declaration in SQL syntax
+     * @return the column
+     */
+    public static Column parse(String columnDeclaration) {
+    	columnDeclaration = columnDeclaration.trim();
+
+    	String name, type;
+	    int size = 0;
+	    int precision = -1;
+	    Matcher matcher = typeWithSizeAndPrecision.matcher(columnDeclaration);
+	    if (matcher.matches()) {
+	        name = matcher.group(1);
+	        type = matcher.group(2);
+	        size = Integer.parseInt(matcher.group(3));
+	        precision = Integer.parseInt(matcher.group(4));
+	    } else {
+	        matcher = typeWithSize.matcher(columnDeclaration);
+	        if (matcher.matches()) {
+	            name = matcher.group(1);
+	            type = matcher.group(2);
+	            size = Integer.parseInt(matcher.group(3));
+	        } else {
+	            matcher = typeWithoutSize.matcher(columnDeclaration);
+	            if (matcher.matches()) {
+	                name = matcher.group(1);
+	                type = matcher.group(2);
+	            } else {
+	                throw new RuntimeException("can't parse primary-key: " + columnDeclaration);
+	            }
+	        }
+	    }
+	    return new Column(name, type, size, precision);
+    }
+    
     /**
      * Compares two columns.
      */

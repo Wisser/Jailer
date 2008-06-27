@@ -998,6 +998,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
                	case 1: extractionModelFrame.openDataModelEditorActionPerformed(null); break;
                	case 2: demo(extractionModelFrame); break;
         	}
+        } else if (!new File(DataModel.COLUMNS_FILE).exists()) {
+           	switch (JOptionPane.showOptionDialog(extractionModelFrame, "No column definition found.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Introspect DB", "Data Model Editor" }, null)) {
+        		case 0: extractionModelFrame.updateDataModelActionPerformed(null); break;
+               	case 1: extractionModelFrame.openDataModelEditorActionPerformed(null); break;
+            }
         }
 	}
     

@@ -25,7 +25,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
 
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
@@ -60,6 +64,16 @@ public class DataModelEditor extends javax.swing.JDialog {
 	 * Table- and association definitions from model-finder result files.
 	 */
     private List<CsvFile.Line> linesFromModelFinder = new ArrayList<CsvFile.Line>();
+
+    /**
+     * Set of tables with modified columns.
+     */
+    private Set<String> modifiedColumnTables = new HashSet<String>();
+    
+	/**
+	 * Columns for each table.
+	 */
+    private Map<String, CsvFile.Line> columns = new TreeMap<String, Line>();
     
     /**
      * List of tables to be excluded from deletion.
@@ -92,11 +106,37 @@ public class DataModelEditor extends javax.swing.JDialog {
         UIUtil.loadTableList(initialDataTables, DataModel.INITIAL_DATA_TABLES_FILE);
         int newTables = 0;
         int newAssociations = 0;
-        File modelFinderTablesFile = new File(ModelBuilder.MODEL_BUILDER_TABLES_CSV);
+        
+        File file = new File(DataModel.COLUMNS_FILE);
+        if (file.exists()) {
+			for (CsvFile.Line l: new CsvFile(file).getLines()) {
+	        	columns.put(l.cells.get(0), l);
+	        }
+        }
+        
+		File modelFinderTablesFile = new File(ModelBuilder.MODEL_BUILDER_TABLES_CSV);
 		if (merge && modelFinderTablesFile.exists()) {
-	        List<CsvFile.Line> tablesFromModelFinder = new CsvFile(modelFinderTablesFile).getLines();
-	        tables.addAll(tablesFromModelFinder);
+		    List<CsvFile.Line> tablesFromModelFinder = new CsvFile(modelFinderTablesFile).getLines();
+	        for (Iterator<CsvFile.Line> i = tablesFromModelFinder.iterator(); i.hasNext(); ) {
+	        	CsvFile.Line t = i.next();
+	        	for (CsvFile.Line l: tables) {
+	        		if (l.cells.equals(t.cells)) {
+	        			i.remove();
+	        			break;
+	        		}
+	        	}
+	        }
 	        linesFromModelFinder.addAll(tablesFromModelFinder);
+	        for (Iterator<CsvFile.Line> i = tables.iterator(); i.hasNext(); ) {
+	        	CsvFile.Line t = i.next();
+	        	for (CsvFile.Line l: linesFromModelFinder) {
+	        		if (l.cells.get(0).equals(t.cells.get(0))) {
+	        			i.remove();
+	        			break;
+	        		}
+	        	}
+	        }
+	        tables.addAll(tablesFromModelFinder);
 	        newTables += tablesFromModelFinder.size();
 		}
 		sortLineList(tables);
@@ -107,10 +147,23 @@ public class DataModelEditor extends javax.swing.JDialog {
 	        linesFromModelFinder.addAll(associationsFromModelFinder);
 	        newAssociations += associationsFromModelFinder.size();
 		}
+		
 		sortLineList(associations);
 		initComponents();
 		setSize(900, 700);
 		setLocation(100, 32);
+
+		File modelFinderColumnFile = new File(ModelBuilder.MODEL_BUILDER_COLUMNS_CSV);
+		if (merge && modelFinderColumnFile.exists()) {
+	        for (CsvFile.Line l: new CsvFile(modelFinderColumnFile).getLines()) {
+	        	CsvFile.Line ol = columns.get(l.cells.get(0));
+	        	if (ol == null || !ol.cells.equals(l.cells)) {
+	        		modifiedColumnTables.add(l.cells.get(0));
+	        		markDirty();
+	        	}
+	        	columns.put(l.cells.get(0), l);
+	        }
+		}
 		if (merge) {
 			info.setText("Found " + newTables + " new tables and " + newAssociations + " new associations");
 			if (!linesFromModelFinder.isEmpty()) {
@@ -132,6 +185,7 @@ public class DataModelEditor extends javax.swing.JDialog {
                     boolean cellHasFocus) {
 				boolean fromModelFinder = linesFromModelFinder.contains(value);
 				CsvFile.Line line = (CsvFile.Line) value;
+				String tableName = line.cells.get(0);
 				String pk = "";
 				for (int i = 2; i < line.length; ++i) {
 					if (line.cells.get(i).length() == 0) {
@@ -144,7 +198,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 				}
 				value = line.cells.get(0) + " (" + pk + ")";
 				Component render = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-				if (fromModelFinder) {
+				if (fromModelFinder || modifiedColumnTables.contains(tableName)) {
 					render.setBackground(isSelected? BG_SELCOLOR : BG_COLOR);
 				}
 				return render;
@@ -467,7 +521,7 @@ public class DataModelEditor extends javax.swing.JDialog {
     		cells.add("");
     	}
 		CsvFile.Line line = new CsvFile.Line("?", cells);
-    	if (new TableEditor(this, tables, associations, excludeFromDeletion, initialDataTables).edit(line)) {
+    	if (new TableEditor(this, tables, associations, excludeFromDeletion, initialDataTables).edit(line, columns)) {
     		tables.add(0, line);
     		tablesList.setModel(createTablesListModel());
     		markDirty();
@@ -484,7 +538,7 @@ public class DataModelEditor extends javax.swing.JDialog {
     		}
     	}
     	if (line != null) {
-	    	if (new TableEditor(this, tables, associations, excludeFromDeletion, initialDataTables).edit(line)) {
+	    	if (new TableEditor(this, tables, associations, excludeFromDeletion, initialDataTables).edit(line, columns)) {
 	    		markDirty();
 	    		repaint();
 	    	}
@@ -595,6 +649,7 @@ public class DataModelEditor extends javax.swing.JDialog {
     		if (needsSave) {
 		    	save(tables, DataModel.TABLES_FILE, "# Name; Upsert; Primary key; ; Author");
 		    	save(associations, DataModel.ASSOCIATIONS_FILE, "# Table A; Table B; First-insert; Cardinality; Join-condition; Name; Author");
+		    	save(new ArrayList<Line>(columns.values()), DataModel.COLUMNS_FILE, "# Table; Columns");
 	    		saveTableList(excludeFromDeletion, DataModel.EXCLUDE_FROM_DELETION_FILE);
 	    		saveTableList(initialDataTables, DataModel.INITIAL_DATA_TABLES_FILE);
 		    	saved = true;

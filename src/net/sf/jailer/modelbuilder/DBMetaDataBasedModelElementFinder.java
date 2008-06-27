@@ -57,6 +57,11 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
     private final String selectTablesScript;
     
     /**
+     * The script containing a SQL-Query for the retrieval of table-columns.
+     */
+    private final String selectColumnsScript;
+    
+    /**
      * The script containing a SQL-Query for the retrieval of foreign-key contraints.
      */
     private final String selectForeignKeysScript;
@@ -66,9 +71,10 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
      * 
      * @param statementExecutor the statement executor for executing SQL-statements
      */
-    public DBMetaDataBasedModelElementFinder(String selectTablesScript, String selectForeignKeysScript) {
+    public DBMetaDataBasedModelElementFinder(String selectTablesScript, String selectForeignKeysScript, String selectColumnsScript) {
         this.selectTablesScript = selectTablesScript;
         this.selectForeignKeysScript = selectForeignKeysScript;
+        this.selectColumnsScript = selectColumnsScript;
     }
     
     /**
@@ -153,8 +159,9 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
                 String name = resultSet.getString(2);
                 String type = resultSet.getString(3);
                 int size = resultSet.getInt(4);
-                int keySeq = resultSet.getInt(5);
-                pk.put(new Integer(keySeq), new Column(name, type, size, -1));
+                int scale = resultSet.getInt(5);
+                int keySeq = resultSet.getInt(6);
+                pk.put(new Integer(keySeq), new Column(name, type, size, scale > 0 && size > 0? scale : -1));
             }
         });
         
@@ -170,6 +177,26 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
             tables.add(table);
         }
         return tables;
+    }
+
+    /**
+     * Finds all columns in DB schema.
+     * 
+     * @param statementExecutor the statement executor for executing SQL-statements 
+     */
+    public List<Column> findColumns(Table table, StatementExecutor statementExecutor) throws Exception {
+        String select = PrintUtil.applyTemplate(selectColumnsScript, new Object[] { statementExecutor.getSchemaName(), table.getName() });
+        final List<Column> columns = new ArrayList<Column>();
+        statementExecutor.executeQuery(select, new StatementExecutor.AbstractResultSetReader() {
+            public void readCurrentRow(ResultSet resultSet) throws SQLException {
+                String name = resultSet.getString(2);
+                String type = resultSet.getString(3);
+                int size = resultSet.getInt(4);
+                int scale = resultSet.getInt(5);
+                columns.add(new Column(name, type, size, scale > 0 && size > 0? scale : -1));
+            }
+        });
+        return columns;
     }
 
 }

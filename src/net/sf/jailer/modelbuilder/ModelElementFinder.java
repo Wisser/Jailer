@@ -16,10 +16,12 @@
 package net.sf.jailer.modelbuilder;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 
@@ -39,7 +41,17 @@ public interface ModelElementFinder {
      * @throws Exception on each error
      */
     Collection<Table> findTables(StatementExecutor statementExecutor) throws Exception;
-    
+
+    /**
+     * Finds the {@link Column}s of a given {@link Table}.
+     *
+     * @param table the table
+     * @param statementExecutor the statement executor for executing SQL-statements 
+     * 
+     * @throws Exception on each error
+     */
+    List<Column> findColumns(Table table, StatementExecutor statementExecutor) throws Exception;
+
     /**
      * Finds a set of {@link Association}s.
      * 

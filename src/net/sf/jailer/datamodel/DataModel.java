@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
@@ -67,6 +65,11 @@ public class DataModel {
      * Name of file containing the table definitions.
      */
     public static final String TABLES_FILE = "datamodel/table.csv";
+
+    /**
+     * Name of file containing the column definitions.
+     */
+    public static final String COLUMNS_FILE = "datamodel/column.csv";
 
     /**
      * Name of file containing the association definitions.
@@ -137,11 +140,8 @@ public class DataModel {
      * @param additionalAssociationsFile association file to read too
      */
     public DataModel(String additionalTablesFile, String additionalAssociationsFile) throws Exception {
-        // tables
-    	Pattern typeWithSizeAndPrecision = Pattern.compile("([^ ]+) +([^ \\(]+) *\\( *([0-9]+) *, *([0-9]+) *\\)");
-    	Pattern typeWithSize = Pattern.compile("([^ ]+) +([^ \\(]+) *\\( *([0-9]+) *\\)");
-        Pattern typeWithoutSize = Pattern.compile("([^ ]+) +([^ \\(]+)");
-        CsvFile tablesFile = new CsvFile(new File(TABLES_FILE));
+    	// tables
+    	CsvFile tablesFile = new CsvFile(new File(TABLES_FILE));
         List<CsvFile.Line> tableList = new ArrayList<CsvFile.Line>(tablesFile.getLines());
         if (additionalTablesFile != null) {
             tableList.addAll(new CsvFile(new File(additionalTablesFile)).getLines());
@@ -151,34 +151,31 @@ public class DataModel {
             List<Column> pk = new ArrayList<Column>();
             for (int j = 2; j < line.cells.size() && line.cells.get(j).toString().length() > 0; ++j) {
                 String col = line.cells.get(j).trim();
-                String name, type;
-                int size = 0;
-                int precision = -1;
-                Matcher matcher = typeWithSizeAndPrecision.matcher(col);
-                if (matcher.matches()) {
-                    name = matcher.group(1);
-                    type = matcher.group(2);
-                    size = Integer.parseInt(matcher.group(3));
-                    precision = Integer.parseInt(matcher.group(4));
-                } else {
-                    matcher = typeWithSize.matcher(col);
-                    if (matcher.matches()) {
-                        name = matcher.group(1);
-                        type = matcher.group(2);
-                        size = Integer.parseInt(matcher.group(3));
-                    } else {
-	                    matcher = typeWithoutSize.matcher(col);
-	                    if (matcher.matches()) {
-	                        name = matcher.group(1);
-	                        type = matcher.group(2);
-	                    } else {
-	                        throw new RuntimeException(line.location + ": can't parse primary-key");
-	                    }
-                    }
-                }
-                pk.add(new Column(name, type, size, precision));
+                pk.add(Column.parse(col));
             }
             tables.put(line.cells.get(0), new Table(line.cells.get(0), PrimaryKeyFactory.createPrimaryKey(pk), upsert));
+        }
+        
+        // columns
+        File file = new File(COLUMNS_FILE);
+        if (file.exists()) {
+	    	CsvFile columnsFile = new CsvFile(file);
+	        List<CsvFile.Line> columnsList = new ArrayList<CsvFile.Line>(columnsFile.getLines());
+	        for (CsvFile.Line line: columnsList) {
+	            List<Column> columns = new ArrayList<Column>();
+	            for (int j = 1; j < line.cells.size() && line.cells.get(j).toString().length() > 0; ++j) {
+	                String col = line.cells.get(j).trim();
+	                try {
+	                	columns.add(Column.parse(col));
+	                } catch (Exception e) {
+	                	// ignore
+					}
+	            }
+	            Table table = tables.get(line.cells.get(0));
+	            if (table != null) {
+	            	table.setColumns(columns);
+	            }
+	        }
         }
         
         // associations

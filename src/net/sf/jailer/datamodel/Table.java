@@ -41,6 +41,11 @@ public class Table extends ModelElement implements Comparable<Table> {
     public final PrimaryKey primaryKey;
     
     /**
+     * List of table columns.
+     */
+    private List<Column> columns;
+    
+    /**
      * Associations to other tables.
      */
     public final List<Association> associations = new ArrayList<Association>();
@@ -57,7 +62,7 @@ public class Table extends ModelElement implements Comparable<Table> {
      * @param primaryKey the names of the primary-key columns
      * @param upsert use upsert (merge) or insert-statement for entities of this table in export-script
      */
-    public Table(String name, PrimaryKey primaryKey, boolean upsert) {
+    public Table(String name, PrimaryKey primaryKey,  boolean upsert) {
         this.name = name;
         this.primaryKey = primaryKey;
         this.upsert = upsert;
@@ -70,6 +75,27 @@ public class Table extends ModelElement implements Comparable<Table> {
      */
     public String getName() {
         return name;
+    }
+
+    /**
+     * Sets columns.
+     * 
+     * @param columns list of table columns
+     */
+    public void setColumns(List<Column> columns) {
+    	this.columns = columns;
+    }
+
+    /**
+     * Gets columns.
+     * 
+     * @return list of table columns
+     */
+    public List<Column>getColumns() {
+    	if (columns == null) {
+    		return Collections.emptyList();
+    	}
+    	return columns;
     }
 
     /**
