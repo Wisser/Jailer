@@ -458,6 +458,7 @@ public class GraphicalDataModelView extends JPanel {
 	            		} else {
 		    	            expandTable(theGraph, table);
 	            			visualization.invalidateAll();
+	            			display.invalidate();
 	            		}
 		            }
 				}
