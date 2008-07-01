@@ -41,7 +41,7 @@ available targets:
 		<jar destfile="${JAR}" basedir="${COMPILE_DIR}">
 			<manifest>
 			    <attribute name="Main-Class" value="net.sf.jailer.ui.ExtractionModelFrame"/>
-			    <attribute name="Class-Path" value="lib/prefuse.jar lib/junit.jar lib/commons-logging.jar lib/log4j.jar lib/args4j.jar lib/spring.jar config/"/>
+			    <attribute name="Class-Path" value="lib/prefuse.jar lib/junit.jar lib/commons-logging.jar lib/log4j.jar lib/args4j.jar lib/spring.jar lib/sdoc-0.5.0-beta.jar config/"/>
 			</manifest>
 		</jar>
 	</target>
@@ -50,7 +50,7 @@ available targets:
 		<jar destfile="${JAR}" basedir="${BUILD_DIR}">
 			<manifest>
 			    <attribute name="Main-Class" value="net.sf.jailer.ui.ExtractionModelFrame"/>
-			    <attribute name="Class-Path" value="lib/prefuse.jar lib/junit.jar lib/commons-logging.jar lib/log4j.jar lib/args4j.jar lib/spring.jar config/"/>
+			    <attribute name="Class-Path" value="lib/prefuse.jar lib/junit.jar lib/commons-logging.jar lib/log4j.jar lib/args4j.jar lib/spring.jar lib/sdoc-0.5.0-beta.jar config/"/>
 			</manifest>
 		</jar>
 	</target>

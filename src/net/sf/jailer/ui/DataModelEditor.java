@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
@@ -38,6 +39,7 @@ import javax.swing.JOptionPane;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListModel;
 
+import net.sf.jailer.Jailer;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.util.CsvFile;
@@ -655,7 +657,8 @@ public class DataModelEditor extends javax.swing.JDialog {
 		    	save(new ArrayList<Line>(columns.values()), DataModel.COLUMNS_FILE, "# Table; Columns");
 	    		saveTableList(excludeFromDeletion, DataModel.EXCLUDE_FROM_DELETION_FILE);
 	    		saveTableList(initialDataTables, DataModel.INITIAL_DATA_TABLES_FILE);
-		    	saved = true;
+	    		saveTableList(Arrays.asList(Jailer.VERSION), DataModel.VERSION_FILE);
+	    		saved = true;
     		}
     	} catch (Throwable t) {
     		UIUtil.showException(this, "Error", t);

@@ -256,6 +256,32 @@ public class SqlUtil {
 	};
 	
     /**
+     * Gets type of column from result-set.
+     * 
+     * @param resultSet result-set
+     * @param columnName column name
+     * @param typeCache for caching types
+     * @return object
+     */
+	public static int getColumnType(ResultSet resultSet, String columnName, Map<String, Integer> typeCache) throws SQLException {
+		Integer type = typeCache.get(columnName);
+		if (type == null) {
+			try {
+				type = Types.OTHER;
+				for (int i = resultSet.getMetaData().getColumnCount(); i > 0; --i) {
+					if (columnName.equalsIgnoreCase(resultSet.getMetaData().getColumnName(i))) {
+						type = resultSet.getMetaData().getColumnType(i);
+						break;
+					}
+				}
+			} catch (Exception e) {
+			}
+			typeCache.put(columnName, type);
+		}
+		return type;
+	}
+	
+    /**
      * Gets object from result-set.
      * 
      * @param resultSet result-set

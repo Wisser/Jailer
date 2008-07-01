@@ -382,9 +382,19 @@ public class EntityGraph {
      * @param table the table
      */
     public void readMarkedEntities(Table table, StatementExecutor.ResultSetReader reader) throws SQLException {
+    	readMarkedEntities(table, reader, "T.*");
+    }
+    
+    /**
+     * Reads all entities of a given table which are marked as independent or as roots.
+     * 
+     * @param reader for reading the result-set
+     * @param table the table
+     */
+    public void readMarkedEntities(Table table, StatementExecutor.ResultSetReader reader, String selectionSchema) throws SQLException {
         statementExecutor.executeQuery(
-                "Select " + table.getName() + ".* From " + ENTITY + " E join " + table.getName() + " on " +
-                pkEqualsEntityID(table, table.getName(), "E") +
+                "Select " + selectionSchema + " From " + ENTITY + " E join " + table.getName() + " T on " +
+                pkEqualsEntityID(table, "T", "E") +
                 " Where E.birthday=0 and E.r_entitygraph=" + graphID + " and E.type='" + table.getName() + "'",
                 reader);
     }
@@ -561,9 +571,10 @@ public class EntityGraph {
      * @param association the dependency
      * @param resultSet current row is given entity
      * @param reader reads the entities
+     * @param selectionSchema the selection schema
      */
-    public void readDependentEntities(Table table, Association association, ResultSet resultSet, ResultSetReader reader, Map<String, Integer> typeCache) throws SQLException {
-    	String select = "Select T.* from " + table.getName() + " T join " + DEPENDENCY + " D on " +
+    public void readDependentEntities(Table table, Association association, ResultSet resultSet, ResultSetReader reader, Map<String, Integer> typeCache, String selectionSchema) throws SQLException {
+    	String select = "Select " + selectionSchema + " from " + table.getName() + " T join " + DEPENDENCY + " D on " +
     		 pkEqualsEntityID(table, "T", "D", "TO_") + " and D.TO_TYPE='" + table.getName() + "'" +
     		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", typeCache) +
     	     " and D.FROM_TYPE='" + association.source.getName() + "' and assoc=" + association.getId() +
@@ -617,7 +628,14 @@ public class EntityGraph {
             sb.append(alias + "." + columnPrefix + column.name + "=");
             Column tableColumn = match.get(column);
             if (tableColumn != null) {
-                sb.append(SqlUtil.toSql(SqlUtil.getObject(resultSet, tableColumn.name, typeCache)));
+            	int i = 0;
+            	for (Column c: table.primaryKey.getColumns()) {
+            		if (c.name.equals(tableColumn.name)) {
+            			break;
+            		}
+            		++i;
+            	}
+                sb.append(SqlUtil.toSql(SqlUtil.getObject(resultSet, "PK" + i /* tableColumn.name*/, typeCache)));
             } else {
                 sb.append(column.getNullValue());
             }

@@ -1041,6 +1041,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		exDel.delete();
 		File iData= new File(DataModel.INITIAL_DATA_TABLES_FILE);
 		iData.delete();
+		File vers= new File(DataModel.VERSION_FILE);
+		vers.delete();
 		try {
 			PrintWriter out = new PrintWriter(new FileOutputStream(tables));
 			out.println("# Name; Upsert; Primary key; ; Author");
@@ -1069,6 +1071,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			out.close();
 			out = new PrintWriter(new FileOutputStream(iData));
 			out.println("SALARYGRADE");
+			out.close();
+			out = new PrintWriter(new FileOutputStream(vers));
+			out.println(Jailer.VERSION);
 			out.close();
 			extractionModelFrame.load("extractionmodel/Demo.csv");
 		} catch (Exception e) {
