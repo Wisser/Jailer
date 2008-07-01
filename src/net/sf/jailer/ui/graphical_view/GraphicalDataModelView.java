@@ -73,6 +73,7 @@ import prefuse.render.ShapeRenderer;
 import prefuse.util.ColorLib;
 import prefuse.util.GraphicsLib;
 import prefuse.util.display.DisplayLib;
+import prefuse.util.force.DragForce;
 import prefuse.util.force.Force;
 import prefuse.util.force.ForceItem;
 import prefuse.util.force.ForceSimulator;
@@ -267,6 +268,9 @@ public class GraphicalDataModelView extends JPanel {
             }
         };
         for (Force force: layout.getForceSimulator().getForces()) {
+        	if (force instanceof DragForce) {
+//        		((DragForce) force).setParameter(DragForce.DRAG_COEFF, 0.05f);
+        	}
         	if (force instanceof NBodyForce) {
         		this.force = (NBodyForce) force;
         	}
@@ -374,7 +378,7 @@ public class GraphicalDataModelView extends JPanel {
                     l[3][1] = coeff*item.force[1];
                     float dx = (k[0][0]+k[3][0])/6.0f + (k[1][0]+k[2][0])/3.0f;
                     float dy = (k[0][1]+k[3][1])/6.0f + (k[1][1]+k[2][1])/3.0f;
-                    if (dx*dx+dy*dy < 6) {
+                    if (dx*dx+dy*dy < 3) {
                     	dx = dy = 0;
                     }
 					item.location[0] = p[0] + dx;
@@ -553,14 +557,22 @@ public class GraphicalDataModelView extends JPanel {
 				display.invalidate();
 			}
 		});
+		JMenuItem mapColumns = new JMenuItem("Map columns");
+		mapColumns.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				modelEditor.openColumnMapper(table);
+			}
+		});
+		mapColumns.setEnabled(modelEditor.exportAsXml);
 		
 		popup.add(toggleDetails);
 		popup.add(new JSeparator());
+		popup.add(hide);
+		popup.add(zoomToFit);
 		popup.add(select);
 		popup.add(selectAsRoot);
 		popup.add(new JSeparator());
-		popup.add(hide);
-		popup.add(zoomToFit);
+		popup.add(mapColumns);
 		
 		return popup;
 	}

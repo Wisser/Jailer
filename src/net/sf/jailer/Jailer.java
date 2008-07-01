@@ -213,9 +213,9 @@ public class Jailer {
         _log.info("export statistic:");
         boolean firstLine = true;
         for (String line: entityGraph.getStatistics()) {
-            _log.info(line);
             String l = (firstLine ? "Exported Entities: " : "    ") + line;
-			appendCommentHeader(l);
+            _log.info(l);
+            appendCommentHeader(l);
 			if (firstLine) {
 				statistic.append(l + "\n\n");
 			} else {
@@ -524,7 +524,7 @@ public class Jailer {
         for (Table table: sortedTables) {
             _log.info("exporting table " + table.getName());
             reader.setTable(table);
-            entityGraph.readMarkedEntities(table, reader);
+            entityGraph.readMarkedEntities(table, reader, reader.getTableMapping(table).selectionSchema);
         }
         reader.endDocument();
         

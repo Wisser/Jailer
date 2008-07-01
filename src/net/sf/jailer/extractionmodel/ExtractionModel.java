@@ -180,7 +180,20 @@ public class ExtractionModel {
             if (i.hasNext()) {
             	dataModel.setExportModus(i.next().cells.get(0));
             }
-
+            
+            // read column mapping
+            List<CsvFile.Line> columnMappingFile = new CsvFile(new File(fileName), "xml column mapping").getLines();
+            for (CsvFile.Line xmLine: columnMappingFile) {
+            	String name = xmLine.cells.get(0);
+				String mapping = xmLine.cells.get(1);
+				Table table = dataModel.getTable(name);
+				if (table == null) {
+					_log.warn("unknown table" + name);
+				} else {
+					table.setXmlTemplate(mapping);
+				}
+            }
+            
             // read xml settings
             List<CsvFile.Line> xmlSettingsFile = new CsvFile(new File(fileName), "xml settings").getLines();
             i = xmlSettingsFile.iterator();

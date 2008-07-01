@@ -13,6 +13,7 @@ set CP=%CP%;%LIB%\log4j.jar
 set CP=%CP%;%LIB%\args4j.jar
 set CP=%CP%;%LIB%\spring.jar
 set CP=%CP%;%LIB%\prefuse.jar
+set CP=%CP%;%LIB%\sdoc-0.5.0-beta.jar
 set CP=%CP%;jailer.jar
 
 echo %CP%

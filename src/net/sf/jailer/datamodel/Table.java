@@ -13,15 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.sf.jailer.datamodel;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import net.sf.jailer.xml.NodeVisitor;
+import net.sf.jailer.xml.XmlUtil;
+
+import org.w3c.dom.Comment;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 /**
  * Describes a database-table.
@@ -54,6 +67,11 @@ public class Table extends ModelElement implements Comparable<Table> {
      * Use upsert (merge) or insert-statement for entities of this table in export-script.
      */
     public final boolean upsert;
+    
+    /**
+     * Template for XML exports.
+     */
+    private String xmlTemplate = null;
     
     /**
      * Constructor.
@@ -231,4 +249,138 @@ public class Table extends ModelElement implements Comparable<Table> {
         return closure;
     }
 
+    /**
+     * Sets template for XML exports.
+     */
+    public void setXmlTemplate(String xmlTemplate) {
+    	this.xmlTemplate = xmlTemplate;
+    }
+
+    /**
+     * Gets template for XML exports.
+     */
+    public String getXmlTemplate() {
+    	return xmlTemplate;
+    }
+
+    /**
+     * Gets template for XML exports as DOM.
+     */
+    public Document getXmlTemplateAsDocument() throws ParserConfigurationException, SAXException, IOException {
+    	return getXmlTemplateAsDocument(xmlTemplate);
+    }
+
+    /**
+     * Gets default template for XML exports as DOM.
+     */
+    public Document getDefaultXmlTemplate() throws ParserConfigurationException, SAXException, IOException {
+    	return getXmlTemplateAsDocument(null);
+    }
+
+    /**
+     * Gets template for XML exports as DOM.
+     */
+    private Document getXmlTemplateAsDocument(String xmlTemplate) throws ParserConfigurationException, SAXException, IOException {
+    	Document template;
+    	if (xmlTemplate == null) {
+    		template = createInitialXmlTemplate();
+    	} else {
+    		template = XmlUtil.parse(xmlTemplate);
+    	}
+
+    	removeNonAggregatedAssociationElements((Element) template.getChildNodes().item(0));
+    	
+    	// find associations:
+    	final Set<String> mappedAssociations = new HashSet<String>();
+    	XmlUtil.visitDocumentNodes(template, new NodeVisitor() {
+			public void visitAssociationElement(String associationName) {
+				mappedAssociations.add(associationName);
+			}
+			public void visitElementEnd(String elementName, boolean isRoot) {
+			}
+			public void visitText(String text) {
+			}
+			public void visitComment(String comment) {
+			}
+			public void visitElementStart(String elementName, boolean isRoot,
+					String[] attributeNames, String[] attributeValues) {
+			}
+    	});
+    	
+    	// add associations:
+    	for (Association a: associations) {
+    		if (a.getAggregationSchema() != AggregationSchema.NONE && !mappedAssociations.contains(a.getName())) {
+				Comment comment= template.createComment("associated " + a.destination.getName() + (Cardinality.MANY_TO_ONE.equals(a.getCardinality()) || Cardinality.ONE_TO_ONE.equals(a.getCardinality())? " row" : " rows"));
+    			template.getChildNodes().item(0).appendChild(comment);
+    			Element associationElement = template.createElementNS(XmlUtil.NS_URI, XmlUtil.ASSOCIATION_TAG);
+    			associationElement.setPrefix(XmlUtil.NS_PREFIX);
+    			associationElement.appendChild(template.createTextNode(a.getName()));
+    			template.getChildNodes().item(0).appendChild(associationElement);
+    		}
+    	}
+    	
+    	return template;
+    }
+
+    private void removeNonAggregatedAssociationElements(Element element) {
+    	NodeList children = element.getChildNodes();
+    	int i = 0;
+    	while (i < children.getLength()) {
+    		if (children.item(i) instanceof Element) {
+    			Element e = (Element) children.item(i);
+    			if (XmlUtil.NS_URI.equals(e.getNamespaceURI()) && XmlUtil.ASSOCIATION_TAG.equals(e.getLocalName())) {
+    				boolean f = false;
+    				for (Association a: associations) {
+    					if (a.getAggregationSchema() != AggregationSchema.NONE && e.getTextContent() != null) {
+	    					if (a.getName().equals(e.getTextContent().trim())) {
+	    						f = true;
+	    						break;
+	    					}
+    					}
+    				}
+    				if (f) {
+    					++i;
+    				} else {
+    					element.removeChild(e);
+    				}
+    			} else {
+    				removeNonAggregatedAssociationElements(e);
+    				++i;
+    			}
+    		} else {
+    			++i;
+    		}
+    	}
+    }
+
+    /**
+     * Creates initial XML mapping template.
+     */
+	private Document createInitialXmlTemplate() throws ParserConfigurationException {
+		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+		factory.setNamespaceAware(true);
+		DocumentBuilder builder = factory.newDocumentBuilder();
+		Document template = builder.newDocument();
+		
+		Element root = template.createElement(XmlUtil.asElementName(getName().toLowerCase()));
+		root.setAttributeNS("http://www.w3.org/2000/xmlns/",
+    			"xmlns:" + XmlUtil.NS_PREFIX,
+    			XmlUtil.NS_URI);
+		template.appendChild(root);
+		boolean commented = false;
+		for (Column column: getColumns()) {
+			if (!commented) {
+				Comment comment= template.createComment("columns of " + getName() + " as T");
+    			root.appendChild(comment);
+    			commented = true;
+			}
+			Element columnElement = template.createElement(XmlUtil.asElementName(column.name.toLowerCase()));
+			columnElement.setTextContent(XmlUtil.SQL_PREFIX + "T." + column.name);
+			root.appendChild(columnElement);
+		}
+		
+		return template;
+	}
+    
 }
+

@@ -41,6 +41,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.SqlUtil;
 
 import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
 
 
 /**
@@ -63,12 +64,12 @@ public class XmlRowWriter {
 	/**
 	 * Pattern for dates.
 	 */
-	private final SimpleDateFormat datePattern;
+	final SimpleDateFormat datePattern;
 	
 	/**
 	 * Pattern for time-stamps.
 	 */
-	private final SimpleDateFormat timestampPattern;
+	final SimpleDateFormat timestampPattern;
 
 	/**
 	 * Names of columns per table.
@@ -79,6 +80,11 @@ public class XmlRowWriter {
 	 * Type caches per table.
 	 */
 	private final Map<Table, Map<Integer, Integer>> typeCaches = new HashMap<Table, Map<Integer,Integer>>();
+	
+	/**
+	 * Type caches per table (String key).
+	 */
+	private final Map<Table, Map<String, Integer>> typeCachesForStringKey = new HashMap<Table, Map<String,Integer>>();
 	
 	/**
 	 * Constructor.
@@ -121,81 +127,6 @@ public class XmlRowWriter {
 	}
 
 	/**
-	 * Writes start element for a row.
-	 * 
-	 * @param resultSet holding to row
-	 * @param table row's table
-	 * @param association association to parent row or <code>null</code>
-	 */
-	public void startRow(ResultSet resultSet, Table table, Association association) throws SAXException, SQLException {
-		if (association == null) {
-			transformerHandler.startElement(null, null, asElementName(table.getName()).toLowerCase(), null);
-		} else {
-			if (association.getAggregationSchema() == AggregationSchema.IMPLICIT_LIST) {
-				transformerHandler.startElement(null, null, association.getAggregationTagName(), null);
-			} else if (association.getAggregationSchema() == AggregationSchema.EXPLICIT_LIST) {
-				transformerHandler.startElement(null, null, asElementName(table.getName()).toLowerCase(), null);
-			}
-		}
-		String[] cNames;
-		if (!columnNames.containsKey(table)) {
-			cNames = new String[resultSet.getMetaData().getColumnCount()];
-			for (int i = 0; i < cNames.length; ++i) {
-				cNames[i] = resultSet.getMetaData().getColumnName(i + 1);
-			}
-			columnNames.put(table, cNames);
-		} else {
-			cNames = columnNames.get(table);
-		}
-		Map<Integer, Integer> typeCache = typeCaches.get(table);
-		if (typeCache == null) {
-			typeCache = new HashMap<Integer, Integer>();
-			typeCaches.put(table, typeCache);
-		}
-		for (int i = 0; i < cNames.length; ++i) {
-			int type = SqlUtil.getColumnType(resultSet, i + 1, typeCache);
-			if (type == Types.BLOB || type == Types.CLOB) {
-				// (C|B)LOB is not yet supported
-				continue;
-			}
-			Object o = SqlUtil.getObject(resultSet, i + 1, typeCache);
-			if (o != null) {
-				String value;
-				
-				if (o instanceof Timestamp) {
-					value = timestampPattern.format((Timestamp) o);
-				} else if (o instanceof Date) {
-					value = timestampPattern.format((Date) o);
-				} else {
-					value = o.toString();
-				}
-				
-				transformerHandler.startElement(null, null, asElementName(cNames[i]).toLowerCase(), null);
-				transformerHandler.characters(value.toCharArray(), 0, value.length());
-				transformerHandler.endElement(null, null, asElementName(cNames[i]).toLowerCase());
-			}
-		}
-	}
-
-	/**
-	 * Writes end element for a row.
-	 * 
-	 * @param table row's table
-	 * @param association association to parent row or <code>null</code>
-	 */
-	public void endRow(Table table, Association association) throws SAXException {
-		if (association == null) {
-			transformerHandler.endElement(null, null, asElementName(table.getName().toLowerCase()));
-		} else {
-			if (association.getAggregationSchema() == AggregationSchema.IMPLICIT_LIST) {
-				transformerHandler.endElement(null, null, association.getAggregationTagName());
-			} else if (association.getAggregationSchema() == AggregationSchema.EXPLICIT_LIST) {
-				transformerHandler.endElement(null, null, asElementName(table.getName().toLowerCase()));
-			}
-		}
-	}
-
-	/**
 	 * Writes start element for a list of rows.
 	 * 
 	 * @param association association describing the list
@@ -216,29 +147,129 @@ public class XmlRowWriter {
 			transformerHandler.endElement(null, null, association.getAggregationTagName());
 		}
 	}
-
+	
 	/**
-	 * Removes invalid char from element names.
+	 * Visits nodes of mapping templates and writes data as XML.
 	 */
-	private String asElementName(String x) {
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < x.length(); ++i) {
-			char c = x.charAt(i);
-			if (Character.isUpperCase(c) || Character.isLowerCase(c) || Character.isDigit(c) || c == '-' || c == '_') {
-				sb.append(c);
+	public abstract class XmlWritingNodeVisitor implements NodeVisitor {
+		
+		/**
+		 * To read rows from.
+		 */
+		private final ResultSet resultSet;
+		
+		/**
+		 * The table from which the data comes.
+		 */
+		private final Table table;
+		
+		/**
+		 * The association which is currently resolved.
+		 */
+		private final Association association;
+		
+		/**
+		 * Next number of column to write out.
+		 */
+		private int nr = 0;
+		
+		/**
+		 * Constructor.
+		 * 
+		 * @param resultSet to read rows from
+		 */
+		public XmlWritingNodeVisitor(ResultSet resultSet, Table table, Association association) {
+			this.resultSet = resultSet;
+			this.table = table;
+			this.association = association;
+		}
+
+		/**
+		 * Gets text to write out. If it starts with "SQL:", write out next column value.
+		 * 
+		 * @param text the text
+		 * @return the xml to write out
+		 */
+		private String toXml(String text) {
+			if (text != null && text.startsWith(XmlUtil.SQL_PREFIX)) {
+				String columnName = "C" + nr++;
+				int type;
+				try {
+					Map<String, Integer> typeCache = typeCachesForStringKey.get(table);
+					if (typeCache == null) {
+						typeCache = new HashMap<String, Integer>();
+						typeCachesForStringKey.put(table, typeCache);
+					}
+					type = SqlUtil.getColumnType(resultSet, columnName, typeCache);
+					if (type == Types.BLOB || type == Types.CLOB) {
+						// (C|B)LOB is not yet supported
+					} else {
+						Object o = SqlUtil.getObject(resultSet, columnName, typeCache);
+						if (o != null) {
+							String value;
+							
+							if (o instanceof Timestamp) {
+								value = timestampPattern.format((Timestamp) o);
+							} else if (o instanceof Date) {
+								value = datePattern.format((Date) o);
+							} else {
+								value = o.toString();
+							}
+							return value;
+						}
+					}
+					return "";
+				} catch (SQLException e) {
+					throw new RuntimeException(e);
+				}
+			}
+			return text;
+		}
+		public void visitComment(String comment) {
+			try {
+				transformerHandler.comment(comment.toCharArray(), 0, comment.length());
+			} catch (SAXException e) {
+				throw new RuntimeException(e);
 			}
 		}
-		return sb.toString();
-	}
-	
-//        hd.startElement("", "", "DEPARTMENT", null);
-//
-//        String curTitle = "Somet<>üöähing inside a tag";
-//        hd.characters(curTitle.toCharArray(), 0, curTitle.length());
-//
-//        hd.endElement("", "", "DEPARTMENT");
-//
-//        hd.endElement("", "", "MyTag");
-//        hd.endDocument();
+		public void visitElementEnd(String elementName, boolean isRoot) {
+			try {
+				if (!isRoot || association == null || association.getAggregationSchema() != AggregationSchema.FLAT) {
+					String tagName = isRoot && association != null && association.getAggregationSchema() != AggregationSchema.EXPLICIT_LIST? association.getAggregationTagName() : elementName;
+					transformerHandler.endElement("", "", tagName);
+				}
+			} catch (SAXException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		String jailerNamespaceDeclaration = "xmlns:" + XmlUtil.NS_PREFIX;
+		public void visitElementStart(String elementName, boolean isRoot, String[] aNames, String[] aValues) {
+			try {
+				AttributesImpl attr = null;
+				if (aNames.length > 0) {
+					attr = new AttributesImpl();
+					for (int i = 0; i < aNames.length; ++i) {
+						if (!aNames[i].equals(jailerNamespaceDeclaration)) {
+							attr.addAttribute("", "", aNames[i], "CDATA", toXml(aValues[i]));
+						}
+					}
+				}
+				if (!isRoot || association == null || association.getAggregationSchema() != AggregationSchema.FLAT) {
+					String tagName = isRoot && association != null && association.getAggregationSchema() != AggregationSchema.EXPLICIT_LIST? association.getAggregationTagName() : elementName;
+					transformerHandler.startElement("", "", tagName, attr);
+				}
+			} catch (SAXException e) {
+				throw new RuntimeException(e);
+			}
+		}
+		public void visitText(String text) {
+			text = toXml(text);
+			try {
+				transformerHandler.characters(text.toCharArray(), 0, text.length());
+			} catch (SAXException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	};
 
 }

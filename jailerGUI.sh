@@ -14,6 +14,7 @@ CP=$CP:$LIB/log4j.jar
 CP=$CP:$LIB/args4j.jar
 CP=$CP:$LIB/spring.jar
 CP=$CP:$LIB/prefuse.jar
+CP=$CP:$LIB/sdoc-0.5.0-beta.jar
 CP=$CP:jailer.jar
 
 java -cp $CP net.sf.jailer.ui.ExtractionModelFrame $@

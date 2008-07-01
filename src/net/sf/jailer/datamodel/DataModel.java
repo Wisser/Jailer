@@ -86,6 +86,11 @@ public class DataModel {
 	 */
 	public static final String EXCLUDE_FROM_DELETION_FILE = "datamodel/exclude-from-deletion.csv";
 	
+	/**
+     * Name of file containing the version number.
+     */
+    public static final String VERSION_FILE = "datamodel/version.csv";
+
     /**
 	 * Export modus, SQL or XML. (GUI support).
 	 */

@@ -57,6 +57,9 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import sdoc.SyntaxSupport;
+
+import net.sf.jailer.Jailer;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
@@ -135,7 +138,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * The enclosing frame.
 	 */
 	public ExtractionModelFrame extractionModelFrame;
-	
+
+	/**
+	 * Dialog for XML column mapping.
+	 */
+    private final ColumnMapperDialog columnMapperDialog;
+    
 	/**
 	 * Name of file containing the currently edited model.
 	 */
@@ -146,7 +154,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 */
 	GraphicalDataModelView graphView; 
 	
-	boolean exportAsXml = false;
+	public boolean exportAsXml = false;
 	
 	/** 
 	 * Creates new form ModelTree.
@@ -157,6 +165,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	public ExtractionModelEditor(String extractionModelFile, ExtractionModelFrame extractionModelFrame) {
 		this.extractionModelFrame = extractionModelFrame;
 		this.extractionModelFile = extractionModelFile;
+		columnMapperDialog = new ColumnMapperDialog(extractionModelFrame);
 		try {
 			dataModel = new DataModel();
 		} catch (Exception e) {
@@ -279,6 +288,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
     	openXmlSettings.setVisible(exportAsXml);
 		onExportModusChanged(null);
+        SyntaxSupport instance = SyntaxSupport.getInstance();
+        instance.highlightCurrent(false);
+		instance.addSupport(SyntaxSupport.XML_LEXER, xmlSketch);
 	}
 
 	/**
@@ -358,7 +370,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         tagField = new javax.swing.JTextField();
         jScrollPane3 = new javax.swing.JScrollPane();
         xmlSketch = new javax.swing.JTextArea();
-        xmlMappingApplyButton = new javax.swing.JButton();
+        jPanel5 = new javax.swing.JPanel();
+        xmlTagApply = new javax.swing.JButton();
+        mapColumns = new javax.swing.JButton();
         legende = new javax.swing.JPanel();
         dependsOn = new javax.swing.JLabel();
         hasDependent = new javax.swing.JLabel();
@@ -586,7 +600,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 10;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(8, 0, 0, 0);
         xmlMappingPanel.add(jLabel3, gridBagConstraints);
 
         aggregationCombobox.setModel(getAggregationModel());
@@ -629,19 +642,30 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(4, 20, 0, 4);
         xmlMappingPanel.add(jScrollPane3, gridBagConstraints);
 
-        xmlMappingApplyButton.setText("apply");
-        xmlMappingApplyButton.addActionListener(new java.awt.event.ActionListener() {
+        xmlTagApply.setText("apply");
+        xmlTagApply.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                xmlMappingApplyButtonActionPerformed(evt);
+                xmlTagApplyActionPerformed(evt);
             }
         });
 
+        jPanel5.add(xmlTagApply);
+
+        mapColumns.setText("map columns");
+        mapColumns.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mapColumnsActionPerformed(evt);
+            }
+        });
+
+        jPanel5.add(mapColumns);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 4);
-        xmlMappingPanel.add(xmlMappingApplyButton, gridBagConstraints);
+        xmlMappingPanel.add(jPanel5, gridBagConstraints);
 
         editorPanel.add(xmlMappingPanel);
 
@@ -694,6 +718,19 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
     }// </editor-fold>//GEN-END:initComponents
 
+    private void mapColumnsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mapColumnsActionPerformed
+    	applyXmlMapping();
+    	Table table = root;
+    	if (currentAssociation != null) {
+    		table = currentAssociation.source;
+    	}
+    	openColumnMapper(table);
+    }//GEN-LAST:event_mapColumnsActionPerformed
+
+    private void xmlTagApplyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_xmlTagApplyActionPerformed
+    	applyXmlMapping();
+    }//GEN-LAST:event_xmlTagApplyActionPerformed
+
     private XmlSettingsDialog xmlSettingsDialog;
     
     private void openXmlSettingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openXmlSettingsActionPerformed
@@ -725,22 +762,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     	openXmlSettings.setVisible(exportAsXml);
     	initRestrictedDependencyWarningField();
     }//GEN-LAST:event_onExportModusChanged
-
-	private void xmlMappingApplyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_xmlMappingApplyButtonActionPerformed
-    	if (currentAssociation != null) {
-    		String tag = tagField.getText().trim();
-    		if (tag.length() == 0) {
-    			tag = null;
-    		}
-    		if (!currentAssociation.getAggregationTagName().equals(tag)) {
-    			currentAssociation.setAggregationTagName(tag);
-        		tagField.setText(currentAssociation.getAggregationTagName());
-				needsSave = true;
-				ExtractionModelEditor.this.extractionModelFrame.updateTitle(needsSave);
-    		}
-    		updateSketch();
-    	}
-    }//GEN-LAST:event_xmlMappingApplyButtonActionPerformed
 
     private void aggregationComboboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aggregationComboboxActionPerformed
     	tagField.setEnabled(AggregationSchema.NONE != aggregationCombobox.getSelectedItem() && AggregationSchema.FLAT != aggregationCombobox.getSelectedItem());
@@ -998,7 +1019,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     		aggregationCombobox.setEnabled(false);
     		tagField.setEnabled(false);
     		tagField.setEditable(false);
-    		xmlMappingApplyButton.setEnabled(false);
+    		xmlTagApply.setEnabled(false);
     	} else {
     		aggregationCombobox.setEditable(false); // association.reversalAssociation.getAggregationSchema() == AggregationSchema.NONE);
     		aggregationCombobox.setEnabled(association.reversalAssociation.getAggregationSchema() == AggregationSchema.NONE);
@@ -1006,7 +1027,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     		tagField.setText(association.getAggregationTagName());
     		tagField.setEnabled(AggregationSchema.NONE != association.getAggregationSchema() && AggregationSchema.FLAT != association.getAggregationSchema());
     		tagField.setEditable(AggregationSchema.NONE != association.getAggregationSchema() && AggregationSchema.FLAT != association.getAggregationSchema());
-   			xmlMappingApplyButton.setEnabled(true);
+    		xmlTagApply.setEnabled(true);
     	}
     	updateSketch();
     }
@@ -1194,8 +1215,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * Updates the XML sketch component.
 	 */
 	private void updateSketch() {
-		xmlSketch.setText(XmlSketchBuilder.buildSketch(currentAssociation == null? null : currentAssociation.source, 0));
-		xmlSketch.setCaretPosition(0);
+		try {
+			xmlSketch.setText(XmlSketchBuilder.buildSketch(currentAssociation == null? null : currentAssociation.source, 0));
+			xmlSketch.setCaretPosition(0);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -1239,7 +1264,23 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			node.add(child);
 		}
 	}
-
+	
+	private void applyXmlMapping() {//GEN-FIRST:event_xmlMappingApplyButtonActionPerformed
+		if (currentAssociation != null) {
+			String tag = tagField.getText().trim();
+		  	if (tag.length() == 0) {
+		  		tag = null;
+		  	}
+		  	if (!currentAssociation.getAggregationTagName().equals(tag)) {
+			  	currentAssociation.setAggregationTagName(tag);
+			  	tagField.setText(currentAssociation.getAggregationTagName());
+			  	needsSave = true;
+			  	ExtractionModelEditor.this.extractionModelFrame.updateTitle(needsSave);
+		  	}
+		  	updateSketch();
+	  	}
+  	}//GEN-LAST:event_xmlMappingApplyButtonActionPerformed
+		  
 	/**
 	 * Renderer for the tree-view.
 	 */
@@ -1488,6 +1529,16 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			out.println(CsvFile.encodeCell(dataModel.getXmlSettings().datePattern) + ";" + 
 				    CsvFile.encodeCell(dataModel.getXmlSettings().timestampPattern) + ";" +
 				    CsvFile.encodeCell(dataModel.getXmlSettings().rootTag));
+			out.println(CsvFile.BLOCK_INDICATOR + "xml column mapping");
+			for (Table table: dataModel.getTables()) {
+				String xmlMapping = table.getXmlTemplate();
+				if (xmlMapping != null) {
+					out.println(CsvFile.encodeCell(table.getName()) + "; " + CsvFile.encodeCell(xmlMapping));
+				}
+			}
+			out.println();
+			out.println(CsvFile.BLOCK_INDICATOR + "version");
+			out.println(Jailer.VERSION);
 			out.close();
 			needsSave = false;
 			extractionModelFrame.updateTitle(needsSave);
@@ -1652,7 +1703,22 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         }
         return model;
     }
-        
+    
+    /**
+     * Opens column mapper dialog for given table.
+     * 
+     * @param table the table
+     */
+	public void openColumnMapper(Table table) {
+		if (columnMapperDialog.edit(dataModel, table)) {
+			updateSketch();
+			if (!needsSave) {
+				needsSave = true;
+				extractionModelFrame.updateTitle(needsSave);
+			}
+		}
+	}
+
     // Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables
     private javax.swing.JComboBox aggregationCombobox;
     private javax.swing.JRadioButton asSql;
@@ -1679,21 +1745,23 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JPanel legende;
+    private javax.swing.JButton mapColumns;
     private javax.swing.JButton openXmlSettings;
     private javax.swing.JTable restrictionsTable;
     private javax.swing.JComboBox rootTable;
     private javax.swing.JComboBox subjectTable;
     private javax.swing.JTextField tagField;
     private javax.swing.JTree tree;
-    private javax.swing.JButton xmlMappingApplyButton;
     private javax.swing.JPanel xmlMappingPanel;
     private javax.swing.JTextArea xmlSketch;
+    private javax.swing.JButton xmlTagApply;
     // Ende der Variablendeklaration//GEN-END:variables
 
 }

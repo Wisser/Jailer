@@ -15,17 +15,17 @@
  */
 package net.sf.jailer.xml;
 
+import java.io.IOException;
 import java.io.OutputStream;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerConfigurationException;
 
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
@@ -38,6 +38,7 @@ import net.sf.jailer.util.SqlScriptExecutor;
 import net.sf.jailer.util.SqlUtil;
 
 import org.apache.log4j.Logger;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 /**
@@ -123,6 +124,11 @@ public class XmlExportReader implements ResultSetReader {
 	private Map<Table, List<Association>> sortedAssociations = new HashMap<Table, List<Association>>();
 
 	/**
+	 * Association cache.
+	 */
+	private Map<Table, Map<String, Association>> associationCache = new HashMap<Table, Map<String,Association>>();
+
+	/**
 	 * Constructor.
 	 * 
 	 * @param out to write the xml into
@@ -150,6 +156,10 @@ public class XmlExportReader implements ResultSetReader {
 			writeEntity(table, null, resultSet, new ArrayList<String>());
 		} catch (SAXException e) {
 			throw new RuntimeException(e);
+		} catch (ParserConfigurationException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -161,16 +171,17 @@ public class XmlExportReader implements ResultSetReader {
 	 * @param resultSet current row contains entity to write out
 	 * @param ancestors ancestors of entity to write out
 	 */
-	private void writeEntity(Table table, Association association, ResultSet resultSet, final List<String> ancestors)
-			throws SQLException, SAXException {
+	private void writeEntity(final Table table, Association association, final ResultSet resultSet, final List<String> ancestors)
+			throws SQLException, SAXException, ParserConfigurationException, IOException {
 		StringBuilder sb = new StringBuilder(table.getName() + "(");
 		boolean f = true;
+		int i = 0;
 		for (Column pk : table.primaryKey.getColumns()) {
 			if (!f) {
 				sb.append(", ");
 			}
 			f = false;
-			sb.append(SqlUtil.toSql(SqlUtil.getObject(resultSet, pk.name,
+			sb.append(SqlUtil.toSql(SqlUtil.getObject(resultSet, "PK" + i++,
 					getTypeCache(table))));
 		}
 		sb.append(")");
@@ -183,63 +194,56 @@ public class XmlExportReader implements ResultSetReader {
 
 		ancestors.add(primaryKey);
 		
-		xmlRowWriter.startRow(resultSet, table, association);
+		TableMapping tableMapping = getTableMapping(table);
 		
-//		try {
-//			for (int i = 0; i < ancestors.size(); ++i) {
-//				writeToScriptFile("  ");
-//			}
-//			writeToScriptFile(primaryKey + "\n");
-//		} catch (IOException e) {
-//			throw new RuntimeException(e);
-//		}
-
-		for (final Association sa: getSortedAssociations(table)) {
-			if (totalProgress.contains(sa.destination)) {
-				if (sa.getAggregationSchema() != AggregationSchema.NONE) {
-					ResultSetReader reader = new ResultSetReader() {
-						public void readCurrentRow(ResultSet resultSet) throws SQLException {
+		Map<String, Association> associationMap = associationCache.get(table);
+		if (associationMap == null) {
+			associationMap = new HashMap<String, Association>();
+			for (Association a: table.associations) {
+				associationMap.put(a.getName(), a);
+			}
+			associationCache.put(table, associationMap);
+		}
+		final Map<String, Association> finalAssociationMap = associationMap;
+		
+		XmlUtil.visitDocumentNodes(tableMapping.template, xmlRowWriter.new XmlWritingNodeVisitor(resultSet, table, association) {
+			public void visitAssociationElement(String associationName) {
+				final Association sa = finalAssociationMap.get(associationName);
+				if (sa != null) {
+					if (totalProgress.contains(sa.destination)) {
+						if (sa.getAggregationSchema() != AggregationSchema.NONE) {
+							ResultSetReader reader = new ResultSetReader() {
+								public void readCurrentRow(ResultSet resultSet) throws SQLException {
+									try {
+										writeEntity(sa.destination, sa, resultSet, ancestors);
+									} catch (SAXException e) {
+										throw new RuntimeException(e);
+									} catch (ParserConfigurationException e) {
+										throw new RuntimeException(e);
+									} catch (IOException e) {
+										throw new RuntimeException(e);
+									}
+								}
+								public void close() {
+								}
+							};
 							try {
-								writeEntity(sa.destination, sa, resultSet, ancestors);
-							} catch (SAXException e) {
+								xmlRowWriter.startList(sa);
+								entityGraph.readDependentEntities(sa.destination, sa, resultSet, reader, getTypeCache(sa.destination), getTableMapping(sa.destination).selectionSchema);
+								if (cyclicAggregatedTables.contains(sa.destination)) {
+									entityGraph.markDependentEntitiesAsTraversed(sa, resultSet, getTypeCache(sa.destination));
+								}
+								xmlRowWriter.endList(sa);
+							} catch (Exception e) {
 								throw new RuntimeException(e);
 							}
 						}
-						public void close() {
-						}
-					};
-					xmlRowWriter.startList(sa);
-					entityGraph.readDependentEntities(sa.destination, sa, resultSet, reader, getTypeCache(sa.destination));
-					if (cyclicAggregatedTables.contains(sa.destination)) {
-						entityGraph.markDependentEntitiesAsTraversed(sa, resultSet, getTypeCache(sa.destination));
 					}
-					xmlRowWriter.endList(sa);
 				}
+				
 			}
-		}
-		xmlRowWriter.endRow(table, association);
-
+		});
 		ancestors.remove(ancestors.size() - 1);
-	}
-
-	/**
-	 * Gets sorted list of associations for a table.
-	 * 
-	 * @param table the table
-	 * @return sorted list table's associations
-	 */
-	private List<Association> getSortedAssociations(Table table) {
-		List<Association> sorted = sortedAssociations.get(table);
-		if (sorted == null) {
-			sorted = new ArrayList<Association>(table.associations);
-			Collections.sort(sorted, new Comparator<Association>() {
-				public int compare(Association o1, Association o2) {
-					return o1.destination.getName().compareTo(o2.destination.getName());
-				}
-			});
-			sortedAssociations.put(table, sorted);
-		}
-		return sorted;
 	}
 
 	/**
@@ -275,6 +279,81 @@ public class XmlExportReader implements ResultSetReader {
 	 * Flushes the export-reader.
 	 */
 	public void close() {
+	}
+	
+	/**
+	 * Holds XML mapping information.
+	 */
+	public class TableMapping {
+		
+		/**
+		 * The template.
+		 */
+		public Document template;
+		
+		/**
+		 * SQL selection schema.
+		 */
+		public String selectionSchema;
+	}
+	
+	/**
+	 * Mappings per table.
+	 */
+	private Map<Table, TableMapping> tableMappings = new HashMap<Table, TableMapping>();
+
+	/**
+	 * Gets the xml mapping for a table.
+	 *  
+	 * @param table the table
+	 * @return xml mapping for table
+	 */
+	public TableMapping getTableMapping(Table table) throws ParserConfigurationException, SAXException, IOException {
+		if (tableMappings.containsKey(table)) {
+			return tableMappings.get(table);
+		}
+		TableMapping tableMapping = new TableMapping();
+		tableMappings.put(table, tableMapping);
+		
+		tableMapping.template = table.getXmlTemplateAsDocument();
+		final StringBuilder sb = new StringBuilder();
+		int i = 0;
+		for (Column pk: table.primaryKey.getColumns()) {
+			if (sb.length() > 0) {
+				sb.append(", ");
+			}
+			sb.append("T." + pk.name + " AS PK" + i++);
+		}
+		XmlUtil.visitDocumentNodes(tableMapping.template, new NodeVisitor() {
+			int nr = 0;
+
+			private void appendSchema(String text) {
+				if (text != null && text.startsWith(XmlUtil.SQL_PREFIX)) {
+					if (sb.length() > 0) {
+						sb.append(", ");
+					}
+					sb.append(text.substring(XmlUtil.SQL_PREFIX.length()) + " AS C" + nr++);
+				}
+			}
+			public void visitAssociationElement(String associationName) {
+			}
+			public void visitComment(String comment) {
+			}
+			public void visitElementEnd(String elementName, boolean isRoot) {
+			}
+			public void visitText(String text) {
+				appendSchema(text);
+			}
+			public void visitElementStart(String elementName, boolean isRoot,
+					String[] attributeNames, String[] attributeValues) {
+				for (String value: attributeValues) {
+					appendSchema(value);
+				}
+			}
+		});
+		tableMapping.selectionSchema = sb.toString();
+		
+		return tableMapping;
 	}
 	
 }
