@@ -383,6 +383,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 15;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(jPanel4, gridBagConstraints);
 
         getContentPane().add(jPanel1, "card2");
