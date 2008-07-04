@@ -122,7 +122,19 @@ public class DataModelEditor extends javax.swing.JDialog {
 	        for (Iterator<CsvFile.Line> i = tablesFromModelFinder.iterator(); i.hasNext(); ) {
 	        	CsvFile.Line t = i.next();
 	        	for (CsvFile.Line l: tables) {
-	        		if (l.cells.equals(t.cells)) {
+	        		boolean eq = true;
+	        		int n = 0;
+	        		while (n < l.cells.size() && n < t.cells.size()) {
+	        			if (!l.cells.get(n).equals(t.cells.get(n))) {
+	        				eq = false;
+	        				break;
+	        			}
+	        			if (l.cells.get(n).length() == 0) {
+	        				break;
+	        			}
+	        			++n;
+	        		}
+	        		if (eq) {
 	        			i.remove();
 	        			break;
 	        		}

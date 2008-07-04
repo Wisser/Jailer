@@ -72,6 +72,11 @@ public class AssociationRenderer extends EdgeRenderer {
 	}
     
 	/**
+	 * Temporary used in getRawShape.
+	 */
+	private Point2D m_isctPoints2[] = new Point2D[2];
+	
+	/**
      * Return a non-transformed shape for the visual representation of the
      * {@link Association}.
      * 
@@ -97,23 +102,37 @@ public class AssociationRenderer extends EdgeRenderer {
 		getAlignedPoint(m_tmpPoints[1], item2.getBounds(),
 		                m_xAlign2, m_yAlign2);
 		m_curWidth = (float)(m_width * getLineWidth(item));
+		EdgeItem e = (EdgeItem)item;
 		
-		double midX = (m_tmpPoints[0].getX() + m_tmpPoints[1].getX()) / 2;
-		double midY = (m_tmpPoints[0].getY() + m_tmpPoints[1].getY()) / 2;
-		
-		if (!full) {
+	    boolean forward = (m_edgeArrow == Constants.EDGE_ARROW_FORWARD);
+
+	    // get starting and ending edge endpoints
+	    Point2D start = null, end = null;
+	    start = m_tmpPoints[forward?0:1];
+	    end   = m_tmpPoints[forward?1:0];
+
+	    if (!full) {
+			double midX;
+			double midY;
+		    Point2D sp = start, ep = end;
+		    
+		    VisualItem dest = forward ? e.getTargetItem() : e.getSourceItem();
+		    int i = GraphicsLib.intersectLineRectangle(start, end,
+		            dest.getBounds(), m_isctPoints);
+		    if ( i > 0 ) ep = m_isctPoints[0];
+
+		    VisualItem src = !forward ? e.getTargetItem() : e.getSourceItem();
+		    i = GraphicsLib.intersectLineRectangle(start, end,
+		            src.getBounds(), m_isctPoints2);
+		    if ( i > 0 ) sp = m_isctPoints2[0];
+		    
+	    	midX = (sp.getX() + ep.getX()) / 2;
+			midY = (sp.getY() + ep.getY()) / 2;
 			m_tmpPoints[reversed? 1 : 0].setLocation(midX, midY);
 		}
 		
 		// create the arrow head, if needed
-		EdgeItem e = (EdgeItem)item;
 		if ( e.isDirected() && m_edgeArrow != Constants.EDGE_ARROW_NONE) {
-		    // get starting and ending edge endpoints
-		    boolean forward = (m_edgeArrow == Constants.EDGE_ARROW_FORWARD);
-		    Point2D start = null, end = null;
-		    start = m_tmpPoints[forward?0:1];
-		    end   = m_tmpPoints[forward?1:0];
-		    
 		    if (type == Constants.EDGE_TYPE_CURVE) {
 			    AffineTransform t = new AffineTransform();
 		    	t.setToRotation(Math.PI/4 * (reversedCurve? 1 : -1));

@@ -149,6 +149,7 @@ public class GraphicalDataModelView extends JPanel {
     private boolean showTableDetails;
 
     private NBodyForce force;
+    private DragForce dragForce;
     
     /**
      * Constructor.
@@ -269,7 +270,7 @@ public class GraphicalDataModelView extends JPanel {
         };
         for (Force force: layout.getForceSimulator().getForces()) {
         	if (force instanceof DragForce) {
-//        		((DragForce) force).setParameter(DragForce.DRAG_COEFF, 0.05f);
+        		dragForce = (DragForce) force;
         	}
         	if (force instanceof NBodyForce) {
         		this.force = (NBodyForce) force;
@@ -1147,6 +1148,7 @@ public class GraphicalDataModelView extends JPanel {
 	 */
 	public void updateTableDetailsMode() {
 		showTableDetails = modelEditor.extractionModelFrame.showTableDetails();
+	//	dragForce.setParameter(DragForce.DRAG_COEFF, showTableDetails? 0.05f : 0.1f);
 		reversedShowDetailsTables.clear();
 		visualization.invalidateAll();
 		visualization.repaint();
