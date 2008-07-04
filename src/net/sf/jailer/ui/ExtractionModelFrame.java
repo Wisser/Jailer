@@ -1046,6 +1046,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		try {
 			PrintWriter out = new PrintWriter(new FileOutputStream(tables));
 			out.println("# Name; Upsert; Primary key; ; Author");
+			out.println("ROLE; N; ROLE_ID INTEGER; ; Demo; ; ");
 			out.println("BONUS; N; ENAME VARCHAR(10); JOB VARCHAR(9); ; Demo; ; ");
 			out.println("DEPARTMENT; N; DEPTNO INTEGER; ; Demo; ; ");
 			out.println("EMPLOYEE; N; EMPNO INTEGER; ; Demo; ; ");
@@ -1055,6 +1056,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			out.close();
 			out = new PrintWriter(new FileOutputStream(associations));
 			out.println("# Table A; Table B; First-insert; Cardinality; Join-condition; Name; Author");
+			out.println("PROJECT_PARTICIPATION; ROLE; B; n:1; A.ROLE_ID=B.ROLE_ID; ROLE; Demo; ; ");
 			out.println("EMPLOYEE; BONUS; ; 1:1; A.NAME=B.ENAME and A.JOB=B.JOB; BONUS; Demo; ; ");
 			out.println("EMPLOYEE; SALARYGRADE; ; n:1; A.SALARY BETWEEN B.LOSAL and B.HISAL; SALARY; Demo; ; ");
 			out.println("EMPLOYEE; DEPARTMENT; B; n:1; A.DEPTNO=B.DEPTNO; DEPARTMENT; Demo; ; ");
@@ -1064,16 +1066,18 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			out.close();
 			out = new PrintWriter(new FileOutputStream(columns));
 			out.println("# Table; Columns");
+			out.println("ROLE; ROLE_ID INTEGER; DESCRIPTION VARCHAR(100); ;");
 			out.println("BONUS; ENAME VARCHAR(10); JOB VARCHAR(9); SAL DECIMAL(7, 2); COMM DECIMAL(7, 2); ;");
 			out.println("DEPARTMENT; DEPTNO INTEGER; NAME VARCHAR(14); LOCATION VARCHAR(13); ;");
 			out.println("EMPLOYEE; EMPNO INTEGER; NAME VARCHAR(10); JOB VARCHAR(9); BOSS INTEGER; HIREDATE VARCHAR(12); SALARY DECIMAL(7, 2); COMM DECIMAL(7, 2); DEPTNO INTEGER; ;");
 			out.println("SALARYGRADE; GRADE INTEGER; LOSAL INTEGER; HISAL INTEGER; ;");
 			out.println("PROJECT; PROJECTNO INTEGER; DESCRIPTION VARCHAR(100); START_DATE VARCHAR(12); END_DATE VARCHAR(12); ;");
-			out.println("PROJECT_PARTICIPATION; PROJECTNO INTEGER; EMPNO INTEGER; START_DATE VARCHAR(12); END_DATE VARCHAR(12); ;");
+			out.println("PROJECT_PARTICIPATION; PROJECTNO INTEGER; EMPNO INTEGER; START_DATE VARCHAR(12); END_DATE VARCHAR(12); ROLE_ID INTEGER; ;");
 			out.close();
 			out = new PrintWriter(new FileOutputStream(exDel));
 			out.println("DEPARTMENT");
 			out.println("SALARYGRADE");
+			out.println("ROLE");
 			out.close();
 			out = new PrintWriter(new FileOutputStream(iData));
 			out.println("SALARYGRADE");
