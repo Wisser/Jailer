@@ -2,7 +2,7 @@ Model-based Data Export Tool
 
 Extracts small consistent and referentially intact row-sets from your productive database 
 and imports the data into your development and test environment.
-Removes and archives obsolete data from your productive database. 
+Improves database performance by removing and archiving obsolete data without violating integrity.
 
 Features
 ========

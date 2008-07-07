@@ -1,3 +1,8 @@
+2.4.0
+ - template based column-to-XML mapping
+ - rendering of table details
+ - improved tutorials
+
 2.3.0
  - exports data to hierarchically structured XML
 
