@@ -265,11 +265,19 @@ associations:<br>
               <li>BOSS (from EMPLOYEE to EMPLOYEE)</li>
               <li>from EMPLOYEE to DEPARTMENT</li>
               <li>from EMPLOYEE to SALARYGRADE.<br>
+                <br>
               </li>
             </ul>
-            <p>and set the aggregation-type to 'flat' for the
-associations:<br>
-            </p>
+set the aggregation-type to 'explicit list' with 'participations' as
+tag for the
+association:<br>
+            <ul>
+              <li>from EMPLOYEE to PROJECT_PARTICIPATION<br>
+                <br>
+              </li>
+            </ul>
+and set the aggregation-type to 'flat' for the
+associations:
             <ul>
               <li>from EMPLOYEE to PROJECT_PARTICIPATION</li>
               <li>from PROJECT_PARTICIPATION to PROJECT</li>
@@ -282,9 +290,10 @@ associations:<br>
 Export data into a file <a href="scott-2.xml"><img
  style="border: 0px solid ;" src="exporting-data-Dateien/arrow.gif"
  hspace="4"><big><span style="font-family: monospace;"><font size="4">scott-2.xml</font></span></big></a>.
-The department, the salary-grade and the boss are now embedded into the
-employee-elements.<br>
-            </p>
+The department, the salary-grade, the boss and the project
+participations are now embedded into the
+employee-elements. Columns from Project and Role are embedded directly
+into the elements for the participations. </p>
             <div id="vc_markup">
             <pre><span class="hl line">    1 </span><span class="hl kwa">&lt;?xml</span> version=<span
  class="hl str">"1.0"</span> encoding=<span class="hl str">"ISO-8859-15"</span>?&gt;<br><span
