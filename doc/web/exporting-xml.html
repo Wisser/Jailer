@@ -1,256 +1,537 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html><head><title>Jailer</title>
-
-<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-<meta name="description" content="Data Export Tool">
-<link rel="shortcut icon" href="favicon.ico">
-<meta name="keywords" content="data export referential integrity java jdbc dbms">
-<link rel="stylesheet" type="text/css" href="exporting-data-Dateien/styles.css">
+<html>
+<head>
+  <title>Jailer</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="description" content="Data Export Tool">
+  <link rel="shortcut icon" href="favicon.ico">
+  <meta name="keywords"
+ content="data export referential integrity java jdbc dbms">
+  <link rel="stylesheet" type="text/css"
+ href="exporting-data-Dateien/styles.css">
 </head>
-
 <body left-margin="0" top-margin="0">
 <div align="left">
-<table style="text-align: left; position: absolute; left: 0pt; top: 0pt;" border="0" cellpadding="0" cellspacing="0" height="407" width="100%">
-<tbody>
-<tr>
-<td colspan="2" class="bannerbackground" height="33" width="100%">
-<table border="0" cellpadding="0" cellspacing="0">
-<tbody>
-<tr>
-<td><img src="exporting-data-Dateien/logo.png" hspace="10"></td>
-<td class="slogan" width="100%">Model-based&nbsp;Data&nbsp;Export</td>
-<td style="text-align: right; width: 100%;"><a href="http://sourceforge.net/projects/jailer/"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=197260&amp;type=1" alt="SourceForge.net Logo" style="border: 0px solid ;"></a></td>
-</tr>
-</tbody>
-</table>
-<b><font color="#ffffff">&nbsp; </font></b></td>
-</tr>
-<tr>
-<td colspan="2" class="nav1background" height="33" width="100%">&nbsp; <b><font color="#ffffff"><a href="home.htm" target="_self" class="tlink">Home</a> &nbsp;&nbsp;&nbsp; <a href="quicktour.htm" target="_self" class="tlink">Quick
-Tour</a> &nbsp;&nbsp;&nbsp;<a href="exporting-data.htm" target="_self" class="tlinkA">Tutorial</a>
+<table
+ style="text-align: left; position: absolute; left: 0pt; top: 0pt;"
+ border="0" cellpadding="0" cellspacing="0" height="407" width="100%">
+  <tbody>
+    <tr>
+      <td colspan="2" class="bannerbackground" height="33" width="100%">
+      <table border="0" cellpadding="0" cellspacing="0">
+        <tbody>
+          <tr>
+            <td><img src="exporting-data-Dateien/logo.png" hspace="10"></td>
+            <td class="slogan" width="100%">Model-based&nbsp;Data&nbsp;Export</td>
+            <td style="text-align: right; width: 100%;"><a
+ href="http://sourceforge.net/projects/jailer/"><img
+ src="http://sflogo.sourceforge.net/sflogo.php?group_id=197260&amp;type=1"
+ alt="SourceForge.net Logo" style="border: 0px solid ;"></a></td>
+          </tr>
+        </tbody>
+      </table>
+      <b><font color="#ffffff">&nbsp; </font></b></td>
+    </tr>
+    <tr>
+      <td colspan="2" class="nav1background" height="33" width="100%">&nbsp;
+      <b><font color="#ffffff"><a href="home.htm" target="_self"
+ class="tlink">Home</a> &nbsp;&nbsp;&nbsp; <a href="quicktour.htm"
+ target="_self" class="tlink">Quick
+Tour</a> &nbsp;&nbsp;&nbsp;<a href="exporting-data.htm" target="_self"
+ class="tlinkA">Tutorial</a>
 &nbsp;&nbsp;&nbsp; <a href="design.htm" target="_self" class="tlink">Documentation</a>
-&nbsp;&nbsp;&nbsp; <a href="http://sourceforge.net/forum/?group_id=197260" target="_self" class="tlink">Forum</a>
-&nbsp;&nbsp;&nbsp; <a href="http://sourceforge.net/project/showfiles.php?group_id=197260" target="_self" class="tlink">Download</a>
+&nbsp;&nbsp;&nbsp; <a
+ href="http://sourceforge.net/forum/?group_id=197260" target="_self"
+ class="tlink">Forum</a>
+&nbsp;&nbsp;&nbsp; <a
+ href="http://sourceforge.net/project/showfiles.php?group_id=197260"
+ target="_self" class="tlink">Download</a>
 &nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</font></b></td>
-</tr>
-<tr>
-<td colspan="2" class="spacer" width="100%">
-<br>
-</td>
-</tr>
-<tr>
-<td class="lmenucontainer" height="100%" valign="top" width="14%">
-<div align="center">
-<center>
-<table border="0" cellpadding="0" cellspacing="0" width="100%">
-<tbody>
-<tr>
-<td width="100%"><br>
-</td>
-</tr>
-</tbody>
-</table>
-</center>
-</div>
-<ul>
-<li><a href="exporting-data.htm" target="_self" class="llink">SQL
+    </tr>
+    <tr>
+      <td colspan="2" class="spacer" width="100%">
+      <br>
+      </td>
+    </tr>
+    <tr>
+      <td class="lmenucontainer" height="100%" valign="top" width="14%">
+      <div align="center">
+      <center>
+      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tbody>
+          <tr>
+            <td width="100%"><br>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </center>
+      </div>
+      <ul>
+        <li><a href="exporting-data.htm" target="_self" class="llink">SQL
 Export</a></li>
-<li><a href="exporting-xml.html" target="_self" class="llinkA">XML
+        <li><a href="exporting-xml.html" target="_self" class="llinkA">XML
 Export<br>
-</a></li>
-<li><a href="deleting-data.htm" target="_self" class="llink">Deleting
+          </a></li>
+        <li><a href="deleting-data.htm" target="_self" class="llink">Deleting
 Data</a></li>
-</ul>
-<table border="0" cellpadding="5" cellspacing="0" width="100%">
-<tbody>
-<tr>
-<td class="content2background"><img style="width: 160px; height: 1px;" alt="" src="architecture-Dateien/vgradp.gif"></td>
-</tr>
-</tbody>
-</table>
-<p>&nbsp;</p>
-</td>
-<td class="contentbackground" height="418" valign="top" width="86%">
-<div align="right">
-<table border="0" cellpadding="0" cellspacing="0" height="542" width="98%">
-<tbody>
-<tr>
-<td class="contentbackground" height="21" width="100%"> <br>
-</td>
-</tr>
-<tr>
-<td class="content" height="520" valign="top" width="100%"> <small><small>&nbsp;</small></small><br>
+      </ul>
+      <table border="0" cellpadding="5" cellspacing="0" width="100%">
+        <tbody>
+          <tr>
+            <td class="content2background"><img
+ style="width: 160px; height: 1px;" alt=""
+ src="architecture-Dateien/vgradp.gif"></td>
+          </tr>
+        </tbody>
+      </table>
+      <p>&nbsp;</p>
+      </td>
+      <td class="contentbackground" height="418" valign="top"
+ width="86%">
+      <div align="right">
+      <table border="0" cellpadding="0" cellspacing="0" height="542"
+ width="98%">
+        <tbody>
+          <tr>
+            <td class="contentbackground" height="21" width="100%"> <br>
+            </td>
+          </tr>
+          <tr>
+            <td class="content" height="520" valign="top" width="100%">
+            <small><small>&nbsp;</small></small><br>
 This tutorial shows you how to export data to XML and how to define the
 structure of the XML document.<br>
-<br>
-<h4>Objective</h4>
+            <br>
+            <h4>Objective</h4>
 Exporting all the data related to the employee named 'Scott' into a XML
 document.<br>
-<br>
-<h4>Step 1. Switch to XML-mode.<br>
-</h4>
-<p>Load the model <big><span style="font-family: monospace;">scott.csv</span></big>
+            <br>
+            <h4>Step 1. Switch to XML-mode.<br>
+            </h4>
+            <p>Load the model <big><span
+ style="font-family: monospace;">scott.csv</span></big>
 from previous
 tutorial and switch to XML mode. An additional panel named "XML
 Mapping" will appear.<br>
-</p>
-<p><img alt="" src="xmlt1.gif"><br>
-</p>
-<p><br>
-</p>
-<h4>Step 2. Export Scott to flat XML<br>
-</h4>
-<p>Export data into a file <a href="scott-1.xml"><img style="border: 0px solid ; width: 13px; height: 13px;" src="exporting-data-Dateien/arrow.gif" hspace="4"><big><span style="font-family: monospace;"><font size="4">scott-1.xml</font></span></big></a>.
+            </p>
+            <p><img alt="" src="xmlt1.gif"><br>
+            </p>
+            <p><br>
+            </p>
+            <h4>Step 2. Export Scott to flat XML<br>
+            </h4>
+            <p>Export data into a file <a href="scott-1.xml"><img
+ style="border: 0px solid ; width: 13px; height: 13px;"
+ src="exporting-data-Dateien/arrow.gif" hspace="4"><big><span
+ style="font-family: monospace;"><font size="4">scott-1.xml</font></span></big></a>.
 The XML file contains a flat list of all exported rows, starting with
 rows from subject table followed by all other rows in alphabetical
 order of their table names.<br>
-<br>
-</p>
-<div id="vc_markup">
-<pre><span class="hl line"> 1 </span><span class="hl kwa">&lt;?xml</span> version=<span class="hl str">"1.0"</span> encoding=<span class="hl str">"ISO-8859-15"</span>?&gt;<br><span class="hl line"> 2 </span><span class="hl com">&lt;!--</span><br><span class="hl line"> 3 </span><span class="hl com"> generated by Jailer at Sun Jul 06 11:33:33 CEST 2008 from wisser@desktop</span><br><span class="hl line"> 4 <br></span><span class="hl line"> 5 </span><span class="hl com"> extraction model: EMPLOYEE where T.NAME='SCOTT' (extractionmodel/scott.csv)</span><br><span class="hl line"> 6 </span><span class="hl com"> database URL: jdbc:db2://localhost/wisser</span><br><span class="hl line"> 7 </span><span class="hl com"> database user: scott</span><br><span class="hl line"> 8 </span><span class="hl com"> Exported Entities: 13</span><br><span class="hl line"> 9 </span><span class="hl com"> DEPARTMENT 2</span><br><span class="hl line"> 10 </span><span class="hl com"> EMPLOYEE 3</span><br><span class="hl line"> 11 </span><span class="hl com"> PROJECT 2</span><br><span class="hl line"> 12 </span><span class="hl com"> PROJECT_PARTICIPATION 2</span><br><span class="hl line"> 13 </span><span class="hl com"> ROLE 2</span><br><span class="hl line"> 14 </span><span class="hl com"> SALARYGRADE 2</span><br><span class="hl line"> 15 </span><span class="hl com">--&gt;</span><br><span class="hl line"> 16 </span><span class="hl kwa">&lt;entities&gt;</span><br><span class="hl line"> 17 </span> <span class="hl kwa">&lt;employee&gt;</span><br><span class="hl line"> 18 </span> <span class="hl com">&lt;!--columns of EMPLOYEE as T--&gt;</span><br><span class="hl line"> 19 </span> <span class="hl kwa">&lt;empno&gt;</span><span class="hl num">7788</span><span class="hl kwa">&lt;/empno&gt;</span><br><span class="hl line"> 20 </span> <span class="hl kwa">&lt;name&gt;</span>SCOTT<span class="hl kwa">&lt;/name&gt;</span><br><span class="hl line"> 21 </span> <span class="hl kwa">&lt;job&gt;</span>ANALYST<span class="hl kwa">&lt;/job&gt;</span><br><span class="hl line"> 22 </span> <span class="hl kwa">&lt;boss&gt;</span><span class="hl num">7566</span><span class="hl kwa">&lt;/boss&gt;</span><br><span class="hl line"> 23 </span> <span class="hl kwa">&lt;hiredate&gt;</span><span class="hl num">1982</span>-<span class="hl num">12</span>-<span class="hl num">09</span><span class="hl kwa">&lt;/hiredate&gt;</span><br><span class="hl line"> 24 </span> <span class="hl kwa">&lt;salary&gt;</span><span class="hl num">3000.00</span><span class="hl kwa">&lt;/salary&gt;</span><br><span class="hl line"> 25 </span> <span class="hl kwa">&lt;comm/&gt;</span><br><span class="hl line"> 26 </span> <span class="hl kwa">&lt;deptno&gt;</span><span class="hl num">20</span><span class="hl kwa">&lt;/deptno&gt;</span><br><span class="hl line"> 27 </span> <span class="hl kwa">&lt;/employee&gt;</span><br><span class="hl line"> 28 </span> <span class="hl kwa">&lt;employee&gt;</span><br><span class="hl line"> 29 </span> <span class="hl com">&lt;!--columns of EMPLOYEE as T--&gt;</span><br><span class="hl line"> 30 </span> <span class="hl kwa">&lt;empno&gt;</span><span class="hl num">7566</span><span class="hl kwa">&lt;/empno&gt;</span><br><span class="hl line"> 31 </span> <span class="hl kwa">&lt;name&gt;</span>JONES<span class="hl kwa">&lt;/name&gt;</span><br><span class="hl line"> 32 </span> <span class="hl kwa">&lt;job&gt;</span>MANAGER<span class="hl kwa">&lt;/job&gt;</span><br><span class="hl line"> 33 </span> <span class="hl kwa">&lt;boss&gt;</span><span class="hl num">7839</span><span class="hl kwa">&lt;/boss&gt;</span><br><span class="hl line"> 34 </span> <span class="hl kwa">&lt;hiredate&gt;</span><span class="hl num">1981</span>-<span class="hl num">04</span>-<span class="hl num">02</span><span class="hl kwa">&lt;/hiredate&gt;</span><br><span class="hl line"> 35 </span> <span class="hl kwa">&lt;salary&gt;</span><span class="hl num">2975.00</span><span class="hl kwa">&lt;/salary&gt;</span><br><span class="hl line"> 36 </span> <span class="hl kwa">&lt;comm/&gt;</span><br><span class="hl line"> 37 </span> <span class="hl kwa">&lt;deptno&gt;</span><span class="hl num">20</span><span class="hl kwa">&lt;/deptno&gt;</span><br><span class="hl line"> 38 </span> <span class="hl kwa">&lt;/employee&gt;</span><br><span class="hl line"></span><span class="hl line"> ...<br> &nbsp;50 </span> <span class="hl kwa">&lt;department&gt;</span><br><span class="hl line"> 51 </span> <span class="hl com">&lt;!--columns of DEPARTMENT as T--&gt;</span><br><span class="hl line"> 52 </span> <span class="hl kwa">&lt;deptno&gt;</span><span class="hl num">20</span><span class="hl kwa">&lt;/deptno&gt;</span><br><span class="hl line"> 53 </span> <span class="hl kwa">&lt;name&gt;</span>RESEARCH<span class="hl kwa">&lt;/name&gt;</span><br><span class="hl line"> 54 </span> <span class="hl kwa">&lt;location&gt;</span>DALLAS<span class="hl kwa">&lt;/location&gt;</span><br><span class="hl line"> 55 </span> <span class="hl kwa">&lt;/department&gt;</span><br><span class="hl line"> 56 </span> <span class="hl kwa">&lt;department&gt;</span><br><span class="hl line"> 57 </span> <span class="hl com">&lt;!--columns of DEPARTMENT as T--&gt;</span><br><span class="hl line"> 58 </span> <span class="hl kwa">&lt;deptno&gt;</span><span class="hl num">10</span><span class="hl kwa">&lt;/deptno&gt;</span><br><span class="hl line"> 59 </span> <span class="hl kwa">&lt;name&gt;</span>ACCOUNTING<span class="hl kwa">&lt;/name&gt;</span><br><span class="hl line"> 60 </span> <span class="hl kwa">&lt;location&gt;</span>NEW YORK<span class="hl kwa">&lt;/location&gt;</span><br><span class="hl line"> 61 </span> <span class="hl kwa">&lt;/department&gt;</span><br><span class="hl line"> 62 </span> <span class="hl kwa">&lt;project&gt;</span><br><span class="hl line"> 63 </span> <span class="hl com">&lt;!--columns of PROJECT as T--&gt;</span><br><span class="hl line"> 64 </span> <span class="hl kwa">&lt;projectno&gt;</span><span class="hl num">1001</span><span class="hl kwa">&lt;/projectno&gt;</span><br><span class="hl line"> 65 </span> <span class="hl kwa">&lt;description&gt;</span>Development of Novel Magnetic Suspension System<span class="hl kwa">&lt;/description&gt;</span><br><span class="hl line"> 66 </span> <span class="hl kwa">&lt;start_date&gt;</span><span class="hl num">2006</span>-<span class="hl num">01</span>-<span class="hl num">01</span><span class="hl kwa">&lt;/start_date&gt;</span><br><span class="hl line"> 67 </span> <span class="hl kwa">&lt;end_date&gt;</span><span class="hl num">2007</span>-<span class="hl num">08</span>-<span class="hl num">13</span><span class="hl kwa">&lt;/end_date&gt;</span><br><span class="hl line"> 68 </span> <span class="hl kwa">&lt;/project&gt;</span><br><span class="hl line"> 69 </span> <span class="hl kwa">&lt;project&gt;</span><br><span class="hl line"> 70 </span> <span class="hl com">&lt;!--columns of PROJECT as T--&gt;</span><br><span class="hl line"> 71 </span> <span class="hl kwa">&lt;projectno&gt;</span><span class="hl num">1003</span><span class="hl kwa">&lt;/projectno&gt;</span><br><span class="hl line"> 72 </span> <span class="hl kwa">&lt;description&gt;</span>Foundation of Quantum Technology<span class="hl kwa">&lt;/description&gt;</span><br><span class="hl line"> 73 </span> <span class="hl kwa">&lt;start_date&gt;</span><span class="hl num">2007</span>-<span class="hl num">02</span>-<span class="hl num">24</span><span class="hl kwa">&lt;/start_date&gt;</span><br><span class="hl line"> 74 </span> <span class="hl kwa">&lt;end_date&gt;</span><span class="hl num">2008</span>-<span class="hl num">07</span>-<span class="hl num">31</span><span class="hl kwa">&lt;/end_date&gt;</span><br><span class="hl line"> 75 </span> <span class="hl kwa">&lt;/project&gt;</span><br><span class="hl line"> 76 </span> <span class="hl kwa">&lt;project_participation&gt;</span><br><span class="hl line"> 77 </span> <span class="hl com">&lt;!--columns of PROJECT_PARTICIPATION as T--&gt;</span><br><span class="hl line"> 78 </span> <span class="hl kwa">&lt;projectno&gt;</span><span class="hl num">1001</span><span class="hl kwa">&lt;/projectno&gt;</span><br><span class="hl line"> 79 </span> <span class="hl kwa">&lt;empno&gt;</span><span class="hl num">7788</span><span class="hl kwa">&lt;/empno&gt;</span><br><span class="hl line"> 80 </span> <span class="hl kwa">&lt;start_date&gt;</span><span class="hl num">2006</span>-<span class="hl num">05</span>-<span class="hl num">15</span><span class="hl kwa">&lt;/start_date&gt;</span><br><span class="hl line"> 81 </span> <span class="hl kwa">&lt;end_date&gt;</span><span class="hl num">2006</span>-<span class="hl num">11</span>-<span class="hl num">01</span><span class="hl kwa">&lt;/end_date&gt;</span><br><span class="hl line"> 82 </span> <span class="hl kwa">&lt;role_id&gt;</span><span class="hl num">100</span><span class="hl kwa">&lt;/role_id&gt;</span><br><span class="hl line"> 83 </span> <span class="hl kwa">&lt;/project_participation&gt;</span><br><span class="hl line"> </span><span class="hl line">...<br> </span><span class="hl line"> 92 </span> <span class="hl kwa">&lt;role&gt;</span><br><span class="hl line"> </span><span class="hl line"> </span><span class="hl line">93 </span> <span class="hl com">&lt;!--columns of ROLE as T--&gt;</span><br><span class="hl line"> 94 </span> <span class="hl kwa">&lt;role_id&gt;</span><span class="hl num">100</span><span class="hl kwa">&lt;/role_id&gt;</span><br><span class="hl line"> 95 </span> <span class="hl kwa">&lt;description&gt;</span>Developer<span class="hl kwa">&lt;/description&gt;</span><br><span class="hl line"> 96 </span> <span class="hl kwa">&lt;/role&gt;</span>
-<span class="hl line"></span><span class="hl line"> ...</span><span class="hl kwa"></span><br> </pre>
-</div>
-<h4>Step 3. Defining the XML structure</h4>
-<p>In the "XML Mapping" panel you can define the
+            <br>
+            </p>
+            <div id="vc_markup">
+            <pre><span class="hl line"> 1 </span><span class="hl kwa">&lt;?xml</span> version=<span
+ class="hl str">"1.0"</span> encoding=<span class="hl str">"ISO-8859-15"</span>?&gt;<br><span
+ class="hl line"> 2 </span><span class="hl com">&lt;!--</span><br><span
+ class="hl line"> 3 </span><span class="hl com"> generated by Jailer at Sun Jul 06 11:33:33 CEST 2008 from wisser@desktop</span><br><span
+ class="hl line"> 4 <br></span><span class="hl line"> 5 </span><span
+ class="hl com"> extraction model: EMPLOYEE where T.NAME='SCOTT' (extractionmodel/scott.csv)</span><br><span
+ class="hl line"> 6 </span><span class="hl com"> database URL: jdbc:db2://localhost/wisser</span><br><span
+ class="hl line"> 7 </span><span class="hl com"> database user: scott</span><br><span
+ class="hl line"> 8 </span><span class="hl com"> Exported Entities: 13</span><br><span
+ class="hl line"> 9 </span><span class="hl com">     DEPARTMENT               2</span><br><span
+ class="hl line"> 10 </span><span class="hl com">    EMPLOYEE                 3</span><br><span
+ class="hl line"> 11 </span><span class="hl com">    PROJECT                  2</span><br><span
+ class="hl line"> 12 </span><span class="hl com">    PROJECT_PARTICIPATION    2</span><br><span
+ class="hl line"> 13 </span><span class="hl com">    ROLE                     2</span><br><span
+ class="hl line"> 14 </span><span class="hl com">    SALARYGRADE              2</span><br><span
+ class="hl line"> 15 </span><span class="hl com">--&gt;</span><br><span
+ class="hl line"> 16 </span><span class="hl kwa">&lt;entities&gt;</span><br><span
+ class="hl line"> 17 </span> <span class="hl kwa"> &lt;employee&gt;</span><br><span
+ class="hl line"> 18 </span> <span class="hl com">   &lt;!--columns of EMPLOYEE as T--&gt;</span><br><span
+ class="hl line"> 19 </span> <span class="hl kwa">   &lt;empno&gt;</span><span
+ class="hl num">7788</span><span class="hl kwa">&lt;/empno&gt;</span><br><span
+ class="hl line"> 20 </span> <span class="hl kwa">   &lt;name&gt;</span>SCOTT<span
+ class="hl kwa">&lt;/name&gt;</span><br><span class="hl line"> 21 </span> <span
+ class="hl kwa">   &lt;job&gt;</span>ANALYST<span class="hl kwa">&lt;/job&gt;</span><br><span
+ class="hl line"> 22 </span> <span class="hl kwa">   &lt;boss&gt;</span><span
+ class="hl num">7566</span><span class="hl kwa">&lt;/boss&gt;</span><br><span
+ class="hl line"> 23 </span> <span class="hl kwa">   &lt;hiredate&gt;</span><span
+ class="hl num">1982</span>-<span class="hl num">12</span>-<span
+ class="hl num">09</span><span class="hl kwa">&lt;/hiredate&gt;</span><br><span
+ class="hl line"> 24 </span> <span class="hl kwa">   &lt;salary&gt;</span><span
+ class="hl num">3000.00</span><span class="hl kwa">&lt;/salary&gt;</span><br><span
+ class="hl line"> 25 </span> <span class="hl kwa">   &lt;comm/&gt;</span><br><span
+ class="hl line"> 26 </span> <span class="hl kwa">   &lt;deptno&gt;</span><span
+ class="hl num">20</span><span class="hl kwa">&lt;/deptno&gt;</span><br><span
+ class="hl line"> 27 </span> <span class="hl kwa"> &lt;/employee&gt;</span><br><span
+ class="hl line"> 28 </span> <span class="hl kwa"> &lt;employee&gt;</span><br><span
+ class="hl line"> 29 </span> <span class="hl com">   &lt;!--columns of EMPLOYEE as T--&gt;</span><br><span
+ class="hl line"> 30 </span> <span class="hl kwa">   &lt;empno&gt;</span><span
+ class="hl num">7566</span><span class="hl kwa">&lt;/empno&gt;</span><br><span
+ class="hl line"> 31 </span> <span class="hl kwa">   &lt;name&gt;</span>JONES<span
+ class="hl kwa">&lt;/name&gt;</span><br><span class="hl line"> 32 </span> <span
+ class="hl kwa">   &lt;job&gt;</span>MANAGER<span class="hl kwa">&lt;/job&gt;</span><br><span
+ class="hl line"> 33 </span> <span class="hl kwa">   &lt;boss&gt;</span><span
+ class="hl num">7839</span><span class="hl kwa">&lt;/boss&gt;</span><br><span
+ class="hl line"> 34 </span> <span class="hl kwa">   &lt;hiredate&gt;</span><span
+ class="hl num">1981</span>-<span class="hl num">04</span>-<span
+ class="hl num">02</span><span class="hl kwa">&lt;/hiredate&gt;</span><br><span
+ class="hl line"> 35 </span> <span class="hl kwa">   &lt;salary&gt;</span><span
+ class="hl num">2975.00</span><span class="hl kwa">&lt;/salary&gt;</span><br><span
+ class="hl line"> 36 </span> <span class="hl kwa">   &lt;comm/&gt;</span><br><span
+ class="hl line"> 37 </span> <span class="hl kwa">   &lt;deptno&gt;</span><span
+ class="hl num">20</span><span class="hl kwa">&lt;/deptno&gt;</span><br><span
+ class="hl line"> 38 </span> <span class="hl kwa"> &lt;/employee&gt;</span><br><span
+ class="hl line"></span><span class="hl line"> ...<br> 50 </span>  <span
+ class="hl kwa">&lt;department&gt;</span><br><span class="hl line"> 51 </span>    <span
+ class="hl com">&lt;!--columns of DEPARTMENT as T--&gt;</span><br><span
+ class="hl line"> 52 </span> <span class="hl kwa">   &lt;deptno&gt;</span><span
+ class="hl num">20</span><span class="hl kwa">&lt;/deptno&gt;</span><br><span
+ class="hl line"> 53 </span> <span class="hl kwa">   &lt;name&gt;</span>RESEARCH<span
+ class="hl kwa">&lt;/name&gt;</span><br><span class="hl line"> 54 </span> <span
+ class="hl kwa">   &lt;location&gt;</span>DALLAS<span class="hl kwa">&lt;/location&gt;</span><br><span
+ class="hl line"> 55 </span>  <span class="hl kwa">&lt;/department&gt;</span><br><span
+ class="hl line"> 56 </span> <span class="hl kwa"> &lt;department&gt;</span><br><span
+ class="hl line"> 57 </span> <span class="hl com">   &lt;!--columns of DEPARTMENT as T--&gt;</span><br><span
+ class="hl line"> 58 </span> <span class="hl kwa">   &lt;deptno&gt;</span><span
+ class="hl num">10</span><span class="hl kwa">&lt;/deptno&gt;</span><br><span
+ class="hl line"> 59 </span>    <span class="hl kwa">&lt;name&gt;</span>ACCOUNTING<span
+ class="hl kwa">&lt;/name&gt;</span><br><span class="hl line"> 60 </span> <span
+ class="hl kwa">   &lt;location&gt;</span>NEW YORK<span class="hl kwa">&lt;/location&gt;</span><br><span
+ class="hl line"> 61 </span> <span class="hl kwa"> &lt;/department&gt;</span><br><span
+ class="hl line"> 62 </span> <span class="hl kwa"> &lt;project&gt;</span><br><span
+ class="hl line"> 63 </span> <span class="hl com">   &lt;!--columns of PROJECT as T--&gt;</span><br><span
+ class="hl line"> 64 </span>    <span class="hl kwa">&lt;projectno&gt;</span><span
+ class="hl num">1001</span><span class="hl kwa">&lt;/projectno&gt;</span><br><span
+ class="hl line"> 65 </span> <span class="hl kwa">   &lt;description&gt;</span>Development of Novel Magnetic Suspension System<span
+ class="hl kwa">&lt;/description&gt;</span><br><span class="hl line"> 66 </span> <span
+ class="hl kwa">   &lt;start_date&gt;</span><span class="hl num">2006</span>-<span
+ class="hl num">01</span>-<span class="hl num">01</span><span
+ class="hl kwa">&lt;/start_date&gt;</span><br><span class="hl line"> 67 </span> <span
+ class="hl kwa">   &lt;end_date&gt;</span><span class="hl num">2007</span>-<span
+ class="hl num">08</span>-<span class="hl num">13</span><span
+ class="hl kwa">&lt;/end_date&gt;</span><br><span class="hl line"> 68 </span> <span
+ class="hl kwa"> &lt;/project&gt;</span><br><span class="hl line"> 69 </span> <span
+ class="hl kwa"> &lt;project&gt;</span><br><span class="hl line"> 70 </span> <span
+ class="hl com">   &lt;!--columns of PROJECT as T--&gt;</span><br><span
+ class="hl line"> 71 </span> <span class="hl kwa">   &lt;projectno&gt;</span><span
+ class="hl num">1003</span><span class="hl kwa">&lt;/projectno&gt;</span><br><span
+ class="hl line"> 72 </span> <span class="hl kwa">   &lt;description&gt;</span>Foundation of Quantum Technology<span
+ class="hl kwa">&lt;/description&gt;</span><br><span class="hl line"> 73 </span> <span
+ class="hl kwa">   &lt;start_date&gt;</span><span class="hl num">2007</span>-<span
+ class="hl num">02</span>-<span class="hl num">24</span><span
+ class="hl kwa">&lt;/start_date&gt;</span><br><span class="hl line"> 74 </span> <span
+ class="hl kwa">   &lt;end_date&gt;</span><span class="hl num">2008</span>-<span
+ class="hl num">07</span>-<span class="hl num">31</span><span
+ class="hl kwa">&lt;/end_date&gt;</span><br><span class="hl line"> 75 </span> <span
+ class="hl kwa"> &lt;/project&gt;</span><br><span class="hl line"> 76 </span> <span
+ class="hl kwa"> &lt;project_participation&gt;</span><br><span
+ class="hl line"> 77 </span> <span class="hl com">   &lt;!--columns of PROJECT_PARTICIPATION as T--&gt;</span><br><span
+ class="hl line"> 78 </span> <span class="hl kwa">   &lt;projectno&gt;</span><span
+ class="hl num">1001</span><span class="hl kwa">&lt;/projectno&gt;</span><br><span
+ class="hl line"> 79 </span> <span class="hl kwa">   &lt;empno&gt;</span><span
+ class="hl num">7788</span><span class="hl kwa">&lt;/empno&gt;</span><br><span
+ class="hl line"> 80 </span> <span class="hl kwa">   &lt;start_date&gt;</span><span
+ class="hl num">2006</span>-<span class="hl num">05</span>-<span
+ class="hl num">15</span><span class="hl kwa">&lt;/start_date&gt;</span><br><span
+ class="hl line"> 81 </span> <span class="hl kwa">   &lt;end_date&gt;</span><span
+ class="hl num">2006</span>-<span class="hl num">11</span>-<span
+ class="hl num">01</span><span class="hl kwa">&lt;/end_date&gt;</span><br><span
+ class="hl line"> 82 </span> <span class="hl kwa">   &lt;role_id&gt;</span><span
+ class="hl num">100</span><span class="hl kwa">&lt;/role_id&gt;</span><br><span
+ class="hl line"> 83 </span> <span class="hl kwa"> &lt;/project_participation&gt;</span><br><span
+ class="hl line"> </span><span class="hl line">...<br> </span><span
+ class="hl line">92 </span> <span class="hl kwa"> &lt;role&gt;</span><br><span
+ class="hl line"> </span><span class="hl line"></span><span
+ class="hl line">93 </span> <span class="hl com">   &lt;!--columns of ROLE as T--&gt;</span><br><span
+ class="hl line"> 94 </span>    <span class="hl kwa">&lt;role_id&gt;</span><span
+ class="hl num">100</span><span class="hl kwa">&lt;/role_id&gt;</span><br><span
+ class="hl line"> 95 </span> <span class="hl kwa">   &lt;description&gt;</span>Developer<span
+ class="hl kwa">&lt;/description&gt;</span><br><span class="hl line"> 96 </span> <span
+ class="hl kwa"> &lt;/role&gt;</span>
+<span class="hl line"></span><span class="hl line"> ...</span><span
+ class="hl kwa"></span><br> </pre>
+            </div>
+            <h4>Step 3. Defining the XML structure</h4>
+            <p>In the "XML Mapping" panel you can define the
 aggregation-type for each association. If the aggregation-type an
-association from table A to B is not 'none', than the XML render of
-entities from table B will be embedded into the XML render of the
+association from table A to B is not 'none', than the XML
+representation of
+entities from table B will be embedded into the XML representation of
+the
 associated entities from table A.<br>
-</p>
-<p>Set the aggregation-type to 'implicit list' for
+            </p>
+            <p>Set the aggregation-type to 'implicit list' for
 the
 associations:<br>
-</p>
-<ul>
-<li>BOSS (from EMPLOYEE to EMPLOYEE)</li>
-<li>from EMPLOYEE to DEPARTMENT</li>
-<li>from EMPLOYEE to SALARYGRADE.<br>
-<br>
-</li>
-</ul>
+            </p>
+            <ul>
+              <li>BOSS (from EMPLOYEE to EMPLOYEE)</li>
+              <li>from EMPLOYEE to DEPARTMENT</li>
+              <li>from EMPLOYEE to SALARYGRADE. Change the tag name to<span
+ style="font-style: italic;"> salary_grade</span>.<br>
+                <br>
+              </li>
+            </ul>
 set the aggregation-type to 'explicit list' with 'participations' as
 tag for the
 association:<br>
-<ul>
-<li>from EMPLOYEE to PROJECT_PARTICIPATION<br>
-<br>
-</li>
-</ul>
+            <ul>
+              <li>from EMPLOYEE to PROJECT_PARTICIPATION<br>
+                <br>
+              </li>
+            </ul>
 and set the aggregation-type to 'flat' for the
 associations:
-<ul>
-<li>from EMPLOYEE to PROJECT_PARTICIPATION</li>
-<li>from PROJECT_PARTICIPATION to PROJECT</li>
-<li>from PROJECT_PARTICIPATION to ROLE<br>
-</li>
-</ul>
-<br>
-<img alt="" src="xmlt2.gif"><br>
-<p><br>
-Export data into a file <a href="scott-2.xml"><img style="border: 0px solid ;" src="exporting-data-Dateien/arrow.gif" hspace="4"><big><span style="font-family: monospace;"><font size="4">scott-2.xml</font></span></big></a>.
+            <ul>
+              <li>from EMPLOYEE to PROJECT_PARTICIPATION</li>
+              <li>from PROJECT_PARTICIPATION to PROJECT</li>
+              <li>from PROJECT_PARTICIPATION to ROLE<br>
+              </li>
+            </ul>
+            <br>
+            <img alt="" src="xmlt2.gif"><br>
+            <p><br>
+Export data into a file <a href="scott-2.xml"><img
+ style="border: 0px solid ;" src="exporting-data-Dateien/arrow.gif"
+ hspace="4"><big><span style="font-family: monospace;"><font size="4">scott-2.xml</font></span></big></a>.
 The department, the salary-grade, the boss and the project
 participations are now embedded into the
 employee-elements. Columns from Project and Role are embedded directly
 into the elements of the project participations. </p>
-<div id="vc_markup">
-<pre><span class="hl line"> 1 </span><span class="hl kwa">&lt;?xml</span> version=<span class="hl str">"1.0"</span> encoding=<span class="hl str">"ISO-8859-15"</span>?&gt;<br><span class="hl line"> 2 </span><span class="hl com">&lt;!--</span><br><span class="hl line"> 3 </span><span class="hl com"> generated by Jailer at Sun Jul 06 12:04:12 CEST 2008 from wisser@desktop</span><br><span class="hl line"> 4 </span><span class="hl com"></span><br><span class="hl line"> 5 </span><span class="hl com"> extraction model: EMPLOYEE where T.NAME='SCOTT' (extractionmodel/scott.csv)</span><br><span class="hl line"> 6 </span><span class="hl com"> database URL: jdbc:db2://localhost/wisser</span><br><span class="hl line"> 7 </span><span class="hl com"> database user: scott</span><br><span class="hl line"> 8 </span><span class="hl com"> Exported Entities: 13</span><br><span class="hl line"> 9 </span><span class="hl com"> DEPARTMENT 2</span><br><span class="hl line"> 10 </span><span class="hl com"> EMPLOYEE 3</span><br><span class="hl line"> 11 </span><span class="hl com"> PROJECT 2</span><br><span class="hl line"> 12 </span><span class="hl com"> PROJECT_PARTICIPATION 2</span><br><span class="hl line"> 13 </span><span class="hl com"> ROLE 2</span><br><span class="hl line"> 14 </span><span class="hl com"> SALARYGRADE 2</span><br><span class="hl line"> 15 </span><span class="hl com">--&gt;</span><br><span class="hl line"> 16 </span><span class="hl kwa">&lt;entities&gt;</span><br><span class="hl line"> 17 </span> <span class="hl kwa">&lt;employee&gt;</span><br><span class="hl line"> 18 </span> <span class="hl com">&lt;!--columns of EMPLOYEE as T--&gt;</span><br><span class="hl line"> 19 </span> <span class="hl kwa">&lt;empno&gt;</span><span class="hl num">7788</span><span class="hl kwa">&lt;/empno&gt;</span><br><span class="hl line"> 20 </span> <span class="hl kwa">&lt;name&gt;</span>SCOTT<span class="hl kwa">&lt;/name&gt;</span><br><span class="hl line"> 21 </span> <span class="hl kwa">&lt;job&gt;</span>ANALYST<span class="hl kwa">&lt;/job&gt;</span><br><span class="hl line"> 22 </span> <span class="hl kwa">&lt;boss&gt;</span><span class="hl num">7566</span><span class="hl kwa">&lt;/boss&gt;</span><br><span class="hl line"> 23 </span> <span class="hl kwa">&lt;hiredate&gt;</span><span class="hl num">1982</span>-<span class="hl num">12</span>-<span class="hl num">09</span><span class="hl kwa">&lt;/hiredate&gt;</span><br><span class="hl line"> 24 </span> <span class="hl kwa">&lt;salary&gt;</span><span class="hl num">3000.00</span><span class="hl kwa">&lt;/salary&gt;</span><br><span class="hl line"> 25 </span> <span class="hl kwa">&lt;comm/&gt;</span><br><span class="hl line"> 26 </span> <span class="hl kwa">&lt;deptno&gt;</span><span class="hl num">20</span><span class="hl kwa">&lt;/deptno&gt;</span><br><span class="hl line"> 27 </span> <span class="hl com">&lt;!--associated SALARYGRADE row--&gt;</span><br><span class="hl line"> 28 </span> <span class="hl kwa">&lt;salary&gt;</span><br><span class="hl line"> 29 </span> <span class="hl com">&lt;!--columns of SALARYGRADE as T--&gt;</span><br><span class="hl line"> 30 </span> <span class="hl kwa">&lt;grade&gt;</span><span class="hl num">4</span><span class="hl kwa">&lt;/grade&gt;</span><br><span class="hl line"> 31 </span> <span class="hl kwa">&lt;losal&gt;</span><span class="hl num">2001</span><span class="hl kwa">&lt;/losal&gt;</span><br><span class="hl line"> 32 </span> <span class="hl kwa">&lt;hisal&gt;</span><span class="hl num">3000</span><span class="hl kwa">&lt;/hisal&gt;</span><br><span class="hl line"> 33 </span> <span class="hl kwa">&lt;/salary&gt;</span><br><span class="hl line"> 34 </span> <span class="hl com">&lt;!--associated DEPARTMENT row--&gt;</span><br><span class="hl line"> 35 </span> <span class="hl kwa">&lt;department&gt;</span><br><span class="hl line"> 36 </span> <span class="hl com">&lt;!--columns of DEPARTMENT as T--&gt;</span><br><span class="hl line"> 37 </span> <span class="hl kwa">&lt;deptno&gt;</span><span class="hl num">20</span><span class="hl kwa">&lt;/deptno&gt;</span><br><span class="hl line"> 38 </span> <span class="hl kwa">&lt;name&gt;</span>RESEARCH<span class="hl kwa">&lt;/name&gt;</span><br><span class="hl line"> 39 </span> <span class="hl kwa">&lt;location&gt;</span>DALLAS<span class="hl kwa">&lt;/location&gt;</span><br><span class="hl line"> 40 </span> <span class="hl kwa">&lt;/department&gt;</span><br><span class="hl line"> 41 </span> <span class="hl com">&lt;!--associated EMPLOYEE row--&gt;</span><br><span class="hl line"> 42 </span> <span class="hl kwa">&lt;boss&gt;</span><br><span class="hl line"> 43 </span> <span class="hl com">&lt;!--columns of EMPLOYEE as T--&gt;</span><br><span class="hl line"> ...<br></span><span class="hl line"></span><span class="hl line"></span><span class="hl line"></span><span class="hl line"></span><span class="hl line"> 116 </span> <span class="hl kwa">&lt;/boss&gt;</span><br><span class="hl line"> 117 </span> <span class="hl com">&lt;!--associated PROJECT_PARTICIPATION rows--&gt;</span><br><span class="hl line"> 118 </span> <span class="hl kwa">&lt;participations&gt;</span><br><span class="hl line"> 119 </span> <span class="hl kwa">&lt;project_participation&gt;</span><br><span class="hl line"> 120 </span> <span class="hl com">&lt;!--columns of PROJECT_PARTICIPATION as T--&gt;</span><br><span class="hl line"> 121 </span> <span class="hl kwa">&lt;projectno&gt;</span><span class="hl num">1001</span><span class="hl kwa">&lt;/projectno&gt;</span><br><span class="hl line"> 122 </span> <span class="hl kwa">&lt;empno&gt;</span><span class="hl num">7788</span><span class="hl kwa">&lt;/empno&gt;</span><br><span class="hl line"> 123 </span> <span class="hl kwa">&lt;start_date&gt;</span><span class="hl num">2006</span>-<span class="hl num">05</span>-<span class="hl num">15</span><span class="hl kwa">&lt;/start_date&gt;</span><br><span class="hl line"> 124 </span> <span class="hl kwa">&lt;end_date&gt;</span><span class="hl num">2006</span>-<span class="hl num">11</span>-<span class="hl num">01</span><span class="hl kwa">&lt;/end_date&gt;</span><br><span class="hl line"> 125 </span> <span class="hl kwa">&lt;role_id&gt;</span><span class="hl num">100</span><span class="hl kwa">&lt;/role_id&gt;</span><br><span class="hl line"> 126 </span> <span class="hl com">&lt;!--associated ROLE row--&gt;</span><br><span class="hl line"> 127 </span> <span class="hl com">&lt;!--columns of ROLE as T--&gt;</span><br><span class="hl line"> 128 </span> <span class="hl kwa">&lt;role_id&gt;</span><span class="hl num">100</span><span class="hl kwa">&lt;/role_id&gt;</span><br><span class="hl line"> 129 </span> <span class="hl kwa">&lt;description&gt;</span>Developer<span class="hl kwa">&lt;/description&gt;</span><br><span class="hl line"> 130 </span> <span class="hl com">&lt;!--associated PROJECT row--&gt;</span><br><span class="hl line"> 131 </span> <span class="hl com">&lt;!--columns of PROJECT as T--&gt;</span><br><span class="hl line"> 132 </span> <span class="hl kwa">&lt;projectno&gt;</span><span class="hl num">1001</span><span class="hl kwa">&lt;/projectno&gt;</span><br><span class="hl line"> 133 </span> <span class="hl kwa">&lt;description&gt;</span>Development of Novel Magnetic Suspension System<span class="hl kwa">&lt;/description&gt;</span><br><span class="hl line"> 134 </span> <span class="hl kwa">&lt;start_date&gt;</span><span class="hl num">2006</span>-<span class="hl num">01</span>-<span class="hl num">01</span><span class="hl kwa">&lt;/start_date&gt;</span><br><span class="hl line"> 135 </span> <span class="hl kwa">&lt;end_date&gt;</span><span class="hl num">2007</span>-<span class="hl num">08</span>-<span class="hl num">13</span><span class="hl kwa">&lt;/end_date&gt;</span><br><span class="hl line"> 136 </span> <span class="hl kwa">&lt;/project_participation&gt;</span><br><span class="hl line"> 137 </span> <span class="hl kwa">&lt;/participations&gt;</span><br><span class="hl line"> 138 </span> <span class="hl kwa">&lt;/employee&gt;</span><br><span class="hl line"> 139 </span><span class="hl kwa">&lt;/entities&gt;</span><br><br></pre>
-</div>
-</td>
-</tr>
-</tbody>
-</table>
-</div>
-<h4>Step 3. Defining the column mapping</h4>
+            <div id="vc_markup">
+            <pre><span class="hl line"> 1 </span><span class="hl kwa">&lt;?xml</span> version=<span
+ class="hl str">"1.0"</span> encoding=<span class="hl str">"ISO-8859-15"</span>?&gt;<br><span
+ class="hl line"> 2 </span><span class="hl com">&lt;!--</span><br><span
+ class="hl line"> 3 </span><span class="hl com"> generated by Jailer at Sun Jul 06 12:04:12 CEST 2008 from wisser@desktop</span><br><span
+ class="hl line"> 4 </span><span class="hl com"></span><br><span
+ class="hl line"> 5 </span><span class="hl com"> extraction model: EMPLOYEE where T.NAME='SCOTT' (extractionmodel/scott.csv)</span><br><span
+ class="hl line"> 6 </span><span class="hl com"> database URL: jdbc:db2://localhost/wisser</span><br><span
+ class="hl line"> 7 </span><span class="hl com"> database user: scott</span><br><span
+ class="hl line"> 8 </span><span class="hl com"> Exported Entities: 13</span><br><span
+ class="hl line"> 9 </span><span class="hl com">     DEPARTMENT              2</span><br><span
+ class="hl line"> 10 </span><span class="hl com">    EMPLOYEE                3</span><br><span
+ class="hl line"> 11 </span><span class="hl com">    PROJECT                 2</span><br><span
+ class="hl line"> 12 </span><span class="hl com">    PROJECT_PARTICIPATION   2</span><br><span
+ class="hl line"> 13 </span><span class="hl com">    ROLE                    2</span><br><span
+ class="hl line"> 14 </span><span class="hl com">    SALARYGRADE             2</span><br><span
+ class="hl line"> 15 </span><span class="hl com">--&gt;</span><br><span
+ class="hl line"> 16 </span><span class="hl kwa">&lt;entities&gt;</span><br><span
+ class="hl line"> 17 </span>  <span class="hl kwa">&lt;employee&gt;</span><br><span
+ class="hl line"> 18 </span><span style="font-family: mon;"><span
+ style="font-style: italic;">    </span></span><span class="hl com">&lt;!--columns of EMPLOYEE as T--&gt;</span><br><span
+ class="hl line"> 19 </span>    <span class="hl kwa">&lt;empno&gt;</span><span
+ class="hl num">7788</span><span class="hl kwa">&lt;/empno&gt;</span><br><span
+ class="hl line"> 20 </span>    <span class="hl kwa">&lt;name&gt;</span>SCOTT<span
+ class="hl kwa">&lt;/name&gt;</span><br><span class="hl line"> 21 </span> <span
+ class="hl kwa">   &lt;job&gt;</span>ANALYST<span class="hl kwa">&lt;/job&gt;</span><br><span
+ class="hl line"> 22 </span> <span class="hl kwa">   &lt;boss&gt;</span><span
+ class="hl num">7566</span><span class="hl kwa">&lt;/boss&gt;</span><br><span
+ class="hl line"> 23 </span>    <span class="hl kwa">&lt;hiredate&gt;</span><span
+ class="hl num">1982</span>-<span class="hl num">12</span>-<span
+ class="hl num">09</span><span class="hl kwa">&lt;/hiredate&gt;</span><br><span
+ class="hl line"> 24 </span> <span class="hl kwa">   &lt;salary&gt;</span><span
+ class="hl num">3000.00</span><span class="hl kwa">&lt;/salary&gt;</span><br><span
+ class="hl line"> 25 </span>    <span class="hl kwa">&lt;comm/&gt;</span><br><span
+ class="hl line"> 26 </span> <span class="hl kwa">   &lt;deptno&gt;</span><span
+ class="hl num">20</span><span class="hl kwa">&lt;/deptno&gt;</span><br><span
+ class="hl line"> 27 </span> <span class="hl com">   &lt;!--associated SALARYGRADE row--&gt;</span><br><span
+ class="hl line"> 28 </span> <span class="hl kwa">   &lt;salary_grade&gt;</span><br><span
+ class="hl line"> 29 </span> <span class="hl com">     &lt;!--columns of SALARYGRADE as T--&gt;</span><br><span
+ class="hl line"> 30 </span> <span class="hl kwa">     &lt;grade&gt;</span><span
+ class="hl num">4</span><span class="hl kwa">&lt;/grade&gt;</span><br><span
+ class="hl line"> 31 </span> <span class="hl kwa">     &lt;losal&gt;</span><span
+ class="hl num">2001</span><span class="hl kwa">&lt;/losal&gt;</span><br><span
+ class="hl line"> 32 </span> <span class="hl kwa">     &lt;hisal&gt;</span><span
+ class="hl num">3000</span><span class="hl kwa">&lt;/hisal&gt;</span><br><span
+ class="hl line"> 33 </span> <span class="hl kwa">     &lt;/salary_grade&gt;</span><br><span
+ class="hl line"> 34 </span> <span class="hl com">   &lt;!--associated DEPARTMENT row--&gt;</span><br><span
+ class="hl line"> 35 </span> <span class="hl kwa">   &lt;department&gt;</span><br><span
+ class="hl line"> 36 </span> <span class="hl com">     &lt;!--columns of DEPARTMENT as T--&gt;</span><br><span
+ class="hl line"> 37 </span> <span class="hl kwa">     &lt;deptno&gt;</span><span
+ class="hl num">20</span><span class="hl kwa">&lt;/deptno&gt;</span><br><span
+ class="hl line"> 38 </span> <span class="hl kwa">     &lt;name&gt;</span>RESEARCH<span
+ class="hl kwa">&lt;/name&gt;</span><br><span class="hl line"> 39 </span> <span
+ class="hl kwa">     &lt;location&gt;</span>DALLAS<span class="hl kwa">&lt;/location&gt;</span><br><span
+ class="hl line"> 40 </span> <span class="hl kwa">   &lt;/department&gt;</span><br><span
+ class="hl line"> 41 </span> <span class="hl com">   &lt;!--associated EMPLOYEE row--&gt;</span><br><span
+ class="hl line"> 42 </span> <span class="hl kwa">   &lt;boss&gt;</span><br><span
+ class="hl line"> 43 </span> <span class="hl com">     &lt;!--columns of EMPLOYEE as T--&gt;</span><br><span
+ class="hl line"> ...<br></span><span class="hl line"></span><span
+ class="hl line"></span><span class="hl line"></span><span
+ class="hl line"></span><span class="hl line"> 116 </span> <span
+ class="hl kwa">  &lt;/boss&gt;</span><br><span class="hl line"> 117 </span> <span
+ class="hl com">  &lt;!--associated PROJECT_PARTICIPATION rows--&gt;</span><br><span
+ class="hl line"> 118 </span> <span class="hl kwa">  &lt;participations&gt;</span><br><span
+ class="hl line"> 119 </span> <span class="hl kwa">    &lt;project_participation&gt;</span><br><span
+ class="hl line"> 120 </span> <span class="hl com">      &lt;!--columns of PROJECT_PARTICIPATION as T--&gt;</span><br><span
+ class="hl line"> 121 </span> <span class="hl kwa">      &lt;projectno&gt;</span><span
+ class="hl num">1001</span><span class="hl kwa">&lt;/projectno&gt;</span><br><span
+ class="hl line"> 122 </span> <span class="hl kwa">      &lt;empno&gt;</span><span
+ class="hl num">7788</span><span class="hl kwa">&lt;/empno&gt;</span><br><span
+ class="hl line"> 123 </span> <span class="hl kwa">      &lt;start_date&gt;</span><span
+ class="hl num">2006</span>-<span class="hl num">05</span>-<span
+ class="hl num">15</span><span class="hl kwa">&lt;/start_date&gt;</span><br><span
+ class="hl line"> 124 </span> <span class="hl kwa">      &lt;end_date&gt;</span><span
+ class="hl num">2006</span>-<span class="hl num">11</span>-<span
+ class="hl num">01</span><span class="hl kwa">&lt;/end_date&gt;</span><br><span
+ class="hl line"> 125 </span>       <span class="hl kwa">&lt;role_id&gt;</span><span
+ class="hl num">100</span><span class="hl kwa">&lt;/role_id&gt;</span><br><span
+ class="hl line"> 126 </span> <span class="hl com">      &lt;!--associated ROLE row--&gt;</span><br><span
+ class="hl line"> 127 </span> <span class="hl com">      &lt;!--columns of ROLE as T--&gt;</span><br><span
+ class="hl line"> 128 </span>       <span class="hl kwa">&lt;role_id&gt;</span><span
+ class="hl num">100</span><span class="hl kwa">&lt;/role_id&gt;</span><br><span
+ class="hl line"> 129 </span> <span class="hl kwa">      &lt;description&gt;</span>Developer<span
+ class="hl kwa">&lt;/description&gt;</span><br><span class="hl line"> 130 </span>       <span
+ class="hl com">&lt;!--associated PROJECT row--&gt;</span><br><span
+ class="hl line"> 131 </span> <span class="hl com">      &lt;!--columns of PROJECT as T--&gt;</span><br><span
+ class="hl line"> 132 </span> <span class="hl kwa">      &lt;projectno&gt;</span><span
+ class="hl num">1001</span><span class="hl kwa">&lt;/projectno&gt;</span><br><span
+ class="hl line"> 133 </span> <span class="hl kwa">      &lt;description&gt;</span>Development of Novel Magnetic Suspension System<span
+ class="hl kwa">&lt;/description&gt;</span><br><span class="hl line"> 134 </span> <span
+ class="hl kwa">      &lt;start_date&gt;</span><span class="hl num">2006</span>-<span
+ class="hl num">01</span>-<span class="hl num">01</span><span
+ class="hl kwa">&lt;/start_date&gt;</span><br><span class="hl line"> 135 </span> <span
+ class="hl kwa">      &lt;end_date&gt;</span><span class="hl num">2007</span>-<span
+ class="hl num">08</span>-<span class="hl num">13</span><span
+ class="hl kwa">&lt;/end_date&gt;</span><br><span class="hl line"> 136 </span> <span
+ class="hl kwa">    &lt;/project_participation&gt;</span><br><span
+ class="hl line"> 137 </span> <span class="hl kwa">  &lt;/participations&gt;</span><br><span
+ class="hl line"> 138 </span> <span class="hl kwa">&lt;/employee&gt;</span><br><span
+ class="hl line"> 139 </span><span class="hl kwa">&lt;/entities&gt;</span><br><br></pre>
+            </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      <h4>Step 3. Defining the column mapping</h4>
 The "XML Column Mapping" dialog allows you to define how columns will
 be mapped to XML elements or attributes. By default each column is
 mapped to an element with the same name. You can open the dialog using
 the "<span style="font-style: italic;">map column</span>"
 button or via
 the context menu of a table.<br>
-<br>
+      <br>
 The <span style="font-style: italic;">column mapping
 template</span>
-of a table describes the XML render of each exported row:<br>
-<ul>
-<li>Expression starting with <span style="font-style: italic;">SQL:</span>
-will be replaced by the value of the SQL expression thereafter. <span style="font-style: italic;">T</span> is the alias for
-the row to&nbsp;
-be rendered. Note that even scalar subqueries are allowed here.</li>
-<li><span style="font-style: italic;">j:assoc</span>
+of a table describes the XML represenation of each exported row:<br>
+      <ul>
+        <li>Expression starting with <span style="font-style: italic;">SQL:</span>
+will be replaced by the value of the SQL expression thereafter. <span
+ style="font-style: italic;">T</span> is the alias for
+the row. Note that even scalar subqueries are allowed here.</li>
+        <li><span style="font-style: italic;">j:assoc</span>
 elements
-will be replaced by the XML render of the associated rows.<br>
-</li>
-</ul>
-<br>
+will be replaced by the XML representation of the associated rows.<br>
+        </li>
+      </ul>
+      <br>
 We change the mapping in the following way:<br>
-<ol>
-<li>Foreign keys should not appear in the XML document as
+      <ol>
+        <li>Foreign keys should not appear in the XML document as
 they
 are redundant.<br>
-</li>
-<li>Map primary keys to attributes rather than elements.</li>
-<li>Rename the element <span style="font-style: italic;">'salary'</span>
-(the enclosing element of SALARYGRADES) into <span style="font-style: italic;">'salary_grade'.</span></li>
-<li>Some elements of ROLE and PROJECT should be renamed.
+        </li>
+        <li>Map primary keys to attributes rather than elements.</li>
+        <li>Some elements of ROLE and PROJECT should be renamed.
 Their
 names are not unique due to the flat embedment into
 PROJECT_PARTICIPATION:<br>
-</li>
-<ul>
-<li>Rename the ROLE-tag <span style="font-style: italic;">'description'</span>
+        </li>
+        <ul>
+          <li>Rename the ROLE-tag <span style="font-style: italic;">'description'</span>
 into <span style="font-style: italic;">'role_description'</span>
-<br>
-</li>
-<li>Rename the PROJECT-tag <span style="font-style: italic;">'description'</span>
+            <br>
+          </li>
+          <li>Rename the PROJECT-tag <span style="font-style: italic;">'description'</span>
 into <span style="font-style: italic;">'project_description'</span></li>
-<li>Rename the PROJECT-tag <span style="font-style: italic;">'start_date'</span>
+          <li>Rename the PROJECT-tag <span style="font-style: italic;">'start_date'</span>
 into <span style="font-style: italic;">'project_start_date'</span></li>
-<li>Rename the PROJECT-tag <span style="font-style: italic;">'end_date'</span>
-into <span style="font-style: italic;">'end_start_date'</span></li>
-</ul>
-</ol>
-<br>
+          <li>Rename the PROJECT-tag <span style="font-style: italic;">'end_date'</span>
+into <span style="font-style: italic;">'project_end_date'</span></li>
+        </ul>
+      </ol>
+      <br>
 Open the mapping dialog for table EMPLYOEE:<br>
-<br>
-<img alt="" src="xmlt3.gif"><br>
-<br>
+      <br>
+      <img alt="" src="xmlt3.gif"><br>
+      <br>
 Remove the elements <span style="font-style: italic;">'empno',</span>
-<span style="font-style: italic;">'boss'</span>
+      <span style="font-style: italic;">'boss'</span>
 and <span style="font-style: italic;">'deptno'.</span>
 Add attribute <span style="font-style: italic;">empno="SQL:T.EMPNO"</span>
 to the root
 element.<br>
-<br>
-<h4> </h4>
-<h4>Step 4. Export entire employee hierarchy</h4>
+      <br>
+Open the mapping dialog for table DEPARTMENT. Remove element <span
+ style="font-style: italic;">deptno</span> and add attribute <span
+ style="font-style: italic;">deptno="SQL:T.DEPTNO"</span> to the root
+element.<br>
+      <br>
+Remove element <span style="font-style: italic;">grade</span> from
+column mapping template of table SALARY_GRADE and add the attribute <span
+ style="font-style: italic;">grade="SQL:T.GRADE"</span> to the root
+element.<br>
+      <br>
+Remove elements <span style="font-style: italic;">projectno, empno</span>
+and <span style="font-style: italic;">role_id</span> from column
+mapping template of table PROJECT_PARTICIPATION.<br>
+      <br>
+Remove element <span style="font-style: italic;">projectno</span> from
+column mapping template of table PROJECT. Rename <span
+ style="font-style: italic;">description,</span> <span
+ style="font-style: italic;">start_date</span> and <span
+ style="font-style: italic;">end_date</span> into <span
+ style="font-style: italic;">project_description,</span> <span
+ style="font-style: italic;">project_start_date</span> and <span
+ style="font-style: italic;">project_end_date.</span><br>
+      <br>
+Remove element <span style="font-style: italic;">role_id</span> from
+column mapping template of table ROLE. Rename <span
+ style="font-style: italic;">description</span> into <span
+ style="font-style: italic;">role_description</span><span
+ style="font-style: italic;">.</span>
+      <h4> </h4>
+Export data into a file <a href="scott-3.xml"><img
+ style="border: 0px solid ;" src="exporting-data-Dateien/arrow.gif"
+ hspace="4"><big><span style="font-family: monospace;"><font size="4">scott-3.xml</font></span></big></a>.
+      <h4> </h4>
+      <h4>Step 4. Export entire employee hierarchy</h4>
 Finally we export all employees into a XML tree with the president as
 root and subordinates as the children.<br>
 Do the following:<br>
-<ul>
-<li>set the aggregation-type of association 'BOSS' to
+      <ul>
+        <li>set the aggregation-type of association 'BOSS' to
 'none'.</li>
-<li>set the aggregation-type of association
+        <li>set the aggregation-type of association
 'inverse-BOSS' to
 'explicit list', set tag name to 'subordinates'.</li>
-<li>set where-condition to T.NAME='KING'.</li>
-</ul>
-Export data into a file <a href="scott-3.xml"><img style="border: 0px solid ; width: 13px; height: 13px;" src="exporting-data-Dateien/arrow.gif" hspace="4"><big><span style="font-family: monospace;"><font size="4">scott-3.xml</font></span></big></a>.<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-<br>
-</td>
-</tr>
-<tr>
-<td height="12" valign="top" width="14%"><br>
-</td>
-<td><br>
-</td>
-</tr>
-</tbody>
+        <li>set where-condition to T.NAME='KING'.</li>
+      </ul>
+Export data into a file <a href="scott-4.xml"><img
+ style="border: 0px solid ; width: 13px; height: 13px;"
+ src="exporting-data-Dateien/arrow.gif" hspace="4"><big><span
+ style="font-family: monospace;"><font size="4">scott-4.xml</font></span></big></a>.<br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      <br>
+      </td>
+    </tr>
+    <tr>
+      <td height="12" valign="top" width="14%"><br>
+      </td>
+      <td><br>
+      </td>
+    </tr>
+  </tbody>
 </table>
 </div>
-</body></html>
+</body>
+</html>
