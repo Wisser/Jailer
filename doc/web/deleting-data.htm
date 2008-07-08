@@ -35,12 +35,12 @@
     <tr>
       <td colspan="2" class="nav1background" height="33" width="100%">&nbsp;
       <b><font color="#ffffff"><a href="home.htm" target="_self"
- class="tlink">Home</a> &nbsp;&nbsp;&nbsp; <a href="quicktour.htm" target="_self" class="tlink">Quick Tour</a> &nbsp;&nbsp;&nbsp;<a
+ class="tlink">Home</a> &nbsp;&nbsp;&nbsp; <a href="quicktour.htm"
+ target="_self" class="tlink">Quick Tour</a> &nbsp;&nbsp;&nbsp;<a
  href="exporting-data.htm" target="_self" class="tlinkA">Tutorial</a>
-&nbsp;&nbsp;&nbsp; <a href="design.htm"
- target="_self" class="tlink">Documentation</a>&nbsp;&nbsp;&nbsp; <a
- href="http://sourceforge.net/forum/?group_id=197260" target="_self"
- class="tlink">Forum</a>
+&nbsp;&nbsp;&nbsp; <a href="design.htm" target="_self" class="tlink">Documentation</a>&nbsp;&nbsp;&nbsp;
+      <a href="http://sourceforge.net/forum/?group_id=197260"
+ target="_self" class="tlink">Forum</a>
 &nbsp;&nbsp;&nbsp; <a
  href="http://sourceforge.net/project/showfiles.php?group_id=197260"
  target="_self" class="tlink">Download</a> &nbsp;&nbsp;&nbsp;
@@ -99,95 +99,69 @@ Data</a></li>
 This tutorial shows you how to delete rows from database without
 violating integrity of the remaining data.<br>
             <br>
-The generation of a <span style="font-style: italic;">delete-script</span>
-is closely coupled with data export. The same restrictions are applied,
+Deleting data <span style="font-style: italic;"></span>is closely
+coupled with data exportation. The same restrictions are applied,
 no row will be deleted which is not also exported. This way you can
 always restore deleted rows by re-importing them.<br>
             <br>
-A delete-script contains DELETE statements for all exported rows which
-are not associated<br>
-with any non-exported row according to the restricted data model.
-Additionally tables can <br>
-be excluded from deletion so that their rows will never be deleted, see
-step 3.<br>
-            <h3><br>
-            </h3>
-            <h4>Step 1. Delete Scott (unsuccessful)</h4>
-Open the extraction model <big><span style="font-family: monospace;">scott.csv</span></big>
-from previous
-tutorial. Use <span style="font-style: italic;">Tools-&gt;Export Data</span>
-again and enter <big><span style="font-family: monospace;">delete-scott.sql</span></big>
-as name of delete-script:<br>
+A <span style="font-style: italic;">delete-script</span> contains
+DELETE statements for all exported rows which
+are not associated with any non-exported row according to the
+restricted data model.
+Additionally tables can be excluded from deletion so that their rows
+will never be deleted, see
+step 2.<br>
+            <h4><br>
+Objective</h4>
+Delete all projects which have ended before 2008-01-01. Delete all
+associated participations too but no role and no employee.<br>
+            <br>
+            <h3> </h3>
+            <h4>Step 1. Delete projects<br>
+            </h4>
+Create a new model. Select table PROJECT as subject table and enter
+T.END_DATE&lt;'2008-01-01' as subject condition.<br>
+            <br>
+In order to prevent the deletion of a PROJECT_PARTICIPATION, which is
+not associated with an old project but with a role of a participation
+in an old project, disable the association from ROLE to
+PROJECT_PARTICIPATION. Do the same with the association from EMPLOYEE
+to PROJECT_PARTICIPATION.<br>
+            <br>
+Disable all associations to EMPLOYEE too. This will reduce the set of
+exported employee-rows to those employees who have participated in an
+old project.<br>
+            <br>
+            <img alt="" src="delt1.gif"><br>
+            <br>
+            <br>
+Open the data export dialog. Enter <span style="font-style: italic;">delete-old-projects.sql</span>
+as name for the delete-script and start the exportation.<br>
             <p> <img src="deleting-data-Dateien/screen17.png"><br>
             </p>
+            <p><img alt="" src="delt2.gif"><br>
+            </p>
             <p><br>
-Jailer will now generate the following script too:<br>
-            <br>
-            <table
- style="background-color: rgb(51, 102, 255); text-align: left;"
- border="0" cellpadding="2" cellspacing="0">
-              <tbody>
-                <tr>
-                  <td
- style="vertical-align: top; height: 24px; background-color: rgb(202, 225, 235);"><big><span
- style="font-family: monospace;"><span style="font-weight: bold;"><span
- style="font-family: monospace;">delete-scott.sql </span></span></span><span
- style="font-family: monospace;"></span></big><br>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <table style="width: 100%; text-align: left;" border="0"
- cellpadding="0" cellspacing="0">
-              <tbody>
-                <tr>
-                  <td
- style="vertical-align: top; background-color: rgb(202, 225, 235);"
- colspan="2"><span style="font-family: monospace;"></span><span
- style="color: rgb(255, 0, 0); font-family: monospace;"></span><span
- style="font-family: monospace;">-- generated by Jailer at Fri May 02
-12:34:35 CEST 2008&nbsp; from wisser@desktop<br>
---<br>
--- extraction model:&nbsp; EMPLOYEE where NAME='SCOTT'
-(extractionmodel/scott.csv)<br>
--- database URL:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-jdbc:db2://localhost/wisser<br>
--- database user:&nbsp;&nbsp;&nbsp;&nbsp; scott<br>
--- exported entities: 7<br>
---&nbsp;&nbsp;&nbsp;&nbsp;
-DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-2<br>
---&nbsp;&nbsp;&nbsp;&nbsp;
-EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-3<br>
---&nbsp;&nbsp;&nbsp;&nbsp;
-SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-2<br>
---<br>
--- Tabu-tables:&nbsp; {&nbsp; }<br>
---<br>
--- entities to delete: 0<br>
-                  </span></td>
-                </tr>
-              </tbody>
-            </table>
-            <br>
 Jailer
-has exported 7 entities but didn't delete anything! That's because
-deleting Scott but not Scotts subordinate (who is not in the set
-defined by the extraction-model!) would violate the integrity of the
-remaining data.<br>
+has generated a script for the deletion of the two old projects and the
+six associated participations, but also for the deletion of six
+employees and one role. This role is the role of an participation in an
+old project, but not of a remaining one. The six employees have
+participated in an old project but in none of the remaining projects.<br>
             <br>
             </p>
-            <h4>Step 2. Delete Scott<br>
+            <h4>Step 2. Prevent employees and roles from being deleted<br>
             </h4>
-In order to delete Scott, me must delete his subordinate
-too. To do so, relax the restriction on the <span
- style="font-style: italic;">inverse-BOSS</span>-association:
-            <p><img src="deleting-data-Dateien/screen18.png"><br>
+Open the data model editor (<span style="font-style: italic;">Tools-&gt;Data
+Model Editor</span>). Edit the table EMPLOYEE and switch on the
+check-box "<span style="font-style: italic;">exclude from deletion</span>".
+Do the same with table ROLE.<br>
             <br>
-            <br>
-and <span style="font-style: italic;">Export Data </span>again:<br>
+            <img alt="" src="delt3.gif"
+ style="width: 600px; height: 350px;"><br>
+            <p><br>
+            <span style="font-style: italic;">Export Data </span>again.
+Employees and roles are now excluded from deletion:<br>
             <br>
             <table
  style="background-color: rgb(51, 102, 255); text-align: left;"
@@ -197,7 +171,7 @@ and <span style="font-style: italic;">Export Data </span>again:<br>
                   <td
  style="vertical-align: top; height: 24px; background-color: rgb(202, 225, 235);"><big><span
  style="font-family: monospace;"><span style="font-weight: bold;"><span
- style="font-family: monospace;">delete-scott.sql </span></span></span><span
+ style="font-family: monospace;">delete-old-projects.sql </span></span></span><span
  style="font-family: monospace;"></span></big><br>
                   </td>
                 </tr>
@@ -219,143 +193,49 @@ and <span style="font-style: italic;">Export Data </span>again:<br>
 -- database URL:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 jdbc:db2://localhost/wisser<br>
 -- database user:&nbsp;&nbsp;&nbsp;&nbsp; scott<br>
--- exported entities: 9<br>
+-- Exported Entities: 25<br>
 --&nbsp;&nbsp;&nbsp;&nbsp;
 DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 2<br>
 --&nbsp;&nbsp;&nbsp;&nbsp;
 EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-4<br>
+8<br>
+--&nbsp;&nbsp;&nbsp;&nbsp;
+PROJECT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+2<br>
+--&nbsp;&nbsp;&nbsp;&nbsp;
+PROJECT_PARTICIPATION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+6<br>
+--&nbsp;&nbsp;&nbsp;&nbsp;
+ROLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+3<br>
 --&nbsp;&nbsp;&nbsp;&nbsp;
 SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-3<br>
+4<br>
 --<br>
--- Tabu-tables:&nbsp; {&nbsp; }<br>
+-- Tabu-tables:&nbsp; { EMPLOYEE, ROLE }<br>
 --<br>
--- entities to delete: 2<br>
+-- Deleted Entities: 8<br>
 --&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-2 (-2)<br>
+PROJECT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+2<br>
+--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+PROJECT_PARTICIPATION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 6<br>
                   <br>
                   <br>
                   <br>
-Delete from EMPLOYEE Where EMPNO in (7876);<br>
-Delete from EMPLOYEE Where EMPNO in (7788);<br>
+Delete from PROJECT_PARTICIPATION Where (PROJECTNO, EMPNO, START_DATE)
+in (values (1001, 7369, '2006-01-01'), (1001, 7788, '2006-05-15'),
+(1001, 7902, '2006-01-01'), (1002, 7782, '2006-08-22'), (1002, 7876,
+'2006-08-22'), (1002, 7934, '2007-01-01'));<br>
+Delete from PROJECT Where PROJECTNO in (1001, 1002);<br>
+                  <br>
                   </span></td>
                 </tr>
               </tbody>
             </table>
             <br>
-The file <big><span style="font-family: monospace;"><font size="4">delete-scott.sql</font></span></big>
-contains <big><span style="font-family: monospace;"><font size="4">Delete</font></span></big>-statements
-for Scott and Adams.<br>
-Note that <big><span style="font-family: monospace;"><font size="4">scott.sql</font></span></big>
-now contains <big><span style="font-family: monospace;"><font size="4">Insert</font></span></big>-statements
-for Adams and his salary-grade too. <br>
-            <br>
             </p>
-            <h4>Step 3. Delete all employees but no department</h4>
-Replace the <span style="font-style: italic;">where</span>-condition
-of the extraction model with '<big><span style="font-family: monospace;">1=1</span></big>',
-or clear the field. Repeat the exportation. Jailer exports all
-employees. The delete-script now contains the departments and
-salary-grades too.<br>
-            <br>
-The reason why no department has been deleted in step 2 is that Scott
-and Adams are not the only employees working in department 'RESEARCH'.
-To prevent departments from being deleted if all their employees are
-deleted, you can exclude the table from deletion.<br>
-            <br>
-Open the data model editor (<span style="font-style: italic;">Tools-&gt;Data
-Model Editor</span>), select and <span style="font-style: italic;">edit</span>
-table DEPARTMENT and switch-on <span style="font-style: italic;">exclude
-from deletion</span>. Do the same with SALARYGRADE.<br>
-            <br>
-            <img src="deleting-data-Dateien/screen1.png"> <br>
-            <br>
-            <img src="deleting-data-Dateien/screen2.png"> <br>
-            <br>
-            <br>
-Repeat exportation. The delete-script now contains only employees.<br>
-            <br>
-            <table
- style="background-color: rgb(51, 102, 255); text-align: left;"
- border="0" cellpadding="2" cellspacing="0">
-              <tbody>
-                <tr>
-                  <td
- style="vertical-align: top; height: 24px; background-color: rgb(202, 225, 235);"><big><span
- style="font-family: monospace;"><span style="font-weight: bold;"><span
- style="font-family: monospace;">delete-scott.sql </span></span></span><span
- style="font-family: monospace;"></span></big><br>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-            <table style="width: 100%; text-align: left;" border="0"
- cellpadding="0" cellspacing="0">
-              <tbody>
-                <tr>
-                  <td
- style="vertical-align: top; background-color: rgb(202, 225, 235);"
- colspan="2"><span style="font-family: monospace;"></span><span
- style="color: rgb(255, 0, 0); font-family: monospace;"></span><span
- style="font-family: monospace;">-- generated by Jailer Fri May 02
-12:37:31 CEST 2008&nbsp; from wisser@desktop</span><br
- style="font-family: monospace;">
-                  <span style="font-family: monospace;">-- </span><br
- style="font-family: monospace;">
-                  <span style="font-family: monospace;">-- extraction
-model:&nbsp; EMPLOYEE where 1=1 (extractionmodel/f.csv)</span><br
- style="font-family: monospace;">
-                  <span style="font-family: monospace;">-- database
-URL:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; jdbc:db2://dbsrv:50001/wisser</span><br
- style="font-family: monospace;">
-                  <span style="font-family: monospace;">-- database
-user:&nbsp;&nbsp;&nbsp;&nbsp; wisser</span><br
- style="font-family: monospace;">
-                  <span style="font-family: monospace;">-- Exported
-Entities: 22</span><br style="font-family: monospace;">
-                  <span style="font-family: monospace;">--&nbsp;&nbsp;&nbsp;&nbsp;
-DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-3</span><br style="font-family: monospace;">
-                  <span style="font-family: monospace;">--&nbsp;&nbsp;&nbsp;&nbsp;
-EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-14</span><br style="font-family: monospace;">
-                  <span style="font-family: monospace;">--&nbsp;&nbsp;&nbsp;&nbsp;
-SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-5</span><br style="font-family: monospace;">
-                  <span style="font-family: monospace;">-- </span><br
- style="font-family: monospace;">
-                  <span style="font-family: monospace;">--
-Tabu-tables:&nbsp; { DEPARTMENT, SALARYGRADE }</span><br
- style="font-family: monospace;">
-                  <span style="font-family: monospace;">-- </span><br
- style="font-family: monospace;">
-                  <span style="font-family: monospace;">-- Deleted
-Entities: 14</span><br style="font-family: monospace;">
-                  <span style="font-family: monospace;">--&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-14</span><br style="font-family: monospace;">
-                  <br style="font-family: monospace;">
-                  <br style="font-family: monospace;">
-                  <br style="font-family: monospace;">
-                  <span style="font-family: monospace;">Delete from
-EMPLOYEE Where EMPNO in (7369, 7499, 7521, 7654, 7844, 7876, 7900,
-7934);</span><br style="font-family: monospace;">
-                  <span style="font-family: monospace;">Delete from
-EMPLOYEE Where EMPNO in (7698, 7782, 7788, 7902);</span><br
- style="font-family: monospace;">
-                  <span style="font-family: monospace;">Delete from
-EMPLOYEE Where EMPNO in (7566);</span><br
- style="font-family: monospace;">
-                  <span style="font-family: monospace;">Delete from
-EMPLOYEE Where EMPNO in (7839);</span><br>
-                  <span style="font-family: monospace;"> </span></td>
-                </tr>
-              </tbody>
-            </table>
-            <br>
             <br>
             <p><br>
             <br>
