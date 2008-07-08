@@ -1085,7 +1085,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			out = new PrintWriter(new FileOutputStream(vers));
 			out.println(Jailer.VERSION);
 			out.close();
-			extractionModelFrame.load("extractionmodel/Demo.csv");
+			extractionModelFrame.load("Demo.csv");
 		} catch (Exception e) {
 			UIUtil.showException(extractionModelFrame, "Error", e);
 		}
