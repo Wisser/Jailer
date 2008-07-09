@@ -34,9 +34,9 @@
 	</Company_Info>
 	<Program_Info>
 		<Program_Name>Jailer</Program_Name>
-		<Program_Version>2.2.0</Program_Version>
-		<Program_Release_Month>05</Program_Release_Month>
-		<Program_Release_Day>06</Program_Release_Day>
+		<Program_Version>2.4.0</Program_Version>
+		<Program_Release_Month>06</Program_Release_Month>
+		<Program_Release_Day>09</Program_Release_Day>
 		<Program_Release_Year>2008</Program_Release_Year>
 		<Program_Cost_Dollars />
 		<Program_Cost_Other_Code />
@@ -59,9 +59,9 @@
 			<Filename_Previous />
 			<Filename_Generic />
 			<Filename_Long />
-			<File_Size_Bytes>5100000</File_Size_Bytes>
-			<File_Size_K>4980.47</File_Size_K>
-			<File_Size_MB>4.86</File_Size_MB>
+			<File_Size_Bytes>6100000</File_Size_Bytes>
+			<File_Size_K>5980.47</File_Size_K>
+			<File_Size_MB>5.86</File_Size_MB>
 		</File_Info>
 		<Expire_Info>
 			<Has_Expire_Info>N</Has_Expire_Info>
