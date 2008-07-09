@@ -1,5 +1,5 @@
 2.4.0
- - template based column-to-XML mapping
+ - template based SQL-to-XML mapping
  - rendering of table details
  - improved tutorials
 
