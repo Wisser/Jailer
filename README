@@ -7,19 +7,19 @@ Improves database performance by removing and archiving obsolete data without vi
 Features
 ========
 
+    * Exports consistent and referentially intact row-sets from your productive database and imports the data into your development and test environment.
+    * Improves database performance by removing and archiving obsolete data without violating integrity.
     * Mass data export to XML and SQL.
     * Generates hierarchically structured XML and topologically sorted SQL-DML.
-    * Exports consistent and referentially intact row-sets from your productive database and imports the data into your development and test environment. 
-    * Removes and archives obsolete data from your productive database without violating integrity.
     * Open Source. Entirely written in Java. Platform independent. DBMS agnostic.
 
 
 Installation
 ============
 
-Unpack the file jailer_2.3.0.zip. You will get the following files:
-$unzip jailer_2.3.0.zip
-$cd jailer_2.3.0
+Unpack the file jailer_2.4.0.zip. You will get the following files:
+$unzip jailer_2.4.0.zip
+$cd jailer_2.4.0
 $ll
 drwxr-xr-x  5 wisser users    152 2008-05-06 10:10 doc
 drwxr-xr-x  5 wisser users    120 2008-04-28 16:17 epilog
