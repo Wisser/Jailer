@@ -310,7 +310,7 @@ public class Table extends ModelElement implements Comparable<Table> {
     	// add associations:
     	for (Association a: associations) {
     		if (a.getAggregationSchema() != AggregationSchema.NONE && !mappedAssociations.contains(a.getName())) {
-				Comment comment= template.createComment("associated " + a.destination.getName() + (Cardinality.MANY_TO_ONE.equals(a.getCardinality()) || Cardinality.ONE_TO_ONE.equals(a.getCardinality())? " row" : " rows"));
+				Comment comment= template.createComment("associated " + a.destination.getUnqualifiedName() + (Cardinality.MANY_TO_ONE.equals(a.getCardinality()) || Cardinality.ONE_TO_ONE.equals(a.getCardinality())? " row" : " rows"));
     			template.getChildNodes().item(0).appendChild(comment);
     			Element associationElement = template.createElementNS(XmlUtil.NS_URI, XmlUtil.ASSOCIATION_TAG);
     			associationElement.setPrefix(XmlUtil.NS_PREFIX);
@@ -362,7 +362,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 		DocumentBuilder builder = factory.newDocumentBuilder();
 		Document template = builder.newDocument();
 		
-		Element root = template.createElement(XmlUtil.asElementName(getName().toLowerCase()));
+		Element root = template.createElement(XmlUtil.asElementName(getUnqualifiedName().toLowerCase()));
 		root.setAttributeNS("http://www.w3.org/2000/xmlns/",
     			"xmlns:" + XmlUtil.NS_PREFIX,
     			XmlUtil.NS_URI);
@@ -370,7 +370,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 		boolean commented = false;
 		for (Column column: getColumns()) {
 			if (!commented) {
-				Comment comment= template.createComment("columns of " + getName() + " as T");
+				Comment comment= template.createComment("columns of " + getUnqualifiedName() + " as T");
     			root.appendChild(comment);
     			commented = true;
 			}
@@ -380,6 +380,33 @@ public class Table extends ModelElement implements Comparable<Table> {
 		}
 		
 		return template;
+	}
+
+	/**
+	 * Gets schema name of table.
+	 * 
+	 * @param defaultSchema the default schema to return if table name is unqualified
+	 * @return schema name
+	 */
+	public String getSchema(String defaultSchema) {
+		int i = name.indexOf('.');
+		if (i >= 0) {
+			return name.substring(0, i);
+		}
+		return defaultSchema;
+	}
+
+	/**
+	 * Gets unqualified name of table.
+	 * 
+	 * @return unqualified name of table
+	 */
+	public String getUnqualifiedName() {
+		int i = name.indexOf('.');
+		if (i >= 0) {
+			return name.substring(i + 1);
+		}
+		return name;
 	}
     
 }

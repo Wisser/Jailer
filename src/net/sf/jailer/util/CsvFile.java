@@ -81,6 +81,9 @@ public class CsvFile {
             	}
             }
             StringBuffer sb = new StringBuffer();
+            if (l >= cells.size()) {
+            	l = cells.size() - 1;
+            }
             for (int i = 0; i <= l; ++i) {
             	sb.append(encodeCell(cells.get(i)) + "; ");
             }

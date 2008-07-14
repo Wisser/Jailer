@@ -170,6 +170,9 @@ public class CommandLineParser {
     @Option(name="-schema",usage="schema to reduce JDBC-Introspection to", metaVar="export-script")
     public String schema = null;
 
+    @Option(name="-qualifyNames",usage="add schema prefix to table names after DB-introspection", metaVar="export-script")
+    public boolean qualifyNames = false;
+
     @Option(name="-d",usage="name of the delete-script file (compressed if it ends with '.zip' or '.gz')", metaVar="delete-script")
     public String deleteScriptFileName = null;
 

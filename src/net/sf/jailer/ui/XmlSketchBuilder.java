@@ -98,7 +98,7 @@ public class XmlSketchBuilder {
 	private static Node[] insertAssociationSketch(Association association, Document doc, int depth) throws ParserConfigurationException, SAXException, IOException {
 		if (association.getAggregationSchema() == AggregationSchema.EXPLICIT_LIST) {
 			Element e1 = doc.createElement(association.getAggregationTagName());
-			Element e2 = doc.createElement(association.destination.getName().toLowerCase());
+			Element e2 = doc.createElement(association.destination.getUnqualifiedName().toLowerCase());
 			e1.appendChild(e2);
 			if (association.getCardinality() != Cardinality.MANY_TO_ONE && association.getCardinality() != Cardinality.ONE_TO_ONE) {
 				e1.appendChild(doc.createComment("..."));
@@ -148,16 +148,16 @@ public class XmlSketchBuilder {
 			});
 
 			if (depth == 0) {
-				sb.append("<" + table.getName().toLowerCase() + ">\n");
-				sb.append("    -- elements of " + table.getName() + " --\n");
+				sb.append("<" + table.getUnqualifiedName().toLowerCase() + ">\n");
+				sb.append("    -- elements of " + table.getUnqualifiedName() + " --\n");
 			}
 			String indent = "    ";
 			for (Association a: sortedSourceAssociations) {
 				if (a.getAggregationSchema() == AggregationSchema.EXPLICIT_LIST) {
 					sb.append(indent + "<" + a.getAggregationTagName() + ">\n");
-					sb.append(indent + "    <" + a.destination.getName().toLowerCase() + "/>\n");
+					sb.append(indent + "    <" + a.destination.getUnqualifiedName().toLowerCase() + "/>\n");
 					if (a.getCardinality() != Cardinality.MANY_TO_ONE && a.getCardinality() != Cardinality.ONE_TO_ONE) {
-						sb.append(indent + "    <" + a.destination.getName().toLowerCase() + "/>\n");
+						sb.append(indent + "    <" + a.destination.getUnqualifiedName().toLowerCase() + "/>\n");
 						sb.append(indent + "      ...\n");
 					}
 					sb.append(indent + "</" + a.getAggregationTagName() + ">\n");
@@ -168,16 +168,16 @@ public class XmlSketchBuilder {
 						sb.append(indent + "  ...\n");
 					}
 				} else if (a.getAggregationSchema() == AggregationSchema.FLAT) {
-					sb.append(indent + "-- elements of " + a.destination.getName() + "(flattened " + a.getName() + ") --\n");
+					sb.append(indent + "-- elements of " + a.destination.getUnqualifiedName() + "(flattened " + a.getName() + ") --\n");
 					sb.append(buildSketch2(a.destination, depth + 1));
 					if (a.getCardinality() != Cardinality.MANY_TO_ONE && a.getCardinality() != Cardinality.ONE_TO_ONE) {
-						sb.append(indent + "-- elements of " + a.destination.getName() + "(flattened " + a.getName() + ") --\n");
+						sb.append(indent + "-- elements of " + a.destination.getUnqualifiedName() + "(flattened " + a.getName() + ") --\n");
 						sb.append(indent + "     ...\n");
 					}
 				}
 			}
 			if (depth == 0) {
-				sb.append("</" + table.getName().toLowerCase() + ">\n");
+				sb.append("</" + table.getUnqualifiedName().toLowerCase() + ">\n");
 			}
 		}
 		

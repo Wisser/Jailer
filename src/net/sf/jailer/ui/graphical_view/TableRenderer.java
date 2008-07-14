@@ -154,11 +154,14 @@ public class TableRenderer extends AbstractShapeRenderer {
         if (item.canGetString(m_labelName) ) {
         	String tableName = item.getString(m_labelName);
         	Table table = model.getTable(tableName);
+        	if (table != null) {
+        		tableName = table.getUnqualifiedName();
+        	}
         	if (table != null && graphicalDataModelView.showDetails(table)) {
         		if (textCache.containsKey(table.getName())) {
         			return textCache.get(table.getName());
         		}
-        		StringBuilder sb = new StringBuilder(table.getName() + " \n-\n");
+        		StringBuilder sb = new StringBuilder(tableName + " \n-\n");
         		for (Column c: table.getColumns()) {
         			for (Column pk: table.primaryKey.getColumns()) {
         				if (pk.name.equals(c.name)) {

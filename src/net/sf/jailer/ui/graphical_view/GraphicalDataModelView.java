@@ -527,7 +527,7 @@ public class GraphicalDataModelView extends JPanel {
 		JMenuItem selectAsRoot = new JMenuItem("Focus " + table.getName());
 		selectAsRoot.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
-				modelEditor.setRoot(table);
+				modelEditor.setRootSelection(table);
 			}
 		});
 		JMenuItem zoomToFit = new JMenuItem("Zoom to fit");
@@ -1075,7 +1075,7 @@ public class GraphicalDataModelView extends JPanel {
 	/**
 	 * Expands all tables.
 	 */
-	public void expandAll() {
+	public void expandAll(boolean expandOnlyVisibleTables) {
 		boolean stop = false;
 		List<Table> toExpand = new ArrayList<Table>();
 		toExpand.addAll(tableNodes.keySet());
@@ -1085,7 +1085,10 @@ public class GraphicalDataModelView extends JPanel {
 				boolean ask = tableNodes.size() <= EXPAND_LIMIT;
 				while (!toExpand.isEmpty()) {
 					Table table = toExpand.remove(0);
-					toExpand.addAll(expandTable(theGraph, table));
+					List<Table> tables = expandTable(theGraph, table);
+					if (!expandOnlyVisibleTables) {
+						toExpand.addAll(tables);
+					}
 					if (ask && tableNodes.size() > EXPAND_LIMIT) {
 						askNow = true;
 						break;
@@ -1152,6 +1155,15 @@ public class GraphicalDataModelView extends JPanel {
 		reversedShowDetailsTables.clear();
 		visualization.invalidateAll();
 		visualization.repaint();
+	}
+
+	/**
+	 * Gets all visible tables.
+	 * 
+	 * @return set of all tables which are currently visible
+	 */
+	public Set<Table> getVisibleTables() {
+		return tableNodes.keySet();
 	}
 	
 }

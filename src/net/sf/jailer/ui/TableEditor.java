@@ -20,7 +20,6 @@ import java.awt.Component;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -656,6 +655,8 @@ public class TableEditor extends javax.swing.JDialog {
     	String msg = null;
     	if (nameField.getText().trim().length() == 0) {
     		msg = "No table name";
+    	} else if (getCurrentPrimaryKeys().isEmpty()) {
+    		msg = "Primary key missing";
     	} else {
     		for (Line l: tables) {
     			if (l != currentTableLine && l.cells.get(0).equalsIgnoreCase(nameField.getText().trim())) {
@@ -692,6 +693,10 @@ public class TableEditor extends javax.swing.JDialog {
 		currentColumnLine = columnLines.get(tableLine.cells.get(0));
 		if (currentColumnLine == null) {
 			currentColumnLine = new CsvFile.Line("", new ArrayList<String>(Arrays.asList(tableLine.cells.get(0))));
+			if (currentColumnLine.length == 0) {
+				// new table without name
+				currentColumnLine.length = 1;
+			}
 		}
 		
 		List<String> oldTableLineCells = new ArrayList<String>(currentTableLine.cells);
