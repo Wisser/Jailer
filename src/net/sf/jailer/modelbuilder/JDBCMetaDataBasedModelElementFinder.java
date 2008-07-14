@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
@@ -65,14 +66,16 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         Collection<Association> associations = new ArrayList<Association>();
         DatabaseMetaData metaData = statementExecutor.getMetaData();
         ResultSet resultSet;
+        String defaultSchema = getDefaultSchema(statementExecutor, statementExecutor.dbUser);
+        
         for (Table table: dataModel.getTables()) {
-        	resultSet = metaData.getExportedKeys(null, statementExecutor.getIntrospectionSchema(), table.getName());
+        	resultSet = metaData.getExportedKeys(null, table.getSchema(statementExecutor.getIntrospectionSchema()), table.getUnqualifiedName());
             _log.info("find associations with " + table.getName());
             Map<String, Association> fkMap = new HashMap<String, Association>();
             while (resultSet.next()) {
-                Table pkTable = dataModel.getTable(resultSet.getString(3));
+                Table pkTable = dataModel.getTable(toQualifiedTableName(defaultSchema, resultSet.getString(2), resultSet.getString(3)));
                 String pkColumn = resultSet.getString(4);
-                Table fkTable = dataModel.getTable(resultSet.getString(7));
+                Table fkTable = dataModel.getTable(toQualifiedTableName(defaultSchema, resultSet.getString(6), resultSet.getString(7)));
                 String fkColumn = resultSet.getString(8);
                 String foreignKey = resultSet.getString(12);
 				String fkName = fkTable + "." + foreignKey;
@@ -85,7 +88,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	                    associations.add(association);
 	                    fkMap.put(fkName, association);
 	                    if (foreignKey != null) {
-	                    	namingSuggestion.put(association, new String[] { foreignKey, fkTable.getName() + "." + foreignKey });
+	                    	namingSuggestion.put(association, new String[] { foreignKey, fkTable.getUnqualifiedName() + "." + foreignKey });
 	                    }
 	                }
                 }
@@ -95,6 +98,21 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         return associations;
     }
 
+    /**
+     * Gets qualified table name.
+     * 
+     * @param defaultSchema default schema
+     * @param schema schema
+     * @param table table
+     * @return qualified table name
+     */
+    private String toQualifiedTableName(String defaultSchema, String schema, String table) {
+    	if (schema != null && schema.trim().length() > 0 && !schema.trim().equals(defaultSchema)) {
+    		return schema.trim() + "." + table;
+    	}
+    	return table;
+    }
+    
     /**
      * Finds all tables in DB schema.
      * 
@@ -112,6 +130,15 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
             String tableName = resultSet.getString(3);
             if ("TABLE".equalsIgnoreCase(resultSet.getString(4))) {
                 if (isValidName(tableName)) {
+                	if (CommandLineParser.getInstance().qualifyNames) {
+                		String schemaName = resultSet.getString(2);
+                		if (schemaName != null) {
+                			schemaName = schemaName.trim();
+                			if (schemaName.length() > 0) {
+                				tableName = schemaName + "." + tableName;
+                			}
+                		}
+                	}
                 	tableNames.add(tableName);
                 	_log.info("found table " + tableName);
                 } else {
@@ -122,7 +149,8 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         resultSet.close();
         Map<String, Map<Integer, Column>> pkColumns = new HashMap<String, Map<Integer, Column>>();
         for (String tableName: tableNames) {
-            resultSet = metaData.getPrimaryKeys(null, statementExecutor.getIntrospectionSchema(), tableName);
+        	Table tmp = new Table(tableName, null, false);
+            resultSet = metaData.getPrimaryKeys(null, tmp.getSchema(statementExecutor.getIntrospectionSchema()), tmp.getUnqualifiedName());
             Map<Integer, Column> pk = pkColumns.get(tableName);
             if (pk == null) {
                 pk = new HashMap<Integer, Column>();
@@ -135,7 +163,8 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
             resultSet.close();
         }
         for (String tableName: tableNames) {
-            resultSet = metaData.getColumns(null, statementExecutor.getIntrospectionSchema(), tableName, null);
+        	Table tmp = new Table(tableName, null, false);
+            resultSet = metaData.getColumns(null, tmp.getSchema(statementExecutor.getIntrospectionSchema()), tmp.getUnqualifiedName(), null);
             Map<Integer, Column> pk = pkColumns.get(tableName);
             while (resultSet.next()) {
                 String colName = resultSet.getString(4);
@@ -206,6 +235,43 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				schemas.add(rs.getString("TABLE_SCHEM"));
 			}
 			rs.close();
+			
+			// don't remove empty schemas 
+//			for (Iterator<String> i = schemas.iterator(); i.hasNext(); ) {
+//				String schema = i.next();
+//				if (!schema.equalsIgnoreCase(userName.trim())) {
+//					rs = metaData.getTables(null, schema, "%", new String[] { "TABLE" });
+//					if (!rs.next()) {
+//						i.remove();
+//					}
+//					rs.close();
+//				}
+//			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+			if (userName != null) {
+				schemas.add(userName);
+			}
+		}
+		return schemas;
+    }
+
+	/**
+     * Gets default schema of DB.
+     * 
+     * @param statementExecutor the statement executor for executing SQL-statements
+     * @param userName schema with this name may be empty
+     */ 
+    public static String getDefaultSchema(StatementExecutor statementExecutor, String userName) throws Exception {
+    	List<String> schemas = new ArrayList<String>();
+		try {
+			DatabaseMetaData metaData = statementExecutor.getMetaData();
+			ResultSet rs = metaData.getSchemas();
+			while (rs.next()) {
+				schemas.add(rs.getString("TABLE_SCHEM"));
+			}
+			rs.close();
+			String userSchema = null;
 			for (Iterator<String> i = schemas.iterator(); i.hasNext(); ) {
 				String schema = i.next();
 				if (!schema.equalsIgnoreCase(userName.trim())) {
@@ -214,15 +280,22 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 						i.remove();
 					}
 					rs.close();
+				} else {
+					userSchema = schema;
 				}
+			}
+			if (userSchema != null) {
+				return userSchema;
+			}
+			if (schemas.size() == 0) {
+				return userName;
+			} else {
+				return schemas.get(0);
 			}
 		} catch (SQLException e) {
 			e.printStackTrace();
-			if (userName != null) {
-				schemas.add(userName);
-			}
+			return userName;
 		}
-		return schemas;
     }
 
     /**
@@ -236,7 +309,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     public List<Column> findColumns(Table table, StatementExecutor statementExecutor) throws Exception {
     	List<Column> columns = new ArrayList<Column>();
     	DatabaseMetaData metaData = statementExecutor.getMetaData();
-        ResultSet resultSet = metaData.getColumns(null, statementExecutor.getIntrospectionSchema(), table.getName(), null);
+        ResultSet resultSet = metaData.getColumns(null, table.getSchema(statementExecutor.getIntrospectionSchema()), table.getUnqualifiedName(), null);
         while (resultSet.next()) {
             String colName = resultSet.getString(4);
             int type = resultSet.getInt(5);

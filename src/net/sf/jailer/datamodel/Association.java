@@ -350,7 +350,7 @@ public class Association extends ModelElement {
     	String tag;
     	if (aggregationTagName == null) {
     		if (name.startsWith("inverse-")) {
-    			tag = destination.getName().toLowerCase();
+    			tag = destination.getUnqualifiedName().toLowerCase();
     		} else {
     			tag = name.toLowerCase();
     		}

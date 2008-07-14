@@ -531,6 +531,10 @@ public class DataModelEditor extends javax.swing.JDialog {
 
     private void newTableActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newTableActionPerformed
     	List<String> cells = new ArrayList<String>();
+    	cells.add("");
+    	cells.add("N");
+    	cells.add("");
+    	cells.add("Data Model Editor");
     	for (int i = 0; i < 100; ++i) {
     		cells.add("");
     	}

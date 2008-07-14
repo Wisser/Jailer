@@ -1,3 +1,9 @@
+2.4.1.beta
+ - basic support for accessing tables from different schema
+ - new feature "Expand all visible tables" 
+ - disabled associations are no longer hidden in tree view
+ - minor bug fixes
+
 2.4.0
  - template based SQL-to-XML mapping
  - rendering of table details

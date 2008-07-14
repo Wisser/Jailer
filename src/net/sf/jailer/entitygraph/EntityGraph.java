@@ -43,12 +43,12 @@ public class EntityGraph {
     /**
      * Name of the graph-table.
      */
-    private static final String ENTITY_GRAPH = "JL_GRAPH";
+	public static final String ENTITY_GRAPH = "JL_GRAPH";
     
     /**
      * Name of the (helper) set-table.
      */
-    private static final String ENTITY_SET_ELEMENT = "JL_SET";
+    public static final String ENTITY_SET_ELEMENT = "JL_SET";
     
     /**
      * Name of the entity-table.

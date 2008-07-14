@@ -36,6 +36,7 @@ import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.util.CsvFile;
 
 import org.apache.log4j.Logger;
@@ -168,7 +169,8 @@ public class ModelBuilder {
             }
         });
         for (Table table: sortedTables) {
-        	if (!EXCLUDE_TABLES_CSV.contains(new String[] { table.getName()}) && 
+        	if (!isJailerTable(table) &&
+        		!EXCLUDE_TABLES_CSV.contains(new String[] { table.getName()}) && 
         	    !EXCLUDE_TABLES_CSV.contains(new String[] { table.getName().toUpperCase() })) {
                 if (table.primaryKey.getColumns().isEmpty()) {
             		String warning = "Table " + table.getName() + " rejected: no primary key";
@@ -263,7 +265,8 @@ public class ModelBuilder {
         
         StringBuilder columnsDefinition = new StringBuilder();
         for (Table table: allTables) {
-        	if (!EXCLUDE_TABLES_CSV.contains(new String[] { table.getName()}) && 
+        	if (!isJailerTable(table) &&
+        	    !EXCLUDE_TABLES_CSV.contains(new String[] { table.getName()}) && 
         		!EXCLUDE_TABLES_CSV.contains(new String[] { table.getName().toUpperCase() })) {
         		if (!table.primaryKey.getColumns().isEmpty()) {
 	        		for (ModelElementFinder finder: modelElementFinder) {
@@ -322,6 +325,20 @@ public class ModelBuilder {
         associationB.reversalAssociation = associationA;
         associationA.source.associations.add(associationA);
         associationB.source.associations.add(associationB);
+    }
+    
+    /**
+     * Checks if table is one of Jailers working tables.
+     * 
+     * @param table the table to check
+     * @return <code>true</code> if table is one of Jailers working tables
+     */
+    private static boolean isJailerTable(Table table) {
+    	return EntityGraph.ENTITY.equalsIgnoreCase(table.getUnqualifiedName())
+	    	|| EntityGraph.DEPENDENCY.equalsIgnoreCase(table.getUnqualifiedName())
+	    	|| EntityGraph.ENTITY_GRAPH.equalsIgnoreCase(table.getUnqualifiedName())
+	    	|| EntityGraph.ENTITY_SET_ELEMENT.equalsIgnoreCase(table.getUnqualifiedName())
+    		|| "JL_CONFIG".equalsIgnoreCase(table.getUnqualifiedName());
     }
     
     /**

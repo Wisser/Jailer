@@ -129,6 +129,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu1 = new javax.swing.JMenu();
         collapseAll = new javax.swing.JMenuItem();
         expandAll = new javax.swing.JMenuItem();
+        expandAllVisible = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
         jMenuItem4 = new javax.swing.JMenuItem();
         refresh = new javax.swing.JMenuItem();
@@ -300,6 +301,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
 
         jMenu1.add(expandAll);
+
+        expandAllVisible.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_W, java.awt.event.InputEvent.CTRL_MASK));
+        expandAllVisible.setText("Expand all visible tables");
+        expandAllVisible.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                expandAllVisibleActionPerformed(evt);
+            }
+        });
+
+        jMenu1.add(expandAllVisible);
 
         jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
         jMenuItem3.setText("Fix all");
@@ -490,6 +501,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void expandAllVisibleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_expandAllVisibleActionPerformed
+    	extractionModelEditor.expandAllVisibleTables();
+    }//GEN-LAST:event_expandAllVisibleActionPerformed
+
     private void showTableDetailsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showTableDetailsActionPerformed
     	extractionModelEditor.graphView.updateTableDetailsMode();
     }//GEN-LAST:event_showTableDetailsActionPerformed
@@ -627,11 +642,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		        	List<String> args = new ArrayList<String>();
 		        	args.add("build-model");
 		        	dbConnectionDialog.addDbArgs(args);
-	        		String schema = dbConnectionDialog.selectDBSchema(this);
+		        	boolean[] isDefaultSchema = new boolean[1];
+	        		String schema = dbConnectionDialog.selectDBSchema(this, isDefaultSchema);
 	        		if (!"".equals(schema)) {
 		        		if (schema != null) {
 		        			args.add("-schema");
 		        			args.add(schema);
+		        		}
+		        		if (!isDefaultSchema[0]) {
+		        			args.add("-qualifyNames");
 		        		}
 			        	if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword())) {
 		        			DataModelEditor dataModelEditor = new DataModelEditor(this, true);
@@ -738,7 +757,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         	if (connectToDBIfNeeded("Html rendering")) {
 	        	List<String> args = new ArrayList<String>();
 	        	args.add("render-datamodel");
-	        	String schema = dbConnectionDialog.selectDBSchema(this);
+	        	String schema = dbConnectionDialog.selectDBSchema(this, new boolean[1]);
         		if (!"".equals(schema)) {
 	        		if (schema != null) {
 	        			args.add("-schema");
@@ -849,9 +868,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	extractionModelEditor.expand();
     }//GEN-LAST:event_expandAllActionPerformed
 
-        private void showIgnoredActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showIgnoredActionPerformed
-        extractionModelEditor.refresh(true, false);
-        }//GEN-LAST:event_showIgnoredActionPerformed
+    private void showIgnoredActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showIgnoredActionPerformed
+//      extractionModelEditor.refresh(true, false);
+    	extractionModelEditor.resetGraphEditor(false);
+    }//GEN-LAST:event_showIgnoredActionPerformed
 
     private void collapseAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_collapseAllActionPerformed
         extractionModelEditor.refresh(false, true);
@@ -859,7 +879,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_collapseAllActionPerformed
 
     private void refreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshActionPerformed
-    	extractionModelEditor.refresh(true, true);
+    	extractionModelEditor.refresh(false, true);
     }//GEN-LAST:event_refreshActionPerformed
 
     private void saveAsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsActionPerformed
@@ -1100,6 +1120,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JPanel editorPanel;
     private javax.swing.JMenuItem exit;
     private javax.swing.JMenuItem expandAll;
+    private javax.swing.JMenuItem expandAllVisible;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem helpContent;
     private javax.swing.JMenuItem helpForum;

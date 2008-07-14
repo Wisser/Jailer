@@ -57,8 +57,6 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import sdoc.SyntaxSupport;
-
 import net.sf.jailer.Jailer;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
@@ -71,6 +69,7 @@ import net.sf.jailer.ui.graphical_view.AssociationRenderer;
 import net.sf.jailer.ui.graphical_view.GraphicalDataModelView;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.SqlUtil;
+import sdoc.SyntaxSupport;
 
 /**
  * Editor for {@link ExtractionModel}s.
@@ -811,6 +810,17 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			resetGraphEditor(true);
 		}
 	}
+	
+	/**
+     * Sets root table selection of select-box.
+     * 
+     * @param table the new root
+     */
+	public void setRootSelection(Table table) {
+		if (table != null) {
+			rootTable.setSelectedItem(table.getName());
+		}
+	}
 
     /**
      * {@link RestrictionDefinition}s currently rendered in restrictions-table.
@@ -1126,9 +1136,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		while (!agenda.isEmpty()) {
 			Association a = agenda.get(0);
 			agenda.remove(0);
-			if (dontExclude == null && extractionModelFrame.hideIgnored() && a.isIgnored()) {
-				continue;
-			}
+			// since 2.4.1 disabled associations are only hidden in graphical view, not in the tree
+//			if (dontExclude == null && extractionModelFrame.hideIgnored() && a.isIgnored()) {
+//				continue;
+//			}
 			if (toNode.get(a) == null) {
 				Association rep = null;
 				for (ModelElement cand: toNode.keySet()) {
@@ -1161,14 +1172,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				}
 			}
 		}
-		
-		if (dontExclude != null && dontExcludeNode != null && extractionModelFrame.hideIgnored()) {
+	
+		// since 2.4.1 disabled associations are only hidden in graphical view, not in the tree
+/*		if (dontExclude != null && dontExcludeNode != null && extractionModelFrame.hideIgnored()) {
 			// remove ignored associations except those on path to dontExclude
 			TreeNode[] path = dontExcludeNode.getPath();
 			treeNodes.clear();
 			removeIgnoredAssociations(root, path);
 		}
-
+*/
 		if (treeModel != null) {
 			treeModel.setRoot(root);
 		} else {
@@ -1636,10 +1648,32 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * Expands all node in associations tree.
 	 */
 	public void expand() {
+		graphView.expandAll(false);
+		expandPathsToVisibleTables();
+	}
+
+	/**
+	 * Expands all associations with visible tables in associations tree.
+	 */
+	public void expandAllVisibleTables() {
+		graphView.expandAll(true);
+		expandPathsToVisibleTables();
+	}
+	
+	/**
+	 * Expands all associations with visible tables in associations tree.
+	 */
+	private void expandPathsToVisibleTables() {
+		Set<Table> visibleTables = graphView.getVisibleTables();
 		for (DefaultMutableTreeNode node: treeNodes) {
-			tree.expandPath(new TreePath(node.getPath()));
+			if (node.getUserObject() instanceof Association) {
+				if (!visibleTables.contains((((Association) node.getUserObject()).destination))) {
+					continue;
+				}
+			}
+			TreePath treePath = new TreePath(node.getPath());
+			tree.expandPath(treePath);
 		}
-		graphView.expandAll();
 	}
 
 	/**

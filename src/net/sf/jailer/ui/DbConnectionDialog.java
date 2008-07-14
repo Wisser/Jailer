@@ -445,27 +445,34 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     /**
      * Selects the DB-schema to for introspection.
      * 
+     * @param isDefaultSchema array with a least one field to be set to true if the selected schema is the default schema
      * @return the DB-schema to for introspection
      */
-	public String selectDBSchema(Component parent) throws Exception {
+	public String selectDBSchema(Component parent, boolean[] isDefaultSchema) throws Exception {
 		StatementExecutor statementExecutor = new StatementExecutor(driverClass.getText(), dbUrl.getText(), user.getText(), password.getText());
 		List<String> schemas = JDBCMetaDataBasedModelElementFinder.getSchemas(statementExecutor, user.getText());
+		String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(statementExecutor, user.getText());
 		statementExecutor.shutDown();
+		isDefaultSchema[0] = false;
 		if (schemas.size() == 1) {
+			if (schemas.get(0).equalsIgnoreCase(user.getText().trim())) {
+				isDefaultSchema[0] = true;
+			}
 			return schemas.get(0);
 		}
 		if (schemas.isEmpty()) {
+			isDefaultSchema[0] = true;
 			return null;
 		}
-		for (String s: schemas) {
-			if (s.equalsIgnoreCase(user.getText().trim())) {
-				return s;
-			}
-		}
-		String s = (String) JOptionPane.showInputDialog(parent, "Select schema to introspect", "Schema", JOptionPane.QUESTION_MESSAGE, null, schemas.toArray(), schemas.get(0));
+		String s = (String) JOptionPane.showInputDialog(parent, "Select schema to introspect", "Schema", JOptionPane.QUESTION_MESSAGE, null, schemas.toArray(), defaultSchema);
 		if (s == null) {
+			isDefaultSchema[0] = true;
 			return "";
 		}
+		if (s.equalsIgnoreCase(user.getText().trim())) {
+			isDefaultSchema[0] = true;
+		}
+		// TODO: support for PostgreSQL (public schema)
 		return s;
 	}
     
