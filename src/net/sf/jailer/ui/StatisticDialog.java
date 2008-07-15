@@ -31,7 +31,7 @@ public class StatisticDialog extends javax.swing.JDialog {
         if (ps == null) {
         	ps = new Dimension(100, 100);
         }
-        int w = 250, h = Math.min(Math.max(70 + ps.height, 100), 300);
+        int w = 300, h = Math.min(Math.max(70 + ps.height, 100), 350);
         setSize(w, h);
         setLocation(Math.max(0, parent.getX() + parent.getWidth() / 2 - w / 2),
                     Math.max(0, parent.getY() + parent.getHeight() / 2 - h / 2));
@@ -46,11 +46,11 @@ public class StatisticDialog extends javax.swing.JDialog {
      * @param line the line
      */
     private void addLine(String line) {
-    	String splits[] = line.split(": *");
-
+    	String splits[] = line.split(" *: *");
+    	
     	JLabel label1 = new JLabel();
     	label1.setFont(new java.awt.Font("Dialog", 0, 12));
-	    label1.setText("  " + splits[0] + (splits.length > 1? ":     " : " "));
+	    label1.setText("  " + splits[0] + (splits.length > 1? "     " : " "));
 	    java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 	    gridBagConstraints.gridx = 0;
 	    gridBagConstraints.gridy = nextY;

@@ -147,7 +147,11 @@ public class DataModel {
      * @return the display name of the table
      */
     public String getDisplayName(Table table) {
-        return displayName.get(table);
+        String displayName = this.displayName.get(table);
+        if (displayName == null) {
+        	return table.getName();
+        }
+        return displayName;
     }
 
     /**

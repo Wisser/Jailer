@@ -469,10 +469,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			isDefaultSchema[0] = true;
 			return "";
 		}
-		if (s.equalsIgnoreCase(user.getText().trim())) {
+		if (s.equalsIgnoreCase(defaultSchema)) {
 			isDefaultSchema[0] = true;
 		}
-		// TODO: support for PostgreSQL (public schema)
 		return s;
 	}
     
