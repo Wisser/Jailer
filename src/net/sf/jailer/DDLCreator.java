@@ -21,10 +21,12 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
+import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.SqlScriptExecutor;
+import net.sf.jailer.util.SqlUtil;
 
 /**
  * Creates the DDL for the working-tables.
@@ -83,7 +85,7 @@ public class DDLCreator {
 	        	try {
 	        		final boolean[] uptodate = new boolean[] { false };
 	        		final DataModel datamodel = new DataModel();
-	        		statementExecutor.executeQuery("Select jvalue from JL_CONFIG where jversion='" + Jailer.VERSION + "' and jkey='upk'", new StatementExecutor.ResultSetReader() {
+	        		statementExecutor.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE + " where jversion='" + Jailer.VERSION + "' and jkey='upk'", new StatementExecutor.ResultSetReader() {
 						public void readCurrentRow(ResultSet resultSet) throws SQLException {
 							uptodate[0] = resultSet.getString(1).equals(datamodel.getUniversalPrimaryKey().toSQL(null));
 						}
@@ -102,6 +104,55 @@ public class DDLCreator {
 		}
         
         return false;
+	}
+
+	/**
+     * Checks for conflicts of existing tables and working-tables.
+     * 
+     * @return name of table in conflict or <code>null</code>
+     */
+	public static String getTableInConflict(String driverClass, String dbUrl, String user, String password) {
+		try {
+			if (driverClass != null) {
+	        	StatementExecutor statementExecutor = new StatementExecutor(driverClass, dbUrl, user, password);
+	        	statementExecutor.setSilent(true);
+	        	try {
+	        		final boolean[] uptodate = new boolean[] { false };
+	        		statementExecutor.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE + " where jkey='magic' and jvalue='837065098274756382534403654245288'", new StatementExecutor.ResultSetReader() {
+						public void readCurrentRow(ResultSet resultSet) throws SQLException {
+							uptodate[0] = true;
+						}
+						public void close() {
+						}
+	        		});
+	        		if (uptodate[0]) {
+	        			return null;
+	        		}
+	        	} catch (Exception e) {
+	        		// fall through
+	        	}
+	            
+	    		// look for jailer tables
+	    		for (String table: SqlUtil.JAILER_TABLES) {
+		        	try {
+		        		statementExecutor.executeQuery("Select * from " + table, new StatementExecutor.ResultSetReader() {
+							public void readCurrentRow(ResultSet resultSet) throws SQLException {
+							}
+							public void close() {
+							}
+		        		});
+		        		statementExecutor.shutDown();
+		        		return table;
+		        	} catch (Exception e) {
+		        		// fall through
+		        	}
+	    		}
+				statementExecutor.shutDown();
+	        }
+			return null;
+		} catch (Exception e) {
+			return null;
+        }
 	}
 
 }

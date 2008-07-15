@@ -20,14 +20,18 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.DateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.entitygraph.EntityGraph;
 
 /**
  * Some utility methods.
@@ -106,6 +110,21 @@ public class SqlUtil {
             }
         }
         return tabuTables;
+    }
+    
+    /**
+     * List of all jailer tables (upper case).
+     */
+    public static final List<String> JAILER_TABLES;
+    static {
+    	JAILER_TABLES = new ArrayList<String>();
+    	JAILER_TABLES.add(EntityGraph.ENTITY_GRAPH);
+    	JAILER_TABLES.add(EntityGraph.ENTITY_SET_ELEMENT);
+    	JAILER_TABLES.add(EntityGraph.ENTITY);
+    	JAILER_TABLES.add(EntityGraph.DEPENDENCY);
+    	JAILER_TABLES.add(SQLDialect.CONFIG_TABLE);
+    	JAILER_TABLES.add(SQLDialect.DUAL_TABLE);
+    	JAILER_TABLES.add(SQLDialect.TMP_TABLE);
     }
     
     /**

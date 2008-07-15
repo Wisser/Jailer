@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.sql.SQLData;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -30,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
@@ -38,6 +40,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.util.CsvFile;
+import net.sf.jailer.util.SqlUtil;
 
 import org.apache.log4j.Logger;
 import org.springframework.context.support.AbstractXmlApplicationContext;
@@ -334,11 +337,7 @@ public class ModelBuilder {
      * @return <code>true</code> if table is one of Jailers working tables
      */
     private static boolean isJailerTable(Table table) {
-    	return EntityGraph.ENTITY.equalsIgnoreCase(table.getUnqualifiedName())
-	    	|| EntityGraph.DEPENDENCY.equalsIgnoreCase(table.getUnqualifiedName())
-	    	|| EntityGraph.ENTITY_GRAPH.equalsIgnoreCase(table.getUnqualifiedName())
-	    	|| EntityGraph.ENTITY_SET_ELEMENT.equalsIgnoreCase(table.getUnqualifiedName())
-    		|| "JL_CONFIG".equalsIgnoreCase(table.getUnqualifiedName());
+    	return SqlUtil.JAILER_TABLES.contains(table.getName().toUpperCase());
     }
     
     /**

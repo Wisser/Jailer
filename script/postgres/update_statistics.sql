@@ -1,4 +1,4 @@
-analyse JL_ENTITY;
-analyse JL_GRAPH;
-analyse JL_DEPENDENCY;
-analyse JL_SET;
+analyse JAILER_ENTITY;
+analyse JAILER_GRAPH;
+analyse JAILER_DEPENDENCY;
+analyse JAILER_SET;

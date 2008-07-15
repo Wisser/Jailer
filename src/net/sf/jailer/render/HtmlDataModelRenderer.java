@@ -20,8 +20,6 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,7 +30,6 @@ import java.util.List;
 import java.util.Set;
 
 import net.sf.jailer.CommandLineParser;
-import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
@@ -86,7 +83,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
      * @param dataModel the data-model
      * @param statementExecutor for accessing the DB
      */
-    public void render(DataModel dataModel, StatementExecutor statementExecutor) {
+    public void render(DataModel dataModel) {
         try {
             List<Table> tableList = new ArrayList<Table>(dataModel.getTables());
             Collections.sort(tableList);
@@ -104,7 +101,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
                 StringBuffer legend = new StringBuffer();
                 String closure = renderClosure(domainModel, composite == null? domainModel.getComposite(table) : composite, legend);
                 closure = PrintUtil.applyTemplate("template" + File.separatorChar + "table.html", new Object[] { "Closure", "", closure });
-                String columns = generateColumnsTable(table, statementExecutor);
+                String columns = generateColumnsTable(table);
                 if (columns == null) {
                     columns = "";
                 } else {
@@ -124,7 +121,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
             
             String restrictions = "none";
             List<String> restrictionModels = CommandLineParser.getInstance().arguments;
-            restrictionModels = restrictionModels.subList(4, restrictionModels.size());
+            restrictionModels = restrictionModels.subList(0, restrictionModels.size());
             if (!restrictionModels.isEmpty()) {
                 restrictionModels = restrictionModels.subList(1, restrictionModels.size());
             }
@@ -378,21 +375,17 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
      * Generates a HTML render of a table schema.
      * 
      * @param table the table
-     * @param statementExecutor for accessing the DB
      * @return HTML render of table schema
      */
-    private String generateColumnsTable(Table table, StatementExecutor statementExecutor) throws SQLException, FileNotFoundException, IOException {
-        DatabaseMetaData metaData = statementExecutor.getMetaData();
+    private String generateColumnsTable(Table table) throws SQLException, FileNotFoundException, IOException {
         StringBuffer result = new StringBuffer();
         
-        ResultSet rs = metaData.getColumns(null, statementExecutor.getIntrospectionSchema(), table.getName(), null);
         int count = 0;
-        while (rs.next()) {
+        for (Column column: table.getColumns()) {
             ++count;
-            String COLUMN_NAME = rs.getString("COLUMN_NAME");
-            String SQL_TYPE = SqlUtil.SQL_TYPE.get(rs.getInt("DATA_TYPE"));
-            boolean nullable = DatabaseMetaData.columnNullable == rs.getInt("NULLABLE");
-            String type = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + SQL_TYPE;
+            String COLUMN_NAME = column.name;
+            boolean nullable = true;
+            String type = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + column.toSQL(null).substring(column.name.length()).trim().replaceAll(" ", "&nbsp;");
             String constraint = (!nullable ? "&nbsp;&nbsp;&nbsp;&nbsp;<small>NOT&nbsp;NULL</small>" : "");
             boolean isPK = false;
             for (Column c: table.primaryKey.getColumns()) {
@@ -400,7 +393,6 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
             }
             result.append(PrintUtil.applyTemplate("template/table_line.html", new Object[] { indentSpaces(1), "&nbsp;&nbsp;" + COLUMN_NAME, type, "", constraint, isPK? COLOR_KEYWORDS : "", count % 2 == 0? "class=\"highlightedrow\"" : "" }));
         }
-        rs.close();
         
         return count == 0? null : (PrintUtil.applyTemplate("template" + File.separatorChar + "table.html", new Object[] { "Columns", "", result.toString() }));
     }

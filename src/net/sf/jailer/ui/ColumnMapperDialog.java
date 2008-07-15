@@ -50,7 +50,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         	 public void actionPerformed(java.awt.event.ActionEvent e) {
         		 try {
         			 if (table != null) {
-	        			 table = dataModel.getTable((String) tableCombobox.getSelectedItem());
+	        			 table = dataModel.getTableByDisplayName((String) tableCombobox.getSelectedItem());
 	        			 mappingField.setText(XmlUtil.build(table.getXmlTemplateAsDocument()));
         			 }
         		 } catch (Exception ex) {
@@ -72,12 +72,12 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
     	this.table = null;
     	Vector<String> tableNames = new Vector<String>();
     	for (Table t: dataModel.getTables()) {
-    		tableNames.add(t.getName());
+    		tableNames.add(dataModel.getDisplayName(t));
     	}
     	Collections.sort(tableNames);
     	tableCombobox.setModel(new DefaultComboBoxModel(tableNames));
     	tableCombobox.setMaximumRowCount(40);
-    	tableCombobox.setSelectedItem(table.getName());
+    	tableCombobox.setSelectedItem(dataModel.getDisplayName(table));
         int w = 450, h = 600;
         setSize(w, h);
         setLocation(Math.max(0, parent.getX() + parent.getWidth() / 2 - w / 2),

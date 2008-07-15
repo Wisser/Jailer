@@ -298,7 +298,7 @@ public class ExportReader implements ResultSetReader {
 	                }
 	                sb.append(insertHead, item, ", ", terminator.toString());
                 } else {
-                	String item = "Select " + valuesWONull + " From " + (SQLDialect.currentDialect.upsertMode == UPSERT_MODE.FROM_DUAL? "dual" : "JL_DUAL");
+                	String item = "Select " + valuesWONull + " From " + (SQLDialect.currentDialect.upsertMode == UPSERT_MODE.FROM_DUAL? "dual" : SQLDialect.DUAL_TABLE);
                 	StringBuffer terminator = new StringBuffer(" Where not exists (Select * from " + table.getName() + " T "
 	                        + "Where ");
 	                terminator.append(where + ");\n");

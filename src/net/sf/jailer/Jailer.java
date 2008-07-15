@@ -78,7 +78,7 @@ public class Jailer {
     /**
      * The Jailer version.
      */
-    public static final String VERSION = "2.4.1.beta";
+    public static final String VERSION = "2.4.1";
     
     /**
      * The relational data model.
@@ -713,7 +713,7 @@ public class Jailer {
                 }
                new DomainModel(dataModel).check();
             } else if ("render-datamodel".equalsIgnoreCase(command)) {
-                if (clp.arguments.size() <= 4) {
+                if (clp.arguments.size() <= 1) {
                     CommandLineParser.printUsage();
                 } else {
                     new Jailer(1).renderDataModel(clp.arguments, clp.withClosures, clp.schema);
@@ -786,9 +786,7 @@ public class Jailer {
     private void renderDataModel(List<String> arguments, boolean withClosures, String schema) throws Exception {
     	printGreeting();
         DataModel dataModel = new DataModel();
-        StatementExecutor statementExecutor = new StatementExecutor(arguments.get(1), arguments.get(2), arguments.get(3), arguments.get(4));
-        statementExecutor.setIntrospectionSchema(schema);
-        for (String rm: arguments.subList(1 + 4, arguments.size())) {
+        for (String rm: arguments.subList(1, arguments.size())) {
             if (dataModel.getRestrictionModel() == null) {
                 dataModel.setRestrictionModel(new RestrictionModel(dataModel));
             }
@@ -798,7 +796,7 @@ public class Jailer {
         if (renderer == null) {
             throw new RuntimeException("no renderer found in config/config.xml");
         }
-        renderer.render(dataModel, statementExecutor);
+        renderer.render(dataModel);
     }
 
 	/**

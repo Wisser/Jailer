@@ -1,5 +1,11 @@
 2.4.1.beta
- - basic support for accessing tables from different schema
+ - support for accessing tables in different schemas
+ - new feature "Expand all visible tables"
+ - disabled associations are no longer hidden in tree view
+ - minor bug fixes
+
+2.4.1.beta
+ - basic support for accessing tables in different schemas
  - new feature "Expand all visible tables" 
  - disabled associations are no longer hidden in tree view
  - minor bug fixes
