@@ -69,7 +69,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         String defaultSchema = getDefaultSchema(statementExecutor, statementExecutor.dbUser);
         
         for (Table table: dataModel.getTables()) {
-        	resultSet = metaData.getExportedKeys(null, table.getSchema(statementExecutor.getIntrospectionSchema()), table.getUnqualifiedName());
+        	resultSet = metaData.getExportedKeys(null, table.getSchema(defaultSchema), table.getUnqualifiedName());
             _log.info("find associations with " + table.getName());
             Map<String, Association> fkMap = new HashMap<String, Association>();
             while (resultSet.next()) {
@@ -182,7 +182,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 }
                 String sqlType = SqlUtil.SQL_TYPE.get(type);
                 if (sqlType == null) {
-                	sqlType = "-unknown-";
+                	sqlType = resultSet.getString(6);
                     // throw new RuntimeException("unknown SQL type: " + type);
                 }
                 Column column = new Column(colName, sqlType, length, precision);
@@ -266,6 +266,8 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     	List<String> schemas = new ArrayList<String>();
 		try {
 			DatabaseMetaData metaData = statementExecutor.getMetaData();
+			String dbName = metaData.getDatabaseProductName();
+			boolean isPostgreSQL = "PostgreSQL".equals(dbName);
 			ResultSet rs = metaData.getSchemas();
 			while (rs.next()) {
 				schemas.add(rs.getString("TABLE_SCHEM"));
@@ -274,6 +276,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			String userSchema = null;
 			for (Iterator<String> i = schemas.iterator(); i.hasNext(); ) {
 				String schema = i.next().trim();
+				if (isPostgreSQL && "public".equalsIgnoreCase(schema)) {
+					return schema;
+				}
 				if (!schema.equalsIgnoreCase(userName.trim())) {
 					rs = metaData.getTables(null, schema, "%", new String[] { "TABLE" });
 					if (!rs.next()) {
@@ -287,11 +292,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			if (userSchema != null) {
 				return userSchema;
 			}
-			if (schemas.size() == 0) {
-				return userName;
-			} else {
-				return schemas.get(0);
-			}
+			return userName;
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return userName;
@@ -309,7 +310,8 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     public List<Column> findColumns(Table table, StatementExecutor statementExecutor) throws Exception {
     	List<Column> columns = new ArrayList<Column>();
     	DatabaseMetaData metaData = statementExecutor.getMetaData();
-        ResultSet resultSet = metaData.getColumns(null, table.getSchema(statementExecutor.getIntrospectionSchema()), table.getUnqualifiedName(), null);
+    	String defaultSchema = getDefaultSchema(statementExecutor, statementExecutor.dbUser);
+        ResultSet resultSet = metaData.getColumns(null, table.getSchema(defaultSchema), table.getUnqualifiedName(), null);
         while (resultSet.next()) {
             String colName = resultSet.getString(4);
             int type = resultSet.getInt(5);
@@ -325,9 +327,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 }
             }
             String sqlType = SqlUtil.SQL_TYPE.get(type);
-            if (sqlType == null) {
-            	sqlType = "-unknown-";
-            }
+            // if (sqlType == null) {
+            	sqlType = resultSet.getString(6);
+            // }
             columns.add(new Column(colName, sqlType, length, precision));
         }
         resultSet.close();

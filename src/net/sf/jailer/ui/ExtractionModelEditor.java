@@ -1530,7 +1530,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			// TODO: refactoring, move save-functionality into Model-class
 			PrintWriter out = new PrintWriter(extractionModel);
 			out.println("# subject; condition;  limit; restrictions");
-			out.println(CsvFile.encodeCell("" + subjectTable.getSelectedItem()) + "; " + CsvFile.encodeCell(condition.getText()) + "; ; " + RestrictionModel.EMBEDDED);
+			Table stable = dataModel.getTableByDisplayName((String) subjectTable.getSelectedItem());
+			out.println(CsvFile.encodeCell("" + stable.getName()) + "; " + CsvFile.encodeCell(condition.getText()) + "; ; " + RestrictionModel.EMBEDDED);
 			saveRestrictions(out);
 			saveXmlMapping(out);
 			out.println();

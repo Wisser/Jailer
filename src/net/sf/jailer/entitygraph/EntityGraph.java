@@ -16,18 +16,17 @@
 package net.sf.jailer.entitygraph;
 
 import java.sql.ResultSet;
-import java.sql.SQLData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
+import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.SqlScriptExecutor;
@@ -718,13 +717,17 @@ public class EntityGraph {
     /**
      * Gets some statistical information.
      */
-    public List<String> getStatistics() throws SQLException {
+    public List<String> getStatistics(final DataModel dataModel) throws SQLException {
         final List<String> statistic = new ArrayList<String>();
         final long[] total = new long[1];
         total[0] = 0;
         statementExecutor.executeQuery("Select type, count(*) From " + ENTITY + " Where r_entitygraph=" + graphID + " and birthday>=0 group by type", new StatementExecutor.AbstractResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 String type = resultSet.getString(1);
+                Table table = dataModel.getTable(type);
+                if (table != null) {
+                	type = dataModel.getDisplayName(table);
+                }
                 long count = resultSet.getLong(2);
                 total[0] += count;
                 while (type.length() < 30) {
