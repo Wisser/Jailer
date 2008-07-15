@@ -26,10 +26,10 @@ CREATE TABLE JAILER_ENTITY
    r_entitygraph   INTEGER NOT NULL,
    {0},
    birthday        INTEGER NOT NULL,
-   type            VARCHAR(50) NOT NULL,
+   type            VARCHAR(60) NOT NULL,
 
    {1},
-   PRE_TYPE        VARCHAR(50),
+   PRE_TYPE        VARCHAR(60),
    association     INTEGER,
 
    CONSTRAINT jlr_pk_entity PRIMARY KEY(r_entitygraph, {4}, type),
@@ -41,7 +41,7 @@ CREATE INDEX jlr_enty_brthdy ON JAILER_ENTITY (r_entitygraph, birthday, type);
 CREATE TABLE JAILER_SET
 (
    set_id          INTEGER NOT NULL,
-   type            VARCHAR(50) NOT NULL,
+   type            VARCHAR(60) NOT NULL,
    {0},
 
    CONSTRAINT jlr_pk_set PRIMARY KEY(set_id, {4}, type)
@@ -52,8 +52,8 @@ CREATE TABLE JAILER_DEPENDENCY
    r_entitygraph   INTEGER NOT NULL,
    assoc           INTEGER NOT NULL,
    traversed       INTEGER,
-   from_type       VARCHAR(50) NOT NULL,
-   to_type         VARCHAR(50) NOT NULL,
+   from_type       VARCHAR(60) NOT NULL,
+   to_type         VARCHAR(60) NOT NULL,
    {2},
    {3},   
 
