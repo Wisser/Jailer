@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.render;
 
-import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.datamodel.DataModel;
 
 /**
@@ -29,8 +28,7 @@ public interface DataModelRenderer {
      * Generates a human readable representation of the data-model.
      * 
      * @param dataModel the data-model
-     * @param statementExecutor for accessing the DB
      */
-    void render(DataModel dataModel, StatementExecutor statementExecutor);
+    void render(DataModel dataModel);
 
 }

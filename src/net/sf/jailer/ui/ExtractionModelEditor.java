@@ -254,7 +254,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		});
 		initRestrictionEditor(null, null);
 		if (extractionModel.getTasks().get(0).subject != null) {
-			subjectTable.setSelectedItem(extractionModel.getTasks().get(0).subject.getName());
+			subjectTable.setSelectedItem(dataModel.getDisplayName(extractionModel.getTasks().get(0).subject));
 		}
 		condition.setText(extractionModel.getTasks().get(0).condition);
 		
@@ -778,8 +778,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private void onNewSubject(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_onNewSubject
     	Object selectedItem = subjectTable.getSelectedItem();
 		if (selectedItem instanceof String) {
-			if (dataModel.getTable(selectedItem.toString()) != null) {
-				subject = dataModel.getTable(selectedItem.toString());
+			if (dataModel.getTableByDisplayName(selectedItem.toString()) != null) {
+				subject = dataModel.getTableByDisplayName(selectedItem.toString());
 			}
 		}
     	rootTable.setModel(getTableListModel());
@@ -793,7 +793,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
     private void rootTableItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rootTableItemStateChanged
     	if (evt.getItem() != null) {
-    		Table table = dataModel.getTable(evt.getItem().toString());
+    		Table table = dataModel.getTableByDisplayName(evt.getItem().toString());
     		setRoot(table);
     	}
     }//GEN-LAST:event_rootTableItemStateChanged
@@ -818,7 +818,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
      */
 	public void setRootSelection(Table table) {
 		if (table != null) {
-			rootTable.setSelectedItem(table.getName());
+			rootTable.setSelectedItem(dataModel.getDisplayName(table));
 		}
 	}
 
@@ -837,7 +837,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     	Object[][] data = new Object[currentRestrictionDefinitions.size()][];
     	int i = 0;
     	for (RestrictionDefinition def: currentRestrictionDefinitions) {
-    		data[i++] = new Object[] { def.from.getName(), def.to.getName(), def.name == null? "" : def.name, def.condition };
+    		data[i++] = new Object[] { dataModel.getDisplayName(def.from), dataModel.getDisplayName(def.to), def.name == null? "" : def.name, def.condition };
     	}
         return new DefaultTableModel(data, new Object[] { "From", "To", "Name", "Condition" });
     }
@@ -850,7 +850,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private ComboBoxModel subjectListModel() {
     	Vector<String> tableNames = new Vector<String>();
     	for (Table table: dataModel.getTables()) {
-    		tableNames.add(table.getName());
+    		tableNames.add(dataModel.getDisplayName(table));
     	}
     	Collections.sort(tableNames);
     	DefaultComboBoxModel model = new DefaultComboBoxModel(tableNames);
@@ -865,11 +865,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private ComboBoxModel getTableListModel() {
     	Vector<String> tableNames = new Vector<String>();
     	for (Table table: dataModel.getTables()) {
-    		tableNames.add(table.getName());
+    		tableNames.add(dataModel.getDisplayName(table));
     	}
     	Collections.sort(tableNames);
         if (subject != null) {
-	    	tableNames.add(0, subject.getName());
+	    	tableNames.add(0, dataModel.getDisplayName(subject));
 	        tableNames.add(1, "---");
         }
     	DefaultComboBoxModel model = new DefaultComboBoxModel(tableNames);
@@ -974,8 +974,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
                 editable = false;
             }
 			restrictionEditor.restriction.setEditable(true);
-			restrictionEditor.source.setText(association.source.getName());
-			restrictionEditor.destination.setText(association.destination.getName());
+			restrictionEditor.source.setText(dataModel.getDisplayName(association.source));
+			restrictionEditor.destination.setText(dataModel.getDisplayName(association.destination));
 			restrictionEditor.cardinality.setText(association.getCardinality() == null? "unknown" : association.getCardinality().toString());
 			restrictionEditor.type.setText(type);
 			restrictionEditor.joinCondition.setText(association.getUnrestrictedJoinCondition());
@@ -1093,7 +1093,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
      * Makes a table the root of the associations-tree.
      */
 	private void jumpTo(Table table) {
-	    rootTable.setSelectedItem(table.getName());
+	    rootTable.setSelectedItem(dataModel.getDisplayName(table));
     }
 
 	/**
@@ -1266,7 +1266,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				int cat1 = cat(a1);
 				int cat2 = cat(a2);
 				if (cat1 == cat2) {
-					return a1.destination.getName().compareTo(a2.destination.getName());
+					return dataModel.getDisplayName(a1.destination).compareTo(dataModel.getDisplayName(a2.destination));
 				}
 				return cat1 - cat2;
 			}
@@ -1305,12 +1305,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				if (value instanceof DefaultMutableTreeNode) {
 					DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
 					if (node.getUserObject() instanceof Table) {
-						text = ((Table) node.getUserObject()).getName();
+						text = dataModel.getDisplayName(((Table) node.getUserObject()));
 						setTextSelectionColor(Color.BLACK);
 						setTextNonSelectionColor(Color.BLACK);
 					} else if (node.getUserObject() instanceof Association) {
 						Association association = (Association) node.getUserObject();
-						text = association.destination.getName();
+						text = dataModel.getDisplayName(association.destination);
 						if (!association.isIgnored() && association.isRestricted()) {
 							text += "*";
 						} else {
@@ -1381,7 +1381,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 		Association first = null;
 		for (Association a: table.associations) {
-			if (first == null || first.destination.getName().compareTo(a.destination.getName()) < 0) {
+			if (first == null || dataModel.getDisplayName(first.destination).compareTo(dataModel.getDisplayName(a.destination)) < 0) {
 				first = a;
 			}
 		}

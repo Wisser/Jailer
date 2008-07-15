@@ -702,7 +702,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				        	dbConnectionDialog.addDbArgs(ddlArgs);
 				        	ExportReader.numberOfExportedEntities = 0;
 				        	ExportReader.numberOfExportedLOBs = 0;
-				            if (DDLCreator.isUptodate(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4)) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
+				        	String tableInConflict = DDLCreator.getTableInConflict(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4));
+				        	if (tableInConflict != null) {
+				        		JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);
+				        	}
+				        	else if (DDLCreator.isUptodate(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4)) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
 			        				"Automatic creation of working-tables failed!\n" +
 			        				"Please execute the Jailer-DDL manually (jailer_ddl.sql)\n\n" +
 			        				"Continue Data Export?", dbConnectionDialog.getPassword())) {
@@ -754,22 +758,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
     private void renderHtmlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renderHtmlActionPerformed
         try {
-        	if (connectToDBIfNeeded("Html rendering")) {
-	        	List<String> args = new ArrayList<String>();
-	        	args.add("render-datamodel");
-	        	String schema = dbConnectionDialog.selectDBSchema(this, new boolean[1]);
-        		if (!"".equals(schema)) {
-	        		if (schema != null) {
-	        			args.add("-schema");
-	        			args.add(schema);
-	        		}
-	        		dbConnectionDialog.addDbArgs(args);
-		        	File file = saveRestrictions();
-		        	args.add(file.getName());
-		        	UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword());
-		        	BrowserLauncher.openURL("render/index.html");
-        		}
-        	}
+        	List<String> args = new ArrayList<String>();
+        	args.add("render-datamodel");
+        	File file = saveRestrictions();
+        	args.add(file.getName());
+        	UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword());
+        	BrowserLauncher.openURL("render/index.html");
         } catch (Exception e) {
         	UIUtil.showException(this, "Error", e);
         }

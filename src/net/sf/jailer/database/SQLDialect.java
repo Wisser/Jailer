@@ -42,6 +42,21 @@ import org.apache.log4j.Logger;
 public class SQLDialect {
 
 	/**
+	 * Name of config table.
+	 */
+	public static final String CONFIG_TABLE = "JAILER_CONFIG";
+	
+	/**
+	 * Name of temp table.
+	 */
+	public static final String TMP_TABLE = "JAILER_TMP";
+	
+	/**
+	 * Name of dual table.
+	 */
+	public static final String DUAL_TABLE = "JAILER_DUAL";
+	
+	/**
 	 * The logger.
 	 */
 	private static final Logger _log = Logger.getLogger(SQLDialect.class);;
@@ -68,10 +83,10 @@ public class SQLDialect {
 	 * Statements for upserts (overwrites).
 	 */
 	public static enum UPSERT_MODE { 
-		DB2("Select * From (values (1, 2), (3, 4)) as Q(c1, c2) Where not exists (Select * from JL_TMP T Where T.c1=Q.c1)"), 
-		FROM_DUAL("Select 1, 2 From dual where not exists(Select * from JL_TMP T where T.c1=1)"),
-		FROM_JL_DUAL("Select 1, 2 From JL_DUAL where not exists(Select * from JL_TMP T where T.c1=1)"),
-		ORACLE("MERGE INTO JL_TMP T " +
+		DB2("Select * From (values (1, 2), (3, 4)) as Q(c1, c2) Where not exists (Select * from " + TMP_TABLE + " T Where T.c1=Q.c1)"), 
+		FROM_DUAL("Select 1, 2 From dual where not exists(Select * from " + TMP_TABLE + " T where T.c1=1)"),
+		FROM_JL_DUAL("Select 1, 2 From " + DUAL_TABLE + " where not exists(Select * from " + TMP_TABLE + " T where T.c1=1)"),
+		ORACLE("MERGE INTO " + TMP_TABLE + " T " +
                               "USING (SELECT 1 c1, 2 c2 from dual) incoming " +
                               "ON (T.c1 = incoming.c1) " +
                               "WHEN MATCHED THEN " +
@@ -169,8 +184,8 @@ public class SQLDialect {
 			log("begin guessing SQL dialect");
 			statementExecutor.setSilent(true);
 			
-			String drop = "DROP TABLE JL_TMP";
-			String create = "CREATE TABLE JL_TMP(c1 INTEGER, c2 INTEGER)";
+			String drop = "DROP TABLE " + TMP_TABLE + "";
+			String create = "CREATE TABLE " + TMP_TABLE + "(c1 INTEGER, c2 INTEGER)";
 			try {
 				statementExecutor.execute(drop);
 			} catch (Exception e) {
@@ -182,12 +197,12 @@ public class SQLDialect {
 				_sqllog.info(e.getMessage());
 			}
 			try {
-				statementExecutor.execute("DROP TABLE JL_DUAL");
+				statementExecutor.execute("DROP TABLE " + DUAL_TABLE + "");
 			} catch (Exception e) {
 				_sqllog.info(e.getMessage());
 			}
 			try {
-				statementExecutor.execute("CREATE TABLE JL_DUAL(D INTEGER)");
+				statementExecutor.execute("CREATE TABLE " + DUAL_TABLE + "(D INTEGER)");
 			} catch (Exception e) {
 				_sqllog.info(e.getMessage());
 			}
@@ -196,7 +211,7 @@ public class SQLDialect {
 				boolean ok = true;
 				try {
 					String values = sqlDialect.needsValuesKeywordForDeletes? "values " : "";
-					statementExecutor.execute("DELETE FROM JL_TMP where (c1, c2) IN (" + values + "(1,2), (3,4))");
+					statementExecutor.execute("DELETE FROM " + TMP_TABLE + " where (c1, c2) IN (" + values + "(1,2), (3,4))");
 				} catch (Exception e) {
 					ok = false;
 					_sqllog.info(e.getMessage());
@@ -206,7 +221,7 @@ public class SQLDialect {
 				}
 				boolean multiRow;
 				try {
-					statementExecutor.execute("INSERT INTO JL_TMP(c1, c2) values (1,2), (3,4)");
+					statementExecutor.execute("INSERT INTO " + TMP_TABLE + "(c1, c2) values (1,2), (3,4)");
 					multiRow = true;
 				} catch (Exception e) {
 					multiRow = false;
@@ -235,7 +250,7 @@ public class SQLDialect {
 			}
 		
 			try {
-				statementExecutor.execute("DROP TABLE JL_DUAL");
+				statementExecutor.execute("DROP TABLE " + DUAL_TABLE + "");
 			} catch (Exception e) {
 				_sqllog.info(e.getMessage());
 			}
@@ -284,8 +299,8 @@ public class SQLDialect {
 				BigInteger.ZERO, new BigDecimal(0), new Double(0.0),
 				new Float(0.0f) };
 
-		String drop = "DROP TABLE JL_TMP";
-		String create = "CREATE TABLE JL_TMP(" + column + ")";
+		String drop = "DROP TABLE " + TMP_TABLE + "";
+		String create = "CREATE TABLE " + TMP_TABLE + "(" + column + ")";
 		try {
 			statementExecutor.execute(drop);
 		} catch (Exception e) {
@@ -299,12 +314,12 @@ public class SQLDialect {
 		for (final Object potNull : potNulls) {
 			try {
 				final Object[] result = new Object[1];
-				statementExecutor.executeUpdate("DELETE FROM JL_TMP");
+				statementExecutor.executeUpdate("DELETE FROM " + TMP_TABLE + "");
 				statementExecutor
-						.executeUpdate("INSERT INTO JL_TMP(" + column.name
+						.executeUpdate("INSERT INTO " + TMP_TABLE + "(" + column.name
 								+ ") VALUES(?)", new Object[] { potNull });
 				statementExecutor.executeQuery("SELECT " + column.name
-						+ " FROM JL_TMP",
+						+ " FROM " + TMP_TABLE + "",
 						new StatementExecutor.ResultSetReader() {
 							public void readCurrentRow(ResultSet resultSet)
 									throws SQLException {
@@ -377,7 +392,7 @@ public class SQLDialect {
 	}
 
 	/**
-	 * Inserts a null (dummy) value into JL_TMP.
+	 * Inserts a null (dummy) value into " + TMP_TABLE + ".
 	 * 
 	 * @param column
 	 *            the column to insert into
@@ -387,14 +402,14 @@ public class SQLDialect {
 	private static void insertNullValue(Column column, Object nullValue,
 			StatementExecutor statementExecutor) throws SQLException {
 		String nv = SqlUtil.toSql(nullValue);
-		statementExecutor.executeUpdate("DELETE FROM JL_TMP");
-		statementExecutor.executeUpdate("INSERT INTO JL_TMP(" + column.name
+		statementExecutor.executeUpdate("DELETE FROM " + TMP_TABLE + "");
+		statementExecutor.executeUpdate("INSERT INTO " + TMP_TABLE + "(" + column.name
 				+ ") VALUES(" + nv + ")");
 		column.nullValue = nv;
 	}
 
 	/**
-	 * Reads value from JL_CONFIG table.
+	 * Reads value from " + CONFIG_TABLE + " table.
 	 * 
 	 * @param key key for value lookup
 	 * @param statementExecutor for executing sql statements
@@ -403,7 +418,7 @@ public class SQLDialect {
 	private static String readConfigValue(String key, StatementExecutor statementExecutor) {
 		try {
 			final String[] value = new String[] { null };
-			statementExecutor.executeQuery("Select jvalue from JL_CONFIG where jversion='" + Jailer.VERSION + "' and jkey='" + key + "'", new StatementExecutor.ResultSetReader() {
+			statementExecutor.executeQuery("Select jvalue from " + CONFIG_TABLE + " where jversion='" + Jailer.VERSION + "' and jkey='" + key + "'", new StatementExecutor.ResultSetReader() {
 				public void readCurrentRow(ResultSet resultSet) throws SQLException {
 					value[0] = resultSet.getString(1);
 				}
@@ -417,7 +432,7 @@ public class SQLDialect {
 	}
 	
 	/**
-	 * Sets value from JL_CONFIG table.
+	 * Sets value from " + CONFIG_TABLE + " table.
 	 * 
 	 * @param key key for value
 	 * @param value for given key or <code>null</code> if no value for given key can be found
@@ -425,7 +440,7 @@ public class SQLDialect {
 	 */
 	private static void setConfigValue(String key, String value, StatementExecutor statementExecutor) {
 		try {
-			statementExecutor.executeUpdate("Insert into JL_CONFIG(jversion, jkey, jvalue) values ('" + Jailer.VERSION + "', " + SqlUtil.toSql(key) + ", " + SqlUtil.toSql(value) + ")");
+			statementExecutor.executeUpdate("Insert into " + CONFIG_TABLE + "(jversion, jkey, jvalue) values ('" + Jailer.VERSION + "', " + SqlUtil.toSql(key) + ", " + SqlUtil.toSql(value) + ")");
 		} catch (Exception e) {
 		}
 	}

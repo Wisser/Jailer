@@ -46,6 +46,16 @@ public class DataModel {
      */
     private Map<String, Table> tables = new HashMap<String, Table>();
     
+	/**
+     * Maps table display names to tables.
+     */
+    private Map<String, Table> tablesByDisplayName = new HashMap<String, Table>();
+    
+	/**
+     * Maps tables to display names.
+     */
+    private Map<Table, String> displayName = new HashMap<Table, String>();
+    
     /**
      * Maps association-names to associations;
      */
@@ -118,6 +128,26 @@ public class DataModel {
      */
     public Table getTable(String name) {
         return tables.get(name);
+    }
+
+    /**
+     * Gets a table by display name.
+     * 
+     * @param displayName the display name of the table
+     * @return the table or <code>null</code> iff no table with the display name exists
+     */
+    public Table getTableByDisplayName(String displayName) {
+        return tablesByDisplayName.get(displayName);
+    }
+
+    /**
+     * Gets display name of a table
+     * 
+     * @param table the table
+     * @return the display name of the table
+     */
+    public String getDisplayName(Table table) {
+        return displayName.get(table);
     }
 
     /**
@@ -231,8 +261,38 @@ public class DataModel {
                 throw new RuntimeException(location + ": " + e.getMessage(), e);
             }
         }
+        initDisplayNames();
     }
 
+    /**
+     * Initializes display names.
+     */
+    private void initDisplayNames() {
+    	Set<String> unqualifiedNames = new HashSet<String>();
+    	Set<String> nonUniqueUnqualifiedNames = new HashSet<String>();
+    	
+    	for (Table table: getTables()) {
+    		String uName = table.getUnqualifiedName();
+    		if (unqualifiedNames.contains(uName)) {
+    			nonUniqueUnqualifiedNames.add(uName);
+    		} else {
+    			unqualifiedNames.add(uName);
+    		}
+    	}
+    	for (Table table: getTables()) {
+    		String uName = table.getUnqualifiedName();
+    		String schema = table.getSchema(null);
+    		String displayName;
+    		if (nonUniqueUnqualifiedNames.contains(uName) && schema != null) {
+    			displayName = uName + " (" + schema + ")";
+    		} else {
+    			displayName = uName;
+    		}
+    		this.displayName.put(table, displayName);
+    		tablesByDisplayName.put(displayName, table);
+    	}
+    }
+    
     /**
      * Gets the primary-key to be used for the entity-table.
      *

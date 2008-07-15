@@ -62,7 +62,7 @@ public class HelperTableEnhancer implements ScriptEnhancer {
 			StatementExecutor statementExecutor, EntityGraph entityGraph,
 			Set<Table> progress) throws IOException, SQLException {
 		if (dualNeeded(progress)) {
-			script.append("DROP TABLE JL_DUAL;\n");
+			script.append("DROP TABLE " + SQLDialect.DUAL_TABLE + ";\n");
 		}
 	}
 
@@ -70,8 +70,8 @@ public class HelperTableEnhancer implements ScriptEnhancer {
 			StatementExecutor statementExecutor, EntityGraph entityGraph,
 			Set<Table> progress) throws IOException, SQLException {
 		if (dualNeeded(progress)) {
-			script.append("CREATE TABLE JL_DUAL(D INTEGER);\n");
-			script.append("INSERT INTO JL_DUAL(D) VALUES(1);\n");
+			script.append("CREATE TABLE " + SQLDialect.DUAL_TABLE + "(D INTEGER);\n");
+			script.append("INSERT INTO " + SQLDialect.DUAL_TABLE + "(D) VALUES(1);\n");
 		}
 	}
 

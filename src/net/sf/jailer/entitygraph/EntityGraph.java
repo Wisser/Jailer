@@ -16,12 +16,14 @@
 package net.sf.jailer.entitygraph;
 
 import java.sql.ResultSet;
+import java.sql.SQLData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.datamodel.Association;
@@ -43,22 +45,22 @@ public class EntityGraph {
     /**
      * Name of the graph-table.
      */
-	public static final String ENTITY_GRAPH = "JL_GRAPH";
+	public static final String ENTITY_GRAPH = "JAILER_GRAPH";
     
     /**
      * Name of the (helper) set-table.
      */
-    public static final String ENTITY_SET_ELEMENT = "JL_SET";
+    public static final String ENTITY_SET_ELEMENT = "JAILER_SET";
     
     /**
      * Name of the entity-table.
      */
-    public static final String ENTITY = "JL_ENTITY";
+    public static final String ENTITY = "JAILER_ENTITY";
     
     /**
      * Name of the dependency-table.
      */
-    public static final String DEPENDENCY = "JL_DEPENDENCY";
+    public static final String DEPENDENCY = "JAILER_DEPENDENCY";
     
     /**
      * The unique ID of the graph.

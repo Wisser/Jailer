@@ -232,7 +232,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			DatabaseMetaData metaData = statementExecutor.getMetaData();
 			ResultSet rs = metaData.getSchemas();
 			while (rs.next()) {
-				schemas.add(rs.getString("TABLE_SCHEM"));
+				schemas.add(rs.getString("TABLE_SCHEM").trim());
 			}
 			rs.close();
 			
@@ -273,7 +273,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			rs.close();
 			String userSchema = null;
 			for (Iterator<String> i = schemas.iterator(); i.hasNext(); ) {
-				String schema = i.next();
+				String schema = i.next().trim();
 				if (!schema.equalsIgnoreCase(userName.trim())) {
 					rs = metaData.getTables(null, schema, "%", new String[] { "TABLE" });
 					if (!rs.next()) {

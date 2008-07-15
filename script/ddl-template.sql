@@ -1,18 +1,27 @@
-DROP TABLE JL_ENTITY;
-DROP TABLE JL_DEPENDENCY;
-DROP TABLE JL_SET;
-DROP TABLE JL_GRAPH;
-DROP TABLE JL_CONFIG;
+DROP TABLE JAILER_ENTITY;
+DROP TABLE JAILER_DEPENDENCY;
+DROP TABLE JAILER_SET;
+DROP TABLE JAILER_GRAPH;
+DROP TABLE JAILER_CONFIG;
 
-CREATE TABLE JL_GRAPH
+CREATE TABLE JAILER_CONFIG
+(
+   jversion        VARCHAR(10),
+   jkey            VARCHAR(200),
+   jvalue          VARCHAR(500)
+);
+
+INSERT INTO JAILER_CONFIG(jversion, jkey, jvalue) values(null, ''magic'', ''837065098274756382534403654245288'');
+
+CREATE TABLE JAILER_GRAPH
 (
    id              INTEGER NOT NULL,
    age             INTEGER NOT NULL,
       
-   CONSTRAINT jl_pk_graph PRIMARY KEY(id)
+   CONSTRAINT jlr_pk_graph PRIMARY KEY(id)
 );
 
-CREATE TABLE JL_ENTITY
+CREATE TABLE JAILER_ENTITY
 (
    r_entitygraph   INTEGER NOT NULL,
    {0},
@@ -23,22 +32,22 @@ CREATE TABLE JL_ENTITY
    PRE_TYPE        VARCHAR(50),
    association     INTEGER,
 
-   CONSTRAINT jl_pk_entity PRIMARY KEY(r_entitygraph, {4}, type),
-   CONSTRAINT jl_fk_graph_e FOREIGN KEY (r_entitygraph) REFERENCES JL_GRAPH(id)
+   CONSTRAINT jlr_pk_entity PRIMARY KEY(r_entitygraph, {4}, type),
+   CONSTRAINT jlr_fk_graph_e FOREIGN KEY (r_entitygraph) REFERENCES JAILER_GRAPH(id)
 );
 
-CREATE INDEX jl_enty_brthdy ON JL_ENTITY (r_entitygraph, birthday, type);
+CREATE INDEX jlr_enty_brthdy ON JAILER_ENTITY (r_entitygraph, birthday, type);
 
-CREATE TABLE JL_SET
+CREATE TABLE JAILER_SET
 (
    set_id          INTEGER NOT NULL,
    type            VARCHAR(50) NOT NULL,
    {0},
 
-   CONSTRAINT jl_pk_set PRIMARY KEY(set_id, {4}, type)
+   CONSTRAINT jlr_pk_set PRIMARY KEY(set_id, {4}, type)
 );
 
-CREATE TABLE JL_DEPENDENCY
+CREATE TABLE JAILER_DEPENDENCY
 (
    r_entitygraph   INTEGER NOT NULL,
    assoc           INTEGER NOT NULL,
@@ -48,18 +57,10 @@ CREATE TABLE JL_DEPENDENCY
    {2},
    {3},   
 
-   CONSTRAINT jl_fk_graph_d FOREIGN KEY (r_entitygraph) REFERENCES JL_GRAPH(id)
+   CONSTRAINT jlr_fk_graph_d FOREIGN KEY (r_entitygraph) REFERENCES JAILER_GRAPH(id)
 );
 
-CREATE INDEX jl_dep_from ON JL_DEPENDENCY (r_entitygraph, assoc, {5});
-CREATE INDEX jl_dep_to ON JL_DEPENDENCY (r_entitygraph, {6});
+CREATE INDEX jlr_dep_from ON JAILER_DEPENDENCY (r_entitygraph, assoc, {5});
+CREATE INDEX jlr_dep_to ON JAILER_DEPENDENCY (r_entitygraph, {6});
 
-CREATE TABLE JL_CONFIG
-(
-   jversion        VARCHAR(10) NOT NULL,
-   jkey            VARCHAR(200),
-   jvalue          VARCHAR(500)
-);
-
-INSERT INTO JL_CONFIG(jversion, jkey, jvalue) values(''{7}'', ''upk'', ''{0}'');
-
+INSERT INTO JAILER_CONFIG(jversion, jkey, jvalue) values(''{7}'', ''upk'', ''{0}'');
