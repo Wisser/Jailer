@@ -1,3 +1,6 @@
+2.4.2
+ - schema mapping
+
 2.4.1
  - multi-schema support
  - new feature "Expand all visible tables"
