@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.database.SQLDialect.UPSERT_MODE;
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
@@ -207,7 +208,7 @@ public class ExportReader implements ResultSetReader {
                     }
                 }
                 
-                String insertHead = "Insert into " + table.getName() + "(" + columnsWONull + ") ";
+                String insertHead = "Insert into " + qualifiedTableName(table) + "(" + columnsWONull + ") ";
                 f = true;
                 StringBuffer whereForTerminator = new StringBuffer("");
                 StringBuffer where = new StringBuffer("");
@@ -236,7 +237,7 @@ public class ExportReader implements ResultSetReader {
                 	// ON (T.c1 = incoming.c1) 
                 	// WHEN MATCHED THEN UPDATE SET T.c2 = incoming.c2 
                 	// WHEN NOT MATCHED THEN INSERT (T.c1, T.c2) VALUES (incoming.c1, incoming.c2)
-                	insertHead = "MERGE INTO " + table.getName() + " T USING(";
+                	insertHead = "MERGE INTO " + qualifiedTableName(table) + " T USING(";
                     StringBuffer terminator = new StringBuffer(") Q ON(" + whereForTerminator + ") ");
 	                
                     StringBuffer sets = new StringBuffer();
@@ -282,7 +283,7 @@ public class ExportReader implements ResultSetReader {
                 	sb.append(insertHead, item, " UNION ALL ", terminator.toString());
                 } else if (SQLDialect.currentDialect.upsertMode == UPSERT_MODE.DB2) {
                 	insertHead += "Select * From (values ";
-	                StringBuffer terminator = new StringBuffer(") as Q(" + columnsWONull + ") Where not exists (Select * from " + table.getName() + " T "
+	                StringBuffer terminator = new StringBuffer(") as Q(" + columnsWONull + ") Where not exists (Select * from " + qualifiedTableName(table) + " T "
 	                        + "Where ");
 	                terminator.append(whereForTerminator + ");\n");
 	                
@@ -299,7 +300,7 @@ public class ExportReader implements ResultSetReader {
 	                sb.append(insertHead, item, ", ", terminator.toString());
                 } else {
                 	String item = "Select " + valuesWONull + " From " + (SQLDialect.currentDialect.upsertMode == UPSERT_MODE.FROM_DUAL? "dual" : SQLDialect.DUAL_TABLE);
-                	StringBuffer terminator = new StringBuffer(" Where not exists (Select * from " + table.getName() + " T "
+                	StringBuffer terminator = new StringBuffer(" Where not exists (Select * from " + qualifiedTableName(table) + " T "
 	                        + "Where ");
 	                terminator.append(where + ");\n");
 	                
@@ -317,7 +318,7 @@ public class ExportReader implements ResultSetReader {
                 
                 if (SQLDialect.currentDialect.upsertMode != UPSERT_MODE.ORACLE) {
 	                StringBuffer insert = new StringBuffer("");
-	                insert.append("Update " + table.getName() + " T set ");
+	                insert.append("Update " + qualifiedTableName(table) + " T set ");
 	                f = true;
 	                for (int i = 1; i <= columnCount; ++i) {
 	                    if (columnLabel[i] == null) {
@@ -333,7 +334,7 @@ public class ExportReader implements ResultSetReader {
 	                writeToScriptFile(insert.toString());
                 }
             } else {
-                String insertSchema = "Insert into " + table.getName() + "(" + labelCSL + ") values ";
+                String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") values ";
                 String item = "(" + valueList + ")";
                 if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
                     writeToScriptFile(insertStatementBuilder.build());
@@ -348,6 +349,24 @@ public class ExportReader implements ResultSetReader {
     }
 
     /**
+     * Gets qualified table name.
+     * 
+     * @param t the table
+     * @return qualified name of t
+     */
+    private String qualifiedTableName(Table t) {
+    	String schema = t.getSchema("");
+    	String mappedSchema = CommandLineParser.getInstance().getSchemaMapping().get(schema);
+    	if (mappedSchema != null) {
+    		schema = mappedSchema;
+    	}
+    	if (schema.length() == 0) {
+    		return t.getUnqualifiedName();
+    	}
+		return schema + "." + t.getUnqualifiedName();
+	}
+
+	/**
      * Checks if columns is part of primary key.
      * 
      * @param column the column

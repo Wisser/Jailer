@@ -17,7 +17,9 @@ package net.sf.jailer;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import net.sf.jailer.datamodel.DataModel;
@@ -140,6 +142,23 @@ public class CommandLineParser {
         tabuTableNames = new CsvFile(file);
     }
 
+    private Map<String, String> schemaMapping;
+
+    public Map<String, String> getSchemaMapping() {
+		if (schemaMapping == null) {
+			schemaMapping = new HashMap<String, String>();
+			if (rawschemamapping != null) {
+				for (String item: rawschemamapping.split(",")) {
+					String[] fromTo = (" " + item + " ").split("=");
+					if (fromTo.length == 2) {
+						schemaMapping.put(fromTo[0].trim(), fromTo[1].trim());
+					}
+				}
+			}
+		}
+		return schemaMapping;
+	}
+    
     @Option(name="-xml",usage="export entities into XML file (instead of SQL)")
     public boolean asXml = false;
     
@@ -181,6 +200,9 @@ public class CommandLineParser {
 
     @Option(name="-where",usage="subject condition", metaVar="SQL-expression")
     public String where = null;
+    
+    @Option(name="-schemamapping",usage="schema map", metaVar="<from>=<to>[','<from>=<to>]*")
+    public String rawschemamapping = null;
     
     @Option(name="-threads",usage="number of threads (default is 10)", metaVar="#threads")
     public int numberOfThreads = 10;
