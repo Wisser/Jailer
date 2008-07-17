@@ -18,13 +18,19 @@ package net.sf.jailer.ui;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import javax.swing.JLabel;
 import javax.swing.JTextField;
 
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.Table;
 
 /**
  * "Data Export" Dialog.
@@ -59,6 +65,16 @@ public class ExportDialog extends javax.swing.JDialog {
 	private static String previousInitialSubjectCondition;
 	
 	/**
+	 * Display name for default schema.
+	 */
+	private static String DEFAULT_SCHEMA = "<default>";
+	
+	/**
+	 * Schema mapping fields.
+	 */
+	private Map<String, JTextField> schemaMappingFields = new HashMap<String, JTextField>();
+	
+	/**
 	 * The form field setting.
 	 */
 	private Settings theSettings;
@@ -80,6 +96,15 @@ public class ExportDialog extends javax.swing.JDialog {
         
         upsertCheckbox.setEnabled(!xml);
         rowsPerThread.setEnabled(!xml);
+
+    	Map<JTextField, String> defaults = new HashMap<JTextField, String>();
+
+    	if (xml) {
+        	schemaMappingPanel.setVisible(false);
+        } else {
+        	schemaMappingPanel.setVisible(true);
+        	initSchemaMapping(dataModel, fields, defaults);
+        }
         
         theSettings = new Settings(".exportdata.ui", fields);
         selectInsert.addActionListener(new ActionListener() {
@@ -99,6 +124,11 @@ public class ExportDialog extends javax.swing.JDialog {
             }
         });
         theSettings.restore("default");
+    	for (JTextField field: defaults.keySet()) {
+    		if (field.getText().length() == 0) {
+    			field.setText(defaults.get(field));
+    		}
+    	}
         if (threads.getText().length() == 0) {
         	threads.setText("1");
         }
@@ -122,6 +152,50 @@ public class ExportDialog extends javax.swing.JDialog {
         }
 	}
 
+    /**
+     * Initializes the schema mapping panel.
+     * 
+     * @param dataModel the data model
+     * @param fields to put newly created text fields into
+     * @param defaults to put default values for newly created text fields into
+     */
+    private void initSchemaMapping(DataModel dataModel, Map<String, JTextField> fields, Map<JTextField, String> defaults) {
+    	Set<String> distinctSchemas = new HashSet<String>();
+    	
+    	for (Table table: dataModel.getTables()) {
+    		String schema = table.getSchema(DEFAULT_SCHEMA);
+    		distinctSchemas.add(schema);
+    	}
+    	
+    	List<String> sortedSchemaList = new ArrayList<String>(distinctSchemas);
+    	Collections.sort(sortedSchemaList);
+    	
+    	int y = 0;
+    	for (String schema: sortedSchemaList) {
+    		JLabel a = new JLabel(schema);
+    		a.setFont(new java.awt.Font("Dialog", 0, 12));
+            java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 1;
+            gridBagConstraints.gridy = y;
+    		schemaMappingPanel.add(a, gridBagConstraints);
+    		JLabel b = new JLabel(" into schema ");
+            gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 2;
+            gridBagConstraints.gridy = y;
+    		schemaMappingPanel.add(b, gridBagConstraints);
+    		JTextField c = new JTextField(schema);
+            fields.put("schema-" + schema, c);
+            defaults.put(c, schema);
+            schemaMappingFields.put(schema, c);
+    		gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = 3;
+            gridBagConstraints.gridy = y;
+            gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+            schemaMappingPanel.add(c, gridBagConstraints);
+    		y++;
+    	}
+    }
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -132,6 +206,10 @@ public class ExportDialog extends javax.swing.JDialog {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel1 = new javax.swing.JPanel();
+        schemaMappingPanel = new javax.swing.JPanel();
+        jLabel13 = new javax.swing.JLabel();
+        jLabel14 = new javax.swing.JLabel();
+        jLabel15 = new javax.swing.JLabel();
         where = new javax.swing.JTextField();
         exportLabel = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -165,6 +243,36 @@ public class ExportDialog extends javax.swing.JDialog {
         setTitle("Data Export");
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        schemaMappingPanel.setLayout(new java.awt.GridBagLayout());
+
+        jLabel13.setText(" Import rows from schema ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        schemaMappingPanel.add(jLabel13, gridBagConstraints);
+
+        jLabel14.setFont(new java.awt.Font("Dialog", 0, 12));
+        jLabel14.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.weightx = 1.0;
+        schemaMappingPanel.add(jLabel14, gridBagConstraints);
+
+        jLabel15.setText("                          ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 200;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        schemaMappingPanel.add(jLabel15, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 80;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jPanel1.add(schemaMappingPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -395,7 +503,12 @@ public class ExportDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_selectInsertActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        theSettings.save("default");
+        for (JTextField f: schemaMappingFields.values()) {
+        	if (f.getText().trim().length() == 0) {
+        		f.setText(DEFAULT_SCHEMA);
+        	}
+        }
+    	theSettings.save("default");
         
         if (insert.getText().trim().length() == 0) {
         	exportLabel.setForeground(Color.RED);
@@ -457,6 +570,22 @@ public class ExportDialog extends javax.swing.JDialog {
     		args.add("-xml-timestamp");
     		args.add(dataModel.getXmlSettings().timestampPattern);
     	}
+    	
+    	StringBuilder schemaMapping = new StringBuilder();
+    	for (String schema: schemaMappingFields.keySet()) {
+    		String to = schemaMappingFields.get(schema).getText().trim();
+    		if (to.equals(DEFAULT_SCHEMA)) {
+    			to = "";
+    		}
+    		if (schemaMapping.length() > 0) {
+    			schemaMapping.append(",");
+    		}
+    		schemaMapping.append((schema.equals(DEFAULT_SCHEMA)? "" : schema) + "=" + to);
+    	}
+		if (schemaMapping.length() > 0) {
+			args.add("-schemamapping");
+			args.add(schemaMapping.toString());
+		}
     }
     
     // Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables
@@ -469,6 +598,9 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -482,6 +614,7 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JTextField rowsPerThread;
+    private javax.swing.JPanel schemaMappingPanel;
     private javax.swing.JButton selectDelete;
     private javax.swing.JButton selectInsert;
     private javax.swing.JLabel subjectTable;
