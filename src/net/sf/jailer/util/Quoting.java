@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.sf.jailer.modelbuilder;
+package net.sf.jailer.util;
 
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Quotes and un-quotes identifier in a DBMS specific way.
+ * Quotes and un-quotes SQL identifier in a DBMS specific way.
  * 
  * @author Ralf Wisser
  */
@@ -80,6 +80,7 @@ public class Quoting {
 				for (String key : k.split(",")) {
 					keyWords.add(key.trim().toUpperCase());
 				}
+				// add all SQL 92 keywords
 				keyWords.addAll(Arrays.asList(new String[] { "ABSOLUTE", "ACTION",
 					"ADD", "ALL", "ALLOCATE", "ALTER", "AND", "ANY", "ARE", "AS",
 					"ASC", "ASSERTION", "AT", "AUTHORIZATION", "AVG", "BEGIN",

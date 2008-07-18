@@ -38,6 +38,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
 import org.apache.log4j.Logger;
@@ -65,20 +66,21 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     public Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestion, StatementExecutor statementExecutor) throws Exception {
         Collection<Association> associations = new ArrayList<Association>();
         DatabaseMetaData metaData = statementExecutor.getMetaData();
-        ResultSet resultSet;
+    	Quoting quoting = new Quoting(metaData);
+    	ResultSet resultSet;
         String defaultSchema = getDefaultSchema(statementExecutor, statementExecutor.dbUser);
-        
+         
         for (Table table: dataModel.getTables()) {
-        	resultSet = metaData.getExportedKeys(null, table.getSchema(defaultSchema), table.getUnqualifiedName());
+        	resultSet = metaData.getExportedKeys(null, quoting.unquote(table.getSchema(quoting.quote(defaultSchema))), quoting.unquote(table.getUnqualifiedName()));
             _log.info("find associations with " + table.getName());
             Map<String, Association> fkMap = new HashMap<String, Association>();
             while (resultSet.next()) {
-                Table pkTable = dataModel.getTable(toQualifiedTableName(defaultSchema, resultSet.getString(2), resultSet.getString(3)));
-                String pkColumn = resultSet.getString(4);
-                Table fkTable = dataModel.getTable(toQualifiedTableName(defaultSchema, resultSet.getString(6), resultSet.getString(7)));
-                String fkColumn = resultSet.getString(8);
+                Table pkTable = dataModel.getTable(toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(2)), quoting.quote(resultSet.getString(3))));
+                String pkColumn = quoting.quote(resultSet.getString(4));
+                Table fkTable = dataModel.getTable(toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(6)), quoting.quote(resultSet.getString(7))));
+                String fkColumn = quoting.quote(resultSet.getString(8));
                 String foreignKey = resultSet.getString(12);
-				String fkName = fkTable + "." + foreignKey;
+                String fkName = fkTable + "." + foreignKey;
                 if (foreignKey != null && fkMap.containsKey(fkName)) {
                 	fkMap.get(fkName).appendCondition("A." + fkColumn + "=B." + pkColumn);
                 } else {
@@ -123,6 +125,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         
         Set<Table> tables = new HashSet<Table>();
         DatabaseMetaData metaData = statementExecutor.getMetaData();
+        Quoting quoting = new Quoting(metaData);
         ResultSet resultSet;
         resultSet = metaData.getTables(null, statementExecutor.getIntrospectionSchema(), "%", new String[] { "TABLE" });
         List<String> tableNames = new ArrayList<String>();
@@ -130,10 +133,11 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
             String tableName = resultSet.getString(3);
             if ("TABLE".equalsIgnoreCase(resultSet.getString(4))) {
                 if (isValidName(tableName)) {
+                	tableName = quoting.quote(tableName);
                 	if (CommandLineParser.getInstance().qualifyNames) {
                 		String schemaName = resultSet.getString(2);
                 		if (schemaName != null) {
-                			schemaName = schemaName.trim();
+                			schemaName = quoting.quote(schemaName.trim());
                 			if (schemaName.length() > 0) {
                 				tableName = schemaName + "." + tableName;
                 			}
@@ -150,24 +154,24 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         Map<String, Map<Integer, Column>> pkColumns = new HashMap<String, Map<Integer, Column>>();
         for (String tableName: tableNames) {
         	Table tmp = new Table(tableName, null, false);
-            resultSet = metaData.getPrimaryKeys(null, tmp.getSchema(statementExecutor.getIntrospectionSchema()), tmp.getUnqualifiedName());
+            resultSet = metaData.getPrimaryKeys(null, quoting.unquote(tmp.getSchema(quoting.quote(statementExecutor.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()));
             Map<Integer, Column> pk = pkColumns.get(tableName);
             if (pk == null) {
                 pk = new HashMap<Integer, Column>();
                 pkColumns.put(tableName, pk);
             }
             while (resultSet.next()) {
-                pk.put(resultSet.getInt(5), new Column(resultSet.getString(4), "", 0, -1));
+                pk.put(resultSet.getInt(5), new Column(quoting.quote(resultSet.getString(4)), "", 0, -1));
             }    
             _log.info("found primary key for table " + tableName);
             resultSet.close();
         }
         for (String tableName: tableNames) {
         	Table tmp = new Table(tableName, null, false);
-            resultSet = metaData.getColumns(null, tmp.getSchema(statementExecutor.getIntrospectionSchema()), tmp.getUnqualifiedName(), null);
+            resultSet = metaData.getColumns(null, quoting.unquote(tmp.getSchema(quoting.quote(statementExecutor.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), null);
             Map<Integer, Column> pk = pkColumns.get(tableName);
             while (resultSet.next()) {
-                String colName = resultSet.getString(4);
+                String colName = quoting.quote(resultSet.getString(4));
                 int type = resultSet.getInt(5);
                 int length = 0;
                 int precision = -1;
@@ -267,7 +271,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		try {
 			DatabaseMetaData metaData = statementExecutor.getMetaData();
 			String dbName = metaData.getDatabaseProductName();
-			boolean isPostgreSQL = "PostgreSQL".equals(dbName);
+			boolean isPostgreSQL = dbName != null && dbName.toLowerCase().contains("PostgreSQL".toLowerCase());
 			ResultSet rs = metaData.getSchemas();
 			while (rs.next()) {
 				schemas.add(rs.getString("TABLE_SCHEM"));
@@ -310,10 +314,11 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     public List<Column> findColumns(Table table, StatementExecutor statementExecutor) throws Exception {
     	List<Column> columns = new ArrayList<Column>();
     	DatabaseMetaData metaData = statementExecutor.getMetaData();
-    	String defaultSchema = getDefaultSchema(statementExecutor, statementExecutor.dbUser);
-        ResultSet resultSet = metaData.getColumns(null, table.getSchema(defaultSchema), table.getUnqualifiedName(), null);
+    	Quoting quoting = new Quoting(metaData);
+        String defaultSchema = getDefaultSchema(statementExecutor, statementExecutor.dbUser);
+        ResultSet resultSet = metaData.getColumns(null, quoting.unquote(table.getSchema(defaultSchema)), quoting.unquote(table.getUnqualifiedName()), null);
         while (resultSet.next()) {
-            String colName = resultSet.getString(4);
+            String colName = quoting.quote(resultSet.getString(4));
             int type = resultSet.getInt(5);
             int length = 0;
             int precision = -1;

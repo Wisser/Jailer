@@ -27,6 +27,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import net.sf.jailer.util.SqlUtil;
 import net.sf.jailer.xml.NodeVisitor;
 import net.sf.jailer.xml.XmlUtil;
 
@@ -389,7 +390,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 	 * @return schema name
 	 */
 	public String getSchema(String defaultSchema) {
-		int i = name.indexOf('.');
+		int i = indexOfDot();
 		if (i >= 0) {
 			return name.substring(0, i);
 		}
@@ -402,12 +403,34 @@ public class Table extends ModelElement implements Comparable<Table> {
 	 * @return unqualified name of table
 	 */
 	public String getUnqualifiedName() {
-		int i = name.indexOf('.');
+		int i = indexOfDot();
 		if (i >= 0) {
 			return name.substring(i + 1);
 		}
 		return name;
 	}
-    
+
+	/**
+	 * Gets index of schema-table separator.
+	 */
+	private int indexOfDot() {
+		if (name.length() > 0) {
+			char c = name.charAt(0);
+			if (SqlUtil.LETTERS_AND_DIGITS.indexOf(c) < 0) {
+				// quoting
+				int end = name.substring(1).indexOf(c);
+				if (end >= 0) {
+					end += 1;
+					int i = name.substring(end).indexOf('.');
+					if (i >= 0) {
+						return i + end;
+					}
+					return -1;
+				}
+			}
+		}
+		return name.indexOf('.');
+	}
+
 }
 

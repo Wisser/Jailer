@@ -22,6 +22,7 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.sql.Blob;
 import java.sql.Clob;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -36,6 +37,7 @@ import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.Base64;
+import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlScriptExecutor;
 import net.sf.jailer.util.SqlUtil;
 
@@ -114,6 +116,11 @@ public class ExportReader implements ResultSetReader {
     public static long numberOfExportedLOBs;
 
     /**
+     * For quoting of column names.
+     */
+    private final Quoting quoting;
+    
+    /**
      * Maps clear text SQL-types to {@link java.sql.Types}.
      */
     private Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
@@ -126,12 +133,13 @@ public class ExportReader implements ResultSetReader {
      * @param maxBodySize maximum length of SQL values list (for generated inserts)
      * @param upsertOnly use 'upsert' statements for all entities
      */
-    public ExportReader(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize) {
+    public ExportReader(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, DatabaseMetaData metaData) throws SQLException {
         this.maxBodySize = maxBodySize;
         this.upsertOnly = upsertOnly;
         this.table = table;
         this.scriptFileWriter = scriptFileWriter;
         this.insertStatementBuilder = new StatementBuilder(SQLDialect.currentDialect.supportsMultiRowInserts? maxBodySize : 1);
+        this.quoting = new Quoting(metaData);
     }
     
     /**
@@ -146,7 +154,7 @@ public class ExportReader implements ResultSetReader {
             lobColumnIndexes = new ArrayList<Integer>();
             labelCSL = "";
             for (int i = 1; i <= columnCount; ++i) {
-                String mdColumnLabel = resultSet.getMetaData().getColumnLabel(i);
+                String mdColumnLabel = quoting.quote(resultSet.getMetaData().getColumnLabel(i));
                 int mdColumnType = resultSet.getMetaData().getColumnType(i);
                 
                 if (mdColumnType == Types.BLOB || mdColumnType == Types.CLOB) {

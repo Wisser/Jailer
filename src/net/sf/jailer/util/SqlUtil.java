@@ -333,6 +333,8 @@ public class SqlUtil {
 		return resultSet.getObject(columnName);
 	};
 
+	public static final String LETTERS_AND_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789";
+
 	/**
 	 * Maps SQL types from {@link java.sql.Types} to clear text types.
 	 */
