@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.sf.jailer.util.SqlUtil;
+
 
 /**
  * Describes a column of a table.
@@ -29,7 +31,7 @@ import java.util.regex.Pattern;
  */
 public class Column {
 
-    /**
+	/**
      * The name (upper-case).
      */
     public final String name;
@@ -92,6 +94,27 @@ public class Column {
     public static Column parse(String columnDeclaration) {
     	columnDeclaration = columnDeclaration.trim();
 
+    	Character quote = null;
+    	if (columnDeclaration.length() > 0 && SqlUtil.LETTERS_AND_DIGITS.indexOf(columnDeclaration.charAt(0)) < 0) {
+    		quote = columnDeclaration.charAt(0);
+    		if (columnDeclaration.substring(1).indexOf(quote) >= 0) {
+	    		StringBuilder sb = new StringBuilder();
+	    		sb.append(quote);
+	    		boolean inScope = true;
+	    		for (int i = 1; i < columnDeclaration.length(); ++i) {
+	    			char c = columnDeclaration.charAt(i);
+	    			if (c == quote) {
+	    				inScope = false;
+	    			}
+	    			if (inScope && c == ' ') {
+	    				c = '\n';
+	    			}
+	    			sb.append(c);
+	    		}
+	    		columnDeclaration = sb.toString();
+    		}
+    	}
+    	
     	String name, type;
 	    int size = 0;
 	    int precision = -1;
@@ -116,6 +139,9 @@ public class Column {
 	                throw new RuntimeException("can't parse primary-key: " + columnDeclaration);
 	            }
 	        }
+	    }
+	    if (quote != null) {
+	    	name = name.replace('\n', ' ');
 	    }
 	    return new Column(name, type, size, precision);
     }

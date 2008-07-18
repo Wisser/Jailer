@@ -409,7 +409,10 @@ public class Jailer {
      * @param result a writer for the extract-script
      */
     private void writeEntities(OutputStreamWriter result, ScriptType scriptType, Table table) throws Exception {
-        ResultSetReader reader = scriptType==ScriptType.INSERT? new ExportReader(table, result, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities) : new DeletionReader(table, result, CommandLineParser.getInstance().numberOfEntities);
+        ResultSetReader reader = scriptType==ScriptType.INSERT? 
+        		new ExportReader(table, result, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities, entityGraph.statementExecutor.getMetaData()) 
+        		: 
+        		new DeletionReader(table, result, CommandLineParser.getInstance().numberOfEntities, entityGraph.statementExecutor.getMetaData());
         entityGraph.readEntities(table, reader);
         entityGraph.deleteEntities(table);
     }
@@ -453,7 +456,10 @@ public class Jailer {
             for (final Table table: dependentTables) {
                 jobs.add(new JobManager.Job() {
                     public void run() throws Exception {
-                        ResultSetReader reader = scriptType==ScriptType.INSERT? new ExportReader(table, result, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities) : new DeletionReader(table, result, CommandLineParser.getInstance().numberOfEntities);
+                        ResultSetReader reader = scriptType==ScriptType.INSERT? 
+                        		new ExportReader(table, result, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities, entityGraph.statementExecutor.getMetaData()) 
+                                : 
+                                new DeletionReader(table, result, CommandLineParser.getInstance().numberOfEntities, entityGraph.statementExecutor.getMetaData());
                         entityGraph.readMarkedEntities(table, reader);
                     }
                 });

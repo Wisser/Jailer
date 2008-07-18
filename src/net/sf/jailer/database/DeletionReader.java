@@ -17,6 +17,7 @@ package net.sf.jailer.database;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.HashMap;
@@ -25,6 +26,7 @@ import java.util.Map;
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
 
@@ -57,16 +59,22 @@ public class DeletionReader implements ResultSetReader {
     private Map<String, Integer> typeCache = new HashMap<String, Integer>();
 
     /**
+     * For quoting of column names.
+     */
+    private final Quoting quoting;
+    
+    /**
      * Constructor.
      * 
      * @param table the table to read from
      * @param scriptFileWriter the file to write to
      * @param maxBodySize maximum length of SQL values list (for generated deletes)
      */
-    public DeletionReader(Table table, OutputStreamWriter scriptFileWriter, int maxBodySize) {
+    public DeletionReader(Table table, OutputStreamWriter scriptFileWriter, int maxBodySize, DatabaseMetaData metaData) throws SQLException {
         this.table = table;
         this.scriptFileWriter = scriptFileWriter;
         deleteStatementBuilder = new StatementBuilder(maxBodySize);
+        this.quoting = new Quoting(metaData);
     }
     
     /**
@@ -80,14 +88,14 @@ public class DeletionReader implements ResultSetReader {
             String item;
             if (table.primaryKey.getColumns().size() == 1) {
                 deleteHead = "Delete from " + table.getName() + " Where " + table.primaryKey.getColumns().get(0).name + " in (";
-                item = SqlUtil.toSql(SqlUtil.getObject(resultSet, table.primaryKey.getColumns().get(0).name, typeCache));
+                item = SqlUtil.toSql(SqlUtil.getObject(resultSet, quoting.unquote(table.primaryKey.getColumns().get(0).name), typeCache));
             } else {
                 deleteHead = "Delete from " + table.getName() + " Where (";
                 item = "(";
                 boolean firstTime = true;
                 for (Column pkColumn: table.primaryKey.getColumns()) {
                     deleteHead += (firstTime? "" : ", ") + pkColumn.name;
-                    item += (firstTime? "" : ", ") + SqlUtil.toSql(SqlUtil.getObject(resultSet, pkColumn.name, typeCache));
+                    item += (firstTime? "" : ", ") + SqlUtil.toSql(SqlUtil.getObject(resultSet, quoting.unquote(pkColumn.name), typeCache));
                     firstTime = false;
                 }
                 item += ")";
