@@ -566,6 +566,26 @@ public class GraphicalDataModelView extends JPanel {
 		});
 		mapColumns.setEnabled(modelEditor.exportAsXml);
 		
+		JMenuItem restrictAll = new JMenuItem("Disable associations");
+		restrictAll.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(modelEditor.extractionModelFrame, "Disable each association with '" + model.getDisplayName(table) + "'?\n(except dependencies)?", "Add restrictions", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+		    		modelEditor.ignoreAll(table);
+		    	}
+			}
+		});
+		restrictAll.setEnabled(modelEditor.isIgnoreAllApplicable(table));
+		
+		JMenuItem removeRestrictions = new JMenuItem("Remove restrictions");
+		removeRestrictions.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(modelEditor.extractionModelFrame, "Remove all restrictions from associations with '" + model.getDisplayName(table) + "'?", "Remove restrictions", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+		    		modelEditor.removeAllRestrictions(table);
+		    	}
+			}
+		});
+		removeRestrictions.setEnabled(modelEditor.isRemovalOfAllRestrictionsApplicable(table));
+		
 		popup.add(toggleDetails);
 		popup.add(new JSeparator());
 		popup.add(hide);
@@ -574,6 +594,9 @@ public class GraphicalDataModelView extends JPanel {
 		popup.add(selectAsRoot);
 		popup.add(new JSeparator());
 		popup.add(mapColumns);
+		popup.add(new JSeparator());
+		popup.add(restrictAll);
+		popup.add(removeRestrictions);
 		
 		return popup;
 	}
