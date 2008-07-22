@@ -1680,11 +1680,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	/**
 	 * Removes all restrictions from extraction model.
 	 */
-	public void removeAllRestrictions() {
+	public void removeAllRestrictions(Table context) {
 		for (Table table: dataModel.getTables()) {
 			for (Association association: table.associations) {
 				if (!association.isInsertDestinationBeforeSource()) {
-					dataModel.getRestrictionModel().addRestriction(table, association, "", "GUI", true);
+					if (context == null || association.source.equals(context) || association.destination.equals(context)) {
+						dataModel.getRestrictionModel().addRestriction(table, association, "", "GUI", true);
+					}
 				}
 			}
 		}
@@ -1699,14 +1701,34 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	}
 	
 	/**
+	 * Checks if {@link #removeAllRestrictions(Table)} is applicable.
+	 */
+	public boolean isRemovalOfAllRestrictionsApplicable(Table context) {
+		for (Table table: dataModel.getTables()) {
+			for (Association association: table.associations) {
+				if (!association.isInsertDestinationBeforeSource()) {
+					if (context == null || association.source.equals(context) || association.destination.equals(context)) {
+						if (association.isRestricted()) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
+	/**
 	 * Add restriction for each non-dependency.
 	 */
-	public void ignoreAll() {
+	public void ignoreAll(Table context) {
 		for (Table table: dataModel.getTables()) {
 			for (Association association: table.associations) {
 				if (!association.isInsertDestinationBeforeSource()) {
 					if (association.getName() != null && !"".equals(association.getName().trim())) {
-						dataModel.getRestrictionModel().addRestriction(table, association, "false", "GUI", true);
+						if (context == null || association.source.equals(context) || association.destination.equals(context)) {
+							dataModel.getRestrictionModel().addRestriction(table, association, "false", "GUI", true);
+						}
 					}
 				}
 			}
@@ -1721,6 +1743,26 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		graphView.resetExpandedState();
 	}
 
+	/**
+	 * Checks if {@link #ignoreAll(Table)} is applicable.
+	 */
+	public boolean isIgnoreAllApplicable(Table context) {
+		for (Table table: dataModel.getTables()) {
+			for (Association association: table.associations) {
+				if (!association.isInsertDestinationBeforeSource()) {
+					if (association.getName() != null && !"".equals(association.getName().trim())) {
+						if (context == null || association.source.equals(context) || association.destination.equals(context)) {
+							if (!association.isIgnored()) {
+								return true;
+							}
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
 	/**
 	 * Zooms graphical view to fit.
 	 */

@@ -543,13 +543,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
     private void removeAllRestrictionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeAllRestrictionsActionPerformed
     	if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Remove all restrictions?", "Remove restrictions", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
-    		extractionModelEditor.removeAllRestrictions();
+    		extractionModelEditor.removeAllRestrictions(null);
     	}
     }//GEN-LAST:event_removeAllRestrictionsActionPerformed
 
     private void ignoreAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ignoreAllActionPerformed
     	if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Disable each association (except dependencies)?", "Add restrictions", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
-    		extractionModelEditor.ignoreAll();
+    		extractionModelEditor.ignoreAll(null);
     	}
     }//GEN-LAST:event_ignoreAllActionPerformed
 
