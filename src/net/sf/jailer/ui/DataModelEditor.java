@@ -125,7 +125,8 @@ public class DataModelEditor extends javax.swing.JDialog {
 	        		boolean eq = true;
 	        		int n = 0;
 	        		while (n < l.cells.size() && n < t.cells.size()) {
-	        			if (!l.cells.get(n).equals(t.cells.get(n))) {
+	        			if (n != 1 // ignore upsert flag 
+	        				&& !l.cells.get(n).equals(t.cells.get(n))) {
 	        				eq = false;
 	        				break;
 	        			}
@@ -187,8 +188,8 @@ public class DataModelEditor extends javax.swing.JDialog {
 		info.setVisible(merge);
 		updateButtons();
         
-		final Color BG_COLOR = new Color(0.9f, 1.0f, 0.9f);
-		final Color BG_SELCOLOR = new Color(0.4f, 1.0f, 0.4f);
+		final Color BG_COLOR = new Color(0.8f, 1.0f, 0.6f);
+		final Color BG_SELCOLOR = new Color(0.4f, 1.0f, 0.1f);
     	
         ListCellRenderer tablesListItemRenderer = new DefaultListCellRenderer() {
 			@Override
