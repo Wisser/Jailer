@@ -1,3 +1,6 @@
+2.4.4
+ - minor bug fixes
+
 2.4.3
  - added menu items for disabling/removing restrictions to context menu
 
