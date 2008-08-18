@@ -1,4 +1,6 @@
 2.4.4
+ - improved interaction between the graphical and hierarchical view
+ - added predefined setting for Microsoft SQL Server 2005
  - minor bug fixes
 
 2.4.3

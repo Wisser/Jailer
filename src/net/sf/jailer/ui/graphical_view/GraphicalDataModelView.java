@@ -100,7 +100,7 @@ public class GraphicalDataModelView extends JPanel {
 	/**
 	 * The selected association.
 	 */
-	private Association selectedAssociation;
+	Association selectedAssociation;
 
 	// constants
     private static final String graph = "graph";
@@ -116,7 +116,7 @@ public class GraphicalDataModelView extends JPanel {
     /**
      * The root table.
      */
-    private final Table root;
+    final Table root;
     
     /**
      * Table renderer.
@@ -403,6 +403,9 @@ public class GraphicalDataModelView extends JPanel {
         animate.add(fill);
         animate.add(new RepaintAction());
         
+//        animate.setStepTime(animate.getStepTime() + 1);
+// System.out.println(animate.getStepTime());
+        
         // finally, we register our ActionList with the Visualization.
         // we can later execute our Actions by invoking a method on our
         // Visualization, using the name we've chosen below.
@@ -426,13 +429,17 @@ public class GraphicalDataModelView extends JPanel {
         display.addControlListener(new DragControl() {
 			@Override
 			public void itemClicked(VisualItem item, MouseEvent e) {
-				// context menu
+				Table table = model.getTable(item.getString("label"));
+                if (SwingUtilities.isLeftMouseButton(e)) {
+	            	if (table != null && e.getClickCount() == 1) {
+	            		GraphicalDataModelView.this.modelEditor.select(table);
+	            	}
+                }
+            	// context menu
                 if (SwingUtilities.isRightMouseButton(e)) {
-                	Table table = model.getTable(item.getString("label"));
                 	if (table != null) {
 						JPopupMenu popup = createPopupMenu(table);
-						Display display = (Display)e.getComponent();
-				        popup.show(display, e.getX(), e.getY());
+						popup.show(e.getComponent(), e.getX(), e.getY());
                 	}
                 }
                 super.itemClicked(item, e);
@@ -515,15 +522,15 @@ public class GraphicalDataModelView extends JPanel {
      * @param table the table for which the menu pops up
      * @return the popup menu
      */
-	protected JPopupMenu createPopupMenu(final Table table) {
+	public JPopupMenu createPopupMenu(final Table table) {
 		JPopupMenu popup = new JPopupMenu();
 		
-		JMenuItem select = new JMenuItem("Select " + table.getName());
-		select.addActionListener(new ActionListener () {
-			public void actionPerformed(ActionEvent e) {
-				modelEditor.select(table);
-			}
-		});
+//		JMenuItem select = new JMenuItem("Select " + table.getName());
+//		select.addActionListener(new ActionListener () {
+//			public void actionPerformed(ActionEvent e) {
+//				modelEditor.select(table);
+//			}
+//		});
 		JMenuItem selectAsRoot = new JMenuItem("Focus " + table.getName());
 		selectAsRoot.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
@@ -589,9 +596,9 @@ public class GraphicalDataModelView extends JPanel {
 		popup.add(toggleDetails);
 		popup.add(new JSeparator());
 		popup.add(hide);
-		popup.add(zoomToFit);
-		popup.add(select);
 		popup.add(selectAsRoot);
+		popup.add(zoomToFit);
+//		popup.add(select);
 		popup.add(new JSeparator());
 		popup.add(mapColumns);
 		popup.add(new JSeparator());

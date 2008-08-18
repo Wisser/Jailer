@@ -21,6 +21,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -39,6 +40,7 @@ import java.util.Vector;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
@@ -56,6 +58,8 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+
+import prefuse.Display;
 
 import net.sf.jailer.Jailer;
 import net.sf.jailer.datamodel.AggregationSchema;
@@ -563,6 +567,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
                 treeValueChanged(evt);
             }
         });
+        tree.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                treeMouseClicked(evt);
+            }
+        });
 
         jScrollPane1.setViewportView(tree);
 
@@ -716,6 +725,29 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         add(legende, gridBagConstraints);
 
     }// </editor-fold>//GEN-END:initComponents
+
+    private void treeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_treeMouseClicked
+    	if (evt.getButton() == MouseEvent.BUTTON3) {
+            if (evt.getClickCount() == 1) {
+                TreePath node = tree.getPathForLocation(evt.getX(), evt.getY());
+                if (node != null) {
+                    Object sel = node.getLastPathComponent();
+                    if (sel instanceof DefaultMutableTreeNode) {
+                        Object selNode = ((DefaultMutableTreeNode) sel).getUserObject();
+                        Table table = null;
+                        if (selNode instanceof Table) {
+                            table = (Table) selNode;
+                        }
+                        if (selNode instanceof Association) {
+                            table = ((Association) selNode).destination;
+                        }
+                        JPopupMenu popup = graphView.createPopupMenu(table);
+				        popup.show(evt.getComponent(), evt.getX(), evt.getY());
+                    }
+                }
+            }
+        }
+    }//GEN-LAST:event_treeMouseClicked
 
     private void mapColumnsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mapColumnsActionPerformed
     	applyXmlMapping();
