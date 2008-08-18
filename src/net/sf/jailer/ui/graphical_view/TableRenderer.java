@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui.graphical_view;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -390,15 +391,28 @@ public class TableRenderer extends AbstractShapeRenderer {
      */
     public void render(Graphics2D g, VisualItem item) {
     	// workaround for 'no-text-color' bug
-		item.setTextColor(ColorLib.rgb(0, 0, 0));
-		
+    	item.setTextColor(ColorLib.rgb(0, 0, 0));
+    	
         RectangularShape shape = (RectangularShape)getShape(item);
         if ( shape == null ) return;
         
         // fill the shape, if requested
         int type = getRenderType(item);
-        if ( type==RENDER_TYPE_FILL || type==RENDER_TYPE_DRAW_AND_FILL )
-            GraphicsLib.paint(g, item, shape, getStroke(item), RENDER_TYPE_FILL);
+        if ( type==RENDER_TYPE_FILL || type==RENDER_TYPE_DRAW_AND_FILL ) {
+        	boolean isSelected = false;
+        	Table table = model.getTable(item.getString("label"));
+        	if (graphicalDataModelView.selectedAssociation != null) {
+        		isSelected = graphicalDataModelView.selectedAssociation.destination.equals(table);
+        	} else {
+        		isSelected = graphicalDataModelView.root != null && graphicalDataModelView.root.equals(table);
+        	}
+            if (isSelected) {
+            	item.setStrokeColor(ColorLib.rgb(0, 0, 0));
+            } else {
+            	item.setStrokeColor(ColorLib.rgba(0, 0, 0, 0));
+            }
+        	GraphicsLib.paint(g, item, shape, new BasicStroke(isSelected? 1 : 0), isSelected? RENDER_TYPE_DRAW_AND_FILL : RENDER_TYPE_FILL);
+        }
 
         // now render the image and text
         String text = m_text;

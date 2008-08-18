@@ -18,6 +18,7 @@ Hypersonic SQL (v1.3 and later);jdbc:HypersonicSQL:<DB>;org.hsql.jdbcDriver
 Microsoft SQL Server (JTurbo Driver);jdbc:JTurbo://<HOST>:<PORT>/<DB>;com.ashna.jturbo.driver.Driver
 Microsoft SQL Server (Sprinta Driver);jdbc:inetdae:<HOST>:<PORT>?database=<DB>;com.inet.tds.TdsDriver
 Microsoft SQL Server 2000 (Microsoft Driver);jdbc:microsoft:sqlserver://<HOST>:<PORT>[\;DatabaseName=<DB>];com.microsoft.jdbc.sqlserver.SQLServerDriver
+Microsoft SQL Server 2005 (Microsoft Driver);jdbc:sqlserver://<HOST>:<PORT>[\;DatabaseName=<DB>];com.microsoft.sqlserver.jdbc.SQLServerDriver
 MySQL (MM.MySQL Driver);jdbc:mysql://<HOST>:<PORT>/<DB>;org.gjt.mm.mysql.Driver
 Oracle OCI 8i;jdbc:oracle:oci8:@<SID>;oracle.jdbc.driver.OracleDriver
 Oracle OCI 9i;jdbc:oracle:oci:@<SID>;oracle.jdbc.driver.OracleDriver
