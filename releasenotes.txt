@@ -1,3 +1,6 @@
+2.4.5
+ - Visualization of reversal association's type in tree view
+
 2.4.4
  - improved interaction between the graphical and hierarchical view
  - added predefined setting for Microsoft SQL Server 2005
