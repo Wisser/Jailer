@@ -15,8 +15,13 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -40,6 +45,7 @@ import java.util.Vector;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.JTree;
@@ -1361,6 +1367,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 							setTextSelectionColor(associatedWith.getForeground());
 							setTextNonSelectionColor(associatedWith.getForeground());
 						}
+						return wrapTreeNode(super.getTreeCellRendererComponent(tree, text, selected, expanded, leaf, row, hasFocus), association);
 					}
 				}
 				return super.getTreeCellRendererComponent(tree, text, selected, expanded, leaf, row, hasFocus);
@@ -1368,6 +1375,89 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		};
 	}
 
+	/**
+	 * Adds an arrow that indicates the type of the reversal association to the render.
+	 */
+	private Component wrapTreeNode(Component component, final Association association) {
+		java.awt.GridBagConstraints gridBagConstraints;
+
+		if (!(component instanceof JLabel)) {
+			return component;
+		}
+		
+        JPanel panel = new javax.swing.JPanel();
+        panel.setOpaque(false);
+        final JLabel reversal = new javax.swing.JLabel();
+        reversal.setText("--");
+
+        panel.setLayout(new java.awt.GridBagLayout());
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        panel.add(component, gridBagConstraints);
+
+        reversal.setFont(((JLabel) component).getFont());
+        reversal.setBackground(((JLabel) component).getBackground());
+
+        JPanel revArrow = new JPanel() {
+        	
+        	public void paintComponent(Graphics g) {
+        		if (association.reversalAssociation.isIgnored()) {
+        			return;
+        		}
+        		Color color;
+        		if (association.reversalAssociation.isIgnored()) {
+					color = ignored.getForeground();
+				} else if (association.reversalAssociation.isInsertDestinationBeforeSource()) {
+					color = dependsOn.getForeground();
+				} else if (association.reversalAssociation.isInsertSourceBeforeDestination()) {
+					color = hasDependent.getForeground();
+				} else {
+					color = associatedWith.getForeground();
+				}
+        	    int width = getWidth();
+        	    int height = getHeight();
+        	    if (g instanceof Graphics2D) {
+        	    	Graphics2D g2d = (Graphics2D) g;
+        	    	color = new Color(color.getRed(), color.getGreen(), color.getBlue(), 100);
+        	    	g2d.setColor(color);
+        	    	g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        	    	g2d.setStroke(new BasicStroke(2));
+	        	    int a = height / 4;
+	        	    g2d.drawLine(0, height / 2, width, height / 2);
+	        	    g2d.drawLine(1, height / 2 - 1, a, height / 2 - a);
+	        	    g2d.drawLine(1, height / 2 + 1, a, height / 2 + a);
+        	    } else {
+	        	    g.setColor(color);
+	        	    int a = height / 4;
+	        	    g.drawLine(0, height / 2, width, height / 2);
+	        	    g.drawLine(0, height / 2, a, height / 2 - a);
+	        	    g.drawLine(0, height / 2, a, height / 2 + a);
+        	    }
+        	}
+        	
+			@Override
+			public Dimension getMinimumSize() {
+				return getPreferredSize();
+			}
+        	
+			@Override
+			public Dimension getPreferredSize() {
+				return reversal.getPreferredSize();
+			}
+        };
+        
+        revArrow.setOpaque(false);
+        
+        panel.add(revArrow, new java.awt.GridBagConstraints());
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        return panel;
+	}
+	
 	/**
      * Set of all association which are not editable due to ambiguity.
      */
