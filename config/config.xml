@@ -35,7 +35,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 
 	<bean name="renderer" class="net.sf.jailer.render.HtmlDataModelRenderer">
 		<constructor-arg value="render" />
-		<constructor-arg value="1" />
+		<constructor-arg value="0" />
 	</bean>
 
 	<!-- Statistic-renovator

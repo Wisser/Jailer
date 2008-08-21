@@ -706,7 +706,9 @@ public class Jailer {
             
             String command = clp.arguments.get(0);
             if (!"create-ddl".equalsIgnoreCase(command)) {
-	            _log.info("Jailer " + VERSION);
+            	if (!"find-association".equalsIgnoreCase(command)) {
+            		_log.info("Jailer " + VERSION);
+            	}
             }
             
             if ("check-domainmodel".equalsIgnoreCase(command)) {
@@ -1035,8 +1037,11 @@ public class Jailer {
         }
         
         Set<Table> tablesToIgnore = CommandLineParser.getInstance().getTabuTables(dataModel);
-        System.out.println("ignoring: " + PrintUtil.tableSetAsString(tablesToIgnore));
+        if (!tablesToIgnore.isEmpty()) {
+        	System.out.println("ignoring: " + PrintUtil.tableSetAsString(tablesToIgnore));
+        }
         System.out.println();
+        System.out.println("Shortest path from " + source.getName() + " to " + destination.getName() + ":");
         
         Map<Table, Table> successor = new HashMap<Table, Table>();
         Map<Table, Association> outgoingAssociation = new HashMap<Table, Association>();
@@ -1061,17 +1066,19 @@ public class Jailer {
         }
         if (successor.containsKey(source)) {
             String joinedSelect = "Select * From " + source.getName();
-            System.out.println(source.getName());
+            System.out.println("    " + source.getName());
             for (Table table = source; !table.equals(destination); table = successor.get(table)) {
                 Association association = outgoingAssociation.get(table);
-                System.out.println(association);
+                System.out.println("    " + association);
                 joinedSelect += " join " + association.destination.getName() + " on " + 
                     (association.reversed?
                             SqlUtil.replaceAliases(association.getJoinCondition(), association.destination.getName(), association.source.getName())
                           : SqlUtil.replaceAliases(association.getJoinCondition(), association.source.getName(), association.destination.getName()));
             }
             System.out.println();
-            System.out.println(joinedSelect);
+            System.out.println();
+            System.out.println("SQL query:");
+            System.out.println("    " + joinedSelect);
         } else {
             System.out.println("tables are not associated");
         }

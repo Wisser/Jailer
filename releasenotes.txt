@@ -1,6 +1,8 @@
 2.4.5
  - Visualization of reversal association's type in tree view
+ - "Shortest path" analysis
  - the 'UPDATE' part of 'UPSERT'-statements in generated SQL-scripts no longer updates primary key columns
+ - added context menu item for HTML rendering of tables
 
 2.4.4
  - improved interaction between the graphical and hierarchical view

@@ -591,6 +591,18 @@ public class GraphicalDataModelView extends JPanel {
 		    	}
 			}
 		});
+		JMenuItem htmlRender = new JMenuItem("Open HTML render");
+		htmlRender.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				modelEditor.extractionModelFrame.openHTMLRender(table);
+			}
+		});
+		JMenuItem shortestPath = new JMenuItem("Show shortest path");
+		shortestPath.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				modelEditor.extractionModelFrame.showShortestPath(modelEditor.getSubject(), table);
+			}
+		});
 		removeRestrictions.setEnabled(modelEditor.isRemovalOfAllRestrictionsApplicable(table));
 		
 		popup.add(toggleDetails);
@@ -600,11 +612,12 @@ public class GraphicalDataModelView extends JPanel {
 		popup.add(zoomToFit);
 //		popup.add(select);
 		popup.add(new JSeparator());
-		popup.add(mapColumns);
-		popup.add(new JSeparator());
 		popup.add(restrictAll);
 		popup.add(removeRestrictions);
-		
+		popup.add(new JSeparator());
+		popup.add(mapColumns);
+		popup.add(shortestPath);
+		popup.add(htmlRender);
 		return popup;
 	}
 

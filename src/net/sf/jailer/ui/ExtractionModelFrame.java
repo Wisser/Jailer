@@ -42,6 +42,8 @@ import net.sf.jailer.Jailer;
 import net.sf.jailer.database.ExportReader;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.render.HtmlDataModelRenderer;
 
 /**
  * Main frame of Extraction-Model-Editor.
@@ -757,17 +759,43 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_connectDbActionPerformed
 
     private void renderHtmlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_renderHtmlActionPerformed
-        try {
+    	openHTMLRender(null);
+    }//GEN-LAST:event_renderHtmlActionPerformed
+
+    /**
+     * Opens browser to render a given table.
+     * 
+     * @param table the table
+     */
+    public void openHTMLRender(Table table) {
+    	try {
         	List<String> args = new ArrayList<String>();
         	args.add("render-datamodel");
         	File file = saveRestrictions();
         	args.add(file.getName());
         	UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword());
-        	BrowserLauncher.openURL("render/index.html");
+        	BrowserLauncher.openURL(table == null? "render/index.html" : ("render/" + HtmlDataModelRenderer.toFileName(table)));
         } catch (Exception e) {
         	UIUtil.showException(this, "Error", e);
         }
-    }//GEN-LAST:event_renderHtmlActionPerformed
+	}
+
+    /**
+     * Shows shortest path between two given table.
+     */
+    public void showShortestPath(Table from, Table to) {
+    	try {
+        	List<String> args = new ArrayList<String>();
+        	args.add("find-association");
+        	args.add(from.getName());
+        	args.add(to.getName());
+        	File file = saveRestrictions();
+        	args.add(file.getName());
+        	UIUtil.runJailer(this, args, false, false, false, false, null, dbConnectionDialog.getPassword());
+        } catch (Exception e) {
+        	UIUtil.showException(this, "Error", e);
+        }
+	}
 
     /**
      * Saves restrictions of current extraction model.
@@ -1154,5 +1182,5 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenu view;
     private javax.swing.JMenuItem zoomToFit;
     // Ende der Variablendeklaration//GEN-END:variables
-    
+
 }
