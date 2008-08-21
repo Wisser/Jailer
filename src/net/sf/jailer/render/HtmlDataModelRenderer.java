@@ -116,7 +116,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
                     domainSuffix = " <small>(" + linkTo(domain) + ")</small>";
                 }
                 String title = composite == null? "Component " + table.getName() : composite.toString();
-                writeFile(new File(outputDir, table.getName() + ".html"), PrintUtil.applyTemplate("template/tableframe.html", new Object[] { title, renderTableBody(table, table, 0, 1, new HashSet<Table>()), closure + legend, components + columns, domainSuffix }));
+                writeFile(new File(outputDir, toFileName(table)), PrintUtil.applyTemplate("template/tableframe.html", new Object[] { title, renderTableBody(table, table, 0, 1, new HashSet<Table>()), closure + legend, components + columns, domainSuffix }));
             }
             
             String restrictions = "none";
@@ -542,9 +542,30 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
      * @return HTML-hyper link to the render of table
      */
     private String linkTo(Table table, String name) {
-        return "<a href=\"" + table.getName() + ".html\">" + name + "</a>";
+        return "<a href=\"" + toFileName(table) + "\">" + name + "</a>";
     }
 
+    /**
+     * Gets name of the file containing the HTML render of a given table.
+     * 
+     * @param table the table
+     * @return name of the file containing the HTML render of table
+     */
+    public static String toFileName(Table table) {
+    	StringBuilder sb = new StringBuilder();
+    	String tableName = table.getName();
+    	String chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.";
+    	
+    	for (int i = 0; i < tableName.length(); ++i) {
+    		char c = tableName.charAt(i);
+    		if (chars.indexOf(c) >= 0) {
+    			sb.append(c);
+    		}
+    	}
+    	
+    	return sb.toString() + ".html";
+    }
+    
     /**
      * Writes content into a file.
      * 
