@@ -332,14 +332,19 @@ public class ExportReader implements ResultSetReader {
 	                    if (columnLabel[i] == null) {
 	                    	continue;
 	                    }
+	                    if (isPrimaryKeyColumn(columnLabel[i])) {
+	                    	continue;
+	                    }
 	                    if (!f) {
 	                        insert.append(", ");
 	                    }
 	                    f = false;
 	                    insert.append(columnLabel[i] + "=" + val.get(columnLabel[i]));
 	                }
-	                insert.append(" Where " + where + ";\n");
-	                writeToScriptFile(insert.toString());
+	                if (!f) {
+	                	insert.append(" Where " + where + ";\n");
+	                    writeToScriptFile(insert.toString());
+	                }
                 }
             } else {
                 String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") values ";
