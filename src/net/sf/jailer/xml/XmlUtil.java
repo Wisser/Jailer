@@ -135,7 +135,11 @@ public class XmlUtil {
 				sb.append(c);
 			}
 		}
-		return sb.toString();
+		String elementName = sb.toString();
+		if (elementName.length() == 0 || (!Character.isUpperCase(elementName.charAt(0)) && !Character.isLowerCase(elementName.charAt(0)))) {
+			return "e" + elementName;
+		}
+		return elementName;
 	}
 
 	/**

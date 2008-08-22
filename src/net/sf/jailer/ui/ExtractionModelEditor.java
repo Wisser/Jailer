@@ -932,7 +932,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     	}
     }//GEN-LAST:event_treeValueChanged
 
-    private Association currentAssociation;
+    Association currentAssociation;
     private DefaultMutableTreeNode currentNode;
     private String initialRestrictionCondition = null;
     

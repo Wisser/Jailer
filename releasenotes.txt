@@ -1,4 +1,4 @@
-2.4.5
+2.5.0
  - Visualization of reversal association's type in tree view
  - "Shortest path" analysis
  - the 'UPDATE' part of 'UPSERT'-statements in generated SQL-scripts no longer updates primary key columns
