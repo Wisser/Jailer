@@ -27,6 +27,7 @@ import java.awt.event.MouseWheelEvent;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -102,6 +103,11 @@ public class GraphicalDataModelView extends JPanel {
 	 */
 	Association selectedAssociation;
 
+	/**
+	 * Set of names of all tables on path from selected one to the root.
+	 */
+	Set<String> tablesOnPath = new HashSet<String>();
+	
 	// constants
     private static final String graph = "graph";
     private static final String nodes = "graph.nodes";
@@ -433,6 +439,9 @@ public class GraphicalDataModelView extends JPanel {
                 if (SwingUtilities.isLeftMouseButton(e)) {
 	            	if (table != null && e.getClickCount() == 1) {
 	            		GraphicalDataModelView.this.modelEditor.select(table);
+	            		Association sa = selectedAssociation;
+	            		setSelection(null);
+	            		setSelection(sa);
 	            	}
                 }
             	// context menu
@@ -597,12 +606,12 @@ public class GraphicalDataModelView extends JPanel {
 				modelEditor.extractionModelFrame.openHTMLRender(table);
 			}
 		});
-		JMenuItem shortestPath = new JMenuItem("Show shortest path");
-		shortestPath.addActionListener(new ActionListener () {
-			public void actionPerformed(ActionEvent e) {
-				modelEditor.extractionModelFrame.showShortestPath(modelEditor.getSubject(), table);
-			}
-		});
+//		JMenuItem shortestPath = new JMenuItem("Show shortest path");
+//		shortestPath.addActionListener(new ActionListener () {
+//			public void actionPerformed(ActionEvent e) {
+//				modelEditor.extractionModelFrame.showShortestPath(modelEditor.getSubject(), table);
+//			}
+//		});
 		removeRestrictions.setEnabled(modelEditor.isRemovalOfAllRestrictionsApplicable(table));
 		
 		popup.add(toggleDetails);
@@ -616,7 +625,7 @@ public class GraphicalDataModelView extends JPanel {
 		popup.add(removeRestrictions);
 		popup.add(new JSeparator());
 		popup.add(mapColumns);
-		popup.add(shortestPath);
+//		popup.add(shortestPath);
 		popup.add(htmlRender);
 		return popup;
 	}
@@ -704,21 +713,25 @@ public class GraphicalDataModelView extends JPanel {
 	    		if (selectedAssociation != null || association != null) {
 	    			selectedAssociation = association;
 	    			modelEditor.select(association);
-	    			if (selectedAssociation != null) {
-	    				if (!renderedAssociations.containsKey(selectedAssociation)) {
-	    					List<Association> path = modelEditor.getPathToRoot(selectedAssociation);
-	    					int lastVisible = -1;
-	    					for (int i = path.size() - 1; i >= 0; --i) {
-	    						if (renderedAssociations.containsKey(path.get(i))) {
-	    							lastVisible = i;
-	    							break;
-	    						}		
+	    			tablesOnPath.clear();
+					if (selectedAssociation != null) {
+    					List<Association> path = getPathToRoot(selectedAssociation.destination, true);
+    					if (path.isEmpty()) {
+    						path = getPathToRoot(selectedAssociation.destination, false);
+    					}
+    					boolean highlightPath = true;
+    					if (path.isEmpty()) {
+    						highlightPath = false;
+    						path = modelEditor.getPathToRoot(selectedAssociation);
+    					}
+    					for (int i = 0; i < path.size(); ++i) {
+    						if (highlightPath) {
+    							tablesOnPath.add(path.get(i).source.getName());
+    							tablesOnPath.add(path.get(i).destination.getName());
 	    					}
-	    					for (int i = lastVisible + 1; i < path.size(); ++i) {
-	    						expandTable(theGraph, path.get(i).source, path.get(i));
-	    						expandTable(theGraph, path.get(i).destination, path.get(i));
-	    					}
-	    				}
+    						expandTable(theGraph, path.get(i).source, path.get(i));
+    						expandTable(theGraph, path.get(i).destination, path.get(i));
+    					}
 	    			}
 	    			invalidate();
 	    		}
@@ -727,6 +740,61 @@ public class GraphicalDataModelView extends JPanel {
     }
     
     /**
+     * Gets shortest path from root to a given table.
+     * 
+     * @param destination the table
+     * @param ignoreInvisibleAssociations if <code>true</code>, find a path over visible associations only
+     * @return shortest path from root to a given table
+     */
+    private List<Association> getPathToRoot(Table destination, boolean ignoreInvisibleAssociations) {
+    	List<Association> path = new ArrayList<Association>();
+    	Map<Table, Table> successor = new HashMap<Table, Table>();
+        Map<Table, Association> outgoingAssociation = new HashMap<Table, Association>();
+        List<Table> agenda = new ArrayList<Table>();
+        agenda.add(destination);
+        
+        while (!agenda.isEmpty()) {
+            Table table = agenda.remove(0);
+            for (Association association: incomingAssociations(table)) {
+            	if (!ignoreInvisibleAssociations || renderedAssociations.containsKey(association)|| renderedAssociations.containsKey(association.reversalAssociation)) {
+	                if (!successor.containsKey(association.source)) {
+	                    successor.put(association.source, table);
+	                    outgoingAssociation.put(association.source, association);
+	                    agenda.add(association.source);
+	                    if (association.source.equals(root)) {
+	                        agenda.clear();
+	                        break;
+	                    }
+	                }
+                }
+            }
+        }
+        if (successor.containsKey(root)) {
+            for (Table table = root; !table.equals(destination); table = successor.get(table)) {
+                Association association = outgoingAssociation.get(table);
+                path.add(association);
+            }
+        }
+        
+        return path;
+    }
+
+    /**
+     * Collects all non-disabled associations with a given table as destination.
+     * 
+     * @param table the table
+     */
+    private static Collection<Association> incomingAssociations(Table table) {
+        Collection<Association> result = new ArrayList<Association>();
+        for (Association association: table.associations) {
+            if (association.reversalAssociation.getJoinCondition() != null) {
+                result.add(association.reversalAssociation);
+            }
+        }
+        return result;
+    }
+
+	/**
      * Gets model as graph.
      * 
      * @param model the data model
@@ -877,11 +945,11 @@ public class GraphicalDataModelView extends JPanel {
 	 * 
 	 * @param g the graph
 	 * @param table the table node
-	 * @param toRender is not null, the only association to make visible
+	 * @param toRender if not null, the only association to make visible
 	 *  
 	 * @return list of newly rendered tables
 	 */
-	private List<Table>  expandTable(Graph g, net.sf.jailer.datamodel.Table table, Association toRender) {
+	private List<Table> expandTable(Graph g, net.sf.jailer.datamodel.Table table, Association toRender) {
 		List<Table> result = new ArrayList<Table>();
 		if (table != null && (!expandedTables.contains(table) || toRender != null)) {
 			List<Table> toCheck = new ArrayList<Table>();

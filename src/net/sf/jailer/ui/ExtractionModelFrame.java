@@ -148,8 +148,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         updateDataModel = new javax.swing.JMenuItem();
         openDataModelEditor = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JSeparator();
-        printDatamodel = new javax.swing.JMenuItem();
         renderHtml = new javax.swing.JMenuItem();
+        printDatamodel = new javax.swing.JMenuItem();
+        shortestPath = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         helpContent = new javax.swing.JMenuItem();
         tutorial = new javax.swing.JMenuItem();
@@ -426,6 +427,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu3.add(jSeparator5);
 
+        renderHtml.setText("HTML Rendering");
+        renderHtml.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                renderHtmlActionPerformed(evt);
+            }
+        });
+
+        jMenu3.add(renderHtml);
+
         printDatamodel.setLabel("Print Data Model");
         printDatamodel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -435,14 +445,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu3.add(printDatamodel);
 
-        renderHtml.setText("HTML Rendering");
-        renderHtml.addActionListener(new java.awt.event.ActionListener() {
+        shortestPath.setText("Shortest Path Analysis");
+        shortestPath.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                renderHtmlActionPerformed(evt);
+                shortestPathActionPerformed(evt);
             }
         });
 
-        jMenu3.add(renderHtml);
+        jMenu3.add(shortestPath);
 
         jMenuBar2.add(jMenu3);
 
@@ -502,6 +512,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void shortestPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_shortestPathActionPerformed
+    	showShortestPath(extractionModelEditor.getSubject(), extractionModelEditor.currentAssociation == null? extractionModelEditor.getSubject() : extractionModelEditor.currentAssociation.destination);
+    }//GEN-LAST:event_shortestPathActionPerformed
 
     private void expandAllVisibleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_expandAllVisibleActionPerformed
     	extractionModelEditor.expandAllVisibleTables();
@@ -784,17 +798,19 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      * Shows shortest path between two given table.
      */
     public void showShortestPath(Table from, Table to) {
-    	try {
-        	List<String> args = new ArrayList<String>();
-        	args.add("find-association");
-        	args.add(from.getName());
-        	args.add(to.getName());
-        	File file = saveRestrictions();
-        	args.add(file.getName());
-        	UIUtil.runJailer(this, args, false, false, false, false, null, dbConnectionDialog.getPassword());
-        } catch (Exception e) {
-        	UIUtil.showException(this, "Error", e);
-        }
+    	if (from != null && to != null) {
+	    	try {
+	        	List<String> args = new ArrayList<String>();
+	        	args.add("find-association");
+	        	args.add(from.getName());
+	        	args.add(to.getName());
+	        	File file = saveRestrictions();
+	        	args.add(file.getName());
+	        	UIUtil.runJailer(this, args, false, false, false, false, null, dbConnectionDialog.getPassword());
+	        } catch (Exception e) {
+	        	UIUtil.showException(this, "Error", e);
+	        }
+    	}
 	}
 
     /**
@@ -1175,6 +1191,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem renderHtml;
     private javax.swing.JMenuItem save;
     private javax.swing.JMenuItem saveAs;
+    private javax.swing.JMenuItem shortestPath;
     private javax.swing.JCheckBoxMenuItem showIgnored;
     private javax.swing.JCheckBoxMenuItem showTableDetails;
     private javax.swing.JMenuItem tutorial;
