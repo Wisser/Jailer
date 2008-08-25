@@ -55,13 +55,18 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	/**
 	 * The embedded editor.
 	 */
-	private ExtractionModelEditor extractionModelEditor;
+	ExtractionModelEditor extractionModelEditor;
 	
 	/**
 	 * Dialog for DB-connects.
 	 */
 	private final DbConnectionDialog dbConnectionDialog;
 	
+	/**
+	 * The "Find Table" dialog.
+	 */
+	private final FindDialog findDialog;
+
 	/**
 	 * File in which plaf-setting is stored.
 	 */
@@ -93,6 +98,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         } catch (Throwable t) {
         }
         updateMenuItems();
+        findDialog = new FindDialog(this);
     }
     
     /**
@@ -128,6 +134,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu5 = new javax.swing.JMenu();
         ignoreAll = new javax.swing.JMenuItem();
         removeAllRestrictions = new javax.swing.JMenuItem();
+        jSeparator4 = new javax.swing.JSeparator();
+        findMenuItem = new javax.swing.JMenuItem();
         jMenu1 = new javax.swing.JMenu();
         collapseAll = new javax.swing.JMenuItem();
         expandAll = new javax.swing.JMenuItem();
@@ -162,8 +170,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        setDefaultCloseOperation(0);
         setTitle("Extraction Model Editor");
+        setDefaultCloseOperation(0);
+        addWindowFocusListener(new java.awt.event.WindowFocusListener() {
+            public void windowGainedFocus(java.awt.event.WindowEvent evt) {
+                formWindowGainedFocus(evt);
+            }
+            public void windowLostFocus(java.awt.event.WindowEvent evt) {
+                formWindowLostFocus(evt);
+            }
+        });
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowClosing(java.awt.event.WindowEvent evt) {
                 formWindowClosing(evt);
@@ -262,7 +278,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenuBar2.add(fileMenu);
 
-        jMenu5.setText("Restriction");
+        jMenu5.setText("Edit");
         ignoreAll.setActionCommand("Disable all associations");
         ignoreAll.setLabel("Disable all associations");
         ignoreAll.addActionListener(new java.awt.event.ActionListener() {
@@ -281,6 +297,18 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
 
         jMenu5.add(removeAllRestrictions);
+
+        jMenu5.add(jSeparator4);
+
+        findMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
+        findMenuItem.setText("Find Table...");
+        findMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                findMenuItemActionPerformed(evt);
+            }
+        });
+
+        jMenu5.add(findMenuItem);
 
         jMenuBar2.add(jMenu5);
 
@@ -315,7 +343,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu1.add(expandAllVisible);
 
-        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.CTRL_MASK));
         jMenuItem3.setText("Fix all");
         jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -513,6 +541,29 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    /**
+     * <code>true</code> if find-dialog was hidden due to lost focus.
+     */
+//    private boolean findDialogWasVisible = false;
+    
+    private void formWindowLostFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowLostFocus
+//    	if (findDialog.isVisible()) {
+//    		findDialogWasVisible = findDialog.isVisible();
+//    		findDialog.setVisible(false);
+//    	}
+    }//GEN-LAST:event_formWindowLostFocus
+
+    private void formWindowGainedFocus(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowGainedFocus
+//    	if (findDialogWasVisible && !findDialog.isVisible()) {
+//    		findDialogWasVisible = false;
+//    		findDialog.setVisible(true);
+//    	}
+    }//GEN-LAST:event_formWindowGainedFocus
+
+    private void findMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findMenuItemActionPerformed
+    	openFindDialog(extractionModelEditor.root);
+    }//GEN-LAST:event_findMenuItemActionPerformed
+
     private void shortestPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_shortestPathActionPerformed
     	showShortestPath(extractionModelEditor.getSubject(), extractionModelEditor.currentAssociation == null? extractionModelEditor.getSubject() : extractionModelEditor.currentAssociation.destination);
     }//GEN-LAST:event_shortestPathActionPerformed
@@ -607,6 +658,17 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 */
 	public boolean showDisabledAssociations() {
 		return !hideIgnored();
+	}
+
+    /**
+     * Opens the find dialog.
+     * 
+     * @param tableToSelect the table to select initially or <code>null</code> to keep the current selection
+     */
+	public void openFindDialog(Table tableToSelect) {
+		findDialog.refresh(tableToSelect);
+    	findDialog.setVisible(true);
+    	findDialog.toFront();
 	}
 
     /**
@@ -1160,6 +1222,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem expandAll;
     private javax.swing.JMenuItem expandAllVisible;
     private javax.swing.JMenu fileMenu;
+    private javax.swing.JMenuItem findMenuItem;
     private javax.swing.JMenuItem helpContent;
     private javax.swing.JMenuItem helpForum;
     private javax.swing.JMenuItem ignoreAll;
@@ -1177,6 +1240,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator11;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
+    private javax.swing.JSeparator jSeparator4;
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JSeparator jSeparator6;
     private javax.swing.JSeparator jSeparator7;

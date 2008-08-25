@@ -614,10 +614,18 @@ public class GraphicalDataModelView extends JPanel {
 //		});
 		removeRestrictions.setEnabled(modelEditor.isRemovalOfAllRestrictionsApplicable(table));
 		
+		JMenuItem findTable = new JMenuItem("Find Table...");
+		findTable.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				modelEditor.extractionModelFrame.openFindDialog(table);
+			}
+		});
+
 		popup.add(toggleDetails);
 		popup.add(new JSeparator());
 		popup.add(hide);
 		popup.add(selectAsRoot);
+		popup.add(findTable);
 		popup.add(zoomToFit);
 //		popup.add(select);
 		popup.add(new JSeparator());
