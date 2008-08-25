@@ -65,8 +65,6 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import prefuse.Display;
-
 import net.sf.jailer.Jailer;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
@@ -111,7 +109,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	/**
 	 * Root of 'associations'-tree.
 	 */
-	private Table root;
+	Table root;
 
 	/**
 	 * Maps unnamed {@link Association}s to one {@link Association} having same source and destination.
@@ -1467,8 +1465,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
      * Selects a table in tree view.
      * 
      * @param table the table to select
+     * @return <code>true</code> if table was selected
      */
-	public void select(Table table) {
+	public boolean select(Table table) {
 		if (root != null) {
 			if (root.equals(table)) {
 				Object r = tree.getModel().getRoot();
@@ -1476,7 +1475,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					TreePath treePath = new TreePath(((DefaultMutableTreeNode) r).getPath());
 					tree.setSelectionPath(treePath);
 					tree.scrollPathToVisible(treePath);
-					return;
+					return true;
 				}
 			}
 		}
@@ -1497,7 +1496,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 						tree.collapsePath(new TreePath(c.getPath()));
 					}
 					tree.scrollPathToVisible(treePath);
-					return;
+					return true;
 				}
 			}
 		}
@@ -1508,8 +1507,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 		}
 		if (first != null) {
-			select(first);
+			return select(first);
 		}
+		return false;
 	}
 	
     /**
@@ -1568,8 +1568,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
      * Selects an association.
      * 
      * @param association the association to select
+     * @return <code>true</code> if table was selected
      */
-	public void select(Association association) {
+	public boolean select(Association association) {
 		if (!suppressRestrictionSelection) {
 			suppressRestrictionSelection = true;
 			try {
@@ -1589,7 +1590,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 						TreePath treePath = new TreePath(toSelect.getPath());
 						tree.setSelectionPath(treePath);
 						tree.scrollPathToVisible(treePath);
-						break;
+						return true;
 					}
 					tree.setModel(getModel(association));
 				}
@@ -1597,6 +1598,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				suppressRestrictionSelection = false;
 			}
 		}
+		return false;
 	}
 
 	/**
