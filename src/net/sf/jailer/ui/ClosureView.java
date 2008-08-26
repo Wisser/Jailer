@@ -52,7 +52,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 
 /**
- * Dialog for finding tables.
+ * Dialog for browsing through the closure of a table.
  *
  * @author Ralf Wisser
  */
@@ -196,7 +196,7 @@ public class ClosureView extends javax.swing.JDialog {
 					String displayName = (String) closureTable.getModel().getValueAt(row, col);
 					closureTable.getSelectionModel().clearSelection();
 					if (displayName != null && !"".equals(displayName)) {
-						if (selectedTable == null || !selectedTable.equals(displayName)) {
+//						if (selectedTable == null || !selectedTable.equals(displayName)) {
 							selectedTable = displayName;
 							repaint();
 							Table table = getDataModel().getTableByDisplayName(selectedTable);
@@ -205,7 +205,7 @@ public class ClosureView extends javax.swing.JDialog {
 									ClosureView.this.extractionModelFrame.extractionModelEditor.setRootSelection(table);
 								}
 							}
-						}
+//						}
 					}
 				}
 			}

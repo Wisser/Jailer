@@ -557,6 +557,7 @@ public class GraphicalDataModelView extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				hideTable(table);
 				display.invalidate();
+				display.repaint();
 			}
 		});
 		if (table.equals(root)) {
@@ -572,6 +573,7 @@ public class GraphicalDataModelView extends JPanel {
 				}
 				visualization.invalidateAll();
 				display.invalidate();
+				display.repaint();
 			}
 		});
 		JMenuItem mapColumns = new JMenuItem("Map columns");
@@ -742,6 +744,7 @@ public class GraphicalDataModelView extends JPanel {
     					}
 	    			}
 	    			invalidate();
+	    			repaint();
 	    		}
 	    	}
     	}
