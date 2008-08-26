@@ -1,6 +1,7 @@
 2.5.0
+ - new dialog "Context" which allows the user to browse through the closure of a table
  - Visualization of reversal association's type in tree view
- - "Shortest path" analysis
+ - "Shortest path" analysis and rendering
  - the 'UPDATE' part of 'UPSERT'-statements in generated SQL-scripts no longer updates primary key columns
  - added context menu item for HTML rendering of tables
 
