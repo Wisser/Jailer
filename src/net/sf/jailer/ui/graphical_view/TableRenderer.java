@@ -417,7 +417,7 @@ public class TableRenderer extends AbstractShapeRenderer {
             }
             int fillColor = item.getFillColor();
         	if (graphicalDataModelView.tablesOnPath.contains(tableName)) {
-        		fillColor = ColorLib.rgba(0.2f, 0.8f, 1.0f, 0.25f);
+        		fillColor = ColorLib.rgba(0.3f, 0.9f, 1.0f, 0.20f);
         	}
            	paint(g, item, fillColor, shape, new BasicStroke(isSelected? 1 : 0), isSelected? RENDER_TYPE_DRAW_AND_FILL : RENDER_TYPE_FILL);
         }
