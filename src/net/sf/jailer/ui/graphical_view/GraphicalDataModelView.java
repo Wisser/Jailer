@@ -256,8 +256,8 @@ public class GraphicalDataModelView extends JPanel {
         final GraphDistanceFilter filter = new GraphDistanceFilter(graph, hops);
 
         ColorAction fill = new ColorAction(nodes, 
-                VisualItem.FILLCOLOR, ColorLib.rgba(255,215,10,120));
-        fill.add(VisualItem.FIXED, ColorLib.rgba(255,255,30,120));
+                VisualItem.FILLCOLOR, ColorLib.rgba(255,215,10,100));
+        fill.add(VisualItem.FIXED, ColorLib.rgba(255,255,30,100));
         fill.add(VisualItem.HIGHLIGHT, ColorLib.rgba(160,160,0,120));
         
         ActionList draw = new ActionList();
