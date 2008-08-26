@@ -33,6 +33,7 @@ import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
@@ -1079,6 +1080,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(final String args[]) {
+    	// check working folder
+    	String configFileName = "config/config.xml";
+    	File configFile = new File(configFileName);
+    	if (!configFile.exists()) {
+    		JOptionPane.showMessageDialog(null, "File '" + configFileName + "' not found!", "Missing configuration file", JOptionPane.ERROR_MESSAGE);
+    		return;
+    	}
+    	
     	// turn of logging for prefuse library
     	try {
 			Logger.getLogger("prefuse").setLevel(Level.OFF);
