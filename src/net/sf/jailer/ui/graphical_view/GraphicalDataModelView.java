@@ -614,10 +614,10 @@ public class GraphicalDataModelView extends JPanel {
 //		});
 		removeRestrictions.setEnabled(modelEditor.isRemovalOfAllRestrictionsApplicable(table));
 		
-		JMenuItem findTable = new JMenuItem("Find Table...");
+		JMenuItem findTable = new JMenuItem("Open closure view");
 		findTable.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
-				modelEditor.extractionModelFrame.openFindDialog(table);
+				modelEditor.extractionModelFrame.openClosureView(table);
 			}
 		});
 

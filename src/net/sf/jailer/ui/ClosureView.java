@@ -15,20 +15,32 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.RenderingHints;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -44,12 +56,12 @@ import net.sf.jailer.datamodel.Table;
  *
  * @author Ralf Wisser
  */
-public class FindDialog extends javax.swing.JDialog {
+public class ClosureView extends javax.swing.JDialog {
 
 	/**
 	 * Maximum number of tables in a closure-table's line.
 	 */
-	private final static int MAX_TABLES_PER_LINE = 5;
+	private final static int MAX_TABLES_PER_LINE = 3;
 	
 	/**
 	 * The extraction model frame.
@@ -66,13 +78,91 @@ public class FindDialog extends javax.swing.JDialog {
 	 */
 	private final List<Color> bgColor = new ArrayList<Color>();
 	
+	/**
+	 * Holds infos about a cell in the closure-table.
+	 */
+	private class CellInfo {
+		public int row, column;
+		List<String> pathToRoot = new ArrayList<String>();
+	};
+
+	/**
+	 * Holds infos about a cell in the closure-table.
+	 */
+	private Map<String, CellInfo> cellInfo = new HashMap<String, CellInfo>();
+	
     /** Creates new form FindDialog */
-    public FindDialog(ExtractionModelFrame extractionModelFrame) {
+    public ClosureView(ExtractionModelFrame extractionModelFrame) {
         super(extractionModelFrame, false);
     	this.extractionModelFrame = extractionModelFrame;
         initComponents();
+        closureTable = new JTable() {
+
+			@Override
+			public void paint(Graphics graphics) {
+				super.paint(graphics);
+				if (!(graphics instanceof Graphics2D)) return;
+				Graphics2D g2d = (Graphics2D) graphics;
+				CellInfo selectionInfo = cellInfo.get(selectedTable);
+				if (selectionInfo == null) return;
+				int[] x = new int[selectionInfo.pathToRoot.size() + 1];
+				int[] y = new int[selectionInfo.pathToRoot.size() + 1];
+				
+				int pos = 0;
+				for (String t: selectionInfo.pathToRoot) {
+					CellInfo posInfo = cellInfo.get(t);
+					Rectangle r = closureTable.getCellRect(posInfo.row, posInfo.column, false);
+					x[pos] = (int) r.getCenterX();
+					y[pos] = (int) r.getCenterY();
+					++pos;
+				}
+				CellInfo posInfo = selectionInfo;
+				Rectangle r = closureTable.getCellRect(posInfo.row, posInfo.column, false);
+				x[pos] = (int) r.getCenterX();
+				y[pos] = (int) r.getCenterY();
+				++pos;
+				Color color = new Color(60, 220, 225, 90);
+    	    	g2d.setColor(color);
+    	    	g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+    	    	g2d.setStroke(new BasicStroke(5));
+        	    g2d.drawPolyline(x, y, pos);
+			}
+        };
+        closureTable.setShowGrid(false);
+        closureTable.setSurrendersFocusOnKeystroke(true);
+        jScrollPane1.setViewportView(closureTable);
+
+        closureTable.addMouseListener(new MouseListener() {
+			public void mouseClicked(MouseEvent e) {
+				// context menu
+                if (SwingUtilities.isRightMouseButton(e)) {
+                	int row = closureTable.rowAtPoint(e.getPoint());
+                	int column = closureTable.columnAtPoint(e.getPoint());
+                	if (row < 0 || column < 0) return;
+                	Object value = closureTable.getModel().getValueAt(row, column);
+                	if (value == null || !(value instanceof String)) return;
+                	Table table = getDataModel().getTableByDisplayName((String) value);
+                	if (table != null) {
+						JPopupMenu popup = ClosureView.this.extractionModelFrame.extractionModelEditor.graphView.createPopupMenu(table);
+						popup.show(e.getComponent(), e.getX(), e.getY());
+                	}
+                }
+			}
+			public void mouseEntered(MouseEvent e) {
+			}
+			public void mouseExited(MouseEvent e) {
+			}
+			public void mousePressed(MouseEvent e) {
+			}
+			public void mouseReleased(MouseEvent e) {
+			}
+        });
+        
         final TableCellRenderer defaultTableCellRenderer = closureTable.getDefaultRenderer(String.class);
 		closureTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
+			private Font normal = new JLabel("normal").getFont();
+			private Font bold = new Font(normal.getName(), normal.getStyle() | Font.BOLD, normal.getSize());
+			
 			public Component getTableCellRendererComponent(JTable table,
 					Object value, boolean isSelected, boolean hasFocus,
 					int row, int column) {
@@ -83,6 +173,15 @@ public class FindDialog extends javax.swing.JDialog {
 				Component render = defaultTableCellRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				if (render instanceof JLabel && !isSelected) {
 					((JLabel) render).setBackground(bgColor.get(row));
+				}
+				CellInfo cellInfo = ClosureView.this.cellInfo.get(selectedTable);
+				if (render instanceof JLabel) {
+//					((JLabel) render).setFont(normal);
+					if (cellInfo != null && selectedTable != null) {
+						if (selectedTable.equals(value) || cellInfo.pathToRoot.contains(value)) {
+							((JLabel) render).setFont(bold);
+						}
+					}
 				}
 				return render;
 			}
@@ -102,8 +201,8 @@ public class FindDialog extends javax.swing.JDialog {
 							repaint();
 							Table table = getDataModel().getTableByDisplayName(selectedTable);
 							if (table != null) {
-								if (!FindDialog.this.extractionModelFrame.extractionModelEditor.select(table)) {
-									FindDialog.this.extractionModelFrame.extractionModelEditor.setRoot(table);
+								if (!ClosureView.this.extractionModelFrame.extractionModelEditor.select(table)) {
+									ClosureView.this.extractionModelFrame.extractionModelEditor.setRootSelection(table);
 								}
 							}
 						}
@@ -117,8 +216,8 @@ public class FindDialog extends javax.swing.JDialog {
 				refresh(table);
             }
         });
-		setLocation(100, 150);
-        setSize(500, 400);
+		setLocation(400, 200);
+        setSize(400, 400);
         setAlwaysOnTop(true);
     }
     
@@ -176,10 +275,25 @@ public class FindDialog extends javax.swing.JDialog {
     }
     
     /**
+     * Refreshes the dialog after the model has been changed.
+     */
+    public void refresh() {
+    	String prevSelection = selectedTable;
+    	refreshTableModel();
+    	if (cellInfo.containsKey(prevSelection)) {
+    		selectedTable = prevSelection;
+    	} else {
+    		selectedTable = null;
+    	}
+		repaint();
+    }
+    
+    /**
      * Refreshes the table model.
      */
     private void refreshTableModel() {
     	Table selectedTable = null;
+    	cellInfo.clear();
     	Object currentSelection = tableSelection.getSelectedItem();
 		if (currentSelection instanceof String) {
 			selectedTable = getDataModel().getTableByDisplayName((String) currentSelection);
@@ -197,12 +311,17 @@ public class FindDialog extends javax.swing.JDialog {
 		Set<String> visited = new HashSet<String>();
 		List<String> currentLine = new ArrayList<String>();
 		if (selectedTable != null) {
-			currentLine.add(getDataModel().getDisplayName(selectedTable));
-			visited.add(getDataModel().getDisplayName(selectedTable));
+			String displayName = getDataModel().getDisplayName(selectedTable);
+			currentLine.add(displayName);
+			visited.add(displayName);
+			CellInfo cellInfo = new CellInfo();
+			cellInfo.column = 1;
+			cellInfo.row = 0;
+			this.cellInfo.put(displayName, cellInfo);
 		}
 		int distance = 0;
 		final Color BG1 = new Color(255, 255, 255);
-		final Color BG2 = new Color(220, 245, 245);
+		final Color BG2 = new Color(230, 255, 255);
 		bgColor.clear();
 		bgColor.add(BG1);
 		
@@ -214,15 +333,20 @@ public class FindDialog extends javax.swing.JDialog {
 			int col = 0;
 			lineAsObjects[col++] = distance > 0? ("" + distance) : "";
 			for (String t: currentLine) {
-				if (col < MAX_TABLES_PER_LINE) {
-					lineAsObjects[col++] = t;
+				CellInfo cellInfo = this.cellInfo.get(t);
+				if (col <= MAX_TABLES_PER_LINE) {
+					cellInfo.column = col;
+					lineAsObjects[col++] = t;					
 				} else {
 					data.add(lineAsObjects);
 					bgColor.add(distance % 2 == 0? BG1 : BG2);
 					lineAsObjects = new Object[MAX_TABLES_PER_LINE + 1];
 					Arrays.fill(lineAsObjects, "");
 					col = 1;
+					cellInfo.column = col;
+					lineAsObjects[col++] = t;
 				}
+				cellInfo.row = data.size();
 			}
 			if (col > 1) {
 				data.add(lineAsObjects);
@@ -234,11 +358,16 @@ public class FindDialog extends javax.swing.JDialog {
 			for (String t: currentLine) {
 				Table table = getDataModel().getTableByDisplayName(t);
 				if (table != null) {
+					CellInfo cellInfoT = this.cellInfo.get(t);
 					for (Association association: table.associations) {
 						String displayName = getDataModel().getDisplayName(association.destination);
 						if (!visited.contains(displayName) && !association.isIgnored()) {
 							nextLine.add(displayName);
 							visited.add(displayName);
+							CellInfo cellInfo = new CellInfo();
+							cellInfo.pathToRoot.addAll(cellInfoT.pathToRoot);
+							cellInfo.pathToRoot.add(t);
+							this.cellInfo.put(displayName, cellInfo);
 						}
 					}
 				}
@@ -275,7 +404,6 @@ public class FindDialog extends javax.swing.JDialog {
             
             column.setPreferredWidth(width);
         }
-    	
 	}
 
 	/** This method is called from within the constructor to
@@ -290,14 +418,13 @@ public class FindDialog extends javax.swing.JDialog {
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         tableSelection = new javax.swing.JComboBox();
-        refreshButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         closureTable = new javax.swing.JTable();
         jLabel2 = new javax.swing.JLabel();
 
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        setTitle("Find Table");
+        setTitle("Closure");
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setText(" Table ");
@@ -308,26 +435,14 @@ public class FindDialog extends javax.swing.JDialog {
         jPanel1.add(jLabel1, gridBagConstraints);
 
         tableSelection.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Eintrag 1", "Eintrag 2", "Eintrag 3", "Eintrag 4" }));
+        tableSelection.setMaximumRowCount(32);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 20;
         gridBagConstraints.gridy = 10;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 2);
         jPanel1.add(tableSelection, gridBagConstraints);
-
-        refreshButton.setText("Refresh");
-        refreshButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                refreshButtonActionPerformed(evt);
-            }
-        });
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 30;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
-        jPanel1.add(refreshButton, gridBagConstraints);
 
         closureTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -351,7 +466,7 @@ public class FindDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 2);
         jPanel1.add(jScrollPane1, gridBagConstraints);
 
         jLabel2.setText(" Closure");
@@ -373,17 +488,12 @@ public class FindDialog extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
-    	refresh(null);
-    }//GEN-LAST:event_refreshButtonActionPerformed
-
     // Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables
     private javax.swing.JTable closureTable;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JButton refreshButton;
     private javax.swing.JComboBox tableSelection;
     // Ende der Variablendeklaration//GEN-END:variables
     

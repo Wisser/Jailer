@@ -65,7 +65,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	/**
 	 * The "Find Table" dialog.
 	 */
-	private final FindDialog findDialog;
+	final ClosureView closureView;
 
 	/**
 	 * File in which plaf-setting is stored.
@@ -98,7 +98,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         } catch (Throwable t) {
         }
         updateMenuItems();
-        findDialog = new FindDialog(this);
+        closureView = new ClosureView(this);
     }
     
     /**
@@ -134,8 +134,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu5 = new javax.swing.JMenu();
         ignoreAll = new javax.swing.JMenuItem();
         removeAllRestrictions = new javax.swing.JMenuItem();
-        jSeparator4 = new javax.swing.JSeparator();
-        findMenuItem = new javax.swing.JMenuItem();
         jMenu1 = new javax.swing.JMenu();
         collapseAll = new javax.swing.JMenuItem();
         expandAll = new javax.swing.JMenuItem();
@@ -144,6 +142,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenuItem4 = new javax.swing.JMenuItem();
         refresh = new javax.swing.JMenuItem();
         zoomToFit = new javax.swing.JMenuItem();
+        jSeparator4 = new javax.swing.JSeparator();
+        closureMenuItem = new javax.swing.JMenuItem();
         jSeparator9 = new javax.swing.JSeparator();
         showIgnored = new javax.swing.JCheckBoxMenuItem();
         showTableDetails = new javax.swing.JCheckBoxMenuItem();
@@ -298,18 +298,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu5.add(removeAllRestrictions);
 
-        jMenu5.add(jSeparator4);
-
-        findMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
-        findMenuItem.setText("Find Table...");
-        findMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                findMenuItemActionPerformed(evt);
-            }
-        });
-
-        jMenu5.add(findMenuItem);
-
         jMenuBar2.add(jMenu5);
 
         jMenu1.setText("View");
@@ -343,7 +331,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu1.add(expandAllVisible);
 
-        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F, java.awt.event.InputEvent.CTRL_MASK));
         jMenuItem3.setText("Fix all");
         jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -383,6 +371,18 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
 
         jMenu1.add(zoomToFit);
+
+        jMenu1.add(jSeparator4);
+
+        closureMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.CTRL_MASK));
+        closureMenuItem.setText("Open closure view");
+        closureMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                closureMenuItemActionPerformed(evt);
+            }
+        });
+
+        jMenu1.add(closureMenuItem);
 
         jMenu1.add(jSeparator9);
 
@@ -560,9 +560,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 //    	}
     }//GEN-LAST:event_formWindowGainedFocus
 
-    private void findMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_findMenuItemActionPerformed
-    	openFindDialog(extractionModelEditor.root);
-    }//GEN-LAST:event_findMenuItemActionPerformed
+    private void closureMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closureMenuItemActionPerformed
+    	openClosureView(extractionModelEditor.root);
+    }//GEN-LAST:event_closureMenuItemActionPerformed
 
     private void shortestPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_shortestPathActionPerformed
     	showShortestPath(extractionModelEditor.getSubject(), extractionModelEditor.currentAssociation == null? extractionModelEditor.getSubject() : extractionModelEditor.currentAssociation.destination);
@@ -661,14 +661,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	}
 
     /**
-     * Opens the find dialog.
+     * Opens the closure view.
      * 
      * @param tableToSelect the table to select initially or <code>null</code> to keep the current selection
      */
-	public void openFindDialog(Table tableToSelect) {
-		findDialog.refresh(tableToSelect);
-    	findDialog.setVisible(true);
-    	findDialog.toFront();
+	public void openClosureView(Table tableToSelect) {
+		closureView.refresh(tableToSelect);
+		closureView.setVisible(true);
+		closureView.toFront();
 	}
 
     /**
@@ -1212,6 +1212,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	}
 	
     // Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables
+    private javax.swing.JMenuItem closureMenuItem;
     private javax.swing.JMenuItem collapseAll;
     private javax.swing.JCheckBoxMenuItem connectDb;
     private javax.swing.JMenuItem dataExport;
@@ -1222,7 +1223,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem expandAll;
     private javax.swing.JMenuItem expandAllVisible;
     private javax.swing.JMenu fileMenu;
-    private javax.swing.JMenuItem findMenuItem;
     private javax.swing.JMenuItem helpContent;
     private javax.swing.JMenuItem helpForum;
     private javax.swing.JMenuItem ignoreAll;
