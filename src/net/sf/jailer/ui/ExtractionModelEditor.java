@@ -1079,7 +1079,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				}
 			}
 			restrictionEditor.joinCondition.setText(joinCondition);
-			tree.grabFocus();
 		}
 		graphView.setSelection(association);
 	}
@@ -1158,6 +1157,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			initRestrictionEditor(currentAssociation, currentNode);
 			initialRestrictionCondition = saveInitialRestrictionCondition;
 			extractionModelFrame.closureView.refresh();
+			tree.grabFocus();
     	}
     }
     
