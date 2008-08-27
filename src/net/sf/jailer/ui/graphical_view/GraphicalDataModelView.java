@@ -474,6 +474,9 @@ public class GraphicalDataModelView extends JPanel {
 	            			collapseTable(theGraph, table, false);
 	            			display.pan(1, 0);
 	            			display.pan(0, 1);
+	            			Association sa = selectedAssociation;
+		            		setSelection(null);
+		            		setSelection(sa);
 	            			visualization.invalidateAll();
 	            			display.invalidate();
 	            		} else {
@@ -557,7 +560,6 @@ public class GraphicalDataModelView extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				hideTable(table);
 				display.invalidate();
-				display.repaint();
 			}
 		});
 		if (table.equals(root)) {
@@ -573,7 +575,6 @@ public class GraphicalDataModelView extends JPanel {
 				}
 				visualization.invalidateAll();
 				display.invalidate();
-				display.repaint();
 			}
 		});
 		JMenuItem mapColumns = new JMenuItem("Map columns");
@@ -616,7 +617,7 @@ public class GraphicalDataModelView extends JPanel {
 //		});
 		removeRestrictions.setEnabled(modelEditor.isRemovalOfAllRestrictionsApplicable(table));
 		
-		JMenuItem findTable = new JMenuItem("Open closure view");
+		JMenuItem findTable = new JMenuItem("Open closure browser");
 		findTable.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				modelEditor.extractionModelFrame.openClosureView(table);
@@ -744,7 +745,6 @@ public class GraphicalDataModelView extends JPanel {
     					}
 	    			}
 	    			invalidate();
-	    			repaint();
 	    		}
 	    	}
     	}

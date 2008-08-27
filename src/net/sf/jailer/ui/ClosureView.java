@@ -121,7 +121,7 @@ public class ClosureView extends javax.swing.JDialog {
 				x[pos] = (int) r.getCenterX();
 				y[pos] = (int) r.getCenterY();
 				++pos;
-				Color color = new Color(60, 220, 225, 90);
+				Color color = new Color(0, 120, 255, 60);
     	    	g2d.setColor(color);
     	    	g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
     	    	g2d.setStroke(new BasicStroke(5));
@@ -160,8 +160,9 @@ public class ClosureView extends javax.swing.JDialog {
         
         final TableCellRenderer defaultTableCellRenderer = closureTable.getDefaultRenderer(String.class);
 		closureTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
-			private Font normal = new JLabel("normal").getFont();
-			private Font bold = new Font(normal.getName(), normal.getStyle() | Font.BOLD, normal.getSize());
+			private Font font = new JLabel("normal").getFont();
+			private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
+			private Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
 			
 			public Component getTableCellRendererComponent(JTable table,
 					Object value, boolean isSelected, boolean hasFocus,
@@ -176,10 +177,31 @@ public class ClosureView extends javax.swing.JDialog {
 				}
 				CellInfo cellInfo = ClosureView.this.cellInfo.get(selectedTable);
 				if (render instanceof JLabel) {
-//					((JLabel) render).setFont(normal);
+					((JLabel) render).setForeground(Color.BLACK);
+					((JLabel) render).setFont(normal);
 					if (cellInfo != null && selectedTable != null) {
 						if (selectedTable.equals(value) || cellInfo.pathToRoot.contains(value)) {
 							((JLabel) render).setFont(bold);
+						}
+					}
+					Table t = getDataModel().getTableByDisplayName((String) value);
+					if (t != null) {
+						boolean allDisabled = true;
+						boolean someRestricted = false;
+						for (Association association: t.associations) {
+							if (!association.isInsertDestinationBeforeSource()) {
+								if (!association.isIgnored()) {
+									allDisabled = false;
+								}
+							}
+							if (association.isRestricted()) {
+								someRestricted = true;
+							}
+						}
+						if (allDisabled && someRestricted) {
+							((JLabel) render).setForeground(new Color(160, 80, 0));
+						} else if (!allDisabled && someRestricted) {
+							((JLabel) render).setForeground(new Color(0, 80, 160));
 						}
 					}
 				}
@@ -424,7 +446,7 @@ public class ClosureView extends javax.swing.JDialog {
 
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        setTitle("Closure");
+        setTitle("Closure Browser");
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setText(" Table ");
