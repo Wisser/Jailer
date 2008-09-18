@@ -165,7 +165,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         tutorial = new javax.swing.JMenuItem();
         jSeparator7 = new javax.swing.JSeparator();
         helpForum = new javax.swing.JMenuItem();
-        jMenuItem2 = new javax.swing.JMenuItem();
         jSeparator8 = new javax.swing.JSeparator();
         jMenuItem1 = new javax.swing.JMenuItem();
 
@@ -515,15 +514,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu2.add(helpForum);
 
-        jMenuItem2.setText("Software Update");
-        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem2ActionPerformed(evt);
-            }
-        });
-
-        jMenu2.add(jMenuItem2);
-
         jMenu2.add(jSeparator8);
 
         jMenuItem1.setText("About Jailer");
@@ -604,10 +594,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			UIUtil.showException(this, "Error", e);
 		}
     }//GEN-LAST:event_helpContentActionPerformed
-
-    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
-    	UIUtil.lookForUpdate(this);
-    }//GEN-LAST:event_jMenuItem2ActionPerformed
 
     private void removeAllRestrictionsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeAllRestrictionsActionPerformed
     	if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Remove all restrictions?", "Remove restrictions", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
@@ -1241,7 +1227,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu5;
     private javax.swing.JMenuBar jMenuBar2;
     private javax.swing.JMenuItem jMenuItem1;
-    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JSeparator jSeparator1;
