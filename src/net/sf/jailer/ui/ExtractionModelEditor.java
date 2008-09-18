@@ -1422,7 +1422,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         JPanel panel = new javax.swing.JPanel();
         panel.setOpaque(false);
         final JLabel reversal = new javax.swing.JLabel();
-        reversal.setText("--");
+        reversal.setText("re");
 
         panel.setLayout(new java.awt.GridBagLayout());
 
