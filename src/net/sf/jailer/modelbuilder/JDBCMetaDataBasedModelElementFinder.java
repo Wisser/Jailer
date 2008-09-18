@@ -56,6 +56,15 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     private static final Logger _log = Logger.getLogger(JDBCMetaDataBasedModelElementFinder.class);
 
     /**
+     * Set of sql types (uppercase) not listed in {@link Types} which needs a length argument.
+     */
+    private final Set<String> typesWithLength = new HashSet<String>();
+    {
+    	typesWithLength.add("NVARCHAR2");
+    	typesWithLength.add("NCHAR");
+    }
+    
+    /**
      * Finds associations by reading the databases meta-data.
      * 
      * @param statementExecutor the statement executor for executing SQL-statements 
@@ -175,7 +184,14 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 int type = resultSet.getInt(5);
                 int length = 0;
                 int precision = -1;
-                if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR) {
+                String sqlType = resultSet.getString(6);
+                if (sqlType == null || sqlType.trim().length() == 0 || resultSet.wasNull()) {
+                	sqlType = SqlUtil.SQL_TYPE.get(type);
+                    if (sqlType == null) {
+                    	throw new RuntimeException("unknown SQL type: " + type);
+                    }
+                }
+                if (typesWithLength.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR) {
                     length = resultSet.getInt(7);
                 }
                 if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR) {
@@ -183,11 +199,6 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                     if (resultSet.wasNull() || precision == 0) {
                     	precision = -1;
                     }
-                }
-                String sqlType = SqlUtil.SQL_TYPE.get(type);
-                if (sqlType == null) {
-                	sqlType = resultSet.getString(6);
-                    // throw new RuntimeException("unknown SQL type: " + type);
                 }
                 Column column = new Column(colName, sqlType, length, precision);
                 for (int i: pk.keySet()) {
@@ -331,10 +342,23 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 	precision = -1;
                 }
             }
-            String sqlType = SqlUtil.SQL_TYPE.get(type);
-            // if (sqlType == null) {
-            	sqlType = resultSet.getString(6);
-            // }
+            String sqlType = resultSet.getString(6);
+            if (sqlType == null || sqlType.trim().length() == 0 || resultSet.wasNull()) {
+            	sqlType = SqlUtil.SQL_TYPE.get(type);
+                if (sqlType == null) {
+                	continue;
+                	// throw new RuntimeException("unknown SQL type: " + type);
+                }
+            }
+            if (typesWithLength.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR) {
+                length = resultSet.getInt(7);
+            }
+            if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR) {
+                precision = resultSet.getInt(9);
+                if (resultSet.wasNull() || precision == 0) {
+                	precision = -1;
+                }
+            }
             columns.add(new Column(colName, sqlType, length, precision));
         }
         resultSet.close();

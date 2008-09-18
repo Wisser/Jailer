@@ -1,3 +1,6 @@
+2.5.1
+ - fixed a bug concerning the introspection of tables which have columns of type NVARCHAR2 or NCHAR.
+
 2.5.0
  - new dialog "Closure Browser" added which allows the user to browse through the closure of a table
  - Visualization of reversal association's type in tree view
