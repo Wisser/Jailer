@@ -1,3 +1,7 @@
+2.5.2
+ - "show table details" is now initially switched off
+ - the focused table is now initially collapsed if it is associated with more than 10 other tables
+
 2.5.1
  - fixed a bug concerning the introspection of tables which have columns of type NVARCHAR2 or NCHAR.
 

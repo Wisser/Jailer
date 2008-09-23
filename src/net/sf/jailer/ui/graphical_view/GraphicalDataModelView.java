@@ -523,6 +523,8 @@ public class GraphicalDataModelView extends JPanel {
         visualization.run("draw");
         layout.run();
         
+		resetExpandedState();
+		
         display.setHighQuality(true);
         
         add(display);
@@ -829,7 +831,19 @@ public class GraphicalDataModelView extends JPanel {
 		
 		Table table = root;
 		showTable(g, table);
-		expandTable(g, table);
+		
+		int nAssociatedTables = 0;
+		if (table != null) {
+			for (Association a: table.associations) {
+				if (isVisualizable(a)) {
+					++nAssociatedTables;
+				}
+			}
+		}
+		
+		if (nAssociatedTables <= 10) {
+			expandTable(g, table);
+		}
 		
     	return g;
 	}
