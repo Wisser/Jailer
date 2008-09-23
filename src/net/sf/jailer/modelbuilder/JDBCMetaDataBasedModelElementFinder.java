@@ -250,18 +250,6 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				schemas.add(rs.getString("TABLE_SCHEM").trim());
 			}
 			rs.close();
-			
-			// don't remove empty schemas 
-//			for (Iterator<String> i = schemas.iterator(); i.hasNext(); ) {
-//				String schema = i.next();
-//				if (!schema.equalsIgnoreCase(userName.trim())) {
-//					rs = metaData.getTables(null, schema, "%", new String[] { "TABLE" });
-//					if (!rs.next()) {
-//						i.remove();
-//					}
-//					rs.close();
-//				}
-//			}
 		} catch (SQLException e) {
 			e.printStackTrace();
 			if (userName != null) {
@@ -366,4 +354,11 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         return columns;
     }
 
+    /**
+     * Gets description.
+     */
+    public String toString() {
+    	return "JDBC based model element finder";
+    }
+    
 }
