@@ -396,7 +396,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu1.add(showIgnored);
 
-        showTableDetails.setSelected(true);
         showTableDetails.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_D, java.awt.event.InputEvent.CTRL_MASK));
         showTableDetails.setText("Show table details");
         showTableDetails.addActionListener(new java.awt.event.ActionListener() {
