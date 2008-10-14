@@ -100,8 +100,40 @@
 Data <span style="text-decoration: underline;"></span>Export
 Tool</big><br>
             </span><br>
+Databases are growing in both size and complexity to meet the
+increasing demands of business. Applications to process the data are
+also increasing in size and complexity. With the growing complexity,
+solid testing becomes more and more important in order to assure the
+quality of software. Ideally we would like to test all changes against
+up-to-date production data, so the general practice is use a copy of
+the production database for all testing.<br>
             <br>
-Features<br>
+But when a database exceeds a certain size it becomes very expensive to
+provide full-size copies of the production database for development and
+testing. One solution of this problem is to have fewer full size copies
+of the production database than are really needed, often only one,
+which will be shared between the development and testing teams.<br>
+            <br>
+Of course this is far from optimal. Data in the database is left in an
+unknown state when passed from one team to the other. It takes a long
+time to provide a refresh of the production copy when it’s required.
+Always having an up-to-date production copy is almost impossible.<br>
+            <br>
+The databases required for development and testing rarely need to be
+full size, it is often easier to work on a small copy. Unfortunately it
+is very hard to manually extract a small subset of the production data.
+It is not possible to just take 10% of each table to get a 10% size
+database. The data in one table would not be related to the data in the
+other tables. It would not be <span style="font-style: italic;">referentially
+intact</span>.<br>
+            <br>
+Jailer simplifies the extraction of referentially intact data. Once you
+have defined an <span style="font-style: italic;">extraction model</span>,
+it can be used to extract data from the production database fast and
+easy whenever up-to-date test data is required.<br>
+            <br>
+            <span style="font-weight: bold;"><br>
+Features</span><br>
             <ul>
               <li>Exports consistent and referentially intact
 row-sets from your
@@ -115,8 +147,6 @@ topologically sorted SQL-DML.</li>
               <li>Open Source. Entirely written in Java. Platform
 independent. DBMS agnostic.</li>
             </ul>
-            <br>
-            <br>
             <ul>
             </ul>
             <br>
