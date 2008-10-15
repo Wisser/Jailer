@@ -264,11 +264,11 @@ public class SQLDialect {
 		
 		log("begin guessing PK-values");
 		for (Column column : primaryKey.getColumns()) {
-			guessDummyValues(column, statementExecutor);
+			guessDummyValues(column, true, statementExecutor);
 		}
 		// force date format guessing
-		guessDummyValues(new Column("C", "DATE", 0, -1), statementExecutor);
-		guessDummyValues(new Column("C", "TIMESTAMP", 0, -1), statementExecutor);
+		guessDummyValues(new Column("C", "DATE", 0, -1), false, statementExecutor);
+		guessDummyValues(new Column("C", "TIMESTAMP", 0, -1), false, statementExecutor);
 		statementExecutor.setSilent(false);
 		log("end guessing PK-values");
 	}
@@ -279,11 +279,11 @@ public class SQLDialect {
 	 * @param primaryKey
 	 *            the primary key
 	 */
-	private static void guessDummyValues(Column column,
+	private static void guessDummyValues(Column column, boolean load,
 			StatementExecutor statementExecutor) {
 		
 		String nullValue = readConfigValue(column.toSQL(null), statementExecutor);
-		if (nullValue != null) {
+		if (nullValue != null && load) {
 			column.nullValue = nullValue;
 			return;
 		}
