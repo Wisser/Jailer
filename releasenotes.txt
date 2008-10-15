@@ -1,5 +1,5 @@
-2.5.3.rc1
- - bug fix: search timestamp pattern even if dummy values are already persisted (release candidate)
+2.5.3
+ - bug fix: search timestamp pattern even if dummy values are already persisted 
 
 2.5.2
  - "show table details" is now initially switched off
