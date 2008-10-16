@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -136,11 +137,21 @@ public class SqlUtil {
      * To be used for time stamp formatting.
      */
     public static DateFormat timestampFormat = null;
-    
+
+    /**
+     * Default time stamp format (for 'to_timestamp' function).
+     */
+    public static DateFormat defaultTimestampFormat = new SimpleDateFormat("yyyy-MM-dd HH.mm.ss");
+
+    /**
+     * <code>true</code> if 'to_timestamp' function is used for writing out timestamps instead of formatting them.
+     */
+	public static boolean useToTimestampFunction = false;
+
     public static boolean appendNanosToTimestamp = true;
     public static boolean appendMillisToTimestamp = false;
 	public static char nanoSep = '.';
-    
+   
     /**
      * Converts a cell-content to valid SQL-literal.
      * 
@@ -161,7 +172,16 @@ public class SqlUtil {
             return "'" + content + "'";
         }
         if (content instanceof java.sql.Timestamp) {
-        	if (timestampFormat != null) {
+        	if (useToTimestampFunction) {
+        		String format;
+        		synchronized(defaultTimestampFormat) {
+	        		format = defaultTimestampFormat.format((Date) content);
+	        		if (appendNanosToTimestamp) {
+	        			format += getNanoString((Timestamp) content, !appendMillisToTimestamp);
+	        		}
+        		}
+				return "to_timestamp('" + format + "', 'YYYY-MM-DD HH24:MI:SS.FF')";
+        	} else if (timestampFormat != null) {
         		String format;
         		synchronized(timestampFormat) {
 	        		format = timestampFormat.format((Date) content);
