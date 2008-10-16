@@ -184,7 +184,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 int type = resultSet.getInt(5);
                 int length = 0;
                 int precision = -1;
-                String sqlType = resultSet.getString(6);
+                String sqlType = toSqlType(resultSet.getString(6));
                 if (sqlType == null || sqlType.trim().length() == 0 || resultSet.wasNull()) {
                 	sqlType = SqlUtil.SQL_TYPE.get(type);
                     if (sqlType == null) {
@@ -330,7 +330,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 	precision = -1;
                 }
             }
-            String sqlType = resultSet.getString(6);
+            String sqlType = toSqlType(resultSet.getString(6));
             if (sqlType == null || sqlType.trim().length() == 0 || resultSet.wasNull()) {
             	sqlType = SqlUtil.SQL_TYPE.get(type);
                 if (sqlType == null) {
@@ -355,6 +355,24 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     }
 
     /**
+     * Converts result from {@link DatabaseMetaData#getColumns(String, String, String, String)}
+     * into the type name.
+     */
+    private String toSqlType(String sqlType) {
+        // Some drivers (MS SQL Server driver for example) prepends the type with some options,
+    	// so we ignore everything after the first space.
+    	if (sqlType == null) {
+    		return null;
+    	}
+    	sqlType = sqlType.trim();
+    	int i = sqlType.indexOf(' ');
+    	if (i > 0) {
+    		return sqlType.substring(0, i);
+    	}
+		return sqlType;
+	}
+
+	/**
      * Gets description.
      */
     public String toString() {

@@ -59,7 +59,7 @@ public class SQLDialect {
 	/**
 	 * The logger.
 	 */
-	private static final Logger _log = Logger.getLogger(SQLDialect.class);;
+	private static final Logger _log = Logger.getLogger(SQLDialect.class);
 
 	/**
 	 * The sql logger.
@@ -289,7 +289,7 @@ public class SQLDialect {
 		}
 		
 		Calendar cal = Calendar.getInstance();
-		cal.set(2000, 0, 30, 9, 59, 30);
+		cal.set(2000, 0, 30, 23, 59, 30);
 		cal.set(Calendar.MILLISECOND, 456);
 		long time = cal.getTimeInMillis();
 		final Timestamp timestamp = new Timestamp(time);
@@ -350,8 +350,14 @@ public class SQLDialect {
 									try {
 										SqlUtil.appendNanosToTimestamp = i != 2;
 										SqlUtil.appendMillisToTimestamp = i != 0;
-										SqlUtil.timestampFormat = pattern == null ? null
+										SqlUtil.useToTimestampFunction = false;
+										if ("TO_TIMESTAMP".equals(pattern)) {
+											SqlUtil.timestampFormat = null;
+											SqlUtil.useToTimestampFunction = true;
+										} else {
+											SqlUtil.timestampFormat = pattern == null ? null
 												: new SimpleDateFormat(pattern);
+										}
 										insertNullValue(column, result[0],
 												statementExecutor);
 										break;
@@ -466,7 +472,8 @@ public class SQLDialect {
 			"yyyy/MM/dd", "yyyy.MM.dd", "yyyy.MM.dd.", "yyyy MMM d",
 			"yyyy-MMM-dd", "dd MMM yy", "dd-MMM-yy", "MM d, yy", null };
 
-	private static String[] timePattern = new String[] { null,
+	private static String[] timePattern = new String[] { null, 
+		    "TO_TIMESTAMP", // for using oracle to_timestamp function
 			"dd/MM/yyyy HH:mm:ss", "dd.MM.yyyy HH:mm:ss",
 			"dd.MM.yyyy. HH.mm.ss", 
 			"dd.MM.yyyy H:mm:ss",

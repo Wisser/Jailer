@@ -1,3 +1,7 @@
+2.5.4
+ - the pattern for timestamp values in generated SQL scripts for oracle DBMS is now fixed (using the to_timestamp function)
+ - additional type options will now be removed from the result of DatabaseMetaData#getColumns 
+
 2.5.3
  - bug fix: search timestamp pattern even if dummy values are already persisted 
 
