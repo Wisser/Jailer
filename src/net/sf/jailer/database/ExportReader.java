@@ -76,6 +76,16 @@ public class ExportReader implements ResultSetReader {
     private List<String> lobColumns = null;
 
     /**
+     * Literals for empty lob values.
+     */
+    private String[] emptyLobValue = null;
+
+    /**
+     * Whether or not the table has columns of type CLOB or BLOB.
+     */
+    private boolean tableHasLobs = false;
+    
+    /**
      * Lob columns indexes.
      */
     private List<Integer> lobColumnIndexes = null;
@@ -151,16 +161,22 @@ public class ExportReader implements ResultSetReader {
             columnCount = resultSet.getMetaData().getColumnCount();
             columnLabel = new String[columnCount + 1];
             lobColumns = new ArrayList<String>();
+            emptyLobValue = new String[columnCount + 1];
             lobColumnIndexes = new ArrayList<Integer>();
             labelCSL = "";
+            tableHasLobs = false;
             for (int i = 1; i <= columnCount; ++i) {
                 String mdColumnLabel = quoting.quote(resultSet.getMetaData().getColumnLabel(i));
                 int mdColumnType = resultSet.getMetaData().getColumnType(i);
                 
                 if (mdColumnType == Types.BLOB || mdColumnType == Types.CLOB) {
+                	tableHasLobs = true;
                 	lobColumnIndexes.add(i);
                 	lobColumns.add(mdColumnLabel);
-                    continue;
+                	emptyLobValue[i] = (mdColumnType == Types.BLOB)? SQLDialect.emptyBLOBValue : SQLDialect.emptyCLOBValue;
+                    if (emptyLobValue[i] == null) {
+                    	continue;
+                    }
                 }
                 columnLabel[i] = mdColumnLabel;
                 if (labelCSL.length() > 0) {
@@ -187,7 +203,10 @@ public class ExportReader implements ResultSetReader {
                 }
                 f = false;
                 String cVal = SqlUtil.toSql(content);
-                valueList.append(cVal);
+            	if (content != null && emptyLobValue[i] != null) {
+            		cVal = emptyLobValue[i];
+            	}
+            	valueList.append(cVal);
                 namedValues.append(cVal + " " + columnLabel[i]);
             }
             if (table.upsert || upsertOnly) {
@@ -204,7 +223,10 @@ public class ExportReader implements ResultSetReader {
                         content = null;
                     }
                     String cVal = SqlUtil.toSql(content);
-                    val.put(columnLabel[i], cVal);
+                	if (content != null && emptyLobValue[i] != null) {
+                		cVal = emptyLobValue[i];
+                	}
+                	val.put(columnLabel[i], cVal);
                     if (content != null) {
                         if (!f) {
                         	valuesWONull.append(", ");
@@ -240,7 +262,7 @@ public class ExportReader implements ResultSetReader {
                     where.append("T." + pk.name + "=" + value);
                 }
 
-                if (SQLDialect.currentDialect.upsertMode == UPSERT_MODE.ORACLE) {
+                if (SQLDialect.currentDialect.upsertMode == UPSERT_MODE.ORACLE && !tableHasLobs) {
                 	// MERGE INTO JL_TMP T USING (SELECT 1 c1, 2 c2 from dual) incoming 
                 	// ON (T.c1 = incoming.c1) 
                 	// WHEN MATCHED THEN UPDATE SET T.c2 = incoming.c2 
@@ -307,7 +329,10 @@ public class ExportReader implements ResultSetReader {
 	                }
 	                sb.append(insertHead, item, ", ", terminator.toString());
                 } else {
-                	String item = "Select " + valuesWONull + " From " + (SQLDialect.currentDialect.upsertMode == UPSERT_MODE.FROM_DUAL? "dual" : SQLDialect.DUAL_TABLE);
+                	String item = "Select " + valuesWONull + " From " + 
+                		(SQLDialect.currentDialect.upsertMode == UPSERT_MODE.FROM_DUAL || 
+                		 SQLDialect.currentDialect.upsertMode == UPSERT_MODE.ORACLE? // oracle table with lobs
+                				 "dual" : SQLDialect.DUAL_TABLE);
                 	StringBuffer terminator = new StringBuffer(" Where not exists (Select * from " + qualifiedTableName(table) + " T "
 	                        + "Where ");
 	                terminator.append(where + ");\n");
@@ -324,12 +349,12 @@ public class ExportReader implements ResultSetReader {
 	                sb.append(insertHead, item, ", ", terminator.toString());
                 }
                 
-                if (SQLDialect.currentDialect.upsertMode != UPSERT_MODE.ORACLE) {
+                if (SQLDialect.currentDialect.upsertMode != UPSERT_MODE.ORACLE || tableHasLobs) {
 	                StringBuffer insert = new StringBuffer("");
 	                insert.append("Update " + qualifiedTableName(table) + " T set ");
 	                f = true;
 	                for (int i = 1; i <= columnCount; ++i) {
-	                    if (columnLabel[i] == null) {
+	                    if (columnLabel[i] == null || (emptyLobValue[i] != null && !"null".equals(val.get(columnLabel[i])))) {
 	                    	continue;
 	                    }
 	                    if (isPrimaryKeyColumn(columnLabel[i])) {
@@ -427,7 +452,7 @@ public class ExportReader implements ResultSetReader {
             	++numberOfExportedLOBs;
             	flush();
 				Clob clob = (Clob) lob;
-				writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "CLOB " + table.getName() + ", " + lobColumns.get(i) + ", " + where + "\n");
+				writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "CLOB " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + "\n");
 				Reader in = clob.getCharacterStream();
 				int c;
 				StringBuffer line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
@@ -453,7 +478,7 @@ public class ExportReader implements ResultSetReader {
             	++numberOfExportedLOBs;
             	flush();
 				Blob blob = (Blob) lob;
-				writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "BLOB " + table.getName() + ", " + lobColumns.get(i) + ", " + where + "\n");
+				writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "BLOB " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + "\n");
 				InputStream in = blob.getBinaryStream();
 				int b;
 				StringBuffer line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);

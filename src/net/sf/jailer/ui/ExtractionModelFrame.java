@@ -423,7 +423,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu3.add(dataExport);
 
-        dataImport.setText("Import Data");
+        dataImport.setLabel("Import SQL Data");
         dataImport.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 dataImportActionPerformed(evt);
@@ -779,7 +779,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        				if (ExportReader.numberOfExportedLOBs > 0) {
 			        					message += "\nExported " + ExportReader.numberOfExportedLOBs + " CLOBs/BLOBs.\n\n" +
 			        					           "Note that the CLOBs/BLOBs can only\n" +
-			        							   "be imported with the 'Import Data'-tool!";
+			        							   "be imported with the 'Import SQL Data' Tool";
 			        				}
 		        					// JOptionPane.showMessageDialog(this, message, "Export Statistic", JOptionPane.INFORMATION_MESSAGE);
 			        				new StatisticDialog(this, message);
