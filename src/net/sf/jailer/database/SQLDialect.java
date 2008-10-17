@@ -110,7 +110,19 @@ public class SQLDialect {
 	 * Current dialect.
 	 */
 	public static SQLDialect currentDialect;
-	
+
+	/**
+	 * Empty CLOB as SQL literal, <code>null</code> if DBMS does not support CLOB literals.
+	 * For instance: "empty_clob()"
+	 */
+	public static String emptyCLOBValue = null;
+
+	/**
+	 * Empty BLOB as SQL literal, <code>null</code> if DBMS does not support BLOB literals.
+	 * For instance: "empty_blob()"
+	 */
+	public static String emptyBLOBValue = null;
+
 	/**
 	 * Constructor.
 	 * 
@@ -129,6 +141,7 @@ public class SQLDialect {
 	 * Named dialects.
 	 */
 	private static List<SQLDialect> sqlDialects = new ArrayList<SQLDialect>();
+
 	static {
 		sqlDialects.add(new SQLDialect("DB2", true, true, UPSERT_MODE.DB2));
 		sqlDialects.add(new SQLDialect("ORACLE_10", false, false, UPSERT_MODE.ORACLE));
@@ -270,7 +283,63 @@ public class SQLDialect {
 		guessDummyValues(new Column("C", "DATE", 0, -1), false, statementExecutor);
 		guessDummyValues(new Column("C", "TIMESTAMP", 0, -1), false, statementExecutor);
 		statementExecutor.setSilent(false);
+		emptyCLOBValue = guessEmptyLobValue("emptyCLOB", "clob", new String[] { "empty_clob()", "clob('')", "''" }, statementExecutor);
+		emptyBLOBValue = guessEmptyLobValue("emptyBLOB", "blob", new String[] { "empty_blob()", "blob('')", "''" }, statementExecutor);
 		log("end guessing PK-values");
+	}
+
+	/**
+	 * Guesses SQL literals for empty LOBs.
+	 * 
+	 * @param configParameter the name of the persistent configuration parameter which holds the value
+	 * @param lobType the SQL type of the LOB
+	 * @param candidates all candidate values
+	 * @return SQL literal for empty LOBs
+	 */
+	private static String guessEmptyLobValue(String configParameter, String lobType, String[] candidates, StatementExecutor statementExecutor) {
+		// try to load value
+		String emptyLobValue = readConfigValue(configParameter, statementExecutor);
+		if (emptyLobValue != null) {
+			return emptyLobValue;
+		}
+		
+		String drop = "DROP TABLE " + TMP_TABLE + "";
+		String create = "CREATE TABLE " + TMP_TABLE + "(C " + lobType + ")";
+		try {
+			statementExecutor.execute(drop);
+		} catch (Exception e) {
+			_sqllog.info(e.getMessage());
+		}
+		try {
+			statementExecutor.execute(create);
+		} catch (Exception e) {
+			_sqllog.info(e.getMessage());
+		}
+
+		// try all candidates
+		for (String candidate: candidates) {
+			try {
+				statementExecutor.executeUpdate("INSERT INTO " + TMP_TABLE + "(C) VALUES(" + candidate + ")");
+				emptyLobValue = candidate;
+				break;
+			} catch (SQLException e) {
+				_sqllog.info(e.getMessage());
+			}
+		}
+		
+		// persist value
+		if (emptyLobValue != null) {
+			log("empty " + lobType + " is '" + emptyLobValue + "'");
+			setConfigValue(configParameter, emptyLobValue, statementExecutor);
+		}
+		
+		try {
+			statementExecutor.execute(drop);
+		} catch (Exception e) {
+			_sqllog.info(e.getMessage());
+		}
+		
+		return emptyLobValue;
 	}
 
 	/**
@@ -445,6 +514,10 @@ public class SQLDialect {
 	 * @param statementExecutor for executing sql statements
 	 */
 	private static void setConfigValue(String key, String value, StatementExecutor statementExecutor) {
+		try {
+			statementExecutor.executeUpdate("Delete from " + CONFIG_TABLE + " where jversion='" + Jailer.VERSION + "' and jkey=" + SqlUtil.toSql(key));
+		} catch (Exception e) {
+		}
 		try {
 			statementExecutor.executeUpdate("Insert into " + CONFIG_TABLE + "(jversion, jkey, jvalue) values ('" + Jailer.VERSION + "', " + SqlUtil.toSql(key) + ", " + SqlUtil.toSql(value) + ")");
 		} catch (Exception e) {

@@ -258,7 +258,7 @@
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="dataImport">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Import Data"/>
+                <Property name="label" type="java.lang.String" value="Import SQL Data"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="dataImportActionPerformed"/>
