@@ -367,7 +367,11 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     	sqlType = sqlType.trim();
     	int i = sqlType.indexOf(' ');
     	if (i > 0) {
-    		return sqlType.substring(0, i);
+    		sqlType = sqlType.substring(0, i);
+    	}
+    	i = sqlType.indexOf('(');
+    	if (i > 0) {
+    		sqlType = sqlType.substring(0, i);
     	}
 		return sqlType;
 	}

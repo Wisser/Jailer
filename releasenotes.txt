@@ -1,3 +1,6 @@
+2.5.6
+ - additional type arguments will now be removed from the result of DatabaseMetaData#getColumns (for better compatibility with MS SQL Server)
+
 2.5.5
  - the table name in insert statements for BLOB/CLOBs in generated SQL scripts is now qualified with target schema name
  - fixed a bug concering the importation of BLOB/CLOBs into non-nullable columns
