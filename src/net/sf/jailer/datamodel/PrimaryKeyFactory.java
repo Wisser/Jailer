@@ -17,7 +17,9 @@
 package net.sf.jailer.datamodel;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.StatementExecutor;
@@ -43,6 +45,11 @@ public class PrimaryKeyFactory {
 			new ArrayList<Column>());
 
 	/**
+	 * If <code>true</code>, the UPK don't preserve order. This minimizes the size of the UPK.
+	 */
+	public static boolean minimizeUPK = false;
+	
+	/**
 	 * Constructs a new primary-key.
 	 * 
 	 * @return a newly created primary-key
@@ -56,49 +63,96 @@ public class PrimaryKeyFactory {
 		}
 		PrimaryKey primaryKey = new PrimaryKey(columns);
 
-		int n = 0;
-		if (!columns.isEmpty()) {
-			for (int i = 0; i < universalPrimaryKey.getColumns().size(); ++i) {
-				Column uPKColumn = universalPrimaryKey.getColumns().get(i);
-				Column column = columns.get(n);
-				if (uPKColumn.type.equalsIgnoreCase(column.type) && column.precision < 0 && uPKColumn.precision < 0) {
-					if (column.length > 0 && column.length > uPKColumn.length) {
-						// increase length
-						universalPrimaryKey.getColumns().set(
-								i,
-								new Column(uPKColumn.name, uPKColumn.type,
-										column.length, column.precision));
+		if (minimizeUPK) {
+			Set<Integer> assignedUPKColumns = new HashSet<Integer>();
+			for (Column column: columns) {
+				boolean assigned = false;
+				for (int i = 0; i < universalPrimaryKey.getColumns().size(); ++i) {
+					if (assignedUPKColumns.contains(i)) {
+						continue;
 					}
-					++n;
-					if (n >= columns.size()) {
+					Column uPKColumn = universalPrimaryKey.getColumns().get(i);
+					if (uPKColumn.type.equalsIgnoreCase(column.type) && column.precision < 0 && uPKColumn.precision < 0) {
+						if (column.length > 0 && column.length > uPKColumn.length) {
+							// increase length
+							universalPrimaryKey.getColumns().set(
+									i,
+									new Column(uPKColumn.name, uPKColumn.type,
+											column.length, column.precision));
+						}
+						assigned = true;
+						assignedUPKColumns.add(i);
+						break;
+					}
+					if (uPKColumn.type.equalsIgnoreCase(column.type) && column.precision >= 0 && uPKColumn.precision >= 0
+							&& (column.length >= uPKColumn.length && column.precision >= uPKColumn.precision
+							 || column.length <= uPKColumn.length && column.precision <= uPKColumn.precision)) {
+						if (column.length > 0 && column.length > uPKColumn.length) {
+							// increase length
+							universalPrimaryKey.getColumns().set(
+									i,
+									new Column(uPKColumn.name, uPKColumn.type,
+											column.length, column.precision));
+						}
+						assigned = true;
+						assignedUPKColumns.add(i);
 						break;
 					}
 				}
-				if (uPKColumn.type.equalsIgnoreCase(column.type) && column.precision >= 0 && uPKColumn.precision >= 0
-						&& (column.length >= uPKColumn.length && column.precision >= uPKColumn.precision
-						 || column.length <= uPKColumn.length && column.precision <= uPKColumn.precision)) {
-					if (column.length > 0 && column.length > uPKColumn.length) {
-						// increase length
-						universalPrimaryKey.getColumns().set(
-								i,
-								new Column(uPKColumn.name, uPKColumn.type,
-										column.length, column.precision));
+				if (!assigned) {
+					// add new columns to universal primary key
+					universalPrimaryKey.getColumns().add(
+							new Column(createUniqueUPKName(), column.type,
+									column.length, column.precision));
+					assignedUPKColumns.add(universalPrimaryKey.getColumns().size() - 1);
+				}
+			}
+			return primaryKey;
+		} else {
+			int n = 0;
+			if (!columns.isEmpty()) {
+				for (int i = 0; i < universalPrimaryKey.getColumns().size(); ++i) {
+					Column uPKColumn = universalPrimaryKey.getColumns().get(i);
+					Column column = columns.get(n);
+					if (uPKColumn.type.equalsIgnoreCase(column.type) && column.precision < 0 && uPKColumn.precision < 0) {
+						if (column.length > 0 && column.length > uPKColumn.length) {
+							// increase length
+							universalPrimaryKey.getColumns().set(
+									i,
+									new Column(uPKColumn.name, uPKColumn.type,
+											column.length, column.precision));
+						}
+						++n;
+						if (n >= columns.size()) {
+							break;
+						}
 					}
-					++n;
-					if (n >= columns.size()) {
-						break;
+					if (uPKColumn.type.equalsIgnoreCase(column.type) && column.precision >= 0 && uPKColumn.precision >= 0
+							&& (column.length >= uPKColumn.length && column.precision >= uPKColumn.precision
+							 || column.length <= uPKColumn.length && column.precision <= uPKColumn.precision)) {
+						if (column.length > 0 && column.length > uPKColumn.length) {
+							// increase length
+							universalPrimaryKey.getColumns().set(
+									i,
+									new Column(uPKColumn.name, uPKColumn.type,
+											column.length, column.precision));
+						}
+						++n;
+						if (n >= columns.size()) {
+							break;
+						}
 					}
 				}
 			}
+			// add new columns to universal primary key
+			for (; n < columns.size(); ++n) {
+				Column column = columns.get(n);
+				universalPrimaryKey.getColumns().add(
+						new Column(createUniqueUPKName(), column.type,
+								column.length, column.precision));
+			}
+			return primaryKey;
 		}
-		// add new columns to universal primary key
-		for (; n < columns.size(); ++n) {
-			Column column = columns.get(n);
-			universalPrimaryKey.getColumns().add(
-					new Column(createUniqueUPKName(), column.type,
-							column.length, column.precision));
-		}
-		return primaryKey;
 	}
 
 	/**

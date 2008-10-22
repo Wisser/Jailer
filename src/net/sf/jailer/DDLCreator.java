@@ -19,7 +19,6 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.List;
 
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.StatementExecutor;

@@ -1078,8 +1078,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			Logger.getLogger("prefuse").setLevel(Level.OFF);
 			
 			// trigger log4j initialization
-			Jailer.class.getName();
-		} catch (SecurityException e1) {
+			new Jailer(1);
+		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
     	try {

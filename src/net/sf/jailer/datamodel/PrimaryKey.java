@@ -17,8 +17,10 @@
 package net.sf.jailer.datamodel;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 
 /**
@@ -60,19 +62,38 @@ public class PrimaryKey {
      * @return a match of all columns of <code>primaryKey</code>
      */
     public Map<Column, Column> match(PrimaryKey primaryKey) {
-        Map<Column, Column> match = new HashMap<Column, Column>();
-        int i = 0;
-        for (Column column: getColumns()) {
-            Column otherColumn = primaryKey.getColumns().get(i);
-            if (column.type.equals(otherColumn.type)) {
-                match.put(column, otherColumn);
-                ++i;
-                if (i >= primaryKey.columns.size()) {
-                    break;
-                }
-            }
-        }
-        return match;
+    	if (PrimaryKeyFactory.minimizeUPK) {
+			Set<Integer> assignedUPKColumns = new HashSet<Integer>();
+	        Map<Column, Column> match = new HashMap<Column, Column>();
+	        for (Column column: getColumns()) {
+	            for (int i = 0; i < primaryKey.getColumns().size(); ++i) {
+	            	if (assignedUPKColumns.contains(i)) {
+	            		continue;
+	            	}
+		        	Column otherColumn = primaryKey.getColumns().get(i);
+		            if (column.type.equals(otherColumn.type)) {
+		                match.put(column, otherColumn);
+		                assignedUPKColumns.add(i);
+	                    break;
+		            }
+	            }
+	        }
+	        return match;
+    	} else {
+	        Map<Column, Column> match = new HashMap<Column, Column>();
+	        int i = 0;
+	        for (Column column: getColumns()) {
+	            Column otherColumn = primaryKey.getColumns().get(i);
+	            if (column.type.equals(otherColumn.type)) {
+	                match.put(column, otherColumn);
+	                ++i;
+	                if (i >= primaryKey.columns.size()) {
+	                    break;
+	                }
+	            }
+	        }
+	        return match;
+    	}
     }
     
     /**
