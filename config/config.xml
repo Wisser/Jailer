@@ -6,6 +6,14 @@ http://www.springframework.org/schema/beans http://www.springframework.org/schem
 http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-2.0.xsd
 http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd">
 
+    <!-- If minimize-UPK is true, the UPK don't preserve order. This minimizes the size of the UPK. -->
+    <bean name="minimize-UPK" class="java.lang.Boolean">
+        <!-- set value="true" if you use MySQL and get the following exception:
+        	"java.sql.SQLException: Too many key parts specified; max 16 parts allowed"
+        -->
+    	<constructor-arg value="false"/>
+    </bean>
+
 	<!-- Script-enhancer 
 		adds application specific extensions to generated SQL-scripts -->
 	<util:list id="script-enhancer">

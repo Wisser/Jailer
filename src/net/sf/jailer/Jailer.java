@@ -45,6 +45,7 @@ import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.domainmodel.DomainModel;
 import net.sf.jailer.enhancer.ScriptEnhancer;
@@ -78,7 +79,7 @@ public class Jailer {
     /**
      * The Jailer version.
      */
-    public static final String VERSION = "2.5.6";
+    public static final String VERSION = "2.5.7.beta";
     
     /**
      * The relational data model.
@@ -103,8 +104,11 @@ public class Jailer {
     /**
      * The configuration.
      */
-    private AbstractXmlApplicationContext applicationContext = new FileSystemXmlApplicationContext("config/config.xml");
-
+    private static AbstractXmlApplicationContext applicationContext = new FileSystemXmlApplicationContext("config/config.xml");
+    static {
+		PrimaryKeyFactory.minimizeUPK = Boolean.TRUE.equals(applicationContext.getBean("minimize-UPK"));
+	}
+    
     /**
      * Comment header of the export-script.
      */
@@ -700,6 +704,11 @@ public class Jailer {
      */
     public static boolean jailerMain(String[] args, StringBuffer warnings) throws Exception {
     	statistic.setLength(0);
+    	
+    	if (PrimaryKeyFactory.minimizeUPK) {
+    		_log.info("minimize-UPK=" + PrimaryKeyFactory.minimizeUPK);
+    	}
+    	
     	try {
             CommandLineParser.parse(args);
             CommandLineParser clp = CommandLineParser.getInstance();

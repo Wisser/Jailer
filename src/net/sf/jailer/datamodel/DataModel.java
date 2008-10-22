@@ -69,7 +69,7 @@ public class DataModel {
     /**
      * For creation of primary-keys.
      */
-    private final PrimaryKeyFactory PrimaryKeyFactory = new PrimaryKeyFactory();
+    private final PrimaryKeyFactory primaryKeyFactory = new PrimaryKeyFactory();
 
     /**
      * Name of file containing the table definitions.
@@ -192,7 +192,7 @@ public class DataModel {
                 String col = line.cells.get(j).trim();
                 pk.add(Column.parse(col));
             }
-            tables.put(line.cells.get(0), new Table(line.cells.get(0), PrimaryKeyFactory.createPrimaryKey(pk), upsert));
+            tables.put(line.cells.get(0), new Table(line.cells.get(0), primaryKeyFactory.createPrimaryKey(pk), upsert));
         }
         
         // columns
@@ -304,7 +304,7 @@ public class DataModel {
      * @return the universal primary key
      */
     public PrimaryKey getUniversalPrimaryKey(StatementExecutor statementExecutor) {
-        return PrimaryKeyFactory.getUniversalPrimaryKey(statementExecutor);
+        return primaryKeyFactory.getUniversalPrimaryKey(statementExecutor);
     }
 
     /**
