@@ -8,7 +8,7 @@ CREATE TABLE JAILER_CONFIG
 (
    jversion        VARCHAR(10),
    jkey            VARCHAR(200),
-   jvalue          VARCHAR(500)
+   jvalue          VARCHAR(2000)
 );
 
 INSERT INTO JAILER_CONFIG(jversion, jkey, jvalue) values(null, ''magic'', ''837065098274756382534403654245288'');
