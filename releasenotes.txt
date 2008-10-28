@@ -1,7 +1,6 @@
-2.5.7.beta
+2.5.7
  - the primary key of the table JAILER_ENTITY can be generated in a more compact way in order to reduce the risc to exceed the maximum number
    of parts per key allowed by the DBMS. To enable this feature, set the parameter 'minimize-UPK' to true in 'config/config.xml'
-   Currently in beta, needs more test.
 
 2.5.6
  - additional type arguments will now be removed from the result of DatabaseMetaData#getColumns (for better compatibility with MS SQL Server)
