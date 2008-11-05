@@ -258,6 +258,11 @@ public class SqlUtil {
 		if (type == null) {
 			try {
 				type = resultSet.getMetaData().getColumnType(i);
+				if (SQLDialect.treatDateAsTimestamp) {
+					if (type == Types.DATE) {
+						type = Types.TIMESTAMP;
+					}
+				}
 			} catch (Exception e) {
 				type = Types.OTHER;
 			}

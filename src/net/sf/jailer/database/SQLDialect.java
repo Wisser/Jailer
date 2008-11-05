@@ -107,10 +107,10 @@ public class SQLDialect {
 	public final UPSERT_MODE upsertMode;
 	
 	/**
-	 * Current dialect.
+	 * On oracle, treat DATA as TIMESTAMP.
 	 */
-	public static SQLDialect currentDialect;
-
+	public static boolean treatDateAsTimestamp = false;
+	
 	/**
 	 * Empty CLOB as SQL literal, <code>null</code> if DBMS does not support CLOB literals.
 	 * For instance: "empty_clob()"
@@ -122,6 +122,11 @@ public class SQLDialect {
 	 * For instance: "empty_blob()"
 	 */
 	public static String emptyBLOBValue = null;
+
+	/**
+	 * Current dialect.
+	 */
+	public static SQLDialect currentDialect;
 
 	/**
 	 * Constructor.
@@ -178,6 +183,16 @@ public class SQLDialect {
 	 */
 	public static void guessDialect(PrimaryKey primaryKey,
 			StatementExecutor statementExecutor) {
+
+		treatDateAsTimestamp = false;
+		try {
+			if (statementExecutor.getMetaData().getDatabaseProductName().toLowerCase().contains("oracle")) {
+				treatDateAsTimestamp = true;
+				_log.info("DATE is treated as TIMESTAMP");
+			}
+		} catch (Exception e) {
+			// ignore
+		}
 		
 		String dialectName = readConfigValue("sqldialect", statementExecutor);
 		SQLDialect dialect = null;

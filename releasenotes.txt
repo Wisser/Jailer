@@ -1,3 +1,6 @@
+2.5.8
+ - support for oracle DATE type which contains also time
+
 2.5.7
  - the primary key of the table JAILER_ENTITY can be generated in a more compact way in order to reduce the risc to exceed the maximum number
    of parts per key allowed by the DBMS. To enable this feature, set the parameter 'minimize-UPK' to true in 'config/config.xml'
