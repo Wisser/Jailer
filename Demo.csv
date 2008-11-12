@@ -25,7 +25,7 @@ inverse-DEPARTMENT;employee;NONE
 inverse-BONUS;employee;NONE
 
 #! block export modus
-XML
+SQL
 
 #! block xml settings
 yyyy-MM-dd;yyyy-MM-dd-HH.mm.ss;entities
