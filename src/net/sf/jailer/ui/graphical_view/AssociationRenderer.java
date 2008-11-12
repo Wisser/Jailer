@@ -18,13 +18,18 @@ package net.sf.jailer.ui.graphical_view;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Graphics2D;
+import java.awt.Image;
 import java.awt.Polygon;
 import java.awt.Shape;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.awt.geom.Rectangle2D;
+
+import javax.swing.ImageIcon;
 
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.datamodel.Cardinality;
 import prefuse.Constants;
 import prefuse.render.EdgeRenderer;
 import prefuse.util.GraphicsLib;
@@ -75,6 +80,7 @@ public class AssociationRenderer extends EdgeRenderer {
 	 * Temporary used in getRawShape.
 	 */
 	private Point2D m_isctPoints2[] = new Point2D[2];
+	private Point2D starPosition = null;
 	
 	/**
      * Return a non-transformed shape for the visual representation of the
@@ -177,6 +183,24 @@ public class AssociationRenderer extends EdgeRenderer {
         m_line.setLine(n1x, n1y, n2x, n2y);
         shape = m_line;
         
+        starBounds = null;
+        starPosition = null;
+        
+        if (!forward && (Cardinality.MANY_TO_MANY.equals(association.getCardinality()) || Cardinality.MANY_TO_ONE.equals(association.getCardinality()))
+        ||   forward && (Cardinality.MANY_TO_MANY.equals(association.getCardinality()) || Cardinality.ONE_TO_MANY.equals(association.getCardinality()))) {
+        	starPosition = m_tmpPoints[forward? 1:0];
+            start = starPosition;
+        	end = m_tmpPoints[forward? 0:1];
+		    AffineTransform t = new AffineTransform();
+	    	t.setToRotation(-Math.PI/3);
+	    	Point2D p = new Point2D.Double(), shift = new Point2D.Double();
+	    	double d = m_tmpPoints[0].distance(m_tmpPoints[1]) / 9.0;
+	    	p.setLocation((end.getX() - start.getX()) / d, (end.getY() - start.getY()) / d);
+	    	t.transform(p, shift);
+	    	starPosition.setLocation(starPosition.getX() + shift.getX(), starPosition.getY() + shift.getY());
+	        starBounds = new Rectangle2D.Double(starPosition.getX() - STAR_SIZE * (starWidth / 2), starPosition.getY() - STAR_SIZE * (starHeight / 2), starWidth * STAR_SIZE, starHeight * STAR_SIZE);
+        }
+
 		return shape;
 	}
 
@@ -245,11 +269,31 @@ public class AssociationRenderer extends EdgeRenderer {
 			}
 			arrowIsPotAggregation = false;
 		}
+		starPosition = null;
 		render(g, item);
+		if (starPosition != null && starImage != null) {
+			double size = STAR_SIZE;
+		    transform.setTransform(size, 0, 0, size, starPosition.getX() - size * (starWidth / 2), starPosition.getY() - size * (starHeight / 2));
+            g.drawImage(starImage, transform, null);
+			starPosition = null;
+		}
 	}
 
+    /**
+     * @see prefuse.render.Renderer#setBounds(prefuse.visual.VisualItem)
+     */
+    public void setBounds(VisualItem item) {
+    	super.setBounds(item);
+        if (starBounds != null ) {
+            Rectangle2D bbox = (Rectangle2D)item.get(VisualItem.BOUNDS);
+            Rectangle2D.union(bbox, starBounds, bbox);
+        }
+    }
+
     private boolean arrowIsPotAggregation = false;
-    
+	private AffineTransform transform = new AffineTransform();
+	private Rectangle2D starBounds = null;
+	
     /**
      * Gets color for association.
      * 
@@ -327,6 +371,21 @@ public class AssociationRenderer extends EdgeRenderer {
 	 */
 	private boolean isAggregation(Association association) {
 		return association.reversalAssociation.getAggregationSchema() != AggregationSchema.NONE;
+	}
+	
+	private Image starImage = null;
+	private double starWidth = 0;
+	private double starHeight = 0;
+	private final double STAR_SIZE = 0.22;
+	{
+		// load images
+		try {
+			starImage = new ImageIcon(getClass().getResource("/star.png")).getImage();
+			starWidth = starImage.getWidth(null);
+			starHeight = starImage.getHeight(null);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 }

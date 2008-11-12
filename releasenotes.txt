@@ -1,4 +1,5 @@
 2.5.8
+ - rendering of associations' cardinality
  - support for oracle DATE type which contains also time
 
 2.5.7
