@@ -7,6 +7,7 @@ svn co https://jailer.svn.sf.net/svnroot/jailer/trunk
 cd ..
 mv $1.co/trunk/* $1
 cd $1
+sed "s/new javax.swing.JComboBox()/new net.sf.jailer.ui.JComboBox()/g" src/net/sf/jailer/ui/*.java --in-place
 cp doc/web/home.htm doc/web/index.html
 rm -rf doc/htdocs
 find -iname ".svn" -exec rm -rf '{}' \;
