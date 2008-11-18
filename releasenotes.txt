@@ -1,3 +1,6 @@
+2.5.9
+ - minor GUI improvements
+
 2.5.8
  - rendering of associations' cardinality
  - support for oracle DATE type which contains also time

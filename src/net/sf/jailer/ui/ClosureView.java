@@ -223,6 +223,26 @@ public class ClosureView extends javax.swing.JDialog {
 							repaint();
 							Table table = getDataModel().getTableByDisplayName(selectedTable);
 							if (table != null) {
+								CellInfo selectionInfo = cellInfo.get(selectedTable);
+								if (selectionInfo != null) {
+									Association association = null;
+									if (selectionInfo.pathToRoot != null && selectionInfo.pathToRoot.size() > 0) {
+										Table pre = getDataModel().getTableByDisplayName(selectionInfo.pathToRoot.get(selectionInfo.pathToRoot.size() - 1));
+										if (pre != null) {
+											for (Association a: pre.associations) {
+												if (!a.isIgnored()) {
+													if (a.destination.equals(table)) {
+														association = a;
+														break;
+													}
+												}
+											}
+										}
+									}
+									if (association != null && ClosureView.this.extractionModelFrame.extractionModelEditor.select(association)) {
+										return;
+									}
+								}
 								if (!ClosureView.this.extractionModelFrame.extractionModelEditor.select(table)) {
 									ClosureView.this.extractionModelFrame.extractionModelEditor.setRootSelection(table);
 								}
