@@ -6,7 +6,7 @@ DROP TABLE JAILER_CONFIG;
 
 CREATE TABLE JAILER_CONFIG
 (
-   jversion        VARCHAR(10),
+   jversion        VARCHAR(20),
    jkey            VARCHAR(200),
    jvalue          VARCHAR(2000)
 );

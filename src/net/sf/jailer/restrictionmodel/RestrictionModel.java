@@ -75,6 +75,9 @@ public class RestrictionModel {
      */
     public void transpose() {
         transposed = !transposed;
+        if (dataModel != null) {
+        	dataModel.version++;
+        }
     }
 
     /**
@@ -122,6 +125,9 @@ public class RestrictionModel {
      * @param fileName the name of the restriction-file
      */
     public void addRestrictionDefinition(String fileName, String extractionModelFileName) throws Exception {
+        if (dataModel != null) {
+        	dataModel.version++;
+        }
         File file;
         boolean embedded = false;
         if (EMBEDDED.equals(fileName)) {
@@ -255,6 +261,9 @@ public class RestrictionModel {
      * @param removePreviousRestriction if <code>true</code>, remove any restriction on the association before adding the new one
      */
     public void addRestriction(Table source, Association association, String condition, String location, boolean removePreviousRestriction) {
+        if (dataModel != null) {
+        	dataModel.version++;
+        }
 //        if (association.isInsertDestinationBeforeSource()) {
 //            String aName = source == null? association.getName() : (source.getName() + "->" + association.destination.getName());
 //            throw new RuntimeException(location + ": can't restrict dependency: " + aName + " condition: " + condition);

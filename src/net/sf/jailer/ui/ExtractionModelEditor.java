@@ -102,6 +102,16 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	DataModel dataModel;
 	
 	/**
+	 * Closure of current {@link #subjectTable}.
+	 */
+	private Set<Table> currentSubjectClosure = null;
+	
+	/**
+	 * Version of data model from which {@link #currentSubjectClosure} is build.
+	 */
+	private long closureVersion = -1;
+	
+	/**
 	 * Subject table.
 	 */
 	Table subject;
@@ -850,6 +860,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     	Object selectedItem = subjectTable.getSelectedItem();
 		if (selectedItem instanceof String) {
 			if (dataModel.getTableByDisplayName(selectedItem.toString()) != null) {
+				currentSubjectClosure = null; // force re-calculation
 				subject = dataModel.getTableByDisplayName(selectedItem.toString());
 			}
 		}
@@ -1152,6 +1163,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     		}
 			dataModel.getRestrictionModel().addRestriction(currentAssociation.source, currentAssociation, condition, "GUI", true);
     		tree.repaint();
+    		graphView.display.invalidate();
 			restrictionsTable.setModel(restrictionTableModel());
 			String saveInitialRestrictionCondition = initialRestrictionCondition;
 			initRestrictionEditor(currentAssociation, currentNode);
@@ -1958,6 +1970,22 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 	}
 
+	/**
+	 * Gets closure of current subject table.
+	 * 
+	 * @return closure of current subject table
+	 */
+	public Set<Table> getCurrentSubjectClosure() {
+		if (dataModel == null || subject == null) {
+			return Collections.emptySet();
+		}
+		if (currentSubjectClosure == null || dataModel.getVersion() != closureVersion) {
+			currentSubjectClosure = subject.closure(true);
+			closureVersion = dataModel.getVersion(); 
+		}
+		return currentSubjectClosure;
+	}
+	
     // Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables
     private javax.swing.JComboBox aggregationCombobox;
     private javax.swing.JRadioButton asSql;

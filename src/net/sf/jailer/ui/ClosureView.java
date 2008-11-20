@@ -327,7 +327,7 @@ public class ClosureView extends javax.swing.JDialog {
     	} else {
     		selectedTable = null;
     	}
-		repaint();
+    	repaint();
     }
     
     /**

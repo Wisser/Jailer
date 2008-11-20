@@ -192,7 +192,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                     	throw new RuntimeException("unknown SQL type: " + type);
                     }
                 }
-                if (typesWithLength.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR) {
+                if (typesWithLength.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
                     length = resultSet.getInt(7);
                 }
                 if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR) {
@@ -339,7 +339,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 	// throw new RuntimeException("unknown SQL type: " + type);
                 }
             }
-            if (typesWithLength.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR) {
+            if (typesWithLength.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
                 length = resultSet.getInt(7);
             }
             if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR) {

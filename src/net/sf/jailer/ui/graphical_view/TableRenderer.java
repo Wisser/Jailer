@@ -90,10 +90,15 @@ public class TableRenderer extends AbstractShapeRenderer {
     protected RectangularShape m_bbox  = new Rectangle2D.Double();
     protected Point2D m_pt = new Point2D.Double(); // temp point
     protected Font    m_font; // temp font holder
+    protected Font    m_font_nic; // temp font holder
     protected Font    m_font2; // temp font holder
     protected String    m_text; // label text
     protected Dimension m_textDim = new Dimension(); // text width / height
     protected Dimension m_headerDim = new Dimension(); // text width / height of header
+    
+    private int m_color;
+    private int NOT_IN_CLOSURE_COLOR = ColorLib.rgb(170, 50, 50);
+    private int IN_CLOSURE_COLOR = ColorLib.rgb(0, 0, 0);
     
     // ------------------------------------------------------------------------
     
@@ -155,13 +160,17 @@ public class TableRenderer extends AbstractShapeRenderer {
      * @return a <code>String</code> to draw
      */
     protected String getText(VisualItem item) {
-        if (item.canGetString(m_labelName) ) {
+		m_color = IN_CLOSURE_COLOR;
+    	if (item.canGetString(m_labelName) ) {
         	String tableName = item.getString(m_labelName);
         	Table table = model.getTable(tableName);
         	if (table != null) {
         		tableName = model.getDisplayName(table);
         	}
-        	if (table != null && graphicalDataModelView.showDetails(table)) {
+        	if (table != null && !graphicalDataModelView.modelEditor.getCurrentSubjectClosure().contains(table)) {
+        		m_color = NOT_IN_CLOSURE_COLOR;
+        	}
+            if (table != null && graphicalDataModelView.showDetails(table)) {
         		if (textCache.containsKey(table.getName())) {
         			return textCache.get(table.getName());
         		}
@@ -250,6 +259,8 @@ public class TableRenderer extends AbstractShapeRenderer {
         }
         m_font2 = FontLib.getFont(m_font.getName(), m_font.getStyle(),
                 size*m_font.getSize() * 0.8);
+        m_font_nic = FontLib.getFont(m_font.getName(), m_font.getStyle() | Font.ITALIC,
+        		size*m_font.getSize());
         
         FontMetrics fm = DEFAULT_GRAPHICS.getFontMetrics(m_font);
         FontMetrics fm2 = DEFAULT_GRAPHICS.getFontMetrics(m_font2);
@@ -393,8 +404,7 @@ public class TableRenderer extends AbstractShapeRenderer {
      * @see prefuse.render.Renderer#render(java.awt.Graphics2D, prefuse.visual.VisualItem)
      */
     public void render(Graphics2D g, VisualItem item) {
-    	// workaround for 'no-text-color' bug
-    	item.setTextColor(ColorLib.rgb(0, 0, 0));
+    	item.setTextColor(IN_CLOSURE_COLOR);
     	
         RectangularShape shape = (RectangularShape)getShape(item);
         if ( shape == null ) return;
@@ -500,10 +510,14 @@ public class TableRenderer extends AbstractShapeRenderer {
         }
         
         // render text
-        int textColor = item.getTextColor();
+        int textColor = m_color; // item.getTextColor();
         if ( text != null && ColorLib.alpha(textColor) > 0 ) {
             g.setPaint(ColorLib.getColor(textColor));
-            g.setFont(m_font);
+            if (m_color == NOT_IN_CLOSURE_COLOR) {
+            	g.setFont(m_font_nic);
+            } else {
+            	g.setFont(m_font);
+            }
             FontMetrics fm = DEFAULT_GRAPHICS.getFontMetrics(m_font);
 
             // compute available width
