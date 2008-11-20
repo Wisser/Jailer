@@ -1,8 +1,10 @@
-2.5.10.beta
- - support for oracle raw type (beta)
+2.6.0
+ - tables not associated with subject table are rendered italic
+ - support for BINARY/RAW column type
+ - internal refactorings
 
 2.5.9
- - workaround for Swing bug 4618607, see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4618607
+ - workaround for swing bug 4618607, see http://bugs.sun.com/bugdatabase/view_bug.do?bug_id=4618607
  - minor GUI improvements
 
 2.5.8

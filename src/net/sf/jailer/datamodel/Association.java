@@ -267,6 +267,9 @@ public class Association extends ModelElement {
      */
     public void setName(String name) {
         this.name = name;
+        if (dataModel != null) {
+        	dataModel.version++;
+        }
     }
 
     /**
@@ -375,6 +378,9 @@ public class Association extends ModelElement {
      */
     public void setAggregationSchema(AggregationSchema aggregationSchema) {
     	this.aggregationSchema = aggregationSchema;
+        if (dataModel != null) {
+        	dataModel.version++;
+        }
     }
     
     /**
@@ -384,6 +390,9 @@ public class Association extends ModelElement {
      */
     public void setAggregationTagName(String aggregationTagName) {
     	this.aggregationTagName = aggregationTagName;
+        if (dataModel != null) {
+        	dataModel.version++;
+        }
     }
 
     /**

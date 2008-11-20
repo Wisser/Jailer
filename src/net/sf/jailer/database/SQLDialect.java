@@ -112,6 +112,11 @@ public class SQLDialect {
 	public static boolean treatDateAsTimestamp = false;
 	
 	/**
+	 * Binary data literal pattern.
+	 */
+	public static String binaryPattern = "x'%s'";
+	
+	/**
 	 * Empty CLOB as SQL literal, <code>null</code> if DBMS does not support CLOB literals.
 	 * For instance: "empty_clob()"
 	 */
@@ -185,9 +190,12 @@ public class SQLDialect {
 			StatementExecutor statementExecutor) {
 
 		treatDateAsTimestamp = false;
+		binaryPattern = "x'%s'";
+		
 		try {
 			if (statementExecutor.getMetaData().getDatabaseProductName().toLowerCase().contains("oracle")) {
 				treatDateAsTimestamp = true;
+				binaryPattern = "hextoraw('%s')";
 				_log.info("DATE is treated as TIMESTAMP");
 			}
 		} catch (Exception e) {

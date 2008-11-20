@@ -67,6 +67,11 @@ public class DataModel {
     private RestrictionModel restrictionModel;
     
     /**
+     * Internal version number. Incremented on each modification.
+     */
+    public long version = 0;
+    
+    /**
      * For creation of primary-keys.
      */
     private final PrimaryKeyFactory primaryKeyFactory = new PrimaryKeyFactory();
@@ -332,6 +337,7 @@ public class DataModel {
      */
     public void setRestrictionModel(RestrictionModel restrictionModel) {
         this.restrictionModel = restrictionModel;
+		++version;
     }
 
     /**
@@ -371,6 +377,7 @@ public class DataModel {
         if (getRestrictionModel() != null) {
             getRestrictionModel().transpose();
         }
+		++version;
     }
     
     /**
@@ -438,6 +445,7 @@ public class DataModel {
 	 */
 	public void setExportModus(String modus) {
 		exportModus = modus;
+		++version;
 	}
 
 	/**
@@ -452,6 +460,16 @@ public class DataModel {
 	 */
 	public void setXmlSettings(XmlSettings xmlSettings) {
 		this.xmlSettings = xmlSettings;
+		++version;
 	}
 
+    /**
+     * Gets internal version number. Incremented on each modification.
+     * 
+     * @return internal version number. Incremented on each modification.
+     */
+    public long getVersion() {
+    	return version;
+    }
+    
 }

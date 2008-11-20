@@ -151,7 +151,12 @@ public class SqlUtil {
     public static boolean appendNanosToTimestamp = true;
     public static boolean appendMillisToTimestamp = false;
 	public static char nanoSep = '.';
-   
+    
+	/**
+	 * All hex digits.
+	 */
+	private static final char[] hexChar = new char[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+	
     /**
      * Converts a cell-content to valid SQL-literal.
      * 
@@ -210,6 +215,15 @@ public class SqlUtil {
                 qvalue = escapeBuffer.toString();
             }
             return "'" + qvalue + "'";
+        }
+        if (content instanceof byte[]) {
+        	byte[] data = (byte[]) content;
+        	StringBuilder hex = new StringBuilder((data.length + 1) * 2);
+        	for (byte b: data) {
+        		hex.append(hexChar[(b >> 4) & 15]);
+        		hex.append(hexChar[b & 15]);
+        	}
+        	return SQLDialect.binaryPattern.replace("%s", hex);
         }
         return content.toString();
     }
