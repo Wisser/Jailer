@@ -192,14 +192,10 @@ public class SQLDialect {
 		treatDateAsTimestamp = false;
 		binaryPattern = "x'%s'";
 		
-		try {
-			if (statementExecutor.getMetaData().getDatabaseProductName().toLowerCase().contains("oracle")) {
-				treatDateAsTimestamp = true;
-				binaryPattern = "hextoraw('%s')";
-				_log.info("DATE is treated as TIMESTAMP");
-			}
-		} catch (Exception e) {
-			// ignore
+		if (statementExecutor.dbms == DBMS.ORACLE) {
+			treatDateAsTimestamp = true;
+			binaryPattern = "hextoraw('%s')";
+			_log.info("DATE is treated as TIMESTAMP");
 		}
 		
 		String dialectName = readConfigValue("sqldialect", statementExecutor);
@@ -386,10 +382,11 @@ public class SQLDialect {
 		long time = cal.getTimeInMillis();
 		final Timestamp timestamp = new Timestamp(time);
 		timestamp.setNanos(123456789);
+		Object NULL_BIT = new Object(); // postgreSQL constant for bit value
 		Object[] potNulls = new Object[] { "0", new Integer(0), new Character('0'),
 				timestamp, new Date(time), new Byte((byte) 0),
 				BigInteger.ZERO, new BigDecimal(0), new Double(0.0),
-				new Float(0.0f) };
+				new Float(0.0f), new byte[] { 0 }, NULL_BIT };
 
 		String drop = "DROP TABLE " + TMP_TABLE + "";
 		String create = "CREATE TABLE " + TMP_TABLE + "(" + column + ")";
@@ -407,9 +404,15 @@ public class SQLDialect {
 			try {
 				final Object[] result = new Object[1];
 				statementExecutor.executeUpdate("DELETE FROM " + TMP_TABLE + "");
-				statementExecutor
+				if (potNull == NULL_BIT) {
+					statementExecutor
+						.executeUpdate("INSERT INTO " + TMP_TABLE + "(" + column.name
+							+ ") VALUES(B'0')");
+				} else {
+					statementExecutor
 						.executeUpdate("INSERT INTO " + TMP_TABLE + "(" + column.name
 								+ ") VALUES(?)", new Object[] { potNull });
+				}
 				statementExecutor.executeQuery("SELECT " + column.name
 						+ " FROM " + TMP_TABLE + "",
 						new StatementExecutor.ResultSetReader() {

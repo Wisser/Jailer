@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.sf.jailer.database;
 
 import java.io.BufferedReader;
@@ -36,6 +35,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
+
+import net.sf.jailer.util.SqlUtil;
 
 import org.apache.log4j.Logger;
 
@@ -140,6 +141,11 @@ public class StatementExecutor {
     public static ClassLoader classLoaderForJdbcDriver = null;
 
     /**
+     * The DBMS.
+     */
+    public final DBMS dbms;
+    
+    /**
      * Wraps a Jdbc-Driver.
      */
     public static class DriverShim implements Driver {
@@ -207,7 +213,10 @@ public class StatementExecutor {
         };
         // fail fast
         Connection connection = connectionFactory.getConnection();
-        logDriverInfo(connection);
+        dbms = logDriverInfo(connection);
+        
+        // TODO: remove this ugly hack
+        SqlUtil.dbms = dbms;
     }
 
     /**
@@ -223,17 +232,26 @@ public class StatementExecutor {
      * Logs driver info
      * 
      * @param connection connection to DB
+     * @return the DBMS
      */
-    private void logDriverInfo(Connection connection) {
+    private DBMS logDriverInfo(Connection connection) {
+    	DBMS dbms = DBMS.UNKNOWN;
 		try {
 			DatabaseMetaData meta = connection.getMetaData();
 			_log.info("driver name:    " + meta.getDriverName());
 			_log.info("driver version: " + meta.getDriverVersion());
-			_log.info("DB name:        " + meta.getDatabaseProductName());
+			String productName = meta.getDatabaseProductName();
+			if (productName != null) {
+				if (productName.toUpperCase().contains("ORACLE")) dbms = DBMS.ORACLE;
+				if (productName.toUpperCase().contains("DB2")) dbms = DBMS.DB2;
+				if (productName.toUpperCase().contains("POSTGRES")) dbms = DBMS.POSTGRESQL;
+			}
+			_log.info("DB name:        " + productName + " (" + dbms + ")");
 			_log.info("DB version:     " + meta.getDatabaseProductVersion());
 		} catch (Exception e) {
 			// ignore exceptions
 		}
+		return dbms;
 	}
 
 	/**

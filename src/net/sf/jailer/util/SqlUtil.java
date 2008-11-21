@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
@@ -151,6 +152,8 @@ public class SqlUtil {
     public static boolean appendNanosToTimestamp = true;
     public static boolean appendMillisToTimestamp = false;
 	public static char nanoSep = '.';
+
+	public static DBMS dbms;
     
 	/**
 	 * All hex digits.
@@ -224,6 +227,14 @@ public class SqlUtil {
         		hex.append(hexChar[b & 15]);
         	}
         	return SQLDialect.binaryPattern.replace("%s", hex);
+        }
+        if (dbms == DBMS.POSTGRESQL) {
+        	if (content instanceof Boolean) {
+        		return "B'" + (Boolean.TRUE.equals(content)? "1" : "0") + "'";
+        	} else if (content.getClass().getName().endsWith(".PGobject")) {
+        		// PostgreSQL bit values
+        		return "B'" + content + "'";
+        	}
         }
         return content.toString();
     }
