@@ -590,6 +590,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 	                fm = DEFAULT_GRAPHICS.getFontMetrics(m_font2);
 	                lh = fm.getHeight();
                 }
+                textColor = IN_CLOSURE_COLOR;
                 f = false;
             }
             drawString(g, fm, text.substring(start), useInt, x, y, tw, Constants.LEFT);

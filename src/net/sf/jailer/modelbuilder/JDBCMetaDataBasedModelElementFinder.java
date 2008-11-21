@@ -30,6 +30,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
@@ -201,7 +202,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                     	precision = -1;
                     }
                 }
-                Column column = new Column(colName, sqlType, length, precision);
+                Column column = new Column(colName, sqlType, filterLength(length, resultSet.getString(6), type, statementExecutor.dbms, resultSet.getInt(7)), precision);
                 for (int i: pk.keySet()) {
                     if (pk.get(i).name.equals(column.name)) {
                         pk.put(i, column);
@@ -348,7 +349,8 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 	precision = -1;
                 }
             }
-            columns.add(new Column(colName, sqlType, length, precision));
+            _log.debug("column info: '" + colName + "' '" + sqlType + "' " + type + " '" + resultSet.getString(6) + "'");
+            columns.add(new Column(colName, sqlType, filterLength(length, resultSet.getString(6), type, statementExecutor.dbms, resultSet.getInt(7)), precision));
         }
         resultSet.close();
         _log.info("found columns for table " + table.getName());
@@ -356,6 +358,34 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     }
 
     /**
+     * Filter the length attribute of a column in a DBMS specific way.
+     * 
+     * @param length the length as given from driver
+     * @param the type name
+     * @param type the sql type
+     * @param dbms the DBMS
+     * @return filtered length
+     */
+    private int filterLength(int length, String typeName, int type, DBMS dbms, int origLength) {
+    	if (length > 0) {
+    		if (dbms == DBMS.POSTGRESQL) {
+    			if (type == Types.VARCHAR && length >= 10485760) {
+    				length = 0;
+    			} else if ("bytea".equalsIgnoreCase(typeName)) {
+    				length = 0;
+    			}
+    		}
+    	} else {
+    		if (dbms == DBMS.POSTGRESQL) {
+    			if ("bit".equalsIgnoreCase(typeName)) {
+    				length = origLength;
+    			}
+    		}
+    	}
+		return length;
+	}
+
+	/**
      * Converts result from {@link DatabaseMetaData#getColumns(String, String, String, String)}
      * into the type name.
      */

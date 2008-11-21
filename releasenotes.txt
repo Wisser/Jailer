@@ -1,3 +1,6 @@
+2.6.1.beta
+ - support for PostgreSQL types BIT, BIT(n), BIT VARYING and VARCHAR without length. (beta, needs more tests)
+
 2.6.0
  - tables not associated with subject table are rendered italic
  - support for BINARY/RAW column type
