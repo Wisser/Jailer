@@ -229,9 +229,7 @@ public class SqlUtil {
         	return SQLDialect.binaryPattern.replace("%s", hex);
         }
         if (dbms == DBMS.POSTGRESQL) {
-        	if (content instanceof Boolean) {
-        		return "B'" + (Boolean.TRUE.equals(content)? "1" : "0") + "'";
-        	} else if (content.getClass().getName().endsWith(".PGobject")) {
+        	if (content.getClass().getName().endsWith(".PGobject")) {
         		// PostgreSQL bit values
         		return "B'" + content + "'";
         	}
@@ -300,7 +298,21 @@ public class SqlUtil {
 			Date date = resultSet.getDate(i);
 			return date;
 		}
-		return resultSet.getObject(i);
+		Object object = resultSet.getObject(i);
+		if (dbms == DBMS.POSTGRESQL) {
+			if (object instanceof Boolean) {
+				String typeName = resultSet.getMetaData().getColumnTypeName(i);
+				if (typeName != null && typeName.toLowerCase().equals("bit")) {
+					final String value = Boolean.TRUE.equals(object)? "B'1'" : "B'0'";
+					return new Object() {
+						public String toString() {
+							return value;
+						}
+					};
+				}
+			}
+		}
+		return object;
 	};
 	
     /**
