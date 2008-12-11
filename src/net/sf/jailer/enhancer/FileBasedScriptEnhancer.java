@@ -23,6 +23,8 @@ import java.io.Writer;
 import java.sql.SQLException;
 import java.util.Set;
 
+import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.ScriptType;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.datamodel.Table;
@@ -72,17 +74,19 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
      * @param progress the export progress
      */
     private void addEnhancement(Writer script, Set<Table> progress, File dir) throws IOException {
-        for (Table table: progress) {
-            File enhancement = new File(dir, table.getName() + ".sql");
-            if (enhancement.exists()) {
-                BufferedReader in = new BufferedReader(new FileReader(enhancement));
-                String line;
-                while ((line = in.readLine()) != null) {
-                    script.append(line);
-                    script.append(System.getProperty("line.separator"));
-                }
-                in.close();
-            }
+        if (ScriptFormat.SQL.equals(CommandLineParser.getInstance().getScriptFormat())) {
+	    	for (Table table: progress) {
+	            File enhancement = new File(dir, table.getName() + ".sql");
+	            if (enhancement.exists()) {
+	                BufferedReader in = new BufferedReader(new FileReader(enhancement));
+	                String line;
+	                while ((line = in.readLine()) != null) {
+	                    script.append(line);
+	                    script.append(System.getProperty("line.separator"));
+	                }
+	                in.close();
+	            }
+	        }
         }
     }
     

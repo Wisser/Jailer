@@ -159,8 +159,23 @@ public class CommandLineParser {
 		return schemaMapping;
 	}
     
-    @Option(name="-xml",usage="export entities into XML file (instead of SQL)")
-    public boolean asXml = false;
+    /**
+     * Gets the script format.
+     * 
+     * @return the script format
+     */
+    public ScriptFormat getScriptFormat() {
+    	if (_asXml) {
+    		return ScriptFormat.XML;
+    	}
+    	return ScriptFormat.valueOf(format);
+    }
+    
+    @Option(name="-format",usage="export file format: SQL, XML or DBUNIT_FLAT_XML")
+    public String format = "SQL";
+    
+    @Option(name="-xml",usage="export entities into XML file (deprecated, use -format XML instead)")
+    public boolean _asXml = false;
     
     @Option(name="-xml-root",usage="root tag of XML export file",metaVar="tag-name")
     public String xmlRootTag = "entities";

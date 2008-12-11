@@ -29,6 +29,7 @@ import java.util.Set;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 
+import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 
@@ -47,7 +48,7 @@ public class ExportDialog extends javax.swing.JDialog {
 	/**
 	 * Xml/Sql switch.
 	 */
-	private boolean xml;
+	private ScriptFormat scriptFormat;
 	
 	/**
 	 * Restricted data model.
@@ -92,14 +93,18 @@ public class ExportDialog extends javax.swing.JDialog {
         fields.put("threads", threads);
         fields.put("rowsPerThread", rowsPerThread);
         
-        xml = "XML".equals(dataModel.getExportModus());
+        scriptFormat = ScriptFormat.SQL;
+        try {
+        	scriptFormat = ScriptFormat.valueOf(dataModel.getExportModus());
+        } catch (Exception e) {
+		}
         
-        upsertCheckbox.setEnabled(!xml);
-        rowsPerThread.setEnabled(!xml);
+        upsertCheckbox.setEnabled(ScriptFormat.SQL.equals(scriptFormat));
+        rowsPerThread.setEnabled(ScriptFormat.SQL.equals(scriptFormat));
 
     	Map<JTextField, String> defaults = new HashMap<JTextField, String>();
 
-    	if (xml) {
+    	if (!ScriptFormat.SQL.equals(scriptFormat)) {
         	schemaMappingPanel.setVisible(false);
         } else {
         	schemaMappingPanel.setVisible(true);
@@ -109,7 +114,7 @@ public class ExportDialog extends javax.swing.JDialog {
         theSettings = new Settings(".exportdata.ui", fields);
         selectInsert.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                String fn = UIUtil.choseFile(null, ".", xml? "XML Export" : "SQL Import Script", xml? ".xml" : ".sql", ExportDialog.this, true, false);
+                String fn = UIUtil.choseFile(null, ".", scriptFormat.getFileChooserTitle(), scriptFormat.getFileExtension(), ExportDialog.this, true, false);
                 if (fn != null) {
                     insert.setText(fn);
                 }
@@ -560,8 +565,10 @@ public class ExportDialog extends javax.swing.JDialog {
     	
     	args.add("-where");
     	args.add(where.getText());
-    	
-    	if (xml) {
+
+    	args.add("-format");
+    	args.add(scriptFormat.toString());
+    	if (ScriptFormat.XML.equals(scriptFormat)) {
     		args.add("-xml");
     		args.add("-xml-root");
     		args.add(dataModel.getXmlSettings().rootTag);
