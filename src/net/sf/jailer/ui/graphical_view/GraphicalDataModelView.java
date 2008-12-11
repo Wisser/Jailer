@@ -42,6 +42,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 
+import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
@@ -585,7 +586,7 @@ public class GraphicalDataModelView extends JPanel {
 				modelEditor.openColumnMapper(table);
 			}
 		});
-		mapColumns.setEnabled(modelEditor.exportAsXml);
+		mapColumns.setEnabled(ScriptFormat.XML.equals(modelEditor.scriptFormat));
 		
 		JMenuItem restrictAll = new JMenuItem("Disable associations");
 		restrictAll.addActionListener(new ActionListener () {

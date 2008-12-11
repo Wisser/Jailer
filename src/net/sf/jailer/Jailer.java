@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -36,6 +37,13 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
+import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
+import javax.xml.transform.stream.StreamResult;
+
 import net.sf.jailer.database.DeletionReader;
 import net.sf.jailer.database.ExportReader;
 import net.sf.jailer.database.StatementExecutor;
@@ -47,6 +55,7 @@ import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.dbunit.FlatXMLWriter;
 import net.sf.jailer.domainmodel.DomainModel;
 import net.sf.jailer.enhancer.ScriptEnhancer;
 import net.sf.jailer.entitygraph.EntityGraph;
@@ -79,7 +88,7 @@ public class Jailer {
     /**
      * The Jailer version.
      */
-    public static final String VERSION = "2.6.1";
+    public static final String VERSION = "3.0.0";
     
     /**
      * The relational data model.
@@ -409,23 +418,45 @@ public class Jailer {
      * Writes entities into extract-SQL-script.
      * 
      * @param sqlScriptFile the name of the sql-script to write the data to
-     * @param table write entities from this table only
+     * @param transformerHandler SAX transformer handler for generating XML. <code>null</code> if script format is not XML.
+	 * @param table write entities from this table only
      * @param result a writer for the extract-script
      */
-    private void writeEntities(OutputStreamWriter result, ScriptType scriptType, Table table) throws Exception {
-        ResultSetReader reader = scriptType==ScriptType.INSERT? 
-        		new ExportReader(table, result, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities, entityGraph.statementExecutor.getMetaData()) 
-        		: 
-        		new DeletionReader(table, result, CommandLineParser.getInstance().numberOfEntities, entityGraph.statementExecutor.getMetaData());
+    private void writeEntities(OutputStreamWriter result, TransformerHandler transformerHandler, ScriptType scriptType, Table table) throws Exception {
+        ResultSetReader reader = createResultSetReader(result, transformerHandler, scriptType, table);
         entityGraph.readEntities(table, reader);
         entityGraph.deleteEntities(table);
     }
+
+	/**
+	 * Creates result set reader for processing the rows to be exported.
+	 * 
+	 * @param outputWriter writer into export file
+	 * @param transformerHandler SAX transformer handler for generating XML. <code>null</code> if script format is not XML.
+	 * @param scriptType the script type
+	 * @param table the table to read rows from
+	 * 
+	 * @return result set reader for processing the rows to be exported
+	 */
+	private ResultSetReader createResultSetReader(
+			OutputStreamWriter outputWriter, TransformerHandler transformerHandler, ScriptType scriptType, Table table)
+			throws SQLException {
+		if (scriptType == ScriptType.INSERT) {
+			if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+				return new FlatXMLWriter(table, transformerHandler, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities, entityGraph.statementExecutor.getMetaData());
+			} else {
+				return new ExportReader(table, outputWriter, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities, entityGraph.statementExecutor.getMetaData());
+			}
+		} else {
+       		return new DeletionReader(table, outputWriter, CommandLineParser.getInstance().numberOfEntities, entityGraph.statementExecutor.getMetaData());
+		}
+	}
     
     /**
      * Writes entities into extract-SQL-script.
      * 
      * @param sqlScriptFile the name of the sql-script to write the data to
-     * @param progress set of tables to account for extraction
+	 * @param progress set of tables to account for extraction
      */
     public void writeEntities(String sqlScriptFile, final ScriptType scriptType, final Set<Table> progress, StatementExecutor statementExecutor) throws Exception {
         _log.info("writing file '" + sqlScriptFile + "'...");
@@ -434,41 +465,71 @@ public class Jailer {
         if (sqlScriptFile.toLowerCase().endsWith(".zip") || sqlScriptFile.toLowerCase().endsWith(".gz")) {
             outputStream = new GZIPOutputStream(outputStream);
         }
-        final OutputStreamWriter result = new OutputStreamWriter(outputStream);
-        result.append(commentHeader);
-        result.append(System.getProperty("line.separator"));
-        for (ScriptEnhancer enhancer: scriptEnhancer) {
-            enhancer.addComments(result, scriptType, statementExecutor, entityGraph, progress);
-        }
-        result.append(System.getProperty("line.separator"));
-        result.append(System.getProperty("line.separator"));
-        for (ScriptEnhancer enhancer: scriptEnhancer) {
-            enhancer.addProlog(result, scriptType, statementExecutor, entityGraph, progress);
+        TransformerHandler transformerHandler = null;
+        OutputStreamWriter result = null;
+        if (scriptType == ScriptType.INSERT && ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+        	StreamResult streamResult = new StreamResult(new OutputStreamWriter(outputStream, Charset.defaultCharset()));
+            SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
+            try {
+            	tf.setAttribute("indent-number", new Integer(2));
+            } catch (Exception e) {
+            	// ignore, workaround for JDK 1.5 bug, see http://forum.java.sun.com/thread.jspa?threadID=562510
+            }
+            transformerHandler = tf.newTransformerHandler();
+            Transformer serializer = transformerHandler.getTransformer();
+            serializer.setOutputProperty(OutputKeys.ENCODING, Charset.defaultCharset().name());
+            serializer.setOutputProperty(OutputKeys.METHOD, "xml");
+            serializer.setOutputProperty(OutputKeys.INDENT, "yes");
+            transformerHandler.setResult(streamResult);
+            transformerHandler.startDocument();
+            String ch = ("\n" + commentHeader).replaceAll("\\n--", "\n ");
+            transformerHandler.comment(ch.toCharArray(), 0, ch.toCharArray().length);
+            transformerHandler.startElement("", "", "dataset", null);
+        } else {
+        	result = new OutputStreamWriter(outputStream);
+	        result.append(commentHeader);
+	        result.append(System.getProperty("line.separator"));
+	        for (ScriptEnhancer enhancer: scriptEnhancer) {
+	            enhancer.addComments(result, scriptType, statementExecutor, entityGraph, progress);
+	        }
+	        result.append(System.getProperty("line.separator"));
+	        result.append(System.getProperty("line.separator"));
+	        for (ScriptEnhancer enhancer: scriptEnhancer) {
+	            enhancer.addProlog(result, scriptType, statementExecutor, entityGraph, progress);
+	        }
         }
         
         // first write entities of independent tables 
-        final Set<Table> dependentTables = writeEntitiesOfIndependentTables(result, scriptType, progress);
+        final Set<Table> dependentTables = writeEntitiesOfIndependentTables(result, transformerHandler, scriptType, progress);
         
         // then write entities of tables having cyclic-dependencies
         _log.info("cyclic dependencies for: " + asString(dependentTables));
         addDependencies(dependentTables, false);
+        
+        final TransformerHandler fTransformerHandler = transformerHandler;
+        final OutputStreamWriter fResult = result;
         
         long rest = entityGraph.getSize();
         for (;;) {
             entityGraph.markIndependentEntities();
             List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
             for (final Table table: dependentTables) {
-                jobs.add(new JobManager.Job() {
-                    public void run() throws Exception {
-                        ResultSetReader reader = scriptType==ScriptType.INSERT? 
-                        		new ExportReader(table, result, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities, entityGraph.statementExecutor.getMetaData()) 
-                                : 
-                                new DeletionReader(table, result, CommandLineParser.getInstance().numberOfEntities, entityGraph.statementExecutor.getMetaData());
-                        entityGraph.readMarkedEntities(table, reader);
-                    }
-                });
+                if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+           			// export rows sequentially, don't mix rows of different tables in a dataset!
+                    ResultSetReader reader = createResultSetReader(fResult, fTransformerHandler, scriptType, table);
+                    entityGraph.readMarkedEntities(table, reader);
+                } else {
+                	jobs.add(new JobManager.Job() {
+	                    public void run() throws Exception {
+	                        ResultSetReader reader = createResultSetReader(fResult, fTransformerHandler, scriptType, table);
+	                        entityGraph.readMarkedEntities(table, reader);
+	                    }
+	                });
+                }
             }
-            jobManager.executeJobs(jobs);
+            if (!ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+            	jobManager.executeJobs(jobs);
+            }
             entityGraph.deleteIndependentEntities();
             long newRest = entityGraph.getSize();
             if (rest == newRest) {
@@ -477,12 +538,19 @@ public class Jailer {
             rest = newRest;
         }
         
-        // write epilogs
-        for (ScriptEnhancer enhancer: scriptEnhancer) {
-            enhancer.addEpilog(result, scriptType, statementExecutor, entityGraph, progress);
+        if (result != null) {
+	        // write epilogs
+	        for (ScriptEnhancer enhancer: scriptEnhancer) {
+	            enhancer.addEpilog(result, scriptType, statementExecutor, entityGraph, progress);
+	        }
+	        result.close();
+        }
+
+        if (transformerHandler != null) {
+        	transformerHandler.endElement("", "", "dataset");
+        	transformerHandler.endDocument();
         }
         
-        result.close();
         if (rest > 0) {
             throw new RuntimeException(rest + " entities not exported due to cyclic dependencies");
         }
@@ -495,7 +563,7 @@ public class Jailer {
      * @param xmlFile the name of the xml-file to write the data to
      * @param progress set of tables to account for extraction
      */
-    public void writeEntitiesAsXml(String xmlFile, final ScriptType scriptType, final Set<Table> progress, final Set<Table> subjects, StatementExecutor statementExecutor) throws Exception {
+    public void writeEntitiesAsXml(String xmlFile, final Set<Table> progress, final Set<Table> subjects, StatementExecutor statementExecutor) throws Exception {
         _log.info("writing file '" + xmlFile + "'...");
 
         OutputStream outputStream = new FileOutputStream(xmlFile);
@@ -600,7 +668,7 @@ public class Jailer {
      * 
      * @return set of tables from which no entities are written
      */ 
-    Set<Table> writeEntitiesOfIndependentTables(final OutputStreamWriter result, final ScriptType scriptType, Set<Table> progress) throws Exception {
+    Set<Table> writeEntitiesOfIndependentTables(final OutputStreamWriter result, final TransformerHandler transformerHandler, final ScriptType scriptType, Set<Table> progress) throws Exception {
         Set<Table> tables = new HashSet<Table>(progress);
         
         Set<Table> independentTables = datamodel.getIndependentTables(tables);
@@ -608,13 +676,20 @@ public class Jailer {
             _log.info("independent tables: " + asString(independentTables));
             List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
             for (final Table independentTable: independentTables) {
-                jobs.add(new JobManager.Job() {
-                    public void run() throws Exception {
-                        writeEntities(result, scriptType, independentTable);
-                    }
-                });
+                if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+           			// export rows sequentially, don't mix rows of different tables in a dataset!
+                	writeEntities(result, transformerHandler, scriptType, independentTable);
+           		} else {
+                	jobs.add(new JobManager.Job() {
+                		public void run() throws Exception {
+                			writeEntities(result, transformerHandler, scriptType, independentTable);
+                		}
+                	});
+                }
             }
-            jobManager.executeJobs(jobs);
+            if (!ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+                jobManager.executeJobs(jobs);
+            }
             tables.removeAll(independentTables);
             independentTables = datamodel.getIndependentTables(tables);
         }
@@ -755,7 +830,7 @@ public class Jailer {
                         System.out.println("missing '-e' option");
                         CommandLineParser.printUsage();
                     } else {
-                        export(clp.arguments.get(1), clp.exportScriptFileName, clp.deleteScriptFileName, clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4), clp.arguments.get(5), clp.explain, clp.numberOfThreads, clp.asXml);
+                        export(clp.arguments.get(1), clp.exportScriptFileName, clp.deleteScriptFileName, clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4), clp.arguments.get(5), clp.explain, clp.numberOfThreads, clp.getScriptFormat());
                     }
                 }
             } else if ("find-association".equalsIgnoreCase(command)) {
@@ -819,7 +894,7 @@ public class Jailer {
 	/**
      * Exports entities.
      */
-    private static void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, String driverClassName, String dbUrl, String dbUser, String dbPassword, boolean explain, int threads, boolean asXML) throws Exception {
+    private static void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, String driverClassName, String dbUrl, String dbUser, String dbPassword, boolean explain, int threads, ScriptFormat scriptFormat) throws Exception {
         printGreeting();
         _log.info("exporting '" + extractionModelFileName + "' to '" + scriptFile + "'");
         
@@ -871,8 +946,8 @@ public class Jailer {
         }
         
         jailer.setEntityGraph(entityGraph);
-        if (asXML) {
-        	jailer.writeEntitiesAsXml(scriptFile, ScriptType.XML, totalProgress, subjects, statementExecutor);
+        if (ScriptFormat.XML.equals(scriptFormat)) {
+        	jailer.writeEntitiesAsXml(scriptFile, totalProgress, subjects, statementExecutor);
         } else {
         	jailer.writeEntities(scriptFile, ScriptType.INSERT, totalProgress, statementExecutor);
         }

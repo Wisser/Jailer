@@ -40,6 +40,7 @@ import javax.swing.UIManager.LookAndFeelInfo;
 
 import net.sf.jailer.DDLCreator;
 import net.sf.jailer.Jailer;
+import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.database.ExportReader;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
@@ -734,7 +735,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	void dataExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataExportActionPerformed
     	try {
-    		if (extractionModelEditor.dataModel != null && !extractionModelEditor.exportAsXml) {
+    		if (extractionModelEditor.dataModel != null && !ScriptFormat.XML.equals(extractionModelEditor.scriptFormat)) {
     			Association restrictedDependency = findRestrictedDependency(extractionModelEditor.dataModel);
     			if (restrictedDependency != null && JOptionPane.showConfirmDialog(this, 
     					"Dependency from '" + restrictedDependency.source.getName() + "' to '" + restrictedDependency.destination.getName() + "'\n" +
