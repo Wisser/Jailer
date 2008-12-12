@@ -19,8 +19,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
@@ -324,11 +326,12 @@ public class EntityGraph {
      * @param to destination of dependency
      * @param toAlias alias for to-table
      * @param condition condition of dependency
-     * @param associationId id of dependency association, 0 if not applicable
+     * @param aggregationId id of aggregation association (for XML export), 0 if not applicable
+     * @param dependencyId id of dependency
      */
-    public void addDependencies(Table from, String fromAlias, Table to, String toAlias, String condition, int associationId) throws SQLException {
-        String insert = "Insert into " + DEPENDENCY + "(r_entitygraph, assoc, from_type, to_type, " + universalPrimaryKey.columnList("FROM_") + ", " + universalPrimaryKey.columnList("TO_") + ") " +
-            "Select " + graphID + ", " + associationId  + ", '" + from.getName() + "', '" + to.getName() + "', " + pkList(from, fromAlias, "FROM") + ", " + pkList(to, toAlias, "TO") +
+    public void addDependencies(Table from, String fromAlias, Table to, String toAlias, String condition, int aggregationId, int dependencyId) throws SQLException {
+        String insert = "Insert into " + DEPENDENCY + "(r_entitygraph, assoc, depend_id, from_type, to_type, " + universalPrimaryKey.columnList("FROM_") + ", " + universalPrimaryKey.columnList("TO_") + ") " +
+            "Select " + graphID + ", " + aggregationId  + ", " + dependencyId + ", '" + from.getName() + "', '" + to.getName() + "', " + pkList(from, fromAlias, "FROM") + ", " + pkList(to, toAlias, "TO") +
             " From " + ENTITY + " E1, " + ENTITY + " E2, " + from.getName() + " " + fromAlias + " join " + to.getName() + " " + toAlias + " on " + condition +
             " Where E1.r_entitygraph=" + graphID + " and E2.r_entitygraph=" + graphID + "" +
             " and E1.type='" + from.getName() + "' and E2.type='" + to.getName() + "'" +
@@ -338,10 +341,34 @@ public class EntityGraph {
     }
     
     /**
+     * Gets distinct association-ids of all edged.
+     */
+    public Set<Integer> getDistinctDependencyIDs() throws SQLException {
+        String select = "Select distinct depend_id from " + DEPENDENCY + " Where r_entitygraph=" + graphID;
+        final Set<Integer> ids = new HashSet<Integer>();
+        statementExecutor.executeQuery(select, new StatementExecutor.ResultSetReader() {
+			public void readCurrentRow(ResultSet resultSet) throws SQLException {
+				ids.add(resultSet.getInt(1));
+			}
+			public void close() {
+			}
+        });
+        return ids;
+    }
+
+    /**
      * Marks all entities which don't dependent on other entities,
      * s.t. they can be read and deleted.
      */
     public void markIndependentEntities() throws SQLException {
+    	markIndependentEntities(null);
+    }
+    
+    /**
+     * Marks all entities of a given table which don't dependent on other entities,
+     * s.t. they can be read and deleted.
+     */
+    public void markIndependentEntities(Table table) throws SQLException {
         StringBuffer fromEqualsPK = new StringBuffer();
         for (Column column: universalPrimaryKey.getColumns()) {
             if (fromEqualsPK.length() > 0) {
@@ -352,6 +379,7 @@ public class EntityGraph {
         statementExecutor.executeUpdate(
                 "Update " + ENTITY + " set birthday=0 " +
                 "Where r_entitygraph=" + graphID + " and birthday>0 and " +
+                	   (table != null? "type='" + table.getName() + "' and " : "") +
                        "not exists (Select * from " + DEPENDENCY + " D " +
                            "Where D.r_entitygraph=" +graphID + " and assoc=0 and D.from_type=type and " +
                                  fromEqualsPK + ")");
