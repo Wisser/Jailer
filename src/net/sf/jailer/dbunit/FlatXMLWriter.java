@@ -15,10 +15,11 @@
  */
 package net.sf.jailer.dbunit;
 
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.HashMap;
 import java.util.Map;
@@ -29,111 +30,114 @@ import net.sf.jailer.database.ExportReader;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.util.Quoting;
+import net.sf.jailer.util.Base64;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
- * A {@link ResultSetReader} that writes the read rows
- * into a DbUnit flat XML dataset document.
+ * Reads a JDBC result set and writes the read rows into a DbUnit flat XML
+ * dataset document.
  * 
+ * @see http://www.dbunit.org/
  * @author Ralf Wisser
  */
 public class FlatXMLWriter implements ResultSetReader {
 
-    /**
-     * The table to read from.
-     */
-    private final Table table;
-    
-    /**
-     * Name of XML row element, or <code>null</code> if the table name can not be converted into a valid XML tag identifier.
-     */
-    private final String rowElementName;
-    
-    /**
-     * To write the XML into.
-     */
-    private final TransformerHandler transformerHandler;
-    
-    /**
-     * Number of columns.
-     */
-    private int columnCount;
+	/**
+	 * The table to read from.
+	 */
+	private final Table table;
 
-    /**
-     * Labels of columns.
-     */
-    private String[] columnLabel = null;
+	/**
+	 * Name of XML row element, or <code>null</code> if the table name can not
+	 * be converted into a valid XML tag identifier.
+	 */
+	private final String rowElementName;
 
-    /**
-     * For quoting of column names.
-     */
-    private final Quoting quoting;
-    
-    /**
-     * Maps clear text SQL-types to {@link java.sql.Types}.
-     */
-    private Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
+	/**
+	 * To write the XML into.
+	 */
+	private final TransformerHandler transformerHandler;
 
-    /**
-     * Constructor.
-     * 
-     * @param table the table to read from
-     * @param transformerHandler to write the XML into
-     * @param maxBodySize maximum length of SQL values list (for generated inserts)
-     * @param upsertOnly use 'upsert' statements for all entities
-     */
-    public FlatXMLWriter(Table table, TransformerHandler transformerHandler, boolean upsertOnly, int maxBodySize, DatabaseMetaData metaData) throws SQLException {
-        this.table = table;
-        this.transformerHandler = transformerHandler;
-        this.quoting = new Quoting(metaData);
-        this.rowElementName = table.getUnqualifiedName();
-    }
-    
-    /**
-     * Reads result-set and writes into export-script.
-     */
-    public void readCurrentRow(ResultSet resultSet) throws SQLException {
-    	if (columnLabel == null) {
-            columnCount = resultSet.getMetaData().getColumnCount();
-            columnLabel = new String[columnCount + 1];
-            for (int i = 1; i <= columnCount; ++i) {
-                String mdColumnLabel = resultSet.getMetaData().getColumnLabel(i);
-                columnLabel[i] = mdColumnLabel;
-            }
-        }
-        try {
-        	AttributesImpl attr = new AttributesImpl();
-            for (int i = 1; i <= columnCount; ++i) {
-                if (columnLabel[i] == null) {
-                	continue;
-                }
-            	String value = getValue(resultSet, i, typeCache);
+	/**
+	 * Number of columns.
+	 */
+	private int columnCount;
+
+	/**
+	 * Labels of columns.
+	 */
+	private String[] columnLabel = null;
+
+	/**
+	 * Maps clear text SQL-types to {@link java.sql.Types}.
+	 */
+	private Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param table
+	 *            the table to read from
+	 * @param transformerHandler
+	 *            to write the XML into
+	 * @param metaData
+	 *            database meta data
+	 */
+	public FlatXMLWriter(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData) throws SQLException {
+		this.table = table;
+		this.transformerHandler = transformerHandler;
+		this.rowElementName = table.getUnqualifiedName();
+	}
+
+	/**
+	 * Reads result-set and writes into export-script.
+	 */
+	public void readCurrentRow(ResultSet resultSet) throws SQLException {
+		if (columnLabel == null) {
+			columnCount = resultSet.getMetaData().getColumnCount();
+			columnLabel = new String[columnCount + 1];
+			for (int i = 1; i <= columnCount; ++i) {
+				String mdColumnLabel = resultSet.getMetaData()
+						.getColumnLabel(i);
+				columnLabel[i] = mdColumnLabel;
+			}
+		}
+		try {
+			AttributesImpl attr = new AttributesImpl();
+			for (int i = 1; i <= columnCount; ++i) {
+				if (columnLabel[i] == null) {
+					continue;
+				}
+				String value = getValue(resultSet, i, typeCache);
 				if (value != null) {
 					attr.addAttribute("", "", columnLabel[i], "CDATA", value);
 				}
-            }
-            synchronized (transformerHandler) {
-	        	transformerHandler.startElement("", "", rowElementName, attr);
-	        	transformerHandler.endElement("", "", rowElementName);
-            }
-            ++ExportReader.numberOfExportedEntities;  // TODO: refactoring of entity counting
-            
-        } catch (SAXException e) {
-            throw new RuntimeException(e);
-        }
-    }
+			}
+			synchronized (transformerHandler) {
+				transformerHandler.startElement("", "", rowElementName, attr);
+				transformerHandler.endElement("", "", rowElementName);
+			}
+			++ExportReader.numberOfExportedEntities; // TODO: refactoring of
+														// entity counting
 
-    /**
-     * Gets value from result-set.
-     * 
-     * @param resultSet result-set
-     * @param i column index
-     * @param typeCache for caching types
-     * @return object
-     */
+		} catch (SAXException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
+	 * Gets value from current row a result-set.
+	 * 
+	 * @param resultSet
+	 *            result-set
+	 * @param i
+	 *            column index
+	 * @param typeCache
+	 *            for caching types
+	 * @return object
+	 */
 	private String getValue(ResultSet resultSet, int i, Map<Integer, Integer> typeCache) throws SQLException {
 		Object object;
 		Integer type = typeCache.get(i);
@@ -150,40 +154,58 @@ public class FlatXMLWriter implements ResultSetReader {
 			}
 			typeCache.put(i, type);
 		}
-		
+
 		if (type == Types.TIMESTAMP) {
 			object = resultSet.getTimestamp(i);
+		} else if (type == Types.TIME) {
+			object = resultSet.getTime(i);
 		} else if (type == Types.DATE) {
 			object = resultSet.getDate(i);
 		} else {
 			object = resultSet.getObject(i);
 		}
-		
-		if (object == null) {
+
+		if (object == null || resultSet.wasNull()) {
 			return null;
 		}
-		
-		if (object instanceof Timestamp) {
-			return ((Timestamp) object).toString();
+
+		if (object instanceof byte[]) {
+			return Base64.encodeBytes((byte[]) object);
 		}
-		
+
+		if (object instanceof Blob) {
+			Blob blob = (Blob) object;
+			byte[] blobValue = blob.getBytes(1, (int) blob.length());
+			return Base64.encodeBytes(blobValue);
+		}
+
+		if (object instanceof Clob) {
+			Clob clobValue = (Clob) object;
+			int length = (int) clobValue.length();
+			if (length > 0) {
+				return clobValue.getSubString(1, length);
+			}
+			return "";
+		}
+
 		return object.toString();
 	};
-	
+
 	/**
-     * Finalizes reading.
-     */
+	 * Finalizes reading.
+	 */
 	public void close() {
 		if (columnLabel != null) {
 			synchronized (transformerHandler) {
-	        	try {
-	        		String content = "\n\n  ";
-					transformerHandler.characters(content.toCharArray(), 0, content.length());
+				try {
+					String content = "\n\n  ";
+					transformerHandler.characters(content.toCharArray(), 0,
+							content.length());
 				} catch (SAXException e) {
 					throw new RuntimeException(e);
 				}
-	        }
+			}
 		}
-    }
+	}
 
 }

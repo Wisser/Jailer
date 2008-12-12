@@ -445,7 +445,7 @@ public class Jailer {
 			throws SQLException {
 		if (scriptType == ScriptType.INSERT) {
 			if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
-				return new FlatXMLWriter(table, transformerHandler, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities, entityGraph.statementExecutor.getMetaData());
+				return new FlatXMLWriter(table, transformerHandler, entityGraph.statementExecutor.getMetaData());
 			} else {
 				return new ExportReader(table, outputWriter, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities, entityGraph.statementExecutor.getMetaData());
 			}
