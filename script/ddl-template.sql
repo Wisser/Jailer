@@ -51,6 +51,7 @@ CREATE TABLE JAILER_DEPENDENCY
 (
    r_entitygraph   INTEGER NOT NULL,
    assoc           INTEGER NOT NULL,
+   depend_id       INTEGER NOT NULL,
    traversed       INTEGER,
    from_type       VARCHAR(60) NOT NULL,
    to_type         VARCHAR(60) NOT NULL,

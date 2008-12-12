@@ -31,6 +31,7 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -88,7 +89,7 @@ public class Jailer {
     /**
      * The Jailer version.
      */
-    public static final String VERSION = "3.0.0";
+    public static final String VERSION = "2.7.0";
     
     /**
      * The relational data model.
@@ -369,7 +370,8 @@ public class Jailer {
         for (final Table table: progress) {
             for (final Association association: table.associations) {
                 if (progress.contains(association.destination)) {
-                	final int associationId = treatAggregationAsDependency? association.getId() : 0;
+                	final int aggregationId = treatAggregationAsDependency? association.getId() : 0;
+                	final int dependencyId = association.getId();
                 	if (treatAggregationAsDependency) {
 	                    if (association.getAggregationSchema() != AggregationSchema.NONE) {
 		                    final String jc = association.getUnrestrictedJoinCondition();
@@ -379,7 +381,7 @@ public class Jailer {
 	                                String fromAlias, toAlias;
 	                                fromAlias = association.reversed? "B" : "A";
 	                                toAlias = association.reversed? "A" : "B";
-	                                entityGraph.addDependencies(table, fromAlias, association.destination, toAlias, jc, associationId);
+	                                entityGraph.addDependencies(table, fromAlias, association.destination, toAlias, jc, aggregationId, dependencyId);
 	                            }
 	                        });
 	                    }
@@ -392,7 +394,7 @@ public class Jailer {
 	                                String fromAlias, toAlias;
 	                                fromAlias = association.reversed? "B" : "A";
 	                                toAlias = association.reversed? "A" : "B";
-	                                entityGraph.addDependencies(table, fromAlias, association.destination, toAlias, jc, associationId);
+	                                entityGraph.addDependencies(table, fromAlias, association.destination, toAlias, jc, aggregationId, dependencyId);
 	                            }
 	                        });
 	                    }
@@ -403,7 +405,7 @@ public class Jailer {
 	                                String fromAlias, toAlias;
 	                                fromAlias = association.reversed? "B" : "A";
 	                                toAlias = association.reversed? "A" : "B";
-	                                entityGraph.addDependencies(association.destination, toAlias, table, fromAlias, jc, associationId);
+	                                entityGraph.addDependencies(association.destination, toAlias, table, fromAlias, jc, aggregationId, dependencyId);
 	                            }
 	                        });
 	                    }
@@ -508,34 +510,69 @@ public class Jailer {
         
         final TransformerHandler fTransformerHandler = transformerHandler;
         final OutputStreamWriter fResult = result;
+        long rest;
         
-        long rest = entityGraph.getSize();
-        for (;;) {
-            entityGraph.markIndependentEntities();
-            List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
-            for (final Table table: dependentTables) {
-                if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
-           			// export rows sequentially, don't mix rows of different tables in a dataset!
-                    ResultSetReader reader = createResultSetReader(fResult, fTransformerHandler, scriptType, table);
-                    entityGraph.readMarkedEntities(table, reader);
-                } else {
+        if (scriptType == ScriptType.INSERT && ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+        	Set<Table> remaining = new HashSet<Table>(dependentTables);
+
+        	// topologically sort remaining tables while ignoring reflexive dependencies
+        	// and dependencies for which no edge exists in entity graph
+        	Set<Association> relevantAssociations = new HashSet<Association>(datamodel.namedAssociations.values());
+        	Set<Integer> existingEdges = entityGraph.getDistinctDependencyIDs();
+        	for (Iterator<Association> i = relevantAssociations.iterator(); i.hasNext(); ) {
+        		Association association = i.next();
+        		if (association.source.equals(association.destination)) {
+        			i.remove();
+        		} else if (!existingEdges.contains(association.getId())) {
+        			if (association.isInsertDestinationBeforeSource()) {
+        				_log.info("irrelevant dependency: " + datamodel.getDisplayName(association.source) + " -> " + datamodel.getDisplayName(association.destination));
+        			}
+        			i.remove();
+        		}
+        	}
+        	Set<Table> independentTables = datamodel.getIndependentTables(remaining, relevantAssociations);
+	        rest = entityGraph.getSize();
+            while (!independentTables.isEmpty()) {
+                _log.info("independent tables: " + asString(independentTables));
+                for (final Table independentTable: independentTables) {
+        	        rest = entityGraph.getSize();
+                	for (;;) {
+	                	entityGraph.markIndependentEntities(independentTable);
+		                // don't use jobManager, export rows sequentially, don't mix rows of different tables in a dataset!
+		                ResultSetReader reader = createResultSetReader(fResult, fTransformerHandler, scriptType, independentTable);
+		                entityGraph.readMarkedEntities(independentTable, reader);
+	    	            entityGraph.deleteIndependentEntities();
+	    	            long newRest = entityGraph.getSize();
+	    	            if (rest == newRest) {
+	    	                break;
+	    	            }
+	    	            rest = newRest;
+                	}
+                }
+                remaining.removeAll(independentTables);
+                independentTables = datamodel.getIndependentTables(remaining, relevantAssociations);;
+            }
+        } else {
+	        rest = entityGraph.getSize();
+	        for (;;) {
+	            entityGraph.markIndependentEntities();
+	            List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
+	            for (final Table table: dependentTables) {
                 	jobs.add(new JobManager.Job() {
 	                    public void run() throws Exception {
 	                        ResultSetReader reader = createResultSetReader(fResult, fTransformerHandler, scriptType, table);
 	                        entityGraph.readMarkedEntities(table, reader);
 	                    }
 	                });
-                }
-            }
-            if (!ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+	            }
             	jobManager.executeJobs(jobs);
-            }
-            entityGraph.deleteIndependentEntities();
-            long newRest = entityGraph.getSize();
-            if (rest == newRest) {
-                break;
-            }
-            rest = newRest;
+	            entityGraph.deleteIndependentEntities();
+	            long newRest = entityGraph.getSize();
+	            if (rest == newRest) {
+	                break;
+	            }
+	            rest = newRest;
+	        }
         }
         
         if (result != null) {
@@ -547,7 +584,9 @@ public class Jailer {
         }
 
         if (transformerHandler != null) {
-        	transformerHandler.endElement("", "", "dataset");
+        	String content = "\n";
+			transformerHandler.characters(content.toCharArray(), 0, content.length());
+			transformerHandler.endElement("", "", "dataset");
         	transformerHandler.endDocument();
         }
         

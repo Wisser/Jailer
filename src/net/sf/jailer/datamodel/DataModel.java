@@ -349,18 +349,33 @@ public class DataModel {
      * @return the sub-set of independent tables of the table-set
      */
     public Set<Table> getIndependentTables(Set<Table> tableSet) {
+    	return getIndependentTables(tableSet, null);
+    }
+    
+    /**
+     * Gets all independent tables
+     * (i.e. tables which don't depend on other tables in the set)
+     * of a given table-set.
+     * 
+     * @param tableSet the table-set
+     * @param associations the associations to consider, <code>null</code> for all associations
+     * @return the sub-set of independent tables of the table-set
+     */
+    public Set<Table> getIndependentTables(Set<Table> tableSet, Set<Association> associations) {
         Set<Table> independentTables = new HashSet<Table>();
         
         for (Table table: tableSet) {
             boolean depends = false;
             for (Association a: table.associations) {
-                if (tableSet.contains(a.destination)) {
-                    if (a.getJoinCondition() != null) {
-                        if (a.isInsertDestinationBeforeSource()) {
-                            depends = true;
-                            break;
-                        }
-                    }
+            	if (associations == null || associations.contains(a)) {
+	                if (tableSet.contains(a.destination)) {
+	                    if (a.getJoinCondition() != null) {
+	                        if (a.isInsertDestinationBeforeSource()) {
+	                            depends = true;
+	                            break;
+	                        }
+	                    }
+	                }
                 }
             }
             if (!depends) {

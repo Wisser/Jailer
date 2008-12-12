@@ -15,32 +15,28 @@
  */
 package net.sf.jailer.dbunit;
 
-import java.io.IOException;
-import java.security.Timestamp;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
 import javax.xml.transform.sax.TransformerHandler;
 
-import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.ExportReader;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.Quoting;
-import net.sf.jailer.util.SqlUtil;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * A {@link ResultSetReader} that writes the read rows
- * into a DbUnit flat XML dataset.
+ * into a DbUnit flat XML dataset document.
  * 
  * @author Ralf Wisser
  */
@@ -175,22 +171,19 @@ public class FlatXMLWriter implements ResultSetReader {
 	};
 	
 	/**
-     * Closes the export-reader.
+     * Finalizes reading.
      */
-    public void close() {
+	public void close() {
+		if (columnLabel != null) {
+			synchronized (transformerHandler) {
+	        	try {
+	        		String content = "\n\n  ";
+					transformerHandler.characters(content.toCharArray(), 0, content.length());
+				} catch (SAXException e) {
+					throw new RuntimeException(e);
+				}
+	        }
+		}
     }
-    
-    /**
-     * Writes into script.
-     */
-    private void writeToScriptFile(String content) throws IOException {
-        synchronized (transformerHandler) {
-        	try {
-				transformerHandler.characters(content.toCharArray(), 0, content.length());
-			} catch (SAXException e) {
-				throw new RuntimeException(e);
-			}
-        }
-    }
-    
+
 }
