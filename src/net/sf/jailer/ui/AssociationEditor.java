@@ -74,10 +74,10 @@ public class AssociationEditor extends javax.swing.JDialog {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel2 = new javax.swing.JPanel();
-        source = new javax.swing.JComboBox();
-        type = new javax.swing.JComboBox();
-        destination = new javax.swing.JComboBox();
-        cardinality = new javax.swing.JComboBox();
+        source = new net.sf.jailer.ui.JComboBox();
+        type = new net.sf.jailer.ui.JComboBox();
+        destination = new net.sf.jailer.ui.JComboBox();
+        cardinality = new net.sf.jailer.ui.JComboBox();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         joinCondition = new javax.swing.JTextField();

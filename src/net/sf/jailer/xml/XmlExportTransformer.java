@@ -46,7 +46,7 @@ import org.xml.sax.SAXException;
  * 
  * @author Ralf Wisser
  */
-public class XmlExportReader implements ResultSetReader {
+public class XmlExportTransformer implements ResultSetReader {
 
 	/**
 	 * The table to read from.
@@ -139,7 +139,7 @@ public class XmlExportReader implements ResultSetReader {
 	 * @param datePattern pattern for dates
 	 * @param timestampPattern pattern for time-stamps
 	 */
-	public XmlExportReader(OutputStream out, String commentHeader,
+	public XmlExportTransformer(OutputStream out, String commentHeader,
 			EntityGraph entityGraph, Set<Table> totalProgress, Set<Table> cyclicAggregatedTables,
 			String rootTag, String datePattern, String timestampPattern) throws TransformerConfigurationException, SAXException {
 		this.xmlRowWriter = new XmlRowWriter(out, commentHeader, rootTag, datePattern, timestampPattern);

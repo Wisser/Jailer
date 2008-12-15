@@ -459,7 +459,7 @@ public class ClosureView extends javax.swing.JDialog {
 
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        tableSelection = new javax.swing.JComboBox();
+        tableSelection = new net.sf.jailer.ui.JComboBox();
         jScrollPane1 = new javax.swing.JScrollPane();
         closureTable = new javax.swing.JTable();
         jLabel2 = new javax.swing.JLabel();

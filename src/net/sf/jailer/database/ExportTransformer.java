@@ -48,7 +48,7 @@ import net.sf.jailer.util.SqlUtil;
  * 
  * @author Ralf Wisser
  */
-public class ExportReader implements ResultSetReader {
+public class ExportTransformer implements ResultSetReader {
 
     /**
      * The table to read from.
@@ -143,7 +143,7 @@ public class ExportReader implements ResultSetReader {
      * @param maxBodySize maximum length of SQL values list (for generated inserts)
      * @param upsertOnly use 'upsert' statements for all entities
      */
-    public ExportReader(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, DatabaseMetaData metaData) throws SQLException {
+    public ExportTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, DatabaseMetaData metaData) throws SQLException {
         this.maxBodySize = maxBodySize;
         this.upsertOnly = upsertOnly;
         this.table = table;

@@ -168,7 +168,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jComboBox1 = new javax.swing.JComboBox();
+        jComboBox1 = new net.sf.jailer.ui.JComboBox();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();

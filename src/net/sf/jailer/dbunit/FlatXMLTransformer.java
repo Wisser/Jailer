@@ -26,7 +26,7 @@ import java.util.Map;
 
 import javax.xml.transform.sax.TransformerHandler;
 
-import net.sf.jailer.database.ExportReader;
+import net.sf.jailer.database.ExportTransformer;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.datamodel.Table;
@@ -36,13 +36,13 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 /**
- * Reads a JDBC result set and writes the read rows into a DbUnit flat XML
- * dataset document.
+ * Reads a JDBC result set and writes the read rows into a 
+ * DbUnit flat XML dataset document.
  * 
  * @see http://www.dbunit.org/
  * @author Ralf Wisser
  */
-public class FlatXMLWriter implements ResultSetReader {
+public class FlatXMLTransformer implements ResultSetReader {
 
 	/**
 	 * The table to read from.
@@ -85,7 +85,7 @@ public class FlatXMLWriter implements ResultSetReader {
 	 * @param metaData
 	 *            database meta data
 	 */
-	public FlatXMLWriter(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData) throws SQLException {
+	public FlatXMLTransformer(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData) throws SQLException {
 		this.table = table;
 		this.transformerHandler = transformerHandler;
 		this.rowElementName = table.getUnqualifiedName();
@@ -119,7 +119,7 @@ public class FlatXMLWriter implements ResultSetReader {
 				transformerHandler.startElement("", "", rowElementName, attr);
 				transformerHandler.endElement("", "", rowElementName);
 			}
-			++ExportReader.numberOfExportedEntities; // TODO: refactoring of
+			++ExportTransformer.numberOfExportedEntities; // TODO: refactoring of
 														// entity counting
 
 		} catch (SAXException e) {

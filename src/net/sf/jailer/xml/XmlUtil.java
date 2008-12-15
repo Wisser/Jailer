@@ -18,15 +18,20 @@ package net.sf.jailer.xml;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.nio.charset.Charset;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
+import javax.xml.transform.sax.SAXTransformerFactory;
+import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import org.w3c.dom.Attr;
@@ -193,6 +198,36 @@ public class XmlUtil {
 				visitor.visitElementEnd(e.getTagName(), nodeIsRoot);
 			}
 		}
+	}
+	
+	/**
+	 * Creates a {@link TransformerHandler}.
+	 * 
+	 * @param commentHeader the comment header
+	 * @param rootTag the root tag
+	 * @param streamResult stream result
+	 */
+	public static TransformerHandler createTransformerHandler(String commentHeader, String rootTag,
+			StreamResult streamResult)
+			throws TransformerFactoryConfigurationError,
+			TransformerConfigurationException, SAXException {
+		SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
+        try {
+        	tf.setAttribute("indent-number", new Integer(2));
+        } catch (Exception e) {
+        	// ignore, workaround for JDK 1.5 bug, see http://forum.java.sun.com/thread.jspa?threadID=562510
+        }
+        TransformerHandler transformerHandler = tf.newTransformerHandler();
+        Transformer serializer = transformerHandler.getTransformer();
+        serializer.setOutputProperty(OutputKeys.ENCODING, Charset.defaultCharset().name());
+        serializer.setOutputProperty(OutputKeys.METHOD, "xml");
+        serializer.setOutputProperty(OutputKeys.INDENT, "yes");
+        transformerHandler.setResult(streamResult);
+        transformerHandler.startDocument();
+        commentHeader = ("\n" + commentHeader).replaceAll("\\n--", "\n ");
+        transformerHandler.comment(commentHeader.toCharArray(), 0, commentHeader.toCharArray().length);
+        transformerHandler.startElement("", "", rootTag, null);
+        return transformerHandler;
 	}
 
 }

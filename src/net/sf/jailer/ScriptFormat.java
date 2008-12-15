@@ -28,15 +28,15 @@ public enum ScriptFormat {
 	SQL("SQL", "SQL Export", ".sql"),
 
 	/**
-	 * DbUnit's FlatXmlDataSet format.
-	 */
-	DBUNIT_FLAT_XML("DbUnit flat dataset", "DbUnit flat dataset Export", ".xml"),
-
-	/**
 	 * Template based XML.
 	 */
-	XML("XML", "XML Export", ".xml");
+	XML("XML", "XML Export", ".xml"),
 	
+	/**
+	 * DbUnit's FlatXmlDataSet format.
+	 */
+	DBUNIT_FLAT_XML("DbUnit flat dataset", "DbUnit flat dataset Export", ".xml");
+
 	/**
 	 * Constructor.
 	 * 

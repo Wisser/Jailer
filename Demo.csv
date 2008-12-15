@@ -1,5 +1,5 @@
 # subject; condition;  limit; restrictions
-EMPLOYEE; T.NAME='SCOTT'; ; .embedded
+EMPLOYEE; ; ; .embedded
 
 # from A (or association name); to B; restriction-condition
 inverse-DEPARTMENT; ; ignore
@@ -38,4 +38,4 @@ PROJECT_PARTICIPATION; <?xml version="1.0" encoding="UTF-8" standalone="no"?>\n<
 DEPARTMENT; <?xml version="1.0" encoding="UTF-8" standalone="no"?>\n<department xmlns:j="http://jailer.sf.net/" deptno="SQL:T.DEPTNO">\n    <!--columns of DEPARTMENT as T-->\n    <name>SQL:T.NAME</name>\n    <location>SQL:T.LOCATION</location>\n</department>
 
 #! block version
-2.4.0
+2.7.0
