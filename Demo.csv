@@ -1,5 +1,5 @@
 # subject; condition;  limit; restrictions
-EMPLOYEE; ; ; .embedded
+EMPLOYEE; T.NAME='SCOTT'; ; .embedded
 
 # from A (or association name); to B; restriction-condition
 inverse-DEPARTMENT; ; ignore
