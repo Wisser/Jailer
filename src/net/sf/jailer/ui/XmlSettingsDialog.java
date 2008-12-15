@@ -175,8 +175,8 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        datePattern = new javax.swing.JComboBox();
-        timestampPattern = new javax.swing.JComboBox();
+        datePattern = new net.sf.jailer.ui.JComboBox();
+        timestampPattern = new net.sf.jailer.ui.JComboBox();
         rootTag = new javax.swing.JTextField();
         dateExample = new javax.swing.JLabel();
         timestampExample = new javax.swing.JLabel();

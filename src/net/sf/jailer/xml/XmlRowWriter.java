@@ -27,11 +27,7 @@ import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
@@ -72,16 +68,6 @@ public class XmlRowWriter {
 	final SimpleDateFormat timestampPattern;
 
 	/**
-	 * Names of columns per table.
-	 */
-	private final Map<Table, String[]> columnNames = new HashMap<Table, String[]>();
-
-	/**
-	 * Type caches per table.
-	 */
-	private final Map<Table, Map<Integer, Integer>> typeCaches = new HashMap<Table, Map<Integer,Integer>>();
-	
-	/**
 	 * Type caches per table (String key).
 	 */
 	private final Map<Table, Map<String, Integer>> typeCachesForStringKey = new HashMap<Table, Map<String,Integer>>();
@@ -100,22 +86,7 @@ public class XmlRowWriter {
 		this.datePattern = new SimpleDateFormat(datePattern);
 		this.timestampPattern = new SimpleDateFormat(timestampPattern);
 		StreamResult streamResult = new StreamResult(new OutputStreamWriter(out, Charset.defaultCharset()));
-        SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
-        try {
-        	tf.setAttribute("indent-number", new Integer(2));
-        } catch (Exception e) {
-        	// ignore, workaround for JDK 1.5 bug, see http://forum.java.sun.com/thread.jspa?threadID=562510
-        }
-        transformerHandler = tf.newTransformerHandler();
-        Transformer serializer = transformerHandler.getTransformer();
-        serializer.setOutputProperty(OutputKeys.ENCODING, Charset.defaultCharset().name());
-        serializer.setOutputProperty(OutputKeys.METHOD, "xml");
-        serializer.setOutputProperty(OutputKeys.INDENT, "yes");
-        transformerHandler.setResult(streamResult);
-        transformerHandler.startDocument();
-        commentHeader = ("\n" + commentHeader).replaceAll("\\n--", "\n ");
-        transformerHandler.comment(commentHeader.toCharArray(), 0, commentHeader.toCharArray().length);
-        transformerHandler.startElement("", "", rootTag, null);
+		transformerHandler = XmlUtil.createTransformerHandler(commentHeader, rootTag, streamResult);
 	}
 
 	/**

@@ -38,15 +38,11 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
-import javax.xml.transform.OutputKeys;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
-import net.sf.jailer.database.DeletionReader;
-import net.sf.jailer.database.ExportReader;
+import net.sf.jailer.database.DeletionTransformer;
+import net.sf.jailer.database.ExportTransformer;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.database.StatisticRenovator;
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
@@ -56,7 +52,7 @@ import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.dbunit.FlatXMLWriter;
+import net.sf.jailer.dbunit.FlatXMLTransformer;
 import net.sf.jailer.domainmodel.DomainModel;
 import net.sf.jailer.enhancer.ScriptEnhancer;
 import net.sf.jailer.entitygraph.EntityGraph;
@@ -69,7 +65,8 @@ import net.sf.jailer.util.JobManager;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.SqlScriptExecutor;
 import net.sf.jailer.util.SqlUtil;
-import net.sf.jailer.xml.XmlExportReader;
+import net.sf.jailer.xml.XmlExportTransformer;
+import net.sf.jailer.xml.XmlUtil;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
@@ -222,7 +219,7 @@ public class Jailer {
         _log.info("export statistic:");
         boolean firstLine = true;
         for (String line: entityGraph.getStatistics(datamodel)) {
-            String l = (firstLine ? "Exported Entities: " : "    ") + line;
+            String l = (firstLine ? "Exported Rows:     " : "    ") + line;
             _log.info(l);
             appendCommentHeader(l);
 			if (firstLine) {
@@ -445,12 +442,12 @@ public class Jailer {
 			throws SQLException {
 		if (scriptType == ScriptType.INSERT) {
 			if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
-				return new FlatXMLWriter(table, transformerHandler, entityGraph.statementExecutor.getMetaData());
+				return new FlatXMLTransformer(table, transformerHandler, entityGraph.statementExecutor.getMetaData());
 			} else {
-				return new ExportReader(table, outputWriter, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities, entityGraph.statementExecutor.getMetaData());
+				return new ExportTransformer(table, outputWriter, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities, entityGraph.statementExecutor.getMetaData());
 			}
 		} else {
-       		return new DeletionReader(table, outputWriter, CommandLineParser.getInstance().numberOfEntities, entityGraph.statementExecutor.getMetaData());
+       		return new DeletionTransformer(table, outputWriter, CommandLineParser.getInstance().numberOfEntities, entityGraph.statementExecutor.getMetaData());
 		}
 	}
     
@@ -471,22 +468,7 @@ public class Jailer {
         OutputStreamWriter result = null;
         if (scriptType == ScriptType.INSERT && ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
         	StreamResult streamResult = new StreamResult(new OutputStreamWriter(outputStream, Charset.defaultCharset()));
-            SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
-            try {
-            	tf.setAttribute("indent-number", new Integer(2));
-            } catch (Exception e) {
-            	// ignore, workaround for JDK 1.5 bug, see http://forum.java.sun.com/thread.jspa?threadID=562510
-            }
-            transformerHandler = tf.newTransformerHandler();
-            Transformer serializer = transformerHandler.getTransformer();
-            serializer.setOutputProperty(OutputKeys.ENCODING, Charset.defaultCharset().name());
-            serializer.setOutputProperty(OutputKeys.METHOD, "xml");
-            serializer.setOutputProperty(OutputKeys.INDENT, "yes");
-            transformerHandler.setResult(streamResult);
-            transformerHandler.startDocument();
-            String ch = ("\n" + commentHeader).replaceAll("\\n--", "\n ");
-            transformerHandler.comment(ch.toCharArray(), 0, ch.toCharArray().length);
-            transformerHandler.startElement("", "", "dataset", null);
+            transformerHandler = XmlUtil.createTransformerHandler(commentHeader.toString(), "dataset", streamResult);
         } else {
         	result = new OutputStreamWriter(outputStream);
 	        result.append(commentHeader);
@@ -632,7 +614,7 @@ public class Jailer {
         Set<Table> cyclicAggregatedTables = getCyclicAggregatedTables(progress);
 		_log.info("cyclic aggregated tables: " + PrintUtil.tableSetAsString(cyclicAggregatedTables));
         
-		XmlExportReader reader = new XmlExportReader(outputStream, commentHeader.toString(), entityGraph, progress, cyclicAggregatedTables, 
+		XmlExportTransformer reader = new XmlExportTransformer(outputStream, commentHeader.toString(), entityGraph, progress, cyclicAggregatedTables, 
         		CommandLineParser.getInstance().xmlRootTag,
         		CommandLineParser.getInstance().xmlDatePattern,
         		CommandLineParser.getInstance().xmlTimeStampPattern);
@@ -943,7 +925,7 @@ public class Jailer {
         entityGraph.setExplain(explain);
         final Jailer jailer = new Jailer(threads);
         
-        jailer.appendCommentHeader("generated by Jailer at " + new Date() + " from " + getUsername());
+        jailer.appendCommentHeader("generated by Jailer, " + new Date() + " from " + getUsername());
         Set<Table> totalProgress = new HashSet<Table>();
         Set<Table> subjects = new HashSet<Table>();
         boolean firstTask = true;
@@ -954,9 +936,13 @@ public class Jailer {
         	}
         	
             jailer.appendCommentHeader("");
-            jailer.appendCommentHeader("extraction model:  " + task.subject.getName() + " where " + task.condition + " (" + extractionModelFileName + ")");
-            jailer.appendCommentHeader("database URL:      " + dbUrl);
-            jailer.appendCommentHeader("database user:     " + dbUser);
+            String condition = (task.condition != null && !"1=1".equals(task.condition))?
+            		task.subject.getName() + " where " + task.condition
+            		:
+            		"all rows from " + task.subject.getName();
+			jailer.appendCommentHeader("Extraction Model:  " + condition + " (" + extractionModelFileName + ")");
+            jailer.appendCommentHeader("Database URL:      " + dbUrl);
+            jailer.appendCommentHeader("Database User:     " + dbUser);
         
             EntityGraph graph = firstTask? entityGraph : EntityGraph.create(EntityGraph.createUniqueGraphID(), statementExecutor, task.dataModel.getUniversalPrimaryKey(statementExecutor));
             jailer.setEntityGraph(graph);

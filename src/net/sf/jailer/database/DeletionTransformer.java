@@ -36,7 +36,7 @@ import net.sf.jailer.util.SqlUtil;
  * 
  * @author Ralf Wisser
  */
-public class DeletionReader implements ResultSetReader {
+public class DeletionTransformer implements ResultSetReader {
 
     /**
      * The table to read from.
@@ -70,7 +70,7 @@ public class DeletionReader implements ResultSetReader {
      * @param scriptFileWriter the file to write to
      * @param maxBodySize maximum length of SQL values list (for generated deletes)
      */
-    public DeletionReader(Table table, OutputStreamWriter scriptFileWriter, int maxBodySize, DatabaseMetaData metaData) throws SQLException {
+    public DeletionTransformer(Table table, OutputStreamWriter scriptFileWriter, int maxBodySize, DatabaseMetaData metaData) throws SQLException {
         this.table = table;
         this.scriptFileWriter = scriptFileWriter;
         deleteStatementBuilder = new StatementBuilder(maxBodySize);
