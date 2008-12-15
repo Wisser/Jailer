@@ -1,3 +1,6 @@
+2.7.0
+ - support for DbUnit flat dataset format
+
 2.6.1
  - support for PostgreSQL types BOOL, BIT, BIT(n), BIT VARYING and unbounded VARCHAR
 
