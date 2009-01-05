@@ -82,8 +82,13 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         String defaultSchema = getDefaultSchema(statementExecutor, statementExecutor.dbUser);
          
         for (Table table: dataModel.getTables()) {
-        	resultSet = metaData.getExportedKeys(null, quoting.unquote(table.getSchema(quoting.quote(defaultSchema))), quoting.unquote(table.getUnqualifiedName()));
             _log.info("find associations with " + table.getName());
+        	try {
+        		resultSet = metaData.getExportedKeys(null, quoting.unquote(table.getSchema(quoting.quote(defaultSchema))), quoting.unquote(table.getUnqualifiedName()));
+        	} catch (Exception e) {
+        		_log.info("failed. " + e.getMessage());
+            	continue;
+        	}
             Map<String, Association> fkMap = new HashMap<String, Association>();
             while (resultSet.next()) {
                 Table pkTable = dataModel.getTable(toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(2)), quoting.quote(resultSet.getString(3))));

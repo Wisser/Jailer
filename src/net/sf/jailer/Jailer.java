@@ -86,7 +86,7 @@ public class Jailer {
     /**
      * The Jailer version.
      */
-    public static final String VERSION = "2.7.0";
+    public static final String VERSION = "2.7.1a";
     
     /**
      * The relational data model.
