@@ -29,8 +29,8 @@ CREATE TABLE JAILER_ENTITY
    type            VARCHAR(60) NOT NULL,
 
    {1},
-   PRE_TYPE        VARCHAR(60),
-   association     INTEGER,
+   PRE_TYPE        VARCHAR(60){8},
+   association     INTEGER{8},
 
    CONSTRAINT jlr_pk_entity PRIMARY KEY(r_entitygraph, {4}, type),
    CONSTRAINT jlr_fk_graph_e FOREIGN KEY (r_entitygraph) REFERENCES JAILER_GRAPH(id)
@@ -52,7 +52,7 @@ CREATE TABLE JAILER_DEPENDENCY
    r_entitygraph   INTEGER NOT NULL,
    assoc           INTEGER NOT NULL,
    depend_id       INTEGER NOT NULL,
-   traversed       INTEGER,
+   traversed       INTEGER{8},
    from_type       VARCHAR(60) NOT NULL,
    to_type         VARCHAR(60) NOT NULL,
    {2},
