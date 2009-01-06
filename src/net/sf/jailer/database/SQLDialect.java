@@ -241,12 +241,14 @@ public class SQLDialect {
 			
 			for (SQLDialect sqlDialect: sqlDialects) {
 				boolean ok = true;
-				try {
-					String values = sqlDialect.needsValuesKeywordForDeletes? "values " : "";
-					statementExecutor.execute("DELETE FROM " + TMP_TABLE + " where (c1, c2) IN (" + values + "(1,2), (3,4))");
-				} catch (Exception e) {
-					ok = false;
-					_sqllog.info(e.getMessage());
+				if (statementExecutor.dbms != DBMS.SYBASE) {
+					try {
+						String values = sqlDialect.needsValuesKeywordForDeletes? "values " : "";
+						statementExecutor.execute("DELETE FROM " + TMP_TABLE + " where (c1, c2) IN (" + values + "(1,2), (3,4))");
+					} catch (Exception e) {
+						ok = false;
+						_sqllog.info(e.getMessage());
+					}
 				}
 				if (!ok) {
 					continue;

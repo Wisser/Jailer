@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.datamodel.Association;
@@ -127,8 +128,8 @@ public class EntityGraph {
     public static EntityGraph copy(EntityGraph graph, int graphID, StatementExecutor statementExecutor) throws SQLException {
         EntityGraph entityGraph = create(graphID, statementExecutor, graph.universalPrimaryKey);
         statementExecutor.executeUpdate(
-                "Insert into " + ENTITY + "(R_ENTITYGRAPH, " + graph.universalPrimaryKey.columnList(null) + ", BIRTHDAY, TYPE) " +
-                    "Select " + graphID + ", " + graph.universalPrimaryKey.columnList(null) + ", BIRTHDAY, TYPE From " + ENTITY + " Where r_entitygraph=" + graph.graphID + "");
+                "Insert into " + ENTITY + "(r_entitygraph, " + graph.universalPrimaryKey.columnList(null) + ", birthday, type) " +
+                    "Select " + graphID + ", " + graph.universalPrimaryKey.columnList(null) + ", birthday, type From " + ENTITY + " Where r_entitygraph=" + graph.graphID + "");
         return entityGraph;
     }
 
@@ -312,7 +313,7 @@ public class EntityGraph {
                      "Group by GRAPH_ID, " + universalPrimaryKey.columnList(null) + ", TODAY, TYPE, ASSOCIATION";
         }
         
-        String insert = "Insert into " + ENTITY + " (r_entitygraph, " + universalPrimaryKey.columnList(null) + ", birthday, type" + (source == null || !explain? "" : ", association, pre_type, " + universalPrimaryKey.columnList("PRE_"))  + ") " + select;
+        String insert = "Insert into " + ENTITY + " (r_entitygraph, " + universalPrimaryKey.columnList(null) + ", birthday, type" + (source == null || !explain? "" : ", association, PRE_TYPE, " + universalPrimaryKey.columnList("PRE_"))  + ") " + select;
         long rc = statementExecutor.executeUpdate(insert);
         totalRowcount += rc;
         return rc;
@@ -374,14 +375,14 @@ public class EntityGraph {
             if (fromEqualsPK.length() > 0) {
                 fromEqualsPK.append(" and ");
             }
-            fromEqualsPK.append("D.FROM_" + column.name + "=" + column.name);
+            fromEqualsPK.append("D.FROM_" + column.name + "=" + ENTITY + "." + column.name);
         }
         statementExecutor.executeUpdate(
                 "Update " + ENTITY + " set birthday=0 " +
                 "Where r_entitygraph=" + graphID + " and birthday>0 and " +
                 	   (table != null? "type='" + table.getName() + "' and " : "") +
                        "not exists (Select * from " + DEPENDENCY + " D " +
-                           "Where D.r_entitygraph=" +graphID + " and assoc=0 and D.from_type=type and " +
+                           "Where D.r_entitygraph=" + graphID + " and D.assoc=0 and D.from_type=" + ENTITY + ".type and " +
                                  fromEqualsPK + ")");
     }
 
@@ -394,13 +395,13 @@ public class EntityGraph {
             if (toEqualsPK.length() > 0) {
                 toEqualsPK.append(" and ");
             }
-            toEqualsPK.append("D.TO_" + column.name + "=" + column.name);
+            toEqualsPK.append("D.TO_" + column.name + "=" + ENTITY + "." + column.name);
         }
         statementExecutor.executeUpdate(
                 "Update " + ENTITY + " set birthday=0 " +
                 "Where r_entitygraph=" + graphID + " and birthday>0 and " +
                        "not exists (Select * from " + DEPENDENCY + " D " +
-                           "Where D.r_entitygraph=" +graphID + " and D.to_type=type and " +
+                           "Where D.r_entitygraph=" +graphID + " and D.to_type=" + ENTITY + ".type and " +
                                  toEqualsPK + ")");
     }
 
@@ -604,10 +605,10 @@ public class EntityGraph {
      */
     public void readDependentEntities(Table table, Association association, ResultSet resultSet, ResultSetReader reader, Map<String, Integer> typeCache, String selectionSchema) throws SQLException {
     	String select = "Select " + selectionSchema + " from " + table.getName() + " T join " + DEPENDENCY + " D on " +
-    		 pkEqualsEntityID(table, "T", "D", "TO_") + " and D.TO_TYPE='" + table.getName() + "'" +
+    		 pkEqualsEntityID(table, "T", "D", "TO_") + " and D.to_type='" + table.getName() + "'" +
     		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", typeCache) +
-    	     " and D.FROM_TYPE='" + association.source.getName() + "' and assoc=" + association.getId() +
-    	     " and D.R_ENTITYGRAPH=" + graphID;
+    	     " and D.from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
+    	     " and D.r_entitygraph=" + graphID;
     	statementExecutor.executeQuery(select, reader);
     }
     
@@ -619,10 +620,18 @@ public class EntityGraph {
      * @param resultSet current row is given entity
      */
     public void markDependentEntitiesAsTraversed(Association association, ResultSet resultSet, Map<String, Integer> typeCache) throws SQLException {
-    	String update = "Update " + DEPENDENCY + " D set traversed=1" +
+    	String update;
+    	if (statementExecutor.dbms == DBMS.SYBASE) {
+    		update = "Update " + DEPENDENCY + " set traversed=1" +
+    		 " Where " + pkEqualsEntityID(association.source, resultSet, DEPENDENCY, "FROM_", typeCache) +
+    		 " and " + DEPENDENCY + ".from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
+    		 " and " + DEPENDENCY + ".r_entitygraph=" + graphID;
+    	} else {
+    		update = "Update " + DEPENDENCY + " D set traversed=1" +
     		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", typeCache) +
-    	     " and D.FROM_TYPE='" + association.source.getName() + "' and assoc=" + association.getId() +
-    	     " and D.R_ENTITYGRAPH=" + graphID;
+    	     " and D.from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
+    	     " and D.r_entitygraph=" + graphID;
+    	}
     	statementExecutor.executeUpdate(update);
     }
     
@@ -635,8 +644,8 @@ public class EntityGraph {
     public void readNonTraversedDependencies(Table table, ResultSetReader reader) throws SQLException {
     	String select = "Select * from " + DEPENDENCY + " D " +
     		 " Where (traversed is null or traversed <> 1)" +
-    	     " and D.FROM_TYPE='" + table.getName() + "'" +
-    	     " and D.R_ENTITYGRAPH=" + graphID;
+    	     " and D.from_type='" + table.getName() + "'" +
+    	     " and D.r_entitygraph=" + graphID;
     	statementExecutor.executeQuery(select, reader);
     }
     

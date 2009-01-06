@@ -257,7 +257,7 @@ public class UIUtil {
 		                    } else {
 		                    	outputView.finish(result[0] && exp[0] == null);
 		                        if (result[0] && warnings.length() > 0) {
-		                        	JOptionPane.showMessageDialog(outputView, warnings.toString(), "Warning", JOptionPane.INFORMATION_MESSAGE);
+		                        	JOptionPane.showMessageDialog(outputView, warnings.length() > 800? warnings.substring(0, 800) + "..." : warnings.toString(), "Warning", JOptionPane.INFORMATION_MESSAGE);
 		                        }
 		                    }
 		            	}

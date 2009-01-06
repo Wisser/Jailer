@@ -201,7 +201,14 @@ public class StatementExecutor {
                     con = DriverManager.getConnection(dbUrl, user, password);
                     con.setAutoCommit(true);
                     try {
-                        con.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+                    	DatabaseMetaData meta = con.getMetaData();
+                		String productName = meta.getDatabaseProductName();
+                		if (productName != null) {
+                			if (!productName.toUpperCase().contains("ADAPTIVE SERVER")) {
+                				// Sybase don't handle UR level correctly, see http://docs.sun.com/app/docs/doc/819-4728/gawlc?a=view
+                			    con.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+                      		}
+                		}
                     } catch (SQLException e) {
                         _log.info("can't set isolation level to UR. Reason: " + e.getMessage());
                     }
@@ -245,6 +252,7 @@ public class StatementExecutor {
 				if (productName.toUpperCase().contains("ORACLE")) dbms = DBMS.ORACLE;
 				if (productName.toUpperCase().contains("DB2")) dbms = DBMS.DB2;
 				if (productName.toUpperCase().contains("POSTGRES")) dbms = DBMS.POSTGRESQL;
+				if (productName.toUpperCase().contains("ADAPTIVE SERVER")) dbms = DBMS.SYBASE;
 			}
 			_log.info("DB name:        " + productName + " (" + dbms + ")");
 			_log.info("DB version:     " + meta.getDatabaseProductVersion());

@@ -20,6 +20,7 @@ import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.datamodel.DataModel;
@@ -39,25 +40,29 @@ public class DDLCreator {
      */
     public static boolean createDDL(String driverClass, String dbUrl, String user, String password) throws Exception {
         DataModel dataModel = new DataModel();
+        StatementExecutor statementExecutor = null;
+        if (driverClass != null) {
+        	statementExecutor = new StatementExecutor(driverClass, dbUrl, user, password);
+        }
         
         String template = "script/ddl-template.sql";
         String universalPrimaryKey = dataModel.getUniversalPrimaryKey().toSQL(null);
 		Object[] arguments = new Object[] { 
                 universalPrimaryKey,
-                dataModel.getUniversalPrimaryKey().toSQL("PRE_", false),
+                dataModel.getUniversalPrimaryKey().toSQL("PRE_", statementExecutor.dbms == DBMS.SYBASE? " NULL" : ""),
                 dataModel.getUniversalPrimaryKey().toSQL("FROM_"),
                 dataModel.getUniversalPrimaryKey().toSQL("TO_"),
                 dataModel.getUniversalPrimaryKey().columnList(null),
                 dataModel.getUniversalPrimaryKey().columnList("FROM_"),
                 dataModel.getUniversalPrimaryKey().columnList("TO_"),
-                Jailer.VERSION
+                Jailer.VERSION,
+                statementExecutor.dbms == DBMS.SYBASE? " NULL" : ""
             };
         String ddl = PrintUtil.applyTemplate(template, arguments);
         
         System.out.println(ddl);
         
-        if (driverClass != null) {
-        	StatementExecutor statementExecutor = new StatementExecutor(driverClass, dbUrl, user, password);
+        if (statementExecutor != null) {
         	try {
         		File tmp = new File("jailer_ddl.sql");
         		PrintWriter pw = new PrintWriter(tmp);
