@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.util;
 
+import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
@@ -68,6 +69,17 @@ public class Quoting {
 		if (quoteString != null
 				&& (quoteString.equals(" ") || quoteString.equals(""))) {
 			quoteString = null;
+		}
+		try {
+			String productName = metaData.getDatabaseProductName();
+    		if (productName != null) {
+    			if (productName.toUpperCase().contains("ADAPTIVE SERVER")) {
+    				// Sybase don't handle quoting correctly
+    				quoteString = null;
+          		}
+    		}
+		} catch (Exception e) {
+			// ignore
 		}
 		quote = quoteString;
 		unquotedIdentifierInUpperCase = metaData.storesUpperCaseIdentifiers();

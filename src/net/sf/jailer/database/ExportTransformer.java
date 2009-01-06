@@ -242,12 +242,14 @@ public class ExportTransformer implements ResultSetReader {
                 f = true;
                 StringBuffer whereForTerminator = new StringBuffer("");
                 StringBuffer where = new StringBuffer("");
+                StringBuffer whereWOAlias = new StringBuffer("");
                 
                 // assemble 'where' for sub-select and update
                 for (Column pk: table.primaryKey.getColumns()) {
                     if (!f) {
                         whereForTerminator.append(" and ");
                         where.append(" and ");
+                        whereWOAlias.append(" and ");
                     }
                     f = false;
                     whereForTerminator.append("T." + pk.name + "=Q." + pk.name);
@@ -260,6 +262,7 @@ public class ExportTransformer implements ResultSetReader {
                     	value = val.get(pk.name.toUpperCase());
                     }
                     where.append("T." + pk.name + "=" + value);
+                    whereWOAlias.append(pk.name + "=" + value);
                 }
 
                 if (SQLDialect.currentDialect.upsertMode == UPSERT_MODE.ORACLE && !tableHasLobs) {
@@ -351,7 +354,7 @@ public class ExportTransformer implements ResultSetReader {
                 
                 if (SQLDialect.currentDialect.upsertMode != UPSERT_MODE.ORACLE || tableHasLobs) {
 	                StringBuffer insert = new StringBuffer("");
-	                insert.append("Update " + qualifiedTableName(table) + " T set ");
+	                insert.append("Update " + qualifiedTableName(table) + " set ");
 	                f = true;
 	                for (int i = 1; i <= columnCount; ++i) {
 	                    if (columnLabel[i] == null || (emptyLobValue[i] != null && !"null".equals(val.get(columnLabel[i])))) {
@@ -367,7 +370,7 @@ public class ExportTransformer implements ResultSetReader {
 	                    insert.append(columnLabel[i] + "=" + val.get(columnLabel[i]));
 	                }
 	                if (!f) {
-	                	insert.append(" Where " + where + ";\n");
+	                	insert.append(" Where " + whereWOAlias + ";\n");
 	                    writeToScriptFile(insert.toString());
 	                }
                 }

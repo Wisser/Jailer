@@ -84,30 +84,41 @@ public class DeletionTransformer implements ResultSetReader {
      */
     public void readCurrentRow(ResultSet resultSet) throws SQLException {
         try {
-            String deleteHead;
-            String item;
-            if (table.primaryKey.getColumns().size() == 1) {
-                deleteHead = "Delete from " + table.getName() + " Where " + table.primaryKey.getColumns().get(0).name + " in (";
-                item = SqlUtil.toSql(SqlUtil.getObject(resultSet, quoting.unquote(table.primaryKey.getColumns().get(0).name), typeCache));
-            } else {
-                deleteHead = "Delete from " + table.getName() + " Where (";
-                item = "(";
+        	if (SqlUtil.dbms == DBMS.SYBASE) {
+        		String delete = "Delete from " + table.getName() + " Where ";
                 boolean firstTime = true;
                 for (Column pkColumn: table.primaryKey.getColumns()) {
-                    deleteHead += (firstTime? "" : ", ") + pkColumn.name;
-                    item += (firstTime? "" : ", ") + SqlUtil.toSql(SqlUtil.getObject(resultSet, quoting.unquote(pkColumn.name), typeCache));
+                	delete += (firstTime? "" : " and ") + pkColumn.name + "="
+                    		+ SqlUtil.toSql(SqlUtil.getObject(resultSet, quoting.unquote(pkColumn.name), typeCache));
                     firstTime = false;
                 }
-                item += ")";
-                deleteHead += ") in (";
-                if (SQLDialect.currentDialect.needsValuesKeywordForDeletes) {
-                	deleteHead += "values ";
-                }
-            }
-            if (!deleteStatementBuilder.isAppendable(deleteHead, item)) {
-                writeToScriptFile(deleteStatementBuilder.build());
-            }
-            deleteStatementBuilder.append(deleteHead, item, ", ", ");\n");
+                writeToScriptFile(delete + "\n");
+        	} else {
+	            String deleteHead;
+	            String item;
+	            if (table.primaryKey.getColumns().size() == 1) {
+	                deleteHead = "Delete from " + table.getName() + " Where " + table.primaryKey.getColumns().get(0).name + " in (";
+	                item = SqlUtil.toSql(SqlUtil.getObject(resultSet, quoting.unquote(table.primaryKey.getColumns().get(0).name), typeCache));
+	            } else {
+	                deleteHead = "Delete from " + table.getName() + " Where (";
+	                item = "(";
+	                boolean firstTime = true;
+	                for (Column pkColumn: table.primaryKey.getColumns()) {
+	                    deleteHead += (firstTime? "" : ", ") + pkColumn.name;
+	                    item += (firstTime? "" : ", ") + SqlUtil.toSql(SqlUtil.getObject(resultSet, quoting.unquote(pkColumn.name), typeCache));
+	                    firstTime = false;
+	                }
+	                item += ")";
+	                deleteHead += ") in (";
+	                if (SQLDialect.currentDialect.needsValuesKeywordForDeletes) {
+	                	deleteHead += "values ";
+	                }
+	            }
+	            if (!deleteStatementBuilder.isAppendable(deleteHead, item)) {
+	                writeToScriptFile(deleteStatementBuilder.build());
+	            }
+	            deleteStatementBuilder.append(deleteHead, item, ", ", ");\n");
+        	}
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

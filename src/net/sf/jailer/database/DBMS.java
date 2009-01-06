@@ -26,6 +26,7 @@ public enum DBMS {
 	DB2,
 	MySQL,
 	POSTGRESQL,
-	UNKNOWN
+	SYBASE,
 	
+	UNKNOWN
 }

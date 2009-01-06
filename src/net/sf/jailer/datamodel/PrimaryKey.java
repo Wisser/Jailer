@@ -142,6 +142,22 @@ public class PrimaryKey {
     }
     
     /**
+     * Returns the primary key in SQL syntax.
+     * 
+     * @param columnPrefix an optional prefix for each PK-column
+     */
+    public String toSQL(String columnPrefix, String contraint) {
+        StringBuffer sb = new StringBuffer();
+        for (int i = 0; i < columns.size(); ++i) {
+            if (i > 0) {
+                sb.append(", ");
+            }
+            sb.append(columns.get(i).toSQL(columnPrefix) + " " + contraint);
+        }
+        return sb.toString();
+    }
+    
+    /**
      * Returns a string representation of the primary key.
      */ 
     public String toString() {
