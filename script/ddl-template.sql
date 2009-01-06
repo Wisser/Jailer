@@ -11,7 +11,7 @@ CREATE TABLE JAILER_CONFIG
    jvalue          VARCHAR(2000)
 );
 
-INSERT INTO JAILER_CONFIG(jversion, jkey, jvalue) values(null, ''magic'', ''837065098274756382534403654245288'');
+INSERT INTO JAILER_CONFIG(jversion, jkey, jvalue) values(''{7}'', ''magic'', ''837065098274756382534403654245288'');
 
 CREATE TABLE JAILER_GRAPH
 (
