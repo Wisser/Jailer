@@ -17,6 +17,7 @@ package net.sf.jailer.database;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
+import java.sql.Connection;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -187,7 +188,7 @@ public class SQLDialect {
 	 *            the primary key
 	 */
 	public static void guessDialect(PrimaryKey primaryKey,
-			StatementExecutor statementExecutor) {
+				StatementExecutor statementExecutor) {
 
 		treatDateAsTimestamp = false;
 		binaryPattern = "x'%s'";
@@ -209,12 +210,12 @@ public class SQLDialect {
 			}	
 		}
 		
+		statementExecutor.setSilent(true);
 		if (dialect != null) {
 			currentDialect = dialect;
 			log("SQL dialect is " + dialect.name);
 		} else {
 			log("begin guessing SQL dialect");
-			statementExecutor.setSilent(true);
 			
 			String drop = "DROP TABLE " + TMP_TABLE + "";
 			String create = "CREATE TABLE " + TMP_TABLE + "(c1 INTEGER, c2 INTEGER)";
@@ -303,10 +304,10 @@ public class SQLDialect {
 		// force date format guessing
 		guessDummyValues(new Column("C", "DATE", 0, -1), false, statementExecutor);
 		guessDummyValues(new Column("C", "TIMESTAMP", 0, -1), false, statementExecutor);
-		statementExecutor.setSilent(false);
 		emptyCLOBValue = guessEmptyLobValue("emptyCLOB", "clob", new String[] { "empty_clob()", "clob('')", "''" }, statementExecutor);
 		emptyBLOBValue = guessEmptyLobValue("emptyBLOB", "blob", new String[] { "empty_blob()", "blob('')", "''" }, statementExecutor);
 		log("end guessing PK-values");
+		statementExecutor.setSilent(false);
 	}
 
 	/**
