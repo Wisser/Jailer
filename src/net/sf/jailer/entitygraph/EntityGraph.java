@@ -704,8 +704,8 @@ public class EntityGraph {
             if (sb.length() > 0) {
                 sb.append(" and ");
             }
-            sb.append(entityAlias + "." + columnPrefix + column.name + "=");
             Column tableColumn = match.get(column);
+            sb.append(typeConvert(entityAlias + "." + columnPrefix + column.name, tableColumn) + "=");
             if (tableColumn != null) {
                 sb.append(tableAlias + "." + tableColumn.name);
             } else {
@@ -716,6 +716,18 @@ public class EntityGraph {
     }
 
     /**
+     * Converts expression to type of given column.
+     * 
+     * @param expr the expression to convert
+     * @param column the column
+     * @return converted expression
+     */
+    private String typeConvert(String expr, Column column) {
+    	if (SqlUtil.dbms != DBMS.SYBASE) return expr;
+		return "convert(" + column.toSQL(null).substring(column.name.length()).trim() + ", " + expr + ")";
+	}
+
+	/**
      * Gets PK-column list for a table.
      * 
      * @param table the table
