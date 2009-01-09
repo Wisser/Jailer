@@ -1,3 +1,7 @@
+2.7.1.beta
+ - Sybase compatibility fixes
+ - Support for MS SQL's uniqueidentifier type
+
 2.7.0
  - support for DbUnit flat dataset format
 
