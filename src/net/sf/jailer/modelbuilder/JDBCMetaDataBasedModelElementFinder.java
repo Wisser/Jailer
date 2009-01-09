@@ -201,6 +201,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 if (typesWithLength.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
                     length = resultSet.getInt(7);
                 }
+                if (sqlType != null && sqlType.equalsIgnoreCase("uniqueidentifier")) {
+                	length = 0;
+                }
                 if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR) {
                     precision = resultSet.getInt(9);
                     if (resultSet.wasNull() || precision == 0) {
@@ -347,6 +350,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
             }
             if (typesWithLength.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
                 length = resultSet.getInt(7);
+            }
+            if (sqlType != null && sqlType.equalsIgnoreCase("uniqueidentifier")) {
+            	length = 0;
             }
             if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR) {
                 precision = resultSet.getInt(9);
