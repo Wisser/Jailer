@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.xml;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -224,7 +225,11 @@ public class XmlUtil {
         serializer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformerHandler.setResult(streamResult);
         transformerHandler.startDocument();
-        commentHeader = ("\n" + commentHeader).replaceAll("\\n--", "\n ");
+        String newline = System.getProperty("line.separator");
+        if (newline == null) {
+        	newline = "\n";
+        }
+		commentHeader = (newline + commentHeader).replaceAll("\\n--", newline + " ");
         transformerHandler.comment(commentHeader.toCharArray(), 0, commentHeader.toCharArray().length);
         transformerHandler.startElement("", "", rootTag, null);
         return transformerHandler;
