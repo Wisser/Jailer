@@ -106,5 +106,11 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<constructor-arg value="jdbc:derby.*" />
 			<constructor-arg value="script/derby/update_statistics.sql" />
 		</bean>
+		
+		<!-- for Sybase -->
+		<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
+			<constructor-arg value="jdbc:sybase.*" />
+			<constructor-arg value="script/sybase/update_statistics.sql" />
+		</bean>
 	</util:list>
 </beans>
