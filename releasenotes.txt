@@ -1,4 +1,4 @@
-2.7.1.beta
+2.7.1
  - Sybase compatibility fixes
  - Support for MS SQL's uniqueidentifier type
 

@@ -86,7 +86,7 @@ public class Jailer {
     /**
      * The Jailer version.
      */
-    public static final String VERSION = "2.7.1.beta3";
+    public static final String VERSION = "2.7.1";
     
     /**
      * The relational data model.
@@ -310,7 +310,7 @@ public class Jailer {
 
                 JobManager.Job job = new JobManager.Job() {
                     public void run() throws Exception {
-                        runstats(entityGraph.statementExecutor);
+                        runstats(entityGraph.statementExecutor, false);
                         if (association.getJoinCondition() != null) {
                         	_log.info("resolving " + datamodel.getDisplayName(table) + " -> " + association.toString(0) + "...");
                         }
@@ -489,6 +489,7 @@ public class Jailer {
         // then write entities of tables having cyclic-dependencies
         _log.info("cyclic dependencies for: " + asString(dependentTables));
         addDependencies(dependentTables, false);
+        runstats(statementExecutor, true);
         
         final TransformerHandler fTransformerHandler = transformerHandler;
         final OutputStreamWriter fResult = result;
@@ -759,8 +760,8 @@ public class Jailer {
     /**
      * Runs script for updating the DB-statistics.
      */
-    private synchronized void runstats(StatementExecutor statementExecutor) throws Exception {
-        if (lastRunstats == 0 || (lastRunstats * 2 <= entityGraph.getTotalRowcount() && entityGraph.getTotalRowcount() > 1000)) {
+    private synchronized void runstats(StatementExecutor statementExecutor, boolean force) throws Exception {
+        if (force || lastRunstats == 0 || (lastRunstats * 2 <= entityGraph.getTotalRowcount() && entityGraph.getTotalRowcount() > 1000)) {
             lastRunstats = entityGraph.getTotalRowcount();
             if (applicationContext.containsBean("statistic-renovator")) {
                 List<StatisticRenovator> statisticRenovators = (List<StatisticRenovator>) applicationContext.getBean("statistic-renovator");  
@@ -947,7 +948,7 @@ public class Jailer {
             EntityGraph graph = firstTask? entityGraph : EntityGraph.create(EntityGraph.createUniqueGraphID(), statementExecutor, task.dataModel.getUniversalPrimaryKey(statementExecutor));
             jailer.setEntityGraph(graph);
             jailer.setDataModel(task.dataModel);
-            jailer.runstats(statementExecutor);
+            jailer.runstats(statementExecutor, false);
             Set<Table> progress = jailer.exportInitialData(task.subject);
             progress.addAll(jailer.export(task.subject, task.condition, progress, task.limit));
             totalProgress.addAll(progress);
