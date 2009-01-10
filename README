@@ -1,25 +1,23 @@
 Model-based Data Export Tool
 
-Extracts small consistent and referentially intact row-sets from your productive database 
-and imports the data into your development and test environment.
-Improves database performance by removing and archiving obsolete data without violating integrity.
+Jailer is a tool for model-based data exporting, schema browsing, and rendering. It exports consistent, referentially intact row-sets from relational databases. It removes obsolete data without violating integrity. It is DBMS agnostic (by using JDBC), platform independent, and generates DbUnit datasets, hierarchically structured XML, and topologically sorted SQL-DML.
+
 
 Features
-========
 
-    * Exports consistent and referentially intact row-sets from your productive database and imports the data into your development and test environment.
+    * Exports consistent and referentially intact row-sets from your productive database 
+      and imports the data into your development and test environment.
     * Improves database performance by removing and archiving obsolete data without violating integrity.
-    * Mass data export to XML and SQL.
-    * Generates hierarchically structured XML and topologically sorted SQL-DML.
+    * Generates hierarchically structured XML, topologically sorted SQL-DML and DbUnit datasets.
     * Open Source. Entirely written in Java. Platform independent. DBMS agnostic.
 
 
 Installation
 ============
 
-Unpack the file jailer_2.4.0.zip. You will get the following files:
-$unzip jailer_2.4.0.zip
-$cd jailer_2.4.0
+Unpack the file jailer_2.7.1.zip. You will get the following files:
+$unzip jailer_2.7.1.zip
+$cd jailer_2.7.1
 $ll
 drwxr-xr-x  5 wisser users    152 2008-05-06 10:10 doc
 drwxr-xr-x  5 wisser users    120 2008-04-28 16:17 epilog
