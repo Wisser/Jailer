@@ -46,7 +46,7 @@ public class DDLCreator {
         }
         
         String template = "script/ddl-template.sql";
-		String contraint = statementExecutor.dbms == DBMS.SYBASE? " NULL" : "";
+		String contraint = statementExecutor.dbms == DBMS.SYBASE || statementExecutor.dbms == DBMS.MySQL? " NULL" : "";
 		String universalPrimaryKey = dataModel.getUniversalPrimaryKey().toSQL(null, contraint);
 		Object[] arguments = new Object[] { 
                 universalPrimaryKey,
