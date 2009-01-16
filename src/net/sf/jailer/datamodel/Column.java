@@ -62,11 +62,6 @@ public class Column {
     }
 
     /**
-     * Null-value for this column, or <code>null</code> if null-value is not known. (use nullValues then)
-     */
-    public String nullValue = null;
-    
-    /**
      * Constructor.
      * 
      * @param name the name (upper-case)
@@ -182,20 +177,4 @@ public class Column {
         return toSQL(null);
     }
 
-    /**
-     * Gets a 'null'-value depending on columns type in SQL syntax.
-     * 
-     * @return a 'null'-value
-     */
-    public String getNullValue() {
-    	if (nullValue != null) {
-    		return nullValue;
-    	}
-        String nv = nullValues.get(type.toUpperCase());
-    	if (nv != null) {
-            return nv;
-        }
-        return "0";
-    }
-    
 }

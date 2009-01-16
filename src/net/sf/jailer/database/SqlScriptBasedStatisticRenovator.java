@@ -27,11 +27,6 @@ import net.sf.jailer.util.SqlScriptExecutor;
 public class SqlScriptBasedStatisticRenovator implements StatisticRenovator {
 
 	/**
-     * DB-URL pattern for this renovator.
-     */
-	private final String urlPattern;
-	
-	/**
      * Name of SQL-script file.
      */
     private final String scriptFileName;
@@ -39,24 +34,13 @@ public class SqlScriptBasedStatisticRenovator implements StatisticRenovator {
     /**
      * Constructor.
      * 
-     * @param urlPattern DB-URL pattern for this renovator
      * @param scriptFileName name of SQL-script file
      */
-    public SqlScriptBasedStatisticRenovator(String urlPattern, String scriptFileName) {
-    	this.urlPattern = urlPattern;
+    public SqlScriptBasedStatisticRenovator(String scriptFileName) {
         this.scriptFileName = scriptFileName;
     }
 
 	/**
-     * Gets DB-URL pattern for this renovator.
-     * 
-     * @return DB-URL pattern for this renovator
-     */
-	public String getUrlPattern() {
-		return urlPattern;
-	}
-
-    /**
      * Renews the DB table statistics for the working-tables
      * by executing the SQL-script.
      * 

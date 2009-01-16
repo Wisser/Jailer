@@ -46,17 +46,18 @@ public class DDLCreator {
         }
         
         String template = "script/ddl-template.sql";
-        String universalPrimaryKey = dataModel.getUniversalPrimaryKey().toSQL(null);
+		String contraint = statementExecutor.dbms == DBMS.SYBASE? " NULL" : "";
+		String universalPrimaryKey = dataModel.getUniversalPrimaryKey().toSQL(null, contraint);
 		Object[] arguments = new Object[] { 
                 universalPrimaryKey,
-                dataModel.getUniversalPrimaryKey().toSQL("PRE_", statementExecutor.dbms == DBMS.SYBASE? " NULL" : ""),
-                dataModel.getUniversalPrimaryKey().toSQL("FROM_"),
-                dataModel.getUniversalPrimaryKey().toSQL("TO_"),
+                dataModel.getUniversalPrimaryKey().toSQL("PRE_", contraint),
+                dataModel.getUniversalPrimaryKey().toSQL("FROM_", contraint),
+                dataModel.getUniversalPrimaryKey().toSQL("TO_", contraint),
                 dataModel.getUniversalPrimaryKey().columnList(null),
                 dataModel.getUniversalPrimaryKey().columnList("FROM_"),
                 dataModel.getUniversalPrimaryKey().columnList("TO_"),
                 Jailer.VERSION,
-                statementExecutor.dbms == DBMS.SYBASE? " NULL" : ""
+                contraint
             };
         String ddl = PrintUtil.applyTemplate(template, arguments);
         
@@ -85,13 +86,15 @@ public class DDLCreator {
 	public static boolean isUptodate(String driverClass, String dbUrl, String user, String password) {
 		try {
 			if (driverClass != null) {
-	        	StatementExecutor statementExecutor = new StatementExecutor(driverClass, dbUrl, user, password);
+	        	final StatementExecutor statementExecutor = new StatementExecutor(driverClass, dbUrl, user, password);
 	        	try {
 	        		final boolean[] uptodate = new boolean[] { false };
 	        		final DataModel datamodel = new DataModel();
 	        		statementExecutor.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE + " where jversion='" + Jailer.VERSION + "' and jkey='upk'", new StatementExecutor.ResultSetReader() {
 						public void readCurrentRow(ResultSet resultSet) throws SQLException {
-							uptodate[0] = resultSet.getString(1).equals(datamodel.getUniversalPrimaryKey().toSQL(null));
+							String contraint = statementExecutor.dbms == DBMS.SYBASE? " NULL" : "";
+							String universalPrimaryKey = datamodel.getUniversalPrimaryKey().toSQL(null, contraint);
+							uptodate[0] = resultSet.getString(1).equals(universalPrimaryKey);
 						}
 						public void close() {
 						}

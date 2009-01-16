@@ -252,6 +252,7 @@ public class StatementExecutor {
 				if (productName.toUpperCase().contains("ORACLE")) dbms = DBMS.ORACLE;
 				if (productName.toUpperCase().contains("DB2")) dbms = DBMS.DB2;
 				if (productName.toUpperCase().contains("POSTGRES")) dbms = DBMS.POSTGRESQL;
+				if (productName.toUpperCase().contains("MYSQL")) dbms = DBMS.MySQL;
 				if (productName.toUpperCase().contains("ADAPTIVE SERVER")) dbms = DBMS.SYBASE;
 			}
 			_log.info("DB name:        " + productName + " (" + dbms + ")");
