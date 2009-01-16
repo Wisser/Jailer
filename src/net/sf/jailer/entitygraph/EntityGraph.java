@@ -298,22 +298,25 @@ public class EntityGraph {
             " left join " + ENTITY + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type='" + table.getName() + "' and " +
             pkEqualsEntityID(table, alias, "Duplicate") + 
             (joinWithEntity? ", " + ENTITY + " E" : "") +
-            " Where (" + condition + ") and Duplicate." + universalPrimaryKey.getColumns().get(0).name + " is null" +
+            " Where (" + condition + ") and Duplicate.type is null" +
             (limit > 0? " fetch first " + limit + " rows only" : ""); 
         
         if (source != null && explain) {
             String max = "";
+            Map<Column, Column> match = universalPrimaryKey.match(source.primaryKey);
             for (Column column: universalPrimaryKey.getColumns()) {
-                if (max.length() > 0) {
-                    max += ", ";
-                }
-                max += "max(PRE_" + column.name + ")";
+            	if (match.get(column) != null) {
+	                if (max.length() > 0) {
+	                    max += ", ";
+	                }
+	                max += "max(PRE_" + column.name + ")";
+            	}
             }
-            select = "Select GRAPH_ID, " + universalPrimaryKey.columnList(null) + ", TODAY, TYPE, ASSOCIATION, max(SOURCE_TYPE), " + max + " From (" + select + ") Q " +
-                     "Group by GRAPH_ID, " + universalPrimaryKey.columnList(null) + ", TODAY, TYPE, ASSOCIATION";
+            select = "Select GRAPH_ID, " + upkColumnList(table, null) + ", TODAY, TYPE, ASSOCIATION, max(SOURCE_TYPE), " + max + " From (" + select + ") Q " +
+                     "Group by GRAPH_ID, " + upkColumnList(table, null) + ", TODAY, TYPE, ASSOCIATION";
         }
         
-        String insert = "Insert into " + ENTITY + " (r_entitygraph, " + universalPrimaryKey.columnList(null) + ", birthday, type" + (source == null || !explain? "" : ", association, PRE_TYPE, " + universalPrimaryKey.columnList("PRE_"))  + ") " + select;
+        String insert = "Insert into " + ENTITY + " (r_entitygraph, " + upkColumnList(table, null) + ", birthday, type" + (source == null || !explain? "" : ", association, PRE_TYPE, " + upkColumnList(source, "PRE_"))  + ") " + select;
         if (SqlUtil.dbms == DBMS.SYBASE) statementExecutor.execute("set forceplan on ");
         long rc = statementExecutor.executeUpdate(insert);
         totalRowcount += rc;
@@ -333,7 +336,7 @@ public class EntityGraph {
      * @param dependencyId id of dependency
      */
     public void addDependencies(Table from, String fromAlias, Table to, String toAlias, String condition, int aggregationId, int dependencyId) throws SQLException {
-        String insert = "Insert into " + DEPENDENCY + "(r_entitygraph, assoc, depend_id, from_type, to_type, " + universalPrimaryKey.columnList("FROM_") + ", " + universalPrimaryKey.columnList("TO_") + ") " +
+        String insert = "Insert into " + DEPENDENCY + "(r_entitygraph, assoc, depend_id, from_type, to_type, " + upkColumnList(from, "FROM_") + ", " + upkColumnList(to, "TO_") + ") " +
             "Select " + graphID + ", " + aggregationId  + ", " + dependencyId + ", '" + from.getName() + "', '" + to.getName() + "', " + pkList(from, fromAlias, "FROM") + ", " + pkList(to, toAlias, "TO") +
             " From " + ENTITY + " E1, " + ENTITY + " E2, " + from.getName() + " " + fromAlias + " join " + to.getName() + " " + toAlias + " on " + condition +
             " Where E1.r_entitygraph=" + graphID + " and E2.r_entitygraph=" + graphID + "" +
@@ -360,24 +363,21 @@ public class EntityGraph {
     }
 
     /**
-     * Marks all entities which don't dependent on other entities,
-     * s.t. they can be read and deleted.
-     */
-    public void markIndependentEntities() throws SQLException {
-    	markIndependentEntities(null);
-    }
-    
-    /**
      * Marks all entities of a given table which don't dependent on other entities,
      * s.t. they can be read and deleted.
      */
     public void markIndependentEntities(Table table) throws SQLException {
         StringBuffer fromEqualsPK = new StringBuffer();
+        Map<Column, Column> match = universalPrimaryKey.match(table.primaryKey);
         for (Column column: universalPrimaryKey.getColumns()) {
             if (fromEqualsPK.length() > 0) {
                 fromEqualsPK.append(" and ");
             }
-            fromEqualsPK.append("D.FROM_" + column.name + "=" + ENTITY + "." + column.name);
+        	if (match.get(column) != null) {
+	            fromEqualsPK.append("D.FROM_" + column.name + "=" + ENTITY + "." + column.name);
+        	} else {
+        		fromEqualsPK.append("D.FROM_" + column.name + " is null and " + ENTITY + "." + column.name + " is null");
+        	}
         }
         statementExecutor.executeUpdate(
                 "Update " + ENTITY + " set birthday=0 " +
@@ -391,17 +391,22 @@ public class EntityGraph {
     /**
      * Marks all rows which are not target of a dependency.
      */
-    public void markRoots() throws SQLException {
+    public void markRoots(Table table) throws SQLException {
         StringBuffer toEqualsPK = new StringBuffer();
+        Map<Column, Column> match = universalPrimaryKey.match(table.primaryKey);
         for (Column column: universalPrimaryKey.getColumns()) {
             if (toEqualsPK.length() > 0) {
                 toEqualsPK.append(" and ");
             }
-            toEqualsPK.append("D.TO_" + column.name + "=" + ENTITY + "." + column.name);
+            if (match.containsKey(column)) {
+            	toEqualsPK.append("D.TO_" + column.name + "=" + ENTITY + "." + column.name);
+            } else {
+            	toEqualsPK.append("D.TO_" + column.name + " is null and " + ENTITY + "." + column.name + " is null");
+            }
         }
         statementExecutor.executeUpdate(
                 "Update " + ENTITY + " set birthday=0 " +
-                "Where r_entitygraph=" + graphID + " and birthday>0 and " +
+                "Where r_entitygraph=" + graphID + " and birthday>0 and type='" + table.getName() + "' and " +
                        "not exists (Select * from " + DEPENDENCY + " D " +
                            "Where D.r_entitygraph=" +graphID + " and D.to_type=" + ENTITY + ".type and " +
                                  toEqualsPK + ")");
@@ -471,36 +476,45 @@ public class EntityGraph {
     /**
      * Deletes all entities which are marked as independent.
      */
-    public void deleteIndependentEntities() throws SQLException {
+    public void deleteIndependentEntities(Table table) throws SQLException {
         StringBuffer fromEqualsPK = new StringBuffer();
         StringBuffer toEqualsPK = new StringBuffer();
+        Map<Column, Column> match = universalPrimaryKey.match(table.primaryKey);
         for (Column column: universalPrimaryKey.getColumns()) {
             if (fromEqualsPK.length() > 0) {
                 fromEqualsPK.append(" and ");
             }
-            fromEqualsPK.append(DEPENDENCY + ".FROM_" + column.name + "=" + column.name);
+            if (match.containsKey(column)) {
+            	fromEqualsPK.append(DEPENDENCY + ".FROM_" + column.name + "=" + column.name);
+            } else {
+            	fromEqualsPK.append(DEPENDENCY + ".FROM_" + column.name + " is null and " + column.name + " is null");
+            }
             if (toEqualsPK.length() > 0) {
                 toEqualsPK.append(" and ");
             }
-            toEqualsPK.append(DEPENDENCY + ".TO_" + column.name + "=" + column.name);
+            if (match.containsKey(column)) {
+            	toEqualsPK.append(DEPENDENCY + ".TO_" + column.name + "=" + column.name);
+            } else {
+            	toEqualsPK.append(DEPENDENCY + ".TO_" + column.name + " is null and " + column.name + " is null");
+            }
         }
         statementExecutor.executeUpdate(
                 "Delete From " + DEPENDENCY + " " +
-                "Where " + DEPENDENCY + ".r_entitygraph=" + graphID + " and assoc=0 and " + 
+                "Where " + DEPENDENCY + ".r_entitygraph=" + graphID + " and assoc=0 and from_type='" + table.getName() + "' and " + 
                       "exists (Select * from " + ENTITY + " E Where " + 
                           "E.r_entitygraph=" + graphID + " and " +
                           fromEqualsPK + " and " + DEPENDENCY + ".from_type=E.type and " +
                           "E.birthday=0)");
         statementExecutor.executeUpdate(
                 "Delete From " + DEPENDENCY + " " +
-                "Where " + DEPENDENCY + ".r_entitygraph=" + graphID + " and assoc=0 and " + 
+                "Where " + DEPENDENCY + ".r_entitygraph=" + graphID + " and assoc=0 and to_type='" + table.getName() + "' and " +
                       "exists (Select * from " + ENTITY + " E Where " + 
                           "E.r_entitygraph=" + graphID + " and " +
                           toEqualsPK + " and " + DEPENDENCY + ".to_type=E.type and " +
                           "E.birthday=0)");
         statementExecutor.executeUpdate(
                 "Delete From " + ENTITY + " " +
-                "Where r_entitygraph=" + graphID + " and " +
+                "Where r_entitygraph=" + graphID + " and type='" + table.getName() + "' and " +
                        "birthday=0");
     }
     
@@ -559,21 +573,27 @@ public class EntityGraph {
                 "join " + association.source.getName() + " " + sourceAlias + " on " + association.getJoinCondition() + " " +
                 (deletedEntitiesAreMarked? "join " : "left join ") + ENTITY + " EA on EA.r_entitygraph=" + graphID + " and EA.type='" + association.source.getName() + "' and " + pkEqualsEntityID(association.source, sourceAlias, "EA") + " " +
                 "Where EB.r_entitygraph=" + graphID + " and EB.type='" + association.destination.getName() + "' " +
-                "and " + (deletedEntitiesAreMarked? "EA.birthday=-1 and EB.birthday>=0" : "EA." + universalPrimaryKey.getColumns().get(0).name + " is null");
+                "and " + (deletedEntitiesAreMarked? "EA.birthday=-1 and EB.birthday>=0" : "EA.type is null");
             long rc = statementExecutor.executeUpdate(remove);
             totalRowcount += rc;
             if (rc > 0) {
-            	StringBuffer sEqualsE = new StringBuffer();
+            	Map<Column, Column> match = universalPrimaryKey.match(association.destination.primaryKey);
+                StringBuffer sEqualsE = new StringBuffer();
             	StringBuffer sEqualsEWoAlias = new StringBuffer();
                 for (Column column: universalPrimaryKey.getColumns()) {
                 	if (sEqualsE.length() > 0) {
                         sEqualsE.append(" and ");
                     }
-                    sEqualsE.append("S." + column.name + "=E." + column.name);
                     if (sEqualsEWoAlias.length() > 0) {
                     	sEqualsEWoAlias.append(" and ");
                     }
-                    sEqualsEWoAlias.append("S." + column.name + "=" + ENTITY + "." + column.name);
+                	if (match.containsKey(column)) {
+	                    sEqualsE.append("S." + column.name + "=E." + column.name);
+	                    sEqualsEWoAlias.append("S." + column.name + "=" + ENTITY + "." + column.name);
+                	} else {
+	                    sEqualsE.append("S." + column.name + " is null and E." + column.name + " is null");
+	                    sEqualsEWoAlias.append("S." + column.name + " is null and " + ENTITY + "." + column.name + " is null");
+                	}
                 }
                 remove = "Update " + ENTITY + " E set E.birthday=-1 Where E.r_entitygraph=" + graphID + " and E.type='" + association.destination.getName() + "' " +
                           "and exists (Select * from " + ENTITY_SET_ELEMENT + " S where S.set_id=" + setId + " and E.type=S.type and " + sEqualsE + ")";
@@ -665,7 +685,7 @@ public class EntityGraph {
             if (sb.length() > 0) {
                 sb.append(" and ");
             }
-            sb.append(alias + "." + columnPrefix + column.name + "=");
+            sb.append(alias + "." + columnPrefix + column.name);
             Column tableColumn = match.get(column);
             if (tableColumn != null) {
             	int i = 0;
@@ -675,9 +695,9 @@ public class EntityGraph {
             		}
             		++i;
             	}
-                sb.append(SqlUtil.toSql(SqlUtil.getObject(resultSet, "PK" + i /* tableColumn.name*/, typeCache)));
+                sb.append("=" + SqlUtil.toSql(SqlUtil.getObject(resultSet, "PK" + i /* tableColumn.name*/, typeCache)));
             } else {
-                sb.append(column.getNullValue());
+                sb.append(" is null");
             }
         }
         return sb.toString();
@@ -707,11 +727,11 @@ public class EntityGraph {
                 sb.append(" and ");
             }
             Column tableColumn = match.get(column);
-            sb.append(entityAlias + "." + columnPrefix + column.name + "=");
+            sb.append(entityAlias + "." + columnPrefix + column.name);
             if (tableColumn != null) {
-                sb.append(tableAlias + "." + tableColumn.name);
+                sb.append("=" + tableAlias + "." + tableColumn.name);
             } else {
-                sb.append(column.getNullValue());
+                sb.append(" is null");
             }
         }
         return sb.toString();
@@ -729,7 +749,7 @@ public class EntityGraph {
     }
     
     /**
-     * Gets PK-column list for a table.
+     * Gets PK-column list for a table. (for Select clause)
      * 
      * @param table the table
      * @param tableAlias the alias for table
@@ -739,20 +759,47 @@ public class EntityGraph {
         Map<Column, Column> match = universalPrimaryKey.match(table.primaryKey);
         StringBuffer sb = new StringBuffer();
         for (Column column: universalPrimaryKey.getColumns()) {
-            if (sb.length() > 0) {
-                sb.append(", ");
-            }
             Column tableColumn = match.get(column);
             if (tableColumn != null) {
+	            if (sb.length() > 0) {
+	                sb.append(", ");
+	            }
                 sb.append(tableAlias + "." + tableColumn.name);
-            } else {
-                sb.append(column.getNullValue());
+                sb.append(" AS " + (columnAliasPrefix == null? "" : columnAliasPrefix) + column.name);
+            } else if (SqlUtil.dbms == DBMS.MySQL) {
+            	if (sb.length() > 0) {
+	                sb.append(", ");
+	            }
+            	sb.append("null AS " + (columnAliasPrefix == null? "" : columnAliasPrefix) + column.name);
             }
-            sb.append(" AS " + (columnAliasPrefix == null? "" : columnAliasPrefix) + column.name);
         }
         return sb.toString();
     }
 
+    /**
+     * Gets PK-column list for a table. (for Insert clause)
+     * 
+     * @param table the table
+     * @param columnAliasPrefix optional prefix for column names
+     */
+    private String upkColumnList(Table table, String columnAliasPrefix) {
+        Map<Column, Column> match = universalPrimaryKey.match(table.primaryKey);
+        StringBuffer sb = new StringBuffer();
+        for (Column column: universalPrimaryKey.getColumns()) {
+            Column tableColumn = match.get(column);
+            if (tableColumn != null || SqlUtil.dbms == DBMS.MySQL) {
+	            if (sb.length() > 0) {
+	                sb.append(", ");
+	            }
+	            if (columnAliasPrefix != null) {
+	            	sb.append(columnAliasPrefix);
+	            }
+                sb.append(column.name);
+            }
+        }
+        return sb.toString();
+    }
+    
     /**
      * Gets some statistical information.
      */

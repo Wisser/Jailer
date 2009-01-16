@@ -24,13 +24,6 @@ package net.sf.jailer.database;
  */
 public interface StatisticRenovator {
 
-	/**
-     * Gets DB-URL pattern for this renovator.
-     * 
-     * @return DB-URL pattern for this renovator
-     */
-	String getUrlPattern();
-	
     /**
      * Renews the DB table statistics for the working-tables.
      * 

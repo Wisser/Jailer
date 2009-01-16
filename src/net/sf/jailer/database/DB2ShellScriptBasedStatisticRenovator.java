@@ -27,11 +27,10 @@ public class DB2ShellScriptBasedStatisticRenovator extends ShellScriptBasedStati
     /**
      * Constructor.
      * 
-     * @param urlPattern DB-URL pattern for this renovator
      * @param scriptInvocation invocation of the script-file
      */
-    public DB2ShellScriptBasedStatisticRenovator(String urlPattern, String scriptInvocation) {
-        super(urlPattern, scriptInvocation);
+    public DB2ShellScriptBasedStatisticRenovator(String scriptInvocation) {
+        super(scriptInvocation);
     }
 
     /**

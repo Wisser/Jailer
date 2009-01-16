@@ -17,6 +17,7 @@ package net.sf.jailer.util;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.DateFormat;
@@ -227,6 +228,9 @@ public class SqlUtil {
         		hex.append(hexChar[b & 15]);
         	}
         	return SQLDialect.binaryPattern.replace("%s", hex);
+        }
+        if (content instanceof Time) {
+        	return "'" + content + "'";
         }
         if (dbms == DBMS.POSTGRESQL) {
         	if (content.getClass().getName().endsWith(".PGobject")) {

@@ -30,11 +30,6 @@ import org.apache.log4j.Logger;
 public class ShellScriptBasedStatisticRenovator implements StatisticRenovator {
 
     /**
-     * DB-URL pattern for this renovator.
-     */
-	private final String urlPattern;
-	
-    /**
      * Invocation of the script-file.
      */
     private final String scriptInvocation;
@@ -47,23 +42,12 @@ public class ShellScriptBasedStatisticRenovator implements StatisticRenovator {
     /**
      * Constructor.
      * 
-     * @param urlPattern DB-URL pattern for this renovator
      * @param scriptInvocation invocation of the script-file
      */
-    public ShellScriptBasedStatisticRenovator(String urlPattern, String scriptInvocation) {
-    	this.urlPattern = urlPattern;
+    public ShellScriptBasedStatisticRenovator(String scriptInvocation) {
     	this.scriptInvocation = scriptInvocation;
     }
     
-	/**
-     * Gets DB-URL pattern for this renovator.
-     * 
-     * @return DB-URL pattern for this renovator
-     */
-	public String getUrlPattern() {
-		return urlPattern;
-	}
-
     /**
      * Renews the DB table statistics for the working-tables
      * by executing the shell-script.

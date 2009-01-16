@@ -128,7 +128,8 @@ public class ExplainTool {
             if (where.length() > 0) {
                 where += " and ";
             }
-            where += column.name + "=" + keys.get(i++);
+            String value = keys.get(i++);
+			where += column.name + (value == null || value.equals("null")? " is null" : ("=" + value));
         }
         String selectPredecessor = "Select PRE_TYPE, association, " + graph.getUniversalPrimaryKey().columnList("PRE_") + " From " + EntityGraph.ENTITY + " E Where E.r_entitygraph=" + graph.graphID +
             " and type='" + type + "' and " + where;

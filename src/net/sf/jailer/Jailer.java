@@ -35,7 +35,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
 import java.util.zip.GZIPOutputStream;
 
 import javax.xml.transform.sax.TransformerHandler;
@@ -70,8 +69,6 @@ import net.sf.jailer.xml.XmlUtil;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
-import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 /**
  * Utility for extracting small consistent row-sets from
@@ -86,7 +83,7 @@ public class Jailer {
     /**
      * The Jailer version.
      */
-    public static final String VERSION = "2.7.1";
+    public static final String VERSION = "2.7.2.beta";
     
     /**
      * The relational data model.
@@ -109,14 +106,6 @@ public class Jailer {
     private static final Logger _log;
 
     /**
-     * The configuration.
-     */
-    private static AbstractXmlApplicationContext applicationContext = new FileSystemXmlApplicationContext("config/config.xml");
-    static {
-		PrimaryKeyFactory.minimizeUPK = Boolean.TRUE.equals(applicationContext.getBean("minimize-UPK"));
-	}
-    
-    /**
      * Comment header of the export-script.
      */
     private StringBuffer commentHeader = new StringBuffer();
@@ -127,18 +116,12 @@ public class Jailer {
     public static StringBuffer statistic = new StringBuffer();
     
     /**
-     * The scipt-enhancer.
-     */
-    private final List<ScriptEnhancer> scriptEnhancer;
-    
-    /**
      * Constructor.
      * 
      * @param threads number of threads
      */
     public Jailer(int threads) throws Exception {
         jobManager = new JobManager(threads);
-        scriptEnhancer = (List<ScriptEnhancer>) applicationContext.getBean("script-enhancer");
     }
 
     /**
@@ -473,12 +456,12 @@ public class Jailer {
         	result = new OutputStreamWriter(outputStream);
 	        result.append(commentHeader);
 	        result.append(System.getProperty("line.separator"));
-	        for (ScriptEnhancer enhancer: scriptEnhancer) {
+	        for (ScriptEnhancer enhancer: Configuration.scriptEnhancer) {
 	            enhancer.addComments(result, scriptType, statementExecutor, entityGraph, progress);
 	        }
 	        result.append(System.getProperty("line.separator"));
 	        result.append(System.getProperty("line.separator"));
-	        for (ScriptEnhancer enhancer: scriptEnhancer) {
+	        for (ScriptEnhancer enhancer: Configuration.scriptEnhancer) {
 	            enhancer.addProlog(result, scriptType, statementExecutor, entityGraph, progress);
 	        }
         }
@@ -524,7 +507,7 @@ public class Jailer {
 		                // don't use jobManager, export rows sequentially, don't mix rows of different tables in a dataset!
 		                ResultSetReader reader = createResultSetReader(fResult, fTransformerHandler, scriptType, independentTable);
 		                entityGraph.readMarkedEntities(independentTable, reader);
-	    	            entityGraph.deleteIndependentEntities();
+	    	            entityGraph.deleteIndependentEntities(independentTable);
 	    	            long newRest = entityGraph.getSize();
 	    	            if (rest == newRest) {
 	    	                break;
@@ -538,7 +521,9 @@ public class Jailer {
         } else {
 	        rest = entityGraph.getSize();
 	        for (;;) {
-	            entityGraph.markIndependentEntities();
+	        	for (final Table table: dependentTables) {
+	                entityGraph.markIndependentEntities(table);
+	        	}
 	            List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 	            for (final Table table: dependentTables) {
                 	jobs.add(new JobManager.Job() {
@@ -549,7 +534,9 @@ public class Jailer {
 	                });
 	            }
             	jobManager.executeJobs(jobs);
-	            entityGraph.deleteIndependentEntities();
+            	for (final Table table: dependentTables) {
+    	            entityGraph.deleteIndependentEntities(table);
+            	}
 	            long newRest = entityGraph.getSize();
 	            if (rest == newRest) {
 	                break;
@@ -560,7 +547,7 @@ public class Jailer {
         
         if (result != null) {
 	        // write epilogs
-	        for (ScriptEnhancer enhancer: scriptEnhancer) {
+	        for (ScriptEnhancer enhancer: Configuration.scriptEnhancer) {
 	            enhancer.addEpilog(result, scriptType, statementExecutor, entityGraph, progress);
 	        }
 	        result.close();
@@ -620,7 +607,9 @@ public class Jailer {
         		CommandLineParser.getInstance().xmlDatePattern,
         		CommandLineParser.getInstance().xmlTimeStampPattern);
         
-        entityGraph.markRoots();
+        for (Table table: sortedTables) {
+        	entityGraph.markRoots(table);
+        }
         for (Table table: sortedTables) {
             _log.info("exporting table " + datamodel.getDisplayName(table));
             reader.setTable(table);
@@ -763,17 +752,14 @@ public class Jailer {
     private synchronized void runstats(StatementExecutor statementExecutor, boolean force) throws Exception {
         if (force || lastRunstats == 0 || (lastRunstats * 2 <= entityGraph.getTotalRowcount() && entityGraph.getTotalRowcount() > 1000)) {
             lastRunstats = entityGraph.getTotalRowcount();
-            if (applicationContext.containsBean("statistic-renovator")) {
-                List<StatisticRenovator> statisticRenovators = (List<StatisticRenovator>) applicationContext.getBean("statistic-renovator");  
-                for (StatisticRenovator statisticRenovator: statisticRenovators) {
-                	if (Pattern.matches(statisticRenovator.getUrlPattern(), statementExecutor.dbUrl)) {
-		                _log.info("gather statistics after " + lastRunstats + " inserted rows...");
-		                try {
-		                	statisticRenovator.renew(statementExecutor);
-		                } catch (Throwable t) {
-		                	_log.warn("unable to update table statistics", t);
-		                }
-                	}
+            
+            StatisticRenovator statisticRenovator = Configuration.forDbms(statementExecutor).getStatisticRenovator();
+            if (statisticRenovator != null) {
+                _log.info("gather statistics after " + lastRunstats + " inserted rows...");
+                try {
+                	statisticRenovator.renew(statementExecutor);
+                } catch (Throwable t) {
+                	_log.warn("unable to update table statistics", t);
                 }
             }
         }
@@ -906,7 +892,7 @@ public class Jailer {
             }
             dataModel.getRestrictionModel().addRestrictionDefinition(rm, null);
         }
-        DataModelRenderer renderer = (DataModelRenderer) applicationContext.getBean("renderer");
+        DataModelRenderer renderer = Configuration.renderer;
         if (renderer == null) {
             throw new RuntimeException("no renderer found in config/config.xml");
         }
@@ -1116,6 +1102,9 @@ public class Jailer {
 			} else {
 				l = l.trim();
 				int i = l.lastIndexOf(' ');
+				if (i > 0 && l.endsWith(")")) {
+					i = l.substring(0, i).lastIndexOf(' ');
+				}
 				if (i > 0) {
 					l = l.substring(0, i) + ":" + l.substring(i + 1);
 				}
@@ -1273,22 +1262,6 @@ public class Jailer {
         return result;
     }
 
-    /**
-     * Collects all non-ignored associations with a given table as source.
-     * 
-     * @param table the table
-     * @return all non-ignored associations with table as source
-     */
-    private static Collection<Association> outgoingAssociations(Table table) {
-        Collection<Association> result = new ArrayList<Association>();
-        for (Association association: table.associations) {
-            if (association.getJoinCondition() != null) {
-                result.add(association);
-            }
-        }
-        return result;
-    }
-    
     // initialize log4j
     static {
         PropertyConfigurator.configure("config/log4j.properties");

@@ -15,21 +15,13 @@
  */
 package net.sf.jailer.database;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.sql.Connection;
-import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
 import java.util.List;
 
+import net.sf.jailer.Configuration;
 import net.sf.jailer.Jailer;
-import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.util.SqlUtil;
 
@@ -86,7 +78,7 @@ public class SQLDialect {
 	public static enum UPSERT_MODE { 
 		DB2("Select * From (values (1, 2), (3, 4)) as Q(c1, c2) Where not exists (Select * from " + TMP_TABLE + " T Where T.c1=Q.c1)"), 
 		FROM_DUAL("Select 1, 2 From dual where not exists(Select * from " + TMP_TABLE + " T where T.c1=1)"),
-		FROM_JL_DUAL("Select 1, 2 From " + DUAL_TABLE + " where not exists(Select * from " + TMP_TABLE + " T where T.c1=1)"),
+		FROM_JL_DUAL("Select 1, 2 From " + TMP_TABLE + " where not exists(Select * from " + TMP_TABLE + " T where T.c1=1)"),
 		ORACLE("MERGE INTO " + TMP_TABLE + " T " +
                               "USING (SELECT 1 c1, 2 c2 from dual) incoming " +
                               "ON (T.c1 = incoming.c1) " +
@@ -191,11 +183,9 @@ public class SQLDialect {
 				StatementExecutor statementExecutor) {
 
 		treatDateAsTimestamp = false;
-		binaryPattern = "x'%s'";
 		
 		if (statementExecutor.dbms == DBMS.ORACLE) {
 			treatDateAsTimestamp = true;
-			binaryPattern = "hextoraw('%s')";
 			_log.info("DATE is treated as TIMESTAMP");
 		}
 		
@@ -216,29 +206,6 @@ public class SQLDialect {
 			log("SQL dialect is " + dialect.name);
 		} else {
 			log("begin guessing SQL dialect");
-			
-			String drop = "DROP TABLE " + TMP_TABLE + "";
-			String create = "CREATE TABLE " + TMP_TABLE + "(c1 INTEGER, c2 INTEGER)";
-			try {
-				statementExecutor.execute(drop);
-			} catch (Exception e) {
-				_sqllog.info(e.getMessage());
-			}
-			try {
-				statementExecutor.execute(create);
-			} catch (Exception e) {
-				_sqllog.info(e.getMessage());
-			}
-			try {
-				statementExecutor.execute("DROP TABLE " + DUAL_TABLE + "");
-			} catch (Exception e) {
-				_sqllog.info(e.getMessage());
-			}
-			try {
-				statementExecutor.execute("CREATE TABLE " + DUAL_TABLE + "(D INTEGER)");
-			} catch (Exception e) {
-				_sqllog.info(e.getMessage());
-			}
 			
 			for (SQLDialect sqlDialect: sqlDialects) {
 				boolean ok = true;
@@ -284,232 +251,21 @@ public class SQLDialect {
 				break;
 			}
 		
-			try {
-				statementExecutor.execute("DROP TABLE " + DUAL_TABLE + "");
-			} catch (Exception e) {
-				_sqllog.info(e.getMessage());
-			}
-			try {
-				statementExecutor.execute(drop);
-			} catch (Exception e) {
-				_sqllog.info(e.getMessage());
-			}
 			log("end guessing SQL dialect");
 		}
 		
-		log("begin guessing PK-values");
-		for (Column column : primaryKey.getColumns()) {
-			guessDummyValues(column, true, statementExecutor);
-		}
-		// force date format guessing
-		guessDummyValues(new Column("C", "DATE", 0, -1), false, statementExecutor);
-		guessDummyValues(new Column("C", "TIMESTAMP", 0, -1), false, statementExecutor);
-		emptyCLOBValue = guessEmptyLobValue("emptyCLOB", "clob", new String[] { "empty_clob()", "clob('')", "''" }, statementExecutor);
-		emptyBLOBValue = guessEmptyLobValue("emptyBLOB", "blob", new String[] { "empty_blob()", "blob('')", "''" }, statementExecutor);
-		log("end guessing PK-values");
 		statementExecutor.setSilent(false);
-	}
-
-	/**
-	 * Guesses SQL literals for empty LOBs.
-	 * 
-	 * @param configParameter the name of the persistent configuration parameter which holds the value
-	 * @param lobType the SQL type of the LOB
-	 * @param candidates all candidate values
-	 * @return SQL literal for empty LOBs
-	 */
-	private static String guessEmptyLobValue(String configParameter, String lobType, String[] candidates, StatementExecutor statementExecutor) {
-		// try to load value
-		String emptyLobValue = readConfigValue(configParameter, statementExecutor);
-		if (emptyLobValue != null) {
-			return emptyLobValue;
-		}
 		
-		String drop = "DROP TABLE " + TMP_TABLE + "";
-		String create = "CREATE TABLE " + TMP_TABLE + "(C " + lobType + ")";
-		try {
-			statementExecutor.execute(drop);
-		} catch (Exception e) {
-			_sqllog.info(e.getMessage());
-		}
-		try {
-			statementExecutor.execute(create);
-		} catch (Exception e) {
-			_sqllog.info(e.getMessage());
-		}
-
-		// try all candidates
-		for (String candidate: candidates) {
-			try {
-				statementExecutor.executeUpdate("INSERT INTO " + TMP_TABLE + "(C) VALUES(" + candidate + ")");
-				emptyLobValue = candidate;
-				break;
-			} catch (SQLException e) {
-				_sqllog.info(e.getMessage());
-			}
-		}
-		
-		// persist value
-		if (emptyLobValue != null) {
-			log("empty " + lobType + " is '" + emptyLobValue + "'");
-			setConfigValue(configParameter, emptyLobValue, statementExecutor);
-		}
-		
-		try {
-			statementExecutor.execute(drop);
-		} catch (Exception e) {
-			_sqllog.info(e.getMessage());
-		}
-		
-		return emptyLobValue;
-	}
-
-	/**
-	 * Guesses dummy-values for each column of a primary key.
-	 * 
-	 * @param primaryKey
-	 *            the primary key
-	 */
-	private static void guessDummyValues(Column column, boolean load,
-			StatementExecutor statementExecutor) {
-		
-		String nullValue = readConfigValue(column.toSQL(null), statementExecutor);
-		if (nullValue != null && load) {
-			column.nullValue = nullValue;
-			return;
-		}
-		
-		Calendar cal = Calendar.getInstance();
-		cal.set(2000, 0, 30, 23, 59, 30);
-		cal.set(Calendar.MILLISECOND, 456);
-		long time = cal.getTimeInMillis();
-		final Timestamp timestamp = new Timestamp(time);
-		timestamp.setNanos(123456789);
-		Object NULL_BIT = new Object(); // postgreSQL constant for bit value
-		Object[] potNulls = new Object[] { "0", new Integer(0), new Character('0'),
-				timestamp, new Date(time), new Byte((byte) 0),
-				BigInteger.ZERO, new BigDecimal(0), new Double(0.0),
-				new Float(0.0f), new byte[] { 0 }, NULL_BIT };
-
-		String drop = "DROP TABLE " + TMP_TABLE + "";
-		String create = "CREATE TABLE " + TMP_TABLE + "(" + column + ")";
-		try {
-			statementExecutor.execute(drop);
-		} catch (Exception e) {
-			_sqllog.info(e.getMessage());
-		}
-		try {
-			statementExecutor.execute(create);
-		} catch (Exception e) {
-			_sqllog.info(e.getMessage());
-		}
-		for (final Object potNull : potNulls) {
-			try {
-				final Object[] result = new Object[1];
-				statementExecutor.executeUpdate("DELETE FROM " + TMP_TABLE + "");
-				if (potNull == NULL_BIT) {
-					statementExecutor
-						.executeUpdate("INSERT INTO " + TMP_TABLE + "(" + column.name
-							+ ") VALUES(B'0')");
-				} else {
-					statementExecutor
-						.executeUpdate("INSERT INTO " + TMP_TABLE + "(" + column.name
-								+ ") VALUES(?)", new Object[] { potNull });
-				}
-				statementExecutor.executeQuery("SELECT " + column.name
-						+ " FROM " + TMP_TABLE + "",
-						new StatementExecutor.ResultSetReader() {
-							public void readCurrentRow(ResultSet resultSet)
-									throws SQLException {
-								result[0] = SqlUtil.getObject(resultSet, 1, new HashMap<Integer, Integer>());
-							}
-
-							public void close() {
-							}
-						});
-				if (result[0] != null) {
-					if (result[0] instanceof Date) {
-						for (String pattern : datePattern) {
-							try {
-								SqlUtil.dateFormat = pattern == null ? null
-										: new SimpleDateFormat(pattern);
-								insertNullValue(column, result[0],
-										statementExecutor);
-								break;
-							} catch (Exception e) {
-								_sqllog.info(e.getMessage());
-							}
-						}
-					} else if (result[0] instanceof Timestamp) {
-						for (int i = 0; i < 3; ++i) {
-							for (char nanoSep: new char[] { '.', ',', '-', ':' }) {
-								SqlUtil.nanoSep = nanoSep;
-								for (String pattern : timePattern) {
-									try {
-										SqlUtil.appendNanosToTimestamp = i != 2;
-										SqlUtil.appendMillisToTimestamp = i != 0;
-										SqlUtil.useToTimestampFunction = false;
-										if ("TO_TIMESTAMP".equals(pattern)) {
-											SqlUtil.timestampFormat = null;
-											SqlUtil.useToTimestampFunction = true;
-										} else {
-											SqlUtil.timestampFormat = pattern == null ? null
-												: new SimpleDateFormat(pattern);
-										}
-										insertNullValue(column, result[0],
-												statementExecutor);
-										break;
-									} catch (Exception e) {
-										_sqllog.info(e.getMessage());
-									}
-								}
-								if (column.nullValue != null) {
-									break;
-								}
-							}
-							if (column.nullValue != null) {
-								break;
-							}
-						}
-					} else {
-						try {
-							insertNullValue(column, result[0], statementExecutor);
-						} catch (Exception e) {
-							_sqllog.info(e.getMessage());
-						}
-					}
-					if (column.nullValue != null) {
-						log("PK-value for " + column + " is " + column.nullValue);
-						setConfigValue(column.toSQL(null), column.nullValue, statementExecutor);
-						break;
-					}
-				}
-			} catch (Exception e) {
-				_sqllog.info(e.getMessage());
-			}
-		}
-		try {
-			statementExecutor.execute(drop);
-		} catch (Exception e) {
-			_sqllog.info(e.getMessage());
-		}
-	}
-
-	/**
-	 * Inserts a null (dummy) value into " + TMP_TABLE + ".
-	 * 
-	 * @param column
-	 *            the column to insert into
-	 * @param nullValue
-	 *            the null value
-	 */
-	private static void insertNullValue(Column column, Object nullValue,
-			StatementExecutor statementExecutor) throws SQLException {
-		String nv = SqlUtil.toSql(nullValue);
-		statementExecutor.executeUpdate("DELETE FROM " + TMP_TABLE + "");
-		statementExecutor.executeUpdate("INSERT INTO " + TMP_TABLE + "(" + column.name
-				+ ") VALUES(" + nv + ")");
-		column.nullValue = nv;
+		Configuration c = Configuration.forDbms(statementExecutor);
+		SqlUtil.dateFormat = c.dateFormat;
+		SqlUtil.nanoSep = c.nanoSep;
+		SqlUtil.appendNanosToTimestamp = c.appendNanosToTimestamp;
+		SqlUtil.appendMillisToTimestamp = c.appendMillisToTimestamp;
+		SqlUtil.useToTimestampFunction = c.useToTimestampFunction;
+		SqlUtil.timestampFormat = c.timestampFormat;
+		emptyCLOBValue = c.emptyCLOBValue;
+		emptyBLOBValue = c.emptyBLOBValue;
+		binaryPattern = c.binaryPattern;	
 	}
 
 	/**
@@ -563,52 +319,5 @@ public class SQLDialect {
 		_log.info(message);
 		_sqllog.info(message);
 	}
-
-	private static String[] datePattern = new String[] { null, "dd-MM-yyyy",
-			"dd/MM/yyyy", "dd.MM.yyyy", "dd.MMM.yyyy", "dd MMMM yyyy",
-			"MM-dd-yyyy", "MM/dd/yyyy", "MMM d, yyyy", "yyyy.d.M",
-			"dd MMM yyyy", "dd-MMM-yyyy", "dd.MM.yyyy.", "d MMM yyyy",
-			"d MMM, yyyy", "d-MMM-yyyy", "d/MMM/yyyy", "d/MM/yyyy",
-			"d.MM.yyyy", "d.M.yyyy", "Gy.MM.dd", "yyyy-M-d", "yyyy/M/d",
-			"yyyy. M. d", "yyyy.M.d", "yyyy'?'M'?'d'?'", "yyyy-MM-dd",
-			"yyyy/MM/dd", "yyyy.MM.dd", "yyyy.MM.dd.", "yyyy MMM d",
-			"yyyy-MMM-dd", "dd MMM yy", "dd-MMM-yy", "MM d, yy", null };
-
-	private static String[] timePattern = new String[] { null, 
-		    "TO_TIMESTAMP", // for using oracle to_timestamp function
-			"dd/MM/yyyy HH:mm:ss", "dd.MM.yyyy HH:mm:ss",
-			"dd.MM.yyyy. HH.mm.ss", 
-			"dd.MM.yyyy H:mm:ss",
-			"yyyy-MM-dd HH:mm:ss",
-			"yyyy.MM.dd HH:mm:ss", "yyyy/MM/dd H:mm:ss", "yyyy.MM.dd. H:mm:ss",
-			"yyyy-MMM-dd HH:mm:ss",
-
-			"dd/MM/yyyy HH.mm.ss", "dd.MM.yyyy HH.mm.ss",
-			"dd.MM.yyyy. HH.mm.ss", "dd.MM.yyyy H.mm.ss",
-			"yyyy-MM-dd HH.mm.ss",
-			"yyyy.MM.dd HH.mm.ss", "yyyy/MM/dd H.mm.ss", "yyyy.MM.dd. H.mm.ss",
-			"yyyy-MMM-dd HH.mm.ss",
-
-			"dd/MM/yyyy-HH.mm.ss", "dd.MM.yyyy-HH.mm.ss",
-			"dd.MM.yyyy.-HH.mm.ss", 
-			"dd.MM.yyyy-H.mm.ss",
-			"yyyy-MM-dd-HH.mm.ss",
-			"yyyy.MM.dd-HH.mm.ss", "yyyy/MM/dd-H.mm.ss", "yyyy.MM.dd.-H.mm.ss",
-			"yyyy-MMM-dd-HH.mm.ss",
-
-			"dd MMM yy H:mm:ss",
-			"dd MMM yyyy HH:mm:ss", "dd-MMM-yyyy HH:mm:ss",
-			"dd.MMM.yyyy HH:mm:ss", "dd-MMM-yyyy H:mm:ss",
-			"dd-MM-yyyy HH:mm:ss",
-			"d MMM yyyy HH:mm:ss", "d-MMM-yyyy HH:mm:ss", "d MMM yyyy H:mm:ss",
-			"d MMM yyyy, H:mm:ss", "d-MMM-yyyy H:mm:ss", "d-MMM-yyyy H.mm.ss",
-			"d/MMM/yyyy H:mm:ss",
-			"d/MM/yyyy HH:mm:ss", "d.MM.yyyy H:mm:ss",
-			"d.M.yyyy HH:mm:", "d.M.yyyy HH:mm:ss", "d.M.yyyy H:mm:ss",
-			"d.M.yyyy H.mm.ss", "Gy.MM.dd H:mm:ss", "HH:mm:ss dd-MM-yyyy",
-			"HH:mm:ss dd/MM/yyyy",
-			"yyyy.d.M HH:mm:ss",
-			"yyyy.M.d HH.mm.ss",
-			"yyyy MMM d HH:mm:ss", null };
 
 }
