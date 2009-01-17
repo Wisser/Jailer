@@ -62,7 +62,7 @@ public class Configuration {
 
 	public char nanoSep = '.';
 	public boolean appendNanosToTimestamp = false;
-	public boolean appendMillisToTimestamp = true;
+	public boolean appendMillisToTimestamp = false;
 	public boolean useToTimestampFunction = false;
 	public DateFormat timestampFormat = null;
 	public String emptyCLOBValue = null;
