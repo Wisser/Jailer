@@ -185,17 +185,15 @@ public class SqlUtil {
         		String format;
         		synchronized(defaultTimestampFormat) {
 	        		format = defaultTimestampFormat.format((Date) content);
-	        		if (appendNanosToTimestamp) {
-	        			format += getNanoString((Timestamp) content, !appendMillisToTimestamp);
-	        		}
+	       			format += getNanoString((Timestamp) content, appendNanosToTimestamp);
         		}
 				return "to_timestamp('" + format + "', 'YYYY-MM-DD HH24:MI:SS.FF')";
         	} else if (timestampFormat != null) {
         		String format;
         		synchronized(timestampFormat) {
 	        		format = timestampFormat.format((Date) content);
-	        		if (appendNanosToTimestamp) {
-	        			format += getNanoString((Timestamp) content, !appendMillisToTimestamp);
+	        		if (appendMillisToTimestamp) {
+	        			format += getNanoString((Timestamp) content, appendNanosToTimestamp);
 	        		}
         		}
 				return "'" + format + "'";
