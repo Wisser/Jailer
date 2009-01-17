@@ -79,6 +79,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<property name="emptyCLOBValue" value="empty_clob()" />
 			<property name="emptyBLOBValue" value="empty_blob()" />
 			<property name="binaryPattern" value="hextoraw('%s')" />
+			<property name="useToTimestampFunction" value="true" />
 		</bean>
 		
 		<!-- for PostgreSQL -->
