@@ -19,6 +19,8 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.Map;
 
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
@@ -48,17 +50,16 @@ public class DDLCreator {
         String template = "script/ddl-template.sql";
 		String contraint = statementExecutor.dbms == DBMS.SYBASE || statementExecutor.dbms == DBMS.MySQL? " NULL" : "";
 		String universalPrimaryKey = dataModel.getUniversalPrimaryKey().toSQL(null, contraint);
-		Object[] arguments = new Object[] { 
-                universalPrimaryKey,
-                dataModel.getUniversalPrimaryKey().toSQL("PRE_", contraint),
-                dataModel.getUniversalPrimaryKey().toSQL("FROM_", contraint),
-                dataModel.getUniversalPrimaryKey().toSQL("TO_", contraint),
-                dataModel.getUniversalPrimaryKey().columnList(null),
-                dataModel.getUniversalPrimaryKey().columnList("FROM_"),
-                dataModel.getUniversalPrimaryKey().columnList("TO_"),
-                Jailer.VERSION,
-                contraint
-            };
+		Map<String, String> arguments = new HashMap<String, String>();
+        arguments.put("upk", universalPrimaryKey);
+		arguments.put("pre", dataModel.getUniversalPrimaryKey().toSQL("PRE_", contraint));
+		arguments.put("from", dataModel.getUniversalPrimaryKey().toSQL("FROM_", contraint));
+		arguments.put("to", dataModel.getUniversalPrimaryKey().toSQL("TO_", contraint));
+		arguments.put("column-list", dataModel.getUniversalPrimaryKey().columnList(null));
+		arguments.put("column-list-from", dataModel.getUniversalPrimaryKey().columnList("FROM_"));
+		arguments.put("column-list-to", dataModel.getUniversalPrimaryKey().columnList("TO_"));
+		arguments.put("version", Jailer.VERSION);
+		arguments.put("constraint", contraint);
         String ddl = PrintUtil.applyTemplate(template, arguments);
         
         System.out.println(ddl);
