@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
@@ -75,8 +76,8 @@ public class ExplainTool {
             succEqualsE.append("Succ.PRE_" + column.name + "=E." + column.name);
         }
         final FileWriter writer = new FileWriter("explain.log");
-        String selectLeafs = "Select type, " + graph.getUniversalPrimaryKey().columnList(null) + " From " + EntityGraph.ENTITY + " E Where E.r_entitygraph=" + graph.graphID +
-            " and not exists (Select * from " + EntityGraph.ENTITY + " Succ Where Succ.r_entitygraph=" + graph.graphID + " and Succ.PRE_TYPE=E.type and " + succEqualsE + ")";
+        String selectLeafs = "Select type, " + graph.getUniversalPrimaryKey().columnList(null) + " From " + SQLDialect.dmlTableReference(EntityGraph.ENTITY_, statementExecutor) + " E Where E.r_entitygraph=" + graph.graphID +
+            " and not exists (Select * from " + SQLDialect.dmlTableReference(EntityGraph.ENTITY_, statementExecutor) + " Succ Where Succ.r_entitygraph=" + graph.graphID + " and Succ.PRE_TYPE=E.type and " + succEqualsE + ")";
         statementExecutor.executeQuery(selectLeafs, new StatementExecutor.AbstractResultSetReader() {
             Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
         	public void readCurrentRow(ResultSet resultSet) throws SQLException {
@@ -131,7 +132,7 @@ public class ExplainTool {
             String value = keys.get(i++);
 			where += column.name + (value == null || value.equals("null")? " is null" : ("=" + value));
         }
-        String selectPredecessor = "Select PRE_TYPE, association, " + graph.getUniversalPrimaryKey().columnList("PRE_") + " From " + EntityGraph.ENTITY + " E Where E.r_entitygraph=" + graph.graphID +
+        String selectPredecessor = "Select PRE_TYPE, association, " + graph.getUniversalPrimaryKey().columnList("PRE_") + " From " + SQLDialect.dmlTableReference(EntityGraph.ENTITY_, statementExecutor) + " E Where E.r_entitygraph=" + graph.graphID +
             " and type='" + type + "' and " + where;
         final String preType[] = new String[1];
         final List<String> preKeys = new ArrayList<String>();

@@ -26,6 +26,7 @@ import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.SqlScriptExecutor;
 import net.sf.jailer.util.SqlUtil;
@@ -60,7 +61,10 @@ public class DDLCreator {
 		arguments.put("column-list-to", dataModel.getUniversalPrimaryKey().columnList("TO_"));
 		arguments.put("version", Jailer.VERSION);
 		arguments.put("constraint", contraint);
-        String ddl = PrintUtil.applyTemplate(template, arguments);
+		arguments.put("config-dml-reference", SQLDialect.dmlTableReference(SQLDialect.CONFIG_TABLE_, statementExecutor));
+// TODO
+arguments.put("table-suffix", "_T");
+		String ddl = PrintUtil.applyTemplate(template, arguments);
         
         System.out.println(ddl);
         
@@ -88,10 +92,14 @@ public class DDLCreator {
 		try {
 			if (driverClass != null) {
 	        	final StatementExecutor statementExecutor = new StatementExecutor(driverClass, dbUrl, user, password);
+// TODO
+if (1==1 /* use_temporary_tables */) {
+	return false;
+}
 	        	try {
 	        		final boolean[] uptodate = new boolean[] { false };
 	        		final DataModel datamodel = new DataModel();
-	        		statementExecutor.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE + " where jversion='" + Jailer.VERSION + "' and jkey='upk'", new StatementExecutor.ResultSetReader() {
+	        		statementExecutor.executeQuery("Select jvalue from " + SQLDialect.dmlTableReference(SQLDialect.CONFIG_TABLE_, statementExecutor) + " where jversion='" + Jailer.VERSION + "' and jkey='upk'", new StatementExecutor.ResultSetReader() {
 						public void readCurrentRow(ResultSet resultSet) throws SQLException {
 							String contraint = statementExecutor.dbms == DBMS.SYBASE? " NULL" : "";
 							String universalPrimaryKey = datamodel.getUniversalPrimaryKey().toSQL(null, contraint);
@@ -123,10 +131,14 @@ public class DDLCreator {
 		try {
 			if (driverClass != null) {
 	        	StatementExecutor statementExecutor = new StatementExecutor(driverClass, dbUrl, user, password);
+// TODO
+if (1==1 /* use_temporary_tables */) {
+	return null;
+}
 	        	statementExecutor.setSilent(true);
 	        	try {
 	        		final boolean[] uptodate = new boolean[] { false };
-	        		statementExecutor.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE + " where jkey='magic' and jvalue='837065098274756382534403654245288'", new StatementExecutor.ResultSetReader() {
+	        		statementExecutor.executeQuery("Select jvalue from " + SQLDialect.dmlTableReference(SQLDialect.CONFIG_TABLE_, statementExecutor) + " where jkey='magic' and jvalue='837065098274756382534403654245288'", new StatementExecutor.ResultSetReader() {
 						public void readCurrentRow(ResultSet resultSet) throws SQLException {
 							uptodate[0] = true;
 						}
