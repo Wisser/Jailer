@@ -97,6 +97,28 @@ public class PrintUtil {
     }
 
     /**
+     * Applies arguments to template.
+     * 
+     * @param template file name of template
+     * @param arguments the arguments (named values)
+     * 
+     * @return template with arguments filled in
+     */
+    public static String applyTemplate(String template, Map<String, String> arguments) throws FileNotFoundException, IOException {
+    	String sb = templateCache.get(template);
+        if (sb == null) {
+            sb = loadFile(template);
+            templateCache.put(template, sb);
+        }
+        
+        for (Map.Entry<String, String> e: arguments.entrySet()) {
+        	sb = sb.replaceAll("\\$\\{" + e.getKey() + "\\}", e.getValue()); 
+        }
+        		
+        return sb;
+	}
+
+    /**
      * Loads a file.
      * 
      * @param file the file to load
