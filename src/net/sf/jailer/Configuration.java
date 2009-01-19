@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.database.StatisticRenovator;
+import net.sf.jailer.database.TemporaryTableManager;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.enhancer.ScriptEnhancer;
 import net.sf.jailer.render.DataModelRenderer;
@@ -68,6 +69,16 @@ public class Configuration {
 	public String emptyCLOBValue = null;
 	public String emptyBLOBValue = null;
 	public String binaryPattern = "x'%s'";
+	
+	/**
+	 * Manages session local temporary tables.
+	 */
+	public TemporaryTableManager sessionTemporaryTableManager = null;
+	
+	/**
+	 * Manages transaction local temporary tables.
+	 */
+	public TemporaryTableManager transactionTemporaryTableManager = null;
 	
     /**
      * Default configuration for unknown DBMS.
@@ -171,6 +182,20 @@ public class Configuration {
 
 	public void setBinaryPattern(String binaryPattern) {
 		this.binaryPattern = binaryPattern;
+	}
+	
+	/**
+	 * Sets manager for session local temporary tables.
+	 */
+	public void setSessionTemporaryTableManager(TemporaryTableManager tableManager) {
+		sessionTemporaryTableManager = tableManager;
+	}
+	
+	/**
+	 * Sets manager for transaction local temporary tables.
+	 */
+	public void setTransactionTemporaryTableManager(TemporaryTableManager tableManager) {
+		transactionTemporaryTableManager = tableManager;
 	}
 	
 }

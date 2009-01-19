@@ -25,8 +25,8 @@ import java.util.Map;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.database.TemporaryTableManager;
 import net.sf.jailer.datamodel.DataModel;
-import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.SqlScriptExecutor;
 import net.sf.jailer.util.SqlUtil;
@@ -62,8 +62,27 @@ public class DDLCreator {
 		arguments.put("version", Jailer.VERSION);
 		arguments.put("constraint", contraint);
 		arguments.put("config-dml-reference", SQLDialect.dmlTableReference(SQLDialect.CONFIG_TABLE_, statementExecutor));
-// TODO
-arguments.put("table-suffix", "_T");
+
+		// TODO
+		TemporaryTableManager tableManager = Configuration.forDbms(statementExecutor).sessionTemporaryTableManager;
+		if (tableManager != null) {
+			arguments.put("table-suffix", "_T");
+			arguments.put("drop-table", "-- DROP TABLE ");
+			arguments.put("create-table", tableManager.getCreateTablePrefix());
+			arguments.put("create-table-suffix", tableManager.getCreateTableSuffix());
+			arguments.put("create-index", tableManager.getCreateIndexPrefix());
+			arguments.put("create-index-suffix", tableManager.getCreateIndexSuffix());
+			arguments.put("index-table-prefix", tableManager.getIndexTablePrefix());
+		} else {
+			arguments.put("table-suffix", "");
+			arguments.put("drop-table", "DROP TABLE ");
+			arguments.put("create-table", "CREATE TABLE ");
+			arguments.put("create-table-suffix", "");
+			arguments.put("create-index", "CREATE INDEX ");
+			arguments.put("create-index-suffix", "");
+			arguments.put("index-table-prefix", "");
+		}
+		
 		String ddl = PrintUtil.applyTemplate(template, arguments);
         
         System.out.println(ddl);
