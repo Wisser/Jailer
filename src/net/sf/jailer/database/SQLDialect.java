@@ -37,12 +37,12 @@ public class SQLDialect {
 	/**
 	 * Name of config table.
 	 */
-	public static final String CONFIG_TABLE = "JAILER_CONFIG";
+	public static final String CONFIG_TABLE_ = "JAILER_CONFIG";
 	
 	/**
 	 * Name of temp table.
 	 */
-	public static final String TMP_TABLE = "JAILER_TMP";
+	public static final String TMP_TABLE_ = "JAILER_TMP";
 	
 	/**
 	 * Name of dual table.
@@ -72,14 +72,25 @@ public class SQLDialect {
 	public final boolean needsValuesKeywordForDeletes;
 	public final boolean supportsMultiRowInserts;
 	
+    /**
+     * Gets table reference for DML statements for a given working table.
+     * 
+     * @param tableName the working table
+     * @param statementExecutor holds connection to DBMS
+     * @return table reference for the working table
+     */
+    public static String dmlTableReference(String tableName, StatementExecutor statementExecutor) {
+    	return tableName + "_T";
+    }
+
 	/**
 	 * Statements for upserts (overwrites).
 	 */
 	public static enum UPSERT_MODE { 
-		DB2("Select * From (values (1, 2), (3, 4)) as Q(c1, c2) Where not exists (Select * from " + TMP_TABLE + " T Where T.c1=Q.c1)"), 
-		FROM_DUAL("Select 1, 2 From dual where not exists(Select * from " + TMP_TABLE + " T where T.c1=1)"),
-		FROM_JL_DUAL("Select 1, 2 From " + TMP_TABLE + " where not exists(Select * from " + TMP_TABLE + " T where T.c1=1)"),
-		ORACLE("MERGE INTO " + TMP_TABLE + " T " +
+		DB2("Select * From (values (1, 2), (3, 4)) as Q(c1, c2) Where not exists (Select * from $ T Where T.c1=Q.c1)"), 
+		FROM_DUAL("Select 1, 2 From dual where not exists(Select * from $ T where T.c1=1)"),
+		FROM_JL_DUAL("Select 1, 2 From $ where not exists(Select * from $ T where T.c1=1)"),
+		ORACLE("MERGE INTO $ T " +
                               "USING (SELECT 1 c1, 2 c2 from dual) incoming " +
                               "ON (T.c1 = incoming.c1) " +
                               "WHEN MATCHED THEN " +
@@ -88,9 +99,9 @@ public class SQLDialect {
                               "INSERT (T.c1, T.c2) " +
                               "VALUES (incoming.c1, incoming.c2)");
 		
-		public final String testSQL;
+		public final String testSQL_;
 		UPSERT_MODE(String testSQL) {
-			this.testSQL = testSQL;
+			this.testSQL_ = testSQL;
 		}
 	};
 	
@@ -212,7 +223,7 @@ public class SQLDialect {
 				if (statementExecutor.dbms != DBMS.SYBASE) {
 					try {
 						String values = sqlDialect.needsValuesKeywordForDeletes? "values " : "";
-						statementExecutor.execute("DELETE FROM " + TMP_TABLE + " where (c1, c2) IN (" + values + "(1,2), (3,4))");
+						statementExecutor.execute("DELETE FROM " + SQLDialect.dmlTableReference(TMP_TABLE_, statementExecutor) + " where (c1, c2) IN (" + values + "(1,2), (3,4))");
 					} catch (Exception e) {
 						ok = false;
 						_sqllog.info(e.getMessage());
@@ -223,7 +234,7 @@ public class SQLDialect {
 				}
 				boolean multiRow;
 				try {
-					statementExecutor.execute("INSERT INTO " + TMP_TABLE + "(c1, c2) values (1,2), (3,4)");
+					statementExecutor.execute("INSERT INTO " + SQLDialect.dmlTableReference(TMP_TABLE_, statementExecutor) + "(c1, c2) values (1,2), (3,4)");
 					multiRow = true;
 				} catch (Exception e) {
 					multiRow = false;
@@ -236,7 +247,7 @@ public class SQLDialect {
 					continue;
 				}
 				try {
-					statementExecutor.execute(sqlDialect.upsertMode.testSQL);
+					statementExecutor.execute(sqlDialect.upsertMode.testSQL_.replaceAll("\\$", SQLDialect.dmlTableReference(TMP_TABLE_, statementExecutor)));
 				} catch (Exception e) {
 					ok = false;
 					_sqllog.info(e.getMessage());
@@ -278,7 +289,7 @@ public class SQLDialect {
 	private static String readConfigValue(String key, StatementExecutor statementExecutor) {
 		try {
 			final String[] value = new String[] { null };
-			statementExecutor.executeQuery("Select jvalue from " + CONFIG_TABLE + " where jversion='" + Jailer.VERSION + "' and jkey='" + key + "'", new StatementExecutor.ResultSetReader() {
+			statementExecutor.executeQuery("Select jvalue from " + SQLDialect.dmlTableReference(CONFIG_TABLE_, statementExecutor) + " where jversion='" + Jailer.VERSION + "' and jkey='" + key + "'", new StatementExecutor.ResultSetReader() {
 				public void readCurrentRow(ResultSet resultSet) throws SQLException {
 					value[0] = resultSet.getString(1);
 				}
@@ -300,11 +311,11 @@ public class SQLDialect {
 	 */
 	private static void setConfigValue(String key, String value, StatementExecutor statementExecutor) {
 		try {
-			statementExecutor.executeUpdate("Delete from " + CONFIG_TABLE + " where jversion='" + Jailer.VERSION + "' and jkey=" + SqlUtil.toSql(key));
+			statementExecutor.executeUpdate("Delete from " + SQLDialect.dmlTableReference(CONFIG_TABLE_, statementExecutor) + " where jversion='" + Jailer.VERSION + "' and jkey=" + SqlUtil.toSql(key));
 		} catch (Exception e) {
 		}
 		try {
-			statementExecutor.executeUpdate("Insert into " + CONFIG_TABLE + "(jversion, jkey, jvalue) values ('" + Jailer.VERSION + "', " + SqlUtil.toSql(key) + ", " + SqlUtil.toSql(value) + ")");
+			statementExecutor.executeUpdate("Insert into " + SQLDialect.dmlTableReference(CONFIG_TABLE_, statementExecutor) + "(jversion, jkey, jvalue) values ('" + Jailer.VERSION + "', " + SqlUtil.toSql(key) + ", " + SqlUtil.toSql(value) + ")");
 		} catch (Exception e) {
 		}
 	}

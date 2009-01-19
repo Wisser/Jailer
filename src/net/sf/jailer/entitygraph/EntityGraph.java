@@ -25,6 +25,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.jailer.database.DBMS;
+import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.datamodel.Association;
@@ -47,22 +48,22 @@ public class EntityGraph {
     /**
      * Name of the graph-table.
      */
-	public static final String ENTITY_GRAPH = "JAILER_GRAPH";
+	public static final String ENTITY_GRAPH_ = "JAILER_GRAPH";
     
     /**
      * Name of the (helper) set-table.
      */
-    public static final String ENTITY_SET_ELEMENT = "JAILER_SET";
+    public static final String ENTITY_SET_ELEMENT_ = "JAILER_SET";
     
     /**
      * Name of the entity-table.
      */
-    public static final String ENTITY = "JAILER_ENTITY";
+    public static final String ENTITY_ = "JAILER_ENTITY";
     
     /**
      * Name of the dependency-table.
      */
-    public static final String DEPENDENCY = "JAILER_DEPENDENCY";
+    public static final String DEPENDENCY_ = "JAILER_DEPENDENCY";
     
     /**
      * The unique ID of the graph.
@@ -108,7 +109,7 @@ public class EntityGraph {
     public static EntityGraph create(int graphID, StatementExecutor statementExecutor, PrimaryKey universalPrimaryKey) {
         EntityGraph entityGraph = new EntityGraph(graphID, statementExecutor, universalPrimaryKey);
         try {
-            statementExecutor.executeUpdate("Insert into " + ENTITY_GRAPH + "(id, age) values (" + graphID + ", 1)");
+            statementExecutor.executeUpdate("Insert into " + SQLDialect.dmlTableReference(ENTITY_GRAPH_, statementExecutor) + "(id, age) values (" + graphID + ", 1)");
         } catch (SQLException e) {
             throw new RuntimeException("Can't find working tables! " +
                     "Run 'bin/jailer.sh create-ddl' " +
@@ -128,8 +129,8 @@ public class EntityGraph {
     public static EntityGraph copy(EntityGraph graph, int graphID, StatementExecutor statementExecutor) throws SQLException {
         EntityGraph entityGraph = create(graphID, statementExecutor, graph.universalPrimaryKey);
         statementExecutor.executeUpdate(
-                "Insert into " + ENTITY + "(r_entitygraph, " + graph.universalPrimaryKey.columnList(null) + ", birthday, type) " +
-                    "Select " + graphID + ", " + graph.universalPrimaryKey.columnList(null) + ", birthday, type From " + ENTITY + " Where r_entitygraph=" + graph.graphID + "");
+                "Insert into " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + "(r_entitygraph, " + graph.universalPrimaryKey.columnList(null) + ", birthday, type) " +
+                    "Select " + graphID + ", " + graph.universalPrimaryKey.columnList(null) + ", birthday, type From " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " Where r_entitygraph=" + graph.graphID + "");
         return entityGraph;
     }
 
@@ -145,7 +146,7 @@ public class EntityGraph {
         EntityGraph entityGraph = new EntityGraph(graphID, statementExecutor, universalPrimaryKey);
         final boolean[] found = new boolean[1];
         found[0] = false;
-        statementExecutor.executeQuery("Select * From " + ENTITY_GRAPH  + "Where id=" + graphID + "", new StatementExecutor.ResultSetReader() {
+        statementExecutor.executeQuery("Select * From " + SQLDialect.dmlTableReference(ENTITY_GRAPH_, statementExecutor) + "Where id=" + graphID + "", new StatementExecutor.ResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 found[0] = true;
             }
@@ -175,7 +176,7 @@ public class EntityGraph {
     public int getAge() throws SQLException {
         final int[] age = new int[1];
         age[0] = -1;
-        statementExecutor.executeQuery("Select age From " + ENTITY_GRAPH + " Where id=" + graphID + "", new StatementExecutor.ResultSetReader() {
+        statementExecutor.executeQuery("Select age From " + SQLDialect.dmlTableReference(ENTITY_GRAPH_, statementExecutor) + " Where id=" + graphID + "", new StatementExecutor.ResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 age[0] = resultSet.getInt(1);
             }
@@ -191,7 +192,7 @@ public class EntityGraph {
      * @param age the age of the graph
      */
     public void setAge(int age) throws SQLException {
-        statementExecutor.executeUpdate("Update " + ENTITY_GRAPH + " Set age=" + age + " Where id=" + graphID + "");
+        statementExecutor.executeUpdate("Update " + SQLDialect.dmlTableReference(ENTITY_GRAPH_, statementExecutor) + " Set age=" + age + " Where id=" + graphID + "");
     }
     
     /**
@@ -202,7 +203,7 @@ public class EntityGraph {
     public long getSize() throws SQLException {
         final int[] size = new int[1];
         size[0] = -1;
-        statementExecutor.executeQuery("Select count(*) From " + ENTITY + " Where r_entitygraph=" + graphID + " and birthday >= 0", new StatementExecutor.ResultSetReader() {
+        statementExecutor.executeQuery("Select count(*) From " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " Where r_entitygraph=" + graphID + " and birthday >= 0", new StatementExecutor.ResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 size[0] = resultSet.getInt(1);
             }
@@ -216,9 +217,9 @@ public class EntityGraph {
      * Deletes the graph.
      */
     public void delete() throws SQLException {
-        statementExecutor.executeUpdate("Delete from " + DEPENDENCY + " Where r_entitygraph=" + graphID + "");
-        statementExecutor.executeUpdate("Delete from " + ENTITY + " Where r_entitygraph=" + graphID + "");
-        statementExecutor.executeUpdate("Delete from " + ENTITY_GRAPH + " Where id=" + graphID + "");
+        statementExecutor.executeUpdate("Delete from " + SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor) + " Where r_entitygraph=" + graphID + "");
+        statementExecutor.executeUpdate("Delete from " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " Where r_entitygraph=" + graphID + "");
+        statementExecutor.executeUpdate("Delete from " + SQLDialect.dmlTableReference(ENTITY_GRAPH_, statementExecutor) + " Where id=" + graphID + "");
     }
 
     /**
@@ -295,9 +296,9 @@ public class EntityGraph {
             (source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, '" + source.getName() + "' AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
             " From " + table.getName() + " " + alias +
             (joinedTable != null? " join " + joinedTable.getName() + " " + joinedTableAlias + " on " + joinCondition : "") +
-            " left join " + ENTITY + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type='" + table.getName() + "' and " +
+            " left join " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type='" + table.getName() + "' and " +
             pkEqualsEntityID(table, alias, "Duplicate") + 
-            (joinWithEntity? ", " + ENTITY + " E" : "") +
+            (joinWithEntity? ", " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " E" : "") +
             " Where (" + condition + ") and Duplicate.type is null" +
             (limit > 0? " fetch first " + limit + " rows only" : ""); 
         
@@ -316,7 +317,7 @@ public class EntityGraph {
                      "Group by GRAPH_ID, " + upkColumnList(table, null) + ", TODAY, TYPE, ASSOCIATION";
         }
         
-        String insert = "Insert into " + ENTITY + " (r_entitygraph, " + upkColumnList(table, null) + ", birthday, type" + (source == null || !explain? "" : ", association, PRE_TYPE, " + upkColumnList(source, "PRE_"))  + ") " + select;
+        String insert = "Insert into " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " (r_entitygraph, " + upkColumnList(table, null) + ", birthday, type" + (source == null || !explain? "" : ", association, PRE_TYPE, " + upkColumnList(source, "PRE_"))  + ") " + select;
         if (SqlUtil.dbms == DBMS.SYBASE) statementExecutor.execute("set forceplan on ");
         long rc = statementExecutor.executeUpdate(insert);
         totalRowcount += rc;
@@ -336,9 +337,9 @@ public class EntityGraph {
      * @param dependencyId id of dependency
      */
     public void addDependencies(Table from, String fromAlias, Table to, String toAlias, String condition, int aggregationId, int dependencyId) throws SQLException {
-        String insert = "Insert into " + DEPENDENCY + "(r_entitygraph, assoc, depend_id, from_type, to_type, " + upkColumnList(from, "FROM_") + ", " + upkColumnList(to, "TO_") + ") " +
+        String insert = "Insert into " + SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor) + "(r_entitygraph, assoc, depend_id, from_type, to_type, " + upkColumnList(from, "FROM_") + ", " + upkColumnList(to, "TO_") + ") " +
             "Select " + graphID + ", " + aggregationId  + ", " + dependencyId + ", '" + from.getName() + "', '" + to.getName() + "', " + pkList(from, fromAlias, "FROM") + ", " + pkList(to, toAlias, "TO") +
-            " From " + ENTITY + " E1, " + ENTITY + " E2, " + from.getName() + " " + fromAlias + " join " + to.getName() + " " + toAlias + " on " + condition +
+            " From " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " E1, " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " E2, " + from.getName() + " " + fromAlias + " join " + to.getName() + " " + toAlias + " on " + condition +
             " Where E1.r_entitygraph=" + graphID + " and E2.r_entitygraph=" + graphID + "" +
             " and E1.type='" + from.getName() + "' and E2.type='" + to.getName() + "'" +
             " and " + pkEqualsEntityID(from, fromAlias, "E1") +
@@ -350,7 +351,7 @@ public class EntityGraph {
      * Gets distinct association-ids of all edged.
      */
     public Set<Integer> getDistinctDependencyIDs() throws SQLException {
-        String select = "Select distinct depend_id from " + DEPENDENCY + " Where r_entitygraph=" + graphID;
+        String select = "Select distinct depend_id from " + SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor) + " Where r_entitygraph=" + graphID;
         final Set<Integer> ids = new HashSet<Integer>();
         statementExecutor.executeQuery(select, new StatementExecutor.ResultSetReader() {
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
@@ -374,17 +375,17 @@ public class EntityGraph {
                 fromEqualsPK.append(" and ");
             }
         	if (match.get(column) != null) {
-	            fromEqualsPK.append("D.FROM_" + column.name + "=" + ENTITY + "." + column.name);
+	            fromEqualsPK.append("D.FROM_" + column.name + "=" + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + "." + column.name);
         	} else {
-        		fromEqualsPK.append("D.FROM_" + column.name + " is null and " + ENTITY + "." + column.name + " is null");
+        		fromEqualsPK.append("D.FROM_" + column.name + " is null and " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + "." + column.name + " is null");
         	}
         }
         statementExecutor.executeUpdate(
-                "Update " + ENTITY + " set birthday=0 " +
+                "Update " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " set birthday=0 " +
                 "Where r_entitygraph=" + graphID + " and birthday>0 and " +
                 	   (table != null? "type='" + table.getName() + "' and " : "") +
-                       "not exists (Select * from " + DEPENDENCY + " D " +
-                           "Where D.r_entitygraph=" + graphID + " and D.assoc=0 and D.from_type=" + ENTITY + ".type and " +
+                       "not exists (Select * from " + SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor) + " D " +
+                           "Where D.r_entitygraph=" + graphID + " and D.assoc=0 and D.from_type=" + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + ".type and " +
                                  fromEqualsPK + ")");
     }
 
@@ -399,16 +400,16 @@ public class EntityGraph {
                 toEqualsPK.append(" and ");
             }
             if (match.containsKey(column)) {
-            	toEqualsPK.append("D.TO_" + column.name + "=" + ENTITY + "." + column.name);
+            	toEqualsPK.append("D.TO_" + column.name + "=" + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + "." + column.name);
             } else {
-            	toEqualsPK.append("D.TO_" + column.name + " is null and " + ENTITY + "." + column.name + " is null");
+            	toEqualsPK.append("D.TO_" + column.name + " is null and " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + "." + column.name + " is null");
             }
         }
         statementExecutor.executeUpdate(
-                "Update " + ENTITY + " set birthday=0 " +
+                "Update " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " set birthday=0 " +
                 "Where r_entitygraph=" + graphID + " and birthday>0 and type='" + table.getName() + "' and " +
-                       "not exists (Select * from " + DEPENDENCY + " D " +
-                           "Where D.r_entitygraph=" +graphID + " and D.to_type=" + ENTITY + ".type and " +
+                       "not exists (Select * from " + SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor) + " D " +
+                           "Where D.r_entitygraph=" +graphID + " and D.to_type=" + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + ".type and " +
                                  toEqualsPK + ")");
     }
 
@@ -430,7 +431,7 @@ public class EntityGraph {
      */
     public void readMarkedEntities(Table table, StatementExecutor.ResultSetReader reader, String selectionSchema) throws SQLException {
         statementExecutor.executeQuery(
-                "Select " + selectionSchema + " From " + ENTITY + " E join " + table.getName() + " T on " +
+                "Select " + selectionSchema + " From " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " E join " + table.getName() + " T on " +
                 pkEqualsEntityID(table, "T", "E") +
                 " Where E.birthday=0 and E.r_entitygraph=" + graphID + " and E.type='" + table.getName() + "'",
                 reader);
@@ -449,10 +450,10 @@ public class EntityGraph {
             }
             e1EqualsE2.append("E1." + column.name + "=E2." + column.name);
         }
-        statementExecutor.executeUpdate("Update " + ENTITY + " E1 " +
+        statementExecutor.executeUpdate("Update " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " E1 " +
                 "set E1.r_entitygraph=" + graphID + " " +
                 "Where E1.r_entitygraph=" + graph.graphID + " " +
-                "and not exists(Select * from " + ENTITY + " E2 Where " +
+                "and not exists(Select * from " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " E2 Where " +
                 "E2.r_entitygraph=" + graphID + " and " +
                 e1EqualsE2 +
                 ")");
@@ -467,7 +468,7 @@ public class EntityGraph {
      */
     public void readEntities(Table table, StatementExecutor.ResultSetReader reader) throws SQLException {
         statementExecutor.executeQuery(
-                "Select " + table.getName() + ".* From " + ENTITY + " E join " + table.getName() + " on " +
+                "Select " + table.getName() + ".* From " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " E join " + table.getName() + " on " +
                 pkEqualsEntityID(table, table.getName(), "E") +
                 " Where E.birthday>=0 and E.r_entitygraph=" + graphID + " and E.type='" + table.getName() + "'",
                 reader);
@@ -485,35 +486,35 @@ public class EntityGraph {
                 fromEqualsPK.append(" and ");
             }
             if (match.containsKey(column)) {
-            	fromEqualsPK.append(DEPENDENCY + ".FROM_" + column.name + "=" + column.name);
+            	fromEqualsPK.append(SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor) + ".FROM_" + column.name + "=" + column.name);
             } else {
-            	fromEqualsPK.append(DEPENDENCY + ".FROM_" + column.name + " is null and " + column.name + " is null");
+            	fromEqualsPK.append(SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor) + ".FROM_" + column.name + " is null and " + column.name + " is null");
             }
             if (toEqualsPK.length() > 0) {
                 toEqualsPK.append(" and ");
             }
             if (match.containsKey(column)) {
-            	toEqualsPK.append(DEPENDENCY + ".TO_" + column.name + "=" + column.name);
+            	toEqualsPK.append(SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor) + ".TO_" + column.name + "=" + column.name);
             } else {
-            	toEqualsPK.append(DEPENDENCY + ".TO_" + column.name + " is null and " + column.name + " is null");
+            	toEqualsPK.append(SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor) + ".TO_" + column.name + " is null and " + column.name + " is null");
             }
         }
         statementExecutor.executeUpdate(
-                "Delete From " + DEPENDENCY + " " +
-                "Where " + DEPENDENCY + ".r_entitygraph=" + graphID + " and assoc=0 and from_type='" + table.getName() + "' and " + 
-                      "exists (Select * from " + ENTITY + " E Where " + 
+                "Delete From " + SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor) + " " +
+                "Where " + SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor) + ".r_entitygraph=" + graphID + " and assoc=0 and from_type='" + table.getName() + "' and " + 
+                      "exists (Select * from " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " E Where " + 
                           "E.r_entitygraph=" + graphID + " and " +
-                          fromEqualsPK + " and " + DEPENDENCY + ".from_type=E.type and " +
+                          fromEqualsPK + " and " + SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor) + ".from_type=E.type and " +
                           "E.birthday=0)");
         statementExecutor.executeUpdate(
-                "Delete From " + DEPENDENCY + " " +
-                "Where " + DEPENDENCY + ".r_entitygraph=" + graphID + " and assoc=0 and to_type='" + table.getName() + "' and " +
-                      "exists (Select * from " + ENTITY + " E Where " + 
+                "Delete From " + SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor) + " " +
+                "Where " + SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor) + ".r_entitygraph=" + graphID + " and assoc=0 and to_type='" + table.getName() + "' and " +
+                      "exists (Select * from " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " E Where " + 
                           "E.r_entitygraph=" + graphID + " and " +
-                          toEqualsPK + " and " + DEPENDENCY + ".to_type=E.type and " +
+                          toEqualsPK + " and " + SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor) + ".to_type=E.type and " +
                           "E.birthday=0)");
         statementExecutor.executeUpdate(
-                "Delete From " + ENTITY + " " +
+                "Delete From " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " " +
                 "Where r_entitygraph=" + graphID + " and type='" + table.getName() + "' and " +
                        "birthday=0");
     }
@@ -523,7 +524,7 @@ public class EntityGraph {
      */
     public long deleteEntities(Table table) throws SQLException {
         return statementExecutor.executeUpdate(
-                "Delete From " + ENTITY + " " +
+                "Delete From " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " " +
                 "Where r_entitygraph=" + graphID + " and " +
                        "type='" + table.getName() +"'");
     }
@@ -537,7 +538,7 @@ public class EntityGraph {
     public long countEntities(Table table) throws SQLException {
         final long[] count = new long[1];
         statementExecutor.executeQuery(
-                "Select count(*) from " + ENTITY + " E " +
+                "Select count(*) from " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " E " +
                 "Where E.birthday>=0 and E.r_entitygraph=" + graphID + " and E.type='" + table.getName() + "'",
                 new StatementExecutor.AbstractResultSetReader() {
                     public void readCurrentRow(ResultSet resultSet) throws SQLException {
@@ -567,11 +568,11 @@ public class EntityGraph {
                 sourceAlias = "A";
             }
             int setId = getNextSetId();
-            String remove = "Insert into " + ENTITY_SET_ELEMENT + "(set_id, type, " + universalPrimaryKey.columnList(null) + ") " +
-                "Select distinct " + setId + ", EB.type, " + universalPrimaryKey.columnList("EB.") + " from " + ENTITY + " EB " +
+            String remove = "Insert into " + SQLDialect.dmlTableReference(ENTITY_SET_ELEMENT_, statementExecutor) + "(set_id, type, " + universalPrimaryKey.columnList(null) + ") " +
+                "Select distinct " + setId + ", EB.type, " + universalPrimaryKey.columnList("EB.") + " from " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " EB " +
                 "join " + association.destination.getName() + " " + destAlias + " on "+ pkEqualsEntityID(association.destination, destAlias, "EB") + " " +
                 "join " + association.source.getName() + " " + sourceAlias + " on " + association.getJoinCondition() + " " +
-                (deletedEntitiesAreMarked? "join " : "left join ") + ENTITY + " EA on EA.r_entitygraph=" + graphID + " and EA.type='" + association.source.getName() + "' and " + pkEqualsEntityID(association.source, sourceAlias, "EA") + " " +
+                (deletedEntitiesAreMarked? "join " : "left join ") + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " EA on EA.r_entitygraph=" + graphID + " and EA.type='" + association.source.getName() + "' and " + pkEqualsEntityID(association.source, sourceAlias, "EA") + " " +
                 "Where EB.r_entitygraph=" + graphID + " and EB.type='" + association.destination.getName() + "' " +
                 "and " + (deletedEntitiesAreMarked? "EA.birthday=-1 and EB.birthday>=0" : "EA.type is null");
             long rc = statementExecutor.executeUpdate(remove);
@@ -589,27 +590,27 @@ public class EntityGraph {
                     }
                 	if (match.containsKey(column)) {
 	                    sEqualsE.append("S." + column.name + "=E." + column.name);
-	                    sEqualsEWoAlias.append("S." + column.name + "=" + ENTITY + "." + column.name);
+	                    sEqualsEWoAlias.append("S." + column.name + "=" + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + "." + column.name);
                 	} else {
 	                    sEqualsE.append("S." + column.name + " is null and E." + column.name + " is null");
-	                    sEqualsEWoAlias.append("S." + column.name + " is null and " + ENTITY + "." + column.name + " is null");
+	                    sEqualsEWoAlias.append("S." + column.name + " is null and " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + "." + column.name + " is null");
                 	}
                 }
-                remove = "Update " + ENTITY + " E set E.birthday=-1 Where E.r_entitygraph=" + graphID + " and E.type='" + association.destination.getName() + "' " +
-                          "and exists (Select * from " + ENTITY_SET_ELEMENT + " S where S.set_id=" + setId + " and E.type=S.type and " + sEqualsE + ")";
+                remove = "Update " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " E set E.birthday=-1 Where E.r_entitygraph=" + graphID + " and E.type='" + association.destination.getName() + "' " +
+                          "and exists (Select * from " + SQLDialect.dmlTableReference(ENTITY_SET_ELEMENT_, statementExecutor) + " S where S.set_id=" + setId + " and E.type=S.type and " + sEqualsE + ")";
                 try {
                 	statementExecutor.setSilent(true);
                 	statementExecutor.executeUpdate(remove);
                 } catch (SQLException e) {
                 	// postgreSQL
                 	StatementExecutor._log.debug("failed, retry without alias (" + e.getMessage() + ")");
-                	remove = "Update " + ENTITY + " set birthday=-1 Where " + ENTITY + ".r_entitygraph=" + graphID + " and " + ENTITY + ".type='" + association.destination.getName() + "' " +
-                    "and exists (Select * from " + ENTITY_SET_ELEMENT + " S where S.set_id=" + setId + " and " + ENTITY + ".type=S.type and " + sEqualsEWoAlias + ")";
+                	remove = "Update " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " set birthday=-1 Where " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + ".r_entitygraph=" + graphID + " and " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + ".type='" + association.destination.getName() + "' " +
+                    "and exists (Select * from " + SQLDialect.dmlTableReference(ENTITY_SET_ELEMENT_, statementExecutor) + " S where S.set_id=" + setId + " and " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + ".type=S.type and " + sEqualsEWoAlias + ")";
                 	statementExecutor.executeUpdate(remove);
                 } finally {
                 	statementExecutor.setSilent(false);
                 }
-                statementExecutor.executeUpdate("Delete from " + ENTITY_SET_ELEMENT + " where set_id=" + setId + "");
+                statementExecutor.executeUpdate("Delete from " + SQLDialect.dmlTableReference(ENTITY_SET_ELEMENT_, statementExecutor) + " where set_id=" + setId + "");
             }
             return rc;
         }
@@ -626,7 +627,7 @@ public class EntityGraph {
      * @param selectionSchema the selection schema
      */
     public void readDependentEntities(Table table, Association association, ResultSet resultSet, ResultSetReader reader, Map<String, Integer> typeCache, String selectionSchema) throws SQLException {
-    	String select = "Select " + selectionSchema + " from " + table.getName() + " T join " + DEPENDENCY + " D on " +
+    	String select = "Select " + selectionSchema + " from " + table.getName() + " T join " + SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor) + " D on " +
     		 pkEqualsEntityID(table, "T", "D", "TO_") + " and D.to_type='" + table.getName() + "'" +
     		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", typeCache) +
     	     " and D.from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
@@ -644,12 +645,12 @@ public class EntityGraph {
     public void markDependentEntitiesAsTraversed(Association association, ResultSet resultSet, Map<String, Integer> typeCache) throws SQLException {
     	String update;
     	if (statementExecutor.dbms == DBMS.SYBASE) {
-    		update = "Update " + DEPENDENCY + " set traversed=1" +
-    		 " Where " + pkEqualsEntityID(association.source, resultSet, DEPENDENCY, "FROM_", typeCache) +
-    		 " and " + DEPENDENCY + ".from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
-    		 " and " + DEPENDENCY + ".r_entitygraph=" + graphID;
+    		update = "Update " + SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor) + " set traversed=1" +
+    		 " Where " + pkEqualsEntityID(association.source, resultSet, SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor), "FROM_", typeCache) +
+    		 " and " + SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor) + ".from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
+    		 " and " + SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor) + ".r_entitygraph=" + graphID;
     	} else {
-    		update = "Update " + DEPENDENCY + " D set traversed=1" +
+    		update = "Update " + SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor) + " D set traversed=1" +
     		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", typeCache) +
     	     " and D.from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
     	     " and D.r_entitygraph=" + graphID;
@@ -664,7 +665,7 @@ public class EntityGraph {
      * @param reader reads the entities
      */
     public void readNonTraversedDependencies(Table table, ResultSetReader reader) throws SQLException {
-    	String select = "Select * from " + DEPENDENCY + " D " +
+    	String select = "Select * from " + SQLDialect.dmlTableReference(DEPENDENCY_, statementExecutor) + " D " +
     		 " Where (traversed is null or traversed <> 1)" +
     	     " and D.from_type='" + table.getName() + "'" +
     	     " and D.r_entitygraph=" + graphID;
@@ -766,12 +767,7 @@ public class EntityGraph {
 	            }
                 sb.append(tableAlias + "." + tableColumn.name);
                 sb.append(" AS " + (columnAliasPrefix == null? "" : columnAliasPrefix) + column.name);
-            } else if (SqlUtil.dbms == DBMS.MySQL) {
-            	if (sb.length() > 0) {
-	                sb.append(", ");
-	            }
-            	sb.append("null AS " + (columnAliasPrefix == null? "" : columnAliasPrefix) + column.name);
-            }
+           }
         }
         return sb.toString();
     }
@@ -787,7 +783,7 @@ public class EntityGraph {
         StringBuffer sb = new StringBuffer();
         for (Column column: universalPrimaryKey.getColumns()) {
             Column tableColumn = match.get(column);
-            if (tableColumn != null || SqlUtil.dbms == DBMS.MySQL) {
+            if (tableColumn != null) {
 	            if (sb.length() > 0) {
 	                sb.append(", ");
 	            }
@@ -807,7 +803,7 @@ public class EntityGraph {
         final List<String> statistic = new ArrayList<String>();
         final long[] total = new long[1];
         total[0] = 0;
-        statementExecutor.executeQuery("Select type, count(*) From " + ENTITY + " Where r_entitygraph=" + graphID + " and birthday>=0 group by type", new StatementExecutor.AbstractResultSetReader() {
+        statementExecutor.executeQuery("Select type, count(*) From " + SQLDialect.dmlTableReference(ENTITY_, statementExecutor) + " Where r_entitygraph=" + graphID + " and birthday>=0 group by type", new StatementExecutor.AbstractResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 String type = resultSet.getString(1);
                 Table table = dataModel.getTable(type);
@@ -873,12 +869,12 @@ public class EntityGraph {
     /**
      * Gets the universal primary key.
      * 
-     * @retrun the universal primary key
+     * @return the universal primary key
      */
     public PrimaryKey getUniversalPrimaryKey() {
         return universalPrimaryKey;
     }
-    
+
     /**
      * For creation of unique set-ids.
      */
