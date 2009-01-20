@@ -32,9 +32,9 @@ ${create-table}JAILER_ENTITY${table-suffix}
 
    ${pre},
    PRE_TYPE        VARCHAR(60)${constraint},
-   association     INTEGER${constraint},
+   association     INTEGER${constraint}
 
-   CONSTRAINT jlr_fk_graph_e FOREIGN KEY (r_entitygraph) REFERENCES JAILER_GRAPH(id)
+-- ,  CONSTRAINT jlr_fk_graph_e FOREIGN KEY (r_entitygraph) REFERENCES JAILER_GRAPH${table-suffix}(id)
 ) ${create-table-suffix};
 
 ${create-index}jlr_enty_upk ON ${index-table-prefix}JAILER_ENTITY${table-suffix} (r_entitygraph, ${column-list}, type) ${create-index-suffix};
@@ -58,9 +58,9 @@ ${create-table}JAILER_DEPENDENCY${table-suffix}
    from_type       VARCHAR(60) NOT NULL,
    to_type         VARCHAR(60) NOT NULL,
    ${from},
-   ${to},   
+   ${to}   
 
-   CONSTRAINT jlr_fk_graph_d FOREIGN KEY (r_entitygraph) REFERENCES JAILER_GRAPH(id)
+-- ,  CONSTRAINT jlr_fk_graph_d FOREIGN KEY (r_entitygraph) REFERENCES JAILER_GRAPH${table-suffix}(id)
 ) ${create-table-suffix};
 
 ${create-index}jlr_dep_from ON ${index-table-prefix}JAILER_DEPENDENCY${table-suffix} (r_entitygraph, assoc, ${column-list-from}) ${create-index-suffix};

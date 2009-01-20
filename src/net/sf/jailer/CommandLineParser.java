@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CsvFile;
@@ -228,9 +229,23 @@ public class CommandLineParser {
     @Option(name="-upsert-only",usage="generate 'upsert'-statements for all entities (in export-file)")
     public boolean upsertOnly = false;
     
+    @Option(name="-scope",usage="scope of working tables, GLOBAL, SESSION_LOCAL or TRANSACTION_LOCAL")
+    public String scope = null;
+    
     @Argument
     public List<String> arguments = new ArrayList<String>();
 
+    public TemporaryTableScope getTemporaryTableScope() {
+    	if (scope == null) {
+    		return TemporaryTableScope.GLOBAL;
+    	}
+    	try {
+    		return TemporaryTableScope.valueOf(scope);
+    	} catch (Exception e) {
+    		return TemporaryTableScope.GLOBAL;
+    	}
+    }
+    
     /**
      * Names of 'tabu' tables.
      */

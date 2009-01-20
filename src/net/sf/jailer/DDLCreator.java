@@ -26,6 +26,7 @@ import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.database.TemporaryTableManager;
+import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.SqlScriptExecutor;
@@ -41,15 +42,22 @@ public class DDLCreator {
     /**
      * Creates the DDL for the working-tables.
      */
-    public static boolean createDDL(String driverClass, String dbUrl, String user, String password) throws Exception {
-        DataModel dataModel = new DataModel();
-        StatementExecutor statementExecutor = null;
+    public static boolean createDDL(String driverClass, String dbUrl, String user, String password, TemporaryTableScope temporaryTableScope) throws Exception {
+    	StatementExecutor statementExecutor = null;
         if (driverClass != null) {
         	statementExecutor = new StatementExecutor(driverClass, dbUrl, user, password);
         }
+        return createDDL(statementExecutor, temporaryTableScope);
+    }
+    
+    /**
+     * Creates the DDL for the working-tables.
+     */
+    public static boolean createDDL(StatementExecutor statementExecutor, TemporaryTableScope temporaryTableScope) throws Exception {
+        DataModel dataModel = new DataModel();
         
         String template = "script/ddl-template.sql";
-		String contraint = statementExecutor.dbms == DBMS.SYBASE || statementExecutor.dbms == DBMS.MySQL? " NULL" : "";
+		String contraint = statementExecutor != null && (statementExecutor.dbms == DBMS.SYBASE || statementExecutor.dbms == DBMS.MySQL)? " NULL" : "";
 		String universalPrimaryKey = dataModel.getUniversalPrimaryKey().toSQL(null, contraint);
 		Map<String, String> arguments = new HashMap<String, String>();
         arguments.put("upk", universalPrimaryKey);
@@ -61,13 +69,22 @@ public class DDLCreator {
 		arguments.put("column-list-to", dataModel.getUniversalPrimaryKey().columnList("TO_"));
 		arguments.put("version", Jailer.VERSION);
 		arguments.put("constraint", contraint);
-		arguments.put("config-dml-reference", SQLDialect.dmlTableReference(SQLDialect.CONFIG_TABLE_, statementExecutor));
-
-		// TODO
-		TemporaryTableManager tableManager = Configuration.forDbms(statementExecutor).sessionTemporaryTableManager;
+		
+		TemporaryTableManager tableManager = null;
+		if (temporaryTableScope == TemporaryTableScope.SESSION_LOCAL) {
+			tableManager = Configuration.forDbms(statementExecutor).sessionTemporaryTableManager;
+		}
+		if (temporaryTableScope == TemporaryTableScope.TRANSACTION_LOCAL) {
+			tableManager = Configuration.forDbms(statementExecutor).transactionTemporaryTableManager;
+		}
+		String tableName = SQLDialect.CONFIG_TABLE_;
+		if (tableManager != null) {
+			tableName = tableManager.getDmlTableReference(tableName);
+		}
+		arguments.put("config-dml-reference", tableName);
 		if (tableManager != null) {
 			arguments.put("table-suffix", "_T");
-			arguments.put("drop-table", "-- DROP TABLE ");
+			arguments.put("drop-table", "DROP TABLE ");
 			arguments.put("create-table", tableManager.getCreateTablePrefix());
 			arguments.put("create-table-suffix", tableManager.getCreateTableSuffix());
 			arguments.put("create-index", tableManager.getCreateIndexPrefix());

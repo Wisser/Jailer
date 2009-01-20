@@ -107,6 +107,9 @@ public class Configuration {
      * @return configuration for the DBMS to which the {@link StatementExecutor} is connected to
      */
 	public static Configuration forDbms(StatementExecutor statementExecutor) {
+		if (statementExecutor == null) {
+			return defaultConfiguration;
+		}
 		if (perUrl.containsKey(statementExecutor.dbUrl)) {
 			return perUrl.get(statementExecutor.dbUrl);
 		}

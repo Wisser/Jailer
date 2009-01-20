@@ -44,6 +44,7 @@ import net.sf.jailer.database.DeletionTransformer;
 import net.sf.jailer.database.ExportTransformer;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.database.StatisticRenovator;
+import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
@@ -787,6 +788,7 @@ public class Jailer {
      */
     public static boolean jailerMain(String[] args, StringBuffer warnings) throws Exception {
     	statistic.setLength(0);
+    	StatementExecutor.closeTemporaryTableSession();
     	
     	if (PrimaryKeyFactory.minimizeUPK) {
     		_log.info("minimize-UPK=" + PrimaryKeyFactory.minimizeUPK);
@@ -849,14 +851,13 @@ public class Jailer {
                 }
             } else if ("create-ddl".equalsIgnoreCase(command)) {
             	if (clp.arguments.size() == 5) {
-            		return DDLCreator.createDDL(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4));
+            		return DDLCreator.createDDL(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4), clp.getTemporaryTableScope());
             	}
-                return DDLCreator.createDDL(null, null, null, null);
+                return DDLCreator.createDDL(null, null, null, null, clp.getTemporaryTableScope());
             } else if ("build-model".equalsIgnoreCase(command)) {
                 if (clp.arguments.size() != 5) {
                     CommandLineParser.printUsage();
                 } else {
-                    printGreeting();
                     _log.info("Building data model.");
                     ModelBuilder.build(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4), clp.schema, warnings);
                 }
@@ -869,23 +870,17 @@ public class Jailer {
             _log.error(e.getMessage(), e);
             System.out.println("Error: " + e.getClass().getName() + ": " + e.getMessage());
             throw e;
+        } finally {
+        	StatementExecutor.closeTemporaryTableSession();
         }
     }
 
-    /**
-     * Prints greetings.
-     */
-    private static void printGreeting() {
-//        System.out.println("Jailer " + VERSION + "\n");
-    }
-    
     /**
      * Render the data model.
      * @param schema schema to introspect
      */
     private void renderDataModel(List<String> arguments, boolean withClosures, String schema) throws Exception {
-    	printGreeting();
-        DataModel dataModel = new DataModel();
+    	DataModel dataModel = new DataModel();
         for (String rm: arguments.subList(1, arguments.size())) {
             if (dataModel.getRestrictionModel() == null) {
                 dataModel.setRestrictionModel(new RestrictionModel(dataModel));
@@ -903,10 +898,13 @@ public class Jailer {
      * Exports entities.
      */
     private static void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, String driverClassName, String dbUrl, String dbUser, String dbPassword, boolean explain, int threads, ScriptFormat scriptFormat) throws Exception {
-        printGreeting();
         _log.info("exporting '" + extractionModelFileName + "' to '" + scriptFile + "'");
         
-        StatementExecutor statementExecutor = new StatementExecutor(driverClassName, dbUrl, dbUser, dbPassword);
+        StatementExecutor statementExecutor = new StatementExecutor(driverClassName, dbUrl, dbUser, dbPassword, CommandLineParser.getInstance().getTemporaryTableScope());
+        if (CommandLineParser.getInstance().getTemporaryTableScope() != TemporaryTableScope.GLOBAL) {
+        	DDLCreator.createDDL(statementExecutor, CommandLineParser.getInstance().getTemporaryTableScope());
+        }
+        
         ExtractionModel extractionModel = new ExtractionModel(extractionModelFileName);
         EntityGraph entityGraph = EntityGraph.create(EntityGraph.createUniqueGraphID(), statementExecutor, extractionModel.getTasks().get(0).dataModel.getUniversalPrimaryKey(statementExecutor));
         entityGraph.setExplain(explain);
@@ -1118,7 +1116,6 @@ public class Jailer {
      * Prints shortest association between two tables.
      */
     private static void findAssociation(String from, String to, List<String> restModels, boolean undirected) throws Exception {
-        printGreeting();
         DataModel dataModel = new DataModel();
         for (String rm: restModels) {
             if (dataModel.getRestrictionModel() == null) {
@@ -1187,7 +1184,6 @@ public class Jailer {
      * Prints restricted data-model.
      */
     private static void printDataModel(List<String> restrictionModels, boolean printClosures) throws Exception {
-        printGreeting();
         DataModel dataModel = new DataModel();
         if (printClosures) {
             DataModel.printClosures = true;
