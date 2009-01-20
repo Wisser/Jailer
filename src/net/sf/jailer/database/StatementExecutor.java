@@ -59,6 +59,16 @@ public class StatementExecutor {
     private final Collection<Connection> connections = Collections.synchronizedCollection(new ArrayList<Connection>());
     
     /**
+     * The session in which temporary tables lives, if any.
+     */
+    private static Connection temporaryTableSession = null;
+    
+    /**
+     * Scope of temporary tables.
+     */
+    private static TemporaryTableScope temporaryTableScope;
+    
+    /**
      * No SQL-Exceptions will be logged in silent mode. 
      */
     private boolean silent = false;
@@ -182,6 +192,18 @@ public class StatementExecutor {
      * @param password the DB-password
      */
     public StatementExecutor(String driverClassName, final String dbUrl, final String user, final String password) throws Exception {
+    	this(driverClassName, dbUrl, user, password, null);
+    }
+    
+    /**
+     * Constructor.
+     * 
+     * @param driverClassName name of JDBC-driver class
+     * @param dbUrl the database URL
+     * @param user the DB-user
+     * @param password the DB-password
+     */
+    public StatementExecutor(String driverClassName, final String dbUrl, final String user, final String password, final TemporaryTableScope scope) throws Exception {
         _log.info("connect to user " + user + " at "+ dbUrl);
         if (classLoaderForJdbcDriver != null) {
             Driver d = (Driver)Class.forName(driverClassName, true, classLoaderForJdbcDriver).newInstance();
@@ -193,13 +215,17 @@ public class StatementExecutor {
         this.dbUrl = dbUrl;
         this.dbUser = user;
         this.dbPassword = password;
+        if (scope != null) {
+        	closeTemporaryTableSession();
+        	temporaryTableScope = scope;
+        }
         connectionFactory = new ConnectionFactory() {
             public Connection getConnection() throws SQLException {
-                Connection con = connection.get();
+                Connection con = temporaryTableSession == null? connection.get() : temporaryTableSession;
                 
                 if (con == null) {
                     con = DriverManager.getConnection(dbUrl, user, password);
-                    con.setAutoCommit(true);
+                    con.setAutoCommit(scope == null || scope != TemporaryTableScope.TRANSACTION_LOCAL);
                     try {
                     	DatabaseMetaData meta = con.getMetaData();
                 		String productName = meta.getDatabaseProductName();
@@ -212,8 +238,12 @@ public class StatementExecutor {
                     } catch (SQLException e) {
                         _log.info("can't set isolation level to UR. Reason: " + e.getMessage());
                     }
-                    connection.set(con);
-                    connections.add(con);
+                	if (scope != null && scope != TemporaryTableScope.GLOBAL) {
+                		temporaryTableSession = con;
+                	} else {
+                        connection.set(con);
+                        connections.add(con);
+                	}
                 }
                 return con;
             }
@@ -226,6 +256,17 @@ public class StatementExecutor {
         SqlUtil.dbms = dbms;
     }
 
+    /**
+     * Closes current connection and opens a new one.
+     */
+    public void reconnect() throws SQLException {
+    	Connection con = connection.get();
+    	if (con != null) {
+    		con.close();
+    		connection.set(null);
+    	}
+    }
+    
     /**
      * No SQL-Exceptions will be logged in silent mode.
      * 
@@ -499,6 +540,23 @@ public class StatementExecutor {
      */
     public void setIntrospectionSchema(String introspectionSchema) {
     	this.introspectionSchema = introspectionSchema;
+    }
+    
+    /**
+     * Closes the session in which temporary tables lives, if any.
+     */
+    public static void closeTemporaryTableSession() {
+    	try {
+    		if (temporaryTableSession != null) {
+    			if (temporaryTableScope == TemporaryTableScope.TRANSACTION_LOCAL) {
+    				temporaryTableSession.commit();
+    			}
+    			temporaryTableSession.close();
+    		}
+    	} catch(SQLException e) {
+    		_log.error("can't close connection", e);
+    	}
+    	temporaryTableSession = null;
     }
     
 }

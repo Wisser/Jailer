@@ -133,7 +133,7 @@ public class DefaultTemporaryTableManager implements TemporaryTableManager {
 	 * Gets reference to a temporary table in DML statements.
 	 */
 	public String getDmlTableReference(String table) {
-		return dmlTableReferencePrefix + table;
+		return dmlTableReferencePrefix + table + "_T";
 	}
 	
 }

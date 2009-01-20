@@ -90,6 +90,17 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<constructor-arg value="script/postgres/update_statistics.sql" />
 				</bean>
 			</property>
+
+			<property name="sessionTemporaryTableManager">
+				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
+					<property name="dmlTableReferencePrefix" value="" />
+					<property name="createTablePrefix" value="CREATE TEMPORARY TABLE " />
+					<property name="createTableSuffix" value="" />
+					<property name="createIndexPrefix" value="CREATE INDEX " />
+					<property name="createIndexSuffix" value="" />
+					<property name="indexTablePrefix" value="" />
+				</bean>
+			</property>
 		</bean>
 		
 		<!-- for Cloudscape -->
@@ -129,17 +140,6 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<property name="statisticRenovator">
 				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
 					<constructor-arg value="script/mysql/update_statistics.sql" />
-				</bean>
-			</property>
-			
-			<property name="sessionTemporaryTableManager">
-				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
-					<property name="dmlTableReferencePrefix" value="" />
-					<property name="createTablePrefix" value="CREATE TEMPORARY TABLE " />
-					<property name="createTableSuffix" value="" />
-					<property name="createIndexPrefix" value="CREATE INDEX " />
-					<property name="createIndexSuffix" value="" />
-					<property name="indexTablePrefix" value="" />
 				</bean>
 			</property>
 		</bean>

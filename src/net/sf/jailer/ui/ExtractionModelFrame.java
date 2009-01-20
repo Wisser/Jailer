@@ -42,6 +42,8 @@ import net.sf.jailer.DDLCreator;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.database.ExportTransformer;
+import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
@@ -754,7 +756,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        	args.add("export");
 			        	args.add(extractionModelEditor.extractionModelFile);
 			        	dbConnectionDialog.addDbArgs(args);
-			        	ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition());
+			        	StatementExecutor.closeTemporaryTableSession();
+			        	StatementExecutor statementExecutor = new StatementExecutor(dbConnectionDialog.driverClass.getText().trim(), dbConnectionDialog.dbUrl.getText().trim(), dbConnectionDialog.user.getText().trim(), dbConnectionDialog.getPassword());
+			        	ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), statementExecutor);
+			        	statementExecutor.shutDown();
+			        	StatementExecutor.closeTemporaryTableSession();
 			        	if (exportDialog.isOk()) {
 			        		exportDialog.fillCLIArgs(args);
 			        		File excludeFromDeletion = new File(DataModel.EXCLUDE_FROM_DELETION_FILE);
@@ -762,16 +768,18 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        			args.add("-t");
 			        			args.add(DataModel.EXCLUDE_FROM_DELETION_FILE);
 			        		}
+			        		args.add("-scope");
+			        		args.add(exportDialog.getTemporaryTableScope().toString());
 				        	List<String> ddlArgs = new ArrayList<String>();
 				        	ddlArgs.add("create-ddl");
 				        	dbConnectionDialog.addDbArgs(ddlArgs);
 				        	ExportTransformer.numberOfExportedEntities = 0;
 				        	ExportTransformer.numberOfExportedLOBs = 0;
 				        	String tableInConflict = DDLCreator.getTableInConflict(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4));
-				        	if (tableInConflict != null) {
+				        	if (tableInConflict != null && exportDialog.getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL)) {
 				        		JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);
 				        	}
-				        	else if (DDLCreator.isUptodate(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4)) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
+				        	else if (!exportDialog.getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL) || DDLCreator.isUptodate(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4)) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
 			        				"Automatic creation of working-tables failed!\n" +
 			        				"Please execute the Jailer-DDL manually (jailer_ddl.sql)\n\n" +
 			        				"Continue Data Export?", dbConnectionDialog.getPassword())) {

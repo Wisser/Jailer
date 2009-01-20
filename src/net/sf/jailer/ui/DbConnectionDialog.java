@@ -441,7 +441,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         classloaders.put(mapKey, urlLoader);
         return urlLoader;
     }
-
+    
     /**
      * Selects the DB-schema to for introspection.
      * 

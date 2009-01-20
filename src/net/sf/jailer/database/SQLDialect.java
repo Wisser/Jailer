@@ -20,6 +20,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.datamodel.PrimaryKey;
@@ -80,7 +81,18 @@ public class SQLDialect {
      * @return table reference for the working table
      */
     public static String dmlTableReference(String tableName, StatementExecutor statementExecutor) {
-    	return tableName + "_T";
+    	TemporaryTableManager tableManager = null;
+    	TemporaryTableScope temporaryTableScope = CommandLineParser.getInstance().getTemporaryTableScope();
+		if (temporaryTableScope == TemporaryTableScope.SESSION_LOCAL) {
+			tableManager = Configuration.forDbms(statementExecutor).sessionTemporaryTableManager;
+		}
+		if (temporaryTableScope == TemporaryTableScope.TRANSACTION_LOCAL) {
+			tableManager = Configuration.forDbms(statementExecutor).transactionTemporaryTableManager;
+		}
+		if (tableManager != null) {
+			return tableManager.getDmlTableReference(tableName);
+		}
+		return tableName;
     }
 
 	/**

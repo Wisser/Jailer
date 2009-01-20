@@ -16,6 +16,13 @@
 
 package net.sf.jailer.database;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
+
+import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.SqlScriptExecutor;
 
 /**
@@ -47,7 +54,16 @@ public class SqlScriptBasedStatisticRenovator implements StatisticRenovator {
      * @param statementExecutor for execution of SQL-statements
      */
     public void renew(StatementExecutor statementExecutor) throws Exception {
-        SqlScriptExecutor.executeScript(scriptFileName, statementExecutor);
+		Map<String, String> arguments = new HashMap<String, String>();
+		arguments.put("JAILER_ENTITY", SQLDialect.dmlTableReference("JAILER_ENTITY", statementExecutor));
+		arguments.put("JAILER_GRAPH", SQLDialect.dmlTableReference("JAILER_GRAPH", statementExecutor));
+		arguments.put("JAILER_DEPENDENCY", SQLDialect.dmlTableReference("JAILER_DEPENDENCY", statementExecutor));
+		arguments.put("JAILER_SET", SQLDialect.dmlTableReference("JAILER_SET", statementExecutor));
+		String fileName = "renew.sql";
+		PrintWriter out = new PrintWriter(new FileOutputStream(fileName));
+		out.print(PrintUtil.applyTemplate(scriptFileName, arguments));
+		out.close();
+        SqlScriptExecutor.executeScript(fileName, statementExecutor);
     }
 
 }
