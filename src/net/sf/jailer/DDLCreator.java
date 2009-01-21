@@ -19,7 +19,10 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.sf.jailer.database.DBMS;
@@ -27,6 +30,7 @@ import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.database.TemporaryTableManager;
 import net.sf.jailer.database.TemporaryTableScope;
+import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.SqlScriptExecutor;
@@ -49,11 +53,30 @@ public class DDLCreator {
         }
         return createDDL(statementExecutor, temporaryTableScope);
     }
-    
+
     /**
      * Creates the DDL for the working-tables.
      */
     public static boolean createDDL(StatementExecutor statementExecutor, TemporaryTableScope temporaryTableScope) throws Exception {
+    	try {
+			return createDDL(statementExecutor, temporaryTableScope, 0);
+		} catch (SQLException e) {
+		}
+		// reconnect and retry with another index type
+		statementExecutor.reconnect();
+    	try {
+			return createDDL(statementExecutor, temporaryTableScope, 1);
+		} catch (SQLException e) {
+		}
+		// reconnect and retry with another index type
+		statementExecutor.reconnect();
+		return createDDL(statementExecutor, temporaryTableScope, 2);
+    }
+    
+    /**
+     * Creates the DDL for the working-tables.
+     */
+    public static boolean createDDL(StatementExecutor statementExecutor, TemporaryTableScope temporaryTableScope, int indexType) throws Exception {
         DataModel dataModel = new DataModel();
         
         String template = "script/ddl-template.sql";
@@ -64,9 +87,6 @@ public class DDLCreator {
 		arguments.put("pre", dataModel.getUniversalPrimaryKey().toSQL("PRE_", contraint));
 		arguments.put("from", dataModel.getUniversalPrimaryKey().toSQL("FROM_", contraint));
 		arguments.put("to", dataModel.getUniversalPrimaryKey().toSQL("TO_", contraint));
-		arguments.put("column-list", dataModel.getUniversalPrimaryKey().columnList(null));
-		arguments.put("column-list-from", dataModel.getUniversalPrimaryKey().columnList("FROM_"));
-		arguments.put("column-list-to", dataModel.getUniversalPrimaryKey().columnList("TO_"));
 		arguments.put("version", Jailer.VERSION);
 		arguments.put("constraint", contraint);
 		
@@ -99,10 +119,33 @@ public class DDLCreator {
 			arguments.put("create-index-suffix", "");
 			arguments.put("index-table-prefix", "");
 		}
-		
-		String ddl = PrintUtil.applyTemplate(template, arguments);
-        
-        System.out.println(ddl);
+
+		Map<String, List<String>> listArguments = new HashMap<String, List<String>>();
+		if (indexType == 0) {
+			// full index
+			listArguments.put("column-list", Collections.singletonList(", " + dataModel.getUniversalPrimaryKey().columnList(null)));
+			listArguments.put("column-list-from", Collections.singletonList(", " + dataModel.getUniversalPrimaryKey().columnList("FROM_")));
+			listArguments.put("column-list-to", Collections.singletonList(", " + dataModel.getUniversalPrimaryKey().columnList("TO_")));
+		} else if (indexType == 1) {
+			// single column indexes
+			List<String> cl = new ArrayList<String>();
+			List<String> clFrom = new ArrayList<String>();
+			List<String> clTo = new ArrayList<String>();
+			for (Column c: dataModel.getUniversalPrimaryKey().getColumns()) {
+				cl.add(", " + c.name);
+				clFrom.add(", FROM_" + c.name);
+				clTo.add(", FROM_" + c.name);
+			}
+			listArguments.put("column-list", cl);
+			listArguments.put("column-list-from", clFrom);
+			listArguments.put("column-list-to", clTo);
+		} else {
+			// minimal index
+			listArguments.put("column-list", Collections.singletonList(""));
+			listArguments.put("column-list-from", Collections.singletonList(""));
+			listArguments.put("column-list-to", Collections.singletonList(""));
+		}
+		String ddl = PrintUtil.applyTemplate(template, arguments, listArguments);
         
         if (statementExecutor != null) {
         	try {
@@ -115,6 +158,7 @@ public class DDLCreator {
         		statementExecutor.shutDown();
         	}
         }
+        System.out.println(ddl);
         
         return true;
     }
@@ -128,14 +172,10 @@ public class DDLCreator {
 		try {
 			if (driverClass != null) {
 	        	final StatementExecutor statementExecutor = new StatementExecutor(driverClass, dbUrl, user, password);
-// TODO
-if (1==1 /* use_temporary_tables */) {
-	return false;
-}
 	        	try {
 	        		final boolean[] uptodate = new boolean[] { false };
 	        		final DataModel datamodel = new DataModel();
-	        		statementExecutor.executeQuery("Select jvalue from " + SQLDialect.dmlTableReference(SQLDialect.CONFIG_TABLE_, statementExecutor) + " where jversion='" + Jailer.VERSION + "' and jkey='upk'", new StatementExecutor.ResultSetReader() {
+	        		statementExecutor.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE_ + " where jversion='" + Jailer.VERSION + "' and jkey='upk'", new StatementExecutor.ResultSetReader() {
 						public void readCurrentRow(ResultSet resultSet) throws SQLException {
 							String contraint = statementExecutor.dbms == DBMS.SYBASE? " NULL" : "";
 							String universalPrimaryKey = datamodel.getUniversalPrimaryKey().toSQL(null, contraint);
@@ -167,14 +207,10 @@ if (1==1 /* use_temporary_tables */) {
 		try {
 			if (driverClass != null) {
 	        	StatementExecutor statementExecutor = new StatementExecutor(driverClass, dbUrl, user, password);
-// TODO
-if (1==1 /* use_temporary_tables */) {
-	return null;
-}
 	        	statementExecutor.setSilent(true);
 	        	try {
 	        		final boolean[] uptodate = new boolean[] { false };
-	        		statementExecutor.executeQuery("Select jvalue from " + SQLDialect.dmlTableReference(SQLDialect.CONFIG_TABLE_, statementExecutor) + " where jkey='magic' and jvalue='837065098274756382534403654245288'", new StatementExecutor.ResultSetReader() {
+	        		statementExecutor.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE_ + " where jkey='magic' and jvalue='837065098274756382534403654245288'", new StatementExecutor.ResultSetReader() {
 						public void readCurrentRow(ResultSet resultSet) throws SQLException {
 							uptodate[0] = true;
 						}

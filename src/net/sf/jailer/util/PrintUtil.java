@@ -104,7 +104,7 @@ public class PrintUtil {
      * 
      * @return template with arguments filled in
      */
-    public static String applyTemplate(String template, Map<String, String> arguments) throws FileNotFoundException, IOException {
+    public static String applyTemplate(String template, Map<String, String> arguments, Map<String, List<String>> listArguments) throws FileNotFoundException, IOException {
     	String sb = templateCache.get(template);
         if (sb == null) {
             sb = loadFile(template);
@@ -114,7 +114,28 @@ public class PrintUtil {
         for (Map.Entry<String, String> e: arguments.entrySet()) {
         	sb = sb.replaceAll("\\$\\{" + e.getKey() + "\\}", e.getValue()); 
         }
-        		
+        
+        for (;;) {
+        	int begin = sb.indexOf("${for-each:");
+        	int end = sb.indexOf("${end}");
+        	
+        	if (begin >= 0 && end >= 0) {
+        		String pre = sb.substring(0, begin);
+        		String woPre = sb.substring(begin + 11);
+        		int i = woPre.indexOf('}');
+         		String content = woPre.substring(i + 1, end - begin - 11);
+         		String suf = sb.substring(end + 6);
+         		String cContent = "";
+         		int index = 1;
+	        	for (String var: listArguments.get(woPre.substring(0, i))) {
+	        		cContent += content.replaceAll("\\$i", "" + (index++)).replaceAll("\\$", var);
+        		}
+        		sb = pre + cContent + suf;
+        	} else {
+        		break;
+        	}
+        }
+        
         return sb;
 	}
 

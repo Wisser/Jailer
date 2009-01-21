@@ -265,6 +265,10 @@ public class StatementExecutor {
     		con.close();
     		connection.set(null);
     	}
+    	if (temporaryTableSession != null) {
+    		temporaryTableSession.close();
+    		temporaryTableSession = null;
+    	}
     }
     
     /**

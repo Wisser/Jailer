@@ -61,7 +61,7 @@ public class SqlScriptBasedStatisticRenovator implements StatisticRenovator {
 		arguments.put("JAILER_SET", SQLDialect.dmlTableReference("JAILER_SET", statementExecutor));
 		String fileName = "renew.sql";
 		PrintWriter out = new PrintWriter(new FileOutputStream(fileName));
-		out.print(PrintUtil.applyTemplate(scriptFileName, arguments));
+		out.print(PrintUtil.applyTemplate(scriptFileName, arguments, null));
 		out.close();
         SqlScriptExecutor.executeScript(fileName, statementExecutor);
     }
