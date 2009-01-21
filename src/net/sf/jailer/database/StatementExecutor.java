@@ -262,10 +262,20 @@ public class StatementExecutor {
     public void reconnect() throws SQLException {
     	Connection con = connection.get();
     	if (con != null) {
+    		if (temporaryTableScope == TemporaryTableScope.TRANSACTION_LOCAL) {
+    			con.commit();
+    		}
     		con.close();
     		connection.set(null);
+    		if (con == temporaryTableSession) {
+    			temporaryTableSession = null;
+    			return;
+    		}
     	}
     	if (temporaryTableSession != null) {
+    		if (temporaryTableScope == TemporaryTableScope.TRANSACTION_LOCAL) {
+    			temporaryTableSession.commit();
+    		}
     		temporaryTableSession.close();
     		temporaryTableSession = null;
     	}

@@ -22,16 +22,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
-import java.net.URL;
-import java.net.URLConnection;
 import java.util.List;
 
 import javax.swing.JFileChooser;
-import javax.swing.JFrame;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
@@ -296,31 +292,6 @@ public class UIUtil {
 	}
 
 	/**
-	 * Looks for software update on project home site.
-	 */
-	public static void lookForUpdate(JFrame parent) {
-		try {
-			URLConnection con = new URL("http://jailer.sourceforge.net/currentVersion.php3?id=1").openConnection();
-			InputStream in = con.getInputStream();
-			String content = "";
-			int c;
-			while ((c = in.read()) != -1) {
-				content += (char) c;
-			}
-			in.close();
-			if (content.equals(Jailer.VERSION)) {
-				content = "No Update found";
-			} else {
-				content = "Jailer " + content + " found at\n" +
-						  "https://sourceforge.net/project/showfiles.php?group_id=197260";
-			}
-			JOptionPane.showMessageDialog(parent, content, "Software Update", JOptionPane.INFORMATION_MESSAGE);
-		} catch (Exception e) {
-			showException(parent, "Error accessing project site", e);
-		}
-	}
-
-    /**
      * Loads table list file and fill a list.
      * 
      * @param list to fill
