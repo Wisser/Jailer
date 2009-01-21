@@ -1,3 +1,9 @@
+2.8.0.beta
+ - animation step time is configurable
+ - support for temporary working tables
+ - elimination of DDL during export
+ - internal refactorings
+
 2.7.1
  - Sybase compatibility fixes
  - Support for MS SQL's uniqueidentifier type
