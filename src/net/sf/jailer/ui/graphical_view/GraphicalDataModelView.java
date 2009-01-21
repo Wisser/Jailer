@@ -410,9 +410,10 @@ public class GraphicalDataModelView extends JPanel {
         animate.add(fill);
         animate.add(new RepaintAction());
         
-//        animate.setStepTime(animate.getStepTime() + 1);
-// System.out.println(animate.getStepTime());
-        
+        if (modelEditor.extractionModelFrame.animationStepTime > 0) {
+        	animate.setStepTime(modelEditor.extractionModelFrame.animationStepTime);
+        }
+
         // finally, we register our ActionList with the Visualization.
         // we can later execute our Actions by invoking a method on our
         // Visualization, using the name we've chosen below.
