@@ -78,7 +78,7 @@ public class DDLCreator {
      */
     public static boolean createDDL(StatementExecutor statementExecutor, TemporaryTableScope temporaryTableScope, int indexType) throws Exception {
         DataModel dataModel = new DataModel();
-        
+
         String template = "script/ddl-template.sql";
 		String contraint = statementExecutor != null && (statementExecutor.dbms == DBMS.SYBASE || statementExecutor.dbms == DBMS.MySQL)? " NULL" : "";
 		String universalPrimaryKey = dataModel.getUniversalPrimaryKey().toSQL(null, contraint);

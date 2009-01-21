@@ -28,6 +28,9 @@ import java.util.Set;
 
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+
+import com.sun.jndi.url.iiopname.iiopnameURLContextFactory;
 
 import net.sf.jailer.Configuration;
 import net.sf.jailer.DDLCreator;
@@ -157,43 +160,89 @@ public class ExportDialog extends javax.swing.JDialog {
         pack();
         UIUtil.initPeer();
         setVisible(true);
+        try {
+			if (initScopeButtonThread != null) {
+				initScopeButtonThread.join();
+			}
+		} catch (InterruptedException e1) {
+		}
+		initScopeButtonThread = null;
         if (isOk) {
         	previousInitialSubjectCondition = subjectCondition;
         	previousSubjectCondition = where.getText();
         }
 	}
 
-    private void initScopeButtons(StatementExecutor statementExecutor) {
-    	Configuration configuration = Configuration.forDbms(statementExecutor);
-    	scopeGlobal.setSelected(true);
-    	scopeSession.setSelected(false);
-    	scopeTransaction.setSelected(false);
-    	if (configuration.sessionTemporaryTableManager == null) {
-    		scopeSession.setEnabled(false);
-    	} else {
-    		scopeSession.setEnabled(true);
-			try {
-				statementExecutor.reconnect();
-				DDLCreator.createDDL(statementExecutor, TemporaryTableScope.SESSION_LOCAL);
-		    	scopeGlobal.setSelected(false);
-	    		scopeSession.setSelected(true);
-			} catch (Exception e) {
+    private Thread initScopeButtonThread;
+    
+    private void initScopeButtons(final StatementExecutor statementExecutor) {
+    	synchronized (this) {
+	    	scopeGlobal.setSelected(true);
+	    	scopeSession.setSelected(false);
+	    	scopeSession.setEnabled(false);
+	    	scopeTransaction.setSelected(false);
+	    	scopeTransaction.setEnabled(false);
+	    	jButton1.setEnabled(false);
+		}
+    	
+    	initScopeButtonThread = new Thread(new Runnable() {
+			public void run() {
+		    	Configuration configuration = Configuration.forDbms(statementExecutor);
+		    	if (configuration.sessionTemporaryTableManager != null) {
+		    		SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+				    		synchronized (ExportDialog.this) {
+				    			scopeSession.setEnabled(true);
+				    		}
+						}
+		    		});
+					try {
+						statementExecutor.reconnect();
+						DDLCreator.createDDL(statementExecutor, TemporaryTableScope.SESSION_LOCAL);
+			    		SwingUtilities.invokeLater(new Runnable() {
+							public void run() {
+					    		synchronized (ExportDialog.this) {
+							    	scopeGlobal.setSelected(false);
+						    		scopeSession.setSelected(true);
+					    		}
+							}
+			    		});
+					} catch (Exception e) {
+					}
+		    	}
+		    	if (configuration.transactionTemporaryTableManager != null) {
+		    		SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+				    		synchronized (ExportDialog.this) {
+				    			scopeTransaction.setEnabled(true);
+				    		}
+						}
+		    		});
+					try {
+						statementExecutor.reconnect();
+						DDLCreator.createDDL(statementExecutor, TemporaryTableScope.TRANSACTION_LOCAL);
+			    		SwingUtilities.invokeLater(new Runnable() {
+							public void run() {
+					    		synchronized (ExportDialog.this) {
+									scopeGlobal.setSelected(false);
+									scopeSession.setSelected(false);
+									scopeTransaction.setSelected(true);
+					    		}
+							}
+			    		});
+					} catch (Exception e) {
+					}
+		    	}
+	    		SwingUtilities.invokeLater(new Runnable() {
+					public void run() {
+			    		synchronized (ExportDialog.this) {
+			    			jButton1.setEnabled(true);
+			    		}
+					}
+	    		});
 			}
-    	}
-    	scopeTransaction.setSelected(false);
-    	if (configuration.transactionTemporaryTableManager == null) {
-    		scopeTransaction.setEnabled(false);
-    	} else {
-    		scopeTransaction.setEnabled(true);
-			try {
-				statementExecutor.reconnect();
-				DDLCreator.createDDL(statementExecutor, TemporaryTableScope.TRANSACTION_LOCAL);
-				scopeGlobal.setSelected(false);
-				scopeSession.setSelected(false);
-	    		scopeTransaction.setSelected(true);
-			} catch (Exception e) {
-			}
-    	}
+    	});
+    	initScopeButtonThread.start();
 	}
 
 	/**
@@ -603,8 +652,7 @@ public class ExportDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void scopeGlobalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeGlobalActionPerformed
-        // TODO add your handling code here:
-}//GEN-LAST:event_scopeGlobalActionPerformed
+    }//GEN-LAST:event_scopeGlobalActionPerformed
     
     public boolean isOk() {
 		return isOk;
