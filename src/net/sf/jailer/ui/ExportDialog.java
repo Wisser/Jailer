@@ -16,6 +16,7 @@
 package net.sf.jailer.ui;
 
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -183,6 +184,7 @@ public class ExportDialog extends javax.swing.JDialog {
 	    	scopeTransaction.setSelected(false);
 	    	scopeTransaction.setEnabled(false);
 	    	jButton1.setEnabled(false);
+	    	setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		}
     	
     	initScopeButtonThread = new Thread(new Runnable() {
@@ -237,6 +239,7 @@ public class ExportDialog extends javax.swing.JDialog {
 					public void run() {
 			    		synchronized (ExportDialog.this) {
 			    			jButton1.setEnabled(true);
+			    	    	setCursor(Cursor.getDefaultCursor());
 			    		}
 					}
 	    		});
