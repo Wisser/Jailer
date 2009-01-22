@@ -31,8 +31,6 @@ import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
-import com.sun.jndi.url.iiopname.iiopnameURLContextFactory;
-
 import net.sf.jailer.Configuration;
 import net.sf.jailer.DDLCreator;
 import net.sf.jailer.ScriptFormat;
