@@ -74,6 +74,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<property name="createIndexPrefix" value="CREATE INDEX SESSION." />
 					<property name="createIndexSuffix" value="" />
 					<property name="indexTablePrefix" value="" />
+					<property name="dropTablePrefix" value="DROP TABLE SESSION." />
 				</bean>
 			</property>
 			<property name="transactionTemporaryTableManager">
@@ -84,6 +85,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<property name="createIndexPrefix" value="CREATE INDEX SESSION." />
 					<property name="createIndexSuffix" value="" />
 					<property name="indexTablePrefix" value="" />
+					<property name="dropTablePrefix" value="DROP TABLE SESSION." />
 				</bean>
 			</property>
 		</bean>
@@ -119,6 +121,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<property name="createIndexPrefix" value="CREATE INDEX " />
 					<property name="createIndexSuffix" value="" />
 					<property name="indexTablePrefix" value="" />
+					<property name="dropTablePrefix" value="-- DROP TABLE " />
 				</bean>
 			</property>
 		</bean>
