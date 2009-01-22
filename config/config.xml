@@ -69,7 +69,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<property name="sessionTemporaryTableManager">
 				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
 					<property name="dmlTableReferencePrefix" value="SESSION." />
-					<property name="createTablePrefix" value="DECLARE USER TEMPORARY TABLE " />
+					<property name="createTablePrefix" value="DECLARE GLOBAL TEMPORARY TABLE " />
 					<property name="createTableSuffix" value="ON COMMIT PRESERVE ROWS NOT LOGGED" />
 					<property name="createIndexPrefix" value="CREATE INDEX SESSION." />
 					<property name="createIndexSuffix" value="" />
@@ -80,7 +80,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<property name="transactionTemporaryTableManager">
 				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
 					<property name="dmlTableReferencePrefix" value="SESSION." />
-					<property name="createTablePrefix" value="DECLARE USER TEMPORARY TABLE " />
+					<property name="createTablePrefix" value="DECLARE GLOBAL TEMPORARY TABLE " />
 					<property name="createTableSuffix" value="ON COMMIT DELETE ROWS NOT LOGGED" />
 					<property name="createIndexPrefix" value="CREATE INDEX SESSION." />
 					<property name="createIndexSuffix" value="" />
