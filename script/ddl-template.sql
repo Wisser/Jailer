@@ -17,9 +17,9 @@ INSERT INTO ${config-dml-reference}(jversion, jkey, jvalue) values('${version}',
 ${create-table}JAILER_GRAPH${table-suffix}
 (
    id              INTEGER NOT NULL,
-   age             INTEGER NOT NULL,
+   age             INTEGER NOT NULL
       
-   CONSTRAINT jlr_pk_graph PRIMARY KEY(id)
+--   ,CONSTRAINT jlr_pk_graph PRIMARY KEY(id)
 ) ${create-table-suffix};
 
 ${create-table}JAILER_ENTITY${table-suffix}
