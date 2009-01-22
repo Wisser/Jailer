@@ -48,10 +48,15 @@ public class DefaultTemporaryTableManager implements TemporaryTableManager {
 	private String createIndexSuffix;
 	
 	/**
-	 * Gets prefix of table name to be used in DDL for creating temporary index.
+	 * Prefix of table name to be used in DDL for creating temporary index.
 	 */
 	private String indexTablePrefix;
-
+	
+	/**
+	 * Prefix to be used in DDL for dropping temporary tables.
+	 */
+	private String dropTablePrefix;
+	
 	/**
 	 * Gets prefix of DDL statement to create temporary table.
 	 */
@@ -136,4 +141,18 @@ public class DefaultTemporaryTableManager implements TemporaryTableManager {
 		return dmlTableReferencePrefix + table + "_T";
 	}
 	
+	/**
+	 * Gets prefix to be used in DDL for dropping temporary tables.
+	 */
+	public String getDropTablePrefix() {
+		return dropTablePrefix;
+	}
+
+	/**
+	 * Sets prefix to be used in DDL for dropping temporary tables.
+	 */
+	public void setDropTablePrefix(String v) {
+		dropTablePrefix = v;
+	}
+
 }

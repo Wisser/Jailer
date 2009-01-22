@@ -104,7 +104,7 @@ public class DDLCreator {
 		arguments.put("config-dml-reference", tableName);
 		if (tableManager != null) {
 			arguments.put("table-suffix", "_T");
-			arguments.put("drop-table", "DROP TABLE ");
+			arguments.put("drop-table", tableManager.getDropTablePrefix());
 			arguments.put("create-table", tableManager.getCreateTablePrefix());
 			arguments.put("create-table-suffix", tableManager.getCreateTableSuffix());
 			arguments.put("create-index", tableManager.getCreateIndexPrefix());

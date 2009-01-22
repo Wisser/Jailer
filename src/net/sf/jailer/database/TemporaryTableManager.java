@@ -52,4 +52,9 @@ public interface TemporaryTableManager {
 	 */
 	String getIndexTablePrefix();
 	
+	/**
+	 * Gets prefix to be used in DDL for dropping temporary tables.
+	 */
+	String getDropTablePrefix();
+	
 }
