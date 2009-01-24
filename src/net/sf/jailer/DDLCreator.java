@@ -76,7 +76,7 @@ public class DDLCreator {
     /**
      * Creates the DDL for the working-tables.
      */
-    public static boolean createDDL(StatementExecutor statementExecutor, TemporaryTableScope temporaryTableScope, int indexType) throws Exception {
+    private static boolean createDDL(StatementExecutor statementExecutor, TemporaryTableScope temporaryTableScope, int indexType) throws Exception {
         DataModel dataModel = new DataModel();
 
         String template = "script/ddl-template.sql";
@@ -148,15 +148,15 @@ public class DDLCreator {
 		String ddl = PrintUtil.applyTemplate(template, arguments, listArguments);
         
         if (statementExecutor != null) {
-        	try {
+//        	try {
         		File tmp = new File("jailer_ddl.sql");
         		PrintWriter pw = new PrintWriter(tmp);
         		pw.println(ddl);
         		pw.close();
         		SqlScriptExecutor.executeScript(tmp.getCanonicalPath(), statementExecutor);
-        	} finally {
-        		statementExecutor.shutDown();
-        	}
+//        	} finally {
+//        		statementExecutor.shutDown();
+//        	}
         }
         System.out.println(ddl);
         

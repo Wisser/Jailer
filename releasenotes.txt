@@ -1,7 +1,7 @@
-2.8.0.beta
+2.8.0
  - animation step time is configurable
  - support for temporary working tables
- - elimination of DDL during export
+ - elimination of DDL statements during export
  - internal refactorings
 
 2.7.1

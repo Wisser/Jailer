@@ -225,7 +225,9 @@ public class StatementExecutor {
                 
                 if (con == null) {
                     con = DriverManager.getConnection(dbUrl, user, password);
-                    con.setAutoCommit(scope == null || scope != TemporaryTableScope.TRANSACTION_LOCAL);
+                    boolean ac = scope == null || scope != TemporaryTableScope.TRANSACTION_LOCAL;
+                    _log.info("set auto commit to " + ac);
+                    con.setAutoCommit(ac);
                     try {
                     	DatabaseMetaData meta = con.getMetaData();
                 		String productName = meta.getDatabaseProductName();
