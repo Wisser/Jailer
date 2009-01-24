@@ -91,6 +91,17 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<property name="emptyBLOBValue" value="empty_blob()" />
 			<property name="binaryPattern" value="hextoraw('%s')" />
 			<property name="useToTimestampFunction" value="true" />
+			<property name="sessionTemporaryTableManager">
+				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
+					<property name="dmlTableReferencePrefix" value="" />
+					<property name="createTablePrefix" value="CREATE GLOBAL TEMPORARY TABLE " />
+					<property name="createTableSuffix" value="ON COMMIT PRESERVE ROWS" />
+					<property name="createIndexPrefix" value="CREATE INDEX " />
+					<property name="createIndexSuffix" value="" />
+					<property name="indexTablePrefix" value="" />
+					<property name="dropTablePrefix" value="DROP TABLE " />
+				</bean>
+			</property>
 		</bean>
 		
 		<!-- for PostgreSQL -->
@@ -144,6 +155,17 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<constructor-arg value="script/mssql/update_statistics.sql" />
 				</bean>
 			</property>
+			<property name="sessionTemporaryTableManager">
+				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
+					<property name="dmlTableReferencePrefix" value="#" />
+					<property name="createTablePrefix" value="CREATE TABLE #" />
+					<property name="createTableSuffix" value="" />
+					<property name="createIndexPrefix" value="CREATE INDEX " />
+					<property name="createIndexSuffix" value="" />
+					<property name="indexTablePrefix" value="#" />
+					<property name="dropTablePrefix" value="DROP TABLE #" />
+				</bean>
+			</property>
 		</bean>
 		
 		<!-- for MySQL -->
@@ -172,6 +194,17 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<property name="statisticRenovator">
 				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
 					<constructor-arg value="script/sybase/update_statistics.sql" />
+				</bean>
+			</property>
+			<property name="sessionTemporaryTableManager">
+				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
+					<property name="dmlTableReferencePrefix" value="#" />
+					<property name="createTablePrefix" value="CREATE TABLE #" />
+					<property name="createTableSuffix" value="" />
+					<property name="createIndexPrefix" value="CREATE INDEX " />
+					<property name="createIndexSuffix" value="" />
+					<property name="indexTablePrefix" value="#" />
+					<property name="dropTablePrefix" value="DROP TABLE #" />
 				</bean>
 			</property>
 		</bean>
