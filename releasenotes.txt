@@ -1,3 +1,6 @@
+2.8.1
+ - Support for MySQL's SET and ENUM column type
+
 2.8.0
  - animation step time is configurable
  - support for temporary working tables
