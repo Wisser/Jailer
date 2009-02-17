@@ -14,6 +14,7 @@ find -iname ".svn" -exec rm -rf '{}' \;
 find -iname ".cvs*" -exec rm -rf '{}' \;
 ant package
 rm -rf admin
+rm -rf doc
 rm -rf out
 rm svn-commit.tmp
 mv datamodel.def datamodel

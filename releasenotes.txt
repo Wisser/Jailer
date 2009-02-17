@@ -1,3 +1,6 @@
+2.8.2
+ - Support for qualified tables in DbUnit datasets.
+
 2.8.1
  - Support for MySQL's SET and ENUM column type
 
