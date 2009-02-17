@@ -26,6 +26,7 @@ import java.util.Map;
 
 import javax.xml.transform.sax.TransformerHandler;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.database.ExportTransformer;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
@@ -88,9 +89,26 @@ public class FlatXMLTransformer implements ResultSetReader {
 	public FlatXMLTransformer(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData) throws SQLException {
 		this.table = table;
 		this.transformerHandler = transformerHandler;
-		this.rowElementName = table.getUnqualifiedName();
+		this.rowElementName = qualifiedTableName(table);
 	}
-
+	
+	/**
+     * Gets qualified table name.
+     * 
+     * @param t the table
+     * @return qualified name of t
+     */
+    private String qualifiedTableName(Table t) {
+    	String schema = t.getSchema("");
+    	String mappedSchema = CommandLineParser.getInstance().getSchemaMapping().get(schema);
+    	if (mappedSchema != null) {
+    		schema = mappedSchema;
+    	}
+    	if (schema.length() == 0) {
+    		return t.getUnqualifiedName();
+    	}
+		return schema + "." + t.getUnqualifiedName();
+	}
 	/**
 	 * Reads result-set and writes into export-script.
 	 */

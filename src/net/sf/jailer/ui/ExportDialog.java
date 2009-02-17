@@ -110,7 +110,7 @@ public class ExportDialog extends javax.swing.JDialog {
 
     	Map<JTextField, String> defaults = new HashMap<JTextField, String>();
 
-    	if (!ScriptFormat.SQL.equals(scriptFormat)) {
+    	if ((!ScriptFormat.SQL.equals(scriptFormat)) && (!ScriptFormat.DBUNIT_FLAT_XML.equals(scriptFormat))) {
         	schemaMappingPanel.setVisible(false);
         } else {
         	schemaMappingPanel.setVisible(true);

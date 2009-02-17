@@ -49,7 +49,6 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.render.HtmlDataModelRenderer;
-import net.sf.jailer.util.PrintUtil;
 
 /**
  * Main frame of Extraction-Model-Editor.
@@ -652,16 +651,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
     private void tutorialActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tutorialActionPerformed
     	try {
-			BrowserLauncher.openURL(new File("doc" + File.separator + "web" + File.separator + "exporting-data.htm").getCanonicalPath());
-		} catch (IOException e) {
+			BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/doc/exporting-data.htm"));
+		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
 		}
     }//GEN-LAST:event_tutorialActionPerformed
 
     private void helpContentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpContentActionPerformed
     	try {
-			BrowserLauncher.openURL(new File("doc" + File.separator + "web" + File.separator + "home.htm").getCanonicalPath());
-		} catch (IOException e) {
+			BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/doc/home.htm"));
+		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
 		}
     }//GEN-LAST:event_helpContentActionPerformed
