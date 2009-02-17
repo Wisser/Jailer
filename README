@@ -1,6 +1,6 @@
-Model-based Data Export Tool
+Database Subsetting Tool
 
-Jailer is a tool for model-based data exporting, schema browsing, and rendering. It exports consistent, referentially intact row-sets from relational databases. It removes obsolete data without violating integrity. It is DBMS agnostic (by using JDBC), platform independent, and generates DbUnit datasets, hierarchically structured XML, and topologically sorted SQL-DML.
+Jailer is a tool for database subsetting, schema browsing, and rendering. It exports consistent, referentially intact row-sets from relational databases. It removes obsolete data without violating integrity. It is DBMS agnostic (by using JDBC), platform independent, and generates DbUnit datasets, hierarchically structured XML, and topologically sorted SQL-DML.
 
 
 Features
@@ -15,7 +15,7 @@ Features
 Installation
 ============
 
-Unpack the file jailer_2.7.1.zip. You will get the following files:
+Unpack the file jailer_2.8.2.zip. You will get the following files:
 $unzip jailer_2.7.1.zip
 $cd jailer_2.7.1
 $ll
