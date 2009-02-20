@@ -68,6 +68,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	private final DbConnectionDialog dbConnectionDialog;
 	
 	/**
+	 * The filter editor.
+	 */
+	private final FilterEditorDialog filterEditorDialog;
+	
+	/**
 	 * The "Find Table" dialog.
 	 */
 	final ClosureView closureView;
@@ -105,6 +110,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         }
         updateMenuItems();
         closureView = new ClosureView(this);
+        filterEditorDialog = new FilterEditorDialog(this);
     }
     
     /**
@@ -112,6 +118,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      */
     private void updateMenuItems() {
 		connectDb.setSelected(dbConnectionDialog.isConnected);
+	}
+
+    /**
+     * Opens the filter editor for a given table.
+     * 
+     * @param table the table
+     */
+	public void openFilterEditor(Table table) {
+		filterEditorDialog.open(table);
 	}
 
 	/** This method is called from within the constructor to
@@ -151,6 +166,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         zoomToFit = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JSeparator();
         closureMenuItem = new javax.swing.JMenuItem();
+        jMenuItem2 = new javax.swing.JMenuItem();
         jSeparator9 = new javax.swing.JSeparator();
         showIgnored = new javax.swing.JCheckBoxMenuItem();
         showTableDetails = new javax.swing.JCheckBoxMenuItem();
@@ -377,6 +393,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
         jMenu1.add(closureMenuItem);
+
+        jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem2.setText("Open filter editor");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem2);
         jMenu1.add(jSeparator9);
 
         showIgnored.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_MASK));
@@ -1187,6 +1212,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private void steptime500ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_steptime500ActionPerformed
     	setAnimationSteptime(500);
     }//GEN-LAST:event_steptime500ActionPerformed
+
+    private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
+        openFilterEditor(null);
+    }//GEN-LAST:event_jMenuItem2ActionPerformed
     
     /**
      * Updates title.
@@ -1381,6 +1410,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenu jMenu5;
     private javax.swing.JMenuBar jMenuBar2;
     private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JSeparator jSeparator1;
