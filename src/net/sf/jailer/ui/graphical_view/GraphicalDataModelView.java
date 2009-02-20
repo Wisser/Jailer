@@ -628,6 +628,13 @@ public class GraphicalDataModelView extends JPanel {
 			}
 		});
 
+		JMenuItem filterEditor= new JMenuItem("Edit Filters...");
+		filterEditor.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				modelEditor.extractionModelFrame.openFilterEditor(table);
+			}
+		});
+
 		popup.add(toggleDetails);
 		popup.add(new JSeparator());
 		popup.add(hide);
@@ -636,6 +643,7 @@ public class GraphicalDataModelView extends JPanel {
 		popup.add(zoomToFit);
 //		popup.add(select);
 		popup.add(new JSeparator());
+		popup.add(filterEditor);
 		popup.add(restrictAll);
 		popup.add(removeRestrictions);
 		popup.add(new JSeparator());

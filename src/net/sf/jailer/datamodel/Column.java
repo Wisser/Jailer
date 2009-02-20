@@ -16,8 +16,6 @@
 
 package net.sf.jailer.datamodel;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -25,19 +23,19 @@ import net.sf.jailer.util.SqlUtil;
 
 
 /**
- * Describes a column of a table.
+ * Column of a table.
  * 
  * @author Ralf Wisser
  */
 public class Column {
 
 	/**
-     * The name (upper-case).
+     * The name.
      */
     public final String name;
     
     /**
-     * The type (in SQL).
+     * The type.
      */
     public final String type;
     
@@ -52,15 +50,10 @@ public class Column {
     public final int precision;
     
     /**
-     * Maps columns types in SQL syntax to 'null'-value of this type.
+     * SQL Expression for server-side column data filtering.
      */
-    private static Map<String, String> nullValues = new HashMap<String, String>();
-    static {
-    	nullValues.put("VARCHAR", "'0'");
-    	nullValues.put("VARCHAR2", "'0'");
-    	nullValues.put("CHAR", "'0'");
-    }
-
+    private String filterExpression = null;
+    
     /**
      * Constructor.
      * 
@@ -75,7 +68,28 @@ public class Column {
         this.length = length;
         this.precision = precision;
     }
- 
+
+    /**
+     * Gets SQL expression for server-side column data filtering.
+     * 
+     * @return SQL expression for server-side column data filtering
+     *         or <code>null</code>, if no filter is defined for this column
+     */
+    public String getFilterExpression() {
+    	return filterExpression;
+    }
+
+    /**
+     * Sets SQL expression for server-side column data filtering.
+     * 
+     * @param filterExpression SQL expression for server-side column data filtering
+     *        or <code>null</code>, if no filter is defined for this column
+     */
+    public void setFilterExpression(String filterExpression) {
+    	this.filterExpression = filterExpression;
+    }
+    
+
     private static Pattern typeWithSizeAndPrecision = Pattern.compile("([^ ]+) +([^ \\(]+) *\\( *([0-9]+) *, *([0-9]+) *\\)");
     private static Pattern typeWithSize = Pattern.compile("([^ ]+) +([^ \\(]+) *\\( *([0-9]+) *\\)");
     private static Pattern typeWithoutSize = Pattern.compile("([^ ]+) +([^ \\(]+)");
