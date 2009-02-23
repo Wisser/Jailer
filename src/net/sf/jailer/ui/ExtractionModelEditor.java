@@ -1958,10 +1958,17 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	public void openColumnMapper(Table table) {
 		if (columnMapperDialog.edit(dataModel, table)) {
 			updateSketch();
-			if (!needsSave) {
-				needsSave = true;
-				extractionModelFrame.updateTitle(needsSave);
-			}
+			markDirty();
+		}
+	}
+
+	/**
+     * Marks the model as dirty (needs save)
+     */
+	public void markDirty() {
+		if (!needsSave) {
+			needsSave = true;
+			extractionModelFrame.updateTitle(needsSave);
 		}
 	}
 

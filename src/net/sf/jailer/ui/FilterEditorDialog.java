@@ -284,6 +284,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		}
 		getDataModel().version++;
 		parent.extractionModelEditor.refresh(false, false);
+		parent.extractionModelEditor.markDirty();
 	}
 	
 	/**
@@ -417,7 +418,9 @@ public class FilterEditorDialog extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
     private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-    	storeFilterExpressions();
+    	if (needsSave()) {
+    		storeFilterExpressions();
+    	}
     	setVisible(false);
     }//GEN-LAST:event_okButtonActionPerformed
 
