@@ -167,13 +167,13 @@ public class Association extends ModelElement {
      * Stringifies the association.
      */
     public String toString() {
-    	return toString(30);
+    	return toString(30, false);
     }
     
     /**
      * Stringifies the association.
      */
-    public String toString(int maxGab) {
+    public String toString(int maxGab, boolean useDisplayName) {
         RestrictionModel restrictionModel = dataModel.getRestrictionModel();
         String restriction = "";
         if (restrictionModel != null) {
@@ -183,7 +183,7 @@ public class Association extends ModelElement {
             }
         }
         String gap = "";
-        String aName = destination.getName();
+        String aName = useDisplayName? dataModel.getDisplayName(destination) : destination.getName();
         if (name != null) {
             aName += " (" + name + ")";
         }

@@ -121,10 +121,10 @@ public class SqlUtil {
     public static final List<String> JAILER_TABLES;
     static {
     	JAILER_TABLES = new ArrayList<String>();
-    	JAILER_TABLES.add(EntityGraph.ENTITY_GRAPH_);
-    	JAILER_TABLES.add(EntityGraph.ENTITY_SET_ELEMENT_);
-    	JAILER_TABLES.add(EntityGraph.ENTITY_);
-    	JAILER_TABLES.add(EntityGraph.DEPENDENCY_);
+    	JAILER_TABLES.add(EntityGraph.ENTITY_GRAPH);
+    	JAILER_TABLES.add(EntityGraph.ENTITY_SET_ELEMENT);
+    	JAILER_TABLES.add(EntityGraph.ENTITY);
+    	JAILER_TABLES.add(EntityGraph.DEPENDENCY);
     	JAILER_TABLES.add(SQLDialect.CONFIG_TABLE_);
     	JAILER_TABLES.add(SQLDialect.DUAL_TABLE);
     	JAILER_TABLES.add(SQLDialect.TMP_TABLE_);

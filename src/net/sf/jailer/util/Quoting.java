@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.util;
 
-import java.sql.Connection;
 import java.sql.DatabaseMetaData;
 import java.sql.SQLException;
 import java.util.Arrays;
