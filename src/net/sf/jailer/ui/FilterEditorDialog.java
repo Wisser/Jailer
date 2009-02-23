@@ -20,8 +20,10 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
@@ -106,6 +108,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
      * @param table the initially selected table
      */
 	public void open(Table table) {
+		filterTextfieldsPerColumn.clear();
 		if (!isInitialized) {
 	        int w = 600, h = 400;
 	        setSize(w, h);
@@ -134,6 +137,8 @@ public class FilterEditorDialog extends javax.swing.JDialog {
     		tableNames.add(getDataModel().getDisplayName(table));
     	}
     	Collections.sort(tableNames);
+    	tableNames.add(0, "---");
+    	tableNames.add(0, "All tables");
     	DefaultComboBoxModel model = new DefaultComboBoxModel(tableNames);
     	tableBox.setModel(model);
     	if (tableToSelect == null && tableNames.size() > 0) {
@@ -172,23 +177,34 @@ public class FilterEditorDialog extends javax.swing.JDialog {
      */
 	private void refreshFilterPane() {
 		filterPane.removeAll();
+		List<Table> tables = new ArrayList<Table>();
 		if (selectedTable != null) {
-			int y = 0;
-			java.awt.GridBagConstraints gridBagConstraints;
-			filterTextfieldsPerColumn.clear();
-			
-			for (Column c: selectedTable.getColumns()) {
+			tables.add(selectedTable);
+		} else {
+			tables.addAll(getDataModel().getTables());
+			Collections.sort(tables);
+		}
+		int y = 0;
+		java.awt.GridBagConstraints gridBagConstraints;
+		filterTextfieldsPerColumn.clear();
+		
+		for (Table table: tables) {	
+			for (Column c: table.getColumns()) {
 				String filter = c.getFilterExpression();
 
+				if (filter == null && selectedTable == null) {
+					continue;
+				}
+				
 				javax.swing.JPanel columnPanel = new JPanel();
 				columnPanel.setLayout(new java.awt.BorderLayout());
 
 				javax.swing.JLabel label = new javax.swing.JLabel();
-				label.setText(" " + c.name);
-		        label.setFont(filter == null? nonBoldFont : boldFont);
+				label.setText(" " + (selectedTable == null? table.getUnqualifiedName() + "." : "") + c.name);
+		        label.setFont(filter == null || selectedTable == null? nonBoldFont : boldFont);
 				
 		        boolean isPK = false;
-		        for (Column pk: selectedTable.primaryKey.getColumns()) {
+		        for (Column pk: table.primaryKey.getColumns()) {
 		        	if (pk.equals(c)) {
 		        		isPK = true;
 		        		break;
@@ -202,7 +218,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				label = new javax.swing.JLabel();
 				label.setText(" " + (c.toSQL(null).substring(c.name.length())) + " ");
 				label.setForeground(Color.GRAY);
-		        label.setFont(filter == null? nonBoldFont : boldFont);
+		        label.setFont(filter == null || selectedTable == null? nonBoldFont : boldFont);
 				columnPanel.add(label, java.awt.BorderLayout.EAST);
 				
 				gridBagConstraints = new java.awt.GridBagConstraints();
@@ -225,7 +241,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		        filterPane.add(label, gridBagConstraints);
 		        
 		        javax.swing.JTextField textField = new javax.swing.JTextField();
-		        textField.setText(filter == null? "T." + c.name : filter);
+		        textField.setText(filter == null? "" : filter);
 		        filterTextfieldsPerColumn.put(c, textField);
 		        
 		        gridBagConstraints = new java.awt.GridBagConstraints();
@@ -239,15 +255,18 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		        
 		        ++y;
 			}
-			javax.swing.JLabel label = new javax.swing.JLabel();
-			label.setText(" ");
-			
-			gridBagConstraints = new java.awt.GridBagConstraints();
-	        gridBagConstraints.gridx = 0;
-	        gridBagConstraints.gridy = y;
-	        gridBagConstraints.weighty = 1.0;
-	        filterPane.add(label, gridBagConstraints);
 		}
+		javax.swing.JLabel label = new javax.swing.JLabel();
+		label.setText(y == 0? " no filter defined" : " ");
+		label.setFont(nonBoldFont);
+		
+		gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = y;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        filterPane.add(label, gridBagConstraints);
 		validate();
 		repaint();
 	}
@@ -256,34 +275,32 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	 * Stores the text-field content.
 	 */
 	private void storeFilterExpressions() {
-		if (selectedTable != null) {
-			for (Column c: selectedTable.getColumns()) {
-				String newFilter = filterTextfieldsPerColumn.get(c).getText().trim();
-				if (newFilter.equals("T." + c.name) || newFilter.length() == 0) {
-					newFilter = null;
-				}
-				c.setFilterExpression(newFilter);
+		for (Column c: filterTextfieldsPerColumn.keySet()) {
+			String newFilter = filterTextfieldsPerColumn.get(c).getText().trim();
+			if (newFilter.length() == 0) {
+				newFilter = null;
 			}
+			c.setFilterExpression(newFilter);
 		}
+		getDataModel().version++;
+		parent.extractionModelEditor.refresh(false, false);
 	}
 	
 	/**
 	 * Whether there is unsaved data.
 	 */
 	private boolean needsSave() {
-		if (selectedTable != null) {
-			for (Column c: selectedTable.getColumns()) {
-				String newFilter = filterTextfieldsPerColumn.get(c).getText().trim();
-				if (newFilter.equals("T." + c.name) || newFilter.length() == 0) {
-					newFilter = null;
-				}
-				if (c.getFilterExpression() == null && newFilter != null) {
+		for (Column c: filterTextfieldsPerColumn.keySet()) {
+			String newFilter = filterTextfieldsPerColumn.get(c).getText().trim();
+			if (newFilter.length() == 0) {
+				newFilter = null;
+			}
+			if (c.getFilterExpression() == null && newFilter != null) {
+				return true;
+			}
+			if (c.getFilterExpression() != null) {
+				if (!c.getFilterExpression().equals(newFilter)) {
 					return true;
-				}
-				if (c.getFilterExpression() != null) {
-					if (!c.getFilterExpression().equals(newFilter)) {
-						return true;
-					}
 				}
 			}
 		}
@@ -303,7 +320,6 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         filterScrollPane = new javax.swing.JScrollPane();
         filterPane = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
         tableBox = new javax.swing.JComboBox();
         jLabel3 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
@@ -314,7 +330,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         setTitle("Filter Editor");
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder("Filters"));
         jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.LINE_AXIS));
 
         filterScrollPane.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
@@ -340,14 +356,6 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         getContentPane().add(jLabel1, gridBagConstraints);
-
-        jLabel2.setText(" Filters");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
-        getContentPane().add(jLabel2, gridBagConstraints);
 
         tableBox.setMaximumRowCount(20);
         tableBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -416,15 +424,13 @@ public class FilterEditorDialog extends javax.swing.JDialog {
     private void tableBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_tableBoxItemStateChanged
     	if (tableBox.getSelectedItem() instanceof String) {
     		Table table = getDataModel().getTableByDisplayName((String) tableBox.getSelectedItem());
-    		if (selectedTable != table) {
-    			if (needsSave()) {
-    				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Save changes?", "", JOptionPane.YES_NO_OPTION)) {
-    					storeFilterExpressions();
-    				}
-    			}
-    			selectedTable = table;
-    			refreshFilterPane();
-    		}
+			if (needsSave()) {
+				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Save changes?", "", JOptionPane.YES_NO_OPTION)) {
+					storeFilterExpressions();
+				}
+			}
+			selectedTable = table;
+			refreshFilterPane();
     	}
     }//GEN-LAST:event_tableBoxItemStateChanged
  
@@ -437,7 +443,6 @@ public class FilterEditorDialog extends javax.swing.JDialog {
     private javax.swing.JPanel filterPane;
     private javax.swing.JScrollPane filterScrollPane;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;

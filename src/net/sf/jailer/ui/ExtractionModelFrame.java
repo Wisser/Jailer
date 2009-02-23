@@ -156,6 +156,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu5 = new javax.swing.JMenu();
         ignoreAll = new javax.swing.JMenuItem();
         removeAllRestrictions = new javax.swing.JMenuItem();
+        jSeparator12 = new javax.swing.JSeparator();
+        jMenuItem2 = new javax.swing.JMenuItem();
         jMenu1 = new javax.swing.JMenu();
         collapseAll = new javax.swing.JMenuItem();
         expandAll = new javax.swing.JMenuItem();
@@ -166,7 +168,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         zoomToFit = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JSeparator();
         closureMenuItem = new javax.swing.JMenuItem();
-        jMenuItem2 = new javax.swing.JMenuItem();
         jSeparator9 = new javax.swing.JSeparator();
         showIgnored = new javax.swing.JCheckBoxMenuItem();
         showTableDetails = new javax.swing.JCheckBoxMenuItem();
@@ -315,6 +316,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
         jMenu5.add(removeAllRestrictions);
+        jMenu5.add(jSeparator12);
+
+        jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem2.setText("Filter editor...");
+        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem2ActionPerformed(evt);
+            }
+        });
+        jMenu5.add(jMenuItem2);
 
         jMenuBar2.add(jMenu5);
 
@@ -393,15 +404,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
         jMenu1.add(closureMenuItem);
-
-        jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
-        jMenuItem2.setText("Open filter editor");
-        jMenuItem2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem2ActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jMenuItem2);
         jMenu1.add(jSeparator9);
 
         showIgnored.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_MASK));
@@ -1416,6 +1418,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator1;
     private javax.swing.JSeparator jSeparator10;
     private javax.swing.JSeparator jSeparator11;
+    private javax.swing.JSeparator jSeparator12;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;

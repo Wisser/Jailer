@@ -72,6 +72,7 @@ import net.sf.jailer.Jailer;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.ModelElement;
 import net.sf.jailer.datamodel.Table;
@@ -1697,6 +1698,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					out.println(CsvFile.encodeCell(table.getName()) + "; " + CsvFile.encodeCell(xmlMapping));
 				}
 			}
+			saveFilters(out);
 			out.println();
 			out.println(CsvFile.BLOCK_INDICATOR + "version");
 			out.println(Jailer.VERSION);
@@ -1755,6 +1757,23 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		PrintWriter out = new PrintWriter(file);
 		saveRestrictions(out);
 		out.close();
+	}
+
+	/**
+	 * Saves filters.
+	 * 
+	 * @param out to save filters into
+	 */
+	private void saveFilters(PrintWriter out) {
+		out.println();
+		out.println(CsvFile.BLOCK_INDICATOR + "filters");
+		for (Table table: dataModel.getTables()) {
+			for (Column c: table.getColumns()) {
+				if (c.getFilterExpression() != null) {
+					out.println(CsvFile.encodeCell(table.getName()) + ";" + CsvFile.encodeCell(c.name) + ";" + CsvFile.encodeCell(c.getFilterExpression()));
+				}
+			}
+		}
 	}
 
 	/**
