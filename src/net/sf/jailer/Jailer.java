@@ -86,7 +86,7 @@ public class Jailer {
     /**
      * The Jailer version.
      */
-    public static final String VERSION = "2.8.2";
+    public static final String VERSION = "2.9.0.beta";
     
     /**
      * The relational data model.
@@ -164,7 +164,7 @@ public class Jailer {
      * @param comment the comment line (without '--'-prefix)
      */
     private void appendCommentHeader(String comment) {
-        commentHeader.append("-- " + comment + "\n");
+        commentHeader.append("-- " + (comment.replace('\n', ' ')) + "\n");
     }
     
     /**
@@ -228,9 +228,9 @@ public class Jailer {
 	        		if (c.getFilterExpression() != null) {
 	        			if (!isFiltered) {
 	        				isFiltered = true;
-	        				appendCommentHeader("Used filters:");
+	        				appendCommentHeader("Used Filters:");
 	        			}
-	        			appendCommentHeader("    " + t.getUnqualifiedName() + "." + c.name + " is " + c.getFilterExpression());
+	        			appendCommentHeader("    " + t.getUnqualifiedName() + "." + c.name + " := " + c.getFilterExpression());
 	        		}
 	        	}
 	        }
@@ -316,11 +316,11 @@ public class Jailer {
                     public void run() throws Exception {
                         runstats(entityGraph.statementExecutor, false);
                         if (association.getJoinCondition() != null) {
-                        	_log.info("resolving " + datamodel.getDisplayName(table) + " -> " + association.toString(0) + "...");
+                        	_log.info("resolving " + datamodel.getDisplayName(table) + " -> " + association.toString(0, true) + "...");
                         }
                         long rc = entityGraph.resolveAssociation(table, association, today);
                         if (rc >= 0) {
-                            _log.info(rc + " entities found resolving " + datamodel.getDisplayName(table) + " -> " + association.toString(0));
+                            _log.info(rc + " entities found resolving " + datamodel.getDisplayName(table) + " -> " + association.toString(0, true));
                         }
                         synchronized (progress) {
                             if (rc > 0) {

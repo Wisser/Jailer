@@ -230,7 +230,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		        filterPane.add(columnPanel, gridBagConstraints);
 		        
 				label = new javax.swing.JLabel();
-				label.setText(" is  ");
+				label.setText(" :=  ");
 		        label.setFont(nonBoldFont);
 				gridBagConstraints = new java.awt.GridBagConstraints();
 		        gridBagConstraints.gridx = 1;
@@ -322,10 +322,10 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         filterPane = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         tableBox = new javax.swing.JComboBox();
-        jLabel3 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Filter Editor");
@@ -351,7 +351,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         gridBagConstraints.weighty = 1.0;
         getContentPane().add(jPanel1, gridBagConstraints);
 
-        jLabel1.setText(" Table   ");
+        jLabel1.setText(" Table ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -366,19 +366,13 @@ public class FilterEditorDialog extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 10;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 2);
         getContentPane().add(tableBox, gridBagConstraints);
-
-        jLabel3.setText(" as T ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 12;
-        gridBagConstraints.gridy = 1;
-        getContentPane().add(jLabel3, gridBagConstraints);
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
@@ -414,6 +408,13 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         getContentPane().add(jPanel2, gridBagConstraints);
 
+        jLabel2.setForeground(java.awt.Color.gray);
+        jLabel2.setText("as T ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        getContentPane().add(jLabel2, gridBagConstraints);
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
@@ -446,7 +447,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
     private javax.swing.JPanel filterPane;
     private javax.swing.JScrollPane filterScrollPane;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JButton okButton;
