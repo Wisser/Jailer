@@ -22,6 +22,7 @@ import java.util.List;
 
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
@@ -191,6 +192,31 @@ public class ExtractionModel {
 					_log.warn("unknown table" + name);
 				} else {
 					table.setXmlTemplate(mapping);
+				}
+            }
+            
+            // read filters
+            List<CsvFile.Line> filtersFile = new CsvFile(new File(fileName), "filters").getLines();
+            for (CsvFile.Line xmLine: filtersFile) {
+            	String name = xmLine.cells.get(0);
+				String column = xmLine.cells.get(1);
+				String filter = xmLine.cells.get(2);
+				Table table = dataModel.getTable(name);
+				if (table == null) {
+					_log.warn("unknown table" + name);
+				} else {
+					Column col = null;
+					for (Column c: table.getColumns()) {
+						if (c.name.equals(column)) {
+							col = c;
+							break;
+						}
+					}
+					if (col == null) {
+						_log.warn("unknown table" + name + "." + column);
+					} else {
+						col.setFilterExpression(filter);
+					}
 				}
             }
             

@@ -35,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.zip.GZIPOutputStream;
 
 import javax.xml.transform.sax.TransformerHandler;
@@ -49,6 +50,7 @@ import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
+import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
@@ -218,12 +220,30 @@ public class Jailer {
 			}
 			firstLine = false;
         }
+        if (CommandLineParser.getInstance().getScriptFormat() != ScriptFormat.XML) {
+	        appendCommentHeader("");
+			boolean isFiltered = false;
+	        for (Table t: new TreeSet<Table>(totalProgress)) {
+	        	for (Column c: t.getColumns()) {
+	        		if (c.getFilterExpression() != null) {
+	        			if (!isFiltered) {
+	        				isFiltered = true;
+	        				appendCommentHeader("Used filters:");
+	        			}
+	        			appendCommentHeader("    " + t.getUnqualifiedName() + "." + c.name + " is " + c.getFilterExpression());
+	        		}
+	        	}
+	        }
+			if (!isFiltered) {
+				appendCommentHeader("No filters used");
+			}
+        }
         
         return totalProgress;
     }
     
     /**
-     * Exports all entities from inital-data tables.
+     * Exports all entities from initial-data tables.
      * 
      * @param subject the subject of the extraction-model
      */

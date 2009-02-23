@@ -33,8 +33,10 @@ import java.awt.geom.RectangularShape;
 import java.awt.geom.RoundRectangle2D;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.swing.ImageIcon;
 
@@ -152,6 +154,7 @@ public class TableRenderer extends AbstractShapeRenderer {
      * Caches texts.
      */
     private Map<String, String> textCache = new HashMap<String, String>();
+    private long textCacheVersion = -1;
     
     /**
      * Returns the text to draw. Subclasses can override this class to
@@ -160,6 +163,10 @@ public class TableRenderer extends AbstractShapeRenderer {
      * @return a <code>String</code> to draw
      */
     protected String getText(VisualItem item) {
+    	if (textCacheVersion != model.version) {
+    		textCacheVersion = model.version;
+    		textCache.clear();
+    	}
 		m_color = IN_CLOSURE_COLOR;
     	if (item.canGetString(m_labelName) ) {
         	String tableName = item.getString(m_labelName);
@@ -176,6 +183,9 @@ public class TableRenderer extends AbstractShapeRenderer {
         		}
         		StringBuilder sb = new StringBuilder(tableName + " \n-\n");
         		for (Column c: table.getColumns()) {
+        			if (c.getFilterExpression() != null) {
+        				sb.append("!");
+        			}
         			for (Column pk: table.primaryKey.getColumns()) {
         				if (pk.name.equals(c.name)) {
         					sb.append("+");
@@ -569,6 +579,13 @@ public class TableRenderer extends AbstractShapeRenderer {
             	} else {
             		a = line.substring(0, tab);
             		b = line.substring(tab + 1);
+            		if (a.startsWith("!")) {
+            			if (filterImage != null) {
+            				m_transform.setTransform(size * imgScale(filterImage) * 0.6, 0, 0, size * imgScale(filterImage) * 0.6, x - filterImage.getWidth(null) * imgScale(filterImage) * 0.9, y - lh * 0.75);
+            				g.drawImage(filterImage, m_transform, null);
+            			}
+                    	a = a.substring(1);
+            		}
             		if (a.startsWith("+")) {
                     	g.setPaint(Color.RED);
                     	a = a.substring(1);
@@ -919,6 +936,9 @@ public class TableRenderer extends AbstractShapeRenderer {
 		}
 	}
 
+	private Set<Table> filteredTables = new HashSet<Table>();
+	private long dmVersionOfFilteredTables = -1;
+	
 	/**
 	 * Get the image to include in the label for the given VisualItem.
 	 * 
@@ -927,7 +947,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 	 * @return the image for the item, or null for no image
 	 */
 	protected Image[] getImage(VisualItem item) {
-		Image[] img = new Image[5];
+		Image[] img = new Image[6];
 		int i = 0;
 		Table table = model.getTable(item
 				.getString("label"));
@@ -946,6 +966,20 @@ public class TableRenderer extends AbstractShapeRenderer {
 			}
 			if (table.upsert) {
 				img[i++] = upsertImage;
+			}
+			if (model.version != dmVersionOfFilteredTables) {
+				for (Table t: model.getTables()) {
+					for (Column column: t.getColumns()) {
+						if (column.getFilterExpression() != null) {
+							filteredTables.add(t);
+							break;
+						}
+					}
+				}
+				dmVersionOfFilteredTables = model.version;
+			}
+			if (filteredTables.contains(table)) {
+				img[i++] = filterImage;
 			}
 		}
 		return img;
@@ -1102,6 +1136,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 	private Image collapsedImage = null;
 	private Image upsertImage = null;
 	private Image subjectImage = null;
+	private Image filterImage = null;
 	{
 		// load images
 		try {
@@ -1126,6 +1161,11 @@ public class TableRenderer extends AbstractShapeRenderer {
 		}
 		try {
 			subjectImage = new ImageIcon(getClass().getResource("/subject.png")).getImage();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			filterImage = new ImageIcon(getClass().getResource("/filter.png")).getImage();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
