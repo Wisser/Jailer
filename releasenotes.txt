@@ -1,3 +1,6 @@
+2.9.0.beta
+ - added data filtering feature for data anonymization and test data aging [2530625].
+
 2.8.2
  - Support for qualified tables in DbUnit datasets.
 
