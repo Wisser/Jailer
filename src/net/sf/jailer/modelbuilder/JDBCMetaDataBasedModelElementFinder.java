@@ -176,10 +176,12 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 pk = new HashMap<Integer, Column>();
                 pkColumns.put(tableName, pk);
             }
+            boolean hasPK = false;
             while (resultSet.next()) {
+            	hasPK = true;
                 pk.put(resultSet.getInt(5), new Column(quoting.quote(resultSet.getString(4)), "", 0, -1));
-            }    
-            _log.info("found primary key for table " + tableName);
+            }
+            _log.info((hasPK? "" : "no ") + "primary key found for table " + tableName);
             resultSet.close();
         }
         for (String tableName: tableNames) {
@@ -218,7 +220,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 }
             }
             resultSet.close();
-            _log.info("found primary key for table " + tableName);
+            _log.info("read primary key type for table " + tableName);
             
             List<Integer> keySeqs = new ArrayList<Integer>(pk.keySet());
             Collections.sort(keySeqs);
