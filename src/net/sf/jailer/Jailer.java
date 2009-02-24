@@ -234,9 +234,6 @@ public class Jailer {
 	        		}
 	        	}
 	        }
-			if (!isFiltered) {
-				appendCommentHeader("No filters used");
-			}
         }
         
         return totalProgress;

@@ -195,12 +195,26 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				if (filter == null && selectedTable == null) {
 					continue;
 				}
-				
+
+				javax.swing.JLabel label = new javax.swing.JLabel();
+				if (selectedTable != null) {
+					label.setText(" T.");
+			        label.setFont(nonBoldFont);
+			        label.setForeground(Color.gray);
+			        gridBagConstraints = new java.awt.GridBagConstraints();
+			        gridBagConstraints.gridx = 0;
+			        gridBagConstraints.gridy = y;
+			        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+			        gridBagConstraints.weightx = 0.0;
+			        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+			        filterPane.add(label, gridBagConstraints);
+				}
+		        
 				javax.swing.JPanel columnPanel = new JPanel();
 				columnPanel.setLayout(new java.awt.BorderLayout());
 
-				javax.swing.JLabel label = new javax.swing.JLabel();
-				label.setText(" " + (selectedTable == null? table.getUnqualifiedName() + "." : "") + c.name);
+				label = new javax.swing.JLabel();
+				label.setText((selectedTable == null? " " + table.getUnqualifiedName() + "." : "") + c.name);
 		        label.setFont(filter == null || selectedTable == null? nonBoldFont : boldFont);
 				
 		        boolean isPK = false;
@@ -222,7 +236,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				columnPanel.add(label, java.awt.BorderLayout.EAST);
 				
 				gridBagConstraints = new java.awt.GridBagConstraints();
-		        gridBagConstraints.gridx = 0;
+		        gridBagConstraints.gridx = 1;
 		        gridBagConstraints.gridy = y;
 		        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 		        gridBagConstraints.weightx = 0.0;
@@ -233,7 +247,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				label.setText(" :=  ");
 		        label.setFont(nonBoldFont);
 				gridBagConstraints = new java.awt.GridBagConstraints();
-		        gridBagConstraints.gridx = 1;
+		        gridBagConstraints.gridx = 2;
 		        gridBagConstraints.gridy = y;
 		        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 		        gridBagConstraints.weightx = 0.0;
@@ -245,7 +259,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		        filterTextfieldsPerColumn.put(c, textField);
 		        
 		        gridBagConstraints = new java.awt.GridBagConstraints();
-		        gridBagConstraints.gridx = 2;
+		        gridBagConstraints.gridx = 3;
 		        gridBagConstraints.gridy = y;
 		        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 		        gridBagConstraints.weightx = 1.0;
