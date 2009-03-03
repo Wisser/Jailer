@@ -1,5 +1,6 @@
-2.9.0.beta
- - added data filtering feature for data anonymization and test data aging [2530625].
+2.9.0
+ - added data filtering feature for data anonymization and test data aging [2530625]
+ - added setting for Sybase jConnect 6.0
 
 2.8.2
  - Support for qualified tables in DbUnit datasets.
