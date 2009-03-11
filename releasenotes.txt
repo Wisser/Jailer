@@ -1,3 +1,6 @@
+2.9.1
+ - fixed compatibility issue with Informix 10
+
 2.9.0
  - added data filtering feature for data anonymization and test data aging [2530625]
  - added setting for Sybase jConnect 6.0

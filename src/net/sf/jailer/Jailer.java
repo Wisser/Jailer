@@ -86,7 +86,7 @@ public class Jailer {
     /**
      * The Jailer version.
      */
-    public static final String VERSION = "2.9.0";
+    public static final String VERSION = "2.9.1";
     
     /**
      * The relational data model.
@@ -777,7 +777,7 @@ public class Jailer {
                 try {
                 	statisticRenovator.renew(statementExecutor);
                 } catch (Throwable t) {
-                	_log.warn("unable to update table statistics", t);
+                	_log.warn("unable to update table statistics: " + t.getMessage());
                 }
             }
         }
