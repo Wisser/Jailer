@@ -9,7 +9,7 @@ ${create-table}JAILER_CONFIG${table-suffix}
 (
    jversion        VARCHAR(20),
    jkey            VARCHAR(200),
-   jvalue          VARCHAR(2000)
+   jvalue          VARCHAR(200)
 ) ${create-table-suffix};
 
 INSERT INTO ${config-dml-reference}(jversion, jkey, jvalue) values('${version}', 'magic', '837065098274756382534403654245288');
@@ -76,4 +76,4 @@ ${create-table}JAILER_TMP${table-suffix}
     c2 INTEGER
 ) ${create-table-suffix};
 
-INSERT INTO ${config-dml-reference}(jversion, jkey, jvalue) values('${version}', 'upk', '${upk}');
+INSERT INTO ${config-dml-reference}(jversion, jkey, jvalue) values('${version}', 'upk', '${upk-hash}');

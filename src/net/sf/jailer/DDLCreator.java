@@ -84,6 +84,7 @@ public class DDLCreator {
 		String universalPrimaryKey = dataModel.getUniversalPrimaryKey().toSQL(null, contraint);
 		Map<String, String> arguments = new HashMap<String, String>();
         arguments.put("upk", universalPrimaryKey);
+        arguments.put("upk-hash", "" + (universalPrimaryKey.hashCode()));
 		arguments.put("pre", dataModel.getUniversalPrimaryKey().toSQL("PRE_", contraint));
 		arguments.put("from", dataModel.getUniversalPrimaryKey().toSQL("FROM_", contraint));
 		arguments.put("to", dataModel.getUniversalPrimaryKey().toSQL("TO_", contraint));
@@ -179,7 +180,7 @@ public class DDLCreator {
 						public void readCurrentRow(ResultSet resultSet) throws SQLException {
 							String contraint = statementExecutor.dbms == DBMS.SYBASE? " NULL" : "";
 							String universalPrimaryKey = datamodel.getUniversalPrimaryKey().toSQL(null, contraint);
-							uptodate[0] = resultSet.getString(1).equals(universalPrimaryKey);
+							uptodate[0] = resultSet.getString(1).equals("" + universalPrimaryKey.hashCode());
 						}
 						public void close() {
 						}
