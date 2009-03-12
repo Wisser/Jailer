@@ -15,9 +15,9 @@ Features
 Installation
 ============
 
-Unpack the file jailer_2.8.2.zip. You will get the following files:
-$unzip jailer_2.7.1.zip
-$cd jailer_2.7.1
+Unpack thei file jailer_2.9.1.zip. You will get the following files:
+$unzip jailer_2.9.1.zip
+$cd jailer_2.9.1
 $ll
 drwxr-xr-x  5 wisser users    152 2008-05-06 10:10 doc
 drwxr-xr-x  5 wisser users    120 2008-04-28 16:17 epilog
@@ -48,3 +48,4 @@ or use java -jar jailer.jar
 Home:    http://jailer.sourceforge.net/
 Forum:   https://sourceforge.net/forum/?group_id=197260
 Support: rwisser@users.sourceforge.net
+
