@@ -1,5 +1,6 @@
 2.9.1
  - fixed compatibility issue with Informix 10
+ - fixed issue with '#' character in driver's file name
 
 2.9.0
  - added data filtering feature for data anonymization and test data aging [2530625]
