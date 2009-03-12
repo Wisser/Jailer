@@ -432,10 +432,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         }
         System.out.println("add '" + jarName1 + "' to classpath");
         if (jarName2 == null) {
-            urls = new URL[] {new URL("file", null, jarName1)};
+            urls = new URL[] { new File(jarName1).toURI().toURL() };
         } else {
             System.out.println("add '" + jarName2 + "' to classpath");
-            urls = new URL[] {new URL("file", null, jarName1), new URL("file", null, jarName2)};
+            urls = new URL[] {new File(jarName1).toURI().toURL(), new File(jarName2).toURI().toURL()};
         }
         URLClassLoader urlLoader = new URLClassLoader(urls);
         classloaders.put(mapKey, urlLoader);
