@@ -15,6 +15,7 @@
  */
 package net.sf.jailer;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
@@ -88,7 +89,7 @@ public class Configuration {
 	/**
      * The configuration.
      */
-    private static AbstractXmlApplicationContext applicationContext = new FileSystemXmlApplicationContext("config/config.xml");
+    private static AbstractXmlApplicationContext applicationContext = new FileSystemXmlApplicationContext("config" + File.separator + "config.xml");
     static {
 		PrimaryKeyFactory.minimizeUPK = Boolean.TRUE.equals(applicationContext.getBean("minimize-UPK"));
         scriptEnhancer = (List<ScriptEnhancer>) applicationContext.getBean("script-enhancer");

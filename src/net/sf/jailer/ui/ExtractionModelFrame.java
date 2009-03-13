@@ -1251,7 +1251,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      */
     public static void main(final String args[]) {
     	// check working folder
-    	String configFileName = "config/config.xml";
+    	String configFileName = "config" + File.separator + "config.xml";
     	File configFile = new File(configFileName);
     	if (!configFile.exists()) {
     		JOptionPane.showMessageDialog(null, "File '" + configFileName + "' not found!", "Missing configuration file", JOptionPane.ERROR_MESSAGE);
