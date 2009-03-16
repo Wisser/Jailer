@@ -86,7 +86,7 @@ public class Jailer {
     /**
      * The Jailer version.
      */
-    public static final String VERSION = "2.9.2.beta";
+    public static final String VERSION = "2.9.2";
     
     /**
      * The relational data model.
@@ -268,7 +268,7 @@ public class Jailer {
      * @return the initial-data-tables list
      */
     private Set<Table> readInitialDataTables() throws Exception {
-        File file = new File("datamodel/initial_data_tables.csv");
+        File file = new File("datamodel" + File.separator + "initial_data_tables.csv");
         if (file.exists()) {
 			Set<Table> idTables = SqlUtil.readTableList(new CsvFile(file), datamodel);
 	        return idTables;
@@ -1277,7 +1277,7 @@ public class Jailer {
 
     // initialize log4j
     static {
-        PropertyConfigurator.configure("config/log4j.properties");
+        PropertyConfigurator.configure("config" + File.separator + "log4j.properties");
         _log = Logger.getLogger(Jailer.class);
     }
 
