@@ -81,13 +81,14 @@ public class DDLCreator {
 
         String template = "script" + File.separator + "ddl-template.sql";
 		String contraint = statementExecutor != null && (statementExecutor.dbms == DBMS.SYBASE || statementExecutor.dbms == DBMS.MySQL)? " NULL" : "";
-		String universalPrimaryKey = dataModel.getUniversalPrimaryKey().toSQL(null, contraint);
+		Map<String, String> typeReplacement = Configuration.forDbms(statementExecutor).getTypeReplacement();
+		String universalPrimaryKey = dataModel.getUniversalPrimaryKey().toSQL(null, contraint, typeReplacement);
 		Map<String, String> arguments = new HashMap<String, String>();
         arguments.put("upk", universalPrimaryKey);
         arguments.put("upk-hash", "" + (universalPrimaryKey.hashCode()));
-		arguments.put("pre", dataModel.getUniversalPrimaryKey().toSQL("PRE_", contraint));
-		arguments.put("from", dataModel.getUniversalPrimaryKey().toSQL("FROM_", contraint));
-		arguments.put("to", dataModel.getUniversalPrimaryKey().toSQL("TO_", contraint));
+		arguments.put("pre", dataModel.getUniversalPrimaryKey().toSQL("PRE_", contraint, typeReplacement));
+		arguments.put("from", dataModel.getUniversalPrimaryKey().toSQL("FROM_", contraint, typeReplacement));
+		arguments.put("to", dataModel.getUniversalPrimaryKey().toSQL("TO_", contraint, typeReplacement));
 		arguments.put("version", Jailer.VERSION);
 		arguments.put("constraint", contraint);
 		
@@ -176,10 +177,11 @@ public class DDLCreator {
 	        	try {
 	        		final boolean[] uptodate = new boolean[] { false };
 	        		final DataModel datamodel = new DataModel();
+	        		final Map<String, String> typeReplacement = Configuration.forDbms(statementExecutor).getTypeReplacement();
 	        		statementExecutor.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE_ + " where jversion='" + Jailer.VERSION + "' and jkey='upk'", new StatementExecutor.ResultSetReader() {
 						public void readCurrentRow(ResultSet resultSet) throws SQLException {
 							String contraint = statementExecutor.dbms == DBMS.SYBASE? " NULL" : "";
-							String universalPrimaryKey = datamodel.getUniversalPrimaryKey().toSQL(null, contraint);
+							String universalPrimaryKey = datamodel.getUniversalPrimaryKey().toSQL(null, contraint, typeReplacement);
 							uptodate[0] = resultSet.getString(1).equals("" + universalPrimaryKey.hashCode());
 						}
 						public void close() {

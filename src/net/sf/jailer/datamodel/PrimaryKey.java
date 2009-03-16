@@ -145,14 +145,15 @@ public class PrimaryKey {
      * Returns the primary key in SQL syntax.
      * 
      * @param columnPrefix an optional prefix for each PK-column
+     * @param typeReplacement column types replacements
      */
-    public String toSQL(String columnPrefix, String contraint) {
+    public String toSQL(String columnPrefix, String contraint, Map<String, String> typeReplacement) {
         StringBuffer sb = new StringBuffer();
         for (int i = 0; i < columns.size(); ++i) {
             if (i > 0) {
                 sb.append(", ");
             }
-            sb.append(columns.get(i).toSQL(columnPrefix) + " " + contraint);
+            sb.append(columns.get(i).toSQL(columnPrefix, typeReplacement) + " " + contraint);
         }
         return sb.toString();
     }

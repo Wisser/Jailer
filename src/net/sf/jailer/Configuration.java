@@ -60,6 +60,11 @@ public class Configuration {
      */
     private StatisticRenovator statisticRenovator;
     
+    /**
+     * Replacement map for column types used for DDL generation.
+     */
+    private Map<String, String> typeReplacement;
+    
     public SimpleDateFormat dateFormat = null;
 
 	public char nanoSep = '.';
@@ -188,6 +193,20 @@ public class Configuration {
 		this.binaryPattern = binaryPattern;
 	}
 	
+    /**
+     * Sets replacement map for column types used for DDL generation.
+     */
+    public void setTypeReplacement(Map<String, String> tr) {
+    	typeReplacement = tr;
+    }
+
+    /**
+     * Gets replacement map for column types used for DDL generation.
+     */
+    public Map<String, String> getTypeReplacement() {
+    	return typeReplacement;
+    }
+
 	/**
 	 * Sets manager for session local temporary tables.
 	 */

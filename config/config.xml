@@ -56,6 +56,18 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 	-->
 	<util:list id="dbms-configuration">
 		
+		<!-- for Informix -->
+		<bean class="net.sf.jailer.Configuration">
+			<property name="urlPattern" value="jdbc:informix.*" />
+			<property name="typeReplacement">
+				<map>
+					<entry key="datetime" value="datetime year to fraction"/>
+					<entry key="serial" value="int"/>
+					<entry key="serial8" value="int8"/>
+				</map>
+			</property>
+		</bean>
+
 		<!-- for IBM DB2 -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:db2.*" />
