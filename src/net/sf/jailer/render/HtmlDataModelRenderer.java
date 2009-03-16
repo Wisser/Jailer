@@ -116,7 +116,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
                     domainSuffix = " <small>(" + linkTo(domain) + ")</small>";
                 }
                 String title = composite == null? "Component " + table.getName() : composite.toString();
-                writeFile(new File(outputDir, toFileName(table)), PrintUtil.applyTemplate("template/tableframe.html", new Object[] { title, renderTableBody(table, table, 0, 1, new HashSet<Table>()), closure + legend, components + columns, domainSuffix }));
+                writeFile(new File(outputDir, toFileName(table)), PrintUtil.applyTemplate("template" + File.separator + "tableframe.html", new Object[] { title, renderTableBody(table, table, 0, 1, new HashSet<Table>()), closure + legend, components + columns, domainSuffix }));
             }
             
             String restrictions = "none";
@@ -212,7 +212,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
                 firstTime = false;
             }
             if (!cl.isEmpty()) {
-                lines.append(PrintUtil.applyTemplate("template/table_line.html", new Object[] { "", "&nbsp;&nbsp;distance&nbsp;" + distance, "", "&nbsp;", ts.toString(), COLOR_KEYWORDS, distance % 2 != 0? "class=\"highlightedrow\"" : "" }));
+                lines.append(PrintUtil.applyTemplate("template" + File.separator + "table_line.html", new Object[] { "", "&nbsp;&nbsp;distance&nbsp;" + distance, "", "&nbsp;", ts.toString(), COLOR_KEYWORDS, distance % 2 != 0? "class=\"highlightedrow\"" : "" }));
             }
             ++distance;
             closure.addAll(associatedComposites);
@@ -311,12 +311,12 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
             }
         }
 
-        StringBuffer result = new StringBuffer(PrintUtil.applyTemplate("template/table.html", new Object[] { table.equals(current)? "Associations" : linkTo(table), indentSpaces(indent), lines.toString() }));
+        StringBuffer result = new StringBuffer(PrintUtil.applyTemplate("template" + File.separator + "table.html", new Object[] { table.equals(current)? "Associations" : linkTo(table), indentSpaces(indent), lines.toString() }));
         
         if (depth < maxDepth) {
             if (depth == 0) {
                 result.append("<br>"
-                        + PrintUtil.applyTemplate("template/table.html", new Object[] { "Neighborhood", indentSpaces(1), "" })
+                        + PrintUtil.applyTemplate("template" + File.separator + "table.html", new Object[] { "Neighborhood", indentSpaces(1), "" })
                         + "<br>");
             }
             Set<Table> rendered = new HashSet<Table>();
@@ -348,7 +348,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
      * @return a row in the table render
      */
     private String tableRow(int indent, String content) throws FileNotFoundException, IOException {
-        return PrintUtil.applyTemplate("template/table_top_line.html", new Object[] { indentSpaces(indent), content, "", "", "", COLOR_KEYWORDS, "" });
+        return PrintUtil.applyTemplate("template" + File.separator + "table_top_line.html", new Object[] { indentSpaces(indent), content, "", "", "", COLOR_KEYWORDS, "" });
     }
 
     /**
@@ -368,7 +368,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
         aliasA = linkTo(association.source, aliasA);
         aliasB = linkTo(association.destination, aliasB);
         jc = SqlUtil.replaceAliases(jc, aliasA, aliasB);
-        return PrintUtil.applyTemplate("template/table_line.html", new Object[] { indentSpaces(indent), "&nbsp;&nbsp;" + (association.destination.equals(current)? association.destination.getName() : linkTo(association.destination)), "&nbsp;&nbsp;" + (association.getCardinality() != null? association.getCardinality() : ""), "&nbsp;on&nbsp;", jc, "", highlighted? "class=\"highlightedrow\"" : "" });
+        return PrintUtil.applyTemplate("template" + File.separator + "table_line.html", new Object[] { indentSpaces(indent), "&nbsp;&nbsp;" + (association.destination.equals(current)? association.destination.getName() : linkTo(association.destination)), "&nbsp;&nbsp;" + (association.getCardinality() != null? association.getCardinality() : ""), "&nbsp;on&nbsp;", jc, "", highlighted? "class=\"highlightedrow\"" : "" });
     }
     
     /**
@@ -391,7 +391,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
             for (Column c: table.primaryKey.getColumns()) {
                 isPK = isPK || c.name.equalsIgnoreCase(COLUMN_NAME);
             }
-            result.append(PrintUtil.applyTemplate("template/table_line.html", new Object[] { indentSpaces(1), "&nbsp;&nbsp;" + COLUMN_NAME, type, "", constraint, isPK? COLOR_KEYWORDS : "", count % 2 == 0? "class=\"highlightedrow\"" : "" }));
+            result.append(PrintUtil.applyTemplate("template" + File.separator + "table_line.html", new Object[] { indentSpaces(1), "&nbsp;&nbsp;" + COLUMN_NAME, type, "", constraint, isPK? COLOR_KEYWORDS : "", count % 2 == 0? "class=\"highlightedrow\"" : "" }));
         }
         
         return count == 0? null : (PrintUtil.applyTemplate("template" + File.separatorChar + "table.html", new Object[] { "Columns", "", result.toString() }));
@@ -418,7 +418,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
     private String generateHTMLTable(String title, List<Integer> indents, List<String> column1, List<String> column2) throws FileNotFoundException, IOException {
         StringBuffer result = new StringBuffer();
         for (int i = 0; i < column1.size(); ++i) {
-            result.append(PrintUtil.applyTemplate("template/table_line.html", new Object[] { "", indentSpaces(indents == null? 1 : indents.get(i)) + column1.get(i), column2 == null? "" : column2.get(i), "", "", "", i % 2 != 0? "class=\"highlightedrow\"" : "" }));
+            result.append(PrintUtil.applyTemplate("template" + File.separator + "table_line.html", new Object[] { "", indentSpaces(indents == null? 1 : indents.get(i)) + column1.get(i), column2 == null? "" : column2.get(i), "", "", "", i % 2 != 0? "class=\"highlightedrow\"" : "" }));
         }
         return column1.isEmpty()? null : (PrintUtil.applyTemplate("template" + File.separatorChar + "table.html", new Object[] { title, "", result.toString() }));
     }
@@ -465,7 +465,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
                 content += tablesTable + "<br>";
             }
             
-            writeFile(new File(outputDir, domain.name + "_DOMAIN.html"), PrintUtil.applyTemplate("template/tableframe.html", new Object[] { "Domain " + domain.name, content, "", "", "" }));
+            writeFile(new File(outputDir, domain.name + "_DOMAIN.html"), PrintUtil.applyTemplate("template" + File.separator + "tableframe.html", new Object[] { "Domain " + domain.name, content, "", "", "" }));
         }
         return generateHTMLTable("Domains", indent, column1, column2);
     }

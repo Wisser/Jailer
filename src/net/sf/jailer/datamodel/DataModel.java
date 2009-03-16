@@ -79,32 +79,32 @@ public class DataModel {
     /**
      * Name of file containing the table definitions.
      */
-    public static final String TABLES_FILE = "datamodel/table.csv";
+    public static final String TABLES_FILE = "datamodel" + File.separator + "/table.csv";
 
     /**
      * Name of file containing the column definitions.
      */
-    public static final String COLUMNS_FILE = "datamodel/column.csv";
+    public static final String COLUMNS_FILE = "datamodel" + File.separator + "column.csv";
 
     /**
      * Name of file containing the association definitions.
      */
-	public static final String ASSOCIATIONS_FILE = "datamodel/association.csv";
+	public static final String ASSOCIATIONS_FILE = "datamodel" + File.separator + "association.csv";
 
 	/**
 	 * List of tables to be exported completely if in closure from subject.
 	 */
-	public static final String INITIAL_DATA_TABLES_FILE = "datamodel/initial_data_tables.csv";
+	public static final String INITIAL_DATA_TABLES_FILE = "datamodel" + File.separator + "initial_data_tables.csv";
 	
 	/**
 	 * List of tables to be excluded from deletion.
 	 */
-	public static final String EXCLUDE_FROM_DELETION_FILE = "datamodel/exclude-from-deletion.csv";
+	public static final String EXCLUDE_FROM_DELETION_FILE = "datamodel" + File.separator + "exclude-from-deletion.csv";
 	
 	/**
      * Name of file containing the version number.
      */
-    public static final String VERSION_FILE = "datamodel/version.csv";
+    public static final String VERSION_FILE = "datamodel" + File.separator + "version.csv";
 
     /**
 	 * Export modus, SQL or XML. (GUI support).

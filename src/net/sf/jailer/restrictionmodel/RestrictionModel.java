@@ -143,7 +143,7 @@ public class RestrictionModel {
         	}
         }
         if (!file.exists()) {
-            file = new File("restrictionmodel/" + fileName);
+            file = new File("restrictionmodel" + File.separator + fileName);
         }
         List<CsvFile.Line> lines = new CsvFile(file).getLines();
         int nr = 0;

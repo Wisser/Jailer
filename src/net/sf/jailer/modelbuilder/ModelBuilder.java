@@ -61,7 +61,7 @@ public class ModelBuilder {
     /**
      * The configuration.
      */
-    private static AbstractXmlApplicationContext applicationContext = new FileSystemXmlApplicationContext("config/config.xml");
+    private static AbstractXmlApplicationContext applicationContext = new FileSystemXmlApplicationContext("config" + File.separator + "config.xml");
 
     /**
      * The logger.
@@ -86,17 +86,17 @@ public class ModelBuilder {
     /**
      * Name of CSV file for generated table definitions.
      */
-    public static final String MODEL_BUILDER_TABLES_CSV = "datamodel/model-builder-table.csv";
+    public static final String MODEL_BUILDER_TABLES_CSV = "datamodel" + File.separator + "model-builder-table.csv";
     
     /**
      * Name of CSV file for generated column definitions.
      */
-    public static final String MODEL_BUILDER_COLUMNS_CSV = "datamodel/model-builder-column.csv";
+    public static final String MODEL_BUILDER_COLUMNS_CSV = "datamodel" + File.separator + "model-builder-column.csv";
     
     /**
      * Name of CSV file for generated association definitions.
      */
-    public static final String MODEL_BUILDER_ASSOCIATIONS_CSV = "datamodel/model-builder-association.csv";
+    public static final String MODEL_BUILDER_ASSOCIATIONS_CSV = "datamodel" + File.separator + "model-builder-association.csv";
 
     /**
      * The exclude-tables file.
@@ -110,8 +110,8 @@ public class ModelBuilder {
     
     static {
         try {
-            File exTFile = new File("datamodel/exclude-tables.csv");
-            File exAFile = new File("datamodel/exclude-associations.csv");
+            File exTFile = new File("datamodel" + File.separator + "exclude-tables.csv");
+            File exAFile = new File("datamodel" + File.separator + "exclude-associations.csv");
             if (!exTFile.exists()) {
             	exTFile.createNewFile();
             }
