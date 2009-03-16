@@ -16,6 +16,7 @@
 
 package net.sf.jailer.datamodel;
 
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -177,12 +178,26 @@ public class Column {
      * Returns the primary key in SQL syntax.
      * 
      * @param columnPrefix an optional prefix for each PK-column
+     * @param typeReplacement column types replacements
      */
-    public String toSQL(String columnPrefix) {
-        return (columnPrefix == null? "": columnPrefix) + name + " " + type + (length == 0? "" : 
+    public String toSQL(String columnPrefix, Map<String, String> typeReplacement) {
+    	String theType = type;
+    	if (typeReplacement != null && typeReplacement.containsKey(theType)) {
+    		theType = typeReplacement.get(theType);
+    	}
+        return (columnPrefix == null? "": columnPrefix) + name + " " + theType + (length == 0? "" : 
         	"(" + length + (precision >= 0? ", " + precision : "") + ")");
     }
  
+    /**
+     * Returns the primary key in SQL syntax.
+     * 
+     * @param columnPrefix an optional prefix for each PK-column
+     */
+    public String toSQL(String columnPrefix) {
+    	return toSQL(columnPrefix, null);
+    }
+    
     /**
      * Returns a string representation of the column.
      */ 

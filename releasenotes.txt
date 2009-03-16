@@ -1,3 +1,6 @@
+2.9.3.beta
+ - implemented column type replacement for DDL generation (beta)
+
 2.9.2
  - fixed issue with loading config file on some Windows XP systems
 
