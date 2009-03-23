@@ -16,6 +16,7 @@ ant package
 rm -rf admin
 rm -rf doc
 rm -rf out
+rm -rf beta
 rm svn-commit.tmp
 mv datamodel.def datamodel
 rm -rf datamodel.scr

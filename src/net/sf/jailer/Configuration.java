@@ -26,8 +26,8 @@ import java.util.regex.Pattern;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.database.StatisticRenovator;
 import net.sf.jailer.database.TemporaryTableManager;
-import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.enhancer.ScriptEnhancer;
+import net.sf.jailer.modelbuilder.ModelElementFinder;
 import net.sf.jailer.render.DataModelRenderer;
 
 import org.springframework.context.support.AbstractXmlApplicationContext;
@@ -43,12 +43,12 @@ public class Configuration {
 	/**
      * The scipt-enhancer.
      */
-    public static final List<ScriptEnhancer> scriptEnhancer;
+    private static List<ScriptEnhancer> theScriptEnhancer;
     
     /**
      * The renderer.
      */
-    public static final DataModelRenderer renderer;
+    private static DataModelRenderer theRenderer;
 
     /**
      * DB-URL pattern of DBMS for which this holds the configuration.
@@ -92,14 +92,41 @@ public class Configuration {
 	private static final Configuration defaultConfiguration = new Configuration();
     
 	/**
+	 * If <code>true</code>, the UPK don't preserve order. This minimizes the size of the UPK.
+	 */
+	private static boolean doMinimizeUPK = false;
+
+	/**
+	 * Returns <code>true</code>, the UPK don't preserve order. This minimizes the size of the UPK.
+	 */
+	public static boolean getDoMinimizeUPK() {
+		getContext();
+		return doMinimizeUPK;
+	}
+	
+    /**
+     * Gets all {@link ModelElementFinder}.
+     * 
+     * @return all {@link ModelElementFinder}
+     */
+    public static List<ModelElementFinder> getModelElementFinder() throws Exception {
+        List<ModelElementFinder> modelElementFinder = (List<ModelElementFinder>) getContext().getBean("model-finder");
+        return modelElementFinder;
+    }
+    
+	/**
      * The configuration.
      */
-    private static AbstractXmlApplicationContext applicationContext = new FileSystemXmlApplicationContext("config" + File.separator + "config.xml");
-    static {
-		PrimaryKeyFactory.minimizeUPK = Boolean.TRUE.equals(applicationContext.getBean("minimize-UPK"));
-        scriptEnhancer = (List<ScriptEnhancer>) applicationContext.getBean("script-enhancer");
-        renderer = (DataModelRenderer) applicationContext.getBean("renderer");
-	}
+    private static AbstractXmlApplicationContext theApplicationContext = null;
+    private static AbstractXmlApplicationContext getContext() {
+    	if (theApplicationContext == null) {
+	    	theApplicationContext = new FileSystemXmlApplicationContext("config" + File.separator + "config.xml");
+			doMinimizeUPK = Boolean.TRUE.equals(theApplicationContext.getBean("minimize-UPK"));
+	        theScriptEnhancer = (List<ScriptEnhancer>) theApplicationContext.getBean("script-enhancer");
+	        theRenderer = (DataModelRenderer) theApplicationContext.getBean("renderer");
+    	}
+    	return theApplicationContext;
+    }
 
     /**
      * Holds configurations.
@@ -119,8 +146,8 @@ public class Configuration {
 		if (perUrl.containsKey(statementExecutor.dbUrl)) {
 			return perUrl.get(statementExecutor.dbUrl);
 		}
-        if (applicationContext.containsBean("dbms-configuration")) {
-            List<Configuration> cs = (List<Configuration>) applicationContext.getBean("dbms-configuration");  
+        if (getContext().containsBean("dbms-configuration")) {
+            List<Configuration> cs = (List<Configuration>) getContext().getBean("dbms-configuration");  
             for (Configuration c: cs) {
             	if (Pattern.matches(c.urlPattern, statementExecutor.dbUrl)) {
             		perUrl.put(statementExecutor.dbUrl, c);
@@ -221,4 +248,20 @@ public class Configuration {
 		transactionTemporaryTableManager = tableManager;
 	}
 	
+	/**
+     * Gets the scipt-enhancer.
+     */
+    public static List<ScriptEnhancer> getScriptEnhancer() {
+    	getContext();
+    	return theScriptEnhancer;
+    }
+    
+    /**
+     * Gets the renderer.
+     */
+    public static DataModelRenderer getRenderer() {
+    	getContext();
+    	return theRenderer;
+    }
+    
 }
