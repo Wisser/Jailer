@@ -22,6 +22,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.jailer.Configuration;
+
 
 /**
  * Primary-key of a {@link Table}.
@@ -62,7 +64,7 @@ public class PrimaryKey {
      * @return a match of all columns of <code>primaryKey</code>
      */
     public Map<Column, Column> match(PrimaryKey primaryKey) {
-    	if (PrimaryKeyFactory.minimizeUPK) {
+    	if (Configuration.getDoMinimizeUPK()) {
 			Set<Integer> assignedUPKColumns = new HashSet<Integer>();
 	        Map<Column, Column> match = new HashMap<Column, Column>();
 	        for (Column column: getColumns()) {

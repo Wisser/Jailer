@@ -16,6 +16,7 @@
 package net.sf.jailer;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -86,7 +87,7 @@ public class Jailer {
     /**
      * The Jailer version.
      */
-    public static final String VERSION = "2.9.3.beta";
+    public static final String VERSION = "2.9.3.beta2";
     
     /**
      * The relational data model.
@@ -474,12 +475,12 @@ public class Jailer {
         	result = new OutputStreamWriter(outputStream);
 	        result.append(commentHeader);
 	        result.append(System.getProperty("line.separator"));
-	        for (ScriptEnhancer enhancer: Configuration.scriptEnhancer) {
+	        for (ScriptEnhancer enhancer: Configuration.getScriptEnhancer()) {
 	            enhancer.addComments(result, scriptType, statementExecutor, entityGraph, progress);
 	        }
 	        result.append(System.getProperty("line.separator"));
 	        result.append(System.getProperty("line.separator"));
-	        for (ScriptEnhancer enhancer: Configuration.scriptEnhancer) {
+	        for (ScriptEnhancer enhancer: Configuration.getScriptEnhancer()) {
 	            enhancer.addProlog(result, scriptType, statementExecutor, entityGraph, progress);
 	        }
         }
@@ -565,7 +566,7 @@ public class Jailer {
         
         if (result != null) {
 	        // write epilogs
-	        for (ScriptEnhancer enhancer: Configuration.scriptEnhancer) {
+	        for (ScriptEnhancer enhancer: Configuration.getScriptEnhancer()) {
 	            enhancer.addEpilog(result, scriptType, statementExecutor, entityGraph, progress);
 	        }
 	        result.close();
@@ -807,11 +808,11 @@ public class Jailer {
     	statistic.setLength(0);
     	StatementExecutor.closeTemporaryTableSession();
     	
-    	if (PrimaryKeyFactory.minimizeUPK) {
-    		_log.info("minimize-UPK=" + PrimaryKeyFactory.minimizeUPK);
-    	}
-    	
     	try {
+	    	if (Configuration.getDoMinimizeUPK()) {
+	    		_log.info("minimize-UPK=" + Configuration.getDoMinimizeUPK());
+	    	}
+    	
             CommandLineParser.parse(args);
             CommandLineParser clp = CommandLineParser.getInstance();
             
@@ -886,6 +887,8 @@ public class Jailer {
         } catch (Exception e) {
             _log.error(e.getMessage(), e);
             System.out.println("Error: " + e.getClass().getName() + ": " + e.getMessage());
+    		String workingDirectory = System.getProperty("user.dir");
+    		_log.error("working directory is " + workingDirectory);
             throw e;
         } finally {
         	StatementExecutor.closeTemporaryTableSession();
@@ -904,7 +907,7 @@ public class Jailer {
             }
             dataModel.getRestrictionModel().addRestrictionDefinition(rm, null);
         }
-        DataModelRenderer renderer = Configuration.renderer;
+        DataModelRenderer renderer = Configuration.getRenderer();
         if (renderer == null) {
             throw new RuntimeException("no renderer found in config/config.xml");
         }

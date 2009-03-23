@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.jailer.Configuration;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
@@ -59,25 +60,10 @@ import org.springframework.context.support.FileSystemXmlApplicationContext;
 public class ModelBuilder {
 
     /**
-     * The configuration.
-     */
-    private static AbstractXmlApplicationContext applicationContext = new FileSystemXmlApplicationContext("config" + File.separator + "config.xml");
-
-    /**
      * The logger.
      */
     private static final Logger _log = Logger.getLogger(ModelBuilder.class);
 
-    /**
-     * Gets all {@link ModelElementFinder}.
-     * 
-     * @return all {@link ModelElementFinder}
-     */
-    private static List<ModelElementFinder> getModelElementFinder() throws Exception {
-        List<ModelElementFinder> modelElementFinder = (List<ModelElementFinder>) applicationContext.getBean("model-finder");
-        return modelElementFinder;
-    }
-    
     /**
      * The statement executor for executing SQL statements.
      */
@@ -144,7 +130,7 @@ public class ModelBuilder {
         DataModel dataModel = new DataModel();
         Collection<Table> tables = new ArrayList<Table>();
         
-        List<ModelElementFinder> modelElementFinder = getModelElementFinder();
+        List<ModelElementFinder> modelElementFinder = Configuration.getModelElementFinder();
         for (ModelElementFinder finder: modelElementFinder) {
             _log.info("find tables with " + finder);
             tables.addAll(finder.findTables(statementExecutor));

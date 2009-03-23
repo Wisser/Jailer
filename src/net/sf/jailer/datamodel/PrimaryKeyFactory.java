@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import net.sf.jailer.Configuration;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.StatementExecutor;
 
@@ -45,11 +46,6 @@ public class PrimaryKeyFactory {
 			new ArrayList<Column>());
 
 	/**
-	 * If <code>true</code>, the UPK don't preserve order. This minimizes the size of the UPK.
-	 */
-	public static boolean minimizeUPK = false;
-	
-	/**
 	 * Constructs a new primary-key.
 	 * 
 	 * @return a newly created primary-key
@@ -63,7 +59,7 @@ public class PrimaryKeyFactory {
 		}
 		PrimaryKey primaryKey = new PrimaryKey(columns);
 
-		if (minimizeUPK) {
+		if (Configuration.getDoMinimizeUPK()) {
 			Set<Integer> assignedUPKColumns = new HashSet<Integer>();
 			for (Column column: columns) {
 				boolean assigned = false;
