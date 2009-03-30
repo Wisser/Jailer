@@ -418,9 +418,10 @@ public class EntityGraph {
      * 
      * @param reader for reading the result-set
      * @param table the table
+     * @param orderByPK if <code>true</code>, result will be ordered by primary keys
      */
-    public void readMarkedEntities(Table table, StatementExecutor.ResultSetReader reader) throws SQLException {
-    	readMarkedEntities(table, reader, filteredSelectionClause(table));
+    public void readMarkedEntities(Table table, StatementExecutor.ResultSetReader reader, boolean orderByPK) throws SQLException {
+    	readMarkedEntities(table, reader, filteredSelectionClause(table), orderByPK);
     }
     
     /**
@@ -428,12 +429,18 @@ public class EntityGraph {
      * 
      * @param reader for reading the result-set
      * @param table the table
+     * @param orderByPK if <code>true</code>, result will be ordered by primary keys
      */
-    public void readMarkedEntities(Table table, StatementExecutor.ResultSetReader reader, String selectionSchema) throws SQLException {
-        statementExecutor.executeQuery(
+    public void readMarkedEntities(Table table, StatementExecutor.ResultSetReader reader, String selectionSchema, boolean orderByPK) throws SQLException {
+        String orderBy = "";
+        if (orderByPK) {
+        	orderBy = " order by " + table.primaryKey.columnList("T.");
+        }
+    	statementExecutor.executeQuery(
                 "Select " + selectionSchema + " From " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " E join " + table.getName() + " T on " +
                 pkEqualsEntityID(table, "T", "E") +
-                " Where E.birthday=0 and E.r_entitygraph=" + graphID + " and E.type='" + table.getName() + "'",
+                " Where E.birthday=0 and E.r_entitygraph=" + graphID + " and E.type='" + table.getName() + "'" +
+                orderBy,
                 reader);
     }
     
@@ -465,12 +472,14 @@ public class EntityGraph {
      * 
      * @param reader for reading the result-set
      * @param table the table
+     * @param orderByPK if <code>true</code>, result will be ordered by primary keys
      */
-    public void readEntities(Table table, StatementExecutor.ResultSetReader reader) throws SQLException {
+    public void readEntities(Table table, StatementExecutor.ResultSetReader reader, boolean orderByPK) throws SQLException {
         statementExecutor.executeQuery(
                 "Select " + filteredSelectionClause(table) + " From " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " E join " + table.getName() + " T on " +
                 pkEqualsEntityID(table, "T", "E") +
-                " Where E.birthday>=0 and E.r_entitygraph=" + graphID + " and E.type='" + table.getName() + "'",
+                " Where E.birthday>=0 and E.r_entitygraph=" + graphID + " and E.type='" + table.getName() + "'" +
+                (orderByPK? " order by " + table.primaryKey.columnList("T.") : ""),
                 reader);
     }
     

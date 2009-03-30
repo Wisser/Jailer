@@ -1,0 +1,32 @@
+# subject; condition;  limit; restrictions
+EMPLOYEE; T.NAME='SCOTT'; ; .embedded
+
+# from A (or association name); to B; restriction-condition
+
+#! block xml-mapping
+inverse-SALARY;employee;NONE
+BONUS;bonus;NONE
+SALARY;salary;NONE
+DEPARTMENT;department;NONE
+BOSS;boss;NONE
+inverse-BOSS;employee;NONE
+inverse-EMPLOYEE;project_participation;NONE
+inverse-ROLE;project_participation;NONE
+inverse-PROJECT;project_participation;NONE
+ROLE;role;NONE
+EMPLOYEE;employee;NONE
+PROJECT;project;NONE
+inverse-DEPARTMENT;employee;NONE
+inverse-BONUS;employee;NONE
+
+#! block export modus
+SQL
+
+#! block xml settings
+yyyy-MM-dd;yyyy-MM-dd-HH.mm.ss;entities
+#! block xml column mapping
+
+#! block filters
+
+#! block version
+2.9.3

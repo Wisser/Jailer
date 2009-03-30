@@ -11,13 +11,21 @@ available targets:
 
 	<property name="BUILD_DIR" location="out" />
 	<property name="COMPILE_DIR" location="${BUILD_DIR}/classes" />
+	<property name="TEST_DIR" location="${BUILD_DIR}/test/classes" />
 	<property name="SRC_DIR" location="src" />
 	<property name="JAR" location="jailer.jar" />
+	<property file="src/test/test.properties"/>
 
 	<path id="default.classpath">
 		<fileset dir="lib">
 			<include name="**/*.jar" />
 		</fileset>
+	</path>
+
+	<path id="test.classpath">
+		<pathelement location="jailer.jar" />
+		<pathelement location="${TEST_DIR}" />
+		<path refid="default.classpath" />
 	</path>
 
 	<target name="clean" description="Cleans up the whole build area.">
@@ -27,14 +35,14 @@ available targets:
 	<target name="compile" depends="clean">
 		<delete file="${JAR}" />
 		<mkdir dir="${COMPILE_DIR}" />
-		<javac source="5" target="5" destdir="${COMPILE_DIR}" srcdir="${SRC_DIR}" debug="on" deprecation="off" encoding="ISO-8859-1">
+		<javac source="5" target="5" destdir="${COMPILE_DIR}" srcdir="${SRC_DIR}/main" debug="on" deprecation="off" encoding="ISO-8859-1">
 			<classpath>
 				<path refid="default.classpath" />
 			</classpath>
 			<include name="**/*.java" />
 		</javac>
 		<copy todir="${COMPILE_DIR}/net/sf/jailer/resource">
-			<fileset dir="${SRC_DIR}/net/sf/jailer/resource">
+			<fileset dir="${SRC_DIR}/main/net/sf/jailer/resource">
 				<include name="**/*" />
 			</fileset>
 		</copy>
@@ -49,11 +57,25 @@ available targets:
 		</jar>
 	</target>
 
-	<target name="test" depends="package">
-		<junit>
-			<classpath refid="default.classpath" />
+	<target name="compile-test" depends="compile">
+		<mkdir dir="${TEST_DIR}" />
+		<javac source="5" target="5" destdir="${TEST_DIR}" srcdir="${SRC_DIR}/test" debug="on" deprecation="off" encoding="ISO-8859-1">
+			<classpath>
+				<path refid="test.classpath" />
+			</classpath>
+			<include name="**/*.java" />
+		</javac>
+	</target>
+
+	<target name="db2-test" depends="package, compile-test">
+		<junit fork="no">
+			<sysproperty key="DB_URL" value="${DB2_DB_URL}"/>
+			<sysproperty key="DRIVER_CLASS" value="${DB2_DRIVER_CLASS}"/>
+			<sysproperty key="DB_USER" value="${DB2_DB_USER}"/>
+			<sysproperty key="DB_PASSWORD" value="${DB2_DB_PASSWORD}"/>
+			<classpath refid="test.classpath" />
 			<formatter type="brief" usefile="false" />
-			<test name="TestExample" />
+			<test name="net.sf.jailer.JailerTestSuite" />
 		</junit>
 	</target>
 

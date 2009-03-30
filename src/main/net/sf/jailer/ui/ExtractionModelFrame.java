@@ -1291,7 +1291,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	}
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                ExtractionModelFrame extractionModelFrame = new ExtractionModelFrame(args.length > 0? args[0] : null);
+            	String file = null;
+            	if (CommandLineParser.getInstance().arguments != null) {
+            		if (CommandLineParser.getInstance().arguments.size() > 0) {
+            			file = CommandLineParser.getInstance().arguments.get(0);
+            		}	
+            	}
+                ExtractionModelFrame extractionModelFrame = new ExtractionModelFrame(file);
     	    	try {
     	    		File plafSetting = new File(PLAFSETTING);
     	    		BufferedReader in = new BufferedReader(new FileReader(plafSetting));

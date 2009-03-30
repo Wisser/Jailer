@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JFileChooser;
@@ -108,7 +109,7 @@ public class UIUtil {
      * Calls the Jailer export engine via CLI.
      * 
      * @param ownerOfConsole owner component of jailer console
-     * @param args CLI arguments
+     * @param cliArgs CLI arguments
      * @param showLogfileButton console property
      * @param printCommandLine if true, print CLI command line
      * @param showExplainLogButton console property
@@ -117,9 +118,14 @@ public class UIUtil {
      * @param password CLI argument to print as "*****"
      * @return <code>true</code> iff call succeeded
      */
-    public static boolean runJailer(Frame ownerOfConsole, List<String> args, boolean showLogfileButton, final boolean printCommandLine, boolean showExplainLogButton, final boolean closeOutputWindow, String continueOnErrorQuestion, String password) {
-        final StringBuffer arglist = new StringBuffer();
-        final String[] argsarray = new String[args.size() + 4];
+    public static boolean runJailer(Frame ownerOfConsole, List<String> cliArgs, boolean showLogfileButton, final boolean printCommandLine, boolean showExplainLogButton, final boolean closeOutputWindow, String continueOnErrorQuestion, String password) {
+        List<String> args = new ArrayList<String>(cliArgs);
+        args.add("-datamodel");
+        args.add(CommandLineParser.getInstance().datamodelFolder);
+        args.add("-script-enhancer");
+        args.add(CommandLineParser.getInstance().enhancerFolder);
+    	final StringBuffer arglist = new StringBuffer();
+        final String[] argsarray = new String[args.size()];
         int i = 0;
         for (String arg: args) {
         	if (arg != null && arg.equals(password)) {
@@ -141,10 +147,6 @@ public class UIUtil {
         	}
             argsarray[i++] = arg.trim();
         }
-        argsarray[i++] = "-datamodel";
-        argsarray[i++] = CommandLineParser.getInstance().datamodelFolder;
-        argsarray[i++] = "-script-enhancer";
-        argsarray[i++] = CommandLineParser.getInstance().enhancerFolder;
         final JailerConsole outputView = new JailerConsole(ownerOfConsole, showLogfileButton, showExplainLogButton);
         final PrintStream originalOut = System.out;
         final boolean[] ready = new boolean[] { true };
