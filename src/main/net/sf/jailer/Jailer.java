@@ -293,8 +293,7 @@ public class Jailer {
 	 * @return the initial-data-tables list
 	 */
 	private Set<Table> readInitialDataTables() throws Exception {
-		File file = new File("datamodel" + File.separator
-				+ "initial_data_tables.csv");
+		File file = new File(DataModel.getInitialDataTablesFile());
 		if (file.exists()) {
 			Set<Table> idTables = SqlUtil.readTableList(new CsvFile(file),
 					datamodel);
@@ -525,13 +524,14 @@ public class Jailer {
 	 *            write entities from this table only
 	 * @param result
 	 *            a writer for the extract-script
+     * @param orderByPK if <code>true</code>, result will be ordered by primary keys
 	 */
 	private void writeEntities(OutputStreamWriter result,
 			TransformerHandler transformerHandler, ScriptType scriptType,
-			Table table) throws Exception {
+			Table table, boolean orderByPK) throws Exception {
 		ResultSetReader reader = createResultSetReader(result,
 				transformerHandler, scriptType, table);
-		entityGraph.readEntities(table, reader);
+		entityGraph.readEntities(table, reader, orderByPK);
 		entityGraph.deleteEntities(table);
 	}
 
@@ -673,7 +673,7 @@ public class Jailer {
 								fTransformerHandler, scriptType,
 								independentTable);
 						entityGraph
-								.readMarkedEntities(independentTable, reader);
+								.readMarkedEntities(independentTable, reader, true);
 						entityGraph.deleteIndependentEntities(independentTable);
 						long newRest = entityGraph.getSize();
 						if (rest == newRest) {
@@ -685,7 +685,6 @@ public class Jailer {
 				remaining.removeAll(independentTables);
 				independentTables = datamodel.getIndependentTables(remaining,
 						relevantAssociations);
-				;
 			}
 		} else {
 			rest = entityGraph.getSize();
@@ -700,7 +699,7 @@ public class Jailer {
 							ResultSetReader reader = createResultSetReader(
 									fResult, fTransformerHandler, scriptType,
 									table);
-							entityGraph.readMarkedEntities(table, reader);
+							entityGraph.readMarkedEntities(table, reader, false);
 						}
 					});
 				}
@@ -797,7 +796,7 @@ public class Jailer {
 			_log.info("exporting table " + datamodel.getDisplayName(table));
 			reader.setTable(table);
 			entityGraph.readMarkedEntities(table, reader, reader
-					.getTableMapping(table).selectionSchema);
+					.getTableMapping(table).selectionSchema, true);
 		}
 		reader.endDocument();
 
@@ -888,12 +887,12 @@ public class Jailer {
 					// export rows sequentially, don't mix rows of different
 					// tables in a dataset!
 					writeEntities(result, transformerHandler, scriptType,
-							independentTable);
+							independentTable, true);
 				} else {
 					jobs.add(new JobManager.Job() {
 						public void run() throws Exception {
 							writeEntities(result, transformerHandler,
-									scriptType, independentTable);
+									scriptType, independentTable, false);
 						}
 					});
 				}
