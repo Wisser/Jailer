@@ -380,7 +380,7 @@ public class AssociationRenderer extends EdgeRenderer {
 	{
 		// load images
 		try {
-			String dir = "/net/sf/jailer/resource/";
+			String dir = "/net/sf/jailer/resource";
 			
 			starImage = new ImageIcon(getClass().getResource(dir + "/star.png")).getImage();
 			starWidth = starImage.getWidth(null);
