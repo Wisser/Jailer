@@ -59,7 +59,7 @@ public class CommandLineParser {
      * 
      * @param args the arguments
      */
-    public static void parse(String[] args) throws Exception {
+    public static void parse(String[] args, boolean exitOnError) throws Exception {
         commandLineParser = new CommandLineParser();
         cmdLineParser = null;
         try {
@@ -75,7 +75,10 @@ public class CommandLineParser {
         } catch( CmdLineException e ) {
             System.out.println(e.getMessage());
             printUsage();
-            System.exit(0);
+            if (exitOnError) {
+            	System.exit(0);
+            }
+            throw e;
         }
     }
 
@@ -231,7 +234,10 @@ public class CommandLineParser {
     
     @Option(name="-scope",usage="scope of working tables, GLOBAL, SESSION_LOCAL or TRANSACTION_LOCAL")
     public String scope = null;
-    
+
+	@Option(name="-datamodel", usage="folder holding the data model. Defaults to './datamodel'")
+    public static String datamodelFolder = "datamodel";
+
     @Argument
     public List<String> arguments = new ArrayList<String>();
 
@@ -255,4 +261,5 @@ public class CommandLineParser {
      * The singleton.
      */
     private static CmdLineParser cmdLineParser;
+
 }

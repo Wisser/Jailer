@@ -138,7 +138,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
      */
     private void init(Settings theSettings) {
 		try {
-			CsvFile drivers = new CsvFile(new File(new File("config"), "driverlist.csv"));
+			CsvFile drivers = new CsvFile(new File("driverlist.csv"));
 			List<Line> lines = new ArrayList<Line>(drivers.getLines());
 			Collections.sort(lines, new Comparator<Line>() {
 				public int compare(Line o1, Line o2) {

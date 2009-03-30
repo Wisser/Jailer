@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.CsvFile;
@@ -77,34 +78,53 @@ public class DataModel {
     private final PrimaryKeyFactory primaryKeyFactory = new PrimaryKeyFactory();
 
     /**
-     * Name of file containing the table definitions.
+     * Gets name of data model folder.
      */
-    public static final String TABLES_FILE = "datamodel" + File.separator + "/table.csv";
+    public static String getDatamodelFolder() {
+    	return CommandLineParser.getInstance().datamodelFolder;
+    }
 
     /**
-     * Name of file containing the column definitions.
+     * Gets name of file containing the table definitions.
      */
-    public static final String COLUMNS_FILE = "datamodel" + File.separator + "column.csv";
+    public static String getTablesFile() {
+    	return getDatamodelFolder() + File.separator + "/table.csv";
+    }
 
     /**
-     * Name of file containing the association definitions.
+     * Gets name of file containing the column definitions.
      */
-	public static final String ASSOCIATIONS_FILE = "datamodel" + File.separator + "association.csv";
+    public static String getColumnsFile() {
+    	return getDatamodelFolder() + File.separator + "column.csv";
+    }
 
+    /**
+     * Gets name of file containing the association definitions.
+     */
+	public static String getAccociationsFile() {
+		return getDatamodelFolder() + File.separator + "association.csv";
+	}
+	
 	/**
 	 * List of tables to be exported completely if in closure from subject.
 	 */
-	public static final String INITIAL_DATA_TABLES_FILE = "datamodel" + File.separator + "initial_data_tables.csv";
+	public static String getInitialDataTablesFile() {
+		return getDatamodelFolder() + File.separator + "initial_data_tables.csv";
+	}
 	
 	/**
 	 * List of tables to be excluded from deletion.
 	 */
-	public static final String EXCLUDE_FROM_DELETION_FILE = "datamodel" + File.separator + "exclude-from-deletion.csv";
+	public static String getExcludeFromDeletionFile() {
+		return getDatamodelFolder() + File.separator + "exclude-from-deletion.csv";
+	}
 	
 	/**
      * Name of file containing the version number.
      */
-    public static final String VERSION_FILE = "datamodel" + File.separator + "version.csv";
+    public static String getVersionFile() {
+    	return getDatamodelFolder() + File.separator + "version.csv";
+   	}
 
     /**
 	 * Export modus, SQL or XML. (GUI support).

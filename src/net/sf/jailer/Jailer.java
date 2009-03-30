@@ -816,7 +816,7 @@ public class Jailer {
 	    		_log.info("minimize-UPK=" + Configuration.getDoMinimizeUPK());
 	    	}
     	
-            CommandLineParser.parse(args);
+            CommandLineParser.parse(args, true);
             CommandLineParser clp = CommandLineParser.getInstance();
             
             String command = clp.arguments.get(0);
@@ -912,7 +912,7 @@ public class Jailer {
         }
         DataModelRenderer renderer = Configuration.getRenderer();
         if (renderer == null) {
-            throw new RuntimeException("no renderer found in config/config.xml");
+            throw new RuntimeException("no renderer found");
         }
         renderer.render(dataModel);
     }

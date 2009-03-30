@@ -1138,34 +1138,36 @@ public class TableRenderer extends AbstractShapeRenderer {
 	private Image subjectImage = null;
 	private Image filterImage = null;
 	{
+		String dir = "net/sf/jailer/resource/";
+		
 		// load images
 		try {
-			excludeFromDeletionImage = new ImageIcon(getClass().getResource("/database-lock.png")).getImage();
+			excludeFromDeletionImage = new ImageIcon(dir + getClass().getResource("/database-lock.png")).getImage();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		try {
-			allRowsImage = new ImageIcon(getClass().getResource("/all-rows.png")).getImage();
+			allRowsImage = new ImageIcon(getClass().getResource(dir + "/all-rows.png")).getImage();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		try {
-			collapsedImage = new ImageIcon(getClass().getResource("/collapsed.png")).getImage();
+			collapsedImage = new ImageIcon(getClass().getResource(dir + "/collapsed.png")).getImage();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		try {
-			upsertImage = new ImageIcon(getClass().getResource("/upsert.png")).getImage();
+			upsertImage = new ImageIcon(getClass().getResource(dir + "/upsert.png")).getImage();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		try {
-			subjectImage = new ImageIcon(getClass().getResource("/subject.png")).getImage();
+			subjectImage = new ImageIcon(getClass().getResource(dir + "/subject.png")).getImage();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		try {
-			filterImage = new ImageIcon(getClass().getResource("/filter.png")).getImage();
+			filterImage = new ImageIcon(getClass().getResource(dir + "/filter.png")).getImage();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

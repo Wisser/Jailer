@@ -39,6 +39,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.DDLCreator;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.ScriptFormat;
@@ -1250,15 +1251,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(final String args[]) {
-    	// check working folder
-    	String configFileName = "config" + File.separator + "config.xml";
-    	File configFile = new File(configFileName);
-    	if (!configFile.exists()) {
-    		JOptionPane.showMessageDialog(null, "File '" + configFileName + "' not found!", "Missing configuration file", JOptionPane.ERROR_MESSAGE);
-    		return;
-    	}
-    	
-    	// turn of logging for prefuse library
+    	 // check working folder
+        String configFileName = "jailer.xml";
+        File configFile = new File(configFileName);
+        if (!configFile.exists()) {
+                JOptionPane.showMessageDialog(null, "File '" + configFileName + "' not found!", "Missing configuration file", JOptionPane.ERROR_MESSAGE);
+                return;
+        }
+        
+        // turn off logging for prefuse library
     	try {
 			Logger.getLogger("prefuse").setLevel(Level.OFF);
 			
@@ -1267,9 +1268,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
+		try {
+			CommandLineParser.parse(args, false);
+		} catch (Exception e) {
+			UIUtil.showException(null, "Illegal arguments", e);
+		}
     	try {
     		// create initial data-model files
-    		File file = new File("datamodel");
+    		File file = new File(DataModel.DATAMODEL_FOLDER);
     		if (!file.exists()) {
     			file.mkdir();
     		}
@@ -1296,7 +1302,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	    	} catch (Exception x) {
     	    	}
     	    	try {
-    	    		extractionModelFrame.setIconImage(new ImageIcon(extractionModelFrame.getClass().getResource("/jailer.gif")).getImage());
+    	    		extractionModelFrame.setIconImage(new ImageIcon(extractionModelFrame.getClass().getResource("/net/sf/jailer/resource/jailer.gif")).getImage());
     	    	} catch (Throwable t) {
     	    	}
                 extractionModelFrame.setLocation(40, 40);

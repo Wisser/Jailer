@@ -31,10 +31,11 @@ import net.sf.jailer.modelbuilder.ModelElementFinder;
 import net.sf.jailer.render.DataModelRenderer;
 
 import org.springframework.context.support.AbstractXmlApplicationContext;
+import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 /**
- * Reads and holds configuration file <code>config/config.xml</code>.
+ * Reads and holds configuration file <code>jailer.xml</code>.
  * 
  * @author Ralf Wisser
  */
@@ -120,8 +121,9 @@ public class Configuration {
     private static AbstractXmlApplicationContext theApplicationContext = null;
     private static AbstractXmlApplicationContext getContext() {
     	if (theApplicationContext == null) {
-	    	theApplicationContext = new FileSystemXmlApplicationContext("config" + File.separator + "config.xml");
-			doMinimizeUPK = Boolean.TRUE.equals(theApplicationContext.getBean("minimize-UPK"));
+    		String configFile = "jailer.xml";
+	    	theApplicationContext = new FileSystemXmlApplicationContext(configFile);
+	    	doMinimizeUPK = Boolean.TRUE.equals(theApplicationContext.getBean("minimize-UPK"));
 	        theScriptEnhancer = (List<ScriptEnhancer>) theApplicationContext.getBean("script-enhancer");
 	        theRenderer = (DataModelRenderer) theApplicationContext.getBean("renderer");
     	}
