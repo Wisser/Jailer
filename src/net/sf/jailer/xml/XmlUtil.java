@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.xml;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -172,7 +171,7 @@ public class XmlUtil {
 			if (text.length() > 0) {
 				visitor.visitText(text);
 			}
-		} if (node instanceof Comment) {
+		} else if (node instanceof Comment) {
 			visitor.visitComment((((Comment) node).getTextContent()));
 		} else if (node instanceof Element) {
 			if (NS_URI.equals(node.getNamespaceURI()) && ASSOCIATION_TAG.equals(node.getLocalName()) && ((Element) node).getTextContent() != null) {
