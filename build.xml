@@ -49,4 +49,12 @@ available targets:
 		</jar>
 	</target>
 
+	<target name="test" depends="package">
+		<junit>
+			<classpath refid="default.classpath" />
+			<formatter type="brief" usefile="false" />
+			<test name="TestExample" />
+		</junit>
+	</target>
+
 </project>

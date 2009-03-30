@@ -1138,7 +1138,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 	private Image subjectImage = null;
 	private Image filterImage = null;
 	{
-		String dir = "/net/sf/jailer/resource/";
+		String dir = "/net/sf/jailer/resource";
 		
 		// load images
 		try {
