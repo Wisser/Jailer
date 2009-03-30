@@ -18,6 +18,8 @@ package net.sf.jailer;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
@@ -35,6 +37,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.zip.GZIPOutputStream;
@@ -87,7 +90,7 @@ public class Jailer {
     /**
      * The Jailer version.
      */
-    public static final String VERSION = "2.9.3.beta2";
+    public static final String VERSION = "2.9.3";
     
     /**
      * The relational data model.
@@ -1280,7 +1283,14 @@ public class Jailer {
 
     // initialize log4j
     static {
-        PropertyConfigurator.configure("config" + File.separator + "log4j.properties");
+    	InputStream in = Jailer.class.getResourceAsStream("/log4j.properties");
+    	Properties p = new Properties();
+    	try {
+			p.load(in);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+    	PropertyConfigurator.configure(p);
         _log = Logger.getLogger(Jailer.class);
     }
 
