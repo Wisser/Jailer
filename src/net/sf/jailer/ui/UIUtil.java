@@ -32,6 +32,7 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Jailer;
 
 import org.apache.log4j.Logger;
@@ -118,7 +119,7 @@ public class UIUtil {
      */
     public static boolean runJailer(Frame ownerOfConsole, List<String> args, boolean showLogfileButton, final boolean printCommandLine, boolean showExplainLogButton, final boolean closeOutputWindow, String continueOnErrorQuestion, String password) {
         final StringBuffer arglist = new StringBuffer();
-        final String[] argsarray = new String[args.size()];
+        final String[] argsarray = new String[args.size() + 2];
         int i = 0;
         for (String arg: args) {
         	if (arg != null && arg.equals(password)) {
@@ -140,6 +141,8 @@ public class UIUtil {
         	}
             argsarray[i++] = arg.trim();
         }
+        argsarray[i++] = "-datamodel";
+        argsarray[i++] = CommandLineParser.getInstance().datamodelFolder;
         final JailerConsole outputView = new JailerConsole(ownerOfConsole, showLogfileButton, showExplainLogButton);
         final PrintStream originalOut = System.out;
         final boolean[] ready = new boolean[] { true };
