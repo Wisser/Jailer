@@ -929,8 +929,8 @@ public class TableRenderer extends AbstractShapeRenderer {
 		this.model = model;
 		this.graphicalDataModelView = graphicalDataModelView;
 		try {
-			UIUtil.loadTableList(excludeFromDeletion, DataModel.EXCLUDE_FROM_DELETION_FILE);
-			UIUtil.loadTableList(initialDataTables, DataModel.INITIAL_DATA_TABLES_FILE);
+			UIUtil.loadTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile());
+			UIUtil.loadTableList(initialDataTables, DataModel.getInitialDataTablesFile());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -1138,7 +1138,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 	private Image subjectImage = null;
 	private Image filterImage = null;
 	{
-		String dir = "net/sf/jailer/resource/";
+		String dir = "/net/sf/jailer/resource/";
 		
 		// load images
 		try {

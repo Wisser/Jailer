@@ -66,13 +66,15 @@ public class CommandLineParser {
             cmdLineParser = new CmdLineParser(commandLineParser);
             cmdLineParser.parseArgument(args);
             if (commandLineParser.arguments.isEmpty()) {
-                printUsage();
-                System.exit(0);
+            	if (exitOnError) {
+            		printUsage();
+            		System.exit(0);
+            	}
             }
             if (commandLineParser.tabuFileName != null) {
                 commandLineParser.loadTabuTables(commandLineParser.tabuFileName);
             }
-        } catch( CmdLineException e ) {
+        } catch (CmdLineException e) {
             System.out.println(e.getMessage());
             printUsage();
             if (exitOnError) {
@@ -236,7 +238,10 @@ public class CommandLineParser {
     public String scope = null;
 
 	@Option(name="-datamodel", usage="folder holding the data model. Defaults to './datamodel'")
-    public static String datamodelFolder = "datamodel";
+    public String datamodelFolder = "datamodel";
+
+	@Option(name="-script-enhancer", usage="folder holding the script-enhancer templates 'prolog' and 'epilog'. Defaults to '.'")
+    public String enhancerFolder = ".";
 
     @Argument
     public List<String> arguments = new ArrayList<String>();

@@ -859,10 +859,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        	StatementExecutor.closeTemporaryTableSession();
 			        	if (exportDialog.isOk()) {
 			        		exportDialog.fillCLIArgs(args);
-			        		File excludeFromDeletion = new File(DataModel.EXCLUDE_FROM_DELETION_FILE);
+			        		File excludeFromDeletion = new File(DataModel.getExcludeFromDeletionFile());
 			        		if (excludeFromDeletion.exists()) {
 			        			args.add("-t");
-			        			args.add(DataModel.EXCLUDE_FROM_DELETION_FILE);
+			        			args.add(DataModel.getExcludeFromDeletionFile());
 			        		}
 			        		args.add("-scope");
 			        		args.add(exportDialog.getTemporaryTableScope().toString());
@@ -1275,15 +1275,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		}
     	try {
     		// create initial data-model files
-    		File file = new File(DataModel.DATAMODEL_FOLDER);
+    		File file = new File(DataModel.getDatamodelFolder());
     		if (!file.exists()) {
     			file.mkdir();
     		}
-    		file = new File(DataModel.TABLES_FILE);
+    		file = new File(DataModel.getTablesFile());
     		if (!file.exists()) {
     			file.createNewFile();
     		}
-    		file = new File(DataModel.ASSOCIATIONS_FILE);
+    		file = new File(DataModel.getAssociationsFile());
     		if (!file.exists()) {
     			file.createNewFile();
     		}
@@ -1322,7 +1322,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
                	case 1: extractionModelFrame.openDataModelEditorActionPerformed(null); break;
                	case 2: demo(extractionModelFrame); break;
         	}
-        } else if (!new File(DataModel.COLUMNS_FILE).exists()) {
+        } else if (!new File(DataModel.getColumnsFile()).exists()) {
            	switch (JOptionPane.showOptionDialog(extractionModelFrame, "No column definition found.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Introspect DB", "Data Model Editor" }, null)) {
         		case 0: extractionModelFrame.updateDataModelActionPerformed(null); break;
                	case 1: extractionModelFrame.openDataModelEditorActionPerformed(null); break;
@@ -1336,17 +1336,17 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      * @param extractionModelFrame the editor frame
      */
 	private static void demo(ExtractionModelFrame extractionModelFrame) {
-		File tables = new File(DataModel.TABLES_FILE);
+		File tables = new File(DataModel.getTablesFile());
 		tables.delete();
-		File columns = new File(DataModel.COLUMNS_FILE);
+		File columns = new File(DataModel.getColumnsFile());
 		columns.delete();
-		File associations = new File(DataModel.ASSOCIATIONS_FILE);
+		File associations = new File(DataModel.getAssociationsFile());
 		associations.delete();
-		File exDel = new File(DataModel.EXCLUDE_FROM_DELETION_FILE);
+		File exDel = new File(DataModel.getExcludeFromDeletionFile());
 		exDel.delete();
-		File iData= new File(DataModel.INITIAL_DATA_TABLES_FILE);
+		File iData= new File(DataModel.getInitialDataTablesFile());
 		iData.delete();
-		File vers= new File(DataModel.VERSION_FILE);
+		File vers= new File(DataModel.getVersionFile());
 		vers.delete();
 		try {
 			PrintWriter out = new PrintWriter(new FileOutputStream(tables));

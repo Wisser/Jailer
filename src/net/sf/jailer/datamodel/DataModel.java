@@ -101,7 +101,7 @@ public class DataModel {
     /**
      * Gets name of file containing the association definitions.
      */
-	public static String getAccociationsFile() {
+	public static String getAssociationsFile() {
 		return getDatamodelFolder() + File.separator + "association.csv";
 	}
 	
@@ -205,7 +205,7 @@ public class DataModel {
      */
     public DataModel(String additionalTablesFile, String additionalAssociationsFile) throws Exception {
     	// tables
-    	CsvFile tablesFile = new CsvFile(new File(TABLES_FILE));
+    	CsvFile tablesFile = new CsvFile(new File(getTablesFile()));
         List<CsvFile.Line> tableList = new ArrayList<CsvFile.Line>(tablesFile.getLines());
         if (additionalTablesFile != null) {
             tableList.addAll(new CsvFile(new File(additionalTablesFile)).getLines());
@@ -221,7 +221,7 @@ public class DataModel {
         }
         
         // columns
-        File file = new File(COLUMNS_FILE);
+        File file = new File(getColumnsFile());
         if (file.exists()) {
 	    	CsvFile columnsFile = new CsvFile(file);
 	        List<CsvFile.Line> columnsList = new ArrayList<CsvFile.Line>(columnsFile.getLines());
@@ -243,7 +243,7 @@ public class DataModel {
         }
         
         // associations
-        List<CsvFile.Line> associationList = new ArrayList<CsvFile.Line>(new CsvFile(new File(ASSOCIATIONS_FILE)).getLines());
+        List<CsvFile.Line> associationList = new ArrayList<CsvFile.Line>(new CsvFile(new File(getAssociationsFile())).getLines());
         if (additionalAssociationsFile != null) {
             associationList.addAll(new CsvFile(new File(additionalAssociationsFile)).getLines());
         }
