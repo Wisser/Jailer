@@ -1,3 +1,0 @@
-Manifest-Version: 1.0
-Main-Class: net.sf.jailer.ui.ExtractionModelFrame
-Class-Path: lib/prefuse.jar lib/junit.jar lib/commons-logging.jar lib/log4j.jar lib/args4j.jar lib/spring.jar

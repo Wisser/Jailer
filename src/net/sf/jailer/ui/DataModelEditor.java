@@ -102,14 +102,14 @@ public class DataModelEditor extends javax.swing.JDialog {
      */
     public DataModelEditor(java.awt.Frame parent, boolean merge) throws Exception {
         super(parent, true);
-        tables = new CsvFile(new File(DataModel.TABLES_FILE)).getLines();
-        associations = new CsvFile(new File(DataModel.ASSOCIATIONS_FILE)).getLines();
-        UIUtil.loadTableList(excludeFromDeletion, DataModel.EXCLUDE_FROM_DELETION_FILE);
-        UIUtil.loadTableList(initialDataTables, DataModel.INITIAL_DATA_TABLES_FILE);
+        tables = new CsvFile(new File(DataModel.getTablesFile())).getLines();
+        associations = new CsvFile(new File(DataModel.getAssociationsFile())).getLines();
+        UIUtil.loadTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile());
+        UIUtil.loadTableList(initialDataTables, DataModel.getInitialDataTablesFile());
         int newTables = 0;
         int newAssociations = 0;
         
-        File file = new File(DataModel.COLUMNS_FILE);
+        File file = new File(DataModel.getColumnsFile());
         if (file.exists()) {
 			for (CsvFile.Line l: new CsvFile(file).getLines()) {
 	        	columns.put(l.cells.get(0), l);
@@ -669,12 +669,12 @@ public class DataModelEditor extends javax.swing.JDialog {
     private void save() {
     	try {
     		if (needsSave) {
-		    	save(tables, DataModel.TABLES_FILE, "# Name; Upsert; Primary key; ; Author");
-		    	save(associations, DataModel.ASSOCIATIONS_FILE, "# Table A; Table B; First-insert; Cardinality; Join-condition; Name; Author");
-		    	save(new ArrayList<Line>(columns.values()), DataModel.COLUMNS_FILE, "# Table; Columns");
-	    		saveTableList(excludeFromDeletion, DataModel.EXCLUDE_FROM_DELETION_FILE);
-	    		saveTableList(initialDataTables, DataModel.INITIAL_DATA_TABLES_FILE);
-	    		saveTableList(Arrays.asList(Jailer.VERSION), DataModel.VERSION_FILE);
+		    	save(tables, DataModel.getTablesFile(), "# Name; Upsert; Primary key; ; Author");
+		    	save(associations, DataModel.getAssociationsFile(), "# Table A; Table B; First-insert; Cardinality; Join-condition; Name; Author");
+		    	save(new ArrayList<Line>(columns.values()), DataModel.getColumnsFile(), "# Table; Columns");
+	    		saveTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile());
+	    		saveTableList(initialDataTables, DataModel.getInitialDataTablesFile());
+	    		saveTableList(Arrays.asList(Jailer.VERSION), DataModel.getVersionFile());
 	    		saved = true;
     		}
     	} catch (Throwable t) {
