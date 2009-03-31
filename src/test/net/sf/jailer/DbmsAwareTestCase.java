@@ -25,6 +25,7 @@ import org.dbunit.PropertiesBasedJdbcDatabaseTester;
 import org.dbunit.dataset.IDataSet;
 import org.dbunit.dataset.ITable;
 import org.dbunit.dataset.SortedTable;
+import org.dbunit.dataset.filter.DefaultColumnFilter;
 import org.dbunit.dataset.xml.FlatXmlDataSet;
 
 /**
@@ -62,13 +63,6 @@ public abstract class DbmsAwareTestCase extends DBTestCase {
     }
 
     /**
-     * Gets data set holding the initial DB state.
-     */
-    protected IDataSet getDataSet() throws Exception {
-        return new FlatXmlDataSet(new File("src/test/initial-dataset.xml"), false, true);
-    }
-
-    /**
      * Asserts that the database is in a given state.
      * 
      * @param expectedState file name of dataset holding the expected state
@@ -81,29 +75,27 @@ public abstract class DbmsAwareTestCase extends DBTestCase {
         // compare tables
         for (ITable table: initialDataSet.getTables()) {
         	ITable actualTable = databaseDataSet.getTable(table.getTableMetaData().getTableName());
-        	Assertion.assertEquals(new SortedTable(table), actualTable);
+        	ITable filteredTable = DefaultColumnFilter.includedColumnsTable(actualTable, 
+                    table.getTableMetaData().getColumns());
+        	Assertion.assertEquals(new SortedTable(table), filteredTable);
         }
 	}
 
     /**
-	 * Exports data.
-	 * 
-	 * @param extractionModel extraction model file name
-	 * @param scope GLOBAL or SESSION_LOCAL
-	 */
-	protected void doExport(File datamodel, File extractionModel, File result, String scope) throws Exception {
-		List<String> args = new ArrayList<String>();
-		args.add("export");
-		args.add(extractionModel.getCanonicalPath());
-		args.addAll(connectionArguments);
-		args.add("-e");
-		args.add(result.getCanonicalPath());
-		args.add("-datamodel");
-		args.add(datamodel.getCanonicalPath());
-		args.add("-scope");
-		args.add(scope);
-		System.out.println(args);
-		Jailer.main(args.toArray(new String[0]));
+     * Asserts that the two database states are equal.
+     * 
+     * @param expectedState file name of dataset holding the expected state
+     * @param actualState file name of dataset holding the actual state
+     */
+    protected void assertEqualDatasets(File expectedState, File actualState) throws Exception {
+        IDataSet expected = new FlatXmlDataSet(expectedState, false, true);
+        IDataSet actual = new FlatXmlDataSet(actualState, false, true);
+        
+        // compare tables
+        for (ITable table: expected.getTables()) {
+        	ITable actualTable = actual.getTable(table.getTableMetaData().getTableName());
+        	Assertion.assertEquals(new SortedTable(table), new SortedTable(actualTable));
+        }
 	}
 
 }

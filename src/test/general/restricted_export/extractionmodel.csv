@@ -2,6 +2,11 @@
 EMPLOYEE; T.NAME='SCOTT'; ; .embedded
 
 # from A (or association name); to B; restriction-condition
+inverse-DEPARTMENT; ; ignore
+inverse-BOSS; ; ignore
+inverse-PROJECT; ; ignore
+inverse-ROLE; ; ignore
+inverse-SALARY; ; ignore
 
 #! block xml-mapping
 inverse-SALARY;employee;NONE

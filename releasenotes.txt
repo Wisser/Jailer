@@ -2,6 +2,8 @@
  - implemented column type replacement for DDL generation
  - ordering of rows in DbUnit datasets by primary keys
  - Test Suite added
+ - new CLI option '-datamodel' allows to work with multiple data models
+ - minor bug fixes
 
 2.9.2
  - fixed issue with loading config file on some Windows XP systems

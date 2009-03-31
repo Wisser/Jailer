@@ -74,9 +74,52 @@ available targets:
 			<sysproperty key="DRIVER_CLASS" value="${DB2_DRIVER_CLASS}"/>
 			<sysproperty key="DB_USER" value="${DB2_DB_USER}"/>
 			<sysproperty key="DB_PASSWORD" value="${DB2_DB_PASSWORD}"/>
+			<sysproperty key="DB_SUPPORTS_SESSION_LOCAL" value="yes"/>
 			<sysproperty key="BASE_DIR" value="${TEST_BASE_DIR}/general"/>
 			<classpath refid="test.classpath" />
-			<formatter type="brief" usefile="false" />
+			<formatter type="brief" usefile="false"/>
+			<test name="net.sf.jailer.GeneralDbmsTestSuite" />
+		</junit>
+	</target>
+
+	<target name="oracle-test" depends="package, compile-test">
+		<junit fork="no">
+			<sysproperty key="DB_URL" value="${ORACLE_DB_URL}"/>
+			<sysproperty key="DRIVER_CLASS" value="${ORACLE_DRIVER_CLASS}"/>
+			<sysproperty key="DB_USER" value="${ORACLE_DB_USER}"/>
+			<sysproperty key="DB_PASSWORD" value="${ORACLE_DB_PASSWORD}"/>
+			<sysproperty key="DB_SUPPORTS_SESSION_LOCAL" value="yes"/>
+			<sysproperty key="BASE_DIR" value="${TEST_BASE_DIR}/general"/>
+			<classpath refid="test.classpath" />
+			<formatter type="brief" usefile="false"/>
+			<test name="net.sf.jailer.GeneralDbmsTestSuite" />
+		</junit>
+	</target>
+
+	<target name="mysql-test" depends="package, compile-test">
+		<junit fork="no">
+			<sysproperty key="DB_URL" value="${MYSQL_DB_URL}"/>
+			<sysproperty key="DRIVER_CLASS" value="${MYSQL_DRIVER_CLASS}"/>
+			<sysproperty key="DB_USER" value="${MYSQL_DB_USER}"/>
+			<sysproperty key="DB_PASSWORD" value="${MYSQL_DB_PASSWORD}"/>
+			<sysproperty key="DB_SUPPORTS_SESSION_LOCAL" value="yes"/>
+			<sysproperty key="BASE_DIR" value="${TEST_BASE_DIR}/general"/>
+			<classpath refid="test.classpath" />
+			<formatter type="brief" usefile="false"/>
+			<test name="net.sf.jailer.GeneralDbmsTestSuite" />
+		</junit>
+	</target>
+
+	<target name="postgre-test" depends="package, compile-test">
+		<junit fork="no">
+			<sysproperty key="DB_URL" value="${POSTGRE_DB_URL}"/>
+			<sysproperty key="DRIVER_CLASS" value="${POSTGRE_DRIVER_CLASS}"/>
+			<sysproperty key="DB_USER" value="${POSTGRE_DB_USER}"/>
+			<sysproperty key="DB_PASSWORD" value="${POSTGRE_DB_PASSWORD}"/>
+			<sysproperty key="DB_SUPPORTS_SESSION_LOCAL" value="yes"/>
+			<sysproperty key="BASE_DIR" value="${TEST_BASE_DIR}/general"/>
+			<classpath refid="test.classpath" />
+			<formatter type="brief" usefile="false"/>
 			<test name="net.sf.jailer.GeneralDbmsTestSuite" />
 		</junit>
 	</target>

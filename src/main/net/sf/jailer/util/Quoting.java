@@ -50,12 +50,12 @@ public class Quoting {
 	/**
 	 * All SQL keywords for each DBMS.
 	 */
-	private static Map<String, Set<String>> keyWordsMap = new HashMap<String, Set<String>>(); 
+	private Map<String, Set<String>> keyWordsMap = new HashMap<String, Set<String>>(); 
 
 	/**
 	 * All SQL keywords for this DBMS.
 	 */
-	private static Set<String> keyWords = new HashSet<String>(); 
+	private Set<String> keyWords = new HashSet<String>(); 
 
 	/**
 	 * Constructor.
