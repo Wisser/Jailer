@@ -14,8 +14,9 @@ available targets:
 	<property name="TEST_DIR" location="${BUILD_DIR}/test/classes" />
 	<property name="SRC_DIR" location="src" />
 	<property name="JAR" location="jailer.jar" />
+	<property name="TEST_BASE_DIR" location="src/test" />
 	<property file="src/test/test.properties"/>
-
+	
 	<path id="default.classpath">
 		<fileset dir="lib">
 			<include name="**/*.jar" />
@@ -73,9 +74,10 @@ available targets:
 			<sysproperty key="DRIVER_CLASS" value="${DB2_DRIVER_CLASS}"/>
 			<sysproperty key="DB_USER" value="${DB2_DB_USER}"/>
 			<sysproperty key="DB_PASSWORD" value="${DB2_DB_PASSWORD}"/>
+			<sysproperty key="BASE_DIR" value="${TEST_BASE_DIR}/general"/>
 			<classpath refid="test.classpath" />
 			<formatter type="brief" usefile="false" />
-			<test name="net.sf.jailer.JailerTestSuite" />
+			<test name="net.sf.jailer.GeneralDbmsTestSuite" />
 		</junit>
 	</target>
 

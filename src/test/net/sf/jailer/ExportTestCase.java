@@ -15,6 +15,8 @@
  */
 package net.sf.jailer;
 
+import java.io.File;
+
 
 /**
  * Tests export feature.
@@ -23,26 +25,24 @@ package net.sf.jailer;
  */
 public class ExportTestCase extends DbmsAwareTestCase {
 
+	private final File testDir;
+	private final File datamodelDir;
+	
 	/**
 	 * Constructor.
 	 * 
 	 * @param name test case name
 	 */
-	public ExportTestCase(String name) {
+	public ExportTestCase(String name, File testDir, File datamodelDir) {
 		super(name);
-	}
-
-	/**
-	 * Tests whether DB is set up correctly.
-	 */
-	public void testDatabaseSetup() throws Exception {
-		assertDatabaseState("src/test/initial-dataset.xml");
+		this.testDir = testDir;
+		this.datamodelDir = datamodelDir;
 	}
 
 	/**
 	 * Tests export of employee SCOTT without restriction.
 	 */
-	public void testExport() throws Exception {
+	public void testDatasetExport() throws Exception {
 		doExport("src/test/export-1.csv", "SESSION_LOCAL");
 	}
 

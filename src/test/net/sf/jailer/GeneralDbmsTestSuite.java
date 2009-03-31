@@ -15,14 +15,16 @@
  */
 package net.sf.jailer;
 
+import java.io.File;
+
 import junit.framework.TestSuite;
 
 /**
- * Jailer Test Suite.
+ * DB-based tests.
  * 
  * @author Ralf Wisser
  */
-public class JailerTestSuite extends TestSuite {
+public class GeneralDbmsTestSuite extends TestSuite {
 
 	/**
 	 * Creates the suite.
@@ -31,8 +33,14 @@ public class JailerTestSuite extends TestSuite {
 	 */
 	public static TestSuite suite() {
 		TestSuite suite = new TestSuite();
+		File baseDir = new File(System.getProperty("BASE_DIR"));
 
-		suite.addTestSuite(ExportTestCase.class);
+		for (String testDirName: baseDir.list()) {
+			File testDir = new File(baseDir, testDirName);
+			if (testDir.isDirectory() && !"datamodel".equals(testDirName)) {
+				suite.addTest(new ExportTestCase("testDatasetExport", testDir, new File(baseDir, "datamodel")));
+			}
+		}
 		return suite;
 	}
 	
