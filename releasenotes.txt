@@ -1,4 +1,4 @@
-2.9.3.beta
+2.9.3
  - implemented column type replacement for DDL generation
  - ordering of rows in DbUnit datasets by primary keys
  - Test Suite added
