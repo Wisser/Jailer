@@ -40,11 +40,6 @@ public abstract class DbmsAwareTestCase extends DBTestCase {
 	protected final List<String> connectionArguments;
 	
 	/**
-	 * File holding exported data.
-	 */
-	private static final String EXPORT_RESULT = "export_result";
-
-	/**
 	 * Constructor.
 	 * 
 	 * @param name test case name
@@ -96,15 +91,15 @@ public abstract class DbmsAwareTestCase extends DBTestCase {
 	 * @param extractionModel extraction model file name
 	 * @param scope GLOBAL or SESSION_LOCAL
 	 */
-	protected void doExport(String extractionModel, String scope) throws Exception {
+	protected void doExport(File datamodel, File extractionModel, File result, String scope) throws Exception {
 		List<String> args = new ArrayList<String>();
 		args.add("export");
-		args.add(extractionModel);
+		args.add(extractionModel.getCanonicalPath());
 		args.addAll(connectionArguments);
 		args.add("-e");
-		args.add(EXPORT_RESULT);
+		args.add(result.getCanonicalPath());
 		args.add("-datamodel");
-		args.add("src/test/datamodel");
+		args.add(datamodel.getCanonicalPath());
 		args.add("-scope");
 		args.add(scope);
 		System.out.println(args);

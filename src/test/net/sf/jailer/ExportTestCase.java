@@ -43,7 +43,11 @@ public class ExportTestCase extends DbmsAwareTestCase {
 	 * Tests export of employee SCOTT without restriction.
 	 */
 	public void testDatasetExport() throws Exception {
-		doExport("src/test/export-1.csv", "SESSION_LOCAL");
+		File resultDir = new File(testDir, "result");
+		if (!resultDir.exists()) {
+			resultDir.mkdir();
+		}
+		doExport(new File(testDir, "datamodel"), new File(testDir, "extractionmodel.csv"), new File(resultDir, "dataset.xml"), "SESSION_LOCAL");
 	}
 
 }

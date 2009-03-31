@@ -37,7 +37,7 @@ public class GeneralDbmsTestSuite extends TestSuite {
 
 		for (String testDirName: baseDir.list()) {
 			File testDir = new File(baseDir, testDirName);
-			if (testDir.isDirectory() && !"datamodel".equals(testDirName)) {
+			if (testDir.isDirectory() && !"datamodel".equals(testDirName) && !testDirName.startsWith(".")) {
 				suite.addTest(new ExportTestCase("testDatasetExport", testDir, new File(baseDir, "datamodel")));
 			}
 		}
