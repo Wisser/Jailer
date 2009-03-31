@@ -38,7 +38,25 @@ public class GeneralDbmsTestSuite extends TestSuite {
 		for (String testDirName: baseDir.list()) {
 			File testDir = new File(baseDir, testDirName);
 			if (testDir.isDirectory() && !"datamodel".equals(testDirName) && !testDirName.startsWith(".")) {
-				suite.addTest(new ExportTestCase("testDatasetExport", testDir, new File(baseDir, "datamodel")));
+				File expectedResult = new File(testDir, "expected-dataset.xml");
+				if (expectedResult.exists()) {
+					suite.addTest(new ExportTestCase("testExport", testDir, new File(baseDir, "datamodel"), new File(baseDir, "initial-dataset.xml"), expectedResult, "DBUNIT_FLAT_XML", "SESSION_LOCAL", false));
+					suite.addTest(new ExportTestCase("testExport", testDir, new File(baseDir, "datamodel"), new File(baseDir, "initial-dataset.xml"), expectedResult, "DBUNIT_FLAT_XML", "GLOBAL", false));
+					suite.addTest(new ExportTestCase("testExport", testDir, new File(baseDir, "datamodel"), new File(baseDir, "initial-dataset.xml"), expectedResult, "SQL", "SESSION_LOCAL", false));
+					suite.addTest(new ExportTestCase("testExport", testDir, new File(baseDir, "datamodel"), new File(baseDir, "initial-dataset.xml"), expectedResult, "SQL", "GLOBAL", false));
+					suite.addTest(new ExportTestCase("testExport", testDir, new File(baseDir, "datamodel"), new File(baseDir, "initial-dataset.xml"), expectedResult, "SQL", "SESSION_LOCAL", true));
+					suite.addTest(new ExportTestCase("testExport", testDir, new File(baseDir, "datamodel"), new File(baseDir, "initial-dataset.xml"), expectedResult, "SQL", "GLOBAL", true));
+				}
+				expectedResult = new File(testDir, "expected-xml.xml");
+				if (expectedResult.exists()) {
+					suite.addTest(new ExportTestCase("testExport", testDir, new File(baseDir, "datamodel"), new File(baseDir, "initial-dataset.xml"), expectedResult, "XML", "SESSION_LOCAL", false));
+					suite.addTest(new ExportTestCase("testExport", testDir, new File(baseDir, "datamodel"), new File(baseDir, "initial-dataset.xml"), expectedResult, "XML", "GLOBAL", false));
+				}
+				expectedResult = new File(testDir, "expected-remaining-dataset.xml");
+				if (expectedResult.exists()) {
+					suite.addTest(new DeletionTestCase("testDeletion", testDir, new File(baseDir, "datamodel"), new File(baseDir, "initial-dataset.xml"), expectedResult, "SESSION_LOCAL"));
+					suite.addTest(new DeletionTestCase("testDeletion", testDir, new File(baseDir, "datamodel"), new File(baseDir, "initial-dataset.xml"), expectedResult, "GLOBAL"));
+				}
 			}
 		}
 		return suite;
