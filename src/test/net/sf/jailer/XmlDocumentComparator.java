@@ -50,7 +50,7 @@ public class XmlDocumentComparator {
      *         can also be found in <code>doc</code>
      */
     static public boolean contains(Document part, Document doc) {
-        Collection remainingLeafs = new ArrayList();
+        Collection<Element> remainingLeafs = new ArrayList<Element>();
         boolean c = contains(part.getDocumentElement(), doc.getDocumentElement(), remainingLeafs);
         dumpLeafs("remaining leafs", remainingLeafs);
         return c;
@@ -66,8 +66,8 @@ public class XmlDocumentComparator {
      *         can also be found in <code>b</code> and vice versa
      */
     static public boolean equals(Document a, Document b) {
-        Collection remainingLeafsA = new ArrayList();
-        Collection remainingLeafsB = new ArrayList();
+        Collection<Element> remainingLeafsA = new ArrayList<Element>();
+        Collection<Element> remainingLeafsB = new ArrayList<Element>();
         boolean c = contains(a.getDocumentElement(), b.getDocumentElement(), remainingLeafsA)
             && contains(b.getDocumentElement(), a.getDocumentElement(), remainingLeafsB);
         dumpLeafs("remaining leafs", remainingLeafsA);
@@ -99,7 +99,7 @@ public class XmlDocumentComparator {
      * @return <code>true</code> iff all information in <code>part</code> 
      *         can also be found in <code>doc</code>
      */
-    static public boolean contains(Element part, Element doc, Collection remainingLeafs) {
+    static public boolean contains(Element part, Element doc, Collection<Element> remainingLeafs) {
         if (!part.getTagName().equals(doc.getTagName())) {
             remainingLeafs.addAll(leafs(part));
             return false;
@@ -120,12 +120,12 @@ public class XmlDocumentComparator {
         	Element partChild = (Element) part.getChildNodes().item(i);
             
             // search child in doc, child-order is not relevant
-            Collection remainingLeafsOfAllChildren = null;
+            Collection<Element> remainingLeafsOfAllChildren = null;
             boolean partChildFoundInDoc = false;
             for (int j = 0; j < doc.getChildNodes().getLength(); ++j) {
                 if (!(doc.getChildNodes().item(j) instanceof Element)) continue; 
                 Element docChild = (Element) doc.getChildNodes().item(j);
-                Collection remainingLeafsOfChild = new ArrayList();
+                Collection<Element> remainingLeafsOfChild = new ArrayList<Element>();
                 if (contains(partChild, docChild, remainingLeafsOfChild)) {
                     partChildFoundInDoc = true;
                     break;
@@ -154,8 +154,8 @@ public class XmlDocumentComparator {
      * @param root the root of the tree
      * @return all leafs of the element-tree
      */
-    private static Collection leafs(Element root) {
-        Collection leafs = new ArrayList();
+    private static Collection<Element> leafs(Element root) {
+        Collection<Element> leafs = new ArrayList<Element>();
         boolean isLeaf = true;
         for (int i = 0; i < root.getChildNodes().getLength(); ++i) {
         	if (root.getChildNodes().item(i) instanceof Element) {
@@ -176,13 +176,13 @@ public class XmlDocumentComparator {
      * @param title the title
      * @param leafs the set of leafs
      */
-    private static void dumpLeafs(String title, Collection leafs) {
+    private static void dumpLeafs(String title, Collection<Element> leafs) {
         if (leafs.isEmpty()) {
             return;
         }
         System.out.println(title + ":");
-        for (Iterator i = leafs.iterator(); i.hasNext(); ) {
-            Element e = (Element) i.next();
+        for (Iterator<Element> i = leafs.iterator(); i.hasNext(); ) {
+            Element e = i.next();
             String path = "";
             for (Node n = e; n != null; n = n.getParentNode()) {
             	path = n.getNodeName() + "/" + path;
