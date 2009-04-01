@@ -1,4 +1,4 @@
--- creates test model for PostgreSQL
+-- creates test model for MySQL
 
 -- DROP TABLE EMPLOYEE;
 -- DROP TABLE DEPARTMENT;
