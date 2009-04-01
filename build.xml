@@ -102,7 +102,7 @@ available targets:
 			<sysproperty key="DRIVER_CLASS" value="${MYSQL_DRIVER_CLASS}"/>
 			<sysproperty key="DB_USER" value="${MYSQL_DB_USER}"/>
 			<sysproperty key="DB_PASSWORD" value="${MYSQL_DB_PASSWORD}"/>
-			<sysproperty key="DB_SUPPORTS_SESSION_LOCAL" value="yes"/>
+			<sysproperty key="DB_SUPPORTS_SESSION_LOCAL" value="no"/>
 			<sysproperty key="BASE_DIR" value="${TEST_BASE_DIR}/general"/>
 			<classpath refid="test.classpath" />
 			<formatter type="brief" usefile="false"/>
