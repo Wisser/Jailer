@@ -23,8 +23,10 @@ import java.io.Reader;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.DatabaseMetaData;
+import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -223,6 +225,10 @@ public class ExportTransformer implements ResultSetReader {
                         content = null;
                     }
                     String cVal = SqlUtil.toSql(content);
+                    if (SqlUtil.dbms == DBMS.POSTGRESQL && (content instanceof Date || content instanceof Timestamp)) {
+                    	// explicit cast needed
+                    	cVal = "timestamp " + cVal;
+                    }
                 	if (content != null && emptyLobValue[i] != null) {
                 		cVal = emptyLobValue[i];
                 	}
