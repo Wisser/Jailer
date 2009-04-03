@@ -84,7 +84,7 @@ public class DeletionTransformer implements ResultSetReader {
      */
     public void readCurrentRow(ResultSet resultSet) throws SQLException {
         try {
-        	if (SqlUtil.dbms == DBMS.SYBASE) {
+        	if (SqlUtil.dbms == DBMS.SYBASE || (SQLDialect.currentDialect != null && !SQLDialect.currentDialect.supportsInClauseForDeletes)) {
         		String delete = "Delete from " + table.getName() + " Where ";
                 boolean firstTime = true;
                 for (Column pkColumn: table.primaryKey.getColumns()) {

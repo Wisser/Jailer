@@ -91,7 +91,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "2.9.3";
+	public static final String VERSION = "2.9.4.beta";
 
 	/**
 	 * The relational data model.
@@ -624,6 +624,7 @@ public class Jailer {
 		_log.info("cyclic dependencies for: " + asString(dependentTables));
 		addDependencies(dependentTables, false);
 		runstats(statementExecutor, true);
+		removeSingleRowCycles(progress, statementExecutor);
 
 		final TransformerHandler fTransformerHandler = transformerHandler;
 		final OutputStreamWriter fResult = result;
@@ -740,6 +741,27 @@ public class Jailer {
 	}
 
 	/**
+	 * Removes all single-row cycles from dependency table.
+	 * 
+	 * @param progress set of all tables from which rows are collected
+	 * @param statementExecutor for executing SQL statements
+	 */
+	private void removeSingleRowCycles(Set<Table> progress, StatementExecutor statementExecutor) throws Exception {
+		for (Table table: progress) {
+			boolean hasReflexiveAssociation = false;
+			for (Association a: table.associations) {
+				if (a.destination == table) {
+					hasReflexiveAssociation = true;
+					break;
+				}
+			}
+			if (hasReflexiveAssociation) {
+				entityGraph.removeReflexiveDependencies(table);
+			}
+		}
+	}
+
+	/**
 	 * Writes entities into XML-document.
 	 * 
 	 * @param xmlFile
@@ -761,6 +783,8 @@ public class Jailer {
 		// then write entities of tables having cyclic-dependencies
 		_log.info("create hierarchy for: " + asString(progress));
 		addDependencies(progress, true);
+		runstats(statementExecutor, true);
+		removeSingleRowCycles(progress, statementExecutor);
 
 		List<Table> sortedTables = new ArrayList<Table>(progress);
 		Collections.sort(sortedTables, new Comparator<Table>() {

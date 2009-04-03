@@ -71,6 +71,7 @@ public class SQLDialect {
 	 * 'DELETE FROM T where PK IN (...)'
 	 */
 	public final boolean needsValuesKeywordForDeletes;
+	public final boolean supportsInClauseForDeletes;
 	public final boolean supportsMultiRowInserts;
 	
     /**
@@ -156,10 +157,11 @@ public class SQLDialect {
 	 * @param needsValuesKeywordForDeletes see {@link #needsValuesKeywordForDeletes}
 	 * @param upsertMode see {@link #upsertMode}
 	 */
-	private SQLDialect(String name, boolean supportsMultiRowInserts, boolean needsValuesKeywordForDeletes, UPSERT_MODE upsertMode) {
+	private SQLDialect(String name, boolean supportsMultiRowInserts, boolean needsValuesKeywordForDeletes, boolean supportsInClauseForDeletes, UPSERT_MODE upsertMode) {
 		this.name = name;
 		this.supportsMultiRowInserts = supportsMultiRowInserts;
 		this.needsValuesKeywordForDeletes = needsValuesKeywordForDeletes;
+		this.supportsInClauseForDeletes = supportsInClauseForDeletes;
 		this.upsertMode = upsertMode;
 	}
 	
@@ -169,29 +171,41 @@ public class SQLDialect {
 	private static List<SQLDialect> sqlDialects = new ArrayList<SQLDialect>();
 
 	static {
-		sqlDialects.add(new SQLDialect("DB2", true, true, UPSERT_MODE.DB2));
-		sqlDialects.add(new SQLDialect("ORACLE_10", false, false, UPSERT_MODE.ORACLE));
-		sqlDialects.add(new SQLDialect("D7", true, false, UPSERT_MODE.ORACLE));
-		sqlDialects.add(new SQLDialect("ORACLE", false, false, UPSERT_MODE.FROM_DUAL));
-		sqlDialects.add(new SQLDialect("MYSQL", true, false, UPSERT_MODE.FROM_DUAL));
-		sqlDialects.add(new SQLDialect("POSTGRESQL", true, true, UPSERT_MODE.DB2));
+		sqlDialects.add(new SQLDialect("DB2", true, true, true, UPSERT_MODE.DB2));
+		sqlDialects.add(new SQLDialect("ORACLE_10", false, false, true, UPSERT_MODE.ORACLE));
+		sqlDialects.add(new SQLDialect("D7", true, false, true, UPSERT_MODE.ORACLE));
+		sqlDialects.add(new SQLDialect("ORACLE", false, false, true, UPSERT_MODE.FROM_DUAL));
+		sqlDialects.add(new SQLDialect("MYSQL", true, false, true, UPSERT_MODE.FROM_DUAL));
+		sqlDialects.add(new SQLDialect("POSTGRESQL", true, true, true, UPSERT_MODE.DB2));
 
-		sqlDialects.add(new SQLDialect("D1", true, true, UPSERT_MODE.ORACLE));
-		sqlDialects.add(new SQLDialect("D2", true, false, UPSERT_MODE.DB2));
-		sqlDialects.add(new SQLDialect("D3", true, true, UPSERT_MODE.FROM_DUAL));
-		sqlDialects.add(new SQLDialect("D4", true, false, UPSERT_MODE.FROM_JL_DUAL));
-		sqlDialects.add(new SQLDialect("D5", true, true, UPSERT_MODE.FROM_JL_DUAL));
+		sqlDialects.add(new SQLDialect("D1", true, true, true, UPSERT_MODE.ORACLE));
+		sqlDialects.add(new SQLDialect("D2", true, false, true, UPSERT_MODE.DB2));
+		sqlDialects.add(new SQLDialect("D3", true, true, true, UPSERT_MODE.FROM_DUAL));
 
-		sqlDialects.add(new SQLDialect("D6", false, true, UPSERT_MODE.DB2));
-		sqlDialects.add(new SQLDialect("D8", true, false, UPSERT_MODE.FROM_DUAL));
-		sqlDialects.add(new SQLDialect("D9", false, false, UPSERT_MODE.FROM_DUAL));
-		sqlDialects.add(new SQLDialect("D10", false, true, UPSERT_MODE.DB2));
+		sqlDialects.add(new SQLDialect("D6", false, true, true, UPSERT_MODE.DB2));
+		sqlDialects.add(new SQLDialect("D8", true, false, true, UPSERT_MODE.FROM_DUAL));
+		sqlDialects.add(new SQLDialect("D9", false, false, true, UPSERT_MODE.FROM_DUAL));
+		sqlDialects.add(new SQLDialect("D10", false, true, true, UPSERT_MODE.DB2));
 
-		sqlDialects.add(new SQLDialect("D11", false, true, UPSERT_MODE.ORACLE));
-		sqlDialects.add(new SQLDialect("D12", false, false, UPSERT_MODE.DB2));
-		sqlDialects.add(new SQLDialect("D13", false, true, UPSERT_MODE.FROM_DUAL));
-		sqlDialects.add(new SQLDialect("D14", false, false, UPSERT_MODE.FROM_JL_DUAL));
-		sqlDialects.add(new SQLDialect("D15", false, true, UPSERT_MODE.FROM_JL_DUAL));
+		sqlDialects.add(new SQLDialect("D11", false, true, true, UPSERT_MODE.ORACLE));
+		sqlDialects.add(new SQLDialect("D12", false, false, true, UPSERT_MODE.DB2));
+		sqlDialects.add(new SQLDialect("D13", false, true, true, UPSERT_MODE.FROM_DUAL));
+
+		sqlDialects.add(new SQLDialect("D16", true, true, true, UPSERT_MODE.DB2));
+		
+		sqlDialects.add(new SQLDialect("D4", true, false, true, UPSERT_MODE.FROM_JL_DUAL));
+		sqlDialects.add(new SQLDialect("D5", true, true, true, UPSERT_MODE.FROM_JL_DUAL));
+		sqlDialects.add(new SQLDialect("D14", false, false, true, UPSERT_MODE.FROM_JL_DUAL));
+		sqlDialects.add(new SQLDialect("D15", false, true, true, UPSERT_MODE.FROM_JL_DUAL));
+
+		sqlDialects.add(new SQLDialect("D17", true, false, false, UPSERT_MODE.DB2));
+		sqlDialects.add(new SQLDialect("D19", true, false, false, UPSERT_MODE.FROM_DUAL));
+		sqlDialects.add(new SQLDialect("D20", true, false, false, UPSERT_MODE.ORACLE));
+		sqlDialects.add(new SQLDialect("D21", false, false, false, UPSERT_MODE.FROM_DUAL));
+		sqlDialects.add(new SQLDialect("D22", false, false, false, UPSERT_MODE.DB2));
+		sqlDialects.add(new SQLDialect("D24", false, false, false, UPSERT_MODE.ORACLE));
+		sqlDialects.add(new SQLDialect("D18", true, false, false, UPSERT_MODE.FROM_JL_DUAL));
+		sqlDialects.add(new SQLDialect("D23", false, false, false, UPSERT_MODE.FROM_JL_DUAL));
 
 		currentDialect = sqlDialects.get(0);
 	}
@@ -230,15 +244,38 @@ public class SQLDialect {
 		} else {
 			log("begin guessing SQL dialect");
 			
+			boolean canDeleteWithValuesKeyword = false;
+			boolean canDeleteWithoutValuesKeyword = false;
+			try {
+				String values = "values ";
+				statementExecutor.execute("DELETE FROM " + SQLDialect.dmlTableReference(TMP_TABLE_, statementExecutor) + " where (c1, c2) IN (" + values + "(1,2), (3,4))");
+				canDeleteWithValuesKeyword = true;
+			} catch (Exception e) {
+				_sqllog.info(e.getMessage());
+			}
+			try {
+				String values = "";
+				statementExecutor.execute("DELETE FROM " + SQLDialect.dmlTableReference(TMP_TABLE_, statementExecutor) + " where (c1, c2) IN (" + values + "(1,2), (3,4))");
+				canDeleteWithoutValuesKeyword = true;
+			} catch (Exception e) {
+				_sqllog.info(e.getMessage());
+			}
+			
 			for (SQLDialect sqlDialect: sqlDialects) {
 				boolean ok = true;
 				if (statementExecutor.dbms != DBMS.SYBASE) {
-					try {
-						String values = sqlDialect.needsValuesKeywordForDeletes? "values " : "";
-						statementExecutor.execute("DELETE FROM " + SQLDialect.dmlTableReference(TMP_TABLE_, statementExecutor) + " where (c1, c2) IN (" + values + "(1,2), (3,4))");
-					} catch (Exception e) {
-						ok = false;
-						_sqllog.info(e.getMessage());
+					if (sqlDialect.supportsInClauseForDeletes) {
+						if ((!canDeleteWithoutValuesKeyword) && (!canDeleteWithValuesKeyword)) {
+							ok = false;
+						} else if (sqlDialect.needsValuesKeywordForDeletes && !canDeleteWithValuesKeyword) {
+							ok = false;
+						} else if ((!sqlDialect.needsValuesKeywordForDeletes) && !canDeleteWithoutValuesKeyword) {
+							ok = false;
+						}
+					} else {
+						if (canDeleteWithoutValuesKeyword || canDeleteWithValuesKeyword) {
+							ok = false;
+						}
 					}
 				}
 				if (!ok) {
