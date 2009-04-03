@@ -291,6 +291,15 @@ public class StatementExecutor {
     public synchronized void setSilent(boolean silent) {
     	this.silent = silent;
     }
+    
+    /**
+     * No SQL-Exceptions will be logged in silent mode.
+     * 
+     * @return silent <code>true</code> for silence
+     */
+    public synchronized boolean getSilent() {
+    	return silent;
+    }
 
     /**
      * Logs driver info

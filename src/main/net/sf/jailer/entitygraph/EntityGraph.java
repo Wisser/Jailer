@@ -639,6 +639,7 @@ public class EntityGraph {
                 }
                 remove = "Update " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " E set E.birthday=-1 Where E.r_entitygraph=" + graphID + " and E.type='" + association.destination.getName() + "' " +
                           "and exists (Select * from " + SQLDialect.dmlTableReference(ENTITY_SET_ELEMENT, statementExecutor) + " S where S.set_id=" + setId + " and E.type=S.type and " + sEqualsE + ")";
+                boolean silent = statementExecutor.getSilent();
                 try {
                 	statementExecutor.setSilent(true);
                 	statementExecutor.executeUpdate(remove);
@@ -649,7 +650,7 @@ public class EntityGraph {
                     "and exists (Select * from " + SQLDialect.dmlTableReference(ENTITY_SET_ELEMENT, statementExecutor) + " S where S.set_id=" + setId + " and " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + ".type=S.type and " + sEqualsEWoAlias + ")";
                 	statementExecutor.executeUpdate(remove);
                 } finally {
-                	statementExecutor.setSilent(false);
+                	statementExecutor.setSilent(silent);
                 }
                 statementExecutor.executeUpdate("Delete from " + SQLDialect.dmlTableReference(ENTITY_SET_ELEMENT, statementExecutor) + " where set_id=" + setId + "");
             }
@@ -714,6 +715,31 @@ public class EntityGraph {
     }
     
     /**
+     * Removes all reflexive dependencies of given table.
+     * 
+     * @param table the table
+     */
+	public void removeReflexiveDependencies(Table table) throws SQLException {
+		Map<Column, Column> match = universalPrimaryKey.match(table.primaryKey);
+        StringBuffer sb = new StringBuffer();
+        for (Column column: universalPrimaryKey.getColumns()) {
+            Column tableColumn = match.get(column);
+            if (tableColumn != null) {
+	            if (sb.length() > 0) {
+	                sb.append(" and ");
+	            }
+	            sb.append("FROM_" + column.name + " = TO_" + column.name);
+            }
+        }
+        String delete = "Delete from " + SQLDialect.dmlTableReference(DEPENDENCY, statementExecutor) +
+			" Where " + sb +
+			" and from_type='" + table.getName() + "'" +
+			" and to_type='" + table.getName() + "'" +
+			" and r_entitygraph=" + graphID;
+		statementExecutor.executeUpdate(delete);
+	}
+
+	/**
      * Gets a SQL comparition expression for comparing rows with given entity.
      * 
      * @param table the table

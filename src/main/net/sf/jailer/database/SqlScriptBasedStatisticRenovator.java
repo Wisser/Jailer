@@ -63,7 +63,10 @@ public class SqlScriptBasedStatisticRenovator implements StatisticRenovator {
 		PrintWriter out = new PrintWriter(new FileOutputStream(fileName));
 		out.print(PrintUtil.applyTemplate(scriptFileName.replace('/', File.separatorChar), arguments, null));
 		out.close();
+		boolean silent = statementExecutor.getSilent();
+		statementExecutor.setSilent(true);
         SqlScriptExecutor.executeScript(fileName, statementExecutor);
+		statementExecutor.setSilent(silent);
     }
 
 }
