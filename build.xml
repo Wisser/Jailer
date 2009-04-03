@@ -75,7 +75,7 @@ available targets:
 			<sysproperty key="DB_USER" value="${DB2_DB_USER}"/>
 			<sysproperty key="DB_PASSWORD" value="${DB2_DB_PASSWORD}"/>
 			<sysproperty key="DB_SUPPORTS_SESSION_LOCAL" value="yes"/>
-			<sysproperty key="BASE_DIR" value="${TEST_BASE_DIR}/general"/>
+			<sysproperty key="BASE_DIR" value="${TEST_BASE_DIR}/single-row-cycle:${TEST_BASE_DIR}/general"/>
 			<classpath refid="test.classpath" />
 			<formatter type="brief" usefile="false"/>
 			<test name="net.sf.jailer.GeneralDbmsTestSuite" />
@@ -89,7 +89,7 @@ available targets:
 			<sysproperty key="DB_USER" value="${ORACLE_DB_USER}"/>
 			<sysproperty key="DB_PASSWORD" value="${ORACLE_DB_PASSWORD}"/>
 			<sysproperty key="DB_SUPPORTS_SESSION_LOCAL" value="yes"/>
-			<sysproperty key="BASE_DIR" value="${TEST_BASE_DIR}/general"/>
+			<sysproperty key="BASE_DIR" value="${TEST_BASE_DIR}/single-row-cycle:${TEST_BASE_DIR}/general"/>
 			<classpath refid="test.classpath" />
 			<formatter type="brief" usefile="false"/>
 			<test name="net.sf.jailer.GeneralDbmsTestSuite" />
@@ -103,7 +103,7 @@ available targets:
 			<sysproperty key="DB_USER" value="${MYSQL_DB_USER}"/>
 			<sysproperty key="DB_PASSWORD" value="${MYSQL_DB_PASSWORD}"/>
 			<sysproperty key="DB_SUPPORTS_SESSION_LOCAL" value="no"/>
-			<sysproperty key="BASE_DIR" value="${TEST_BASE_DIR}/general"/>
+			<sysproperty key="BASE_DIR" value="${TEST_BASE_DIR}/single-row-cycle:${TEST_BASE_DIR}/general"/>
 			<classpath refid="test.classpath" />
 			<formatter type="brief" usefile="false"/>
 			<test name="net.sf.jailer.GeneralDbmsTestSuite" />
@@ -117,7 +117,7 @@ available targets:
 			<sysproperty key="DB_USER" value="${POSTGRE_DB_USER}"/>
 			<sysproperty key="DB_PASSWORD" value="${POSTGRE_DB_PASSWORD}"/>
 			<sysproperty key="DB_SUPPORTS_SESSION_LOCAL" value="yes"/>
-			<sysproperty key="BASE_DIR" value="${TEST_BASE_DIR}/general"/>
+			<sysproperty key="BASE_DIR" value="${TEST_BASE_DIR}/single-row-cycle:${TEST_BASE_DIR}/general"/>
 			<classpath refid="test.classpath" />
 			<formatter type="brief" usefile="false"/>
 			<test name="net.sf.jailer.GeneralDbmsTestSuite" />
