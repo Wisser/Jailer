@@ -1,3 +1,7 @@
+2.9.4.beta
+ - enhancement of the sorting algorithm, (single-row cycles detection)
+ - db2 for z/os compatibility fixes
+
 2.9.3
  - implemented column type replacement for DDL generation
  - ordering of rows in DbUnit datasets by primary keys
