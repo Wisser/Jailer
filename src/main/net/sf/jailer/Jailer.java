@@ -82,7 +82,7 @@ import org.apache.log4j.PropertyConfigurator;
  * using JDBC), platform independent, and generates DbUnit datasets,
  * hierarchically structured XML, and topologically sorted SQL-DML.
  * 
- * <a href="http://jailer.sourceforge.net/">http://jailer.sourceforge.net</a>
+ * <a href="http://jailer.sourceforge.net/">http://jailer.sourceforge.net"</a>
  * 
  * @author Ralf Wisser
  */
@@ -91,7 +91,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "2.9.4.beta";
+	public static final String VERSION = "2.9.4";
 
 	/**
 	 * The relational data model.

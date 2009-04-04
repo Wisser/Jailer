@@ -1,6 +1,6 @@
-2.9.4.beta
- - enhancement of the sorting algorithm, (single-row cycles detection)
- - db2 for z/os compatibility fixes
+2.9.4
+ - enhancement of the sorting algorithm, single-row cycles detection
+ - fixed compatibility issue with DB2 for z/OS
 
 2.9.3
  - implemented column type replacement for DDL generation
@@ -67,7 +67,7 @@
  - fixed a bug concering the importation of BLOB/CLOBs into non-nullable columns
 
 2.5.4
- - the pattern for timestamp values in generated SQL scripts for oracle DBMS is now fixed (using the to_timestamp function)
+ - explicit pattern for timestamp values in generated SQL scripts for oracle DBMS (using the to_timestamp function)
  - additional type options will now be removed from the result of DatabaseMetaData#getColumns 
 
 2.5.3
@@ -119,9 +119,6 @@
 2.3.0
  - exports data to hierarchically structured XML
 
-2.3.0_beta
- - exports data to hierarchically structured XML. Currently in beta, needs testing.
-
 2.2.3
  - improved documentation
  - minor bug fixes
@@ -130,7 +127,8 @@
  - improved logging
 
 2.2.1
- - fixed a bug that occurred when more than one connection to dbms is used simultaniously during exportation due to lack of thread safeness of java.text.DateFormat
+ - fixed a bug that occurred when more than one connection to dbms is used
+   simultaniously during exportation due to lack of thread safeness of java.text.DateFormat
 
 2.2.0
  - Graph-based extraction model editor
@@ -138,9 +136,6 @@
 
 2.1.8
  - fixed a bug concerning primary key columns of type DATE
-
-2.1.8.rc(n)
- - fixed a bug concerning primary key columns of type DATE (release candidate)
 
 2.1.7
  - fixed a bug concerning incompatibilities with Oracle 10g
