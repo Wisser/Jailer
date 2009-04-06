@@ -1,9 +1,0 @@
-<?xml version='1.0' encoding='ISO-8859-15'?>
-<dataset>
-  <salarygrade/>
-  <role/>
-  <project/>
-  <department deptno="40" name="OPERATIONS" location="BOSTON"/>
-  <employee/>
-  <project_participation/>
-</dataset>
