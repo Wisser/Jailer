@@ -104,8 +104,30 @@ public class DataModelEditor extends javax.swing.JDialog {
         super(parent, true);
         tables = new CsvFile(new File(DataModel.getTablesFile())).getLines();
         associations = new CsvFile(new File(DataModel.getAssociationsFile())).getLines();
-        UIUtil.loadTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile());
-        UIUtil.loadTableList(initialDataTables, DataModel.getInitialDataTablesFile());
+        boolean isDemoModel = true;
+        for (CsvFile.Line dt: tables) {
+        	String lastV = null;
+        	for (String v: dt.cells) {
+        		if (v != null && v.trim().length() > 0) {
+        			lastV = v.trim();
+        		}
+       		}
+        	if (lastV != null) {
+        		if (!"Demo".equals(lastV)) {
+        			isDemoModel = false;
+        			break;
+        		}
+        	}
+        }
+        boolean initiallyDirty = false;
+        if (merge && isDemoModel) {
+        	tables.clear();
+        	associations.clear();
+        	initiallyDirty = true;
+        } else {
+	        UIUtil.loadTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile());
+	        UIUtil.loadTableList(initialDataTables, DataModel.getInitialDataTablesFile());
+        }
         int newTables = 0;
         int newAssociations = 0;
         
@@ -252,6 +274,9 @@ public class DataModelEditor extends javax.swing.JDialog {
         tablesList.setCellRenderer(tablesListItemRenderer);
         associationsList.setCellRenderer(associationsListItemRenderer);
 		invalidate();
+		if (initiallyDirty) {
+			markDirty();
+		}
 		UIUtil.initPeer();
     }
     
