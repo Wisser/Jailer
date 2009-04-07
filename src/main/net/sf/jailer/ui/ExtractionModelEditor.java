@@ -94,7 +94,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	/**
 	 * Editor for single restriction.
 	 */
-	private RestrictionEditor restrictionEditor;
+	public RestrictionEditor restrictionEditor;
 	
 	/**
 	 * Holds restrictions.
@@ -1105,7 +1105,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	/**
 	 * Reacts on 'Apply'-button pressed.
 	 */
-    private void onApply(boolean applyButtonKlicked) {
+    public void onApply(boolean applyButtonKlicked) {
     	if (currentAssociation != null) {
     		if (!needsSave) {
     			needsSave = true;
