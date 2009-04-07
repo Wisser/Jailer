@@ -438,7 +438,7 @@ public class GraphicalDataModelView extends JPanel {
 			@Override
 			public void itemClicked(VisualItem item, MouseEvent e) {
 				Table table = model.getTable(item.getString("label"));
-                if (SwingUtilities.isLeftMouseButton(e)) {
+				if (SwingUtilities.isLeftMouseButton(e)) {
 	            	if (table != null && e.getClickCount() == 1) {
 	            		GraphicalDataModelView.this.modelEditor.select(table);
 	            		Association sa = selectedAssociation;
@@ -448,6 +448,19 @@ public class GraphicalDataModelView extends JPanel {
                 }
             	// context menu
                 if (SwingUtilities.isRightMouseButton(e)) {
+                	Association association = (Association) item.get("association");
+                	if (association != null) {
+                		if (Boolean.TRUE.equals(item.get("full"))) {
+	            			associationRenderer.useAssociationRendererForLocation = true;
+	            			VisualItem findItem = display.findItem(e.getPoint());
+							if (findItem == null || !findItem.equals(item)) {
+	            				association = association.reversalAssociation;
+	            			}
+	            			associationRenderer.useAssociationRendererForLocation = false;
+	            		}
+                		JPopupMenu popup = createPopupMenu(association);
+						popup.show(e.getComponent(), e.getX(), e.getY());
+                	}
                 	if (table != null) {
 						JPopupMenu popup = createPopupMenu(table);
 						popup.show(e.getComponent(), e.getX(), e.getY());
@@ -650,6 +663,49 @@ public class GraphicalDataModelView extends JPanel {
 		popup.add(mapColumns);
 //		popup.add(shortestPath);
 		popup.add(htmlRender);
+		return popup;
+	}
+
+    /**
+     * Creates popup menu.
+     *
+     * @param association the association for which the menu pops up
+     * @return the popup menu
+     */
+	public JPopupMenu createPopupMenu(final Association association) {
+		JPopupMenu popup = new JPopupMenu();
+		
+		JMenuItem disable = new JMenuItem("disable association");
+		disable.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				setSelection(association);
+				modelEditor.restrictionEditor.ignore.setSelected(true);
+				modelEditor.onApply(false);
+			}
+		});
+		JMenuItem enable = new JMenuItem("remove restriction");
+		enable.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				setSelection(association);
+				modelEditor.restrictionEditor.ignore.setSelected(false);
+				modelEditor.onApply(false);
+			}
+		});
+		JMenuItem zoomToFit = new JMenuItem("Zoom to fit");
+		zoomToFit.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				zoomToFit();
+			}
+		});
+
+		disable.setEnabled(!association.isIgnored());
+		enable.setEnabled(association.isRestricted());
+		
+		popup.add(disable);
+		popup.add(enable);
+		popup.add(new JSeparator());
+		popup.add(zoomToFit);
+
 		return popup;
 	}
 
@@ -1154,7 +1210,7 @@ public class GraphicalDataModelView extends JPanel {
 		@Override
 		public void itemClicked(VisualItem item, MouseEvent e) {
 			// click on table opens pop-up menu
-			if (model.getTable(item.getString("label")) != null) {
+			if (model.getTable(item.getString("label")) != null || item.get("association") != null) {
 				return;
 			}
 			super.itemClicked(item, e);
