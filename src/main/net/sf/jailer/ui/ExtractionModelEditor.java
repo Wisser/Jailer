@@ -379,7 +379,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         editorPanel = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jLabel6 = new javax.swing.JLabel();
-        subjectTable = new net.sf.jailer.ui.JComboBox();
+        subjectTable = new javax.swing.JComboBox();
         jLabel7 = new javax.swing.JLabel();
         jScrollPane4 = new javax.swing.JScrollPane();
         restrictionsTable = new javax.swing.JTable();
@@ -390,20 +390,20 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jPanel2 = new javax.swing.JPanel();
         openXmlSettings = new javax.swing.JButton();
         exportButton = new javax.swing.JButton();
-        exportFormat = new net.sf.jailer.ui.JComboBox();
+        exportFormat = new javax.swing.JComboBox();
         jPanel4 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tree = new javax.swing.JTree();
         jPanel6 = new javax.swing.JPanel();
         jLabel9 = new javax.swing.JLabel();
-        rootTable = new net.sf.jailer.ui.JComboBox();
+        rootTable = new javax.swing.JComboBox();
         openClosureView = new javax.swing.JButton();
         inspectorHolder = new javax.swing.JPanel();
         xmlMappingPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        aggregationCombobox = new net.sf.jailer.ui.JComboBox();
+        aggregationCombobox = new javax.swing.JComboBox();
         tagField = new javax.swing.JTextField();
         jScrollPane3 = new javax.swing.JScrollPane();
         xmlSketch = new javax.swing.JTextArea();
@@ -420,6 +420,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane1.setContinuousLayout(true);
+        jSplitPane1.setOneTouchExpandable(true);
 
         graphContainer.setLayout(new java.awt.BorderLayout());
         jSplitPane1.setBottomComponent(graphContainer);

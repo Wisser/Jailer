@@ -1,3 +1,6 @@
+2.9.5
+ - allows enlargement of extraction model pane (2738574)
+
 2.9.4
  - enhancement of the sorting algorithm, single-row cycles detection
  - fixed compatibility issue with DB2 for z/OS
