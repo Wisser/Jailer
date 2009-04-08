@@ -192,7 +192,7 @@ public class GraphicalDataModelView extends JPanel {
                 double y = item.getY();
                 if ( Double.isNaN(y) || Double.isInfinite(y) )
                     y = 0;
-                double width = 14 * item.getSize();
+                double width = 10 * item.getSize();
                 
                 // Center the shape around the specified x and y
                 if ( width > 1 ) {
