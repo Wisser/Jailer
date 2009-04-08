@@ -149,6 +149,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jSeparator1 = new javax.swing.JSeparator();
         save = new javax.swing.JMenuItem();
         saveAs = new javax.swing.JMenuItem();
+        exportDisplay = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JSeparator();
         connectDb = new javax.swing.JCheckBoxMenuItem();
         disconnectDb = new javax.swing.JMenuItem();
@@ -194,6 +195,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         renderHtml = new javax.swing.JMenuItem();
         printDatamodel = new javax.swing.JMenuItem();
         shortestPath = new javax.swing.JMenuItem();
+        jSeparator13 = new javax.swing.JSeparator();
         jMenu2 = new javax.swing.JMenu();
         helpContent = new javax.swing.JMenuItem();
         tutorial = new javax.swing.JMenuItem();
@@ -202,8 +204,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jSeparator8 = new javax.swing.JSeparator();
         jMenuItem1 = new javax.swing.JMenuItem();
 
-        setTitle("Extraction Model Editor");
         setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+        setTitle("Extraction Model Editor");
         addWindowFocusListener(new java.awt.event.WindowFocusListener() {
             public void windowGainedFocus(java.awt.event.WindowEvent evt) {
                 formWindowGainedFocus(evt);
@@ -270,6 +272,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
         fileMenu.add(saveAs);
+
+        exportDisplay.setText("Export graph as image");
+        exportDisplay.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportDisplayActionPerformed(evt);
+            }
+        });
+        fileMenu.add(exportDisplay);
         fileMenu.add(jSeparator2);
 
         connectDb.setText("Connect database");
@@ -584,6 +594,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
         jMenu3.add(shortestPath);
+        jMenu3.add(jSeparator13);
 
         jMenuBar2.add(jMenu3);
 
@@ -1219,6 +1230,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
         openFilterEditor(null);
     }//GEN-LAST:event_jMenuItem2ActionPerformed
+
+    private void exportDisplayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportDisplayActionPerformed
+        try {
+        	extractionModelEditor.graphView.exportDisplayToImage();
+        } catch (Throwable e) {
+        	UIUtil.showException(this, "Error", e);
+        }
+    }//GEN-LAST:event_exportDisplayActionPerformed
     
     /**
      * Updates title.
@@ -1413,6 +1432,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem exit;
     private javax.swing.JMenuItem expandAll;
     private javax.swing.JMenuItem expandAllVisible;
+    private javax.swing.JMenuItem exportDisplay;
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem helpContent;
     private javax.swing.JMenuItem helpForum;
@@ -1431,6 +1451,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator10;
     private javax.swing.JSeparator jSeparator11;
     private javax.swing.JSeparator jSeparator12;
+    private javax.swing.JSeparator jSeparator13;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
