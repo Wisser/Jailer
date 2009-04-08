@@ -1375,14 +1375,18 @@ public class GraphicalDataModelView extends JPanel {
 		Association oldAssociation = selectedAssociation;
 		Set<String> oldTablesOnPath = tablesOnPath;
 		try {
-			selectedAssociation = null;
-			tablesOnPath = new HashSet<String>();
-			inImageExport = true;
+			synchronized (this) {
+				selectedAssociation = null;
+				tablesOnPath = new HashSet<String>();
+				inImageExport = true;
+			}
 			displayExporter.export(display);
 		} finally {
-			inImageExport = false;
-			selectedAssociation = oldAssociation;
-			tablesOnPath = oldTablesOnPath;
+			synchronized (this) {
+				inImageExport = false;
+				selectedAssociation = oldAssociation;
+				tablesOnPath = oldTablesOnPath;
+			}
 		}
 	}
 	
