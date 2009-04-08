@@ -1367,5 +1367,11 @@ public class GraphicalDataModelView extends JPanel {
 	public Set<Table> getVisibleTables() {
 		return tableNodes.keySet();
 	}
+
+	private static DisplayExporter displayExporter = new DisplayExporter();
+	
+	public void exportDisplayToImage() throws Exception {
+		displayExporter.export(display);
+	}
 	
 }

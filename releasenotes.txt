@@ -1,5 +1,6 @@
 2.9.5
- - allows enlargement of extraction model pane (2738574)
+ - allows exportation of the graph as image (File->Export graph as image)
+ - allows enlargement of extraction model pane [2738574]
  - added context menu for associations
 
 2.9.4
