@@ -257,8 +257,8 @@ public class GraphicalDataModelView extends JPanel {
         final GraphDistanceFilter filter = new GraphDistanceFilter(graph, hops);
 
         ColorAction fill = new ColorAction(nodes, 
-                VisualItem.FILLCOLOR, ColorLib.rgba(255,215,10,100));
-        fill.add(VisualItem.FIXED, ColorLib.rgba(255,255,30,100));
+                VisualItem.FILLCOLOR, ColorLib.rgba(255,235,20,100));
+        fill.add(VisualItem.FIXED, ColorLib.rgba(255,235,20,100));
         fill.add(VisualItem.HIGHLIGHT, ColorLib.rgba(160,160,0,120));
         
         ActionList draw = new ActionList();
@@ -1369,9 +1369,21 @@ public class GraphicalDataModelView extends JPanel {
 	}
 
 	private static DisplayExporter displayExporter = new DisplayExporter();
+	public boolean inImageExport = false;
 	
 	public void exportDisplayToImage() throws Exception {
-		displayExporter.export(display);
+		Association oldAssociation = selectedAssociation;
+		Set<String> oldTablesOnPath = tablesOnPath;
+		try {
+			selectedAssociation = null;
+			tablesOnPath = new HashSet<String>();
+			inImageExport = true;
+			displayExporter.export(display);
+		} finally {
+			inImageExport = false;
+			selectedAssociation = oldAssociation;
+			tablesOnPath = oldTablesOnPath;
+		}
 	}
 	
 }

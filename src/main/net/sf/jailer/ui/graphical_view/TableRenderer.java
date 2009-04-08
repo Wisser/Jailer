@@ -425,10 +425,12 @@ public class TableRenderer extends AbstractShapeRenderer {
         	boolean isSelected = false;
         	String tableName = item.getString("label");
 			Table table = model.getTable(tableName);
-        	if (graphicalDataModelView.selectedAssociation != null) {
-        		isSelected = graphicalDataModelView.selectedAssociation.destination.equals(table);
-        	} else {
-        		isSelected = graphicalDataModelView.root != null && graphicalDataModelView.root.equals(table);
+        	if (!graphicalDataModelView.inImageExport) {
+				if (graphicalDataModelView.selectedAssociation != null) {
+	        		isSelected = graphicalDataModelView.selectedAssociation.destination.equals(table);
+	        	} else {
+	        		isSelected = graphicalDataModelView.root != null && graphicalDataModelView.root.equals(table);
+	        	}
         	}
             if (isSelected) {
             	item.setStrokeColor(ColorLib.rgb(0, 0, 0));
