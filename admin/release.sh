@@ -25,4 +25,4 @@ rm -rf datamodel.scr
 ls jailer.jar
 cd ..
 rm $1.zip
-zip -r $1.zip $1 
+zip -r $1.zip jailer 
