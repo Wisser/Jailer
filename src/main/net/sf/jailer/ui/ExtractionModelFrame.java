@@ -83,15 +83,23 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 */
 	private static final String PLAFSETTING = ".plaf.ui";
 
+	/**
+	 * File in which orientation is stored.
+	 */
+	private static final String ORIENTATIONSETTING = ".orientation.ui";
+
     /**
      *  Creates new form ExtractionModelFrame.
      *  
      *  @param extractionModelFile file containing the model, <code>null</code> for new model
+     *  @param isHorizonal 
      */
-    public ExtractionModelFrame(String extractionModelFile) {
+    public ExtractionModelFrame(String extractionModelFile, boolean isHorizonal) {
         initComponents();
         initAnimationSteptime();
-        editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelFile, this), "editor");
+        isHorizontalLayout = isHorizonal;
+        horizontalLayoutMenuItem.setSelected(isHorizontalLayout);
+        editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelFile, this, isHorizontalLayout), "editor");
         extractionModelEditor.extractionModelFile = extractionModelFile;
         pack();
         updateTitle(extractionModelEditor.needsSave);
@@ -174,6 +182,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         showIgnored = new javax.swing.JCheckBoxMenuItem();
         showTableDetails = new javax.swing.JCheckBoxMenuItem();
         jSeparator11 = new javax.swing.JSeparator();
+        horizontalLayoutMenuItem = new javax.swing.JCheckBoxMenuItem();
         view = new javax.swing.JMenu();
         jMenu4 = new javax.swing.JMenu();
         steptime0 = new javax.swing.JRadioButtonMenuItem();
@@ -435,6 +444,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         jMenu1.add(showTableDetails);
         jMenu1.add(jSeparator11);
+
+        horizontalLayoutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_I, java.awt.event.InputEvent.CTRL_MASK));
+        horizontalLayoutMenuItem.setSelected(true);
+        horizontalLayoutMenuItem.setText("Horizontal layout");
+        horizontalLayoutMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                horizontalLayoutMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(horizontalLayoutMenuItem);
 
         view.setLabel("Look&Feel");
         jMenu1.add(view);
@@ -767,7 +786,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		closureView.toFront();
 	}
 
-    /**
+	/**
      * Sets Look&Feel.
      * 
      * @param plaf the l&f
@@ -785,6 +804,29 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	    		File plafSetting = new File(PLAFSETTING);
 	    		PrintWriter out = new PrintWriter(plafSetting);
 	    		out.println(plaf);
+	    		out.close();
+	    	} catch (Exception x) {
+	    	}
+	    }
+    	catch (Exception e) {
+	    	UIUtil.showException(this, "Error", e);
+	    }
+    }
+    
+    /**
+     * Stores orientation.
+     */
+    private void storeOrientation() {
+	    try {
+	    	try {
+                File file = new File(ORIENTATIONSETTING);
+                file.delete();
+            } catch (Exception e) {
+            }
+            try {
+	    		File setting = new File(ORIENTATIONSETTING);
+	    		PrintWriter out = new PrintWriter(setting);
+	    		out.println(isHorizontalLayout);
 	    		out.close();
 	    	} catch (Exception x) {
 	    	}
@@ -1040,7 +1082,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	private void load(String modelFile) {
 		extractionModelEditor.extractionModelFrame = null;
 		editorPanel.remove(extractionModelEditor);
-		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(modelFile, this), "editor");
+		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(modelFile, this, isHorizontalLayout), "editor");
 		((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
 		validate();
 		updateTitle(extractionModelEditor.needsSave);
@@ -1050,7 +1092,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	if (saveIfNeeded("creating new model", true)) {
     		extractionModelEditor.extractionModelFrame = null;
     		editorPanel.remove(extractionModelEditor);
-    		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(null, this), "editor");
+    		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(null, this, isHorizontalLayout), "editor");
     		((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
     		validate();
     		updateTitle(extractionModelEditor.needsSave);
@@ -1060,7 +1102,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private void reload() {
 		extractionModelEditor.extractionModelFrame = null;
 		editorPanel.remove(extractionModelEditor);
-		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelEditor.extractionModelFile, this), "editor");
+		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelEditor.extractionModelFile, this, isHorizontalLayout), "editor");
 		((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
 		validate();
 		updateTitle(extractionModelEditor.needsSave);
@@ -1238,7 +1280,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         	UIUtil.showException(this, "Error", e);
         }
     }//GEN-LAST:event_exportDisplayActionPerformed
+
+    private void horizontalLayoutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_horizontalLayoutMenuItemActionPerformed
+    	isHorizontalLayout = !isHorizontalLayout;
+    	extractionModelEditor.setOrientation(isHorizontalLayout);
+    	horizontalLayoutMenuItem.setSelected(isHorizontalLayout);
+    	storeOrientation();
+    }//GEN-LAST:event_horizontalLayoutMenuItemActionPerformed
     
+    boolean isHorizontalLayout = false;
+	
     /**
      * Updates title.
      */
@@ -1316,8 +1367,17 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             			file = CommandLineParser.getInstance().arguments.get(0);
             		}	
             	}
-                ExtractionModelFrame extractionModelFrame = new ExtractionModelFrame(file);
+            	boolean isHorizonal = false;
     	    	try {
+    	    		File setting = new File(ORIENTATIONSETTING);
+    	    		BufferedReader in = new BufferedReader(new FileReader(setting));
+    	    		String or = in.readLine();
+    	    		in.close();
+    	    		isHorizonal = Boolean.valueOf(or);
+    	    	} catch (Exception x) {
+    	    	}
+                ExtractionModelFrame extractionModelFrame = new ExtractionModelFrame(file, isHorizonal);
+                try {
     	    		File plafSetting = new File(PLAFSETTING);
     	    		BufferedReader in = new BufferedReader(new FileReader(plafSetting));
     	    		String plaf = in.readLine();
@@ -1436,6 +1496,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenu fileMenu;
     private javax.swing.JMenuItem helpContent;
     private javax.swing.JMenuItem helpForum;
+    private javax.swing.JCheckBoxMenuItem horizontalLayoutMenuItem;
     private javax.swing.JMenuItem ignoreAll;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;

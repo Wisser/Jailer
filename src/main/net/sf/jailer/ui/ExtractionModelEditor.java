@@ -21,6 +21,8 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridLayout;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -45,14 +47,18 @@ import java.util.Vector;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -177,6 +183,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	GraphicalDataModelView graphView; 
 	
 	public ScriptFormat scriptFormat = ScriptFormat.SQL;
+
+	private boolean isHorizontalLayout = false;
 	
 	/** 
 	 * Creates new form ModelTree.
@@ -184,7 +192,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * @param extractionModelFile file containing the model
 	 * @param extractionModelFrame the enclosing frame
      */
-	public ExtractionModelEditor(String extractionModelFile, ExtractionModelFrame extractionModelFrame) {
+	public ExtractionModelEditor(String extractionModelFile, ExtractionModelFrame extractionModelFrame, boolean horizontalLayout) {
 		this.extractionModelFrame = extractionModelFrame;
 		this.extractionModelFile = extractionModelFile;
 		columnMapperDialog = new ColumnMapperDialog(extractionModelFrame);
@@ -219,7 +227,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		tree.setExpandsSelectedPaths(true);
 		restrictionEditor = new RestrictionEditor();
 		
-		graphView = new GraphicalDataModelView(dataModel, this, subject, 948, 379);
+		if (isHorizontalLayout ) {
+			graphView = new GraphicalDataModelView(dataModel, this, subject, 948, 379);
+		} else {
+			graphView = new GraphicalDataModelView(dataModel, this, subject, 648, 579);
+		}
 		graphContainer.add(graphView);
 		
 		AssociationRenderer.COLOR_ASSOCIATION = associatedWith.getForeground();
@@ -326,8 +338,78 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         SyntaxSupport instance = SyntaxSupport.getInstance();
         instance.highlightCurrent(false);
 		instance.addSupport(SyntaxSupport.XML_LEXER, xmlSketch);
+		setOrientation(horizontalLayout);
 	}
 
+	void setOrientation(boolean horizontal) {
+		isHorizontalLayout = horizontal;
+		
+		if (isHorizontalLayout) {
+			jPanel1.removeAll();
+			GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+	        gridBagConstraints.gridx = 0;
+	        gridBagConstraints.gridy = 1;
+	        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+	        gridBagConstraints.weightx = 1.0;
+	        gridBagConstraints.weighty = 1.0;
+	        jPanel1.add(editorPanel, gridBagConstraints);
+
+			jSplitPane1.setOrientation(JSplitPane.VERTICAL_SPLIT);
+			jSplitPane1.setLeftComponent(jPanel1);
+			
+			editorPanel.removeAll();
+			editorPanel.add(jPanel3);
+			editorPanel.add(jPanel4);
+			editorPanel.add(inspectorHolder);
+			((GridLayout) editorPanel.getLayout()).setVgap(0);
+			((GridLayout) editorPanel.getLayout()).setRows(1);
+			if (ScriptFormat.XML.equals(scriptFormat)) {
+				editorPanel.add(xmlMappingPanel);
+				((GridLayout) editorPanel.getLayout()).setColumns(4);
+			} else {
+				((GridLayout) editorPanel.getLayout()).setColumns(3);
+			}
+		} else {
+			jSplitPane1.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
+			
+			final JScrollPane scrollPanel = new JScrollPane() {
+				@Override
+				public Dimension getMinimumSize() {
+					return editorPanel.getMinimumSize();
+				}
+			};
+			scrollPanel.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+			JPanel panel = new JPanel() {
+				@Override
+				public Dimension getMaximumSize() {
+					Dimension s = super.getMaximumSize();
+					return new Dimension(scrollPanel.getWidth() - 20, Math.max((int) (820.0 * (scriptFormat.equals(ScriptFormat.XML)? 1.33 : 1.0)), scrollPanel.getHeight() - 10));
+				}
+				@Override
+				public Dimension getPreferredSize() {
+					return getMaximumSize();
+				}
+			};
+			panel.setLayout(new GridLayout(1, 1, 0, 0));
+			panel.add(editorPanel);
+			scrollPanel.setViewportView(panel);
+			jSplitPane1.setLeftComponent(scrollPanel);
+			
+			editorPanel.removeAll();
+			editorPanel.add(jPanel3);
+			editorPanel.add(jPanel4);
+			editorPanel.add(inspectorHolder);
+			((GridLayout) editorPanel.getLayout()).setVgap(4);
+			((GridLayout) editorPanel.getLayout()).setColumns(1);
+			if (ScriptFormat.XML.equals(scriptFormat)) {
+				editorPanel.add(xmlMappingPanel);
+				((GridLayout) editorPanel.getLayout()).setRows(4);
+			} else {
+				((GridLayout) editorPanel.getLayout()).setRows(3);
+			}
+		}
+	}
+	
 	/**
 	 * Resets the graphical editor.
 	 */
@@ -441,8 +523,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel3.add(jLabel6, gridBagConstraints);
 
-        subjectTable.setMaximumRowCount(32);
+        subjectTable.setMaximumRowCount(24);
         subjectTable.setModel(subjectListModel());
+        subjectTable.setMinimumSize(new java.awt.Dimension(150, 19));
         subjectTable.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 onNewSubject(evt);
@@ -583,8 +666,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         jPanel6.add(jLabel9, gridBagConstraints);
 
-        rootTable.setMaximumRowCount(32);
+        rootTable.setMaximumRowCount(24);
         rootTable.setModel(getTableListModel());
+        rootTable.setMinimumSize(new java.awt.Dimension(150, 19));
         rootTable.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 rootTableItemStateChanged(evt);
@@ -1347,11 +1431,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         	scriptFormat = f;
         	dataModel.setExportModus(scriptFormat.toString());
         }
-    	if (ScriptFormat.XML.equals(scriptFormat)) {
-    		editorPanel.add(xmlMappingPanel);
-  		} else {
-  			editorPanel.remove(xmlMappingPanel);
-  		}
+        setOrientation(isHorizontalLayout);
+//    	if (ScriptFormat.XML.equals(scriptFormat)) {
+//    		editorPanel.add(xmlMappingPanel);
+//  		} else {
+//  			editorPanel.remove(xmlMappingPanel);
+//  		}
 		validate();
     }//GEN-LAST:event_onExportModusChanged
 		  

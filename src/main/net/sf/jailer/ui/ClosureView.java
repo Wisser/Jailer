@@ -96,6 +96,9 @@ public class ClosureView extends javax.swing.JDialog {
         super(extractionModelFrame, false);
     	this.extractionModelFrame = extractionModelFrame;
         initComponents();
+        
+        tableSelection.setMaximumRowCount(22);
+        
         closureTable = new JTable() {
 
 			@Override
