@@ -1286,6 +1286,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	extractionModelEditor.setOrientation(isHorizontalLayout);
     	horizontalLayoutMenuItem.setSelected(isHorizontalLayout);
     	storeOrientation();
+    	jMenuBar2.grabFocus();
     }//GEN-LAST:event_horizontalLayoutMenuItemActionPerformed
     
     boolean isHorizontalLayout = false;
