@@ -2,6 +2,7 @@
  - allows exportation of the graph as image (File->Export graph as image)
  - allows enlargement of extraction model pane [2738574]
  - added context menu for associations
+ - new UI layout (vertical+horizontal)
 
 2.9.4
  - enhancement of the sorting algorithm, single-row cycles detection
