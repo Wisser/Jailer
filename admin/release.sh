@@ -1,12 +1,14 @@
+rm -rf ~/tmp/jailer
 rm -rf ~/tmp/$1
 rm -rf ~/tmp/$1.co
+mkdir ~/tmp/jailer
 mkdir ~/tmp/$1
 mkdir ~/tmp/$1.co
 cd ~/tmp/$1.co
 svn co https://jailer.svn.sf.net/svnroot/jailer/trunk
 cd ..
-mv $1.co/trunk/* $1
-cd $1
+mv $1.co/trunk/* jailer
+cd jailer
 sed "s/new javax.swing.JComboBox()/new net.sf.jailer.ui.JComboBox()/g" src/net/sf/jailer/ui/*.java --in-place
 cp doc/web/home.htm doc/web/index.html
 rm -rf doc/htdocs
