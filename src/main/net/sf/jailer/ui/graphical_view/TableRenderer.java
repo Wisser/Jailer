@@ -1144,7 +1144,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 		
 		// load images
 		try {
-			excludeFromDeletionImage = new ImageIcon(dir + getClass().getResource("/database-lock.png")).getImage();
+			excludeFromDeletionImage = new ImageIcon(getClass().getResource(dir + "/database-lock.png")).getImage();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
