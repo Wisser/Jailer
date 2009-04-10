@@ -261,8 +261,8 @@ public class ClosureView extends javax.swing.JDialog {
 				refresh(table);
             }
         });
-		setLocation(400, 200);
-        setSize(400, 400);
+		setLocation(400, 150);
+        setSize(400, 600);
         setAlwaysOnTop(true);
     }
     
