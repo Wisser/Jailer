@@ -383,7 +383,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				@Override
 				public Dimension getMaximumSize() {
 					Dimension s = super.getMaximumSize();
-					return new Dimension(scrollPanel.getWidth() - 20, Math.max((int) (820.0 * (scriptFormat.equals(ScriptFormat.XML)? 1.33 : 1.0)), scrollPanel.getHeight() - 10));
+					return new Dimension(scrollPanel.getWidth() - 20, Math.max((int) (860.0 * (scriptFormat.equals(ScriptFormat.XML)? 1.33 : 1.0)), scrollPanel.getHeight() - 10));
 				}
 				@Override
 				public Dimension getPreferredSize() {
