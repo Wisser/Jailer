@@ -416,7 +416,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	        gridBagConstraints.weightx = 1;
 	        gridBagConstraints.weighty = 1;
 	        gridBagConstraints.fill = GridBagConstraints.BOTH;
-	        gridBagConstraints.insets = new Insets(6, 0, 0, 0);
+	        gridBagConstraints.insets = new Insets(4, 0, 0, 0);
 			panel2.add(jPanel4, gridBagConstraints);
 			gridBagConstraints = new java.awt.GridBagConstraints();
 	        gridBagConstraints.gridx = 0;
@@ -424,7 +424,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	        gridBagConstraints.weightx = 1;
 	        gridBagConstraints.weighty = 0;
 	        gridBagConstraints.fill = GridBagConstraints.BOTH;
-	        gridBagConstraints.insets = new Insets(6, 0, 0, 0);
+	        gridBagConstraints.insets = new Insets(4, 0, 0, 0);
 			panel2.add(inspectorHolder, gridBagConstraints);
 			
 			editorPanel.removeAll();
@@ -438,7 +438,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		        gridBagConstraints.weightx = 1;
 		        gridBagConstraints.weighty = 1;
 		        gridBagConstraints.fill = GridBagConstraints.BOTH;
-		        gridBagConstraints.insets = new Insets(6, 0, 0, 0);
+		        gridBagConstraints.insets = new Insets(4, 0, 0, 0);
 				panel2.add(xmlMappingPanel, gridBagConstraints);
 //				editorPanel.add(xmlMappingPanel);
 				((GridLayout) editorPanel.getLayout()).setRows(1);
@@ -549,12 +549,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         editorPanel.setLayout(new java.awt.GridLayout(1, 4));
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Subject", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 2, 12)));
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), " Subject ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125)));
         jPanel3.setMaximumSize(new java.awt.Dimension(2147483647, 2147483647));
         jPanel3.setMinimumSize(new java.awt.Dimension(158, 122));
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
-        jLabel6.setText("Export from ");
+        jLabel6.setText(" Export from ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -576,7 +576,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel3.add(subjectTable, gridBagConstraints);
 
-        jLabel7.setText("Where");
+        jLabel7.setText(" Where");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
@@ -615,7 +615,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel3.add(condition, gridBagConstraints);
 
-        jLabel4.setText("To");
+        jLabel4.setText(" To");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
@@ -675,7 +675,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         editorPanel.add(jPanel3);
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Association", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 2, 12)));
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), " Association ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125)));
         jPanel4.setLayout(new java.awt.BorderLayout(0, 4));
 
         jScrollPane1.setBorder(null);
@@ -737,12 +737,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         editorPanel.add(jPanel4);
 
-        inspectorHolder.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Restriction", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 2, 12)));
+        inspectorHolder.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), " Restriction ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125)));
         inspectorHolder.setMinimumSize(new java.awt.Dimension(100, 400));
         inspectorHolder.setLayout(new java.awt.GridBagLayout());
         editorPanel.add(inspectorHolder);
 
-        xmlMappingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "XML Mapping", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 2, 12)));
+        xmlMappingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), " XML Mapping ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125)));
         xmlMappingPanel.setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setText(" Aggregation ");
