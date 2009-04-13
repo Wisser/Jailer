@@ -282,11 +282,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				onApply(false);
 			}
 		});
-		restrictionEditor.jump.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				onJump();
-			}
-		});
+//		restrictionEditor.jump.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent e) {
+//				onJump();
+//			}
+//		});
 		initRestrictionEditor(null, null);
 		if (extractionModel.getTasks().get(0).subject != null) {
 			subjectTable.setSelectedItem(dataModel.getDisplayName(extractionModel.getTasks().get(0).subject));
@@ -635,7 +635,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         editorPanel.add(jPanel3);
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Associations", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 2, 12)));
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Association", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 2, 12)));
         jPanel4.setLayout(new java.awt.BorderLayout(0, 4));
 
         jScrollPane1.setBorder(null);
@@ -697,10 +697,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         editorPanel.add(jPanel4);
 
-        inspectorHolder.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Restriction on association", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 2, 12)));
+        inspectorHolder.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Restriction", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 2, 12)));
         inspectorHolder.setMinimumSize(new java.awt.Dimension(100, 400));
         inspectorHolder.setLayout(new java.awt.GridBagLayout());
         editorPanel.add(inspectorHolder);
+        inspectorHolder.getAccessibleContext().setAccessibleName("Restriction");
 
         xmlMappingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "XML Mapping", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 2, 12)));
         xmlMappingPanel.setLayout(new java.awt.GridBagLayout());
@@ -1051,7 +1052,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			restrictionEditor.ignore.getModel().setPressed(false);
 			restrictionEditor.ignore.setEnabled(false);
 			restrictionEditor.joinCondition.setText("");
-			restrictionEditor.jump.setEnabled(false); 
+//			restrictionEditor.jump.setEnabled(false); 
 			restrictionEditor.restriction.setText("");
 			restrictionEditor.restriction.setEditable(false);
 			restrictionEditor.source.setText("");
@@ -1075,39 +1076,43 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					restrictionsTable.removeRowSelectionInterval(0, row - 1);
 				}
 			}
-			if (!association.destination.equals(root)) {
-				restrictionEditor.jump.setEnabled(true);
-			} else {
-				restrictionEditor.jump.setEnabled(false);
-			}
+//			if (!association.destination.equals(root)) {
+//				restrictionEditor.jump.setEnabled(true);
+//			} else {
+//				restrictionEditor.jump.setEnabled(false);
+//			}
 
-			String type = "Association ";
+			String type = "associates  ";
+			Color typeColor = associatedWith.getForeground();
 			boolean editable = true;
 			if (association.isInsertDestinationBeforeSource()) {
-				type = "Dependency ";
+				type = "depends on  ";
+				typeColor = dependsOn.getForeground();
 				// editable = false;
 			} else if (association.isInsertSourceBeforeDestination()) {
-				type = "Inverse dependency ";
+				type = "has dependency  ";
+				typeColor = hasDependent.getForeground();
 			}
             String shortendName = association.getName();
-            if (shortendName != null && shortendName.length() > 25) {
+            if (shortendName != null && shortendName.length() > 30) {
             	restrictionEditor.aName.setToolTipText(shortendName);
-            	shortendName = shortendName.substring(0, 25) + "...";
+            	shortendName = shortendName.substring(0, 30) + "...";
             } else {
             	restrictionEditor.aName.setToolTipText(null);
             }
 			restrictionEditor.aName.setText(shortendName);
-            restrictionEditor.aName.setForeground(restrictionEditor.type.getForeground());
+//            restrictionEditor.aName.setForeground(restrictionEditor.type.getForeground());
             if (getAmbiguousNonames().contains(association)) {
-                restrictionEditor.aName.setForeground(Color.RED);
+//                restrictionEditor.aName.setForeground(Color.RED);
                 restrictionEditor.aName.setText("unnamed and ambiguous");
                 editable = false;
             }
 			restrictionEditor.restriction.setEditable(true);
 			restrictionEditor.source.setText(dataModel.getDisplayName(association.source));
 			restrictionEditor.destination.setText(dataModel.getDisplayName(association.destination));
-			restrictionEditor.cardinality.setText(association.getCardinality() == null? "unknown" : association.getCardinality().toString());
+			restrictionEditor.cardinality.setText(association.getCardinality() == null? "" : ("(" + association.getCardinality().toString() + ")"));
 			restrictionEditor.type.setText(type);
+			restrictionEditor.type.setForeground(typeColor);
 			restrictionEditor.joinCondition.setText(association.getUnrestrictedJoinCondition());
 			String restrictionCondition = association.getRestrictionCondition();
 			if (restrictionCondition != null && restrictionCondition.startsWith("(") && restrictionCondition.endsWith(")")) {
@@ -1138,6 +1143,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				}
 			}
 			restrictionEditor.joinCondition.setText(joinCondition);
+			restrictionEditor.joinCondition.setToolTipText(joinCondition);
 		}
 		graphView.setSelection(association);
 	}

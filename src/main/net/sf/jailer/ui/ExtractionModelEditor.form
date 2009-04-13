@@ -252,7 +252,7 @@
                   <Properties>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                        <TitledBorder title="Associations">
+                        <TitledBorder title="Association">
                           <Font PropertyName="font" name="Dialog" size="12" style="2"/>
                         </TitledBorder>
                       </Border>
@@ -357,7 +357,7 @@
                   <Properties>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                        <TitledBorder title="Restriction on association">
+                        <TitledBorder title="Restriction">
                           <Font PropertyName="font" name="Dialog" size="12" style="2"/>
                         </TitledBorder>
                       </Border>
@@ -366,6 +366,9 @@
                       <Dimension value="[100, 400]"/>
                     </Property>
                   </Properties>
+                  <AccessibilityProperties>
+                    <Property name="AccessibleContext.accessibleName" type="java.lang.String" value="Restriction"/>
+                  </AccessibilityProperties>
 
                   <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
                 </Container>
