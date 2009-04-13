@@ -22,7 +22,9 @@ import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.GridLayout;
+import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -383,29 +385,65 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				@Override
 				public Dimension getMaximumSize() {
 					Dimension s = super.getMaximumSize();
-					return new Dimension(scrollPanel.getWidth() - 20, Math.max((int) (860.0 * (scriptFormat.equals(ScriptFormat.XML)? 1.33 : 1.0)), scrollPanel.getHeight() - 10));
+					return new Dimension(scrollPanel.getWidth() - 20, Math.max((int) (650.0 * (scriptFormat.equals(ScriptFormat.XML)? 1.33 : 1.0)), scrollPanel.getHeight() - 10));
 				}
 				@Override
 				public Dimension getPreferredSize() {
 					return getMaximumSize();
 				}
 			};
+			
+			java.awt.GridBagConstraints gridBagConstraints;
+
 			panel.setLayout(new GridLayout(1, 1, 0, 0));
 			panel.add(editorPanel);
 			scrollPanel.setViewportView(panel);
 			jSplitPane1.setLeftComponent(scrollPanel);
 			
+			JPanel panel2 = new JPanel();
+			panel2.setLayout(new GridBagLayout());
+			gridBagConstraints = new java.awt.GridBagConstraints();
+	        gridBagConstraints.gridx = 0;
+	        gridBagConstraints.gridy = 0;
+	        gridBagConstraints.weightx = 1;
+	        gridBagConstraints.weighty = 1;
+	        gridBagConstraints.fill = GridBagConstraints.BOTH;
+	        
+			panel2.add(jPanel3, gridBagConstraints);
+			gridBagConstraints = new java.awt.GridBagConstraints();
+	        gridBagConstraints.gridx = 0;
+	        gridBagConstraints.gridy = 1;
+	        gridBagConstraints.weightx = 1;
+	        gridBagConstraints.weighty = 1;
+	        gridBagConstraints.fill = GridBagConstraints.BOTH;
+	        gridBagConstraints.insets = new Insets(6, 0, 0, 0);
+			panel2.add(jPanel4, gridBagConstraints);
+			gridBagConstraints = new java.awt.GridBagConstraints();
+	        gridBagConstraints.gridx = 0;
+	        gridBagConstraints.gridy = 2;
+	        gridBagConstraints.weightx = 1;
+	        gridBagConstraints.weighty = 0;
+	        gridBagConstraints.fill = GridBagConstraints.BOTH;
+	        gridBagConstraints.insets = new Insets(6, 0, 0, 0);
+			panel2.add(inspectorHolder, gridBagConstraints);
+			
 			editorPanel.removeAll();
-			editorPanel.add(jPanel3);
-			editorPanel.add(jPanel4);
-			editorPanel.add(inspectorHolder);
-			((GridLayout) editorPanel.getLayout()).setVgap(4);
+			editorPanel.add(panel2);
+			((GridLayout) editorPanel.getLayout()).setVgap(1);
 			((GridLayout) editorPanel.getLayout()).setColumns(1);
 			if (ScriptFormat.XML.equals(scriptFormat)) {
-				editorPanel.add(xmlMappingPanel);
-				((GridLayout) editorPanel.getLayout()).setRows(4);
+				gridBagConstraints = new java.awt.GridBagConstraints();
+		        gridBagConstraints.gridx = 0;
+		        gridBagConstraints.gridy = 3;
+		        gridBagConstraints.weightx = 1;
+		        gridBagConstraints.weighty = 1;
+		        gridBagConstraints.fill = GridBagConstraints.BOTH;
+		        gridBagConstraints.insets = new Insets(6, 0, 0, 0);
+				panel2.add(xmlMappingPanel, gridBagConstraints);
+//				editorPanel.add(xmlMappingPanel);
+				((GridLayout) editorPanel.getLayout()).setRows(1);
 			} else {
-				((GridLayout) editorPanel.getLayout()).setRows(3);
+				((GridLayout) editorPanel.getLayout()).setRows(1);
 			}
 		}
 	}
@@ -536,14 +574,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel3.add(subjectTable, gridBagConstraints);
 
         jLabel7.setText("Where");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel3.add(jLabel7, gridBagConstraints);
 
         restrictionsTable.setModel(restrictionTableModel());
@@ -574,6 +612,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel3.add(condition, gridBagConstraints);
 
         jLabel4.setText("To");
@@ -581,7 +620,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel3.add(jLabel4, gridBagConstraints);
 
         jLabel5.setText(" as T ");
@@ -631,6 +670,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel3.add(exportFormat, gridBagConstraints);
 
         editorPanel.add(jPanel3);
@@ -701,7 +741,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         inspectorHolder.setMinimumSize(new java.awt.Dimension(100, 400));
         inspectorHolder.setLayout(new java.awt.GridBagLayout());
         editorPanel.add(inspectorHolder);
-        inspectorHolder.getAccessibleContext().setAccessibleName("Restriction");
 
         xmlMappingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "XML Mapping", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 2, 12)));
         xmlMappingPanel.setLayout(new java.awt.GridBagLayout());
@@ -1046,18 +1085,20 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			if (l > 0) {
 				restrictionsTable.removeRowSelectionInterval(0, l - 1);
 			}
+			String noVal = "n/a";
 			restrictionEditor.apply.setEnabled(false);
 			restrictionEditor.cardinality.setText("");
-			restrictionEditor.destination.setText("");
+			restrictionEditor.destination.setText(noVal);
 			restrictionEditor.ignore.getModel().setPressed(false);
 			restrictionEditor.ignore.setEnabled(false);
-			restrictionEditor.joinCondition.setText("");
+			restrictionEditor.joinCondition.setText(noVal);
+			restrictionEditor.joinCondition.setToolTipText(noVal);
 //			restrictionEditor.jump.setEnabled(false); 
 			restrictionEditor.restriction.setText("");
 			restrictionEditor.restriction.setEditable(false);
-			restrictionEditor.source.setText("");
-			restrictionEditor.type.setText("");
-            restrictionEditor.aName.setText("");
+			restrictionEditor.source.setText(noVal);
+			restrictionEditor.type.setText(noVal);
+            restrictionEditor.aName.setText(noVal);
 		} else {
 			if (currentRestrictionDefinitions != null) {
 				int row = 0;

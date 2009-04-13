@@ -36,6 +36,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        joinCondition2 = new javax.swing.JTextField();
         description = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         ignore = new javax.swing.JCheckBox();
@@ -51,11 +52,19 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel3 = new javax.swing.JPanel();
         destination = new javax.swing.JLabel();
         restrictedDependencyWarning = new javax.swing.JLabel();
-        joinCondition = new javax.swing.JTextField();
         jPanel4 = new javax.swing.JPanel();
         type = new javax.swing.JLabel();
         cardinality = new javax.swing.JLabel();
         description1 = new javax.swing.JLabel();
+        jPanel5 = new javax.swing.JPanel();
+        joinCondition = new javax.swing.JLabel();
+
+        joinCondition2.setEditable(false);
+        joinCondition2.setText("jTextField1");
+        joinCondition2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        joinCondition2.setCaretPosition(1);
+        joinCondition2.setFocusable(false);
+        joinCondition2.setRequestFocusEnabled(false);
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -102,6 +111,8 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 20, 0, 0);
         add(restriction, gridBagConstraints);
+
+        jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 0));
 
         apply.setText(" apply ");
         jPanel1.add(apply);
@@ -187,20 +198,6 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         add(restrictedDependencyWarning, gridBagConstraints);
 
-        joinCondition.setEditable(false);
-        joinCondition.setText("jTextField1");
-        joinCondition.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        joinCondition.setCaretPosition(1);
-        joinCondition.setFocusable(false);
-        joinCondition.setRequestFocusEnabled(false);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
-        add(joinCondition, gridBagConstraints);
-
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
         type.setFont(new java.awt.Font("Dialog", 0, 12));
@@ -224,6 +221,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(jPanel4, gridBagConstraints);
@@ -235,6 +233,19 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(description1, gridBagConstraints);
+
+        jPanel5.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
+
+        joinCondition.setFont(new java.awt.Font("Dialog", 0, 12));
+        joinCondition.setText("jLabel5");
+        jPanel5.add(joinCondition);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(jPanel5, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void ignoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ignoreActionPerformed
@@ -263,7 +274,9 @@ public class RestrictionEditor extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    javax.swing.JTextField joinCondition;
+    private javax.swing.JPanel jPanel5;
+    javax.swing.JLabel joinCondition;
+    javax.swing.JTextField joinCondition2;
     public javax.swing.JLabel restrictedDependencyWarning;
     public javax.swing.JTextField restriction;
     public javax.swing.JLabel source;

@@ -262,7 +262,7 @@ public class ClosureView extends javax.swing.JDialog {
             }
         });
 		setLocation(400, 150);
-        setSize(400, 500);
+        setSize(400, 400);
         setAlwaysOnTop(true);
     }
     
