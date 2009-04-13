@@ -71,8 +71,12 @@
                   <Properties>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                        <TitledBorder title="Subject">
-                          <Font PropertyName="font" name="Dialog" size="12" style="2"/>
+                        <TitledBorder title=" Subject ">
+                          <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                          <Font PropertyName="font" name="Dialog" size="12" style="1"/>
+                          <Color PropertyName="color" blue="7d" green="52" red="56" type="rgb"/>
                         </TitledBorder>
                       </Border>
                     </Property>
@@ -88,7 +92,7 @@
                   <SubComponents>
                     <Component class="javax.swing.JLabel" name="jLabel6">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Export from "/>
+                        <Property name="text" type="java.lang.String" value=" Export from "/>
                       </Properties>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -117,7 +121,7 @@
                     </Component>
                     <Component class="javax.swing.JLabel" name="jLabel7">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="Where"/>
+                        <Property name="text" type="java.lang.String" value=" Where"/>
                       </Properties>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -171,7 +175,7 @@
                     </Component>
                     <Component class="javax.swing.JLabel" name="jLabel4">
                       <Properties>
-                        <Property name="text" type="java.lang.String" value="To"/>
+                        <Property name="text" type="java.lang.String" value=" To"/>
                       </Properties>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -252,8 +256,12 @@
                   <Properties>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                        <TitledBorder title="Association">
-                          <Font PropertyName="font" name="Dialog" size="12" style="2"/>
+                        <TitledBorder title=" Association ">
+                          <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                          <Font PropertyName="font" name="Dialog" size="12" style="1"/>
+                          <Color PropertyName="color" blue="7d" green="52" red="56" type="rgb"/>
                         </TitledBorder>
                       </Border>
                     </Property>
@@ -357,8 +365,12 @@
                   <Properties>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                        <TitledBorder title="Restriction">
-                          <Font PropertyName="font" name="Dialog" size="12" style="2"/>
+                        <TitledBorder title=" Restriction ">
+                          <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                          <Font PropertyName="font" name="Dialog" size="12" style="1"/>
+                          <Color PropertyName="color" blue="7d" green="52" red="56" type="rgb"/>
                         </TitledBorder>
                       </Border>
                     </Property>
@@ -373,8 +385,12 @@
                   <Properties>
                     <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
                       <Border info="org.netbeans.modules.form.compat2.border.TitledBorderInfo">
-                        <TitledBorder title="XML Mapping">
-                          <Font PropertyName="font" name="Dialog" size="12" style="2"/>
+                        <TitledBorder title=" XML Mapping ">
+                          <Border PropertyName="innerBorder" info="org.netbeans.modules.form.compat2.border.BevelBorderInfo">
+                            <BevelBorder/>
+                          </Border>
+                          <Font PropertyName="font" name="Dialog" size="12" style="1"/>
+                          <Color PropertyName="color" blue="7d" green="52" red="56" type="rgb"/>
                         </TitledBorder>
                       </Border>
                     </Property>
