@@ -1123,7 +1123,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 //				restrictionEditor.jump.setEnabled(false);
 //			}
 
-			String type = "associates  ";
+			String type = "associated with  ";
 			Color typeColor = associatedWith.getForeground();
 			boolean editable = true;
 			if (association.isInsertDestinationBeforeSource()) {
@@ -1131,7 +1131,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				typeColor = dependsOn.getForeground();
 				// editable = false;
 			} else if (association.isInsertSourceBeforeDestination()) {
-				type = "has dependency  ";
+				type = "has dependent  ";
 				typeColor = hasDependent.getForeground();
 			}
             String shortendName = association.getName();
