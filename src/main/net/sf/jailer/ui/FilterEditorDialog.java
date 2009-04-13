@@ -335,7 +335,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         filterScrollPane = new javax.swing.JScrollPane();
         filterPane = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        tableBox = new javax.swing.JComboBox();
+        tableBox = new net.sf.jailer.ui.JComboBox();
         jPanel2 = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
