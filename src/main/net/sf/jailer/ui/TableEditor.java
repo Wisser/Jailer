@@ -17,6 +17,8 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -83,6 +85,16 @@ public class TableEditor extends javax.swing.JDialog {
         this.excludeFromDeletionList = excludeFromDeletionList;
         this.initialDataTablesList = initialDataTablesList;
         initComponents();
+        primaryKey.addActionListener(new ActionListener() {
+        	@Override
+			public void actionPerformed(ActionEvent e) {
+        		int s = columnsTable.getSelectedRow();
+        		updateButtonActionPerformed(e);
+        		if (s >= 0) {
+        			columnsTable.getSelectionModel().addSelectionInterval(s, s);
+        		}
+        	}
+        });
         columnsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         final Color BG1 = new Color(255, 255, 255);
 		final Color BG2 = new Color(230, 255, 255);
