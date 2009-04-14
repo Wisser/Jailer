@@ -49,6 +49,7 @@ import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.datamodel.DataModel.NoPrimaryKeyException;
 import net.sf.jailer.render.HtmlDataModelRenderer;
 
 /**
@@ -837,9 +838,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     }
     
     private void openDataModelEditorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openDataModelEditorActionPerformed
-    	try {
+    	openDataModelEditor(null);
+    }//GEN-LAST:event_openDataModelEditorActionPerformed
+
+	/**
+	 * Opens the data model editor.
+	 */
+	private void openDataModelEditor(Table toEdit) {
+		try {
     		if (saveIfNeeded("edit data model", true)) {
-       			DataModelEditor dataModelEditor = new DataModelEditor(this, false);
+       			DataModelEditor dataModelEditor = new DataModelEditor(this, false, toEdit);
        			dataModelEditor.setVisible(true);
        		//	if (dataModelEditor.saved) {
        				reload();
@@ -849,7 +857,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         } catch (Exception e) {
         	UIUtil.showException(this, "Error", e);
         }
-    }//GEN-LAST:event_openDataModelEditorActionPerformed
+	}
  
     private void updateDataModelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateDataModelActionPerformed
     	try {
@@ -869,7 +877,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		        			args.add("-qualifyNames");
 		        		}
 			        	if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword())) {
-		        			DataModelEditor dataModelEditor = new DataModelEditor(this, true);
+		        			DataModelEditor dataModelEditor = new DataModelEditor(this, true, null);
 							dataModelEditor.setVisible(true);
 		           //			if (dataModelEditor.saved) {
 		           				reload();
@@ -897,6 +905,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     		if (extractionModelEditor.subject == null) {
     			askForDataModel(this);
     			return;
+    		}
+    		if (extractionModelEditor.dataModel != null) {
+    			extractionModelEditor.dataModel.checkForPrimaryKey(extractionModelEditor.subject, false);
     		}
     		if (saveIfNeeded("Export data", false)) {
     			if (extractionModelEditor.extractionModelFile != null || extractionModelEditor.save(true, "Export data")) {
@@ -948,7 +959,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	        	}
     		}
         } catch (Exception e) {
-        	UIUtil.showException(this, "Error", e);
+        	if (e instanceof DataModel.NoPrimaryKeyException) {
+    			if (JOptionPane.showOptionDialog(this, e.getMessage(), "No Primary Key", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE, null, new Object[] { "Edit Table", "Cancel" }, null) == 0) {
+    				openDataModelEditor(((NoPrimaryKeyException) e).table);
+    			}
+    		} else {
+    			UIUtil.showException(this, "Error", e);
+    		}
         }
     }//GEN-LAST:event_dataExportActionPerformed
 

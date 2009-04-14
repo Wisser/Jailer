@@ -17,6 +17,9 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ContainerListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -41,6 +44,7 @@ import javax.swing.ListModel;
 
 import net.sf.jailer.Jailer;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
@@ -99,8 +103,10 @@ public class DataModelEditor extends javax.swing.JDialog {
     
     /** 
      * Creates new form DataModelEditor.
+     * 
+     * @param toEdit if not null, open table editor for this table immediately
      */
-    public DataModelEditor(java.awt.Frame parent, boolean merge) throws Exception {
+    public DataModelEditor(java.awt.Frame parent, boolean merge, final Table toEdit) throws Exception {
         super(parent, true);
         tables = new CsvFile(new File(DataModel.getTablesFile())).getLines();
         associations = new CsvFile(new File(DataModel.getAssociationsFile())).getLines();
@@ -235,6 +241,9 @@ public class DataModelEditor extends javax.swing.JDialog {
 				}
 				value = line.cells.get(0) + " (" + pk + ")";
 				Component render = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				if (pk.equals("")) {
+					render.setForeground(Color.RED);
+				}
 				if (fromModelFinder || modifiedColumnTables.contains(tableName)) {
 					render.setBackground(isSelected? BG_SELCOLOR : BG_COLOR);
 				}
@@ -278,6 +287,41 @@ public class DataModelEditor extends javax.swing.JDialog {
 			markDirty();
 		}
 		UIUtil.initPeer();
+		
+		if (toEdit != null) {
+			addWindowListener(new WindowListener() {
+				@Override
+				public void windowActivated(WindowEvent e) {
+				}
+				@Override
+				public void windowClosed(WindowEvent e) {
+				}
+				@Override
+				public void windowClosing(WindowEvent e) {
+				}
+				@Override
+				public void windowDeactivated(WindowEvent e) {
+				}
+				@Override
+				public void windowDeiconified(WindowEvent e) {
+				}
+				@Override
+				public void windowIconified(WindowEvent e) {
+				}
+				@Override
+				public void windowOpened(WindowEvent e) {
+					for (Line l: tables) {
+						if (toEdit.getName().equals(l.cells.get(0))) {
+							if (new TableEditor(DataModelEditor.this, tables, associations, excludeFromDeletion, initialDataTables).edit(l, columns)) {
+					    		markDirty();
+					    		repaint();
+					    	}
+							break;
+						}
+					}
+				}
+			});
+		}
     }
     
 	/**
