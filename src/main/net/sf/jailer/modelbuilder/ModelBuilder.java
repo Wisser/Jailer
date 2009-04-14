@@ -41,8 +41,6 @@ import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.SqlUtil;
 
 import org.apache.log4j.Logger;
-import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 /**
  * Automatically builds a data-model using several {@link ModelElementFinder}.
@@ -159,16 +157,15 @@ public class ModelBuilder {
         		!EXCLUDE_TABLES_CSV.contains(new String[] { table.getName()}) && 
         	    !EXCLUDE_TABLES_CSV.contains(new String[] { table.getName().toUpperCase() })) {
                 if (table.primaryKey.getColumns().isEmpty()) {
-            		String warning = "Table " + table.getName() + " rejected: no primary key";
+            		String warning = "Table '" + table.getName() + "' has no primary key";
             		warnings.append(warning + "\n");
 					_log.warn(warning);
-                } else {
-                    tableDefinitions += table.getName() + "; N; ";
-	                for (Column pk: table.primaryKey.getColumns()) {
-	                    tableDefinitions += pk + ";";
-	                }
-	                tableDefinitions += "   ;" + table.getAuthor() + ";\n";
+                } 
+                tableDefinitions += table.getName() + "; N; ";
+                for (Column pk: table.primaryKey.getColumns()) {
+                    tableDefinitions += pk + ";";
                 }
+                tableDefinitions += "   ;" + table.getAuthor() + ";\n";
             }
         }
         
@@ -254,7 +251,7 @@ public class ModelBuilder {
         	if (!isJailerTable(table) &&
         	    !EXCLUDE_TABLES_CSV.contains(new String[] { table.getName()}) && 
         		!EXCLUDE_TABLES_CSV.contains(new String[] { table.getName().toUpperCase() })) {
-        		if (!table.primaryKey.getColumns().isEmpty()) {
+        		// if (!table.primaryKey.getColumns().isEmpty()) {
 	        		for (ModelElementFinder finder: modelElementFinder) {
 			            _log.info("find colums with " + finder);
 	            		List<Column> columns = finder.findColumns(table, statementExecutor);
@@ -267,7 +264,7 @@ public class ModelBuilder {
 	            			break;
 	            		}
 	            	}
-        		}
+        		// }
             }
         }
         resetColumnsFile(columnsDefinition.toString());

@@ -3,6 +3,7 @@
  - allows enlargement of extraction model pane [2738574]
  - added context menu for associations
  - new UI layout (vertical+horizontal)
+ - tables without primary keys will no longer be rejected
 
 2.9.4
  - enhancement of the sorting algorithm, single-row cycles detection

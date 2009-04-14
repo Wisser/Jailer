@@ -1203,6 +1203,8 @@ public class Jailer {
 			jailer.appendCommentHeader("Database URL:      " + dbUrl);
 			jailer.appendCommentHeader("Database User:     " + dbUser);
 
+			task.dataModel.checkForPrimaryKey(task.subject, deleteScriptFileName != null);
+			
 			EntityGraph graph = firstTask ? entityGraph : EntityGraph.create(
 					EntityGraph.createUniqueGraphID(), statementExecutor,
 					task.dataModel.getUniversalPrimaryKey(statementExecutor));

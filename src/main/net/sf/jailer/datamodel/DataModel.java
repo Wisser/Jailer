@@ -507,4 +507,41 @@ public class DataModel {
     	return version;
     }
     
+    /**
+     * Thrown if a table has no primary key.
+     */
+    public static class NoPrimaryKeyException extends RuntimeException {
+    	public final Table table;
+    	public NoPrimaryKeyException(Table table) {
+			super("Table '" + table.getName() + "' has no primary key");
+			this.table = table;
+		}
+    }
+
+    /**
+     * Checks whether all tables in the closure of a given subject have primary keys.
+     * 
+     * @param subject the subject
+     * @throws NoPrimaryKeyException if a table has no primary key
+     */
+    public void checkForPrimaryKey(Table subject, boolean forDeletion) throws NoPrimaryKeyException {
+    	Set<Table> toCheck = new HashSet<Table>(subject.closure(true));
+    	if (forDeletion) {
+    		Set<Table> border = new HashSet<Table>();
+    		for (Table table: toCheck) {
+    			for (Association a: table.associations) {
+    				if (!a.reversalAssociation.isIgnored()) {
+    					border.add(a.destination);
+    				}
+    			}
+    		}
+    		toCheck.addAll(border);
+    	}
+    	for (Table table: toCheck) {
+    		if (table.primaryKey.getColumns().isEmpty()) {
+    			throw new NoPrimaryKeyException(table);
+    		}
+    	}
+    }
+    
 }
