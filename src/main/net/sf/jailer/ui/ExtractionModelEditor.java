@@ -1807,12 +1807,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 			extractionModelFile = newFile;
 		}
-		File extractionModel = new File(extractionModelFile);
 		try {
+			Table stable = dataModel.getTableByDisplayName((String) subjectTable.getSelectedItem());
+			if (stable == null) {
+				return true;
+			}
+			File extractionModel = new File(extractionModelFile);
 			// TODO: refactoring, move save-functionality into Model-class
 			PrintWriter out = new PrintWriter(extractionModel);
 			out.println("# subject; condition;  limit; restrictions");
-			Table stable = dataModel.getTableByDisplayName((String) subjectTable.getSelectedItem());
 			out.println(CsvFile.encodeCell("" + stable.getName()) + "; " + CsvFile.encodeCell(condition.getText()) + "; ; " + RestrictionModel.EMBEDDED);
 			saveRestrictions(out);
 			saveXmlMapping(out);
@@ -1838,7 +1841,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			out.close();
 			needsSave = false;
 			extractionModelFrame.updateTitle(needsSave);
-		} catch (IOException e) {
+		} catch (Exception e) {
 			UIUtil.showException(this, "Could not save " + new File(extractionModelFile).getName(), e);
 			return false;
 		}
