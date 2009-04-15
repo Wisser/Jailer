@@ -671,7 +671,7 @@ public class TableEditor extends javax.swing.JDialog {
     		msg = "Primary key missing";
     	} else {
     		for (Line l: tables) {
-    			if (l != currentTableLine && l.cells.get(0).equalsIgnoreCase(nameField.getText().trim())) {
+    			if (l != currentTableLine && l.cells.get(0).equals(nameField.getText().trim())) {
     				msg = "Table already exists";
     				break;
     			}
