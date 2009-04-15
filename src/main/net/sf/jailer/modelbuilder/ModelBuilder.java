@@ -36,6 +36,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.SqlUtil;
@@ -152,13 +153,62 @@ public class ModelBuilder {
                 return t1.getName().compareTo(t2.getName());
             }
         });
+
+        Map<Table, List<Column>> columnPerTable = new HashMap<Table, List<Column>>();
+        
+        StringBuilder columnsDefinition = new StringBuilder();
+        for (Table table: allTables) {
+        	if (!isJailerTable(table) &&
+        	    !EXCLUDE_TABLES_CSV.contains(new String[] { table.getName()}) && 
+        		!EXCLUDE_TABLES_CSV.contains(new String[] { table.getName().toUpperCase() })) {
+        		// if (!table.primaryKey.getColumns().isEmpty()) {
+	        		for (ModelElementFinder finder: modelElementFinder) {
+			            _log.info("find colums with " + finder);
+	            		List<Column> columns = finder.findColumns(table, statementExecutor);
+	            		if (!columns.isEmpty()) {
+	            			columnPerTable.put(table, columns);
+	            			columnsDefinition.append(table.getName() + "; ");
+	            			for (Column c: columns) {
+	            				columnsDefinition.append(c.toSQL(null) + "; ");
+	            			}
+	            			columnsDefinition.append("\n");
+	            			break;
+	            		}
+	            	}
+        		// }
+            }
+        }
+        resetColumnsFile(columnsDefinition.toString());
+        
         for (Table table: sortedTables) {
         	if (!isJailerTable(table) &&
         		!EXCLUDE_TABLES_CSV.contains(new String[] { table.getName()}) && 
         	    !EXCLUDE_TABLES_CSV.contains(new String[] { table.getName().toUpperCase() })) {
                 if (table.primaryKey.getColumns().isEmpty()) {
+                	// try find user defined pk
+                	Table old = dataModel.getTable(table.getName());
+                	if (old != null && !old.primaryKey.getColumns().isEmpty() && columnPerTable.containsKey(table)) {
+                		List<Column> newPk = new ArrayList<Column>();
+                		for (Column c: columnPerTable.get(table)) {
+                			for (Column opk: old.primaryKey.getColumns()) {
+                				if (c.name.equals(opk.name)) {
+                					newPk.add(c);
+                					break;
+                				}
+                			}
+                		}
+                		if (newPk.size() == old.primaryKey.getColumns().size()) {
+                			table = new Table(old.getName(), new PrimaryKeyFactory().createPrimaryKey(newPk), false);
+                			table.setAuthor(old.getAuthor());
+                		}
+                	}
+                	
             		String warning = "Table '" + table.getName() + "' has no primary key";
-            		warnings.append(warning + "\n");
+            		if (table.primaryKey.getColumns().size() == 0) {
+            			warnings.append(warning + "\n");
+            		} else {
+            			warning += ", taking manually defined key.";
+            		}
 					_log.warn(warning);
                 } 
                 tableDefinitions += table.getName() + "; N; ";
@@ -245,29 +295,6 @@ public class ModelBuilder {
         }
         
         resetAssociationFile(associationDefinition);
-        
-        StringBuilder columnsDefinition = new StringBuilder();
-        for (Table table: allTables) {
-        	if (!isJailerTable(table) &&
-        	    !EXCLUDE_TABLES_CSV.contains(new String[] { table.getName()}) && 
-        		!EXCLUDE_TABLES_CSV.contains(new String[] { table.getName().toUpperCase() })) {
-        		// if (!table.primaryKey.getColumns().isEmpty()) {
-	        		for (ModelElementFinder finder: modelElementFinder) {
-			            _log.info("find colums with " + finder);
-	            		List<Column> columns = finder.findColumns(table, statementExecutor);
-	            		if (!columns.isEmpty()) {
-	            			columnsDefinition.append(table.getName() + "; ");
-	            			for (Column c: columns) {
-	            				columnsDefinition.append(c.toSQL(null) + "; ");
-	            			}
-	            			columnsDefinition.append("\n");
-	            			break;
-	            		}
-	            	}
-        		// }
-            }
-        }
-        resetColumnsFile(columnsDefinition.toString());
     }
 
     private static void resetAssociationFile(String associationDefinition) throws IOException {

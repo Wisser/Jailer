@@ -182,7 +182,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 	        tables.addAll(tablesFromModelFinder);
 	        newTables += tablesFromModelFinder.size();
 		}
-		sortLineList(tables);
+		sortLineList(tables, true);
         File modelFinderAssociationsFile = new File(ModelBuilder.MODEL_BUILDER_ASSOCIATIONS_CSV);
 		if (merge && modelFinderAssociationsFile.exists()) {
 	        List<CsvFile.Line> associationsFromModelFinder = new CsvFile(modelFinderAssociationsFile).getLines();
@@ -191,7 +191,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 	        newAssociations += associationsFromModelFinder.size();
 		}
 		
-		sortLineList(associations);
+		sortLineList(associations, false);
 		initComponents();
 		setSize(900, 700);
 		setLocation(100, 32);
@@ -339,13 +339,19 @@ public class DataModelEditor extends javax.swing.JDialog {
      * 
      * @param lines the list to sort
      */
-    private void sortLineList(List<CsvFile.Line> list) {
+    private void sortLineList(List<CsvFile.Line> list, final boolean sortTables) {
 		Collections.sort(list, new Comparator<CsvFile.Line> () {
 			public int compare(CsvFile.Line o1, CsvFile.Line o2) {
 				int c1 = linesFromModelFinder.contains(o1)? 0 : 1;
 				int c2 = linesFromModelFinder.contains(o2)? 0 : 1;
 				if (c1 != c2) {
 					return c1 - c2;
+				}
+				if (sortTables) {
+					String pk1 = o1.cells.get(2);
+					String pk2 = o2.cells.get(2);
+					if (pk1.length() == 0 && pk2.length() > 0) return -1;
+					if (pk1.length() > 0 && pk2.length() == 0) return 1;
 				}
 				for (int i = 0; i < 3; ++i) {
 					int r = o1.cells.get(i).compareTo(o2.cells.get(i));

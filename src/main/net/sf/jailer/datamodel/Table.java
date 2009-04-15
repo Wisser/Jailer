@@ -81,7 +81,7 @@ public class Table extends ModelElement implements Comparable<Table> {
      * @param primaryKey the names of the primary-key columns
      * @param upsert use upsert (merge) or insert-statement for entities of this table in export-script
      */
-    public Table(String name, PrimaryKey primaryKey,  boolean upsert) {
+    public Table(String name, PrimaryKey primaryKey, boolean upsert) {
         this.name = name;
         this.primaryKey = primaryKey;
         this.upsert = upsert;

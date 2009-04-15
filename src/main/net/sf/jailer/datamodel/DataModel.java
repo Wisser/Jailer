@@ -88,7 +88,7 @@ public class DataModel {
      * Gets name of file containing the table definitions.
      */
     public static String getTablesFile() {
-    	return getDatamodelFolder() + File.separator + "/table.csv";
+    	return getDatamodelFolder() + File.separator + "table.csv";
     }
 
     /**
@@ -137,7 +137,7 @@ public class DataModel {
 	public static class XmlSettings {
 		public String datePattern = "yyyy-MM-dd";
 		public String timestampPattern = "yyyy-MM-dd-HH.mm.ss";
-		public String rootTag = "entities";
+		public String rootTag = "rowset";
 	}
 
 	/**
@@ -213,11 +213,14 @@ public class DataModel {
         for (CsvFile.Line line: tableList) {
             boolean upsert = "Y".equalsIgnoreCase(line.cells.get(1));
             List<Column> pk = new ArrayList<Column>();
-            for (int j = 2; j < line.cells.size() && line.cells.get(j).toString().length() > 0; ++j) {
+            int j;
+            for (j = 2; j < line.cells.size() && line.cells.get(j).toString().length() > 0; ++j) {
                 String col = line.cells.get(j).trim();
                 pk.add(Column.parse(col));
             }
-            tables.put(line.cells.get(0), new Table(line.cells.get(0), primaryKeyFactory.createPrimaryKey(pk), upsert));
+            Table table = new Table(line.cells.get(0), primaryKeyFactory.createPrimaryKey(pk), upsert);
+			table.setAuthor(line.cells.get(j + 1));
+            tables.put(line.cells.get(0), table);
         }
         
         // columns
