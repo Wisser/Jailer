@@ -1,6 +1,7 @@
 2.9.6
  - preserve manually defined keys after re-introspection
  - improvements of data model editor
+ - export of BLOB/CLOB data into XML files
 
 2.9.5
  - allows exportation of the graph as image (File->Export graph as image)
