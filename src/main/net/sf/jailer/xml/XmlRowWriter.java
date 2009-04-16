@@ -18,6 +18,8 @@ package net.sf.jailer.xml;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,6 +36,7 @@ import javax.xml.transform.stream.StreamResult;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.util.Base64;
 import net.sf.jailer.util.SqlUtil;
 
 import org.xml.sax.SAXException;
@@ -173,7 +176,21 @@ public class XmlRowWriter {
 					}
 					type = SqlUtil.getColumnType(resultSet, columnName, typeCache);
 					if (type == Types.BLOB || type == Types.CLOB) {
-						// (C|B)LOB is not yet supported
+						Object object = resultSet.getObject(columnName);
+						if (object instanceof Blob) {
+							Blob blob = (Blob) object;
+							byte[] blobValue = blob.getBytes(1, (int) blob.length());
+							return Base64.encodeBytes(blobValue);
+						}
+
+						if (object instanceof Clob) {
+							Clob clobValue = (Clob) object;
+							int length = (int) clobValue.length();
+							if (length > 0) {
+								return clobValue.getSubString(1, length);
+							}
+							return "";
+						}
 					} else {
 						Object o = SqlUtil.getObject(resultSet, columnName, typeCache);
 						if (o != null) {
