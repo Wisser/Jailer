@@ -19,14 +19,19 @@ import java.awt.Component;
 import java.awt.Frame;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
@@ -58,7 +63,11 @@ public class UIUtil {
      * @param description description of file to chose
      */
     public static String choseFile(File selectedFile, String startDir, final String description, final String extension, Component parent, boolean addExtension, boolean forLoad) {
-        JFileChooser fileChooser = new JFileChooser(startDir);
+    	String newStartDir = restoreCurrentDir(extension);
+    	if (newStartDir != null) {
+    		startDir = newStartDir;
+    	}
+    	JFileChooser fileChooser = new JFileChooser(startDir);
         javax.swing.filechooser.FileFilter filter = new javax.swing.filechooser.FileFilter() {
             public boolean accept(File pathname) {
                 return pathname.isDirectory() || pathname.getName().toLowerCase().endsWith(extension)
@@ -93,10 +102,19 @@ public class UIUtil {
                 if (addExtension && !fn.endsWith(extension)) {
                 	fn += extension;
                 }
+                try {
+                	storeCurrentDir(extension, fileChooser.getSelectedFile().getParent());
+                } catch (Exception e) {
+                	// ignore
+                }
                 return fn;
             } catch (IOException e1) {
                 try {
-					return fileChooser.getSelectedFile().getCanonicalPath();
+					fn = fileChooser.getSelectedFile().getCanonicalPath();
+                    if (addExtension && !fn.endsWith(extension)) {
+                    	fn += extension;
+                    }
+                    return fn;
 				} catch (IOException e) {
 					e.printStackTrace();
 				}
@@ -106,6 +124,59 @@ public class UIUtil {
     }
 
     /**
+     * File to store current directory of file chooser.
+     */
+    private final static File cdSettings = new File(".cdsettings");
+    
+    /**
+     * Stores current directory of file chooser.
+     * 
+     * @param key the key under which to store current directory
+     * @param currentDir the current directory
+     */
+    private static void storeCurrentDir(String key, String currentDir) {
+		try {
+			Map<String, String> cd = new HashMap<String, String>();
+			if (cdSettings.exists()) {
+				try {
+					ObjectInputStream in = new ObjectInputStream(new FileInputStream(cdSettings));
+					cd = (Map<String, String>) in.readObject();
+					in.close();
+				} catch (Exception e) {
+					// ignore
+				}
+			}
+			cdSettings.delete();
+			cd.put(key, currentDir);
+			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(cdSettings));
+			out.writeObject(cd);
+			out.close();
+		} catch (Exception e) {
+			// ignore
+		}
+	}
+
+    /**
+     * Restores current directory of file chooser.
+     * 
+     * @param key the key of the current directory to restore
+     * @return the current directory, or <code>null</code> if no directory has been stored under the key
+     */
+	private static String restoreCurrentDir(String key) {
+		if (cdSettings.exists()) {
+			try {
+				ObjectInputStream in = new ObjectInputStream(new FileInputStream(cdSettings));
+				String cd = ((Map<String, String>) in.readObject()).get(key);
+				in.close();
+				return cd;
+			} catch (Exception e) {
+				// ignore
+			}
+		}
+		return null;
+	}
+
+	/**
      * Calls the Jailer export engine via CLI.
      * 
      * @param ownerOfConsole owner component of jailer console
