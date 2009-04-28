@@ -1173,7 +1173,7 @@ public class Jailer {
 		}
 
 		ExtractionModel extractionModel = new ExtractionModel(
-				extractionModelFileName);
+				extractionModelFileName, CommandLineParser.getInstance().getSourceSchemaMapping());
 		EntityGraph entityGraph = EntityGraph.create(EntityGraph
 				.createUniqueGraphID(), statementExecutor, extractionModel
 				.getTasks().get(0).dataModel
@@ -1203,6 +1203,19 @@ public class Jailer {
 			jailer.appendCommentHeader("Database URL:      " + dbUrl);
 			jailer.appendCommentHeader("Database User:     " + dbUser);
 
+			String ss = "";
+			for (String s: CommandLineParser.getInstance().getSourceSchemaMapping().values()) {
+				if (s.length() > 0) {
+					if (ss.length() > 0) {
+						ss += ", ";
+					}
+					ss += s;
+				}
+			}
+			if (ss.length() > 0) {
+				jailer.appendCommentHeader("Schema:            " + ss);
+			}
+			
 			task.dataModel.checkForPrimaryKey(task.subject, deleteScriptFileName != null);
 			
 			EntityGraph graph = firstTask ? entityGraph : EntityGraph.create(

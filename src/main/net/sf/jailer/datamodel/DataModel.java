@@ -33,6 +33,7 @@ import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.PrintUtil;
+import net.sf.jailer.util.SqlUtil;
 
 
 /**
@@ -199,11 +200,30 @@ public class DataModel {
     /**
      * Reads in <code>table.csv</code> and <code>association.csv</code>
      * and builds the relational data model.
+     */
+    public DataModel(Map<String, String> sourceSchemaMapping) throws Exception {
+        this(null, null, sourceSchemaMapping);
+    }
+
+    /**
+     * Reads in <code>table.csv</code> and <code>association.csv</code>
+     * and builds the relational data model.
      * 
      * @param additionalTablesFile table file to read too
      * @param additionalAssociationsFile association file to read too
      */
     public DataModel(String additionalTablesFile, String additionalAssociationsFile) throws Exception {
+    	this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>());
+    }
+
+    /**
+     * Reads in <code>table.csv</code> and <code>association.csv</code>
+     * and builds the relational data model.
+     * 
+     * @param additionalTablesFile table file to read too
+     * @param additionalAssociationsFile association file to read too
+     */
+    public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping) throws Exception {
     	// tables
     	CsvFile tablesFile = new CsvFile(new File(getTablesFile()));
         List<CsvFile.Line> tableList = new ArrayList<CsvFile.Line>(tablesFile.getLines());
@@ -218,7 +238,7 @@ public class DataModel {
                 String col = line.cells.get(j).trim();
                 pk.add(Column.parse(col));
             }
-            Table table = new Table(line.cells.get(0), primaryKeyFactory.createPrimaryKey(pk), upsert);
+            Table table = new Table(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0)), primaryKeyFactory.createPrimaryKey(pk), upsert);
 			table.setAuthor(line.cells.get(j + 1));
             tables.put(line.cells.get(0), table);
         }
@@ -238,7 +258,7 @@ public class DataModel {
 	                	// ignore
 					}
 	            }
-	            Table table = tables.get(line.cells.get(0));
+	            Table table = tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0)));
 	            if (table != null) {
 	            	table.setColumns(columns);
 	            }
@@ -253,11 +273,11 @@ public class DataModel {
         for (CsvFile.Line line: associationList) {
             String location = line.location;
             try {
-                Table tableA = (Table) tables.get(line.cells.get(0));
+                Table tableA = (Table) tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0)));
                 if (tableA == null) {
                     throw new RuntimeException("Table '" + line.cells.get(0) + "' not found");
                 }
-                Table tableB = (Table) tables.get(line.cells.get(1));
+                Table tableB = (Table) tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(1)));
                 if (tableB == null) {
                     throw new RuntimeException("Table '" + line.cells.get(1) + "' not found");
                 }

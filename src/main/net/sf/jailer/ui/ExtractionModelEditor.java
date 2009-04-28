@@ -210,7 +210,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				dataModel = new DataModel();
 				extractionModel = new ExtractionModel(dataModel);
 			} else {
-				extractionModel = new ExtractionModel(extractionModelFile);
+				extractionModel = new ExtractionModel(extractionModelFile, new HashMap<String, String>());
 			}
 			subject = extractionModel.getTasks().get(0).subject;
 			dataModel = extractionModel.getTasks().get(0).dataModel;

@@ -1,4 +1,6 @@
 2.9.7
+ - new source-schema-mapping allows the user to specify the schema
+   to export data from
  - added column replacements for PostgreSQL
 
 2.9.6
