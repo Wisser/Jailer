@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.datamodel.DataModel;
@@ -396,6 +397,26 @@ public class SqlUtil {
 		}
 		return resultSet.getObject(columnName);
 	};
+
+	/**
+	 * Replaces schema of qualified table name according to a schema-map. 
+	 * 
+	 * @param schemaMapping the mapping
+	 * @param tableName the table name
+	 * @return table name with replaced schema
+	 */
+	public static String mappedSchema(Map<String, String> schemaMapping, String tableName) {
+		Table t = new Table(tableName, null, false);
+		String schema = t.getSchema("");
+    	String mappedSchema = schemaMapping.get(schema);
+    	if (mappedSchema != null) {
+    		schema = mappedSchema;
+    	}
+    	if (schema.length() == 0) {
+    		return t.getUnqualifiedName();
+    	}
+		return schema + "." + t.getUnqualifiedName();
+	}
 
 	public static final String LETTERS_AND_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789";
 

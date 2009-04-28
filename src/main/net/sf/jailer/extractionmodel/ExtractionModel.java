@@ -19,6 +19,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
@@ -27,6 +28,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.CsvFile;
+import net.sf.jailer.util.SqlUtil;
 
 import org.apache.log4j.Logger;
 
@@ -101,8 +103,8 @@ public class ExtractionModel {
      * 
      * @param the name of the model-file
      */
-    public ExtractionModel(String fileName) throws Exception {
-        readModel(fileName);
+    public ExtractionModel(String fileName, Map<String, String> sourceSchemaMapping) throws Exception {
+        readModel(fileName, sourceSchemaMapping);
     }
     
     /**
@@ -119,12 +121,12 @@ public class ExtractionModel {
      * 
      * @param fileName the models file name
      */
-    private void readModel(String fileName) throws Exception {
+    private void readModel(String fileName, Map<String, String> sourceSchemaMapping) throws Exception {
         List<CsvFile.Line> csv = new CsvFile(new File(fileName)).getLines();
         for (CsvFile.Line line: csv) {
             String location = line.location;
-            DataModel dataModel = new DataModel();
-            Table subject = dataModel.getTable(line.cells.get(0));
+            DataModel dataModel = new DataModel(sourceSchemaMapping);
+            Table subject = dataModel.getTable(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0)));
             if (subject == null) {
             	_log.warn(location + ": unknown table " + line.cells.get(0));
             }
@@ -187,7 +189,7 @@ public class ExtractionModel {
             for (CsvFile.Line xmLine: columnMappingFile) {
             	String name = xmLine.cells.get(0);
 				String mapping = xmLine.cells.get(1);
-				Table table = dataModel.getTable(name);
+				Table table = dataModel.getTable(SqlUtil.mappedSchema(sourceSchemaMapping, name));
 				if (table == null) {
 					_log.warn("unknown table" + name);
 				} else {
@@ -201,7 +203,7 @@ public class ExtractionModel {
             	String name = xmLine.cells.get(0);
 				String column = xmLine.cells.get(1);
 				String filter = xmLine.cells.get(2);
-				Table table = dataModel.getTable(name);
+				Table table = dataModel.getTable(SqlUtil.mappedSchema(sourceSchemaMapping, name));
 				if (table == null) {
 					_log.warn("unknown table" + name);
 				} else {

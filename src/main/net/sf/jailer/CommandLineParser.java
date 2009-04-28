@@ -165,6 +165,23 @@ public class CommandLineParser {
 		return schemaMapping;
 	}
     
+    private Map<String, String> sourceSchemaMapping;
+
+    public Map<String, String> getSourceSchemaMapping() {
+		if (sourceSchemaMapping == null) {
+			sourceSchemaMapping = new HashMap<String, String>();
+			if (rawsourceschemamapping != null) {
+				for (String item: rawsourceschemamapping.split(",")) {
+					String[] fromTo = (" " + item + " ").split("=");
+					if (fromTo.length == 2) {
+						sourceSchemaMapping.put(fromTo[0].trim(), fromTo[1].trim());
+					}
+				}
+			}
+		}
+		return sourceSchemaMapping;
+	}
+    
     /**
      * Gets the script format.
      * 
@@ -222,8 +239,11 @@ public class CommandLineParser {
     @Option(name="-where",usage="subject condition", metaVar="SQL-expression")
     public String where = null;
     
-    @Option(name="-schemamapping",usage="schema map", metaVar="<from>=<to>[','<from>=<to>]*")
+    @Option(name="-schemamapping",usage="target schema map", metaVar="<from>=<to>[','<from>=<to>]*")
     public String rawschemamapping = null;
+    
+    @Option(name="-source-schemamapping",usage="source schema map", metaVar="<from>=<to>[','<from>=<to>]*")
+    public String rawsourceschemamapping = null;
     
     @Option(name="-threads",usage="number of threads (default is 10)", metaVar="#threads")
     public int numberOfThreads = 10;
