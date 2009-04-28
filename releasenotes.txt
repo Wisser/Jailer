@@ -1,3 +1,6 @@
+2.9.7
+ - added column replacements for PostgreSQL
+
 2.9.6
  - preserve manually defined keys after re-introspection
  - improvements of data model editor
