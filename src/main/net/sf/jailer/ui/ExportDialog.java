@@ -851,7 +851,7 @@ public class ExportDialog extends javax.swing.JDialog {
     		if (sourceSchemaMapping.length() > 0) {
     			sourceSchemaMapping.append(",");
     		}
-    		if (!relevantSchemas.contains(schema)) {
+    		if (!relevantSchemas.contains(schema.equals(DEFAULT_SCHEMA)? "" : schema)) {
     			to = "I/" + schema;
     		}
     		sourceSchemaMapping.append((schema.equals(DEFAULT_SCHEMA)? "" : schema) + "=" + to);
