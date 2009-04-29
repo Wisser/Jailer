@@ -91,7 +91,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "2.9.7";
+	public static final String VERSION = "2.10.0";
 
 	/**
 	 * The relational data model.
@@ -269,7 +269,7 @@ public class Jailer {
 	 *            the subject of the extraction-model
 	 */
 	private Set<Table> exportInitialData(Table subject) throws Exception {
-		Set<Table> idTables = readInitialDataTables();
+		Set<Table> idTables = readInitialDataTables(CommandLineParser.getInstance().getSourceSchemaMapping());
 		Set<Table> tables = new HashSet<Table>();
 		for (Table table : idTables) {
 			if (subject.closure(true).contains(table)) {
@@ -292,11 +292,11 @@ public class Jailer {
 	 * 
 	 * @return the initial-data-tables list
 	 */
-	private Set<Table> readInitialDataTables() throws Exception {
+	private Set<Table> readInitialDataTables(Map<String, String> sourceSchemaMapping) throws Exception {
 		File file = new File(DataModel.getInitialDataTablesFile());
 		if (file.exists()) {
 			Set<Table> idTables = SqlUtil.readTableList(new CsvFile(file),
-					datamodel);
+					datamodel, sourceSchemaMapping);
 			return idTables;
 		} else {
 			return new HashSet<Table>();
@@ -320,7 +320,7 @@ public class Jailer {
 			throws Exception {
 		final Map<Table, Collection<Association>> progress = new HashMap<Table, Collection<Association>>();
 
-		Set<Table> initialDataTables = readInitialDataTables();
+		Set<Table> initialDataTables = readInitialDataTables(CommandLineParser.getInstance().getSourceSchemaMapping());
 
 		// resolve associations with same dest-type sequentially
 		Map<Table, List<JobManager.Job>> jobsPerDestination = new HashMap<Table, List<JobManager.Job>>();
@@ -1203,19 +1203,6 @@ public class Jailer {
 			jailer.appendCommentHeader("Database URL:      " + dbUrl);
 			jailer.appendCommentHeader("Database User:     " + dbUser);
 
-			String ss = "";
-			for (String s: CommandLineParser.getInstance().getSourceSchemaMapping().values()) {
-				if (s.length() > 0) {
-					if (ss.length() > 0) {
-						ss += ", ";
-					}
-					ss += s;
-				}
-			}
-			if (ss.length() > 0) {
-				jailer.appendCommentHeader("Schema:            " + ss);
-			}
-			
 			task.dataModel.checkForPrimaryKey(task.subject, deleteScriptFileName != null);
 			
 			EntityGraph graph = firstTask ? entityGraph : EntityGraph.create(
@@ -1236,7 +1223,7 @@ public class Jailer {
 		}
 
 		if (explain) {
-			ExplainTool.explain(entityGraph, jailer.readInitialDataTables(),
+			ExplainTool.explain(entityGraph, jailer.readInitialDataTables(CommandLineParser.getInstance().getSourceSchemaMapping()),
 					statementExecutor, jailer.datamodel);
 		}
 
@@ -1263,7 +1250,7 @@ public class Jailer {
 			jailer.setEntityGraph(exportedEntities);
 			jailer.deleteEntities(subjects, totalProgress, statementExecutor,
 					CommandLineParser.getInstance().getTabuTables(
-							jailer.datamodel));
+							jailer.datamodel, CommandLineParser.getInstance().getSourceSchemaMapping()));
 			jailer.datamodel.transpose();
 			jailer.writeEntities(deleteScriptFileName, ScriptType.DELETE,
 					totalProgress, statementExecutor);
@@ -1458,7 +1445,7 @@ public class Jailer {
 		}
 
 		Set<Table> tablesToIgnore = CommandLineParser.getInstance()
-				.getTabuTables(dataModel);
+				.getTabuTables(dataModel, null);
 		if (!tablesToIgnore.isEmpty()) {
 			System.out.println("ignoring: "
 					+ PrintUtil.tableSetAsString(tablesToIgnore));

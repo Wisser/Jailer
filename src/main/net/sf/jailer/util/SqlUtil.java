@@ -101,14 +101,15 @@ public class SqlUtil {
      * @param tableFile the file containing the list
      * @return set of tables, empty list if file contains no tables
      */
-    public static Set<Table> readTableList(CsvFile tableFile, DataModel dataModel) {
+    public static Set<Table> readTableList(CsvFile tableFile, DataModel dataModel, Map<String, String> sourceSchemaMapping) {
         Set<Table> tabuTables = new HashSet<Table>();
         
         if (tableFile != null) {
             for (CsvFile.Line line: tableFile.getLines()) {
-                Table table = dataModel.getTable(line.cells.get(0));
+                String name = mappedSchema(sourceSchemaMapping, line.cells.get(0));
+				Table table = dataModel.getTable(name);
                 if (table == null) {
-                    throw new RuntimeException(line.location + ": unknown table: '" + line.cells.get(0) + "'");
+                    throw new RuntimeException(line.location + ": unknown table: '" + name + "'");
                 }
                 tabuTables.add(table);
             }
@@ -406,8 +407,11 @@ public class SqlUtil {
 	 * @return table name with replaced schema
 	 */
 	public static String mappedSchema(Map<String, String> schemaMapping, String tableName) {
+		if (schemaMapping == null) {
+			return tableName;
+		}
 		Table t = new Table(tableName, null, false);
-		String schema = t.getSchema("");
+		String schema = t.getOriginalSchema("");
     	String mappedSchema = schemaMapping.get(schema);
     	if (mappedSchema != null) {
     		schema = mappedSchema;

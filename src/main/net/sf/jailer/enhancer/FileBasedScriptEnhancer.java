@@ -76,7 +76,7 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
     private void addEnhancement(Writer script, Set<Table> progress, File dir) throws IOException {
         if (ScriptFormat.SQL.equals(CommandLineParser.getInstance().getScriptFormat())) {
 	    	for (Table table: progress) {
-	            File enhancement = new File(dir, table.getName() + ".sql");
+	            File enhancement = new File(dir, table.getOriginalName() + ".sql");
 	            if (enhancement.exists()) {
 	                BufferedReader in = new BufferedReader(new FileReader(enhancement));
 	                String line;

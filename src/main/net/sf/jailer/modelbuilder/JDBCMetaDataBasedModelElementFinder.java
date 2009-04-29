@@ -84,7 +84,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         for (Table table: dataModel.getTables()) {
             _log.info("find associations with " + table.getName());
         	try {
-        		resultSet = metaData.getExportedKeys(null, quoting.unquote(table.getSchema(quoting.quote(defaultSchema))), quoting.unquote(table.getUnqualifiedName()));
+        		resultSet = metaData.getExportedKeys(null, quoting.unquote(table.getOriginalSchema(quoting.quote(defaultSchema))), quoting.unquote(table.getUnqualifiedName()));
         	} catch (Exception e) {
         		_log.info("failed. " + e.getMessage());
             	continue;
@@ -170,7 +170,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         Map<String, Map<Integer, Column>> pkColumns = new HashMap<String, Map<Integer, Column>>();
         for (String tableName: tableNames) {
         	Table tmp = new Table(tableName, null, false);
-            resultSet = metaData.getPrimaryKeys(null, quoting.unquote(tmp.getSchema(quoting.quote(statementExecutor.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()));
+            resultSet = metaData.getPrimaryKeys(null, quoting.unquote(tmp.getOriginalSchema(quoting.quote(statementExecutor.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()));
             Map<Integer, Column> pk = pkColumns.get(tableName);
             if (pk == null) {
                 pk = new HashMap<Integer, Column>();
@@ -186,7 +186,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         }
         for (String tableName: tableNames) {
         	Table tmp = new Table(tableName, null, false);
-            resultSet = metaData.getColumns(null, quoting.unquote(tmp.getSchema(quoting.quote(statementExecutor.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), null);
+            resultSet = metaData.getColumns(null, quoting.unquote(tmp.getOriginalSchema(quoting.quote(statementExecutor.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), null);
             Map<Integer, Column> pk = pkColumns.get(tableName);
             while (resultSet.next()) {
                 String colName = quoting.quote(resultSet.getString(4));
@@ -327,7 +327,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     	DatabaseMetaData metaData = statementExecutor.getMetaData();
     	Quoting quoting = new Quoting(metaData);
         String defaultSchema = getDefaultSchema(statementExecutor, statementExecutor.dbUser);
-        ResultSet resultSet = metaData.getColumns(null, quoting.unquote(table.getSchema(defaultSchema)), quoting.unquote(table.getUnqualifiedName()), null);
+        ResultSet resultSet = metaData.getColumns(null, quoting.unquote(table.getOriginalSchema(defaultSchema)), quoting.unquote(table.getUnqualifiedName()), null);
         while (resultSet.next()) {
             String colName = quoting.quote(resultSet.getString(4));
             int type = resultSet.getInt(5);

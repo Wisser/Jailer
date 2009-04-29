@@ -36,8 +36,10 @@ import net.sf.jailer.DDLCreator;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.database.TemporaryTableScope;
+import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.datamodel.DataModel.NoPrimaryKeyException;
 
 /**
  * "Data Export" Dialog.
@@ -91,10 +93,16 @@ public class ExportDialog extends javax.swing.JDialog {
 	 */
 	private Settings theSettings;
 	
+	/**
+	 * The subject table.
+	 */
+	private final Table subject;
+	
     /** Creates new form DbConnectionDialog */
     public ExportDialog(java.awt.Frame parent, DataModel dataModel, net.sf.jailer.datamodel.Table subject, String subjectCondition, StatementExecutor statementExecutor) {
         super(parent, true);
         this.dataModel = dataModel;
+        this.subject = subject;
         initComponents();
         setModal(true);
         setLocation(100, 150);
@@ -263,7 +271,7 @@ public class ExportDialog extends javax.swing.JDialog {
     	Set<String> distinctSchemas = new HashSet<String>();
     	
     	for (Table table: dataModel.getTables()) {
-    		String schema = table.getSchema(DEFAULT_SCHEMA);
+    		String schema = table.getOriginalSchema(DEFAULT_SCHEMA);
     		distinctSchemas.add(schema);
     	}
     	
@@ -307,7 +315,7 @@ public class ExportDialog extends javax.swing.JDialog {
     	Set<String> distinctSchemas = new HashSet<String>();
     	
     	for (Table table: dataModel.getTables()) {
-    		String schema = table.getSchema(DEFAULT_SCHEMA);
+    		String schema = table.getOriginalSchema(DEFAULT_SCHEMA);
     		distinctSchemas.add(schema);
     	}
     	
@@ -754,10 +762,12 @@ public class ExportDialog extends javax.swing.JDialog {
      * @param args the argument-list to fill
      */
     public void fillCLIArgs(List<String> args) {
+    	boolean withDelete = false;
     	
     	args.add("-e");
     	args.add(insert.getText());
     	if (delete.getText().trim().length() > 0) {
+    		withDelete = true;
     		args.add("-d");
     		args.add(delete.getText().trim());
     	}
@@ -815,6 +825,23 @@ public class ExportDialog extends javax.swing.JDialog {
 			args.add(schemaMapping.toString());
 		}
 		
+		Set<Table> closure = subject.closure(true);
+		if (withDelete) {
+			Set<Table> border = new HashSet<Table>();
+    		for (Table table: closure) {
+    			for (Association a: table.associations) {
+    				if (!a.reversalAssociation.isIgnored()) {
+    					border.add(a.destination);
+    				}
+    			}
+    		}
+    		closure.addAll(border);
+    	}
+		Set<String> relevantSchemas = new HashSet<String>();
+    	for (Table table: closure) {
+    		relevantSchemas.add(table.getOriginalSchema(""));
+		}
+	
     	StringBuilder sourceSchemaMapping = new StringBuilder();
     	for (String schema: sourceSchemaMappingFields.keySet()) {
     		String to = sourceSchemaMappingFields.get(schema).getText().trim();
@@ -824,6 +851,9 @@ public class ExportDialog extends javax.swing.JDialog {
     		if (sourceSchemaMapping.length() > 0) {
     			sourceSchemaMapping.append(",");
     		}
+    		if (!relevantSchemas.contains(schema)) {
+    			to = "I/" + schema;
+    		}
     		sourceSchemaMapping.append((schema.equals(DEFAULT_SCHEMA)? "" : schema) + "=" + to);
     	}
 		if (sourceSchemaMapping.length() > 0) {
@@ -831,7 +861,6 @@ public class ExportDialog extends javax.swing.JDialog {
 			args.add(sourceSchemaMapping.toString());
 		}
     }
-    
 
     public TemporaryTableScope getTemporaryTableScope() {
     	if (scopeSession.isSelected()) {

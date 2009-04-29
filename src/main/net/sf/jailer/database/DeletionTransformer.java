@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.database.StatementExecutor.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
@@ -85,7 +86,7 @@ public class DeletionTransformer implements ResultSetReader {
     public void readCurrentRow(ResultSet resultSet) throws SQLException {
         try {
         	if (SqlUtil.dbms == DBMS.SYBASE || (SQLDialect.currentDialect != null && !SQLDialect.currentDialect.supportsInClauseForDeletes)) {
-        		String delete = "Delete from " + table.getName() + " Where ";
+        		String delete = "Delete from " + qualifiedTableName(table) + " Where ";
                 boolean firstTime = true;
                 for (Column pkColumn: table.primaryKey.getColumns()) {
                 	delete += (firstTime? "" : " and ") + pkColumn.name + "="
@@ -97,10 +98,10 @@ public class DeletionTransformer implements ResultSetReader {
 	            String deleteHead;
 	            String item;
 	            if (table.primaryKey.getColumns().size() == 1) {
-	                deleteHead = "Delete from " + table.getName() + " Where " + table.primaryKey.getColumns().get(0).name + " in (";
+	                deleteHead = "Delete from " + qualifiedTableName(table) + " Where " + table.primaryKey.getColumns().get(0).name + " in (";
 	                item = SqlUtil.toSql(SqlUtil.getObject(resultSet, quoting.unquote(table.primaryKey.getColumns().get(0).name), typeCache));
 	            } else {
-	                deleteHead = "Delete from " + table.getName() + " Where (";
+	                deleteHead = "Delete from " + qualifiedTableName(table) + " Where (";
 	                item = "(";
 	                boolean firstTime = true;
 	                for (Column pkColumn: table.primaryKey.getColumns()) {
@@ -123,6 +124,24 @@ public class DeletionTransformer implements ResultSetReader {
             throw new RuntimeException(e);
         }
     }
+
+    /**
+     * Gets qualified table name.
+     * 
+     * @param t the table
+     * @return qualified name of t
+     */
+    private String qualifiedTableName(Table t) {
+    	String schema = t.getOriginalSchema("");
+    	String mappedSchema = CommandLineParser.getInstance().getSchemaMapping().get(schema);
+    	if (mappedSchema != null) {
+    		schema = mappedSchema;
+    	}
+    	if (schema.length() == 0) {
+    		return t.getUnqualifiedName();
+    	}
+		return schema + "." + t.getUnqualifiedName();
+	}
 
     /**
      * Writes into script.
