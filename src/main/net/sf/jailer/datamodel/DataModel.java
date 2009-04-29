@@ -238,9 +238,14 @@ public class DataModel {
                 String col = line.cells.get(j).trim();
                 pk.add(Column.parse(col));
             }
-            Table table = new Table(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0)), primaryKeyFactory.createPrimaryKey(pk), upsert);
+            String mappedSchemaTableName = SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0));
+			Table table = new Table(mappedSchemaTableName, primaryKeyFactory.createPrimaryKey(pk), upsert);
 			table.setAuthor(line.cells.get(j + 1));
-            tables.put(line.cells.get(0), table);
+			table.setOriginalName(line.cells.get(0));
+			if (tables.containsKey(mappedSchemaTableName)) {
+				throw new RuntimeException("Duplicate table name '" + mappedSchemaTableName + "'");
+			}
+            tables.put(mappedSchemaTableName, table);
         }
         
         // columns
@@ -331,6 +336,7 @@ public class DataModel {
     			unqualifiedNames.add(uName);
     		}
     	}
+
     	for (Table table: getTables()) {
     		String uName = table.getUnqualifiedName();
     		String schema = table.getSchema(null);

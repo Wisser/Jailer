@@ -99,7 +99,7 @@ public class FlatXMLTransformer implements ResultSetReader {
      * @return qualified name of t
      */
     private String qualifiedTableName(Table t) {
-    	String schema = t.getSchema("");
+    	String schema = t.getOriginalSchema("");
     	String mappedSchema = CommandLineParser.getInstance().getSchemaMapping().get(schema);
     	if (mappedSchema != null) {
     		schema = mappedSchema;
@@ -109,6 +109,7 @@ public class FlatXMLTransformer implements ResultSetReader {
     	}
 		return schema + "." + t.getUnqualifiedName();
 	}
+    
 	/**
 	 * Reads result-set and writes into export-script.
 	 */

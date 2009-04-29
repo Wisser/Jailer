@@ -136,8 +136,8 @@ public class CommandLineParser {
      * @param dataModel to get tables from
      * @return set of 'tabu' tables or <code>null</code>, empty list if no tabu-file is given
      */
-    public Set<Table> getTabuTables(DataModel dataModel) {
-        return SqlUtil.readTableList(tabuTableNames, dataModel);
+    public Set<Table> getTabuTables(DataModel dataModel, Map<String, String> sourceSchemaMapping) {
+        return SqlUtil.readTableList(tabuTableNames, dataModel, sourceSchemaMapping);
     }
     
     /**

@@ -402,7 +402,7 @@ public class ExportTransformer implements ResultSetReader {
      * @return qualified name of t
      */
     private String qualifiedTableName(Table t) {
-    	String schema = t.getSchema("");
+    	String schema = t.getOriginalSchema("");
     	String mappedSchema = CommandLineParser.getInstance().getSchemaMapping().get(schema);
     	if (mappedSchema != null) {
     		schema = mappedSchema;

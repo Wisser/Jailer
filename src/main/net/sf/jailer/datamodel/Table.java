@@ -44,7 +44,7 @@ import org.xml.sax.SAXException;
  */
 public class Table extends ModelElement implements Comparable<Table> {
 
-    /**
+	/**
      * The table-name.
      */
     private final String name;
@@ -73,6 +73,11 @@ public class Table extends ModelElement implements Comparable<Table> {
      * Template for XML exports.
      */
     private String xmlTemplate = null;
+    
+    /**
+     * The original table-name. Differs from name if a source-schema-mapping has been applied to the name.
+     */
+    private String originalName;
     
     /**
      * Constructor.
@@ -384,13 +389,27 @@ public class Table extends ModelElement implements Comparable<Table> {
 	}
 
 	/**
-	 * Gets schema name of table.
+	 * Gets un-mapped schema name of table.
+	 * 
+	 * @param defaultSchema the default schema to return if table name is unqualified
+	 * @return schema name
+	 */
+	public String getOriginalSchema(String defaultSchema) {
+		int i = indexOfDot(getOriginalName());
+		if (i >= 0) {
+			return getOriginalName().substring(0, i);
+		}
+		return defaultSchema;
+	}
+
+	/**
+	 * Gets mapped schema name of table.
 	 * 
 	 * @param defaultSchema the default schema to return if table name is unqualified
 	 * @return schema name
 	 */
 	public String getSchema(String defaultSchema) {
-		int i = indexOfDot();
+		int i = indexOfDot(name);
 		if (i >= 0) {
 			return name.substring(0, i);
 		}
@@ -403,7 +422,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 	 * @return unqualified name of table
 	 */
 	public String getUnqualifiedName() {
-		int i = indexOfDot();
+		int i = indexOfDot(name);
 		if (i >= 0) {
 			return name.substring(i + 1);
 		}
@@ -413,15 +432,15 @@ public class Table extends ModelElement implements Comparable<Table> {
 	/**
 	 * Gets index of schema-table separator.
 	 */
-	private int indexOfDot() {
-		if (name.length() > 0) {
-			char c = name.charAt(0);
+	private int indexOfDot(String fullName) {
+		if (fullName.length() > 0) {
+			char c = fullName.charAt(0);
 			if (SqlUtil.LETTERS_AND_DIGITS.indexOf(c) < 0) {
 				// quoting
-				int end = name.substring(1).indexOf(c);
+				int end = fullName.substring(1).indexOf(c);
 				if (end >= 0) {
 					end += 1;
-					int i = name.substring(end).indexOf('.');
+					int i = fullName.substring(end).indexOf('.');
 					if (i >= 0) {
 						return i + end;
 					}
@@ -429,7 +448,25 @@ public class Table extends ModelElement implements Comparable<Table> {
 				}
 			}
 		}
-		return name.indexOf('.');
+		return fullName.indexOf('.');
+	}
+
+    /**
+     * Sets the original table-name. Differs from name if a source-schema-mapping has been applied to the name.
+     * 
+     * @param originalName the original name
+     */
+	public void setOriginalName(String originalName) {
+		this.originalName = originalName;
+	}
+
+	/**
+     * Gets the original table-name. Differs from name if a source-schema-mapping has been applied to the name.
+     * 
+     * @return the original name
+     */
+	public String getOriginalName() {
+		return originalName == null? name : originalName;
 	}
 
 }
