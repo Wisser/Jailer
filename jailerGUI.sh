@@ -1,5 +1,9 @@
+#!/bin/sh
+
+instdir=`dirname $0`
+cd $instdir
+
 LIB=lib
-CP=.:out:out/classes:out/jailer.jar
 
 # JDBC-driver
 # CP=$CP:<driver-jar>
@@ -17,4 +21,7 @@ CP=$CP:$LIB/prefuse.jar
 CP=$CP:$LIB/sdoc-0.5.0-beta.jar
 CP=$CP:jailer.jar
 
+# echo $CP
+
 java -cp $CP net.sf.jailer.ui.ExtractionModelFrame $@
+
