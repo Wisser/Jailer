@@ -1,21 +1,16 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html>
-<head>
-  <title>Jailer</title>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<html><head>
+  
+  <title>Jailer</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
   <meta name="description" content="Data Export Tool">
-<link rel="shortcut icon" href="favicon.ico" >
+<link rel="shortcut icon" href="favicon.ico">
 
-  <meta name="keywords"
- content="data export referential integrity java jdbc dbms">
-  <link rel="stylesheet" type="text/css"
- href="file-formats-Dateien/styles.css">
-</head>
+  <meta name="keywords" content="data export referential integrity java jdbc dbms">
+  <link rel="stylesheet" type="text/css" href="file-formats-Dateien/styles.css"></head>
+
 <body left-margin="0" top-margin="0">
 <div align="left">
-<table
- style="text-align: left; position: absolute; left: 0pt; top: 0pt;"
- border="0" cellpadding="0" cellspacing="0" height="407" width="100%">
+<table style="text-align: left; position: absolute; left: 0pt; top: 0pt;" border="0" cellpadding="0" cellspacing="0" height="407" width="100%">
   <tbody>
     <tr>
       <td colspan="2" class="bannerbackground" height="33" width="100%">
@@ -24,10 +19,7 @@
           <tr>
             <td><img src="file-formats-Dateien/logo.png" hspace="10"></td>
             <td class="slogan" width="100%">Database&nbsp;Subsetting&nbsp;Tool</td>
-            <td style="text-align: right; width: 100%;"><table border="0" cellpadding="0" cellspacing="0"><tr><td><a
- href="http://sourceforge.net/projects/jailer/"><img
- src="http://sflogo.sourceforge.net/sflogo.php?group_id=197260&amp;type=1"
- alt="SourceForge.net Logo" style="border: 0px solid ;"></a></td></tr><tr><td><a href=http://www.java.net><img src="javanet_button_90.gif" width="90" height="25" border="0" alt="java.net Member Button: 90px wide"></a></td></tr></table></td>
+            <td style="text-align: right; width: 100%;"><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td><a href="http://sourceforge.net/projects/jailer/"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=197260&amp;type=1" alt="SourceForge.net Logo" style="border: 0px solid ;"></a></td></tr><tr><td><a href="http://www.java.net"><img src="javanet_button_90.gif" alt="java.net Member Button: 90px wide" border="0" height="25" width="90"></a></td></tr></tbody></table></td>
           </tr>
         </tbody>
       </table>
@@ -35,13 +27,8 @@
     </tr>
     <tr>
       <td colspan="2" class="nav1background" height="33" width="100%">&nbsp;
-      <b><font color="#ffffff"><a href="home.htm" target="_self"
- class="tlink">Home</a> &nbsp;&nbsp;&nbsp; <a href="quicktour.htm" target="_self" class="tlink">Quick Tour</a> &nbsp;&nbsp;&nbsp;<a
- href="exporting-data.htm" target="_self" class="tlink">Tutorial</a>
-&nbsp;&nbsp;&nbsp; <a href="design.htm"
- target="_self" class="tlinkA">Documentation</a> &nbsp;&nbsp;&nbsp; <a href="http://sourceforge.net/forum/?group_id=197260" target="_self" class="tlink">Forum</a>&nbsp;&nbsp;&nbsp; <a
- href="http://sourceforge.net/project/showfiles.php?group_id=197260"
- target="_self" class="tlink">Download</a> &nbsp;&nbsp;&nbsp;
+      <b><font color="#ffffff"><a href="home.htm" target="_self" class="tlink">Home</a> &nbsp;&nbsp;&nbsp; <a href="quicktour.htm" target="_self" class="tlink">Quick Tour</a> &nbsp;&nbsp;&nbsp;<a href="exporting-data.htm" target="_self" class="tlink">Tutorial</a>
+&nbsp;&nbsp;&nbsp; <a href="design.htm" target="_self" class="tlinkA">Documentation</a> &nbsp;&nbsp;&nbsp; <a href="http://sourceforge.net/forum/?group_id=197260" target="_self" class="tlink">Forum</a>&nbsp;&nbsp;&nbsp; <a href="http://sourceforge.net/project/showfiles.php?group_id=197260" target="_self" class="tlink">Download</a> &nbsp;&nbsp;&nbsp;
 &nbsp;&nbsp;&nbsp;</font></b></td>
     </tr>
     <tr>
@@ -70,19 +57,15 @@ Formats</a></li>
       <table border="0" cellpadding="5" cellspacing="0" width="100%">
         <tbody>
           <tr>
-            <td class="content2background"><img
- style="width: 160px; height: 1px;" alt=""
- src="architecture-Dateien/vgradp.gif"></td>
+            <td class="content2background"><img style="width: 160px; height: 1px;" alt="" src="architecture-Dateien/vgradp.gif"></td>
           </tr>
         </tbody>
       </table>
       <p>&nbsp;</p>
       </td>
-      <td class="contentbackground" height="418" valign="top"
- width="86%">
+      <td class="contentbackground" height="418" valign="top" width="86%">
       <div align="right">
-      <table border="0" cellpadding="0" cellspacing="0" height="542"
- width="98%">
+      <table border="0" cellpadding="0" cellspacing="0" height="542" width="98%">
         <tbody>
           <tr>
             <td class="contentbackground" height="21" width="100%"><br>
@@ -105,8 +88,7 @@ the content of the file specified thereafter.<br>
             <h4><br>
             </h4>
             <h3>Data Model</h3>
-            <h4><a name="table-datei">Table-File<span
- style="font-family: monospace;"> (datamodel/table.csv)</span></a>&nbsp;</h4>
+            <h4><a name="table-datei">Table-File<span style="font-family: monospace;"> (datamodel/table.csv)</span></a>&nbsp;</h4>
 For each table the following information is required:
             <div class="level3">
             <ul>
@@ -121,8 +103,7 @@ N: generate <big><span style="font-family: monospace;"><font size="4">INSERT</fo
 for entities of this table<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 Y: generate '<big><span style="font-family: monospace;"><font size="4">INSERT
-IF NOT EXISTS</font></span></big>' + <big><span
- style="font-family: monospace;"><font size="4">UPDATE</font></span></big>-statements<br>
+IF NOT EXISTS</font></span></big>' + <big><span style="font-family: monospace;"><font size="4">UPDATE</font></span></big>-statements<br>
               </li>
               <li class="level1">
                 <div class="li"><span style="font-weight: bold;">Primary-Key</span>
@@ -131,18 +112,13 @@ IF NOT EXISTS</font></span></big>' + <big><span
               <li class="level1"><span style="font-weight: bold;">Author</span></li>
             </ul>
             <p>Example: </p>
-            <table class="inline" border="1" cellpadding="2"
- cellspacing="0">
+            <table class="inline" border="1" cellpadding="2" cellspacing="0">
               <tbody>
                 <tr>
                   <td style="background-color: rgb(153, 255, 255);"><strong>Name</strong></td>
-                  <td class="rightalign"
- style="background-color: rgb(153, 255, 255);"><strong>upsert</strong></td>
-                  <td class="rightalign"
- style="background-color: rgb(153, 255, 255);"><strong>primary keys</strong></td>
-                  <td
- style="vertical-align: top; background-color: rgb(153, 255, 255);"><span
- style="font-weight: bold;">author</span><br>
+                  <td class="rightalign" style="background-color: rgb(153, 255, 255);"><strong>upsert</strong></td>
+                  <td class="rightalign" style="background-color: rgb(153, 255, 255);"><strong>primary keys</strong></td>
+                  <td style="vertical-align: top; background-color: rgb(153, 255, 255);"><span style="font-weight: bold;">author</span><br>
                   </td>
                 </tr>
                 <tr>
@@ -170,8 +146,7 @@ INTEGER;HISAL INTEGER</td>
             </table>
             <br>
             </div>
-            <h4><a name="associations-datei">Associations-File<span
- style="font-family: monospace;"> (datamodel/association.csv)</span></a>&nbsp;</h4>
+            <h4><a name="associations-datei">Associations-File<span style="font-family: monospace;"> (datamodel/association.csv)</span></a>&nbsp;</h4>
 For each table the following information is required:
             <div class="level3">
             <ul>
@@ -185,11 +160,9 @@ B </span>destination </li>
               <li class="level1"><span style="font-weight: bold;">insert-first</span>
 specifies dependency:<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <big><span style="font-family: monospace;"><font
- size="4">- A</font></span></big> if B depends on A<br>
+                <big><span style="font-family: monospace;"><font size="4">- A</font></span></big> if B depends on A<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                <span style="font-family: monospace;">- </span><big><span
- style="font-family: monospace;"><font size="4">B</font></span></big>
+                <span style="font-family: monospace;">- </span><big><span style="font-family: monospace;"><font size="4">B</font></span></big>
 if A depends on B<br>
 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 - nothing if the association is not a dependency </li>
@@ -198,9 +171,7 @@ of the association. 1:1, 1:n, n:1, n:m<br>
               </li>
               <li class="level1">
                 <div class="li"><span style="font-weight: bold;">Join-Condition</span>
-of the association. Use the table-aliases <span
- style="font-style: italic;">A</span> und <span
- style="font-style: italic;">B</span>.</div>
+of the association. Use the table-aliases <span style="font-style: italic;">A</span> und <span style="font-style: italic;">B</span>.</div>
               </li>
               <li class="level1"><span style="font-weight: bold;">Name.</span>
 Optional name of the association. Names are neccessary to refer to
@@ -214,25 +185,18 @@ two tables exists.<br>
             <br>
             <p>Example:<br>
             </p>
-            <table class="inline" border="1" cellpadding="2"
- cellspacing="0">
+            <table class="inline" border="1" cellpadding="2" cellspacing="0">
               <tbody>
                 <tr>
                   <td style="background-color: rgb(153, 255, 255);"><strong>Table
 A</strong></td>
-                  <td class="rightalign"
- style="background-color: rgb(153, 255, 255);"><strong>Table B</strong></td>
-                  <td class="rightalign"
- style="background-color: rgb(153, 255, 255);"><strong>first-insert</strong></td>
-                  <td
- style="vertical-align: top; background-color: rgb(153, 255, 255);"><strong>cardinality</strong><br>
+                  <td class="rightalign" style="background-color: rgb(153, 255, 255);"><strong>Table B</strong></td>
+                  <td class="rightalign" style="background-color: rgb(153, 255, 255);"><strong>first-insert</strong></td>
+                  <td style="vertical-align: top; background-color: rgb(153, 255, 255);"><strong>cardinality</strong><br>
                   </td>
                   <td style="background-color: rgb(153, 255, 255);"><strong>join-condition</strong></td>
-                  <td
- style="vertical-align: top; background-color: rgb(153, 255, 255);"><strong>Name</strong></td>
-                  <td
- style="vertical-align: top; background-color: rgb(153, 255, 255);"><span
- style="font-weight: bold;">author</span></td>
+                  <td style="vertical-align: top; background-color: rgb(153, 255, 255);"><strong>Name</strong></td>
+                  <td style="vertical-align: top; background-color: rgb(153, 255, 255);"><span style="font-weight: bold;">author</span></td>
                 </tr>
                 <tr>
                   <td><small>DEPARTMENT</small></td>
@@ -273,225 +237,7 @@ B.LOSAL AND B.HISAL </small></td>
               </tbody>
             </table>
             </div>
-            <br>
-            <h3><a name="restriktionsmodell">Restriction Model</a></h3>
-            <a name="restriktionsmodell"></a>&nbsp;Restricts some
-associations in order to control the exportation (and deletion).
-            <div class="level2">
-            <p>Columns:<br>
-            </p>
-            <ul>
-              <li><span style="font-weight: bold;">from</span> source
-table or the association-name </li>
-              <li><span style="font-weight: bold;">to</span>
-destination table.Empty if association-name is given </li>
-              <li class="level1"><span style="font-weight: bold;">restriction-condition</span>
-extends the join-condition, <big><span style="font-family: monospace;"><font
- size="4">ignore</font></span></big> for unsatisfiable condition </li>
-            </ul>
-Note: it is not possible to restrict dependencies!<br>
-            <p><br>
-Example: </p>
-            <table class="inline" border="1" cellpadding="2"
- cellspacing="0">
-              <tbody>
-                <tr>
-                  <td style="background-color: rgb(153, 255, 255);"><strong>from</strong></td>
-                  <td class="rightalign"
- style="background-color: rgb(153, 255, 255);"><strong>to</strong></td>
-                  <td class="rightalign"
- style="background-color: rgb(153, 255, 255);"><strong>restriction-condition</strong></td>
-                </tr>
-                <tr>
-                  <td>SUBORDINATES</td>
-                  <td class="rightalign"><br>
-                  </td>
-                  <td class="rightalign">A.NAME='SCOTT'</td>
-                </tr>
-                <tr>
-                  <td>DEPARTMENT</td>
-                  <td class="rightalign">*</td>
-                  <td class="rightalign">ignore</td>
-                </tr>
-                <tr>
-                  <td>SALARYGRADE</td>
-                  <td class="rightalign">EMPLOYEE</td>
-                  <td class="rightalign">ignore</td>
-                </tr>
-              </tbody>
-            </table>
-            </div>
-            <br>
-            <br>
-            <h3><a name="extraktionsmodell">Extraction Model</a></h3>
-            <a name="extraktionsmodell"></a>&nbsp;Defines the subject
-set and specifies which restriction models to take into account.<br>
-            <div class="level2">
-            <p>Columns:<br>
-            </p>
-            <ul>
-              <li class="level1">
-                <div class="li"><span style="font-weight: bold;">subject</span>
-the subject table</div>
-              </li>
-              <li class="level1">
-                <div class="li"><span style="font-weight: bold;">condition</span>
-specifies the subject set</div>
-              </li>
-              <li class="level1"><span style="font-weight: bold;">limit</span>
-limit of the number of subject entities. Optional.<br>
-              </li>
-              <li class="level1">
-                <div class="li"><span style="font-weight: bold;">restrictions</span>
-';'-separated list of restriction model files</div>
-              </li>
-            </ul>
-            <br>
-            <p>Example: </p>
-            <table class="inline" border="1" cellpadding="2"
- cellspacing="0">
-              <tbody>
-                <tr>
-                  <td class="leftalign"
- style="background-color: rgb(153, 255, 255);"><strong>subject</strong></td>
-                  <td class="leftalign"
- style="background-color: rgb(153, 255, 255);"><strong>condition</strong></td>
-                  <td class="leftalign"
- style="background-color: rgb(153, 255, 255);"><strong>limit</strong></td>
-                  <td style="background-color: rgb(153, 255, 255);"><strong>restrictions</strong></td>
-                </tr>
-                <tr>
-                  <td>EMPLOYEE</td>
-                  <td class="rightalign">NAME='SCOTT'</td>
-                  <td class="rightalign"><br>
-                  </td>
-                  <td class="rightalign">default-restrictions.csv;
-no-subordinates.csv</td>
-                </tr>
-                <tr>
-                  <td>DEPARTMENT</td>
-                  <td class="rightalign">1=1</td>
-                  <td class="rightalign">10<br>
-                  </td>
-                  <td class="rightalign">default-restrictions.csv</td>
-                </tr>
-              </tbody>
-            </table>
-            </div>
-            <h2><br>
-            </h2>
-            <h3>Domain Model</h3>
-Each file named <span style="font-family: monospace;"><span
- style="font-style: italic;">&lt;domainname&gt;</span>.csv</span> in
-the directory <span style="font-family: monospace;">domainmodel</span>
-defines a domain of tables named <span style="font-style: italic;">domainname</span>.<br>
-            <p>The first row is a ';'-separated list of sub-domains.
-Don't forget the single ';' if the domain has no sub-domains!<br>
-            </p>
-            <p>Columns:<br>
-            </p>
-            <ul>
-              <li><span style="font-weight: bold;">table</span> name of
-domain's tables (or composites)<br>
-              </li>
-            </ul>
-            <p><br>
-Example:</p>
-            <p><span style="font-family: monospace;">DEPARTMENTS.cvs</span><br>
-            </p>
-            <table class="inline" border="1" cellpadding="2"
- cellspacing="0">
-              <tbody>
-                <tr>
-                  <td class="leftalign"
- style="background-color: rgb(153, 255, 255);"><strong>table</strong></td>
-                </tr>
-                <tr>
-                  <td>;</td>
-                </tr>
-                <tr>
-                  <td>DEPARTMENTS</td>
-                </tr>
-              </tbody>
-            </table>
-            <br>
-            <span style="font-family: monospace;"><br>
-SALARY_GRADES.csv<br>
-            <br>
-            </span>
-            <table class="inline" border="1" cellpadding="2"
- cellspacing="0">
-              <tbody>
-                <tr>
-                  <td class="leftalign"
- style="background-color: rgb(153, 255, 255);"><strong>table</strong></td>
-                </tr>
-                <tr>
-                  <td>; <br>
-                  </td>
-                </tr>
-                <tr>
-                  <td>DEPARTMENT</td>
-                </tr>
-              </tbody>
-            </table>
-            <br>
-            <br>
-            <span style="font-family: monospace;">EMPLOYEES.csv</span>
-            <p></p>
-            <table class="inline" border="1" cellpadding="2"
- cellspacing="0">
-              <tbody>
-                <tr>
-                  <td class="leftalign"
- style="background-color: rgb(153, 255, 255);"><strong>table</strong></td>
-                </tr>
-                <tr>
-                  <td>DEPARTMENTS; SALARY_GRADES<br>
-                  </td>
-                </tr>
-                <tr>
-                  <td>EMPLOYEE</td>
-                </tr>
-              </tbody>
-            </table>
-            <br>
-            <br>
-            <h3>Composites Model<br>
-            </h3>
-The file <span style="font-family: monospace;">domainmodel/composites.csv</span>
-defines all composites.<br>
-            <p>Columns:<br>
-            </p>
-            <ul>
-              <li><span style="font-weight: bold;">main table</span>
-the main table of the composite </li>
-              <li><span style="font-weight: bold;">component 1</span>
-the first component table </li>
-              <li style="font-weight: bold;">... </li>
-              <li><span style="font-weight: bold;">component n</span>
-the last component table </li>
-            </ul>
-            <p><br>
-Example:</p>
-            <table class="inline" border="1" cellpadding="2"
- cellspacing="0">
-              <tbody>
-                <tr>
-                  <td style="background-color: rgb(153, 255, 255);"><strong>main
-table<br>
-                  </strong></td>
-                  <td class="rightalign"
- style="background-color: rgb(153, 255, 255);"><strong>component 1</strong><br>
-                  </td>
-                </tr>
-                <tr>
-                  <td>EMPLOYEE</td>
-                  <td class="rightalign">EMPLOYEE_HISTORY </td>
-                </tr>
-              </tbody>
-            </table>
-            </td>
+            <br><div class="level2"><br></div><br><div class="level2"><br></div><span style="font-family: monospace;"></span><span style="font-family: monospace;"></span><br><br></td>
           </tr>
         </tbody>
       </table>
@@ -508,5 +254,4 @@ table<br>
   </tbody>
 </table>
 </div>
-</body>
-</html>
+</body></html>
