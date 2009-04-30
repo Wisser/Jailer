@@ -133,7 +133,7 @@ public class DeletionTransformer implements ResultSetReader {
      */
     private String qualifiedTableName(Table t) {
     	String schema = t.getOriginalSchema("");
-    	String mappedSchema = CommandLineParser.getInstance().getSchemaMapping().get(schema);
+    	String mappedSchema = CommandLineParser.getInstance().getSourceSchemaMapping().get(schema);
     	if (mappedSchema != null) {
     		schema = mappedSchema;
     	}
