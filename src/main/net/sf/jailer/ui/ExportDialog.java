@@ -17,8 +17,6 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Cursor;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -27,6 +25,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -39,7 +39,6 @@ import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.datamodel.DataModel.NoPrimaryKeyException;
 
 /**
  * "Data Export" Dialog.
@@ -132,22 +131,7 @@ public class ExportDialog extends javax.swing.JDialog {
     	initSourceSchemaMapping(dataModel, fields, defaults);
         
         theSettings = new Settings(".exportdata.ui", fields);
-        selectInsert.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                String fn = UIUtil.choseFile(null, ".", scriptFormat.getFileChooserTitle(), scriptFormat.getFileExtension(), ExportDialog.this, true, false);
-                if (fn != null) {
-                    insert.setText(fn);
-                }
-            }
-        });
-        selectDelete.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                String fn = UIUtil.choseFile(null, ".", "SQL Delete Script", ".sql", ExportDialog.this, true, true);
-                if (fn != null) {
-                    delete.setText(fn);
-                }
-            }
-        });
+        
         theSettings.restore("default");
     	for (JTextField field: defaults.keySet()) {
     		if (field.getText().length() == 0) {
@@ -170,6 +154,11 @@ public class ExportDialog extends javax.swing.JDialog {
         
         initScopeButtons(statementExecutor);
 
+        selectInsertFile.setText("");
+        selectInsertFile.setIcon(loadIcon);
+        selectDeleteFile.setText("");
+        selectDeleteFile.setIcon(loadIcon);
+        
         pack();
         UIUtil.initPeer();
         setVisible(true);
@@ -373,9 +362,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         insert = new javax.swing.JTextField();
-        selectInsert = new javax.swing.JButton();
         delete = new javax.swing.JTextField();
-        selectDelete = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         threads = new javax.swing.JTextField();
         jLabel10 = new javax.swing.JLabel();
@@ -399,6 +386,8 @@ public class ExportDialog extends javax.swing.JDialog {
         scopeSession = new javax.swing.JRadioButton();
         scopeTransaction = new javax.swing.JRadioButton();
         jLabel9 = new javax.swing.JLabel();
+        selectInsertFile = new javax.swing.JLabel();
+        selectDeleteFile = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Data Export");
@@ -471,7 +460,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 1, 0);
         jPanel1.add(where, gridBagConstraints);
 
         exportLabel.setText(" Into*");
@@ -506,32 +495,15 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 20;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 1, 0);
         jPanel1.add(insert, gridBagConstraints);
-
-        selectInsert.setFont(new java.awt.Font("Dialog", 0, 10));
-        selectInsert.setText("...");
-        selectInsert.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                selectInsertActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 20;
-        jPanel1.add(selectInsert, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 40;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 1, 0);
         jPanel1.add(delete, gridBagConstraints);
-
-        selectDelete.setFont(new java.awt.Font("Dialog", 0, 10));
-        selectDelete.setText("...");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 40;
-        jPanel1.add(selectDelete, gridBagConstraints);
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
@@ -554,7 +526,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 0, 0);
         jPanel3.add(rowsPerThread, gridBagConstraints);
 
         jLabel17.setText("           ");
@@ -720,13 +692,34 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 58;
         jPanel1.add(jLabel9, gridBagConstraints);
 
+        selectInsertFile.setText("jLabel21");
+        selectInsertFile.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                selectInsertFileMouseClicked(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
+        jPanel1.add(selectInsertFile, gridBagConstraints);
+
+        selectDeleteFile.setText("jLabel21");
+        selectDeleteFile.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                selectDeleteFileMouseClicked(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 40;
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
+        jPanel1.add(selectDeleteFile, gridBagConstraints);
+
         getContentPane().add(jPanel1, "card2");
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void selectInsertActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectInsertActionPerformed
-    }//GEN-LAST:event_selectInsertActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         for (JTextField f: schemaMappingFields.values()) {
@@ -751,6 +744,20 @@ public class ExportDialog extends javax.swing.JDialog {
 
     private void scopeGlobalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeGlobalActionPerformed
     }//GEN-LAST:event_scopeGlobalActionPerformed
+
+    private void selectInsertFileMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_selectInsertFileMouseClicked
+    	String fn = UIUtil.choseFile(null, ".", scriptFormat.getFileChooserTitle(), scriptFormat.getFileExtension(), ExportDialog.this, true, false);
+        if (fn != null) {
+            insert.setText(fn);
+        }
+    }//GEN-LAST:event_selectInsertFileMouseClicked
+
+    private void selectDeleteFileMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_selectDeleteFileMouseClicked
+    	String fn = UIUtil.choseFile(null, ".", "SQL Delete Script", ".sql", ExportDialog.this, true, true);
+        if (fn != null) {
+            delete.setText(fn);
+        }
+    }//GEN-LAST:event_selectDeleteFileMouseClicked
     
     public boolean isOk() {
 		return isOk;
@@ -908,8 +915,8 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JRadioButton scopeGlobal;
     private javax.swing.JRadioButton scopeSession;
     private javax.swing.JRadioButton scopeTransaction;
-    private javax.swing.JButton selectDelete;
-    private javax.swing.JButton selectInsert;
+    private javax.swing.JLabel selectDeleteFile;
+    private javax.swing.JLabel selectInsertFile;
     public javax.swing.JPanel sourceSchemaMappingPanel;
     private javax.swing.JLabel subjectTable;
     private javax.swing.JTextField threads;
@@ -917,4 +924,15 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JTextField where;
     // End of variables declaration//GEN-END:variables
     
+    private Icon loadIcon;
+	{
+		String dir = "/net/sf/jailer/resource";
+		
+		// load images
+		try {
+			loadIcon = new ImageIcon(getClass().getResource(dir + "/load.png"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }
