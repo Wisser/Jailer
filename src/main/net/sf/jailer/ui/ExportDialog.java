@@ -154,6 +154,24 @@ public class ExportDialog extends javax.swing.JDialog {
         
         initScopeButtons(statementExecutor);
 
+        selectInsertFile.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+            	selectInsertFile.setEnabled(false);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+            	selectInsertFile.setEnabled(true);
+           }
+        });
+        
+        selectDeleteFile.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+            	selectDeleteFile.setEnabled(false);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+            	selectDeleteFile.setEnabled(true);
+           }
+        });
+        
         selectInsertFile.setText("");
         selectInsertFile.setIcon(loadIcon);
         selectDeleteFile.setText("");
