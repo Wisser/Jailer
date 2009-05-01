@@ -38,6 +38,7 @@ import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
+import javax.swing.border.Border;
 
 import net.sf.jailer.database.StatementExecutor;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
@@ -126,6 +127,30 @@ public class DbConnectionDialog extends javax.swing.JDialog {
                     jar2.setText(fn);
                 }
             }
+        });
+        load1.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+            	load1.setEnabled(false);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+            	load1.setEnabled(true);
+           }
+        });
+        load2.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+            	load2.setEnabled(false);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+            	load2.setEnabled(true);
+           }
+        });
+        helpjdbc.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+            	helpjdbc.setEnabled(false);
+            }
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+            	helpjdbc.setEnabled(true);
+           }
         });
         helpjdbc.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -362,6 +387,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         jPanel1.add(password, gridBagConstraints);
 
         load1.setText("load");
+        load1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 20;
