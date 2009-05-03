@@ -243,7 +243,9 @@ public class DataModel {
 			table.setAuthor(line.cells.get(j + 1));
 			table.setOriginalName(line.cells.get(0));
 			if (tables.containsKey(mappedSchemaTableName)) {
-				throw new RuntimeException("Duplicate table name '" + mappedSchemaTableName + "'");
+				if (additionalTablesFile == null) {
+					throw new RuntimeException("Duplicate table name '" + mappedSchemaTableName + "'");
+				}
 			}
             tables.put(mappedSchemaTableName, table);
         }
