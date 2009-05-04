@@ -29,7 +29,7 @@ public interface StatisticRenovator {
      * 
      * @param statementExecutor for execution of SQL-statements
      */
-    void renew(StatementExecutor statementExecutor) throws Exception;
+    void renew(Session statementExecutor) throws Exception;
     
 }
 

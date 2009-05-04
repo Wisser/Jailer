@@ -26,8 +26,8 @@ import java.util.Set;
 
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
-import net.sf.jailer.database.StatementExecutor;
-import net.sf.jailer.database.StatementExecutor.ResultSetReader;
+import net.sf.jailer.database.Session;
+import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
@@ -73,7 +73,7 @@ public class EntityGraph {
     /**
      * For executing SQL-Statements.
      */
-    public final StatementExecutor statementExecutor;
+    public final Session statementExecutor;
 
 	/**
      * The logger.
@@ -92,7 +92,7 @@ public class EntityGraph {
      * @param statementExecutor for executing SQL-Statements
      * @param universalPrimaryKey the universal primary key
      */
-    private EntityGraph(int graphID, StatementExecutor statementExecutor, PrimaryKey universalPrimaryKey) {
+    private EntityGraph(int graphID, Session statementExecutor, PrimaryKey universalPrimaryKey) {
         this.graphID = graphID;
         this.statementExecutor = statementExecutor;
         this.universalPrimaryKey = universalPrimaryKey;
@@ -106,7 +106,7 @@ public class EntityGraph {
      * @param universalPrimaryKey the universal primary key
      * @return the newly created entity-graph
      */
-    public static EntityGraph create(int graphID, StatementExecutor statementExecutor, PrimaryKey universalPrimaryKey) {
+    public static EntityGraph create(int graphID, Session statementExecutor, PrimaryKey universalPrimaryKey) {
         EntityGraph entityGraph = new EntityGraph(graphID, statementExecutor, universalPrimaryKey);
         try {
             statementExecutor.executeUpdate("Insert into " + SQLDialect.dmlTableReference(ENTITY_GRAPH, statementExecutor) + "(id, age) values (" + graphID + ", 1)");
@@ -126,7 +126,7 @@ public class EntityGraph {
      * @param statementExecutor for executing SQL-Statements
      * @return the newly created entity-graph
      */
-    public static EntityGraph copy(EntityGraph graph, int graphID, StatementExecutor statementExecutor) throws SQLException {
+    public static EntityGraph copy(EntityGraph graph, int graphID, Session statementExecutor) throws SQLException {
         EntityGraph entityGraph = create(graphID, statementExecutor, graph.universalPrimaryKey);
         statementExecutor.executeUpdate(
                 "Insert into " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + "(r_entitygraph, " + graph.universalPrimaryKey.columnList(null) + ", birthday, type) " +
@@ -142,11 +142,11 @@ public class EntityGraph {
      * @param statementExecutor for executing SQL-Statements
      * @return the entity-graph
      */
-    public static EntityGraph find(int graphID, StatementExecutor statementExecutor, PrimaryKey universalPrimaryKey) throws SQLException {
+    public static EntityGraph find(int graphID, Session statementExecutor, PrimaryKey universalPrimaryKey) throws SQLException {
         EntityGraph entityGraph = new EntityGraph(graphID, statementExecutor, universalPrimaryKey);
         final boolean[] found = new boolean[1];
         found[0] = false;
-        statementExecutor.executeQuery("Select * From " + SQLDialect.dmlTableReference(ENTITY_GRAPH, statementExecutor) + "Where id=" + graphID + "", new StatementExecutor.ResultSetReader() {
+        statementExecutor.executeQuery("Select * From " + SQLDialect.dmlTableReference(ENTITY_GRAPH, statementExecutor) + "Where id=" + graphID + "", new Session.ResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 found[0] = true;
             }
@@ -176,7 +176,7 @@ public class EntityGraph {
     public int getAge() throws SQLException {
         final int[] age = new int[1];
         age[0] = -1;
-        statementExecutor.executeQuery("Select age From " + SQLDialect.dmlTableReference(ENTITY_GRAPH, statementExecutor) + " Where id=" + graphID + "", new StatementExecutor.ResultSetReader() {
+        statementExecutor.executeQuery("Select age From " + SQLDialect.dmlTableReference(ENTITY_GRAPH, statementExecutor) + " Where id=" + graphID + "", new Session.ResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 age[0] = resultSet.getInt(1);
             }
@@ -203,7 +203,7 @@ public class EntityGraph {
     public long getSize() throws SQLException {
         final int[] size = new int[1];
         size[0] = -1;
-        statementExecutor.executeQuery("Select count(*) From " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " Where r_entitygraph=" + graphID + " and birthday >= 0", new StatementExecutor.ResultSetReader() {
+        statementExecutor.executeQuery("Select count(*) From " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " Where r_entitygraph=" + graphID + " and birthday >= 0", new Session.ResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 size[0] = resultSet.getInt(1);
             }
@@ -353,7 +353,7 @@ public class EntityGraph {
     public Set<Integer> getDistinctDependencyIDs() throws SQLException {
         String select = "Select distinct depend_id from " + SQLDialect.dmlTableReference(DEPENDENCY, statementExecutor) + " Where r_entitygraph=" + graphID;
         final Set<Integer> ids = new HashSet<Integer>();
-        statementExecutor.executeQuery(select, new StatementExecutor.ResultSetReader() {
+        statementExecutor.executeQuery(select, new Session.ResultSetReader() {
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
 				ids.add(resultSet.getInt(1));
 			}
@@ -420,7 +420,7 @@ public class EntityGraph {
      * @param table the table
      * @param orderByPK if <code>true</code>, result will be ordered by primary keys
      */
-    public void readMarkedEntities(Table table, StatementExecutor.ResultSetReader reader, boolean orderByPK) throws SQLException {
+    public void readMarkedEntities(Table table, Session.ResultSetReader reader, boolean orderByPK) throws SQLException {
     	readMarkedEntities(table, reader, filteredSelectionClause(table), orderByPK);
     }
     
@@ -431,7 +431,7 @@ public class EntityGraph {
      * @param table the table
      * @param orderByPK if <code>true</code>, result will be ordered by primary keys
      */
-    public void readMarkedEntities(Table table, StatementExecutor.ResultSetReader reader, String selectionSchema, boolean orderByPK) throws SQLException {
+    public void readMarkedEntities(Table table, Session.ResultSetReader reader, String selectionSchema, boolean orderByPK) throws SQLException {
         String orderBy = "";
         if (orderByPK) {
         	orderBy = " order by " + table.primaryKey.columnList("T.");
@@ -474,7 +474,7 @@ public class EntityGraph {
      * @param table the table
      * @param orderByPK if <code>true</code>, result will be ordered by primary keys
      */
-    public void readEntities(Table table, StatementExecutor.ResultSetReader reader, boolean orderByPK) throws SQLException {
+    public void readEntities(Table table, Session.ResultSetReader reader, boolean orderByPK) throws SQLException {
         statementExecutor.executeQuery(
                 "Select " + filteredSelectionClause(table) + " From " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " E join " + table.getName() + " T on " +
                 pkEqualsEntityID(table, "T", "E") +
@@ -581,7 +581,7 @@ public class EntityGraph {
         statementExecutor.executeQuery(
                 "Select count(*) from " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " E " +
                 "Where E.birthday>=0 and E.r_entitygraph=" + graphID + " and E.type='" + table.getName() + "'",
-                new StatementExecutor.AbstractResultSetReader() {
+                new Session.AbstractResultSetReader() {
                     public void readCurrentRow(ResultSet resultSet) throws SQLException {
                         count[0] = resultSet.getLong(1);
                     }
@@ -645,7 +645,7 @@ public class EntityGraph {
                 	statementExecutor.executeUpdate(remove);
                 } catch (SQLException e) {
                 	// postgreSQL
-                	StatementExecutor._log.debug("failed, retry without alias (" + e.getMessage() + ")");
+                	Session._log.debug("failed, retry without alias (" + e.getMessage() + ")");
                 	remove = "Update " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " set birthday=-1 Where " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + ".r_entitygraph=" + graphID + " and " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + ".type='" + association.destination.getName() + "' " +
                     "and exists (Select * from " + SQLDialect.dmlTableReference(ENTITY_SET_ELEMENT, statementExecutor) + " S where S.set_id=" + setId + " and " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + ".type=S.type and " + sEqualsEWoAlias + ")";
                 	statementExecutor.executeUpdate(remove);
@@ -870,7 +870,7 @@ public class EntityGraph {
         final List<String> statistic = new ArrayList<String>();
         final long[] total = new long[1];
         total[0] = 0;
-        statementExecutor.executeQuery("Select type, count(*) From " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " Where r_entitygraph=" + graphID + " and birthday>=0 group by type", new StatementExecutor.AbstractResultSetReader() {
+        statementExecutor.executeQuery("Select type, count(*) From " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " Where r_entitygraph=" + graphID + " and birthday>=0 group by type", new Session.AbstractResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 String type = resultSet.getString(1);
                 Table table = dataModel.getTable(type);

@@ -27,7 +27,7 @@ import java.util.Map;
 
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
-import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.database.TemporaryTableManager;
 import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.datamodel.Column;
@@ -47,9 +47,9 @@ public class DDLCreator {
      * Creates the DDL for the working-tables.
      */
     public static boolean createDDL(String driverClass, String dbUrl, String user, String password, TemporaryTableScope temporaryTableScope) throws Exception {
-    	StatementExecutor statementExecutor = null;
+    	Session statementExecutor = null;
         if (driverClass != null) {
-        	statementExecutor = new StatementExecutor(driverClass, dbUrl, user, password);
+        	statementExecutor = new Session(driverClass, dbUrl, user, password);
         }
         return createDDL(statementExecutor, temporaryTableScope);
     }
@@ -57,7 +57,7 @@ public class DDLCreator {
     /**
      * Creates the DDL for the working-tables.
      */
-    public static boolean createDDL(StatementExecutor statementExecutor, TemporaryTableScope temporaryTableScope) throws Exception {
+    public static boolean createDDL(Session statementExecutor, TemporaryTableScope temporaryTableScope) throws Exception {
     	try {
 			return createDDL(statementExecutor, temporaryTableScope, 0);
 		} catch (SQLException e) {
@@ -76,7 +76,7 @@ public class DDLCreator {
     /**
      * Creates the DDL for the working-tables.
      */
-    private static boolean createDDL(StatementExecutor statementExecutor, TemporaryTableScope temporaryTableScope, int indexType) throws Exception {
+    private static boolean createDDL(Session statementExecutor, TemporaryTableScope temporaryTableScope, int indexType) throws Exception {
         DataModel dataModel = new DataModel();
 
         String template = "script" + File.separator + "ddl-template.sql";
@@ -173,12 +173,12 @@ public class DDLCreator {
 	public static boolean isUptodate(String driverClass, String dbUrl, String user, String password) {
 		try {
 			if (driverClass != null) {
-	        	final StatementExecutor statementExecutor = new StatementExecutor(driverClass, dbUrl, user, password);
+	        	final Session statementExecutor = new Session(driverClass, dbUrl, user, password);
 	        	try {
 	        		final boolean[] uptodate = new boolean[] { false };
 	        		final DataModel datamodel = new DataModel();
 	        		final Map<String, String> typeReplacement = Configuration.forDbms(statementExecutor).getTypeReplacement();
-	        		statementExecutor.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE_ + " where jversion='" + Jailer.VERSION + "' and jkey='upk'", new StatementExecutor.ResultSetReader() {
+	        		statementExecutor.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE_ + " where jversion='" + Jailer.VERSION + "' and jkey='upk'", new Session.ResultSetReader() {
 						public void readCurrentRow(ResultSet resultSet) throws SQLException {
 							String contraint = statementExecutor.dbms == DBMS.SYBASE? " NULL" : "";
 							String universalPrimaryKey = datamodel.getUniversalPrimaryKey().toSQL(null, contraint, typeReplacement);
@@ -209,11 +209,11 @@ public class DDLCreator {
 	public static String getTableInConflict(String driverClass, String dbUrl, String user, String password) {
 		try {
 			if (driverClass != null) {
-	        	StatementExecutor statementExecutor = new StatementExecutor(driverClass, dbUrl, user, password);
+	        	Session statementExecutor = new Session(driverClass, dbUrl, user, password);
 	        	statementExecutor.setSilent(true);
 	        	try {
 	        		final boolean[] uptodate = new boolean[] { false };
-	        		statementExecutor.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE_ + " where jkey='magic' and jvalue='837065098274756382534403654245288'", new StatementExecutor.ResultSetReader() {
+	        		statementExecutor.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE_ + " where jkey='magic' and jvalue='837065098274756382534403654245288'", new Session.ResultSetReader() {
 						public void readCurrentRow(ResultSet resultSet) throws SQLException {
 							uptodate[0] = true;
 						}
@@ -230,7 +230,7 @@ public class DDLCreator {
 	    		// look for jailer tables
 	    		for (String table: SqlUtil.JAILER_TABLES) {
 		        	try {
-		        		statementExecutor.executeQuery("Select * from " + table, new StatementExecutor.ResultSetReader() {
+		        		statementExecutor.executeQuery("Select * from " + table, new Session.ResultSetReader() {
 							public void readCurrentRow(ResultSet resultSet) throws SQLException {
 							}
 							public void close() {

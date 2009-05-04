@@ -46,10 +46,10 @@ import javax.xml.transform.stream.StreamResult;
 
 import net.sf.jailer.database.DeletionTransformer;
 import net.sf.jailer.database.ExportTransformer;
-import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.database.StatisticRenovator;
 import net.sf.jailer.database.TemporaryTableScope;
-import net.sf.jailer.database.StatementExecutor.ResultSetReader;
+import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
@@ -582,7 +582,7 @@ public class Jailer {
 	 */
 	public void writeEntities(String sqlScriptFile,
 			final ScriptType scriptType, final Set<Table> progress,
-			StatementExecutor statementExecutor) throws Exception {
+			Session statementExecutor) throws Exception {
 		_log.info("writing file '" + sqlScriptFile + "'...");
 
 		OutputStream outputStream = new FileOutputStream(sqlScriptFile);
@@ -746,7 +746,7 @@ public class Jailer {
 	 * @param progress set of all tables from which rows are collected
 	 * @param statementExecutor for executing SQL statements
 	 */
-	private void removeSingleRowCycles(Set<Table> progress, StatementExecutor statementExecutor) throws Exception {
+	private void removeSingleRowCycles(Set<Table> progress, Session statementExecutor) throws Exception {
 		for (Table table: progress) {
 			boolean hasReflexiveAssociation = false;
 			for (Association a: table.associations) {
@@ -770,7 +770,7 @@ public class Jailer {
 	 *            set of tables to account for extraction
 	 */
 	public void writeEntitiesAsXml(String xmlFile, final Set<Table> progress,
-			final Set<Table> subjects, StatementExecutor statementExecutor)
+			final Set<Table> subjects, Session statementExecutor)
 			throws Exception {
 		_log.info("writing file '" + xmlFile + "'...");
 
@@ -870,7 +870,7 @@ public class Jailer {
 			throws SQLException {
 		for (Table table : cyclicAggregatedTables) {
 			entityGraph.readNonTraversedDependencies(table,
-					new StatementExecutor.ResultSetReader() {
+					new Session.ResultSetReader() {
 						public void readCurrentRow(ResultSet resultSet)
 								throws SQLException {
 							String message = "Can't export all rows from table '"
@@ -974,7 +974,7 @@ public class Jailer {
 	/**
 	 * Runs script for updating the DB-statistics.
 	 */
-	private synchronized void runstats(StatementExecutor statementExecutor,
+	private synchronized void runstats(Session statementExecutor,
 			boolean force) throws Exception {
 		if (force
 				|| lastRunstats == 0
@@ -1023,7 +1023,7 @@ public class Jailer {
 	public static boolean jailerMain(String[] args, StringBuffer warnings)
 			throws Exception {
 		statistic.setLength(0);
-		StatementExecutor.closeTemporaryTableSession();
+		Session.closeTemporaryTableSession();
 
 		try {
 			if (Configuration.getDoMinimizeUPK()) {
@@ -1063,7 +1063,7 @@ public class Jailer {
 					CommandLineParser.printUsage();
 				} else {
 					SqlScriptExecutor.executeScript(clp.arguments.get(1),
-							new StatementExecutor(clp.arguments.get(2),
+							new Session(clp.arguments.get(2),
 									clp.arguments.get(3), clp.arguments.get(4),
 									clp.arguments.get(5)));
 				}
@@ -1127,7 +1127,7 @@ public class Jailer {
 			_log.error("working directory is " + workingDirectory);
 			throw e;
 		} finally {
-			StatementExecutor.closeTemporaryTableSession();
+			Session.closeTemporaryTableSession();
 		}
 	}
 
@@ -1164,7 +1164,7 @@ public class Jailer {
 		_log.info("exporting '" + extractionModelFileName + "' to '"
 				+ scriptFile + "'");
 
-		StatementExecutor statementExecutor = new StatementExecutor(
+		Session statementExecutor = new Session(
 				driverClassName, dbUrl, dbUser, dbPassword, CommandLineParser
 						.getInstance().getTemporaryTableScope());
 		if (CommandLineParser.getInstance().getTemporaryTableScope() != TemporaryTableScope.GLOBAL) {
@@ -1289,7 +1289,7 @@ public class Jailer {
 	 *            never deletes entities of one of this tables
 	 */
 	private void deleteEntities(Set<Table> subjects, Set<Table> allTables,
-			StatementExecutor statementExecutor, Set<Table> tabuTables)
+			Session statementExecutor, Set<Table> tabuTables)
 			throws Exception {
 		appendCommentHeader("");
 		appendCommentHeader("Tabu-tables: "

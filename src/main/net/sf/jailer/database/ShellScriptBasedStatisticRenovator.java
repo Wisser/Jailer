@@ -54,7 +54,7 @@ public class ShellScriptBasedStatisticRenovator implements StatisticRenovator {
      * 
      * @param statementExecutor for execution of SQL-statements
      */
-    public void renew(StatementExecutor statementExecutor) throws Exception {
+    public void renew(Session statementExecutor) throws Exception {
         String theScriptInvocation = getScriptInvocation(statementExecutor);
         _log.info("executing: " + theScriptInvocation);
         Process process = Runtime.getRuntime().exec(theScriptInvocation);
@@ -73,7 +73,7 @@ public class ShellScriptBasedStatisticRenovator implements StatisticRenovator {
      * @param statementExecutor for execution of SQL-statements
      * @return shell-invocation
      */
-    protected String getScriptInvocation(StatementExecutor statementExecutor) throws Exception {
+    protected String getScriptInvocation(Session statementExecutor) throws Exception {
         return scriptInvocation;
     }
 

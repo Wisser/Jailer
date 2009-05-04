@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.sf.jailer.CommandLineParser;
-import net.sf.jailer.database.StatementExecutor.ResultSetReader;
+import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.Quoting;

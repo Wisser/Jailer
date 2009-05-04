@@ -44,7 +44,7 @@ import net.sf.jailer.DDLCreator;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.database.ExportTransformer;
-import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
@@ -128,6 +128,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      */
     private void updateMenuItems() {
 		connectDb.setSelected(dbConnectionDialog.isConnected);
+		if (dbConnectionDialog.isConnected) {
+			extractionModelEditor.connectivityState.setText(dbConnectionDialog.user.getText().trim() + " at " + (dbConnectionDialog.dbUrl.getText().trim()));
+		} else {
+			extractionModelEditor.connectivityState.setText("offline");
+		}
 	}
 
     /**
@@ -916,11 +921,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        	args.add("export");
 			        	args.add(extractionModelEditor.extractionModelFile);
 			        	dbConnectionDialog.addDbArgs(args);
-			        	StatementExecutor.closeTemporaryTableSession();
-			        	StatementExecutor statementExecutor = new StatementExecutor(dbConnectionDialog.driverClass.getText().trim(), dbConnectionDialog.dbUrl.getText().trim(), dbConnectionDialog.user.getText().trim(), dbConnectionDialog.getPassword());
+			        	Session.closeTemporaryTableSession();
+			        	Session statementExecutor = new Session(dbConnectionDialog.driverClass.getText().trim(), dbConnectionDialog.dbUrl.getText().trim(), dbConnectionDialog.user.getText().trim(), dbConnectionDialog.getPassword());
 			        	ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), statementExecutor);
 			        	statementExecutor.shutDown();
-			        	StatementExecutor.closeTemporaryTableSession();
+			        	Session.closeTemporaryTableSession();
 			        	if (exportDialog.isOk()) {
 			        		exportDialog.fillCLIArgs(args);
 			        		File excludeFromDeletion = new File(DataModel.getExcludeFromDeletionFile());

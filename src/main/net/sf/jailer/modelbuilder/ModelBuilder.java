@@ -31,7 +31,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.jailer.Configuration;
-import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.Column;
@@ -66,7 +66,7 @@ public class ModelBuilder {
     /**
      * The statement executor for executing SQL statements.
      */
-    private static StatementExecutor statementExecutor;
+    private static Session statementExecutor;
 
     /**
      * Name of CSV file for generated table definitions.
@@ -121,7 +121,7 @@ public class ModelBuilder {
      * @param warnings string-buffer to print warnings into, may be <code>null</code>
      */
     public static void build(String driverClassName, String dbUrl, String dbUser, String dbPassword, String schema, StringBuffer warnings) throws Exception {
-    	statementExecutor = new StatementExecutor(driverClassName, dbUrl, dbUser, dbPassword);
+    	statementExecutor = new Session(driverClassName, dbUrl, dbUser, dbPassword);
     	statementExecutor.setIntrospectionSchema(schema);
 
         resetFiles();
