@@ -85,54 +85,183 @@
 </tr>
 <tr>
 <td class="content" height="520" valign="top" width="100%">
-<small><small>&nbsp; </small></small><br><span style="font-weight: bold;">Frequently Asked Questions</span> (Under Construction)<br>&nbsp; 
+<small><small>&nbsp; </small></small><br>
+<big><span style="font-weight: bold;">Frequently
+Asked Questions<br><br></span></big>
 <table style="text-align: left;" border="0" cellpadding="3" cellspacing="0">
 <tbody>
 <tr>
-<td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q
-&nbsp;</td>
-<td style="font-weight: bold; background-color: rgb(242, 242, 242);">...
-&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+<td style="font-weight: bold; background-color: rgb(242, 242, 242);">Q&nbsp;</td>
+<td style="font-weight: bold; background-color: rgb(242, 242, 242);">Why
+am I getting so much data back?&nbsp; &nbsp; &nbsp;
+&nbsp;
 &nbsp; &nbsp; &nbsp;</td>
 </tr>
 <tr>
-<td>A</td>
-<td><br>
+<td style="vertical-align: top;">A</td>
+<td>Each association will be traversed in both
+directions, unless there is a restriction defined. For example, if the
+subject table is <span style="font-style: italic;">employee</span>,
+and the association from&nbsp;<span style="font-style: italic;">department</span>
+table to&nbsp;<span style="font-style: italic;">employee</span>
+table is enabled, you will not only get all departments associated with
+any subject employee, but also&nbsp;all employees associated with
+any of that departments.<br>
+<br>
+If you get rows which you don't intend to get, then a restriction is
+missing. You can use the&nbsp;<span style="font-style: italic;">explain</span>
+feature in such a case. The explain log shows the chain of associations
+for each exported row back to a subject row, where the exportation
+starts. I recommend to read the <a href="exporting-data.htm">tutorial</a>,
+which explains the matters. <br>
+<br>
+Instead of adding all restrictions you need, starting from the
+unrestricted model, you can also go the opposit way: at first disable
+all associations (except dependencies) using <span style="font-style: italic;">"Edit-&gt;Disable all
+associations</span>" menu item. Then remove restrictions until
+you get all the rows you are looking for. <br>
+&nbsp;<br>
+It's easier that way to get a working extraction model, but it's harder
+to ensure that the model isn't too restrictive, i.e. that you will
+get&nbsp;<span style="font-weight: bold;">all</span>
+rows you intend to get. <br>
+&nbsp;<br>
+From my experience the best way to define an extraction model is to use
+the "<span style="font-weight: bold;">Closure Browser</span>"
+(use "<span style="font-style: italic;">Closure...</span>"
+button). <br>
+&nbsp;<br>
+The closure browser lists all tables which are directly or indirectly
+associated with the subject table (where extraction starts) according
+to the restrictions, ordered by distance. <br>
+&nbsp;<br>
+Check each table of this list from top to bottom. If you don't want to
+have rows from the table to be exported, select the table and disable
+the association which gets automatically selected then (table's context
+menu is also available here). The table disapears from the list as soon
+as it is no longer associated with subject.&nbsp; <br>
+<br>
+This way you easily get an extraction model which extracts rows only
+from tables you want to extract data from.&nbsp; <br>
+<br>
+Finally check all associations between the remaining tables. <br>
+&nbsp;<br>
 </td>
 </tr>
 <tr>
 <td style="background-color: rgb(242, 242, 242); font-weight: bold;">Q</td>
-<td style="background-color: rgb(242, 242, 242); font-weight: bold;">...</td>
+<td style="background-color: rgb(242, 242, 242); font-weight: bold;">How
+do I anonymize the extracted data?</td>
 </tr>
 <tr>
-<td>A</td>
-<td><br>
+<td style="vertical-align: top;">A</td>
+<td>It's possible to anonymize the extracted
+data by defining filters (via "<span style="font-style: italic;">Edit</span>"
+menu "<span style="font-style: italic;">Filter editor...</span>",
+or table's context menu)<br>
+<br>
+A filter is an assignment of a SQL expression to a table column, the
+column values will be replaced by the result of the expression when the
+export file is written. <br>
+&nbsp;<br>
+For example: <br>
+&nbsp;<br>
+In order to substitute the values of the column PERSON.SSN with the
+constant value '123', define the filter: <span style="font-style: italic;">PERSON.SSN := '123' </span><br>
+&nbsp;<br>
+The filter <br>
+<span style="font-style: italic;">PERSON.SSN
+:= substr(SSN, 1, length(SSN) - 3) || '***' </span><br>
+replaces the last 3 characters of the SSN with '***' <br>
+&nbsp;<br>
+The filter: <br>
+<span style="font-style: italic;">PERSON.SSN
+:= (SELECT SSN FROM TEST_SSN ORDER BY RAND() </span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp;FETCH FIRST 1 ROWS ONLY) </span><br style="font-style: italic;">
+would replace the SSN with a randomly chosen SSN from a table holding
+test SSNs (in IBM's DB2) <br>
+&nbsp;<br>
 </td>
 </tr>
 <tr>
 <td style="background-color: rgb(242, 242, 242); font-weight: bold;">Q</td>
-<td style="background-color: rgb(242, 242, 242); font-weight: bold;">...</td>
+<td style="background-color: rgb(242, 242, 242); font-weight: bold;">Why
+doesn't Jailer detect&nbsp;associations in MySQL databases?</td>
 </tr>
 <tr>
-<td>A </td>
-<td></td>
+<td style="vertical-align: top;">A </td>
+<td>If you use MyISAM database engine, no
+association will be detected. MyISAM doesn't know the concept of
+foreign key relationships, even if they're defined in the DDL. <br>
+&nbsp;<br>
+The typical alternative engine that supports foreign key relationships
+is InnoDB. <br>
+&nbsp;</td>
 </tr>
 <tr>
 <td style="background-color: rgb(242, 242, 242); font-weight: bold;">Q</td>
-<td style="background-color: rgb(242, 242, 242); font-weight: bold;">...</td>
+<td style="background-color: rgb(242, 242, 242); font-weight: bold;">Is
+it possible to avoid the creation of JAILER_* tables in the
+introspected database?
+</td>
 </tr>
 <tr>
-<td>A</td>
-<td><br>
+<td style="vertical-align: top;">A</td>
+<td>It's not possible to avoid the creation of
+that tables, but it's possible to have them in an own schema.<br>
+<br>
+The JAILER_* tables will always be created within the database user's
+default schema. If you don't want to have them in the schema of user <span style="font-style: italic;">A</span>, then
+create a new database user <span style="font-style: italic;">B</span>,
+connect as <span style="font-style: italic;">B</span>
+and enter <span style="font-style: italic;">A</span>'s
+schema as the schema to read rows from in the data export
+dialog.&nbsp;The meta tables will be
+created in&nbsp;<span style="font-style: italic;">B</span>'s&nbsp;schema
+and the data will be exported from <span style="font-style: italic;">A</span>'s
+schema.<br>
+<br>
+For DB2, Oracle, PostgreSQL,
+Sybase and MS SQL Server, it is also possible to create the tables as
+temporary tables.<br>
+&nbsp;</td>
+</tr>
+<tr>
+<td style="background-color: rgb(242, 242, 242); font-weight: bold;">Q</td>
+<td style="background-color: rgb(242, 242, 242); font-weight: bold;">I'm
+getting the message "Table has no primary key". What's wrong?</td>
+</tr>
+<tr>
+<td style="vertical-align: top;">A</td>
+<td>Jailer cannot handle tables without primary
+keys. Exporting data is not possible, if a table without a primary key
+is associated with the subject table. In this case, you should define
+a&nbsp;key of the table in the tool's data model&nbsp;(not in
+the database!) manually, using the data model editor. Note that a key
+must be unique and known (i.e. not NULL).<br>
+<br>
 </td>
 </tr>
 <tr>
 <td style="background-color: rgb(242, 242, 242); font-weight: bold;">Q</td>
-<td style="background-color: rgb(242, 242, 242); font-weight: bold;">...</td>
+<td style="background-color: rgb(242, 242, 242); font-weight: bold;">The
+GUI is slow, what can I do?<br>
+</td>
 </tr>
 <tr>
-<td>A</td>
-<td><br>
+<td style="vertical-align: top;">A</td>
+<td>due to the dynamic nature of the layouting
+algorithm, the
+table-association graph is permanently redrawn. It seems that this
+consumes too much cpu time on some systems. However, there is a
+parameter called "<span style="font-style: italic;">animation
+step time</span>" which determines the minimum
+time (in ms) for one animation step. Increasing that parameter
+(View-&gt;Animation step time) will
+reduce the cpu utilization.<br>
 </td>
 </tr>
 </tbody>
