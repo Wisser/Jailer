@@ -100,7 +100,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         initAnimationSteptime();
         isHorizontalLayout = isHorizonal;
         horizontalLayoutMenuItem.setSelected(isHorizontalLayout);
-        editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelFile, this, isHorizontalLayout), "editor");
+        editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelFile, this, isHorizontalLayout, getConnectivityState()), "editor");
         extractionModelEditor.extractionModelFile = extractionModelFile;
         pack();
         updateTitle(extractionModelEditor.needsSave);
@@ -128,10 +128,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      */
     private void updateMenuItems() {
 		connectDb.setSelected(dbConnectionDialog.isConnected);
-		if (dbConnectionDialog.isConnected) {
-			extractionModelEditor.connectivityState.setText(dbConnectionDialog.user.getText().trim() + " at " + (dbConnectionDialog.dbUrl.getText().trim()));
+		extractionModelEditor.connectivityState.setText(getConnectivityState());
+    }
+	
+	private String getConnectivityState() {
+		if (dbConnectionDialog != null && dbConnectionDialog.isConnected) {
+			return dbConnectionDialog.user.getText().trim() + " at " + (dbConnectionDialog.dbUrl.getText().trim());
 		} else {
-			extractionModelEditor.connectivityState.setText("offline");
+			return "offline";
 		}
 	}
 
@@ -1104,7 +1108,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	private void load(String modelFile) {
 		extractionModelEditor.extractionModelFrame = null;
 		editorPanel.remove(extractionModelEditor);
-		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(modelFile, this, isHorizontalLayout), "editor");
+		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(modelFile, this, isHorizontalLayout, getConnectivityState()), "editor");
 		((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
 		validate();
 		updateTitle(extractionModelEditor.needsSave);
@@ -1114,7 +1118,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	if (saveIfNeeded("creating new model", true)) {
     		extractionModelEditor.extractionModelFrame = null;
     		editorPanel.remove(extractionModelEditor);
-    		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(null, this, isHorizontalLayout), "editor");
+    		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(null, this, isHorizontalLayout, getConnectivityState()), "editor");
     		((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
     		validate();
     		updateTitle(extractionModelEditor.needsSave);
@@ -1124,7 +1128,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private void reload() {
 		extractionModelEditor.extractionModelFrame = null;
 		editorPanel.remove(extractionModelEditor);
-		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelEditor.extractionModelFile, this, isHorizontalLayout), "editor");
+		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelEditor.extractionModelFile, this, isHorizontalLayout, getConnectivityState()), "editor");
 		((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
 		validate();
 		updateTitle(extractionModelEditor.needsSave);

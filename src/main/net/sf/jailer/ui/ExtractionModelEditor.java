@@ -194,7 +194,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * @param extractionModelFile file containing the model
 	 * @param extractionModelFrame the enclosing frame
      */
-	public ExtractionModelEditor(String extractionModelFile, ExtractionModelFrame extractionModelFrame, boolean horizontalLayout) {
+	public ExtractionModelEditor(String extractionModelFile, ExtractionModelFrame extractionModelFrame, boolean horizontalLayout, String connectionState) {
 		this.extractionModelFrame = extractionModelFrame;
 		this.extractionModelFile = extractionModelFile;
 		columnMapperDialog = new ColumnMapperDialog(extractionModelFrame);
@@ -341,6 +341,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         instance.highlightCurrent(false);
 		instance.addSupport(SyntaxSupport.XML_LEXER, xmlSketch);
 		setOrientation(horizontalLayout);
+		connectivityState.setText(connectionState);
 	}
 
 	void setOrientation(boolean horizontal) {
