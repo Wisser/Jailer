@@ -22,7 +22,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.util.SqlScriptExecutor;
 
 import org.dbunit.dataset.IDataSet;
@@ -77,7 +77,7 @@ public class DeletionTestCase extends DbmsAwareTestCase {
 		File insertResult = new File(resultDir, "insert.sql");
 		
 		if (doDeletion(datamodelDir, new File(testDir, "extractionmodel.csv"), result, insertResult, scope)) {
-			StatementExecutor statementExecutor = new StatementExecutor(connectionArguments.get(0), connectionArguments.get(1), connectionArguments.get(2), connectionArguments.get(3));
+			Session statementExecutor = new Session(connectionArguments.get(0), connectionArguments.get(1), connectionArguments.get(2), connectionArguments.get(3));
 			SqlScriptExecutor.executeScript(result.getCanonicalPath(), statementExecutor);
 			statementExecutor.shutDown();
 			
