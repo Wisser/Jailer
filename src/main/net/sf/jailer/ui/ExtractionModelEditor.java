@@ -535,6 +535,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         hasDependent = new javax.swing.JLabel();
         associatedWith = new javax.swing.JLabel();
         ignored = new javax.swing.JLabel();
+        connectivityState = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -844,6 +845,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -877,6 +879,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
         add(legende, gridBagConstraints);
+
+        connectivityState.setFont(new java.awt.Font("Dialog", 0, 12));
+        connectivityState.setText("offline");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        add(connectivityState, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void openClosureViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openClosureViewActionPerformed
@@ -2129,6 +2139,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JLabel associatedWith;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JTextField condition;
+    public javax.swing.JLabel connectivityState;
     private javax.swing.JLabel dependsOn;
     private javax.swing.JPanel editorPanel;
     public javax.swing.JButton exportButton;

@@ -34,7 +34,7 @@ import javax.swing.SwingUtilities;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.DDLCreator;
 import net.sf.jailer.ScriptFormat;
-import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
@@ -98,7 +98,7 @@ public class ExportDialog extends javax.swing.JDialog {
 	private final Table subject;
 	
     /** Creates new form DbConnectionDialog */
-    public ExportDialog(java.awt.Frame parent, DataModel dataModel, net.sf.jailer.datamodel.Table subject, String subjectCondition, StatementExecutor statementExecutor) {
+    public ExportDialog(java.awt.Frame parent, DataModel dataModel, net.sf.jailer.datamodel.Table subject, String subjectCondition, Session statementExecutor) {
         super(parent, true);
         this.dataModel = dataModel;
         this.subject = subject;
@@ -195,7 +195,7 @@ public class ExportDialog extends javax.swing.JDialog {
 
     private Thread initScopeButtonThread;
     
-    private void initScopeButtons(final StatementExecutor statementExecutor) {
+    private void initScopeButtons(final Session statementExecutor) {
     	synchronized (this) {
 	    	scopeGlobal.setSelected(true);
 	    	scopeSession.setSelected(false);

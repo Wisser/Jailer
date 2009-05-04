@@ -26,7 +26,7 @@ import java.util.Set;
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.ScriptType;
-import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 
@@ -47,14 +47,14 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
     /**
      * Adds nothing.
      */
-    public void addComments(Writer script, ScriptType scriptType, StatementExecutor statementExecutor, EntityGraph entityGraph, 
+    public void addComments(Writer script, ScriptType scriptType, Session statementExecutor, EntityGraph entityGraph, 
             Set<Table> progress) throws IOException, SQLException {
     }
 
     /**
      * Adds epilogs.
      */
-    public void addEpilog(Writer script, ScriptType scriptType, StatementExecutor statementExecutor, EntityGraph entityGraph, 
+    public void addEpilog(Writer script, ScriptType scriptType, Session statementExecutor, EntityGraph entityGraph, 
             Set<Table> progress) throws IOException, SQLException {
         addEnhancement(script, progress, new File(CommandLineParser.getInstance().enhancerFolder + File.separatorChar + "epilog" + File.separatorChar + scriptType));
     }
@@ -62,7 +62,7 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
     /**
      * Adds prologs.
      */
-    public void addProlog(Writer script, ScriptType scriptType, StatementExecutor statementExecutor, EntityGraph entityGraph, 
+    public void addProlog(Writer script, ScriptType scriptType, Session statementExecutor, EntityGraph entityGraph, 
             Set<Table> progress) throws IOException, SQLException {
         addEnhancement(script, progress, new File(CommandLineParser.getInstance().enhancerFolder + File.separatorChar + "prolog" + File.separatorChar + scriptType));
     }

@@ -31,7 +31,7 @@ import java.util.Set;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.database.DBMS;
-import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.Column;
@@ -74,7 +74,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
      * @param namingSuggestion to put naming suggestions for associations into
      * @return found associations
      */
-    public Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestion, StatementExecutor statementExecutor) throws Exception {
+    public Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestion, Session statementExecutor) throws Exception {
         Collection<Association> associations = new ArrayList<Association>();
         DatabaseMetaData metaData = statementExecutor.getMetaData();
     	Quoting quoting = new Quoting(metaData);
@@ -136,7 +136,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
      * 
      * @param statementExecutor the statement executor for executing SQL-statements 
      */
-    public Set<Table> findTables(StatementExecutor statementExecutor) throws Exception {
+    public Set<Table> findTables(Session statementExecutor) throws Exception {
         PrimaryKeyFactory primaryKeyFactory = new PrimaryKeyFactory();
         
         Set<Table> tables = new HashSet<Table>();
@@ -253,7 +253,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
      * @param statementExecutor the statement executor for executing SQL-statements
      * @param userName schema with this name may be empty
      */ 
-    public static List<String> getSchemas(StatementExecutor statementExecutor, String userName) throws Exception {
+    public static List<String> getSchemas(Session statementExecutor, String userName) throws Exception {
     	List<String> schemas = new ArrayList<String>();
 		try {
 			DatabaseMetaData metaData = statementExecutor.getMetaData();
@@ -283,7 +283,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
      * @param statementExecutor the statement executor for executing SQL-statements
      * @param userName schema with this name may be empty
      */ 
-    public static String getDefaultSchema(StatementExecutor statementExecutor, String userName) throws Exception {
+    public static String getDefaultSchema(Session statementExecutor, String userName) throws Exception {
     	List<String> schemas = new ArrayList<String>();
 		try {
 			DatabaseMetaData metaData = statementExecutor.getMetaData();
@@ -328,7 +328,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
      * 
      * @throws Exception on each error
      */
-    public List<Column> findColumns(Table table, StatementExecutor statementExecutor) throws Exception {
+    public List<Column> findColumns(Table table, Session statementExecutor) throws Exception {
     	List<Column> columns = new ArrayList<Column>();
     	DatabaseMetaData metaData = statementExecutor.getMetaData();
     	Quoting quoting = new Quoting(metaData);

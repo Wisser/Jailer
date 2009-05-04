@@ -40,7 +40,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.border.Border;
 
-import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
@@ -427,16 +427,16 @@ public class DbConnectionDialog extends javax.swing.JDialog {
             d2 = null;
         }
         try {
-            StatementExecutor.setClassLoaderForJdbcDriver(addJarToClasspath(d1, d2));
+            Session.setClassLoaderForJdbcDriver(addJarToClasspath(d1, d2));
         } catch (Exception e) {
             UIUtil.showException(this, "Error loading driver jars", e);
             return;
         }
         
         try {
-	        if (StatementExecutor.classLoaderForJdbcDriver != null) {
-	            Driver d = (Driver)Class.forName(driverClass.getText(), true, StatementExecutor.classLoaderForJdbcDriver).newInstance();
-	            DriverManager.registerDriver(new StatementExecutor.DriverShim(d));
+	        if (Session.classLoaderForJdbcDriver != null) {
+	            Driver d = (Driver)Class.forName(driverClass.getText(), true, Session.classLoaderForJdbcDriver).newInstance();
+	            DriverManager.registerDriver(new Session.DriverShim(d));
 	        } else {
 	            Class.forName(driverClass.getText());
 	        }
@@ -494,7 +494,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
      * @return the DB-schema to for introspection
      */
 	public String selectDBSchema(Component parent, boolean[] isDefaultSchema) throws Exception {
-		StatementExecutor statementExecutor = new StatementExecutor(driverClass.getText(), dbUrl.getText(), user.getText(), password.getText());
+		Session statementExecutor = new Session(driverClass.getText(), dbUrl.getText(), user.getText(), password.getText());
 		List<String> schemas = JDBCMetaDataBasedModelElementFinder.getSchemas(statementExecutor, user.getText());
 		String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(statementExecutor, user.getText());
 		statementExecutor.shutDown();

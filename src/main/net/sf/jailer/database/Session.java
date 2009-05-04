@@ -41,12 +41,12 @@ import net.sf.jailer.util.SqlUtil;
 import org.apache.log4j.Logger;
 
 /**
- * Executes SQL-Statements.
- * Holds connections to the database on a 'per thread' basis.
+ * Manages database sessions on a 'per thread' basis.
+ * Executes SQL-Statements in the context of a session.
  * 
  * @author Ralf Wisser
  */
-public class StatementExecutor {
+public class Session {
 
     /**
      * Hold a connection for each thread.
@@ -191,7 +191,7 @@ public class StatementExecutor {
      * @param user the DB-user
      * @param password the DB-password
      */
-    public StatementExecutor(String driverClassName, final String dbUrl, final String user, final String password) throws Exception {
+    public Session(String driverClassName, final String dbUrl, final String user, final String password) throws Exception {
     	this(driverClassName, dbUrl, user, password, null);
     }
     
@@ -203,7 +203,7 @@ public class StatementExecutor {
      * @param user the DB-user
      * @param password the DB-password
      */
-    public StatementExecutor(String driverClassName, final String dbUrl, final String user, final String password, final TemporaryTableScope scope) throws Exception {
+    public Session(String driverClassName, final String dbUrl, final String user, final String password, final TemporaryTableScope scope) throws Exception {
         _log.info("connect to user " + user + " at "+ dbUrl);
         if (classLoaderForJdbcDriver != null) {
             Driver d = (Driver)Class.forName(driverClassName, true, classLoaderForJdbcDriver).newInstance();

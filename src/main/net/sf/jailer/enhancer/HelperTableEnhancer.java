@@ -23,7 +23,7 @@ import java.util.Set;
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.ScriptType;
 import net.sf.jailer.database.SQLDialect;
-import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.database.SQLDialect.UPSERT_MODE;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
@@ -54,12 +54,12 @@ public class HelperTableEnhancer implements ScriptEnhancer {
 	}
 	
 	public void addComments(Writer script, ScriptType scriptType,
-			StatementExecutor statementExecutor, EntityGraph entityGraph,
+			Session statementExecutor, EntityGraph entityGraph,
 			Set<Table> progress) throws IOException, SQLException {
 	}
 
 	public void addEpilog(Writer script, ScriptType scriptType,
-			StatementExecutor statementExecutor, EntityGraph entityGraph,
+			Session statementExecutor, EntityGraph entityGraph,
 			Set<Table> progress) throws IOException, SQLException {
 		if (dualNeeded(progress)) {
 			script.append("DROP TABLE " + SQLDialect.DUAL_TABLE + ";\n");
@@ -67,7 +67,7 @@ public class HelperTableEnhancer implements ScriptEnhancer {
 	}
 
 	public void addProlog(Writer script, ScriptType scriptType,
-			StatementExecutor statementExecutor, EntityGraph entityGraph,
+			Session statementExecutor, EntityGraph entityGraph,
 			Set<Table> progress) throws IOException, SQLException {
 		if (dualNeeded(progress)) {
 			script.append("CREATE TABLE " + SQLDialect.DUAL_TABLE + "(D INTEGER);\n");

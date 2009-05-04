@@ -23,7 +23,7 @@ import java.util.Set;
 
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.SQLDialect;
-import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.database.Session;
 
 /**
  * Factory for {@link PrimaryKey}s. Builds the universal primary key as a
@@ -168,7 +168,7 @@ public class PrimaryKeyFactory {
 	 *            for guessing null-values of columns
 	 * @return the universal primary key
 	 */
-	public PrimaryKey getUniversalPrimaryKey(StatementExecutor statementExecutor) {
+	public PrimaryKey getUniversalPrimaryKey(Session statementExecutor) {
 		closed = true;
 		if (statementExecutor != null) {
 			SQLDialect.guessDialect(universalPrimaryKey, statementExecutor);

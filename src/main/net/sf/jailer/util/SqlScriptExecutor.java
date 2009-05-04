@@ -28,7 +28,7 @@ import java.io.Writer;
 import java.sql.SQLException;
 import java.util.zip.GZIPInputStream;
 
-import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.database.Session;
 
 import org.apache.log4j.Logger;
 
@@ -60,7 +60,7 @@ public class SqlScriptExecutor {
      * @param scriptFileName the name of the script-file
      * @param statementExecutor for execution of statements
      */
-    public static void executeScript(String scriptFileName, StatementExecutor statementExecutor) throws IOException, SQLException {
+    public static void executeScript(String scriptFileName, Session statementExecutor) throws IOException, SQLException {
         _log.info("reading file '" + scriptFileName + "'");
     	BufferedReader reader;
     	if (scriptFileName.toLowerCase().endsWith(".gz") || scriptFileName.toLowerCase().endsWith(".zip")) {
@@ -112,7 +112,7 @@ public class SqlScriptExecutor {
      * @param clobLocator locates the clob
      * @param reader for reading content
      */
-	private static void importCLob(final String clobLocator, final BufferedReader reader, StatementExecutor statementExecutor) throws IOException, SQLException {
+	private static void importCLob(final String clobLocator, final BufferedReader reader, Session statementExecutor) throws IOException, SQLException {
 		int c1 = clobLocator.indexOf(',');
 		int c2 = clobLocator.indexOf(',', c1 + 1);
 		String table = clobLocator.substring(0, c1).trim();
@@ -161,7 +161,7 @@ public class SqlScriptExecutor {
      * @param clobLocator locates the clob
      * @param reader for reading content
      */
-	private static void importBLob(final String clobLocator, final BufferedReader reader, StatementExecutor statementExecutor) throws IOException, SQLException {
+	private static void importBLob(final String clobLocator, final BufferedReader reader, Session statementExecutor) throws IOException, SQLException {
 		int c1 = clobLocator.indexOf(',');
 		int c2 = clobLocator.indexOf(',', c1 + 1);
 		String table = clobLocator.substring(0, c1).trim();
