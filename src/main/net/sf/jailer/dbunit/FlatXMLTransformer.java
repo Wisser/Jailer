@@ -29,7 +29,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.database.ExportTransformer;
 import net.sf.jailer.database.SQLDialect;
-import net.sf.jailer.database.StatementExecutor.ResultSetReader;
+import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.Base64;
 

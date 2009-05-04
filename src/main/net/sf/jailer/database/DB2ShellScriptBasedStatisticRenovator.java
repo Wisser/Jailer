@@ -39,7 +39,7 @@ public class DB2ShellScriptBasedStatisticRenovator extends ShellScriptBasedStati
      * @param statementExecutor for execution of SQL-statements
      * @return shell-invocation
      */
-    protected String getScriptInvocation(StatementExecutor statementExecutor) throws Exception {
+    protected String getScriptInvocation(Session statementExecutor) throws Exception {
         int indexOf = statementExecutor.dbUrl.indexOf("://");
         String dbName;
         if (indexOf >= 0) {

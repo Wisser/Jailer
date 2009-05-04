@@ -26,7 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.Column;
@@ -85,7 +85,7 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
      * @param namingSuggestion to put naming suggestions for associations into
      * @return found associations
      */
-    public Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestion, StatementExecutor statementExecutor) throws Exception {
+    public Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestion, Session statementExecutor) throws Exception {
         Collection<Association> associations = new ArrayList<Association>();
         associations.addAll(findAssociations(dataModel, selectForeignKeysScript, statementExecutor));
         return associations;
@@ -110,10 +110,10 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
      *             
      * @return found associations
      */
-    private Collection<Association> findAssociations(final DataModel dataModel, final String sqlFileName, StatementExecutor statementExecutor) throws Exception {
+    private Collection<Association> findAssociations(final DataModel dataModel, final String sqlFileName, Session statementExecutor) throws Exception {
         final List<Association> associations = new ArrayList<Association>();
         String select = PrintUtil.applyTemplate(sqlFileName, new Object[] { statementExecutor.getSchemaName() });
-        statementExecutor.executeQuery(select, new StatementExecutor.AbstractResultSetReader() {
+        statementExecutor.executeQuery(select, new Session.AbstractResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 String tableA = resultSet.getString(1);
                 String tableB = resultSet.getString(2);
@@ -142,12 +142,12 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
      * 
      * @param statementExecutor the statement executor for executing SQL-statements 
      */
-    public Set<Table> findTables(StatementExecutor statementExecutor) throws Exception {
+    public Set<Table> findTables(Session statementExecutor) throws Exception {
         final PrimaryKeyFactory primaryKeyFactory = new PrimaryKeyFactory();
         final Set<Table> tables = new TreeSet<Table>();
         String select = PrintUtil.applyTemplate(selectTablesScript, new Object[] { statementExecutor.getSchemaName() });
         final Map<String, Map<Integer, Column>> pkColumns = new HashMap<String, Map<Integer, Column>>();
-        statementExecutor.executeQuery(select, new StatementExecutor.AbstractResultSetReader() {
+        statementExecutor.executeQuery(select, new Session.AbstractResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 String tableName = resultSet.getString(1);
                 Map<Integer, Column> pk = pkColumns.get(tableName);
@@ -184,10 +184,10 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
      * 
      * @param statementExecutor the statement executor for executing SQL-statements 
      */
-    public List<Column> findColumns(Table table, StatementExecutor statementExecutor) throws Exception {
+    public List<Column> findColumns(Table table, Session statementExecutor) throws Exception {
         String select = PrintUtil.applyTemplate(selectColumnsScript, new Object[] { statementExecutor.getSchemaName(), table.getName() });
         final List<Column> columns = new ArrayList<Column>();
-        statementExecutor.executeQuery(select, new StatementExecutor.AbstractResultSetReader() {
+        statementExecutor.executeQuery(select, new Session.AbstractResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 String name = resultSet.getString(2);
                 String type = resultSet.getString(3);

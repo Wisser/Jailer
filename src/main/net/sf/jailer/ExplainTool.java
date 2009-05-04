@@ -28,7 +28,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.jailer.database.SQLDialect;
-import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
@@ -62,7 +62,7 @@ public class ExplainTool {
      * @param statementExecutor
      *            for executing SQL-statements
      */
-    public static void explain(final EntityGraph graph, final Set<Table> tablesToIgnore, final StatementExecutor statementExecutor, final DataModel datamodel) throws Exception {
+    public static void explain(final EntityGraph graph, final Set<Table> tablesToIgnore, final Session statementExecutor, final DataModel datamodel) throws Exception {
         _log.info("generating explain.log...");
     	final Set<String> namesOfTablesToIgnore = new HashSet<String>();
         for (Table table: tablesToIgnore) {
@@ -78,7 +78,7 @@ public class ExplainTool {
         final FileWriter writer = new FileWriter("explain.log");
         String selectLeafs = "Select type, " + graph.getUniversalPrimaryKey().columnList(null) + " From " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, statementExecutor) + " E Where E.r_entitygraph=" + graph.graphID +
             " and not exists (Select * from " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, statementExecutor) + " Succ Where Succ.r_entitygraph=" + graph.graphID + " and Succ.PRE_TYPE=E.type and " + succEqualsE + ")";
-        statementExecutor.executeQuery(selectLeafs, new StatementExecutor.AbstractResultSetReader() {
+        statementExecutor.executeQuery(selectLeafs, new Session.AbstractResultSetReader() {
             Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
         	public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 String type = resultSet.getString(1);
@@ -122,7 +122,7 @@ public class ExplainTool {
      * Stringifies the path of predecessors of a given entity.
      * @throws SQLException 
      */
-    private static String path(final EntityGraph graph, StatementExecutor statementExecutor, String type, List<String> keys, DataModel datamodel) throws SQLException {
+    private static String path(final EntityGraph graph, Session statementExecutor, String type, List<String> keys, DataModel datamodel) throws SQLException {
         String where = "";
         int i = 0;
         for (Column column: graph.getUniversalPrimaryKey().getColumns()) {
@@ -137,7 +137,7 @@ public class ExplainTool {
         final String preType[] = new String[1];
         final List<String> preKeys = new ArrayList<String>();
         final Integer associationID[] = new Integer[1];
-        statementExecutor.executeQuery(selectPredecessor, new StatementExecutor.AbstractResultSetReader() {
+        statementExecutor.executeQuery(selectPredecessor, new Session.AbstractResultSetReader() {
             private Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 preType[0] = resultSet.getString(1);

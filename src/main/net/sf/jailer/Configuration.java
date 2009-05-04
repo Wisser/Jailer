@@ -23,7 +23,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.database.StatisticRenovator;
 import net.sf.jailer.database.TemporaryTableManager;
 import net.sf.jailer.enhancer.ScriptEnhancer;
@@ -139,9 +139,9 @@ public class Configuration {
      * Gets DBMS specific configuration.
      * 
      * @param statementExecutor connected to the DBMS
-     * @return configuration for the DBMS to which the {@link StatementExecutor} is connected to
+     * @return configuration for the DBMS to which the {@link Session} is connected to
      */
-	public static Configuration forDbms(StatementExecutor statementExecutor) {
+	public static Configuration forDbms(Session statementExecutor) {
 		if (statementExecutor == null) {
 			return defaultConfiguration;
 		}

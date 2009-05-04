@@ -29,7 +29,7 @@ import java.util.Set;
 import java.util.TreeMap;
 
 import net.sf.jailer.CommandLineParser;
-import net.sf.jailer.database.StatementExecutor;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.PrintUtil;
@@ -359,7 +359,7 @@ public class DataModel {
      * @param statementExecutor for null value guessing
      * @return the universal primary key
      */
-    public PrimaryKey getUniversalPrimaryKey(StatementExecutor statementExecutor) {
+    public PrimaryKey getUniversalPrimaryKey(Session statementExecutor) {
         return primaryKeyFactory.getUniversalPrimaryKey(statementExecutor);
     }
 

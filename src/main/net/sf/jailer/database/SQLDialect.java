@@ -81,7 +81,7 @@ public class SQLDialect {
      * @param statementExecutor holds connection to DBMS
      * @return table reference for the working table
      */
-    public static String dmlTableReference(String tableName, StatementExecutor statementExecutor) {
+    public static String dmlTableReference(String tableName, Session statementExecutor) {
     	TemporaryTableManager tableManager = null;
     	TemporaryTableScope temporaryTableScope = CommandLineParser.getInstance().getTemporaryTableScope();
 		if (temporaryTableScope == TemporaryTableScope.SESSION_LOCAL) {
@@ -217,7 +217,7 @@ public class SQLDialect {
 	 *            the primary key
 	 */
 	public static void guessDialect(PrimaryKey primaryKey,
-				StatementExecutor statementExecutor) {
+				Session statementExecutor) {
 
 		treatDateAsTimestamp = false;
 		
@@ -335,10 +335,10 @@ public class SQLDialect {
 	 * @param statementExecutor for executing sql statements
 	 * @return value for given key or <code>null</code> if no value for given key can be found
 	 */
-	private static String readConfigValue(String key, StatementExecutor statementExecutor) {
+	private static String readConfigValue(String key, Session statementExecutor) {
 		try {
 			final String[] value = new String[] { null };
-			statementExecutor.executeQuery("Select jvalue from " + SQLDialect.dmlTableReference(CONFIG_TABLE_, statementExecutor) + " where jversion='" + Jailer.VERSION + "' and jkey='" + key + "'", new StatementExecutor.ResultSetReader() {
+			statementExecutor.executeQuery("Select jvalue from " + SQLDialect.dmlTableReference(CONFIG_TABLE_, statementExecutor) + " where jversion='" + Jailer.VERSION + "' and jkey='" + key + "'", new Session.ResultSetReader() {
 				public void readCurrentRow(ResultSet resultSet) throws SQLException {
 					value[0] = resultSet.getString(1);
 				}
@@ -358,7 +358,7 @@ public class SQLDialect {
 	 * @param value for given key or <code>null</code> if no value for given key can be found
 	 * @param statementExecutor for executing sql statements
 	 */
-	private static void setConfigValue(String key, String value, StatementExecutor statementExecutor) {
+	private static void setConfigValue(String key, String value, Session statementExecutor) {
 		try {
 			statementExecutor.executeUpdate("Delete from " + SQLDialect.dmlTableReference(CONFIG_TABLE_, statementExecutor) + " where jversion='" + Jailer.VERSION + "' and jkey=" + SqlUtil.toSql(key));
 		} catch (Exception e) {
