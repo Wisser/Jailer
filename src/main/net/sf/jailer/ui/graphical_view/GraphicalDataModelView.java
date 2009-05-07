@@ -49,6 +49,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.ExtractionModelEditor;
 import prefuse.Display;
 import prefuse.Visualization;
+import prefuse.action.Action;
 import prefuse.action.ActionList;
 import prefuse.action.RepaintAction;
 import prefuse.action.assignment.ColorAction;
@@ -68,6 +69,7 @@ import prefuse.data.Node;
 import prefuse.data.Schema;
 import prefuse.data.Tuple;
 import prefuse.data.event.TupleSetListener;
+import prefuse.data.expression.BooleanLiteral;
 import prefuse.data.tuple.TupleSet;
 import prefuse.render.Renderer;
 import prefuse.render.RendererFactory;
@@ -157,6 +159,7 @@ public class GraphicalDataModelView extends JPanel {
 
     private NBodyForce force;
     private DragForce dragForce;
+    private volatile boolean layoutHasBeenSet = false;
     
     /**
      * Constructor.
@@ -172,8 +175,20 @@ public class GraphicalDataModelView extends JPanel {
     	this.modelEditor = modelEditor;
     	this.root = subject;
     	
-        tableRenderer = new TableRenderer(model, this);
-    	theGraph = getModelGraph(model);
+    	tableRenderer = new TableRenderer(model, this);
+    	Set<Table> initiallyVisibleTables = new HashSet<Table>();
+    	if (subject != null) {
+    		Map<String, double[]> positions = LayoutStorage.getPositions(subject.getName());
+			if (positions != null) {
+		    	for (String tn: positions.keySet()) {
+		    		Table table = model.getTable(tn);
+		    		if (table != null && !table.equals(subject)) {
+		    			initiallyVisibleTables.add(table);
+		    		}
+		    	}
+			}
+    	}
+    	theGraph = getModelGraph(model, initiallyVisibleTables);
     	
         // create a new, empty visualization for our data
         visualization = new Visualization();
@@ -270,6 +285,167 @@ public class GraphicalDataModelView extends JPanel {
         draw.add(new ColorAction(edges, VisualItem.STROKECOLOR, ColorLib.gray(200)));
         
         ActionList animate = new ActionList(Activity.INFINITY);
+        animate.add(fill);
+        animate.add(new RepaintAction());
+        
+        if (modelEditor.extractionModelFrame.animationStepTime > 0) {
+        	animate.setStepTime(modelEditor.extractionModelFrame.animationStepTime);
+        }
+
+        // finally, we register our ActionList with the Visualization.
+        // we can later execute our Actions by invoking a method on our
+        // Visualization, using the name we've chosen below.
+        visualization.putAction("draw", draw);
+        visualization.putAction("layout", animate);
+        
+        visualization.runAfter("draw", "layout");
+        
+        
+        // --------------------------------------------------------------------
+        // set up a display to show the visualization
+        
+        display = new Display(visualization);
+        display.setSize(width, height);
+        display.pan(width / 2, height / 2);
+        display.setForeground(Color.GRAY);
+        display.setBackground(Color.WHITE);
+        
+        // main display controls
+        display.addControlListener(new FocusControl(1));
+        display.addControlListener(new DragControl() {
+			@Override
+			public void itemClicked(VisualItem item, MouseEvent e) {
+				Table table = model.getTable(item.getString("label"));
+				if (SwingUtilities.isLeftMouseButton(e)) {
+	            	if (table != null && e.getClickCount() == 1) {
+	            		GraphicalDataModelView.this.modelEditor.select(table);
+	            		Association sa = selectedAssociation;
+	            		setSelection(null);
+	            		setSelection(sa);
+	            	}
+                }
+            	// context menu
+                if (SwingUtilities.isRightMouseButton(e)) {
+                	Association association = (Association) item.get("association");
+                	if (association != null) {
+                		if (Boolean.TRUE.equals(item.get("full"))) {
+	            			associationRenderer.useAssociationRendererForLocation = true;
+	            			VisualItem findItem = display.findItem(e.getPoint());
+							if (findItem == null || !findItem.equals(item)) {
+	            				association = association.reversalAssociation;
+	            			}
+	            			associationRenderer.useAssociationRendererForLocation = false;
+	            		}
+                		JPopupMenu popup = createPopupMenu(association);
+						popup.show(e.getComponent(), e.getX(), e.getY());
+                	}
+                	if (table != null) {
+						JPopupMenu popup = createPopupMenu(table);
+						popup.show(e.getComponent(), e.getX(), e.getY());
+                	}
+                }
+                super.itemClicked(item, e);
+			}
+
+			public void itemPressed(VisualItem item, MouseEvent e) {
+				if (UILib.isButtonPressed(e, LEFT_MOUSE_BUTTON)) {
+					Association association = (Association) item.get("association");
+	            	if (association != null) {
+	            		if (Boolean.TRUE.equals(item.get("full"))) {
+	            			associationRenderer.useAssociationRendererForLocation = true;
+	            			VisualItem findItem = display.findItem(e.getPoint());
+							if (findItem == null || !findItem.equals(item)) {
+	            				association = association.reversalAssociation;
+	            			}
+	            			associationRenderer.useAssociationRendererForLocation = false;
+	            		}
+	            		setSelection(association);
+	            	}
+	            	Table table = model.getTable(item.getString("label"));
+	            	if (table != null && e.getClickCount() > 1) {
+	            		if (expandedTables.contains(table)) {
+	            			collapseTable(theGraph, table, false);
+	            			display.pan(1, 0);
+	            			display.pan(0, 1);
+	            			Association sa = selectedAssociation;
+		            		setSelection(null);
+		            		setSelection(sa);
+	            			visualization.invalidateAll();
+	            			display.invalidate();
+	            		} else {
+		    	            expandTable(theGraph, table);
+	            			visualization.invalidateAll();
+	            			display.invalidate();
+	            		}
+		            }
+				}
+            	super.itemPressed(item, e);
+			}
+			
+			public void itemReleased(VisualItem item, MouseEvent e) {
+				// fix after drag
+				super.itemReleased(item, e);
+                if (!SwingUtilities.isLeftMouseButton(e)) return;
+                if (item instanceof NodeItem) {
+                	item.setFixed(true);
+                }
+        	}
+        });
+        display.addControlListener(new PanControl());
+        display.addControlListener(zoomBoxControl);
+        display.addControlListener(new WheelZoomControl(){
+            /**
+             * @see java.awt.event.MouseWheelListener#mouseWheelMoved(java.awt.event.MouseWheelEvent)
+             */
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                Display display = (Display)e.getComponent();
+                Point p = e.getPoint();
+                zoom(display, p,
+                     1 + 0.1f * e.getWheelRotation(), false);
+            }
+
+        });
+        zoomToFitControl = new ZoomToFitControlExtension(Visualization.ALL_ITEMS, 50, 800, Control.RIGHT_MOUSE_BUTTON,	model);
+        display.addControlListener(zoomToFitControl);
+        display.addControlListener(new ToolTipControl("tooltip"));
+
+        display.setForeground(Color.GRAY);
+        display.setBackground(Color.WHITE);
+        
+        // now we run our action list
+        visualization.run("draw");
+        
+		resetExpandedState();
+		
+        display.setHighQuality(true);
+        
+        add(display);
+
+        Rectangle2D bounds = null;
+        if (root != null) {
+	        synchronized (visualization) {
+		        Iterator items = visualization.items(BooleanLiteral.TRUE);
+		        for (int m_visibleCount=0; items.hasNext(); ++m_visibleCount ) {
+		            VisualItem item = (VisualItem)items.next();
+		            if (item.canGetString("label") ) {
+		            	String tableName = item.getString("label");
+		            	double[] pos = LayoutStorage.getPosition(root.getName(), tableName);
+		            	if (pos != null) {
+		            		if (bounds == null) {
+		            			bounds = new Rectangle2D.Double(pos[0], pos[1], 1, 1);
+		            		} else {
+		            			bounds.add(new Point2D.Double(pos[0], pos[1]));
+		            		}
+		            	}
+		            }
+		        }
+	        }
+        }
+        
+        if (bounds != null) {
+	        display.panToAbs(new Point2D.Double(bounds.getCenterX(), bounds.getCenterY()));
+        }
+        
         layout = new ForceDirectedLayout(graph) {
         	protected float getMassValue(VisualItem n) {
                 return zoomBoxControl.getRenderer().isBoxItem(n)? 0.01f : showTableDetails? 2.0f : 1.0f;
@@ -407,144 +583,78 @@ public class GraphicalDataModelView extends JPanel {
         });
         layout.setVisualization(visualization);
         animate.add(layout);
-        animate.add(fill);
-        animate.add(new RepaintAction());
-        
-        if (modelEditor.extractionModelFrame.animationStepTime > 0) {
-        	animate.setStepTime(modelEditor.extractionModelFrame.animationStepTime);
-        }
-
-        // finally, we register our ActionList with the Visualization.
-        // we can later execute our Actions by invoking a method on our
-        // Visualization, using the name we've chosen below.
-        visualization.putAction("draw", draw);
-        visualization.putAction("layout", animate);
-        
-        visualization.runAfter("draw", "layout");
-        
-        
-        // --------------------------------------------------------------------
-        // set up a display to show the visualization
-        
-        display = new Display(visualization);
-        display.setSize(width, height);
-        display.pan(width / 2, height / 2);
-        display.setForeground(Color.GRAY);
-        display.setBackground(Color.WHITE);
-        
-        // main display controls
-        display.addControlListener(new FocusControl(1));
-        display.addControlListener(new DragControl() {
-			@Override
-			public void itemClicked(VisualItem item, MouseEvent e) {
-				Table table = model.getTable(item.getString("label"));
-				if (SwingUtilities.isLeftMouseButton(e)) {
-	            	if (table != null && e.getClickCount() == 1) {
-	            		GraphicalDataModelView.this.modelEditor.select(table);
-	            		Association sa = selectedAssociation;
-	            		setSelection(null);
-	            		setSelection(sa);
-	            	}
-                }
-            	// context menu
-                if (SwingUtilities.isRightMouseButton(e)) {
-                	Association association = (Association) item.get("association");
-                	if (association != null) {
-                		if (Boolean.TRUE.equals(item.get("full"))) {
-	            			associationRenderer.useAssociationRendererForLocation = true;
-	            			VisualItem findItem = display.findItem(e.getPoint());
-							if (findItem == null || !findItem.equals(item)) {
-	            				association = association.reversalAssociation;
-	            			}
-	            			associationRenderer.useAssociationRendererForLocation = false;
-	            		}
-                		JPopupMenu popup = createPopupMenu(association);
-						popup.show(e.getComponent(), e.getX(), e.getY());
-                	}
-                	if (table != null) {
-						JPopupMenu popup = createPopupMenu(table);
-						popup.show(e.getComponent(), e.getX(), e.getY());
-                	}
-                }
-                super.itemClicked(item, e);
-			}
-
-			public void itemPressed(VisualItem item, MouseEvent e) {
-				if (UILib.isButtonPressed(e, LEFT_MOUSE_BUTTON)) {
-					Association association = (Association) item.get("association");
-	            	if (association != null) {
-	            		if (Boolean.TRUE.equals(item.get("full"))) {
-	            			associationRenderer.useAssociationRendererForLocation = true;
-	            			VisualItem findItem = display.findItem(e.getPoint());
-							if (findItem == null || !findItem.equals(item)) {
-	            				association = association.reversalAssociation;
-	            			}
-	            			associationRenderer.useAssociationRendererForLocation = false;
-	            		}
-	            		setSelection(association);
-	            	}
-	            	Table table = model.getTable(item.getString("label"));
-	            	if (table != null && e.getClickCount() > 1) {
-	            		if (expandedTables.contains(table)) {
-	            			collapseTable(theGraph, table, false);
-	            			display.pan(1, 0);
-	            			display.pan(0, 1);
-	            			Association sa = selectedAssociation;
-		            		setSelection(null);
-		            		setSelection(sa);
-	            			visualization.invalidateAll();
-	            			display.invalidate();
-	            		} else {
-		    	            expandTable(theGraph, table);
-	            			visualization.invalidateAll();
-	            			display.invalidate();
-	            		}
-		            }
-				}
-            	super.itemPressed(item, e);
-			}
-			
-			public void itemReleased(VisualItem item, MouseEvent e) {
-				// fix after drag
-				super.itemReleased(item, e);
-                if (!SwingUtilities.isLeftMouseButton(e)) return;
-                if (item instanceof NodeItem) {
-                	item.setFixed(true);
-                }
-        	}
-        });
-        display.addControlListener(new PanControl());
-        display.addControlListener(zoomBoxControl);
-        display.addControlListener(new WheelZoomControl(){
-            /**
-             * @see java.awt.event.MouseWheelListener#mouseWheelMoved(java.awt.event.MouseWheelEvent)
-             */
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                Display display = (Display)e.getComponent();
-                Point p = e.getPoint();
-                zoom(display, p,
-                     1 + 0.1f * e.getWheelRotation(), false);
-            }
-
-        });
-        zoomToFitControl = new ZoomToFitControlExtension(Visualization.ALL_ITEMS, 50, 800, Control.RIGHT_MOUSE_BUTTON,	model);
-        display.addControlListener(zoomToFitControl);
-        display.addControlListener(new ToolTipControl("tooltip"));
-
-        display.setForeground(Color.GRAY);
-        display.setBackground(Color.WHITE);
-        
-        // now we run our action list
-        visualization.run("draw");
         layout.run();
-        
-		resetExpandedState();
-		
-        display.setHighQuality(true);
-        
-        add(display);
+        Action a = new Action() {
+        	boolean done = false;
+			@Override
+			public void run(double frac) {
+				if (!done) {
+					synchronized (visualization) {
+						if (root != null) {
+					        Iterator items = visualization.items(BooleanLiteral.TRUE);
+					        for (int m_visibleCount=0; items.hasNext(); ++m_visibleCount ) {
+					            VisualItem item = (VisualItem)items.next();
+					            if (item.canGetString("label") ) {
+					            	String tableName;
+			                		tableName = item.getString("label");
+					            	double[] pos = LayoutStorage.getPosition(root.getName(), tableName);
+					            	if (pos != null) {
+					            		item.setX(pos[0]);
+					            		item.setY(pos[1]);
+					            		item.setEndX(pos[0]);
+					            		item.setEndY(pos[1]);
+					            		item.setFixed(pos[2] == 1.0);
+					            	}
+					            }
+				            }
+				        }
+			        }
+					layout.reset();
+					visualization.invalidateAll();
+					done = true;
+					layoutHasBeenSet = true;
+				}
+			}
+        };
+        a.alwaysRunAfter(layout);
+		animate.add(a);
+		animate.add(new Action() {
+			// force redraw, work-around for a strange repaint bug
+			long startTime = System.currentTimeMillis();
+			boolean done = false;
+			@Override
+			public void run(double frac) {
+				if (!done && System.currentTimeMillis() > startTime + 300) {
+					display.pan(1, 1);
+					display.pan(-1, -1);
+					done = true;
+				}
+			}
+		});
     }
     
+    /**
+     * Stores current positions of the tables.
+     */
+    public void storeLayout() {
+    	if (root != null && layoutHasBeenSet) {
+	    	synchronized (visualization) {
+	    		LayoutStorage.removeAll(root.getName());
+		        Iterator items = visualization.items(BooleanLiteral.TRUE);
+		        for (int m_visibleCount=0; items.hasNext(); ++m_visibleCount ) {
+		            VisualItem item = (VisualItem)items.next();
+		            if (item.canGetString("label") ) {
+		            	String tableName;
+                		tableName = item.getString("label");
+                		if (tableName != null) {
+                			LayoutStorage.setPosition(root.getName(), tableName, new double[] { item.getX(), item.getY(), item.isFixed()? 1.0:0.0 });
+                		}
+		            }
+		        }
+	        }
+    	}
+    }
+
     /**
      * Creates popup menu.
      *
@@ -722,8 +832,16 @@ public class GraphicalDataModelView extends JPanel {
 
 	/**
 	 * Closes the view.
+	 * @param storeLayout 
 	 */
-	public void close() {
+	public void close(boolean storeLayout) {
+		if (storeLayout) {
+			storeLayout();
+		} else {
+			if (root != null) {
+				LayoutStorage.removeAll(root.getName());
+			}
+		}
 		visualization.reset();
 		layout.cancel();
 	}
@@ -879,7 +997,7 @@ public class GraphicalDataModelView extends JPanel {
      * @param model the data model
      * @return graph
      */
-	private Graph getModelGraph(DataModel model) {
+	private Graph getModelGraph(DataModel model, Set<Table> initiallyVisibleTables) {
 		tableNodes = new HashMap<net.sf.jailer.datamodel.Table, Node>();
         expandedTables = new HashSet<net.sf.jailer.datamodel.Table>();
         renderedAssociations = new HashMap<Association, Edge>();
@@ -898,6 +1016,17 @@ public class GraphicalDataModelView extends JPanel {
 		Table table = root;
 		showTable(g, table);
 		
+		if (!modelEditor.extractionModelFrame.showDisabledAssociations()) {
+			initiallyVisibleTables.retainAll(table.closure(true));
+		}
+		
+		for (Table t: initiallyVisibleTables) {
+			showTable(g, t);
+		}
+		for (Table t: initiallyVisibleTables) {
+			addEdges(g, t, null, new ArrayList<Table>(), true);
+		}
+		
 		int nAssociatedTables = 0;
 		if (table != null) {
 			for (Association a: table.associations) {
@@ -907,7 +1036,7 @@ public class GraphicalDataModelView extends JPanel {
 			}
 		}
 		
-		if (nAssociatedTables <= 10) {
+		if (initiallyVisibleTables.isEmpty() && nAssociatedTables <= 10) {
 			expandTable(g, table);
 		}
 		

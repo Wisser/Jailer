@@ -1,3 +1,6 @@
+2.9.8
+ - Graph layout is persistent [2787683]
+
 2.9.7
  - new source-schema-mapping allows the user to specify the schema
    to export data from

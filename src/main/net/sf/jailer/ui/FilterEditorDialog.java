@@ -297,7 +297,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 			c.setFilterExpression(newFilter);
 		}
 		getDataModel().version++;
-		parent.extractionModelEditor.refresh(false, false);
+		parent.extractionModelEditor.refresh(false, false, true);
 		parent.extractionModelEditor.markDirty();
 	}
 	
