@@ -88,6 +88,7 @@ import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.ui.graphical_view.AssociationRenderer;
 import net.sf.jailer.ui.graphical_view.GraphicalDataModelView;
+import net.sf.jailer.ui.graphical_view.LayoutStorage;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.SqlUtil;
 import sdoc.SyntaxSupport;
@@ -211,6 +212,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				extractionModel = new ExtractionModel(dataModel);
 			} else {
 				extractionModel = new ExtractionModel(extractionModelFile, new HashMap<String, String>());
+				LayoutStorage.restore(extractionModelFile);
 			}
 			subject = extractionModel.getTasks().get(0).subject;
 			dataModel = extractionModel.getTasks().get(0).dataModel;
@@ -452,9 +454,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	/**
 	 * Resets the graphical editor.
 	 */
-	public void resetGraphEditor(boolean full) {
+	public void resetGraphEditor(boolean full, boolean storeLayout) {
 		if (full) {
-			graphView.close();
+			graphView.close(storeLayout);
 			graphContainer.remove(graphView);
 			graphView = new GraphicalDataModelView(dataModel, this, root, graphView.display.getWidth(), graphView.display.getHeight());
 			graphContainer.add(graphView);
@@ -988,7 +990,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		if (table != null) {
 			root = table;
 			tree.setModel(getModel());
-			resetGraphEditor(true);
+			resetGraphEditor(true, true);
 		}
 	}
 	
@@ -1819,6 +1821,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			extractionModelFile = newFile;
 		}
 		try {
+			graphView.storeLayout();
+			
 			Table stable = dataModel.getTableByDisplayName((String) subjectTable.getSelectedItem());
 			if (stable == null) {
 				return true;
@@ -1846,6 +1850,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				}
 			}
 			saveFilters(out);
+			out.println();
+			LayoutStorage.store(out);
 			out.println();
 			out.println(CsvFile.BLOCK_INDICATOR + "version");
 			out.println(Jailer.VERSION);
@@ -1950,10 +1956,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     /**
      * Refreshes associations tree.
      */
-	public void refresh(boolean restoreSelection, boolean fullGraphModelReset) {
+	public void refresh(boolean restoreSelection, boolean fullGraphModelReset, boolean storeLayout) {
 		Association association = currentAssociation;
 		tree.setModel(getModel());
-		resetGraphEditor(fullGraphModelReset);
+		resetGraphEditor(fullGraphModelReset, storeLayout);
 		if (restoreSelection) {
 			select(association);
 		}
