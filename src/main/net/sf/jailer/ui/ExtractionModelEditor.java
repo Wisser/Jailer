@@ -210,6 +210,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				needsSave = extractionModelFile != null;
 				dataModel = new DataModel();
 				extractionModel = new ExtractionModel(dataModel);
+				LayoutStorage.removeAll();
 			} else {
 				extractionModel = new ExtractionModel(extractionModelFile, new HashMap<String, String>());
 				LayoutStorage.restore(extractionModelFile);
@@ -454,9 +455,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	/**
 	 * Resets the graphical editor.
 	 */
-	public void resetGraphEditor(boolean full, boolean storeLayout) {
+	public void resetGraphEditor(boolean full, boolean storeLayout, boolean removeLayout) {
 		if (full) {
-			graphView.close(storeLayout);
+			graphView.close(storeLayout, removeLayout);
 			graphContainer.remove(graphView);
 			graphView = new GraphicalDataModelView(dataModel, this, root, graphView.display.getWidth(), graphView.display.getHeight());
 			graphContainer.add(graphView);
@@ -990,7 +991,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		if (table != null) {
 			root = table;
 			tree.setModel(getModel());
-			resetGraphEditor(true, true);
+			resetGraphEditor(true, true, false);
 		}
 	}
 	
@@ -1956,10 +1957,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     /**
      * Refreshes associations tree.
      */
-	public void refresh(boolean restoreSelection, boolean fullGraphModelReset, boolean storeLayout) {
+	public void refresh(boolean restoreSelection, boolean fullGraphModelReset, boolean storeLayout, boolean removeLayout) {
 		Association association = currentAssociation;
 		tree.setModel(getModel());
-		resetGraphEditor(fullGraphModelReset, storeLayout);
+		resetGraphEditor(fullGraphModelReset, storeLayout, removeLayout);
 		if (restoreSelection) {
 			select(association);
 		}
