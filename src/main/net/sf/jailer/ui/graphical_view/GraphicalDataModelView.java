@@ -176,7 +176,7 @@ public class GraphicalDataModelView extends JPanel {
     	this.root = subject;
     	
     	tableRenderer = new TableRenderer(model, this);
-    	Set<Table> initiallyVisibleTables = new HashSet<Table>();
+    	final Set<Table> initiallyVisibleTables = new HashSet<Table>();
     	if (subject != null) {
     		Map<String, double[]> positions = LayoutStorage.getPositions(subject.getName());
 			if (positions != null) {
@@ -590,7 +590,7 @@ public class GraphicalDataModelView extends JPanel {
 			public void run(double frac) {
 				if (!done) {
 					synchronized (visualization) {
-						if (root != null) {
+						if (root != null && !initiallyVisibleTables.isEmpty()) {
 					        Iterator items = visualization.items(BooleanLiteral.TRUE);
 					        for (int m_visibleCount=0; items.hasNext(); ++m_visibleCount ) {
 					            VisualItem item = (VisualItem)items.next();
@@ -624,7 +624,7 @@ public class GraphicalDataModelView extends JPanel {
 			boolean done = false;
 			@Override
 			public void run(double frac) {
-				if (!done && System.currentTimeMillis() > startTime + 300) {
+				if (!done && System.currentTimeMillis() > startTime + 30) {
 					display.pan(1, 1);
 					display.pan(-1, -1);
 					done = true;
@@ -651,6 +651,7 @@ public class GraphicalDataModelView extends JPanel {
                 		}
 		            }
 		        }
+		        LayoutStorage.checkSignificance(root.getName());
 	        }
     	}
     }
@@ -834,10 +835,10 @@ public class GraphicalDataModelView extends JPanel {
 	 * Closes the view.
 	 * @param storeLayout 
 	 */
-	public void close(boolean storeLayout) {
+	public void close(boolean storeLayout, boolean removeLayout) {
 		if (storeLayout) {
 			storeLayout();
-		} else {
+		} else if (removeLayout) {
 			if (root != null) {
 				LayoutStorage.removeAll(root.getName());
 			}
@@ -1018,6 +1019,8 @@ public class GraphicalDataModelView extends JPanel {
 		
 		if (!modelEditor.extractionModelFrame.showDisabledAssociations()) {
 			initiallyVisibleTables.retainAll(table.closure(true));
+		} else {
+			initiallyVisibleTables.retainAll(table.unrestrictedClosure(new HashSet<Table>()));
 		}
 		
 		for (Table t: initiallyVisibleTables) {

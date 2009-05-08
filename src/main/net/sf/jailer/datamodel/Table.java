@@ -237,7 +237,7 @@ public class Table extends ModelElement implements Comparable<Table> {
      * @param directed consider associations as directed?
      * @param tablesToIgnore ignore this tables
      * 
-     * @return closure of the table (all tables associated (in-)direct with table)
+     * @return closure of the table (all tables associated (in-)directly with table)
      */
     private Set<Table> closure(Set<Table> tables, Set<Table> tablesToIgnore, boolean directed) {
         Set<Table> closure = new HashSet<Table>();
@@ -255,6 +255,27 @@ public class Table extends ModelElement implements Comparable<Table> {
         return closure;
     }
 
+    /**
+     * Gets the closure of the table, ignoring restrictions.
+     * 
+     * @param tables tables known in closure
+     * 
+     * @return closure of the table (all tables associated (in-)directly with table)
+     */
+    public Set<Table> unrestrictedClosure(Set<Table> tables) {
+        Set<Table> closure = new HashSet<Table>();
+        if (!tables.contains(this)) {
+            closure.add(this);
+            tables.add(this);
+            for (Association association: associations) {
+                if (!tables.contains(association.destination)) {
+                    closure.addAll(association.destination.unrestrictedClosure(tables));
+                }
+            }
+        }
+        return closure;
+    }
+    
     /**
      * Sets template for XML exports.
      */

@@ -51,6 +51,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.datamodel.DataModel.NoPrimaryKeyException;
 import net.sf.jailer.render.HtmlDataModelRenderer;
+import net.sf.jailer.ui.graphical_view.LayoutStorage;
 
 /**
  * Main frame of Extraction-Model-Editor.
@@ -1140,16 +1141,21 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
     private void showIgnoredActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showIgnoredActionPerformed
 //      extractionModelEditor.refresh(true, false);
-    	extractionModelEditor.resetGraphEditor(false, true);
+    	extractionModelEditor.resetGraphEditor(false, true, true);
     }//GEN-LAST:event_showIgnoredActionPerformed
 
     private void collapseAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_collapseAllActionPerformed
-        extractionModelEditor.refresh(false, true, false);
-        extractionModelEditor.resetGraphEditor(true, false);
+        try {
+	    	LayoutStorage.enabled = false;
+        	extractionModelEditor.refresh(false, true, false, true);
+	        extractionModelEditor.resetGraphEditor(true, false, true);
+        } finally {
+	    	LayoutStorage.enabled = true;
+        }
     }//GEN-LAST:event_collapseAllActionPerformed
 
     private void refreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshActionPerformed
-    	extractionModelEditor.refresh(false, true, false);
+    	extractionModelEditor.refresh(false, true, false, false);
     }//GEN-LAST:event_refreshActionPerformed
 
     private void saveAsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsActionPerformed
@@ -1256,7 +1262,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	    	out.close();
 		} catch (IOException e) {
 		}
-		extractionModelEditor.refresh(false, true, true);
+		extractionModelEditor.refresh(false, true, true, true);
     }
     
     private void steptime0ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_steptime0ActionPerformed
