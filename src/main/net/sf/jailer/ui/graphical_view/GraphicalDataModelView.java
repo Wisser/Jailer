@@ -1017,10 +1017,12 @@ public class GraphicalDataModelView extends JPanel {
 		Table table = root;
 		showTable(g, table);
 		
-		if (!modelEditor.extractionModelFrame.showDisabledAssociations()) {
-			initiallyVisibleTables.retainAll(table.closure(true));
-		} else {
-			initiallyVisibleTables.retainAll(table.unrestrictedClosure(new HashSet<Table>()));
+		if (table != null) {
+			if (!modelEditor.extractionModelFrame.showDisabledAssociations()) {
+				initiallyVisibleTables.retainAll(table.closure(true));
+			} else {
+				initiallyVisibleTables.retainAll(table.unrestrictedClosure(new HashSet<Table>()));
+			}
 		}
 		
 		for (Table t: initiallyVisibleTables) {
