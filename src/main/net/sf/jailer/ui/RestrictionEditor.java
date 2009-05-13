@@ -58,6 +58,8 @@ public class RestrictionEditor extends javax.swing.JPanel {
         description1 = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         joinCondition = new javax.swing.JLabel();
+        columnsA = new javax.swing.JLabel();
+        columnsB = new javax.swing.JLabel();
 
         joinCondition2.setEditable(false);
         joinCondition2.setText("jTextField1");
@@ -68,7 +70,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
 
         setLayout(new java.awt.GridBagLayout());
 
-        description.setText(" Table A  ");
+        description.setText(" Table A ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -81,7 +83,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 15;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 0, 0);
         add(jLabel2, gridBagConstraints);
@@ -96,7 +98,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 30;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 20, 0, 0);
         add(ignore, gridBagConstraints);
@@ -106,7 +108,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 20;
-        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.gridwidth = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 20, 0, 0);
@@ -120,7 +122,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 40;
-        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.gridwidth = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
@@ -134,7 +136,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(jLabel1, gridBagConstraints);
 
-        jLabel4.setText(" Table B  ");
+        jLabel4.setText(" Table B ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -153,7 +155,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         aName.setFont(new java.awt.Font("Dialog", 0, 12));
         aName.setText("jLabel9");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -167,7 +169,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel2.add(source);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -181,7 +183,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel3.add(destination);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
@@ -191,7 +193,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         restrictedDependencyWarning.setForeground(new java.awt.Color(255, 0, 51));
         restrictedDependencyWarning.setText("Restricted Dependency! ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 30;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
@@ -219,7 +221,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel4.add(cardinality, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -241,11 +243,25 @@ public class RestrictionEditor extends javax.swing.JPanel {
         jPanel5.add(joinCondition);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jPanel5, gridBagConstraints);
+
+        columnsA.setText("V");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 8);
+        add(columnsA, gridBagConstraints);
+
+        columnsB.setText("V");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 8);
+        add(columnsB, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void ignoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ignoreActionPerformed
@@ -262,6 +278,8 @@ public class RestrictionEditor extends javax.swing.JPanel {
     public javax.swing.JLabel aName;
     public javax.swing.JButton apply;
     public javax.swing.JLabel cardinality;
+    javax.swing.JLabel columnsA;
+    javax.swing.JLabel columnsB;
     public javax.swing.JLabel description;
     public javax.swing.JLabel description1;
     public javax.swing.JLabel destination;
