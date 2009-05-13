@@ -55,10 +55,10 @@ public class SqlUtil {
         StringBuffer reversed = new StringBuffer("");
         for (int i = 0; i < condition.length(); ++i) {
             char c = condition.charAt(i);
-            if (c == 'A' || c == 'B') {
+            if (c == 'A' || c == 'B' || c == 'a' || c == 'b') {
                 if (i + 1 < condition.length() && condition.charAt(i + 1) == '.') {
                     if (i == 0 || chars.indexOf(condition.charAt(i - 1)) < 0) {
-                        reversed.append(c == 'A'? 'B' : 'A');
+                        reversed.append(c == 'A' || c == 'a'? 'B' : 'A');
                         continue;
                     }
                 }
@@ -81,10 +81,10 @@ public class SqlUtil {
         StringBuffer result = new StringBuffer("");
         for (int i = 0; i < condition.length(); ++i) {
             char c = condition.charAt(i);
-            if (c == 'A' || c == 'B') {
+            if (c == 'A' || c == 'B' || c == 'a' || c == 'b') {
                 if (i + 1 < condition.length() && condition.charAt(i + 1) == '.') {
                     if (i == 0 || chars.indexOf(condition.charAt(i - 1)) < 0) {
-                        result.append(c == 'A'? aliasA : aliasB);
+                        result.append(c == 'A' || c == 'a'? aliasA : aliasB);
                         continue;
                     }
                 }
@@ -94,6 +94,46 @@ public class SqlUtil {
         return result.toString();
     }
     
+    /**
+     * Resolves the pseudo-columns in a restriction condition.
+     * 
+     * @param condition the condition
+     * @param entityAAlias alias for entity table joined with A
+     * @param entityBAlias alias for entity table joined with B
+     * @param birthdayOfSubject birthday of subject
+     * @param today today
+     */
+    public static String resolvePseudoColumns(String condition, String entityAAlias, String entityBAlias, int today, int birthdayOfSubject) {
+    	return resolvePseudoColumns(condition, entityAAlias, entityBAlias, today, birthdayOfSubject, "birthday");
+    }
+    
+    /**
+     * Resolves the pseudo-columns in a restriction condition.
+     * 
+     * @param condition the condition
+     * @param entityAAlias alias for entity table joined with A
+     * @param entityBAlias alias for entity table joined with B
+     * @param birthdayOfSubject birthday of subject
+     * @param today today
+     * @param birthdayColumnName name of the column which holds the birthday of an entity ('birthday' or 'orig_birthday')
+     */
+    public static String resolvePseudoColumns(String condition, String entityAAlias, String entityBAlias, int today, int birthdayOfSubject, String birthdayColumnName) {
+    	String aBirthday = entityAAlias == null? "" + (today - birthdayOfSubject) : ("(" + entityAAlias + "." + birthdayColumnName + " - " + birthdayOfSubject + ")");
+    	String bBirthday = entityBAlias == null? "" + (today - birthdayOfSubject) : ("(" + entityBAlias + "." + birthdayColumnName + " - " + birthdayOfSubject + ")");
+    	String aIsSubject = entityAAlias == null? "(" + (today - birthdayOfSubject) + " = 0)" : ("(" + entityAAlias + "." + birthdayColumnName + " - " + birthdayOfSubject + " = 0)");
+    	String bIsSubject = entityBAlias == null? "(" + (today - birthdayOfSubject) + " = 0)" : ("(" + entityBAlias + "." + birthdayColumnName + " - " + birthdayOfSubject + " = 0)");
+
+    	condition = condition.replaceAll("(A|a) *\\. *\\$distance", aBirthday);
+    	condition = condition.replaceAll("(A|a) *\\. *\\$DISTANCE", aBirthday);
+		condition = condition.replaceAll("(B|b) *\\. *\\$distance", bBirthday);
+    	condition = condition.replaceAll("(B|b) *\\. *\\$DISTANCE", bBirthday);
+		condition = condition.replaceAll("(A|a) *\\. *\\$IS_SUBJECT", aIsSubject);
+    	condition = condition.replaceAll("(A|a) *\\. *\\$is_subject", aIsSubject);
+		condition = condition.replaceAll("(B|b) *\\. *\\$IS_SUBJECT", bIsSubject);
+    	condition = condition.replaceAll("(B|b) *\\. *\\$is_subject", bIsSubject);
+    	return condition;
+    }
+   
     /**
      * Reads a table-list from CSV-file.
      * 

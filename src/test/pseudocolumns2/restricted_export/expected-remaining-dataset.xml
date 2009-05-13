@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='ISO-8859-15'?>
+<dataset>
+  <SALARYGRADE grade="1" losal="700" hisal="1200"/>
+  <SALARYGRADE grade="2" losal="1201" hisal="1400"/>
+  <SALARYGRADE grade="3" losal="1401" hisal="2000"/>
+  <SALARYGRADE grade="4" losal="2001" hisal="3000"/>
+  <SALARYGRADE grade="5" losal="3001" hisal="9999"/>
+  <ROLE role_id="100" description="Developer"/>
+  <ROLE role_id="101" description="Researcher"/>
+  <ROLE role_id="102" description="Project manager"/>
+  <PROJECT projectno="1001" description="Development of Novel Magnetic Suspension System" start_date="2006-01-01" end_date="2007-08-13"/>
+  <PROJECT projectno="1002" description="Research on thermofluid dynamics in Microdroplets" start_date="2006-08-22" end_date="2007-03-20"/>
+  <PROJECT projectno="1003" description="Foundation of Quantum Technology" start_date="2007-02-24" end_date="2008-07-31"/>
+  <PROJECT projectno="1004" description="High capacity optical network" start_date="2008-01-01"/>
+  <DEPARTMENT deptno="10" name="ACCOUNTING" location="NEW YORK"/>
+  <DEPARTMENT deptno="20" name="RESEARCH" location="DALLAS"/>
+  <DEPARTMENT deptno="30" name="SALES" location="CHICAGO"/>
+  <DEPARTMENT deptno="40" name="OPERATIONS" location="BOSTON"/>
+  <EMPLOYEE empno="7369" name="SMITH" job="CLERK" boss="7902" hiredate="1980-12-17" salary="800.00" deptno="20"/>
+  <EMPLOYEE empno="7499" name="ALLEN" job="SALESMAN" boss="7698" hiredate="1981-02-20" salary="1600.00" comm="300.00" deptno="30"/>
+  <EMPLOYEE empno="7521" name="WARD" job="SALESMAN" boss="7698" hiredate="1981-02-22" salary="1250.00" comm="500.00" deptno="30"/>
+  <EMPLOYEE empno="7566" name="JONES" job="MANAGER" boss="7839" hiredate="1981-04-02" salary="2975.00" deptno="20"/>
+  <EMPLOYEE empno="7654" name="MARTIN" job="SALESMAN" boss="7698" hiredate="1981-09-28" salary="1250.00" comm="1400.00" deptno="30"/>
+  <EMPLOYEE empno="7698" name="BLAKE" job="MANAGER" boss="7839" hiredate="1981-05-01" salary="2850.00" deptno="30"/>
+  <EMPLOYEE empno="7782" name="CLARK" job="MANAGER" boss="7839" hiredate="1981-06-09" salary="2450.00" deptno="10"/>
+  <EMPLOYEE empno="7788" name="SCOTT" job="ANALYST" boss="7566" hiredate="1982-12-09" salary="3000.00" deptno="20"/>
+  <EMPLOYEE empno="7839" name="KING" job="PRESIDENT" hiredate="1981-11-17" salary="5000.00" deptno="10"/>
+  <EMPLOYEE empno="7844" name="TURNER" job="SALESMAN" boss="7698" hiredate="1981-09-08" salary="1500.00" comm="0.00" deptno="30"/>
+  <EMPLOYEE empno="7876" name="ADAMS" job="CLERK" boss="7788" hiredate="1983-01-12" salary="1100.00" deptno="20"/>
+  <EMPLOYEE empno="7900" name="JAMES" job="CLERK" boss="7698" hiredate="1981-12-03" salary="950.00" deptno="30"/>
+  <EMPLOYEE empno="7902" name="FORD" job="ANALYST" boss="7566" hiredate="1981-12-03" salary="3000.00" deptno="20"/>
+  <EMPLOYEE empno="7934" name="MILLER" job="CLERK" boss="7782" hiredate="1982-01-23" salary="1300.00" deptno="10"/>
+  <PROJECT_PARTICIPATION projectno="1001" empno="7369" start_date="2006-01-01" end_date="2007-08-13" role_id="100"/>
+  <PROJECT_PARTICIPATION projectno="1001" empno="7788" start_date="2006-05-15" end_date="2006-11-01" role_id="100"/>
+  <PROJECT_PARTICIPATION projectno="1001" empno="7902" start_date="2006-01-01" end_date="2006-12-30" role_id="102"/>
+  <PROJECT_PARTICIPATION projectno="1002" empno="7782" start_date="2006-08-22" end_date="2007-03-20" role_id="101"/>
+  <PROJECT_PARTICIPATION projectno="1002" empno="7876" start_date="2006-08-22" end_date="2007-03-20" role_id="102"/>
+  <PROJECT_PARTICIPATION projectno="1002" empno="7934" start_date="2007-01-01" end_date="2007-03-20" role_id="101"/>
+  <PROJECT_PARTICIPATION projectno="1003" empno="7566" start_date="2007-02-24" end_date="2008-07-31" role_id="102"/>
+  <PROJECT_PARTICIPATION projectno="1003" empno="7900" start_date="2007-02-24" end_date="2007-01-31" role_id="101"/>
+  <PROJECT_PARTICIPATION projectno="1004" empno="7499" start_date="2008-01-01" role_id="102"/>
+  <PROJECT_PARTICIPATION projectno="1004" empno="7521" start_date="2008-05-01" role_id="101"/>
+  <PROJECT_PARTICIPATION projectno="1004" empno="7654" start_date="2008-04-15" role_id="101"/>
+  <PROJECT_PARTICIPATION projectno="1004" empno="7844" start_date="2008-02-01" role_id="101"/>
+  <PROJECT_PARTICIPATION projectno="1004" empno="7900" start_date="2008-03-01" end_date="2008-04-01" role_id="101"/>
+  <PROJECT_PARTICIPATION projectno="1004" empno="7900" start_date="2008-05-20" role_id="101"/>
+</dataset>

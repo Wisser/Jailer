@@ -86,6 +86,11 @@ public class EntityGraph {
     private final PrimaryKey universalPrimaryKey;
     
     /**
+     * Birthday of subject rows.
+     */
+    private int birthdayOfSubject = 0;
+    
+    /**
      * Constructor.
      * 
      * @param graphID the unique ID of the graph
@@ -96,6 +101,15 @@ public class EntityGraph {
         this.graphID = graphID;
         this.statementExecutor = statementExecutor;
         this.universalPrimaryKey = universalPrimaryKey;
+    }
+    
+    /**
+     * Sets birthday of subject rows.
+     * 
+     * @param birthdayOfSubject birthday of subject rows
+     */
+    public void setBirthdayOfSubject(int birthdayOfSubject) {
+    	this.birthdayOfSubject = birthdayOfSubject;
     }
     
     /**
@@ -128,9 +142,10 @@ public class EntityGraph {
      */
     public static EntityGraph copy(EntityGraph graph, int graphID, Session statementExecutor) throws SQLException {
         EntityGraph entityGraph = create(graphID, statementExecutor, graph.universalPrimaryKey);
+        entityGraph.setBirthdayOfSubject(graph.birthdayOfSubject);
         statementExecutor.executeUpdate(
-                "Insert into " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + "(r_entitygraph, " + graph.universalPrimaryKey.columnList(null) + ", birthday, type) " +
-                    "Select " + graphID + ", " + graph.universalPrimaryKey.columnList(null) + ", birthday, type From " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " Where r_entitygraph=" + graph.graphID + "");
+                "Insert into " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + "(r_entitygraph, " + graph.universalPrimaryKey.columnList(null) + ", birthday, orig_birthday, type) " +
+                    "Select " + graphID + ", " + graph.universalPrimaryKey.columnList(null) + ", birthday, birthday, type From " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " Where r_entitygraph=" + graph.graphID + "");
         return entityGraph;
     }
 
@@ -291,15 +306,19 @@ public class EntityGraph {
         if (maxTotalRowcount > 0 && limit == 0) {
             limit = Math.max(maxTotalRowcount - totalRowcount + 1, 1);
         }
+        if (joinCondition != null) {
+        	joinCondition = SqlUtil.resolvePseudoColumns(joinCondition, null, "E", today, birthdayOfSubject);
+        }
         String select =
             "Select " + (joinedTable != null? "distinct " : "") + "" + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS TODAY, '" + table.getName() + "' AS TYPE" +
             (source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, '" + source.getName() + "' AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
             " From " + table.getName() + " " + alias +
-            (joinedTable != null? " join " + joinedTable.getName() + " " + joinedTableAlias + " on " + joinCondition : "") +
             " left join " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type='" + table.getName() + "' and " +
             pkEqualsEntityID(table, alias, "Duplicate") + 
+            (joinedTable != null? ", " + joinedTable.getName() + " " + joinedTableAlias + " ": "") +
             (joinWithEntity? ", " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " E" : "") +
             " Where (" + condition + ") and Duplicate.type is null" +
+            (joinedTable != null? " and (" + joinCondition + ")" : "") +
             (limit > 0? " fetch first " + limit + " rows only" : ""); 
         
         if (source != null && explain) {
@@ -337,10 +356,12 @@ public class EntityGraph {
      * @param dependencyId id of dependency
      */
     public void addDependencies(Table from, String fromAlias, Table to, String toAlias, String condition, int aggregationId, int dependencyId) throws SQLException {
+    	condition = SqlUtil.resolvePseudoColumns(condition, "E1", "E2", 0, birthdayOfSubject);
         String insert = "Insert into " + SQLDialect.dmlTableReference(DEPENDENCY, statementExecutor) + "(r_entitygraph, assoc, depend_id, from_type, to_type, " + upkColumnList(from, "FROM_") + ", " + upkColumnList(to, "TO_") + ") " +
             "Select " + graphID + ", " + aggregationId  + ", " + dependencyId + ", '" + from.getName() + "', '" + to.getName() + "', " + pkList(from, fromAlias, "FROM") + ", " + pkList(to, toAlias, "TO") +
-            " From " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " E1, " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " E2, " + from.getName() + " " + fromAlias + " join " + to.getName() + " " + toAlias + " on " + condition +
+            " From " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " E1, " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " E2, " + from.getName() + " " + fromAlias + " ," + to.getName() + " " + toAlias + " " +
             " Where E1.r_entitygraph=" + graphID + " and E2.r_entitygraph=" + graphID + "" +
+            " and (" + condition + ")" +
             " and E1.type='" + from.getName() + "' and E2.type='" + to.getName() + "'" +
             " and " + pkEqualsEntityID(from, fromAlias, "E1") +
             " and " + pkEqualsEntityID(to, toAlias, "E2");
@@ -609,12 +630,14 @@ public class EntityGraph {
                 sourceAlias = "A";
             }
             int setId = getNextSetId();
+            jc = SqlUtil.resolvePseudoColumns(jc, "EB", "EA", 0, birthdayOfSubject, "orig_birthday");
             String remove = "Insert into " + SQLDialect.dmlTableReference(ENTITY_SET_ELEMENT, statementExecutor) + "(set_id, type, " + universalPrimaryKey.columnList(null) + ") " +
                 "Select distinct " + setId + ", EB.type, " + universalPrimaryKey.columnList("EB.") + " from " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " EB " +
                 "join " + association.destination.getName() + " " + destAlias + " on "+ pkEqualsEntityID(association.destination, destAlias, "EB") + " " +
-                "join " + association.source.getName() + " " + sourceAlias + " on " + association.getJoinCondition() + " " +
+                ", " + association.source.getName() + " " + sourceAlias + " " +
                 (deletedEntitiesAreMarked? "join " : "left join ") + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " EA on EA.r_entitygraph=" + graphID + " and EA.type='" + association.source.getName() + "' and " + pkEqualsEntityID(association.source, sourceAlias, "EA") + " " +
                 "Where EB.r_entitygraph=" + graphID + " and EB.type='" + association.destination.getName() + "' " +
+                "and (" + jc + ") " +
                 "and " + (deletedEntitiesAreMarked? "EA.birthday=-1 and EB.birthday>=0" : "EA.type is null");
             long rc = statementExecutor.executeUpdate(remove);
             totalRowcount += rc;
