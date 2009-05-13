@@ -59,6 +59,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
@@ -1096,10 +1097,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		for (Column c: table.getColumns()) {
 			columns.add(alias + "." + c.name);
 		}
+		columns.add("");
 		columns.add(alias + ".$IS_SUBJECT");
 		columns.add(alias + ".$DISTANCE");
 		
 		for (final String c: columns) {
+			if (c.equals("")) {
+				popup.add(new JSeparator());
+				continue;
+			}
 			JMenuItem m = new JMenuItem(c);
 			m.addActionListener(new ActionListener () {
 				public void actionPerformed(ActionEvent e) {
