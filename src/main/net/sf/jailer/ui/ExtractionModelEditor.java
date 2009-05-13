@@ -30,6 +30,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.IOException;
@@ -49,9 +50,12 @@ import java.util.Vector;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
+import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
@@ -1081,20 +1085,93 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     Association currentAssociation;
     private DefaultMutableTreeNode currentNode;
     private String initialRestrictionCondition = null;
-    
+
+    /**
+     * Opens a drop-down box which allows the user to select columns for restriction definitions.
+     */
+	private void openColumnDropDownBox(JLabel label, String alias, Table table) {
+		JPopupMenu popup = new JPopupMenu();
+		List<String> columns = new ArrayList<String>();
+		
+		for (Column c: table.getColumns()) {
+			columns.add(alias + "." + c.name);
+		}
+		columns.add(alias + ".$IS_SUBJECT");
+		columns.add(alias + ".$DISTANCE");
+		
+		for (final String c: columns) {
+			JMenuItem m = new JMenuItem(c);
+			m.addActionListener(new ActionListener () {
+				public void actionPerformed(ActionEvent e) {
+					if (restrictionEditor.restriction.isEnabled()) {
+						if (restrictionEditor.restriction.isEditable()) {
+							restrictionEditor.restriction.replaceSelection(c);
+						}
+					}
+				}
+			});
+			popup.add(m);
+		}
+		popup.show(label, 0, label.getHeight());
+	}
+
+	private MouseAdapter maA, maB;
+	
     /**
      * Initializes the restriction editor.
      * 
      * @param association the association on which a restriction can be edited
      * @param node selected tree node
      */
-    private void initRestrictionEditor(Association association, DefaultMutableTreeNode node) {
+    private void initRestrictionEditor(final Association association, DefaultMutableTreeNode node) {
     	currentAssociation = association;
     	currentNode = node;
     	initialRestrictionCondition = null;
     	initXmlMappingEditor(association);
     	initRestrictedDependencyWarningField();
+    	restrictionEditor.columnsA.setText(null);
+    	restrictionEditor.columnsB.setText(null);
+    	restrictionEditor.columnsA.setIcon(dropDownIcon);
+    	restrictionEditor.columnsB.setIcon(dropDownIcon);
+    	restrictionEditor.columnsA.setEnabled(true);
+    	restrictionEditor.columnsB.setEnabled(true);
+    	if (maA != null) {
+    		restrictionEditor.columnsA.removeMouseListener(maA);
+    	}
+    	if (maB != null) {
+    		restrictionEditor.columnsB.removeMouseListener(maB);
+    	}
+    	maA = maB = null;
+    	if (association != null) {
+    		restrictionEditor.columnsB.addMouseListener(maB = new java.awt.event.MouseAdapter() {
+    			public void mousePressed(java.awt.event.MouseEvent evt) {
+    				openColumnDropDownBox(restrictionEditor.columnsB, "B", association.destination);
+    			}
+    			
+				public void mouseEntered(java.awt.event.MouseEvent evt) {
+	            	restrictionEditor.columnsB.setEnabled(false);
+	            }
+	            public void mouseExited(java.awt.event.MouseEvent evt) {
+	            	restrictionEditor.columnsB.setEnabled(true);
+	           }
+	        });
+    		restrictionEditor.columnsA.addMouseListener(maA = new java.awt.event.MouseAdapter() {
+    			public void mousePressed(java.awt.event.MouseEvent evt) {
+    				openColumnDropDownBox(restrictionEditor.columnsA, "A", association.source);
+    			}
+    			
+				public void mouseEntered(java.awt.event.MouseEvent evt) {
+	            	restrictionEditor.columnsA.setEnabled(false);
+	            }
+	            public void mouseExited(java.awt.event.MouseEvent evt) {
+	            	restrictionEditor.columnsA.setEnabled(true);
+	           }
+	        });
+    	}
     	if (association == null) {
+        	restrictionEditor.columnsA.setEnabled(false);
+        	restrictionEditor.columnsB.setEnabled(false);
+
 			int l = currentRestrictionDefinitions == null? -1 : currentRestrictionDefinitions.size();
 			if (l > 0) {
 				restrictionsTable.removeRowSelectionInterval(0, l - 1);
@@ -2189,5 +2266,16 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JTextArea xmlSketch;
     private javax.swing.JButton xmlTagApply;
     // End of variables declaration//GEN-END:variables
-
+    
+    private Icon dropDownIcon;
+	{
+		String dir = "/net/sf/jailer/resource";
+		
+		// load images
+		try {
+			dropDownIcon = new ImageIcon(getClass().getResource(dir + "/dropdown.png"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }
