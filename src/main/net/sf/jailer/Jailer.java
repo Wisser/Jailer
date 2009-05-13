@@ -91,7 +91,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "2.9.8.beta";
+	public static final String VERSION = "2.9.8.beta2";
 
 	/**
 	 * The relational data model.
@@ -278,6 +278,7 @@ public class Jailer {
 
 				int today = entityGraph.getAge();
 				entityGraph.addEntities(table, "1=1", today, 0);
+				entityGraph.setAge(today + 1);
 			} else {
 				_log.info(datamodel.getDisplayName(table) + " not in closure("
 						+ datamodel.getDisplayName(subject) + ")");
@@ -1212,6 +1213,7 @@ public class Jailer {
 			jailer.setDataModel(task.dataModel);
 			jailer.runstats(statementExecutor, false);
 			Set<Table> progress = jailer.exportInitialData(task.subject);
+			entityGraph.setBirthdayOfSubject(entityGraph.getAge());
 			progress.addAll(jailer.export(task.subject, task.condition,
 					progress, task.limit));
 			totalProgress.addAll(progress);

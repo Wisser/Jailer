@@ -77,7 +77,7 @@ public abstract class DbmsAwareTestCase extends DBTestCase {
         	ITable actualTable = databaseDataSet.getTable(table.getTableMetaData().getTableName());
         	ITable filteredTable = DefaultColumnFilter.includedColumnsTable(actualTable, 
                     table.getTableMetaData().getColumns());
-        	Assertion.assertEquals(new SortedTable(table), filteredTable);
+        	Assertion.assertEquals(new SortedTable(table), new SortedTable(filteredTable));
         }
 	}
 
