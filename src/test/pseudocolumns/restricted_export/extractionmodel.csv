@@ -1,0 +1,56 @@
+# subject; condition;  limit; restrictions
+EMPLOYEE; NAME='JONES'; ; .embedded
+
+# from A (or association name); to B; restriction-condition
+inverse-DEPARTMENT; ; ignore
+BONUS; ; ignore
+inverse-BOSS; ; B.$distance<=1
+inverse-EMPLOYEE; ; A.$IS_SUBJECT
+inverse-PROJECT; ; ignore
+inverse-ROLE; ; ignore
+inverse-SALARY; ; ignore
+
+#! block xml-mapping
+inverse-SALARY;employee;NONE
+BONUS;bonus;NONE
+SALARY;salary;NONE
+DEPARTMENT;department;NONE
+BOSS;boss;NONE
+inverse-BOSS;employee;NONE
+inverse-EMPLOYEE;project_participation;NONE
+inverse-ROLE;project_participation;NONE
+inverse-PROJECT;project_participation;NONE
+ROLE;role;NONE
+EMPLOYEE;employee;NONE
+PROJECT;project;NONE
+inverse-DEPARTMENT;employee;NONE
+inverse-BONUS;employee;NONE
+
+#! block export modus
+SQL
+
+#! block xml settings
+yyyy-MM-dd;yyyy-MM-dd-HH.mm.ss;rowset
+#! block xml column mapping
+
+#! block filters
+
+#! block layout
+SALARYGRADE; SALARYGRADE; 0.0; 0.0; 1.0
+SALARYGRADE; EMPLOYEE; -116.57973957061768; 77.88906860351562; 1.0
+SALARYGRADE; BOSS#; -226.4259033203125; 37.8797492980957; 0.0
+SALARYGRADE; $ZOOMBOX; 0.0; 0.0; 1.0
+SALARYGRADE; PROJECT_PARTICIPATION; -122.6189956665039; -80.84614562988281; 0.0
+SALARYGRADE; DEPARTMENT; -220.5424346923828; 192.13333129882812; 0.0
+SALARYGRADE; BONUS; -1.4217983484268188; 183.37156677246094; 0.0
+EMPLOYEE; SALARYGRADE; -144.06448364257812; 77.61380004882812; 0.0
+EMPLOYEE; EMPLOYEE; 0.0; 0.0; 1.0
+EMPLOYEE; BOSS#; 153.7010040283203; -33.74187469482422; 1.0
+EMPLOYEE; ROLE; -144.63861083984375; -183.38647317886353; 1.0
+EMPLOYEE; PROJECT; -5.355398178100586; -241.50450134277344; 1.0
+EMPLOYEE; $ZOOMBOX; 0.0; 0.0; 1.0
+EMPLOYEE; PROJECT_PARTICIPATION; -6.297966003417969; -83.17901611328125; 1.0
+EMPLOYEE; DEPARTMENT; 1.8123130798339844; 106.9405517578125; 1.0
+
+#! block version
+2.9.8.beta2

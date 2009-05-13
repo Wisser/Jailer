@@ -1031,6 +1031,9 @@ public class GraphicalDataModelView extends JPanel {
 		for (Table t: initiallyVisibleTables) {
 			addEdges(g, t, null, new ArrayList<Table>(), true);
 		}
+		if (!initiallyVisibleTables.isEmpty()) {
+			addEdges(g, table, null, new ArrayList<Table>(), true);
+		}
 		
 		int nAssociatedTables = 0;
 		if (table != null) {
