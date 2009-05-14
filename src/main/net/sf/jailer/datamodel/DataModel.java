@@ -574,5 +574,20 @@ public class DataModel {
     		}
     	}
     }
+
+    /**
+     * Destroys the model in order to prevent OOMEs.
+     * A model can no longer be used if it is destroyed.
+     */
+    public void destroy() {
+        for (Table t: tables.values()) {
+        	t.associations.clear();
+        }
+        tables.clear();
+    	tablesByDisplayName.clear();
+    	displayName.clear();
+    	namedAssociations.clear();
+    	restrictionModel = null;
+    }
     
 }

@@ -28,6 +28,7 @@ import java.awt.Insets;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -982,8 +983,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
     private void rootTableItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rootTableItemStateChanged
     	if (evt.getItem() != null) {
-    		Table table = dataModel.getTableByDisplayName(evt.getItem().toString());
-    		setRoot(table);
+    		if (evt.getStateChange() == ItemEvent.SELECTED) {
+    			Table table = dataModel.getTableByDisplayName(evt.getItem().toString());
+    			setRoot(table);
+    		}
     	}
     }//GEN-LAST:event_rootTableItemStateChanged
 
