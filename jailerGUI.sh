@@ -23,5 +23,5 @@ CP=$CP:jailer.jar
 
 # echo $CP
 
-java -cp $CP net.sf.jailer.ui.ExtractionModelFrame $@
+java -Xmx256M -cp $CP net.sf.jailer.ui.ExtractionModelFrame $@
 

@@ -174,7 +174,7 @@ public class GraphicalDataModelView extends JPanel {
     	this.model = model;
     	this.modelEditor = modelEditor;
     	this.root = subject;
-    	
+
     	tableRenderer = new TableRenderer(model, this);
     	final Set<Table> initiallyVisibleTables = new HashSet<Table>();
     	if (subject != null) {

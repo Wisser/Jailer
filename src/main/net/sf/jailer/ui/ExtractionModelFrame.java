@@ -16,6 +16,7 @@
 package net.sf.jailer.ui;
 
 import java.awt.CardLayout;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -1107,32 +1108,65 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      * @param modelFile name of model file
      */
 	private void load(String modelFile) {
-		extractionModelEditor.extractionModelFrame = null;
-		editorPanel.remove(extractionModelEditor);
-		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(modelFile, this, isHorizontalLayout, getConnectivityState()), "editor");
-		((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
-		validate();
-		updateTitle(extractionModelEditor.needsSave);
+		try {
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			extractionModelEditor.extractionModelFrame = null;
+			editorPanel.remove(extractionModelEditor);
+			if (extractionModelEditor.dataModel != null) {
+				extractionModelEditor.dataModel.destroy(); // prevent OOE
+			}
+			extractionModelEditor = null;
+    		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(modelFile, this, isHorizontalLayout, getConnectivityState()), "editor");
+			((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
+			validate();
+			updateTitle(extractionModelEditor.needsSave);
+		} catch (Throwable t) {
+			UIUtil.showException(this, "Error", t);
+		} finally {
+			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		}
 	}
 
     private void newModelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newModelActionPerformed
-    	if (saveIfNeeded("creating new model", true)) {
-    		extractionModelEditor.extractionModelFrame = null;
-    		editorPanel.remove(extractionModelEditor);
-    		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(null, this, isHorizontalLayout, getConnectivityState()), "editor");
-    		((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
-    		validate();
-    		updateTitle(extractionModelEditor.needsSave);
-    	}
+    	try {
+    		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+    		if (saveIfNeeded("creating new model", true)) {
+	    		extractionModelEditor.extractionModelFrame = null;
+	    		editorPanel.remove(extractionModelEditor);
+				if (extractionModelEditor.dataModel != null) {
+					extractionModelEditor.dataModel.destroy(); // prevent OOE
+				}
+	    		extractionModelEditor = null;
+	    		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(null, this, isHorizontalLayout, getConnectivityState()), "editor");
+	    		((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
+	    		validate();
+	    		updateTitle(extractionModelEditor.needsSave);
+	    	}
+		} catch (Throwable t) {
+			UIUtil.showException(this, "Error", t);
+		} finally {
+			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		}
     }//GEN-LAST:event_newModelActionPerformed
 
     private void reload() {
-		extractionModelEditor.extractionModelFrame = null;
-		editorPanel.remove(extractionModelEditor);
-		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelEditor.extractionModelFile, this, isHorizontalLayout, getConnectivityState()), "editor");
-		((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
-		validate();
-		updateTitle(extractionModelEditor.needsSave);
+		try {
+    		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+	    	extractionModelEditor.extractionModelFrame = null;
+			editorPanel.remove(extractionModelEditor);
+			if (extractionModelEditor.dataModel != null) {
+				extractionModelEditor.dataModel.destroy(); // prevent OOE
+			}
+			extractionModelEditor = null;
+    		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelEditor.extractionModelFile, this, isHorizontalLayout, getConnectivityState()), "editor");
+			((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
+			validate();
+			updateTitle(extractionModelEditor.needsSave);
+		} catch (Throwable t) {
+			UIUtil.showException(this, "Error", t);
+		} finally {
+			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		}
 	}
 
 	private void expandAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_expandAllActionPerformed
@@ -1354,7 +1388,19 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(final String args[]) {
-    	 // check working folder
+    	
+//    	long size = 0;
+//    	try {
+//    		List<byte[]> m = new ArrayList<byte[]>();
+//    		for (;;) {
+//    			m.add(new byte[10000]);
+//    			size += 10000;
+//    		}
+//    	} catch (OutOfMemoryError e) {
+//    		System.out.println(size);
+//    	}
+    	
+    	// check working folder
         String configFileName = "jailer.xml";
         File configFile = new File(configFileName);
         if (!configFile.exists()) {
