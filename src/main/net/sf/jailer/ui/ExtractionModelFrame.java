@@ -1480,7 +1480,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     
     private static void askForDataModel(
 			ExtractionModelFrame extractionModelFrame) {
-		if (extractionModelFrame.extractionModelEditor.dataModel.getTables().isEmpty()) {
+		if (extractionModelFrame.extractionModelEditor.dataModel == null || extractionModelFrame.extractionModelEditor.dataModel.getTables().isEmpty()) {
         	switch (JOptionPane.showOptionDialog(extractionModelFrame, "No Data Model found.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Introspect DB", "Data Model Editor", "Demo" }, null)) {
         		case 0: extractionModelFrame.updateDataModelActionPerformed(null); break;
                	case 1: extractionModelFrame.openDataModelEditorActionPerformed(null); break;
