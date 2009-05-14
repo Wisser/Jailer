@@ -5,7 +5,8 @@
 <meta name="keywords" content="Data Export Tool">
 <meta name="description" content="data export referential integrity java jdbc dbms">
 <link rel="stylesheet" type="text/css" href="installation-2-Dateien/styles.css">
-<link rel="shortcut icon" href="favicon.ico"></head>
+<link rel="shortcut icon" href="favicon.ico">
+</head>
 <body top-margin="0" left-margin="0">
 <div align="left">
 <table style="text-align: left; position: absolute; left: 0pt; top: 0pt;" border="0" cellpadding="0" cellspacing="0" height="407" width="100%">
@@ -86,7 +87,9 @@
 <td class="content" height="520" valign="top" width="100%">
 <small><small>&nbsp; </small></small><br>
 <big><span style="font-weight: bold;">Frequently
-Asked Questions<br><br></span></big>
+Asked Questions<br>
+<br>
+</span></big>
 <table style="text-align: left;" border="0" cellpadding="3" cellspacing="0">
 <tbody>
 <tr>
@@ -149,6 +152,18 @@ Finally check all associations between the remaining tables. <br>
 </tr>
 <tr>
 <td style="background-color: rgb(242, 242, 242); font-weight: bold;">Q</td>
+<td style="background-color: rgb(242, 242, 242); font-weight: bold;">What does $DISTANCE and $IS_SUBJECT mean?<br></td>
+</tr>
+<tr>
+<td style="vertical-align: top;">A</td>
+<td>$DISTANCE and $IS_SUBJECT are special expressions&nbsp;used in
+restriction conditions in order to define restriction models based on
+topological properties of rows.<br><br><table style="text-align: left; width: 100%;" border="0" cellpadding="2" cellspacing="0"><tbody><tr><td style="font-weight: bold;">Expression</td><td style="font-weight: bold;">Type</td><td></td></tr><tr><td style="vertical-align: top;">$DISTANCE</td><td style="vertical-align: top;">INTEGER &nbsp; </td><td>Minimum length of all paths from the row back to any subject row. <br>The distance of subject rows is 0.</td></tr><tr><td>$BIRTHDAY</td><td>INTEGER</td><td>Synonym for $DISTANCE.</td></tr><tr><td>$IS_SUBJECT</td><td>BOOLEAN</td><td>Synonym for $DISTANCE=0.</td></tr></tbody></table><br>
+&nbsp;<br>
+</td>
+</tr>
+<tr>
+<td style="background-color: rgb(242, 242, 242); font-weight: bold;">Q</td>
 <td style="background-color: rgb(242, 242, 242); font-weight: bold;">How
 do I anonymize the extracted data?</td>
 </tr>
@@ -166,7 +181,7 @@ export file is written. <br>
 For example: <br>
 &nbsp;<br>
 In order to substitute the values of the column PERSON.SSN with the
-constant value '123', define the filter: <span style="font-style: italic;">PERSON.SSN := '123' </span><br>
+constant value '123', define the filter: <span style="font-style: italic;"><br>PERSON.SSN := '123' </span><br>
 &nbsp;<br>
 The filter <br>
 <span style="font-style: italic;">PERSON.SSN
@@ -259,7 +274,8 @@ consumes too much cpu time on some systems. However, there is a
 parameter called "<span style="font-style: italic;">animation
 step time</span>" which determines the minimum
 time (in ms) for one animation step. Increasing that parameter
-(<span style="font-style: italic;">View-&gt;Animation step time</span>) will
+(<span style="font-style: italic;">View-&gt;Animation
+step time</span>) will
 reduce the cpu utilization.<br>
 </td>
 </tr>
