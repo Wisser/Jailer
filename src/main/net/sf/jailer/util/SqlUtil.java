@@ -462,6 +462,54 @@ public class SqlUtil {
 		return schema + "." + t.getUnqualifiedName();
 	}
 
+	/**
+	 * Splits a DML statement into several lines with limited length.
+	 * 
+	 * @param sql the DML statement
+	 * @param maxLength maximum line length
+	 * @return DML statement with line breaks
+	 */
+	public static String splitDMLStatement(String sql, int maxLength) {
+		if (sql.length() <= maxLength) {
+			return sql;
+		}
+		StringBuilder sb = new StringBuilder();
+		int lastBreak = -1;
+		int currentLength = 0;
+		boolean inLiteral = false;
+		for (int i = 0; i < sql.length(); ++i) {
+			char c = sql.charAt(i);
+			
+			if (currentLength >= maxLength) {
+				if (inLiteral && lastBreak <= 0) {
+					if (i + 1 < sql.length() && sql.charAt(i + 1) != '\'') {
+						sb.append("'||\n'");
+						currentLength = 3;
+						lastBreak = -1;
+					}
+				} else if (lastBreak > 0) {
+					sb.insert(lastBreak + 1, "\n");
+					currentLength = sb.length() - lastBreak - 2;
+					lastBreak = -1;
+				}
+			}
+			
+			if ((!inLiteral) && (c == ' ' || c == ',')) {
+				lastBreak = sb.length();
+			} else if (c == '\n') {
+				currentLength = 0;
+				lastBreak = -1;
+			}
+			
+			++currentLength;
+			sb.append(c);
+			if (c == '\'') {
+				inLiteral = !inLiteral;
+			}
+		}
+		return sb.toString();
+	}
+
 	public static final String LETTERS_AND_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789";
 
 	/**
