@@ -148,7 +148,11 @@ public class DeletionTransformer implements ResultSetReader {
      */
     private void writeToScriptFile(String content) throws IOException {
         synchronized (scriptFileWriter) {
-            scriptFileWriter.write(content);
+        	if (SqlUtil.dbms == DBMS.ORACLE) {
+       			scriptFileWriter.write(SqlUtil.splitDMLStatement(content, 50 /* TODO 2400 */));
+        	} else {
+        		scriptFileWriter.write(content);
+        	}
         }
     }
 

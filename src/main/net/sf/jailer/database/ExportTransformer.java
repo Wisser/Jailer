@@ -314,7 +314,7 @@ public class ExportTransformer implements ResultSetReader {
 	            
 	                String item = "Select " + valueList + " from dual";
 	                if (!sb.isAppendable(insertHead, item)) {
-	                    writeToScriptFile(sb.build());
+	                    writeToScriptFile(sb.build(), true);
 	                }
 	                if (sb.isEmpty()) {
 	                	item = "Select " + namedValues + " from dual";
@@ -334,7 +334,7 @@ public class ExportTransformer implements ResultSetReader {
 	            
 	                String item = "(" + valuesWONull + ")";
 	                if (!sb.isAppendable(insertHead, item)) {
-	                    writeToScriptFile(sb.build());
+	                    writeToScriptFile(sb.build(), true);
 	                }
 	                sb.append(insertHead, item, ", ", terminator.toString());
                 } else {
@@ -353,7 +353,7 @@ public class ExportTransformer implements ResultSetReader {
 	                }
 	            
 	                if (!sb.isAppendable(insertHead, item)) {
-	                    writeToScriptFile(sb.build());
+	                    writeToScriptFile(sb.build(), true);
 	                }
 	                sb.append(insertHead, item, ", ", terminator.toString());
                 }
@@ -377,14 +377,14 @@ public class ExportTransformer implements ResultSetReader {
 	                }
 	                if (!f) {
 	                	insert.append(" Where " + whereWOAlias + ";\n");
-	                    writeToScriptFile(insert.toString());
+	                    writeToScriptFile(insert.toString(), true);
 	                }
                 }
             } else {
                 String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") values ";
                 String item = "(" + valueList + ")";
                 if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
-                    writeToScriptFile(insertStatementBuilder.build());
+                    writeToScriptFile(insertStatementBuilder.build(), true);
                 }
                 insertStatementBuilder.append(insertSchema, item, ", ", ";\n");
             }
@@ -461,13 +461,13 @@ public class ExportTransformer implements ResultSetReader {
             	++numberOfExportedLOBs;
             	flush();
 				Clob clob = (Clob) lob;
-				writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "CLOB " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + "\n");
+				writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "CLOB " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + "\n", false);
 				Reader in = clob.getCharacterStream();
 				int c;
 				StringBuffer line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
 				while ((c = in.read()) != -1) {
 					if ((char) c == '\n') {
-						writeToScriptFile(line.toString() + "\\n\n");
+						writeToScriptFile(line.toString() + "\\n\n", false);
 						line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
 					} else {
 						line.append((char) c);
@@ -476,18 +476,18 @@ public class ExportTransformer implements ResultSetReader {
 						}
 					}
 					if (line.length() >= 100) {
-						writeToScriptFile(line.toString() + "\n");
+						writeToScriptFile(line.toString() + "\n", false);
 						line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
 					}
 				}
 				in.close();
-				writeToScriptFile(line.toString() + "\n" + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "\n");
+				writeToScriptFile(line.toString() + "\n" + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "\n", false);
 			}
             if (lob instanceof Blob) {
             	++numberOfExportedLOBs;
             	flush();
 				Blob blob = (Blob) lob;
-				writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "BLOB " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + "\n");
+				writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "BLOB " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + "\n", false);
 				InputStream in = blob.getBinaryStream();
 				int b;
 				StringBuffer line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
@@ -496,13 +496,13 @@ public class ExportTransformer implements ResultSetReader {
 				while ((b = in.read()) != -1) {
 					buffer[size++] = (byte) b;
 					if (size == buffer.length) {
-						writeToScriptFile(line.toString() + Base64.encodeBytes(buffer, Base64.DONT_BREAK_LINES) + "\n");
+						writeToScriptFile(line.toString() + Base64.encodeBytes(buffer, Base64.DONT_BREAK_LINES) + "\n", false);
 						line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
 						size = 0;
 					}
 				}
 				in.close();
-				writeToScriptFile(line.toString() + Base64.encodeBytes(buffer, 0, size, Base64.DONT_BREAK_LINES) + "\n" + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "\n");
+				writeToScriptFile(line.toString() + Base64.encodeBytes(buffer, 0, size, Base64.DONT_BREAK_LINES) + "\n" + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "\n", false);
 			}
 		}
 	}
@@ -512,9 +512,9 @@ public class ExportTransformer implements ResultSetReader {
      */
     public void flush() {
         try {
-            writeToScriptFile(insertStatementBuilder.build());
+            writeToScriptFile(insertStatementBuilder.build(), true);
             for (StatementBuilder sb: upsertInsertStatementBuilder.values()) {
-                writeToScriptFile(sb.build());
+                writeToScriptFile(sb.build(), true);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -531,9 +531,13 @@ public class ExportTransformer implements ResultSetReader {
     /**
      * Writes into script.
      */
-    private void writeToScriptFile(String content) throws IOException {
+    private void writeToScriptFile(String content, boolean wrap) throws IOException {
         synchronized (scriptFileWriter) {
-            scriptFileWriter.write(content);
+        	if (wrap && SqlUtil.dbms == DBMS.ORACLE) {
+       			scriptFileWriter.write(SqlUtil.splitDMLStatement(content, 50 /* TODO 2400 */));
+        	} else {
+        		scriptFileWriter.write(content);
+        	}
         }
     }
     
