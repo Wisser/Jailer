@@ -1,3 +1,7 @@
+2.9.9.beta
+ - limited the length of lines in SQL export files to 2400 bytes,
+   so that oracle's utility SQLPLUS can be used to import the data.
+
 2.9.8
  - Graph layout is persistent [2787683]
  - introduced pseudo-columns for each table: $DISTANCE and $IS_SUBJECT (a synonym for $DISTANCE=0),
