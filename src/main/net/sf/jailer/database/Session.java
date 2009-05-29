@@ -345,7 +345,7 @@ public class Session {
      * @param reader the reader for the result
      */
     public void executeQuery(String sqlQuery, ResultSetReader reader) throws SQLException {
-        _log.debug(sqlQuery);
+        _log.info(sqlQuery);
         try {
 	        Statement statement = connectionFactory.getConnection().createStatement();
 	        ResultSet resultSet = statement.executeQuery(sqlQuery);
@@ -400,7 +400,7 @@ public class Session {
      * @return update-count
      */
     public int executeUpdate(String sqlUpdate) throws SQLException {
-        _log.debug(sqlUpdate);
+        _log.info(sqlUpdate);
         try {
 	        int rowCount = 0;
 	        int failures = 0;
@@ -418,7 +418,7 @@ public class Session {
 	                    rowCount = statement.executeUpdate(sqlUpdate);
 	                }
 	                ok = true;
-	                _log.debug("" + rowCount + " row(s)");
+	                _log.info("" + rowCount + " row(s)");
 	            } catch (SQLException e) {
 	                if (++failures > 10 || e.getErrorCode() != -911) {
 	                    throw e;
@@ -450,7 +450,7 @@ public class Session {
      * @return update-count
      */
     public int executeUpdate(String sqlUpdate, Object[] parameter) throws SQLException {
-        _log.debug(sqlUpdate);
+        _log.info(sqlUpdate);
         try {
 	        int rowCount = 0;
 	        PreparedStatement statement = null;
@@ -461,7 +461,7 @@ public class Session {
 	            	statement.setObject(i++, p);
 	            }
 	        	rowCount = statement.executeUpdate();
-	            _log.debug("" + rowCount + " row(s)");
+	            _log.info("" + rowCount + " row(s)");
 	        } finally {
 	            if (statement != null) {
 	                statement.close();
@@ -481,7 +481,7 @@ public class Session {
      */
     public void insertClob(String table, String column, String where, File lobFile) throws SQLException, FileNotFoundException {
     	String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
-        _log.debug(sqlUpdate);
+        _log.info(sqlUpdate);
         PreparedStatement statement = null;
         statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
         statement.setCharacterStream(1, new InputStreamReader(new FileInputStream(lobFile)), (int) lobFile.length());
@@ -494,7 +494,7 @@ public class Session {
      */
     public void insertBlob(String table, String column, String where, File lobFile) throws SQLException, FileNotFoundException {
     	String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
-        _log.debug(sqlUpdate);
+        _log.info(sqlUpdate);
         PreparedStatement statement = null;
         statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
         statement.setBinaryStream(1, new FileInputStream(lobFile), (int) lobFile.length());
@@ -508,7 +508,7 @@ public class Session {
      * @param sql the SQL-Statement
      */
     public void execute(String sql) throws SQLException {
-        _log.debug(sql);
+        _log.info(sql);
         try {
 	        Statement statement = connectionFactory.getConnection().createStatement();
 	        statement.execute(sql);
