@@ -534,7 +534,7 @@ public class ExportTransformer implements ResultSetReader {
     private void writeToScriptFile(String content, boolean wrap) throws IOException {
         synchronized (scriptFileWriter) {
         	if (wrap && SqlUtil.dbms == DBMS.ORACLE) {
-       			scriptFileWriter.write(SqlUtil.splitDMLStatement(content, 50 /* TODO 2400 */));
+       			scriptFileWriter.write(SqlUtil.splitDMLStatement(content, 2400));
         	} else {
         		scriptFileWriter.write(content);
         	}
