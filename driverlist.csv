@@ -15,6 +15,7 @@ InstantDB (v3.14 and later);jdbc:idb:<DB>;org.enhydra.instantdb.jdbc.idbDriver
 Interbase (InterClient Driver);jdbc:interbase://<HOST>/<DB>;interbase.interclient.Driver
 Hypersonic SQL (v1.2 and earlier);jdbc:HypersonicSQL:<DB>;hSql.hDriver
 Hypersonic SQL (v1.3 and later);jdbc:HypersonicSQL:<DB>;org.hsql.jdbcDriver
+Microsoft SQL Server (jTDS);jdbc:jtds:sqlserver://<server>[:<port>][/<database>];net.sourceforge.jtds.jdbc.Driver
 Microsoft SQL Server (JTurbo Driver);jdbc:JTurbo://<HOST>:<PORT>/<DB>;com.ashna.jturbo.driver.Driver
 Microsoft SQL Server (Sprinta Driver);jdbc:inetdae:<HOST>:<PORT>?database=<DB>;com.inet.tds.TdsDriver
 Microsoft SQL Server 2000 (Microsoft Driver);jdbc:microsoft:sqlserver://<HOST>:<PORT>[\;DatabaseName=<DB>];com.microsoft.jdbc.sqlserver.SQLServerDriver
@@ -24,6 +25,7 @@ Oracle OCI 8i;jdbc:oracle:oci8:@<SID>;oracle.jdbc.driver.OracleDriver
 Oracle OCI 9i;jdbc:oracle:oci:@<SID>;oracle.jdbc.driver.OracleDriver
 PostgreSQL (v6.5 and earlier);jdbc:postgresql://<HOST>:<PORT>/<DB>;postgresql.Driver
 PostgreSQL (v7.0 and later);jdbc:postgresql://<HOST>:<PORT>/<DB>;org.postgresql.Driver
+Sybase (jTDS);jdbc:jtds:sybase://<server>[:<port>][/<database>];net.sourceforge.jtds.jdbc.Driver
 Sybase (jConnect 4.2 and earlier);jdbc:sybase:Tds:<HOST>:<PORT>;com.sybase.jdbc.SybDriver
 Sybase (jConnect 5.2);jdbc:sybase:Tds:<HOST>:<PORT>;com.sybase.jdbc2.jdbc.SybDriver 
 Sybase (jConnect 6.0);jdbc:sybase:Tds:<HOST>:<PORT>;com.sybase.jdbc3.jdbc.SybDriver

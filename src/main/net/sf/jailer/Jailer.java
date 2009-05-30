@@ -91,7 +91,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "2.9.9.beta";
+	public static final String VERSION = "2.9.9.beta2";
 
 	/**
 	 * The relational data model.
@@ -564,7 +564,8 @@ public class Jailer {
 				return new ExportTransformer(table, outputWriter,
 						CommandLineParser.getInstance().upsertOnly,
 						CommandLineParser.getInstance().numberOfEntities,
-						entityGraph.statementExecutor.getMetaData());
+						entityGraph.statementExecutor.getMetaData(),
+						entityGraph.statementExecutor);
 			}
 		} else {
 			return new DeletionTransformer(table, outputWriter,

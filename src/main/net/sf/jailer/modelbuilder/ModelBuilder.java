@@ -169,7 +169,7 @@ public class ModelBuilder {
 	            			columnPerTable.put(table, columns);
 	            			columnsDefinition.append(table.getName() + "; ");
 	            			for (Column c: columns) {
-	            				columnsDefinition.append(c.toSQL(null) + "; ");
+	            				columnsDefinition.append(c.toSQL(null) + (c.isIdentityColumn? " identity" : "") + "; ");
 	            			}
 	            			columnsDefinition.append("\n");
 	            			break;

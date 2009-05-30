@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.Configuration;
 import net.sf.jailer.database.SQLDialect.UPSERT_MODE;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
@@ -133,6 +134,16 @@ public class ExportTransformer implements ResultSetReader {
     private final Quoting quoting;
     
     /**
+     * If table has identity column (MSSQL/Sybase)
+     */
+    private boolean tableHasIdentityColumn;
+    
+    /**
+     * Current session;
+     */
+    private final Session session;
+    
+    /**
      * Maps clear text SQL-types to {@link java.sql.Types}.
      */
     private Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
@@ -145,13 +156,23 @@ public class ExportTransformer implements ResultSetReader {
      * @param maxBodySize maximum length of SQL values list (for generated inserts)
      * @param upsertOnly use 'upsert' statements for all entities
      */
-    public ExportTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, DatabaseMetaData metaData) throws SQLException {
+    public ExportTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, DatabaseMetaData metaData, Session session) throws SQLException {
         this.maxBodySize = maxBodySize;
         this.upsertOnly = upsertOnly;
         this.table = table;
         this.scriptFileWriter = scriptFileWriter;
         this.insertStatementBuilder = new StatementBuilder(SQLDialect.currentDialect.supportsMultiRowInserts? maxBodySize : 1);
         this.quoting = new Quoting(metaData);
+        this.session = session;
+        tableHasIdentityColumn = false;
+        if (Configuration.forDbms(session).isIdentityInserts()) {
+        	for (Column c: table.getColumns()) {
+        		if (c.isIdentityColumn) {
+        			tableHasIdentityColumn = true;
+        			break;
+        		}
+        	}
+        }
     }
     
     /**
@@ -205,6 +226,12 @@ public class ExportTransformer implements ResultSetReader {
                 }
                 f = false;
                 String cVal = SqlUtil.toSql(content);
+                if (Configuration.forDbms(session).isIdentityInserts()) {
+                	// Boolean mapping for MSSQL/Sybase
+                	if (content instanceof Boolean) {
+                		cVal = Boolean.TRUE.equals(content)? "1" : "0";
+                	}
+                }
             	if (content != null && emptyLobValue[i] != null) {
             		cVal = emptyLobValue[i];
             	}
@@ -434,77 +461,79 @@ public class ExportTransformer implements ResultSetReader {
      * @param resultSet export current row
      */
     private void exportLobs(Table table, ResultSet resultSet) throws IOException, SQLException {
-		for (int i = 0; i < lobColumnIndexes.size(); ++i) {
-			Object lob = resultSet.getObject(lobColumnIndexes.get(i));
-			Map<String, String> val = new HashMap<String, String>();
-			for (int j = 1; j <= columnCount; ++j) {
-                if (columnLabel[j] == null) {
-                	continue;
-                }
-                Object content = SqlUtil.getObject(resultSet, j, typeCache);
-                if (resultSet.wasNull()) {
-                    content = null;
-                }
-                String cVal = SqlUtil.toSql(content);
-                val.put(columnLabel[j], cVal);
-            }
-			boolean f = true;
-            StringBuffer where = new StringBuffer("");
-            for (Column pk: table.primaryKey.getColumns()) {
-            	if (!f) {
-                    where.append(" and ");
-                }
-                f = false;
-                where.append(pk.name + "=" + val.get(pk.name));
-            }
-            if (lob instanceof Clob) {
-            	++numberOfExportedLOBs;
-            	flush();
-				Clob clob = (Clob) lob;
-				writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "CLOB " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + "\n", false);
-				Reader in = clob.getCharacterStream();
-				int c;
-				StringBuffer line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
-				while ((c = in.read()) != -1) {
-					if ((char) c == '\n') {
-						writeToScriptFile(line.toString() + "\\n\n", false);
-						line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
-					} else {
-						line.append((char) c);
-						if ((char) c == '\\') {
+    	synchronized (scriptFileWriter) {
+	    	for (int i = 0; i < lobColumnIndexes.size(); ++i) {
+				Object lob = resultSet.getObject(lobColumnIndexes.get(i));
+				Map<String, String> val = new HashMap<String, String>();
+				for (int j = 1; j <= columnCount; ++j) {
+	                if (columnLabel[j] == null) {
+	                	continue;
+	                }
+	                Object content = SqlUtil.getObject(resultSet, j, typeCache);
+	                if (resultSet.wasNull()) {
+	                    content = null;
+	                }
+	                String cVal = SqlUtil.toSql(content);
+	                val.put(columnLabel[j], cVal);
+	            }
+				boolean f = true;
+	            StringBuffer where = new StringBuffer("");
+	            for (Column pk: table.primaryKey.getColumns()) {
+	            	if (!f) {
+	                    where.append(" and ");
+	                }
+	                f = false;
+	                where.append(pk.name + "=" + val.get(pk.name));
+	            }
+	            if (lob instanceof Clob) {
+	            	++numberOfExportedLOBs;
+	            	flush();
+					Clob clob = (Clob) lob;
+					writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "CLOB " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + "\n", false);
+					Reader in = clob.getCharacterStream();
+					int c;
+					StringBuffer line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
+					while ((c = in.read()) != -1) {
+						if ((char) c == '\n') {
+							writeToScriptFile(line.toString() + "\\n\n", false);
+							line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
+						} else {
 							line.append((char) c);
+							if ((char) c == '\\') {
+								line.append((char) c);
+							}
+						}
+						if (line.length() >= 100) {
+							writeToScriptFile(line.toString() + "\n", false);
+							line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
 						}
 					}
-					if (line.length() >= 100) {
-						writeToScriptFile(line.toString() + "\n", false);
-						line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
-					}
+					in.close();
+					writeToScriptFile(line.toString() + "\n" + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "\n", false);
 				}
-				in.close();
-				writeToScriptFile(line.toString() + "\n" + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "\n", false);
-			}
-            if (lob instanceof Blob) {
-            	++numberOfExportedLOBs;
-            	flush();
-				Blob blob = (Blob) lob;
-				writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "BLOB " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + "\n", false);
-				InputStream in = blob.getBinaryStream();
-				int b;
-				StringBuffer line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
-				byte[] buffer = new byte[64];
-				int size = 0;
-				while ((b = in.read()) != -1) {
-					buffer[size++] = (byte) b;
-					if (size == buffer.length) {
-						writeToScriptFile(line.toString() + Base64.encodeBytes(buffer, Base64.DONT_BREAK_LINES) + "\n", false);
-						line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
-						size = 0;
+	            if (lob instanceof Blob) {
+	            	++numberOfExportedLOBs;
+	            	flush();
+					Blob blob = (Blob) lob;
+					writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "BLOB " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + "\n", false);
+					InputStream in = blob.getBinaryStream();
+					int b;
+					StringBuffer line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
+					byte[] buffer = new byte[64];
+					int size = 0;
+					while ((b = in.read()) != -1) {
+						buffer[size++] = (byte) b;
+						if (size == buffer.length) {
+							writeToScriptFile(line.toString() + Base64.encodeBytes(buffer, Base64.DONT_BREAK_LINES) + "\n", false);
+							line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
+							size = 0;
+						}
 					}
+					in.close();
+					writeToScriptFile(line.toString() + Base64.encodeBytes(buffer, 0, size, Base64.DONT_BREAK_LINES) + "\n" + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "\n", false);
 				}
-				in.close();
-				writeToScriptFile(line.toString() + Base64.encodeBytes(buffer, 0, size, Base64.DONT_BREAK_LINES) + "\n" + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "\n", false);
 			}
-		}
+    	}
 	}
 
 	/**
@@ -526,13 +555,35 @@ public class ExportTransformer implements ResultSetReader {
      */
     public void close() {
     	flush();
+    	synchronized (scriptFileWriter) {
+    		if (identityInsertTable != null) {
+    			try {
+					scriptFileWriter.write("SET IDENTITY_INSERT " + qualifiedTableName(identityInsertTable) + " OFF;\n");
+				} catch (IOException e) {
+					throw new RuntimeException(e);
+				}
+    			identityInsertTable = null;
+    		}
+    	}
     }
+    
+    private static Table identityInsertTable = null;
     
     /**
      * Writes into script.
      */
     private void writeToScriptFile(String content, boolean wrap) throws IOException {
         synchronized (scriptFileWriter) {
+        	if (tableHasIdentityColumn) {
+        		if (identityInsertTable != table) {
+        			if (identityInsertTable != null) {
+        				scriptFileWriter.write("SET IDENTITY_INSERT " + qualifiedTableName(identityInsertTable) + " OFF;\n");
+            			identityInsertTable = null;
+        			}
+        			scriptFileWriter.write("SET IDENTITY_INSERT " + qualifiedTableName(table) + " ON;\n");
+        			identityInsertTable = table;
+        		}
+        	}
         	if (wrap && SqlUtil.dbms == DBMS.ORACLE) {
        			scriptFileWriter.write(SqlUtil.splitDMLStatement(content, 2400));
         	} else {
