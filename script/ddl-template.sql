@@ -32,7 +32,7 @@ ${create-table}JAILER_ENTITY${table-suffix}
 
    ${pre},
    PRE_TYPE        VARCHAR(60)${constraint},
-   orig_birthday   INTEGER,
+   orig_birthday   INTEGER${constraint},
    association     INTEGER${constraint}
 
 -- ,  CONSTRAINT jlr_fk_graph_e FOREIGN KEY (r_entitygraph) REFERENCES JAILER_GRAPH${table-suffix}(id)
