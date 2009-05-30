@@ -1,6 +1,8 @@
-2.9.9.beta
+2.9.9.beta2
+ - added support for MSSQL's identity column type and BIT type.
  - limited the length of lines in SQL export files to 2400 bytes,
    so that oracle's utility SQLPLUS can be used to import the data.
+ - minor bug fixes
 
 2.9.8
  - Graph layout is persistent [2787683]
