@@ -169,12 +169,13 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<!-- for MS SQL -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern"
-				value="jdbc:sqlserver.*|jdbc:inetdae.*|jdbc:JTurbo.*|jdbc:weblogic:mssqlserver.*" />
+				value="jdbc:sqlserver.*|jdbc:inetdae.*|jdbc:JTurbo.*|jdbc:weblogic:mssqlserver.*|jdbc:jtds:sqlserver.*" />
 			<property name="statisticRenovator">
 				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
 					<constructor-arg value="script/mssql/update_statistics.sql" />
 				</bean>
 			</property>
+			<property name="identityInserts" value="true"/>
 			<property name="sessionTemporaryTableManager">
 				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
 					<property name="dmlTableReferencePrefix" value="#" />
@@ -210,12 +211,13 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		
 		<!-- for Sybase -->
 		<bean class="net.sf.jailer.Configuration">
-			<property name="urlPattern" value="jdbc:sybase.*" />
+			<property name="urlPattern" value="jdbc:sybase.*|jdbc:jtds:sybase.*" />
 			<property name="statisticRenovator">
 				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
 					<constructor-arg value="script/sybase/update_statistics.sql" />
 				</bean>
 			</property>
+			<property name="identityInserts" value="true"/>
 			<property name="sessionTemporaryTableManager">
 				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
 					<property name="dmlTableReferencePrefix" value="#" />

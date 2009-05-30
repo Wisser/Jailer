@@ -232,7 +232,7 @@ public class Session {
                     	DatabaseMetaData meta = con.getMetaData();
                 		String productName = meta.getDatabaseProductName();
                 		if (productName != null) {
-                			if (!productName.toUpperCase().contains("ADAPTIVE SERVER")) {
+                			if ((!"ASE".equals(productName)) && !productName.toUpperCase().contains("ADAPTIVE SERVER")) {
                 				// Sybase don't handle UR level correctly, see http://docs.sun.com/app/docs/doc/819-4728/gawlc?a=view
                 			    con.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
                       		}
@@ -320,6 +320,7 @@ public class Session {
 				if (productName.toUpperCase().contains("POSTGRES")) dbms = DBMS.POSTGRESQL;
 				if (productName.toUpperCase().contains("MYSQL")) dbms = DBMS.MySQL;
 				if (productName.toUpperCase().contains("ADAPTIVE SERVER")) dbms = DBMS.SYBASE;
+				if (productName.toUpperCase().equals("ASE")) dbms = DBMS.SYBASE;
 			}
 			_log.info("DB name:        " + productName + " (" + dbms + ")");
 			_log.info("DB version:     " + meta.getDatabaseProductVersion());

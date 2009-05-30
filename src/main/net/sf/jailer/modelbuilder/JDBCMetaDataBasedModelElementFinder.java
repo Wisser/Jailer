@@ -419,16 +419,17 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     			return "VARCHAR";
     		}
     	}
-    	
-    	// Some drivers (MS SQL Server driver for example) prepends the type with some options,
-    	// so we ignore everything after the first space.
-    	int i = sqlType.indexOf(' ');
-    	if (i > 0) {
-    		sqlType = sqlType.substring(0, i);
-    	}
-    	i = sqlType.indexOf('(');
-    	if (i > 0) {
-    		sqlType = sqlType.substring(0, i);
+    	if (!sqlType.toLowerCase().endsWith(" identity")) {
+	    	// Some drivers (MS SQL Server driver for example) prepends the type with some options,
+	    	// so we ignore everything after the first space.
+	    	int i = sqlType.indexOf(' ');
+	    	if (i > 0) {
+	    		sqlType = sqlType.substring(0, i);
+	    	}
+	    	i = sqlType.indexOf('(');
+	    	if (i > 0) {
+	    		sqlType = sqlType.substring(0, i);
+	    	}
     	}
 		return sqlType;
 	}
