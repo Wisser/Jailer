@@ -66,6 +66,8 @@ public class Configuration {
      */
     private Map<String, String> typeReplacement;
     
+    private boolean identityInserts = false;
+    
     public SimpleDateFormat dateFormat = null;
 
 	public char nanoSep = '.';
@@ -265,5 +267,13 @@ public class Configuration {
     	getContext();
     	return theRenderer;
     }
+
+	public boolean isIdentityInserts() {
+		return identityInserts;
+	}
+
+	public void setIdentityInserts(boolean identityInserts) {
+		this.identityInserts = identityInserts;
+	}
     
 }

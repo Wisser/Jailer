@@ -198,7 +198,7 @@ public class TableEditor extends javax.swing.JDialog {
 	private void setCurrentColumns(List<Column> columns) {
 		int i = 1;
 		for (Column column: columns) {
-			currentColumnLine.cells.set(i++, column.toSQL(null));
+			currentColumnLine.cells.set(i++, column.toSQL(null) + (column.isIdentityColumn? " identity" : ""));
 		}
 		currentColumnLine.cells.set(i++, "");
 		currentColumnLine.cells.set(i++, "Data Model Editor");
@@ -570,7 +570,7 @@ public class TableEditor extends javax.swing.JDialog {
     		Column column = Column.parse(this.column.getText());
     		for (int i = 1; i < currentColumnLine.length; ++i) {
     			if (Column.parse(currentColumnLine.cells.get(i)).name.equals(column.name)) {
-    				currentColumnLine.cells.set(i, column.toSQL(null));
+    				currentColumnLine.cells.set(i, column.toSQL(null) + (column.isIdentityColumn? " identity" : ""));
     				break;
     			}
     		}
@@ -582,7 +582,7 @@ public class TableEditor extends javax.swing.JDialog {
     			if (Column.parse(currentTableLine.cells.get(i)).name.equals(column.name)) {
     				found = true;
     				if (primaryKey.isSelected()) {
-    					currentTableLine.cells.set(i, column.toSQL(null));
+    					currentTableLine.cells.set(i, column.toSQL(null) + (column.isIdentityColumn? " identity" : ""));
     				} else {
     					currentTableLine.cells.remove(i);
     					currentTableLine.length--;
@@ -591,7 +591,7 @@ public class TableEditor extends javax.swing.JDialog {
     			}
     		}
     		if (!found && primaryKey.isSelected()) {
-    			currentTableLine.cells.add(currentTableLine.length - 2, column.toSQL(null));
+    			currentTableLine.cells.add(currentTableLine.length - 2, column.toSQL(null) + (column.isIdentityColumn? " identity" : ""));
         		currentTableLine.length++;
     		}
     		columnsTable.setModel(columnsTableModel());
@@ -605,10 +605,10 @@ public class TableEditor extends javax.swing.JDialog {
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
     	try {
     		Column column = Column.parse(this.column.getText());
-    		currentColumnLine.cells.add(currentColumnLine.length, column.toSQL(null));
+    		currentColumnLine.cells.add(currentColumnLine.length, column.toSQL(null) + (column.isIdentityColumn? " identity" : ""));
     		currentColumnLine.length++;
     		if (primaryKey.isSelected()) {
-        		currentTableLine.cells.add(currentTableLine.length - 2, column.toSQL(null));
+        		currentTableLine.cells.add(currentTableLine.length - 2, column.toSQL(null) + (column.isIdentityColumn? " identity" : ""));
         		currentTableLine.length++;
     		}
     		columnsTable.setModel(columnsTableModel());

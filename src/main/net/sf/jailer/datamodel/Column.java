@@ -51,6 +51,11 @@ public class Column {
     public final int precision;
     
     /**
+     * <code>true</code> if column is identity column.
+     */
+    public boolean isIdentityColumn = false;
+    
+    /**
      * SQL Expression for server-side column data filtering.
      */
     private String filterExpression = null;
@@ -103,7 +108,13 @@ public class Column {
      */
     public static Column parse(String columnDeclaration) {
     	columnDeclaration = columnDeclaration.trim();
-
+    	
+    	boolean isIdent = false;
+    	if (columnDeclaration.toLowerCase().endsWith(" identity")) {
+    		isIdent = true;
+    		columnDeclaration = columnDeclaration.substring(0, columnDeclaration.length() - 9).trim();
+    	}
+    	
     	Character quote = null;
     	if (columnDeclaration.length() > 0 && SqlUtil.LETTERS_AND_DIGITS.indexOf(columnDeclaration.charAt(0)) < 0) {
     		quote = columnDeclaration.charAt(0);
@@ -153,7 +164,9 @@ public class Column {
 	    if (quote != null) {
 	    	name = name.replace('\n', ' ');
 	    }
-	    return new Column(name, type, size, precision);
+	    Column column = new Column(name, type, size, precision);
+	    column.isIdentityColumn = isIdent;
+	    return column;
     }
     
     /**
