@@ -1,16 +1,24 @@
 -- creates some test-tables and data
 
--- DROP TABLE EMPLOYEE;
--- DROP TABLE DEPARTMENT;
--- DROP TABLE SALARYGRADE;
--- DROP TABLE BONUS;
--- DROP TABLE PROJECT_PARTICIPATION;
--- DROP TABLE PROJECT;
--- DROP TABLE ROLE;
+ DROP TABLE EMPLOYEE;
+ DROP TABLE DEPARTMENT;
+DROP TABLE SALARYGRADE;
+ DROP TABLE BONUS;
+ DROP TABLE PROJECT_PARTICIPATION;
+ DROP TABLE PROJECT;
+ DROP TABLE ROLE;
+
+CREATE TABLE PROJECT_PARTICIPATION(
+    projectno    INTEGER NOT NULL,
+    empno        INTEGER NOT NULL,
+    start_date   DATE NOT NULL,
+    end_date     DATE,
+    role_id      INTEGER
+);
 
 CREATE TABLE EMPLOYEE(
     empno      INTEGER NOT NULL,
-    name       VARCHAR(10),
+    name       VARCHAR(400) NOT NULL,
     job        VARCHAR(9),
     boss       INTEGER,
     hiredate   varchar(12),
@@ -18,6 +26,9 @@ CREATE TABLE EMPLOYEE(
     comm       DECIMAL(7, 2),
     deptno     INTEGER
 );
+
+insert into employee select empno, name || (select count(*) from employee), job, boss, hiredate, salary, comm, deptno from employee;
+
 
 CREATE TABLE DEPARTMENT(
     deptno     INTEGER NOT NULL,
@@ -45,14 +56,6 @@ CREATE TABLE PROJECT(
     end_date     VARCHAR(12)
 );
 
-CREATE TABLE PROJECT_PARTICIPATION(
-    projectno    INTEGER NOT NULL,
-    empno        INTEGER NOT NULL,
-    start_date   VARCHAR(12) NOT NULL,
-    end_date     VARCHAR(12),
-    role_id      INTEGER
-);
-
 CREATE TABLE ROLE(
     role_id      INTEGER NOT NULL,
     description  VARCHAR(100)
@@ -61,7 +64,7 @@ CREATE TABLE ROLE(
 -- Primary Keys
 ALTER TABLE EMPLOYEE
   ADD CONSTRAINT emp_pk
-  PRIMARY KEY (empno);
+  PRIMARY KEY (empno, name);
 
 ALTER TABLE DEPARTMENT
   ADD CONSTRAINT dept_pk
@@ -81,7 +84,7 @@ ALTER TABLE PROJECT
 
 ALTER TABLE PROJECT_PARTICIPATION
   ADD CONSTRAINT participation_pk
-  PRIMARY KEY (projectno, empno, start_date);
+  PRIMARY KEY (start_date, projectno, empno);
 
 ALTER TABLE ROLE
   ADD CONSTRAINT role_pk
