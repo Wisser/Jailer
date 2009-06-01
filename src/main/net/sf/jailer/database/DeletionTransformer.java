@@ -60,6 +60,11 @@ public class DeletionTransformer implements ResultSetReader {
     private Map<String, Integer> typeCache = new HashMap<String, Integer>();
 
     /**
+     * Current session;
+     */
+    private final Session session;
+    
+    /**
      * For quoting of column names.
      */
     private final Quoting quoting;
@@ -71,11 +76,12 @@ public class DeletionTransformer implements ResultSetReader {
      * @param scriptFileWriter the file to write to
      * @param maxBodySize maximum length of SQL values list (for generated deletes)
      */
-    public DeletionTransformer(Table table, OutputStreamWriter scriptFileWriter, int maxBodySize, DatabaseMetaData metaData) throws SQLException {
+    public DeletionTransformer(Table table, OutputStreamWriter scriptFileWriter, int maxBodySize, DatabaseMetaData metaData, Session session) throws SQLException {
         this.table = table;
         this.scriptFileWriter = scriptFileWriter;
         deleteStatementBuilder = new StatementBuilder(maxBodySize);
         this.quoting = new Quoting(metaData);
+        this.session = session;
     }
     
     /**
@@ -90,7 +96,7 @@ public class DeletionTransformer implements ResultSetReader {
                 boolean firstTime = true;
                 for (Column pkColumn: table.primaryKey.getColumns()) {
                 	delete += (firstTime? "" : " and ") + pkColumn.name + "="
-                    		+ SqlUtil.toSql(SqlUtil.getObject(resultSet, quoting.unquote(pkColumn.name), typeCache));
+                    		+ SqlUtil.toSql(SqlUtil.getObject(resultSet, quoting.unquote(pkColumn.name), typeCache), session);
                     firstTime = false;
                 }
                 writeToScriptFile(delete + "\n");
@@ -99,14 +105,14 @@ public class DeletionTransformer implements ResultSetReader {
 	            String item;
 	            if (table.primaryKey.getColumns().size() == 1) {
 	                deleteHead = "Delete from " + qualifiedTableName(table) + " Where " + table.primaryKey.getColumns().get(0).name + " in (";
-	                item = SqlUtil.toSql(SqlUtil.getObject(resultSet, quoting.unquote(table.primaryKey.getColumns().get(0).name), typeCache));
+	                item = SqlUtil.toSql(SqlUtil.getObject(resultSet, quoting.unquote(table.primaryKey.getColumns().get(0).name), typeCache), session);
 	            } else {
 	                deleteHead = "Delete from " + qualifiedTableName(table) + " Where (";
 	                item = "(";
 	                boolean firstTime = true;
 	                for (Column pkColumn: table.primaryKey.getColumns()) {
 	                    deleteHead += (firstTime? "" : ", ") + pkColumn.name;
-	                    item += (firstTime? "" : ", ") + SqlUtil.toSql(SqlUtil.getObject(resultSet, quoting.unquote(pkColumn.name), typeCache));
+	                    item += (firstTime? "" : ", ") + SqlUtil.toSql(SqlUtil.getObject(resultSet, quoting.unquote(pkColumn.name), typeCache), session);
 	                    firstTime = false;
 	                }
 	                item += ")";

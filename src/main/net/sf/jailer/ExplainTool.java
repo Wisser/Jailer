@@ -85,7 +85,7 @@ public class ExplainTool {
                 List<String> keys = new ArrayList<String>();
                 int i = 2;
                 for (Column column: graph.getUniversalPrimaryKey().getColumns()) {
-                    keys.add(SqlUtil.toSql(SqlUtil.getObject(resultSet, i++, typeCache)));
+                    keys.add(SqlUtil.toSql(SqlUtil.getObject(resultSet, i++, typeCache), statementExecutor));
                 }
                 if (!namesOfTablesToIgnore.contains(type)) {
                     try {
@@ -122,7 +122,7 @@ public class ExplainTool {
      * Stringifies the path of predecessors of a given entity.
      * @throws SQLException 
      */
-    private static String path(final EntityGraph graph, Session statementExecutor, String type, List<String> keys, DataModel datamodel) throws SQLException {
+    private static String path(final EntityGraph graph, final Session statementExecutor, String type, List<String> keys, DataModel datamodel) throws SQLException {
         String where = "";
         int i = 0;
         for (Column column: graph.getUniversalPrimaryKey().getColumns()) {
@@ -144,7 +144,7 @@ public class ExplainTool {
                 associationID[0] = resultSet.getInt(2);
                 int i = 3;
                 for (Column column: graph.getUniversalPrimaryKey().getColumns()) {
-                    preKeys.add(SqlUtil.toSql(SqlUtil.getObject(resultSet, i++, typeCache)));
+                    preKeys.add(SqlUtil.toSql(SqlUtil.getObject(resultSet, i++, typeCache), statementExecutor));
                 }
             }
         });

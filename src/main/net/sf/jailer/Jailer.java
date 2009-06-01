@@ -45,7 +45,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import net.sf.jailer.database.DeletionTransformer;
-import net.sf.jailer.database.ExportTransformer;
+import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.StatisticRenovator;
 import net.sf.jailer.database.TemporaryTableScope;
@@ -91,7 +91,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "2.9.9.beta2";
+	public static final String VERSION = "2.9.9.beta3";
 
 	/**
 	 * The relational data model.
@@ -561,7 +561,7 @@ public class Jailer {
 				return new FlatXMLTransformer(table, transformerHandler,
 						entityGraph.statementExecutor.getMetaData());
 			} else {
-				return new ExportTransformer(table, outputWriter,
+				return new DMLTransformer(table, outputWriter,
 						CommandLineParser.getInstance().upsertOnly,
 						CommandLineParser.getInstance().numberOfEntities,
 						entityGraph.statementExecutor.getMetaData(),
@@ -570,7 +570,8 @@ public class Jailer {
 		} else {
 			return new DeletionTransformer(table, outputWriter,
 					CommandLineParser.getInstance().numberOfEntities,
-					entityGraph.statementExecutor.getMetaData());
+					entityGraph.statementExecutor.getMetaData(),
+					entityGraph.statementExecutor);
 		}
 	}
 
@@ -813,7 +814,8 @@ public class Jailer {
 				cyclicAggregatedTables,
 				CommandLineParser.getInstance().xmlRootTag, CommandLineParser
 						.getInstance().xmlDatePattern, CommandLineParser
-						.getInstance().xmlTimeStampPattern);
+						.getInstance().xmlTimeStampPattern,
+						entityGraph.statementExecutor);
 
 		for (Table table : sortedTables) {
 			entityGraph.markRoots(table);

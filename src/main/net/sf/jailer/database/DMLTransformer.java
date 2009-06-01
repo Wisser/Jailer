@@ -46,12 +46,12 @@ import net.sf.jailer.util.SqlUtil;
 
 
 /**
- * A {@link ResultSetReader} that writes the read rows as SQL-INSERT-statements 
+ * A {@link ResultSetReader} that writes the read rows as DML-statements 
  * into the export-script.
  * 
  * @author Ralf Wisser
  */
-public class ExportTransformer implements ResultSetReader {
+public class DMLTransformer implements ResultSetReader {
 
     /**
      * The table to read from.
@@ -156,7 +156,7 @@ public class ExportTransformer implements ResultSetReader {
      * @param maxBodySize maximum length of SQL values list (for generated inserts)
      * @param upsertOnly use 'upsert' statements for all entities
      */
-    public ExportTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, DatabaseMetaData metaData, Session session) throws SQLException {
+    public DMLTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, DatabaseMetaData metaData, Session session) throws SQLException {
         this.maxBodySize = maxBodySize;
         this.upsertOnly = upsertOnly;
         this.table = table;
@@ -225,13 +225,7 @@ public class ExportTransformer implements ResultSetReader {
                 	valueList.append(", ");
                 }
                 f = false;
-                String cVal = SqlUtil.toSql(content);
-                if (Configuration.forDbms(session).isIdentityInserts()) {
-                	// Boolean mapping for MSSQL/Sybase
-                	if (content instanceof Boolean) {
-                		cVal = Boolean.TRUE.equals(content)? "1" : "0";
-                	}
-                }
+                String cVal = SqlUtil.toSql(content, session);
             	if (content != null && emptyLobValue[i] != null) {
             		cVal = emptyLobValue[i];
             	}
@@ -251,7 +245,7 @@ public class ExportTransformer implements ResultSetReader {
                     if (resultSet.wasNull()) {
                         content = null;
                     }
-                    String cVal = SqlUtil.toSql(content);
+                    String cVal = SqlUtil.toSql(content, session);
                     if (SqlUtil.dbms == DBMS.POSTGRESQL && (content instanceof Date || content instanceof Timestamp)) {
                     	// explicit cast needed
                     	cVal = "timestamp " + cVal;
@@ -473,7 +467,7 @@ public class ExportTransformer implements ResultSetReader {
 	                if (resultSet.wasNull()) {
 	                    content = null;
 	                }
-	                String cVal = SqlUtil.toSql(content);
+	                String cVal = SqlUtil.toSql(content, session);
 	                val.put(columnLabel[j], cVal);
 	            }
 				boolean f = true;
