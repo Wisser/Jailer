@@ -360,11 +360,11 @@ public class SQLDialect {
 	 */
 	private static void setConfigValue(String key, String value, Session statementExecutor) {
 		try {
-			statementExecutor.executeUpdate("Delete from " + SQLDialect.dmlTableReference(CONFIG_TABLE_, statementExecutor) + " where jversion='" + Jailer.VERSION + "' and jkey=" + SqlUtil.toSql(key));
+			statementExecutor.executeUpdate("Delete from " + SQLDialect.dmlTableReference(CONFIG_TABLE_, statementExecutor) + " where jversion='" + Jailer.VERSION + "' and jkey=" + SqlUtil.toSql(key, statementExecutor));
 		} catch (Exception e) {
 		}
 		try {
-			statementExecutor.executeUpdate("Insert into " + SQLDialect.dmlTableReference(CONFIG_TABLE_, statementExecutor) + "(jversion, jkey, jvalue) values ('" + Jailer.VERSION + "', " + SqlUtil.toSql(key) + ", " + SqlUtil.toSql(value) + ")");
+			statementExecutor.executeUpdate("Insert into " + SQLDialect.dmlTableReference(CONFIG_TABLE_, statementExecutor) + "(jversion, jkey, jvalue) values ('" + Jailer.VERSION + "', " + SqlUtil.toSql(key, statementExecutor) + ", " + SqlUtil.toSql(value, statementExecutor) + ")");
 		} catch (Exception e) {
 		}
 	}

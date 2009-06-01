@@ -27,7 +27,7 @@ import java.util.Map;
 import javax.xml.transform.sax.TransformerHandler;
 
 import net.sf.jailer.CommandLineParser;
-import net.sf.jailer.database.ExportTransformer;
+import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Table;
@@ -138,7 +138,7 @@ public class FlatXMLTransformer implements ResultSetReader {
 				transformerHandler.startElement("", "", rowElementName, attr);
 				transformerHandler.endElement("", "", rowElementName);
 			}
-			++ExportTransformer.numberOfExportedEntities; // TODO: refactoring of
+			++DMLTransformer.numberOfExportedEntities; // TODO: refactoring of
 														// entity counting
 
 		} catch (SAXException e) {

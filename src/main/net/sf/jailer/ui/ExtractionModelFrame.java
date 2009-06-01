@@ -44,7 +44,7 @@ import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.DDLCreator;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.ScriptFormat;
-import net.sf.jailer.database.ExportTransformer;
+import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.datamodel.Association;
@@ -944,8 +944,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				        	List<String> ddlArgs = new ArrayList<String>();
 				        	ddlArgs.add("create-ddl");
 				        	dbConnectionDialog.addDbArgs(ddlArgs);
-				        	ExportTransformer.numberOfExportedEntities = 0;
-				        	ExportTransformer.numberOfExportedLOBs = 0;
+				        	DMLTransformer.numberOfExportedEntities = 0;
+				        	DMLTransformer.numberOfExportedLOBs = 0;
 				        	String tableInConflict = DDLCreator.getTableInConflict(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4));
 				        	if (tableInConflict != null && exportDialog.getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL)) {
 				        		JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);
@@ -956,8 +956,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        				"Continue Data Export?", dbConnectionDialog.getPassword())) {
 			        			if (UIUtil.runJailer(this, args, true, true, exportDialog.explain.isSelected(), !exportDialog.explain.isSelected(), null, dbConnectionDialog.getPassword())) {
 			        				String message = Jailer.statistic.toString();
-			        				if (ExportTransformer.numberOfExportedLOBs > 0) {
-			        					message += "\nExported " + ExportTransformer.numberOfExportedLOBs + " CLOBs/BLOBs.\n\n" +
+			        				if (DMLTransformer.numberOfExportedLOBs > 0) {
+			        					message += "\nExported " + DMLTransformer.numberOfExportedLOBs + " CLOBs/BLOBs.\n\n" +
 			        					           "Note that the CLOBs/BLOBs can only\n" +
 			        							   "be imported with the 'Import SQL Data' Tool";
 			        				}

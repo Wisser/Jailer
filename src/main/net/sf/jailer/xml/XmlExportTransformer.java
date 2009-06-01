@@ -28,6 +28,7 @@ import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerConfigurationException;
 
+import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
@@ -123,7 +124,12 @@ public class XmlExportTransformer implements ResultSetReader {
 	 */
 	private Map<Table, List<Association>> sortedAssociations = new HashMap<Table, List<Association>>();
 
-	/**
+    /**
+     * Current session;
+     */
+    private final Session session;
+    
+    /**
 	 * Association cache.
 	 */
 	private Map<Table, Map<String, Association>> associationCache = new HashMap<Table, Map<String,Association>>();
@@ -141,11 +147,12 @@ public class XmlExportTransformer implements ResultSetReader {
 	 */
 	public XmlExportTransformer(OutputStream out, String commentHeader,
 			EntityGraph entityGraph, Set<Table> totalProgress, Set<Table> cyclicAggregatedTables,
-			String rootTag, String datePattern, String timestampPattern) throws TransformerConfigurationException, SAXException {
+			String rootTag, String datePattern, String timestampPattern, Session session) throws TransformerConfigurationException, SAXException {
 		this.xmlRowWriter = new XmlRowWriter(out, commentHeader, rootTag, datePattern, timestampPattern);
 		this.entityGraph = entityGraph;
 		this.totalProgress = totalProgress;
 		this.cyclicAggregatedTables = cyclicAggregatedTables;
+		this.session = session;
 	}
 
 	/**
@@ -166,7 +173,7 @@ public class XmlExportTransformer implements ResultSetReader {
 	/**
 	 * Writes entity as XML hierarchy.
 	 * 
-	 * @param table entitie's table
+	 * @param table entity's table
 	 * @param association association to parent, <code>null</code> for top-level entities
 	 * @param resultSet current row contains entity to write out
 	 * @param ancestors ancestors of entity to write out
@@ -182,7 +189,7 @@ public class XmlExportTransformer implements ResultSetReader {
 			}
 			f = false;
 			sb.append(SqlUtil.toSql(SqlUtil.getObject(resultSet, "PK" + i++,
-					getTypeCache(table))));
+					getTypeCache(table)), session));
 		}
 		sb.append(")");
 		String primaryKey = sb.toString();
