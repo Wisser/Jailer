@@ -30,9 +30,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.Configuration;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
@@ -209,7 +210,7 @@ public class SqlUtil {
      * @param object the content
      * @return the SQL-literal
      */
-    public static String toSql(Object content) {
+    public static String toSql(Object content, Session session) {
         if (content == null) {
             return "null";
         }
@@ -276,6 +277,12 @@ public class SqlUtil {
         	if (content.getClass().getName().endsWith(".PGobject")) {
         		// PostgreSQL bit values
         		return "B'" + content + "'";
+        	}
+        }
+        if (Configuration.forDbms(session).isIdentityInserts()) {
+        	// Boolean mapping for MSSQL/Sybase
+        	if (content instanceof Boolean) {
+        		content = Boolean.TRUE.equals(content)? "1" : "0";
         	}
         }
         return content.toString();
