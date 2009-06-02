@@ -57,7 +57,7 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
      */
     public void addEpilog(Writer script, ScriptType scriptType, Session statementExecutor, EntityGraph entityGraph, 
             Set<Table> progress) throws IOException, SQLException {
-        addEnhancement(script, progress, "EPILOG", new File(CommandLineParser.getInstance().enhancerFolder + File.separatorChar + "epilog" + File.separatorChar + scriptType));
+        addEnhancement(script, progress, "EPILOG.sql", new File(CommandLineParser.getInstance().enhancerFolder + File.separatorChar + "epilog" + File.separatorChar + scriptType));
     }
 
     /**
@@ -65,7 +65,7 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
      */
     public void addProlog(Writer script, ScriptType scriptType, Session statementExecutor, EntityGraph entityGraph, 
             Set<Table> progress) throws IOException, SQLException {
-        addEnhancement(script, progress, "PROLOG", new File(CommandLineParser.getInstance().enhancerFolder + File.separatorChar + "prolog" + File.separatorChar + scriptType));
+        addEnhancement(script, progress, "PROLOG.sql", new File(CommandLineParser.getInstance().enhancerFolder + File.separatorChar + "prolog" + File.separatorChar + scriptType));
     }
 
     /**
