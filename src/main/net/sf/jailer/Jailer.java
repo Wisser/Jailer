@@ -91,7 +91,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "2.9.9.beta3";
+	public static final String VERSION = "2.9.9";
 
 	/**
 	 * The relational data model.
@@ -606,13 +606,13 @@ public class Jailer {
 		} else {
 			result = new OutputStreamWriter(outputStream);
 			result.append(commentHeader);
-			result.append(System.getProperty("line.separator"));
+//			result.append(System.getProperty("line.separator"));
 			for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
 				enhancer.addComments(result, scriptType, statementExecutor,
 						entityGraph, progress);
 			}
-			result.append(System.getProperty("line.separator"));
-			result.append(System.getProperty("line.separator"));
+//			result.append(System.getProperty("line.separator"));
+//			result.append(System.getProperty("line.separator"));
 			for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
 				enhancer.addProlog(result, scriptType, statementExecutor,
 						entityGraph, progress);
