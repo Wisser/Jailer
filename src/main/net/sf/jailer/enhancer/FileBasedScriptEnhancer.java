@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.sql.SQLException;
 import java.util.Set;
+import java.util.TreeSet;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.ScriptFormat;
@@ -56,7 +57,7 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
      */
     public void addEpilog(Writer script, ScriptType scriptType, Session statementExecutor, EntityGraph entityGraph, 
             Set<Table> progress) throws IOException, SQLException {
-        addEnhancement(script, progress, new File(CommandLineParser.getInstance().enhancerFolder + File.separatorChar + "epilog" + File.separatorChar + scriptType));
+        addEnhancement(script, progress, "EPILOG", new File(CommandLineParser.getInstance().enhancerFolder + File.separatorChar + "epilog" + File.separatorChar + scriptType));
     }
 
     /**
@@ -64,7 +65,7 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
      */
     public void addProlog(Writer script, ScriptType scriptType, Session statementExecutor, EntityGraph entityGraph, 
             Set<Table> progress) throws IOException, SQLException {
-        addEnhancement(script, progress, new File(CommandLineParser.getInstance().enhancerFolder + File.separatorChar + "prolog" + File.separatorChar + scriptType));
+        addEnhancement(script, progress, "PROLOG", new File(CommandLineParser.getInstance().enhancerFolder + File.separatorChar + "prolog" + File.separatorChar + scriptType));
     }
 
     /**
@@ -73,10 +74,17 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
      * @param script writer to script
      * @param progress the export progress
      */
-    private void addEnhancement(Writer script, Set<Table> progress, File dir) throws IOException {
+    private void addEnhancement(Writer script, Set<Table> progress, String globalEnhancement, File dir) throws IOException {
         if (ScriptFormat.SQL.equals(CommandLineParser.getInstance().getScriptFormat())) {
-	    	for (Table table: progress) {
-	            File enhancement = new File(dir, table.getOriginalName() + ".sql");
+	    	Set<String> fileNames = new TreeSet<String>();
+	    	if (globalEnhancement != null) {
+	    		fileNames.add(globalEnhancement);
+	    	}
+        	for (Table table: progress) {
+        		fileNames.add(table.getOriginalName() + ".sql");
+        	}
+        	for (String fileName: fileNames) {	
+	            File enhancement = new File(dir, fileName);
 	            if (enhancement.exists()) {
 	                BufferedReader in = new BufferedReader(new FileReader(enhancement));
 	                String line;
