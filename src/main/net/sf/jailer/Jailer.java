@@ -1426,6 +1426,7 @@ public class Jailer {
 			}
 			firstLine = false;
 		}
+		appendCommentHeader("");
 	}
 
 	/**
