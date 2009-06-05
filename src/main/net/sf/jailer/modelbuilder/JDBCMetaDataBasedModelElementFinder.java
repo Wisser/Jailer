@@ -226,7 +226,10 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
             Collections.sort(keySeqs);
             List<Column> columns = new ArrayList<Column>();
             for (int i: keySeqs) {
-                columns.add(pk.get(i));
+                Column column = pk.get(i);
+				if (column.type != null && column.type.trim().length() > 0) {
+					columns.add(column);
+				}
             }
             PrimaryKey primaryKey = primaryKeyFactory.createPrimaryKey(columns);
             Table table = new Table(tableName, primaryKey, false);
