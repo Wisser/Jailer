@@ -167,9 +167,9 @@ public class ModelBuilder {
 	            		List<Column> columns = finder.findColumns(table, statementExecutor);
 	            		if (!columns.isEmpty()) {
 	            			columnPerTable.put(table, columns);
-	            			columnsDefinition.append(table.getName() + "; ");
+	            			columnsDefinition.append(CsvFile.encodeCell(table.getName()) + "; ");
 	            			for (Column c: columns) {
-	            				columnsDefinition.append(c.toSQL(null) + (c.isIdentityColumn? " identity" : "") + "; ");
+	            				columnsDefinition.append(CsvFile.encodeCell(c.toSQL(null) + (c.isIdentityColumn? " identity" : "")) + "; ");
 	            			}
 	            			columnsDefinition.append("\n");
 	            			break;
@@ -211,11 +211,11 @@ public class ModelBuilder {
             		}
 					_log.warn(warning);
                 } 
-                tableDefinitions += table.getName() + "; N; ";
+                tableDefinitions += CsvFile.encodeCell(table.getName()) + "; N; ";
                 for (Column pk: table.primaryKey.getColumns()) {
-                    tableDefinitions += pk + ";";
+                    tableDefinitions += CsvFile.encodeCell(pk.toString()) + ";";
                 }
-                tableDefinitions += "   ;" + table.getAuthor() + ";\n";
+                tableDefinitions += "   ;" + CsvFile.encodeCell(table.getAuthor()) + ";\n";
             }
         }
         
@@ -290,8 +290,8 @@ public class ModelBuilder {
             	}
             }
             names.add(name);
-            associationDefinition += association.source.getName() + "; " + association.destination.getName() + "; " + firstInsert + "; " + card + "; " + association.getJoinCondition() + 
-                                     "; " + name + "; " + association.getAuthor() + ";\n";
+            associationDefinition += CsvFile.encodeCell(association.source.getName()) + "; " + CsvFile.encodeCell(association.destination.getName()) + "; " + firstInsert + "; " + card + "; " + CsvFile.encodeCell(association.getJoinCondition()) + 
+                                     "; " + CsvFile.encodeCell(name) + "; " + CsvFile.encodeCell(association.getAuthor()) + ";\n";
         }
         
         resetAssociationFile(associationDefinition);
