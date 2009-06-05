@@ -35,7 +35,6 @@ import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.SqlUtil;
 
-
 /**
  * Model of the relational data.
  * 
@@ -236,7 +235,11 @@ public class DataModel {
             int j;
             for (j = 2; j < line.cells.size() && line.cells.get(j).toString().length() > 0; ++j) {
                 String col = line.cells.get(j).trim();
-                pk.add(Column.parse(col));
+                try {
+                	pk.add(Column.parse(col));
+                } catch (Exception e) {
+                	throw new RuntimeException("unable to load table '" + line.cells.get(0) + "'. " + line.location, e);
+                }
             }
             String mappedSchemaTableName = SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0));
 			Table table = new Table(mappedSchemaTableName, primaryKeyFactory.createPrimaryKey(pk), upsert);
