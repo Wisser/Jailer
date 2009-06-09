@@ -1,3 +1,6 @@
+2.9.10.beta
+ - fixed a bug concerning multi-line CLOB content.
+
 2.9.9
  - added support for MSSQL's identity column type and BIT type.
  - limited the length of lines in SQL export files to 2400 bytes,
