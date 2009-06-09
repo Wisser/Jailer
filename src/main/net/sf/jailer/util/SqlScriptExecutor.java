@@ -140,6 +140,8 @@ public class SqlScriptExecutor {
 						if (inEscape) {
 							if (c == 'n') {
 								c = '\n';
+							} else if (c == 'r') {
+								c = '\r';
 							}
 							inEscape = false;
 						}
