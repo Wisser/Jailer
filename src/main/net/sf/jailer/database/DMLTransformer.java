@@ -492,9 +492,13 @@ public class DMLTransformer implements ResultSetReader {
 							writeToScriptFile(line.toString() + "\\n\n", false);
 							line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
 						} else {
-							line.append((char) c);
-							if ((char) c == '\\') {
+							if ((char) c == '\r') {
+								line.append("\\r");
+							} else {
 								line.append((char) c);
+								if ((char) c == '\\') {
+									line.append((char) c);
+								}
 							}
 						}
 						if (line.length() >= 100) {
