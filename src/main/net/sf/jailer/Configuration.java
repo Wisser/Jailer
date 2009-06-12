@@ -15,7 +15,6 @@
  */
 package net.sf.jailer;
 
-import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
@@ -31,7 +30,6 @@ import net.sf.jailer.modelbuilder.ModelElementFinder;
 import net.sf.jailer.render.DataModelRenderer;
 
 import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.springframework.context.support.ClassPathXmlApplicationContext;
 import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 /**
