@@ -186,8 +186,10 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         }
         for (String tableName: tableNames) {
         	Table tmp = new Table(tableName, null, false);
-            resultSet = metaData.getColumns(null, quoting.unquote(tmp.getOriginalSchema(quoting.quote(statementExecutor.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), null);
-            Map<Integer, Column> pk = pkColumns.get(tableName);
+        	_log.info("getting columns for " + quoting.unquote(tmp.getOriginalSchema(quoting.quote(statementExecutor.getIntrospectionSchema()))) + "." + quoting.unquote(tmp.getUnqualifiedName()));
+        	resultSet = metaData.getColumns(null, quoting.unquote(tmp.getOriginalSchema(quoting.quote(statementExecutor.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), "%");
+        	_log.info("done");
+        	Map<Integer, Column> pk = pkColumns.get(tableName);
             while (resultSet.next()) {
                 String colName = quoting.quote(resultSet.getString(4));
                 int type = resultSet.getInt(5);
@@ -323,6 +325,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		}
     }
 
+    private Session forDefaultSchema = null;
+    private String defaultSchema = null;
+    
     /**
      * Finds the {@link Column}s of a given {@link Table}.
      *
@@ -335,9 +340,16 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     	List<Column> columns = new ArrayList<Column>();
     	DatabaseMetaData metaData = statementExecutor.getMetaData();
     	Quoting quoting = new Quoting(metaData);
-        String defaultSchema = getDefaultSchema(statementExecutor, statementExecutor.dbUser);
-        ResultSet resultSet = metaData.getColumns(null, quoting.unquote(table.getOriginalSchema(defaultSchema)), quoting.unquote(table.getUnqualifiedName()), null);
-        while (resultSet.next()) {
+    	if (forDefaultSchema != statementExecutor) {
+    		forDefaultSchema = statementExecutor;
+    		_log.info("getting default schema...");
+    		defaultSchema = getDefaultSchema(statementExecutor, statementExecutor.dbUser);
+    		_log.info("default schema is '" + defaultSchema + "'");
+    	}
+    	_log.info("getting columns for " + table.getOriginalSchema(defaultSchema) + "." + quoting.unquote(table.getUnqualifiedName()));
+    	ResultSet resultSet = metaData.getColumns(null, quoting.unquote(table.getOriginalSchema(defaultSchema)), quoting.unquote(table.getUnqualifiedName()), "%");
+    	_log.info("done");
+    	while (resultSet.next()) {
             String colName = quoting.quote(resultSet.getString(4));
             int type = resultSet.getInt(5);
             int length = 0;
