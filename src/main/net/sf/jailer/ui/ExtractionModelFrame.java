@@ -135,7 +135,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	
 	private String getConnectivityState() {
 		if (dbConnectionDialog != null && dbConnectionDialog.isConnected) {
-			return dbConnectionDialog.user.getText().trim() + " at " + (dbConnectionDialog.dbUrl.getText().trim());
+			return dbConnectionDialog.currentConnection.user + " at " + (dbConnectionDialog.currentConnection.url);
 		} else {
 			return "offline";
 		}
@@ -928,7 +928,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        	args.add(extractionModelEditor.extractionModelFile);
 			        	dbConnectionDialog.addDbArgs(args);
 			        	Session.closeTemporaryTableSession();
-			        	Session statementExecutor = new Session(dbConnectionDialog.driverClass.getText().trim(), dbConnectionDialog.dbUrl.getText().trim(), dbConnectionDialog.user.getText().trim(), dbConnectionDialog.getPassword());
+			        	Session statementExecutor = new Session(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword());
 			        	ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), statementExecutor);
 			        	statementExecutor.shutDown();
 			        	Session.closeTemporaryTableSession();
