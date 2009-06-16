@@ -157,7 +157,10 @@ Finally check all associations between the remaining tables. <br>
 </tr>
 <tr>
 <td style="vertical-align: top;">A</td>
-<td>Put the SQL statements <br>
+<td>In order to disable triggers (or constraints) belonging to a table <span style="font-style: italic;">T</span> during the execution of generated SQL scripts, create a file&nbsp;named 'prolog/INSERT/<span style="font-style: italic;">T</span>.sql' and write the SQL statement&nbsp;to disable the trigger into it (<span style="font-style: italic;">T</span>
+is the fully qualified name of the table). The content of that file
+will be written into the&nbsp;script, if at least 1 row of the table
+has been exported.<br><br>Put the statement to re-enable the trigger into the file 'epilog/INSERT/<span style="font-style: italic;">T</span>.sql'.<br><br>For more information, please read 'prolog/INSERT/Readme.txt'.<br>
 &nbsp;<br>
 </td>
 </tr>
