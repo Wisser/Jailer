@@ -1,4 +1,5 @@
-2.9.10.beta
+2.9.10
+ - Redesigning of the "connection" dialog [2806688]
  - fixed a bug concerning multi-line CLOB content.
 
 2.9.9

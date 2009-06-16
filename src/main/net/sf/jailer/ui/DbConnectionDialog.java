@@ -17,6 +17,10 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -153,6 +157,30 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				connectionsTable.getSelectionModel().setSelectionInterval(i, i);
 			}
 		}
+		
+		addComponentListener(new ComponentListener() {
+			@Override
+			public void componentShown(ComponentEvent e) {
+				if (connectionList != null && connectionList.isEmpty()) {
+					newButtonActionPerformed(null);
+				}
+			}
+			@Override
+			public void componentHidden(ComponentEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			@Override
+			public void componentMoved(ComponentEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+			@Override
+			public void componentResized(ComponentEvent e) {
+				// TODO Auto-generated method stub
+				
+			}
+		});
 		
 		setLocation(100, 150);
 		pack();
