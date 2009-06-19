@@ -44,8 +44,8 @@ import java.util.zip.GZIPOutputStream;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
-import net.sf.jailer.database.DeletionTransformer;
 import net.sf.jailer.database.DMLTransformer;
+import net.sf.jailer.database.DeletionTransformer;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.StatisticRenovator;
 import net.sf.jailer.database.TemporaryTableScope;
@@ -91,7 +91,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "2.9.10";
+	public static final String VERSION = "2.9.11";
 
 	/**
 	 * The relational data model.
@@ -269,7 +269,7 @@ public class Jailer {
 	 *            the subject of the extraction-model
 	 */
 	private Set<Table> exportInitialData(Table subject) throws Exception {
-		Set<Table> idTables = readInitialDataTables(CommandLineParser.getInstance().getSourceSchemaMapping());
+		Set<Table> idTables = initialDataTables;
 		Set<Table> tables = new HashSet<Table>();
 		for (Table table : idTables) {
 			if (subject.closure(true).contains(table)) {
@@ -286,21 +286,28 @@ public class Jailer {
 		}
 		return tables;
 	}
-
+	
+	/**
+	 * Initial-data-tables list. An initial-data-table is a table
+	 * which will be exported completely if it is in closure from subject.
+	 */
+	private Set<Table> initialDataTables = new HashSet<Table>();
+	
 	/**
 	 * Reads the initial-data-tables list. An initial-data-table is a table
 	 * which will be exported completely if it is in closure from subject.
 	 * 
 	 * @return the initial-data-tables list
 	 */
-	private Set<Table> readInitialDataTables(Map<String, String> sourceSchemaMapping) throws Exception {
+	private void readInitialDataTables(Map<String, String> sourceSchemaMapping, Table subject) throws Exception {
 		File file = new File(DataModel.getInitialDataTablesFile());
 		if (file.exists()) {
 			Set<Table> idTables = SqlUtil.readTableList(new CsvFile(file),
 					datamodel, sourceSchemaMapping);
-			return idTables;
+			idTables.remove(subject);
+			initialDataTables = idTables;
 		} else {
-			return new HashSet<Table>();
+			initialDataTables = new HashSet<Table>();
 		}
 	}
 
@@ -320,8 +327,6 @@ public class Jailer {
 			Map<Table, Collection<Association>> progressOfYesterday)
 			throws Exception {
 		final Map<Table, Collection<Association>> progress = new HashMap<Table, Collection<Association>>();
-
-		Set<Table> initialDataTables = readInitialDataTables(CommandLineParser.getInstance().getSourceSchemaMapping());
 
 		// resolve associations with same dest-type sequentially
 		Map<Table, List<JobManager.Job>> jobsPerDestination = new HashMap<Table, List<JobManager.Job>>();
@@ -452,7 +457,7 @@ public class Jailer {
 									entityGraph.addDependencies(table,
 											fromAlias, association.destination,
 											toAlias, jc, aggregationId,
-											dependencyId);
+											dependencyId, association.reversed);
 								}
 							});
 						}
@@ -478,7 +483,7 @@ public class Jailer {
 									entityGraph.addDependencies(table,
 											fromAlias, association.destination,
 											toAlias, jc, aggregationId,
-											dependencyId);
+											dependencyId, association.reversed);
 								}
 							});
 						}
@@ -502,7 +507,7 @@ public class Jailer {
 									entityGraph.addDependencies(
 											association.destination, toAlias,
 											table, fromAlias, jc,
-											aggregationId, dependencyId);
+											aggregationId, dependencyId, association.reversed);
 								}
 							});
 						}
@@ -1214,6 +1219,7 @@ public class Jailer {
 					task.dataModel.getUniversalPrimaryKey(statementExecutor));
 			jailer.setEntityGraph(graph);
 			jailer.setDataModel(task.dataModel);
+			jailer.readInitialDataTables(CommandLineParser.getInstance().getSourceSchemaMapping(), task.subject);
 			jailer.runstats(statementExecutor, false);
 			Set<Table> progress = jailer.exportInitialData(task.subject);
 			entityGraph.setBirthdayOfSubject(entityGraph.getAge());
@@ -1228,7 +1234,7 @@ public class Jailer {
 		}
 
 		if (explain) {
-			ExplainTool.explain(entityGraph, jailer.readInitialDataTables(CommandLineParser.getInstance().getSourceSchemaMapping()),
+			ExplainTool.explain(entityGraph, jailer.initialDataTables,
 					statementExecutor, jailer.datamodel);
 		}
 
