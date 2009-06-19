@@ -1465,7 +1465,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	    	} catch (Exception x) {
     	    	}
     	    	try {
-    	    		extractionModelFrame.setIconImage(new ImageIcon(extractionModelFrame.getClass().getResource("/net/sf/jailer/resource/jailer.gif")).getImage());
+    	    		extractionModelFrame.setIconImage(new ImageIcon(extractionModelFrame.getClass().getResource("/net/sf/jailer/resource/lock.gif")).getImage());
     	    	} catch (Throwable t) {
     	    	}
                 extractionModelFrame.setLocation(40, 40);
