@@ -248,7 +248,7 @@ public class EntityGraph {
      * @return row-count
      */
     public long addEntities(Table table, String condition, int today, long limit) throws SQLException {
-        return addEntities(table, "T", condition, null, null, null, null, false, today, limit, 0);
+        return addEntities(table, "T", condition, null, null, null, null, false, today, limit, 0, true);
     }
     
     /**
@@ -283,7 +283,7 @@ public class EntityGraph {
                     }
                 }
             }
-            return addEntities(association.destination, destAlias, "E.r_entitygraph=" + graphID + " and E.birthday = " + (today - 1) + " and E.type='" + table.getName() + "' and " + pkEqualsEntityID(table, sourceAlias, "E"), table, sourceAlias, association.source, jc, true, today, 0, associationExplanationID);
+            return addEntities(association.destination, destAlias, "E.r_entitygraph=" + graphID + " and E.birthday = " + (today - 1) + " and E.type='" + table.getName() + "' and " + pkEqualsEntityID(table, sourceAlias, "E"), table, sourceAlias, association.source, jc, true, today, 0, associationExplanationID, association.reversed);
         }
         return -1;
     }
@@ -302,12 +302,12 @@ public class EntityGraph {
      * 
      * @return row-count
      */
-    private long addEntities(Table table, String alias, String condition, Table joinedTable, String joinedTableAlias, Table source, String joinCondition, boolean joinWithEntity, int today, long limit, int associationExplanationID) throws SQLException {
+    private long addEntities(Table table, String alias, String condition, Table joinedTable, String joinedTableAlias, Table source, String joinCondition, boolean joinWithEntity, int today, long limit, int associationExplanationID, boolean isInverseAssociation) throws SQLException {
         if (maxTotalRowcount > 0 && limit == 0) {
             limit = Math.max(maxTotalRowcount - totalRowcount + 1, 1);
         }
         if (joinCondition != null) {
-        	joinCondition = SqlUtil.resolvePseudoColumns(joinCondition, null, "E", today, birthdayOfSubject);
+        	joinCondition = SqlUtil.resolvePseudoColumns(joinCondition, isInverseAssociation? null : "E", isInverseAssociation? "E" : null, today, birthdayOfSubject);
         }
         String select =
             "Select " + (joinedTable != null? "distinct " : "") + "" + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS TODAY, '" + table.getName() + "' AS TYPE" +
@@ -355,8 +355,8 @@ public class EntityGraph {
      * @param aggregationId id of aggregation association (for XML export), 0 if not applicable
      * @param dependencyId id of dependency
      */
-    public void addDependencies(Table from, String fromAlias, Table to, String toAlias, String condition, int aggregationId, int dependencyId) throws SQLException {
-    	condition = SqlUtil.resolvePseudoColumns(condition, "E1", "E2", 0, birthdayOfSubject);
+    public void addDependencies(Table from, String fromAlias, Table to, String toAlias, String condition, int aggregationId, int dependencyId, boolean isAssociationReversed) throws SQLException {
+    	condition = SqlUtil.resolvePseudoColumns(condition, isAssociationReversed? "E1" : "E2", isAssociationReversed? "E2" : "E1", 0, birthdayOfSubject);
         String insert = "Insert into " + SQLDialect.dmlTableReference(DEPENDENCY, statementExecutor) + "(r_entitygraph, assoc, depend_id, from_type, to_type, " + upkColumnList(from, "FROM_") + ", " + upkColumnList(to, "TO_") + ") " +
             "Select " + graphID + ", " + aggregationId  + ", " + dependencyId + ", '" + from.getName() + "', '" + to.getName() + "', " + pkList(from, fromAlias, "FROM") + ", " + pkList(to, toAlias, "TO") +
             " From " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " E1, " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " E2, " + from.getName() + " " + fromAlias + " ," + to.getName() + " " + toAlias + " " +
@@ -630,7 +630,7 @@ public class EntityGraph {
                 sourceAlias = "A";
             }
             int setId = getNextSetId();
-            jc = SqlUtil.resolvePseudoColumns(jc, "EB", "EA", 0, birthdayOfSubject, "orig_birthday");
+            jc = SqlUtil.resolvePseudoColumns(jc, association.reversed? "EB" : "EA", association.reversed? "EA" : "EB", 0, birthdayOfSubject, "orig_birthday");
             String remove = "Insert into " + SQLDialect.dmlTableReference(ENTITY_SET_ELEMENT, statementExecutor) + "(set_id, type, " + universalPrimaryKey.columnList(null) + ") " +
                 "Select distinct " + setId + ", EB.type, " + universalPrimaryKey.columnList("EB.") + " from " + SQLDialect.dmlTableReference(ENTITY, statementExecutor) + " EB " +
                 "join " + association.destination.getName() + " " + destAlias + " on "+ pkEqualsEntityID(association.destination, destAlias, "EB") + " " +
