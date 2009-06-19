@@ -1,3 +1,6 @@
+2.9.11
+ - Fix: $IS_SUBJECT/$DISTANCE expressions were not always evaluated correctly.
+
 2.9.10
  - Redesigning of the "connection" dialog [2806688]
  - fixed a bug concerning multi-line CLOB content.
