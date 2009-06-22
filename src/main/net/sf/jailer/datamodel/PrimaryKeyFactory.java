@@ -164,14 +164,14 @@ public class PrimaryKeyFactory {
 	 * Gets the primary-key to be used for the entity-table and closes the
 	 * factory.
 	 * 
-	 * @param statementExecutor
+	 * @param session
 	 *            for guessing null-values of columns
 	 * @return the universal primary key
 	 */
-	public PrimaryKey getUniversalPrimaryKey(Session statementExecutor) {
+	public PrimaryKey getUniversalPrimaryKey(Session session) {
 		closed = true;
-		if (statementExecutor != null) {
-			SQLDialect.guessDialect(universalPrimaryKey, statementExecutor);
+		if (session != null) {
+			SQLDialect.guessDialect(universalPrimaryKey, session);
 		}
 		return universalPrimaryKey;
 	}

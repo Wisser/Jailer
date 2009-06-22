@@ -38,29 +38,29 @@ public interface ScriptEnhancer {
      * 
      * @param script to write into the script
      * @param scriptType the type of the script
-     * @param statementExecutor for executing SQL-statements in the source-DB
+     * @param session for executing SQL-statements in the source-DB
      * @param progress the export progess
      */
-    void addComments(Writer script, ScriptType scriptType, Session statementExecutor, EntityGraph entityGraph, Set<Table> progress) throws IOException, SQLException;
+    void addComments(Writer script, ScriptType scriptType, Session session, EntityGraph entityGraph, Set<Table> progress) throws IOException, SQLException;
     
     /**
      * Adds statements at top of the script.
      * 
      * @param script to write into the script
      * @param scriptType the type of the script
-     * @param statementExecutor for executing SQL-statements in the source-DB
+     * @param session for executing SQL-statements in the source-DB
      * @param progress the export progess
      */
-    void addProlog(Writer script, ScriptType scriptType, Session statementExecutor, EntityGraph entityGraph, Set<Table> progress) throws IOException, SQLException;
+    void addProlog(Writer script, ScriptType scriptType, Session session, EntityGraph entityGraph, Set<Table> progress) throws IOException, SQLException;
     
     /**
      * Adds comments at bottom of the script.
      * 
      * @param script to write into the script
      * @param scriptType the type of the script
-     * @param statementExecutor for executing SQL-statements in the source-DB
+     * @param session for executing SQL-statements in the source-DB
      * @param progress the export progess
      */
-    void addEpilog(Writer script, ScriptType scriptType, Session statementExecutor, EntityGraph entityGraph, Set<Table> progress) throws IOException, SQLException;
+    void addEpilog(Writer script, ScriptType scriptType, Session session, EntityGraph entityGraph, Set<Table> progress) throws IOException, SQLException;
     
 }

@@ -138,26 +138,26 @@ public class Configuration {
     /**
      * Gets DBMS specific configuration.
      * 
-     * @param statementExecutor connected to the DBMS
+     * @param session connected to the DBMS
      * @return configuration for the DBMS to which the {@link Session} is connected to
      */
-	public static Configuration forDbms(Session statementExecutor) {
-		if (statementExecutor == null) {
+	public static Configuration forDbms(Session session) {
+		if (session == null) {
 			return defaultConfiguration;
 		}
-		if (perUrl.containsKey(statementExecutor.dbUrl)) {
-			return perUrl.get(statementExecutor.dbUrl);
+		if (perUrl.containsKey(session.dbUrl)) {
+			return perUrl.get(session.dbUrl);
 		}
         if (getContext().containsBean("dbms-configuration")) {
             List<Configuration> cs = (List<Configuration>) getContext().getBean("dbms-configuration");  
             for (Configuration c: cs) {
-            	if (Pattern.matches(c.urlPattern, statementExecutor.dbUrl)) {
-            		perUrl.put(statementExecutor.dbUrl, c);
+            	if (Pattern.matches(c.urlPattern, session.dbUrl)) {
+            		perUrl.put(session.dbUrl, c);
 	                return c;
             	}
             }
         }
-        perUrl.put(statementExecutor.dbUrl, defaultConfiguration);
+        perUrl.put(session.dbUrl, defaultConfiguration);
         return defaultConfiguration;
 	}
 

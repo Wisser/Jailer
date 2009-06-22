@@ -58,9 +58,9 @@ public class SqlScriptExecutor {
      * Reads in and executes a SQL-script.
      * 
      * @param scriptFileName the name of the script-file
-     * @param statementExecutor for execution of statements
+     * @param session for execution of statements
      */
-    public static void executeScript(String scriptFileName, Session statementExecutor) throws IOException, SQLException {
+    public static void executeScript(String scriptFileName, Session session) throws IOException, SQLException {
         _log.info("reading file '" + scriptFileName + "'");
     	BufferedReader reader;
     	if (scriptFileName.toLowerCase().endsWith(".gz") || scriptFileName.toLowerCase().endsWith(".zip")) {
@@ -76,27 +76,27 @@ public class SqlScriptExecutor {
             	if (line.startsWith(UNFINISHED_MULTILINE_COMMENT)) {
             		String cmd = line.substring(UNFINISHED_MULTILINE_COMMENT.length());
             		if (cmd.startsWith("CLOB")) {
-            			importCLob(cmd.substring(4).trim(), reader, statementExecutor);
+            			importCLob(cmd.substring(4).trim(), reader, session);
             		}
             		if (cmd.startsWith("BLOB")) {
-            			importBLob(cmd.substring(4).trim(), reader, statementExecutor);
+            			importBLob(cmd.substring(4).trim(), reader, session);
             		}
             	}
                 continue;
             }
             if (line.endsWith(";")) {
             	String stmt = currentStatement + line.substring(0, line.length() - 1);
-                boolean silent = statementExecutor.getSilent();
-            	statementExecutor.setSilent(silent || stmt.trim().toLowerCase().startsWith("drop"));
+                boolean silent = session.getSilent();
+            	session.setSilent(silent || stmt.trim().toLowerCase().startsWith("drop"));
             	try {
-                	statementExecutor.execute(stmt);
+                	session.execute(stmt);
                 } catch (SQLException e) {
                 	// drops may fail
                 	if (!stmt.trim().toLowerCase().startsWith("drop")) {
                 		throw e;
                 	}
                 }
-                statementExecutor.setSilent(silent);
+                session.setSilent(silent);
                 currentStatement.setLength(0);
             } else {
                 currentStatement.append(line + " ");
@@ -112,7 +112,7 @@ public class SqlScriptExecutor {
      * @param clobLocator locates the clob
      * @param reader for reading content
      */
-	private static void importCLob(final String clobLocator, final BufferedReader reader, Session statementExecutor) throws IOException, SQLException {
+	private static void importCLob(final String clobLocator, final BufferedReader reader, Session session) throws IOException, SQLException {
 		int c1 = clobLocator.indexOf(',');
 		int c2 = clobLocator.indexOf(',', c1 + 1);
 		String table = clobLocator.substring(0, c1).trim();
@@ -153,7 +153,7 @@ public class SqlScriptExecutor {
 			}
 		}
 		out.close();
-		statementExecutor.insertClob(table, column, where, lobFile);
+		session.insertClob(table, column, where, lobFile);
 		lobFile.delete();
 	}
     
@@ -163,7 +163,7 @@ public class SqlScriptExecutor {
      * @param clobLocator locates the clob
      * @param reader for reading content
      */
-	private static void importBLob(final String clobLocator, final BufferedReader reader, Session statementExecutor) throws IOException, SQLException {
+	private static void importBLob(final String clobLocator, final BufferedReader reader, Session session) throws IOException, SQLException {
 		int c1 = clobLocator.indexOf(',');
 		int c2 = clobLocator.indexOf(',', c1 + 1);
 		String table = clobLocator.substring(0, c1).trim();
@@ -182,7 +182,7 @@ public class SqlScriptExecutor {
 			}
 		}
 		out.close();
-		statementExecutor.insertBlob(table, column, where, lobFile);
+		session.insertBlob(table, column, where, lobFile);
 		lobFile.delete();
 	}
 

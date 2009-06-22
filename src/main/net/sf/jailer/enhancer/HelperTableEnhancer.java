@@ -54,12 +54,12 @@ public class HelperTableEnhancer implements ScriptEnhancer {
 	}
 	
 	public void addComments(Writer script, ScriptType scriptType,
-			Session statementExecutor, EntityGraph entityGraph,
+			Session session, EntityGraph entityGraph,
 			Set<Table> progress) throws IOException, SQLException {
 	}
 
 	public void addEpilog(Writer script, ScriptType scriptType,
-			Session statementExecutor, EntityGraph entityGraph,
+			Session session, EntityGraph entityGraph,
 			Set<Table> progress) throws IOException, SQLException {
 		if (dualNeeded(progress)) {
 			script.append("DROP TABLE " + SQLDialect.DUAL_TABLE + ";\n");
@@ -67,7 +67,7 @@ public class HelperTableEnhancer implements ScriptEnhancer {
 	}
 
 	public void addProlog(Writer script, ScriptType scriptType,
-			Session statementExecutor, EntityGraph entityGraph,
+			Session session, EntityGraph entityGraph,
 			Set<Table> progress) throws IOException, SQLException {
 		if (dualNeeded(progress)) {
 			script.append("CREATE TABLE " + SQLDialect.DUAL_TABLE + "(D INTEGER);\n");

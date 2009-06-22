@@ -51,22 +51,22 @@ public class SqlScriptBasedStatisticRenovator implements StatisticRenovator {
      * Renews the DB table statistics for the working-tables
      * by executing the SQL-script.
      * 
-     * @param statementExecutor for execution of SQL-statements
+     * @param session for execution of SQL-statements
      */
-    public void renew(Session statementExecutor) throws Exception {
+    public void renew(Session session) throws Exception {
 		Map<String, String> arguments = new HashMap<String, String>();
-		arguments.put("JAILER_ENTITY", SQLDialect.dmlTableReference("JAILER_ENTITY", statementExecutor));
-		arguments.put("JAILER_GRAPH", SQLDialect.dmlTableReference("JAILER_GRAPH", statementExecutor));
-		arguments.put("JAILER_DEPENDENCY", SQLDialect.dmlTableReference("JAILER_DEPENDENCY", statementExecutor));
-		arguments.put("JAILER_SET", SQLDialect.dmlTableReference("JAILER_SET", statementExecutor));
+		arguments.put("JAILER_ENTITY", SQLDialect.dmlTableReference("JAILER_ENTITY", session));
+		arguments.put("JAILER_GRAPH", SQLDialect.dmlTableReference("JAILER_GRAPH", session));
+		arguments.put("JAILER_DEPENDENCY", SQLDialect.dmlTableReference("JAILER_DEPENDENCY", session));
+		arguments.put("JAILER_SET", SQLDialect.dmlTableReference("JAILER_SET", session));
 		String fileName = "renew.sql";
 		PrintWriter out = new PrintWriter(new FileOutputStream(fileName));
 		out.print(PrintUtil.applyTemplate(scriptFileName.replace('/', File.separatorChar), arguments, null));
 		out.close();
-		boolean silent = statementExecutor.getSilent();
-		statementExecutor.setSilent(true);
-        SqlScriptExecutor.executeScript(fileName, statementExecutor);
-		statementExecutor.setSilent(silent);
+		boolean silent = session.getSilent();
+		session.setSilent(true);
+        SqlScriptExecutor.executeScript(fileName, session);
+		session.setSilent(silent);
     }
 
 }

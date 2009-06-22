@@ -69,7 +69,7 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
     /**
      * Constructor.
      * 
-     * @param statementExecutor the statement executor for executing SQL-statements
+     * @param session the statement executor for executing SQL-statements
      */
     public DBMetaDataBasedModelElementFinder(String selectTablesScript, String selectForeignKeysScript, String selectColumnsScript) {
         this.selectTablesScript = selectTablesScript;
@@ -80,14 +80,14 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
     /**
      * Finds associations by reading the databases meta-data.
      * 
-     * @param statementExecutor the statement executor for executing SQL-statements 
+     * @param session the statement executor for executing SQL-statements 
      * @param dataModel model containing already known elements
      * @param namingSuggestion to put naming suggestions for associations into
      * @return found associations
      */
-    public Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestion, Session statementExecutor) throws Exception {
+    public Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestion, Session session) throws Exception {
         Collection<Association> associations = new ArrayList<Association>();
-        associations.addAll(findAssociations(dataModel, selectForeignKeysScript, statementExecutor));
+        associations.addAll(findAssociations(dataModel, selectForeignKeysScript, session));
         return associations;
     }
 
@@ -106,14 +106,14 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
      *                <li>join-condition</li>
      *             </ul>
      *             Associations between unknown tables are ignored
-     * @param statementExecutor the statement executor for executing SQL-statements 
+     * @param session the statement executor for executing SQL-statements 
      *             
      * @return found associations
      */
-    private Collection<Association> findAssociations(final DataModel dataModel, final String sqlFileName, Session statementExecutor) throws Exception {
+    private Collection<Association> findAssociations(final DataModel dataModel, final String sqlFileName, Session session) throws Exception {
         final List<Association> associations = new ArrayList<Association>();
-        String select = PrintUtil.applyTemplate(sqlFileName, new Object[] { statementExecutor.getSchemaName() });
-        statementExecutor.executeQuery(select, new Session.AbstractResultSetReader() {
+        String select = PrintUtil.applyTemplate(sqlFileName, new Object[] { session.getSchemaName() });
+        session.executeQuery(select, new Session.AbstractResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 String tableA = resultSet.getString(1);
                 String tableB = resultSet.getString(2);
@@ -140,14 +140,14 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
     /**
      * Finds all tables in DB schema.
      * 
-     * @param statementExecutor the statement executor for executing SQL-statements 
+     * @param session the statement executor for executing SQL-statements 
      */
-    public Set<Table> findTables(Session statementExecutor) throws Exception {
+    public Set<Table> findTables(Session session) throws Exception {
         final PrimaryKeyFactory primaryKeyFactory = new PrimaryKeyFactory();
         final Set<Table> tables = new TreeSet<Table>();
-        String select = PrintUtil.applyTemplate(selectTablesScript, new Object[] { statementExecutor.getSchemaName() });
+        String select = PrintUtil.applyTemplate(selectTablesScript, new Object[] { session.getSchemaName() });
         final Map<String, Map<Integer, Column>> pkColumns = new HashMap<String, Map<Integer, Column>>();
-        statementExecutor.executeQuery(select, new Session.AbstractResultSetReader() {
+        session.executeQuery(select, new Session.AbstractResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 String tableName = resultSet.getString(1);
                 Map<Integer, Column> pk = pkColumns.get(tableName);
@@ -182,12 +182,12 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
     /**
      * Finds all columns in DB schema.
      * 
-     * @param statementExecutor the statement executor for executing SQL-statements 
+     * @param session the statement executor for executing SQL-statements 
      */
-    public List<Column> findColumns(Table table, Session statementExecutor) throws Exception {
-        String select = PrintUtil.applyTemplate(selectColumnsScript, new Object[] { statementExecutor.getSchemaName(), table.getName() });
+    public List<Column> findColumns(Table table, Session session) throws Exception {
+        String select = PrintUtil.applyTemplate(selectColumnsScript, new Object[] { session.getSchemaName(), table.getName() });
         final List<Column> columns = new ArrayList<Column>();
-        statementExecutor.executeQuery(select, new Session.AbstractResultSetReader() {
+        session.executeQuery(select, new Session.AbstractResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 String name = resultSet.getString(2);
                 String type = resultSet.getString(3);

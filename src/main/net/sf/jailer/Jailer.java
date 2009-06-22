@@ -91,7 +91,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "2.9.11";
+	public static final String VERSION = "3.0";
 
 	/**
 	 * The relational data model.
@@ -165,8 +165,7 @@ public class Jailer {
 	 * 
 	 * @return set of tables from which entities are added
 	 */
-	public Set<Table> export(Table table, String condition,
-			Collection<Table> progressOfYesterday) throws Exception {
+	public Set<Table> export(Table table, String condition, Collection<Table> progressOfYesterday) throws Exception {
 		return export(table, condition, progressOfYesterday, 0);
 	}
 
@@ -194,10 +193,8 @@ public class Jailer {
 	 * 
 	 * @return set of tables from which entities are added
 	 */
-	public Set<Table> export(Table table, String condition,
-			Collection<Table> progressOfYesterday, long limit) throws Exception {
-		_log.info("exporting " + datamodel.getDisplayName(table) + " Where "
-				+ condition);
+	public Set<Table> export(Table table, String condition, Collection<Table> progressOfYesterday, long limit) throws Exception {
+		_log.info("exporting " + datamodel.getDisplayName(table) + " Where " + condition);
 		int today = entityGraph.getAge();
 		entityGraph.setAge(today + 1);
 		Map<Table, Collection<Association>> progress = new HashMap<Table, Collection<Association>>();
@@ -213,15 +210,13 @@ public class Jailer {
 
 		while (!progress.isEmpty()) {
 			totalProgress.addAll(progress.keySet());
-			_log.info("day " + today + ", progress: "
-					+ asString(progress.keySet()));
+			_log.info("day " + today + ", progress: " + asString(progress.keySet()));
 			++today;
 			entityGraph.setAge(today + 1);
 			progress = resolveAssociations(today, progress);
 		}
 
-		_log.info("exported " + datamodel.getDisplayName(table) + " Where "
-				+ condition);
+		_log.info("exported " + datamodel.getDisplayName(table) + " Where " + condition);
 		_log.info("total progress: " + asString(totalProgress));
 		_log.info("export statistic:");
 		boolean firstLine = true;
@@ -251,9 +246,7 @@ public class Jailer {
 							isFiltered = true;
 							appendCommentHeader("Used Filters:");
 						}
-						appendCommentHeader("    " + t.getUnqualifiedName()
-								+ "." + c.name + " := "
-								+ c.getFilterExpression());
+						appendCommentHeader("    " + t.getUnqualifiedName() + "." + c.name + " := " + c.getFilterExpression());
 					}
 				}
 			}
@@ -280,19 +273,18 @@ public class Jailer {
 				entityGraph.addEntities(table, "1=1", today, 0);
 				entityGraph.setAge(today + 1);
 			} else {
-				_log.info(datamodel.getDisplayName(table) + " not in closure("
-						+ datamodel.getDisplayName(subject) + ")");
+				_log.info(datamodel.getDisplayName(table) + " not in closure(" + datamodel.getDisplayName(subject) + ")");
 			}
 		}
 		return tables;
 	}
-	
+
 	/**
-	 * Initial-data-tables list. An initial-data-table is a table
-	 * which will be exported completely if it is in closure from subject.
+	 * Initial-data-tables list. An initial-data-table is a table which will be
+	 * exported completely if it is in closure from subject.
 	 */
 	private Set<Table> initialDataTables = new HashSet<Table>();
-	
+
 	/**
 	 * Reads the initial-data-tables list. An initial-data-table is a table
 	 * which will be exported completely if it is in closure from subject.
@@ -302,8 +294,7 @@ public class Jailer {
 	private void readInitialDataTables(Map<String, String> sourceSchemaMapping, Table subject) throws Exception {
 		File file = new File(DataModel.getInitialDataTablesFile());
 		if (file.exists()) {
-			Set<Table> idTables = SqlUtil.readTableList(new CsvFile(file),
-					datamodel, sourceSchemaMapping);
+			Set<Table> idTables = SqlUtil.readTableList(new CsvFile(file), datamodel, sourceSchemaMapping);
 			idTables.remove(subject);
 			initialDataTables = idTables;
 		} else {
@@ -322,10 +313,7 @@ public class Jailer {
 	 * @return map from tables from which entities are added to all associations
 	 *         which lead to the entities
 	 */
-	private Map<Table, Collection<Association>> resolveAssociations(
-			final int today,
-			Map<Table, Collection<Association>> progressOfYesterday)
-			throws Exception {
+	private Map<Table, Collection<Association>> resolveAssociations(final int today, Map<Table, Collection<Association>> progressOfYesterday) throws Exception {
 		final Map<Table, Collection<Association>> progress = new HashMap<Table, Collection<Association>>();
 
 		// resolve associations with same dest-type sequentially
@@ -335,50 +323,32 @@ public class Jailer {
 			for (final Association association : table.associations) {
 				if (initialDataTables.contains(association.destination)) {
 					// optimization: initial data tables
-					_log
-							.info("skip association with initial table "
-									+ datamodel.getDisplayName(table)
-									+ " -> "
-									+ datamodel
-											.getDisplayName(association.destination));
+					_log.info("skip association with initial table " + datamodel.getDisplayName(table) + " -> "
+							+ datamodel.getDisplayName(association.destination));
 					continue;
 				}
 
 				Collection<Association> as = progressOfYesterday.get(table);
-				if (as != null
-						&& as.size() == 1
-						&& as.iterator().next() == association.reversalAssociation) {
-					if (association.getCardinality() == Cardinality.MANY_TO_ONE
-							|| association.getCardinality() == Cardinality.ONE_TO_ONE) {
-						_log
-								.info("skip reversal association "
-										+ datamodel.getDisplayName(table)
-										+ " -> "
-										+ datamodel
-												.getDisplayName(association.destination));
+				if (as != null && as.size() == 1 && as.iterator().next() == association.reversalAssociation) {
+					if (association.getCardinality() == Cardinality.MANY_TO_ONE || association.getCardinality() == Cardinality.ONE_TO_ONE) {
+						_log.info("skip reversal association " + datamodel.getDisplayName(table) + " -> " + datamodel.getDisplayName(association.destination));
 						continue;
 					}
 				}
 
 				JobManager.Job job = new JobManager.Job() {
 					public void run() throws Exception {
-						runstats(entityGraph.statementExecutor, false);
+						runstats(entityGraph.session, false);
 						if (association.getJoinCondition() != null) {
-							_log.info("resolving "
-									+ datamodel.getDisplayName(table) + " -> "
-									+ association.toString(0, true) + "...");
+							_log.info("resolving " + datamodel.getDisplayName(table) + " -> " + association.toString(0, true) + "...");
 						}
-						long rc = entityGraph.resolveAssociation(table,
-								association, today);
+						long rc = entityGraph.resolveAssociation(table, association, today);
 						if (rc >= 0) {
-							_log.info(rc + " entities found resolving "
-									+ datamodel.getDisplayName(table) + " -> "
-									+ association.toString(0, true));
+							_log.info(rc + " entities found resolving " + datamodel.getDisplayName(table) + " -> " + association.toString(0, true));
 						}
 						synchronized (progress) {
 							if (rc > 0) {
-								Collection<Association> as = progress
-										.get(association.destination);
+								Collection<Association> as = progress.get(association.destination);
 								if (as == null) {
 									as = new ArrayList<Association>();
 									progress.put(association.destination, as);
@@ -388,8 +358,7 @@ public class Jailer {
 						}
 					}
 				};
-				List<JobManager.Job> jobList = jobsPerDestination
-						.get(association.destination);
+				List<JobManager.Job> jobList = jobsPerDestination.get(association.destination);
 				if (jobList == null) {
 					jobList = new ArrayList<JobManager.Job>();
 					jobsPerDestination.put(association.destination, jobList);
@@ -398,8 +367,7 @@ public class Jailer {
 			}
 		}
 		List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
-		for (final Map.Entry<Table, List<JobManager.Job>> entry : jobsPerDestination
-				.entrySet()) {
+		for (final Map.Entry<Table, List<JobManager.Job>> entry : jobsPerDestination.entrySet()) {
 			jobs.add(new JobManager.Job() {
 				public void run() throws Exception {
 					for (JobManager.Job job : entry.getValue()) {
@@ -410,11 +378,8 @@ public class Jailer {
 		}
 		jobManager.executeJobs(jobs);
 
-		if (EntityGraph.maxTotalRowcount > 0
-				&& EntityGraph.maxTotalRowcount < entityGraph
-						.getTotalRowcount()) {
-			throw new RuntimeException("found more than "
-					+ EntityGraph.maxTotalRowcount + " entities.");
+		if (EntityGraph.maxTotalRowcount > 0 && EntityGraph.maxTotalRowcount < entityGraph.getTotalRowcount()) {
+			throw new RuntimeException("found more than " + EntityGraph.maxTotalRowcount + " entities.");
 		}
 
 		return progress;
@@ -426,88 +391,53 @@ public class Jailer {
 	 * @param progress
 	 *            set of tables to take into account
 	 */
-	public void addDependencies(Set<Table> progress,
-			boolean treatAggregationAsDependency) throws Exception {
+	public void addDependencies(Set<Table> progress, boolean treatAggregationAsDependency) throws Exception {
 		List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 		for (final Table table : progress) {
 			for (final Association association : table.associations) {
 				if (progress.contains(association.destination)) {
-					final int aggregationId = treatAggregationAsDependency ? association
-							.getId()
-							: 0;
+					final int aggregationId = treatAggregationAsDependency ? association.getId() : 0;
 					final int dependencyId = association.getId();
 					if (treatAggregationAsDependency) {
 						if (association.getAggregationSchema() != AggregationSchema.NONE) {
-							final String jc = association
-									.getUnrestrictedJoinCondition();
+							final String jc = association.getUnrestrictedJoinCondition();
 							jobs.add(new JobManager.Job() {
 								public void run() throws Exception {
-									_log
-											.info("find aggregation for "
-													+ datamodel
-															.getDisplayName(table)
-													+ " -> "
-													+ datamodel
-															.getDisplayName(association.destination)
-													+ " on " + jc);
+									_log.info("find aggregation for " + datamodel.getDisplayName(table) + " -> "
+											+ datamodel.getDisplayName(association.destination) + " on " + jc);
 									String fromAlias, toAlias;
-									fromAlias = association.reversed ? "B"
-											: "A";
+									fromAlias = association.reversed ? "B" : "A";
 									toAlias = association.reversed ? "A" : "B";
-									entityGraph.addDependencies(table,
-											fromAlias, association.destination,
-											toAlias, jc, aggregationId,
-											dependencyId, association.reversed);
+									entityGraph.addDependencies(table, fromAlias, association.destination, toAlias, jc, aggregationId, dependencyId,
+											association.reversed);
 								}
 							});
 						}
 					} else {
 						final String jc = association.getJoinCondition();
-						if (jc != null
-								&& association
-										.isInsertDestinationBeforeSource()) {
+						if (jc != null && association.isInsertDestinationBeforeSource()) {
 							jobs.add(new JobManager.Job() {
 								public void run() throws Exception {
-									_log
-											.info("find dependencies "
-													+ datamodel
-															.getDisplayName(table)
-													+ " -> "
-													+ datamodel
-															.getDisplayName(association.destination)
-													+ " on " + jc);
+									_log.info("find dependencies " + datamodel.getDisplayName(table) + " -> "
+											+ datamodel.getDisplayName(association.destination) + " on " + jc);
 									String fromAlias, toAlias;
-									fromAlias = association.reversed ? "B"
-											: "A";
+									fromAlias = association.reversed ? "B" : "A";
 									toAlias = association.reversed ? "A" : "B";
-									entityGraph.addDependencies(table,
-											fromAlias, association.destination,
-											toAlias, jc, aggregationId,
-											dependencyId, association.reversed);
+									entityGraph.addDependencies(table, fromAlias, association.destination, toAlias, jc, aggregationId, dependencyId,
+											association.reversed);
 								}
 							});
 						}
-						if (jc != null
-								&& association
-										.isInsertSourceBeforeDestination()) {
+						if (jc != null && association.isInsertSourceBeforeDestination()) {
 							jobs.add(new JobManager.Job() {
 								public void run() throws Exception {
-									_log
-											.info("find dependencies "
-													+ datamodel
-															.getDisplayName(association.destination)
-													+ " -> "
-													+ datamodel
-															.getDisplayName(table)
-													+ " on " + jc);
+									_log.info("find dependencies " + datamodel.getDisplayName(association.destination) + " -> "
+											+ datamodel.getDisplayName(table) + " on " + jc);
 									String fromAlias, toAlias;
-									fromAlias = association.reversed ? "B"
-											: "A";
+									fromAlias = association.reversed ? "B" : "A";
 									toAlias = association.reversed ? "A" : "B";
-									entityGraph.addDependencies(
-											association.destination, toAlias,
-											table, fromAlias, jc,
-											aggregationId, dependencyId, association.reversed);
+									entityGraph.addDependencies(association.destination, toAlias, table, fromAlias, jc, aggregationId, dependencyId,
+											association.reversed);
 								}
 							});
 						}
@@ -530,13 +460,12 @@ public class Jailer {
 	 *            write entities from this table only
 	 * @param result
 	 *            a writer for the extract-script
-     * @param orderByPK if <code>true</code>, result will be ordered by primary keys
+	 * @param orderByPK
+	 *            if <code>true</code>, result will be ordered by primary keys
 	 */
-	private void writeEntities(OutputStreamWriter result,
-			TransformerHandler transformerHandler, ScriptType scriptType,
-			Table table, boolean orderByPK) throws Exception {
-		ResultSetReader reader = createResultSetReader(result,
-				transformerHandler, scriptType, table);
+	private void writeEntities(OutputStreamWriter result, TransformerHandler transformerHandler, ScriptType scriptType, Table table, boolean orderByPK)
+			throws Exception {
+		ResultSetReader reader = createResultSetReader(result, transformerHandler, scriptType, table);
 		entityGraph.readEntities(table, reader, orderByPK);
 		entityGraph.deleteEntities(table);
 	}
@@ -556,27 +485,18 @@ public class Jailer {
 	 * 
 	 * @return result set reader for processing the rows to be exported
 	 */
-	private ResultSetReader createResultSetReader(
-			OutputStreamWriter outputWriter,
-			TransformerHandler transformerHandler, ScriptType scriptType,
-			Table table) throws SQLException {
+	private ResultSetReader createResultSetReader(OutputStreamWriter outputWriter, TransformerHandler transformerHandler, ScriptType scriptType, Table table)
+			throws SQLException {
 		if (scriptType == ScriptType.INSERT) {
-			if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser
-					.getInstance().getScriptFormat())) {
-				return new FlatXMLTransformer(table, transformerHandler,
-						entityGraph.statementExecutor.getMetaData());
+			if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+				return new FlatXMLTransformer(table, transformerHandler, entityGraph.session.getMetaData());
 			} else {
-				return new DMLTransformer(table, outputWriter,
-						CommandLineParser.getInstance().upsertOnly,
-						CommandLineParser.getInstance().numberOfEntities,
-						entityGraph.statementExecutor.getMetaData(),
-						entityGraph.statementExecutor);
+				return new DMLTransformer(table, outputWriter, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities,
+						entityGraph.session.getMetaData(), entityGraph.session);
 			}
 		} else {
-			return new DeletionTransformer(table, outputWriter,
-					CommandLineParser.getInstance().numberOfEntities,
-					entityGraph.statementExecutor.getMetaData(),
-					entityGraph.statementExecutor);
+			return new DeletionTransformer(table, outputWriter, CommandLineParser.getInstance().numberOfEntities, entityGraph.session.getMetaData(),
+					entityGraph.session);
 		}
 	}
 
@@ -588,87 +508,66 @@ public class Jailer {
 	 * @param progress
 	 *            set of tables to account for extraction
 	 */
-	public void writeEntities(String sqlScriptFile,
-			final ScriptType scriptType, final Set<Table> progress,
-			Session statementExecutor) throws Exception {
+	public void writeEntities(String sqlScriptFile, final ScriptType scriptType, final Set<Table> progress, Session session) throws Exception {
 		_log.info("writing file '" + sqlScriptFile + "'...");
 
 		OutputStream outputStream = new FileOutputStream(sqlScriptFile);
-		if (sqlScriptFile.toLowerCase().endsWith(".zip")
-				|| sqlScriptFile.toLowerCase().endsWith(".gz")) {
+		if (sqlScriptFile.toLowerCase().endsWith(".zip") || sqlScriptFile.toLowerCase().endsWith(".gz")) {
 			outputStream = new GZIPOutputStream(outputStream);
 		}
 		TransformerHandler transformerHandler = null;
 		OutputStreamWriter result = null;
-		if (scriptType == ScriptType.INSERT
-				&& ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser
-						.getInstance().getScriptFormat())) {
-			StreamResult streamResult = new StreamResult(
-					new OutputStreamWriter(outputStream, Charset
-							.defaultCharset()));
-			transformerHandler = XmlUtil.createTransformerHandler(commentHeader
-					.toString(), "dataset", streamResult);
+		if (scriptType == ScriptType.INSERT && ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+			StreamResult streamResult = new StreamResult(new OutputStreamWriter(outputStream, Charset.defaultCharset()));
+			transformerHandler = XmlUtil.createTransformerHandler(commentHeader.toString(), "dataset", streamResult);
 		} else {
 			result = new OutputStreamWriter(outputStream);
 			result.append(commentHeader);
-//			result.append(System.getProperty("line.separator"));
+			// result.append(System.getProperty("line.separator"));
 			for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
-				enhancer.addComments(result, scriptType, statementExecutor,
-						entityGraph, progress);
+				enhancer.addComments(result, scriptType, session, entityGraph, progress);
 			}
-//			result.append(System.getProperty("line.separator"));
-//			result.append(System.getProperty("line.separator"));
+			// result.append(System.getProperty("line.separator"));
+			// result.append(System.getProperty("line.separator"));
 			for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
-				enhancer.addProlog(result, scriptType, statementExecutor,
-						entityGraph, progress);
+				enhancer.addProlog(result, scriptType, session, entityGraph, progress);
 			}
 		}
 
 		// first write entities of independent tables
-		final Set<Table> dependentTables = writeEntitiesOfIndependentTables(
-				result, transformerHandler, scriptType, progress);
+		final Set<Table> dependentTables = writeEntitiesOfIndependentTables(result, transformerHandler, scriptType, progress);
 
 		// then write entities of tables having cyclic-dependencies
 		_log.info("cyclic dependencies for: " + asString(dependentTables));
 		addDependencies(dependentTables, false);
-		runstats(statementExecutor, true);
-		removeSingleRowCycles(progress, statementExecutor);
+		runstats(session, true);
+		removeSingleRowCycles(progress, session);
 
 		final TransformerHandler fTransformerHandler = transformerHandler;
 		final OutputStreamWriter fResult = result;
 		long rest;
 
-		if (scriptType == ScriptType.INSERT
-				&& ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser
-						.getInstance().getScriptFormat())) {
+		if (scriptType == ScriptType.INSERT && ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
 			Set<Table> remaining = new HashSet<Table>(dependentTables);
 
 			// topologically sort remaining tables while ignoring reflexive
 			// dependencies
 			// and dependencies for which no edge exists in entity graph
-			Set<Association> relevantAssociations = new HashSet<Association>(
-					datamodel.namedAssociations.values());
+			Set<Association> relevantAssociations = new HashSet<Association>(datamodel.namedAssociations.values());
 			Set<Integer> existingEdges = entityGraph.getDistinctDependencyIDs();
-			for (Iterator<Association> i = relevantAssociations.iterator(); i
-					.hasNext();) {
+			for (Iterator<Association> i = relevantAssociations.iterator(); i.hasNext();) {
 				Association association = i.next();
 				if (association.source.equals(association.destination)) {
 					i.remove();
 				} else if (!existingEdges.contains(association.getId())) {
 					if (association.isInsertDestinationBeforeSource()) {
-						_log
-								.info("irrelevant dependency: "
-										+ datamodel
-												.getDisplayName(association.source)
-										+ " -> "
-										+ datamodel
-												.getDisplayName(association.destination));
+						_log.info("irrelevant dependency: " + datamodel.getDisplayName(association.source) + " -> "
+								+ datamodel.getDisplayName(association.destination));
 					}
 					i.remove();
 				}
 			}
-			Set<Table> independentTables = datamodel.getIndependentTables(
-					remaining, relevantAssociations);
+			Set<Table> independentTables = datamodel.getIndependentTables(remaining, relevantAssociations);
 			rest = entityGraph.getSize();
 			while (!independentTables.isEmpty()) {
 				_log.info("independent tables: " + asString(independentTables));
@@ -678,11 +577,8 @@ public class Jailer {
 						entityGraph.markIndependentEntities(independentTable);
 						// don't use jobManager, export rows sequentially, don't
 						// mix rows of different tables in a dataset!
-						ResultSetReader reader = createResultSetReader(fResult,
-								fTransformerHandler, scriptType,
-								independentTable);
-						entityGraph
-								.readMarkedEntities(independentTable, reader, true);
+						ResultSetReader reader = createResultSetReader(fResult, fTransformerHandler, scriptType, independentTable);
+						entityGraph.readMarkedEntities(independentTable, reader, true);
 						entityGraph.deleteIndependentEntities(independentTable);
 						long newRest = entityGraph.getSize();
 						if (rest == newRest) {
@@ -692,8 +588,7 @@ public class Jailer {
 					}
 				}
 				remaining.removeAll(independentTables);
-				independentTables = datamodel.getIndependentTables(remaining,
-						relevantAssociations);
+				independentTables = datamodel.getIndependentTables(remaining, relevantAssociations);
 			}
 		} else {
 			rest = entityGraph.getSize();
@@ -705,9 +600,7 @@ public class Jailer {
 				for (final Table table : dependentTables) {
 					jobs.add(new JobManager.Job() {
 						public void run() throws Exception {
-							ResultSetReader reader = createResultSetReader(
-									fResult, fTransformerHandler, scriptType,
-									table);
+							ResultSetReader reader = createResultSetReader(fResult, fTransformerHandler, scriptType, table);
 							entityGraph.readMarkedEntities(table, reader, false);
 						}
 					});
@@ -727,23 +620,20 @@ public class Jailer {
 		if (result != null) {
 			// write epilogs
 			for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
-				enhancer.addEpilog(result, scriptType, statementExecutor,
-						entityGraph, progress);
+				enhancer.addEpilog(result, scriptType, session, entityGraph, progress);
 			}
 			result.close();
 		}
 
 		if (transformerHandler != null) {
 			String content = "\n";
-			transformerHandler.characters(content.toCharArray(), 0, content
-					.length());
+			transformerHandler.characters(content.toCharArray(), 0, content.length());
 			transformerHandler.endElement("", "", "dataset");
 			transformerHandler.endDocument();
 		}
 
 		if (rest > 0) {
-			throw new RuntimeException(rest
-					+ " entities not exported due to cyclic dependencies");
+			throw new RuntimeException(rest + " entities not exported due to cyclic dependencies");
 		}
 		_log.info("file '" + sqlScriptFile + "' written.");
 	}
@@ -751,13 +641,15 @@ public class Jailer {
 	/**
 	 * Removes all single-row cycles from dependency table.
 	 * 
-	 * @param progress set of all tables from which rows are collected
-	 * @param statementExecutor for executing SQL statements
+	 * @param progress
+	 *            set of all tables from which rows are collected
+	 * @param session
+	 *            for executing SQL statements
 	 */
-	private void removeSingleRowCycles(Set<Table> progress, Session statementExecutor) throws Exception {
-		for (Table table: progress) {
+	private void removeSingleRowCycles(Set<Table> progress, Session session) throws Exception {
+		for (Table table : progress) {
 			boolean hasReflexiveAssociation = false;
-			for (Association a: table.associations) {
+			for (Association a : table.associations) {
 				if (a.destination == table) {
 					hasReflexiveAssociation = true;
 					break;
@@ -777,22 +669,19 @@ public class Jailer {
 	 * @param progress
 	 *            set of tables to account for extraction
 	 */
-	public void writeEntitiesAsXml(String xmlFile, final Set<Table> progress,
-			final Set<Table> subjects, Session statementExecutor)
-			throws Exception {
+	public void writeEntitiesAsXml(String xmlFile, final Set<Table> progress, final Set<Table> subjects, Session session) throws Exception {
 		_log.info("writing file '" + xmlFile + "'...");
 
 		OutputStream outputStream = new FileOutputStream(xmlFile);
-		if (xmlFile.toLowerCase().endsWith(".zip")
-				|| xmlFile.toLowerCase().endsWith(".gz")) {
+		if (xmlFile.toLowerCase().endsWith(".zip") || xmlFile.toLowerCase().endsWith(".gz")) {
 			outputStream = new GZIPOutputStream(outputStream);
 		}
 
 		// then write entities of tables having cyclic-dependencies
 		_log.info("create hierarchy for: " + asString(progress));
 		addDependencies(progress, true);
-		runstats(statementExecutor, true);
-		removeSingleRowCycles(progress, statementExecutor);
+		runstats(session, true);
+		removeSingleRowCycles(progress, session);
 
 		List<Table> sortedTables = new ArrayList<Table>(progress);
 		Collections.sort(sortedTables, new Comparator<Table>() {
@@ -805,22 +694,16 @@ public class Jailer {
 				if (!s1 && s2) {
 					return 1;
 				}
-				return datamodel.getDisplayName(t1).compareTo(
-						datamodel.getDisplayName(t2));
+				return datamodel.getDisplayName(t1).compareTo(datamodel.getDisplayName(t2));
 			}
 		});
 
 		Set<Table> cyclicAggregatedTables = getCyclicAggregatedTables(progress);
-		_log.info("cyclic aggregated tables: "
-				+ PrintUtil.tableSetAsString(cyclicAggregatedTables));
+		_log.info("cyclic aggregated tables: " + PrintUtil.tableSetAsString(cyclicAggregatedTables));
 
-		XmlExportTransformer reader = new XmlExportTransformer(outputStream,
-				commentHeader.toString(), entityGraph, progress,
-				cyclicAggregatedTables,
-				CommandLineParser.getInstance().xmlRootTag, CommandLineParser
-						.getInstance().xmlDatePattern, CommandLineParser
-						.getInstance().xmlTimeStampPattern,
-						entityGraph.statementExecutor);
+		XmlExportTransformer reader = new XmlExportTransformer(outputStream, commentHeader.toString(), entityGraph, progress, cyclicAggregatedTables,
+				CommandLineParser.getInstance().xmlRootTag, CommandLineParser.getInstance().xmlDatePattern,
+				CommandLineParser.getInstance().xmlTimeStampPattern, entityGraph.session);
 
 		for (Table table : sortedTables) {
 			entityGraph.markRoots(table);
@@ -828,8 +711,7 @@ public class Jailer {
 		for (Table table : sortedTables) {
 			_log.info("exporting table " + datamodel.getDisplayName(table));
 			reader.setTable(table);
-			entityGraph.readMarkedEntities(table, reader, reader
-					.getTableMapping(table).selectionSchema, true);
+			entityGraph.readMarkedEntities(table, reader, reader.getTableMapping(table).selectionSchema, true);
 		}
 		reader.endDocument();
 
@@ -850,8 +732,7 @@ public class Jailer {
 				boolean isAggregated = false;
 				for (Association association : t.associations) {
 					if (association.reversalAssociation.getAggregationSchema() != AggregationSchema.NONE) {
-						if (cyclicAggregatedTables
-								.contains(association.destination)) {
+						if (cyclicAggregatedTables.contains(association.destination)) {
 							isAggregated = true;
 							break;
 						}
@@ -875,22 +756,17 @@ public class Jailer {
 	 * @param cyclicAggregatedTables
 	 *            tables to check
 	 */
-	private void checkCompletenessOfXmlExport(Set<Table> cyclicAggregatedTables)
-			throws SQLException {
+	private void checkCompletenessOfXmlExport(Set<Table> cyclicAggregatedTables) throws SQLException {
 		for (Table table : cyclicAggregatedTables) {
-			entityGraph.readNonTraversedDependencies(table,
-					new Session.ResultSetReader() {
-						public void readCurrentRow(ResultSet resultSet)
-								throws SQLException {
-							String message = "Can't export all rows from table '"
-									+ resultSet.getString("TO_TYPE")
-									+ "' due to cyclic aggregation";
-							throw new RuntimeException(message);
-						}
+			entityGraph.readNonTraversedDependencies(table, new Session.ResultSetReader() {
+				public void readCurrentRow(ResultSet resultSet) throws SQLException {
+					String message = "Can't export all rows from table '" + resultSet.getString("TO_TYPE") + "' due to cyclic aggregation";
+					throw new RuntimeException(message);
+				}
 
-						public void close() {
-						}
-					});
+				public void close() {
+				}
+			});
 		}
 	}
 
@@ -904,10 +780,8 @@ public class Jailer {
 	 * 
 	 * @return set of tables from which no entities are written
 	 */
-	Set<Table> writeEntitiesOfIndependentTables(
-			final OutputStreamWriter result,
-			final TransformerHandler transformerHandler,
-			final ScriptType scriptType, Set<Table> progress) throws Exception {
+	Set<Table> writeEntitiesOfIndependentTables(final OutputStreamWriter result, final TransformerHandler transformerHandler, final ScriptType scriptType,
+			Set<Table> progress) throws Exception {
 		Set<Table> tables = new HashSet<Table>(progress);
 
 		Set<Table> independentTables = datamodel.getIndependentTables(tables);
@@ -915,23 +789,19 @@ public class Jailer {
 			_log.info("independent tables: " + asString(independentTables));
 			List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 			for (final Table independentTable : independentTables) {
-				if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser
-						.getInstance().getScriptFormat())) {
+				if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
 					// export rows sequentially, don't mix rows of different
 					// tables in a dataset!
-					writeEntities(result, transformerHandler, scriptType,
-							independentTable, true);
+					writeEntities(result, transformerHandler, scriptType, independentTable, true);
 				} else {
 					jobs.add(new JobManager.Job() {
 						public void run() throws Exception {
-							writeEntities(result, transformerHandler,
-									scriptType, independentTable, false);
+							writeEntities(result, transformerHandler, scriptType, independentTable, false);
 						}
 					});
 				}
 			}
-			if (!ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser
-					.getInstance().getScriptFormat())) {
+			if (!ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
 				jobManager.executeJobs(jobs);
 			}
 			tables.removeAll(independentTables);
@@ -983,24 +853,17 @@ public class Jailer {
 	/**
 	 * Runs script for updating the DB-statistics.
 	 */
-	private synchronized void runstats(Session statementExecutor,
-			boolean force) throws Exception {
-		if (force
-				|| lastRunstats == 0
-				|| (lastRunstats * 2 <= entityGraph.getTotalRowcount() && entityGraph
-						.getTotalRowcount() > 1000)) {
+	private synchronized void runstats(Session session, boolean force) throws Exception {
+		if (force || lastRunstats == 0 || (lastRunstats * 2 <= entityGraph.getTotalRowcount() && entityGraph.getTotalRowcount() > 1000)) {
 			lastRunstats = entityGraph.getTotalRowcount();
 
-			StatisticRenovator statisticRenovator = Configuration.forDbms(
-					statementExecutor).getStatisticRenovator();
+			StatisticRenovator statisticRenovator = Configuration.forDbms(session).getStatisticRenovator();
 			if (statisticRenovator != null) {
-				_log.info("gather statistics after " + lastRunstats
-						+ " inserted rows...");
+				_log.info("gather statistics after " + lastRunstats + " inserted rows...");
 				try {
-					statisticRenovator.renew(statementExecutor);
+					statisticRenovator.renew(session);
 				} catch (Throwable t) {
-					_log.warn("unable to update table statistics: "
-							+ t.getMessage());
+					_log.warn("unable to update table statistics: " + t.getMessage());
 				}
 			}
 		}
@@ -1029,8 +892,7 @@ public class Jailer {
 	 *            string-buffer to print warnings into, may be <code>null</code>
 	 * @return <code>false</code> iff something went wrong
 	 */
-	public static boolean jailerMain(String[] args, StringBuffer warnings)
-			throws Exception {
+	public static boolean jailerMain(String[] args, StringBuffer warnings) throws Exception {
 		statistic.setLength(0);
 		Session.closeTemporaryTableSession();
 
@@ -1053,28 +915,23 @@ public class Jailer {
 				DataModel dataModel = new DataModel();
 				for (String rm : clp.arguments.subList(1, clp.arguments.size())) {
 					if (dataModel.getRestrictionModel() == null) {
-						dataModel.setRestrictionModel(new RestrictionModel(
-								dataModel));
+						dataModel.setRestrictionModel(new RestrictionModel(dataModel));
 					}
-					dataModel.getRestrictionModel().addRestrictionDefinition(
-							rm, null);
+					dataModel.getRestrictionModel().addRestrictionDefinition(rm, null);
 				}
 				new DomainModel(dataModel).check();
 			} else if ("render-datamodel".equalsIgnoreCase(command)) {
 				if (clp.arguments.size() <= 1) {
 					CommandLineParser.printUsage();
 				} else {
-					new Jailer(1).renderDataModel(clp.arguments,
-							clp.withClosures, clp.schema);
+					new Jailer(1).renderDataModel(clp.arguments, clp.withClosures, clp.schema);
 				}
 			} else if ("import".equalsIgnoreCase(command)) {
 				if (clp.arguments.size() != 6) {
 					CommandLineParser.printUsage();
 				} else {
-					SqlScriptExecutor.executeScript(clp.arguments.get(1),
-							new Session(clp.arguments.get(2),
-									clp.arguments.get(3), clp.arguments.get(4),
-									clp.arguments.get(5)));
+					SqlScriptExecutor.executeScript(clp.arguments.get(1), new Session(clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4),
+							clp.arguments.get(5)));
 				}
 			} else if ("print-datamodel".equalsIgnoreCase(command)) {
 				printDataModel(clp.arguments, clp.withClosures);
@@ -1084,44 +941,34 @@ public class Jailer {
 				} else {
 					if (clp.maxNumberOfEntities > 0) {
 						EntityGraph.maxTotalRowcount = clp.maxNumberOfEntities;
-						_log.info("max-rowcount="
-								+ EntityGraph.maxTotalRowcount);
+						_log.info("max-rowcount=" + EntityGraph.maxTotalRowcount);
 					}
 					if (clp.exportScriptFileName == null) {
 						System.out.println("missing '-e' option");
 						CommandLineParser.printUsage();
 					} else {
-						export(clp.arguments.get(1), clp.exportScriptFileName,
-								clp.deleteScriptFileName, clp.arguments.get(2),
-								clp.arguments.get(3), clp.arguments.get(4),
-								clp.arguments.get(5), clp.explain,
-								clp.numberOfThreads, clp.getScriptFormat());
+						export(clp.arguments.get(1), clp.exportScriptFileName, clp.deleteScriptFileName, clp.arguments.get(2), clp.arguments.get(3),
+								clp.arguments.get(4), clp.arguments.get(5), clp.explain, clp.numberOfThreads, clp.getScriptFormat());
 					}
 				}
 			} else if ("find-association".equalsIgnoreCase(command)) {
 				if (clp.arguments.size() < 3) {
 					CommandLineParser.printUsage();
 				} else {
-					findAssociation(clp.arguments.get(1), clp.arguments.get(2),
-							clp.arguments.subList(3, clp.arguments.size()),
-							clp.undirected);
+					findAssociation(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.subList(3, clp.arguments.size()), clp.undirected);
 				}
 			} else if ("create-ddl".equalsIgnoreCase(command)) {
 				if (clp.arguments.size() == 5) {
-					return DDLCreator.createDDL(clp.arguments.get(1),
-							clp.arguments.get(2), clp.arguments.get(3),
-							clp.arguments.get(4), clp.getTemporaryTableScope());
+					return DDLCreator.createDDL(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4), clp
+							.getTemporaryTableScope());
 				}
-				return DDLCreator.createDDL(null, null, null, null, clp
-						.getTemporaryTableScope());
+				return DDLCreator.createDDL(null, null, null, null, clp.getTemporaryTableScope());
 			} else if ("build-model".equalsIgnoreCase(command)) {
 				if (clp.arguments.size() != 5) {
 					CommandLineParser.printUsage();
 				} else {
 					_log.info("Building data model.");
-					ModelBuilder.build(clp.arguments.get(1), clp.arguments
-							.get(2), clp.arguments.get(3),
-							clp.arguments.get(4), clp.schema, warnings);
+					ModelBuilder.build(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4), clp.schema, warnings);
 				}
 			} else {
 				CommandLineParser.printUsage();
@@ -1130,8 +977,7 @@ public class Jailer {
 			return true;
 		} catch (Exception e) {
 			_log.error(e.getMessage(), e);
-			System.out.println("Error: " + e.getClass().getName() + ": "
-					+ e.getMessage());
+			System.out.println("Error: " + e.getClass().getName() + ": " + e.getMessage());
 			String workingDirectory = System.getProperty("user.dir");
 			_log.error("working directory is " + workingDirectory);
 			throw e;
@@ -1146,8 +992,7 @@ public class Jailer {
 	 * @param schema
 	 *            schema to introspect
 	 */
-	private void renderDataModel(List<String> arguments, boolean withClosures,
-			String schema) throws Exception {
+	private void renderDataModel(List<String> arguments, boolean withClosures, String schema) throws Exception {
 		DataModel dataModel = new DataModel();
 		for (String rm : arguments.subList(1, arguments.size())) {
 			if (dataModel.getRestrictionModel() == null) {
@@ -1165,66 +1010,49 @@ public class Jailer {
 	/**
 	 * Exports entities.
 	 */
-	private static void export(String extractionModelFileName,
-			String scriptFile, String deleteScriptFileName,
-			String driverClassName, String dbUrl, String dbUser,
-			String dbPassword, boolean explain, int threads,
-			ScriptFormat scriptFormat) throws Exception {
-		_log.info("exporting '" + extractionModelFileName + "' to '"
-				+ scriptFile + "'");
+	private static void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, String driverClassName, String dbUrl,
+			String dbUser, String dbPassword, boolean explain, int threads, ScriptFormat scriptFormat) throws Exception {
+		_log.info("exporting '" + extractionModelFileName + "' to '" + scriptFile + "'");
 
-		Session statementExecutor = new Session(
-				driverClassName, dbUrl, dbUser, dbPassword, CommandLineParser
-						.getInstance().getTemporaryTableScope());
+		Session session = new Session(driverClassName, dbUrl, dbUser, dbPassword, CommandLineParser.getInstance().getTemporaryTableScope());
 		if (CommandLineParser.getInstance().getTemporaryTableScope() != TemporaryTableScope.GLOBAL) {
-			DDLCreator.createDDL(statementExecutor, CommandLineParser
-					.getInstance().getTemporaryTableScope());
+			DDLCreator.createDDL(session, CommandLineParser.getInstance().getTemporaryTableScope());
 		}
 
-		ExtractionModel extractionModel = new ExtractionModel(
-				extractionModelFileName, CommandLineParser.getInstance().getSourceSchemaMapping());
-		EntityGraph entityGraph = EntityGraph.create(EntityGraph
-				.createUniqueGraphID(), statementExecutor, extractionModel
-				.getTasks().get(0).dataModel
-				.getUniversalPrimaryKey(statementExecutor));
+		ExtractionModel extractionModel = new ExtractionModel(extractionModelFileName, CommandLineParser.getInstance().getSourceSchemaMapping());
+		EntityGraph entityGraph = EntityGraph.create(EntityGraph.createUniqueGraphID(), session, extractionModel.getTasks().get(0).dataModel
+				.getUniversalPrimaryKey(session));
 		entityGraph.setExplain(explain);
 		final Jailer jailer = new Jailer(threads);
 
-		jailer.appendCommentHeader("generated by Jailer, " + new Date()
-				+ " from " + getUsername());
+		jailer.appendCommentHeader("generated by Jailer, " + new Date() + " from " + getUsername());
 		Set<Table> totalProgress = new HashSet<Table>();
 		Set<Table> subjects = new HashSet<Table>();
 		boolean firstTask = true;
 		for (ExtractionModel.ExtractionTask task : extractionModel.getTasks()) {
 
-			if (CommandLineParser.getInstance().where != null
-					&& CommandLineParser.getInstance().where.trim().length() > 0) {
+			if (CommandLineParser.getInstance().where != null && CommandLineParser.getInstance().where.trim().length() > 0) {
 				task.condition = CommandLineParser.getInstance().where;
 			}
 
 			jailer.appendCommentHeader("");
-			String condition = (task.condition != null && !"1=1"
-					.equals(task.condition)) ? task.subject.getName()
-					+ " where " + task.condition : "all rows from "
-					+ task.subject.getName();
-			jailer.appendCommentHeader("Extraction Model:  " + condition + " ("
-					+ extractionModelFileName + ")");
+			String condition = (task.condition != null && !"1=1".equals(task.condition)) ? task.subject.getName() + " where " + task.condition
+					: "all rows from " + task.subject.getName();
+			jailer.appendCommentHeader("Extraction Model:  " + condition + " (" + extractionModelFileName + ")");
 			jailer.appendCommentHeader("Database URL:      " + dbUrl);
 			jailer.appendCommentHeader("Database User:     " + dbUser);
 
 			task.dataModel.checkForPrimaryKey(task.subject, deleteScriptFileName != null);
-			
-			EntityGraph graph = firstTask ? entityGraph : EntityGraph.create(
-					EntityGraph.createUniqueGraphID(), statementExecutor,
-					task.dataModel.getUniversalPrimaryKey(statementExecutor));
+
+			EntityGraph graph = firstTask ? entityGraph : EntityGraph.create(EntityGraph.createUniqueGraphID(), session, task.dataModel
+					.getUniversalPrimaryKey(session));
 			jailer.setEntityGraph(graph);
 			jailer.setDataModel(task.dataModel);
 			jailer.readInitialDataTables(CommandLineParser.getInstance().getSourceSchemaMapping(), task.subject);
-			jailer.runstats(statementExecutor, false);
+			jailer.runstats(session, false);
 			Set<Table> progress = jailer.exportInitialData(task.subject);
 			entityGraph.setBirthdayOfSubject(entityGraph.getAge());
-			progress.addAll(jailer.export(task.subject, task.condition,
-					progress, task.limit));
+			progress.addAll(jailer.export(task.subject, task.condition, progress, task.limit));
 			totalProgress.addAll(progress);
 			subjects.add(task.subject);
 			if (!firstTask) {
@@ -1234,8 +1062,7 @@ public class Jailer {
 		}
 
 		if (explain) {
-			ExplainTool.explain(entityGraph, jailer.initialDataTables,
-					statementExecutor, jailer.datamodel);
+			ExplainTool.explain(entityGraph, jailer.initialDataTables, session, jailer.datamodel);
 		}
 
 		totalProgress = jailer.datamodel.normalize(totalProgress);
@@ -1243,28 +1070,23 @@ public class Jailer {
 
 		EntityGraph exportedEntities = null;
 		if (deleteScriptFileName != null) {
-			exportedEntities = EntityGraph.copy(entityGraph, EntityGraph
-					.createUniqueGraphID(), statementExecutor);
+			exportedEntities = EntityGraph.copy(entityGraph, EntityGraph.createUniqueGraphID(), session);
 		}
 
 		jailer.setEntityGraph(entityGraph);
 		if (ScriptFormat.XML.equals(scriptFormat)) {
-			jailer.writeEntitiesAsXml(scriptFile, totalProgress, subjects,
-					statementExecutor);
+			jailer.writeEntitiesAsXml(scriptFile, totalProgress, subjects, session);
 		} else {
-			jailer.writeEntities(scriptFile, ScriptType.INSERT, totalProgress,
-					statementExecutor);
+			jailer.writeEntities(scriptFile, ScriptType.INSERT, totalProgress, session);
 		}
 		entityGraph.delete();
 
 		if (deleteScriptFileName != null) {
 			jailer.setEntityGraph(exportedEntities);
-			jailer.deleteEntities(subjects, totalProgress, statementExecutor,
-					CommandLineParser.getInstance().getTabuTables(
-							jailer.datamodel, CommandLineParser.getInstance().getSourceSchemaMapping()));
+			jailer.deleteEntities(subjects, totalProgress, session, CommandLineParser.getInstance().getTabuTables(jailer.datamodel,
+					CommandLineParser.getInstance().getSourceSchemaMapping()));
 			jailer.datamodel.transpose();
-			jailer.writeEntities(deleteScriptFileName, ScriptType.DELETE,
-					totalProgress, statementExecutor);
+			jailer.writeEntities(deleteScriptFileName, ScriptType.DELETE, totalProgress, session);
 			exportedEntities.delete();
 		}
 
@@ -1299,14 +1121,10 @@ public class Jailer {
 	 * @param tabuTables
 	 *            never deletes entities of one of this tables
 	 */
-	private void deleteEntities(Set<Table> subjects, Set<Table> allTables,
-			Session statementExecutor, Set<Table> tabuTables)
-			throws Exception {
+	private void deleteEntities(Set<Table> subjects, Set<Table> allTables, Session session, Set<Table> tabuTables) throws Exception {
 		appendCommentHeader("");
-		appendCommentHeader("Tabu-tables: "
-				+ PrintUtil.tableSetAsString(tabuTables, "--                 "));
-		_log.info("Tabu-tables: "
-				+ PrintUtil.tableSetAsString(tabuTables, null));
+		appendCommentHeader("Tabu-tables: " + PrintUtil.tableSetAsString(tabuTables, "--                 "));
+		_log.info("Tabu-tables: " + PrintUtil.tableSetAsString(tabuTables, null));
 
 		final Map<Table, Long> removedEntities = new HashMap<Table, Long>();
 
@@ -1337,8 +1155,7 @@ public class Jailer {
 		// remove tabu entities
 		for (Table tabuTable : tabuTables) {
 			long rc = entityGraph.deleteEntities(tabuTable);
-			_log.info("excluded " + rc + " entities from "
-					+ datamodel.getDisplayName(tabuTable) + " (tabu)");
+			_log.info("excluded " + rc + " entities from " + datamodel.getDisplayName(tabuTable) + " (tabu)");
 			allTables.remove(tabuTable);
 		}
 
@@ -1346,15 +1163,13 @@ public class Jailer {
 		Set<Table> emptyTables = new HashSet<Table>();
 
 		Set<Table> tablesToCheck = new HashSet<Table>(allTables);
-		_log.info("don't check initially: "
-				+ PrintUtil.tableSetAsString(dontCheckInitially, null));
+		_log.info("don't check initially: " + PrintUtil.tableSetAsString(dontCheckInitially, null));
 		tablesToCheck.removeAll(dontCheckInitially);
 
 		boolean firstStep = true;
 		// remove associated entities
 		while (!tablesToCheck.isEmpty()) {
-			_log.info("tables to check: "
-					+ PrintUtil.tableSetAsString(tablesToCheck, null));
+			_log.info("tables to check: " + PrintUtil.tableSetAsString(tablesToCheck, null));
 			List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 			final Set<Table> tablesToCheckNextTime = new HashSet<Table>();
 			for (final Table table : tablesToCheck) {
@@ -1370,24 +1185,14 @@ public class Jailer {
 						final boolean isFirstStep = firstStep;
 						jobs.add(new JobManager.Job() {
 							public void run() throws Exception {
-								long rc = entityGraph
-										.removeAssociatedDestinations(
-												a.reversalAssociation,
-												!isFirstStep);
+								long rc = entityGraph.removeAssociatedDestinations(a.reversalAssociation, !isFirstStep);
 								if (rc > 0) {
 									synchronized (removedEntities) {
 										Long oldRc = removedEntities.get(table);
-										removedEntities.put(table, rc
-												+ (oldRc == null ? 0 : oldRc));
-										_log.info("excluded "
-												+ rc
-												+ " entities from "
-												+ datamodel
-														.getDisplayName(table)
-												+ " referenced by " + a);
+										removedEntities.put(table, rc + (oldRc == null ? 0 : oldRc));
+										_log.info("excluded " + rc + " entities from " + datamodel.getDisplayName(table) + " referenced by " + a);
 										for (Association a2 : table.associations) {
-											tablesToCheckNextTime
-													.add(a2.destination);
+											tablesToCheckNextTime.add(a2.destination);
 										}
 									}
 								}
@@ -1408,8 +1213,7 @@ public class Jailer {
 		boolean firstLine = true;
 		for (String line : entityGraph.getStatistics(datamodel)) {
 			if (!firstLine) {
-				Long re = removedEntities.get(datamodel.getTable(line
-						.split(" ")[0]));
+				Long re = removedEntities.get(datamodel.getTable(line.split(" ")[0]));
 				if (re != null && re != 0L) {
 					line += " (-" + re + ")";
 				}
@@ -1438,8 +1242,7 @@ public class Jailer {
 	/**
 	 * Prints shortest association between two tables.
 	 */
-	private static void findAssociation(String from, String to,
-			List<String> restModels, boolean undirected) throws Exception {
+	private static void findAssociation(String from, String to, List<String> restModels, boolean undirected) throws Exception {
 		DataModel dataModel = new DataModel();
 		for (String rm : restModels) {
 			if (dataModel.getRestrictionModel() == null) {
@@ -1456,15 +1259,12 @@ public class Jailer {
 			throw new RuntimeException("unknown table: '" + to);
 		}
 
-		Set<Table> tablesToIgnore = CommandLineParser.getInstance()
-				.getTabuTables(dataModel, null);
+		Set<Table> tablesToIgnore = CommandLineParser.getInstance().getTabuTables(dataModel, null);
 		if (!tablesToIgnore.isEmpty()) {
-			System.out.println("ignoring: "
-					+ PrintUtil.tableSetAsString(tablesToIgnore));
+			System.out.println("ignoring: " + PrintUtil.tableSetAsString(tablesToIgnore));
 		}
 		System.out.println();
-		System.out.println("Shortest path from " + source.getName() + " to "
-				+ destination.getName() + ":");
+		System.out.println("Shortest path from " + source.getName() + " to " + destination.getName() + ":");
 
 		Map<Table, Table> successor = new HashMap<Table, Table>();
 		Map<Table, Association> outgoingAssociation = new HashMap<Table, Association>();
@@ -1473,13 +1273,11 @@ public class Jailer {
 
 		while (!agenda.isEmpty()) {
 			Table table = agenda.remove(0);
-			for (Association association : incomingAssociations(table,
-					undirected)) {
+			for (Association association : incomingAssociations(table, undirected)) {
 				if (!tablesToIgnore.contains(association.source)) {
 					if (!successor.containsKey(association.source)) {
 						successor.put(association.source, table);
-						outgoingAssociation
-								.put(association.source, association);
+						outgoingAssociation.put(association.source, association);
 						agenda.add(association.source);
 						if (association.source.equals(source)) {
 							agenda.clear();
@@ -1492,20 +1290,15 @@ public class Jailer {
 		if (successor.containsKey(source)) {
 			String joinedSelect = "Select * From " + source.getName();
 			System.out.println("    " + source.getName());
-			for (Table table = source; !table.equals(destination); table = successor
-					.get(table)) {
+			for (Table table = source; !table.equals(destination); table = successor.get(table)) {
 				Association association = outgoingAssociation.get(table);
 				System.out.println("    " + association);
 				joinedSelect += " join "
 						+ association.destination.getName()
 						+ " on "
-						+ (association.reversed ? SqlUtil.replaceAliases(
-								association.getJoinCondition(),
-								association.destination.getName(),
-								association.source.getName()) : SqlUtil
-								.replaceAliases(association.getJoinCondition(),
-										association.source.getName(),
-										association.destination.getName()));
+						+ (association.reversed ? SqlUtil.replaceAliases(association.getJoinCondition(), association.destination.getName(), association.source
+								.getName()) : SqlUtil.replaceAliases(association.getJoinCondition(), association.source.getName(), association.destination
+								.getName()));
 			}
 			System.out.println();
 			System.out.println();
@@ -1519,8 +1312,7 @@ public class Jailer {
 	/**
 	 * Prints restricted data-model.
 	 */
-	private static void printDataModel(List<String> restrictionModels,
-			boolean printClosures) throws Exception {
+	private static void printDataModel(List<String> restrictionModels, boolean printClosures) throws Exception {
 		DataModel dataModel = new DataModel();
 		if (printClosures) {
 			DataModel.printClosures = true;
@@ -1555,8 +1347,7 @@ public class Jailer {
 		if (tables.isEmpty()) {
 			System.out.println("no cyclic dependencies" + asString(tables));
 		} else {
-			System.out
-					.println("tables in dependent-cycle: " + asString(tables));
+			System.out.println("tables in dependent-cycle: " + asString(tables));
 		}
 	}
 
@@ -1588,12 +1379,10 @@ public class Jailer {
 	 *            the table
 	 * @return all non-ignored associations with table as destination
 	 */
-	private static Collection<Association> incomingAssociations(Table table,
-			boolean undirected) {
+	private static Collection<Association> incomingAssociations(Table table, boolean undirected) {
 		Collection<Association> result = new ArrayList<Association>();
 		for (Association association : table.associations) {
-			if (association.reversalAssociation.getJoinCondition() != null
-					|| (undirected && association.getJoinCondition() != null)) {
+			if (association.reversalAssociation.getJoinCondition() != null || (undirected && association.getJoinCondition() != null)) {
 				result.add(association.reversalAssociation);
 			}
 		}

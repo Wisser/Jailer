@@ -43,61 +43,61 @@ import net.sf.jailer.util.SqlUtil;
  */
 public class DDLCreator {
 
-    /**
-     * Creates the DDL for the working-tables.
-     */
-    public static boolean createDDL(String driverClass, String dbUrl, String user, String password, TemporaryTableScope temporaryTableScope) throws Exception {
-    	Session statementExecutor = null;
-        if (driverClass != null) {
-        	statementExecutor = new Session(driverClass, dbUrl, user, password);
-        }
-        return createDDL(statementExecutor, temporaryTableScope);
-    }
+	/**
+	 * Creates the DDL for the working-tables.
+	 */
+	public static boolean createDDL(String driverClass, String dbUrl, String user, String password, TemporaryTableScope temporaryTableScope) throws Exception {
+		Session session = null;
+		if (driverClass != null) {
+			session = new Session(driverClass, dbUrl, user, password);
+		}
+		return createDDL(session, temporaryTableScope);
+	}
 
-    /**
-     * Creates the DDL for the working-tables.
-     */
-    public static boolean createDDL(Session statementExecutor, TemporaryTableScope temporaryTableScope) throws Exception {
-    	try {
-			return createDDL(statementExecutor, temporaryTableScope, 0);
+	/**
+	 * Creates the DDL for the working-tables.
+	 */
+	public static boolean createDDL(Session session, TemporaryTableScope temporaryTableScope) throws Exception {
+		try {
+			return createDDL(session, temporaryTableScope, 0);
 		} catch (SQLException e) {
 		}
 		// reconnect and retry with another index type
-		statementExecutor.reconnect();
-    	try {
-			return createDDL(statementExecutor, temporaryTableScope, 1);
+		session.reconnect();
+		try {
+			return createDDL(session, temporaryTableScope, 1);
 		} catch (SQLException e) {
 		}
 		// reconnect and retry with another index type
-		statementExecutor.reconnect();
-		return createDDL(statementExecutor, temporaryTableScope, 2);
-    }
-    
-    /**
-     * Creates the DDL for the working-tables.
-     */
-    private static boolean createDDL(Session statementExecutor, TemporaryTableScope temporaryTableScope, int indexType) throws Exception {
-        DataModel dataModel = new DataModel();
+		session.reconnect();
+		return createDDL(session, temporaryTableScope, 2);
+	}
 
-        String template = "script" + File.separator + "ddl-template.sql";
-		String contraint = statementExecutor != null && (statementExecutor.dbms == DBMS.SYBASE || statementExecutor.dbms == DBMS.MySQL)? " NULL" : "";
-		Map<String, String> typeReplacement = Configuration.forDbms(statementExecutor).getTypeReplacement();
+	/**
+	 * Creates the DDL for the working-tables.
+	 */
+	private static boolean createDDL(Session session, TemporaryTableScope temporaryTableScope, int indexType) throws Exception {
+		DataModel dataModel = new DataModel();
+
+		String template = "script" + File.separator + "ddl-template.sql";
+		String contraint = session != null && (session.dbms == DBMS.SYBASE || session.dbms == DBMS.MySQL) ? " NULL" : "";
+		Map<String, String> typeReplacement = Configuration.forDbms(session).getTypeReplacement();
 		String universalPrimaryKey = dataModel.getUniversalPrimaryKey().toSQL(null, contraint, typeReplacement);
 		Map<String, String> arguments = new HashMap<String, String>();
-        arguments.put("upk", universalPrimaryKey);
-        arguments.put("upk-hash", "" + (universalPrimaryKey.hashCode()));
+		arguments.put("upk", universalPrimaryKey);
+		arguments.put("upk-hash", "" + (universalPrimaryKey.hashCode()));
 		arguments.put("pre", dataModel.getUniversalPrimaryKey().toSQL("PRE_", contraint, typeReplacement));
 		arguments.put("from", dataModel.getUniversalPrimaryKey().toSQL("FROM_", contraint, typeReplacement));
 		arguments.put("to", dataModel.getUniversalPrimaryKey().toSQL("TO_", contraint, typeReplacement));
 		arguments.put("version", Jailer.VERSION);
 		arguments.put("constraint", contraint);
-		
+
 		TemporaryTableManager tableManager = null;
 		if (temporaryTableScope == TemporaryTableScope.SESSION_LOCAL) {
-			tableManager = Configuration.forDbms(statementExecutor).sessionTemporaryTableManager;
+			tableManager = Configuration.forDbms(session).sessionTemporaryTableManager;
 		}
 		if (temporaryTableScope == TemporaryTableScope.TRANSACTION_LOCAL) {
-			tableManager = Configuration.forDbms(statementExecutor).transactionTemporaryTableManager;
+			tableManager = Configuration.forDbms(session).transactionTemporaryTableManager;
 		}
 		String tableName = SQLDialect.CONFIG_TABLE_;
 		if (tableManager != null) {
@@ -133,7 +133,7 @@ public class DDLCreator {
 			List<String> cl = new ArrayList<String>();
 			List<String> clFrom = new ArrayList<String>();
 			List<String> clTo = new ArrayList<String>();
-			for (Column c: dataModel.getUniversalPrimaryKey().getColumns()) {
+			for (Column c : dataModel.getUniversalPrimaryKey().getColumns()) {
 				cl.add(", " + c.name);
 				clFrom.add(", FROM_" + c.name);
 				clTo.add(", FROM_" + c.name);
@@ -148,106 +148,111 @@ public class DDLCreator {
 			listArguments.put("column-list-to", Collections.singletonList(""));
 		}
 		String ddl = PrintUtil.applyTemplate(template, arguments, listArguments);
-        
-        if (statementExecutor != null) {
-//        	try {
-        		File tmp = new File("jailer_ddl.sql");
-        		PrintWriter pw = new PrintWriter(tmp);
-        		pw.println(ddl);
-        		pw.close();
-        		SqlScriptExecutor.executeScript(tmp.getCanonicalPath(), statementExecutor);
-//        	} finally {
-//        		statementExecutor.shutDown();
-//        	}
-        }
-        System.out.println(ddl);
-        
-        return true;
-    }
-    
-    /**
-     * Checks whether working-tables schema is up-to-date.
-     * 
-     * @return <code>true</code> if working-tables schema is up-to-date
-     */
-	public static boolean isUptodate(String driverClass, String dbUrl, String user, String password) {
-		try {
-			if (driverClass != null) {
-	        	final Session statementExecutor = new Session(driverClass, dbUrl, user, password);
-	        	try {
-	        		final boolean[] uptodate = new boolean[] { false };
-	        		final DataModel datamodel = new DataModel();
-	        		final Map<String, String> typeReplacement = Configuration.forDbms(statementExecutor).getTypeReplacement();
-	        		statementExecutor.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE_ + " where jversion='" + Jailer.VERSION + "' and jkey='upk'", new Session.ResultSetReader() {
-						public void readCurrentRow(ResultSet resultSet) throws SQLException {
-							String contraint = statementExecutor.dbms == DBMS.SYBASE? " NULL" : "";
-							String universalPrimaryKey = datamodel.getUniversalPrimaryKey().toSQL(null, contraint, typeReplacement);
-							uptodate[0] = resultSet.getString(1).equals("" + universalPrimaryKey.hashCode());
-						}
-						public void close() {
-						}
-	        		});
-	        		return uptodate[0];
-	        	} catch (Exception e) {
-	        		return false;
-	        	} finally {
-						statementExecutor.shutDown();
-	        	}
-	        }
-		} catch (Exception e) {
-			return false;
+
+		if (session != null) {
+			// try {
+			File tmp = new File("jailer_ddl.sql");
+			PrintWriter pw = new PrintWriter(tmp);
+			pw.println(ddl);
+			pw.close();
+			SqlScriptExecutor.executeScript(tmp.getCanonicalPath(), session);
+			// } finally {
+			// session.shutDown();
+			// }
 		}
-        
-        return false;
+		System.out.println(ddl);
+
+		return true;
 	}
 
 	/**
-     * Checks for conflicts of existing tables and working-tables.
-     * 
-     * @return name of table in conflict or <code>null</code>
-     */
+	 * Checks whether working-tables schema is up-to-date.
+	 * 
+	 * @return <code>true</code> if working-tables schema is up-to-date
+	 */
+	public static boolean isUptodate(String driverClass, String dbUrl, String user, String password) {
+		try {
+			if (driverClass != null) {
+				final Session session = new Session(driverClass, dbUrl, user, password);
+				try {
+					final boolean[] uptodate = new boolean[] { false };
+					final DataModel datamodel = new DataModel();
+					final Map<String, String> typeReplacement = Configuration.forDbms(session).getTypeReplacement();
+					session.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE_ + " where jversion='" + Jailer.VERSION + "' and jkey='upk'",
+							new Session.ResultSetReader() {
+								public void readCurrentRow(ResultSet resultSet) throws SQLException {
+									String contraint = session.dbms == DBMS.SYBASE ? " NULL" : "";
+									String universalPrimaryKey = datamodel.getUniversalPrimaryKey().toSQL(null, contraint, typeReplacement);
+									uptodate[0] = resultSet.getString(1).equals("" + universalPrimaryKey.hashCode());
+								}
+
+								public void close() {
+								}
+							});
+					return uptodate[0];
+				} catch (Exception e) {
+					return false;
+				} finally {
+					session.shutDown();
+				}
+			}
+		} catch (Exception e) {
+			return false;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Checks for conflicts of existing tables and working-tables.
+	 * 
+	 * @return name of table in conflict or <code>null</code>
+	 */
 	public static String getTableInConflict(String driverClass, String dbUrl, String user, String password) {
 		try {
 			if (driverClass != null) {
-	        	Session statementExecutor = new Session(driverClass, dbUrl, user, password);
-	        	statementExecutor.setSilent(true);
-	        	try {
-	        		final boolean[] uptodate = new boolean[] { false };
-	        		statementExecutor.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE_ + " where jkey='magic' and jvalue='837065098274756382534403654245288'", new Session.ResultSetReader() {
+				Session session = new Session(driverClass, dbUrl, user, password);
+				session.setSilent(true);
+				try {
+					final boolean[] uptodate = new boolean[] { false };
+					session.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE_
+							+ " where jkey='magic' and jvalue='837065098274756382534403654245288'", new Session.ResultSetReader() {
 						public void readCurrentRow(ResultSet resultSet) throws SQLException {
 							uptodate[0] = true;
 						}
+
 						public void close() {
 						}
-	        		});
-	        		if (uptodate[0]) {
-	        			return null;
-	        		}
-	        	} catch (Exception e) {
-	        		// fall through
-	        	}
-	            
-	    		// look for jailer tables
-	    		for (String table: SqlUtil.JAILER_TABLES) {
-		        	try {
-		        		statementExecutor.executeQuery("Select * from " + table, new Session.ResultSetReader() {
+					});
+					if (uptodate[0]) {
+						return null;
+					}
+				} catch (Exception e) {
+					// fall through
+				}
+
+				// look for jailer tables
+				for (String table : SqlUtil.JAILER_TABLES) {
+					try {
+						session.executeQuery("Select * from " + table, new Session.ResultSetReader() {
 							public void readCurrentRow(ResultSet resultSet) throws SQLException {
 							}
+
 							public void close() {
 							}
-		        		});
-		        		statementExecutor.shutDown();
-		        		return table;
-		        	} catch (Exception e) {
-		        		// fall through
-		        	}
-	    		}
-				statementExecutor.shutDown();
-	        }
+						});
+						session.shutDown();
+						return table;
+					} catch (Exception e) {
+						// fall through
+					}
+				}
+				session.shutDown();
+			}
 			return null;
 		} catch (Exception e) {
 			return null;
-        }
+		}
 	}
 
 }
