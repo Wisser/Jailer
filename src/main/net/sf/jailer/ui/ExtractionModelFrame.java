@@ -928,9 +928,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        	args.add(extractionModelEditor.extractionModelFile);
 			        	dbConnectionDialog.addDbArgs(args);
 			        	Session.closeTemporaryTableSession();
-			        	Session statementExecutor = new Session(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword());
-			        	ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), statementExecutor);
-			        	statementExecutor.shutDown();
+			        	Session session = new Session(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword());
+			        	ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), session);
+			        	session.shutDown();
 			        	Session.closeTemporaryTableSession();
 			        	if (exportDialog.isOk()) {
 			        		exportDialog.fillCLIArgs(args);

@@ -98,7 +98,7 @@ public class ExportDialog extends javax.swing.JDialog {
 	private final Table subject;
 	
     /** Creates new form DbConnectionDialog */
-    public ExportDialog(java.awt.Frame parent, DataModel dataModel, net.sf.jailer.datamodel.Table subject, String subjectCondition, Session statementExecutor) {
+    public ExportDialog(java.awt.Frame parent, DataModel dataModel, net.sf.jailer.datamodel.Table subject, String subjectCondition, Session session) {
         super(parent, true);
         this.dataModel = dataModel;
         this.subject = subject;
@@ -152,7 +152,7 @@ public class ExportDialog extends javax.swing.JDialog {
         	where.setText(subjectCondition);
         }
         
-        initScopeButtons(statementExecutor);
+        initScopeButtons(session);
 
         selectInsertFile.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -195,7 +195,7 @@ public class ExportDialog extends javax.swing.JDialog {
 
     private Thread initScopeButtonThread;
     
-    private void initScopeButtons(final Session statementExecutor) {
+    private void initScopeButtons(final Session session) {
     	synchronized (this) {
 	    	scopeGlobal.setSelected(true);
 	    	scopeSession.setSelected(false);
@@ -208,7 +208,7 @@ public class ExportDialog extends javax.swing.JDialog {
     	
     	initScopeButtonThread = new Thread(new Runnable() {
 			public void run() {
-		    	Configuration configuration = Configuration.forDbms(statementExecutor);
+		    	Configuration configuration = Configuration.forDbms(session);
 		    	if (configuration.sessionTemporaryTableManager != null) {
 		    		SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
@@ -218,8 +218,8 @@ public class ExportDialog extends javax.swing.JDialog {
 						}
 		    		});
 					try {
-						statementExecutor.reconnect();
-						DDLCreator.createDDL(statementExecutor, TemporaryTableScope.SESSION_LOCAL);
+						session.reconnect();
+						DDLCreator.createDDL(session, TemporaryTableScope.SESSION_LOCAL);
 			    		SwingUtilities.invokeLater(new Runnable() {
 							public void run() {
 					    		synchronized (ExportDialog.this) {
@@ -240,8 +240,8 @@ public class ExportDialog extends javax.swing.JDialog {
 						}
 		    		});
 					try {
-						statementExecutor.reconnect();
-						DDLCreator.createDDL(statementExecutor, TemporaryTableScope.TRANSACTION_LOCAL);
+						session.reconnect();
+						DDLCreator.createDDL(session, TemporaryTableScope.TRANSACTION_LOCAL);
 			    		SwingUtilities.invokeLater(new Runnable() {
 							public void run() {
 					    		synchronized (ExportDialog.this) {

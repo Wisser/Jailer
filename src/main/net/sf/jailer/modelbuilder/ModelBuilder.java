@@ -66,7 +66,7 @@ public class ModelBuilder {
     /**
      * The statement executor for executing SQL statements.
      */
-    private static Session statementExecutor;
+    private static Session session;
 
     /**
      * Name of CSV file for generated table definitions.
@@ -121,8 +121,8 @@ public class ModelBuilder {
      * @param warnings string-buffer to print warnings into, may be <code>null</code>
      */
     public static void build(String driverClassName, String dbUrl, String dbUser, String dbPassword, String schema, StringBuffer warnings) throws Exception {
-    	statementExecutor = new Session(driverClassName, dbUrl, dbUser, dbPassword);
-    	statementExecutor.setIntrospectionSchema(schema);
+    	session = new Session(driverClassName, dbUrl, dbUser, dbPassword);
+    	session.setIntrospectionSchema(schema);
 
         resetFiles();
 
@@ -132,7 +132,7 @@ public class ModelBuilder {
         List<ModelElementFinder> modelElementFinder = Configuration.getModelElementFinder();
         for (ModelElementFinder finder: modelElementFinder) {
             _log.info("find tables with " + finder);
-            tables.addAll(finder.findTables(statementExecutor));
+            tables.addAll(finder.findTables(session));
         }
         
         Collection<Table> allTables = new ArrayList<Table>(tables);
@@ -164,7 +164,7 @@ public class ModelBuilder {
         		// if (!table.primaryKey.getColumns().isEmpty()) {
 	        		for (ModelElementFinder finder: modelElementFinder) {
 			            _log.info("find colums with " + finder);
-	            		List<Column> columns = finder.findColumns(table, statementExecutor);
+	            		List<Column> columns = finder.findColumns(table, session);
 	            		if (!columns.isEmpty()) {
 	            			columnPerTable.put(table, columns);
 	            			columnsDefinition.append(CsvFile.encodeCell(table.getName()) + "; ");
@@ -228,7 +228,7 @@ public class ModelBuilder {
         Map<Association, String[]> namingSuggestion = new HashMap<Association, String[]>();
         for (ModelElementFinder finder: modelElementFinder) {
             _log.info("find associations with " + finder);
-            associations.addAll(finder.findAssociations(dataModel, namingSuggestion, statementExecutor));
+            associations.addAll(finder.findAssociations(dataModel, namingSuggestion, session));
         }
 
         Collection<Association> associationsToWrite = new ArrayList<Association>();

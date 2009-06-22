@@ -359,11 +359,11 @@ public class DataModel {
     /**
      * Gets the primary-key to be used for the entity-table.
      *
-     * @param statementExecutor for null value guessing
+     * @param session for null value guessing
      * @return the universal primary key
      */
-    public PrimaryKey getUniversalPrimaryKey(Session statementExecutor) {
-        return primaryKeyFactory.getUniversalPrimaryKey(statementExecutor);
+    public PrimaryKey getUniversalPrimaryKey(Session session) {
+        return primaryKeyFactory.getUniversalPrimaryKey(session);
     }
 
     /**

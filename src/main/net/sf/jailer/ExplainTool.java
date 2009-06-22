@@ -59,10 +59,10 @@ public class ExplainTool {
      *            the entity-graph to explain
      * @param tablesToIgnore
      *            don't list path to entities of this tables
-     * @param statementExecutor
+     * @param session
      *            for executing SQL-statements
      */
-    public static void explain(final EntityGraph graph, final Set<Table> tablesToIgnore, final Session statementExecutor, final DataModel datamodel) throws Exception {
+    public static void explain(final EntityGraph graph, final Set<Table> tablesToIgnore, final Session session, final DataModel datamodel) throws Exception {
         _log.info("generating explain.log...");
     	final Set<String> namesOfTablesToIgnore = new HashSet<String>();
         for (Table table: tablesToIgnore) {
@@ -76,20 +76,20 @@ public class ExplainTool {
             succEqualsE.append("Succ.PRE_" + column.name + "=E." + column.name);
         }
         final FileWriter writer = new FileWriter("explain.log");
-        String selectLeafs = "Select type, " + graph.getUniversalPrimaryKey().columnList(null) + " From " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, statementExecutor) + " E Where E.r_entitygraph=" + graph.graphID +
-            " and not exists (Select * from " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, statementExecutor) + " Succ Where Succ.r_entitygraph=" + graph.graphID + " and Succ.PRE_TYPE=E.type and " + succEqualsE + ")";
-        statementExecutor.executeQuery(selectLeafs, new Session.AbstractResultSetReader() {
+        String selectLeafs = "Select type, " + graph.getUniversalPrimaryKey().columnList(null) + " From " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, session) + " E Where E.r_entitygraph=" + graph.graphID +
+            " and not exists (Select * from " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, session) + " Succ Where Succ.r_entitygraph=" + graph.graphID + " and Succ.PRE_TYPE=E.type and " + succEqualsE + ")";
+        session.executeQuery(selectLeafs, new Session.AbstractResultSetReader() {
             Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
         	public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 String type = resultSet.getString(1);
                 List<String> keys = new ArrayList<String>();
                 int i = 2;
                 for (Column column: graph.getUniversalPrimaryKey().getColumns()) {
-                    keys.add(SqlUtil.toSql(SqlUtil.getObject(resultSet, i++, typeCache), statementExecutor));
+                    keys.add(SqlUtil.toSql(SqlUtil.getObject(resultSet, i++, typeCache), session));
                 }
                 if (!namesOfTablesToIgnore.contains(type)) {
                     try {
-                        writer.append(path(graph, statementExecutor, type, keys, datamodel));
+                        writer.append(path(graph, session, type, keys, datamodel));
                         writer.append(".\n");
                     } catch (IOException e) {
                         throw new RuntimeException(e);
@@ -122,7 +122,7 @@ public class ExplainTool {
      * Stringifies the path of predecessors of a given entity.
      * @throws SQLException 
      */
-    private static String path(final EntityGraph graph, final Session statementExecutor, String type, List<String> keys, DataModel datamodel) throws SQLException {
+    private static String path(final EntityGraph graph, final Session session, String type, List<String> keys, DataModel datamodel) throws SQLException {
         String where = "";
         int i = 0;
         for (Column column: graph.getUniversalPrimaryKey().getColumns()) {
@@ -132,25 +132,25 @@ public class ExplainTool {
             String value = keys.get(i++);
 			where += column.name + (value == null || value.equals("null")? " is null" : ("=" + value));
         }
-        String selectPredecessor = "Select PRE_TYPE, association, " + graph.getUniversalPrimaryKey().columnList("PRE_") + " From " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, statementExecutor) + " E Where E.r_entitygraph=" + graph.graphID +
+        String selectPredecessor = "Select PRE_TYPE, association, " + graph.getUniversalPrimaryKey().columnList("PRE_") + " From " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, session) + " E Where E.r_entitygraph=" + graph.graphID +
             " and type='" + type + "' and " + where;
         final String preType[] = new String[1];
         final List<String> preKeys = new ArrayList<String>();
         final Integer associationID[] = new Integer[1];
-        statementExecutor.executeQuery(selectPredecessor, new Session.AbstractResultSetReader() {
+        session.executeQuery(selectPredecessor, new Session.AbstractResultSetReader() {
             private Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 preType[0] = resultSet.getString(1);
                 associationID[0] = resultSet.getInt(2);
                 int i = 3;
                 for (Column column: graph.getUniversalPrimaryKey().getColumns()) {
-                    preKeys.add(SqlUtil.toSql(SqlUtil.getObject(resultSet, i++, typeCache), statementExecutor));
+                    preKeys.add(SqlUtil.toSql(SqlUtil.getObject(resultSet, i++, typeCache), session));
                 }
             }
         });
         String thePath = entityAsString(type, keys, datamodel);
         if (preType[0] != null) {
-            thePath = path(graph, statementExecutor, preType[0], preKeys, datamodel) + " --" + associationID[0] + "--> " + thePath;
+            thePath = path(graph, session, preType[0], preKeys, datamodel) + " --" + associationID[0] + "--> " + thePath;
         }
         return thePath;
     }

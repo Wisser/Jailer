@@ -78,17 +78,17 @@ public class SQLDialect {
      * Gets table reference for DML statements for a given working table.
      * 
      * @param tableName the working table
-     * @param statementExecutor holds connection to DBMS
+     * @param session holds connection to DBMS
      * @return table reference for the working table
      */
-    public static String dmlTableReference(String tableName, Session statementExecutor) {
+    public static String dmlTableReference(String tableName, Session session) {
     	TemporaryTableManager tableManager = null;
     	TemporaryTableScope temporaryTableScope = CommandLineParser.getInstance().getTemporaryTableScope();
 		if (temporaryTableScope == TemporaryTableScope.SESSION_LOCAL) {
-			tableManager = Configuration.forDbms(statementExecutor).sessionTemporaryTableManager;
+			tableManager = Configuration.forDbms(session).sessionTemporaryTableManager;
 		}
 		if (temporaryTableScope == TemporaryTableScope.TRANSACTION_LOCAL) {
-			tableManager = Configuration.forDbms(statementExecutor).transactionTemporaryTableManager;
+			tableManager = Configuration.forDbms(session).transactionTemporaryTableManager;
 		}
 		if (tableManager != null) {
 			return tableManager.getDmlTableReference(tableName);
@@ -217,16 +217,16 @@ public class SQLDialect {
 	 *            the primary key
 	 */
 	public static void guessDialect(PrimaryKey primaryKey,
-				Session statementExecutor) {
+				Session session) {
 
 		treatDateAsTimestamp = false;
 		
-		if (statementExecutor.dbms == DBMS.ORACLE) {
+		if (session.dbms == DBMS.ORACLE) {
 			treatDateAsTimestamp = true;
 			_log.info("DATE is treated as TIMESTAMP");
 		}
 		
-		String dialectName = readConfigValue("sqldialect", statementExecutor);
+		String dialectName = readConfigValue("sqldialect", session);
 		SQLDialect dialect = null;
 		if (dialectName != null) {
 			for (SQLDialect sqlDialect: sqlDialects) {
@@ -237,7 +237,7 @@ public class SQLDialect {
 			}	
 		}
 		
-		statementExecutor.setSilent(true);
+		session.setSilent(true);
 		if (dialect != null) {
 			currentDialect = dialect;
 			log("SQL dialect is " + dialect.name);
@@ -248,14 +248,14 @@ public class SQLDialect {
 			boolean canDeleteWithoutValuesKeyword = false;
 			try {
 				String values = "values ";
-				statementExecutor.execute("DELETE FROM " + SQLDialect.dmlTableReference(TMP_TABLE_, statementExecutor) + " where (c1, c2) IN (" + values + "(1,2), (3,4))");
+				session.execute("DELETE FROM " + SQLDialect.dmlTableReference(TMP_TABLE_, session) + " where (c1, c2) IN (" + values + "(1,2), (3,4))");
 				canDeleteWithValuesKeyword = true;
 			} catch (Exception e) {
 				_sqllog.info(e.getMessage());
 			}
 			try {
 				String values = "";
-				statementExecutor.execute("DELETE FROM " + SQLDialect.dmlTableReference(TMP_TABLE_, statementExecutor) + " where (c1, c2) IN (" + values + "(1,2), (3,4))");
+				session.execute("DELETE FROM " + SQLDialect.dmlTableReference(TMP_TABLE_, session) + " where (c1, c2) IN (" + values + "(1,2), (3,4))");
 				canDeleteWithoutValuesKeyword = true;
 			} catch (Exception e) {
 				_sqllog.info(e.getMessage());
@@ -263,7 +263,7 @@ public class SQLDialect {
 			
 			for (SQLDialect sqlDialect: sqlDialects) {
 				boolean ok = true;
-				if (statementExecutor.dbms != DBMS.SYBASE) {
+				if (session.dbms != DBMS.SYBASE) {
 					if (sqlDialect.supportsInClauseForDeletes) {
 						if ((!canDeleteWithoutValuesKeyword) && (!canDeleteWithValuesKeyword)) {
 							ok = false;
@@ -283,7 +283,7 @@ public class SQLDialect {
 				}
 				boolean multiRow;
 				try {
-					statementExecutor.execute("INSERT INTO " + SQLDialect.dmlTableReference(TMP_TABLE_, statementExecutor) + "(c1, c2) values (1,2), (3,4)");
+					session.execute("INSERT INTO " + SQLDialect.dmlTableReference(TMP_TABLE_, session) + "(c1, c2) values (1,2), (3,4)");
 					multiRow = true;
 				} catch (Exception e) {
 					multiRow = false;
@@ -296,7 +296,7 @@ public class SQLDialect {
 					continue;
 				}
 				try {
-					statementExecutor.execute(sqlDialect.upsertMode.testSQL_.replaceAll("\\$", SQLDialect.dmlTableReference(TMP_TABLE_, statementExecutor)));
+					session.execute(sqlDialect.upsertMode.testSQL_.replaceAll("\\$", SQLDialect.dmlTableReference(TMP_TABLE_, session)));
 				} catch (Exception e) {
 					ok = false;
 					_sqllog.info(e.getMessage());
@@ -306,7 +306,7 @@ public class SQLDialect {
 				}
 				
 				currentDialect = sqlDialect;
-				setConfigValue("sqldialect", sqlDialect.name, statementExecutor);
+				setConfigValue("sqldialect", sqlDialect.name, session);
 				log("SQL dialect is " + sqlDialect.name);
 				break;
 			}
@@ -314,9 +314,9 @@ public class SQLDialect {
 			log("end guessing SQL dialect");
 		}
 		
-		statementExecutor.setSilent(false);
+		session.setSilent(false);
 		
-		Configuration c = Configuration.forDbms(statementExecutor);
+		Configuration c = Configuration.forDbms(session);
 		SqlUtil.dateFormat = c.dateFormat;
 		SqlUtil.nanoSep = c.nanoSep;
 		SqlUtil.appendNanosToTimestamp = c.appendNanosToTimestamp;
@@ -332,13 +332,13 @@ public class SQLDialect {
 	 * Reads value from " + CONFIG_TABLE + " table.
 	 * 
 	 * @param key key for value lookup
-	 * @param statementExecutor for executing sql statements
+	 * @param session for executing sql statements
 	 * @return value for given key or <code>null</code> if no value for given key can be found
 	 */
-	private static String readConfigValue(String key, Session statementExecutor) {
+	private static String readConfigValue(String key, Session session) {
 		try {
 			final String[] value = new String[] { null };
-			statementExecutor.executeQuery("Select jvalue from " + SQLDialect.dmlTableReference(CONFIG_TABLE_, statementExecutor) + " where jversion='" + Jailer.VERSION + "' and jkey='" + key + "'", new Session.ResultSetReader() {
+			session.executeQuery("Select jvalue from " + SQLDialect.dmlTableReference(CONFIG_TABLE_, session) + " where jversion='" + Jailer.VERSION + "' and jkey='" + key + "'", new Session.ResultSetReader() {
 				public void readCurrentRow(ResultSet resultSet) throws SQLException {
 					value[0] = resultSet.getString(1);
 				}
@@ -356,15 +356,15 @@ public class SQLDialect {
 	 * 
 	 * @param key key for value
 	 * @param value for given key or <code>null</code> if no value for given key can be found
-	 * @param statementExecutor for executing sql statements
+	 * @param session for executing sql statements
 	 */
-	private static void setConfigValue(String key, String value, Session statementExecutor) {
+	private static void setConfigValue(String key, String value, Session session) {
 		try {
-			statementExecutor.executeUpdate("Delete from " + SQLDialect.dmlTableReference(CONFIG_TABLE_, statementExecutor) + " where jversion='" + Jailer.VERSION + "' and jkey=" + SqlUtil.toSql(key, statementExecutor));
+			session.executeUpdate("Delete from " + SQLDialect.dmlTableReference(CONFIG_TABLE_, session) + " where jversion='" + Jailer.VERSION + "' and jkey=" + SqlUtil.toSql(key, session));
 		} catch (Exception e) {
 		}
 		try {
-			statementExecutor.executeUpdate("Insert into " + SQLDialect.dmlTableReference(CONFIG_TABLE_, statementExecutor) + "(jversion, jkey, jvalue) values ('" + Jailer.VERSION + "', " + SqlUtil.toSql(key, statementExecutor) + ", " + SqlUtil.toSql(value, statementExecutor) + ")");
+			session.executeUpdate("Insert into " + SQLDialect.dmlTableReference(CONFIG_TABLE_, session) + "(jversion, jkey, jvalue) values ('" + Jailer.VERSION + "', " + SqlUtil.toSql(key, session) + ", " + SqlUtil.toSql(value, session) + ")");
 		} catch (Exception e) {
 		}
 	}

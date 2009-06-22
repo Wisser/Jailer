@@ -763,14 +763,14 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 */
 	public String selectDBSchema(Component parent, boolean[] isDefaultSchema)
 			throws Exception {
-		Session statementExecutor = new Session(currentConnection.driverClass,
+		Session session = new Session(currentConnection.driverClass,
 				currentConnection.url, currentConnection.user,
 				currentConnection.password);
 		List<String> schemas = JDBCMetaDataBasedModelElementFinder.getSchemas(
-				statementExecutor, currentConnection.user);
+				session, currentConnection.user);
 		String defaultSchema = JDBCMetaDataBasedModelElementFinder
-				.getDefaultSchema(statementExecutor, currentConnection.user);
-		statementExecutor.shutDown();
+				.getDefaultSchema(session, currentConnection.user);
+		session.shutDown();
 		isDefaultSchema[0] = false;
 		if (schemas.size() == 1) {
 			if (schemas.get(0).equalsIgnoreCase(currentConnection.user)) {
