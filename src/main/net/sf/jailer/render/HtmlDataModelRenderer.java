@@ -81,7 +81,6 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
      * Generates a human readable HTML-representation of the data-model.
      * 
      * @param dataModel the data-model
-     * @param statementExecutor for accessing the DB
      */
     public void render(DataModel dataModel) {
         try {

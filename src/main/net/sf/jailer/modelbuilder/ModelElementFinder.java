@@ -35,33 +35,33 @@ public interface ModelElementFinder {
     /**
      * Finds a set of {@link Table}s.
      * 
-     * @param statementExecutor the statement executor for executing SQL-statements 
+     * @param session the statement executor for executing SQL-statements 
      * @return a set of {@link Table}s
      * 
      * @throws Exception on each error
      */
-    Collection<Table> findTables(Session statementExecutor) throws Exception;
+    Collection<Table> findTables(Session session) throws Exception;
 
     /**
      * Finds the {@link Column}s of a given {@link Table}.
      *
      * @param table the table
-     * @param statementExecutor the statement executor for executing SQL-statements 
+     * @param session the statement executor for executing SQL-statements 
      * 
      * @throws Exception on each error
      */
-    List<Column> findColumns(Table table, Session statementExecutor) throws Exception;
+    List<Column> findColumns(Table table, Session session) throws Exception;
 
     /**
      * Finds a set of {@link Association}s.
      * 
      * @param dataModel model containing already known elements. 
-     * @param statementExecutor the statement executor for executing SQL-statements 
+     * @param session the statement executor for executing SQL-statements 
      * @param namingSuggestion to put naming suggestions for associations into
      * @return a set of {@link Association}s
      * 
      * @throws Exception on each error
      */
-    Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestions, Session statementExecutor) throws Exception;
+    Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestions, Session session) throws Exception;
     
 }

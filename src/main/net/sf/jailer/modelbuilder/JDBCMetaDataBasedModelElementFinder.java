@@ -69,17 +69,17 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     /**
      * Finds associations by reading the databases meta-data.
      * 
-     * @param statementExecutor the statement executor for executing SQL-statements 
+     * @param session the statement executor for executing SQL-statements 
      * @param dataModel model containing already known elements
      * @param namingSuggestion to put naming suggestions for associations into
      * @return found associations
      */
-    public Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestion, Session statementExecutor) throws Exception {
+    public Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestion, Session session) throws Exception {
         Collection<Association> associations = new ArrayList<Association>();
-        DatabaseMetaData metaData = statementExecutor.getMetaData();
+        DatabaseMetaData metaData = session.getMetaData();
     	Quoting quoting = new Quoting(metaData);
     	ResultSet resultSet;
-        String defaultSchema = getDefaultSchema(statementExecutor, statementExecutor.dbUser);
+        String defaultSchema = getDefaultSchema(session, session.dbUser);
          
         for (Table table: dataModel.getTables()) {
             _log.info("find associations with " + table.getName());
@@ -134,16 +134,16 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     /**
      * Finds all tables in DB schema.
      * 
-     * @param statementExecutor the statement executor for executing SQL-statements 
+     * @param session the statement executor for executing SQL-statements 
      */
-    public Set<Table> findTables(Session statementExecutor) throws Exception {
+    public Set<Table> findTables(Session session) throws Exception {
         PrimaryKeyFactory primaryKeyFactory = new PrimaryKeyFactory();
         
         Set<Table> tables = new HashSet<Table>();
-        DatabaseMetaData metaData = statementExecutor.getMetaData();
+        DatabaseMetaData metaData = session.getMetaData();
         Quoting quoting = new Quoting(metaData);
         ResultSet resultSet;
-        resultSet = metaData.getTables(null, statementExecutor.getIntrospectionSchema(), "%", new String[] { "TABLE" });
+        resultSet = metaData.getTables(null, session.getIntrospectionSchema(), "%", new String[] { "TABLE" });
         List<String> tableNames = new ArrayList<String>();
         while (resultSet.next()) {
             String tableName = resultSet.getString(3);
@@ -170,7 +170,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         Map<String, Map<Integer, Column>> pkColumns = new HashMap<String, Map<Integer, Column>>();
         for (String tableName: tableNames) {
         	Table tmp = new Table(tableName, null, false);
-            resultSet = metaData.getPrimaryKeys(null, quoting.unquote(tmp.getOriginalSchema(quoting.quote(statementExecutor.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()));
+            resultSet = metaData.getPrimaryKeys(null, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()));
             Map<Integer, Column> pk = pkColumns.get(tableName);
             if (pk == null) {
                 pk = new HashMap<Integer, Column>();
@@ -186,8 +186,8 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         }
         for (String tableName: tableNames) {
         	Table tmp = new Table(tableName, null, false);
-        	_log.info("getting columns for " + quoting.unquote(tmp.getOriginalSchema(quoting.quote(statementExecutor.getIntrospectionSchema()))) + "." + quoting.unquote(tmp.getUnqualifiedName()));
-        	resultSet = metaData.getColumns(null, quoting.unquote(tmp.getOriginalSchema(quoting.quote(statementExecutor.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), "%");
+        	_log.info("getting columns for " + quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))) + "." + quoting.unquote(tmp.getUnqualifiedName()));
+        	resultSet = metaData.getColumns(null, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), "%");
         	_log.info("done");
         	Map<Integer, Column> pk = pkColumns.get(tableName);
             while (resultSet.next()) {
@@ -195,7 +195,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 int type = resultSet.getInt(5);
                 int length = 0;
                 int precision = -1;
-                String sqlType = toSqlType(resultSet.getString(6), statementExecutor.dbms);
+                String sqlType = toSqlType(resultSet.getString(6), session.dbms);
                 if (sqlType == null || sqlType.trim().length() == 0 || resultSet.wasNull()) {
                 	sqlType = SqlUtil.SQL_TYPE.get(type);
                     if (sqlType == null) {
@@ -214,7 +214,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                     	precision = -1;
                     }
                 }
-                Column column = new Column(colName, sqlType, filterLength(length, resultSet.getString(6), type, statementExecutor.dbms, resultSet.getInt(7)), precision);
+                Column column = new Column(colName, sqlType, filterLength(length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), precision);
                 for (int i: pk.keySet()) {
                     if (pk.get(i).name.equals(column.name)) {
                         pk.put(i, column);
@@ -255,18 +255,18 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	/**
      * Finds all non-empty schemas in DB.
      * 
-     * @param statementExecutor the statement executor for executing SQL-statements
+     * @param session the statement executor for executing SQL-statements
      * @param userName schema with this name may be empty
      */ 
-    public static List<String> getSchemas(Session statementExecutor, String userName) throws Exception {
+    public static List<String> getSchemas(Session session, String userName) throws Exception {
     	List<String> schemas = new ArrayList<String>();
 		try {
-			DatabaseMetaData metaData = statementExecutor.getMetaData();
+			DatabaseMetaData metaData = session.getMetaData();
 			ResultSet rs = metaData.getSchemas();
 			while (rs.next()) {
 				String schema = rs.getString("TABLE_SCHEM").trim();
 				if (schema != null) {
-					if (statementExecutor.dbms == DBMS.POSTGRESQL && schema.startsWith("pg_toast_temp")) {
+					if (session.dbms == DBMS.POSTGRESQL && schema.startsWith("pg_toast_temp")) {
 						continue;
 					}
 					schemas.add(schema);
@@ -285,13 +285,13 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	/**
      * Gets default schema of DB.
      * 
-     * @param statementExecutor the statement executor for executing SQL-statements
+     * @param session the statement executor for executing SQL-statements
      * @param userName schema with this name may be empty
      */ 
-    public static String getDefaultSchema(Session statementExecutor, String userName) throws Exception {
+    public static String getDefaultSchema(Session session, String userName) throws Exception {
     	List<String> schemas = new ArrayList<String>();
 		try {
-			DatabaseMetaData metaData = statementExecutor.getMetaData();
+			DatabaseMetaData metaData = session.getMetaData();
 			String dbName = metaData.getDatabaseProductName();
 			boolean isPostgreSQL = dbName != null && dbName.toLowerCase().contains("PostgreSQL".toLowerCase());
 			ResultSet rs = metaData.getSchemas();
@@ -332,18 +332,18 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
      * Finds the {@link Column}s of a given {@link Table}.
      *
      * @param table the table
-     * @param statementExecutor the statement executor for executing SQL-statements 
+     * @param session the statement executor for executing SQL-statements 
      * 
      * @throws Exception on each error
      */
-    public List<Column> findColumns(Table table, Session statementExecutor) throws Exception {
+    public List<Column> findColumns(Table table, Session session) throws Exception {
     	List<Column> columns = new ArrayList<Column>();
-    	DatabaseMetaData metaData = statementExecutor.getMetaData();
+    	DatabaseMetaData metaData = session.getMetaData();
     	Quoting quoting = new Quoting(metaData);
-    	if (forDefaultSchema != statementExecutor) {
-    		forDefaultSchema = statementExecutor;
+    	if (forDefaultSchema != session) {
+    		forDefaultSchema = session;
     		_log.info("getting default schema...");
-    		defaultSchema = getDefaultSchema(statementExecutor, statementExecutor.dbUser);
+    		defaultSchema = getDefaultSchema(session, session.dbUser);
     		_log.info("default schema is '" + defaultSchema + "'");
     	}
     	_log.info("getting columns for " + table.getOriginalSchema(defaultSchema) + "." + quoting.unquote(table.getUnqualifiedName()));
@@ -363,7 +363,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 	precision = -1;
                 }
             }
-            String sqlType = toSqlType(resultSet.getString(6), statementExecutor.dbms);
+            String sqlType = toSqlType(resultSet.getString(6), session.dbms);
             if (sqlType == null || sqlType.trim().length() == 0 || resultSet.wasNull()) {
             	sqlType = SqlUtil.SQL_TYPE.get(type);
                 if (sqlType == null) {
@@ -384,7 +384,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 }
             }
             _log.debug("column info: '" + colName + "' '" + sqlType + "' " + type + " '" + resultSet.getString(6) + "'");
-            columns.add(new Column(colName, sqlType, filterLength(length, resultSet.getString(6), type, statementExecutor.dbms, resultSet.getInt(7)), precision));
+            columns.add(new Column(colName, sqlType, filterLength(length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), precision));
         }
         resultSet.close();
         _log.info("found columns for table " + table.getName());
