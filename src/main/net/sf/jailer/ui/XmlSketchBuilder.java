@@ -23,18 +23,18 @@ import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
+import net.sf.jailer.datamodel.AggregationSchema;
+import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.datamodel.Cardinality;
+import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.xml.XmlUtil;
+
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-
-import net.sf.jailer.datamodel.AggregationSchema;
-import net.sf.jailer.datamodel.Association;
-import net.sf.jailer.datamodel.Cardinality;
-import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.xml.XmlUtil;
 
 /**
  * Builds XML sketches.

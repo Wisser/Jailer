@@ -80,7 +80,7 @@ public class RestrictionDefinition {
 	 */
 	public static List<RestrictionDefinition> fromRestrictionModel(ExtractionModel extractionModel) {
 		List<RestrictionDefinition> list = new ArrayList<RestrictionDefinition>();
-		for (Table table: extractionModel.getTasks().get(0).dataModel.getTables()) {
+		for (Table table: extractionModel.dataModel.getTables()) {
 			for (Association association: table.associations) {
 				if (association.isRestricted()) {
 					list.add(new RestrictionDefinition(association.source, association.destination, association.getName(), association.isIgnored()? "disabled" : association.getRestrictionCondition(), association.isIgnored()));
