@@ -34,7 +34,6 @@ import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -53,7 +52,6 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
@@ -64,7 +62,6 @@ import javax.swing.JSeparator;
 import javax.swing.JSplitPane;
 import javax.swing.JTable;
 import javax.swing.JTree;
-import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
 import javax.swing.event.DocumentEvent;
@@ -223,8 +220,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				extractionModel = new ExtractionModel(extractionModelFile, new HashMap<String, String>());
 				LayoutStorage.restore(extractionModelFile);
 			}
-			subject = extractionModel.getTasks().get(0).subject;
-			dataModel = extractionModel.getTasks().get(0).dataModel;
+			subject = extractionModel.subject;
+			dataModel = extractionModel.dataModel;
 			if (subject == null && dataModel != null && !dataModel.getTables().isEmpty()) {
 				subject = dataModel.getTables().iterator().next();
 				needsSave = true;
@@ -337,10 +334,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 //			}
 //		});
 		initRestrictionEditor(null, null);
-		if (extractionModel.getTasks().get(0).subject != null) {
-			subjectTable.setSelectedItem(dataModel.getDisplayName(extractionModel.getTasks().get(0).subject));
+		if (extractionModel.subject != null) {
+			subjectTable.setSelectedItem(dataModel.getDisplayName(extractionModel.subject));
 		}
-		condition.setText(extractionModel.getTasks().get(0).condition);
+		condition.setText(extractionModel.condition);
 		
 		condition.addKeyListener(new KeyListener() {
 			public void keyPressed(KeyEvent arg0) {

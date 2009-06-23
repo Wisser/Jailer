@@ -17,7 +17,6 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.event.ContainerListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;

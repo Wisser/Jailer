@@ -60,31 +60,6 @@ public class XmlExportTransformer implements ResultSetReader {
 	private final XmlRowWriter xmlRowWriter;
 
 	/**
-	 * Number of columns.
-	 */
-	private int columnCount;
-
-	/**
-	 * Labels of columns.
-	 */
-	private String[] columnLabel = null;
-
-	/**
-	 * Lob columns.
-	 */
-	private List<String> lobColumns = null;
-
-	/**
-	 * Lob columns indexes.
-	 */
-	private List<Integer> lobColumnIndexes = null;
-
-	/**
-	 * Labels of columns as comma separated list.
-	 */
-	private String labelCSL;
-
-	/**
 	 * Counts the exported entities. (GUI support)
 	 */
 	public static long numberOfExportedEntities;
@@ -118,11 +93,6 @@ public class XmlExportTransformer implements ResultSetReader {
 	 * Maps clear text SQL-types to {@link java.sql.Types}.
 	 */
 	private Map<Table, Map<String, Integer>> typeCache = new HashMap<Table, Map<String,Integer>>();
-
-	/**
-	 * Holds sorted lists of associations per table.
-	 */
-	private Map<Table, List<Association>> sortedAssociations = new HashMap<Table, List<Association>>();
 
     /**
      * Current session;
