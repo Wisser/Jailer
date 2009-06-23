@@ -67,6 +67,8 @@ import javax.swing.JTree;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -283,6 +285,42 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         inspectorHolder.add(restrictionEditor, gridBagConstraints);
 		inspectorHolder.setMinimumSize(inspectorHolder.getPreferredSize());
+		restrictionEditor.restriction.getDocument().addDocumentListener(new DocumentListener() {
+
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				restrictionEditor.apply.setEnabled(true);
+			}
+
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				restrictionEditor.apply.setEnabled(true);
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				restrictionEditor.apply.setEnabled(true);
+			}
+			
+		});
+		tagField.getDocument().addDocumentListener(new DocumentListener() {
+
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				xmlTagApply.setEnabled(true);
+			}
+
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				xmlTagApply.setEnabled(true);
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				xmlTagApply.setEnabled(true);
+			}
+			
+		});
 		restrictionEditor.apply.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				onApply(true);
@@ -1264,7 +1302,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			restrictionEditor.ignore.getModel().setSelected(association.isIgnored());
 			restrictionEditor.restriction.setEditable(editable && !association.isIgnored());
 			restrictionEditor.ignore.setEnabled(editable);
-			restrictionEditor.apply.setEnabled(editable);
+			// restrictionEditor.apply.setEnabled(editable);
 			String joinCondition = association.getUnrestrictedJoinCondition();
 			if (association.reversed) {
 				joinCondition = SqlUtil.reversRestrictionCondition(joinCondition);
@@ -1287,6 +1325,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			restrictionEditor.joinCondition.setToolTipText(joinCondition);
 		}
 		graphView.setSelection(association);
+    	restrictionEditor.apply.setEnabled(false);
 	}
 
     private void initRestrictedDependencyWarningField() {
@@ -1316,6 +1355,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     		xmlTagApply.setEnabled(true);
     	}
     	updateSketch();
+    	xmlTagApply.setEnabled(false);
     }
     
     /**
@@ -1569,6 +1609,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			  	ExtractionModelEditor.this.extractionModelFrame.updateTitle(needsSave);
 		  	}
 		  	updateSketch();
+		  	xmlTagApply.setEnabled(false);
 	  	}
   	}//GEN-LAST:event_xmlMappingApplyButtonActionPerformed
 

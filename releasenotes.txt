@@ -1,5 +1,8 @@
-2.9.11
+3.0
+ - internal refactorings
+ - GUI improvements
  - Fix: $IS_SUBJECT/$DISTANCE expressions were not always evaluated correctly.
+ - minor bug fixes
 
 2.9.10
  - Redesigning of the "connection" dialog [2806688]
