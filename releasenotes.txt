@@ -1,7 +1,7 @@
 3.0
- - internal refactorings
+ - extensive internal refactorings
  - GUI improvements
- - Fix: $IS_SUBJECT/$DISTANCE expressions were not always evaluated correctly.
+ - Fix: $IS_SUBJECT/$DISTANCE expressions were not always evaluated correctly
  - minor bug fixes
 
 2.9.10
