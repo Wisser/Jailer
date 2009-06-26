@@ -26,7 +26,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.database.Session;
@@ -578,6 +580,36 @@ public class DataModel {
     	}
     }
 
+    /**
+     * Gets all parameters which occur in subject condition, association restrictions or XML templates.
+     * 
+     * @param subjectCondition the subject condition
+     * @return all parameters which occur in subject condition, association restrictions or XML templates
+     */
+    public SortedSet<String> getParameters(String subjectCondition) {
+    	SortedSet<String> parameters = new TreeSet<String>();
+    	
+    	ParameterHandler.collectParameter(subjectCondition, parameters);
+    	for (Association a: namedAssociations.values()) {
+    		String r = a.getRestrictionCondition();
+    		if (r != null) {
+    			ParameterHandler.collectParameter(r, parameters);
+    		}
+    	}
+    	for (Table t: getTables()) {
+    		String r = t.getXmlTemplate();
+    		if (r != null) {
+    			ParameterHandler.collectParameter(r, parameters);
+    		}
+    		for (Column c: t.getColumns()) {
+    			if (c.getFilterExpression() != null) {
+    				ParameterHandler.collectParameter(c.getFilterExpression(), parameters);
+    			}
+    		}
+    	}
+    	return parameters;
+    }
+    
     /**
      * Destroys the model in order to prevent OOMEs.
      * A model can no longer be used if it is destroyed.

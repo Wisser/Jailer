@@ -245,6 +245,9 @@ public class CommandLineParser {
     @Option(name="-source-schemamapping",usage="source schema map", metaVar="<from>=<to>[','<from>=<to>]*")
     public String rawsourceschemamapping = null;
     
+    @Option(name="-parameters",usage="parameters", metaVar="<parameter>=<value>[';'<parameter>=<value>]*")
+    public String parameters = null;
+    
     @Option(name="-threads",usage="number of threads (default is 10)", metaVar="#threads")
     public int numberOfThreads = 10;
     
@@ -275,6 +278,21 @@ public class CommandLineParser {
     	} catch (Exception e) {
     		return TemporaryTableScope.GLOBAL;
     	}
+    }
+ 
+    public Map<String, String> getParameters() {
+    	Map<String, String> map = new HashMap<String, String>();
+    	
+    	if (parameters != null) {
+    		for (String pv: CsvFile.decodeLine(parameters)) {
+    			int i = pv.indexOf('=');
+    			if (i >= 0) {
+    				map.put(pv.substring(0, i), pv.substring(i + 1));
+    			}
+    		}
+    	}
+    	
+    	return map;
     }
     
     /**
