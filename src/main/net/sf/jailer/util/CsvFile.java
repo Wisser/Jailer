@@ -165,7 +165,7 @@ public class CsvFile {
      * @param line the line to decode
      * @return decoded and splitted line
      */
-    private static String[] decodeLine(String line) {
+    public static String[] decodeLine(String line) {
     	List<String> cells = new ArrayList<String>();
     	StringBuilder sb = new StringBuilder();
     	boolean esc = false;
