@@ -91,7 +91,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "3.0";
+	public static final String VERSION = "3.1";
 
 	/**
 	 * The relational data model.
@@ -1020,6 +1020,7 @@ public class Jailer {
 		}
 
 		ExtractionModel extractionModel = new ExtractionModel(extractionModelFileName, CommandLineParser.getInstance().getSourceSchemaMapping());
+System.out.println(CommandLineParser.getInstance().getParameters());
 		EntityGraph entityGraph = EntityGraph.create(EntityGraph.createUniqueGraphID(), session, extractionModel.dataModel.getUniversalPrimaryKey(session));
 		entityGraph.setExplain(explain);
 		final Jailer jailer = new Jailer(threads);

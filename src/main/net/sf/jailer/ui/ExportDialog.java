@@ -17,6 +17,7 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Cursor;
+import java.awt.GridBagConstraints;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,6 +40,7 @@ import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.util.CsvFile;
 
 /**
  * "Data Export" Dialog.
@@ -97,12 +99,25 @@ public class ExportDialog extends javax.swing.JDialog {
 	 */
 	private final Table subject;
 	
+	private ParameterEditor parameterEditor;
+	
     /** Creates new form DbConnectionDialog */
     public ExportDialog(java.awt.Frame parent, DataModel dataModel, net.sf.jailer.datamodel.Table subject, String subjectCondition, Session session) {
         super(parent, true);
         this.dataModel = dataModel;
         this.subject = subject;
         initComponents();
+        
+        parameterEditor = new ParameterEditor(parent);
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        parameterPanel.add(parameterEditor.createPane(dataModel.getParameters(subjectCondition)), gridBagConstraints);
+        
         setModal(true);
         setLocation(100, 150);
         Map<String, JTextField> fields = new HashMap<String, JTextField>();
@@ -110,6 +125,9 @@ public class ExportDialog extends javax.swing.JDialog {
         fields.put("delete", delete);
         fields.put("threads", threads);
         fields.put("rowsPerThread", rowsPerThread);
+        for (Map.Entry<String, JTextField> e: parameterEditor.textfieldsPerParameter.entrySet()) {
+        	fields.put("$" + e.getKey(), e.getValue());
+        }
         
         scriptFormat = ScriptFormat.SQL;
         try {
@@ -176,6 +194,10 @@ public class ExportDialog extends javax.swing.JDialog {
         selectInsertFile.setIcon(loadIcon);
         selectDeleteFile.setText("");
         selectDeleteFile.setIcon(loadIcon);
+        
+        if (parameterEditor.firstTextField != null) {
+        	parameterEditor.firstTextField.grabFocus();
+        }
         
         pack();
         UIUtil.initPeer();
@@ -406,6 +428,8 @@ public class ExportDialog extends javax.swing.JDialog {
         jLabel9 = new javax.swing.JLabel();
         selectInsertFile = new javax.swing.JLabel();
         selectDeleteFile = new javax.swing.JLabel();
+        jLabel21 = new javax.swing.JLabel();
+        parameterPanel = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Data Export");
@@ -648,7 +672,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 18;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(jLabel11, gridBagConstraints);
 
         jPanel4.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
@@ -733,6 +757,24 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 40;
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
         jPanel1.add(selectDeleteFile, gridBagConstraints);
+
+        jLabel21.setText(" With");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 19;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        jPanel1.add(jLabel21, gridBagConstraints);
+
+        parameterPanel.setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 19;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(parameterPanel, gridBagConstraints);
 
         getContentPane().add(jPanel1, "card2");
 
@@ -850,6 +892,19 @@ public class ExportDialog extends javax.swing.JDialog {
 			args.add(schemaMapping.toString());
 		}
 		
+		StringBuilder parameter = new StringBuilder();
+    	for (String p: parameterEditor.textfieldsPerParameter.keySet()) {
+    		String v = parameterEditor.textfieldsPerParameter.get(p).getText().trim();
+    		if (parameter.length() > 0) {
+    			parameter.append(";");
+    		}
+    		parameter.append(p + "=" + CsvFile.encodeCell(v));
+    	}
+		if (parameter.length() > 0) {
+			args.add("-parameters");
+			args.add(parameter.toString());
+		}
+		
 		Set<Table> closure = subject.closure(true);
 		if (withDelete) {
 			Set<Table> border = new HashSet<Table>();
@@ -917,6 +972,7 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
+    private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -928,6 +984,7 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel parameterPanel;
     private javax.swing.JTextField rowsPerThread;
     private javax.swing.JPanel schemaMappingPanel;
     private javax.swing.JRadioButton scopeGlobal;
