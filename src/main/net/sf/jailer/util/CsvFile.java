@@ -210,7 +210,9 @@ public class CsvFile {
         		sb.append("\\\\");
     		} else if (c == '\n') {
         		sb.append("\\n");
-        	} else {
+    		} else if (c == '\r') {
+    			// ignore
+            } else {
         		sb.append(c);
         	}
     	}
