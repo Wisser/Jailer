@@ -466,6 +466,40 @@ public class EntityGraph {
     }
     
     /**
+     * Reads all entities of a given table which are marked as independent or as roots.
+     * 
+     * @param reader for reading the result-set
+     * @param table the table
+     * @param orderByPK if <code>true</code>, result will be ordered by primary keys
+     */
+    public void readMarkedEntities(Table table, Session.ResultSetReader reader, String selectionSchema, String originalPKAliasPrefix, boolean orderByPK) throws SQLException {
+        if (originalPKAliasPrefix == null) {
+        	readMarkedEntities(table, reader, selectionSchema, orderByPK);
+        	return;
+        }
+    	String orderBy = "";
+    	StringBuffer sb = new StringBuffer();
+    	StringBuffer selectOPK = new StringBuffer();
+    	for (int i = 0; i < table.primaryKey.getColumns().size(); ++i) {
+    		if (i > 0) {
+    			sb.append(", ");
+    			selectOPK.append(", ");
+    		}
+    		sb.append(originalPKAliasPrefix + i);
+    		selectOPK.append("T." + table.primaryKey.getColumns().get(i).name + " AS " + originalPKAliasPrefix + i);
+    	}
+    	orderBy = "order by " + sb;
+    	session.executeQuery(
+    			"Select " + selectionSchema + " From (" +
+                "Select " + selectOPK + ", " + filteredSelectionClause(table) + " From " + SQLDialect.dmlTableReference(ENTITY, session) + " E join " + table.getName() + " T on " +
+                pkEqualsEntityID(table, "T", "E") +
+                " Where E.birthday=0 and E.r_entitygraph=" + graphID + " and E.type='" + table.getName() + "'" +
+                ") T " +
+                (orderByPK? orderBy : ""),
+                reader);
+    }
+    
+    /**
      * Unites the graph with another one and deletes the other graph.
      * 
      * @param graph the graph to be united with this graph
@@ -691,12 +725,30 @@ public class EntityGraph {
      * @param reader reads the entities
      * @param selectionSchema the selection schema
      */
-    public void readDependentEntities(Table table, Association association, ResultSet resultSet, ResultSetReader reader, Map<String, Integer> typeCache, String selectionSchema) throws SQLException {
-    	String select = "Select " + selectionSchema + " from " + table.getName() + " T join " + SQLDialect.dmlTableReference(DEPENDENCY, session) + " D on " +
-    		 pkEqualsEntityID(table, "T", "D", "TO_") + " and D.to_type='" + table.getName() + "'" +
-    		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", typeCache, session) +
-    	     " and D.from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
-    	     " and D.r_entitygraph=" + graphID;
+    public void readDependentEntities(Table table, Association association, ResultSet resultSet, ResultSetReader reader, Map<String, Integer> typeCache, String selectionSchema, String originalPKAliasPrefix) throws SQLException {
+    	String select;
+    	if (originalPKAliasPrefix != null) {
+        	StringBuffer selectOPK = new StringBuffer();
+        	for (int i = 0; i < table.primaryKey.getColumns().size(); ++i) {
+        		if (i > 0) {
+        			selectOPK.append(", ");
+        		}
+        		selectOPK.append("T." + table.primaryKey.getColumns().get(i).name + " AS " + originalPKAliasPrefix + i);
+        	}
+    		select = 
+    			"Select " + selectionSchema + " from (" +  
+    			"Select " + selectOPK + ", " + filteredSelectionClause(table) + " from " + table.getName() + " T join " + SQLDialect.dmlTableReference(DEPENDENCY, session) + " D on " +
+	    		 pkEqualsEntityID(table, "T", "D", "TO_") + " and D.to_type='" + table.getName() + "'" +
+	    		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", typeCache, session) +
+	    	     " and D.from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
+	    	     " and D.r_entitygraph=" + graphID + ") T";
+    	} else {
+	    	select = "Select " + selectionSchema + " from " + table.getName() + " T join " + SQLDialect.dmlTableReference(DEPENDENCY, session) + " D on " +
+	    		 pkEqualsEntityID(table, "T", "D", "TO_") + " and D.to_type='" + table.getName() + "'" +
+	    		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", typeCache, session) +
+	    	     " and D.from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
+	    	     " and D.r_entitygraph=" + graphID;
+    	}
     	session.executeQuery(select, reader);
     }
     

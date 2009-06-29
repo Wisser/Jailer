@@ -24,6 +24,7 @@ import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.ParameterHandler;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.CsvFile;
@@ -79,10 +80,11 @@ public class ExtractionModel {
 
     /**
      * Constructor.
-     * 
+     *  
      * @param the name of the model-file
+     * @param parameters apply this parameter-value mapping to all restriction conditions, XML templates and filters 
      */
-    public ExtractionModel(String fileName, Map<String, String> sourceSchemaMapping) throws Exception {
+    public ExtractionModel(String fileName, Map<String, String> sourceSchemaMapping, Map<String, String> parameters) throws Exception {
         List<CsvFile.Line> csv = new CsvFile(new File(fileName)).getLines();
         if (csv.isEmpty()) {
         	throw new RuntimeException("file '" + fileName + "' is empty");
@@ -111,7 +113,7 @@ public class ExtractionModel {
                 dataModel.setRestrictionModel(new RestrictionModel(dataModel));
             }
             try {
-                dataModel.getRestrictionModel().addRestrictionDefinition(subjectLine.cells.get(i), fileName);
+                dataModel.getRestrictionModel().addRestrictionDefinition(subjectLine.cells.get(i), fileName, parameters);
             } catch (Exception e) {
                 throw new RuntimeException(location, e);
             }
@@ -155,7 +157,7 @@ public class ExtractionModel {
 			if (table == null) {
 				_log.warn("unknown table" + name);
 			} else {
-				table.setXmlTemplate(mapping);
+				table.setXmlTemplate(ParameterHandler.assignParameterValues(mapping, parameters));
 			}
         }
         
@@ -179,7 +181,7 @@ public class ExtractionModel {
 				if (col == null) {
 					_log.warn("unknown table" + name + "." + column);
 				} else {
-					col.setFilterExpression(filter);
+					col.setFilterExpression(ParameterHandler.assignParameterValues(filter, parameters));
 				}
 			}
         }

@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.datamodel.DataModel;
@@ -281,7 +282,7 @@ public class CommandLineParser {
     }
  
     public Map<String, String> getParameters() {
-    	Map<String, String> map = new HashMap<String, String>();
+    	Map<String, String> map = new TreeMap<String, String>();
     	
     	if (parameters != null) {
     		for (String pv: CsvFile.decodeLine(parameters)) {
