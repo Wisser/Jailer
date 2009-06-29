@@ -217,7 +217,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				extractionModel = new ExtractionModel(dataModel);
 				LayoutStorage.removeAll();
 			} else {
-				extractionModel = new ExtractionModel(extractionModelFile, new HashMap<String, String>());
+				extractionModel = new ExtractionModel(extractionModelFile, new HashMap<String, String>(), new HashMap<String, String>());
 				LayoutStorage.restore(extractionModelFile);
 			}
 			subject = extractionModel.subject;
@@ -1393,7 +1393,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     				condition = restrictionEditor.restriction.getText().trim();
     			}
     		}
-			dataModel.getRestrictionModel().addRestriction(currentAssociation.source, currentAssociation, condition, "GUI", true);
+			dataModel.getRestrictionModel().addRestriction(currentAssociation.source, currentAssociation, condition, "GUI", true, new HashMap<String, String>());
     		tree.repaint();
     		graphView.display.invalidate();
 			restrictionsTable.setModel(restrictionTableModel());
@@ -2130,7 +2130,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			for (Association association: table.associations) {
 				if (!association.isInsertDestinationBeforeSource()) {
 					if (context == null || association.source.equals(context) || association.destination.equals(context)) {
-						dataModel.getRestrictionModel().addRestriction(table, association, "", "GUI", true);
+						dataModel.getRestrictionModel().addRestriction(table, association, "", "GUI", true, new HashMap<String, String>());
 					}
 				}
 			}
@@ -2173,7 +2173,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				if (!association.isInsertDestinationBeforeSource()) {
 					if (association.getName() != null && !"".equals(association.getName().trim())) {
 						if (context == null || association.source.equals(context) || association.destination.equals(context)) {
-							dataModel.getRestrictionModel().addRestriction(table, association, "false", "GUI", true);
+							dataModel.getRestrictionModel().addRestriction(table, association, "false", "GUI", true, new HashMap<String, String>());
 						}
 					}
 				}

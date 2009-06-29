@@ -23,6 +23,7 @@ import java.util.Map;
 
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.ParameterHandler;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.SqlUtil;
@@ -122,9 +123,10 @@ public class RestrictionModel {
     /**
      * Adds restrictions defined in a restriction-file.
      * 
+     * @param parameters apply this parameter-value mapping to all restriction conditions 
      * @param fileName the name of the restriction-file
      */
-    public void addRestrictionDefinition(String fileName, String extractionModelFileName) throws Exception {
+    public void addRestrictionDefinition(String fileName, String extractionModelFileName, Map<String, String> parameters) throws Exception {
         if (dataModel != null) {
         	dataModel.version++;
         }
@@ -164,7 +166,7 @@ public class RestrictionModel {
                 	_log.warn(location + ": missing condition");
                     continue;
                 }
-                addRestriction(null, association, condition, location);
+                addRestriction(null, association, condition, location, parameters);
                 continue;
             }
             Table from;
@@ -217,7 +219,7 @@ public class RestrictionModel {
                     for (Association a: table.associations) {
                         if (a.destination.equals(to)) {
                             if (!a.isInsertDestinationBeforeSource()) {
-                                addRestriction(table, a, condition, location);
+                                addRestriction(table, a, condition, location, parameters);
                             }
                         }
                     }
@@ -226,14 +228,14 @@ public class RestrictionModel {
                 for (Association a: from.associations) {
                     if (!a.isInsertDestinationBeforeSource()) {
                         if (excludeTo == null || !excludeTo.contains(a.destination)) {
-                            addRestriction(from, a, condition, location);
+                            addRestriction(from, a, condition, location, parameters);
                         }
                     }
             }
             } else {
                 for (Association a: from.associations) {
                     if (a.destination.equals(to)) {
-                        addRestriction(from, a, condition, location);
+                        addRestriction(from, a, condition, location, parameters);
                     }
                 }
             }
@@ -246,10 +248,11 @@ public class RestrictionModel {
      * 
      * @param association the association
      * @param condition the restriction-condition
+     * @param parameters apply this parameter-value mapping to all restriction conditions 
      * @param location location in CSV-file
      */
-    public void addRestriction(Table source, Association association, String condition, String location) {
-    	addRestriction(source, association, condition, location, false);
+    public void addRestriction(Table source, Association association, String condition, String location, Map<String, String> parameters) {
+    	addRestriction(source, association, condition, location, false, parameters);
     }
     	
     /**
@@ -258,12 +261,14 @@ public class RestrictionModel {
      * @param association the association
      * @param condition the restriction-condition
      * @param location location in CSV-file
+     * @param parameters apply this parameter-value mapping to all restriction conditions 
      * @param removePreviousRestriction if <code>true</code>, remove any restriction on the association before adding the new one
      */
-    public void addRestriction(Table source, Association association, String condition, String location, boolean removePreviousRestriction) {
+    public void addRestriction(Table source, Association association, String condition, String location, boolean removePreviousRestriction, Map<String, String> parameters) {
         if (dataModel != null) {
         	dataModel.version++;
         }
+        condition = ParameterHandler.assignParameterValues(condition, parameters);
 //        if (association.isInsertDestinationBeforeSource()) {
 //            String aName = source == null? association.getName() : (source.getName() + "->" + association.destination.getName());
 //            throw new RuntimeException(location + ": can't restrict dependency: " + aName + " condition: " + condition);

@@ -206,7 +206,7 @@ public class XmlExportTransformer implements ResultSetReader {
 							};
 							try {
 								xmlRowWriter.startList(sa);
-								entityGraph.readDependentEntities(sa.destination, sa, resultSet, reader, getTypeCache(sa.destination), getTableMapping(sa.destination).selectionSchema);
+								entityGraph.readDependentEntities(sa.destination, sa, resultSet, reader, getTypeCache(sa.destination), getTableMapping(sa.destination).selectionSchema, getTableMapping(sa.destination).originalPKAliasPrefix);
 								if (cyclicAggregatedTables.contains(sa.destination)) {
 									entityGraph.markDependentEntitiesAsTraversed(sa, resultSet, getTypeCache(sa.destination));
 								}
@@ -272,6 +272,11 @@ public class XmlExportTransformer implements ResultSetReader {
 		 * SQL selection schema.
 		 */
 		public String selectionSchema;
+
+		/**
+		 * Prefix of column aliases for selection of unfiltered PK values.
+		 */
+		public String originalPKAliasPrefix;
 	}
 	
 	/**
@@ -292,6 +297,30 @@ public class XmlExportTransformer implements ResultSetReader {
 		TableMapping tableMapping = new TableMapping();
 		tableMappings.put(table, tableMapping);
 		
+		boolean isFiltered = false;
+		for (Column c: table.getColumns()) {
+			if (c.getFilterExpression() != null) {
+				isFiltered = true;
+				break;
+			}
+		}
+		
+		if (isFiltered) {
+			for (int i = 0; ; ++i) {
+				tableMapping.originalPKAliasPrefix = "O" + i;
+				boolean found = false;
+				for (Column c: table.getColumns()) {
+					if (c.name.startsWith(tableMapping.originalPKAliasPrefix)) {
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					break;
+				}
+			}
+		}
+		
 		tableMapping.template = table.getXmlTemplateAsDocument();
 		final StringBuilder sb = new StringBuilder();
 		int i = 0;
@@ -299,7 +328,12 @@ public class XmlExportTransformer implements ResultSetReader {
 			if (sb.length() > 0) {
 				sb.append(", ");
 			}
-			sb.append("T." + pk.name + " AS PK" + i++);
+			if (tableMapping.originalPKAliasPrefix != null) {
+				sb.append("T." + tableMapping.originalPKAliasPrefix + i + " AS PK" + i);
+				++i;
+			} else {
+				sb.append("T." + pk.name + " AS PK" + i++);
+			}
 		}
 		XmlUtil.visitDocumentNodes(tableMapping.template, new NodeVisitor() {
 			int nr = 0;
