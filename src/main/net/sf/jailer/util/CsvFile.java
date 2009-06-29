@@ -185,6 +185,8 @@ public class CsvFile {
     		} else {
     			if (esc && c == 'n') {
     				c = '\n';
+    			} else if (esc && c == 'r') {
+    				c = '\r';
     			}
     			sb.append(c);
     		}
@@ -211,7 +213,7 @@ public class CsvFile {
     		} else if (c == '\n') {
         		sb.append("\\n");
     		} else if (c == '\r') {
-    			// ignore
+    			sb.append("\\r");
             } else {
         		sb.append(c);
         	}
