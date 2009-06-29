@@ -1,3 +1,7 @@
+3.1
+ - A new feature for parametrizing filters, XML-templates, restriction conditions and subject conditions has beed introduced.
+ - GUI support for multi-line conditions and filters.
+
 3.0
  - extensive internal refactorings
  - GUI improvements

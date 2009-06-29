@@ -55,6 +55,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.ParameterHandler;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.dbunit.FlatXMLTransformer;
 import net.sf.jailer.domainmodel.DomainModel;
@@ -711,7 +712,7 @@ public class Jailer {
 		for (Table table : sortedTables) {
 			_log.info("exporting table " + datamodel.getDisplayName(table));
 			reader.setTable(table);
-			entityGraph.readMarkedEntities(table, reader, reader.getTableMapping(table).selectionSchema, true);
+			entityGraph.readMarkedEntities(table, reader, reader.getTableMapping(table).selectionSchema, reader.getTableMapping(table).originalPKAliasPrefix, true);
 		}
 		reader.endDocument();
 
@@ -917,7 +918,7 @@ public class Jailer {
 					if (dataModel.getRestrictionModel() == null) {
 						dataModel.setRestrictionModel(new RestrictionModel(dataModel));
 					}
-					dataModel.getRestrictionModel().addRestrictionDefinition(rm, null);
+					dataModel.getRestrictionModel().addRestrictionDefinition(rm, null, new HashMap<String, String>());
 				}
 				new DomainModel(dataModel).check();
 			} else if ("render-datamodel".equalsIgnoreCase(command)) {
@@ -998,7 +999,7 @@ public class Jailer {
 			if (dataModel.getRestrictionModel() == null) {
 				dataModel.setRestrictionModel(new RestrictionModel(dataModel));
 			}
-			dataModel.getRestrictionModel().addRestrictionDefinition(rm, null);
+			dataModel.getRestrictionModel().addRestrictionDefinition(rm, null, new HashMap<String, String>());
 		}
 		DataModelRenderer renderer = Configuration.getRenderer();
 		if (renderer == null) {
@@ -1019,8 +1020,8 @@ public class Jailer {
 			DDLCreator.createDDL(session, CommandLineParser.getInstance().getTemporaryTableScope());
 		}
 
-		ExtractionModel extractionModel = new ExtractionModel(extractionModelFileName, CommandLineParser.getInstance().getSourceSchemaMapping());
-System.out.println(CommandLineParser.getInstance().getParameters());
+		ExtractionModel extractionModel = new ExtractionModel(extractionModelFileName, CommandLineParser.getInstance().getSourceSchemaMapping(), CommandLineParser.getInstance().getParameters());
+
 		EntityGraph entityGraph = EntityGraph.create(EntityGraph.createUniqueGraphID(), session, extractionModel.dataModel.getUniversalPrimaryKey(session));
 		entityGraph.setExplain(explain);
 		final Jailer jailer = new Jailer(threads);
@@ -1042,6 +1043,18 @@ System.out.println(CommandLineParser.getInstance().getParameters());
 
 		extractionModel.dataModel.checkForPrimaryKey(extractionModel.subject, deleteScriptFileName != null);
 
+		extractionModel.condition = ParameterHandler.assignParameterValues(extractionModel.condition, CommandLineParser.getInstance().getParameters());
+		
+		if (!CommandLineParser.getInstance().getParameters().isEmpty()) {
+			String suffix = "Parameters:        ";
+			jailer.appendCommentHeader("");
+			for (Map.Entry<String, String> e: CommandLineParser.getInstance().getParameters().entrySet()) {
+				jailer.appendCommentHeader(suffix + e.getKey() + " = " + e.getValue());
+				suffix = "                   ";
+			}
+			jailer.appendCommentHeader("");
+		}
+		
 		EntityGraph graph = entityGraph;
 		jailer.setEntityGraph(graph);
 		jailer.setDataModel(extractionModel.dataModel);
@@ -1240,7 +1253,7 @@ System.out.println(CommandLineParser.getInstance().getParameters());
 			if (dataModel.getRestrictionModel() == null) {
 				dataModel.setRestrictionModel(new RestrictionModel(dataModel));
 			}
-			dataModel.getRestrictionModel().addRestrictionDefinition(rm, null);
+			dataModel.getRestrictionModel().addRestrictionDefinition(rm, null, new HashMap<String, String>());
 		}
 		Table source = dataModel.getTable(from);
 		if (source == null) {
@@ -1313,7 +1326,7 @@ System.out.println(CommandLineParser.getInstance().getParameters());
 			if (dataModel.getRestrictionModel() == null) {
 				dataModel.setRestrictionModel(new RestrictionModel(dataModel));
 			}
-			dataModel.getRestrictionModel().addRestrictionDefinition(rm, null);
+			dataModel.getRestrictionModel().addRestrictionDefinition(rm, null, new HashMap<String, String>());
 		}
 
 		System.out.println(dataModel);

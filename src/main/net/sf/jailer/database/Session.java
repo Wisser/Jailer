@@ -347,15 +347,18 @@ public class Session {
      */
     public void executeQuery(String sqlQuery, ResultSetReader reader) throws SQLException {
         _log.info(sqlQuery);
+        long rc = 0;
         try {
 	        Statement statement = connectionFactory.getConnection().createStatement();
 	        ResultSet resultSet = statement.executeQuery(sqlQuery);
 	        while (resultSet.next()) {
 	            reader.readCurrentRow(resultSet);
+	            ++rc;
 	        }
 	        reader.close();
 	        resultSet.close();
 	        statement.close();
+	        _log.info(rc + " row(s)");
         } catch (SQLException e) {
         	if (!silent) {
         		_log.error("Error executing query", e);
