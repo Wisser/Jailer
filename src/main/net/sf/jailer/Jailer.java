@@ -177,7 +177,7 @@ public class Jailer {
 	 *            the comment line (without '--'-prefix)
 	 */
 	private void appendCommentHeader(String comment) {
-		commentHeader.append("-- " + (comment.replace('\n', ' ')) + "\n");
+		commentHeader.append("-- " + (comment.replace('\n', ' ').replace('\r', ' ')) + "\n");
 	}
 
 	/**
@@ -195,7 +195,7 @@ public class Jailer {
 	 * @return set of tables from which entities are added
 	 */
 	public Set<Table> export(Table table, String condition, Collection<Table> progressOfYesterday, long limit) throws Exception {
-		_log.info("exporting " + datamodel.getDisplayName(table) + " Where " + condition);
+		_log.info("exporting " + datamodel.getDisplayName(table) + " Where " + condition.replace('\n', ' ').replace('\r', ' '));
 		int today = entityGraph.getAge();
 		entityGraph.setAge(today + 1);
 		Map<Table, Collection<Association>> progress = new HashMap<Table, Collection<Association>>();
@@ -203,7 +203,7 @@ public class Jailer {
 			progress.put(table, new ArrayList<Association>());
 		}
 		if (progressOfYesterday != null) {
-			for (Table t : progressOfYesterday) {
+			for (Table t: progressOfYesterday) {
 				progress.put(t, new ArrayList<Association>());
 			}
 		}
@@ -217,7 +217,7 @@ public class Jailer {
 			progress = resolveAssociations(today, progress);
 		}
 
-		_log.info("exported " + datamodel.getDisplayName(table) + " Where " + condition);
+		_log.info("exported " + datamodel.getDisplayName(table) + " Where " + condition.replace('\n', ' ').replace('\r', ' '));
 		_log.info("total progress: " + asString(totalProgress));
 		_log.info("export statistic:");
 		boolean firstLine = true;
@@ -237,7 +237,7 @@ public class Jailer {
 			}
 			firstLine = false;
 		}
-		if (CommandLineParser.getInstance().getScriptFormat() != ScriptFormat.XML) {
+//		if (CommandLineParser.getInstance().getScriptFormat() != ScriptFormat.XML) {
 			appendCommentHeader("");
 			boolean isFiltered = false;
 			for (Table t : new TreeSet<Table>(totalProgress)) {
@@ -251,7 +251,7 @@ public class Jailer {
 					}
 				}
 			}
-		}
+//		}
 
 		return totalProgress;
 	}
@@ -1040,6 +1040,7 @@ public class Jailer {
 		jailer.appendCommentHeader("Extraction Model:  " + condition + " (" + extractionModelFileName + ")");
 		jailer.appendCommentHeader("Database URL:      " + dbUrl);
 		jailer.appendCommentHeader("Database User:     " + dbUser);
+		jailer.appendCommentHeader("");
 
 		extractionModel.dataModel.checkForPrimaryKey(extractionModel.subject, deleteScriptFileName != null);
 
@@ -1047,7 +1048,6 @@ public class Jailer {
 		
 		if (!CommandLineParser.getInstance().getParameters().isEmpty()) {
 			String suffix = "Parameters:        ";
-			jailer.appendCommentHeader("");
 			for (Map.Entry<String, String> e: CommandLineParser.getInstance().getParameters().entrySet()) {
 				jailer.appendCommentHeader(suffix + e.getKey() + " = " + e.getValue());
 				suffix = "                   ";

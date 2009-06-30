@@ -705,7 +705,7 @@ public class GraphicalDataModelView extends JPanel {
 				display.invalidate();
 			}
 		});
-		JMenuItem mapColumns = new JMenuItem("Map columns");
+		JMenuItem mapColumns = new JMenuItem("XML column mapping");
 		mapColumns.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				modelEditor.openColumnMapper(table);

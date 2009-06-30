@@ -200,6 +200,7 @@ public class ExportDialog extends javax.swing.JDialog {
         }
         
         pack();
+        setSize(Math.min(getSize().width, 800), getSize().height);
         UIUtil.initPeer();
         setVisible(true);
         try {

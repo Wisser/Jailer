@@ -2,6 +2,7 @@
  - A new feature for parametrizing filters, XML-templates, restriction conditions and subject conditions has been introduced.
  - GUI support for multi-line conditions and filters.
  - A bug concerning XML export on windows platform has been fixed.
+ - Minor bug fixes.
 
 3.0
  - extensive internal refactorings
