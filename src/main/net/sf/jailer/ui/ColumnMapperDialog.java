@@ -86,8 +86,15 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         try {
 			mappingField.setText(XmlUtil.build(table.getXmlTemplateAsDocument()));
 		} catch (Exception e) {
-			UIUtil.showException(parent, "Error", e);
-			return false;
+			try {
+				// try again with default template,
+				// there was a bug in Jailer 3.0 which causes corruption of XML templates
+				// in windows platform
+				mappingField.setText(XmlUtil.build(table.getDefaultXmlTemplate()));
+			} catch (Exception e2) {
+				UIUtil.showException(parent, "Error", e);
+				return false;
+			}
 		}
 		ok = false;
     	this.table = table;

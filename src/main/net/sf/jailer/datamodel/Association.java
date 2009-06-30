@@ -179,7 +179,7 @@ public class Association extends ModelElement {
         if (restrictionModel != null) {
             String r = restrictionModel.getRestriction(this);
             if (r != null && r != RestrictionModel.IGNORE) {
-                restriction = " restricted by " + r;
+                restriction = " restricted by " + r.replace('\n', ' ').replace('\r', ' ');
             }
         }
         String gap = "";

@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -66,6 +68,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
     /** Creates new form FilterEditor */
     public FilterEditorDialog(ExtractionModelFrame parent) {
         super(parent, true);
+        this.conditionEditor = new ConditionEditor(parent);
         this.parent = parent;
         initComponents();
         final ListCellRenderer tableBoxRenderer = tableBox.getRenderer();
@@ -172,6 +175,11 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	 */
 	private Map<Column, JTextField> filterTextfieldsPerColumn = new HashMap<Column, JTextField>();
 	
+	/**
+	 * The editor for filter conditions.
+	 */
+	private ConditionEditor conditionEditor;
+	
     /**
      * Refreshes the filter pane.
      */
@@ -188,7 +196,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		java.awt.GridBagConstraints gridBagConstraints;
 		filterTextfieldsPerColumn.clear();
 		
-		for (Table table: tables) {	
+		for (final Table table: tables) {	
 			for (Column c: table.getColumns()) {
 				String filter = c.getFilterExpression();
 
@@ -214,7 +222,8 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				columnPanel.setLayout(new java.awt.BorderLayout());
 
 				label = new javax.swing.JLabel();
-				label.setText((selectedTable == null? " " + table.getUnqualifiedName() + "." : "") + c.name);
+				final String columnName = (selectedTable == null? " " + table.getUnqualifiedName() + "." : "") + c.name;
+				label.setText(columnName);
 		        label.setFont(filter == null || selectedTable == null? nonBoldFont : boldFont);
 				
 		        boolean isPK = false;
@@ -254,19 +263,54 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 		        filterPane.add(label, gridBagConstraints);
 		        
-		        javax.swing.JTextField textField = new javax.swing.JTextField();
-		        textField.setText(filter == null? "" : filter);
+		        final javax.swing.JTextField textField = new javax.swing.JTextField();
+		        textField.setText(filter == null? "" : ConditionEditor.toSingleLine(filter));
 		        filterTextfieldsPerColumn.put(c, textField);
 		        
+		        label = new javax.swing.JLabel();
+				label.setText(null);
+		        
+				label.setIcon(conditionEditorIcon);
+				
 		        gridBagConstraints = new java.awt.GridBagConstraints();
 		        gridBagConstraints.gridx = 3;
+		        gridBagConstraints.gridy = y;
+		        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+		        gridBagConstraints.weightx = 0.0;
+		        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		        gridBagConstraints.insets = new Insets(1, 0, 0, 4);
+		        filterPane.add(label, gridBagConstraints);
+		        
+		        gridBagConstraints = new java.awt.GridBagConstraints();
+		        gridBagConstraints.gridx = 4;
 		        gridBagConstraints.gridy = y;
 		        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 		        gridBagConstraints.weightx = 1.0;
 		        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 		        gridBagConstraints.insets = new Insets(1, 0, 0, 0);
 		        filterPane.add(textField, gridBagConstraints);
-		        
+
+		        final JLabel theLabel = label;
+		        label.addMouseListener(new java.awt.event.MouseAdapter() {
+					public void mousePressed(java.awt.event.MouseEvent evt) {
+						conditionEditor.setTitle(columnName.trim());
+						String cond = conditionEditor.edit(textField.getText(), "Table", "T", table, null, null, null, false);
+						if (cond != null) {
+							if (!textField.getText().equals(ConditionEditor.toSingleLine(cond))) {
+								textField.setText(ConditionEditor.toSingleLine(cond));
+							}
+							theLabel.setEnabled(true);
+						}
+					}
+					
+					public void mouseEntered(java.awt.event.MouseEvent evt) {
+						theLabel.setEnabled(false);
+		            }
+		            public void mouseExited(java.awt.event.MouseEvent evt) {
+		            	theLabel.setEnabled(true);
+		           }
+		        });
+
 		        ++y;
 			}
 		}
@@ -290,7 +334,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	 */
 	private void storeFilterExpressions() {
 		for (Column c: filterTextfieldsPerColumn.keySet()) {
-			String newFilter = filterTextfieldsPerColumn.get(c).getText().trim();
+			String newFilter = ConditionEditor.toMultiLine(filterTextfieldsPerColumn.get(c).getText()).trim();
 			if (newFilter.length() == 0) {
 				newFilter = null;
 			}
@@ -306,7 +350,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	 */
 	private boolean needsSave() {
 		for (Column c: filterTextfieldsPerColumn.keySet()) {
-			String newFilter = filterTextfieldsPerColumn.get(c).getText().trim();
+			String newFilter = ConditionEditor.toMultiLine(filterTextfieldsPerColumn.get(c).getText()).trim();
 			if (newFilter.length() == 0) {
 				newFilter = null;
 			}
@@ -468,4 +512,16 @@ public class FilterEditorDialog extends javax.swing.JDialog {
     private javax.swing.JComboBox tableBox;
     // End of variables declaration//GEN-END:variables
     
+    private Icon conditionEditorIcon;
+	{
+		String dir = "/net/sf/jailer/resource";
+		
+		// load images
+		try {
+			conditionEditorIcon = new ImageIcon(getClass().getResource(dir + "/edit.png"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
 }
