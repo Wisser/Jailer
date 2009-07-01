@@ -321,7 +321,16 @@ public class XmlExportTransformer implements ResultSetReader {
 			}
 		}
 		
-		tableMapping.template = table.getXmlTemplateAsDocument();
+		try {
+			tableMapping.template = table.getXmlTemplateAsDocument();
+		} catch (Exception e) {
+			// try again with default template,
+			// there was a bug in Jailer 3.0 which causes corruption of XML templates
+			// in windows platform
+			_log.warn("can't parse XML template for table " + table.getName() + ", using defaults", e);
+			tableMapping.template = table.getDefaultXmlTemplate();
+		}
+		
 		final StringBuilder sb = new StringBuilder();
 		int i = 0;
 		for (Column pk: table.primaryKey.getColumns()) {
