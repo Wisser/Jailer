@@ -30,6 +30,7 @@ import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -122,7 +123,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         }
         updateMenuItems();
         closureView = new ClosureView(this);
-        filterEditorDialog = new FilterEditorDialog(this);
+        filterEditorDialog = new FilterEditorDialog(this, new ParameterSelector.ParametersGetter() {
+			@Override
+			public Set<String> getParameters() {
+				return extractionModelEditor.dataModel.getParameters(extractionModelEditor.condition.getText());
+			}
+		});
     }
     
     /**

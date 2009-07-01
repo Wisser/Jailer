@@ -28,6 +28,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 
 import net.sf.jailer.datamodel.Column;
+import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import sdoc.SyntaxSupport;
 
@@ -39,13 +40,17 @@ import sdoc.SyntaxSupport;
 public class ConditionEditor extends javax.swing.JDialog {
     
 	private boolean ok;
+	private ParameterSelector parameterSelector;
 	
     /** Creates new form ConditionEditor */
-    public ConditionEditor(java.awt.Frame parent) {
+    public ConditionEditor(java.awt.Frame parent, ParameterSelector.ParametersGetter parametersGetter) {
         super(parent, true);
         initComponents();
         setLocation(400, 150);
-        setSize(400, 400);
+        setSize(600, 400);
+        
+        paramsPanel.add(parameterSelector = new ParameterSelector(this, textArea, parametersGetter));
+        
         SyntaxSupport instance = SyntaxSupport.getInstance();
         instance.highlightCurrent(false);
 		instance.addSupport(SyntaxSupport.SQL_LEXER, textArea);
@@ -125,6 +130,7 @@ public class ConditionEditor extends javax.swing.JDialog {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel1 = new javax.swing.JPanel();
+        paramsPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         textArea = new javax.swing.JTextArea();
         jPanel2 = new javax.swing.JPanel();
@@ -143,6 +149,15 @@ public class ConditionEditor extends javax.swing.JDialog {
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        paramsPanel.setMinimumSize(new java.awt.Dimension(150, 0));
+        paramsPanel.setLayout(new javax.swing.BoxLayout(paramsPanel, javax.swing.BoxLayout.LINE_AXIS));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 20;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(paramsPanel, gridBagConstraints);
 
         textArea.setColumns(20);
         textArea.setRows(5);
@@ -242,6 +257,7 @@ public class ConditionEditor extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 20;
+        gridBagConstraints.gridwidth = 20;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         jPanel1.add(jPanel3, gridBagConstraints);
 
@@ -307,26 +323,10 @@ public class ConditionEditor extends javax.swing.JDialog {
 		}
 		ok = false;
 		textArea.setText(condition);
+		parameterSelector.updateParameters();
 		setVisible(true);
 		return ok? textArea.getText() : null;
 	}
-    
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String args[]) {
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                ConditionEditor dialog = new ConditionEditor(new javax.swing.JFrame());
-                dialog.addWindowListener(new java.awt.event.WindowAdapter() {
-                    public void windowClosing(java.awt.event.WindowEvent e) {
-                        System.exit(0);
-                    }
-                });
-                dialog.setVisible(true);
-            }
-        });
-    }
     
     /**
      * Converts multi-line text into single line presentation.
@@ -383,6 +383,7 @@ public class ConditionEditor extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton okButton;
+    private javax.swing.JPanel paramsPanel;
     private javax.swing.JLabel table1dropDown;
     private javax.swing.JLabel table1label;
     private javax.swing.JLabel table1name;
