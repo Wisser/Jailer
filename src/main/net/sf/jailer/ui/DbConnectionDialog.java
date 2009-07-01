@@ -193,7 +193,13 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		for (ConnectionInfo ci: connectionList) {
 			data[i++] = new Object[] { ci.alias, ci.user, ci.url };
 		}
-		connectionsTable.setModel(new DefaultTableModel(data, new String[] { "Alias", "User", "URL" }));
+		connectionsTable.setModel(new DefaultTableModel(data, new String[] { "Alias", "User", "URL" }) {
+			@Override
+			public boolean isCellEditable(int row, int column) {
+				return false;
+			}
+			
+		});
 		return data;
 	}
 

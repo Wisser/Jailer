@@ -213,7 +213,16 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	public ExtractionModelEditor(String extractionModelFile, ExtractionModelFrame extractionModelFrame, boolean horizontalLayout, String connectionState) {
 		this.extractionModelFrame = extractionModelFrame;
 		this.extractionModelFile = extractionModelFile;
-		columnMapperDialog = new ColumnMapperDialog(extractionModelFrame);
+		ParameterSelector.ParametersGetter parametersGetter = new ParameterSelector.ParametersGetter() {
+			@Override
+			public Set<String> getParameters() {
+				if (dataModel == null) {
+					return new HashSet<String>();
+				}
+				return dataModel.getParameters(condition.getText());
+			}
+		};
+		columnMapperDialog = new ColumnMapperDialog(extractionModelFrame, parametersGetter);
 		try {
 			dataModel = new DataModel();
 		} catch (Exception e) {
@@ -389,23 +398,25 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 		});
 		exportFormat.setSelectedItem(scriptFormat);
-    	openXmlSettings.setVisible(ScriptFormat.XML.equals(scriptFormat));
+    	
+		openXmlSettings.setVisible(ScriptFormat.XML.equals(scriptFormat));
 		onExportModusChanged(null);
         SyntaxSupport instance = SyntaxSupport.getInstance();
         instance.highlightCurrent(false);
         instance.addSupport(SyntaxSupport.XML_LEXER, xmlSketch);
 		setOrientation(horizontalLayout);
 		connectivityState.setText(connectionState);
-		subjectConditionEditor = new ConditionEditor(extractionModelFrame);
+		subjectConditionEditor = new ConditionEditor(extractionModelFrame, parametersGetter);
 		subjectConditionEditor.setTitle("Subject condition");
-		restrictionConditionEditor = new ConditionEditor(extractionModelFrame);
+		restrictionConditionEditor = new ConditionEditor(extractionModelFrame, parametersGetter);
 		restrictionConditionEditor.setTitle("Restriction");
 		openSubjectConditionEditor.setIcon(conditionEditorIcon);
 		openSubjectConditionEditor.setText(null);
 		restrictionEditor.openRestrictionConditionEditor.setIcon(conditionEditorIcon);
 		restrictionEditor.openRestrictionConditionEditor.setText(null);
 		restrictionEditor.openRestrictionConditionEditor.addMouseListener(new java.awt.event.MouseAdapter() {
-			public void mousePressed(java.awt.event.MouseEvent evt) {
+			@Override
+			public void mouseClicked(MouseEvent e) {
 				if (currentAssociation != null && restrictionEditor.restriction.isEditable()) {
 					String cond = restrictionConditionEditor.edit(restrictionEditor.restriction.getText(), "Table A", "A", currentAssociation.source, "Table B", "B", currentAssociation.destination, true);
 					if (cond != null) {
@@ -414,19 +425,21 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 							onApply(true);
 						}
 					}
-					restrictionEditor.openRestrictionConditionEditor.setEnabled(true);
+					restrictionEditor.openRestrictionConditionEditor.setIcon(conditionEditorSelectedIcon);
 				}
 			}
 			
 			public void mouseEntered(java.awt.event.MouseEvent evt) {
-				restrictionEditor.openRestrictionConditionEditor.setEnabled(false);
+				if (currentAssociation != null) {
+					restrictionEditor.openRestrictionConditionEditor.setIcon(conditionEditorSelectedIcon);
+				}
             }
             public void mouseExited(java.awt.event.MouseEvent evt) {
-            	restrictionEditor.openRestrictionConditionEditor.setEnabled(currentAssociation != null);
+            	restrictionEditor.openRestrictionConditionEditor.setIcon(conditionEditorIcon);
            }
         });
 		openSubjectConditionEditor.addMouseListener(new java.awt.event.MouseAdapter() {
-			public void mousePressed(java.awt.event.MouseEvent evt) {
+			public void mouseClicked(java.awt.event.MouseEvent evt) {
 				String cond = subjectConditionEditor.edit(condition.getText(), "Subject", "T", subject, null, null, null, false);
 				if (cond != null) {
 					if (!condition.getText().equals(ConditionEditor.toSingleLine(cond))) {
@@ -434,15 +447,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 						needsSave = true;
 						ExtractionModelEditor.this.extractionModelFrame.updateTitle(needsSave);
 					}
-					openSubjectConditionEditor.setEnabled(true);
+					openSubjectConditionEditor.setIcon(conditionEditorSelectedIcon);
 				}
 			}
 			
 			public void mouseEntered(java.awt.event.MouseEvent evt) {
-				openSubjectConditionEditor.setEnabled(false);
+				openSubjectConditionEditor.setIcon(conditionEditorSelectedIcon);
             }
             public void mouseExited(java.awt.event.MouseEvent evt) {
-            	openSubjectConditionEditor.setEnabled(true);
+            	openSubjectConditionEditor.setIcon(conditionEditorIcon);
            }
         });
 	}
@@ -792,7 +805,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         jPanel3.add(jPanel8, gridBagConstraints);
 
         editorPanel.add(jPanel3);
@@ -1140,9 +1153,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     	Object[][] data = new Object[currentRestrictionDefinitions.size()][];
     	int i = 0;
     	for (RestrictionDefinition def: currentRestrictionDefinitions) {
-    		data[i++] = new Object[] { dataModel.getDisplayName(def.from), dataModel.getDisplayName(def.to), def.name == null? "" : def.name, def.condition };
+    		data[i++] = new Object[] { dataModel.getDisplayName(def.from), dataModel.getDisplayName(def.to), def.condition };
     	}
-        return new DefaultTableModel(data, new Object[] { "From", "To", "Name", "Condition" });
+        return new DefaultTableModel(data, new Object[] { "From", "To", "Condition" }) {
+			public boolean isCellEditable(int row, int column) {
+				return false;
+			}
+        };
     }
     
     /**
@@ -2348,7 +2365,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JComboBox aggregationCombobox;
     private javax.swing.JLabel associatedWith;
     private javax.swing.ButtonGroup buttonGroup1;
-    private javax.swing.JTextField condition;
+    javax.swing.JTextField condition;
     public javax.swing.JLabel connectivityState;
     private javax.swing.JLabel dependsOn;
     private javax.swing.JPanel editorPanel;
@@ -2397,6 +2414,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     
     private Icon dropDownIcon;
     private Icon conditionEditorIcon;
+    private Icon conditionEditorSelectedIcon;
 	{
 		String dir = "/net/sf/jailer/resource";
 		
@@ -2408,6 +2426,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 		try {
 			conditionEditorIcon = new ImageIcon(getClass().getResource(dir + "/edit.png"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			conditionEditorSelectedIcon = new ImageIcon(getClass().getResource(dir + "/edit_s.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

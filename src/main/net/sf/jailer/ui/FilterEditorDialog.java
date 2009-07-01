@@ -66,9 +66,9 @@ public class FilterEditorDialog extends javax.swing.JDialog {
     private boolean refreshing = false;
     
     /** Creates new form FilterEditor */
-    public FilterEditorDialog(ExtractionModelFrame parent) {
+    public FilterEditorDialog(ExtractionModelFrame parent, ParameterSelector.ParametersGetter parametersGetter) {
         super(parent, true);
-        this.conditionEditor = new ConditionEditor(parent);
+        this.conditionEditor = new ConditionEditor(parent, parametersGetter);
         this.parent = parent;
         initComponents();
         final ListCellRenderer tableBoxRenderer = tableBox.getRenderer();
@@ -278,7 +278,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 		        gridBagConstraints.weightx = 0.0;
 		        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		        gridBagConstraints.insets = new Insets(1, 0, 0, 4);
+		        gridBagConstraints.insets = new Insets(1, 0, 0, 2);
 		        filterPane.add(label, gridBagConstraints);
 		        
 		        gridBagConstraints = new java.awt.GridBagConstraints();
@@ -292,22 +292,22 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
 		        final JLabel theLabel = label;
 		        label.addMouseListener(new java.awt.event.MouseAdapter() {
-					public void mousePressed(java.awt.event.MouseEvent evt) {
+					public void mouseClicked(java.awt.event.MouseEvent evt) {
 						conditionEditor.setTitle(columnName.trim());
 						String cond = conditionEditor.edit(textField.getText(), "Table", "T", table, null, null, null, false);
 						if (cond != null) {
 							if (!textField.getText().equals(ConditionEditor.toSingleLine(cond))) {
 								textField.setText(ConditionEditor.toSingleLine(cond));
 							}
-							theLabel.setEnabled(true);
+							theLabel.setIcon(conditionEditorIcon);
 						}
 					}
 					
 					public void mouseEntered(java.awt.event.MouseEvent evt) {
-						theLabel.setEnabled(false);
+						theLabel.setIcon(conditionEditorSelectedIcon);
 		            }
 		            public void mouseExited(java.awt.event.MouseEvent evt) {
-		            	theLabel.setEnabled(true);
+		            	theLabel.setIcon(conditionEditorIcon);
 		           }
 		        });
 
@@ -513,12 +513,18 @@ public class FilterEditorDialog extends javax.swing.JDialog {
     // End of variables declaration//GEN-END:variables
     
     private Icon conditionEditorIcon;
+    private Icon conditionEditorSelectedIcon;
 	{
 		String dir = "/net/sf/jailer/resource";
 		
 		// load images
 		try {
 			conditionEditorIcon = new ImageIcon(getClass().getResource(dir + "/edit.png"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			conditionEditorSelectedIcon = new ImageIcon(getClass().getResource(dir + "/edit_s.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

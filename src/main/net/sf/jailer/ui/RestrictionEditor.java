@@ -275,7 +275,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         jPanel7.add(openRestrictionConditionEditor, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -284,7 +284,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 6;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 19, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 18, 0, 0);
         add(jPanel7, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
