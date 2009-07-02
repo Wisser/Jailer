@@ -487,7 +487,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
     	if (tableBox.getSelectedItem() instanceof String) {
     		Table table = getDataModel().getTableByDisplayName((String) tableBox.getSelectedItem());
 			if (needsSave()) {
-				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Save changes?", "", JOptionPane.YES_NO_OPTION)) {
+				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Keep filter changes?", "", JOptionPane.YES_NO_OPTION)) {
 					storeFilterExpressions();
 				}
 			}

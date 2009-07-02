@@ -47,6 +47,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.ExtractionModelEditor;
+import net.sf.jailer.ui.QueryBuilderDialog;
 import prefuse.Display;
 import prefuse.Visualization;
 import prefuse.action.Action;
@@ -110,6 +111,11 @@ public class GraphicalDataModelView extends JPanel {
 	 * Set of names of all tables on path from selected one to the root.
 	 */
 	Set<String> tablesOnPath = new HashSet<String>();
+
+	/**
+	 * Path from selected one to the root.
+	 */
+	private List<Association> associationsOnPath = new ArrayList<Association>();
 	
 	// constants
     private static final String graph = "graph";
@@ -737,6 +743,12 @@ public class GraphicalDataModelView extends JPanel {
 				modelEditor.extractionModelFrame.openHTMLRender(table);
 			}
 		});
+		JMenuItem queryBuilder = new JMenuItem("Query builder");
+		queryBuilder.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				openQueryBuilder(table, false);
+			}
+		});
 //		JMenuItem shortestPath = new JMenuItem("Show shortest path");
 //		shortestPath.addActionListener(new ActionListener () {
 //			public void actionPerformed(ActionEvent e) {
@@ -767,12 +779,13 @@ public class GraphicalDataModelView extends JPanel {
 		popup.add(zoomToFit);
 //		popup.add(select);
 		popup.add(new JSeparator());
-		popup.add(filterEditor);
 		popup.add(restrictAll);
 		popup.add(removeRestrictions);
-		popup.add(new JSeparator());
+		popup.add(filterEditor);
 		popup.add(mapColumns);
+		popup.add(new JSeparator());
 //		popup.add(shortestPath);
+		popup.add(queryBuilder);
 		popup.add(htmlRender);
 		return popup;
 	}
@@ -912,6 +925,7 @@ public class GraphicalDataModelView extends JPanel {
 	    			selectedAssociation = association;
 	    			modelEditor.select(association);
 	    			tablesOnPath.clear();
+	    			associationsOnPath.clear();
 					if (selectedAssociation != null) {
     					List<Association> path = getPathToRoot(selectedAssociation.destination, true);
     					if (path.isEmpty()) {
@@ -924,6 +938,7 @@ public class GraphicalDataModelView extends JPanel {
     					}
     					for (int i = 0; i < path.size(); ++i) {
     						if (highlightPath) {
+    							associationsOnPath.add(path.get(i));
     							tablesOnPath.add(path.get(i).source.getName());
     							tablesOnPath.add(path.get(i).destination.getName());
 	    					}
@@ -1525,6 +1540,16 @@ public class GraphicalDataModelView extends JPanel {
 				tablesOnPath = oldTablesOnPath;
 			}
 		}
+	}
+	
+	/**
+	 * Opens query builder dialog.
+	 * 
+	 * @param table subject of query
+	 * @param usePath if <code>true</code>, immediately build query based on selected path
+  	 */
+	public void openQueryBuilder(Table table, boolean usePath) {
+		new QueryBuilderDialog(this.modelEditor.extractionModelFrame).buildQuery(table, usePath, associationsOnPath, model);
 	}
 	
 }
