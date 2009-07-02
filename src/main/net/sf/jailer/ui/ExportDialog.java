@@ -676,14 +676,20 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(jLabel11, gridBagConstraints);
 
-        jPanel4.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
+        jPanel4.setLayout(new java.awt.GridBagLayout());
 
         subjectTable.setFont(new java.awt.Font("Dialog", 0, 12));
         subjectTable.setText("jLabel11");
-        jPanel4.add(subjectTable);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        jPanel4.add(subjectTable, gridBagConstraints);
 
         jLabel12.setText("  as T");
-        jPanel4.add(jLabel12);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        jPanel4.add(jLabel12, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

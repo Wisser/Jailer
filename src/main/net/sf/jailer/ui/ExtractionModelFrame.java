@@ -219,10 +219,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         updateDataModel = new javax.swing.JMenuItem();
         openDataModelEditor = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JSeparator();
+        queryBuilder = new javax.swing.JMenuItem();
         renderHtml = new javax.swing.JMenuItem();
         printDatamodel = new javax.swing.JMenuItem();
-        shortestPath = new javax.swing.JMenuItem();
-        jSeparator13 = new javax.swing.JSeparator();
         jMenu2 = new javax.swing.JMenu();
         helpContent = new javax.swing.JMenuItem();
         tutorial = new javax.swing.JMenuItem();
@@ -608,6 +607,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu3.add(openDataModelEditor);
         jMenu3.add(jSeparator5);
 
+        queryBuilder.setText("Query Builder");
+        queryBuilder.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                queryBuilderActionPerformed(evt);
+            }
+        });
+        jMenu3.add(queryBuilder);
+
         renderHtml.setText("HTML Rendering");
         renderHtml.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -623,15 +630,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
         jMenu3.add(printDatamodel);
-
-        shortestPath.setText("Shortest Path Analysis");
-        shortestPath.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                shortestPathActionPerformed(evt);
-            }
-        });
-        jMenu3.add(shortestPath);
-        jMenu3.add(jSeparator13);
 
         jMenuBar2.add(jMenu3);
 
@@ -701,9 +699,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	openClosureView(extractionModelEditor.root);
     }//GEN-LAST:event_closureMenuItemActionPerformed
 
-    private void shortestPathActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_shortestPathActionPerformed
-    	showShortestPath(extractionModelEditor.getSubject(), extractionModelEditor.currentAssociation == null? extractionModelEditor.getSubject() : extractionModelEditor.currentAssociation.destination);
-    }//GEN-LAST:event_shortestPathActionPerformed
+    private void queryBuilderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_queryBuilderActionPerformed
+    	extractionModelEditor.graphView.openQueryBuilder(extractionModelEditor.root, true);
+    }//GEN-LAST:event_queryBuilderActionPerformed
 
     private void expandAllVisibleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_expandAllVisibleActionPerformed
     	extractionModelEditor.expandAllVisibleTables();
@@ -1600,7 +1598,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator10;
     private javax.swing.JSeparator jSeparator11;
     private javax.swing.JSeparator jSeparator12;
-    private javax.swing.JSeparator jSeparator13;
     private javax.swing.JSeparator jSeparator2;
     private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
@@ -1613,12 +1610,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem newModel;
     private javax.swing.JMenuItem openDataModelEditor;
     private javax.swing.JMenuItem printDatamodel;
+    private javax.swing.JMenuItem queryBuilder;
     private javax.swing.JMenuItem refresh;
     private javax.swing.JMenuItem removeAllRestrictions;
     private javax.swing.JMenuItem renderHtml;
     private javax.swing.JMenuItem save;
     private javax.swing.JMenuItem saveAs;
-    private javax.swing.JMenuItem shortestPath;
     private javax.swing.JCheckBoxMenuItem showIgnored;
     private javax.swing.JCheckBoxMenuItem showTableDetails;
     private javax.swing.JRadioButtonMenuItem steptime0;
