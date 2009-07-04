@@ -1,3 +1,6 @@
+3.1.1
+ - Support for multi-row inserts in oracle.
+
 3.1
  - A new feature for parametrizing filters, XML-templates, restriction conditions and subject conditions has been introduced.
  - GUI support for multi-line conditions and filters.
