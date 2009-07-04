@@ -85,7 +85,8 @@ public class SqlScriptExecutor {
                 continue;
             }
             if (line.endsWith(";")) {
-            	String stmt = currentStatement + line.substring(0, line.length() - 1);
+            	currentStatement.append(line.substring(0, line.length() - 1));
+            	String stmt = currentStatement.toString();
                 boolean silent = session.getSilent();
             	session.setSilent(silent || stmt.trim().toLowerCase().startsWith("drop"));
             	try {
