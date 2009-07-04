@@ -161,7 +161,7 @@ public class DMLTransformer implements ResultSetReader {
         this.upsertOnly = upsertOnly;
         this.table = table;
         this.scriptFileWriter = scriptFileWriter;
-        this.insertStatementBuilder = new StatementBuilder(SQLDialect.currentDialect.supportsMultiRowInserts? maxBodySize : 1);
+        this.insertStatementBuilder = new StatementBuilder(SQLDialect.currentDialect.supportsMultiRowInserts || session.dbms == DBMS.ORACLE? maxBodySize : 1);
         this.quoting = new Quoting(metaData);
         this.session = session;
         tableHasIdentityColumn = false;
@@ -402,12 +402,21 @@ public class DMLTransformer implements ResultSetReader {
 	                }
                 }
             } else {
-                String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") values ";
-                String item = "(" + valueList + ")";
-                if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
-                    writeToScriptFile(insertStatementBuilder.build(), true);
-                }
-                insertStatementBuilder.append(insertSchema, item, ", ", ";\n");
+            	if (session.dbms == DBMS.ORACLE) {
+            		String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
+	                String item = "\n Select " + valueList + " From DUAL";
+	                if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
+	                    writeToScriptFile(insertStatementBuilder.build(), true);
+	                }
+	                insertStatementBuilder.append(insertSchema, item, " Union all ", ";\n");
+            	} else {
+	                String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") values ";
+	                String item = "(" + valueList + ")";
+	                if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
+	                    writeToScriptFile(insertStatementBuilder.build(), true);
+	                }
+	                insertStatementBuilder.append(insertSchema, item, ", ", ";\n");
+            	}
             }
             
             exportLobs(table, resultSet);
