@@ -16,6 +16,7 @@
 package net.sf.jailer.ui;
 
 import java.awt.Color;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
@@ -301,7 +302,29 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 	        gridBagConstraints.insets = new Insets(0, 0, 2, 0);
 	        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 	        if (relationship == null || relationship.association != null) {
-	        	JComboBox tableCB = new JComboBox();
+	        	JComboBox tableCB = new JComboBox() {
+	        		private boolean layingOut = false;
+	        	    public void doLayout() {
+	        	        try {
+	        	            layingOut = true;
+	        	            super.doLayout();
+	        	        }
+	        	        finally {
+	        	            layingOut = false;
+	        	        }
+	        	    }
+	        	    public Dimension getSize() {
+	        	        Dimension sz = super.getSize();
+	        	        if (!layingOut) {
+	        	            sz.width = Math.max(sz.width, super.getPreferredSize().width);
+	        	        }
+	        	        return sz;
+	        	    }
+	        	    @Override
+					public Dimension getPreferredSize() {
+						return new Dimension(Math.min(super.getPreferredSize().width, 300), super.getPreferredSize().height);
+					}
+	        	};
 	        	DefaultComboBoxModel aModel = new DefaultComboBoxModel();
 	        	aModel.addElement("");
         		for (Association a: lastTable.associations) {
