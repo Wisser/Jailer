@@ -63,14 +63,21 @@ public class SqlScriptExecutor {
     public static void executeScript(String scriptFileName, Session session) throws IOException, SQLException {
         _log.info("reading file '" + scriptFileName + "'");
     	BufferedReader reader;
+    	long fileSize = 0;
     	if (scriptFileName.toLowerCase().endsWith(".gz") || scriptFileName.toLowerCase().endsWith(".zip")) {
     		reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(scriptFileName))));
     	} else {
-    		reader = new BufferedReader(new FileReader(scriptFileName));
+    		File f = new File(scriptFileName);
+    		fileSize = f.length();
+    		reader = new BufferedReader(new FileReader(f));
     	}
         String line = null;
         StringBuffer currentStatement = new StringBuffer();
+        long linesRead = 0;
+        long bytesRead = 0;
+        long t = System.currentTimeMillis();
         while ((line = reader.readLine()) != null) {
+        	bytesRead += line.length() + 1;
             line = line.trim();
             if (line.length() == 0 || line.startsWith("--")) {
             	if (line.startsWith(UNFINISHED_MULTILINE_COMMENT)) {
@@ -85,9 +92,10 @@ public class SqlScriptExecutor {
                 continue;
             }
             if (line.endsWith(";")) {
+            	++linesRead;
             	currentStatement.append(line.substring(0, line.length() - 1));
             	String stmt = currentStatement.toString();
-                boolean silent = session.getSilent();
+            	boolean silent = session.getSilent();
             	session.setSilent(silent || stmt.trim().toLowerCase().startsWith("drop"));
             	try {
                 	session.execute(stmt);
@@ -99,12 +107,24 @@ public class SqlScriptExecutor {
                 }
                 session.setSilent(silent);
                 currentStatement.setLength(0);
+                if (System.currentTimeMillis() > t + 1000) {
+                	t = System.currentTimeMillis();
+                	long p = 0;
+                	if (fileSize > 0) {
+                		p = (100 * bytesRead) / fileSize;
+                		if (p > 100) {
+                			p = 100;
+                		}
+                	}
+                	_log.info(linesRead + " statements" + (p > 0? " (" + p + "%)" : ""));
+                }
             } else {
                 currentStatement.append(line + " ");
             }
         }
         reader.close();
-        _log.info("successfully read file '" + scriptFileName + "'");
+        _log.info(linesRead + " statements (100%)");
+    	_log.info("successfully read file '" + scriptFileName + "'");
     }
 
     /**
