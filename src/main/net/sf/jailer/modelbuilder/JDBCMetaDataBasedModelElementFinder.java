@@ -45,7 +45,7 @@ import net.sf.jailer.util.SqlUtil;
 import org.apache.log4j.Logger;
 
 /**
- * Finds associations and tables by introspection of the JDBC meta data.
+ * Finds associations and tables by analyzing the JDBC meta data.
  * 
  * @author Ralf Wisser
  */

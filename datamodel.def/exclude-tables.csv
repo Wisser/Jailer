@@ -1,4 +1,4 @@
-# tables to be excluded from DB introspection
+# tables to be excluded from DB analysis
 JL_GRAPH
 JL_SET
 JL_ENTITY

@@ -28,6 +28,8 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -35,6 +37,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
@@ -324,7 +327,18 @@ public class GraphicalDataModelView extends JPanel {
 				Table table = model.getTable(item.getString("label"));
 				if (SwingUtilities.isLeftMouseButton(e)) {
 	            	if (table != null && e.getClickCount() == 1) {
-	            		GraphicalDataModelView.this.modelEditor.select(table);
+	            		Association toS = null;
+	            		for (Association a: table.associations) {
+	            			if (renderedAssociations.containsKey(a) || renderedAssociations.containsKey(a.reversalAssociation)) {
+	            				toS = a.reversalAssociation;
+	            				break;
+	            			}
+	            		}
+	            		if (toS == null) {
+	            			GraphicalDataModelView.this.modelEditor.select(table);
+	            		} else {
+	            			GraphicalDataModelView.this.modelEditor.select(toS);
+	            		}
 	            		Association sa = selectedAssociation;
 	            		setSelection(null);
 	            		setSelection(sa);
@@ -346,7 +360,7 @@ public class GraphicalDataModelView extends JPanel {
 						popup.show(e.getComponent(), e.getX(), e.getY());
                 	}
                 	if (table != null) {
-						JPopupMenu popup = createPopupMenu(table);
+						JPopupMenu popup = createPopupMenu(table, true);
 						popup.show(e.getComponent(), e.getX(), e.getY());
                 	}
                 }
@@ -668,8 +682,63 @@ public class GraphicalDataModelView extends JPanel {
      * @param table the table for which the menu pops up
      * @return the popup menu
      */
-	public JPopupMenu createPopupMenu(final Table table) {
+	public JPopupMenu createPopupMenu(final Table table, boolean withNavigation) {
 		JPopupMenu popup = new JPopupMenu();
+
+		JMenu navigateTo = null;
+		
+		if (withNavigation) {
+			navigateTo = new JMenu("Show associated table");
+			List<Association> aList = new ArrayList<Association>();
+			Set<Table> includedTables = new HashSet<Table>();
+			for (Association a: table.associations) {
+				if (isVisualizable(a)) {
+					if (!includedTables.contains(a.destination)) {
+						aList.add(a);
+						includedTables.add(a.destination);
+					}
+				}
+			}
+			Collections.sort(aList, new Comparator<Association>() {
+				@Override
+				public int compare(Association o1, Association o2) {
+					return o1.getDataModel().getDisplayName(o1.destination)
+						   .compareTo(o2.getDataModel().getDisplayName(o2.destination));
+				}
+			});
+			navigateTo.setEnabled(false);
+			JMenu currentMenu = navigateTo;
+			int numItems = 0;
+			final int MAX_ITEMS = 40;
+			for (final Association a: aList) {
+				String miText = a.getDataModel().getDisplayName(a.destination);
+				JMenuItem mi = new JMenuItem();
+				final int MAX_LENGTH = 50;
+				if (miText.length() < MAX_LENGTH) {
+					mi.setText(miText);
+				} else {
+					mi.setText(miText.substring(0, MAX_LENGTH) + "...");
+					mi.setToolTipText(miText);
+				}
+				mi.addActionListener(new ActionListener () {
+					public void actionPerformed(ActionEvent e) {
+						GraphicalDataModelView.this.modelEditor.select(a);
+					}
+				});
+				if (renderedAssociations.containsKey(a)|| renderedAssociations.containsKey(a.reversalAssociation)) {
+					mi.setEnabled(false);
+				} else {
+					navigateTo.setEnabled(true);
+				}
+				if (numItems++ > MAX_ITEMS) {
+					JMenu nextMenu = new JMenu("More");
+					currentMenu.add(nextMenu);
+					currentMenu = nextMenu;
+					numItems = 1;
+				}
+				currentMenu.add(mi);
+			}
+		}
 		
 //		JMenuItem select = new JMenuItem("Select " + table.getName());
 //		select.addActionListener(new ActionListener () {
@@ -775,8 +844,10 @@ public class GraphicalDataModelView extends JPanel {
 		popup.add(new JSeparator());
 		popup.add(hide);
 		popup.add(selectAsRoot);
+		if (navigateTo != null) {
+			popup.add(navigateTo);
+		}
 		popup.add(findTable);
-		popup.add(zoomToFit);
 //		popup.add(select);
 		popup.add(new JSeparator());
 		popup.add(restrictAll);
@@ -785,6 +856,8 @@ public class GraphicalDataModelView extends JPanel {
 		popup.add(mapColumns);
 		popup.add(new JSeparator());
 //		popup.add(shortestPath);
+		popup.add(zoomToFit);
+		popup.add(new JSeparator());
 		popup.add(queryBuilder);
 		popup.add(htmlRender);
 		return popup;
@@ -924,6 +997,9 @@ public class GraphicalDataModelView extends JPanel {
 	    		if (selectedAssociation != null || association != null) {
 	    			selectedAssociation = association;
 	    			modelEditor.select(association);
+	    			if (association != null) {
+	    				expandTable(theGraph, association.source, association);
+	    			}
 	    			tablesOnPath.clear();
 	    			associationsOnPath.clear();
 					if (selectedAssociation != null) {

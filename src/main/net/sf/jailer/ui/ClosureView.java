@@ -146,7 +146,7 @@ public class ClosureView extends javax.swing.JDialog {
                 	if (value == null || !(value instanceof String)) return;
                 	Table table = getDataModel().getTableByDisplayName((String) value);
                 	if (table != null) {
-						JPopupMenu popup = ClosureView.this.extractionModelFrame.extractionModelEditor.graphView.createPopupMenu(table);
+						JPopupMenu popup = ClosureView.this.extractionModelFrame.extractionModelEditor.graphView.createPopupMenu(table, false);
 						popup.show(e.getComponent(), e.getX(), e.getY());
                 	}
                 }
