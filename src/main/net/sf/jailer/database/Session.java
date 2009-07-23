@@ -141,7 +141,7 @@ public class Session {
     public final String dbPassword;
 
     /**
-     * Optional schema for introspection.
+     * Optional schema for database analysis.
      */
     private String introspectionSchema;
     
@@ -554,18 +554,18 @@ public class Session {
     }
     
     /**
-     * Gets optional schema for introspection.
+     * Gets optional schema for database analysis.
      * 
-     * @return optional schema for introspection
+     * @return optional schema for database analysis
      */
     public String getIntrospectionSchema() {
     	return introspectionSchema;
     }
     
     /**
-     * Sets optional schema for introspection.
+     * Sets optional schema for database analysis.
      * 
-     * @param introspectionSchema optional schema for introspection
+     * @param introspectionSchema optional schema for database analysis
      */
     public void setIntrospectionSchema(String introspectionSchema) {
     	this.introspectionSchema = introspectionSchema;

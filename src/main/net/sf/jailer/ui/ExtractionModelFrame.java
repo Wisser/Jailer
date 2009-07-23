@@ -590,7 +590,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu3.add(dataImport);
         jMenu3.add(jSeparator6);
 
-        updateDataModel.setText("Introspect DB");
+        updateDataModel.setText("Analyze Database");
         updateDataModel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 updateDataModelActionPerformed(evt);
@@ -876,8 +876,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
  
     private void updateDataModelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateDataModelActionPerformed
     	try {
-    		if (saveIfNeeded("introspect DB", true)) {
-	        	if (connectToDBIfNeeded("Introspect DB")) {
+    		if (saveIfNeeded("Analyze Database", true)) {
+	        	if (connectToDBIfNeeded("Analyze Database")) {
 		        	List<String> args = new ArrayList<String>();
 		        	args.add("build-model");
 		        	dbConnectionDialog.addDbArgs(args);
@@ -1488,13 +1488,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private static void askForDataModel(
 			ExtractionModelFrame extractionModelFrame) {
 		if (extractionModelFrame.extractionModelEditor == null || extractionModelFrame.extractionModelEditor.dataModel == null || extractionModelFrame.extractionModelEditor.dataModel.getTables().isEmpty()) {
-        	switch (JOptionPane.showOptionDialog(extractionModelFrame, "No Data Model found.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Introspect DB", "Data Model Editor", "Demo" }, null)) {
+        	switch (JOptionPane.showOptionDialog(extractionModelFrame, "No Data Model found.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor", "Demo" }, null)) {
         		case 0: extractionModelFrame.updateDataModelActionPerformed(null); break;
                	case 1: extractionModelFrame.openDataModelEditorActionPerformed(null); break;
                	case 2: demo(extractionModelFrame); break;
         	}
         } else if (!new File(DataModel.getColumnsFile()).exists()) {
-           	switch (JOptionPane.showOptionDialog(extractionModelFrame, "No column definition found.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Introspect DB", "Data Model Editor" }, null)) {
+           	switch (JOptionPane.showOptionDialog(extractionModelFrame, "No column definition found.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor" }, null)) {
         		case 0: extractionModelFrame.updateDataModelActionPerformed(null); break;
                	case 1: extractionModelFrame.openDataModelEditorActionPerformed(null); break;
             }

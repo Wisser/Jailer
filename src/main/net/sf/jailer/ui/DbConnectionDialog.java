@@ -760,12 +760,12 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}
 
 	/**
-	 * Selects the DB-schema to for introspection.
+	 * Selects the DB-schema to analyze.
 	 * 
 	 * @param isDefaultSchema
 	 *            array with a least one field to be set to true if the selected
 	 *            schema is the default schema
-	 * @return the DB-schema to for introspection
+	 * @return the DB-schema to analyze
 	 */
 	public String selectDBSchema(Component parent, boolean[] isDefaultSchema)
 			throws Exception {
@@ -789,7 +789,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			return null;
 		}
 		String s = (String) JOptionPane.showInputDialog(parent,
-				"Select schema to introspect", "Schema",
+				"Select schema to analyze", "Schema",
 				JOptionPane.QUESTION_MESSAGE, null, schemas.toArray(),
 				defaultSchema);
 		if (s == null) {

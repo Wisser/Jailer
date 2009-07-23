@@ -821,7 +821,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         tree.setModel(getModel());
         tree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
             public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
-                treeValueChanged(evt);
+            	treeValueChanged(evt);
             }
         });
         tree.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -1042,7 +1042,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
                         if (selNode instanceof Association) {
                             table = ((Association) selNode).destination;
                         }
-                        JPopupMenu popup = graphView.createPopupMenu(table);
+                        JPopupMenu popup = graphView.createPopupMenu(table, false);
 				        popup.show(evt.getComponent(), evt.getX(), evt.getY());
                     }
                 }
@@ -1200,17 +1200,34 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
      * Reacts on changes of selection of tree-view.
      */
     private void treeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_treeValueChanged
-    	if (evt.getNewLeadSelectionPath() != null) {
-    		DefaultMutableTreeNode node = ((DefaultMutableTreeNode) evt.getNewLeadSelectionPath().getLastPathComponent());
-			Object selection = node.getUserObject();
-	    	if (selection instanceof Association) {
-	    		initRestrictionEditor((Association) selection, node);
-	    	}
-	    	if (selection instanceof Table) {
+    	suppressRestrictionSelection = true;
+    	try {
+	    	if (evt.getNewLeadSelectionPath() != null) {
+	    		DefaultMutableTreeNode node = ((DefaultMutableTreeNode) evt.getNewLeadSelectionPath().getLastPathComponent());
+				Object selection = node.getUserObject();
+		    	if (selection instanceof Association) {
+		    		initRestrictionEditor((Association) selection, node);
+		    	}
+		    	if (selection instanceof Table) {
+		    		initRestrictionEditor(null, null);
+		    	}
+	    	} else {
 	    		initRestrictionEditor(null, null);
 	    	}
-    	} else {
-    		initRestrictionEditor(null, null);
+    	} finally {
+    		suppressRestrictionSelection = false;
+    	}
+    	if (evt.getPath() != null && evt.getPath().getLastPathComponent() != null) {
+    		Object node = evt.getPath().getLastPathComponent();
+	    	if (node instanceof DefaultMutableTreeNode) {
+				DefaultMutableTreeNode n = (DefaultMutableTreeNode) node;
+				if (n.getChildCount() == 0 && n.getUserObject() instanceof Association) {
+					for (Association a: ((Association) n.getUserObject()).destination.associations) {
+						n.add(new DefaultMutableTreeNode(a));
+					}
+					sort(n);
+				}
+			}
     	}
     }//GEN-LAST:event_treeValueChanged
 
@@ -1991,7 +2008,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 		return false;
 	}
-
+	
 	/**
 	 * Gets path from given association to root of association-tree.
 	 * 

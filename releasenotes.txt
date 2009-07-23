@@ -1,3 +1,7 @@
+3.1.3
+ - New context menu item "Show associated table".
+ - Minor GUI improvements and bug fixes.
+
 3.1.2
  - Progress indicator for SQL import tool.
  - Minor GUI improvements.
@@ -40,7 +44,7 @@
  - internal refactorings
 
 2.9.6
- - preserve manually defined keys after re-introspection
+ - preserve manually defined keys after re-analyzing the database
  - improvements of data model editor
  - export of BLOB/CLOB data into XML files
 
@@ -131,7 +135,7 @@
  - the focused table is now initially collapsed if it is associated with more than 10 other tables
 
 2.5.1
- - fixed a bug concerning the introspection of tables which have columns of type NVARCHAR2 or NCHAR.
+ - fixed a bug concerning the analysis of tables which have columns of type NVARCHAR2 or NCHAR.
 
 2.5.0
  - new dialog "Closure Browser" added which allows the user to browse through the closure of a table
@@ -219,7 +223,7 @@
  - New full-featured Graphical User Interface
    - Extraction Model Editor
    - Data Model Editor
-   - DB Introspector
+   - DB Analyzer
 
 1.0.1
  - Fixed a bug in file-selector on windows platform
