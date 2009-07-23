@@ -328,7 +328,7 @@ public class AssociationRenderer extends EdgeRenderer {
 		if ( s == null ) {
 		    return false;
 		} else {
-		    double width = Math.max(12, getLineWidth(item));
+		    double width = Math.max(14, getLineWidth(item));
 		    double halfWidth = width/2.0;
 		    return s.intersects(p.getX()-halfWidth,
 		                        p.getY()-halfWidth,

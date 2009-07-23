@@ -92,7 +92,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "3.1.2";
+	public static final String VERSION = "3.1.3";
 
 	/**
 	 * The relational data model.
@@ -990,8 +990,7 @@ public class Jailer {
 	/**
 	 * Render the data model.
 	 * 
-	 * @param schema
-	 *            schema to introspect
+	 * @param schema schema to analyze
 	 */
 	private void renderDataModel(List<String> arguments, boolean withClosures, String schema) throws Exception {
 		DataModel dataModel = new DataModel();
