@@ -1044,7 +1044,7 @@ public class GraphicalDataModelView extends JPanel {
         
         while (!agenda.isEmpty()) {
             Table table = agenda.remove(0);
-            for (Association association: incomingAssociations(table)) {
+            for (Association association: incomingAssociations(table, ignoreInvisibleAssociations)) {
             	if (!ignoreInvisibleAssociations || renderedAssociations.containsKey(association)|| renderedAssociations.containsKey(association.reversalAssociation)) {
 	                if (!successor.containsKey(association.source)) {
 	                    successor.put(association.source, table);
@@ -1073,10 +1073,10 @@ public class GraphicalDataModelView extends JPanel {
      * 
      * @param table the table
      */
-    private Collection<Association> incomingAssociations(Table table) {
+    private Collection<Association> incomingAssociations(Table table, boolean ignoreInvisibleAssociations) {
         Collection<Association> result = new ArrayList<Association>();
         for (Association association: table.associations) {
-            if (association.reversalAssociation.getJoinCondition() != null || renderedAssociations.containsKey(association) || renderedAssociations.containsKey(association.reversalAssociation)) {
+            if (association.reversalAssociation.getJoinCondition() != null || ((!ignoreInvisibleAssociations) && (renderedAssociations.containsKey(association) || renderedAssociations.containsKey(association.reversalAssociation)))) {
                 result.add(association.reversalAssociation);
             }
         }
