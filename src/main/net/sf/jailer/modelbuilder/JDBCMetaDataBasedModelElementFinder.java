@@ -39,6 +39,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
@@ -112,6 +113,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 }
             }
             resultSet.close();
+            CancellationHandler.checkForCancellation();
         }
         return associations;
     }
@@ -165,6 +167,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 	_log.info("skip table " + tableName);
                 }
             }
+            CancellationHandler.checkForCancellation();
         }
         resultSet.close();
         Map<String, Map<Integer, Column>> pkColumns = new HashMap<String, Map<Integer, Column>>();
@@ -183,6 +186,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
             }
             _log.info((hasPK? "" : "no ") + "primary key found for table " + tableName);
             resultSet.close();
+            CancellationHandler.checkForCancellation();
         }
         for (String tableName: tableNames) {
         	Table tmp = new Table(tableName, null, false);
@@ -237,6 +241,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
             Table table = new Table(tableName, primaryKey, false);
             table.setAuthor(metaData.getDriverName());
             tables.add(table);
+            CancellationHandler.checkForCancellation();
         }
 
         return tables;

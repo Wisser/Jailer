@@ -83,7 +83,7 @@ public class JobManager {
                 Job job = nextJob();
                 if (job == null) {
                     try {
-                        Thread.sleep(500);
+                        Thread.sleep(200);
                     } catch (InterruptedException e) {
                     }
                 } else {
@@ -139,10 +139,12 @@ public class JobManager {
 	            Thread.sleep(100);
 	            Exception e = getException();
 	            if (e != null) {
-	                _log.error("Job-error", e);
+	            	if (!(e instanceof CancellationException)) {
+	            		_log.error("Job-error", e);
+	            	}
 	                // wait for other jobs
 	                while (getJobsInExecutionCounter() > 0) {
-	                    Thread.sleep(500);
+	                    Thread.sleep(50);
 	                }
 	                throw e;
 	            }
@@ -221,7 +223,7 @@ public class JobManager {
         ++jobsInExecutionCounter;
     }
 
-    /**index
+    /**
      * Decrements the Number of jobs currently executed.
      */
     private synchronized void decrementJobsInExecutionCounter() {
@@ -249,7 +251,7 @@ public class JobManager {
      * Sets an exception.
      */
     private synchronized void setException(Exception e) {
-        exception = e == null? null : new RuntimeException(Thread.currentThread().getName() + " failed", e);
+        exception = e == null? null : e instanceof CancellationException? e : new RuntimeException(Thread.currentThread().getName() + " failed", e);
         jobs = null;
     }
     
