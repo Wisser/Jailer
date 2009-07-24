@@ -17,6 +17,9 @@ package net.sf.jailer.ui;
 
 import java.awt.Component;
 import java.awt.Frame;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -40,6 +43,8 @@ import javax.swing.WindowConstants;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Jailer;
+import net.sf.jailer.util.CancellationException;
+import net.sf.jailer.util.CancellationHandler;
 
 import org.apache.log4j.Logger;
 
@@ -289,7 +294,20 @@ public class UIUtil {
             final Throwable[] exp = new Throwable[1];
             final StringBuffer warnings = new StringBuffer();
             final boolean[] fin = new boolean[] { false };
-            
+            outputView.addWindowListener(new WindowAdapter() {
+            	boolean cancelled = false;
+
+            	@Override
+    			public void windowClosing(WindowEvent e) {
+    				if (exp[0] == null && !fin[0] && !cancelled) {
+	    				if (JOptionPane.showConfirmDialog(outputView, "Cancel operation?", "Cancellation", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+	    					CancellationHandler.cancel();
+	    					outputView.setTitle("Jailer Console - canceled...");
+	    					cancelled = true;
+	    				}
+    				}
+    			}
+            });
             new Thread(new Runnable() {
 				public void run() {
 					for (int i = 0; ; ++i) {
@@ -347,7 +365,11 @@ public class UIUtil {
             }
             return result[0];
         } catch (Throwable t) {
-            UIUtil.showException(null, "Error", t);
+        	if (t instanceof CancellationException) {
+        		CancellationHandler.reset();
+        	} else {
+        		UIUtil.showException(null, "Error", t);
+        	}
             return false;
         } finally {
             System.setOut(originalOut);

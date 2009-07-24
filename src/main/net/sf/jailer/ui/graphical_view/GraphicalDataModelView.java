@@ -1073,10 +1073,10 @@ public class GraphicalDataModelView extends JPanel {
      * 
      * @param table the table
      */
-    private static Collection<Association> incomingAssociations(Table table) {
+    private Collection<Association> incomingAssociations(Table table) {
         Collection<Association> result = new ArrayList<Association>();
         for (Association association: table.associations) {
-            if (association.reversalAssociation.getJoinCondition() != null) {
+            if (association.reversalAssociation.getJoinCondition() != null || renderedAssociations.containsKey(association) || renderedAssociations.containsKey(association.reversalAssociation)) {
                 result.add(association.reversalAssociation);
             }
         }

@@ -36,6 +36,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Properties;
 
+import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.SqlUtil;
 
 import org.apache.log4j.Logger;
@@ -349,17 +350,24 @@ public class Session {
         _log.info(sqlQuery);
         long rc = 0;
         try {
+        	CancellationHandler.checkForCancellation();
 	        Statement statement = connectionFactory.getConnection().createStatement();
+	        CancellationHandler.begin(statement);
 	        ResultSet resultSet = statement.executeQuery(sqlQuery);
 	        while (resultSet.next()) {
 	            reader.readCurrentRow(resultSet);
 	            ++rc;
+	            if (rc % 100 == 0) {
+	            	CancellationHandler.checkForCancellation();
+	            }
 	        }
 	        reader.close();
 	        resultSet.close();
 	        statement.close();
+	        CancellationHandler.end(statement);
 	        _log.info(rc + " row(s)");
         } catch (SQLException e) {
+        	CancellationHandler.checkForCancellation();
         	if (!silent) {
         		_log.error("Error executing query", e);
         	}
@@ -405,6 +413,7 @@ public class Session {
      */
     public int executeUpdate(String sqlUpdate) throws SQLException {
         _log.info(sqlUpdate);
+    	CancellationHandler.checkForCancellation();
         try {
 	        int rowCount = 0;
 	        int failures = 0;
@@ -414,17 +423,21 @@ public class Session {
 	            Statement statement = null;
 	            try {
 	                statement = connectionFactory.getConnection().createStatement();
-	                if (serializeAccess) {
+		        	CancellationHandler.begin(statement);
+		        	if (serializeAccess) {
 	                    synchronized (DB_LOCK) {
 	                        rowCount = statement.executeUpdate(sqlUpdate);
 	                    }
 	                } else {
 	                    rowCount = statement.executeUpdate(sqlUpdate);
 	                }
+		        	CancellationHandler.end(statement);
 	                ok = true;
 	                _log.info("" + rowCount + " row(s)");
 	            } catch (SQLException e) {
-	                if (++failures > 10 || e.getErrorCode() != -911) {
+		        	CancellationHandler.checkForCancellation();
+		        	CancellationHandler.end(statement);
+		        	if (++failures > 10 || e.getErrorCode() != -911) {
 	                    throw e;
 	                }
 	                // deadlock
@@ -432,12 +445,13 @@ public class Session {
 	                _log.info("Deadlock! Try again.");
 	            } finally {
 	                if (statement != null) {
-	                    statement.close();
+	                    try { statement.close(); } catch (SQLException e) { }
 	                }
 	            }
 	        }
 	        return rowCount;
 	    } catch (SQLException e) {
+        	CancellationHandler.checkForCancellation();
 	    	if (!silent) {
 	    		_log.error("Error executing statement", e);
 	    	}
@@ -456,23 +470,27 @@ public class Session {
     public int executeUpdate(String sqlUpdate, Object[] parameter) throws SQLException {
         _log.info(sqlUpdate);
         try {
+        	CancellationHandler.checkForCancellation();
 	        int rowCount = 0;
 	        PreparedStatement statement = null;
 	        try {
 	        	statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
-	            int i = 1;
+	        	CancellationHandler.begin(statement);
+	        	int i = 1;
 	        	for (Object p: parameter) {
 	            	statement.setObject(i++, p);
 	            }
 	        	rowCount = statement.executeUpdate();
+	        	CancellationHandler.end(statement);
 	            _log.info("" + rowCount + " row(s)");
 	        } finally {
 	            if (statement != null) {
-	                statement.close();
+	                try { statement.close(); } catch (SQLException e) { }
 	            }
 	        }
 	        return rowCount;
 	    } catch (SQLException e) {
+        	CancellationHandler.checkForCancellation();
 	    	if (!silent) {
 	    		_log.error("Error executing statement", e);
 	    	}
@@ -487,10 +505,17 @@ public class Session {
     	String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
         _log.info(sqlUpdate);
         PreparedStatement statement = null;
-        statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
-        statement.setCharacterStream(1, new InputStreamReader(new FileInputStream(lobFile)), (int) lobFile.length());
-        statement.execute();
-        statement.close();
+        try {
+	        statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
+	        CancellationHandler.begin(statement);
+	        statement.setCharacterStream(1, new InputStreamReader(new FileInputStream(lobFile)), (int) lobFile.length());
+	        statement.execute();
+	        statement.close();
+	        CancellationHandler.end(statement);
+        } catch (SQLException e) {
+        	CancellationHandler.checkForCancellation();
+        	throw e;
+        }
     }
 
     /**
@@ -500,10 +525,17 @@ public class Session {
     	String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
         _log.info(sqlUpdate);
         PreparedStatement statement = null;
-        statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
-        statement.setBinaryStream(1, new FileInputStream(lobFile), (int) lobFile.length());
-        statement.execute();
-        statement.close();
+        try {
+	        statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
+	        CancellationHandler.begin(statement);
+	        statement.setBinaryStream(1, new FileInputStream(lobFile), (int) lobFile.length());
+	        statement.execute();
+	        statement.close();
+	        CancellationHandler.end(statement);
+	    } catch (SQLException e) {
+	    	CancellationHandler.checkForCancellation();
+	    	throw e;
+	    }
     }
 
     /**
@@ -514,10 +546,14 @@ public class Session {
     public void execute(String sql) throws SQLException {
         _log.info(sql);
         try {
+        	CancellationHandler.checkForCancellation();
 	        Statement statement = connectionFactory.getConnection().createStatement();
+	        CancellationHandler.begin(statement);
 	        statement.execute(sql);
 	        statement.close();
+	        CancellationHandler.end(statement);
 	    } catch (SQLException e) {
+        	CancellationHandler.checkForCancellation();
 	    	if (!silent) {
     			_log.error("Error executing statement", e);
 	    	}

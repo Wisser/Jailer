@@ -37,6 +37,8 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.domainmodel.Composite;
 import net.sf.jailer.domainmodel.Domain;
 import net.sf.jailer.domainmodel.DomainModel;
+import net.sf.jailer.util.CancellationException;
+import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.SqlUtil;
 
@@ -116,6 +118,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
                 }
                 String title = composite == null? "Component " + table.getName() : composite.toString();
                 writeFile(new File(outputDir, toFileName(table)), PrintUtil.applyTemplate("template" + File.separator + "tableframe.html", new Object[] { title, renderTableBody(table, table, 0, 1, new HashSet<Table>()), closure + legend, components + columns, domainSuffix }));
+                CancellationHandler.checkForCancellation();
             }
             
             String restrictions = "none";
@@ -135,6 +138,8 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
             }
             
             writeFile(new File(outputDir, "index.html"), PrintUtil.applyTemplate("template" + File.separatorChar + "index.html", new Object[] { new Date(), generateHTMLTable("Tables", null, tablesColumn, domainsColumn), restrictions, domains }));
+        } catch (CancellationException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
