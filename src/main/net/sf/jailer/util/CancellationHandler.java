@@ -19,6 +19,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.log4j.Logger;
+
 /**
  * Handles cancellation request of the user and cancels database requests.
  * 
@@ -37,6 +39,11 @@ public class CancellationHandler {
 	private static List<Statement> currentStatements = new ArrayList<Statement>();
 	
 	/**
+     * The logger.
+     */
+    private static final Logger _log = Logger.getLogger(JobManager.class);
+
+	/**
 	 * Resets the handler.
 	 */
 	public static synchronized void reset() {
@@ -51,6 +58,7 @@ public class CancellationHandler {
 		isCanceled = true;
 		final List<Statement> toBeCanceled = new ArrayList<Statement>(currentStatements);
 		currentStatements.clear();
+		_log.warn("cancallation request received");
 		new Thread(new Runnable() {
 			@Override
 			public void run() {
