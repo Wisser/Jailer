@@ -983,7 +983,7 @@ public class Jailer {
 			return true;
 		} catch (Exception e) {
 			if (e instanceof CancellationException) {
-				_log.warn("canceled");
+				_log.warn("cancelled");
 				throw e;
 			}
 			_log.error(e.getMessage(), e);
