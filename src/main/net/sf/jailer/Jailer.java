@@ -15,12 +15,14 @@
  */
 package net.sf.jailer;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.io.StringReader;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
@@ -65,6 +67,8 @@ import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.render.DataModelRenderer;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
+import net.sf.jailer.util.CancellationException;
+import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.JobManager;
 import net.sf.jailer.util.PrintUtil;
@@ -92,7 +96,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "3.1.3";
+	public static final String VERSION = "3.1.4";
 
 	/**
 	 * The relational data model.
@@ -894,6 +898,7 @@ public class Jailer {
 	 * @return <code>false</code> iff something went wrong
 	 */
 	public static boolean jailerMain(String[] args, StringBuffer warnings) throws Exception {
+		CancellationHandler.reset();
 		statistic.setLength(0);
 		Session.closeTemporaryTableSession();
 
@@ -977,6 +982,10 @@ public class Jailer {
 			}
 			return true;
 		} catch (Exception e) {
+			if (e instanceof CancellationException) {
+				_log.warn("canceled");
+				throw e;
+			}
 			_log.error(e.getMessage(), e);
 			System.out.println("Error: " + e.getClass().getName() + ": " + e.getMessage());
 			String workingDirectory = System.getProperty("user.dir");
@@ -1057,43 +1066,57 @@ public class Jailer {
 		EntityGraph graph = entityGraph;
 		jailer.setEntityGraph(graph);
 		jailer.setDataModel(extractionModel.dataModel);
-		jailer.readInitialDataTables(CommandLineParser.getInstance().getSourceSchemaMapping(), extractionModel.subject);
-		jailer.runstats(session, false);
-		Set<Table> progress = jailer.exportInitialData(extractionModel.subject);
-		entityGraph.setBirthdayOfSubject(entityGraph.getAge());
-		progress.addAll(jailer.export(extractionModel.subject, extractionModel.condition, progress, extractionModel.limit));
-		totalProgress.addAll(progress);
-		subjects.add(extractionModel.subject);
-
-		if (explain) {
-			ExplainTool.explain(entityGraph, jailer.initialDataTables, session, jailer.datamodel);
-		}
-
-		totalProgress = jailer.datamodel.normalize(totalProgress);
-		subjects = jailer.datamodel.normalize(subjects);
-
 		EntityGraph exportedEntities = null;
-		if (deleteScriptFileName != null) {
-			exportedEntities = EntityGraph.copy(entityGraph, EntityGraph.createUniqueGraphID(), session);
+		
+		try {
+			jailer.readInitialDataTables(CommandLineParser.getInstance().getSourceSchemaMapping(), extractionModel.subject);
+			jailer.runstats(session, false);
+			Set<Table> progress = jailer.exportInitialData(extractionModel.subject);
+			entityGraph.setBirthdayOfSubject(entityGraph.getAge());
+			progress.addAll(jailer.export(extractionModel.subject, extractionModel.condition, progress, extractionModel.limit));
+			totalProgress.addAll(progress);
+			subjects.add(extractionModel.subject);
+	
+			if (explain) {
+				ExplainTool.explain(entityGraph, jailer.initialDataTables, session, jailer.datamodel);
+			}
+	
+			totalProgress = jailer.datamodel.normalize(totalProgress);
+			subjects = jailer.datamodel.normalize(subjects);
+	
+			if (deleteScriptFileName != null) {
+				exportedEntities = EntityGraph.copy(entityGraph, EntityGraph.createUniqueGraphID(), session);
+			}
+	
+			jailer.setEntityGraph(entityGraph);
+			if (ScriptFormat.XML.equals(scriptFormat)) {
+				jailer.writeEntitiesAsXml(scriptFile, totalProgress, subjects, session);
+			} else {
+				jailer.writeEntities(scriptFile, ScriptType.INSERT, totalProgress, session);
+			}
+			entityGraph.delete();
+	
+			if (deleteScriptFileName != null) {
+				jailer.setEntityGraph(exportedEntities);
+				jailer.deleteEntities(subjects, totalProgress, session, CommandLineParser.getInstance().getTabuTables(jailer.datamodel,
+						CommandLineParser.getInstance().getSourceSchemaMapping()));
+				jailer.datamodel.transpose();
+				jailer.writeEntities(deleteScriptFileName, ScriptType.DELETE, totalProgress, session);
+				exportedEntities.delete();
+			}
+		} catch (CancellationException e) {
+			try {
+				_log.info("cleaning up after cancellation...");
+				jailer.entityGraph.delete();
+				if (exportedEntities != null) {
+					exportedEntities.delete();
+				}
+				jailer.shutDown();
+			} catch (Throwable t) {
+				// ignore
+			}
+			throw e;
 		}
-
-		jailer.setEntityGraph(entityGraph);
-		if (ScriptFormat.XML.equals(scriptFormat)) {
-			jailer.writeEntitiesAsXml(scriptFile, totalProgress, subjects, session);
-		} else {
-			jailer.writeEntities(scriptFile, ScriptType.INSERT, totalProgress, session);
-		}
-		entityGraph.delete();
-
-		if (deleteScriptFileName != null) {
-			jailer.setEntityGraph(exportedEntities);
-			jailer.deleteEntities(subjects, totalProgress, session, CommandLineParser.getInstance().getTabuTables(jailer.datamodel,
-					CommandLineParser.getInstance().getSourceSchemaMapping()));
-			jailer.datamodel.transpose();
-			jailer.writeEntities(deleteScriptFileName, ScriptType.DELETE, totalProgress, session);
-			exportedEntities.delete();
-		}
-
 		jailer.shutDown();
 	}
 
@@ -1328,7 +1351,12 @@ public class Jailer {
 			dataModel.getRestrictionModel().addRestrictionDefinition(rm, null, new HashMap<String, String>());
 		}
 
-		System.out.println(dataModel);
+		BufferedReader in = new BufferedReader(new StringReader(dataModel.toString()));
+		String line;
+		while ((line = in.readLine()) != null) {
+			System.out.println(line);
+			CancellationHandler.checkForCancellation();
+		}
 
 		printCycles(dataModel);
 		printComponents(dataModel);

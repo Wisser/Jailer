@@ -27,7 +27,7 @@ import java.awt.event.ActionListener;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
+import javax.swing.JTextArea;
 
 /**
  * Jailer console window.
@@ -47,6 +47,9 @@ public class JailerConsole extends javax.swing.JDialog {
         super(owner);
         initialize();
         getJTextPane().setAutoscrolls(true);
+        Font f = getJTextPane().getFont();
+        getJTextPane().setFont(new Font(Font.MONOSPACED, f.getStyle(), f.getSize()));
+        getJTextPane().setLineWrap(false);
         setModal(true);
         setLocation(100, 50);
         setDefaultCloseOperation(0);
@@ -106,12 +109,12 @@ public class JailerConsole extends javax.swing.JDialog {
      *  
      * @return javax.swing.JTextPane    
      */
-    private JTextPane getJTextPane() {
-        if (jTextPane == null) {
-            jTextPane = new JTextPane();
-            jTextPane.setEditable(false);
+    private JTextArea getJTextPane() {
+        if (jTextArea == null) {
+        	jTextArea = new JTextArea();
+        	jTextArea.setEditable(false);
         }
-        return jTextPane;
+        return jTextArea;
     }
 
     /**
@@ -235,7 +238,7 @@ public class JailerConsole extends javax.swing.JDialog {
         return loadExplainLog;
     }
     
-    private JTextPane jTextPane = null;
+    private JTextArea jTextArea = null;
     private JPanel jPanel = null;
     private JScrollPane jScrollPane = null;
     private JButton loadExportLog = null;
