@@ -302,7 +302,7 @@ public class UIUtil {
     				if (exp[0] == null && !fin[0] && !cancelled) {
 	    				if (JOptionPane.showConfirmDialog(outputView, "Cancel operation?", "Cancellation", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
 	    					CancellationHandler.cancel();
-	    					outputView.setTitle("Jailer Console - cancelled...");
+	    					outputView.setTitle("Jailer Console - cancelling...");
 	    					cancelled = true;
 	    				}
     				}

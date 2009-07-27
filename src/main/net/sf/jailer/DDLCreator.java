@@ -189,6 +189,15 @@ public class DDLCreator {
 								public void close() {
 								}
 							});
+					// look for jailer tables
+					for (String table : SqlUtil.JAILER_MH_TABLES) {
+						session.executeQuery("Select * from " + table + " Where 1=0", new Session.ResultSetReader() {
+							public void readCurrentRow(ResultSet resultSet) throws SQLException {
+							}
+							public void close() {
+							}
+						});
+					}
 					return uptodate[0];
 				} catch (Exception e) {
 					return false;
@@ -234,7 +243,7 @@ public class DDLCreator {
 				// look for jailer tables
 				for (String table : SqlUtil.JAILER_TABLES) {
 					try {
-						session.executeQuery("Select * from " + table, new Session.ResultSetReader() {
+						session.executeQuery("Select * from " + table + " Where 1=0", new Session.ResultSetReader() {
 							public void readCurrentRow(ResultSet resultSet) throws SQLException {
 							}
 
