@@ -590,13 +590,21 @@ public class Session {
     }
     
     /**
-     * Rolls back all connections.
+     * Rolls back and closes all connections.
      */
     public void rollbackAll() throws SQLException {
     	for (Connection con: connections) {
-            con.rollback();
-            con.close();
-        }
+            try {
+            	con.rollback();
+            } catch(SQLException e) {
+        		_log.warn(e.getMessage());
+        	}
+            try {
+            	con.close();
+            } catch(SQLException e) {
+        		_log.warn(e.getMessage());
+        	}
+    	}
     	connection = new ThreadLocal<Connection>();
     }
     
