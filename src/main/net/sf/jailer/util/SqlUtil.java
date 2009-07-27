@@ -174,6 +174,19 @@ public class SqlUtil {
     }
     
     /**
+     * List of all jailer tables (upper case).
+     */
+    public static final List<String> JAILER_MH_TABLES;
+    static {
+    	JAILER_MH_TABLES = new ArrayList<String>();
+    	JAILER_MH_TABLES.add(EntityGraph.ENTITY_GRAPH);
+    	JAILER_MH_TABLES.add(EntityGraph.ENTITY_SET_ELEMENT);
+    	JAILER_MH_TABLES.add(EntityGraph.ENTITY);
+    	JAILER_MH_TABLES.add(EntityGraph.DEPENDENCY);
+    	JAILER_MH_TABLES.add(SQLDialect.CONFIG_TABLE_);
+    }
+    
+    /**
      * To be used for date formatting.
      */
     public static DateFormat dateFormat = null;

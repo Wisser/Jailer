@@ -1,3 +1,6 @@
+3.1.5
+ - clean-up of working tables on error or shutdown.
+
 3.1.4
  - Added ability to cancel long running actions by closing the console window.
 

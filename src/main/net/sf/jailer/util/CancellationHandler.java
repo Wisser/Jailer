@@ -55,22 +55,29 @@ public class CancellationHandler {
 	 * Requests cancellation.
 	 */
 	public static synchronized void cancel() {
+		_log.warn("cancallation request received");
+		synchronizedCancel();
+	}
+
+	/**
+	 * Requests cancellation.
+	 */
+	private static synchronized void synchronizedCancel() {
 		isCanceled = true;
 		final List<Statement> toBeCanceled = new ArrayList<Statement>(currentStatements);
 		currentStatements.clear();
-		_log.warn("cancallation request received");
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				for (Statement statement: toBeCanceled) {
+		for (final Statement statement: toBeCanceled) {
+			new Thread(new Runnable() {
+				@Override
+				public void run() {
 					try {
 						statement.cancel();
 					} catch (Exception e) {
 						// ignore
 					}
 				}
-			}
-		}).start();
+			}).start();
+		}
 	}
 
 	/**
