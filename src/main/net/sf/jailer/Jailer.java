@@ -96,7 +96,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "3.1.4";
+	public static final String VERSION = "3.1.5";
 
 	/**
 	 * The relational data model.
@@ -881,6 +881,17 @@ public class Jailer {
 	 *            arguments
 	 */
 	public static void main(String[] args) {
+		final Thread mainThread = Thread.currentThread();
+		Runtime.getRuntime().addShutdownHook(new Thread("shutdown-hook") {
+		    public void run() {
+		        CancellationHandler.cancel();
+		        try {
+					mainThread.join();
+				} catch (InterruptedException e) {
+					// ignore
+				}
+		    }
+		});
 		try {
 			jailerMain(args, new StringBuffer());
 		} catch (Exception e) {
@@ -1107,13 +1118,28 @@ public class Jailer {
 		} catch (CancellationException e) {
 			try {
 				_log.info("cleaning up after cancellation...");
+				CancellationHandler.reset();
+				jailer.entityGraph.session.rollbackAll();
+				jailer.entityGraph.delete();
+				if (exportedEntities != null) {
+					exportedEntities.delete();
+				}
+				_log.info("cleaned up");
+				jailer.shutDown();
+			} catch (Throwable t) {
+				_log.warn(t.getMessage());
+			}
+			throw e;
+		} catch (Exception e) {
+			try {
+				_log.info("cleaning up...");
 				jailer.entityGraph.delete();
 				if (exportedEntities != null) {
 					exportedEntities.delete();
 				}
 				jailer.shutDown();
 			} catch (Throwable t) {
-				// ignore
+				_log.warn(t.getMessage());
 			}
 			throw e;
 		}

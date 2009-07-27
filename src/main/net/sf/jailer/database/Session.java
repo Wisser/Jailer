@@ -52,7 +52,7 @@ public class Session {
     /**
      * Hold a connection for each thread.
      */
-    private final ThreadLocal<Connection> connection = new ThreadLocal<Connection>();
+    private ThreadLocal<Connection> connection = new ThreadLocal<Connection>();
     
     /**
      * Holds all connections.
@@ -587,6 +587,17 @@ public class Session {
         for (Connection con: connections) {
             con.close();
         }
+    }
+    
+    /**
+     * Rolls back all connections.
+     */
+    public void rollbackAll() throws SQLException {
+    	for (Connection con: connections) {
+            con.rollback();
+            con.close();
+        }
+    	connection = new ThreadLocal<Connection>();
     }
     
     /**
