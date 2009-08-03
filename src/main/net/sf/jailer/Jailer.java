@@ -96,7 +96,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "3.1.5";
+	public static final String VERSION = "3.1.6";
 
 	/**
 	 * The relational data model.
@@ -882,7 +882,8 @@ public class Jailer {
 	 */
 	public static void main(String[] args) {
 		final Thread mainThread = Thread.currentThread();
-		Runtime.getRuntime().addShutdownHook(new Thread("shutdown-hook") {
+		Thread shutdownHook;
+		Runtime.getRuntime().addShutdownHook(shutdownHook = new Thread("shutdown-hook") {
 		    public void run() {
 		        CancellationHandler.cancel();
 		        try {
@@ -896,6 +897,12 @@ public class Jailer {
 			jailerMain(args, new StringBuffer());
 		} catch (Exception e) {
 			// Exception is already logged
+		} finally {
+			try {
+				Runtime.getRuntime().removeShutdownHook(shutdownHook);
+			} catch (Exception e) {
+				// ignore
+			}
 		}
 	}
 

@@ -121,7 +121,7 @@ public class UIUtil {
                     }
                     return fn;
 				} catch (IOException e) {
-					e.printStackTrace();
+					throw new RuntimeException(e.getMessage(), e);
 				}
             }
         }
