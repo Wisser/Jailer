@@ -109,6 +109,12 @@ public class Column {
     public static Column parse(String columnDeclaration) {
     	columnDeclaration = columnDeclaration.trim();
     	
+    	// work-around for bug 2849047
+    	String normalizedcolumnDeclaration = columnDeclaration.replaceFirst("(\\(\\))? +[iI][dD][eE][nN][tT][iI][tT][yY]", "");
+    	if (!normalizedcolumnDeclaration.equals(columnDeclaration)) {
+    		columnDeclaration = normalizedcolumnDeclaration + " identity";
+    	}
+    	
     	boolean isIdent = false;
     	if (columnDeclaration.toLowerCase().endsWith(" identity")) {
     		isIdent = true;
