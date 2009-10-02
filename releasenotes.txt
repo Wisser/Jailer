@@ -1,3 +1,6 @@
+3.1.8.beta
+ - Fix for bug 2871798 concerning importation of multi line CLOBs.
+
 3.1.7
  - Fix for bug 2849047 concerning the recognition of identity columns in MS SQL-Server and Sybase.
 
