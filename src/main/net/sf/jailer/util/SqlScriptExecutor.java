@@ -144,7 +144,7 @@ public class SqlScriptExecutor {
 		File lobFile = new File("lob." + System.currentTimeMillis());
 		Writer out = new FileWriter(lobFile);
 		while ((line = reader.readLine()) != null) {
-		    line = line.trim();
+		    // line = line.trim();
 			if (line.startsWith(UNFINISHED_MULTILINE_COMMENT)) {
 				String content = line.substring(UNFINISHED_MULTILINE_COMMENT.length());
 				int l = content.length();
