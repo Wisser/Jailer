@@ -1,4 +1,4 @@
-3.1.8.beta
+3.1.8
  - Fix for bug 2871798 concerning importation of multi line CLOBs.
 
 3.1.7
