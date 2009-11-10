@@ -82,6 +82,9 @@ public class SqlScriptExecutor {
             if (line.length() == 0 || line.startsWith("--")) {
             	if (line.startsWith(UNFINISHED_MULTILINE_COMMENT)) {
             		String cmd = line.substring(UNFINISHED_MULTILINE_COMMENT.length());
+            		if (cmd.startsWith("XML")) {
+            			importSQLXML(cmd.substring(3).trim(), reader, session);
+            		}
             		if (cmd.startsWith("CLOB")) {
             			importCLob(cmd.substring(4).trim(), reader, session);
             		}
@@ -179,7 +182,58 @@ public class SqlScriptExecutor {
 		lobFile.delete();
 	}
     
-    /**
+	/**
+     * Imports SQL-XML from sql-script.
+     * 
+     * @param xmlLocator locates the XML column
+     * @param reader for reading content
+     */
+	private static void importSQLXML(final String xmlLocator, final BufferedReader reader, Session session) throws IOException, SQLException {
+		int c1 = xmlLocator.indexOf(',');
+		int c2 = xmlLocator.indexOf(',', c1 + 1);
+		String table = xmlLocator.substring(0, c1).trim();
+		String column = xmlLocator.substring(c1 + 1, c2).trim();
+		String where = xmlLocator.substring(c2 + 1).trim();
+		String line;
+		File lobFile = new File("lob." + System.currentTimeMillis());
+		Writer out = new FileWriter(lobFile);
+		while ((line = reader.readLine()) != null) {
+		    // line = line.trim();
+			if (line.startsWith(UNFINISHED_MULTILINE_COMMENT)) {
+				String content = line.substring(UNFINISHED_MULTILINE_COMMENT.length());
+				int l = content.length();
+				boolean inEscape = false;
+				for (int i = 0; i < l; ++i) {
+					char c = content.charAt(i);
+					if (c == '\\') {
+						if (inEscape) {
+							inEscape = false;
+						} else {
+							inEscape = true;
+							continue;
+						}
+					} else {
+						if (inEscape) {
+							if (c == 'n') {
+								c = '\n';
+							} else if (c == 'r') {
+								c = '\r';
+							}
+							inEscape = false;
+						}
+					}
+					out.write(c);
+				}
+			} else {
+				break;
+			}
+		}
+		out.close();
+		session.insertSQLXML(table, column, where, lobFile);
+		lobFile.delete();
+	}
+    
+	/**
      * Imports blob from sql-script.
      * 
      * @param clobLocator locates the clob
