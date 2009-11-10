@@ -36,7 +36,7 @@ available targets:
 	<target name="compile" depends="clean">
 		<delete file="${JAR}" />
 		<mkdir dir="${COMPILE_DIR}" />
-		<javac source="5" target="5" destdir="${COMPILE_DIR}" srcdir="${SRC_DIR}/main" debug="on" deprecation="off" encoding="ISO-8859-1">
+		<javac destdir="${COMPILE_DIR}" srcdir="${SRC_DIR}/main" debug="on" deprecation="off" encoding="ISO-8859-1">
 			<classpath>
 				<path refid="default.classpath" />
 			</classpath>
@@ -60,7 +60,7 @@ available targets:
 
 	<target name="compile-test" depends="compile">
 		<mkdir dir="${TEST_DIR}" />
-		<javac source="5" target="5" destdir="${TEST_DIR}" srcdir="${SRC_DIR}/test" debug="on" deprecation="off" encoding="ISO-8859-1">
+		<javac destdir="${TEST_DIR}" srcdir="${SRC_DIR}/test" debug="on" deprecation="off" encoding="ISO-8859-1">
 			<classpath>
 				<path refid="test.classpath" />
 			</classpath>
