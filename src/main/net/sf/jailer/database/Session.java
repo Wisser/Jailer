@@ -519,6 +519,26 @@ public class Session {
     }
 
     /**
+     * Inserts a SQL-XML.
+     */
+    public void insertSQLXML(String table, String column, String where, File lobFile) throws SQLException, FileNotFoundException {
+    	String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
+        _log.info(sqlUpdate);
+        PreparedStatement statement = null;
+        try {
+	        statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
+	        CancellationHandler.begin(statement);
+	        statement.setCharacterStream(1, new InputStreamReader(new FileInputStream(lobFile)), (int) lobFile.length());
+	        statement.execute();
+	        statement.close();
+	        CancellationHandler.end(statement);
+        } catch (SQLException e) {
+        	CancellationHandler.checkForCancellation();
+        	throw e;
+        }
+    }
+
+    /**
      * Inserts a BLob.
      */
     public void insertBlob(String table, String column, String where, File lobFile) throws SQLException, FileNotFoundException {

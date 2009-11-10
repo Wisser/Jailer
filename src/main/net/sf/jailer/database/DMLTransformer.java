@@ -26,6 +26,7 @@ import java.sql.DatabaseMetaData;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLXML;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
@@ -192,11 +193,15 @@ public class DMLTransformer implements ResultSetReader {
                 String mdColumnLabel = quoting.quote(resultSet.getMetaData().getColumnLabel(i));
                 int mdColumnType = resultSet.getMetaData().getColumnType(i);
                 
-                if (mdColumnType == Types.BLOB || mdColumnType == Types.CLOB) {
+                if (mdColumnType == Types.BLOB || mdColumnType == Types.CLOB || mdColumnType == Types.SQLXML) {
                 	tableHasLobs = true;
                 	lobColumnIndexes.add(i);
                 	lobColumns.add(mdColumnLabel);
-                	emptyLobValue[i] = (mdColumnType == Types.BLOB)? SQLDialect.emptyBLOBValue : SQLDialect.emptyCLOBValue;
+                	if (mdColumnType == Types.SQLXML) {
+                		emptyLobValue[i] = null;
+                	} else {
+                		emptyLobValue[i] = (mdColumnType == Types.BLOB)? SQLDialect.emptyBLOBValue : SQLDialect.emptyCLOBValue;
+                	}
                     if (emptyLobValue[i] == null) {
                     	continue;
                     }
@@ -488,6 +493,36 @@ public class DMLTransformer implements ResultSetReader {
 	                f = false;
 	                where.append(pk.name + "=" + val.get(pk.name));
 	            }
+	            if (lob instanceof SQLXML) {
+	            	++numberOfExportedLOBs;
+	            	flush();
+	            	SQLXML xml = (SQLXML) lob;
+					writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "XML " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + "\n", false);
+					Reader in = xml.getCharacterStream();
+					int c;
+					StringBuffer line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
+					while ((c = in.read()) != -1) {
+						if ((char) c == '\n') {
+							writeToScriptFile(line.toString() + "\\n\n", false);
+							line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
+						} else {
+							if ((char) c == '\r') {
+								line.append("\\r");
+							} else {
+								line.append((char) c);
+								if ((char) c == '\\') {
+									line.append((char) c);
+								}
+							}
+						}
+						if (line.length() >= 200) {
+							writeToScriptFile(line.toString() + "\n", false);
+							line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
+						}
+					}
+					in.close();
+					writeToScriptFile(line.toString() + "\n" + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "\n", false);
+				}
 	            if (lob instanceof Clob) {
 	            	++numberOfExportedLOBs;
 	            	flush();
@@ -510,7 +545,7 @@ public class DMLTransformer implements ResultSetReader {
 								}
 							}
 						}
-						if (line.length() >= 100) {
+						if (line.length() >= 200) {
 							writeToScriptFile(line.toString() + "\n", false);
 							line = new StringBuffer(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT);
 						}

@@ -1,3 +1,6 @@
+3.2
+ - Support for XML column type.
+
 3.1.9
  - Set maximum table name length to 120 characters.
 
