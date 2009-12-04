@@ -96,7 +96,9 @@ public class XmlRowWriter {
 	 * Closes the writer.
 	 */
 	public void close() throws SAXException {
-        transformerHandler.endElement("", "", rootTag);
+		if (rootTag.length() > 0) {
+			transformerHandler.endElement("", "", rootTag);
+		}
         transformerHandler.endDocument();
 	}
 
