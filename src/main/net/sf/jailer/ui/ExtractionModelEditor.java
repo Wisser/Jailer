@@ -1729,6 +1729,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         	dataModel.setExportModus(scriptFormat.toString());
         }
         setOrientation(isHorizontalLayout);
+        openXmlSettings.setVisible(ScriptFormat.XML.equals(scriptFormat));
 //    	if (ScriptFormat.XML.equals(scriptFormat)) {
 //    		editorPanel.add(xmlMappingPanel);
 //  		} else {

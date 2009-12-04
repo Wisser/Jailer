@@ -1,3 +1,6 @@
+3.2.1
+ - Added ability to change XML root tag name. 
+
 3.2
  - Support for XML column type.
 
