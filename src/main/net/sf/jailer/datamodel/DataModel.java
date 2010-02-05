@@ -94,6 +94,13 @@ public class DataModel {
     }
 
     /**
+     * Gets name of file containing the display names.
+     */
+    public static String getDisplayNamesFile() {
+    	return getDatamodelFolder() + File.separator + "displayname.csv";
+    }
+
+    /**
      * Gets name of file containing the column definitions.
      */
     public static String getColumnsFile() {
@@ -331,7 +338,7 @@ public class DataModel {
     /**
      * Initializes display names.
      */
-    private void initDisplayNames() {
+    private void initDisplayNames() throws Exception {
     	Set<String> unqualifiedNames = new HashSet<String>();
     	Set<String> nonUniqueUnqualifiedNames = new HashSet<String>();
     	
@@ -355,6 +362,27 @@ public class DataModel {
     		}
     		this.displayName.put(table, displayName);
     		tablesByDisplayName.put(displayName, table);
+    	}
+    	
+    	Map<String, String> userDefinedDisplayNames = new TreeMap<String, String>();
+        File dnFile = new File(DataModel.getDisplayNamesFile());
+        if (dnFile.exists()) {
+        	for (CsvFile.Line dnl: new CsvFile(dnFile).getLines()) {
+        		userDefinedDisplayNames.put(dnl.cells.get(0), dnl.cells.get(1));
+        	}
+        }
+        
+    	for (Map.Entry<String, String> e: userDefinedDisplayNames.entrySet()) {
+    		Table table = getTable(e.getKey());
+    		if (table != null && !tablesByDisplayName.containsKey(e.getValue())) {
+    			String displayName = getDisplayName(table);
+        		this.displayName.remove(table);
+        		if (displayName != null) {
+        			tablesByDisplayName.remove(displayName);
+        		}
+        		this.displayName.put(table, e.getValue());
+        		tablesByDisplayName.put(e.getValue(), table);
+    		}
     	}
     }
     
