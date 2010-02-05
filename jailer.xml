@@ -71,6 +71,12 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<!-- for IBM DB2 -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:db2.*" />
+			<property name="typeReplacement">
+				<map>
+					<entry key="graphic" value="varchar"/>
+					<entry key="GRAPHIC" value="VARCHAR"/>
+				</map>
+			</property>
 			<property name="statisticRenovator">
 				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
 					<constructor-arg value="script/db2/update_statistics.sql" />
@@ -176,6 +182,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 				</bean>
 			</property>
 			<property name="identityInserts" value="true"/>
+			<property name="binaryPattern" value="0x%s" />
 			<property name="sessionTemporaryTableManager">
 				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
 					<property name="dmlTableReferencePrefix" value="#" />
@@ -218,6 +225,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 				</bean>
 			</property>
 			<property name="identityInserts" value="true"/>
+			<property name="binaryPattern" value="0x%s" />
 			<property name="sessionTemporaryTableManager">
 				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
 					<property name="dmlTableReferencePrefix" value="#" />
