@@ -1,3 +1,8 @@
+3.2.2
+ - Added support for data type 'GRAPHIC' on DB2 for z/OS.
+ - Added ability to define display names for tables. [2946481]
+ - Fixed binary format error on MS Sql Server. [2946477]
+
 3.2.1
  - Added ability to change XML root tag name. 
 

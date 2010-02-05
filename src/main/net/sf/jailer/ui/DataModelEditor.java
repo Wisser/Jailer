@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import javax.activation.FileDataSource;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
@@ -61,6 +62,11 @@ public class DataModelEditor extends javax.swing.JDialog {
 	private List<CsvFile.Line> tables;
 	
 	/**
+     * Maps table names to display names.
+     */
+    private Map<String, String> displayNames;
+    
+    /**
 	 * List of associations.
 	 */
 	private List<CsvFile.Line> associations;
@@ -108,6 +114,15 @@ public class DataModelEditor extends javax.swing.JDialog {
     public DataModelEditor(java.awt.Frame parent, boolean merge, final Table toEdit) throws Exception {
         super(parent, true);
         tables = new CsvFile(new File(DataModel.getTablesFile())).getLines();
+
+        displayNames = new TreeMap<String, String>();
+        File dnFile = new File(DataModel.getDisplayNamesFile());
+        if (dnFile.exists()) {
+        	for (CsvFile.Line dnl: new CsvFile(dnFile).getLines()) {
+        		displayNames.put(dnl.cells.get(0), dnl.cells.get(1));
+        	}
+        }
+        
         associations = new CsvFile(new File(DataModel.getAssociationsFile())).getLines();
         boolean isDemoModel = true;
         for (CsvFile.Line dt: tables) {
@@ -311,7 +326,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 				public void windowOpened(WindowEvent e) {
 					for (Line l: tables) {
 						if (toEdit.getName().equals(l.cells.get(0))) {
-							if (new TableEditor(DataModelEditor.this, tables, associations, excludeFromDeletion, initialDataTables).edit(l, columns)) {
+							if (new TableEditor(DataModelEditor.this, displayNames, tables, associations, excludeFromDeletion, initialDataTables).edit(l, columns)) {
 					    		markDirty();
 					    		repaint();
 					    	}
@@ -614,7 +629,7 @@ public class DataModelEditor extends javax.swing.JDialog {
     		cells.add("");
     	}
 		CsvFile.Line line = new CsvFile.Line("?", cells);
-    	if (new TableEditor(this, tables, associations, excludeFromDeletion, initialDataTables).edit(line, columns)) {
+    	if (new TableEditor(this, displayNames, tables, associations, excludeFromDeletion, initialDataTables).edit(line, columns)) {
     		tables.add(0, line);
     		tablesList.setModel(createTablesListModel());
     		markDirty();
@@ -631,7 +646,7 @@ public class DataModelEditor extends javax.swing.JDialog {
     		}
     	}
     	if (line != null) {
-	    	if (new TableEditor(this, tables, associations, excludeFromDeletion, initialDataTables).edit(line, columns)) {
+	    	if (new TableEditor(this, displayNames, tables, associations, excludeFromDeletion, initialDataTables).edit(line, columns)) {
 	    		markDirty();
 	    		repaint();
 	    	}
@@ -675,6 +690,9 @@ public class DataModelEditor extends javax.swing.JDialog {
     	}
     	if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Delete " + toDelete.size() + " tables with\n" + assToDelete.size() + " related associations?", "Delete Table", JOptionPane.YES_NO_OPTION)) {
 	    	tables.removeAll(toDelete);
+	    	for (String k: namesOfTablesToDelete) {
+	    		displayNames.remove(k);
+	    	}
 	    	excludeFromDeletion.removeAll(namesOfTablesToDelete);
 	    	initialDataTables.removeAll(namesOfTablesToDelete);
 	    	tablesList.setModel(createTablesListModel());
@@ -749,6 +767,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 	    		saveTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile());
 	    		saveTableList(initialDataTables, DataModel.getInitialDataTablesFile());
 	    		saveTableList(Arrays.asList(Jailer.VERSION), DataModel.getVersionFile());
+	    		saveDisplayNames();
 	    		saved = true;
     		}
     	} catch (Throwable t) {
@@ -758,6 +777,18 @@ public class DataModelEditor extends javax.swing.JDialog {
     }
     
     /**
+     * Save the display names.
+     */
+    private void saveDisplayNames() throws FileNotFoundException {
+    	PrintWriter out = new PrintWriter(DataModel.getDisplayNamesFile());
+		out.println("# table; display name");
+		for (Map.Entry<String, String> e: displayNames.entrySet()) {
+			out.println(CsvFile.encodeCell(e.getKey()) + "; " + CsvFile.encodeCell(e.getValue()));
+		}
+		out.close();
+	}
+
+    /**
      * Save a table list.
      * 
      * @param tableList list to save
@@ -765,7 +796,7 @@ public class DataModelEditor extends javax.swing.JDialog {
      */
     private void saveTableList(List<String> tableList, String fileName)  throws FileNotFoundException {
     	PrintWriter out = new PrintWriter(fileName);
-		for (String table: tableList) {
+    	for (String table: tableList) {
 			out.println(table);
 		}
 		out.close();
