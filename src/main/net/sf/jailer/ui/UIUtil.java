@@ -205,13 +205,13 @@ public class UIUtil {
         int i = 0;
         for (String arg: args) {
         	if (arg != null && arg.equals(password)) {
-        		arglist.append(" *****");
+        		arglist.append(" \"<password>\"");
         	} else {
         		if ("".equals(arg) || arg.contains(" ") || arg.contains("<") || arg.contains(">") || arg.contains("*") || arg.contains("?") || arg.contains("|") || arg.contains("$") || arg.contains("\"") || arg.contains("'") || arg.contains("\\")) {
         			arglist.append(" \"");
         			for (int j = 0; j < arg.length(); ++j) {
         				char c = arg.charAt(j);
-        				if (c == '\"') {
+        				if (c == '\"' || c == '$') {
         					arglist.append("\\");
         				}
         				arglist.append(c);
