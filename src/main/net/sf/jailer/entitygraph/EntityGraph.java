@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.jailer.Configuration;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
@@ -550,6 +551,9 @@ public class EntityGraph {
     	boolean first = true;
     	
     	for (Column c: table.getColumns()) {
+    		if (Configuration.forDbms(session).exportBlocks.contains(c.type)) {
+    			continue;
+    		}
     		if (!first) {
     			sb.append(", ");
     		}

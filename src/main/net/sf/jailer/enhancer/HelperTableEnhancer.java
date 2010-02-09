@@ -46,7 +46,7 @@ public class HelperTableEnhancer implements ScriptEnhancer {
 			return true;
 		}
 		for (Table table: progress) {
-			if (table.upsert) {
+			if (table.getUpsert()) {
 				return true;
 			}
 		}

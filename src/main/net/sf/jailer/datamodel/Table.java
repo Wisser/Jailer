@@ -67,7 +67,12 @@ public class Table extends ModelElement implements Comparable<Table> {
     /**
      * Use upsert (merge) or insert-statement for entities of this table in export-script.
      */
-    public final boolean upsert;
+    public Boolean upsert;
+    
+    /**
+     * Data model default for export mode.
+     */
+    public final boolean defaultUpsert;
     
     /**
      * Template for XML exports.
@@ -84,12 +89,12 @@ public class Table extends ModelElement implements Comparable<Table> {
      * 
      * @param name the table-name
      * @param primaryKey the names of the primary-key columns
-     * @param upsert use upsert (merge) or insert-statement for entities of this table in export-script
+     * @param defaultUpsert data model default for export mode
      */
-    public Table(String name, PrimaryKey primaryKey, boolean upsert) {
+    public Table(String name, PrimaryKey primaryKey, boolean defaultUpsert) {
         this.name = name;
         this.primaryKey = primaryKey;
-        this.upsert = upsert;
+        this.defaultUpsert = defaultUpsert;
     }
 
     /**
@@ -100,7 +105,16 @@ public class Table extends ModelElement implements Comparable<Table> {
     public String getName() {
         return name;
     }
-
+    
+    /**
+     * Gets export modus.
+     * 
+     * @return Boolean.TRUE for upsert/merge, Boolean.FALSE for insert
+     */
+    public Boolean getUpsert() {
+    	return upsert == null? defaultUpsert : upsert;
+    }
+    
     /**
      * Sets columns.
      * 
