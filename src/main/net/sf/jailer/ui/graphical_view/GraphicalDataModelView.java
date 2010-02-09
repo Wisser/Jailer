@@ -37,11 +37,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.ButtonGroup;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 
@@ -860,6 +862,63 @@ public class GraphicalDataModelView extends JPanel {
 		popup.add(new JSeparator());
 		popup.add(queryBuilder);
 		popup.add(htmlRender);
+		
+		popup.add(new JSeparator());
+		JMenu insertModeMenu = new JMenu("Export mode");
+		popup.add(insertModeMenu);
+		JRadioButtonMenuItem insert = new JRadioButtonMenuItem("Insert");
+		insert.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				if (!Boolean.FALSE.equals(table.upsert)) {
+					table.upsert = false;
+					visualization.invalidateAll();
+					display.invalidate();
+					modelEditor.markDirty();
+				}
+			}
+		});
+		insertModeMenu.add(insert);
+		JRadioButtonMenuItem upsert = new JRadioButtonMenuItem("Upsert/Merge");
+		insertModeMenu.add(upsert);
+		upsert.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				if (!Boolean.TRUE.equals(table.upsert)) {
+					table.upsert = true;
+					visualization.invalidateAll();
+					display.invalidate();
+					modelEditor.markDirty();
+				}
+			}
+		});
+		JRadioButtonMenuItem deflt = new JRadioButtonMenuItem("Data model default (" + (table.defaultUpsert? "Upsert" : "Insert" + ")"));
+		insertModeMenu.add(deflt);
+		deflt.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				if (table.upsert != null) {
+					table.upsert = null;
+					visualization.invalidateAll();
+					display.invalidate();
+					modelEditor.markDirty();
+				}
+			}
+		});
+		ButtonGroup bt = new ButtonGroup();
+		bt.add(insert);
+		bt.add(upsert);
+		bt.add(deflt);
+		
+		if (table.upsert == null) {
+			deflt.setSelected(true);
+		}
+		
+		if (Boolean.TRUE.equals(table.upsert)) {
+			upsert.setSelected(true);
+		}
+		
+		if (Boolean.FALSE.equals(table.upsert)) {
+			insert.setSelected(true);
+		}
+		
 		return popup;
 	}
 

@@ -31,7 +31,7 @@ import net.sf.jailer.util.SqlUtil;
 import org.apache.log4j.Logger;
 
 /**
- * Restricts association-definions in a {@link DataModel}.
+ * Restricts association-definitions in a {@link DataModel}.
  * 
  * @author Ralf Wisser
  */

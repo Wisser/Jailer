@@ -968,7 +968,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 			if (initialDataTables.contains(table.getName())) {
 				img[i++] = allRowsImage;
 			}
-			if (table.upsert) {
+			if (table.getUpsert()) {
 				img[i++] = upsertImage;
 			}
 			if (model.version != dmVersionOfFilteredTables) {
@@ -1004,8 +1004,8 @@ public class TableRenderer extends AbstractShapeRenderer {
 		if (initialDataTables.contains(table.getName())) {
 			tt += "Export all Rows. ";
 		}
-		if (table.upsert) {
-			tt += "Upsert Rows (overwrite). ";
+		if (table.getUpsert()) {
+			tt += "Upsert Rows/Merge. ";
 		}
 		
 		return tt + table.getName() + " (" + table.primaryKey.toSQL(null, false) + ")";

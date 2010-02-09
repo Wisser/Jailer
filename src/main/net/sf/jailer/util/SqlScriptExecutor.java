@@ -105,7 +105,10 @@ public class SqlScriptExecutor {
                 } catch (SQLException e) {
                 	// drops may fail
                 	if (!stmt.trim().toLowerCase().startsWith("drop")) {
-                		throw e;
+                    	// fix for bug [2946477]
+                		if (!stmt.trim().toLowerCase().contains("jailer_dual")) {
+                    		throw e;
+                    	}
                 	}
                 }
                 session.setSilent(silent);

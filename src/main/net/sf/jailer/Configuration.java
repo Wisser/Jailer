@@ -18,8 +18,10 @@ package net.sf.jailer;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import net.sf.jailer.database.Session;
@@ -63,6 +65,8 @@ public class Configuration {
      * Replacement map for column types used for DDL generation.
      */
     private Map<String, String> typeReplacement;
+    
+    public Set<String> exportBlocks = new HashSet<String>();
     
     private boolean identityInserts = false;
     
@@ -161,6 +165,10 @@ public class Configuration {
         return defaultConfiguration;
 	}
 
+	public void setExportBlocks(Set<String> exportBlocks) {
+		this.exportBlocks = exportBlocks;
+	}
+    
     /**
      * Sets DB-URL pattern of DBMS for which this holds the configuration.
      */

@@ -239,7 +239,7 @@ public class DataModel {
             tableList.addAll(new CsvFile(new File(additionalTablesFile)).getLines());
         }
         for (CsvFile.Line line: tableList) {
-            boolean upsert = "Y".equalsIgnoreCase(line.cells.get(1));
+            boolean defaultUpsert = "Y".equalsIgnoreCase(line.cells.get(1));
             List<Column> pk = new ArrayList<Column>();
             int j;
             for (j = 2; j < line.cells.size() && line.cells.get(j).toString().length() > 0; ++j) {
@@ -251,7 +251,7 @@ public class DataModel {
                 }
             }
             String mappedSchemaTableName = SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0));
-			Table table = new Table(mappedSchemaTableName, primaryKeyFactory.createPrimaryKey(pk), upsert);
+			Table table = new Table(mappedSchemaTableName, primaryKeyFactory.createPrimaryKey(pk), defaultUpsert);
 			table.setAuthor(line.cells.get(j + 1));
 			table.setOriginalName(line.cells.get(0));
 			if (tables.containsKey(mappedSchemaTableName)) {
