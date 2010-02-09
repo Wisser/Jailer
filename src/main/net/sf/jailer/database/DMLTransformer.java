@@ -237,7 +237,7 @@ public class DMLTransformer implements ResultSetReader {
             	valueList.append(cVal);
                 namedValues.append(cVal + " " + columnLabel[i]);
             }
-            if (table.upsert || upsertOnly) {
+            if (table.getUpsert() || upsertOnly) {
                 Map<String, String> val = new HashMap<String, String>();
                 StringBuffer valuesWONull = new StringBuffer("");
                 StringBuffer columnsWONull = new StringBuffer("");

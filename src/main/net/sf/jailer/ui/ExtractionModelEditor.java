@@ -2087,6 +2087,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					out.println(CsvFile.encodeCell(table.getName()) + "; " + CsvFile.encodeCell(xmlMapping));
 				}
 			}
+			out.println(CsvFile.BLOCK_INDICATOR + "upserts");
+			for (Table table: dataModel.getTables()) {
+				if (table.upsert != null) {
+					out.println(CsvFile.encodeCell(table.getName()) + "; " + CsvFile.encodeCell(table.upsert.toString()));
+				}
+			}
 			saveFilters(out);
 			out.println();
 			LayoutStorage.store(out);

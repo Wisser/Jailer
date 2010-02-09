@@ -141,6 +141,20 @@ public class ExtractionModel {
             }
         }
 
+        // read upserts
+        List<CsvFile.Line> upserts = new CsvFile(new File(fileName), "upserts").getLines();
+        for (CsvFile.Line upsert: upserts) {
+            location = subjectLine.location;
+			String name = upsert.cells.get(0);
+			String tag = upsert.cells.get(1);
+            Table table = dataModel.getTable(name);
+            if (table == null) {
+            	_log.warn("unknown table '" + name + "'");
+            } else {
+            	table.upsert = Boolean.parseBoolean(tag);
+            }
+        }
+
         // read export modus
         List<CsvFile.Line> exportModusFile = new CsvFile(new File(fileName), "export modus").getLines();
         Iterator<CsvFile.Line> i = exportModusFile.iterator();
