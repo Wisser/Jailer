@@ -27,6 +27,7 @@ import java.util.Map;
 import javax.xml.transform.sax.TransformerHandler;
 
 import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.Configuration;
 import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session.ResultSetReader;
@@ -185,7 +186,7 @@ public class FlatXMLTransformer implements ResultSetReader {
 		}
 
 		if (object == null || resultSet.wasNull()) {
-			return null;
+			return Configuration.getNullColumnPlaceholder();
 		}
 
 		if (object instanceof byte[]) {

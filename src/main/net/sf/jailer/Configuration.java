@@ -101,6 +101,12 @@ public class Configuration {
 	 */
 	private static boolean doMinimizeUPK = false;
 
+	private static String nullColumnPlaceholder = null;
+
+	public static String getNullColumnPlaceholder() {
+		return nullColumnPlaceholder;
+	}
+
 	/**
 	 * Returns <code>true</code>, the UPK don't preserve order. This minimizes the size of the UPK.
 	 */
@@ -130,6 +136,7 @@ public class Configuration {
 	    	doMinimizeUPK = Boolean.TRUE.equals(theApplicationContext.getBean("minimize-UPK"));
 	        theScriptEnhancer = (List<ScriptEnhancer>) theApplicationContext.getBean("script-enhancer");
 	        theRenderer = (DataModelRenderer) theApplicationContext.getBean("renderer");
+	        nullColumnPlaceholder = (String) theApplicationContext.getBean("null-column-placeholder");
     	}
     	return theApplicationContext;
     }

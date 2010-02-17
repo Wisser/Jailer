@@ -1,9 +1,10 @@
-3.3.beta
+3.3
  - Added ability to change the export mode (Insert/Upsert) for each table (via table's context menu)
  - Added support for data type 'GRAPHIC' on DB2 for z/OS.
  - Added ability to define display names for tables. [2946481]
  - Fixed binary format error on MS Sql Server. [2946477]
  - Added support for data type 'TIMESTAMP' on MS Sql Server. [2946477]
+ - Added ability to define a placeholder for NULL columns in a DBUnit data set. [2953453]
 
 3.2.1
  - Added ability to change XML root tag name. 
