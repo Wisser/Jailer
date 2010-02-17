@@ -8,6 +8,21 @@ http://www.springframework.org/schema/lang http://www.springframework.org/schema
 http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd">
 	
 	<!--
+	For DBUnit flat XML files, null columns can carry a placeholder value
+	which can later be replaced using a ReplacementDataSet.
+	In Flat XML files the first row of a table defines the metadata. If a null
+	column is omitted, none of the following rows can have this column! This is the
+	default behaviour of Jailer.
+	Thus, define a null placeholder and replace it with a null value when you load
+	the data set with DBUnit.     
+	 -->
+	<!--
+	<bean name="null-column-placeholder" class="java.lang.String">
+		<constructor-arg value="[NULL]" />
+	</bean>
+	-->
+	
+	<!--
 		If minimize-UPK is true, the UPK don't preserve order. This minimizes
 		the size of the UPK.
 	-->
@@ -19,6 +34,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		-->
 		<constructor-arg value="false" />
 	</bean>
+	
 	<!--
 		Script-enhancer adds application specific extensions to generated
 		SQL-scripts
@@ -33,6 +49,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<bean class="net.sf.jailer.enhancer.FileBasedScriptEnhancer" />
 		<bean class="net.sf.jailer.enhancer.HelperTableEnhancer" />
 	</util:list>
+	
 	<!--
 		Model-finder reads table- and association definitions from meta-data
 		sources
