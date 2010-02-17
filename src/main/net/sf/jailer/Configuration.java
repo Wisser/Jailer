@@ -136,7 +136,9 @@ public class Configuration {
 	    	doMinimizeUPK = Boolean.TRUE.equals(theApplicationContext.getBean("minimize-UPK"));
 	        theScriptEnhancer = (List<ScriptEnhancer>) theApplicationContext.getBean("script-enhancer");
 	        theRenderer = (DataModelRenderer) theApplicationContext.getBean("renderer");
-	        nullColumnPlaceholder = (String) theApplicationContext.getBean("null-column-placeholder");
+	        if (theApplicationContext.containsBean("null-column-placeholder")) {
+	        	nullColumnPlaceholder = (String) theApplicationContext.getBean("null-column-placeholder");
+	        }
     	}
     	return theApplicationContext;
     }
