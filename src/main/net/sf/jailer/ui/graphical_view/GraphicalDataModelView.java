@@ -1064,6 +1064,7 @@ public class GraphicalDataModelView extends JPanel {
 	    			modelEditor.select(association);
 	    			if (association != null) {
 	    				expandTable(theGraph, association.source, association);
+	    				expandTable(theGraph, association.destination, association);
 	    			}
 	    			tablesOnPath.clear();
 	    			associationsOnPath.clear();
