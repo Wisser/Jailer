@@ -1054,6 +1054,12 @@ public class GraphicalDataModelView extends JPanel {
     	synchronized (visualization) {
 	    	if (selectedAssociation == null || association == null || !selectedAssociation.equals(association)) {
 	    		if (selectedAssociation != null || association != null) {
+	    			Association newlySelectedAssociation = null;
+	    			if (association != null) {
+	    				if (!(renderedAssociations.containsKey(association) || renderedAssociations.containsKey(association.reversalAssociation))) {
+	    					newlySelectedAssociation = association;
+	    				}
+	    			}
 	    			selectedAssociation = association;
 	    			modelEditor.select(association);
 	    			if (association != null) {
@@ -1062,9 +1068,9 @@ public class GraphicalDataModelView extends JPanel {
 	    			tablesOnPath.clear();
 	    			associationsOnPath.clear();
 					if (selectedAssociation != null) {
-    					List<Association> path = getPathToRoot(selectedAssociation.destination, true);
+    					List<Association> path = getPathToRoot(selectedAssociation.destination, true, newlySelectedAssociation);
     					if (path.isEmpty()) {
-    						path = getPathToRoot(selectedAssociation.destination, false);
+    						path = getPathToRoot(selectedAssociation.destination, false, newlySelectedAssociation);
     					}
     					boolean highlightPath = true;
     					if (path.isEmpty()) {
@@ -1094,7 +1100,7 @@ public class GraphicalDataModelView extends JPanel {
      * @param ignoreInvisibleAssociations if <code>true</code>, find a path over visible associations only
      * @return shortest path from root to a given table
      */
-    private List<Association> getPathToRoot(Table destination, boolean ignoreInvisibleAssociations) {
+    private List<Association> getPathToRoot(Table destination, boolean ignoreInvisibleAssociations, Association newlySelectedAssociation) {
     	List<Association> path = new ArrayList<Association>();
     	Map<Table, Table> successor = new HashMap<Table, Table>();
         Map<Table, Association> outgoingAssociation = new HashMap<Table, Association>();
@@ -1103,7 +1109,7 @@ public class GraphicalDataModelView extends JPanel {
         
         while (!agenda.isEmpty()) {
             Table table = agenda.remove(0);
-            for (Association association: incomingAssociations(table, ignoreInvisibleAssociations)) {
+            for (Association association: incomingAssociations(table, ignoreInvisibleAssociations, newlySelectedAssociation)) {
             	if (!ignoreInvisibleAssociations || renderedAssociations.containsKey(association)|| renderedAssociations.containsKey(association.reversalAssociation)) {
 	                if (!successor.containsKey(association.source)) {
 	                    successor.put(association.source, table);
@@ -1132,10 +1138,10 @@ public class GraphicalDataModelView extends JPanel {
      * 
      * @param table the table
      */
-    private Collection<Association> incomingAssociations(Table table, boolean ignoreInvisibleAssociations) {
+    private Collection<Association> incomingAssociations(Table table, boolean ignoreInvisibleAssociations, Association newlySelectedAssociation) {
         Collection<Association> result = new ArrayList<Association>();
         for (Association association: table.associations) {
-            if (association.reversalAssociation.getJoinCondition() != null || ((!ignoreInvisibleAssociations) && (renderedAssociations.containsKey(association) || renderedAssociations.containsKey(association.reversalAssociation)))) {
+            if (association.reversalAssociation.getJoinCondition() != null || ((!ignoreInvisibleAssociations) && (association.reversalAssociation != newlySelectedAssociation)&& (renderedAssociations.containsKey(association) || renderedAssociations.containsKey(association.reversalAssociation)))) {
                 result.add(association.reversalAssociation);
             }
         }
