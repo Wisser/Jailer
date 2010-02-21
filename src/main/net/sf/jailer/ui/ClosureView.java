@@ -61,7 +61,7 @@ public class ClosureView extends javax.swing.JDialog {
 	/**
 	 * Maximum number of tables in a closure-table's line.
 	 */
-	private final static int MAX_TABLES_PER_LINE = 3;
+	private final static int MAX_TABLES_PER_LINE = 4;
 	
 	/**
 	 * The extraction model frame.
