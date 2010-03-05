@@ -28,6 +28,7 @@ import java.io.Writer;
 import java.sql.SQLException;
 import java.util.zip.GZIPInputStream;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.database.Session;
 
 import org.apache.log4j.Logger;
@@ -67,7 +68,7 @@ public class SqlScriptExecutor {
     	if (scriptFileName.toLowerCase().endsWith(".gz") || scriptFileName.toLowerCase().endsWith(".zip")) {
     		reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(scriptFileName))));
     	} else {
-    		File f = new File(scriptFileName);
+    		File f = CommandLineParser.getInstance().newFile(scriptFileName);
     		fileSize = f.length();
     		reader = new BufferedReader(new FileReader(f));
     	}
@@ -147,7 +148,7 @@ public class SqlScriptExecutor {
 		String column = clobLocator.substring(c1 + 1, c2).trim();
 		String where = clobLocator.substring(c2 + 1).trim();
 		String line;
-		File lobFile = new File("lob." + System.currentTimeMillis());
+		File lobFile = CommandLineParser.getInstance().newFile("lob." + System.currentTimeMillis());
 		Writer out = new FileWriter(lobFile);
 		while ((line = reader.readLine()) != null) {
 		    // line = line.trim();
@@ -198,7 +199,7 @@ public class SqlScriptExecutor {
 		String column = xmlLocator.substring(c1 + 1, c2).trim();
 		String where = xmlLocator.substring(c2 + 1).trim();
 		String line;
-		File lobFile = new File("lob." + System.currentTimeMillis());
+		File lobFile = CommandLineParser.getInstance().newFile("lob." + System.currentTimeMillis());
 		Writer out = new FileWriter(lobFile);
 		while ((line = reader.readLine()) != null) {
 		    // line = line.trim();
@@ -249,7 +250,7 @@ public class SqlScriptExecutor {
 		String column = clobLocator.substring(c1 + 1, c2).trim();
 		String where = clobLocator.substring(c2 + 1).trim();
 		String line;
-		File lobFile = new File("lob." + System.currentTimeMillis());
+		File lobFile = CommandLineParser.getInstance().newFile("lob." + System.currentTimeMillis());
 		OutputStream out = new FileOutputStream(lobFile);
 		while ((line = reader.readLine()) != null) {
 		    line = line.trim();

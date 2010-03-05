@@ -60,7 +60,8 @@ public class Settings  {
      * 
      * @param fields the formular fields
      */
-    public Settings(String fileName, Map<String, JTextField> fields) {
+    @SuppressWarnings("unchecked")
+	public Settings(String fileName, Map<String, JTextField> fields) {
         this.FILENAME = fileName;
         this.fields = fields;
         boolean isNew = true;

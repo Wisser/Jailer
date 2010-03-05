@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
@@ -78,7 +79,7 @@ public class DomainModel {
         
         // load files
         Map<String, CsvFile> csvFiles = new HashMap<String, CsvFile>();
-        File domainModelDirectory = new File("domainmodel");
+        File domainModelDirectory = CommandLineParser.getInstance().newFile("domainmodel");
         if (!domainModelDirectory.exists() || !domainModelDirectory.isDirectory()) {
             return;
         }
@@ -142,7 +143,7 @@ public class DomainModel {
      * Loads the composites definition file.
      */
     private void loadComposites() throws Exception {
-        File compositesDefinition = new File("domainmodel" + File.separator + "composites.csv");
+        File compositesDefinition = CommandLineParser.getInstance().newFile("domainmodel" + File.separator + "composites.csv");
         Map<Table, CsvFile.Line> compositeDefinitionOfTable = new HashMap<Table, Line>();
         if (compositesDefinition.exists()) {
             CsvFile compostitesCsvFile = new CsvFile(compositesDefinition);

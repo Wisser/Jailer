@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
@@ -44,15 +45,15 @@ import net.sf.jailer.util.SqlUtil;
 import org.apache.log4j.Logger;
 
 /**
- * Automatically builds a data-model using several {@link ModelElementFinder}.
+ * Automatically builds a data-model using a list of {@link ModelElementFinder}.
  * 
- * Writes all found elements into the files
+ * Writes all model elements into the files
  * <ul>
  *   <li>datamodel/model-builder-table.csv<li>
  *   <li>datamodel/model-builder-association.csv<li>
  * <ul>
  * except the already known elements (table.csv/association.csv)
- * and the excluded elements listet in datamodel/exclude-[tables|associations].csv
+ * and the excluded elements listed in datamodel/exclude-[tables|associations].csv
  * 
  * @author Ralf Wisser
  */
@@ -95,8 +96,8 @@ public class ModelBuilder {
     
     static {
         try {
-            File exTFile = new File(DataModel.getDatamodelFolder() + File.separator + "exclude-tables.csv");
-            File exAFile = new File(DataModel.getDatamodelFolder() + File.separator + "exclude-associations.csv");
+            File exTFile = CommandLineParser.getInstance().newFile(DataModel.getDatamodelFolder() + File.separator + "exclude-tables.csv");
+            File exAFile = CommandLineParser.getInstance().newFile(DataModel.getDatamodelFolder() + File.separator + "exclude-associations.csv");
             if (!exTFile.exists()) {
             	exTFile.createNewFile();
             }

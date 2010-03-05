@@ -21,5 +21,5 @@ package net.sf.jailer.util;
  * @author Ralf Wisser
  */
 public class CancellationException extends RuntimeException {
-
+	private static final long serialVersionUID = 7366028954311431212L;
 }

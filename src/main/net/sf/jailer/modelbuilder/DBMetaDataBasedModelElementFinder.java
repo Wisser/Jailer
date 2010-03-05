@@ -37,7 +37,6 @@ import net.sf.jailer.util.PrintUtil;
 
 import org.apache.log4j.Logger;
 
-
 /**
  * Finds associations and tables by reading the databases meta-data tables
  * via SQL-script.
@@ -62,7 +61,7 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
     private final String selectColumnsScript;
     
     /**
-     * The script containing a SQL-Query for the retrieval of foreign-key contraints.
+     * The script containing a SQL-Query for the retrieval of foreign-key constraints.
      */
     private final String selectForeignKeysScript;
     

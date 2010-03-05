@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package net.sf.jailer.datamodel;
 
 import java.util.HashMap;
@@ -23,7 +22,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.jailer.Configuration;
-
 
 /**
  * Primary-key of a {@link Table}.

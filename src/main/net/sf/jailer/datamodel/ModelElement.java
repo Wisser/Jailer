@@ -19,7 +19,7 @@ package net.sf.jailer.datamodel;
 import net.sf.jailer.modelbuilder.ModelElementFinder;
 
 /**
- * Element of data-model ({@link Table} or {@link Association}).
+ * Element of a data model ({@link Table} or {@link Association}).
  * 
  * @author Ralf Wisser
  */

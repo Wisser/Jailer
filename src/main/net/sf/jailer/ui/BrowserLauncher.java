@@ -37,7 +37,7 @@ public class BrowserLauncher {
 	 * @param uri the uri to open
 	 */
 	public static void openURL(URI uri) throws Exception {
-		Class desktop = Class.forName("java.awt.Desktop");
+		Class<?> desktop = Class.forName("java.awt.Desktop");
 		if (desktop != null) {
 			Method getDesktop = desktop.getMethod("getDesktop");
 			Method browse = desktop.getMethod("browse", URI.class);
@@ -55,7 +55,7 @@ public class BrowserLauncher {
 	 */
 	public static void openURL(String url) {
 		try {
-			Class desktop = Class.forName("java.awt.Desktop");
+			Class<?> desktop = Class.forName("java.awt.Desktop");
 			if (desktop != null) {
 				Method getDesktop = desktop.getMethod("getDesktop");
 				Method browse = desktop.getMethod("browse", URI.class);
@@ -83,7 +83,7 @@ public class BrowserLauncher {
 		String osName = System.getProperty("os.name");
 		try {
 			if (osName.startsWith("Mac OS")) {
-				Class fileMgr = Class.forName("com.apple.eio.FileManager");
+				Class<?> fileMgr = Class.forName("com.apple.eio.FileManager");
 				Method openURL = fileMgr.getDeclaredMethod("openURL",
 						new Class[] { String.class });
 				openURL.invoke(null, new Object[] { url });

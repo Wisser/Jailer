@@ -55,7 +55,7 @@ public class CancellationHandler {
 	 * Requests cancellation.
 	 */
 	public static void cancel() {
-		_log.warn("cancallation request received");
+		_log.warn("cancellation request received");
 		synchronizedCancel();
 	}
 

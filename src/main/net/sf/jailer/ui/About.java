@@ -22,7 +22,7 @@ package net.sf.jailer.ui;
  */
 public class About extends javax.swing.JDialog {
     
-    /** 
+	/** 
      * Creates new "About" form. 
      */
     public About(java.awt.Frame parent, boolean modal) {
@@ -144,4 +144,5 @@ public class About extends javax.swing.JDialog {
     private javax.swing.JTextField jTextField3;
     // End of variables declaration//GEN-END:variables
     
+    private static final long serialVersionUID = -6499791486275376059L;
 }

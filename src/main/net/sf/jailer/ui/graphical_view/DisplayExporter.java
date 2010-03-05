@@ -1,12 +1,5 @@
 package net.sf.jailer.ui.graphical_view;
 
-import prefuse.Display;
-import prefuse.Visualization;
-
-import prefuse.util.GraphicsLib;
-import prefuse.util.io.IOLib;
-import prefuse.util.io.SimpleFileFilter;
-
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics2D;
@@ -14,18 +7,20 @@ import java.awt.GraphicsEnvironment;
 import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.image.BufferedImage;
-
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
-
 import java.util.HashSet;
 
 import javax.imageio.ImageIO;
-
 import javax.swing.JFileChooser;
-import javax.swing.JOptionPane;
+
+import prefuse.Display;
+import prefuse.Visualization;
+import prefuse.util.GraphicsLib;
+import prefuse.util.io.IOLib;
+import prefuse.util.io.SimpleFileFilter;
 
 /**
  * This class exports a prefuse.Display to a graphics file. The scalefactor will be 1.
@@ -137,7 +132,7 @@ public class DisplayExporter {
              */
   
             // The zoom point, zooming should not change anything else than the scale
-            Point2D zoomPoint = new Point2D.Double(0, 0);
+//          Point2D zoomPoint = new Point2D.Double(0, 0);
 
             // Get and remember the current scaling
             Double scale = display.getScale();

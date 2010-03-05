@@ -351,7 +351,8 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    @SuppressWarnings("deprecation")
+	private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
     	isOk = true;
         Color red = new Color(255, 200, 180);
 		if (alias.getText().trim().length() == 0) {
@@ -432,4 +433,5 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		}
 	}
 	 
+	private static final long serialVersionUID = -492511696901313920L;
 }

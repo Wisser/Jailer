@@ -36,7 +36,7 @@ import javax.swing.JTextField;
  */
 public class ParameterEditor extends javax.swing.JDialog {
 
-    private Font font = new JLabel("normal").getFont();
+	private Font font = new JLabel("normal").getFont();
     
     /**
      * Non-bold font.
@@ -187,4 +187,5 @@ public class ParameterEditor extends javax.swing.JDialog {
 
 	public JTextField firstTextField = null;
     
+	private static final long serialVersionUID = 8104407954983199282L;
 }

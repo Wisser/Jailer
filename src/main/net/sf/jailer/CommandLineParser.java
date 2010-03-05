@@ -42,9 +42,9 @@ import org.kohsuke.args4j.Option;
 public class CommandLineParser {
 
     /**
-     * The singleton.
+     * The singleton (per thread).
      */
-    private static CommandLineParser commandLineParser = null;
+    private static InheritableThreadLocal<CommandLineParser> commandLineParser = new InheritableThreadLocal<CommandLineParser>();
     
     /**
      * Gets the singleton.
@@ -52,35 +52,35 @@ public class CommandLineParser {
      * @return the singleton
      */
     public static CommandLineParser getInstance() {
-        return commandLineParser;
+        return commandLineParser.get();
     }
     
     /**
      * Parses arguments and initializes the parser.
      * 
      * @param args the arguments
+     * @param silent if <code>true</code>, no error messages will be written
      */
-    public static void parse(String[] args, boolean exitOnError) throws Exception {
-        commandLineParser = new CommandLineParser();
-        cmdLineParser = null;
+    public static boolean parse(String[] args, boolean silent) throws Exception {
+    	CommandLineParser p = new CommandLineParser();
+        commandLineParser.set(p);
+        p.cmdLineParser = null;
         try {
-            cmdLineParser = new CmdLineParser(commandLineParser);
-            cmdLineParser.parseArgument(args);
-            if (commandLineParser.arguments.isEmpty()) {
-            	if (exitOnError) {
+        	p.cmdLineParser = new CmdLineParser(p);
+        	p.cmdLineParser.parseArgument(args);
+            if (p.arguments.isEmpty()) {
+            	if (!silent) {
             		printUsage();
-            		System.exit(0);
+            		return false;
             	}
             }
-            if (commandLineParser.tabuFileName != null) {
-                commandLineParser.loadTabuTables(commandLineParser.tabuFileName);
+            if (p.tabuFileName != null) {
+                p.loadTabuTables(p.tabuFileName);
             }
+            return true;
         } catch (CmdLineException e) {
             System.out.println(e.getMessage());
             printUsage();
-            if (exitOnError) {
-            	System.exit(0);
-            }
             throw e;
         }
     }
@@ -126,8 +126,8 @@ public class CommandLineParser {
         System.out.println("    imports data (with C|BLOB support)");
         System.out.println();
         System.out.println("options:");
-        cmdLineParser.setUsageWidth(120);
-        cmdLineParser.printUsage(System.out);
+        getInstance().cmdLineParser.setUsageWidth(120);
+        getInstance().cmdLineParser.printUsage(System.out);
         System.out.println();
     }
 
@@ -145,7 +145,7 @@ public class CommandLineParser {
      * Loads 'tabu' tables file.
      */
     private void loadTabuTables(String fileName) throws Exception {
-        File file = new File(fileName);
+        File file = newFile(fileName);
         tabuTableNames = new CsvFile(file);
     }
 
@@ -249,8 +249,8 @@ public class CommandLineParser {
     @Option(name="-parameters",usage="parameters", metaVar="<parameter>=<value>[';'<parameter>=<value>]*")
     public String parameters = null;
     
-    @Option(name="-threads",usage="number of threads (default is 10)", metaVar="#threads")
-    public int numberOfThreads = 10;
+    @Option(name="-threads",usage="number of threads (default is 1)", metaVar="#threads")
+    public int numberOfThreads = 1;
     
     @Option(name="-entities",usage="maximum number of entities per insert-statement (in export-file, default is 10)", metaVar="#entities")
     public int numberOfEntities = 10;
@@ -264,12 +264,45 @@ public class CommandLineParser {
 	@Option(name="-datamodel", usage="folder holding the data model. Defaults to './datamodel'")
     public String datamodelFolder = "datamodel";
 
+	@Option(name="-working-folder", usage="the working folder. Defaults to '.'")
+    public String workingFolder = null;
+
 	@Option(name="-script-enhancer", usage="folder holding the script-enhancer templates 'prolog' and 'epilog'. Defaults to '.'")
     public String enhancerFolder = ".";
 
     @Argument
     public List<String> arguments = new ArrayList<String>();
 
+    /**
+     * Gets working-folder option.
+     * 
+     * @return working folder option, or <code>null</code> if no working-folder option is given
+     */
+    public File getWorkingfolder() {
+    	if (workingFolder == null) {
+    		return null;
+    	}
+    	return new File(workingFolder);
+    }
+
+    /**
+     * Gets {@link File} from a file name relative to the working-folder.
+     * 
+     * @param filename the file name
+     * @return {@link File} from a file name relative to the working-folder
+     */
+    public File newFile(String filename) {
+    	File wf = getWorkingfolder();
+    	if (wf == null) {
+    		return new File(filename);
+    	}
+    	File f = new File(filename);
+    	if (f.isAbsolute()) {
+    		return f;
+    	}
+    	return new File(wf, filename);
+    }
+    
     public TemporaryTableScope getTemporaryTableScope() {
     	if (scope == null) {
     		return TemporaryTableScope.GLOBAL;
@@ -302,8 +335,8 @@ public class CommandLineParser {
     private CsvFile tabuTableNames = null;
     
     /**
-     * The singleton.
+     * The parser.
      */
-    private static CmdLineParser cmdLineParser;
+    private CmdLineParser cmdLineParser;
 
 }

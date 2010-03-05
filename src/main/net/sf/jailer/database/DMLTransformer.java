@@ -45,7 +45,6 @@ import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlScriptExecutor;
 import net.sf.jailer.util.SqlUtil;
 
-
 /**
  * A {@link ResultSetReader} that writes the read rows as DML-statements 
  * into the export-script.
@@ -110,7 +109,7 @@ public class DMLTransformer implements ResultSetReader {
     private Map<String, StatementBuilder> upsertInsertStatementBuilder = new HashMap<String, StatementBuilder>();
 
     /**
-     * Whether to create INSERTs for 'initial-data' entities or UPSERTS for all entities.
+     * Whether to create INSERTs or UPSERTS for all entities.
      */
     private final boolean upsertOnly;
 
@@ -118,11 +117,6 @@ public class DMLTransformer implements ResultSetReader {
      * Maximum length of SQL values list (for generated inserts).
      */
     private final int maxBodySize;
-    
-    /**
-     * Counts the exported entities. (GUI support)
-     */
-    public static long numberOfExportedEntities;
     
     /**
      * Counts the exported LOBs. (GUI support)
@@ -180,8 +174,7 @@ public class DMLTransformer implements ResultSetReader {
      * Reads result-set and writes into export-script.
      */
     public void readCurrentRow(ResultSet resultSet) throws SQLException {
-    	++numberOfExportedEntities;
-        if (columnLabel == null) {
+    	if (columnLabel == null) {
             columnCount = resultSet.getMetaData().getColumnCount();
             columnLabel = new String[columnCount + 1];
             lobColumns = new ArrayList<String>();
@@ -609,6 +602,9 @@ public class DMLTransformer implements ResultSetReader {
     	}
     }
     
+    /**
+     * Table which is currently enabled for identity-inserts.
+     */
     private static Table identityInsertTable = null;
     
     /**

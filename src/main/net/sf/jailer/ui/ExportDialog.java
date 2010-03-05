@@ -43,7 +43,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CsvFile;
 
 /**
- * "Data Export" Dialog.
+ * Data Export Dialog.
  *
  * @author Ralf Wisser
  */
@@ -1017,4 +1017,6 @@ public class ExportDialog extends javax.swing.JDialog {
 			e.printStackTrace();
 		}
 	}
+
+	private static final long serialVersionUID = 952553009821662964L;
 }

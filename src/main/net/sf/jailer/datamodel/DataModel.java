@@ -38,14 +38,14 @@ import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.SqlUtil;
 
 /**
- * Model of the relational data.
+ * Relational data model.
  * 
  * @author Ralf Wisser
  */
 public class DataModel {
 
 	/**
-     * Maps table-names to tables;
+     * Maps table-names to tables.
      */
     private Map<String, Table> tables = new HashMap<String, Table>();
     
@@ -233,10 +233,10 @@ public class DataModel {
      */
     public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping) throws Exception {
     	// tables
-    	CsvFile tablesFile = new CsvFile(new File(getTablesFile()));
+    	CsvFile tablesFile = new CsvFile(CommandLineParser.getInstance().newFile(getTablesFile()));
         List<CsvFile.Line> tableList = new ArrayList<CsvFile.Line>(tablesFile.getLines());
         if (additionalTablesFile != null) {
-            tableList.addAll(new CsvFile(new File(additionalTablesFile)).getLines());
+            tableList.addAll(new CsvFile(CommandLineParser.getInstance().newFile(additionalTablesFile)).getLines());
         }
         for (CsvFile.Line line: tableList) {
             boolean defaultUpsert = "Y".equalsIgnoreCase(line.cells.get(1));
@@ -263,7 +263,7 @@ public class DataModel {
         }
         
         // columns
-        File file = new File(getColumnsFile());
+        File file = CommandLineParser.getInstance().newFile(getColumnsFile());
         if (file.exists()) {
 	    	CsvFile columnsFile = new CsvFile(file);
 	        List<CsvFile.Line> columnsList = new ArrayList<CsvFile.Line>(columnsFile.getLines());
@@ -285,9 +285,9 @@ public class DataModel {
         }
         
         // associations
-        List<CsvFile.Line> associationList = new ArrayList<CsvFile.Line>(new CsvFile(new File(getAssociationsFile())).getLines());
+        List<CsvFile.Line> associationList = new ArrayList<CsvFile.Line>(new CsvFile(CommandLineParser.getInstance().newFile(getAssociationsFile())).getLines());
         if (additionalAssociationsFile != null) {
-            associationList.addAll(new CsvFile(new File(additionalAssociationsFile)).getLines());
+            associationList.addAll(new CsvFile(CommandLineParser.getInstance().newFile(additionalAssociationsFile)).getLines());
         }
         for (CsvFile.Line line: associationList) {
             String location = line.location;
@@ -365,7 +365,7 @@ public class DataModel {
     	}
     	
     	Map<String, String> userDefinedDisplayNames = new TreeMap<String, String>();
-        File dnFile = new File(DataModel.getDisplayNamesFile());
+        File dnFile = CommandLineParser.getInstance().newFile(DataModel.getDisplayNamesFile());
         if (dnFile.exists()) {
         	for (CsvFile.Line dnl: new CsvFile(dnFile).getLines()) {
         		userDefinedDisplayNames.put(dnl.cells.get(0), dnl.cells.get(1));
@@ -575,7 +575,8 @@ public class DataModel {
      * Thrown if a table has no primary key.
      */
     public static class NoPrimaryKeyException extends RuntimeException {
-    	public final Table table;
+		private static final long serialVersionUID = 4523935351640139649L;
+		public final Table table;
     	public NoPrimaryKeyException(Table table) {
 			super("Table '" + table.getName() + "' has no primary key");
 			this.table = table;

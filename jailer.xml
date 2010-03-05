@@ -69,7 +69,8 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<constructor-arg value="0" />
 	</bean>
 
-	<!-- DBMS configuration
+	<!--
+	    DBMS configuration
 	-->
 	<util:list id="dbms-configuration">
 		

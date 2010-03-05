@@ -20,10 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Builds compact SQL-statements having the pattern:
+ * Builds compact SQL-statements of the pattern:
  * HEAD ITEM {SEPARATOR ITEM}* TERMINATOR.
  *  
- * (for instance an 'INSERT' with a 'values'-list)
+ * (for example, an 'INSERT' with a 'values'-list)
  *  
  * @author Ralf Wisser
  */
@@ -35,12 +35,12 @@ public class StatementBuilder {
     private final int maxBodySize;
 
     /**
-     * The head of the statement (for instance 'INSERT INTO T(...) VALUES ')
+     * The head of the statement.
      */
     private String head = null;
 
     /**
-     * Body-list (for instance a 'values'-list)
+     * Item-list.
      */
     private List<String> body = new ArrayList<String>();
 

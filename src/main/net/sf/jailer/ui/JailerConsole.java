@@ -25,8 +25,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
 /**
@@ -34,25 +36,31 @@ import javax.swing.JTextArea;
  * 
  * @author Ralf Wisser
  */
-public class JailerConsole extends javax.swing.JDialog {
+public class JailerConsole {
 
+	private final ProgressPanel progressPanel;
+	public final JDialog dialog;
+	private final boolean fullSize;
+	
     /**
      * Constructor.
      * 
      * @param owner the enclosing component
      * @param showLogfileButton <code>true</code> for offering a button to open the log-file
      * @param showExplainLogButton <code>true</code> for offering a button to open the explain-log-file
+     * @param progressPanel progress panel, optional
      */
-	public JailerConsole(Frame owner, boolean showLogfileButton, boolean showExplainLogButton) {
-        super(owner);
+	public JailerConsole(Frame owner, JDialog dialog, boolean showLogfileButton, boolean showExplainLogButton, ProgressPanel progressPanel, boolean fullSize) {
+		this.dialog = dialog == null? new JDialog(owner) : dialog;
+        this.progressPanel = progressPanel;
+        this.fullSize = fullSize;
         initialize();
         getJTextPane().setAutoscrolls(true);
         Font f = getJTextPane().getFont();
         getJTextPane().setFont(new Font(Font.MONOSPACED, f.getStyle(), f.getSize()));
         getJTextPane().setLineWrap(false);
-        setModal(true);
-        setLocation(100, 50);
-        setDefaultCloseOperation(0);
+        dialog.setModal(true);
+        dialog.setDefaultCloseOperation(0);
         getLoadExplainLog().setEnabled(false);
     	getLoadSqlLog().setEnabled(false);
         getLoadExportLog().setVisible(false);
@@ -70,15 +78,37 @@ public class JailerConsole extends javax.swing.JDialog {
      * Initializes components.
      */
     private void initialize() {
-        this.setSize(new Dimension(950, 640));
-        this.setContentPane(getJPanel());
-        this.setTitle("Jailer Console - in progress");
+    	JPanel jPanel = getJPanel();
+        if (progressPanel != null) {
+        	jPanel.remove(getJScrollPane());
+        	JTabbedPane contentPane = new JTabbedPane();
+        	contentPane.add(progressPanel, "Progress");
+        	contentPane.add(getJScrollPane(), "Console");
+        	GridBagConstraints gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.fill = GridBagConstraints.BOTH;
+            gridBagConstraints.gridy = 0;
+            gridBagConstraints.weightx = 1.0;
+            gridBagConstraints.weighty = 1.0;
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridwidth = 5;
+            gridBagConstraints.insets = new Insets(0, 0, 4, 0);
+        	jPanel.add(contentPane, gridBagConstraints);
+        } 
+        if (fullSize) {
+        	dialog.setSize(new Dimension(1010, 740));
+           	dialog.setLocation(10, 50);
+        } else {
+        	dialog.setSize(new Dimension(400, 400));
+        	dialog.setLocation(200, 250);
+        }
+        dialog.setContentPane(jPanel);
+        dialog.setTitle("Jailer Console - in progress");
         getJTextPane().setFont(new Font("Monospaced", Font.PLAIN, 12));
         
         getLoadExportLog().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    new FileView(JailerConsole.this, "export.log");
+                    new FileView(dialog, "export.log");
                 } catch (Exception e1) {
                     e1.printStackTrace();
                 }
@@ -87,7 +117,7 @@ public class JailerConsole extends javax.swing.JDialog {
         getLoadSqlLog().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    new FileView(JailerConsole.this, "sql.log");
+                    new FileView(dialog, "sql.log");
                 } catch (Exception e1) {
                     e1.printStackTrace();
                 }
@@ -96,7 +126,7 @@ public class JailerConsole extends javax.swing.JDialog {
         getLoadExplainLog().addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 try {
-                    new FileView(JailerConsole.this, "explain.log");
+                    new FileView(dialog, "explain.log");
                 } catch (Exception e1) {
                     e1.printStackTrace();
                 }
@@ -145,7 +175,7 @@ public class JailerConsole extends javax.swing.JDialog {
     public void finish(boolean ok) {
     	getLoadSqlLog().setEnabled(true);
     	getLoadExplainLog().setEnabled(true);
-        this.setTitle("Jailer Console - " + (ok? "finished" : "failed!"));
+    	dialog.setTitle("Jailer Console - " + (ok? "finished" : "failed!"));
     }
     
     /**

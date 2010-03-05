@@ -20,7 +20,7 @@ import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.SqlUtil;
 
 /**
- * Describes an association between two database-tables.
+ * An association between database-tables.
  * 
  * @author Ralf Wisser
  */
@@ -89,7 +89,7 @@ public class Association extends ModelElement {
     private final DataModel dataModel;
     
     /**
-     * Unique association ID. -1 if id is not yet given.
+     * Unique association ID. -1 if id is not yet defined.
      */
     int id = -1;
     
