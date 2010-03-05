@@ -51,7 +51,7 @@ import net.sf.jailer.util.SqlUtil;
  */
 public class QueryBuilderDialog extends javax.swing.JDialog {
     
-    /** Creates new form QueryBuilderDialog */
+	/** Creates new form QueryBuilderDialog */
     public QueryBuilderDialog(java.awt.Frame parent) {
         super(parent, true);
         initComponents();
@@ -303,7 +303,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 	        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 	        if (relationship == null || relationship.association != null) {
 	        	JComboBox tableCB = new JComboBox() {
-	        		private boolean layingOut = false;
+					private boolean layingOut = false;
 	        	    public void doLayout() {
 	        	        try {
 	        	            layingOut = true;
@@ -324,6 +324,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 					public Dimension getPreferredSize() {
 						return new Dimension(Math.min(super.getPreferredSize().width, 300), super.getPreferredSize().height);
 					}
+					private static final long serialVersionUID = -6555670830339032571L;
 	        	};
 	        	DefaultComboBoxModel aModel = new DefaultComboBoxModel();
 	        	aModel.addElement("");
@@ -688,4 +689,5 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     private javax.swing.JTextArea sqlTextArea;
     // End of variables declaration//GEN-END:variables
     
+    private static final long serialVersionUID = -2801831496446636545L;
 }

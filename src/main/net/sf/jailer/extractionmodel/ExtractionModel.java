@@ -15,11 +15,11 @@
  */
 package net.sf.jailer.extractionmodel;
 
-import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
@@ -85,7 +85,7 @@ public class ExtractionModel {
      * @param parameters apply this parameter-value mapping to all restriction conditions, XML templates and filters 
      */
     public ExtractionModel(String fileName, Map<String, String> sourceSchemaMapping, Map<String, String> parameters) throws Exception {
-        List<CsvFile.Line> csv = new CsvFile(new File(fileName)).getLines();
+        List<CsvFile.Line> csv = new CsvFile(CommandLineParser.getInstance().newFile(fileName)).getLines();
         if (csv.isEmpty()) {
         	throw new RuntimeException("file '" + fileName + "' is empty");
         }
@@ -124,7 +124,7 @@ public class ExtractionModel {
         this.dataModel = dataModel;
         
         // read xml mapping
-        List<CsvFile.Line> xmlMapping = new CsvFile(new File(fileName), "xml-mapping").getLines();
+        List<CsvFile.Line> xmlMapping = new CsvFile(CommandLineParser.getInstance().newFile(fileName), "xml-mapping").getLines();
         for (CsvFile.Line xmLine: xmlMapping) {
             location = subjectLine.location;
 			String name = xmLine.cells.get(0);
@@ -142,7 +142,7 @@ public class ExtractionModel {
         }
 
         // read upserts
-        List<CsvFile.Line> upserts = new CsvFile(new File(fileName), "upserts").getLines();
+        List<CsvFile.Line> upserts = new CsvFile(CommandLineParser.getInstance().newFile(fileName), "upserts").getLines();
         for (CsvFile.Line upsert: upserts) {
             location = subjectLine.location;
 			String name = upsert.cells.get(0);
@@ -156,14 +156,14 @@ public class ExtractionModel {
         }
 
         // read export modus
-        List<CsvFile.Line> exportModusFile = new CsvFile(new File(fileName), "export modus").getLines();
+        List<CsvFile.Line> exportModusFile = new CsvFile(CommandLineParser.getInstance().newFile(fileName), "export modus").getLines();
         Iterator<CsvFile.Line> i = exportModusFile.iterator();
         if (i.hasNext()) {
         	dataModel.setExportModus(i.next().cells.get(0));
         }
         
         // read column mapping
-        List<CsvFile.Line> columnMappingFile = new CsvFile(new File(fileName), "xml column mapping").getLines();
+        List<CsvFile.Line> columnMappingFile = new CsvFile(CommandLineParser.getInstance().newFile(fileName), "xml column mapping").getLines();
         for (CsvFile.Line xmLine: columnMappingFile) {
         	String name = xmLine.cells.get(0);
 			String mapping = xmLine.cells.get(1);
@@ -176,7 +176,7 @@ public class ExtractionModel {
         }
         
         // read filters
-        List<CsvFile.Line> filtersFile = new CsvFile(new File(fileName), "filters").getLines();
+        List<CsvFile.Line> filtersFile = new CsvFile(CommandLineParser.getInstance().newFile(fileName), "filters").getLines();
         for (CsvFile.Line xmLine: filtersFile) {
         	String name = xmLine.cells.get(0);
 			String column = xmLine.cells.get(1);
@@ -201,7 +201,7 @@ public class ExtractionModel {
         }
         
         // read xml settings
-        List<CsvFile.Line> xmlSettingsFile = new CsvFile(new File(fileName), "xml settings").getLines();
+        List<CsvFile.Line> xmlSettingsFile = new CsvFile(CommandLineParser.getInstance().newFile(fileName), "xml settings").getLines();
         i = xmlSettingsFile.iterator();
         if (i.hasNext()) {
         	List<String> cells = i.next().cells;

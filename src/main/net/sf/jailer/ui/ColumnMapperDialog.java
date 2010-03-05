@@ -279,4 +279,5 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
     private javax.swing.JComboBox tableCombobox;
     // End of variables declaration//GEN-END:variables
     
+    private static final long serialVersionUID = -5437578641818236294L;
 }

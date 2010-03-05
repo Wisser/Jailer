@@ -65,6 +65,8 @@ import net.sf.jailer.enhancer.ScriptEnhancer;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.modelbuilder.ModelBuilder;
+import net.sf.jailer.progress.ProgressListener;
+import net.sf.jailer.progress.ProgressListenerRegistry;
 import net.sf.jailer.render.DataModelRenderer;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.CancellationException;
@@ -96,7 +98,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "3.3";
+	public static final String VERSION = "3.4";
 
 	/**
 	 * The relational data model.
@@ -122,11 +124,6 @@ public class Jailer {
 	 * Comment header of the export-script.
 	 */
 	private StringBuffer commentHeader = new StringBuffer();
-
-	/**
-	 * Holds statistical information.
-	 */
-	public static StringBuffer statistic = new StringBuffer();
 
 	/**
 	 * Constructor.
@@ -203,7 +200,10 @@ public class Jailer {
 		int today = entityGraph.getAge();
 		entityGraph.setAge(today + 1);
 		Map<Table, Collection<Association>> progress = new HashMap<Table, Collection<Association>>();
-		if (entityGraph.addEntities(table, condition, today, limit) > 0) {
+		ProgressListenerRegistry.getProgressListener().startedCollection(1, table);
+		long rc = entityGraph.addEntities(table, condition, today, limit);
+		ProgressListenerRegistry.getProgressListener().collected(1, table, rc);
+		if (rc > 0) {
 			progress.put(table, new ArrayList<Association>());
 		}
 		if (progressOfYesterday != null) {
@@ -229,16 +229,6 @@ public class Jailer {
 			String l = (firstLine ? "Exported Rows:     " : "    ") + line;
 			_log.info(l);
 			appendCommentHeader(l);
-			if (firstLine) {
-				statistic.append(l + "\n\n");
-			} else {
-				l = l.trim();
-				int i = l.lastIndexOf(' ');
-				if (i > 0) {
-					l = l.substring(0, i) + ":" + l.substring(i + 1);
-				}
-				statistic.append("   " + l + "\n");
-			}
 			firstLine = false;
 		}
 //		if (CommandLineParser.getInstance().getScriptFormat() != ScriptFormat.XML) {
@@ -275,7 +265,9 @@ public class Jailer {
 				_log.info("exporting all " + datamodel.getDisplayName(table));
 
 				int today = entityGraph.getAge();
-				entityGraph.addEntities(table, "1=1", today, 0);
+				ProgressListenerRegistry.getProgressListener().startedCollection(1, table);
+				long rc = entityGraph.addEntities(table, "1=1", today, 0);
+				ProgressListenerRegistry.getProgressListener().collected(1, table, rc);
 				entityGraph.setAge(today + 1);
 			} else {
 				_log.info(datamodel.getDisplayName(table) + " not in closure(" + datamodel.getDisplayName(subject) + ")");
@@ -297,7 +289,7 @@ public class Jailer {
 	 * @return the initial-data-tables list
 	 */
 	private void readInitialDataTables(Map<String, String> sourceSchemaMapping, Table subject) throws Exception {
-		File file = new File(DataModel.getInitialDataTablesFile());
+		File file = CommandLineParser.getInstance().newFile(DataModel.getInitialDataTablesFile());
 		if (file.exists()) {
 			Set<Table> idTables = SqlUtil.readTableList(new CsvFile(file), datamodel, sourceSchemaMapping);
 			idTables.remove(subject);
@@ -341,6 +333,10 @@ public class Jailer {
 					}
 				}
 
+				String jc = association.getJoinCondition();
+		        if (jc != null) {
+		        	ProgressListenerRegistry.getProgressListener().startedCollection(today, association);
+		        }
 				JobManager.Job job = new JobManager.Job() {
 					public void run() throws Exception {
 						runstats(entityGraph.session, false);
@@ -348,6 +344,7 @@ public class Jailer {
 							_log.info("resolving " + datamodel.getDisplayName(table) + " -> " + association.toString(0, true) + "...");
 						}
 						long rc = entityGraph.resolveAssociation(table, association, today);
+						ProgressListenerRegistry.getProgressListener().collected(today, association, rc);
 						if (rc >= 0) {
 							_log.info(rc + " entities found resolving " + datamodel.getDisplayName(table) + " -> " + association.toString(0, true));
 						}
@@ -896,7 +893,7 @@ public class Jailer {
 		try {
 			jailerMain(args, new StringBuffer());
 		} catch (Exception e) {
-			// Exception is already logged
+			// Exception has already been logged
 		} finally {
 			try {
 				Runtime.getRuntime().removeShutdownHook(shutdownHook);
@@ -916,16 +913,33 @@ public class Jailer {
 	 * @return <code>false</code> iff something went wrong
 	 */
 	public static boolean jailerMain(String[] args, StringBuffer warnings) throws Exception {
+		return jailerMain(args, warnings, null);
+	}
+	
+	/**
+	 * Main-method for GUI.
+	 * 
+	 * @param args
+	 *            arguments
+	 * @param warnings
+	 *            string-buffer to print warnings into, may be <code>null</code>
+	 * @param progressListener listens to progess events
+	 * @return <code>false</code> iff something went wrong
+	 */
+	public static boolean jailerMain(String[] args, StringBuffer warnings, ProgressListener progressListener) throws Exception {
 		CancellationHandler.reset();
-		statistic.setLength(0);
 		Session.closeTemporaryTableSession();
 
 		try {
+			ProgressListenerRegistry.setProgressListener(progressListener);
+			
 			if (Configuration.getDoMinimizeUPK()) {
 				_log.info("minimize-UPK=" + Configuration.getDoMinimizeUPK());
 			}
 
-			CommandLineParser.parse(args, true);
+			if (!CommandLineParser.parse(args, false)) {
+				return false;
+			}
 			CommandLineParser clp = CommandLineParser.getInstance();
 
 			String command = clp.arguments.get(0);
@@ -1010,6 +1024,7 @@ public class Jailer {
 			_log.error("working directory is " + workingDirectory);
 			throw e;
 		} finally {
+			ProgressListenerRegistry.setProgressListener(null);
 			Session.closeTemporaryTableSession();
 		}
 	}
@@ -1089,6 +1104,7 @@ public class Jailer {
 		try {
 			jailer.readInitialDataTables(CommandLineParser.getInstance().getSourceSchemaMapping(), extractionModel.subject);
 			jailer.runstats(session, false);
+			ProgressListenerRegistry.getProgressListener().newStage("collecting rows", false, false);
 			Set<Table> progress = jailer.exportInitialData(extractionModel.subject);
 			entityGraph.setBirthdayOfSubject(entityGraph.getAge());
 			progress.addAll(jailer.export(extractionModel.subject, extractionModel.condition, progress, extractionModel.limit));
@@ -1096,6 +1112,7 @@ public class Jailer {
 			subjects.add(extractionModel.subject);
 	
 			if (explain) {
+				ProgressListenerRegistry.getProgressListener().newStage("generating explain-log", false, false);
 				ExplainTool.explain(entityGraph, jailer.initialDataTables, session, jailer.datamodel);
 			}
 	
@@ -1105,7 +1122,9 @@ public class Jailer {
 			if (deleteScriptFileName != null) {
 				exportedEntities = EntityGraph.copy(entityGraph, EntityGraph.createUniqueGraphID(), session);
 			}
-	
+
+			ProgressListenerRegistry.getProgressListener().newStage("exporting rows", false, false);
+
 			jailer.setEntityGraph(entityGraph);
 			if (ScriptFormat.XML.equals(scriptFormat)) {
 				jailer.writeEntitiesAsXml(scriptFile, totalProgress, subjects, session);
@@ -1115,9 +1134,11 @@ public class Jailer {
 			entityGraph.delete();
 	
 			if (deleteScriptFileName != null) {
+				ProgressListenerRegistry.getProgressListener().newStage("deletion-check", false, false);
 				jailer.setEntityGraph(exportedEntities);
 				jailer.deleteEntities(subjects, totalProgress, session, CommandLineParser.getInstance().getTabuTables(jailer.datamodel,
 						CommandLineParser.getInstance().getSourceSchemaMapping()));
+				ProgressListenerRegistry.getProgressListener().newStage("writing delete-script", false, false);
 				jailer.datamodel.transpose();
 				jailer.writeEntities(deleteScriptFileName, ScriptType.DELETE, totalProgress, session);
 				exportedEntities.delete();
@@ -1269,7 +1290,6 @@ public class Jailer {
 
 		_log.info("entities to delete:");
 		appendCommentHeader("");
-		statistic.append("\n\n");
 		boolean firstLine = true;
 		for (String line : entityGraph.getStatistics(datamodel)) {
 			if (!firstLine) {
@@ -1281,19 +1301,6 @@ public class Jailer {
 			_log.info(line);
 			String l = (firstLine ? "Deleted Entities: " : "     ") + line;
 			appendCommentHeader(l);
-			if (firstLine) {
-				statistic.append(l + "\n\n");
-			} else {
-				l = l.trim();
-				int i = l.lastIndexOf(' ');
-				if (i > 0 && l.endsWith(")")) {
-					i = l.substring(0, i).lastIndexOf(' ');
-				}
-				if (i > 0) {
-					l = l.substring(0, i) + ":" + l.substring(i + 1);
-				}
-				statistic.append("   " + l + "\n");
-			}
 			firstLine = false;
 		}
 		appendCommentHeader("");

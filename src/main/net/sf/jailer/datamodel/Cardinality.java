@@ -18,7 +18,7 @@ package net.sf.jailer.datamodel;
 
 
 /**
- * Enumeration of associations cardinality.
+ * Enumeration of association's cardinalities.
  * 
  * @author Ralf Wisser
  */

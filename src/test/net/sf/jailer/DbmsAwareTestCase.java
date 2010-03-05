@@ -67,7 +67,8 @@ public abstract class DbmsAwareTestCase extends DBTestCase {
      * 
      * @param expectedState file name of dataset holding the expected state
      */
-    protected void assertDatabaseState(String expectedState) throws Exception {
+    @SuppressWarnings("deprecation")
+	protected void assertDatabaseState(String expectedState) throws Exception {
 		// Fetch database data after executing your code
         IDataSet databaseDataSet = getConnection().createDataSet();
         IDataSet initialDataSet = new FlatXmlDataSet(new File(expectedState), false, true);
@@ -87,7 +88,8 @@ public abstract class DbmsAwareTestCase extends DBTestCase {
      * @param expectedState file name of dataset holding the expected state
      * @param actualState file name of dataset holding the actual state
      */
-    protected void assertEqualDatasets(File expectedState, File actualState) throws Exception {
+    @SuppressWarnings("deprecation")
+	protected void assertEqualDatasets(File expectedState, File actualState) throws Exception {
         IDataSet expected = new FlatXmlDataSet(expectedState, false, true);
         IDataSet actual = new FlatXmlDataSet(actualState, false, true);
         

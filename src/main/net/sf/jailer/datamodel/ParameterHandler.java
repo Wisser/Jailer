@@ -19,9 +19,8 @@ package net.sf.jailer.datamodel;
 import java.util.Map;
 import java.util.Set;
 
-
 /**
- * Handles parameters in subject conditions, association restrictions and XML
+ * Handles parameters in subject conditions, association-restrictions and XML
  * templates.
  * 
  * @author Ralf Wisser

@@ -22,7 +22,6 @@ import java.util.regex.Pattern;
 
 import net.sf.jailer.util.SqlUtil;
 
-
 /**
  * Column of a table.
  * 
@@ -209,9 +208,9 @@ public class Column {
     }
  
     /**
-     * Returns the primary key in SQL syntax.
+     * Returns the column definition in SQL syntax.
      * 
-     * @param columnPrefix an optional prefix for each PK-column
+     * @param columnPrefix an optional prefix for the column name
      */
     public String toSQL(String columnPrefix) {
     	return toSQL(columnPrefix, null);

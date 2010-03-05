@@ -56,7 +56,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
     /**
      * The directory to put the HTML-render in.
      */
-    private final File outputDir;
+    private final String outputDir;
     
     /**
      * Maximum depth of expansion on table render.
@@ -75,7 +75,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
      * @param maxDepth maximum depth of expansion on table render
       */
     public HtmlDataModelRenderer(String outputDir, int maxDepth) {
-        this.outputDir = new File(outputDir);
+        this.outputDir = outputDir;
         this.maxDepth = maxDepth;
     }
     

@@ -83,7 +83,6 @@ import prefuse.render.ShapeRenderer;
 import prefuse.util.ColorLib;
 import prefuse.util.GraphicsLib;
 import prefuse.util.display.DisplayLib;
-import prefuse.util.force.DragForce;
 import prefuse.util.force.Force;
 import prefuse.util.force.ForceItem;
 import prefuse.util.force.ForceSimulator;
@@ -169,7 +168,6 @@ public class GraphicalDataModelView extends JPanel {
     private boolean showTableDetails;
 
     private NBodyForce force;
-    private DragForce dragForce;
     private volatile boolean layoutHasBeenSet = false;
     
     /**
@@ -180,7 +178,8 @@ public class GraphicalDataModelView extends JPanel {
      * @param width
      * @param height initial size
      */
-    public GraphicalDataModelView(final DataModel model, ExtractionModelEditor modelEditor, Table subject, int width, int height) {
+    @SuppressWarnings("unchecked")
+	public GraphicalDataModelView(final DataModel model, ExtractionModelEditor modelEditor, Table subject, boolean expandSubject, int width, int height) {
     	super(new BorderLayout());
     	this.model = model;
     	this.modelEditor = modelEditor;
@@ -199,7 +198,7 @@ public class GraphicalDataModelView extends JPanel {
 		    	}
 			}
     	}
-    	theGraph = getModelGraph(model, initiallyVisibleTables);
+    	theGraph = getModelGraph(model, initiallyVisibleTables, expandSubject);
     	
         // create a new, empty visualization for our data
         visualization = new Visualization();
@@ -329,21 +328,7 @@ public class GraphicalDataModelView extends JPanel {
 				Table table = model.getTable(item.getString("label"));
 				if (SwingUtilities.isLeftMouseButton(e)) {
 	            	if (table != null && e.getClickCount() == 1) {
-	            		Association toS = null;
-	            		for (Association a: table.associations) {
-	            			if (renderedAssociations.containsKey(a) || renderedAssociations.containsKey(a.reversalAssociation)) {
-	            				toS = a.reversalAssociation;
-	            				break;
-	            			}
-	            		}
-	            		if (toS == null) {
-	            			GraphicalDataModelView.this.modelEditor.select(table);
-	            		} else {
-	            			GraphicalDataModelView.this.modelEditor.select(toS);
-	            		}
-	            		Association sa = selectedAssociation;
-	            		setSelection(null);
-	            		setSelection(sa);
+	            		selectTable(table);
 	            	}
                 }
             	// context menu
@@ -474,9 +459,6 @@ public class GraphicalDataModelView extends JPanel {
             }
         };
         for (Force force: layout.getForceSimulator().getForces()) {
-        	if (force instanceof DragForce) {
-        		dragForce = (DragForce) force;
-        	}
         	if (force instanceof NBodyForce) {
         		this.force = (NBodyForce) force;
         	}
@@ -658,7 +640,8 @@ public class GraphicalDataModelView extends JPanel {
     /**
      * Stores current positions of the tables.
      */
-    public void storeLayout() {
+    @SuppressWarnings("unchecked")
+	public void storeLayout() {
     	if (root != null && layoutHasBeenSet) {
 	    	synchronized (visualization) {
 	    		LayoutStorage.removeAll(root.getName());
@@ -754,6 +737,12 @@ public class GraphicalDataModelView extends JPanel {
 				modelEditor.setRootSelection(table);
 			}
 		});
+		JMenuItem showReachability = new JMenuItem("Show reachability");
+		showReachability.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+		        modelEditor.showReachability(table);
+			}
+		});
 		JMenuItem zoomToFit = new JMenuItem("Zoom to fit");
 		zoomToFit.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
@@ -846,6 +835,7 @@ public class GraphicalDataModelView extends JPanel {
 		popup.add(new JSeparator());
 		popup.add(hide);
 		popup.add(selectAsRoot);
+		popup.add(showReachability);
 		if (navigateTo != null) {
 			popup.add(navigateTo);
 		}
@@ -1155,7 +1145,7 @@ public class GraphicalDataModelView extends JPanel {
      * @param model the data model
      * @return graph
      */
-	private Graph getModelGraph(DataModel model, Set<Table> initiallyVisibleTables) {
+	private Graph getModelGraph(DataModel model, Set<Table> initiallyVisibleTables, boolean expandSubject) {
 		tableNodes = new HashMap<net.sf.jailer.datamodel.Table, Node>();
         expandedTables = new HashSet<net.sf.jailer.datamodel.Table>();
         renderedAssociations = new HashMap<Association, Edge>();
@@ -1201,7 +1191,7 @@ public class GraphicalDataModelView extends JPanel {
 			}
 		}
 		
-		if (initiallyVisibleTables.isEmpty() && nAssociatedTables <= 10) {
+		if (initiallyVisibleTables.isEmpty() && nAssociatedTables <= 10 && expandSubject) {
 			expandTable(g, table);
 		}
 		
@@ -1570,8 +1560,77 @@ public class GraphicalDataModelView extends JPanel {
 
 	/**
 	 * Expands all tables.
+	 * 
+	 * @param reachableTable if not <code>null</code>, expand only tables from which this table is reachable
 	 */
-	public void expandAll(boolean expandOnlyVisibleTables) {
+	public void expandAll(boolean expandOnlyVisibleTables, Table reachableTable) {
+		Set<Table> onPath = new HashSet<Table>();
+		if (reachableTable != null) {
+			List<Table> toExpand = new ArrayList<Table>();
+			toExpand.addAll(tableNodes.keySet());
+			onPath.addAll(tableNodes.keySet());
+			while (!toExpand.isEmpty()) {
+				Table table = toExpand.remove(0);
+				for (Association association: table.associations) {
+					if (!association.isIgnored() && !onPath.contains(association.destination)) {
+						if (association.destination.closure(true).contains(reachableTable)) {
+							onPath.add(association.destination);
+							toExpand.add(association.destination);
+						}
+					}
+				}
+			}
+			for (;;) {
+				Set<Table> toRemove = new HashSet<Table>();
+				Set<Table> refTables = new HashSet<Table>();
+				Set<Table> toIgnore = new HashSet<Table>();
+				for (Table initTable: tableNodes.keySet()) {
+					toIgnore.addAll(initTable.closure(true));
+				}
+				toIgnore.removeAll(onPath);
+				for (Table table: onPath) {
+					/* if (!table.equals(reachableTable) && !tableNodes.containsKey(table)) */ {
+						refTables.clear();
+						for (Association association: table.associations) {
+							if (!association.destination.equals(table) && onPath.contains(association.destination)) {
+								refTables.add(association.destination);
+							}
+						}
+						boolean isIn = toIgnore.contains(table);
+						toIgnore.add(table);
+						for (Table toCheck: refTables) {
+							if (!toCheck.equals(reachableTable) && !tableNodes.containsKey(toCheck)) {
+								boolean reach = toCheck.closure(toIgnore, true).contains(reachableTable);
+								if (!reach) {
+									model.transpose();
+									for (Table initTable: tableNodes.keySet()) {
+										reach = toCheck.closure(toIgnore, true).contains(initTable);
+										if (reach) {
+											break;
+										}
+									}
+									model.transpose();
+								}
+								if (!reach) {
+									toRemove.add(toCheck);
+								}
+							}
+						}
+						if (!isIn) {
+							toIgnore.remove(table);
+						}
+					}
+				}
+				if (!toRemove.isEmpty()) {
+					onPath.removeAll(toRemove);
+					toIgnore.addAll(toRemove);
+					toRemove.clear();
+				} else {
+					break;
+				}
+			}
+		}
+		
 		boolean stop = false;
 		List<Table> toExpand = new ArrayList<Table>();
 		toExpand.addAll(tableNodes.keySet());
@@ -1581,9 +1640,30 @@ public class GraphicalDataModelView extends JPanel {
 				boolean ask = tableNodes.size() <= EXPAND_LIMIT;
 				while (!toExpand.isEmpty()) {
 					Table table = toExpand.remove(0);
-					List<Table> tables = expandTable(theGraph, table);
-					if (!expandOnlyVisibleTables) {
-						toExpand.addAll(tables);
+					if (reachableTable != null) {
+						for (Association association: table.associations) {
+							if (onPath.contains(association.destination) && !tableNodes.containsKey(association.destination)) {
+							List<Table> tables = expandTable(theGraph, table, association);
+							if (!expandOnlyVisibleTables) {
+								toExpand.addAll(tables);
+							}
+						}
+					}
+//						for (Association association: table.associations) {
+//							if (!association.isIgnored() && !tableNodes.containsKey(association.destination)) {
+//								if (association.destination.closure(true).contains(reachableTable)) {
+//									List<Table> tables = expandTable(theGraph, table, association);
+//									if (!expandOnlyVisibleTables) {
+//										toExpand.addAll(tables);
+//									}
+//								}
+//							}
+//						}
+					} else {
+						List<Table> tables = expandTable(theGraph, table);
+						if (!expandOnlyVisibleTables) {
+							toExpand.addAll(tables);
+						}
 					}
 					if (ask && tableNodes.size() > EXPAND_LIMIT) {
 						askNow = true;
@@ -1693,5 +1773,39 @@ public class GraphicalDataModelView extends JPanel {
 	public void openQueryBuilder(Table table, boolean usePath) {
 		new QueryBuilderDialog(this.modelEditor.extractionModelFrame).buildQuery(table, usePath, associationsOnPath, model);
 	}
+
+	/**
+	 * Gets visibility of a table.
+	 * 
+	 * @param table the table
+	 * @return <code>true</code> iff table is visible
+	 */
+	public boolean isTableVisible(Table table) {
+		return tableNodes.containsKey(table);
+	}
+
+	/**
+	 * Selects a table.
+	 * 
+	 * @param table the table
+	 */
+	public void selectTable(Table table) {
+		Association toS = null;
+		for (Association a: table.associations) {
+			if (renderedAssociations.containsKey(a) || renderedAssociations.containsKey(a.reversalAssociation)) {
+				toS = a.reversalAssociation;
+				break;
+			}
+		}
+		if (toS == null) {
+			GraphicalDataModelView.this.modelEditor.select(table);
+		} else {
+			GraphicalDataModelView.this.modelEditor.select(toS);
+		}
+		Association sa = selectedAssociation;
+		setSelection(null);
+		setSelection(sa);
+	}
 	
+	private static final long serialVersionUID = -5938101712807557555L;
 }

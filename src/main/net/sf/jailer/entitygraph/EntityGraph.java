@@ -34,10 +34,8 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.util.SqlScriptExecutor;
+import net.sf.jailer.progress.ProgressListenerRegistry;
 import net.sf.jailer.util.SqlUtil;
-
-import org.apache.log4j.Logger;
 
 /**
  * Persistent graph of entities. 
@@ -77,11 +75,6 @@ public class EntityGraph {
     public final Session session;
 
 	/**
-     * The logger.
-     */
-    private static final Logger _log = Logger.getLogger(SqlScriptExecutor.class);
-
-    /**
      * The universal primary key.
      */
     private final PrimaryKey universalPrimaryKey;
@@ -458,12 +451,13 @@ public class EntityGraph {
         if (orderByPK) {
         	orderBy = " order by " + table.primaryKey.columnList("T.");
         }
-    	session.executeQuery(
+    	long rc = session.executeQuery(
                 "Select " + selectionSchema + " From " + SQLDialect.dmlTableReference(ENTITY, session) + " E join " + table.getName() + " T on " +
                 pkEqualsEntityID(table, "T", "E") +
                 " Where E.birthday=0 and E.r_entitygraph=" + graphID + " and E.type='" + table.getName() + "'" +
                 orderBy,
                 reader);
+    	ProgressListenerRegistry.getProgressListener().exported(table, rc);
     }
     
     /**
@@ -490,7 +484,7 @@ public class EntityGraph {
     		selectOPK.append("T." + table.primaryKey.getColumns().get(i).name + " AS " + originalPKAliasPrefix + i);
     	}
     	orderBy = "order by " + sb;
-    	session.executeQuery(
+    	long rc = session.executeQuery(
     			"Select " + selectionSchema + " From (" +
                 "Select " + selectOPK + ", " + filteredSelectionClause(table) + " From " + SQLDialect.dmlTableReference(ENTITY, session) + " E join " + table.getName() + " T on " +
                 pkEqualsEntityID(table, "T", "E") +
@@ -498,6 +492,7 @@ public class EntityGraph {
                 ") T " +
                 (orderByPK? orderBy : ""),
                 reader);
+    	ProgressListenerRegistry.getProgressListener().exported(table, rc);
     }
     
     /**
@@ -531,12 +526,13 @@ public class EntityGraph {
      * @param orderByPK if <code>true</code>, result will be ordered by primary keys
      */
     public void readEntities(Table table, Session.ResultSetReader reader, boolean orderByPK) throws SQLException {
-        session.executeQuery(
+        long rc = session.executeQuery(
                 "Select " + filteredSelectionClause(table) + " From " + SQLDialect.dmlTableReference(ENTITY, session) + " E join " + table.getName() + " T on " +
                 pkEqualsEntityID(table, "T", "E") +
                 " Where E.birthday>=0 and E.r_entitygraph=" + graphID + " and E.type='" + table.getName() + "'" +
                 (orderByPK? " order by " + table.primaryKey.columnList("T.") : ""),
                 reader);
+        ProgressListenerRegistry.getProgressListener().exported(table, rc);
     }
     
     /**
@@ -753,7 +749,8 @@ public class EntityGraph {
 	    	     " and D.from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
 	    	     " and D.r_entitygraph=" + graphID;
     	}
-    	session.executeQuery(select, reader);
+    	long rc = session.executeQuery(select, reader);
+    	ProgressListenerRegistry.getProgressListener().exported(table, rc);
     }
     
     /**

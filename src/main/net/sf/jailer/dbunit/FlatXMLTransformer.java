@@ -28,7 +28,6 @@ import javax.xml.transform.sax.TransformerHandler;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
-import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Table;
@@ -45,11 +44,6 @@ import org.xml.sax.helpers.AttributesImpl;
  * @author Ralf Wisser
  */
 public class FlatXMLTransformer implements ResultSetReader {
-
-	/**
-	 * The table to read from.
-	 */
-	private final Table table;
 
 	/**
 	 * Name of XML row element, or <code>null</code> if the table name can not
@@ -88,7 +82,6 @@ public class FlatXMLTransformer implements ResultSetReader {
 	 *            database meta data
 	 */
 	public FlatXMLTransformer(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData) throws SQLException {
-		this.table = table;
 		this.transformerHandler = transformerHandler;
 		this.rowElementName = qualifiedTableName(table);
 	}
@@ -139,9 +132,6 @@ public class FlatXMLTransformer implements ResultSetReader {
 				transformerHandler.startElement("", "", rowElementName, attr);
 				transformerHandler.endElement("", "", rowElementName);
 			}
-			++DMLTransformer.numberOfExportedEntities; // TODO: refactoring of
-														// entity counting
-
 		} catch (SAXException e) {
 			throw new RuntimeException(e);
 		}

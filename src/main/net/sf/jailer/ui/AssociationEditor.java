@@ -341,6 +341,7 @@ public class AssociationEditor extends javax.swing.JDialog {
 			return super.getListCellRendererComponent(list, value, index, isSelected,
 						cellHasFocus);
 			}
+			private static final long serialVersionUID = 1992399605806444015L;
     	};
     	return renderer;
     }
@@ -433,4 +434,5 @@ public class AssociationEditor extends javax.swing.JDialog {
     private javax.swing.JComboBox type;
     // Ende der Variablendeklaration//GEN-END:variables
     
+    private static final long serialVersionUID = 603961628104674406L;
 }

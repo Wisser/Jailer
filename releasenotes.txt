@@ -1,3 +1,9 @@
+3.4
+ - Added graphical progress indicator.
+ - Added command line option to set working folder.
+ - Added reachability-analysis feature.
+ - Internal refactorings.
+
 3.3
  - Added ability to change the export mode (Insert/Upsert) for each table (via table's context menu)
  - Added support for data type 'GRAPHIC' on DB2 for z/OS.

@@ -123,6 +123,7 @@ public class TableEditor extends javax.swing.JDialog {
 				}
 				return render;
 			}
+			private static final long serialVersionUID = 2081014492388534455L;
         };
         columnsTable.setDefaultRenderer(Object.class, renderer);
         columnsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
@@ -194,21 +195,6 @@ public class TableEditor extends javax.swing.JDialog {
 			columns.add(Column.parse(currentColumnLine.cells.get(i)));
 		}
 		return columns;
-	}
-
-	/**
-     * Sets list of current columns.
-     * 
-     * @return list of current columns
-     */
-	private void setCurrentColumns(List<Column> columns) {
-		int i = 1;
-		for (Column column: columns) {
-			currentColumnLine.cells.set(i++, column.toSQL(null) + (column.isIdentityColumn? " identity" : ""));
-		}
-		currentColumnLine.cells.set(i++, "");
-		currentColumnLine.cells.set(i++, "Data Model Editor");
-		currentColumnLine.length = i;
 	}
 
 	/** This method is called from within the constructor to
@@ -849,6 +835,7 @@ public class TableEditor extends javax.swing.JDialog {
 			public boolean isCellEditable(int row, int column) {
 				return false;
 			}
+			private static final long serialVersionUID = -5655810990374489020L;
     	};
     	model.addColumn("Name");
     	model.addColumn("Type");
@@ -890,4 +877,5 @@ public class TableEditor extends javax.swing.JDialog {
     private javax.swing.JCheckBox upsertCheckbox;
     // End of variables declaration//GEN-END:variables
     
+	private static final long serialVersionUID = -3331167410435129849L;
 }

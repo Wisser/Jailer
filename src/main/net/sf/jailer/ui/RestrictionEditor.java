@@ -22,7 +22,7 @@ package net.sf.jailer.ui;
  */
 public class RestrictionEditor extends javax.swing.JPanel {
     
-    /** Creates new form RestrictionEditor */
+	/** Creates new form RestrictionEditor */
     public RestrictionEditor() {
         initComponents();
     }
@@ -328,4 +328,5 @@ public class RestrictionEditor extends javax.swing.JPanel {
     public javax.swing.JLabel type;
     // End of variables declaration//GEN-END:variables
     
+    private static final long serialVersionUID = -6735468124049608700L;
 }
