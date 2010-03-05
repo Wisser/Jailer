@@ -151,7 +151,7 @@ public class DDLCreator {
 
 		if (session != null) {
 			// try {
-			File tmp = new File("jailer_ddl.sql");
+			File tmp = CommandLineParser.getInstance().newFile("jailer_ddl.sql");
 			PrintWriter pw = new PrintWriter(tmp);
 			pw.println(ddl);
 			pw.close();

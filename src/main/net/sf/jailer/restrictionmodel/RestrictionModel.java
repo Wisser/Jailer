@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.ParameterHandler;
@@ -133,19 +134,19 @@ public class RestrictionModel {
         File file;
         boolean embedded = false;
         if (EMBEDDED.equals(fileName)) {
-        	file = new File(extractionModelFileName);
+        	file = CommandLineParser.getInstance().newFile(extractionModelFileName);
         	embedded = true;
         } else {
-        	file = new File(fileName);
+        	file = CommandLineParser.getInstance().newFile(fileName);
         }
         if (!file.exists()) {
         	try {
-        		file = new File(new File(extractionModelFileName).getParent(), fileName);
+        		file = new File(CommandLineParser.getInstance().newFile(extractionModelFileName).getParent(), fileName);
         	} catch (Exception e) {
         	}
         }
         if (!file.exists()) {
-            file = new File("restrictionmodel" + File.separator + fileName);
+            file = CommandLineParser.getInstance().newFile("restrictionmodel" + File.separator + fileName);
         }
         List<CsvFile.Line> lines = new CsvFile(file).getLines();
         int nr = 0;

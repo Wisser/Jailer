@@ -18,6 +18,7 @@ package net.sf.jailer.ui;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -100,7 +101,11 @@ public class ClosureView extends javax.swing.JDialog {
         tableSelection.setMaximumRowCount(22);
         
         closureTable = new JTable() {
+			private static final long serialVersionUID = 8960056200057023368L;
 
+			/**
+			 * Paints selected path.
+			 */
 			@Override
 			public void paint(Graphics graphics) {
 				super.paint(graphics);
@@ -426,6 +431,7 @@ public class ClosureView extends javax.swing.JDialog {
 			public boolean isCellEditable(int row, int column) {
 				return false;
 			}
+			private static final long serialVersionUID = -6639310191624899380L;
     	};
     	closureTable.setModel(tableModel);
 
@@ -449,6 +455,7 @@ public class ClosureView extends javax.swing.JDialog {
             
             column.setPreferredWidth(width);
         }
+		closureTable.setIntercellSpacing(new Dimension(0, 0));
 	}
 
 	/** This method is called from within the constructor to
@@ -542,4 +549,5 @@ public class ClosureView extends javax.swing.JDialog {
     private javax.swing.JComboBox tableSelection;
     // Ende der Variablendeklaration//GEN-END:variables
     
+	private static final long serialVersionUID = 5485949274233292142L;
 }

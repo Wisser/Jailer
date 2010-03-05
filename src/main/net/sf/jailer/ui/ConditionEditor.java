@@ -28,7 +28,6 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 
 import net.sf.jailer.datamodel.Column;
-import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import sdoc.SyntaxSupport;
 
@@ -404,4 +403,6 @@ public class ConditionEditor extends javax.swing.JDialog {
 			e.printStackTrace();
 		}
 	}
+    
+    private static final long serialVersionUID = -5169934807182707970L;
 }

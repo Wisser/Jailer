@@ -153,7 +153,7 @@ public class XmlExportTransformer implements ResultSetReader {
 		StringBuilder sb = new StringBuilder(table.getName() + "(");
 		boolean f = true;
 		int i = 0;
-		for (Column pk : table.primaryKey.getColumns()) {
+		for (@SuppressWarnings("unused") Column pk : table.primaryKey.getColumns()) {
 			if (!f) {
 				sb.append(", ");
 			}

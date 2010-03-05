@@ -66,8 +66,14 @@ public class Configuration {
      */
     private Map<String, String> typeReplacement;
     
+    /**
+     * Set of type names for which no data must be exported.
+     */
     public Set<String> exportBlocks = new HashSet<String>();
     
+    /**
+     * <code>true</code> if DBMS supports identity-type (MS-SQL)
+     */
     private boolean identityInserts = false;
     
     public SimpleDateFormat dateFormat = null;
@@ -101,8 +107,16 @@ public class Configuration {
 	 */
 	private static boolean doMinimizeUPK = false;
 
+	/**
+	 * Replacement for null in DBUnit datasets.
+	 */
 	private static String nullColumnPlaceholder = null;
 
+	/**
+	 * Gets replacement for null in DBUnit datasets.
+	 * 
+	 * @return replacement for null in DBUnit datasets
+	 */
 	public static String getNullColumnPlaceholder() {
 		return nullColumnPlaceholder;
 	}
@@ -120,7 +134,8 @@ public class Configuration {
      * 
      * @return all {@link ModelElementFinder}
      */
-    public static List<ModelElementFinder> getModelElementFinder() throws Exception {
+    @SuppressWarnings("unchecked")
+	public static List<ModelElementFinder> getModelElementFinder() throws Exception {
         List<ModelElementFinder> modelElementFinder = (List<ModelElementFinder>) getContext().getBean("model-finder");
         return modelElementFinder;
     }
@@ -129,7 +144,8 @@ public class Configuration {
      * The configuration.
      */
     private static AbstractXmlApplicationContext theApplicationContext = null;
-    private static AbstractXmlApplicationContext getContext() {
+    @SuppressWarnings("unchecked")
+	private static synchronized AbstractXmlApplicationContext getContext() {
     	if (theApplicationContext == null) {
     		String configFile = "jailer.xml";
 	    	theApplicationContext = new FileSystemXmlApplicationContext(configFile);
@@ -154,7 +170,8 @@ public class Configuration {
      * @param session connected to the DBMS
      * @return configuration for the DBMS to which the {@link Session} is connected to
      */
-	public static Configuration forDbms(Session session) {
+	@SuppressWarnings("unchecked")
+	public static synchronized Configuration forDbms(Session session) {
 		if (session == null) {
 			return defaultConfiguration;
 		}

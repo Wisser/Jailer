@@ -53,7 +53,7 @@ import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
 
 /**
- * "Connect with DB" dialog.
+ * Database connection dialog.
  * 
  * @author Ralf Wisser
  */
@@ -141,7 +141,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				new ListSelectionListener() {
 					@Override
 					public void valueChanged(ListSelectionEvent evt) {
-						int row = connectionsTable.getSelectedRow();
 						refresh();
 					}
 				});
@@ -162,18 +161,12 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			}
 			@Override
 			public void componentHidden(ComponentEvent e) {
-				// TODO Auto-generated method stub
-				
 			}
 			@Override
 			public void componentMoved(ComponentEvent e) {
-				// TODO Auto-generated method stub
-				
 			}
 			@Override
 			public void componentResized(ComponentEvent e) {
-				// TODO Auto-generated method stub
-				
 			}
 		});
 		
@@ -198,7 +191,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			public boolean isCellEditable(int row, int column) {
 				return false;
 			}
-			
+			private static final long serialVersionUID = 1535384744352159695L;
 		});
 		return data;
 	}
@@ -274,6 +267,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	/**
 	 * Loads connection list.
 	 */
+	@SuppressWarnings("unchecked")
 	private void loadConnectionList() {
 		connectionList = new ArrayList<ConnectionInfo>();
 		currentConnection = null;
@@ -837,4 +831,5 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		return currentConnection.password;
 	}
 
+	private static final long serialVersionUID = -3983034803834547687L;
 }

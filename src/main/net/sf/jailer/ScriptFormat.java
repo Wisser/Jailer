@@ -16,7 +16,7 @@
 package net.sf.jailer;
 
 /**
- * Enumeration of SQL-script formats.
+ * Enumeration of output formats.
  * 
  * @author Ralf Wisser
  */

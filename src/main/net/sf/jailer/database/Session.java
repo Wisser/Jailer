@@ -346,7 +346,7 @@ public class Session {
      * @param sqlQuery the query in SQL
      * @param reader the reader for the result
      */
-    public void executeQuery(String sqlQuery, ResultSetReader reader) throws SQLException {
+    public long executeQuery(String sqlQuery, ResultSetReader reader) throws SQLException {
         _log.info(sqlQuery);
         long rc = 0;
         try {
@@ -366,6 +366,7 @@ public class Session {
 	        statement.close();
 	        CancellationHandler.end(statement);
 	        _log.info(rc + " row(s)");
+	        return rc;
         } catch (SQLException e) {
         	CancellationHandler.checkForCancellation();
         	if (!silent) {
@@ -592,9 +593,9 @@ public class Session {
     }
 
     /**
-     * Sets Classloader to load Jdbc-Driver with.
+     * Sets {@link ClassLoader} to load Jdbc-Driver with.
      * 
-     * @param classLoader Classloader to load Jdbc-Driver with
+     * @param classLoader {@link ClassLoader} to load Jdbc-Driver with
      */
     public static void setClassLoaderForJdbcDriver(ClassLoader classLoader) {
         classLoaderForJdbcDriver = classLoader;

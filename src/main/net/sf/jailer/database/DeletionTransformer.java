@@ -30,7 +30,6 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
-
 /**
  * A {@link ResultSetReader} that writes the read rows as SQL-DELETE-statements 
  * into the deletion-script.

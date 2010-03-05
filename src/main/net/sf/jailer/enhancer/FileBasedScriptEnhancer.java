@@ -31,7 +31,6 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 
-
 /**
  * Inserts the content of the files
  * <ul>
@@ -57,7 +56,7 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
      */
     public void addEpilog(Writer script, ScriptType scriptType, Session session, EntityGraph entityGraph, 
             Set<Table> progress) throws IOException, SQLException {
-        addEnhancement(script, progress, "EPILOG.sql", new File(CommandLineParser.getInstance().enhancerFolder + File.separatorChar + "epilog" + File.separatorChar + scriptType));
+        addEnhancement(script, progress, "EPILOG.sql", CommandLineParser.getInstance().newFile(CommandLineParser.getInstance().enhancerFolder + File.separatorChar + "epilog" + File.separatorChar + scriptType));
     }
 
     /**
@@ -65,7 +64,7 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
      */
     public void addProlog(Writer script, ScriptType scriptType, Session session, EntityGraph entityGraph, 
             Set<Table> progress) throws IOException, SQLException {
-        addEnhancement(script, progress, "PROLOG.sql", new File(CommandLineParser.getInstance().enhancerFolder + File.separatorChar + "prolog" + File.separatorChar + scriptType));
+        addEnhancement(script, progress, "PROLOG.sql", CommandLineParser.getInstance().newFile(CommandLineParser.getInstance().enhancerFolder + File.separatorChar + "prolog" + File.separatorChar + scriptType));
     }
 
     /**

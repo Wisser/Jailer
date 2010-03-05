@@ -84,7 +84,7 @@ public class ExplainTool {
                 String type = resultSet.getString(1);
                 List<String> keys = new ArrayList<String>();
                 int i = 2;
-                for (Column column: graph.getUniversalPrimaryKey().getColumns()) {
+                for (@SuppressWarnings("unused") Column column: graph.getUniversalPrimaryKey().getColumns()) {
                     keys.add(SqlUtil.toSql(SqlUtil.getObject(resultSet, i++, typeCache), session));
                 }
                 if (!namesOfTablesToIgnore.contains(type)) {
@@ -143,7 +143,7 @@ public class ExplainTool {
                 preType[0] = resultSet.getString(1);
                 associationID[0] = resultSet.getInt(2);
                 int i = 3;
-                for (Column column: graph.getUniversalPrimaryKey().getColumns()) {
+                for (@SuppressWarnings("unused") Column column: graph.getUniversalPrimaryKey().getColumns()) {
                     preKeys.add(SqlUtil.toSql(SqlUtil.getObject(resultSet, i++, typeCache), session));
                 }
             }

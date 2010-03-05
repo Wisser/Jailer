@@ -7,7 +7,6 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Frame;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -141,6 +140,7 @@ public class ParameterSelector extends javax.swing.JPanel {
 			public boolean isCellEditable(int row, int column) {
 				return false;
 			}
+			private static final long serialVersionUID = 2703862797772451362L;
         });
 	}
     
@@ -193,4 +193,5 @@ public class ParameterSelector extends javax.swing.JPanel {
     private javax.swing.JTable paramTable;
     // End of variables declaration//GEN-END:variables
     
+    private static final long serialVersionUID = 5153763345779925099L;
 }

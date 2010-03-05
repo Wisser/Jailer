@@ -530,4 +530,5 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		}
 	}
 
+	private static final long serialVersionUID = 7869830170667759018L;
 }

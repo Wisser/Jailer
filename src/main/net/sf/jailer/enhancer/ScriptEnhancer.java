@@ -25,7 +25,6 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 
-
 /**
  * Enhances the generated SQL-export-script with statements or comments.
  * 

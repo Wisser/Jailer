@@ -22,21 +22,21 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 
 import javax.swing.JScrollPane;
-import javax.swing.JTextPane;
+import javax.swing.JTextArea;
 
 import net.sf.jailer.util.PrintUtil;
 
 /**
- * Visualizes text files.
+ * Renders a text files.
  * 
  * @author Ralf Wisser
  */
 public class FileView extends javax.swing.JDialog {
 
-    /**
+	/**
      * Component for rendering the file content.
      */
-	private JTextPane jTextPane = null;
+	private JTextArea jTextPane = null;
 	
 	/**
 	 * Scroll-pane around content.
@@ -104,11 +104,13 @@ public class FileView extends javax.swing.JDialog {
      * 	
      * @return javax.swing.JTextPane	
      */
-    private JTextPane getJTextPane() {
+    private JTextArea getJTextPane() {
         if (jTextPane == null) {
-            jTextPane = new JTextPane();
+            jTextPane = new JTextArea();
+            jTextPane.setLineWrap(false);
         }
         return jTextPane;
     }
-
+    
+	private static final long serialVersionUID = -8991473715127153931L;
 }  //  @jve:decl-index=0:visual-constraint="10,10"

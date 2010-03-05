@@ -31,7 +31,7 @@ import net.sf.jailer.datamodel.DataModel;
  */
 public class XmlSettingsDialog extends javax.swing.JDialog {
     
-    /** Creates new form XmlSettingsDialog */
+	/** Creates new form XmlSettingsDialog */
     public XmlSettingsDialog(java.awt.Frame parent) {
         super(parent, true);
         initComponents();
@@ -179,8 +179,8 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        datePattern = new javax.swing.JComboBox();
-        timestampPattern = new javax.swing.JComboBox();
+        datePattern = new net.sf.jailer.ui.JComboBox();
+        timestampPattern = new net.sf.jailer.ui.JComboBox();
         rootTag = new javax.swing.JTextField();
         dateExample = new javax.swing.JLabel();
         timestampExample = new javax.swing.JLabel();
@@ -357,4 +357,5 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
     private javax.swing.JComboBox timestampPattern;
     // End of variables declaration//GEN-END:variables
     
+    private static final long serialVersionUID = -2752715206964965549L;
 }

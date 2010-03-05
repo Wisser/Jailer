@@ -257,9 +257,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		restrictionEditor = new RestrictionEditor();
 		
 		if (isHorizontalLayout ) {
-			graphView = new GraphicalDataModelView(dataModel, this, subject, 948, 379);
+			graphView = new GraphicalDataModelView(dataModel, this, subject, true, 948, 379);
 		} else {
-			graphView = new GraphicalDataModelView(dataModel, this, subject, 648, 579);
+			graphView = new GraphicalDataModelView(dataModel, this, subject, true, 648, 579);
 		}
 		graphContainer.add(graphView);
 		
@@ -396,6 +396,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				return super.getListCellRendererComponent(list, ((ScriptFormat) value).getDisplayName(), index, isSelected,
 						cellHasFocus);
 			}
+			private static final long serialVersionUID = 2393022320508863837L;
 		});
 		exportFormat.setSelectedItem(scriptFormat);
     	
@@ -496,18 +497,19 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				public Dimension getMinimumSize() {
 					return editorPanel.getMinimumSize();
 				}
+				private static final long serialVersionUID = -947582621664272477L;
 			};
 			scrollPanel.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 			JPanel panel = new JPanel() {
 				@Override
 				public Dimension getMaximumSize() {
-					Dimension s = super.getMaximumSize();
 					return new Dimension(scrollPanel.getWidth() - 20, Math.max((int) (650.0 * (scriptFormat.equals(ScriptFormat.XML)? 1.33 : 1.0)), scrollPanel.getHeight() - 10));
 				}
 				@Override
 				public Dimension getPreferredSize() {
 					return getMaximumSize();
 				}
+				private static final long serialVersionUID = -5175513783835424396L;
 			};
 			
 			java.awt.GridBagConstraints gridBagConstraints;
@@ -568,11 +570,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	/**
 	 * Resets the graphical editor.
 	 */
-	public void resetGraphEditor(boolean full, boolean storeLayout, boolean removeLayout) {
+	public void resetGraphEditor(boolean full, boolean storeLayout, boolean removeLayout, boolean expandRoot) {
 		if (full) {
 			graphView.close(storeLayout, removeLayout);
 			graphContainer.remove(graphView);
-			graphView = new GraphicalDataModelView(dataModel, this, root, graphView.display.getWidth(), graphView.display.getHeight());
+			graphView = new GraphicalDataModelView(dataModel, this, root, expandRoot, graphView.display.getWidth(), graphView.display.getHeight());
 			graphContainer.add(graphView);
 		} else {
 			graphView.resetExpandedState();
@@ -608,8 +610,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jScrollPane2 = new javax.swing.JScrollPane();
-        buttonGroup1 = new javax.swing.ButtonGroup();
         jSplitPane1 = new javax.swing.JSplitPane();
         graphContainer = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
@@ -670,7 +670,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         editorPanel.setLayout(new java.awt.GridLayout(1, 4));
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Subject ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125)));
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Subject ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
         jPanel3.setMaximumSize(new java.awt.Dimension(2147483647, 2147483647));
         jPanel3.setMinimumSize(new java.awt.Dimension(158, 122));
         jPanel3.setLayout(new java.awt.GridBagLayout());
@@ -810,7 +810,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         editorPanel.add(jPanel3);
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Association ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125)));
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Association ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
         jPanel4.setLayout(new java.awt.BorderLayout(0, 4));
 
         jScrollPane1.setBorder(null);
@@ -821,7 +821,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         tree.setModel(getModel());
         tree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
             public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
-            	treeValueChanged(evt);
+                treeValueChanged(evt);
             }
         });
         tree.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -872,12 +872,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         editorPanel.add(jPanel4);
 
-        inspectorHolder.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Restriction ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125)));
+        inspectorHolder.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Restriction ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
         inspectorHolder.setMinimumSize(new java.awt.Dimension(100, 400));
         inspectorHolder.setLayout(new java.awt.GridBagLayout());
         editorPanel.add(inspectorHolder);
 
-        xmlMappingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "XML Mapping ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125)));
+        xmlMappingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "XML Mapping ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
         xmlMappingPanel.setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setText(" Aggregation ");
@@ -1123,7 +1123,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		if (table != null) {
 			root = table;
 			tree.setModel(getModel());
-			resetGraphEditor(true, true, false);
+			resetGraphEditor(true, true, false, true);
 		}
 	}
 	
@@ -1159,6 +1159,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			public boolean isCellEditable(int row, int column) {
 				return false;
 			}
+			private static final long serialVersionUID = 7309234765268573389L;
         };
     }
     
@@ -1467,21 +1468,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     	xmlTagApply.setEnabled(false);
     }
     
-    /**
-     * Jump-button clicked.
-     */
-	private void onJump() {
-    	if (tree.getLeadSelectionPath() != null) {
-    		Object selection = ((DefaultMutableTreeNode) tree.getLeadSelectionPath().getLastPathComponent()).getUserObject();
-	    	if (selection instanceof Association) {
-	    		jumpTo(((Association) selection).destination);
-	    	}
-	    	if (selection instanceof Table) {
-	    		jumpTo(subject);
-	    	}
-    	}
-    }
-
 	/**
 	 * Reacts on 'Apply'-button pressed.
 	 */
@@ -1517,13 +1503,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     	}
     }
     
-    /**
-     * Makes a table the root of the associations-tree.
-     */
-	private void jumpTo(Table table) {
-	    rootTable.setSelectedItem(dataModel.getDisplayName(table));
-    }
-
 	/**
      * Gets model of the associations-tree.
      */
@@ -1558,16 +1537,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				parent.put(a, root);
 			}
 		}
-		
-		DefaultMutableTreeNode dontExcludeNode = null;
-		
+
 		while (!agenda.isEmpty()) {
 			Association a = agenda.get(0);
 			agenda.remove(0);
-			// since 2.4.1 disabled associations are only hidden in graphical view, not in the tree
-//			if (dontExclude == null && extractionModelFrame.hideIgnored() && a.isIgnored()) {
-//				continue;
-//			}
 			if (toNode.get(a) == null) {
 				Association rep = null;
 				for (ModelElement cand: toNode.keySet()) {
@@ -1584,9 +1557,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					representant.put(a, rep);
 				} else {
 					DefaultMutableTreeNode node = new DefaultMutableTreeNode(a);
-					if (dontExclude == a) {
-						dontExcludeNode = node;
-					}
 					treeNodes.add(node);
 					parent.get(a).add(node);
 					sort(parent.get(a));
@@ -1601,54 +1571,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 		}
 	
-		// since 2.4.1 disabled associations are only hidden in graphical view, not in the tree
-/*		if (dontExclude != null && dontExcludeNode != null && extractionModelFrame.hideIgnored()) {
-			// remove ignored associations except those on path to dontExclude
-			TreeNode[] path = dontExcludeNode.getPath();
-			treeNodes.clear();
-			removeIgnoredAssociations(root, path);
-		}
-*/
 		if (treeModel != null) {
 			treeModel.setRoot(root);
 		} else {
 			treeModel = new DefaultTreeModel(root);
 		}
 		return treeModel;
-	}
-
-	/**
-	 * Removes all disabled associations from tree.
-	 * 
-	 * @param root the root of the tree
-	 * @param exceptions don't remove these nodes
-	 */
-	private void removeIgnoredAssociations(DefaultMutableTreeNode root,
-			TreeNode[] exceptions) {
-		if (root.getUserObject() instanceof Association) {
-			Association a = (Association) root.getUserObject();
-			if (a.isIgnored()) {
-				boolean isException = false;
-				for (TreeNode ex: exceptions) {
-					if (ex == root) {
-						isException = true;
-						break;
-					}
-				}
-				if (!isException) {
-					root.removeFromParent();
-					return;
-				}
-			}
-		}
-		treeNodes.add(root);
-		List<DefaultMutableTreeNode> children = new ArrayList<DefaultMutableTreeNode>();
-		for (int i = 0; i < root.getChildCount(); ++i) {
-			children.add((DefaultMutableTreeNode) root.getChildAt(i));
-		}
-		for (DefaultMutableTreeNode n: children) {
-			removeIgnoredAssociations(n, exceptions);
-		}
 	}
 
 	/**
@@ -1730,11 +1658,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         }
         setOrientation(isHorizontalLayout);
         openXmlSettings.setVisible(ScriptFormat.XML.equals(scriptFormat));
-//    	if (ScriptFormat.XML.equals(scriptFormat)) {
-//    		editorPanel.add(xmlMappingPanel);
-//  		} else {
-//  			editorPanel.remove(xmlMappingPanel);
-//  		}
 		validate();
     }//GEN-LAST:event_onExportModusChanged
 		  
@@ -1779,6 +1702,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				}
 				return super.getTreeCellRendererComponent(tree, text, selected, expanded, leaf, row, hasFocus);
 			}
+			private static final long serialVersionUID = 2657584557290860355L;
 		};
 	}
 
@@ -1808,7 +1732,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         reversal.setBackground(((JLabel) component).getBackground());
 
         JPanel revArrow = new JPanel() {
-        	
         	public void paintComponent(Graphics g) {
         		if (association.reversalAssociation.isIgnored()) {
         			return;
@@ -1853,6 +1776,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			public Dimension getPreferredSize() {
 				return reversal.getPreferredSize();
 			}
+
+			private static final long serialVersionUID = -8515778652672162975L;
         };
         
         revArrow.setOpaque(false);
@@ -2203,7 +2128,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	public void refresh(boolean restoreSelection, boolean fullGraphModelReset, boolean storeLayout, boolean removeLayout) {
 		Association association = currentAssociation;
 		tree.setModel(getModel());
-		resetGraphEditor(fullGraphModelReset, storeLayout, removeLayout);
+		resetGraphEditor(fullGraphModelReset, storeLayout, removeLayout, true);
 		if (restoreSelection) {
 			select(association);
 		}
@@ -2213,15 +2138,33 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * Expands all node in associations tree.
 	 */
 	public void expand() {
-		graphView.expandAll(false);
+		graphView.expandAll(false, null);
 		expandPathsToVisibleTables();
+	}
+
+	/**
+	 * Shows reachability of a given table.
+	 */
+	public void showReachability(Table table) {
+		try {
+	    	LayoutStorage.enabled = false;
+        	refresh(false, true, false, true);
+	        resetGraphEditor(true, false, true, false);
+        } finally {
+	    	LayoutStorage.enabled = true;
+        }
+        graphView.expandAll(false, table);
+		expandPathsToVisibleTables();
+        if (graphView.isTableVisible(table)) {
+        	graphView.selectTable(table);
+        }
 	}
 
 	/**
 	 * Expands all associations with visible tables in associations tree.
 	 */
 	public void expandAllVisibleTables() {
-		graphView.expandAll(true);
+		graphView.expandAll(true, null);
 		expandPathsToVisibleTables();
 	}
 	
@@ -2388,7 +2331,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox aggregationCombobox;
     private javax.swing.JLabel associatedWith;
-    private javax.swing.ButtonGroup buttonGroup1;
     javax.swing.JTextField condition;
     public javax.swing.JLabel connectivityState;
     private javax.swing.JLabel dependsOn;
@@ -2417,7 +2359,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSplitPane jSplitPane1;
@@ -2459,4 +2400,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			e.printStackTrace();
 		}
 	}
+
+	private static final long serialVersionUID = -5640822484296649670L;
 }

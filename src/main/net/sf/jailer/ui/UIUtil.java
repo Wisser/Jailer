@@ -19,7 +19,6 @@ import java.awt.Component;
 import java.awt.Frame;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.awt.event.WindowListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
@@ -36,6 +35,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JDialog;
 import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -43,6 +43,7 @@ import javax.swing.WindowConstants;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Jailer;
+import net.sf.jailer.progress.ProgressListener;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 
@@ -139,7 +140,8 @@ public class UIUtil {
      * @param key the key under which to store current directory
      * @param currentDir the current directory
      */
-    private static void storeCurrentDir(String key, String currentDir) {
+    @SuppressWarnings("unchecked")
+	private static void storeCurrentDir(String key, String currentDir) {
 		try {
 			Map<String, String> cd = new HashMap<String, String>();
 			if (cdSettings.exists()) {
@@ -167,6 +169,7 @@ public class UIUtil {
      * @param key the key of the current directory to restore
      * @return the current directory, or <code>null</code> if no directory has been stored under the key
      */
+	@SuppressWarnings("unchecked")
 	private static String restoreCurrentDir(String key) {
 		if (cdSettings.exists()) {
 			try {
@@ -194,7 +197,11 @@ public class UIUtil {
      * @param password CLI argument to print as "*****"
      * @return <code>true</code> iff call succeeded
      */
-    public static boolean runJailer(Frame ownerOfConsole, List<String> cliArgs, boolean showLogfileButton, final boolean printCommandLine, boolean showExplainLogButton, final boolean closeOutputWindow, String continueOnErrorQuestion, String password) {
+    public static boolean runJailer(Frame ownerOfConsole, List<String> cliArgs, 
+    		boolean showLogfileButton, final boolean printCommandLine, boolean showExplainLogButton, 
+    		final boolean closeOutputWindow, String continueOnErrorQuestion, String password,
+    		final ProgressListener progressListener, final ProgressPanel progressPanel, final boolean showExeptions, boolean fullSize) {
+    	JDialog dialog = new JDialog(ownerOfConsole);
         List<String> args = new ArrayList<String>(cliArgs);
         args.add("-datamodel");
         args.add(CommandLineParser.getInstance().datamodelFolder);
@@ -223,7 +230,7 @@ public class UIUtil {
         	}
             argsarray[i++] = arg.trim();
         }
-        final JailerConsole outputView = new JailerConsole(ownerOfConsole, showLogfileButton, showExplainLogButton);
+        final JailerConsole outputView = new JailerConsole(ownerOfConsole, dialog, showLogfileButton, showExplainLogButton, progressPanel, fullSize);
         final PrintStream originalOut = System.out;
         final boolean[] ready = new boolean[] { true };
         System.setOut(new PrintStream(new OutputStream() {
@@ -275,6 +282,7 @@ public class UIUtil {
                 }
             }
         }));
+        final boolean[] exceptionShown = new boolean[1];
         try {
             try {
                 File exportLog = new File("export.log");
@@ -294,15 +302,25 @@ public class UIUtil {
             final Throwable[] exp = new Throwable[1];
             final StringBuffer warnings = new StringBuffer();
             final boolean[] fin = new boolean[] { false };
-            outputView.addWindowListener(new WindowAdapter() {
+            outputView.dialog.addWindowListener(new WindowAdapter() {
             	boolean cancelled = false;
 
             	@Override
     			public void windowClosing(WindowEvent e) {
+            		boolean f;
+            		synchronized (UIUtil.class) {
+	            		f = exp[0] == null;
+	            	}
+            		if (cancelled && f) {
+            			JOptionPane.showMessageDialog(outputView.dialog, "Cancellation in progress...", "Cancellation", JOptionPane.INFORMATION_MESSAGE);
+            		}
     				if (exp[0] == null && !fin[0] && !cancelled) {
-	    				if (JOptionPane.showConfirmDialog(outputView, "Cancel operation?", "Cancellation", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+	    				if (JOptionPane.showConfirmDialog(outputView.dialog, "Cancel operation?", "Cancellation", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
 	    					CancellationHandler.cancel();
-	    					outputView.setTitle("Jailer Console - cancelling...");
+	    					outputView.dialog.setTitle("Jailer Console - cancelling...");
+	    					if (progressListener != null) {
+	    						progressListener.newStage("cancelling", true, true);
+	    					}
 	    					cancelled = true;
 	    				}
     				}
@@ -331,44 +349,65 @@ public class UIUtil {
 		                if (printCommandLine) {
 		                    _log.info("arguments: " + arglist.toString().trim());
 		                }
-		            	result[0] = Jailer.jailerMain(argsarray, warnings);
+		            	result[0] = Jailer.jailerMain(argsarray, warnings, progressListener);
 		            } catch (Throwable t) {
-		            	exp[0] = t;
+		            	synchronized (UIUtil.class) {
+		            		exp[0] = t;
+		            	}
 		            } finally {
 		            	// flush
 		            	System.out.println("@");
-		            	synchronized (fin) {
+		            	synchronized (UIUtil.class) {
 		            		fin[0] = true;
 		            	}
 		            }
 		            SwingUtilities.invokeLater(new Runnable() {
 		            	public void run() {
-		            		outputView.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
-		                    if (closeOutputWindow && result[0] && exp[0] == null && warnings.length() == 0) {
-		                    	outputView.setVisible(false);
-		                    } else {
-		                    	outputView.finish(result[0] && exp[0] == null);
-		                        if (result[0] && warnings.length() > 0) {
-		                        	JOptionPane.showMessageDialog(outputView, warnings.length() > 800? warnings.substring(0, 800) + "..." : warnings.toString(), "Warning", JOptionPane.INFORMATION_MESSAGE);
-		                        }
-		                    }
+		            		synchronized (UIUtil.class) {
+			            		outputView.dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		    					if (progressListener != null) {
+		    						progressListener.newStage(exp[0] == null? "finished" : "failed", exp[0] != null, true);
+		    					}
+		    					if (closeOutputWindow && result[0] && exp[0] == null && warnings.length() == 0) {
+		                    		outputView.dialog.setVisible(false);
+			                    } else {
+			                    	outputView.finish(result[0] && exp[0] == null);
+			                        if (result[0] && warnings.length() > 0) {
+			                        	JOptionPane.showMessageDialog(outputView.dialog, warnings.length() > 800? warnings.substring(0, 800) + "..." : warnings.toString(), "Warning", JOptionPane.INFORMATION_MESSAGE);
+			                        } else if (showExeptions && exp[0] != null && !(exp[0] instanceof CancellationException)) {
+			                        	UIUtil.showException(outputView.dialog, "Error", exp[0]);
+			                        	exceptionShown[0] = true;
+			                        }
+			                        if (result[0] && progressPanel != null) {
+			                        	progressPanel.confirm();
+			                        }
+			                    }
+		            		}
 		            	}
 		            });
 				}
             }, "jailer-main").start();
-            outputView.setVisible(true);
-            if (exp[0] != null) {
-            	throw exp[0];
+            outputView.dialog.setVisible(true);
+            synchronized (UIUtil.class) {
+	            if (exp[0] != null) {
+	            	throw exp[0];
+	            }
             }
             if (!result[0] && continueOnErrorQuestion != null) {
-            	result[0] = JOptionPane.showConfirmDialog(outputView, continueOnErrorQuestion, "Error", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
+            	result[0] = JOptionPane.showConfirmDialog(outputView.dialog, continueOnErrorQuestion, "Error", JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
             }
             return result[0];
         } catch (Throwable t) {
         	if (t instanceof CancellationException) {
         		CancellationHandler.reset();
         	} else {
-        		UIUtil.showException(null, "Error", t);
+        		boolean shown = false;
+        		synchronized (UIUtil.class) {
+        			shown = exceptionShown[0];
+        		}
+        		if (!shown) {
+        			UIUtil.showException(null, "Error", t);
+        		}
         	}
             return false;
         } finally {

@@ -34,7 +34,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import javax.activation.FileDataSource;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JList;
@@ -263,6 +262,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 				}
 				return render;
 			}
+			private static final long serialVersionUID = -8591324056536900244L;
         };
         
         ListCellRenderer associationsListItemRenderer = new DefaultListCellRenderer() {
@@ -292,6 +292,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 				}
 				return render;
 			}
+			private static final long serialVersionUID = -6057505075587930064L;
         };
     
         tablesList.setCellRenderer(tablesListItemRenderer);
@@ -840,4 +841,5 @@ public class DataModelEditor extends javax.swing.JDialog {
     private javax.swing.JList tablesList;
     // Ende der Variablendeklaration//GEN-END:variables
     
+	private static final long serialVersionUID = -1267039412732180237L;
 }
