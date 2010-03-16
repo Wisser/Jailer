@@ -148,6 +148,9 @@ public class Configuration {
 	private static synchronized AbstractXmlApplicationContext getContext() {
     	if (theApplicationContext == null) {
     		String configFile = "jailer.xml";
+    		if (CommandLineParser.getInstance().getWorkingfolder() != null) {
+    			configFile = "file:" + CommandLineParser.getInstance().newFile(configFile).getAbsolutePath();
+    		}
 	    	theApplicationContext = new FileSystemXmlApplicationContext(configFile);
 	    	doMinimizeUPK = Boolean.TRUE.equals(theApplicationContext.getBean("minimize-UPK"));
 	        theScriptEnhancer = (List<ScriptEnhancer>) theApplicationContext.getBean("script-enhancer");

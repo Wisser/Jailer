@@ -98,7 +98,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "3.4";
+	public static final String VERSION = "3.4.1.beta";
 
 	/**
 	 * The relational data model.
@@ -933,13 +933,14 @@ public class Jailer {
 		try {
 			ProgressListenerRegistry.setProgressListener(progressListener);
 			
+			if (!CommandLineParser.parse(args, false)) {
+				return false;
+			}
+
 			if (Configuration.getDoMinimizeUPK()) {
 				_log.info("minimize-UPK=" + Configuration.getDoMinimizeUPK());
 			}
 
-			if (!CommandLineParser.parse(args, false)) {
-				return false;
-			}
 			CommandLineParser clp = CommandLineParser.getInstance();
 
 			String command = clp.arguments.get(0);

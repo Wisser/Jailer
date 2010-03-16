@@ -113,7 +113,10 @@ public class CommandLineParser {
         System.out.println("    -t prevents deletion of entities from 'tabu'-tables");
         System.out.println();
         System.out.println("  jailer create-ddl");
-        System.out.println("    creates the DDL for the working-tables");
+        System.out.println("    creates the DDL for the working-tables and prints it to stdout");
+        System.out.println();
+        System.out.println("  jailer create-ddl <jdbc-driver-class> <db-URL> <db-user> <db-password>");
+        System.out.println("    creates the DDL for the working-tables and executes it");
         System.out.println();
         System.out.println("  jailer build-model [-schema <schema>] <jdbc-driver-class> <db-URL> <db-user> <db-password>");
         System.out.println("    automatically retrieves datamodel elements using the 'model-finder' beans");
