@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.datamodel.Table;
 
 /**
@@ -162,7 +163,7 @@ public class PrintUtil {
     public static String loadFile(String file, boolean ignoreComments) throws FileNotFoundException, IOException {
         StringBuffer sb;
         sb = new StringBuffer();
-        BufferedReader reader = new BufferedReader(new FileReader(file));
+        BufferedReader reader = new BufferedReader(new FileReader(CommandLineParser.getInstance().newFile(file)));
         String line = null;
         while ((line = reader.readLine()) != null) {
             if (!ignoreComments || (line.trim().length() > 0 && !line.startsWith("#"))) {
