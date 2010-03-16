@@ -1,3 +1,6 @@
+3.4.1.beta
+ - Fixed a bug concerning the command line option "working-folder".
+
 3.4
  - Added graphical progress indicator.
  - Added command line option to set working folder.
