@@ -67,6 +67,17 @@ public class Configuration {
     private Map<String, String> typeReplacement;
     
     /**
+     * Replacement map for special characters in string literals.
+     */
+    private Map<String, String> stringLiteralEscapeSequences;
+    
+    /**
+     * Maps characters to escape sequences according to {@link #stringLiteralEscapeSequences}.
+     */
+    private Map<Character, String> charToEscapeSequence = new HashMap<Character, String>();
+    { charToEscapeSequence.put('\'', "''"); }
+    
+    /**
      * Set of type names for which no data must be exported.
      */
     public Set<String> exportBlocks = new HashSet<String>();
@@ -310,5 +321,69 @@ public class Configuration {
 	public void setIdentityInserts(boolean identityInserts) {
 		this.identityInserts = identityInserts;
 	}
+
+	/**
+     * Sets replacement map for special characters in string literals.
+     */
+    public void setStringLiteralEscapeSequences(Map<String, String> stringLiteralEscapeSequences) {
+    	this.stringLiteralEscapeSequences = stringLiteralEscapeSequences;
+    	try {
+	    	for (Map.Entry<String, String> e: stringLiteralEscapeSequences.entrySet()) {
+	    		if (e.getKey().startsWith("\\")) {
+	    			char c;
+	    			char c2 = e.getKey().charAt(1);
+	    			if (Character.isDigit(c2)) {
+	    				c = (char) Integer.parseInt(e.getKey().substring(1));
+	    			} else if (c2 == '\\') {
+	    				c = '\\';
+	    			} else if (c2 == 'b') {
+	    				c = '\b';
+	    			} else if (c2 == 'n') {
+	    				c = '\n';
+	    			} else if (c2 == 't') {
+	    				c = '\t';
+	    			} else if (c2 == 'r') {
+	    				c = '\r';
+	    			} else {
+	    				throw new RuntimeException("illegal escape sequence: " + e.getKey());
+	    			}
+	    			charToEscapeSequence.put(c, e.getValue());
+	    		} else {
+	    			charToEscapeSequence.put(e.getKey().charAt(0), e.getValue());
+	    		}
+	    	}
+    	} catch (Exception e) {
+    		throw new RuntimeException("cannot recognize key of stringLiteralEscapeSequences-entry", e);
+    	}
+    }
+
+    /**
+     * Gets replacement map for special characters in string literals.
+     */
+    public Map<String, String> getStringLiteralEscapeSequences() {
+    	return stringLiteralEscapeSequences;
+    }
+    
+    /**
+     * Converts a string to a string literal according to the {@link #getStringLiteralEscapeSequences()}.
+     * 
+     * @param string the string to convert
+     * @return the string literal
+     */
+    public StringBuilder convertToStringLiteral(String string) {
+    	StringBuilder qvalue = new StringBuilder();
+        int l = string.length();
+    	
+        for (int i = 0; i < l; ++i) {
+        	char c = string.charAt(i);
+        	String es = charToEscapeSequence.get(c);
+        	if (es != null) {
+        		qvalue.append(es);
+        	} else {
+        		qvalue.append(c);
+        	}
+        }
+        return qvalue;
+    }
     
 }

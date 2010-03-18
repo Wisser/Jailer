@@ -1,5 +1,6 @@
-3.4.1.beta
+3.4.1.beta2
  - Fixed a bug concerning the command line option "working-folder".
+ - Support for MySQL string literal escape sequences.
 
 3.4
  - Added graphical progress indicator.
