@@ -33,10 +33,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
+import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableColumnModel;
@@ -129,6 +131,9 @@ public class ProgressTable extends JTable {
 		numberRender.setOpaque(true);
 		setRowHeight(getRowHeight() * 3);
 
+		final Border defaultBorder = cellPanel.getBorder();
+		final Border selBorder = BorderFactory.createLineBorder(Color.BLACK, 2);
+		
 		setDefaultRenderer(Object.class, new TableCellRenderer() {
 			private Font font = new JLabel("normal").getFont();
 			private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
@@ -141,8 +146,14 @@ public class ProgressTable extends JTable {
 				tableRender.setForeground(Color.BLACK);
 				numberRender.setForeground(Color.BLACK);
 				cellPanel.setToolTipText(null);
+				cellPanel.setBorder(defaultBorder);
 				if (value instanceof CellInfo) {
 					CellInfo cellInfo = (CellInfo) value;
+					
+					if (cellInfo.tableName.equals(selectedTableName)) {
+						cellPanel.setBorder(selBorder);
+					}
+					
 					tableRender.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 					tableRender.setText(cellInfo.tableName);
 					cellPanel.setToolTipText(cellInfo.tableName);
@@ -206,6 +217,7 @@ public class ProgressTable extends JTable {
 						CellInfo cellInfo = (CellInfo) o;
 						selectedCells.clear();
 						selectedTableName = cellInfo.tableName;
+						multiSelection = false;
 						selectCell(cellInfo);
 						repaint();
 						getSelectionModel().clearSelection();
@@ -230,6 +242,8 @@ public class ProgressTable extends JTable {
 		setTableHeader(null);
 	}
 
+	private boolean multiSelection = false;
+	
 	/**
 	 * Recursively selects cells.
 	 * 
@@ -242,6 +256,29 @@ public class ProgressTable extends JTable {
 				selectCell(p);
 			}
 		}
+	}
+
+	/**
+	 * Selects all cells which render a given table.
+	 * 
+	 * @param tableName name of the table
+	 */
+	public void selectAllCells(String tableName) {
+		multiSelection = true;
+		selectedCells.clear();
+		selectedTableName = tableName;
+		for (List<CellInfo> cL : cellInfos) {
+			for (CellInfo cellInfo : cL) {
+				if (cellInfo != null) {
+					if (cellInfo.tableName.equals(tableName)) {
+						if (cellInfo.numberOfRows > 0) {
+							selectCell(cellInfo);
+						}
+					}
+				}
+			}
+		}
+		repaint();
 	}
 
 	private DefaultTableModel tableModel;
@@ -339,18 +376,22 @@ public class ProgressTable extends JTable {
 		}
 		addRow(cells, day, scrollToBottom);
 
-		if (selectedTableName != null && checkSelection) {
-			boolean f = false;
-			for (CellInfo cellInfo : cellInfos.get(cellInfos.size() - 1)) {
-				if (cellInfo != null && selectedTableName.equals(cellInfo.tableName)) {
-					selectCell(cellInfo);
-					f = true;
-					break;
+		if (selectedTableName != null && (checkSelection || multiSelection)) {
+			if (multiSelection) {
+				selectAllCells(selectedTableName);
+			} else {
+				boolean f = false;
+				for (CellInfo cellInfo : cellInfos.get(cellInfos.size() - 1)) {
+					if (cellInfo != null && selectedTableName.equals(cellInfo.tableName)) {
+						selectCell(cellInfo);
+						f = true;
+						break;
+					}
 				}
-			}
-			if (!f) {
-				selectedCells.clear();
-				selectedTableName = null;
+				if (!f) {
+					selectedCells.clear();
+					selectedTableName = null;
+				}
 			}
 		}
 	}

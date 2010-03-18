@@ -316,7 +316,12 @@ public class UIUtil {
             		}
     				if (exp[0] == null && !fin[0] && !cancelled) {
 	    				if (JOptionPane.showConfirmDialog(outputView.dialog, "Cancel operation?", "Cancellation", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-	    					CancellationHandler.cancel();
+	    					new Thread(new Runnable() {
+	    						@Override
+	    						public void run() {
+    								CancellationHandler.cancel();
+	    						}
+	    					}).start();
 	    					outputView.dialog.setTitle("Jailer Console - cancelling...");
 	    					if (progressListener != null) {
 	    						progressListener.newStage("cancelling", true, true);
