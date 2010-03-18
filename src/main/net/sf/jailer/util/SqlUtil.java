@@ -257,22 +257,7 @@ public class SqlUtil {
             return "'" + content + "'";
         }
         if (content instanceof String) {
-            String qvalue = (String) content;
-            if (qvalue.indexOf('\'') > -1) {
-                StringBuffer escapeBuffer = new StringBuffer(qvalue);
-                int pos = 0;
-                int lastpos = 0;
-
-                do {
-                    pos = escapeBuffer.indexOf("'", lastpos);
-                    if (pos > -1) {
-                        escapeBuffer.insert(pos, '\'');
-                        lastpos = pos + 2;
-                    }
-                } while (pos > -1);
-                qvalue = escapeBuffer.toString();
-            }
-            return "'" + qvalue + "'";
+            return "'" + Configuration.forDbms(session).convertToStringLiteral((String) content) + "'";
         }
         if (content instanceof byte[]) {
         	byte[] data = (byte[]) content;

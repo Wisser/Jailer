@@ -223,6 +223,19 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<!-- for MySQL -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:mysql.*" />
+			<property name="stringLiteralEscapeSequences">
+				<map>
+					<entry key="\0" value="\0"/>
+					<entry key="'" value="\'"/>
+					<entry key="&quot;" value="\&quot;"/>
+					<entry key="\n" value="\n"/>
+					<entry key="\r" value="\r"/>
+					<entry key="\t" value="\t"/>
+					<entry key="\b" value="\b"/>
+					<entry key="\26" value="\Z"/>
+					<entry key="\\" value="\\"/>
+				</map>
+			</property>
 			<property name="statisticRenovator">
 				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
 					<constructor-arg value="script/mysql/update_statistics.sql" />
