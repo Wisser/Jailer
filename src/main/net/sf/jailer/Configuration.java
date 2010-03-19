@@ -76,6 +76,7 @@ public class Configuration {
      */
     private Map<Character, String> charToEscapeSequence = new HashMap<Character, String>();
     { charToEscapeSequence.put('\'', "''"); }
+    private char[] keysOfCharToEscapeSequence = new char[] { '\'' };
     
     /**
      * Set of type names for which no data must be exported.
@@ -352,6 +353,11 @@ public class Configuration {
 	    			charToEscapeSequence.put(e.getKey().charAt(0), e.getValue());
 	    		}
 	    	}
+	    	keysOfCharToEscapeSequence = new char[charToEscapeSequence.keySet().size()];
+	    	int i = 0;
+	    	for (char c: charToEscapeSequence.keySet()) {
+	    		keysOfCharToEscapeSequence[i++] = c;
+	    	}
     	} catch (Exception e) {
     		throw new RuntimeException("cannot recognize key of stringLiteralEscapeSequences-entry", e);
     	}
@@ -370,7 +376,18 @@ public class Configuration {
      * @param string the string to convert
      * @return the string literal
      */
-    public StringBuilder convertToStringLiteral(String string) {
+    public String convertToStringLiteral(String string) {
+    	boolean esc = false;
+    	for (char c: keysOfCharToEscapeSequence) {
+    		if (string.indexOf(c) >= 0) {
+    			esc = true;
+    			break;
+    		}
+    	}
+    	if (!esc) {
+    		return string;
+    	}
+    	
     	StringBuilder qvalue = new StringBuilder();
         int l = string.length();
     	
@@ -383,7 +400,7 @@ public class Configuration {
         		qvalue.append(c);
         	}
         }
-        return qvalue;
+        return qvalue.toString();
     }
     
 }
