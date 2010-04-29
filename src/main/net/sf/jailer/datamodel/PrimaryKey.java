@@ -71,7 +71,7 @@ public class PrimaryKey {
 	            		continue;
 	            	}
 		        	Column otherColumn = primaryKey.getColumns().get(i);
-		            if (column.type.equals(otherColumn.type)) {
+		            if (isAssignable(column, otherColumn)) {
 		                match.put(column, otherColumn);
 		                assignedUPKColumns.add(i);
 	                    break;
@@ -84,7 +84,7 @@ public class PrimaryKey {
 	        int i = 0;
 	        for (Column column: getColumns()) {
 	            Column otherColumn = primaryKey.getColumns().get(i);
-	            if (column.type.equals(otherColumn.type)) {
+	            if (isAssignable(column, otherColumn)) {
 	                match.put(column, otherColumn);
 	                ++i;
 	                if (i >= primaryKey.columns.size()) {
@@ -95,6 +95,31 @@ public class PrimaryKey {
 	        return match;
     	}
     }
+
+	private boolean isAssignable(Column uPKColumn, Column entityColumn) {
+		if (!uPKColumn.type.equals(entityColumn.type)) {
+			return false;
+		}
+		if (uPKColumn.length == 0 && entityColumn.length != 0) {
+			return false;
+		}
+		if (uPKColumn.length != 0 && entityColumn.length == 0) {
+			return false;
+		}
+		if (uPKColumn.length < entityColumn.length) {
+			return false;
+		}
+		if (uPKColumn.precision < 0 && entityColumn.precision >= 0) {
+			return false;
+		}
+		if (uPKColumn.precision >= 0 && entityColumn.precision < 0) {
+			return false;
+		}
+		if (uPKColumn.precision < entityColumn.precision) {
+			return false;
+		}
+		return true;
+	}
     
     /**
      * Creates a comma-separated list of column names.
