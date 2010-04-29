@@ -69,7 +69,7 @@ public class PrimaryKeyFactory {
 					}
 					Column uPKColumn = universalPrimaryKey.getColumns().get(i);
 					if (uPKColumn.type.equalsIgnoreCase(column.type) && column.precision < 0 && uPKColumn.precision < 0) {
-						if (column.length > 0 && column.length > uPKColumn.length) {
+						if (column.length > 0 && uPKColumn.length > 0 && column.length > uPKColumn.length) {
 							// increase length
 							universalPrimaryKey.getColumns().set(
 									i,
@@ -111,7 +111,7 @@ public class PrimaryKeyFactory {
 					Column uPKColumn = universalPrimaryKey.getColumns().get(i);
 					Column column = columns.get(n);
 					if (uPKColumn.type.equalsIgnoreCase(column.type) && column.precision < 0 && uPKColumn.precision < 0) {
-						if (column.length > 0 && column.length > uPKColumn.length) {
+						if (column.length > 0 && uPKColumn.length > 0 && column.length > uPKColumn.length) {
 							// increase length
 							universalPrimaryKey.getColumns().set(
 									i,
