@@ -410,6 +410,8 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     		if (dbms == DBMS.POSTGRESQL) {
     			if (type == Types.VARCHAR && length >= 10485760) {
     				length = 0;
+    			} else if (type == Types.NUMERIC && length > 1000) {
+    				length = 0;
     			} else if ("bytea".equalsIgnoreCase(typeName)) {
     				length = 0;
     			}
