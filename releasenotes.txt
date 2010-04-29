@@ -1,3 +1,6 @@
+3.4.2.beta
+ - Fixed a bug concerning numeric columns with unlimited precision in postgreSQL.
+
 3.4.1
  - Improvements of graphical progress indicator.
  - Support for MySQL string literal escape sequences.
