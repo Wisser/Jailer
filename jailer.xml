@@ -145,6 +145,8 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<property name="urlPattern" value="jdbc:postgres.*" />
 			<property name="typeReplacement">
 				<map>
+					<entry key="DOUBLE" value="DOUBLE PRECISION"/>
+					<entry key="double" value="double precision"/>
 					<entry key="bigserial" value="int8"/>
 					<entry key="serial8" value="int8"/>
 					<entry key="serial" value="int4"/>
@@ -183,6 +185,11 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<!-- for Firebird -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:firebirdsql.*" />
+			<property name="typeReplacement">
+				<map>
+					<entry key="DOUBLE" value="DOUBLE PRECISION"/>
+				</map>
+			</property>
 			<property name="statisticRenovator">
 				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
 					<constructor-arg value="script/firebird/update_statistics.sql" />
