@@ -1,5 +1,6 @@
-3.4.2.beta
+3.4.2
  - Fixed a bug concerning numeric columns with unlimited precision in postgreSQL.
+ - Amended configuration for Firebird DBMS.
 
 3.4.1
  - Improvements of graphical progress indicator.
