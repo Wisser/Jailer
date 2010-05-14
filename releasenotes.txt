@@ -1,3 +1,6 @@
+3.4.3
+ - Added support for user-defined distinct types.
+
 3.4.2
  - Fixed a bug concerning numeric columns with unlimited precision in postgreSQL.
  - Amended configuration for Firebird DBMS.
