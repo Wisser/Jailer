@@ -218,6 +218,10 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                     	precision = -1;
                     }
                 }
+                if (type == Types.DISTINCT) {
+                	length = 0;
+                	precision = -1;
+                }
                 Column column = new Column(colName, sqlType, filterLength(length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), precision);
                 for (int i: pk.keySet()) {
                     if (pk.get(i).name.equals(column.name)) {
@@ -387,6 +391,10 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 if (resultSet.wasNull() || precision == 0) {
                 	precision = -1;
                 }
+            }
+            if (type == Types.DISTINCT) {
+            	length = 0;
+            	precision = -1;
             }
             _log.debug("column info: '" + colName + "' '" + sqlType + "' " + type + " '" + resultSet.getString(6) + "'");
             columns.add(new Column(colName, sqlType, filterLength(length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), precision));
