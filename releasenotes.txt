@@ -1,4 +1,5 @@
 3.4.3
+ - Added support for SQLite DBMS.
  - Added support for user-defined distinct types.
 
 3.4.2

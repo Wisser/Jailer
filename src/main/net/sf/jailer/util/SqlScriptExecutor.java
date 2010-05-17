@@ -107,7 +107,7 @@ public class SqlScriptExecutor {
                 	// drops may fail
                 	if (!stmt.trim().toLowerCase().startsWith("drop")) {
                     	// fix for bug [2946477]
-                		if (!stmt.trim().toLowerCase().contains("jailer_dual")) {
+                		if (!stmt.trim().toUpperCase().contains("DROP TABLE JAILER_DUAL")) {
                     		throw e;
                     	}
                 	}
