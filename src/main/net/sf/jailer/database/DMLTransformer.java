@@ -156,7 +156,7 @@ public class DMLTransformer implements ResultSetReader {
         this.upsertOnly = upsertOnly;
         this.table = table;
         this.scriptFileWriter = scriptFileWriter;
-        this.insertStatementBuilder = new StatementBuilder(SQLDialect.currentDialect.supportsMultiRowInserts || session.dbms == DBMS.ORACLE? maxBodySize : 1);
+        this.insertStatementBuilder = new StatementBuilder(SQLDialect.currentDialect.supportsMultiRowInserts || session.dbms == DBMS.ORACLE || session.dbms == DBMS.SQLITE? maxBodySize : 1);
         this.quoting = new Quoting(metaData);
         this.session = session;
         tableHasIdentityColumn = false;
@@ -186,7 +186,7 @@ public class DMLTransformer implements ResultSetReader {
                 String mdColumnLabel = quoting.quote(resultSet.getMetaData().getColumnLabel(i));
                 int mdColumnType = resultSet.getMetaData().getColumnType(i);
                 
-                if (mdColumnType == Types.BLOB || mdColumnType == Types.CLOB || mdColumnType == Types.SQLXML) {
+                if ((mdColumnType == Types.BLOB || mdColumnType == Types.CLOB || mdColumnType == Types.SQLXML) && session.dbms != DBMS.SQLITE) {
                 	tableHasLobs = true;
                 	lobColumnIndexes.add(i);
                 	lobColumns.add(mdColumnLabel);
@@ -403,6 +403,13 @@ public class DMLTransformer implements ResultSetReader {
             	if (session.dbms == DBMS.ORACLE) {
             		String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
 	                String item = "\n Select " + valueList + " From DUAL";
+	                if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
+	                    writeToScriptFile(insertStatementBuilder.build(), true);
+	                }
+	                insertStatementBuilder.append(insertSchema, item, " Union all ", ";\n");
+            	} else if (session.dbms == DBMS.SQLITE) {
+            		String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
+	                String item = "\n Select " + valueList + " ";
 	                if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
 	                    writeToScriptFile(insertStatementBuilder.build(), true);
 	                }

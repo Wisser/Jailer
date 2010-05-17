@@ -320,6 +320,7 @@ public class Session {
 				if (productName.toUpperCase().contains("DB2")) dbms = DBMS.DB2;
 				if (productName.toUpperCase().contains("POSTGRES")) dbms = DBMS.POSTGRESQL;
 				if (productName.toUpperCase().contains("MYSQL")) dbms = DBMS.MySQL;
+				if (productName.toUpperCase().contains("SQLITE")) dbms = DBMS.SQLITE;
 				if (productName.toUpperCase().contains("ADAPTIVE SERVER")) dbms = DBMS.SYBASE;
 				if (productName.toUpperCase().equals("ASE")) dbms = DBMS.SYBASE;
 			}

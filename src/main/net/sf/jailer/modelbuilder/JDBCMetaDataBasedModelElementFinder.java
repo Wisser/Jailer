@@ -85,7 +85,12 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         for (Table table: dataModel.getTables()) {
             _log.info("find associations with " + table.getName());
         	try {
-        		resultSet = metaData.getExportedKeys(null, quoting.unquote(table.getOriginalSchema(quoting.quote(defaultSchema))), quoting.unquote(table.getUnqualifiedName()));
+        		// SQlite driver does'nt support getExportedKeys
+        		if (session.dbms == DBMS.SQLITE) {
+        			resultSet = metaData.getImportedKeys(null, quoting.unquote(table.getOriginalSchema(quoting.quote(defaultSchema))), quoting.unquote(table.getUnqualifiedName()));
+        		} else {
+        			resultSet = metaData.getExportedKeys(null, quoting.unquote(table.getOriginalSchema(quoting.quote(defaultSchema))), quoting.unquote(table.getUnqualifiedName()));
+        		}
         	} catch (Exception e) {
         		_log.info("failed. " + e.getMessage());
             	continue;
@@ -180,9 +185,15 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 pkColumns.put(tableName, pk);
             }
             boolean hasPK = false;
+            int nextKeySeq = 0;
             while (resultSet.next()) {
             	hasPK = true;
-                pk.put(resultSet.getInt(5), new Column(quoting.quote(resultSet.getString(4)), "", 0, -1));
+            	int keySeq = resultSet.getInt(5);
+            	if (session.dbms == DBMS.SQLITE) {
+            		// SQlite driver does'nt return the keySeq
+            		keySeq = nextKeySeq++;
+            	}
+                pk.put(keySeq, new Column(quoting.quote(resultSet.getString(4)), "", 0, -1));
             }
             _log.info((hasPK? "" : "no ") + "primary key found for table " + tableName);
             resultSet.close();
@@ -423,6 +434,8 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     			} else if ("bytea".equalsIgnoreCase(typeName)) {
     				length = 0;
     			}
+    		} else if (dbms == DBMS.SQLITE) {
+    			return 0;
     		}
     	} else {
     		if (dbms == DBMS.POSTGRESQL) {

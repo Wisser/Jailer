@@ -31,4 +31,5 @@ Sybase (jConnect 5.2);jdbc:sybase:Tds:<HOST>:<PORT>;com.sybase.jdbc2.jdbc.SybDri
 Sybase (jConnect 6.0);jdbc:sybase:Tds:<HOST>:<PORT>;com.sybase.jdbc3.jdbc.SybDriver
 Derby;jdbc:derby://<HOST>:<PORT>/<DB>;org.apache.derby.jdbc.ClientDriver
 Derby embedded;jdbc:derby:<DB>;org.apache.derby.jdbc.EmbeddedDriver
+SQLite;jdbc:sqlite:<file>;org.sqlite.JDBC
 <other>;
