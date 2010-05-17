@@ -288,5 +288,21 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 				</bean>
 			</property>
 		</bean>
+
+    <!-- for SQlite -->
+		<bean class="net.sf.jailer.Configuration">
+			<property name="urlPattern" value="jdbc:sqlite.*" />
+			<property name="sessionTemporaryTableManager">
+				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
+					<property name="dmlTableReferencePrefix" value="" />
+					<property name="createTablePrefix" value="CREATE TEMPORARY TABLE " />
+					<property name="createTableSuffix" value="" />
+					<property name="createIndexPrefix" value="CREATE INDEX " />
+					<property name="createIndexSuffix" value="" />
+					<property name="indexTablePrefix" value="" />
+					<property name="dropTablePrefix" value="DROP TABLE " />
+				</bean>
+			</property>
+		</bean>
 	</util:list>
 </beans>
