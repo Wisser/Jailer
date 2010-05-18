@@ -359,10 +359,10 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         	alias.setBackground(red);
         	isOk = false;
         }
-        if (user.getText().trim().length() == 0) {
-        	user.setBackground(red);
-        	isOk = false;
-        }
+//        if (user.getText().trim().length() == 0) {
+//        	user.setBackground(red);
+//        	isOk = false;
+//        }
         if (driverClass.getText().trim().length() == 0) {
         	driverClass.setBackground(red);
         	isOk = false;
