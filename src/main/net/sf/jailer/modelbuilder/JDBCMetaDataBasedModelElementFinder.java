@@ -85,12 +85,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         for (Table table: dataModel.getTables()) {
             _log.info("find associations with " + table.getName());
         	try {
-        		// SQlite driver does'nt support getExportedKeys
-        		if (session.dbms == DBMS.SQLITE) {
-        			resultSet = metaData.getImportedKeys(null, quoting.unquote(table.getOriginalSchema(quoting.quote(defaultSchema))), quoting.unquote(table.getUnqualifiedName()));
-        		} else {
-        			resultSet = metaData.getExportedKeys(null, quoting.unquote(table.getOriginalSchema(quoting.quote(defaultSchema))), quoting.unquote(table.getUnqualifiedName()));
-        		}
+        		resultSet = metaData.getImportedKeys(null, quoting.unquote(table.getOriginalSchema(quoting.quote(defaultSchema))), quoting.unquote(table.getUnqualifiedName()));
         	} catch (Exception e) {
         		_log.info("failed. " + e.getMessage());
             	continue;
