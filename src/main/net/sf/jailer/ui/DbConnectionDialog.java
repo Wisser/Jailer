@@ -25,15 +25,12 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.sql.Connection;
 import java.sql.Driver;
 import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -49,6 +46,7 @@ import javax.swing.table.TableColumn;
 
 import net.sf.jailer.database.Session;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
+import net.sf.jailer.util.ClasspathUtil;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
 
@@ -686,7 +684,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			d2 = null;
 		}
 		try {
-			Session.setClassLoaderForJdbcDriver(addJarToClasspath(d1, d2));
+			Session.setClassLoaderForJdbcDriver(ClasspathUtil.addJarToClasspath(d1, d2));
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error loading driver jars", e);
 			return;
@@ -712,46 +710,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 
 	}// GEN-LAST:event_jButton1ActionPerformed
-
-	/**
-	 * Holds all class-loader in order to prevent loading a jar twice.
-	 */
-	private Map<String, URLClassLoader> classloaders = new HashMap<String, URLClassLoader>();
-
-	/**
-	 * Adds one or two jars to classpath.
-	 * 
-	 * @param jarName1
-	 *            filename of jar 1
-	 * @param jarName2
-	 *            filename of jar 2
-	 */
-	private URLClassLoader addJarToClasspath(String jarName1, String jarName2)
-			throws Exception {
-		String mapKey = jarName1 + "," + jarName2;
-		if (classloaders.containsKey(mapKey)) {
-			return classloaders.get(mapKey);
-		}
-		URL[] urls;
-		if (jarName1 == null) {
-			if (jarName2 == null) {
-				return null;
-			}
-			jarName1 = jarName2;
-			jarName2 = null;
-		}
-		System.out.println("add '" + jarName1 + "' to classpath");
-		if (jarName2 == null) {
-			urls = new URL[] { new File(jarName1).toURI().toURL() };
-		} else {
-			System.out.println("add '" + jarName2 + "' to classpath");
-			urls = new URL[] { new File(jarName1).toURI().toURL(),
-					new File(jarName2).toURI().toURL() };
-		}
-		URLClassLoader urlLoader = new URLClassLoader(urls);
-		classloaders.put(mapKey, urlLoader);
-		return urlLoader;
-	}
 
 	/**
 	 * Selects the DB-schema to analyze.
@@ -807,6 +765,14 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		args.add(currentConnection.url);
 		args.add(currentConnection.user);
 		args.add(currentConnection.password);
+		if (currentConnection.jar1.trim().length() > 0) {
+			args.add("-jdbcjar");
+			args.add(currentConnection.jar1.trim());
+		}
+		if (currentConnection.jar2.trim().length() > 0) {
+			args.add("-jdbcjar2");
+			args.add(currentConnection.jar2.trim());
+		}
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

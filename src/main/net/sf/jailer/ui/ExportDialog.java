@@ -18,6 +18,10 @@ package net.sf.jailer.ui;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.GridBagConstraints;
+import java.awt.Point;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -31,6 +35,8 @@ import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 
 import net.sf.jailer.Configuration;
 import net.sf.jailer.DDLCreator;
@@ -100,12 +106,17 @@ public class ExportDialog extends javax.swing.JDialog {
 	private final Table subject;
 	
 	private ParameterEditor parameterEditor;
+	private final List<String> initialArgs;
+	private final String password;
 	
-    /** Creates new form DbConnectionDialog */
-    public ExportDialog(java.awt.Frame parent, DataModel dataModel, net.sf.jailer.datamodel.Table subject, String subjectCondition, Session session) {
+    /** Creates new form DbConnectionDialog 
+     * @param args */
+    public ExportDialog(java.awt.Frame parent, DataModel dataModel, net.sf.jailer.datamodel.Table subject, String subjectCondition, Session session, List<String> initialArgs, String password) {
         super(parent, true);
         this.dataModel = dataModel;
         this.subject = subject;
+        this.initialArgs = new ArrayList<String>(initialArgs);
+        this.password = password;
         initComponents();
         
         parameterEditor = new ParameterEditor(parent);
@@ -199,6 +210,40 @@ public class ExportDialog extends javax.swing.JDialog {
         	parameterEditor.firstTextField.grabFocus();
         }
         
+        DocumentListener dl = new DocumentListener() {
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				updateCLIArea();
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				updateCLIArea();
+			}
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				updateCLIArea();
+			}
+		};
+		ActionListener al = new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				updateCLIArea();
+			}
+		};
+        where.getDocument().addDocumentListener(dl);
+        insert.getDocument().addDocumentListener(dl);
+        delete.getDocument().addDocumentListener(dl);
+        threads.getDocument().addDocumentListener(dl);
+        rowsPerThread.getDocument().addDocumentListener(dl);
+        upsertCheckbox.addActionListener(al);
+        explain.addActionListener(al);
+        scopeGlobal.addActionListener(al);
+        scopeSession.addActionListener(al);
+        for (JTextField field: parameterEditor.textfieldsPerParameter.values()) {
+        	field.getDocument().addDocumentListener(dl);
+        }
+        updateCLIArea();
+        
         pack();
         setSize(Math.min(getSize().width, 800), getSize().height);
         UIUtil.initPeer();
@@ -216,6 +261,18 @@ public class ExportDialog extends javax.swing.JDialog {
         }
 	}
 
+    private void updateCLIArea() {
+    	List<String> args = new ArrayList<String>(initialArgs);
+    	fillCLIArgs(args);
+    	String cmd = "sh jailer.sh";
+    	if (System.getProperty("os.name", "").toLowerCase().startsWith("windows")) {
+    		cmd = "jailer.bat";
+    	}
+    	cliArea.setText(cmd + UIUtil.createCLIArgumentString(password, args));
+    	cliArea.setCaretPosition(0);
+    	jScrollPane1.getViewport().setViewPosition(new Point(0,0));  
+    }
+    
     private Thread initScopeButtonThread;
     
     private void initScopeButtons(final Session session) {
@@ -223,10 +280,9 @@ public class ExportDialog extends javax.swing.JDialog {
 	    	scopeGlobal.setSelected(true);
 	    	scopeSession.setSelected(false);
 	    	scopeSession.setEnabled(false);
-	    	scopeTransaction.setSelected(false);
-	    	scopeTransaction.setEnabled(false);
 	    	jButton1.setEnabled(false);
 	    	setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+	    	updateCLIArea();
 		}
     	
     	initScopeButtonThread = new Thread(new Runnable() {
@@ -248,40 +304,43 @@ public class ExportDialog extends javax.swing.JDialog {
 					    		synchronized (ExportDialog.this) {
 							    	scopeGlobal.setSelected(false);
 						    		scopeSession.setSelected(true);
-					    		}
+						    		updateCLIArea();
+						        }
 							}
 			    		});
 					} catch (Exception e) {
 					}
 		    	}
-		    	if (configuration.transactionTemporaryTableManager != null) {
-		    		SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-				    		synchronized (ExportDialog.this) {
-				    			scopeTransaction.setEnabled(true);
-				    		}
-						}
-		    		});
-					try {
-						session.reconnect();
-						DDLCreator.createDDL(session, TemporaryTableScope.TRANSACTION_LOCAL);
-			    		SwingUtilities.invokeLater(new Runnable() {
-							public void run() {
-					    		synchronized (ExportDialog.this) {
-									scopeGlobal.setSelected(false);
-									scopeSession.setSelected(false);
-									scopeTransaction.setSelected(true);
-					    		}
-							}
-			    		});
-					} catch (Exception e) {
-					}
-		    	}
+//		    	if (configuration.transactionTemporaryTableManager != null) {
+//		    		SwingUtilities.invokeLater(new Runnable() {
+//						public void run() {
+//				    		synchronized (ExportDialog.this) {
+//				    			scopeTransaction.setEnabled(true);
+//				    		}
+//						}
+//		    		});
+//					try {
+//						session.reconnect();
+//						DDLCreator.createDDL(session, TemporaryTableScope.TRANSACTION_LOCAL);
+//			    		SwingUtilities.invokeLater(new Runnable() {
+//							public void run() {
+//					    		synchronized (ExportDialog.this) {
+//									scopeGlobal.setSelected(false);
+//									scopeSession.setSelected(false);
+//									scopeTransaction.setSelected(true);
+//                    		    	updateCLIArea();
+//					    		}
+//							}
+//			    		});
+//					} catch (Exception e) {
+//					}
+//		    	}
 	    		SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
 			    		synchronized (ExportDialog.this) {
 			    			jButton1.setEnabled(true);
 			    	    	setCursor(Cursor.getDefaultCursor());
+			    	    	updateCLIArea();
 			    		}
 					}
 	    		});
@@ -322,6 +381,20 @@ public class ExportDialog extends javax.swing.JDialog {
             gridBagConstraints.gridy = y;
     		schemaMappingPanel.add(b, gridBagConstraints);
     		JTextField c = new JTextField(schema);
+    		c.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					updateCLIArea();
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					updateCLIArea();
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					updateCLIArea();
+				}
+			});
             fields.put("schema-" + schema, c);
             defaults.put(c, schema);
             schemaMappingFields.put(schema, c);
@@ -360,7 +433,21 @@ public class ExportDialog extends javax.swing.JDialog {
             gridBagConstraints.gridy = y;
             sourceSchemaMappingPanel.add(b, gridBagConstraints);
     		JTextField c = new JTextField(schema);
-            fields.put("srcschema-" + schema, c);
+    		c.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					updateCLIArea();
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					updateCLIArea();
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					updateCLIArea();
+				}
+			});
+    		fields.put("srcschema-" + schema, c);
             defaults.put(c, schema);
             sourceSchemaMappingFields.put(schema, c);
     		gridBagConstraints = new java.awt.GridBagConstraints();
@@ -425,12 +512,19 @@ public class ExportDialog extends javax.swing.JDialog {
         scopeGlobal = new javax.swing.JRadioButton();
         jLabel16 = new javax.swing.JLabel();
         scopeSession = new javax.swing.JRadioButton();
-        scopeTransaction = new javax.swing.JRadioButton();
         jLabel9 = new javax.swing.JLabel();
         selectInsertFile = new javax.swing.JLabel();
         selectDeleteFile = new javax.swing.JLabel();
         jLabel21 = new javax.swing.JLabel();
         parameterPanel = new javax.swing.JPanel();
+        jPanel5 = new javax.swing.JPanel();
+        jLabel22 = new javax.swing.JLabel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        cliArea = new javax.swing.JTextArea();
+        jLabel23 = new javax.swing.JLabel();
+        jLabel24 = new javax.swing.JLabel();
+        jLabel25 = new javax.swing.JLabel();
+        copyButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Data Export");
@@ -596,9 +690,9 @@ public class ExportDialog extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
@@ -727,14 +821,6 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel1.add(scopeSession, gridBagConstraints);
 
-        buttonGroup1.add(scopeTransaction);
-        scopeTransaction.setText("Transaction");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 57;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        jPanel1.add(scopeTransaction, gridBagConstraints);
-
         jLabel9.setText("           ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -783,6 +869,75 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.weighty = 1.0;
         jPanel1.add(parameterPanel, gridBagConstraints);
 
+        jPanel5.setLayout(new java.awt.GridBagLayout());
+
+        jLabel22.setText(" Command line");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel5.add(jLabel22, gridBagConstraints);
+
+        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        cliArea.setColumns(20);
+        cliArea.setEditable(false);
+        cliArea.setLineWrap(true);
+        cliArea.setRows(5);
+        cliArea.setWrapStyleWord(true);
+        jScrollPane1.setViewportView(cliArea);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+        jPanel5.add(jScrollPane1, gridBagConstraints);
+
+        jLabel23.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        jPanel5.add(jLabel23, gridBagConstraints);
+
+        jLabel24.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        jPanel5.add(jLabel24, gridBagConstraints);
+
+        jLabel25.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        jPanel5.add(jLabel25, gridBagConstraints);
+
+        copyButton.setText("Copy");
+        copyButton.setToolTipText("Copy to Clipboard");
+        copyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                copyButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
+        jPanel5.add(copyButton, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 85;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        jPanel1.add(jPanel5, gridBagConstraints);
+
         getContentPane().add(jPanel1, "card2");
 
         pack();
@@ -825,6 +980,12 @@ public class ExportDialog extends javax.swing.JDialog {
             delete.setText(fn);
         }
     }//GEN-LAST:event_selectDeleteFileMouseClicked
+
+    private void copyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copyButtonActionPerformed
+        cliArea.selectAll();
+        cliArea.copy();
+        updateCLIArea();
+    }//GEN-LAST:event_copyButtonActionPerformed
     
     public boolean isOk() {
 		return isOk;
@@ -947,20 +1108,30 @@ public class ExportDialog extends javax.swing.JDialog {
 			args.add("-source-schemamapping");
 			args.add(sourceSchemaMapping.toString());
 		}
+
+		File excludeFromDeletion = new File(DataModel.getExcludeFromDeletionFile());
+		if (excludeFromDeletion.exists()) {
+			args.add("-t");
+			args.add(DataModel.getExcludeFromDeletionFile());
+		}
+		args.add("-scope");
+		args.add(getTemporaryTableScope().toString());
     }
 
     public TemporaryTableScope getTemporaryTableScope() {
     	if (scopeSession.isSelected()) {
     		return TemporaryTableScope.SESSION_LOCAL;
     	}
-    	if (scopeTransaction.isSelected()) {
-    		return TemporaryTableScope.TRANSACTION_LOCAL;
-    	}
+//    	if (scopeTransaction.isSelected()) {
+//    		return TemporaryTableScope.TRANSACTION_LOCAL;
+//    	}
     	return TemporaryTableScope.GLOBAL;
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JTextArea cliArea;
+    private javax.swing.JButton copyButton;
     private javax.swing.JTextField delete;
     public javax.swing.JCheckBox explain;
     private javax.swing.JLabel exportLabel;
@@ -980,6 +1151,10 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel21;
+    private javax.swing.JLabel jLabel22;
+    private javax.swing.JLabel jLabel23;
+    private javax.swing.JLabel jLabel24;
+    private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -991,12 +1166,13 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel parameterPanel;
     private javax.swing.JTextField rowsPerThread;
     private javax.swing.JPanel schemaMappingPanel;
     private javax.swing.JRadioButton scopeGlobal;
     private javax.swing.JRadioButton scopeSession;
-    private javax.swing.JRadioButton scopeTransaction;
     private javax.swing.JLabel selectDeleteFile;
     private javax.swing.JLabel selectInsertFile;
     public javax.swing.JPanel sourceSchemaMappingPanel;

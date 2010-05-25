@@ -273,7 +273,13 @@ public class CommandLineParser {
 	@Option(name="-script-enhancer", usage="folder holding the script-enhancer templates 'prolog' and 'epilog'. Defaults to '.'")
     public String enhancerFolder = ".";
 
-    @Argument
+	@Option(name="-jdbcjar", usage="JDBC driver's jar file")
+    public String jdbcjar = null;
+
+	@Option(name="-jdbcjar2", usage="JDBC driver's secondary jar file")
+    public String jdbcjar2 = null;
+
+	@Argument
     public List<String> arguments = new ArrayList<String>();
 
     /**

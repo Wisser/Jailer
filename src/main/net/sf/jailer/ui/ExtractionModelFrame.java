@@ -935,18 +935,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        	dbConnectionDialog.addDbArgs(args);
 			        	Session.closeTemporaryTableSession();
 			        	Session session = new Session(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword());
-			        	ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), session);
+			        	ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), session, args, dbConnectionDialog.getPassword());
 			        	session.shutDown();
 			        	Session.closeTemporaryTableSession();
 			        	if (exportDialog.isOk()) {
 			        		exportDialog.fillCLIArgs(args);
-			        		File excludeFromDeletion = new File(DataModel.getExcludeFromDeletionFile());
-			        		if (excludeFromDeletion.exists()) {
-			        			args.add("-t");
-			        			args.add(DataModel.getExcludeFromDeletionFile());
-			        		}
-			        		args.add("-scope");
-			        		args.add(exportDialog.getTemporaryTableScope().toString());
 				        	List<String> ddlArgs = new ArrayList<String>();
 				        	ddlArgs.add("create-ddl");
 				        	dbConnectionDialog.addDbArgs(ddlArgs);
