@@ -373,7 +373,7 @@ public class Session {
         	if (!silent) {
         		_log.error("Error executing query", e);
         	}
-        	throw e;
+	    	throw new SQLException("\"" + e.getMessage() + "\" in statement \"" + sqlQuery + "\"");
         }
     }
 
@@ -440,7 +440,7 @@ public class Session {
 		        	CancellationHandler.checkForCancellation();
 		        	CancellationHandler.end(statement);
 		        	if (++failures > 10 || e.getErrorCode() != -911) {
-	                    throw e;
+		    	    	throw new SQLException("\"" + e.getMessage() + "\" in statement \"" + sqlUpdate + "\"");
 	                }
 	                // deadlock
 	                serializeAccess = true;
@@ -496,7 +496,7 @@ public class Session {
 	    	if (!silent) {
 	    		_log.error("Error executing statement", e);
 	    	}
-	    	throw e;
+	    	throw new SQLException("\"" + e.getMessage() + "\" in statement \"" + sqlUpdate + "\"");
 	    }
     }
 
@@ -579,7 +579,7 @@ public class Session {
 	    	if (!silent) {
     			_log.error("Error executing statement", e);
 	    	}
-	    	throw e;
+	    	throw new SQLException("\"" + e.getMessage() + "\" in statement \"" + sql + "\"");
 	    }
     }
     
@@ -594,11 +594,11 @@ public class Session {
     }
 
     /**
-     * Sets {@link ClassLoader} to load Jdbc-Driver with.
+     * Sets {@link ClassLoader} to load Jdbc-driver with.
      * 
-     * @param classLoader {@link ClassLoader} to load Jdbc-Driver with
+     * @param classLoader {@link ClassLoader} to load Jdbc-driver with
      */
-    public static void setClassLoaderForJdbcDriver(ClassLoader classLoader) {
+    public static synchronized void setClassLoaderForJdbcDriver(ClassLoader classLoader) {
         classLoaderForJdbcDriver = classLoader;
     }
     

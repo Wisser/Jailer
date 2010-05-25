@@ -71,6 +71,7 @@ import net.sf.jailer.render.DataModelRenderer;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
+import net.sf.jailer.util.ClasspathUtil;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.JobManager;
 import net.sf.jailer.util.PrintUtil;
@@ -98,7 +99,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "3.4.3";
+	public static final String VERSION = "3.4.4";
 
 	/**
 	 * The relational data model.
@@ -942,14 +943,16 @@ public class Jailer {
 			}
 
 			CommandLineParser clp = CommandLineParser.getInstance();
-
+			
 			String command = clp.arguments.get(0);
 			if (!"create-ddl".equalsIgnoreCase(command)) {
 				if (!"find-association".equalsIgnoreCase(command)) {
 					_log.info("Jailer " + VERSION);
 				}
 			}
-
+			
+			Session.setClassLoaderForJdbcDriver(ClasspathUtil.addJarToClasspath(clp.jdbcjar, clp.jdbcjar2));
+			
 			if ("check-domainmodel".equalsIgnoreCase(command)) {
 				DataModel dataModel = new DataModel();
 				for (String rm : clp.arguments.subList(1, clp.arguments.size())) {

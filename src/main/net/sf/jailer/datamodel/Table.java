@@ -415,7 +415,17 @@ public class Table extends ModelElement implements Comparable<Table> {
     			root.appendChild(comment);
     			commented = true;
 			}
+			boolean isPK = false;
+			for (Column pk: primaryKey.getColumns()) {
+				if (pk.name.equals(column.name)) {
+					isPK = true;
+					break;
+				}
+			}
 			Element columnElement = template.createElement(XmlUtil.asElementName(column.name.toLowerCase()));
+			if (!isPK) {
+				columnElement.setAttribute(XmlUtil.NS_PREFIX + ":if-not-null", XmlUtil.SQL_PREFIX + "T." + column.name);
+			}
 			columnElement.setTextContent(XmlUtil.SQL_PREFIX + "T." + column.name);
 			root.appendChild(columnElement);
 		}
