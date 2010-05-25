@@ -183,7 +183,7 @@ public class XmlExportTransformer implements ResultSetReader {
 		}
 		final Map<String, Association> finalAssociationMap = associationMap;
 		
-		XmlUtil.visitDocumentNodes(tableMapping.template, xmlRowWriter.new XmlWritingNodeVisitor(resultSet, table, association) {
+		XmlUtil.visitDocumentNodes(tableMapping.template, xmlRowWriter.new XmlWritingNodeVisitor(resultSet, table, association, session) {
 			public void visitAssociationElement(String associationName) {
 				final Association sa = finalAssociationMap.get(associationName);
 				if (sa != null) {

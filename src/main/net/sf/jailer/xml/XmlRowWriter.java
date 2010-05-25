@@ -33,6 +33,8 @@ import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
+import net.sf.jailer.database.DBMS;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Table;
@@ -70,6 +72,11 @@ public class XmlRowWriter {
 	 */
 	final SimpleDateFormat timestampPattern;
 
+	/**
+	 * Current level of if-blocks to skip.
+	 */
+	private int ifLevel = 0;
+	
 	/**
 	 * Type caches per table (String key).
 	 */
@@ -109,7 +116,9 @@ public class XmlRowWriter {
 	 */
 	public void startList(Association association) throws SAXException {
 		if (association != null && association.getAggregationSchema() == AggregationSchema.EXPLICIT_LIST) {
-			transformerHandler.startElement(null, null, association.getAggregationTagName(), null);
+			if (ifLevel == 0) {
+				transformerHandler.startElement(null, null, association.getAggregationTagName(), null);
+			}
 		}
 	}
 
@@ -120,7 +129,9 @@ public class XmlRowWriter {
 	 */
 	public void endList(Association association) throws SAXException {
 		if (association != null && association.getAggregationSchema() == AggregationSchema.EXPLICIT_LIST) {
-			transformerHandler.endElement(null, null, association.getAggregationTagName());
+			if (ifLevel == 0) {
+				transformerHandler.endElement(null, null, association.getAggregationTagName());
+			}
 		}
 	}
 	
@@ -145,6 +156,11 @@ public class XmlRowWriter {
 		private final Association association;
 		
 		/**
+		 * The DB session.
+		 */
+		private final Session session;
+		
+		/**
 		 * Next number of column to write out.
 		 */
 		private int nr = 0;
@@ -154,19 +170,21 @@ public class XmlRowWriter {
 		 * 
 		 * @param resultSet to read rows from
 		 */
-		public XmlWritingNodeVisitor(ResultSet resultSet, Table table, Association association) {
+		public XmlWritingNodeVisitor(ResultSet resultSet, Table table, Association association, Session session) {
 			this.resultSet = resultSet;
 			this.table = table;
 			this.association = association;
+			this.session = session;
 		}
 
 		/**
 		 * Gets text to write out. If it starts with "SQL:", write out next column value.
 		 * 
 		 * @param text the text
+		 * @param returnNull if <code>true</code>, return null instead of empty string if sql-result is null
 		 * @return the xml to write out
 		 */
-		private String toXml(String text) {
+		private String toXml(String text, boolean returnNull) {
 			if (text != null && text.startsWith(XmlUtil.SQL_PREFIX)) {
 				String columnName = "C" + nr++;
 				int type;
@@ -177,8 +195,11 @@ public class XmlRowWriter {
 						typeCachesForStringKey.put(table, typeCache);
 					}
 					type = SqlUtil.getColumnType(resultSet, columnName, typeCache);
-					if (type == Types.BLOB || type == Types.CLOB) {
+					if ((type == Types.BLOB || type == Types.CLOB) && session.dbms != DBMS.SQLITE) {
 						Object object = resultSet.getObject(columnName);
+						if (returnNull && (object == null || resultSet.wasNull())) {
+							return null;
+						}
 						if (object instanceof Blob) {
 							Blob blob = (Blob) object;
 							byte[] blobValue = blob.getBytes(1, (int) blob.length());
@@ -195,6 +216,9 @@ public class XmlRowWriter {
 						}
 					} else {
 						Object o = SqlUtil.getObject(resultSet, columnName, typeCache);
+						if (returnNull && (o == null || resultSet.wasNull())) {
+							return null;
+						}
 						if (o != null) {
 							String value;
 							
@@ -215,47 +239,82 @@ public class XmlRowWriter {
 			}
 			return text;
 		}
+		
 		public void visitComment(String comment) {
 			try {
-				transformerHandler.comment(comment.toCharArray(), 0, comment.length());
-			} catch (SAXException e) {
-				throw new RuntimeException(e);
-			}
-		}
-		public void visitElementEnd(String elementName, boolean isRoot) {
-			try {
-				if (!isRoot || association == null || association.getAggregationSchema() != AggregationSchema.FLAT) {
-					String tagName = isRoot && association != null && association.getAggregationSchema() != AggregationSchema.EXPLICIT_LIST? association.getAggregationTagName() : elementName;
-					transformerHandler.endElement("", "", tagName);
+				if (ifLevel == 0) {
+					transformerHandler.comment(comment.toCharArray(), 0, comment.length());
 				}
 			} catch (SAXException e) {
 				throw new RuntimeException(e);
 			}
 		}
+		
+		public void visitElementEnd(String elementName, boolean isRoot) {
+			if (ifLevel > 0) {
+				--ifLevel;
+			} else {
+				try {
+					if (!isRoot || association == null || association.getAggregationSchema() != AggregationSchema.FLAT) {
+						String tagName = isRoot && association != null && association.getAggregationSchema() != AggregationSchema.EXPLICIT_LIST? association.getAggregationTagName() : elementName;
+						transformerHandler.endElement("", "", tagName);
+					}
+				} catch (SAXException e) {
+					throw new RuntimeException(e);
+				}
+			}
+		}
+		
 		String jailerNamespaceDeclaration = "xmlns:" + XmlUtil.NS_PREFIX;
+		
 		public void visitElementStart(String elementName, boolean isRoot, String[] aNames, String[] aValues) {
+			if (ifLevel > 0) {
+				++ifLevel;
+			}
 			try {
 				AttributesImpl attr = null;
+				boolean cond = true;
 				if (aNames.length > 0) {
 					attr = new AttributesImpl();
 					for (int i = 0; i < aNames.length; ++i) {
-						if (!aNames[i].equals(jailerNamespaceDeclaration)) {
-							attr.addAttribute("", "", aNames[i], "CDATA", toXml(aValues[i]));
+						if (aNames[i].equals(XmlUtil.NS_PREFIX + ":if-not-null")) {
+							if (toXml(aValues[i], true) == null) {
+								if (ifLevel == 0) {
+									cond = false;
+								}
+							}
+						} else if (aNames[i].equals(XmlUtil.NS_PREFIX + ":if-null")) {
+							if (toXml(aValues[i], true) != null) {
+								if (ifLevel == 0) {
+									cond = false;
+								}
+							}
+						} else if (!aNames[i].equals(jailerNamespaceDeclaration)) {
+							attr.addAttribute("", "", aNames[i], "CDATA", toXml(aValues[i], false));
 						}
 					}
 				}
-				if (!isRoot || association == null || association.getAggregationSchema() != AggregationSchema.FLAT) {
-					String tagName = isRoot && association != null && association.getAggregationSchema() != AggregationSchema.EXPLICIT_LIST? association.getAggregationTagName() : elementName;
-					transformerHandler.startElement("", "", tagName, attr);
+				if (ifLevel == 0) {
+					if (!cond) {
+						++ifLevel;
+					} else {
+						if (!isRoot || association == null || association.getAggregationSchema() != AggregationSchema.FLAT) {
+							String tagName = isRoot && association != null && association.getAggregationSchema() != AggregationSchema.EXPLICIT_LIST? association.getAggregationTagName() : elementName;
+							transformerHandler.startElement("", "", tagName, attr);
+						}
+					}
 				}
 			} catch (SAXException e) {
 				throw new RuntimeException(e);
 			}
 		}
+		
 		public void visitText(String text) {
-			text = toXml(text);
+			text = toXml(text, false);
 			try {
-				transformerHandler.characters(text.toCharArray(), 0, text.length());
+				if (ifLevel == 0) {
+					transformerHandler.characters(text.toCharArray(), 0, text.length());
+				}
 			} catch (SAXException e) {
 				throw new RuntimeException(e);
 			}

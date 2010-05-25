@@ -1,3 +1,9 @@
+3.4.4
+ - Command line rendering in "Data Export" dialog eases the handling of the command line interface.
+ - Improved error handling.
+ - JDBC driver's jar files can now be specified via command line arguments.
+ - new XML-attributes "j:if-not-null" and "j:if-null" can now be used in XML templates for case differentiation.
+
 3.4.3
  - Added support for SQLite DBMS.
  - Added support for user-defined distinct types.

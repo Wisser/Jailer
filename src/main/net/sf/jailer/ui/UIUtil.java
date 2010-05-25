@@ -34,6 +34,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
@@ -203,31 +205,10 @@ public class UIUtil {
     		final ProgressListener progressListener, final ProgressPanel progressPanel, final boolean showExeptions, boolean fullSize) {
     	JDialog dialog = new JDialog(ownerOfConsole);
         List<String> args = new ArrayList<String>(cliArgs);
-        args.add("-datamodel");
-        args.add(CommandLineParser.getInstance().datamodelFolder);
-        args.add("-script-enhancer");
-        args.add(CommandLineParser.getInstance().enhancerFolder);
-    	final StringBuffer arglist = new StringBuffer();
+        final StringBuffer arglist = createCLIArgumentString(password, args);
         final String[] argsarray = new String[args.size()];
         int i = 0;
         for (String arg: args) {
-        	if (arg != null && arg.equals(password)) {
-        		arglist.append(" \"<password>\"");
-        	} else {
-        		if ("".equals(arg) || arg.contains(" ") || arg.contains("<") || arg.contains(">") || arg.contains("*") || arg.contains("?") || arg.contains("|") || arg.contains("$") || arg.contains("\"") || arg.contains("'") || arg.contains("\\")) {
-        			arglist.append(" \"");
-        			for (int j = 0; j < arg.length(); ++j) {
-        				char c = arg.charAt(j);
-        				if (c == '\"' || c == '$') {
-        					arglist.append("\\");
-        				}
-        				arglist.append(c);
-        			}
-        			arglist.append("\"");
-        		} else {
-        			arglist.append(" " + arg);
-        		}
-        	}
             argsarray[i++] = arg.trim();
         }
         final JailerConsole outputView = new JailerConsole(ownerOfConsole, dialog, showLogfileButton, showExplainLogButton, progressPanel, fullSize);
@@ -420,6 +401,34 @@ public class UIUtil {
         }
     }
 
+	public static StringBuffer createCLIArgumentString(String password, List<String> args) {
+		args.add("-datamodel");
+        args.add(CommandLineParser.getInstance().datamodelFolder);
+        args.add("-script-enhancer");
+        args.add(CommandLineParser.getInstance().enhancerFolder);
+    	final StringBuffer arglist = new StringBuffer();
+        for (String arg: args) {
+        	if (arg != null && arg.equals(password) && password.length() > 0) {
+        		arglist.append(" \"<password>\"");
+        	} else {
+        		if ("".equals(arg) || arg.contains(" ") || arg.contains("<") || arg.contains(">") || arg.contains("*") || arg.contains("?") || arg.contains("|") || arg.contains("$") || arg.contains("\"") || arg.contains("'") || arg.contains("\\") || arg.contains(";")|| arg.contains("&")) {
+        			arglist.append(" \"");
+        			for (int j = 0; j < arg.length(); ++j) {
+        				char c = arg.charAt(j);
+        				if (c == '\"' || c == '$') {
+        					arglist.append("\\");
+        				}
+        				arglist.append(c);
+        			}
+        			arglist.append("\"");
+        		} else {
+        			arglist.append(" " + arg);
+        		}
+        	}
+        }
+		return arglist;
+	}
+
     /**
      * Shows an exception.
      * 
@@ -432,7 +441,19 @@ public class UIUtil {
 		while (t.getCause() != null && t != t.getCause()) {
 			t = t.getCause();
 		}
-		JOptionPane.showMessageDialog(parent, t.getMessage() + "\n(" + t.getClass().getSimpleName() + ")", title + " - " + t.getClass().getName(), JOptionPane.ERROR_MESSAGE);
+		StringBuilder msg = new StringBuilder();
+		int maxwidth = 80;
+		Pattern wrapRE = Pattern.compile("(\\S\\S{" + maxwidth + ",}|.{1," + maxwidth + "})(\\s+|$)");
+	    Matcher m = wrapRE.matcher(t.getMessage());
+		while (m.find()) { 
+			String line = m.group();
+			while (line.length() > maxwidth + 10) {
+				msg.append(line.substring(0, maxwidth) + "\n");
+				line = line.substring(maxwidth);
+			}
+			msg.append(line + "\n");
+		}
+		JOptionPane.showMessageDialog(parent, msg.toString().trim(), title + " - " + t.getClass().getName(), JOptionPane.ERROR_MESSAGE);
 	}
 
 	/**
