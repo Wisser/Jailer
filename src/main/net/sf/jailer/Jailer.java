@@ -686,8 +686,8 @@ public class Jailer {
 		runstats(session, true);
 		removeSingleRowCycles(progress, session);
 
-		List<Table> sortedTables = new ArrayList<Table>(progress);
-		Collections.sort(sortedTables, new Comparator<Table>() {
+		List<Table> lexSortedTables = new ArrayList<Table>(progress);
+		Collections.sort(lexSortedTables, new Comparator<Table>() {
 			public int compare(Table t1, Table t2) {
 				boolean s1 = subjects.contains(t1);
 				boolean s2 = subjects.contains(t2);
@@ -701,6 +701,34 @@ public class Jailer {
 			}
 		});
 
+		List<Table> sortedTables = new ArrayList<Table>();
+		boolean done = false;
+		while (!done) {
+			done = true;
+			for (Table table: lexSortedTables) {
+				boolean depends = false;
+				for (Association association: table.associations) {
+					if (association.destination != table) {
+						if (association.isInsertDestinationBeforeSource()) {
+							if (lexSortedTables.contains(association.destination)) {
+								depends = true;
+								break;
+							}
+						}
+					}
+				}
+				if (!depends) {
+					sortedTables.add(table);
+					done = false;
+				}
+			}
+			lexSortedTables.removeAll(sortedTables);
+		}
+		if (!lexSortedTables.isEmpty()) {
+			_log.warn("remaining tables after sorting: " + PrintUtil.tableSetAsString(new HashSet<Table>(lexSortedTables)));
+			sortedTables.addAll(lexSortedTables);
+		}
+		
 		Set<Table> cyclicAggregatedTables = getCyclicAggregatedTables(progress);
 		_log.info("cyclic aggregated tables: " + PrintUtil.tableSetAsString(cyclicAggregatedTables));
 
