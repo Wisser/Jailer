@@ -245,7 +245,9 @@ public class ExportDialog extends javax.swing.JDialog {
         updateCLIArea();
         
         pack();
-        setSize(Math.min(getSize().width, 800), getSize().height);
+        setSize(Math.max(Math.min(getSize().width, 900), 580), getSize().height);
+        placeholder.setVisible(false);
+        placeholder1.setVisible(false);
         UIUtil.initPeer();
         setVisible(true);
         try {
@@ -366,20 +368,27 @@ public class ExportDialog extends javax.swing.JDialog {
     	
     	List<String> sortedSchemaList = new ArrayList<String>(distinctSchemas);
     	Collections.sort(sortedSchemaList);
+    	Set<String> relevantSchemas = getRelevantSchemas(true);
     	
     	int y = 0;
     	for (String schema: sortedSchemaList) {
+    		boolean add = relevantSchemas.contains(schema.equals(DEFAULT_SCHEMA)? "" : schema);
     		JLabel a = new JLabel(schema);
     		a.setFont(new java.awt.Font("Dialog", 0, 12));
             java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 1;
             gridBagConstraints.gridy = y;
-    		schemaMappingPanel.add(a, gridBagConstraints);
-    		JLabel b = new JLabel(" into schema ");
-            gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+            if (add) {
+            	schemaMappingPanel.add(a, gridBagConstraints);
+    		}
+        	JLabel b = new JLabel(" into schema ");
+    		gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 2;
             gridBagConstraints.gridy = y;
-    		schemaMappingPanel.add(b, gridBagConstraints);
+    		if (add) {
+    			schemaMappingPanel.add(b, gridBagConstraints);
+    		}
     		JTextField c = new JTextField(schema);
     		c.getDocument().addDocumentListener(new DocumentListener() {
 				@Override
@@ -402,8 +411,12 @@ public class ExportDialog extends javax.swing.JDialog {
             gridBagConstraints.gridx = 3;
             gridBagConstraints.gridy = y;
             gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-            schemaMappingPanel.add(c, gridBagConstraints);
-    		y++;
+            if (add) {
+            	schemaMappingPanel.add(c, gridBagConstraints);
+            }
+    		if (add) {
+    			y++;
+    		}
     	}
     }
     
@@ -424,14 +437,18 @@ public class ExportDialog extends javax.swing.JDialog {
     	
     	List<String> sortedSchemaList = new ArrayList<String>(distinctSchemas);
     	Collections.sort(sortedSchemaList);
+    	Set<String> relevantSchemas = getRelevantSchemas(true);
     	
     	int y = 0;
     	for (String schema: sortedSchemaList) {
+    		boolean add = relevantSchemas.contains(schema.equals(DEFAULT_SCHEMA)? "" : schema);
     		JLabel b = new JLabel(" instead of ");
     		java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 2;
             gridBagConstraints.gridy = y;
-            sourceSchemaMappingPanel.add(b, gridBagConstraints);
+            if (add) {
+            	sourceSchemaMappingPanel.add(b, gridBagConstraints);
+            }
     		JTextField c = new JTextField(schema);
     		c.getDocument().addDocumentListener(new DocumentListener() {
 				@Override
@@ -454,14 +471,21 @@ public class ExportDialog extends javax.swing.JDialog {
             gridBagConstraints.gridx = 1;
             gridBagConstraints.gridy = y;
             gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-            sourceSchemaMappingPanel.add(c, gridBagConstraints);
+            if (add) {
+            	sourceSchemaMappingPanel.add(c, gridBagConstraints);
+            }
     		JLabel a = new JLabel(schema);
     		a.setFont(new java.awt.Font("Dialog", 0, 12));
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = 3;
             gridBagConstraints.gridy = y;
-    		sourceSchemaMappingPanel.add(a, gridBagConstraints);
-    		y++;
+            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+    		if (add) {
+    			sourceSchemaMappingPanel.add(a, gridBagConstraints);
+    		}
+    		if (add) {
+    			y++;
+    		}
     	}
     }
     
@@ -475,6 +499,8 @@ public class ExportDialog extends javax.swing.JDialog {
         java.awt.GridBagConstraints gridBagConstraints;
 
         buttonGroup1 = new javax.swing.ButtonGroup();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jPanel6 = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         sourceSchemaMappingPanel = new javax.swing.JPanel();
         jLabel18 = new javax.swing.JLabel();
@@ -496,12 +522,9 @@ public class ExportDialog extends javax.swing.JDialog {
         jLabel10 = new javax.swing.JLabel();
         rowsPerThread = new javax.swing.JTextField();
         jLabel17 = new javax.swing.JLabel();
-        jPanel2 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jLabel2 = new javax.swing.JLabel();
         upsertCheckbox = new javax.swing.JCheckBox();
         explain = new javax.swing.JCheckBox();
-        jLabel1 = new javax.swing.JLabel();
+        placeholder = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel8 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
@@ -525,30 +548,42 @@ public class ExportDialog extends javax.swing.JDialog {
         jLabel24 = new javax.swing.JLabel();
         jLabel25 = new javax.swing.JLabel();
         copyButton = new javax.swing.JButton();
+        placeholder1 = new javax.swing.JLabel();
+        jPanel7 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        jButton1 = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Data Export");
-        getContentPane().setLayout(new java.awt.CardLayout());
+        setTitle("Data Export"); // NOI18N
+        getContentPane().setLayout(new java.awt.GridBagLayout());
 
+        jScrollPane2.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        jScrollPane2.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+
+        jPanel6.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        jPanel6.setLayout(new java.awt.GridBagLayout());
+
+        jPanel1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         sourceSchemaMappingPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel18.setText(" Read from schema ");
+        jLabel18.setText(" Read from schema "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         sourceSchemaMappingPanel.add(jLabel18, gridBagConstraints);
 
         jLabel19.setFont(new java.awt.Font("Dialog", 0, 12));
-        jLabel19.setText(" ");
+        jLabel19.setText(" "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.weightx = 1.0;
         sourceSchemaMappingPanel.add(jLabel19, gridBagConstraints);
 
-        jLabel20.setText("                          ");
+        jLabel20.setText("                          "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 200;
@@ -564,21 +599,21 @@ public class ExportDialog extends javax.swing.JDialog {
 
         schemaMappingPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel13.setText(" Import rows from schema ");
+        jLabel13.setText(" Import rows from schema "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         schemaMappingPanel.add(jLabel13, gridBagConstraints);
 
         jLabel14.setFont(new java.awt.Font("Dialog", 0, 12));
-        jLabel14.setText(" ");
+        jLabel14.setText(" "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.weightx = 1.0;
         schemaMappingPanel.add(jLabel14, gridBagConstraints);
 
-        jLabel15.setText("                          ");
+        jLabel15.setText("                          "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 200;
@@ -600,27 +635,27 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 1, 0);
         jPanel1.add(where, gridBagConstraints);
 
-        exportLabel.setText(" Into*");
+        exportLabel.setText(" Into*"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 20;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(exportLabel, gridBagConstraints);
 
-        jLabel3.setText(" Generate delete-script* ");
+        jLabel3.setText(" Generate delete-script* "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 40;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel3, gridBagConstraints);
 
-        jLabel5.setText(" ");
+        jLabel5.setText(" "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 45;
         jPanel1.add(jLabel5, gridBagConstraints);
 
-        jLabel6.setText(" Threads ");
+        jLabel6.setText(" Threads "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 50;
@@ -652,7 +687,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel3.add(threads, gridBagConstraints);
 
-        jLabel10.setText("  ");
+        jLabel10.setText("  "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
@@ -666,7 +701,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(1, 0, 0, 0);
         jPanel3.add(rowsPerThread, gridBagConstraints);
 
-        jLabel17.setText("           ");
+        jLabel17.setText("           "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
@@ -681,41 +716,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel1.add(jPanel3, gridBagConstraints);
 
-        jPanel2.setLayout(new java.awt.GridBagLayout());
-
-        jButton1.setText("Export Data");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
-        jPanel2.add(jButton1, gridBagConstraints);
-
-        jLabel2.setFont(new java.awt.Font("Dialog", 0, 12));
-        jLabel2.setText(" * '.zip' extension for compressed files");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        jPanel2.add(jLabel2, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 100;
-        gridBagConstraints.gridwidth = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel1.add(jPanel2, gridBagConstraints);
-
-        upsertCheckbox.setText("generate Upsert-statements (overwrite) for all rows");
+        upsertCheckbox.setText("generate Upsert-statements (overwrite) for all rows"); // NOI18N
         upsertCheckbox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -725,7 +726,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
         jPanel1.add(upsertCheckbox, gridBagConstraints);
 
-        explain.setText("explain");
+        explain.setText("explain"); // NOI18N
         explain.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -734,27 +735,27 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 4, 0);
         jPanel1.add(explain, gridBagConstraints);
 
-        jLabel1.setText(" ");
+        placeholder.setText(" "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.weightx = 1.0;
-        jPanel1.add(jLabel1, gridBagConstraints);
+        jPanel1.add(placeholder, gridBagConstraints);
 
-        jLabel4.setText(" ");
+        jLabel4.setText(" "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 20;
         jPanel1.add(jLabel4, gridBagConstraints);
 
-        jLabel8.setText(" Working table scope");
+        jLabel8.setText(" Working table scope"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 55;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(jLabel8, gridBagConstraints);
 
-        jLabel7.setText(" Export from");
+        jLabel7.setText(" Export from"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 15;
@@ -762,7 +763,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(jLabel7, gridBagConstraints);
 
-        jLabel11.setText(" Where");
+        jLabel11.setText(" Where"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 18;
@@ -773,13 +774,13 @@ public class ExportDialog extends javax.swing.JDialog {
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
         subjectTable.setFont(new java.awt.Font("Dialog", 0, 12));
-        subjectTable.setText("jLabel11");
+        subjectTable.setText("jLabel11"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         jPanel4.add(subjectTable, gridBagConstraints);
 
-        jLabel12.setText("  as T");
+        jLabel12.setText("  as T"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
@@ -793,7 +794,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jPanel1.add(jPanel4, gridBagConstraints);
 
         buttonGroup1.add(scopeGlobal);
-        scopeGlobal.setText("Global");
+        scopeGlobal.setText("Global"); // NOI18N
         scopeGlobal.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 scopeGlobalActionPerformed(evt);
@@ -805,7 +806,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel1.add(scopeGlobal, gridBagConstraints);
 
-        jLabel16.setText(" Rows per statement");
+        jLabel16.setText(" Rows per statement"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 51;
@@ -814,20 +815,20 @@ public class ExportDialog extends javax.swing.JDialog {
         jPanel1.add(jLabel16, gridBagConstraints);
 
         buttonGroup1.add(scopeSession);
-        scopeSession.setText("Session");
+        scopeSession.setText("Session"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 56;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel1.add(scopeSession, gridBagConstraints);
 
-        jLabel9.setText("           ");
+        jLabel9.setText("           "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 58;
         jPanel1.add(jLabel9, gridBagConstraints);
 
-        selectInsertFile.setText("jLabel21");
+        selectInsertFile.setText("jLabel21"); // NOI18N
         selectInsertFile.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 selectInsertFileMouseClicked(evt);
@@ -839,7 +840,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
         jPanel1.add(selectInsertFile, gridBagConstraints);
 
-        selectDeleteFile.setText("jLabel21");
+        selectDeleteFile.setText("jLabel21"); // NOI18N
         selectDeleteFile.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 selectDeleteFileMouseClicked(evt);
@@ -851,7 +852,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
         jPanel1.add(selectDeleteFile, gridBagConstraints);
 
-        jLabel21.setText(" With");
+        jLabel21.setText(" With"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 19;
@@ -866,12 +867,11 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
         jPanel1.add(parameterPanel, gridBagConstraints);
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
-        jLabel22.setText(" Command line");
+        jLabel22.setText(" Command line"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -898,26 +898,26 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         jPanel5.add(jScrollPane1, gridBagConstraints);
 
-        jLabel23.setText(" ");
+        jLabel23.setText(" "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         jPanel5.add(jLabel23, gridBagConstraints);
 
-        jLabel24.setText(" ");
+        jLabel24.setText(" "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         jPanel5.add(jLabel24, gridBagConstraints);
 
-        jLabel25.setText(" ");
+        jLabel25.setText(" "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 3;
         jPanel5.add(jLabel25, gridBagConstraints);
 
-        copyButton.setText("Copy");
-        copyButton.setToolTipText("Copy to Clipboard");
+        copyButton.setText("Copy"); // NOI18N
+        copyButton.setToolTipText("Copy to Clipboard"); // NOI18N
         copyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 copyButtonActionPerformed(evt);
@@ -927,7 +927,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jPanel5.add(copyButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -938,7 +938,73 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(jPanel5, gridBagConstraints);
 
-        getContentPane().add(jPanel1, "card2");
+        placeholder1.setText(" "); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 1.0;
+        jPanel1.add(placeholder1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel6.add(jPanel1, gridBagConstraints);
+
+        jScrollPane2.setViewportView(jPanel6);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        getContentPane().add(jScrollPane2, gridBagConstraints);
+
+        jPanel7.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+        jPanel7.setLayout(new java.awt.GridBagLayout());
+
+        jPanel2.setLayout(new java.awt.GridBagLayout());
+
+        jButton1.setText("Export Data"); // NOI18N
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 6);
+        jPanel2.add(jButton1, gridBagConstraints);
+
+        jLabel2.setFont(new java.awt.Font("Dialog", 0, 12));
+        jLabel2.setText(" * '.zip' extension for compressed files"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        jPanel2.add(jLabel2, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 100;
+        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel7.add(jPanel2, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        getContentPane().add(jPanel7, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -1073,22 +1139,7 @@ public class ExportDialog extends javax.swing.JDialog {
 			args.add(parameter.toString());
 		}
 		
-		Set<Table> closure = subject.closure(true);
-		if (withDelete) {
-			Set<Table> border = new HashSet<Table>();
-    		for (Table table: closure) {
-    			for (Association a: table.associations) {
-    				if (!a.reversalAssociation.isIgnored()) {
-    					border.add(a.destination);
-    				}
-    			}
-    		}
-    		closure.addAll(border);
-    	}
-		Set<String> relevantSchemas = new HashSet<String>();
-    	for (Table table: closure) {
-    		relevantSchemas.add(table.getOriginalSchema(""));
-		}
+		Set<String> relevantSchemas = getRelevantSchemas(withDelete);
 	
     	StringBuilder sourceSchemaMapping = new StringBuilder();
     	for (String schema: sourceSchemaMappingFields.keySet()) {
@@ -1118,6 +1169,26 @@ public class ExportDialog extends javax.swing.JDialog {
 		args.add(getTemporaryTableScope().toString());
     }
 
+	private Set<String> getRelevantSchemas(boolean withDelete) {
+		Set<Table> closure = subject.closure(true);
+		if (withDelete) {
+			Set<Table> border = new HashSet<Table>();
+    		for (Table table: closure) {
+    			for (Association a: table.associations) {
+    				if (!a.reversalAssociation.isIgnored()) {
+    					border.add(a.destination);
+    				}
+    			}
+    		}
+    		closure.addAll(border);
+    	}
+		Set<String> relevantSchemas = new HashSet<String>();
+    	for (Table table: closure) {
+    		relevantSchemas.add(table.getOriginalSchema(""));
+		}
+		return relevantSchemas;
+	}
+
     public TemporaryTableScope getTemporaryTableScope() {
     	if (scopeSession.isSelected()) {
     		return TemporaryTableScope.SESSION_LOCAL;
@@ -1137,7 +1208,6 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JLabel exportLabel;
     private javax.swing.JTextField insert;
     private javax.swing.JButton jButton1;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
@@ -1167,8 +1237,13 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPanel parameterPanel;
+    private javax.swing.JLabel placeholder;
+    private javax.swing.JLabel placeholder1;
     private javax.swing.JTextField rowsPerThread;
     private javax.swing.JPanel schemaMappingPanel;
     private javax.swing.JRadioButton scopeGlobal;

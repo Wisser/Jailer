@@ -18,6 +18,8 @@ package net.sf.jailer.ui;
 import java.awt.Component;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
+import java.util.TreeSet;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -367,9 +369,13 @@ public class AssociationEditor extends javax.swing.JDialog {
 		nameField.setText(association.cells.get(5));
 		DefaultComboBoxModel tablesModel1 = new DefaultComboBoxModel();
 		DefaultComboBoxModel tablesModel2 = new DefaultComboBoxModel();
+		Set<String> sortedTableNames = new TreeSet<String>();
 		for (Line table: tables) {
-			tablesModel1.addElement(table.cells.get(0));
-			tablesModel2.addElement(table.cells.get(0));
+			sortedTableNames.add(table.cells.get(0));
+		}
+		for (String tableName: sortedTableNames) {
+			tablesModel1.addElement(tableName);
+			tablesModel2.addElement(tableName);
 		}
 		source.setModel(tablesModel1);
 		destination.setModel(tablesModel2);
