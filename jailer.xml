@@ -289,7 +289,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			</property>
 		</bean>
 
-    <!-- for SQlite -->
+    	<!-- for SQlite -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:sqlite.*" />
 			<property name="sessionTemporaryTableManager">
@@ -303,6 +303,11 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<property name="dropTablePrefix" value="DROP TABLE " />
 				</bean>
 			</property>
+		</bean>
+
+    	<!-- for HSQL -->
+		<bean class="net.sf.jailer.Configuration">
+			<property name="urlPattern" value="jdbc:hsqldb.*" />
 		</bean>
 	</util:list>
 </beans>

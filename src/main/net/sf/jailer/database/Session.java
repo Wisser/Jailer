@@ -235,7 +235,10 @@ public class Session {
                 		if (productName != null) {
                 			if ((!"ASE".equals(productName)) && !productName.toUpperCase().contains("ADAPTIVE SERVER")) {
                 				// Sybase don't handle UR level correctly, see http://docs.sun.com/app/docs/doc/819-4728/gawlc?a=view
-                			    con.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+                				if (!productName.toUpperCase().startsWith("HSQL")) {
+                					// HSQL don't allow write access at UR level
+                        			con.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+                				}
                       		}
                 		}
                     } catch (SQLException e) {
@@ -322,6 +325,7 @@ public class Session {
 				if (productName.toUpperCase().contains("MYSQL")) dbms = DBMS.MySQL;
 				if (productName.toUpperCase().contains("SQLITE")) dbms = DBMS.SQLITE;
 				if (productName.toUpperCase().contains("ADAPTIVE SERVER")) dbms = DBMS.SYBASE;
+				if (productName.toUpperCase().contains("HSQL")) dbms = DBMS.HSQL;
 				if (productName.toUpperCase().equals("ASE")) dbms = DBMS.SYBASE;
 			}
 			_log.info("DB name:        " + productName + " (" + dbms + ")");

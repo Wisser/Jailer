@@ -705,7 +705,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			isConnected = true;
 			setVisible(false);
 		} catch (Exception e) {
-			UIUtil.showException(this, "Cannot connect with DB", e);
+			UIUtil.showException(this, "Could not connect to DB", e);
 			return;
 		}
 
