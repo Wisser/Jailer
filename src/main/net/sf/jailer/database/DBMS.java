@@ -21,13 +21,13 @@ package net.sf.jailer.database;
  * @author Ralf Wisser
  */
 public enum DBMS {
-
 	ORACLE,
 	DB2,
 	MySQL,
 	POSTGRESQL,
 	SYBASE,
 	SQLITE,
+	HSQL,
 	
-	UNKNOWN
+	UNKNOWN, 
 }

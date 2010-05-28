@@ -705,21 +705,28 @@ public class Jailer {
 		boolean done = false;
 		while (!done) {
 			done = true;
-			for (Table table: lexSortedTables) {
-				boolean depends = false;
-				for (Association association: table.associations) {
-					if (association.destination != table) {
-						if (association.isInsertDestinationBeforeSource()) {
-							if (lexSortedTables.contains(association.destination)) {
-								depends = true;
-								break;
+			for (int step = 1; step <= 2; ++step) {
+				for (Table table: lexSortedTables) {
+					boolean depends = false;
+					for (Association association: table.associations) {
+						if (association.destination != table) {
+							if (association.isInsertDestinationBeforeSource()) {
+								if (lexSortedTables.contains(association.destination)) {
+									if (step == 1 || (association.getAggregationSchema() == AggregationSchema.NONE && association.reversalAssociation.getAggregationSchema() == AggregationSchema.NONE)) {
+										depends = true;
+										break;
+									}
+								}
 							}
 						}
 					}
+					if (!depends) {
+						sortedTables.add(table);
+						done = false;
+					}
 				}
-				if (!depends) {
-					sortedTables.add(table);
-					done = false;
+				if (!done) {
+					break;
 				}
 			}
 			lexSortedTables.removeAll(sortedTables);
