@@ -484,14 +484,15 @@ public class EntityGraph {
     		selectOPK.append("T." + table.primaryKey.getColumns().get(i).name + " AS " + originalPKAliasPrefix + i);
     	}
     	orderBy = "order by " + sb;
-    	long rc = session.executeQuery(
-    			"Select " + selectionSchema + " From (" +
-                "Select " + selectOPK + ", " + filteredSelectionClause(table) + " From " + SQLDialect.dmlTableReference(ENTITY, session) + " E join " + table.getName() + " T on " +
-                pkEqualsEntityID(table, "T", "E") +
-                " Where E.birthday=0 and E.r_entitygraph=" + graphID + " and E.type='" + table.getName() + "'" +
-                ") T " +
-                (orderByPK? orderBy : ""),
-                reader);
+    	String sqlQuery = "Select " + selectionSchema + " From (" +
+		                "Select " + selectOPK + ", " + filteredSelectionClause(table) + " From " + SQLDialect.dmlTableReference(ENTITY, session) + " E join " + table.getName() + " T on " +
+		                pkEqualsEntityID(table, "T", "E") +
+		                " Where E.birthday=0 and E.r_entitygraph=" + graphID + " and E.type='" + table.getName() + "'" +
+		                ") T ";
+		long rc = session.executeQuery(
+    			sqlQuery + (orderByPK? orderBy : ""),
+                reader,
+                (!orderByPK? sqlQuery : null));
     	ProgressListenerRegistry.getProgressListener().exported(table, rc);
     }
     
@@ -526,12 +527,17 @@ public class EntityGraph {
      * @param orderByPK if <code>true</code>, result will be ordered by primary keys
      */
     public void readEntities(Table table, Session.ResultSetReader reader, boolean orderByPK) throws SQLException {
-        long rc = session.executeQuery(
-                "Select " + filteredSelectionClause(table) + " From " + SQLDialect.dmlTableReference(ENTITY, session) + " E join " + table.getName() + " T on " +
-                pkEqualsEntityID(table, "T", "E") +
-                " Where E.birthday>=0 and E.r_entitygraph=" + graphID + " and E.type='" + table.getName() + "'" +
-                (orderByPK? " order by " + table.primaryKey.columnList("T.") : ""),
-                reader);
+        String sqlQuery = "Select " + filteredSelectionClause(table) + " From " + SQLDialect.dmlTableReference(ENTITY, session) + " E join " + table.getName() + " T on " +
+			pkEqualsEntityID(table, "T", "E") +
+			" Where E.birthday>=0 and E.r_entitygraph=" + graphID + " and E.type='" + table.getName() + "'";
+		long rc;
+		if (orderByPK) {
+			String sqlQueryWithOrderBy = sqlQuery +
+				(orderByPK? " order by " + table.primaryKey.columnList("T.") : "");
+			rc = session.executeQuery(sqlQueryWithOrderBy, reader, sqlQuery);
+		} else {
+			rc = session.executeQuery(sqlQuery, reader);
+		}
         ProgressListenerRegistry.getProgressListener().exported(table, rc);
     }
     
