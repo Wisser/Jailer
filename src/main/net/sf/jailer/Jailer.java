@@ -73,6 +73,7 @@ import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.ClasspathUtil;
 import net.sf.jailer.util.CsvFile;
+import net.sf.jailer.util.CycleFinder;
 import net.sf.jailer.util.JobManager;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.SqlScriptExecutor;
@@ -99,7 +100,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "3.4.4";
+	public static final String VERSION = "3.4.5";
 
 	/**
 	 * The relational data model.
@@ -542,9 +543,13 @@ public class Jailer {
 
 		// then write entities of tables having cyclic-dependencies
 		_log.info("cyclic dependencies for: " + asString(dependentTables));
-		addDependencies(dependentTables, false);
-		runstats(session, true);
-		removeSingleRowCycles(progress, session);
+		if (!CommandLineParser.getInstance().noSorting) {
+			addDependencies(dependentTables, false);
+			runstats(session, true);
+			removeSingleRowCycles(progress, session);
+		} else {
+			_log.warn("skipping topological sorting");
+		}
 
 		final TransformerHandler fTransformerHandler = transformerHandler;
 		final OutputStreamWriter fResult = result;
@@ -636,11 +641,43 @@ public class Jailer {
 		}
 
 		if (rest > 0) {
-			throw new RuntimeException(rest + " entities not exported due to cyclic dependencies");
+			try {
+				new File(sqlScriptFile).renameTo(new File(sqlScriptFile + ".failed"));
+			} catch (Exception e) {
+				_log.warn(e.getMessage());
+			}
+			Set<Table> cycle = CycleFinder.getCycle(dependentTables);
+			String msgTitel = rest + " entities not exported due to cyclic dependencies.\n";
+			String msg = msgTitel + (cycle.size() == 1? "Table" : "Tables") + " with cyclic dependencies: " + asString(cycle);
+			_log.error(msg);
+			try {
+				// try to get a more sophisticated error message
+				_log.info("starting cycle analysis...");
+				ProgressListenerRegistry.getProgressListener().newStage("cycle analysis", true, false);
+				String sMsg = msgTitel + "Paths:\n";
+				for (CycleFinder.Path path: CycleFinder.findCycle(datamodel, cycle)) {
+					List<Table> pList = new ArrayList<Table>();
+					path.fillPath(pList);
+					sMsg += "[ ";
+					boolean ft = true;
+					for (Table t: pList) {
+						if (!ft) {
+							sMsg += " -> ";
+						}
+						ft = false;
+						sMsg += datamodel.getDisplayName(t);
+					}
+					sMsg += " ]\n";
+				}
+				msg = sMsg;
+			} catch (Throwable t) {
+				_log.warn("cycle analysis failed: " + t.getMessage());
+			}
+			throw new RuntimeException(msg);
 		}
 		_log.info("file '" + sqlScriptFile + "' written.");
 	}
-
+	
 	/**
 	 * Removes all single-row cycles from dependency table.
 	 * 
@@ -1118,6 +1155,9 @@ public class Jailer {
 		String condition = (extractionModel.condition != null && !"1=1".equals(extractionModel.condition)) ? extractionModel.subject.getName() + " where " + extractionModel.condition
 				: "all rows from " + extractionModel.subject.getName();
 		jailer.appendCommentHeader("Extraction Model:  " + condition + " (" + extractionModelFileName + ")");
+		if (CommandLineParser.getInstance().noSorting) {
+			jailer.appendCommentHeader("                   unsorted");
+		}
 		jailer.appendCommentHeader("Database URL:      " + dbUrl);
 		jailer.appendCommentHeader("Database User:     " + dbUser);
 		jailer.appendCommentHeader("");

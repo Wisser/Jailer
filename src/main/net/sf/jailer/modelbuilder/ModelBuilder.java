@@ -345,7 +345,9 @@ public class ModelBuilder {
      * @return <code>true</code> if table is one of Jailers working tables
      */
     private static boolean isJailerTable(Table table) {
-    	return SqlUtil.JAILER_TABLES.contains(table.getUnqualifiedName().toUpperCase());
+    	String tName = table.getUnqualifiedName().toUpperCase();
+		return SqlUtil.JAILER_TABLES.contains(tName)
+    	    || (tName.endsWith("_T") && SqlUtil.JAILER_TABLES.contains(tName.substring(0, tName.length() - 2)));
     }
     
     /**

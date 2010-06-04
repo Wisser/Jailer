@@ -344,6 +344,17 @@ public class SqlUtil {
 			return resultSet.getTimestamp(i);
 		}
 		if (type == Types.DATE) {
+			if (dbms == DBMS.MySQL) {
+				// YEAR
+				String typeName = resultSet.getMetaData().getColumnTypeName(i);
+				if (typeName != null && typeName.toUpperCase().equals("YEAR")) {
+					int result = resultSet.getInt(i);
+					if (resultSet.wasNull()) {
+						return null;
+					}
+					return result;
+				}
+			}
 			Date date = resultSet.getDate(i);
 			return date;
 		}

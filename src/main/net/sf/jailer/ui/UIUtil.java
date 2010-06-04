@@ -451,7 +451,7 @@ public class UIUtil {
 				msg.append(line.substring(0, maxwidth) + "\n");
 				line = line.substring(maxwidth);
 			}
-			msg.append(line + "\n");
+			msg.append(line + (line.endsWith("\n")? "" : "\n"));
 		}
 		JOptionPane.showMessageDialog(parent, msg.toString().trim(), title + " - " + t.getClass().getName(), JOptionPane.ERROR_MESSAGE);
 	}

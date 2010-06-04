@@ -146,6 +146,8 @@ public class ExportDialog extends javax.swing.JDialog {
         } catch (Exception e) {
 		}
         
+        sortedCheckBox.setEnabled(ScriptFormat.SQL.equals(scriptFormat) || ScriptFormat.DBUNIT_FLAT_XML.equals(scriptFormat));
+        sortedCheckBox.setSelected(true);
         upsertCheckbox.setEnabled(ScriptFormat.SQL.equals(scriptFormat));
         rowsPerThread.setEnabled(ScriptFormat.SQL.equals(scriptFormat));
 
@@ -237,6 +239,7 @@ public class ExportDialog extends javax.swing.JDialog {
         rowsPerThread.getDocument().addDocumentListener(dl);
         upsertCheckbox.addActionListener(al);
         explain.addActionListener(al);
+        sortedCheckBox.addActionListener(al);
         scopeGlobal.addActionListener(al);
         scopeSession.addActionListener(al);
         for (JTextField field: parameterEditor.textfieldsPerParameter.values()) {
@@ -549,6 +552,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jLabel25 = new javax.swing.JLabel();
         copyButton = new javax.swing.JButton();
         placeholder1 = new javax.swing.JLabel();
+        sortedCheckBox = new javax.swing.JCheckBox();
         jPanel7 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -716,7 +720,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel1.add(jPanel3, gridBagConstraints);
 
-        upsertCheckbox.setText("generate Upsert-statements (overwrite) for all rows"); // NOI18N
+        upsertCheckbox.setText("upsert-statements (overwrite) for all rows"); // NOI18N
         upsertCheckbox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -945,6 +949,22 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(placeholder1, gridBagConstraints);
 
+        sortedCheckBox.setText("topological sorting");
+        sortedCheckBox.setToolTipText("sort exported rows according to dependencies");
+        sortedCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        sortedCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sortedCheckBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 42;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
+        jPanel1.add(sortedCheckBox, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -1052,6 +1072,9 @@ public class ExportDialog extends javax.swing.JDialog {
         cliArea.copy();
         updateCLIArea();
     }//GEN-LAST:event_copyButtonActionPerformed
+
+    private void sortedCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortedCheckBoxActionPerformed
+    }//GEN-LAST:event_sortedCheckBoxActionPerformed
     
     public boolean isOk() {
 		return isOk;
@@ -1077,6 +1100,9 @@ public class ExportDialog extends javax.swing.JDialog {
     	}
     	if (upsertCheckbox.isSelected()) {
     		args.add("-upsert-only");
+    	}
+    	if (!sortedCheckBox.isSelected()) {
+    		args.add("-no-sorting");
     	}
     	try {
     		int nt = Integer.parseInt(threads.getText().trim());
@@ -1250,6 +1276,7 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JRadioButton scopeSession;
     private javax.swing.JLabel selectDeleteFile;
     private javax.swing.JLabel selectInsertFile;
+    private javax.swing.JCheckBox sortedCheckBox;
     public javax.swing.JPanel sourceSchemaMappingPanel;
     private javax.swing.JLabel subjectTable;
     private javax.swing.JTextField threads;
