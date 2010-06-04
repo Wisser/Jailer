@@ -1,3 +1,8 @@
+3.4.5
+ - Added dependency cycle analysis feature. 
+ - Added support for data type 'YEAR' on MySQL.
+ - minor bug fixes.
+
 3.4.4
  - Command line rendering in "Data Export" dialog eases the handling of the command line interface.
  - Added support for HSQL DBMS.

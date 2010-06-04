@@ -279,6 +279,9 @@ public class CommandLineParser {
 	@Option(name="-jdbcjar2", usage="JDBC driver's secondary jar file")
     public String jdbcjar2 = null;
 
+	@Option(name="-no-sorting", usage="if set, the exported rows will not be sorted according to foreign key constraints")
+    public boolean noSorting = false;
+
 	@Argument
     public List<String> arguments = new ArrayList<String>();
 

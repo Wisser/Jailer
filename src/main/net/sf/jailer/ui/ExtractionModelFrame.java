@@ -83,6 +83,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	final ClosureView closureView;
 
 	/**
+	 * The "Cycle View" dialog.
+	 */
+	final CyclesView cycleViewDialog;
+
+	/**
 	 * File in which plaf-setting is stored.
 	 */
 	private static final String PLAFSETTING = ".plaf.ui";
@@ -123,6 +128,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         }
         updateMenuItems();
         closureView = new ClosureView(this);
+        cycleViewDialog = new CyclesView(this);
         filterEditorDialog = new FilterEditorDialog(this, new ParameterSelector.ParametersGetter() {
 			@Override
 			public Set<String> getParameters() {
@@ -222,6 +228,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         openDataModelEditor = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JSeparator();
         queryBuilder = new javax.swing.JMenuItem();
+        cycleView = new javax.swing.JMenuItem();
         renderHtml = new javax.swing.JMenuItem();
         printDatamodel = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
@@ -616,6 +623,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
         jMenu3.add(queryBuilder);
+
+        cycleView.setText("Cycle View");
+        cycleView.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cycleViewActionPerformed(evt);
+            }
+        });
+        jMenu3.add(cycleView);
 
         renderHtml.setText("HTML Rendering");
         renderHtml.addActionListener(new java.awt.event.ActionListener() {
@@ -1357,6 +1372,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         	extractionModelEditor.showReachability(extractionModelEditor.currentAssociation.destination);
         }
     }//GEN-LAST:event_showReachabilityActionPerformed
+
+    private void cycleViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cycleViewActionPerformed
+		cycleViewDialog.refresh();
+		cycleViewDialog.setVisible(true);
+		cycleViewDialog.toFront();
+		cycleViewDialog.findCycles();
+    }//GEN-LAST:event_cycleViewActionPerformed
     
     boolean isHorizontalLayout = false;
 	
@@ -1559,6 +1581,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem closureMenuItem;
     private javax.swing.JMenuItem collapseAll;
     private javax.swing.JCheckBoxMenuItem connectDb;
+    private javax.swing.JMenuItem cycleView;
     private javax.swing.JMenuItem dataExport;
     private javax.swing.JMenuItem dataImport;
     private javax.swing.JMenuItem disconnectDb;

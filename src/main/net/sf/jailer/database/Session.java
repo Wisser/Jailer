@@ -352,13 +352,36 @@ public class Session {
      * @param reader the reader for the result
      */
     public long executeQuery(String sqlQuery, ResultSetReader reader) throws SQLException {
+    	return executeQuery(sqlQuery, reader, null);
+    }
+    
+    /**
+     * Executes a SQL-Query (SELECT).
+     * 
+     * @param sqlQuery the query in SQL
+     * @param reader the reader for the result
+     * @param alternativeSQL query to be executed if sqlQuery fails
+     */
+    public long executeQuery(String sqlQuery, ResultSetReader reader, String alternativeSQL) throws SQLException {
         _log.info(sqlQuery);
         long rc = 0;
         try {
         	CancellationHandler.checkForCancellation();
 	        Statement statement = connectionFactory.getConnection().createStatement();
 	        CancellationHandler.begin(statement);
-	        ResultSet resultSet = statement.executeQuery(sqlQuery);
+	        ResultSet resultSet;
+	        try {
+	        	resultSet = statement.executeQuery(sqlQuery);
+	        } catch (SQLException e) {
+	        	if (alternativeSQL != null) {
+	        		_log.warn("query failed, using alternative query. Reason: " + e.getMessage());
+	        		_log.info(alternativeSQL);
+	                CancellationHandler.checkForCancellation();
+	        		resultSet = statement.executeQuery(alternativeSQL);
+	        	} else {
+	        		throw e;
+	        	}
+	        }
 	        while (resultSet.next()) {
 	            reader.readCurrentRow(resultSet);
 	            ++rc;

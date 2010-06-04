@@ -187,6 +187,7 @@ public class ClosureView extends javax.swing.JDialog {
 				if (render instanceof JLabel) {
 					((JLabel) render).setForeground(Color.BLACK);
 					((JLabel) render).setFont(normal);
+					((JLabel) render).setToolTipText(((JLabel) render).getText());
 					if (cellInfo != null && selectedTable != null) {
 						if (selectedTable.equals(value) || cellInfo.pathToRoot.contains(value)) {
 							((JLabel) render).setFont(bold);
