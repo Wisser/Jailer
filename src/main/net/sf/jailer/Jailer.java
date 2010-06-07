@@ -653,7 +653,7 @@ public class Jailer {
 			try {
 				// try to get a more sophisticated error message
 				_log.info("starting cycle analysis...");
-				ProgressListenerRegistry.getProgressListener().newStage("cycle analysis", true, false);
+				ProgressListenerRegistry.getProgressListener().newStage("cycle error, analysing...", true, false);
 				String sMsg = msgTitel + "Paths:\n";
 				for (CycleFinder.Path path: CycleFinder.findCycle(datamodel, cycle)) {
 					List<Table> pList = new ArrayList<Table>();
