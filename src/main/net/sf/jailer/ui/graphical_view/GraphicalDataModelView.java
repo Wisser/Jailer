@@ -109,7 +109,7 @@ public class GraphicalDataModelView extends JPanel {
 	/**
 	 * The selected association.
 	 */
-	Association selectedAssociation;
+	public Association selectedAssociation;
 
 	/**
 	 * Set of names of all tables on path from selected one to the root.
@@ -924,17 +924,13 @@ public class GraphicalDataModelView extends JPanel {
 		JMenuItem disable = new JMenuItem("disable association");
 		disable.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
-				setSelection(association);
-				modelEditor.restrictionEditor.ignore.setSelected(true);
-				modelEditor.onApply(false);
+				setRestriction(association, true);
 			}
 		});
 		JMenuItem enable = new JMenuItem("remove restriction");
 		enable.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
-				setSelection(association);
-				modelEditor.restrictionEditor.ignore.setSelected(false);
-				modelEditor.onApply(false);
+				setRestriction(association, false);
 			}
 		});
 		JMenuItem zoomToFit = new JMenuItem("Zoom to fit");
@@ -1807,5 +1803,11 @@ public class GraphicalDataModelView extends JPanel {
 		setSelection(sa);
 	}
 	
+	public void setRestriction(final Association association, boolean ignore) {
+		setSelection(association);
+		modelEditor.restrictionEditor.ignore.setSelected(ignore);
+		modelEditor.onApply(false);
+	}
+
 	private static final long serialVersionUID = -5938101712807557555L;
 }
