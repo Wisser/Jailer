@@ -594,6 +594,10 @@ public class ClosureView extends javax.swing.JDialog {
 						editedAssociations.add(assocName);
 						Association association = getDataModel().namedAssociations.get(assocName);
 						if (association != null) {
+							if (!ClosureView.this.extractionModelFrame.extractionModelEditor.select(association)) {
+								ClosureView.this.extractionModelFrame.extractionModelEditor.setRootSelection(association.destination);
+								ClosureView.this.extractionModelFrame.extractionModelEditor.select(association);
+							}
 							extractionModelFrame.extractionModelEditor.graphView.setRestriction(association, !checkBox.isSelected());
 						}
 					}
@@ -726,7 +730,10 @@ public class ClosureView extends javax.swing.JDialog {
 					else if (SwingUtilities.isLeftMouseButton(e)) {
 						Association association = getDataModel().namedAssociations.get(assocName);
 						if (association != null) {
-							ClosureView.this.extractionModelFrame.extractionModelEditor.select(association);
+							if (!ClosureView.this.extractionModelFrame.extractionModelEditor.select(association)) {
+								ClosureView.this.extractionModelFrame.extractionModelEditor.setRootSelection(association.destination);
+								ClosureView.this.extractionModelFrame.extractionModelEditor.select(association);
+							}
 							refreshAssociationView(getSelectedTable());
 							repaint();
 						}
