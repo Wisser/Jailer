@@ -1,5 +1,5 @@
 3.4.6
- - Added button for disabling associations in closure browser.
+ - Added associations list view in closure-browser.
 
 3.4.5
  - Added dependency cycle analysis feature. 
