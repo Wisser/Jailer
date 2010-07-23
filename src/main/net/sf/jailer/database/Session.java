@@ -18,7 +18,6 @@ package net.sf.jailer.database;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -530,17 +529,19 @@ public class Session {
     /**
      * Inserts a CLob.
      */
-    public void insertClob(String table, String column, String where, File lobFile) throws SQLException, FileNotFoundException {
+    public void insertClob(String table, String column, String where, File lobFile) throws SQLException, IOException {
     	String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
         _log.info(sqlUpdate);
         PreparedStatement statement = null;
         try {
 	        statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
 	        CancellationHandler.begin(statement);
-	        statement.setCharacterStream(1, new InputStreamReader(new FileInputStream(lobFile)), (int) lobFile.length());
+	        InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile));
+			statement.setCharacterStream(1, inputStreamReader, (int) lobFile.length());
 	        statement.execute();
 	        statement.close();
 	        CancellationHandler.end(statement);
+	        inputStreamReader.close();
         } catch (SQLException e) {
         	CancellationHandler.checkForCancellation();
         	throw e;
@@ -550,17 +551,19 @@ public class Session {
     /**
      * Inserts a SQL-XML.
      */
-    public void insertSQLXML(String table, String column, String where, File lobFile) throws SQLException, FileNotFoundException {
+    public void insertSQLXML(String table, String column, String where, File lobFile) throws SQLException, IOException {
     	String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
         _log.info(sqlUpdate);
         PreparedStatement statement = null;
         try {
 	        statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
 	        CancellationHandler.begin(statement);
-	        statement.setCharacterStream(1, new InputStreamReader(new FileInputStream(lobFile)), (int) lobFile.length());
+	        InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile));
+			statement.setCharacterStream(1, inputStreamReader, (int) lobFile.length());
 	        statement.execute();
 	        statement.close();
 	        CancellationHandler.end(statement);
+	        inputStreamReader.close();
         } catch (SQLException e) {
         	CancellationHandler.checkForCancellation();
         	throw e;
@@ -570,17 +573,19 @@ public class Session {
     /**
      * Inserts a BLob.
      */
-    public void insertBlob(String table, String column, String where, File lobFile) throws SQLException, FileNotFoundException {
+    public void insertBlob(String table, String column, String where, File lobFile) throws SQLException, IOException {
     	String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
         _log.info(sqlUpdate);
         PreparedStatement statement = null;
         try {
 	        statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
 	        CancellationHandler.begin(statement);
-	        statement.setBinaryStream(1, new FileInputStream(lobFile), (int) lobFile.length());
+	        FileInputStream fileInputStream = new FileInputStream(lobFile);
+			statement.setBinaryStream(1, fileInputStream, (int) lobFile.length());
 	        statement.execute();
 	        statement.close();
 	        CancellationHandler.end(statement);
+	        fileInputStream.close();
 	    } catch (SQLException e) {
 	    	CancellationHandler.checkForCancellation();
 	    	throw e;
