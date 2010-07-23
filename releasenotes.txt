@@ -1,3 +1,6 @@
+3.4.7-beta
+ - Fixed a bug concerning import of LOB data. 
+
 3.4.6
  - Added associations list view in closure-browser.
 
