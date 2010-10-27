@@ -51,7 +51,13 @@ public class DDLCreator {
 		if (driverClass != null) {
 			session = new Session(driverClass, dbUrl, user, password);
 		}
-		return createDDL(session, temporaryTableScope);
+		try {
+			return createDDL(session, temporaryTableScope);
+		} finally {
+			if (session != null) {
+				try { session.shutDown(); } catch (Exception e) { /* ignore */ }
+			}
+		}
 	}
 
 	/**
