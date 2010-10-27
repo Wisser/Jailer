@@ -1,3 +1,6 @@
+3.4.8
+ - Bugfix: connections were not always closed properly.
+
 3.4.7
  - Fixed a bug concerning import of LOB data [3033441].
 

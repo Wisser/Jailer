@@ -1390,6 +1390,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			return;
 		}
 		String title = "Jailer " + Jailer.VERSION + " Extraction Model Editor";
+		if (!"datamodel".equals(CommandLineParser.getInstance().datamodelFolder)) {
+			title += " (" + new File(CommandLineParser.getInstance().datamodelFolder).getName() + ")";
+		}
         if (extractionModelEditor.extractionModelFile == null) {
         	title = "New Model - " + title;
         } else {
