@@ -400,14 +400,14 @@ public class DMLTransformer implements ResultSetReader {
 	                }
                 }
             } else {
-            	if (session.dbms == DBMS.ORACLE) {
+            	if (session.dbms == DBMS.ORACLE && maxBodySize > 1) {
             		String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
 	                String item = "\n Select " + valueList + " From DUAL";
 	                if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
 	                    writeToScriptFile(insertStatementBuilder.build(), true);
 	                }
 	                insertStatementBuilder.append(insertSchema, item, " Union all ", ";\n");
-            	} else if (session.dbms == DBMS.SQLITE) {
+            	} else if (session.dbms == DBMS.SQLITE && maxBodySize > 1) {
             		String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
 	                String item = "\n Select " + valueList + " ";
 	                if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
