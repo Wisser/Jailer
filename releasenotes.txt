@@ -1,3 +1,7 @@
+3.4.9
+ - SQL generator no longer uses the "from DUAL" idiom 
+   for single-row inserts on Oracle DBMS
+
 3.4.8
  - Bugfix: connections were not always closed properly.
 
