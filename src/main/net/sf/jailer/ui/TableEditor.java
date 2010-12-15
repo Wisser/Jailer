@@ -349,7 +349,7 @@ public class TableEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         getContentPane().add(excludeFromDeletion, gridBagConstraints);
 
-        exportAllRows.setText(" export all rows if in closure of subject");
+        exportAllRows.setText(" always export all rows (initial-data)");
         exportAllRows.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
