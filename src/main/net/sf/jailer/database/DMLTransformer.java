@@ -416,7 +416,7 @@ public class DMLTransformer implements ResultSetReader {
 	                insertStatementBuilder.append(insertSchema, item, " Union all ", ";\n");
             	} else {
 	                String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") values ";
-	                String item = "(" + valueList + ")";
+	                String item = (maxBodySize > 1? "\n " : "") + "(" + valueList + ")";
 	                if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
 	                    writeToScriptFile(insertStatementBuilder.build(), true);
 	                }
