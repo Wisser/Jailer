@@ -262,7 +262,8 @@ public class Jailer {
 		Set<Table> idTables = initialDataTables;
 		Set<Table> tables = new HashSet<Table>();
 		for (Table table : idTables) {
-			if (subject.closure(true).contains(table)) {
+			/* if (subject.closure(true).contains(table)) */ {
+				// since 3.4.10 initial-data tables always will be exported
 				tables.add(table);
 				_log.info("exporting all " + datamodel.getDisplayName(table));
 
@@ -271,8 +272,8 @@ public class Jailer {
 				long rc = entityGraph.addEntities(table, "1=1", today, 0);
 				ProgressListenerRegistry.getProgressListener().collected(1, table, rc);
 				entityGraph.setAge(today + 1);
-			} else {
-				_log.info(datamodel.getDisplayName(table) + " not in closure(" + datamodel.getDisplayName(subject) + ")");
+//			} else {
+//				_log.info(datamodel.getDisplayName(table) + " not in closure(" + datamodel.getDisplayName(subject) + ")");
 			}
 		}
 		return tables;
