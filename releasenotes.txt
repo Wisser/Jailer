@@ -1,3 +1,6 @@
+3.4.10
+ - Enhanced readability of generated SQL scripts.
+
 3.4.9
  - SQL generator no longer uses the "from DUAL" idiom 
    for single-row inserts on Oracle DBMS
