@@ -63,6 +63,7 @@ import javax.swing.table.TableColumn;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.util.SqlUtil;
 
 /**
  * Dialog for browsing through the closure of a table.
@@ -612,7 +613,11 @@ public class ClosureView extends javax.swing.JDialog {
 	            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
 	            assocViewPanel.add(checkBox, gridBagConstraints);
 
-	            l = createLabel(y, null, assocName, bgc, " " + association.getUnrestrictedJoinCondition(), true);
+	            String unrestrictedJoinCondition = association.getUnrestrictedJoinCondition();
+	            if (association.reversed) {
+	            	unrestrictedJoinCondition = SqlUtil.reversRestrictionCondition(unrestrictedJoinCondition);
+	            }
+				l = createLabel(y, null, assocName, bgc, " " + unrestrictedJoinCondition, true);
 	            l.setOpaque(true);
 	            l.setFont(nonbold);
 	            l.setForeground(Color.GRAY);
