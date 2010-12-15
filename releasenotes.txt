@@ -1,5 +1,6 @@
 3.4.10
  - Enhanced readability of generated SQL scripts.
+ - Fix for rendering bug in closure view.
 
 3.4.9
  - SQL generator no longer uses the "from DUAL" idiom 
