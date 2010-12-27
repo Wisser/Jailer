@@ -39,10 +39,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
-import javax.swing.JComponent;
-import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -62,6 +61,7 @@ import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
+import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.UIUtil;
@@ -86,6 +86,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * Parent row, or <code>null</code>.
 	 */
 	private final Row parentRow;
+	
+	/**
+	 * The data model.
+	 */
+	private final DataModel dataModel;
 	
 	/**
 	 * {@link Association} with parent row, or <code>null</code>.
@@ -146,14 +151,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	
 	/**
 	 * Constructor.
+	 * 
+	 * @param dataModel the data model
 	 * @param table to read rows from
 	 * @param session DB session
 	 * @param parentRow parent row
 	 * @param association {@link Association} with parent row
 	 */
-	public BrowserContentPane(final Table table, Session session, Row parentRow, Association association, Frame parentFrame) {
+	public BrowserContentPane(final DataModel dataModel, final Table table, Session session, Row parentRow, Association association, Frame parentFrame) {
 		this.table = table;
 		this.session = session;
+		this.dataModel = dataModel;
 		this.parentRow = parentRow;
 		this.association = association;
 		try {
@@ -163,6 +171,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 
 		initComponents();
+		from.setText(this.dataModel.getDisplayName(table));
 		if (association == null) {
 			join.setVisible(false);
 			on.setVisible(false);
@@ -170,10 +179,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			jLabel1.setVisible(false);
 			jLabel4.setVisible(false);
 			jLabel9.setVisible(false);
+			jLabel6.setVisible(false);
 			andLabel.setText(" Where ");
 		} else {
-			join.setText(association.getDataModel().getDisplayName(association.source) + " A");
-			on.setText(association.reversed? SqlUtil.reversRestrictionCondition(association.getUnrestrictedJoinCondition()) : association.getUnrestrictedJoinCondition());
+			join.setText(dataModel.getDisplayName(association.source));
+			on.setText(!association.reversed? SqlUtil.reversRestrictionCondition(association.getUnrestrictedJoinCondition()) : association.getUnrestrictedJoinCondition());
 			where.setText(parentRow.rowId);
 			join.setToolTipText(join.getText());
 			on.setToolTipText(on.getText());
@@ -248,6 +258,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
             	openEditorLabel.setIcon(conditionEditorIcon);
            }
         });
+		limitBox.setModel(new DefaultComboBoxModel(new Integer[] { 100, 200, 500, 1000, 2000, 5000 }));
+		limitBox.setSelectedIndex(0);
 		updateTableModel();
 		reloadRows();
 	}
@@ -361,16 +373,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		boolean f = true;
 		for (Column column: table.getColumns()) {
 			String name = quoting == null? column.name : quoting.quote(column.name);
-			sql += (!f? ", " : "") + "B." + name;
+			sql += (!f? ", " : "") + "A." + name;
 			f = false;
 		}
 		sql += " From ";
 		if (association != null) {
-			sql += (quoting == null? association.source.getName() : quoting.quote(association.source.getName())) + " A join ";
+			sql += (quoting == null? association.source.getName() : quoting.quote(association.source.getName())) + " B join ";
 		}
-		sql += (quoting == null? table.getName() : quoting.quote(table.getName())) + " B";
+		sql += (quoting == null? table.getName() : quoting.quote(table.getName())) + " A";
 		if (association != null) {
-			if (!association.reversed) {
+			if (association.reversed) {
 				sql += " on " + association.getUnrestrictedJoinCondition();
 			} else {
 				sql += " on " + SqlUtil.reversRestrictionCondition(association.getUnrestrictedJoinCondition());
@@ -381,7 +393,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		String orderBy = "";
 		for (Column pk: table.primaryKey.getColumns()) {
 			pkColumnNames.add(pk.name);
-			orderBy += (f? "" : ", ") + "B." + (quoting == null? pk.name : quoting.quote(pk.name));
+			orderBy += (f? "" : ", ") + "A." + (quoting == null? pk.name : quoting.quote(pk.name));
 			f = false;
 		}
 		if (parentRow != null) {
@@ -418,7 +430,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						Object o = SqlUtil.getObject(resultSet, i, typeCache);
 						if (pkColumnNames.contains(column.name)) {
 							String cVal = SqlUtil.toSql(o, session);
-			                rowId += (rowId.length() == 0? "" : " and ") + "A." + (quoting == null? column.name : quoting.quote(column.name))
+			                rowId += (rowId.length() == 0? "" : " and ") + "B." + (quoting == null? column.name : quoting.quote(column.name))
 			                	+ "=" + cVal;
 						}
 		                if (o == null || resultSet.wasNull()) {
@@ -518,6 +530,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         openEditorLabel = new javax.swing.JLabel();
         andCondition = new javax.swing.JTextField();
         loadButton = new javax.swing.JButton();
+        jLabel3 = new javax.swing.JLabel();
+        from = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        fetchLabel = new javax.swing.JLabel();
+        jPanel3 = new javax.swing.JPanel();
+        limitBox = new javax.swing.JComboBox();
+        jLabel7 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -566,7 +586,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 12;
-        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridwidth = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -576,7 +596,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jLabel1.setText(" Join ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel1, gridBagConstraints);
@@ -585,7 +605,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         join.setText("jLabel3");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(join, gridBagConstraints);
 
@@ -593,7 +613,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jLabel4.setText(" On ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel4, gridBagConstraints);
@@ -602,7 +622,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jLabel9.setText(" Where ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel9, gridBagConstraints);
@@ -611,7 +631,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         on.setText("jLabel3");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(on, gridBagConstraints);
 
@@ -619,7 +640,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         where.setText("jLabel3");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(where, gridBagConstraints);
 
@@ -627,34 +649,92 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         andLabel.setText(" And  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         add(andLabel, gridBagConstraints);
 
         openEditorLabel.setText(" And  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         add(openEditorLabel, gridBagConstraints);
-
-        andCondition.setText("jTextField1");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 8;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         add(andCondition, gridBagConstraints);
 
         loadButton.setText("refresh");
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 6;
+        gridBagConstraints.gridy = 8;
+        add(loadButton, gridBagConstraints);
+
+        jLabel3.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
+        jLabel3.setText(" from ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(jLabel3, gridBagConstraints);
+
+        from.setFont(new java.awt.Font("DejaVu Sans", 0, 14));
+        from.setText("jLabel3");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(from, gridBagConstraints);
+
+        jLabel5.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
+        jLabel5.setText(" as A ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(jLabel5, gridBagConstraints);
+
+        jLabel6.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
+        jLabel6.setText(" as B  ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        add(jLabel6, gridBagConstraints);
+
+        fetchLabel.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
+        fetchLabel.setText(" Limit  ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
-        add(loadButton, gridBagConstraints);
+        add(fetchLabel, gridBagConstraints);
+
+        jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.LINE_AXIS));
+
+        limitBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        jPanel3.add(limitBox);
+
+        jLabel7.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
+        jLabel7.setText(" rows");
+        jPanel3.add(jLabel7);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 9;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        add(jPanel3, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -662,14 +742,22 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JLabel andLabel;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JPanel cardPanel;
+    private javax.swing.JLabel fetchLabel;
+    private javax.swing.JLabel from;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel join;
+    private javax.swing.JComboBox limitBox;
     private javax.swing.JButton loadButton;
     private javax.swing.JLabel on;
     private javax.swing.JLabel openEditorLabel;
