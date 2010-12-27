@@ -694,7 +694,7 @@ public class GraphicalDataModelView extends JPanel {
 			navigateTo.setEnabled(false);
 			JMenu currentMenu = navigateTo;
 			int numItems = 0;
-			final int MAX_ITEMS = 40;
+			final int MAX_ITEMS = 30;
 			for (final Association a: aList) {
 				String miText = a.getDataModel().getDisplayName(a.destination);
 				JMenuItem mi = new JMenuItem();
