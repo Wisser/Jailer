@@ -48,7 +48,11 @@ public class ConditionEditor extends javax.swing.JDialog {
         setLocation(400, 150);
         setSize(600, 400);
         
-        paramsPanel.add(parameterSelector = new ParameterSelector(this, textArea, parametersGetter));
+        if (parametersGetter != null) {
+        	paramsPanel.add(parameterSelector = new ParameterSelector(this, textArea, parametersGetter));
+        } else {
+        	paramsPanel.setVisible(false);
+        }
         
         SyntaxSupport instance = SyntaxSupport.getInstance();
         instance.highlightCurrent(false);
@@ -322,7 +326,9 @@ public class ConditionEditor extends javax.swing.JDialog {
 		}
 		ok = false;
 		textArea.setText(condition);
-		parameterSelector.updateParameters();
+		if (parameterSelector != null) {
+			parameterSelector.updateParameters();
+		}
 		setVisible(true);
 		return ok? textArea.getText() : null;
 	}
