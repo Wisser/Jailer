@@ -202,7 +202,7 @@ public class Desktop extends JDesktopPane {
 	 * @return new row-browser
 	 */
 	public synchronized RowBrowser addTableBrowser(final RowBrowser parent, int parentRowIndex, final Table table, Association association) {
-		final int MIN = 0, HEIGHT = 460, MIN_HEIGHT = 70, DISTANCE = 20;
+		final int MIN = 0, HEIGHT = 460, MIN_HEIGHT = 80, DISTANCE = 20;
 
 		JInternalFrame jInternalFrame = new JInternalFrame(datamodel.getDisplayName(table));
 		jInternalFrame.setClosable(true);
