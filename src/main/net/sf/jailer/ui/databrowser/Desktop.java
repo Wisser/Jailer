@@ -53,6 +53,7 @@ import javax.swing.event.InternalFrameListener;
 
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.UIUtil;
@@ -201,7 +202,7 @@ public class Desktop extends JDesktopPane {
 	 * @return new row-browser
 	 */
 	public synchronized RowBrowser addTableBrowser(final RowBrowser parent, int parentRowIndex, final Table table, Association association) {
-		final int MIN = 0, HEIGHT = 320, DISTANCE = 20;
+		final int MIN = 0, HEIGHT = 460, MIN_HEIGHT = 70, DISTANCE = 20;
 
 		JInternalFrame jInternalFrame = new JInternalFrame(datamodel.getDisplayName(table));
 		jInternalFrame.setClosable(true);
@@ -247,12 +248,21 @@ public class Desktop extends JDesktopPane {
 			}
 		});
 
+		final RowBrowser tableBrowser = new RowBrowser();
+		BrowserContentPane browserContentPane = new BrowserContentPane(datamodel, table, session, parent == null? null : parent.browserContentPane.rows.get(parentRowIndex), association, parentFrame) {
+			@Override
+			protected void navigateTo(Association association, int rowIndex, Row row) {
+				addTableBrowser(tableBrowser, rowIndex, association.destination, association);
+			}
+		};
+		
 		int x = MIN;
 		if (parent != null) {
 			x = parent.internalFrame.getX() + parent.internalFrame.getWidth() + DISTANCE;
 		}
+		int h = association == null || (association.getCardinality() != Cardinality.MANY_TO_ONE && association.getCardinality() != Cardinality.ONE_TO_ONE)? HEIGHT : browserContentPane.getMinimumSize().height + MIN_HEIGHT; 
 		int y = MIN;
-		Rectangle r = new Rectangle(x, y, BROWSERTABLE_DEFAULT_WIDTH, HEIGHT);
+		Rectangle r = new Rectangle(x, y, BROWSERTABLE_DEFAULT_WIDTH, h);
 		for (;;) {
 			boolean ok = true;
 			for (RowBrowser tb : tableBrowsers) {
@@ -261,7 +271,7 @@ public class Desktop extends JDesktopPane {
 					break;
 				}
 			}
-			r = new Rectangle(x, y, BROWSERTABLE_DEFAULT_WIDTH, HEIGHT);
+			r = new Rectangle(x, y, BROWSERTABLE_DEFAULT_WIDTH, h);
 			y += 8;
 			if (ok) {
 				break;
@@ -269,14 +279,7 @@ public class Desktop extends JDesktopPane {
 		}
 
 		jInternalFrame.setBounds(r);
-
-		final RowBrowser tableBrowser = new RowBrowser();
-		BrowserContentPane browserContentPane = new BrowserContentPane(table, session, parent == null? null : parent.browserContentPane.rows.get(parentRowIndex), association, parentFrame) {
-			@Override
-			protected void navigateTo(Association association, int rowIndex, Row row) {
-				addTableBrowser(tableBrowser, rowIndex, association.destination, association);
-			}
-		};
+		
 		tableBrowser.internalFrame = jInternalFrame;
 		tableBrowser.browserContentPane = browserContentPane;
 		tableBrowser.rowIndex = parentRowIndex;
