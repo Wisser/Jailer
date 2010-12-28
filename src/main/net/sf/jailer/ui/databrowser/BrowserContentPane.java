@@ -238,7 +238,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					Row row = rows.get(i);
 
 					if (lastMenu == null || !lastMenu.isVisible()) {
-						currentRowSelection = i;
+						currentRowSelection = ri;
 						onRedraw();
 						JPopupMenu popup = createPopupMenu(row, i);
 						Rectangle r = rowsTable.getCellRect(ri, 0, false);
