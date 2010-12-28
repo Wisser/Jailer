@@ -259,6 +259,11 @@ public class Desktop extends JDesktopPane {
 			protected void onContentChange(List<Row> rows) {
 				updateChildren(tableBrowser, rows);
 			}
+
+			@Override
+			protected void onRedraw() {
+				repaintDesktop();
+			}
 		};
 		
 		int x = MIN;
