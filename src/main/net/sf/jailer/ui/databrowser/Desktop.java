@@ -331,6 +331,9 @@ public class Desktop extends JDesktopPane {
 				}
 				Desktop.this.remove(e.getInternalFrame());
 				tableBrowsers.remove(tableBrowser);
+				for (RowBrowser rb: tableBrowsers) {
+					updateChildren(rb, rb.browserContentPane.rows);
+				}
 				repaintDesktop();
 			}
 			@Override
