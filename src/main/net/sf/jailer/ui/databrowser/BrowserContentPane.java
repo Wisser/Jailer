@@ -26,6 +26,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.ResultSet;
@@ -116,6 +118,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private final Session session;
 	
 	private Quoting quoting;
+
+	protected int currentRowSelection;
 	
 	/**
 	 * For concurrent reload of rows.
@@ -199,10 +203,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize()); 
 			
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+				isSelected = currentRowSelection == row;
 				Component render = defaultTableCellRenderer.getTableCellRendererComponent(table, value, isSelected, false, row, column);
 				final RowSorter<?> rowSorter = rowsTable.getRowSorter();
 				if (render instanceof JLabel) {
-					((JLabel) render).setBackground((row % 2 == 0) ? BG1 : BG2);
+					if (!isSelected) {
+						((JLabel) render).setBackground((row % 2 == 0) ? BG1 : BG2);
+					}
 					((JLabel) render).setForeground(pkColumns.contains(rowsTable.convertColumnIndexToModel(column))? FG1 : Color.BLACK);
 					try {
 						((JLabel) render).setFont(highlightedRows.contains(rowSorter.convertRowIndexToModel(row))? bold : nonbold);
@@ -231,9 +238,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					Row row = rows.get(i);
 
 					if (lastMenu == null || !lastMenu.isVisible()) {
+						currentRowSelection = i;
+						onRedraw();
 						JPopupMenu popup = createPopupMenu(row, i);
 						Rectangle r = rowsTable.getCellRect(ri, 0, false);
 						popup.show(rowsTable, Math.max((int) e.getPoint().x, (int) r.getMinX()), (int) r.getMaxY() - 2);
+						popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
+							
+							@Override
+							public void propertyChange(PropertyChangeEvent evt) {
+								if (Boolean.FALSE.equals(evt.getNewValue())) {
+									currentRowSelection = -1;
+									onRedraw();
+								}
+							}
+						});
 						lastMenu = popup;
 					}
 				}
@@ -858,5 +877,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	protected abstract void navigateTo(Association association, int rowIndex, Row row);
 	protected abstract void onContentChange(List<Row> rows);
+    protected abstract void onRedraw();
     
 }
