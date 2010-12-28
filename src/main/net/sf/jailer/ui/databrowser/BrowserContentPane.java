@@ -85,7 +85,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * Parent row, or <code>null</code>.
 	 */
-	private final Row parentRow;
+	final Row parentRow;
 	
 	/**
 	 * The data model.
@@ -105,7 +105,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * Indexes of highlighted rows.
 	 */
-	private Set<Integer> highlightedRows = new HashSet<Integer>();
+	Set<Integer> highlightedRows = new HashSet<Integer>();
 	
 	/**
 	 * Indexes of primary key columns.
@@ -127,7 +127,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * Maximum number of concurrent DB connections.
 	 */
-	private static int MAX_CONCURRENT_CONNECTIONS = 2;
+	private static int MAX_CONCURRENT_CONNECTIONS = 5;
 
 	static {
 		// initialize listeners for #runnableQueue
@@ -242,10 +242,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		openEditorLabel.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-					String cond = andConditionEditor.edit(andCondition.getText(), "", "A", table, null, null, null, false);
+					String cond = andConditionEditor.edit(andCondition.getText(), "Table", "A", table, null, null, null, false);
 					if (cond != null) {
 						if (!andCondition.getText().equals(ConditionEditor.toSingleLine(cond))) {
 							andCondition.setText(ConditionEditor.toSingleLine(cond));
+							loadButton.grabFocus();
 						}
 					}
 					openEditorLabel.setIcon(conditionEditorSelectedIcon);
@@ -277,7 +278,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	    			++n;
 	    		}
 	    	}
-	    	String name = a.getDataModel().getDisplayName(a.destination) + (n > 1? " on "  + a.getName() : "");
+	    	char c = ' ';
+	    	if (a.isIgnored()) {
+	    		c = '4';
+	    	} else if (a.isInsertDestinationBeforeSource()) {
+	    		c = '1';
+	    	} else if (a.isInsertSourceBeforeDestination()) {
+	    		c = '2';
+	    	} else {
+	    		c = '3';
+	    	}
+	    	String name = c + a.getDataModel().getDisplayName(a.destination) + (n > 1? " on "  + a.getName() : "");
 	    	assList.add(name);
 	    	assMap.put(name, a);
 		}
@@ -303,7 +314,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				current = p;
 			}
 			
-			item = new JMenuItem("  " + name);
+			item = new JMenuItem("  " + (name.substring(1)));
+			if (name.startsWith("1")) {
+				item.setForeground(new java.awt.Color(170, 0, 0));
+			}
+			if (name.startsWith("2")) {
+				item.setForeground(new java.awt.Color(0, 112, 0));
+			}
+			if (name.startsWith("3")) {
+				item.setForeground(new java.awt.Color(0, 100, 255));
+			}
+			if (name.startsWith("4")) {
+				item.setForeground(new java.awt.Color(153, 153, 153));
+			}
 			item.addActionListener(new ActionListener () {
 				public void actionPerformed(ActionEvent e) {
 					highlightedRows.add(rowIndex);
@@ -349,11 +372,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							e = exception;
 						}
 						if (e != null) {
+							((CardLayout) cardPanel.getLayout()).show(cardPanel, "error");
 							UIUtil.showException(null, "Error", e);
 						} else {
+							onContentChange(new ArrayList<Row>());
 							BrowserContentPane.this.rows.clear();
 							BrowserContentPane.this.rows.addAll(rows);
 							updateTableModel();
+							onContentChange(rows);
 							((CardLayout) cardPanel.getLayout()).show(cardPanel, "table");
 						}
 					}
@@ -397,7 +423,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			f = false;
 		}
 		if (parentRow != null) {
-			sql += " Where " + parentRow.rowId;
+			sql += " Where (" + parentRow.rowId + ")";
+		}
+		if (andCondition.getText().trim().length() > 0) {
+			sql += (parentRow != null? " and" : " Where") + " (" + ConditionEditor.toMultiLine(andCondition.getText()) + ")";
 		}
 		if (orderBy.length() > 0) {
 			sql += " Order by " + orderBy;
@@ -520,6 +549,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jScrollPane1 = new javax.swing.JScrollPane();
         rowsTable = new javax.swing.JTable();
         rowsCount = new javax.swing.JLabel();
+        jPanel4 = new javax.swing.JPanel();
+        jLabel8 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         join = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
@@ -582,6 +613,22 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel1.add(rowsCount, java.awt.BorderLayout.SOUTH);
 
         cardPanel.add(jPanel1, "table");
+
+        jPanel4.setLayout(new java.awt.GridBagLayout());
+
+        jLabel8.setFont(new java.awt.Font("DejaVu Sans", 1, 14));
+        jLabel8.setForeground(new java.awt.Color(141, 16, 16));
+        jLabel8.setText("Error");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 8, 0);
+        jPanel4.add(jLabel8, gridBagConstraints);
+
+        cardPanel.add(jPanel4, "error");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -668,6 +715,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         add(andCondition, gridBagConstraints);
 
         loadButton.setText("refresh");
+        loadButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadButtonActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 6;
         gridBagConstraints.gridy = 8;
@@ -737,6 +789,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         add(jPanel3, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void loadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadButtonActionPerformed
+        reloadRows();
+    }//GEN-LAST:event_loadButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField andCondition;
     private javax.swing.JLabel andLabel;
@@ -751,10 +807,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel join;
     private javax.swing.JComboBox limitBox;
@@ -786,5 +844,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	protected abstract void navigateTo(Association association, int rowIndex, Row row);
+	protected abstract void onContentChange(List<Row> rows);
     
 }

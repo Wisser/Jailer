@@ -254,6 +254,11 @@ public class Desktop extends JDesktopPane {
 			protected void navigateTo(Association association, int rowIndex, Row row) {
 				addTableBrowser(tableBrowser, rowIndex, association.destination, association);
 			}
+
+			@Override
+			protected void onContentChange(List<Row> rows) {
+				updateChildren(tableBrowser, rows);
+			}
 		};
 		
 		int x = MIN;
@@ -339,6 +344,22 @@ public class Desktop extends JDesktopPane {
 		return tableBrowser;
 	}
 
+	protected synchronized void updateChildren(RowBrowser tableBrowser, List<Row> rows) {
+		tableBrowser.browserContentPane.highlightedRows.clear();
+		for (RowBrowser rowBrowser: tableBrowsers) {
+			if (rowBrowser.parent == tableBrowser) {
+				rowBrowser.rowIndex = -1;
+				for (int i = 0; i < rows.size(); ++i) {
+					if (rowBrowser.browserContentPane.parentRow.rowId.equals(rows.get(i).rowId)) {
+						rowBrowser.rowIndex = i;
+						tableBrowser.browserContentPane.highlightedRows.add(i);
+						break;
+					}
+				}
+			}
+		}
+	}
+
 	/**
 	 * Repaints the desktop.
 	 */
@@ -369,9 +390,13 @@ public class Desktop extends JDesktopPane {
 				int y1 = tableBrowser.internalFrame.getY() + tableBrowser.internalFrame.getHeight() / 2;
 				int midx = tableBrowser.parent.internalFrame.getX() + tableBrowser.parent.internalFrame.getWidth() / 2;
 
-				int i = tableBrowser.parent.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(tableBrowser.rowIndex);
+				Rectangle cellRect = new Rectangle();
+				int i = 0;
+				if (tableBrowser.rowIndex >= 0) {
+					i = tableBrowser.parent.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(tableBrowser.rowIndex);
+					cellRect = tableBrowser.parent.browserContentPane.rowsTable.getCellRect(i, 0, true);
+				}
 
-				Rectangle cellRect = tableBrowser.parent.browserContentPane.rowsTable.getCellRect(i, 0, true);
 				int x2 = tableBrowser.parent.internalFrame.getX();
 				int y = cellRect.y;
 				y = cellRect.height * i;
@@ -418,7 +443,7 @@ public class Desktop extends JDesktopPane {
 			Graphics2D g2d = (Graphics2D) graphics;
 			if (renderLinks) {
 				for (RowBrowser tableBrowser : tableBrowsers) {
-					if (tableBrowser.parent != null) {
+					if (tableBrowser.parent != null && tableBrowser.rowIndex >= 0) {
 						if (tableBrowser.internalFrame.isIcon() || tableBrowser.parent.internalFrame.isIcon()) {
 							continue;
 						}
