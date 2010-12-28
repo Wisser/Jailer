@@ -25,6 +25,7 @@ import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.ResultSet;
@@ -48,11 +49,8 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -215,27 +213,42 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				return render;
 			}
 		});
-		rowsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		rowsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+		rowsTable.setRowSelectionAllowed(false);
+		rowsTable.setColumnSelectionAllowed(false);
+		rowsTable.setCellSelectionEnabled(false);
+		rowsTable.setEnabled(false);
+		rowsTable.addMouseListener(new MouseListener() {
 			private JPopupMenu lastMenu;
+			
 			@Override
-			public void valueChanged(ListSelectionEvent e) {
-				if (rowsTable.getSelectedRow() >= 0) {
-					int i = rowsTable.getRowSorter().convertRowIndexToModel(rowsTable.getSelectedRow());
+			public void mouseReleased(MouseEvent e) {
+			}
+			@Override
+			public void mousePressed(MouseEvent e) {
+				int ri = rowsTable.rowAtPoint(e.getPoint());
+				if (ri >= 0) {
+					int i = rowsTable.getRowSorter().convertRowIndexToModel(ri);
 					Row row = rows.get(i);
 
 					if (lastMenu == null || !lastMenu.isVisible()) {
 						JPopupMenu popup = createPopupMenu(row, i);
-						Rectangle r = rowsTable.getCellRect(rowsTable.getSelectedRow(), rowsTable.getSelectedColumn(), false);
-						Rectangle v = rowsTable.getVisibleRect();
-						popup.show(rowsTable, Math.max((int) v.getMinX(), (int) r.getMinX()), (int) r.getMaxY() - 2);
+						Rectangle r = rowsTable.getCellRect(ri, 0, false);
+						popup.show(rowsTable, Math.max((int) e.getPoint().x, (int) r.getMinX()), (int) r.getMaxY() - 2);
 						lastMenu = popup;
 					}
-					
-					rowsTable.clearSelection();
 				}
 			}
+			@Override
+			public void mouseExited(MouseEvent e) {
+			}
+			@Override
+			public void mouseEntered(MouseEvent e) {
+			}
+			@Override
+			public void mouseClicked(MouseEvent e) {
+			}
 		});
+
 		andConditionEditor = new ConditionEditor(parentFrame, null);
 		openEditorLabel.setIcon(conditionEditorIcon);
 		openEditorLabel.setText(null);
