@@ -336,6 +336,7 @@ public class Desktop extends JDesktopPane {
 				}
 				Desktop.this.remove(e.getInternalFrame());
 				tableBrowsers.remove(tableBrowser);
+				tableBrowser.browserContentPane.cancelLoadJob();
 				for (RowBrowser rb: tableBrowsers) {
 					updateChildren(rb, rb.browserContentPane.rows);
 				}
@@ -438,9 +439,17 @@ public class Desktop extends JDesktopPane {
 			changed = true;
 		}
 		renderLinks = true;
+		if (lastPTS + 1000 < System.currentTimeMillis()) {
+			changed = true;
+		}
+		if (changed) {
+			lastPTS = System.currentTimeMillis();
+		}
 		return changed;
 	}
 
+	private long lastPTS = 0;
+	
 	/**
 	 * Paints all link-renders.
 	 */
@@ -735,6 +744,9 @@ public class Desktop extends JDesktopPane {
 
 	public synchronized void stop() {
 		running = false;
+		for (RowBrowser rb: tableBrowsers) {
+			rb.browserContentPane.cancelLoadJob();
+		}
 		try {
 			session.shutDown();
 		} catch (SQLException e) {

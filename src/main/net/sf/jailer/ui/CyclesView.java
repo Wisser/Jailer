@@ -265,7 +265,7 @@ public class CyclesView extends javax.swing.JDialog {
 
         private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
             this.setVisible(false);
-            CancellationHandler.cancel();
+            CancellationHandler.cancel(null);
         }//GEN-LAST:event_jButton1ActionPerformed
         
         private javax.swing.JButton jButton1;
@@ -278,7 +278,7 @@ public class CyclesView extends javax.swing.JDialog {
 		final FindCyclesDialog findCyclesDialog = new FindCyclesDialog();
 		findCyclesDialog.setLocation(getLocation().x + getSize().width / 2 - findCyclesDialog.getSize().width / 2,
 				getLocation().y + getSize().height / 2 - findCyclesDialog.getSize().height / 2);
-		CancellationHandler.reset();
+		CancellationHandler.reset(null);
 		new Thread() {
 			@Override
 			public void run() {
