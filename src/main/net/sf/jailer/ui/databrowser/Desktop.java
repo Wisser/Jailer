@@ -51,10 +51,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 
+import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
@@ -111,6 +113,8 @@ public class Desktop extends JDesktopPane {
 		this.jailerIcon = jailerIcon;
 		try {
 			this.session = new Session(connection.driverClass, connection.url, connection.user, connection.password);
+			// trigger sql dialect guessing
+			datamodel.getUniversalPrimaryKey(session);
 			setAutoscrolls(true);
 			manager = new MDIDesktopManager(this);
 			setDesktopManager(manager);
