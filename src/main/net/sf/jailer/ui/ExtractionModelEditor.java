@@ -89,6 +89,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.ModelElement;
+import net.sf.jailer.datamodel.ParameterHandler;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
@@ -1690,6 +1691,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			if (cond.equals("1=1")) {
 				cond = "";
 			}
+			Set<String> parameters = new HashSet<String>();
+			ParameterHandler.collectParameter(cond, parameters);
+			if (!parameters.isEmpty()) {
+				cond = "";
+			}
+			cond = SqlUtil.replaceAlias(cond, "A");
 		}
 		extractionModelFrame.openDataBrowser(root, cond);
     }//GEN-LAST:event_openDataBrowserActionPerformed
