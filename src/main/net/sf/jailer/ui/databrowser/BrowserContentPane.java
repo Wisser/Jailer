@@ -235,11 +235,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * 
 	 * @param dataModel the data model
 	 * @param table to read rows from
+	 * @param condition initial condition
 	 * @param session DB session
 	 * @param parentRow parent row
 	 * @param association {@link Association} with parent row
 	 */
-	public BrowserContentPane(final DataModel dataModel, final Table table, Session session, Row parentRow, Association association, Frame parentFrame) {
+	public BrowserContentPane(final DataModel dataModel, final Table table, String condition, Session session, Row parentRow, Association association, Frame parentFrame) {
 		this.table = table;
 		this.session = session;
 		this.dataModel = dataModel;
@@ -252,6 +253,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 
 		initComponents();
+		andCondition.setText(ConditionEditor.toSingleLine(condition));
 		from.setText(this.dataModel.getDisplayName(table));
 		if (association == null) {
 			join.setVisible(false);

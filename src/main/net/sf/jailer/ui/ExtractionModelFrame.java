@@ -35,6 +35,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -53,6 +54,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.datamodel.DataModel.NoPrimaryKeyException;
 import net.sf.jailer.render.HtmlDataModelRenderer;
+import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.graphical_view.LayoutStorage;
 
 /**
@@ -817,6 +819,18 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		closureView.refresh(tableToSelect);
 		closureView.setVisible(true);
 		closureView.toFront();
+	}
+	
+	/**
+     * Opens the closure view.
+     * 
+     * @param root the table to open initially
+     */
+	public void openDataBrowser(Table root, String condition) {
+    	if (dbConnectionDialog.isConnected || dbConnectionDialog.connect("Data Browser")) {
+			DataBrowser dataBrowser = new DataBrowser(extractionModelEditor.dataModel, root, condition, dbConnectionDialog.currentConnection);
+			dataBrowser.setVisible(true);
+		}
 	}
 
 	/**
@@ -1650,4 +1664,5 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
 	private static final long serialVersionUID = -2252377308370736756L;
+
 }

@@ -52,6 +52,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
@@ -91,6 +92,7 @@ import net.sf.jailer.datamodel.ModelElement;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
+import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.graphical_view.AssociationRenderer;
 import net.sf.jailer.ui.graphical_view.GraphicalDataModelView;
 import net.sf.jailer.ui.graphical_view.LayoutStorage;
@@ -616,7 +618,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         editorPanel = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jLabel6 = new javax.swing.JLabel();
-        subjectTable = new net.sf.jailer.ui.JComboBox();
+        subjectTable = new javax.swing.JComboBox();
         jScrollPane4 = new javax.swing.JScrollPane();
         restrictionsTable = new javax.swing.JTable();
         jLabel8 = new javax.swing.JLabel();
@@ -625,7 +627,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jPanel2 = new javax.swing.JPanel();
         openXmlSettings = new javax.swing.JButton();
         exportButton = new javax.swing.JButton();
-        exportFormat = new net.sf.jailer.ui.JComboBox();
+        exportFormat = new javax.swing.JComboBox();
         jPanel7 = new javax.swing.JPanel();
         condition = new javax.swing.JTextField();
         jPanel8 = new javax.swing.JPanel();
@@ -636,14 +638,16 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         tree = new javax.swing.JTree();
         jPanel6 = new javax.swing.JPanel();
         jLabel9 = new javax.swing.JLabel();
-        rootTable = new net.sf.jailer.ui.JComboBox();
+        rootTable = new javax.swing.JComboBox();
+        jPanel9 = new javax.swing.JPanel();
+        openDataBrowser = new javax.swing.JButton();
         openClosureView = new javax.swing.JButton();
         inspectorHolder = new javax.swing.JPanel();
         xmlMappingPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        aggregationCombobox = new net.sf.jailer.ui.JComboBox();
+        aggregationCombobox = new javax.swing.JComboBox();
         tagField = new javax.swing.JTextField();
         jScrollPane3 = new javax.swing.JScrollPane();
         xmlSketch = new javax.swing.JTextArea();
@@ -852,21 +856,39 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         jPanel6.add(rootTable, gridBagConstraints);
 
-        openClosureView.setText("Closure...");
+        jPanel9.setLayout(new java.awt.BorderLayout(2, 0));
+
+        openDataBrowser.setText("Data");
+        openDataBrowser.setToolTipText("Open Data Browser");
+        openDataBrowser.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openDataBrowserActionPerformed(evt);
+            }
+        });
+        jPanel9.add(openDataBrowser, java.awt.BorderLayout.WEST);
+
+        openClosureView.setText("Closure");
+        openClosureView.setToolTipText("Open Closure Browser");
         openClosureView.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 openClosureViewActionPerformed(evt);
             }
         });
+        jPanel9.add(openClosureView, java.awt.BorderLayout.EAST);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        jPanel6.add(openClosureView, gridBagConstraints);
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
+        jPanel6.add(jPanel9, gridBagConstraints);
 
         jPanel4.add(jPanel6, java.awt.BorderLayout.NORTH);
 
@@ -1660,6 +1682,17 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         openXmlSettings.setVisible(ScriptFormat.XML.equals(scriptFormat));
 		validate();
     }//GEN-LAST:event_onExportModusChanged
+
+    private void openDataBrowserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openDataBrowserActionPerformed
+    	String cond = "";
+		if (root != null && root.equals(subject)) {
+			cond = ConditionEditor.toMultiLine(condition.getText());
+			if (cond.equals("1=1")) {
+				cond = "";
+			}
+		}
+		extractionModelFrame.openDataBrowser(root, cond);
+    }//GEN-LAST:event_openDataBrowserActionPerformed
 		  
 	/**
 	 * Renderer for the tree-view.
@@ -2358,6 +2391,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
+    private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JScrollPane jScrollPane4;
@@ -2365,6 +2399,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JPanel legende;
     private javax.swing.JButton mapColumns;
     private javax.swing.JButton openClosureView;
+    private javax.swing.JButton openDataBrowser;
     private javax.swing.JLabel openSubjectConditionEditor;
     private javax.swing.JButton openXmlSettings;
     private javax.swing.JTable restrictionsTable;

@@ -69,14 +69,15 @@ public class DataBrowser extends javax.swing.JFrame {
 	 *            the {@link DataModel}
 	 * @param root
 	 *            table to start browsing with
+	 * @param condition initial condition
 	 * @param connection
 	 *            DB-connection
 	 */
-	public DataBrowser(DataModel datamodel, Table root, ConnectionInfo connection) {
+	public DataBrowser(DataModel datamodel, Table root, String condition, ConnectionInfo connection) {
 		this.datamodel = datamodel;
 		this.root = root;
 		initComponents();
-
+		
 		setTitle(connection.user + "@" + connection.url + " - Jailer " + Jailer.VERSION + " Data Browser");
 
 		try {
@@ -126,7 +127,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		});
 		setLocation(100, 100);
 		setSize(900, 600);
-		desktop.addTableBrowser(null, 0, root, null);
+		desktop.addTableBrowser(null, 0, root, null, condition);
 	}
 
 	/**
@@ -175,7 +176,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 					DbConnectionDialog dbConnectionDialog = new DbConnectionDialog(null);
 					if (dbConnectionDialog.connect("Jailer Data Browser")) {
-						DataBrowser dataBrowser = new DataBrowser(datamodel, datamodel.getTable("ADDRESS"), dbConnectionDialog.currentConnection);
+						DataBrowser dataBrowser = new DataBrowser(datamodel, datamodel.getTable("ADDRESS"), "", dbConnectionDialog.currentConnection);
 						dataBrowser.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 						dataBrowser.setVisible(true);
 					} else {
