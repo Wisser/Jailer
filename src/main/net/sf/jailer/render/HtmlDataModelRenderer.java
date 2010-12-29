@@ -118,7 +118,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
                 }
                 String title = composite == null? "Component " + table.getName() : composite.toString();
                 writeFile(new File(outputDir, toFileName(table)), PrintUtil.applyTemplate("template" + File.separator + "tableframe.html", new Object[] { title, renderTableBody(table, table, 0, 1, new HashSet<Table>()), closure + legend, components + columns, domainSuffix }));
-                CancellationHandler.checkForCancellation();
+                CancellationHandler.checkForCancellation(null);
             }
             
             String restrictions = "none";

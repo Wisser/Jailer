@@ -300,7 +300,7 @@ public class UIUtil {
 	    					new Thread(new Runnable() {
 	    						@Override
 	    						public void run() {
-    								CancellationHandler.cancel();
+    								CancellationHandler.cancel(null);
 	    						}
 	    					}).start();
 	    					outputView.dialog.setTitle("Jailer Console - cancelling...");
@@ -385,7 +385,7 @@ public class UIUtil {
             return result[0];
         } catch (Throwable t) {
         	if (t instanceof CancellationException) {
-        		CancellationHandler.reset();
+        		CancellationHandler.reset(null);
         	} else {
         		boolean shown = false;
         		synchronized (UIUtil.class) {

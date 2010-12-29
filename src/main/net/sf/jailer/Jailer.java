@@ -956,7 +956,7 @@ public class Jailer {
 		Thread shutdownHook;
 		Runtime.getRuntime().addShutdownHook(shutdownHook = new Thread("shutdown-hook") {
 		    public void run() {
-		        CancellationHandler.cancel();
+		        CancellationHandler.cancel(null);
 		        try {
 					mainThread.join();
 				} catch (InterruptedException e) {
@@ -1001,7 +1001,7 @@ public class Jailer {
 	 * @return <code>false</code> iff something went wrong
 	 */
 	public static boolean jailerMain(String[] args, StringBuffer warnings, ProgressListener progressListener) throws Exception {
-		CancellationHandler.reset();
+		CancellationHandler.reset(null);
 		Session.closeTemporaryTableSession();
 
 		try {
@@ -1226,7 +1226,7 @@ public class Jailer {
 		} catch (CancellationException e) {
 			try {
 				_log.info("cleaning up after cancellation...");
-				CancellationHandler.reset();
+				CancellationHandler.reset(null);
 				jailer.entityGraph.session.rollbackAll();
 				jailer.entityGraph.delete();
 				if (exportedEntities != null) {
@@ -1475,7 +1475,7 @@ public class Jailer {
 		String line;
 		while ((line = in.readLine()) != null) {
 			System.out.println(line);
-			CancellationHandler.checkForCancellation();
+			CancellationHandler.checkForCancellation(null);
 		}
 
 		printCycles(dataModel);

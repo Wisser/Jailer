@@ -72,6 +72,11 @@ public class Configuration {
     private Map<String, String> stringLiteralEscapeSequences;
     
     /**
+     * Suffix of SQL-Select statement to limit number of rows.
+     */
+    private String sqlLimitSuffix;
+    
+    /**
      * Maps characters to escape sequences according to {@link #stringLiteralEscapeSequences}.
      */
     private Map<Character, String> charToEscapeSequence = new HashMap<Character, String>();
@@ -402,5 +407,19 @@ public class Configuration {
         }
         return qvalue.toString();
     }
+
+	/**
+	 * @param sqlLimitSuffix the sqlLimitSuffix to set
+	 */
+	public void setSqlLimitSuffix(String sqlLimitSuffix) {
+		this.sqlLimitSuffix = sqlLimitSuffix;
+	}
+
+	/**
+	 * @return the sqlLimitSuffix
+	 */
+	public String getSqlLimitSuffix() {
+		return sqlLimitSuffix;
+	}
     
 }

@@ -57,6 +57,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import net.sf.jailer.Configuration;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
@@ -65,6 +66,8 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.util.CancellationException;
+import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
@@ -77,6 +80,82 @@ import net.sf.jailer.util.SqlUtil;
 @SuppressWarnings("serial")
 public abstract class BrowserContentPane extends javax.swing.JPanel {
 
+	/**
+	 * Concurrently loads rows.
+	 */
+	private final class LoadJob {
+		private List<Row> rows = Collections.synchronizedList(new ArrayList<Row>());
+		private Exception exception;
+		private boolean isCanceled = false;
+		private final int limit;
+		
+		public LoadJob(int limit) {
+			synchronized (this) {
+				this.limit = limit;
+			}
+		}
+		
+		public void run() {
+			int l;
+			synchronized (this) {
+				l = limit;
+				if (isCanceled) {
+					CancellationHandler.reset(this);
+		        	return;
+				}
+			}
+			try {
+				reloadRows(rows, this, l + 1);
+			} catch (SQLException e) {
+				CancellationHandler.reset(this);
+				synchronized (rows) {
+					exception = e;
+				}
+			} catch (CancellationException e) {
+				Session._log.info("cancelled");
+				return;
+			}
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					Exception e;
+					int l;
+					synchronized (rows) {
+						e = exception;
+						l = limit;
+						isCanceled = true; // done
+					}
+					if (e != null) {
+						((CardLayout) cardPanel.getLayout()).show(cardPanel, "error");
+						UIUtil.showException(null, "Error", e);
+					} else {
+						onContentChange(new ArrayList<Row>());
+						BrowserContentPane.this.rows.clear();
+						BrowserContentPane.this.rows.addAll(rows);
+						updateTableModel(l);
+						onContentChange(rows);
+						((CardLayout) cardPanel.getLayout()).show(cardPanel, "table");
+					}
+				}
+			});
+		}
+
+		public void cancel() {
+			synchronized (this) {
+				if (isCanceled) {
+					return;
+				}
+				isCanceled = true;
+			}
+			CancellationHandler.cancel(this);
+		}
+	}
+	
+	/**
+	 * Current LoadJob.
+	 */
+	private LoadJob currentLoadJob;
+	
 	/**
 	 * Table to read rows from.
 	 */
@@ -124,7 +203,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * For concurrent reload of rows.
 	 */
-	private static final LinkedBlockingQueue<Runnable> runnableQueue = new LinkedBlockingQueue<Runnable>();
+	private static final LinkedBlockingQueue<LoadJob> runnableQueue = new LinkedBlockingQueue<LoadJob>();
 	
 	/**
 	 * Maximum number of concurrent DB connections.
@@ -293,7 +372,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         });
 		limitBox.setModel(new DefaultComboBoxModel(new Integer[] { 100, 200, 500, 1000, 2000, 5000 }));
 		limitBox.setSelectedIndex(0);
-		updateTableModel();
+		updateTableModel(0);
 		reloadRows();
 	}
 	
@@ -383,41 +462,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * Reloads rows.
 	 */
 	private void reloadRows() {
+		cancelLoadJob();
 		((CardLayout) cardPanel.getLayout()).show(cardPanel, "loading");
-		Runnable reloadJob = new Runnable() {
-			private List<Row> rows = Collections.synchronizedList(new ArrayList<Row>());
-			private Exception exception;
-			@Override
-			public void run() {
-				try {
-					reloadRows(rows);
-				} catch (SQLException e) {
-					synchronized (rows) {
-						exception = e;
-					}
-				}
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						Exception e;
-						synchronized (rows) {
-							e = exception;
-						}
-						if (e != null) {
-							((CardLayout) cardPanel.getLayout()).show(cardPanel, "error");
-							UIUtil.showException(null, "Error", e);
-						} else {
-							onContentChange(new ArrayList<Row>());
-							BrowserContentPane.this.rows.clear();
-							BrowserContentPane.this.rows.addAll(rows);
-							updateTableModel();
-							onContentChange(rows);
-							((CardLayout) cardPanel.getLayout()).show(cardPanel, "table");
-						}
-					}
-				});
-			}
-		};
+		int limit = 100;
+		if (limitBox.getSelectedItem() instanceof Integer) {
+			limit = (Integer) limitBox.getSelectedItem();
+		}
+		LoadJob reloadJob = new LoadJob(limit);
+		synchronized (this) {
+			currentLoadJob = reloadJob;
+		}
 		runnableQueue.add(reloadJob);
 	}
 	
@@ -425,14 +479,67 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * Reload rows from {@link #table}.
 	 * 
 	 * @param rows to put the rows into
+	 * @param context cancellation context
+	 * @param limit row number limit
 	 */
-	private void reloadRows(final List<Row> rows) throws SQLException {
+	private void reloadRows(final List<Row> rows, Object context, int limit) throws SQLException {
+		if (Configuration.forDbms(session).getSqlLimitSuffix() != null) {
+			try {
+				session.setSilent(true);
+				reloadRows(rows, context, limit, false, Configuration.forDbms(session).getSqlLimitSuffix());
+				return;
+			} catch (SQLException e) {
+				Session._log.warn("failed, try another limit-strategy");
+			} finally {
+				session.setSilent(false);
+			}
+		}
+		try {
+			session.setSilent(true);
+			reloadRows(rows, context, limit, true, null);
+			return;
+		} catch (SQLException e) {
+			Session._log.warn("failed, try another limit-strategy");
+		} finally {
+			session.setSilent(false);
+		}
+		reloadRows(rows, context, limit, false, null);
+	}
+	
+	/**
+	 * Reload rows from {@link #table}.
+	 * 
+	 * @param rows to put the rows into
+	 * @param context cancellation context
+	 */
+	private void reloadRows(final List<Row> rows, Object context, int limit, boolean useOLAPLimitation, String sqlLimitSuffix) throws SQLException {
 		String sql = "Select ";
+		String olapPrefix = "Select ";
+		String olapSuffix = ") S Where S.jlr_rnum__ <= " + limit + " Order by S.jlr_rnum__";
+		if (sqlLimitSuffix != null && sqlLimitSuffix.toLowerCase().startsWith("top ")) {
+			sql += (sqlLimitSuffix.replace("%s", Integer.toString(limit))) + " ";
+		}
 		boolean f = true;
 		for (Column column: table.getColumns()) {
 			String name = quoting == null? column.name : quoting.quote(column.name);
 			sql += (!f? ", " : "") + "A." + name;
+			olapPrefix += (!f? ", " : "") + "S." + name;
 			f = false;
+		}
+		final Set<String> pkColumnNames = new HashSet<String>();
+		f = true;
+		String orderBy = "";
+		for (Column pk: table.primaryKey.getColumns()) {
+			pkColumnNames.add(pk.name);
+			orderBy += (f? "" : ", ") + "A." + (quoting == null? pk.name : quoting.quote(pk.name));
+			f = false;
+		}
+		if (useOLAPLimitation) {
+			sql += ", row_number() over(";
+			if (useOLAPLimitation) {
+				sql += "order by " + orderBy;
+			}
+			sql += ") as jlr_rnum__";
 		}
 		sql += " From ";
 		if (association != null) {
@@ -446,14 +553,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				sql += " on " + SqlUtil.reversRestrictionCondition(association.getUnrestrictedJoinCondition());
 			}
 		}
-		final Set<String> pkColumnNames = new HashSet<String>();
-		f = true;
-		String orderBy = "";
-		for (Column pk: table.primaryKey.getColumns()) {
-			pkColumnNames.add(pk.name);
-			orderBy += (f? "" : ", ") + "A." + (quoting == null? pk.name : quoting.quote(pk.name));
-			f = false;
-		}
+		
 		if (parentRow != null) {
 			sql += " Where (" + parentRow.rowId + ")";
 		}
@@ -461,7 +561,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			sql += (parentRow != null? " and" : " Where") + " (" + ConditionEditor.toMultiLine(andCondition.getText()) + ")";
 		}
 		if (orderBy.length() > 0) {
-			sql += " Order by " + orderBy;
+			if (sqlLimitSuffix != null && !useOLAPLimitation) {
+				sql += " order by " + orderBy;
+			}
+		}
+		olapPrefix += " From (";
+		if (useOLAPLimitation) {
+			sql = olapPrefix + sql + olapSuffix;
+		}
+		if (sqlLimitSuffix != null && !sqlLimitSuffix.toLowerCase().startsWith("top ")) {
+			sql += " " + (sqlLimitSuffix.replace("%s", Integer.toString(limit)));
 		}
 		session.executeQuery(sql, new Session.ResultSetReader() {
 			
@@ -509,13 +618,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			public void close() {
 			}
-		});
+		}, null, context, limit);
 	}
 
 	/**
 	 * Updates the model of the {@link #rowsTable}.
+	 * @param limit row limit
 	 */
-	private void updateTableModel() {
+	private void updateTableModel(int limit) {
 		pkColumns.clear();
 		String[] columnNames = new String[table.getColumns().size()];
 		final Set<String> pkColumnNames = new HashSet<String>();
@@ -534,12 +644,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				return false;
 			}
 		};
+		int rn = 0;
 		for (Row row : rows) {
 			Object[] rowData = new Object[table.getColumns().size()];
 			for (int i = 0; i < table.getColumns().size(); ++i) {
 				rowData[i] = row.values[i];
 			}
 			dtm.addRow(rowData);
+			if (++rn >= limit) {
+				break;
+			}
 		}
 		rowsTable.setModel(dtm);
 		for (int i = 0; i < rowsTable.getColumnCount(); i++) {
@@ -560,7 +674,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
             column.setPreferredWidth(width);
         }
 		rowsTable.setIntercellSpacing(new Dimension(0, 0));
-		rowsCount.setText(" " + rows.size() + " row" + (rows.size() != 1? "s" : ""));
+		int size = rows.size();
+		if (size > limit) {
+			size = limit;
+		}
+		rowsCount.setText((rn >= limit? " more than " : " ") + size + " row" + (size != 1? "s" : ""));
 	}
 
 	/**
@@ -806,6 +924,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.LINE_AXIS));
 
         limitBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        limitBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                limitBoxItemStateChanged(evt);
+            }
+        });
         jPanel3.add(limitBox);
 
         jLabel7.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
@@ -824,6 +947,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private void loadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadButtonActionPerformed
         reloadRows();
     }//GEN-LAST:event_loadButtonActionPerformed
+
+    private void limitBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_limitBoxItemStateChanged
+        reloadRows();
+    }//GEN-LAST:event_limitBoxItemStateChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTextField andCondition;
@@ -875,6 +1002,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 	}
 
+	/**
+	 * Cancels current load job.
+	 */
+	public void cancelLoadJob() {
+		LoadJob cLoadJob;
+		synchronized (this) {
+			cLoadJob = currentLoadJob;
+		}
+		if (cLoadJob != null) {
+			cLoadJob.cancel();
+		}
+	}
+	
 	protected abstract void navigateTo(Association association, int rowIndex, Row row);
 	protected abstract void onContentChange(List<Row> rows);
     protected abstract void onRedraw();

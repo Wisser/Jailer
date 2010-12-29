@@ -351,7 +351,7 @@ public class Session {
      * @param reader the reader for the result
      */
     public long executeQuery(String sqlQuery, ResultSetReader reader) throws SQLException {
-    	return executeQuery(sqlQuery, reader, null);
+    	return executeQuery(sqlQuery, reader, null, null, 0);
     }
     
     /**
@@ -360,14 +360,16 @@ public class Session {
      * @param sqlQuery the query in SQL
      * @param reader the reader for the result
      * @param alternativeSQL query to be executed if sqlQuery fails
+     * @param limit row limit, 0 for unlimited
+     * @param context cancellation context
      */
-    public long executeQuery(String sqlQuery, ResultSetReader reader, String alternativeSQL) throws SQLException {
+    public long executeQuery(String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, int limit) throws SQLException {
         _log.info(sqlQuery);
         long rc = 0;
         try {
-        	CancellationHandler.checkForCancellation();
+        	CancellationHandler.checkForCancellation(context);
 	        Statement statement = connectionFactory.getConnection().createStatement();
-	        CancellationHandler.begin(statement);
+	        CancellationHandler.begin(statement, context);
 	        ResultSet resultSet;
 	        try {
 	        	resultSet = statement.executeQuery(sqlQuery);
@@ -375,7 +377,7 @@ public class Session {
 	        	if (alternativeSQL != null) {
 	        		_log.warn("query failed, using alternative query. Reason: " + e.getMessage());
 	        		_log.info(alternativeSQL);
-	                CancellationHandler.checkForCancellation();
+	                CancellationHandler.checkForCancellation(context);
 	        		resultSet = statement.executeQuery(alternativeSQL);
 	        	} else {
 	        		throw e;
@@ -385,17 +387,20 @@ public class Session {
 	            reader.readCurrentRow(resultSet);
 	            ++rc;
 	            if (rc % 100 == 0) {
-	            	CancellationHandler.checkForCancellation();
+	            	CancellationHandler.checkForCancellation(context);
+	            }
+	            if (limit > 0 && rc >= limit) {
+	            	break;
 	            }
 	        }
 	        reader.close();
 	        resultSet.close();
 	        statement.close();
-	        CancellationHandler.end(statement);
+	        CancellationHandler.end(statement, context);
 	        _log.info(rc + " row(s)");
 	        return rc;
         } catch (SQLException e) {
-        	CancellationHandler.checkForCancellation();
+        	CancellationHandler.checkForCancellation(context);
         	if (!silent) {
         		_log.error("Error executing query", e);
         	}
@@ -441,7 +446,7 @@ public class Session {
      */
     public int executeUpdate(String sqlUpdate) throws SQLException {
         _log.info(sqlUpdate);
-    	CancellationHandler.checkForCancellation();
+    	CancellationHandler.checkForCancellation(null);
         try {
 	        int rowCount = 0;
 	        int failures = 0;
@@ -451,7 +456,7 @@ public class Session {
 	            Statement statement = null;
 	            try {
 	                statement = connectionFactory.getConnection().createStatement();
-		        	CancellationHandler.begin(statement);
+		        	CancellationHandler.begin(statement, null);
 		        	if (serializeAccess) {
 	                    synchronized (DB_LOCK) {
 	                        rowCount = statement.executeUpdate(sqlUpdate);
@@ -459,12 +464,12 @@ public class Session {
 	                } else {
 	                    rowCount = statement.executeUpdate(sqlUpdate);
 	                }
-		        	CancellationHandler.end(statement);
+		        	CancellationHandler.end(statement, null);
 	                ok = true;
 	                _log.info("" + rowCount + " row(s)");
 	            } catch (SQLException e) {
-		        	CancellationHandler.checkForCancellation();
-		        	CancellationHandler.end(statement);
+		        	CancellationHandler.checkForCancellation(null);
+		        	CancellationHandler.end(statement, null);
 		        	if (++failures > 10 || e.getErrorCode() != -911) {
 		    	    	throw new SQLException("\"" + e.getMessage() + "\" in statement \"" + sqlUpdate + "\"");
 	                }
@@ -479,7 +484,7 @@ public class Session {
 	        }
 	        return rowCount;
 	    } catch (SQLException e) {
-        	CancellationHandler.checkForCancellation();
+        	CancellationHandler.checkForCancellation(null);
 	    	if (!silent) {
 	    		_log.error("Error executing statement", e);
 	    	}
@@ -498,18 +503,18 @@ public class Session {
     public int executeUpdate(String sqlUpdate, Object[] parameter) throws SQLException {
         _log.info(sqlUpdate);
         try {
-        	CancellationHandler.checkForCancellation();
+        	CancellationHandler.checkForCancellation(null);
 	        int rowCount = 0;
 	        PreparedStatement statement = null;
 	        try {
 	        	statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
-	        	CancellationHandler.begin(statement);
+	        	CancellationHandler.begin(statement, null);
 	        	int i = 1;
 	        	for (Object p: parameter) {
 	            	statement.setObject(i++, p);
 	            }
 	        	rowCount = statement.executeUpdate();
-	        	CancellationHandler.end(statement);
+	        	CancellationHandler.end(statement, null);
 	            _log.info("" + rowCount + " row(s)");
 	        } finally {
 	            if (statement != null) {
@@ -518,7 +523,7 @@ public class Session {
 	        }
 	        return rowCount;
 	    } catch (SQLException e) {
-        	CancellationHandler.checkForCancellation();
+        	CancellationHandler.checkForCancellation(null);
 	    	if (!silent) {
 	    		_log.error("Error executing statement", e);
 	    	}
@@ -535,15 +540,15 @@ public class Session {
         PreparedStatement statement = null;
         try {
 	        statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
-	        CancellationHandler.begin(statement);
+	        CancellationHandler.begin(statement, null);
 	        InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile));
 			statement.setCharacterStream(1, inputStreamReader, (int) lobFile.length());
 	        statement.execute();
 	        statement.close();
-	        CancellationHandler.end(statement);
+	        CancellationHandler.end(statement, null);
 	        inputStreamReader.close();
         } catch (SQLException e) {
-        	CancellationHandler.checkForCancellation();
+        	CancellationHandler.checkForCancellation(null);
         	throw e;
         }
     }
@@ -557,15 +562,15 @@ public class Session {
         PreparedStatement statement = null;
         try {
 	        statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
-	        CancellationHandler.begin(statement);
+	        CancellationHandler.begin(statement, null);
 	        InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile));
 			statement.setCharacterStream(1, inputStreamReader, (int) lobFile.length());
 	        statement.execute();
 	        statement.close();
-	        CancellationHandler.end(statement);
+	        CancellationHandler.end(statement, null);
 	        inputStreamReader.close();
         } catch (SQLException e) {
-        	CancellationHandler.checkForCancellation();
+        	CancellationHandler.checkForCancellation(null);
         	throw e;
         }
     }
@@ -579,15 +584,15 @@ public class Session {
         PreparedStatement statement = null;
         try {
 	        statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
-	        CancellationHandler.begin(statement);
+	        CancellationHandler.begin(statement, null);
 	        FileInputStream fileInputStream = new FileInputStream(lobFile);
 			statement.setBinaryStream(1, fileInputStream, (int) lobFile.length());
 	        statement.execute();
 	        statement.close();
-	        CancellationHandler.end(statement);
+	        CancellationHandler.end(statement, null);
 	        fileInputStream.close();
 	    } catch (SQLException e) {
-	    	CancellationHandler.checkForCancellation();
+	    	CancellationHandler.checkForCancellation(null);
 	    	throw e;
 	    }
     }
@@ -600,14 +605,14 @@ public class Session {
     public void execute(String sql) throws SQLException {
         _log.info(sql);
         try {
-        	CancellationHandler.checkForCancellation();
+        	CancellationHandler.checkForCancellation(null);
 	        Statement statement = connectionFactory.getConnection().createStatement();
-	        CancellationHandler.begin(statement);
+	        CancellationHandler.begin(statement, null);
 	        statement.execute(sql);
 	        statement.close();
-	        CancellationHandler.end(statement);
+	        CancellationHandler.end(statement, null);
 	    } catch (SQLException e) {
-        	CancellationHandler.checkForCancellation();
+        	CancellationHandler.checkForCancellation(null);
 	    	if (!silent) {
     			_log.error("Error executing statement", e);
 	    	}

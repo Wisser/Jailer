@@ -95,6 +95,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<entry key="GRAPHIC" value="VARCHAR"/>
 				</map>
 			</property>
+			<property name="sqlLimitSuffix" value="fetch first %s rows only" />
 			<property name="statisticRenovator">
 				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
 					<constructor-arg value="script/db2/update_statistics.sql" />
@@ -158,6 +159,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<constructor-arg value="script/postgres/update_statistics.sql" />
 				</bean>
 			</property>
+			<property name="sqlLimitSuffix" value="LIMIT %s" />
 
 			<property name="sessionTemporaryTableManager">
 				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
@@ -207,6 +209,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 				   <value>TIMESTAMP</value>
 				</set>
 			</property>
+			<property name="sqlLimitSuffix" value="TOP %s" />
 			<property name="statisticRenovator">
 				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
 					<constructor-arg value="script/mssql/update_statistics.sql" />
@@ -243,6 +246,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<entry key="\\" value="\\"/>
 				</map>
 			</property>
+			<property name="sqlLimitSuffix" value="LIMIT 0, %s" />
 			<property name="statisticRenovator">
 				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
 					<constructor-arg value="script/mysql/update_statistics.sql" />
@@ -269,6 +273,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 				   <value>TIMESTAMP</value>
 				</set>
 			</property>
+			<property name="sqlLimitSuffix" value="TOP %s" />
 			<property name="statisticRenovator">
 				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
 					<constructor-arg value="script/sybase/update_statistics.sql" />
@@ -292,6 +297,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
     	<!-- for SQlite -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:sqlite.*" />
+			<property name="sqlLimitSuffix" value="LIMIT %s" />
 			<property name="sessionTemporaryTableManager">
 				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
 					<property name="dmlTableReferencePrefix" value="" />
@@ -308,6 +314,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
     	<!-- for HSQL -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:hsqldb.*" />
+			<property name="sqlLimitSuffix" value="LIMIT %s" />
 		</bean>
 	</util:list>
 </beans>
