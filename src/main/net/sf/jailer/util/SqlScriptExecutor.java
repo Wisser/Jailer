@@ -128,7 +128,7 @@ public class SqlScriptExecutor {
             } else {
                 currentStatement.append(line + " ");
             }
-            CancellationHandler.checkForCancellation();
+            CancellationHandler.checkForCancellation(null);
         }
         reader.close();
         _log.info(linesRead + " statements (100%)");

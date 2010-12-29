@@ -132,7 +132,7 @@ public class CycleFinder {
 			
 			for (Map.Entry<Table, List<Path>> e: fromToPaths.entrySet()) {
 				for (Path path: e.getValue()) {
-					CancellationHandler.checkForCancellation();
+					CancellationHandler.checkForCancellation(null);
 					if (path.from != path.to) {
 						List<Path> list = fromToPaths.get(path.to);
 						if (list != null) {
@@ -172,7 +172,7 @@ public class CycleFinder {
 		Map<Set<Table>, Path> cycles = new HashMap<Set<Table>, Path>();
 		long nPath = 0;
 		for (List<Path> pList: fromToPaths.values()) {
-			CancellationHandler.checkForCancellation();
+			CancellationHandler.checkForCancellation(null);
 			nPath += pList.size();
 			for (Path path: pList) {
 				if (path.from == path.to) {

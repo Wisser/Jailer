@@ -492,7 +492,7 @@ public class EntityGraph {
 		long rc = session.executeQuery(
     			sqlQuery + (orderByPK? orderBy : ""),
                 reader,
-                (!orderByPK? sqlQuery : null));
+                (!orderByPK? sqlQuery : null), null, 0);
     	ProgressListenerRegistry.getProgressListener().exported(table, rc);
     }
     
@@ -534,7 +534,7 @@ public class EntityGraph {
 		if (orderByPK) {
 			String sqlQueryWithOrderBy = sqlQuery +
 				(orderByPK? " order by " + table.primaryKey.columnList("T.") : "");
-			rc = session.executeQuery(sqlQueryWithOrderBy, reader, sqlQuery);
+			rc = session.executeQuery(sqlQueryWithOrderBy, reader, sqlQuery, null, 0);
 		} else {
 			rc = session.executeQuery(sqlQuery, reader);
 		}

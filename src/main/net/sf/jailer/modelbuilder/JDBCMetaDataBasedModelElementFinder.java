@@ -113,7 +113,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 }
             }
             resultSet.close();
-            CancellationHandler.checkForCancellation();
+            CancellationHandler.checkForCancellation(null);
         }
         return associations;
     }
@@ -167,7 +167,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 	_log.info("skip table " + tableName);
                 }
             }
-            CancellationHandler.checkForCancellation();
+            CancellationHandler.checkForCancellation(null);
         }
         resultSet.close();
         Map<String, Map<Integer, Column>> pkColumns = new HashMap<String, Map<Integer, Column>>();
@@ -192,7 +192,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
             }
             _log.info((hasPK? "" : "no ") + "primary key found for table " + tableName);
             resultSet.close();
-            CancellationHandler.checkForCancellation();
+            CancellationHandler.checkForCancellation(null);
         }
         for (String tableName: tableNames) {
         	Table tmp = new Table(tableName, null, false);
@@ -251,7 +251,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
             Table table = new Table(tableName, primaryKey, false);
             table.setAuthor(metaData.getDriverName());
             tables.add(table);
-            CancellationHandler.checkForCancellation();
+            CancellationHandler.checkForCancellation(null);
         }
 
         return tables;

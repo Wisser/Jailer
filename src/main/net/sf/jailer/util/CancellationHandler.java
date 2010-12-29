@@ -17,7 +17,11 @@ package net.sf.jailer.util;
 
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 
@@ -29,83 +33,106 @@ import org.apache.log4j.Logger;
 public class CancellationHandler {
 
 	/**
-	 * <code>true</code> if user has requested cancellation.
+	 * Contexts for which user have requested cancellation.
 	 */
-	private static boolean isCanceled = false;
+	private static Set<Object> cancelled = new HashSet<Object>();
 	
 	/**
-	 * List of all currently running statements.
+	 * List of all currently running statements per context.
 	 */
-	private static List<Statement> currentStatements = new ArrayList<Statement>();
+	private static Map<Object, List<Statement>> currentStatements = new HashMap<Object, List<Statement>>();
 	
 	/**
      * The logger.
      */
     private static final Logger _log = Logger.getLogger(JobManager.class);
 
+    /**
+     * Default context
+     */
+	private static final Object DEFAULT_CONTEXT = new Object();
+
 	/**
 	 * Resets the handler.
+	 * 
+	 * @param context cancellation context, <code>null</code> for default context
 	 */
-	public static synchronized void reset() {
-		isCanceled = false;
-		currentStatements.clear();
+	public static synchronized void reset(Object context) {
+		cancelled.remove(context == null? DEFAULT_CONTEXT : context);
+		currentStatements.remove(context == null? DEFAULT_CONTEXT : context);
 	}
 
 	/**
 	 * Requests cancellation.
+	 * 
+	 * @param context cancellation context, <code>null</code> for default context
 	 */
-	public static void cancel() {
+	public static void cancel(Object context) {
 		_log.warn("cancellation request received");
-		synchronizedCancel();
+		synchronizedCancel(context);
 	}
 
 	/**
 	 * Requests cancellation.
+	 * 
+	 * @param context cancellation context, <code>null</code> for default context
 	 */
-	private static synchronized void synchronizedCancel() {
-		isCanceled = true;
-		final List<Statement> toBeCanceled = new ArrayList<Statement>(currentStatements);
-		currentStatements.clear();
-		for (final Statement statement: toBeCanceled) {
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						statement.cancel();
-					} catch (Exception e) {
-						// ignore
+	private static synchronized void synchronizedCancel(Object context) {
+		cancelled.add(context == null? DEFAULT_CONTEXT : context);
+		if (currentStatements.containsKey(context == null? DEFAULT_CONTEXT : context)) {
+			final List<Statement> toBeCanceled = new ArrayList<Statement>(currentStatements.get(context == null? DEFAULT_CONTEXT : context));
+			currentStatements.remove(context == null? DEFAULT_CONTEXT : context);
+			for (final Statement statement: toBeCanceled) {
+				new Thread(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							statement.cancel();
+						} catch (Exception e) {
+							// ignore
+						}
 					}
-				}
-			}).start();
+				}).start();
+			}
 		}
 	}
 
 	/**
 	 * Indicates that a statement is going to be executed.
 	 * 
+	 * @param context cancellation context, <code>null</code> for default context
 	 * @param statement the statement
 	 */
-	public static synchronized void begin(Statement statement) {
-		checkForCancellation();
-		currentStatements.add(statement);
+	public static synchronized void begin(Statement statement, Object context) {
+		checkForCancellation(context);
+		List<Statement> sl = currentStatements.get(context == null? DEFAULT_CONTEXT : context);
+		if (sl == null) {
+			sl = new ArrayList<Statement>();
+			currentStatements.put(context == null? DEFAULT_CONTEXT : context, sl);
+		}
+		sl.add(statement);
 	}
 	
 	/**
 	 * Indicates that a statement has been executed.
 	 * 
 	 * @param statement the statement
+	 * @param context cancellation context, <code>null</code> for default context
 	 */
-	public static synchronized void end(Statement statement) {
-		currentStatements.remove(statement);
+	public static synchronized void end(Statement statement, Object context) {
+		if (currentStatements.containsKey(context == null? DEFAULT_CONTEXT : context)) {
+			currentStatements.get(context == null? DEFAULT_CONTEXT : context).remove(statement);
+		}
 	}
 	
 	/**
 	 * Checks for cancellation.
 	 * 
+	 * @param context cancellation context, <code>null</code> for default context
 	 * @throws CancellationException if cancellation have been requested
 	 */
-	public static synchronized void checkForCancellation() throws CancellationException {
-		if (isCanceled) {
+	public static synchronized void checkForCancellation(Object context) throws CancellationException {
+		if (cancelled.contains(context == null? DEFAULT_CONTEXT : context)) {
 			throw new CancellationException();
 		}
 	}
