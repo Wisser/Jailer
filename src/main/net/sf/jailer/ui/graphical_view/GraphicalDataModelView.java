@@ -673,7 +673,7 @@ public class GraphicalDataModelView extends JPanel {
 		JMenu navigateTo = null;
 		
 		if (withNavigation) {
-			navigateTo = new JMenu("Show associated table");
+			navigateTo = new JMenu("Show Associated Table");
 			List<Association> aList = new ArrayList<Association>();
 			Set<Table> includedTables = new HashSet<Table>();
 			for (Association a: table.associations) {
@@ -737,13 +737,19 @@ public class GraphicalDataModelView extends JPanel {
 				modelEditor.setRootSelection(table);
 			}
 		});
-		JMenuItem showReachability = new JMenuItem("Show reachability");
+		JMenuItem dataBrowser = new JMenuItem("Browse Data");
+		dataBrowser.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				modelEditor.extractionModelFrame.openDataBrowser(table, "");
+			}
+		});
+		JMenuItem showReachability = new JMenuItem("Show Reachability");
 		showReachability.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 		        modelEditor.showReachability(table);
 			}
 		});
-		JMenuItem zoomToFit = new JMenuItem("Zoom to fit");
+		JMenuItem zoomToFit = new JMenuItem("Zoom To Fit");
 		zoomToFit.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				zoomToFit();
@@ -759,7 +765,7 @@ public class GraphicalDataModelView extends JPanel {
 		if (table.equals(root)) {
 			hide.setEnabled(false);
 		}
-		JMenuItem toggleDetails = new JMenuItem(showDetails(table)? "Hide details" : "Show details");
+		JMenuItem toggleDetails = new JMenuItem(showDetails(table)? "Hide Details" : "Show Details");
 		toggleDetails.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				if (reversedShowDetailsTables.contains(table)) {
@@ -771,7 +777,7 @@ public class GraphicalDataModelView extends JPanel {
 				display.invalidate();
 			}
 		});
-		JMenuItem mapColumns = new JMenuItem("XML column mapping");
+		JMenuItem mapColumns = new JMenuItem("XML Column Mapping");
 		mapColumns.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				modelEditor.openColumnMapper(table);
@@ -779,7 +785,7 @@ public class GraphicalDataModelView extends JPanel {
 		});
 		mapColumns.setEnabled(ScriptFormat.XML.equals(modelEditor.scriptFormat));
 		
-		JMenuItem restrictAll = new JMenuItem("Disable associations");
+		JMenuItem restrictAll = new JMenuItem("Disable Associations");
 		restrictAll.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(modelEditor.extractionModelFrame, "Disable each association with '" + model.getDisplayName(table) + "'?\n(except dependencies)?", "Add restrictions", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
@@ -789,7 +795,7 @@ public class GraphicalDataModelView extends JPanel {
 		});
 		restrictAll.setEnabled(modelEditor.isIgnoreAllApplicable(table));
 		
-		JMenuItem removeRestrictions = new JMenuItem("Remove restrictions");
+		JMenuItem removeRestrictions = new JMenuItem("Remove Restrictions");
 		removeRestrictions.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(modelEditor.extractionModelFrame, "Remove all restrictions from associations with '" + model.getDisplayName(table) + "'?", "Remove restrictions", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
@@ -797,13 +803,13 @@ public class GraphicalDataModelView extends JPanel {
 		    	}
 			}
 		});
-		JMenuItem htmlRender = new JMenuItem("Open HTML render");
+		JMenuItem htmlRender = new JMenuItem("Open HTML Render");
 		htmlRender.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				modelEditor.extractionModelFrame.openHTMLRender(table);
 			}
 		});
-		JMenuItem queryBuilder = new JMenuItem("Query builder");
+		JMenuItem queryBuilder = new JMenuItem("Query Builder");
 		queryBuilder.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				openQueryBuilder(table, false);
@@ -817,7 +823,7 @@ public class GraphicalDataModelView extends JPanel {
 //		});
 		removeRestrictions.setEnabled(modelEditor.isRemovalOfAllRestrictionsApplicable(table));
 		
-		JMenuItem findTable = new JMenuItem("Open closure browser");
+		JMenuItem findTable = new JMenuItem("Browser Closure");
 		findTable.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				modelEditor.extractionModelFrame.openClosureView(table);
@@ -835,11 +841,12 @@ public class GraphicalDataModelView extends JPanel {
 		popup.add(new JSeparator());
 		popup.add(hide);
 		popup.add(selectAsRoot);
-		popup.add(showReachability);
 		if (navigateTo != null) {
 			popup.add(navigateTo);
 		}
+		popup.add(dataBrowser);
 		popup.add(findTable);
+		popup.add(showReachability);
 //		popup.add(select);
 		popup.add(new JSeparator());
 		popup.add(restrictAll);
@@ -854,7 +861,7 @@ public class GraphicalDataModelView extends JPanel {
 		popup.add(htmlRender);
 		
 		popup.add(new JSeparator());
-		JMenu insertModeMenu = new JMenu("Export mode");
+		JMenu insertModeMenu = new JMenu("Export Mode");
 		popup.add(insertModeMenu);
 		JRadioButtonMenuItem insert = new JRadioButtonMenuItem("Insert");
 		insert.addActionListener(new ActionListener () {
@@ -880,7 +887,7 @@ public class GraphicalDataModelView extends JPanel {
 				}
 			}
 		});
-		JRadioButtonMenuItem deflt = new JRadioButtonMenuItem("Data model default (" + (table.defaultUpsert? "Upsert" : "Insert" + ")"));
+		JRadioButtonMenuItem deflt = new JRadioButtonMenuItem("Data model default (" + ((table.defaultUpsert? "Upsert" : "Insert") + ")"));
 		insertModeMenu.add(deflt);
 		deflt.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
@@ -921,19 +928,19 @@ public class GraphicalDataModelView extends JPanel {
 	public JPopupMenu createPopupMenu(final Association association) {
 		JPopupMenu popup = new JPopupMenu();
 		
-		JMenuItem disable = new JMenuItem("disable association");
+		JMenuItem disable = new JMenuItem("Disable Association");
 		disable.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				setRestriction(association, true);
 			}
 		});
-		JMenuItem enable = new JMenuItem("remove restriction");
+		JMenuItem enable = new JMenuItem("Remove Restriction");
 		enable.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				setRestriction(association, false);
 			}
 		});
-		JMenuItem zoomToFit = new JMenuItem("Zoom to fit");
+		JMenuItem zoomToFit = new JMenuItem("Zoom To Fit");
 		zoomToFit.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				zoomToFit();
