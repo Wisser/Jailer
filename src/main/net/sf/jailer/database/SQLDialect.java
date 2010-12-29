@@ -226,6 +226,7 @@ public class SQLDialect {
 			_log.info("DATE is treated as TIMESTAMP");
 		}
 		
+		session.setSilent(true);
 		String dialectName = readConfigValue("sqldialect", session);
 		SQLDialect dialect = null;
 		if (dialectName != null) {
@@ -237,7 +238,6 @@ public class SQLDialect {
 			}	
 		}
 		
-		session.setSilent(true);
 		if (dialect != null) {
 			currentDialect = dialect;
 			log("SQL dialect is " + dialect.name);
