@@ -199,9 +199,10 @@ public class Desktop extends JDesktopPane {
 	 * @param parentRowIndex index of parent row in the parent's row browser
 	 * @param table to read rows from
 	 * @param association to navigate, or <code>null</code>
+	 * @param condition 
 	 * @return new row-browser
 	 */
-	public synchronized RowBrowser addTableBrowser(final RowBrowser parent, int parentRowIndex, final Table table, Association association) {
+	public synchronized RowBrowser addTableBrowser(final RowBrowser parent, int parentRowIndex, final Table table, Association association, String condition) {
 		final int MIN = 0, HEIGHT = 460, MIN_HEIGHT = 80, DISTANCE = 20;
 
 		JInternalFrame jInternalFrame = new JInternalFrame(datamodel.getDisplayName(table));
@@ -249,10 +250,10 @@ public class Desktop extends JDesktopPane {
 		});
 
 		final RowBrowser tableBrowser = new RowBrowser();
-		BrowserContentPane browserContentPane = new BrowserContentPane(datamodel, table, session, parent == null? null : parent.browserContentPane.rows.get(parentRowIndex), association, parentFrame) {
+		BrowserContentPane browserContentPane = new BrowserContentPane(datamodel, table, condition, session, parent == null? null : parent.browserContentPane.rows.get(parentRowIndex), association, parentFrame) {
 			@Override
 			protected void navigateTo(Association association, int rowIndex, Row row) {
-				addTableBrowser(tableBrowser, rowIndex, association.destination, association);
+				addTableBrowser(tableBrowser, rowIndex, association.destination, association, "");
 			}
 
 			@Override
