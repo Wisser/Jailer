@@ -51,15 +51,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 
-import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.DataModel;
-import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
 import prefuse.util.GraphicsLib;
 
 /**
@@ -73,7 +70,7 @@ public class Desktop extends JDesktopPane {
 	/**
 	 * The {@link DataModel}.
 	 */
-	private final DataModel datamodel;
+	private final Reference<DataModel> datamodel;
 	
 	/**
 	 * Icon for the row-browser frames.
@@ -98,23 +95,23 @@ public class Desktop extends JDesktopPane {
 	/**
 	 * DB session.
 	 */
-	private Session session;
+	private Reference<Session> session;
 	
 	/**
 	 * Constructor.
 	 * 
 	 * @param datamodel the {@link DataModel}
 	 * @param jailerIcon icon for the frames
-	 * @param connection DB-connection
+	 * @param session DB-session
 	 */
-	public Desktop(DataModel datamodel, Icon jailerIcon, ConnectionInfo connection, Frame parentFrame) {
+	public Desktop(Reference<DataModel> datamodel, Icon jailerIcon, Reference<Session> session, Frame parentFrame) {
 		this.parentFrame = parentFrame;
 		this.datamodel = datamodel;
 		this.jailerIcon = jailerIcon;
 		try {
-			this.session = new Session(connection.driverClass, connection.url, connection.user, connection.password);
+			this.session = session;
 			// trigger sql dialect guessing
-			datamodel.getUniversalPrimaryKey(session);
+			datamodel.get().getUniversalPrimaryKey(session.get());
 			setAutoscrolls(true);
 			manager = new MDIDesktopManager(this);
 			setDesktopManager(manager);
@@ -209,7 +206,7 @@ public class Desktop extends JDesktopPane {
 	public synchronized RowBrowser addTableBrowser(final RowBrowser parent, int parentRowIndex, final Table table, Association association, String condition) {
 		final int MIN = 0, HEIGHT = 460, MIN_HEIGHT = 80, DISTANCE = 20;
 
-		JInternalFrame jInternalFrame = new JInternalFrame(datamodel.getDisplayName(table));
+		JInternalFrame jInternalFrame = new JInternalFrame(datamodel.get().getDisplayName(table));
 		jInternalFrame.setClosable(true);
 		jInternalFrame.setIconifiable(true);
 		jInternalFrame.setMaximizable(true);
@@ -254,7 +251,7 @@ public class Desktop extends JDesktopPane {
 		});
 
 		final RowBrowser tableBrowser = new RowBrowser();
-		BrowserContentPane browserContentPane = new BrowserContentPane(datamodel, table, condition, session, parent == null? null : parent.browserContentPane.rows.get(parentRowIndex), association, parentFrame) {
+		BrowserContentPane browserContentPane = new BrowserContentPane(datamodel.get(), table, condition, session, parent == null? null : parent.browserContentPane.rows.get(parentRowIndex), association, parentFrame) {
 			@Override
 			protected void navigateTo(Association association, int rowIndex, Row row) {
 				addTableBrowser(tableBrowser, rowIndex, association.destination, association, "");
@@ -753,7 +750,7 @@ public class Desktop extends JDesktopPane {
 			rb.browserContentPane.cancelLoadJob();
 		}
 		try {
-			session.shutDown();
+			session.get().shutDown();
 		} catch (SQLException e) {
 			// exception already has been logged
 		}

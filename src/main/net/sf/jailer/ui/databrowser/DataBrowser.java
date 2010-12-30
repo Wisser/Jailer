@@ -20,6 +20,8 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.sql.SQLException;
 import java.util.Properties;
 
 import javax.swing.ImageIcon;
@@ -27,9 +29,13 @@ import javax.swing.JFrame;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Jailer;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.About;
+import net.sf.jailer.ui.BrowserLauncher;
 import net.sf.jailer.ui.DbConnectionDialog;
+import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
 
 import org.apache.log4j.PropertyConfigurator;
@@ -55,13 +61,18 @@ public class DataBrowser extends javax.swing.JFrame {
 	/**
 	 * The {@link DataModel}.
 	 */
-	private final DataModel datamodel;
+	private final Reference<DataModel> datamodel;
 
 	/**
 	 * Table to start browsing with.
 	 */
 	private final Table root;
-
+	
+	/**
+	 * Session.
+	 */
+	private Reference<Session> session;
+	
 	/**
 	 * Constructor.
 	 * 
@@ -73,12 +84,12 @@ public class DataBrowser extends javax.swing.JFrame {
 	 * @param connection
 	 *            DB-connection
 	 */
-	public DataBrowser(DataModel datamodel, Table root, String condition, ConnectionInfo connection) {
-		this.datamodel = datamodel;
+	public DataBrowser(DataModel datamodel, Table root, String condition, ConnectionInfo connection) throws Exception {
+		this.datamodel = new Reference<DataModel>(datamodel);
 		this.root = root;
 		initComponents();
 		
-		setTitle(connection.user + "@" + connection.url + " - Jailer " + Jailer.VERSION + " Data Browser");
+		updateTitel(connection);
 
 		try {
 			setIconImage((jailerIcon = new ImageIcon(getClass().getResource("/net/sf/jailer/resource/jailer.png"))).getImage());
@@ -91,8 +102,9 @@ public class DataBrowser extends javax.swing.JFrame {
 
 		jailerIcon.setImage(jailerIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
 
-		desktop = new Desktop(datamodel, jailerIcon, connection, this);
-
+		session = new Reference<Session>(new Session(connection.driverClass, connection.url, connection.user, connection.password));
+		desktop = new Desktop(this.datamodel, jailerIcon, session, this);
+		
 		jScrollPane1.setViewportView(desktop);
 		addWindowListener(new WindowListener() {
 			@Override
@@ -130,6 +142,10 @@ public class DataBrowser extends javax.swing.JFrame {
 		desktop.addTableBrowser(null, 0, root, null, condition);
 	}
 
+	private void updateTitel(ConnectionInfo connection) {
+		setTitle(connection.user + "@" + connection.url + " - Jailer " + Jailer.VERSION + " Data Browser");
+	}
+
 	/**
 	 * This method is called from within the constructor to initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is always
@@ -143,6 +159,16 @@ public class DataBrowser extends javax.swing.JFrame {
         jScrollPane1 = new javax.swing.JScrollPane();
         jInternalFrame1 = new javax.swing.JInternalFrame();
         jLabel1 = new javax.swing.JLabel();
+        jMenuBar1 = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        connectMenuItem = new javax.swing.JMenuItem();
+        menuTools = new javax.swing.JMenu();
+        analyseMenuItem = new javax.swing.JMenuItem();
+        dataModelEditorjMenuItem = new javax.swing.JMenuItem();
+        menuWindow = new javax.swing.JMenu();
+        jMenu2 = new javax.swing.JMenu();
+        helpForum = new javax.swing.JMenuItem();
+        jMenuItem4 = new javax.swing.JMenuItem();
 
         jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -159,8 +185,103 @@ public class DataBrowser extends javax.swing.JFrame {
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
 
+        jMenu1.setText("File");
+
+        connectMenuItem.setText("Connect database");
+        connectMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                connectMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(connectMenuItem);
+
+        jMenuBar1.add(jMenu1);
+
+        menuTools.setText("Tools");
+
+        analyseMenuItem.setText("Analyse Database");
+        analyseMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                analyseMenuItemActionPerformed(evt);
+            }
+        });
+        menuTools.add(analyseMenuItem);
+
+        dataModelEditorjMenuItem.setText("Data Model Editor");
+        dataModelEditorjMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dataModelEditorjMenuItemActionPerformed(evt);
+            }
+        });
+        menuTools.add(dataModelEditorjMenuItem);
+
+        jMenuBar1.add(menuTools);
+
+        menuWindow.setText("Window");
+        jMenuBar1.add(menuWindow);
+
+        jMenu2.setText("Help");
+
+        helpForum.setLabel("Help Forum");
+        helpForum.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                helpForumActionPerformed(evt);
+            }
+        });
+        jMenu2.add(helpForum);
+
+        jMenuItem4.setText("About Jailer");
+        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem4ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem4);
+
+        jMenuBar1.add(jMenu2);
+
+        setJMenuBar(jMenuBar1);
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
+
+    private void helpForumActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_helpForumActionPerformed
+        try {
+            BrowserLauncher.openURL(new URI("https://sourceforge.net/forum/?group_id=197260"));
+        } catch (Exception e) {
+            UIUtil.showException(this, "Error", e);
+        }
+}//GEN-LAST:event_helpForumActionPerformed
+
+    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+        About about = new About(this, true);
+        about.setTitle("Jailer " + Jailer.VERSION);
+        about.pack();
+        about.setLocation(getLocation().x + (getSize().width - about.getPreferredSize().width) / 2, getLocation().y + (getSize().height - about.getPreferredSize().height) / 2);
+        about.setVisible(true);
+}//GEN-LAST:event_jMenuItem4ActionPerformed
+
+    private void analyseMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analyseMenuItemActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_analyseMenuItemActionPerformed
+
+    private void dataModelEditorjMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataModelEditorjMenuItemActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_dataModelEditorjMenuItemActionPerformed
+
+    private void connectMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectMenuItemActionPerformed
+    	DbConnectionDialog dbConnectionDialog = new DbConnectionDialog(this);
+        if (dbConnectionDialog.connect("Jailer Data Browser")) {
+        	try {
+				session.get().shutDown();
+				ConnectionInfo connection = dbConnectionDialog.currentConnection;
+				session.set(new Session(connection.driverClass, connection.url, connection.user, connection.password));
+				updateTitel(connection);
+			} catch (Exception e) {
+				UIUtil.showException(this, "Error", e);
+			}
+        }
+    }//GEN-LAST:event_connectMenuItemActionPerformed
 
 	/**
 	 * @param args
@@ -190,10 +311,20 @@ public class DataBrowser extends javax.swing.JFrame {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem analyseMenuItem;
+    private javax.swing.JMenuItem connectMenuItem;
+    private javax.swing.JMenuItem dataModelEditorjMenuItem;
+    private javax.swing.JMenuItem helpForum;
     private javax.swing.JInternalFrame jInternalFrame1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JMenu menuTools;
+    private javax.swing.JMenu menuWindow;
     // End of variables declaration//GEN-END:variables
 
 	// initialize log4j
