@@ -35,7 +35,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
-import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -828,8 +827,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      */
 	public void openDataBrowser(Table root, String condition) {
     	if (dbConnectionDialog.isConnected || dbConnectionDialog.connect("Data Browser")) {
-			DataBrowser dataBrowser = new DataBrowser(extractionModelEditor.dataModel, root, condition, dbConnectionDialog.currentConnection);
-			dataBrowser.setVisible(true);
+			DataBrowser dataBrowser;
+			try {
+				dataBrowser = new DataBrowser(extractionModelEditor.dataModel, root, condition, dbConnectionDialog.currentConnection);
+				dataBrowser.setVisible(true);
+			} catch (Exception e) {
+				UIUtil.showException(this, "Error", e);
+			}
 		}
 	}
 

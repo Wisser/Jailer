@@ -194,7 +194,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * DB session.
 	 */
-	private final Session session;
+	private final Reference<Session> session;
 	
 	private Quoting quoting;
 
@@ -240,14 +240,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param parentRow parent row
 	 * @param association {@link Association} with parent row
 	 */
-	public BrowserContentPane(final DataModel dataModel, final Table table, String condition, Session session, Row parentRow, Association association, Frame parentFrame) {
+	public BrowserContentPane(final DataModel dataModel, final Table table, String condition, Reference<Session> session, Row parentRow, Association association, Frame parentFrame) {
 		this.table = table;
 		this.session = session;
 		this.dataModel = dataModel;
 		this.parentRow = parentRow;
 		this.association = association;
 		try {
-			quoting = new Quoting(session.getMetaData());
+			quoting = new Quoting(session.get().getMetaData());
 		} catch (SQLException e) {
 			UIUtil.showException(null, "Error", e);
 		}
@@ -485,25 +485,25 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param limit row number limit
 	 */
 	private void reloadRows(final List<Row> rows, Object context, int limit) throws SQLException {
-		if (Configuration.forDbms(session).getSqlLimitSuffix() != null) {
+		if (Configuration.forDbms(session.get()).getSqlLimitSuffix() != null) {
 			try {
-				session.setSilent(true);
-				reloadRows(rows, context, limit, false, Configuration.forDbms(session).getSqlLimitSuffix());
+				session.get().setSilent(true);
+				reloadRows(rows, context, limit, false, Configuration.forDbms(session.get()).getSqlLimitSuffix());
 				return;
 			} catch (SQLException e) {
 				Session._log.warn("failed, try another limit-strategy");
 			} finally {
-				session.setSilent(false);
+				session.get().setSilent(false);
 			}
 		}
 		try {
-			session.setSilent(true);
+			session.get().setSilent(true);
 			reloadRows(rows, context, limit, true, null);
 			return;
 		} catch (SQLException e) {
 			Session._log.warn("failed, try another limit-strategy");
 		} finally {
-			session.setSilent(false);
+			session.get().setSilent(false);
 		}
 		reloadRows(rows, context, limit, false, null);
 	}
@@ -574,7 +574,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (sqlLimitSuffix != null && !sqlLimitSuffix.toLowerCase().startsWith("top ")) {
 			sql += " " + (sqlLimitSuffix.replace("%s", Integer.toString(limit)));
 		}
-		session.executeQuery(sql, new Session.ResultSetReader() {
+		session.get().executeQuery(sql, new Session.ResultSetReader() {
 			
 			Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
 
@@ -586,7 +586,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				for (Column column: table.getColumns()) {
 					String value = "";
 					int type = SqlUtil.getColumnType(resultSet, i, typeCache);
-					if ((type == Types.BLOB || type == Types.CLOB) && session.dbms != DBMS.SQLITE) {
+					if ((type == Types.BLOB || type == Types.CLOB) && session.get().dbms != DBMS.SQLITE) {
 						Object object = resultSet.getObject(i);
 						if (object == null || resultSet.wasNull()) {
 							value = "";
@@ -601,7 +601,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					} else {
 						Object o = SqlUtil.getObject(resultSet, i, typeCache);
 						if (pkColumnNames.contains(column.name)) {
-							String cVal = SqlUtil.toSql(o, session);
+							String cVal = SqlUtil.toSql(o, session.get());
 			                rowId += (rowId.length() == 0? "" : " and ") + "B." + (quoting == null? column.name : quoting.quote(column.name))
 			                	+ "=" + cVal;
 						}
