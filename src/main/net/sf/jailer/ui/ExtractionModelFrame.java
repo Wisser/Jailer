@@ -91,7 +91,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	/**
 	 * File in which plaf-setting is stored.
 	 */
-	private static final String PLAFSETTING = ".plaf.ui";
+	private static final String PLAFSETTING = ".plaf2.ui";
 
 	/**
 	 * File in which orientation is stored.
@@ -1489,17 +1489,21 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	    		isHorizonal = Boolean.valueOf(or);
     	    	} catch (Exception x) {
     	    	}
-                ExtractionModelFrame extractionModelFrame = new ExtractionModelFrame(file, isHorizonal);
                 try {
     	    		File plafSetting = new File(PLAFSETTING);
-    	    		BufferedReader in = new BufferedReader(new FileReader(plafSetting));
-    	    		String plaf = in.readLine();
-    	    		in.close();
+    	    		String plaf;
+    	    		if (!plafSetting.exists()) {
+    	    			plaf = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
+    	    		} else {
+	    	    		BufferedReader in = new BufferedReader(new FileReader(plafSetting));
+	    	    		plaf = in.readLine();
+	    	    		in.close();
+    	    		}
     	    		UIManager.setLookAndFeel(plaf);
-    		    	SwingUtilities.updateComponentTreeUI(extractionModelFrame);
-    	    	} catch (Exception x) {
+    			} catch (Exception x) {
     	    	}
-    	    	try {
+    	    	ExtractionModelFrame extractionModelFrame = new ExtractionModelFrame(file, isHorizonal);
+                try {
     	    		extractionModelFrame.setIconImage(new ImageIcon(extractionModelFrame.getClass().getResource("/net/sf/jailer/resource/jailer.png")).getImage());
     	    	} catch (Throwable t) {
         	    	try {
