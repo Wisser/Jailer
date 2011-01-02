@@ -26,11 +26,11 @@ public class Row {
 	 * Constructor.
 	 * 
 	 * @param rowId unique ID, also serves as SQL predicate which identifies this row
-	 * @param values column values
+	 * @param v column values
 	 */
-	public Row(String rowId, String[] values) {
+	public Row(String rowId, Object[] v) {
 		this.rowId = rowId;
-		this.values = values;
+		this.values = v;
 	}
 	
 	/**
@@ -41,6 +41,6 @@ public class Row {
 	/**
 	 * Column values.
 	 */
-	public final String[] values;
+	public final Object[] values;
 	
 }

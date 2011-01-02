@@ -95,7 +95,7 @@ public class Desktop extends JDesktopPane {
 	/**
 	 * DB session.
 	 */
-	private Reference<Session> session;
+	public Session session;
 	
 	/**
 	 * Constructor.
@@ -104,14 +104,14 @@ public class Desktop extends JDesktopPane {
 	 * @param jailerIcon icon for the frames
 	 * @param session DB-session
 	 */
-	public Desktop(Reference<DataModel> datamodel, Icon jailerIcon, Reference<Session> session, Frame parentFrame) {
+	public Desktop(Reference<DataModel> datamodel, Icon jailerIcon, Session session, Frame parentFrame) {
 		this.parentFrame = parentFrame;
 		this.datamodel = datamodel;
 		this.jailerIcon = jailerIcon;
 		try {
 			this.session = session;
 			// trigger sql dialect guessing
-			datamodel.get().getUniversalPrimaryKey(session.get());
+			datamodel.get().getUniversalPrimaryKey(session);
 			setAutoscrolls(true);
 			manager = new MDIDesktopManager(this);
 			setDesktopManager(manager);
@@ -206,6 +206,14 @@ public class Desktop extends JDesktopPane {
 	public synchronized RowBrowser addTableBrowser(final RowBrowser parent, int parentRowIndex, final Table table, Association association, String condition) {
 		final int MIN = 0, HEIGHT = 460, MIN_HEIGHT = 80, DISTANCE = 20;
 
+		for (RowBrowser rb: tableBrowsers) {
+			try {
+				rb.internalFrame.setMaximum(false);
+			} catch (PropertyVetoException e) {
+				// ignore
+			}
+		}
+		
 		JInternalFrame jInternalFrame = new JInternalFrame(datamodel.get().getDisplayName(table));
 		jInternalFrame.setClosable(true);
 		jInternalFrame.setIconifiable(true);
@@ -297,15 +305,15 @@ public class Desktop extends JDesktopPane {
 		tableBrowser.rowIndex = parentRowIndex;
 		tableBrowser.parent = parent;
 		if (association != null) {
-			tableBrowser.color = new java.awt.Color(0, 100, 255, 140);
+			tableBrowser.color = new java.awt.Color(0, 100, 255);
 			if (association.isInsertDestinationBeforeSource()) {
-				tableBrowser.color = new java.awt.Color(170, 0, 0, 140);
+				tableBrowser.color = new java.awt.Color(170, 0, 0);
 			}
 			if (association.isInsertSourceBeforeDestination()) {
-				tableBrowser.color = new java.awt.Color(0, 112, 0, 140);
+				tableBrowser.color = new java.awt.Color(0, 112, 0);
 			}
 			if (association.isIgnored()) {
-				tableBrowser.color = new java.awt.Color(153, 153, 153, 140);
+				tableBrowser.color = new java.awt.Color(153, 153, 153);
 			}
 		}
 		tableBrowsers.add(tableBrowser);
@@ -466,56 +474,61 @@ public class Desktop extends JDesktopPane {
 						if (tableBrowser.internalFrame.isIcon() || tableBrowser.parent.internalFrame.isIcon()) {
 							continue;
 						}
-						Color color = tableBrowser.color;
-						g2d.setColor(color);
-						g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-						g2d.setStroke(new BasicStroke(3));
-
-						Point2D start = new Point2D.Double(tableBrowser.x2, tableBrowser.y2);
-						Point2D end = new Point2D.Double(tableBrowser.x1, tableBrowser.y1);
-
-						AffineTransform t = new AffineTransform();
-						t.setToRotation(Math.PI / 4);
-						Point2D p = new Point2D.Double(), shift = new Point2D.Double();
-						double d = start.distance(end) / 5.0;
-						p.setLocation((end.getX() - start.getX()) / d, (end.getY() - start.getY()) / d);
-						t.transform(p, shift);
-						start.setLocation(start.getX() + shift.getX(), start.getY() + shift.getY());
-						end.setLocation(end.getX() + shift.getX(), end.getY() + shift.getY());
-
-						// compute the intersection with the target bounding box
-						Point2D[] sect = new Point2D[10];
-						int i = GraphicsLib.intersectLineRectangle(start, end, tableBrowser.internalFrame.getBounds(), sect);
-						if (i == 0)
-							continue;
-						end = sect[0];
-						if (start.distance(end) < 2)
-							continue;
-
-						// create the arrow head shape
-						if (m_arrowHead == null) {
-							m_arrowHead = new Polygon();
-							double ws = 0.9;
-							double hs = 2.0 / 3.0;
-							double w = 3, h = 3;
-							m_arrowHead.addPoint(0, 0);
-							m_arrowHead.addPoint((int) (ws * -w), (int) (hs * (-h)));
-							// m_arrowHead.addPoint(0, (int) (hs * (-2 * h)));
-							m_arrowHead.addPoint((int) (ws * w), (int) (hs * (-h)));
-							m_arrowHead.addPoint(0, 0);
+						for (boolean pbg: new Boolean[] { true, false}) {
+							Color color = pbg? Color.white : tableBrowser.color;
+							g2d.setColor(color);
+							g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+							g2d.setStroke(new BasicStroke(pbg? 5 : 3));
+	
+							Point2D start = new Point2D.Double(tableBrowser.x2, tableBrowser.y2);
+							Point2D end = new Point2D.Double(tableBrowser.x1, tableBrowser.y1);
+	
+							AffineTransform t = new AffineTransform();
+							t.setToRotation(Math.PI / 4);
+							Point2D p = new Point2D.Double(), shift = new Point2D.Double();
+							double d = start.distance(end) / 5.0;
+							p.setLocation((end.getX() - start.getX()) / d, (end.getY() - start.getY()) / d);
+							t.transform(p, shift);
+							start.setLocation(start.getX() + shift.getX(), start.getY() + shift.getY());
+							end.setLocation(end.getX() + shift.getX(), end.getY() + shift.getY());
+	
+							// compute the intersection with the target bounding box
+							Point2D[] sect = new Point2D[10];
+							int i = GraphicsLib.intersectLineRectangle(start, end, tableBrowser.internalFrame.getBounds(), sect);
+							if (i == 0)
+								continue;
+							end = sect[0];
+							if (start.distance(end) < 2)
+								continue;
+	
+							// create the arrow head shape
+							if (m_arrowHead == null) {
+								m_arrowHead = new Polygon();
+								double ws = 0.5;
+								double hs = 2.0 / 3.0;
+								double w = pbg? 4 : 3, h = w;
+								m_arrowHead.addPoint(0, 0);
+								m_arrowHead.addPoint((int) (ws * -w), (int) (hs * (-h)));
+								// m_arrowHead.addPoint(0, (int) (hs * (-2 * h)));
+								m_arrowHead.addPoint((int) (ws * w), (int) (hs * (-h)));
+								m_arrowHead.addPoint(0, 0);
+							}
+	
+							AffineTransform at = getArrowTrans(start, end, 10);
+							Shape m_curArrow = at.createTransformedShape(m_arrowHead);
+	
+							Point2D lineEnd = end;
+							lineEnd.setLocation(0, -2);
+							at.transform(lineEnd, lineEnd);
+	
+							g2d.drawLine((int) start.getX(), (int) start.getY(), (int) end.getX(), (int) end.getY());
+							g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+							g2d.setStroke(new BasicStroke(1));
+							g2d.fill(m_curArrow);
+							if (pbg) {
+								g2d.draw(m_curArrow);
+							}
 						}
-
-						AffineTransform at = getArrowTrans(start, end, 10);
-						Shape m_curArrow = at.createTransformedShape(m_arrowHead);
-
-						Point2D lineEnd = end;
-						lineEnd.setLocation(0, -2);
-						at.transform(lineEnd, lineEnd);
-
-						g2d.drawLine((int) start.getX(), (int) start.getY(), (int) end.getX(), (int) end.getY());
-						g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-						g2d.setStroke(new BasicStroke(1));
-						g2d.fill(m_curArrow);
 					}
 				}
 			}
@@ -750,7 +763,7 @@ public class Desktop extends JDesktopPane {
 			rb.browserContentPane.cancelLoadJob();
 		}
 		try {
-			session.get().shutDown();
+			session.shutDown();
 		} catch (SQLException e) {
 			// exception already has been logged
 		}

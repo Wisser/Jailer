@@ -273,11 +273,10 @@ public class ProgressPanel extends javax.swing.JPanel {
         jPanel2.add(jPanel5, gridBagConstraints);
 
         jLabel1.setForeground(new java.awt.Color(230, 230, 230));
-        jLabel1.setText("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+        jLabel1.setText("                                     ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 11;
-        gridBagConstraints.gridwidth = 2;
         jPanel2.add(jLabel1, gridBagConstraints);
 
         jLabel6.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
