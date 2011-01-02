@@ -40,6 +40,7 @@ public class RestrictionEditor extends javax.swing.JPanel {
         description = new javax.swing.JLabel();
         ignore = new javax.swing.JCheckBox();
         jPanel1 = new javax.swing.JPanel();
+        restrictedDependencyWarning = new javax.swing.JLabel();
         apply = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
@@ -49,7 +50,6 @@ public class RestrictionEditor extends javax.swing.JPanel {
         source = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         destination = new javax.swing.JLabel();
-        restrictedDependencyWarning = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         type = new javax.swing.JLabel();
         cardinality = new javax.swing.JLabel();
@@ -92,18 +92,22 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 30;
         gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 20, 0, 0);
         add(ignore, gridBagConstraints);
 
-        jPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 0));
+        jPanel1.setLayout(new java.awt.BorderLayout());
+
+        restrictedDependencyWarning.setForeground(new java.awt.Color(255, 0, 51));
+        restrictedDependencyWarning.setText("Restricted Dependency! ");
+        jPanel1.add(restrictedDependencyWarning, java.awt.BorderLayout.WEST);
 
         apply.setText(" apply ");
-        jPanel1.add(apply);
+        jPanel1.add(apply, java.awt.BorderLayout.EAST);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 40;
+        gridBagConstraints.gridy = 30;
         gridBagConstraints.gridwidth = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
         gridBagConstraints.weighty = 1.0;
@@ -171,16 +175,6 @@ public class RestrictionEditor extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         add(jPanel3, gridBagConstraints);
-
-        restrictedDependencyWarning.setForeground(new java.awt.Color(255, 0, 51));
-        restrictedDependencyWarning.setText("Restricted Dependency! ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 30;
-        gridBagConstraints.gridwidth = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        add(restrictedDependencyWarning, gridBagConstraints);
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
 

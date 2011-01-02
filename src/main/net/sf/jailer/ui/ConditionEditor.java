@@ -164,6 +164,7 @@ public class ConditionEditor extends javax.swing.JDialog {
 
         textArea.setColumns(20);
         textArea.setRows(5);
+        textArea.setOpaque(false);
         jScrollPane1.setViewportView(textArea);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

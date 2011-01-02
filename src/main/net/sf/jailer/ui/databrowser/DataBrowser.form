@@ -8,16 +8,6 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="File"/>
           </Properties>
-          <SubComponents>
-            <MenuItem class="javax.swing.JMenuItem" name="connectMenuItem">
-              <Properties>
-                <Property name="text" type="java.lang.String" value="Connect database"/>
-              </Properties>
-              <Events>
-                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="connectMenuItemActionPerformed"/>
-              </Events>
-            </MenuItem>
-          </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="menuTools">
           <Properties>
@@ -46,6 +36,13 @@
           <Properties>
             <Property name="text" type="java.lang.String" value="Window"/>
           </Properties>
+          <SubComponents>
+            <Menu class="javax.swing.JMenu" name="view">
+              <Properties>
+                <Property name="label" type="java.lang.String" value="Look&amp;Feel"/>
+              </Properties>
+            </Menu>
+          </SubComponents>
         </Menu>
         <Menu class="javax.swing.JMenu" name="jMenu2">
           <Properties>

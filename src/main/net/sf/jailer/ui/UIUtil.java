@@ -444,7 +444,7 @@ public class UIUtil {
 		StringBuilder msg = new StringBuilder();
 		int maxwidth = 80;
 		Pattern wrapRE = Pattern.compile("(\\S\\S{" + maxwidth + ",}|.{1," + maxwidth + "})(\\s+|$)");
-	    Matcher m = wrapRE.matcher(t.getMessage());
+	    Matcher m = wrapRE.matcher(t.getMessage() == null ? "" : t.getMessage());
 		while (m.find()) { 
 			String line = m.group();
 			while (line.length() > maxwidth + 10) {

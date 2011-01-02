@@ -16,16 +16,25 @@
 package net.sf.jailer.ui.databrowser;
 
 import java.awt.Image;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
 import java.net.URI;
-import java.sql.SQLException;
 import java.util.Properties;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JMenuItem;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UIManager.LookAndFeelInfo;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Jailer;
@@ -64,14 +73,9 @@ public class DataBrowser extends javax.swing.JFrame {
 	private final Reference<DataModel> datamodel;
 
 	/**
-	 * Table to start browsing with.
-	 */
-	private final Table root;
-	
-	/**
 	 * Session.
 	 */
-	private Reference<Session> session;
+	private Session session;
 	
 	/**
 	 * Constructor.
@@ -86,9 +90,22 @@ public class DataBrowser extends javax.swing.JFrame {
 	 */
 	public DataBrowser(DataModel datamodel, Table root, String condition, ConnectionInfo connection) throws Exception {
 		this.datamodel = new Reference<DataModel>(datamodel);
-		this.root = root;
 		initComponents();
 		
+		try {
+	        for (final LookAndFeelInfo lfInfo: UIManager.getInstalledLookAndFeels()) {
+	        	JMenuItem mItem = new JMenuItem();
+	        	mItem.setText(lfInfo.getName());
+	        	view.add(mItem);
+	        	mItem.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent arg0) {
+						setPLAF(lfInfo.getClassName());
+					}
+	        	});
+	        }
+        } catch (Throwable t) {
+        }
+        
 		updateTitel(connection);
 
 		try {
@@ -102,7 +119,9 @@ public class DataBrowser extends javax.swing.JFrame {
 
 		jailerIcon.setImage(jailerIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
 
-		session = new Reference<Session>(new Session(connection.driverClass, connection.url, connection.user, connection.password));
+		if (connection != null) {
+			session = new Session(connection.driverClass, connection.url, connection.user, connection.password);
+		}
 		desktop = new Desktop(this.datamodel, jailerIcon, session, this);
 		
 		jScrollPane1.setViewportView(desktop);
@@ -139,11 +158,21 @@ public class DataBrowser extends javax.swing.JFrame {
 		});
 		setLocation(100, 100);
 		setSize(900, 600);
-		desktop.addTableBrowser(null, 0, root, null, condition);
+		if (root != null) {
+			desktop.addTableBrowser(null, 0, root, null, condition);
+		}
+	}
+
+	protected void setConnection(ConnectionInfo connection) throws Exception {
+		if (connection != null) {
+			session = new Session(connection.driverClass, connection.url, connection.user, connection.password);
+			desktop.session = session;
+			updateTitel(connection);
+		}
 	}
 
 	private void updateTitel(ConnectionInfo connection) {
-		setTitle(connection.user + "@" + connection.url + " - Jailer " + Jailer.VERSION + " Data Browser");
+		setTitle((connection != null? (connection.user + "@" + connection.url + " - ") : "") + "Jailer " + Jailer.VERSION + " Data Browser");
 	}
 
 	/**
@@ -161,11 +190,11 @@ public class DataBrowser extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
-        connectMenuItem = new javax.swing.JMenuItem();
         menuTools = new javax.swing.JMenu();
         analyseMenuItem = new javax.swing.JMenuItem();
         dataModelEditorjMenuItem = new javax.swing.JMenuItem();
         menuWindow = new javax.swing.JMenu();
+        view = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
         helpForum = new javax.swing.JMenuItem();
         jMenuItem4 = new javax.swing.JMenuItem();
@@ -186,15 +215,6 @@ public class DataBrowser extends javax.swing.JFrame {
         getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
 
         jMenu1.setText("File");
-
-        connectMenuItem.setText("Connect database");
-        connectMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                connectMenuItemActionPerformed(evt);
-            }
-        });
-        jMenu1.add(connectMenuItem);
-
         jMenuBar1.add(jMenu1);
 
         menuTools.setText("Tools");
@@ -218,6 +238,10 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenuBar1.add(menuTools);
 
         menuWindow.setText("Window");
+
+        view.setLabel("Look&Feel");
+        menuWindow.add(view);
+
         jMenuBar1.add(menuWindow);
 
         jMenu2.setText("Help");
@@ -268,20 +292,11 @@ public class DataBrowser extends javax.swing.JFrame {
     private void dataModelEditorjMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataModelEditorjMenuItemActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_dataModelEditorjMenuItemActionPerformed
-
-    private void connectMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_connectMenuItemActionPerformed
-    	DbConnectionDialog dbConnectionDialog = new DbConnectionDialog(this);
-        if (dbConnectionDialog.connect("Jailer Data Browser")) {
-        	try {
-				session.get().shutDown();
-				ConnectionInfo connection = dbConnectionDialog.currentConnection;
-				session.set(new Session(connection.driverClass, connection.url, connection.user, connection.password));
-				updateTitel(connection);
-			} catch (Exception e) {
-				UIUtil.showException(this, "Error", e);
-			}
-        }
-    }//GEN-LAST:event_connectMenuItemActionPerformed
+    
+    /**
+	 * File in which plaf-setting is stored.
+	 */
+	private static final String PLAFSETTING = ".plaf2.ui";
 
 	/**
 	 * @param args
@@ -294,12 +309,25 @@ public class DataBrowser extends javax.swing.JFrame {
 				try {
 					CommandLineParser.parse(args, true);
 					datamodel = new DataModel();
-
-					DbConnectionDialog dbConnectionDialog = new DbConnectionDialog(null);
+					try {
+	    	    		File plafSetting = new File(PLAFSETTING);
+	    	    		String plaf;
+	    	    		if (!plafSetting.exists()) {
+	    	    			plaf = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
+	    	    		} else {
+		    	    		BufferedReader in = new BufferedReader(new FileReader(plafSetting));
+		    	    		plaf = in.readLine();
+		    	    		in.close();
+	    	    		}
+	    	    		UIManager.setLookAndFeel(plaf);
+	    	    	} catch (Exception x) {
+	    	    	}
+	    	    	DataBrowser dataBrowser = new DataBrowser(datamodel, null, "", null);
+					dataBrowser.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+					dataBrowser.setVisible(true);
+					DbConnectionDialog dbConnectionDialog = new DbConnectionDialog(dataBrowser);
 					if (dbConnectionDialog.connect("Jailer Data Browser")) {
-						DataBrowser dataBrowser = new DataBrowser(datamodel, datamodel.getTable("ADDRESS"), "", dbConnectionDialog.currentConnection);
-						dataBrowser.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-						dataBrowser.setVisible(true);
+						dataBrowser.setConnection(dbConnectionDialog.currentConnection);
 					} else {
 						System.exit(0);
 					}
@@ -312,7 +340,6 @@ public class DataBrowser extends javax.swing.JFrame {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem analyseMenuItem;
-    private javax.swing.JMenuItem connectMenuItem;
     private javax.swing.JMenuItem dataModelEditorjMenuItem;
     private javax.swing.JMenuItem helpForum;
     private javax.swing.JInternalFrame jInternalFrame1;
@@ -325,9 +352,37 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JMenu menuTools;
     private javax.swing.JMenu menuWindow;
+    private javax.swing.JMenu view;
     // End of variables declaration//GEN-END:variables
 
-	// initialize log4j
+    /**
+     * Sets Look&Feel.
+     * 
+     * @param plaf the l&f
+     */
+    private void setPLAF(String plaf) {
+	    try {
+	    	UIManager.setLookAndFeel(plaf);
+	    	SwingUtilities.updateComponentTreeUI(this);
+	    	try {
+                File file = new File(PLAFSETTING);
+                file.delete();
+            } catch (Exception e) {
+            }
+            try {
+	    		File plafSetting = new File(PLAFSETTING);
+	    		PrintWriter out = new PrintWriter(plafSetting);
+	    		out.println(plaf);
+	    		out.close();
+	    	} catch (Exception x) {
+	    	}
+	    }
+    	catch (Exception e) {
+	    	UIUtil.showException(this, "Error", e);
+	    }
+    }
+    
+    // initialize log4j
 	static {
 		InputStream in = Jailer.class.getResourceAsStream("/net/sf/jailer/resource/log4j.properties");
 		Properties p = new Properties();

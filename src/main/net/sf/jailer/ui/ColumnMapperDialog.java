@@ -117,7 +117,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        tableCombobox = new net.sf.jailer.ui.JComboBox();
+        tableCombobox = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         mappingField = new javax.swing.JTextArea();
@@ -129,8 +129,8 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         cancelButton = new javax.swing.JButton();
         paramPanel = new javax.swing.JPanel();
 
-        setTitle("XML Column Mapping");
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("XML Column Mapping");
         getContentPane().setLayout(new javax.swing.BoxLayout(getContentPane(), javax.swing.BoxLayout.LINE_AXIS));
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
@@ -161,6 +161,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 
         mappingField.setColumns(20);
         mappingField.setRows(5);
+        mappingField.setOpaque(false);
         jScrollPane1.setViewportView(mappingField);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

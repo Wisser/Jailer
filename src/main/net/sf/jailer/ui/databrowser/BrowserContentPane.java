@@ -32,9 +32,11 @@ import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.SQLXML;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -56,6 +58,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.DBMS;
@@ -194,7 +198,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * DB session.
 	 */
-	private final Reference<Session> session;
+	private final Session session;
 	
 	private Quoting quoting;
 
@@ -240,14 +244,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param parentRow parent row
 	 * @param association {@link Association} with parent row
 	 */
-	public BrowserContentPane(final DataModel dataModel, final Table table, String condition, Reference<Session> session, Row parentRow, Association association, Frame parentFrame) {
+	public BrowserContentPane(final DataModel dataModel, final Table table, String condition, Session session, Row parentRow, Association association, Frame parentFrame) {
 		this.table = table;
 		this.session = session;
 		this.dataModel = dataModel;
 		this.parentRow = parentRow;
 		this.association = association;
 		try {
-			quoting = new Quoting(session.get().getMetaData());
+			quoting = new Quoting(session.getMetaData());
 		} catch (SQLException e) {
 			UIUtil.showException(null, "Error", e);
 		}
@@ -485,25 +489,25 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param limit row number limit
 	 */
 	private void reloadRows(final List<Row> rows, Object context, int limit) throws SQLException {
-		if (Configuration.forDbms(session.get()).getSqlLimitSuffix() != null) {
+		if (Configuration.forDbms(session).getSqlLimitSuffix() != null) {
 			try {
-				session.get().setSilent(true);
-				reloadRows(rows, context, limit, false, Configuration.forDbms(session.get()).getSqlLimitSuffix());
+				session.setSilent(true);
+				reloadRows(rows, context, limit, false, Configuration.forDbms(session).getSqlLimitSuffix());
 				return;
 			} catch (SQLException e) {
 				Session._log.warn("failed, try another limit-strategy");
 			} finally {
-				session.get().setSilent(false);
+				session.setSilent(false);
 			}
 		}
 		try {
-			session.get().setSilent(true);
+			session.setSilent(true);
 			reloadRows(rows, context, limit, true, null);
 			return;
 		} catch (SQLException e) {
 			Session._log.warn("failed, try another limit-strategy");
 		} finally {
-			session.get().setSilent(false);
+			session.setSilent(false);
 		}
 		reloadRows(rows, context, limit, false, null);
 	}
@@ -574,7 +578,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (sqlLimitSuffix != null && !sqlLimitSuffix.toLowerCase().startsWith("top ")) {
 			sql += " " + (sqlLimitSuffix.replace("%s", Integer.toString(limit)));
 		}
-		session.get().executeQuery(sql, new Session.ResultSetReader() {
+		session.executeQuery(sql, new Session.ResultSetReader() {
 			
 			Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
 
@@ -582,34 +586,48 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
 				int i = 1;
 				String rowId = "";
-				String v[] = new String[table.getColumns().size()];
+				Object v[] = new Object[table.getColumns().size()];
 				for (Column column: table.getColumns()) {
-					String value = "";
+					Object value = "";
 					int type = SqlUtil.getColumnType(resultSet, i, typeCache);
-					if ((type == Types.BLOB || type == Types.CLOB) && session.get().dbms != DBMS.SQLITE) {
+					if ((type == Types.BLOB || type == Types.CLOB) && session.dbms != DBMS.SQLITE) {
 						Object object = resultSet.getObject(i);
 						if (object == null || resultSet.wasNull()) {
-							value = "";
+							value = null;
 						}
 						if (object instanceof Blob) {
-							value = "Blob";
+							value = new Object() {
+								public String toString() {
+									return "<Blob>";
+								}
+							};
 						}
-
 						if (object instanceof Clob) {
-							value = "Clob";
+							value = new Object() {
+								public String toString() {
+									return "<Clob>";
+								}
+							};
+						}
+						if (object instanceof SQLXML) {
+							value = new Object() {
+								public String toString() {
+									return "<XML>";
+								}
+							};
 						}
 					} else {
 						Object o = SqlUtil.getObject(resultSet, i, typeCache);
 						if (pkColumnNames.contains(column.name)) {
-							String cVal = SqlUtil.toSql(o, session.get());
+							String cVal = SqlUtil.toSql(o, session);
 			                rowId += (rowId.length() == 0? "" : " and ") + "B." + (quoting == null? column.name : quoting.quote(column.name))
 			                	+ "=" + cVal;
 						}
 		                if (o == null || resultSet.wasNull()) {
-							value = "";
+							value = null;
 						}
 						if (o != null) {
-							value = o.toString();
+							value = o;
 						}
 					}
 					v[i - 1] = value;
@@ -658,6 +676,34 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		}
 		rowsTable.setModel(dtm);
+		
+		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(dtm);
+		for (int i = 0; i < columnNames.length; ++i) {
+			sorter.setComparator(i, new Comparator<Object>() {
+				@SuppressWarnings("unchecked")
+				@Override
+				public int compare(Object o1, Object o2) {
+					if (o1 == null && o2 == null) {
+						return 0;
+					}
+					if (o1 == null) {
+						return -1;
+					}
+					if (o2 == null) {
+						return 1;
+					}
+					if (o1.getClass().equals(o2.getClass())) {
+						if (o1 instanceof Comparable<?>) {
+							return ((Comparable) o1).compareTo(o2);
+						}
+						return 0;
+					}
+					return o1.getClass().getName().compareTo(o2.getClass().getName());
+				}
+			});
+		}
+		rowsTable.setRowSorter(sorter);
+	    
 		for (int i = 0; i < rowsTable.getColumnCount(); i++) {
             TableColumn column = rowsTable.getColumnModel().getColumn(i);
             int width = (Desktop.BROWSERTABLE_DEFAULT_WIDTH - 14) / rowsTable.getColumnCount();
