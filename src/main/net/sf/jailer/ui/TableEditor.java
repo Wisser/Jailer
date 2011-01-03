@@ -407,7 +407,7 @@ public class TableEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
         jPanel2.add(downButton, gridBagConstraints);
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
@@ -458,7 +458,7 @@ public class TableEditor extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
         jPanel2.add(addButton, gridBagConstraints);
 
         updateButton.setText("Update");
@@ -471,7 +471,7 @@ public class TableEditor extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
         jPanel2.add(updateButton, gridBagConstraints);
 
         deleteButton.setText("Delete");
@@ -486,7 +486,7 @@ public class TableEditor extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
         jPanel2.add(deleteButton, gridBagConstraints);
 
         primaryKey.setText(" primary key");

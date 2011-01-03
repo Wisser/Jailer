@@ -434,6 +434,14 @@
             </MenuItem>
             <MenuItem class="javax.swing.JSeparator" name="jSeparator5">
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="openDataBrowserItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Data Browser"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="openDataBrowserItemActionPerformed"/>
+              </Events>
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="queryBuilder">
               <Properties>
                 <Property name="text" type="java.lang.String" value="Query Builder"/>
