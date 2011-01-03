@@ -21,7 +21,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
-import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
@@ -38,12 +37,14 @@ import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.swing.DefaultDesktopManager;
 import javax.swing.Icon;
 import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
+import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
@@ -104,7 +105,7 @@ public class Desktop extends JDesktopPane {
 	 * @param jailerIcon icon for the frames
 	 * @param session DB-session
 	 */
-	public Desktop(Reference<DataModel> datamodel, Icon jailerIcon, Session session, Frame parentFrame) {
+	public Desktop(Reference<DataModel> datamodel, Icon jailerIcon, Session session, JFrame parentFrame) {
 		this.parentFrame = parentFrame;
 		this.datamodel = datamodel;
 		this.jailerIcon = jailerIcon;
@@ -173,6 +174,11 @@ public class Desktop extends JDesktopPane {
 		public RowBrowser parent;
 		
 		/**
+		 * Association with parent.
+		 */
+		public Association association;
+		
+		/**
 		 * Index of parent row in the parent's row browser.
 		 */
 		public int rowIndex;
@@ -204,8 +210,6 @@ public class Desktop extends JDesktopPane {
 	 * @return new row-browser
 	 */
 	public synchronized RowBrowser addTableBrowser(final RowBrowser parent, int parentRowIndex, final Table table, Association association, String condition) {
-		final int MIN = 0, HEIGHT = 460, MIN_HEIGHT = 80, DISTANCE = 20;
-
 		for (RowBrowser rb: tableBrowsers) {
 			try {
 				rb.internalFrame.setMaximum(false);
@@ -274,29 +278,14 @@ public class Desktop extends JDesktopPane {
 			protected void onRedraw() {
 				repaintDesktop();
 			}
+
+			@Override
+			protected JFrame getOwner() {
+				return parentFrame;
+			}
 		};
 		
-		int x = MIN;
-		if (parent != null) {
-			x = parent.internalFrame.getX() + parent.internalFrame.getWidth() + DISTANCE;
-		}
-		int h = association == null || (association.getCardinality() != Cardinality.MANY_TO_ONE && association.getCardinality() != Cardinality.ONE_TO_ONE)? HEIGHT : browserContentPane.getMinimumSize().height + MIN_HEIGHT; 
-		int y = MIN;
-		Rectangle r = new Rectangle(x, y, BROWSERTABLE_DEFAULT_WIDTH, h);
-		for (;;) {
-			boolean ok = true;
-			for (RowBrowser tb : tableBrowsers) {
-				if (tb.internalFrame.getBounds().intersects(r)) {
-					ok = false;
-					break;
-				}
-			}
-			r = new Rectangle(x, y, BROWSERTABLE_DEFAULT_WIDTH, h);
-			y += 8;
-			if (ok) {
-				break;
-			}
-		}
+		Rectangle r = layout(parent, association, browserContentPane, new ArrayList<RowBrowser>());
 
 		jInternalFrame.setBounds(r);
 		
@@ -304,6 +293,7 @@ public class Desktop extends JDesktopPane {
 		tableBrowser.browserContentPane = browserContentPane;
 		tableBrowser.rowIndex = parentRowIndex;
 		tableBrowser.parent = parent;
+		tableBrowser.association = association;
 		if (association != null) {
 			tableBrowser.color = new java.awt.Color(0, 100, 255);
 			if (association.isInsertDestinationBeforeSource()) {
@@ -339,18 +329,7 @@ public class Desktop extends JDesktopPane {
 			}
 			@Override
 			public void internalFrameClosed(InternalFrameEvent e) {
-				for (RowBrowser tb: tableBrowsers) {
-					if (tb.parent == tableBrowser) {
-						tb.parent = null;
-					}
-				}
-				Desktop.this.remove(e.getInternalFrame());
-				tableBrowsers.remove(tableBrowser);
-				tableBrowser.browserContentPane.cancelLoadJob();
-				for (RowBrowser rb: tableBrowsers) {
-					updateChildren(rb, rb.browserContentPane.rows);
-				}
-				repaintDesktop();
+				close(tableBrowser);
 			}
 			@Override
 			public void internalFrameActivated(InternalFrameEvent e) {
@@ -359,8 +338,36 @@ public class Desktop extends JDesktopPane {
 
 		checkDesktopSize();
 		this.scrollRectToVisible(jInternalFrame.getBounds());
-		
+		jInternalFrame.toFront();
+		browserContentPane.andCondition.grabFocus();
 		return tableBrowser;
+	}
+
+	private Rectangle layout(final RowBrowser parent, Association association, BrowserContentPane browserContentPane, Collection<RowBrowser> ignore) {
+		final int MIN = 0, HEIGHT = 460, MIN_HEIGHT = 80, DISTANCE = 32;
+
+		int x = MIN;
+		if (parent != null) {
+			x = parent.internalFrame.getX() + parent.internalFrame.getWidth() + DISTANCE;
+		}
+		int h = association == null || (association.getCardinality() != Cardinality.MANY_TO_ONE && association.getCardinality() != Cardinality.ONE_TO_ONE)? HEIGHT : browserContentPane.getMinimumSize().height + MIN_HEIGHT; 
+		int y = MIN;
+		Rectangle r = new Rectangle(x, y, BROWSERTABLE_DEFAULT_WIDTH, h);
+		for (;;) {
+			boolean ok = true;
+			for (RowBrowser tb : tableBrowsers) {
+				if (!ignore.contains(tb) && tb.internalFrame.getBounds().intersects(r)) {
+					ok = false;
+					break;
+				}
+			}
+			r = new Rectangle(x, y, BROWSERTABLE_DEFAULT_WIDTH, h);
+			y += 8;
+			if (ok) {
+				break;
+			}
+		}
+		return r;
 	}
 
 	protected synchronized void updateChildren(RowBrowser tableBrowser, List<Row> rows) {
@@ -769,6 +776,55 @@ public class Desktop extends JDesktopPane {
 		}
 	}
 
-	private final Frame parentFrame;
+	private final JFrame parentFrame;
+
+	public void layoutBrowser() {
+		List<RowBrowser> all = new ArrayList<RowBrowser>(tableBrowsers);
+		List<RowBrowser> column = new ArrayList<RowBrowser>();
+		for (RowBrowser rb: all) {
+			if (rb.parent == null) {
+				column.add(rb);
+			}
+		}
+		while (!column.isEmpty()) {
+			List<RowBrowser> nextColumn = new ArrayList<RowBrowser>();
+			for (RowBrowser rb: column) {
+				try {
+					rb.internalFrame.setMaximum(false);
+				} catch (PropertyVetoException e) {
+					// ignore
+				}
+				rb.internalFrame.setBounds(layout(rb.parent, rb.association, rb.browserContentPane, all));
+				all.remove(rb);
+				for (RowBrowser rbc: all) {
+					if (rbc.parent == rb) {
+						nextColumn.add(rbc);
+					}
+				}
+			}
+			column = nextColumn;
+		}
+	}
+
+	public void closeAll() {
+		for (RowBrowser rb: new ArrayList<RowBrowser>(tableBrowsers)) {
+			close(rb);
+			getDesktopManager().closeFrame(rb.internalFrame);
+		}
+	}
+
+	private void close(final RowBrowser tableBrowser) {
+		for (RowBrowser tb: tableBrowsers) {
+			if (tb.parent == tableBrowser) {
+				tb.parent = null;
+			}
+		}
+		tableBrowsers.remove(tableBrowser);
+		tableBrowser.browserContentPane.cancelLoadJob();
+		for (RowBrowser rb: tableBrowsers) {
+			updateChildren(rb, rb.browserContentPane.rows);
+		}
+		repaintDesktop();
+	}
 	
 }

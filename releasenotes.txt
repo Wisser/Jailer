@@ -1,3 +1,7 @@
+3.5
+ - A Data Browser has been introduced.
+ - GUI enhancements.
+
 3.4.10
  - Enhanced readability of generated SQL scripts.
  - Fix for rendering bug in closure view.

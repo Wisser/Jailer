@@ -823,7 +823,7 @@ public class GraphicalDataModelView extends JPanel {
 //		});
 		removeRestrictions.setEnabled(modelEditor.isRemovalOfAllRestrictionsApplicable(table));
 		
-		JMenuItem findTable = new JMenuItem("Browser Closure");
+		JMenuItem findTable = new JMenuItem("Browse Closure");
 		findTable.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				modelEditor.extractionModelFrame.openClosureView(table);

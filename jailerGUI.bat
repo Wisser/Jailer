@@ -18,4 +18,4 @@ set CP=%CP%;jailer.jar
 
 echo %CP%
 
-start javaw -Xmx256M -cp %CP% net.sf.jailer.ui.ExtractionModelFrame %*
+start javaw -Xmx512M -cp %CP% net.sf.jailer.ui.ExtractionModelFrame %*
