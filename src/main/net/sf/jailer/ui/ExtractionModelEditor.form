@@ -214,6 +214,7 @@
                     </Container>
                     <Component class="javax.swing.JComboBox" name="subjectTable">
                       <Properties>
+                        <Property name="maximumRowCount" type="int" value="18"/>
                         <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                           <Connection code="subjectListModel()" type="code"/>
                         </Property>
@@ -358,7 +359,7 @@
                         </Component>
                         <Component class="javax.swing.JComboBox" name="rootTable">
                           <Properties>
-                            <Property name="maximumRowCount" type="int" value="24"/>
+                            <Property name="maximumRowCount" type="int" value="18"/>
                             <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
                               <Connection code="getTableListModel()" type="code"/>
                             </Property>

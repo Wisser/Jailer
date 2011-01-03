@@ -21,6 +21,7 @@ import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -47,6 +48,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -62,7 +65,6 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
 import net.sf.jailer.Configuration;
-import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
@@ -202,7 +204,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	
 	private Quoting quoting;
 
-	protected int currentRowSelection;
+	protected int currentRowSelection = -1;
 	
 	/**
 	 * For concurrent reload of rows.
@@ -325,9 +327,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					if (lastMenu == null || !lastMenu.isVisible()) {
 						currentRowSelection = ri;
 						onRedraw();
-						JPopupMenu popup = createPopupMenu(row, i);
 						Rectangle r = rowsTable.getCellRect(ri, 0, false);
-						popup.show(rowsTable, Math.max((int) e.getPoint().x, (int) r.getMinX()), (int) r.getMaxY() - 2);
+						int x = Math.max((int) e.getPoint().x, (int) r.getMinX());
+						int y = (int) r.getMaxY() - 2;
+						Point p = SwingUtilities.convertPoint(rowsTable, x, y, null);
+						JPopupMenu popup = createPopupMenu(row, i, p.x + getOwner().getX(), p.y + getOwner().getY());
+						popup.show(rowsTable, x, y);
 						popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
 							
 							@Override
@@ -385,7 +390,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
      * Creates popup menu for navigation.
      */
-	public JPopupMenu createPopupMenu(final Row row, final int rowIndex) {
+	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y) {
 		List<String> assList = new ArrayList<String>();
 		Map<String, Association> assMap = new HashMap<String, Association>();
 		for (Association a: table.associations) {
@@ -412,10 +417,30 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		Collections.sort(assList);
 		
 		JPopupMenu popup = new JPopupMenu();
-		JMenuItem item = new JMenuItem("to..");
-		item.setEnabled(false);
-		popup.add(item);
-		JMenu current = null;
+		JMenu nav = new JMenu("Associated Rows");
+		popup.add(nav);
+		JMenu current = nav;
+		JMenuItem det = new JMenuItem("Details");
+		popup.add(det);
+		det.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				JDialog d = new JDialog(getOwner(), dataModel.getDisplayName(table), true);
+				d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex) {
+					@Override
+					protected void onRowChanged(int row) {
+						currentRowSelection = row;
+						onRedraw();
+					}
+				});
+				d.pack();
+				d.setLocation(x, y);
+				d.setSize(400, d.getHeight() + 20);
+				d.setVisible(true);
+				currentRowSelection = -1;
+				onRedraw();
+			}
+		});
 		int l = 0;
 		for (String name: assList) {
 			final Association association = assMap.get(name);
@@ -431,7 +456,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				current = p;
 			}
 			
-			item = new JMenuItem("  " + (name.substring(1)));
+			JMenuItem item = new JMenuItem("  " + (name.substring(1)));
 			if (name.startsWith("1")) {
 				item.setForeground(new java.awt.Color(170, 0, 0));
 			}
@@ -457,9 +482,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		}
 		if (assList.isEmpty()) {
-			item = new JMenuItem("no associations");
-			item.setEnabled(false);
-			popup.add(item);
+			nav.setEnabled(false);
 		}
 		return popup;
 	}
@@ -590,7 +613,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				for (Column column: table.getColumns()) {
 					Object value = "";
 					int type = SqlUtil.getColumnType(resultSet, i, typeCache);
-					if ((type == Types.BLOB || type == Types.CLOB) && session.dbms != DBMS.SQLITE) {
+					if (type == Types.BLOB || type == Types.CLOB || type == Types.SQLXML) {
 						Object object = resultSet.getObject(i);
 						if (object == null || resultSet.wasNull()) {
 							value = null;
@@ -618,7 +641,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 					} else {
 						Object o = SqlUtil.getObject(resultSet, i, typeCache);
-						if (pkColumnNames.contains(column.name)) {
+						boolean isPK = false;
+						if (pkColumnNames.isEmpty()) {
+							isPK =
+								type != Types.BLOB &&
+								type != Types.CLOB &&
+								type != Types.DATALINK &&
+								type != Types.JAVA_OBJECT &&
+								type != Types.NCLOB &&
+								type != Types.NULL &&
+								type != Types.OTHER &&
+								type != Types.REF &&
+								type != Types.SQLXML &&
+								type != Types.STRUCT;
+						}
+						if (pkColumnNames.contains(column.name) || isPK) {
 							String cVal = SqlUtil.toSql(o, session);
 			                rowId += (rowId.length() == 0? "" : " and ") + "B." + (quoting == null? column.name : quoting.quote(column.name))
 			                	+ "=" + cVal;
@@ -1001,7 +1038,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     }//GEN-LAST:event_limitBoxItemStateChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTextField andCondition;
+    public javax.swing.JTextField andCondition;
     private javax.swing.JLabel andLabel;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JPanel cardPanel;
@@ -1065,6 +1102,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	
 	protected abstract void navigateTo(Association association, int rowIndex, Row row);
 	protected abstract void onContentChange(List<Row> rows);
-    protected abstract void onRedraw();
+	protected abstract void onRedraw();
+	protected abstract JFrame getOwner();
     
 }

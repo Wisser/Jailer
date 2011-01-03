@@ -35,6 +35,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -228,6 +229,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         updateDataModel = new javax.swing.JMenuItem();
         openDataModelEditor = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JSeparator();
+        openDataBrowserItem = new javax.swing.JMenuItem();
         queryBuilder = new javax.swing.JMenuItem();
         cycleView = new javax.swing.JMenuItem();
         renderHtml = new javax.swing.JMenuItem();
@@ -617,6 +619,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenu3.add(openDataModelEditor);
         jMenu3.add(jSeparator5);
 
+        openDataBrowserItem.setText("Data Browser");
+        openDataBrowserItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openDataBrowserItemActionPerformed(evt);
+            }
+        });
+        jMenu3.add(openDataBrowserItem);
+
         queryBuilder.setText("Query Builder");
         queryBuilder.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -829,7 +839,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	if (dbConnectionDialog.isConnected || dbConnectionDialog.connect("Data Browser")) {
 			DataBrowser dataBrowser;
 			try {
-				dataBrowser = new DataBrowser(extractionModelEditor.dataModel, root, condition, dbConnectionDialog.currentConnection);
+				dataBrowser = new DataBrowser(extractionModelEditor.dataModel, root, condition, dbConnectionDialog, true);
 				dataBrowser.setVisible(true);
 			} catch (Exception e) {
 				UIUtil.showException(this, "Error", e);
@@ -1143,9 +1153,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			extractionModelEditor.extractionModelFrame = null;
 			editorPanel.remove(extractionModelEditor);
-			if (extractionModelEditor.dataModel != null) {
-				extractionModelEditor.dataModel.destroy(); // prevent OOE
-			}
 			extractionModelEditor = null;
     		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(modelFile, this, isHorizontalLayout, getConnectivityState()), "editor");
 			((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
@@ -1164,10 +1171,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     		if (saveIfNeeded("creating new model", true)) {
 	    		extractionModelEditor.extractionModelFrame = null;
 	    		editorPanel.remove(extractionModelEditor);
-				if (extractionModelEditor.dataModel != null) {
-					extractionModelEditor.dataModel.destroy(); // prevent OOE
-				}
-	    		extractionModelEditor = null;
+				extractionModelEditor = null;
 	    		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(null, this, isHorizontalLayout, getConnectivityState()), "editor");
 	    		((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
 	    		validate();
@@ -1185,9 +1189,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 	    	extractionModelEditor.extractionModelFrame = null;
 			editorPanel.remove(extractionModelEditor);
-			if (extractionModelEditor.dataModel != null) {
-				extractionModelEditor.dataModel.destroy(); // prevent OOE
-			}
 			editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelEditor.extractionModelFile, this, isHorizontalLayout, getConnectivityState()), "editor");
 			((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
 			validate();
@@ -1397,6 +1398,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		cycleViewDialog.toFront();
 		cycleViewDialog.findCycles();
     }//GEN-LAST:event_cycleViewActionPerformed
+
+    private void openDataBrowserItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openDataBrowserItemActionPerformed
+        openDataBrowser(extractionModelEditor.root, "");
+    }//GEN-LAST:event_openDataBrowserItemActionPerformed
     
     boolean isHorizontalLayout = false;
 	
@@ -1474,6 +1479,31 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	}
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
+            	
+            	try {
+    	    		File plafSetting = new File(PLAFSETTING);
+    	    		String plaf;
+    	    		if (!plafSetting.exists()) {
+    	    			plaf = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
+    	    		} else {
+	    	    		BufferedReader in = new BufferedReader(new FileReader(plafSetting));
+	    	    		plaf = in.readLine();
+	    	    		in.close();
+    	    		}
+    	    		UIManager.setLookAndFeel(plaf);
+    			} catch (Exception x) {
+    	    	}
+    			JFrame dummy = new JFrame();
+    			dummy.setIconImage(new ImageIcon(ExtractionModelFrame.class.getResource("/net/sf/jailer/resource/jailer.png")).getImage());
+    	    	switch (JOptionPane.showOptionDialog(dummy, "Choose Module", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null,
+            			new Object[] { "Data Browser", "Database Subsetter" }, null)) {
+            	case 0: 
+            		DataBrowser.main(args);
+            		return;
+            	case 1: break;
+            	default: return;
+            	}
+            	
             	String file = null;
             	if (CommandLineParser.getInstance().arguments != null) {
             		if (CommandLineParser.getInstance().arguments.size() > 0) {
@@ -1489,20 +1519,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	    		isHorizonal = Boolean.valueOf(or);
     	    	} catch (Exception x) {
     	    	}
-                try {
-    	    		File plafSetting = new File(PLAFSETTING);
-    	    		String plaf;
-    	    		if (!plafSetting.exists()) {
-    	    			plaf = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
-    	    		} else {
-	    	    		BufferedReader in = new BufferedReader(new FileReader(plafSetting));
-	    	    		plaf = in.readLine();
-	    	    		in.close();
-    	    		}
-    	    		UIManager.setLookAndFeel(plaf);
-    			} catch (Exception x) {
-    	    	}
-    	    	ExtractionModelFrame extractionModelFrame = new ExtractionModelFrame(file, isHorizonal);
+                ExtractionModelFrame extractionModelFrame = new ExtractionModelFrame(file, isHorizonal);
                 try {
     	    		extractionModelFrame.setIconImage(new ImageIcon(extractionModelFrame.getClass().getResource("/net/sf/jailer/resource/jailer.png")).getImage());
     	    	} catch (Throwable t) {
@@ -1643,6 +1660,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator9;
     private javax.swing.JMenuItem load;
     private javax.swing.JMenuItem newModel;
+    private javax.swing.JMenuItem openDataBrowserItem;
     private javax.swing.JMenuItem openDataModelEditor;
     private javax.swing.JMenuItem printDatamodel;
     private javax.swing.JMenuItem queryBuilder;

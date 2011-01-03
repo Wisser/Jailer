@@ -354,12 +354,13 @@ public class UIUtil {
 		    					if (progressListener != null) {
 		    						progressListener.newStage(exp[0] == null? "finished" : "failed", exp[0] != null, true);
 		    					}
-		    					if (closeOutputWindow && result[0] && exp[0] == null && warnings.length() == 0) {
+		    					if ((exp[0] instanceof CancellationException) || (closeOutputWindow && result[0] && exp[0] == null && warnings.length() == 0)) {
 		                    		outputView.dialog.setVisible(false);
 			                    } else {
 			                    	outputView.finish(result[0] && exp[0] == null);
 			                        if (result[0] && warnings.length() > 0) {
 			                        	JOptionPane.showMessageDialog(outputView.dialog, warnings.length() > 800? warnings.substring(0, 800) + "..." : warnings.toString(), "Warning", JOptionPane.INFORMATION_MESSAGE);
+			                        	outputView.dialog.setVisible(false);
 			                        } else if (showExeptions && exp[0] != null && !(exp[0] instanceof CancellationException)) {
 			                        	UIUtil.showException(outputView.dialog, "Error", exp[0]);
 			                        	exceptionShown[0] = true;
