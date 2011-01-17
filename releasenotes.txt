@@ -1,3 +1,6 @@
+3.5.1
+ - Bug fix: changing the subject table was not possible in version 3.5.
+
 3.5
  - A Data Browser has been introduced.
  - GUI enhancements.

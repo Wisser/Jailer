@@ -631,9 +631,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jPanel8 = new javax.swing.JPanel();
         jLabel7 = new javax.swing.JLabel();
         openSubjectConditionEditor = new javax.swing.JLabel();
-        subjectTable = new net.sf.jailer.ui.JComboBox();
+        subjectTable = new javax.swing.JComboBox();
         jPanel10 = new javax.swing.JPanel();
-        exportFormat = new net.sf.jailer.ui.JComboBox();
+        exportFormat = new javax.swing.JComboBox();
         exportButton = new javax.swing.JButton();
         openXmlSettings = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
@@ -641,7 +641,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         tree = new javax.swing.JTree();
         jPanel6 = new javax.swing.JPanel();
         jLabel9 = new javax.swing.JLabel();
-        rootTable = new net.sf.jailer.ui.JComboBox();
+        rootTable = new javax.swing.JComboBox();
         jPanel9 = new javax.swing.JPanel();
         openDataBrowser = new javax.swing.JButton();
         openClosureView = new javax.swing.JButton();
@@ -650,7 +650,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        aggregationCombobox = new net.sf.jailer.ui.JComboBox();
+        aggregationCombobox = new javax.swing.JComboBox();
         tagField = new javax.swing.JTextField();
         jScrollPane3 = new javax.swing.JScrollPane();
         xmlSketch = new javax.swing.JTextArea();
@@ -767,6 +767,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         subjectTable.setMaximumRowCount(18);
         subjectTable.setModel(subjectListModel());
+        subjectTable.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                subjectTableItemStateChanged(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 0;
@@ -1681,6 +1686,23 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 		extractionModelFrame.openDataBrowser(root, cond);
     }//GEN-LAST:event_openDataBrowserActionPerformed
+
+    private void subjectTableItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_subjectTableItemStateChanged
+        Object selectedItem = subjectTable.getSelectedItem();
+	   if (selectedItem instanceof String) {
+	                         if (dataModel.getTableByDisplayName(selectedItem.toString()) != null) {
+	                                 currentSubjectClosure = null; // force re-calculation
+	                                 subject = dataModel.getTableByDisplayName(selectedItem.toString());
+	                         }
+	                 }
+	         rootTable.setModel(getTableListModel());
+	         rootTable.setSelectedItem(null);
+	         rootTable.setSelectedItem(selectedItem);
+	         if (!needsSave) {
+	                         needsSave = true;
+	                         extractionModelFrame.updateTitle(needsSave);
+	                 } 
+    }//GEN-LAST:event_subjectTableItemStateChanged
 		  
 	/**
 	 * Renderer for the tree-view.
