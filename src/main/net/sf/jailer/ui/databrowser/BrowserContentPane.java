@@ -74,7 +74,6 @@ import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
-import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -202,8 +201,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 */
 	private final Session session;
 	
-	private Quoting quoting;
-
 	protected int currentRowSelection = -1;
 	
 	/**
@@ -252,12 +249,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		this.dataModel = dataModel;
 		this.parentRow = parentRow;
 		this.association = association;
-		try {
-			quoting = new Quoting(session.getMetaData());
-		} catch (SQLException e) {
-			UIUtil.showException(null, "Error", e);
-		}
-
+		
 		initComponents();
 		andCondition.setText(ConditionEditor.toSingleLine(condition));
 		from.setText(this.dataModel.getDisplayName(table));
@@ -550,7 +542,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		boolean f = true;
 		for (Column column: table.getColumns()) {
-			String name = quoting == null? column.name : quoting.quote(column.name);
+			String name = column.name;
 			sql += (!f? ", " : "") + "A." + name;
 			olapPrefix += (!f? ", " : "") + "S." + name;
 			f = false;
@@ -560,7 +552,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		String orderBy = "";
 		for (Column pk: table.primaryKey.getColumns()) {
 			pkColumnNames.add(pk.name);
-			orderBy += (f? "" : ", ") + "A." + (quoting == null? pk.name : quoting.quote(pk.name));
+			orderBy += (f? "" : ", ") + "A." + pk.name;
 			f = false;
 		}
 		if (useOLAPLimitation) {
@@ -572,9 +564,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		sql += " From ";
 		if (association != null) {
-			sql += (quoting == null? association.source.getName() : quoting.quote(association.source.getName())) + " B join ";
+			sql += association.source.getName() + " B join ";
 		}
-		sql += (quoting == null? table.getName() : quoting.quote(table.getName())) + " A";
+		sql += table.getName() + " A";
 		if (association != null) {
 			if (association.reversed) {
 				sql += " on " + association.getUnrestrictedJoinCondition();
@@ -657,7 +649,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 						if (pkColumnNames.contains(column.name) || isPK) {
 							String cVal = SqlUtil.toSql(o, session);
-			                rowId += (rowId.length() == 0? "" : " and ") + "B." + (quoting == null? column.name : quoting.quote(column.name))
+			                rowId += (rowId.length() == 0? "" : " and ") + "B." + column.name
 			                	+ "=" + cVal;
 						}
 		                if (o == null || resultSet.wasNull()) {

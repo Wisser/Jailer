@@ -16,6 +16,7 @@
 package net.sf.jailer.ui;
 
 import java.awt.CardLayout;
+import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -854,7 +855,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      */
     private void setPLAF(String plaf) {
 	    try {
-	    	UIManager.setLookAndFeel(plaf);
+    		UIManager.setLookAndFeel(plaf);
 	    	SwingUtilities.updateComponentTreeUI(this);
 	    	try {
                 File file = new File(PLAFSETTING);
@@ -1490,7 +1491,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	    	    		plaf = in.readLine();
 	    	    		in.close();
     	    		}
-    	    		UIManager.setLookAndFeel(plaf);
+    		    	UIManager.setLookAndFeel(plaf);
     			} catch (Exception x) {
     	    	}
     			JFrame dummy = new JFrame();
