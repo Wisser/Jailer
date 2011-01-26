@@ -1,3 +1,6 @@
+3.5.2
+ - minor GUI enhancements.
+
 3.5.1
  - Bug fix: changing the subject table was not possible in version 3.5.
 
