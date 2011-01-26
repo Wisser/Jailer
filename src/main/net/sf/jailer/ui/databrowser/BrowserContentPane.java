@@ -55,6 +55,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
@@ -409,9 +410,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		Collections.sort(assList);
 		
 		JPopupMenu popup = new JPopupMenu();
-		JMenu nav = new JMenu("Associated Rows");
-		popup.add(nav);
-		JMenu current = nav;
+		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Parents", "1");
+		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Children", "2");
+		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Associated Rows", "3");
+		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Detached Rows", "4");
+		
+		popup.add(new JSeparator());
+		
 		JMenuItem det = new JMenuItem("Details");
 		popup.add(det);
 		det.addActionListener(new ActionListener() {
@@ -433,8 +438,30 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				onRedraw();
 			}
 		});
+		return popup;
+	}
+
+	private JPopupMenu createNavigationMenu(JPopupMenu popup, final Row row, final int rowIndex, List<String> assList, Map<String, Association> assMap, String title, String prefix) {
+		JMenu nav = new JMenu(title);
+		if (prefix.equals("1")) {
+			nav.setForeground(new java.awt.Color(170, 0, 0));
+		}
+		if (prefix.equals("2")) {
+			nav.setForeground(new java.awt.Color(0, 112, 0));
+		}
+		if (prefix.equals("3")) {
+			nav.setForeground(new java.awt.Color(0, 100, 255));
+		}
+		if (prefix.equals("4")) {
+			nav.setForeground(new java.awt.Color(153, 153, 153));
+		}
+		JMenu current = nav;
 		int l = 0;
 		for (String name: assList) {
+			if (!name.startsWith(prefix)) {
+				continue;
+			}
+				
 			final Association association = assMap.get(name);
 			
 			if (++l > 30) {
@@ -448,19 +475,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				current = p;
 			}
 			
-			JMenuItem item = new JMenuItem("  " + (name.substring(1)));
-			if (name.startsWith("1")) {
-				item.setForeground(new java.awt.Color(170, 0, 0));
-			}
-			if (name.startsWith("2")) {
-				item.setForeground(new java.awt.Color(0, 112, 0));
-			}
-			if (name.startsWith("3")) {
-				item.setForeground(new java.awt.Color(0, 100, 255));
-			}
-			if (name.startsWith("4")) {
-				item.setForeground(new java.awt.Color(153, 153, 153));
-			}
+			final JMenuItem item = new JMenuItem("  " + (name.substring(1)));
+			
 			item.addActionListener(new ActionListener () {
 				public void actionPerformed(ActionEvent e) {
 					highlightedRows.add(rowIndex);
@@ -473,12 +489,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				popup.add(item);
 			}
 		}
-		if (assList.isEmpty()) {
-			nav.setEnabled(false);
+		if (l > 0) {
+			popup.add(nav);
 		}
 		return popup;
 	}
-
+	
 	/**
 	 * Reloads rows.
 	 */

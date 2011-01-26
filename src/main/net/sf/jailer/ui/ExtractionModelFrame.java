@@ -28,6 +28,7 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
@@ -1437,6 +1438,29 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	}
 	
 	/**
+	 * Changes some nimbus LAF defaults.
+	 */
+	public static void customizeNimbus() {
+		try {
+	    	Color bgSelColor = new Color(170, 200, 255);
+			// very (!) ugly trick to change nimbus default colors, but I found no better way
+			Object o = UIManager.get("Tree:TreeCell[Focused+Selected].backgroundPainter");
+			if (o != null) {
+		    	Field f = o.getClass().getDeclaredField("color2");
+		    	f.setAccessible(true);
+				f.set(o, bgSelColor);
+			}
+			o = UIManager.get("Tree:TreeCell[Enabled+Selected].backgroundPainter");
+			if (o != null) {
+		    	Field f = o.getClass().getDeclaredField("color2");
+		    	f.setAccessible(true);
+				f.set(o, bgSelColor);
+			}
+		} catch (Exception x) {
+		}
+	}
+
+	/**
      * @param args the command line arguments
      */
     public static void main(final String args[]) {
@@ -1492,8 +1516,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	    	    		in.close();
     	    		}
     		    	UIManager.setLookAndFeel(plaf);
+    		    	customizeNimbus();
     			} catch (Exception x) {
-    	    	}
+    			}
     			JFrame dummy = new JFrame();
     			dummy.setIconImage(new ImageIcon(ExtractionModelFrame.class.getResource("/net/sf/jailer/resource/jailer.png")).getImage());
     	    	switch (JOptionPane.showOptionDialog(dummy, "Choose Module", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null,
