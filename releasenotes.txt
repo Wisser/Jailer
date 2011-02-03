@@ -1,3 +1,6 @@
+3.5.3
+ - Data Browser has been improved.
+
 3.5.2
  - minor GUI enhancements.
 

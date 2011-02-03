@@ -38,7 +38,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.swing.DefaultDesktopManager;
 import javax.swing.Icon;
@@ -98,6 +100,8 @@ public class Desktop extends JDesktopPane {
 	 */
 	public Session session;
 	
+	private Set<Row> currentClosure = new HashSet<Row>();
+	
 	/**
 	 * Constructor.
 	 * 
@@ -153,6 +157,34 @@ public class Desktop extends JDesktopPane {
 		}
 	}
 
+	public class RowToRowLink {
+		
+		/**
+		 * The rows.
+		 */
+		public Row parentRow, childRow;
+		
+		/**
+		 * Index of parent row in the parent's row browser.
+		 */
+		public int parentRowIndex = -1;
+		
+		/**
+		 * Index of child row.
+		 */
+		public int childRowIndex = -1;
+		
+		/**
+		 * Coordinates of the link render.
+		 */
+		public int x1 = -1, y1, x2, y2;
+		
+		/**
+		 * The link's color.
+		 */
+		public Color color; 
+	}
+	
 	/**
 	 * Renders a set of {@link Row}s.
 	 */
@@ -192,6 +224,12 @@ public class Desktop extends JDesktopPane {
 		 * The link's color.
 		 */
 		public Color color;
+		
+		/**
+		 * Row-to-row links.
+		 */
+		public List<RowToRowLink> rowToRowLinks = new ArrayList<RowToRowLink>();
+		
 	};
 
 	/**
@@ -203,13 +241,13 @@ public class Desktop extends JDesktopPane {
 	 * Opens a new row-browser.
 	 * 
 	 * @param parent parent browser
-	 * @param parentRowIndex index of parent row in the parent's row browser
+	 * @param parentRowIndex index of parent row in the parent's row browser, -1 for all rows
 	 * @param table to read rows from
 	 * @param association to navigate, or <code>null</code>
 	 * @param condition 
 	 * @return new row-browser
 	 */
-	public synchronized RowBrowser addTableBrowser(final RowBrowser parent, int parentRowIndex, final Table table, Association association, String condition) {
+	public synchronized RowBrowser addTableBrowser(final RowBrowser parent, int parentRowIndex, final Table table, final Association association, String condition) {
 		for (RowBrowser rb: tableBrowsers) {
 			try {
 				rb.internalFrame.setMaximum(false);
@@ -263,7 +301,7 @@ public class Desktop extends JDesktopPane {
 		});
 
 		final RowBrowser tableBrowser = new RowBrowser();
-		BrowserContentPane browserContentPane = new BrowserContentPane(datamodel.get(), table, condition, session, parent == null? null : parent.browserContentPane.rows.get(parentRowIndex), association, parentFrame) {
+		BrowserContentPane browserContentPane = new BrowserContentPane(datamodel.get(), table, condition, session, parent == null || parentRowIndex < 0? null : parent.browserContentPane.rows.get(parentRowIndex), parent == null || parentRowIndex >= 0? null : parent.browserContentPane.rows, association, parentFrame, currentClosure) {
 			@Override
 			protected void navigateTo(Association association, int rowIndex, Row row) {
 				addTableBrowser(tableBrowser, rowIndex, association.destination, association, "");
@@ -283,9 +321,43 @@ public class Desktop extends JDesktopPane {
 			protected JFrame getOwner() {
 				return parentFrame;
 			}
+
+			@Override
+			protected void addRowToRowLink(Row parentRow, Row childRow) {
+				synchronized (Desktop.this) {
+					RowToRowLink rowToRowLink = new RowToRowLink();
+					rowToRowLink.parentRow = parentRow;
+					rowToRowLink.childRow = childRow;
+					rowToRowLink.color = getAssociationColor(association);
+					tableBrowser.rowToRowLinks.add(rowToRowLink);
+				}
+			}
+
+			@Override
+			protected void beforeReload() {
+				synchronized (Desktop.this) {
+					tableBrowser.rowToRowLinks.clear();
+				}
+			}
+
+			@Override
+			protected void findClosure(Row row) {
+				if (!currentClosure.contains(row)) {
+					currentClosure.add(row);
+					for (RowBrowser child: tableBrowsers) {
+						if (child.parent == tableBrowser) {
+							for (RowToRowLink rowToRowLink: child.rowToRowLinks) {
+								if (row.rowId.equals(rowToRowLink.parentRow.rowId)) {
+									child.browserContentPane.findClosure(rowToRowLink.childRow);
+								}
+							}
+						}
+					}
+				}
+			}
 		};
 		
-		Rectangle r = layout(parent, association, browserContentPane, new ArrayList<RowBrowser>());
+		Rectangle r = layout(parentRowIndex < 0, parent, association, browserContentPane, new ArrayList<RowBrowser>());
 
 		jInternalFrame.setBounds(r);
 		
@@ -295,16 +367,7 @@ public class Desktop extends JDesktopPane {
 		tableBrowser.parent = parent;
 		tableBrowser.association = association;
 		if (association != null) {
-			tableBrowser.color = new java.awt.Color(0, 100, 255);
-			if (association.isInsertDestinationBeforeSource()) {
-				tableBrowser.color = new java.awt.Color(170, 0, 0);
-			}
-			if (association.isInsertSourceBeforeDestination()) {
-				tableBrowser.color = new java.awt.Color(0, 112, 0);
-			}
-			if (association.isIgnored()) {
-				tableBrowser.color = new java.awt.Color(153, 153, 153);
-			}
+			tableBrowser.color = getAssociationColor(association);
 		}
 		tableBrowsers.add(tableBrowser);
 
@@ -343,14 +406,28 @@ public class Desktop extends JDesktopPane {
 		return tableBrowser;
 	}
 
-	private Rectangle layout(final RowBrowser parent, Association association, BrowserContentPane browserContentPane, Collection<RowBrowser> ignore) {
+	private Color getAssociationColor(Association association) {
+		Color color = new java.awt.Color(0, 100, 255);
+		if (association.isInsertDestinationBeforeSource()) {
+			color = new java.awt.Color(170, 0, 0);
+		}
+		if (association.isInsertSourceBeforeDestination()) {
+			color = new java.awt.Color(0, 112, 0);
+		}
+		if (association.isIgnored()) {
+			color = new java.awt.Color(153, 153, 153);
+		}
+		return color;
+	}
+
+	private Rectangle layout(final boolean fullSize, final RowBrowser parent, Association association, BrowserContentPane browserContentPane, Collection<RowBrowser> ignore) {
 		final int MIN = 0, HEIGHT = 460, MIN_HEIGHT = 80, DISTANCE = 32;
 
 		int x = MIN;
 		if (parent != null) {
 			x = parent.internalFrame.getX() + parent.internalFrame.getWidth() + DISTANCE;
 		}
-		int h = association == null || (association.getCardinality() != Cardinality.MANY_TO_ONE && association.getCardinality() != Cardinality.ONE_TO_ONE)? HEIGHT : browserContentPane.getMinimumSize().height + MIN_HEIGHT; 
+		int h = fullSize || association == null || (association.getCardinality() != Cardinality.MANY_TO_ONE && association.getCardinality() != Cardinality.ONE_TO_ONE)? HEIGHT : browserContentPane.getMinimumSize().height + MIN_HEIGHT; 
 		int y = MIN;
 		Rectangle r = new Rectangle(x, y, BROWSERTABLE_DEFAULT_WIDTH, h);
 		for (;;) {
@@ -371,14 +448,39 @@ public class Desktop extends JDesktopPane {
 	}
 
 	protected synchronized void updateChildren(RowBrowser tableBrowser, List<Row> rows) {
+		boolean hasParent = false;
 		tableBrowser.browserContentPane.highlightedRows.clear();
 		for (RowBrowser rowBrowser: tableBrowsers) {
+			if (rowBrowser == tableBrowser.parent) {
+				hasParent = true;
+			}
 			if (rowBrowser.parent == tableBrowser) {
 				rowBrowser.rowIndex = -1;
 				for (int i = 0; i < rows.size(); ++i) {
-					if (rowBrowser.browserContentPane.parentRow.rowId.equals(rows.get(i).rowId)) {
+					if (rowBrowser.browserContentPane.parentRow != null && rowBrowser.browserContentPane.parentRow.rowId.equals(rows.get(i).rowId)) {
 						rowBrowser.rowIndex = i;
 						tableBrowser.browserContentPane.highlightedRows.add(i);
+						break;
+					}
+				}
+			}
+		}
+		if (!hasParent) {
+			tableBrowser.rowToRowLinks.clear();
+		} else {
+			for (RowToRowLink rowToRowLink: tableBrowser.rowToRowLinks) {
+				rowToRowLink.childRowIndex = -1;
+				for (int i = 0; i < rows.size(); ++i) {
+					if (rowToRowLink.childRow.rowId.equals(rows.get(i).rowId)) {
+						rowToRowLink.childRowIndex = i;
+						break;
+					}
+				}
+				rowToRowLink.parentRowIndex = -1;
+				List<Row> parentRows = tableBrowser.parent.browserContentPane.rows;
+				for (int i = 0; i < parentRows.size(); ++i) {
+					if (rowToRowLink.parentRow.rowId.equals(parentRows.get(i).rowId)) {
+						rowToRowLink.parentRowIndex = i;
 						break;
 					}
 				}
@@ -412,6 +514,7 @@ public class Desktop extends JDesktopPane {
 				return changed;
 			}
 			if (tableBrowser.parent != null) {
+				int BORDER = 12;
 				int x1 = tableBrowser.internalFrame.getX() + tableBrowser.internalFrame.getWidth() / 2;
 				int y1 = tableBrowser.internalFrame.getY() + tableBrowser.internalFrame.getHeight() / 2;
 				int midx = tableBrowser.parent.internalFrame.getX() + tableBrowser.parent.internalFrame.getWidth() / 2;
@@ -428,7 +531,9 @@ public class Desktop extends JDesktopPane {
 				y = cellRect.height * i;
 				int y2 = tableBrowser.parent.internalFrame.getY() + y + cellRect.height / 2;
 				if (midx < x1) {
-					x2 += tableBrowser.parent.internalFrame.getWidth();
+					x2 += tableBrowser.parent.internalFrame.getWidth() - BORDER;
+				} else {
+					x2 += BORDER;
 				}
 				Container p = tableBrowser.parent.browserContentPane.rowsTable;
 				while (p != tableBrowser.parent.internalFrame) {
@@ -449,6 +554,86 @@ public class Desktop extends JDesktopPane {
 					tableBrowser.y1 = y1;
 					tableBrowser.x2 = x2;
 					tableBrowser.y2 = y2;
+				}
+				
+				for (RowToRowLink rowToRowLink: tableBrowser.rowToRowLinks) {
+					x1 = y1 = x2 = y2 = -1;
+					if (rowToRowLink.childRowIndex >= 0 && rowToRowLink.parentRowIndex >= 0) {
+						cellRect = new Rectangle();
+						i = 0;
+						int dll = Math.abs(tableBrowser.parent.internalFrame.getX() - tableBrowser.internalFrame.getX());
+						int dlr = Math.abs(tableBrowser.parent.internalFrame.getX() - (tableBrowser.internalFrame.getX() + tableBrowser.internalFrame.getWidth()));
+						int drl = Math.abs((tableBrowser.parent.internalFrame.getX() + tableBrowser.parent.internalFrame.getWidth()) - tableBrowser.internalFrame.getX());
+						int drr = Math.abs((tableBrowser.parent.internalFrame.getX() + tableBrowser.parent.internalFrame.getWidth()) - (tableBrowser.internalFrame.getX() + tableBrowser.internalFrame.getWidth()));
+						
+						boolean r1, r2;
+						int dmin = Math.min(dll, Math.min(dlr, Math.min(drl, drr)));
+						r2 = dmin == drl || dmin == drr;
+						r1 = dmin == dlr || dmin == drr;
+						
+						if (rowToRowLink.childRowIndex >= 0) {
+							i = tableBrowser.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(rowToRowLink.childRowIndex);
+							cellRect = tableBrowser.browserContentPane.rowsTable.getCellRect(i, 0, true);
+						}
+	
+						x1 = tableBrowser.internalFrame.getX();
+						y = cellRect.height * i;
+						y1 = tableBrowser.internalFrame.getY() + y + cellRect.height / 2;
+						if (r1) {
+							x1 += tableBrowser.internalFrame.getWidth()- BORDER;
+						} else {
+							x1 += BORDER;
+						}
+						p = tableBrowser.browserContentPane.rowsTable;
+						while (p != tableBrowser.internalFrame) {
+							y1 += p.getY();
+							p = p.getParent();
+						}
+						min = tableBrowser.internalFrame.getY() + cellRect.height;
+						if (y1 < min) {
+							y1 = min;
+						}
+						max = tableBrowser.internalFrame.getY() + tableBrowser.internalFrame.getHeight();
+						if (y1 > max) {
+							y1 = max;
+						}
+						
+						cellRect = new Rectangle();
+						i = 0;
+						if (rowToRowLink.parentRowIndex >= 0) {
+							i = tableBrowser.parent.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(rowToRowLink.parentRowIndex);
+							cellRect = tableBrowser.parent.browserContentPane.rowsTable.getCellRect(i, 0, true);
+						}
+	
+						x2 = tableBrowser.parent.internalFrame.getX();
+						y = cellRect.height * i;
+						y2 = tableBrowser.parent.internalFrame.getY() + y + cellRect.height / 2;
+						if (r2) {
+							x2 += tableBrowser.parent.internalFrame.getWidth() - BORDER;
+						} else {
+							x2 += BORDER;
+						}
+						p = tableBrowser.parent.browserContentPane.rowsTable;
+						while (p != tableBrowser.parent.internalFrame) {
+							y2 += p.getY();
+							p = p.getParent();
+						}
+						min = tableBrowser.parent.internalFrame.getY() + cellRect.height;
+						if (y2 < min) {
+							y2 = min;
+						}
+						max = tableBrowser.parent.internalFrame.getY() + tableBrowser.parent.internalFrame.getHeight();
+						if (y2 > max) {
+							y2 = max;
+						}
+					}
+					if (x1 != rowToRowLink.x1 || y1 != rowToRowLink.y1 || x2 != rowToRowLink.x2 || y2 != rowToRowLink.y2) {
+						changed = true;
+						rowToRowLink.x1 = x1;
+						rowToRowLink.y1 = y1;
+						rowToRowLink.x2 = x2;
+						rowToRowLink.y2 = y2;
+					}
 				}
 			}
 		}
@@ -476,69 +661,76 @@ public class Desktop extends JDesktopPane {
 		if (graphics instanceof Graphics2D) {
 			Graphics2D g2d = (Graphics2D) graphics;
 			if (renderLinks) {
-				for (RowBrowser tableBrowser : tableBrowsers) {
-					if (tableBrowser.parent != null && tableBrowser.rowIndex >= 0) {
-						if (tableBrowser.internalFrame.isIcon() || tableBrowser.parent.internalFrame.isIcon()) {
-							continue;
-						}
-						for (boolean pbg: new Boolean[] { true, false}) {
+				for (boolean pbg: new Boolean[] { true, false}) {
+					for (RowBrowser tableBrowser : tableBrowsers) {
+						if (!tableBrowser.internalFrame.isIcon() && (tableBrowser.parent == null || !tableBrowser.parent.internalFrame.isIcon())) {
 							Color color = pbg? Color.white : tableBrowser.color;
-							g2d.setColor(color);
-							g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-							g2d.setStroke(new BasicStroke(pbg? 5 : 3));
-	
-							Point2D start = new Point2D.Double(tableBrowser.x2, tableBrowser.y2);
-							Point2D end = new Point2D.Double(tableBrowser.x1, tableBrowser.y1);
-	
-							AffineTransform t = new AffineTransform();
-							t.setToRotation(Math.PI / 4);
-							Point2D p = new Point2D.Double(), shift = new Point2D.Double();
-							double d = start.distance(end) / 5.0;
-							p.setLocation((end.getX() - start.getX()) / d, (end.getY() - start.getY()) / d);
-							t.transform(p, shift);
-							start.setLocation(start.getX() + shift.getX(), start.getY() + shift.getY());
-							end.setLocation(end.getX() + shift.getX(), end.getY() + shift.getY());
-	
-							// compute the intersection with the target bounding box
-							Point2D[] sect = new Point2D[10];
-							int i = GraphicsLib.intersectLineRectangle(start, end, tableBrowser.internalFrame.getBounds(), sect);
-							if (i == 0)
-								continue;
-							end = sect[0];
-							if (start.distance(end) < 2)
-								continue;
-	
-							// create the arrow head shape
-							if (m_arrowHead == null) {
-								m_arrowHead = new Polygon();
-								double ws = 0.5;
-								double hs = 2.0 / 3.0;
-								double w = pbg? 4 : 3, h = w;
-								m_arrowHead.addPoint(0, 0);
-								m_arrowHead.addPoint((int) (ws * -w), (int) (hs * (-h)));
-								// m_arrowHead.addPoint(0, (int) (hs * (-2 * h)));
-								m_arrowHead.addPoint((int) (ws * w), (int) (hs * (-h)));
-								m_arrowHead.addPoint(0, 0);
+							if (tableBrowser.parent != null && tableBrowser.rowIndex >= 0) {
+								Point2D start = new Point2D.Double(tableBrowser.x2, tableBrowser.y2);
+								Point2D end = new Point2D.Double(tableBrowser.x1, tableBrowser.y1);
+								paintLink(start, end, color, g2d, tableBrowser, pbg, true);
 							}
-	
-							AffineTransform at = getArrowTrans(start, end, 10);
-							Shape m_curArrow = at.createTransformedShape(m_arrowHead);
-	
-							Point2D lineEnd = end;
-							lineEnd.setLocation(0, -2);
-							at.transform(lineEnd, lineEnd);
-	
-							g2d.drawLine((int) start.getX(), (int) start.getY(), (int) end.getX(), (int) end.getY());
-							g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-							g2d.setStroke(new BasicStroke(1));
-							g2d.fill(m_curArrow);
-							if (pbg) {
-								g2d.draw(m_curArrow);
+							for (RowToRowLink rowToRowLink: tableBrowser.rowToRowLinks) {
+								if (rowToRowLink.x1 >= 0) {
+									paintLink(new Point2D.Double(rowToRowLink.x2, rowToRowLink.y2), new Point2D.Double(rowToRowLink.x1, rowToRowLink.y1), color, g2d, tableBrowser, pbg, false);
+								}
 							}
 						}
 					}
 				}
 			}
+		}
+	}
+	
+	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect) {
+		g2d.setColor(color);
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setStroke(new BasicStroke(!intersect? (pbg? 3 : 1) : (pbg? 5 : 3)));
+
+		AffineTransform t = new AffineTransform();
+		t.setToRotation(Math.PI / 4);
+		Point2D p = new Point2D.Double(), shift = new Point2D.Double();
+		double d = start.distance(end) / 3.0;
+		p.setLocation((end.getX() - start.getX()) / d, (end.getY() - start.getY()) / d);
+		t.transform(p, shift);
+		start.setLocation(start.getX() + shift.getX(), start.getY() + shift.getY());
+		end.setLocation(end.getX() + shift.getX(), end.getY() + shift.getY());
+
+		// compute the intersection with the target bounding box
+		if (intersect) {
+			Point2D[] sect = new Point2D[10];
+			int i = GraphicsLib.intersectLineRectangle(start, end, tableBrowser.internalFrame.getBounds(), sect);
+			if (i == 0)
+				return;
+			end = sect[0];
+		}
+		if (start.distance(end) < 2)
+			return;
+
+		// create the arrow head shape
+		m_arrowHead = new Polygon();
+		double ws = 0.5;
+		double hs = 2.0 / 3.0;
+		double w = !intersect? (pbg? 3 : 3) : (pbg? 3 : 3), h = w;
+		m_arrowHead.addPoint(0, 0);
+		m_arrowHead.addPoint((int) (ws * -w), (int) (hs * (-h)));
+		// m_arrowHead.addPoint(0, (int) (hs * (-2 * h)));
+		m_arrowHead.addPoint((int) (ws * w), (int) (hs * (-h)));
+		m_arrowHead.addPoint(0, 0);
+
+		AffineTransform at = getArrowTrans(start, end, 10);
+		Shape m_curArrow = at.createTransformedShape(m_arrowHead);
+
+		Point2D lineEnd = end;
+		lineEnd.setLocation(0, -2);
+		at.transform(lineEnd, lineEnd);
+
+		g2d.drawLine((int) start.getX(), (int) start.getY(), (int) end.getX(), (int) end.getY());
+		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		g2d.setStroke(new BasicStroke(1));
+		g2d.fill(m_curArrow);
+		if (pbg) {
+			g2d.draw(m_curArrow);
 		}
 	}
 
@@ -794,7 +986,7 @@ public class Desktop extends JDesktopPane {
 				} catch (PropertyVetoException e) {
 					// ignore
 				}
-				rb.internalFrame.setBounds(layout(rb.parent, rb.association, rb.browserContentPane, all));
+				rb.internalFrame.setBounds(layout(rb.rowIndex < 0, rb.parent, rb.association, rb.browserContentPane, all));
 				all.remove(rb);
 				for (RowBrowser rbc: all) {
 					if (rbc.parent == rb) {
