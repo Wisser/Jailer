@@ -466,7 +466,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					JDialog d = new JDialog(getOwner(), dataModel.getDisplayName(table), true);
-					d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex) {
+					d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter()) {
 						@Override
 						protected void onRowChanged(int row) {
 							setCurrentRowSelection(row);
@@ -487,7 +487,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		currentRowSelection = i;
 		if (i >= 0) {
 			currentClosure.clear();
-			findClosure(rows.get(i));
+			findClosure(rows.get(rowsTable.getRowSorter().convertRowIndexToModel(i)));
 		}
 		if (currentClosure.size() == 1) {
 			currentClosure.clear();
