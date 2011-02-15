@@ -20,9 +20,11 @@ import java.util.List;
 
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.RowSorter;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.table.TableModel;
 
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
@@ -38,13 +40,17 @@ public abstract class DetailsView extends javax.swing.JPanel {
 
 	private final Table table;
 	private final List<Row> rows;
+	private final RowSorter<? extends TableModel> rowSorter;
 	
     /** Creates new form DetailsView 
+     * @param rowSorter 
     */
-    public DetailsView(List<Row> rows, int size, DataModel dataModel, Table table, int rowIndex) {
+    public DetailsView(List<Row> rows, int size, DataModel dataModel, Table table, int rowIndex, RowSorter<? extends TableModel> rowSorter) {
         this.table = table;
     	this.rows = rows;
+    	this.rowSorter = rowSorter;
         initComponents();
+        rowIndex = rowSorter.convertRowIndexToView(rowIndex);
         final SpinnerNumberModel model = new SpinnerNumberModel(rowIndex + 1, 1, size, -1);
         rowSpinner.setModel(model);
         rowSpinner.addChangeListener(new ChangeListener() {
@@ -71,7 +77,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
             jPanel1.add(l, gridBagConstraints);
 
             JTextField f = new JTextField();
-            Object v = rows.get(row).values[i];
+            Object v = rows.get(rowSorter.convertRowIndexToModel(row)).values[i];
 			f.setText(v == null? "" : v.toString());
 			f.setEnabled(v != null);
             gridBagConstraints = new java.awt.GridBagConstraints();
@@ -98,7 +104,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
     	validate();
     	setSize(getWidth() - 1, getHeight() - 1);
     	setSize(getWidth() + 1, getHeight() + 1);
-		onRowChanged(row);
+		onRowChanged((row));
 	}
 
 	protected abstract void onRowChanged(int row);
