@@ -558,81 +558,85 @@ public class Desktop extends JDesktopPane {
 				
 				for (RowToRowLink rowToRowLink: tableBrowser.rowToRowLinks) {
 					x1 = y1 = x2 = y2 = -1;
-					if (rowToRowLink.childRowIndex >= 0 && rowToRowLink.parentRowIndex >= 0) {
-						cellRect = new Rectangle();
-						i = 0;
-						int dll = Math.abs(tableBrowser.parent.internalFrame.getX() - tableBrowser.internalFrame.getX());
-						int dlr = Math.abs(tableBrowser.parent.internalFrame.getX() - (tableBrowser.internalFrame.getX() + tableBrowser.internalFrame.getWidth()));
-						int drl = Math.abs((tableBrowser.parent.internalFrame.getX() + tableBrowser.parent.internalFrame.getWidth()) - tableBrowser.internalFrame.getX());
-						int drr = Math.abs((tableBrowser.parent.internalFrame.getX() + tableBrowser.parent.internalFrame.getWidth()) - (tableBrowser.internalFrame.getX() + tableBrowser.internalFrame.getWidth()));
-						
-						boolean r1, r2;
-						int dmin = Math.min(dll, Math.min(dlr, Math.min(drl, drr)));
-						r2 = dmin == drl || dmin == drr;
-						r1 = dmin == dlr || dmin == drr;
-						
-						if (rowToRowLink.childRowIndex >= 0) {
-							i = tableBrowser.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(rowToRowLink.childRowIndex);
-							cellRect = tableBrowser.browserContentPane.rowsTable.getCellRect(i, 0, true);
+					try {
+						if (rowToRowLink.childRowIndex >= 0 && rowToRowLink.parentRowIndex >= 0) {
+							cellRect = new Rectangle();
+							i = 0;
+							int dll = Math.abs(tableBrowser.parent.internalFrame.getX() - tableBrowser.internalFrame.getX());
+							int dlr = Math.abs(tableBrowser.parent.internalFrame.getX() - (tableBrowser.internalFrame.getX() + tableBrowser.internalFrame.getWidth()));
+							int drl = Math.abs((tableBrowser.parent.internalFrame.getX() + tableBrowser.parent.internalFrame.getWidth()) - tableBrowser.internalFrame.getX());
+							int drr = Math.abs((tableBrowser.parent.internalFrame.getX() + tableBrowser.parent.internalFrame.getWidth()) - (tableBrowser.internalFrame.getX() + tableBrowser.internalFrame.getWidth()));
+							
+							boolean r1, r2;
+							int dmin = Math.min(dll, Math.min(dlr, Math.min(drl, drr)));
+							r2 = dmin == drl || dmin == drr;
+							r1 = dmin == dlr || dmin == drr;
+							
+							if (rowToRowLink.childRowIndex >= 0) {
+								i = tableBrowser.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(rowToRowLink.childRowIndex);
+								cellRect = tableBrowser.browserContentPane.rowsTable.getCellRect(i, 0, true);
+							}
+		
+							x1 = tableBrowser.internalFrame.getX();
+							y = cellRect.height * i;
+							y1 = tableBrowser.internalFrame.getY() + y + cellRect.height / 2;
+							if (r1) {
+								x1 += tableBrowser.internalFrame.getWidth()- BORDER;
+							} else {
+								x1 += BORDER;
+							}
+							p = tableBrowser.browserContentPane.rowsTable;
+							while (p != tableBrowser.internalFrame) {
+								y1 += p.getY();
+								p = p.getParent();
+							}
+							min = tableBrowser.internalFrame.getY() + cellRect.height;
+							if (y1 < min) {
+								y1 = min;
+							}
+							max = tableBrowser.internalFrame.getY() + tableBrowser.internalFrame.getHeight();
+							if (y1 > max) {
+								y1 = max;
+							}
+							
+							cellRect = new Rectangle();
+							i = 0;
+							if (rowToRowLink.parentRowIndex >= 0) {
+								i = tableBrowser.parent.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(rowToRowLink.parentRowIndex);
+								cellRect = tableBrowser.parent.browserContentPane.rowsTable.getCellRect(i, 0, true);
+							}
+		
+							x2 = tableBrowser.parent.internalFrame.getX();
+							y = cellRect.height * i;
+							y2 = tableBrowser.parent.internalFrame.getY() + y + cellRect.height / 2;
+							if (r2) {
+								x2 += tableBrowser.parent.internalFrame.getWidth() - BORDER;
+							} else {
+								x2 += BORDER;
+							}
+							p = tableBrowser.parent.browserContentPane.rowsTable;
+							while (p != tableBrowser.parent.internalFrame) {
+								y2 += p.getY();
+								p = p.getParent();
+							}
+							min = tableBrowser.parent.internalFrame.getY() + cellRect.height;
+							if (y2 < min) {
+								y2 = min;
+							}
+							max = tableBrowser.parent.internalFrame.getY() + tableBrowser.parent.internalFrame.getHeight();
+							if (y2 > max) {
+								y2 = max;
+							}
 						}
-	
-						x1 = tableBrowser.internalFrame.getX();
-						y = cellRect.height * i;
-						y1 = tableBrowser.internalFrame.getY() + y + cellRect.height / 2;
-						if (r1) {
-							x1 += tableBrowser.internalFrame.getWidth()- BORDER;
-						} else {
-							x1 += BORDER;
+						if (x1 != rowToRowLink.x1 || y1 != rowToRowLink.y1 || x2 != rowToRowLink.x2 || y2 != rowToRowLink.y2) {
+							changed = true;
+							rowToRowLink.x1 = x1;
+							rowToRowLink.y1 = y1;
+							rowToRowLink.x2 = x2;
+							rowToRowLink.y2 = y2;
 						}
-						p = tableBrowser.browserContentPane.rowsTable;
-						while (p != tableBrowser.internalFrame) {
-							y1 += p.getY();
-							p = p.getParent();
-						}
-						min = tableBrowser.internalFrame.getY() + cellRect.height;
-						if (y1 < min) {
-							y1 = min;
-						}
-						max = tableBrowser.internalFrame.getY() + tableBrowser.internalFrame.getHeight();
-						if (y1 > max) {
-							y1 = max;
-						}
-						
-						cellRect = new Rectangle();
-						i = 0;
-						if (rowToRowLink.parentRowIndex >= 0) {
-							i = tableBrowser.parent.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(rowToRowLink.parentRowIndex);
-							cellRect = tableBrowser.parent.browserContentPane.rowsTable.getCellRect(i, 0, true);
-						}
-	
-						x2 = tableBrowser.parent.internalFrame.getX();
-						y = cellRect.height * i;
-						y2 = tableBrowser.parent.internalFrame.getY() + y + cellRect.height / 2;
-						if (r2) {
-							x2 += tableBrowser.parent.internalFrame.getWidth() - BORDER;
-						} else {
-							x2 += BORDER;
-						}
-						p = tableBrowser.parent.browserContentPane.rowsTable;
-						while (p != tableBrowser.parent.internalFrame) {
-							y2 += p.getY();
-							p = p.getParent();
-						}
-						min = tableBrowser.parent.internalFrame.getY() + cellRect.height;
-						if (y2 < min) {
-							y2 = min;
-						}
-						max = tableBrowser.parent.internalFrame.getY() + tableBrowser.parent.internalFrame.getHeight();
-						if (y2 > max) {
-							y2 = max;
-						}
-					}
-					if (x1 != rowToRowLink.x1 || y1 != rowToRowLink.y1 || x2 != rowToRowLink.x2 || y2 != rowToRowLink.y2) {
-						changed = true;
-						rowToRowLink.x1 = x1;
-						rowToRowLink.y1 = y1;
-						rowToRowLink.x2 = x2;
-						rowToRowLink.y2 = y2;
+					} catch (Exception e) {
+						// ignore
 					}
 				}
 			}

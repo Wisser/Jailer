@@ -366,14 +366,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		openEditorLabel.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-					String cond = andConditionEditor.edit(andCondition.getText(), "Table", "A", table, null, null, null, false);
-					if (cond != null) {
-						if (!andCondition.getText().equals(ConditionEditor.toSingleLine(cond))) {
-							andCondition.setText(ConditionEditor.toSingleLine(cond));
-							loadButton.grabFocus();
-						}
+				String cond = andConditionEditor.edit(andCondition.getText(), "Table", "A", table, null, null, null, false);
+				if (cond != null) {
+					if (!andCondition.getText().equals(ConditionEditor.toSingleLine(cond))) {
+						andCondition.setText(ConditionEditor.toSingleLine(cond));
+						loadButton.grabFocus();
+						reloadRows();
 					}
-					openEditorLabel.setIcon(conditionEditorSelectedIcon);
+				}
+				openEditorLabel.setIcon(conditionEditorSelectedIcon);
 			}
 			
 			public void mouseEntered(java.awt.event.MouseEvent evt) {
