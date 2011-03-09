@@ -33,6 +33,8 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
@@ -277,6 +279,13 @@ public class Desktop extends JDesktopPane {
 
 		jInternalFrame.getContentPane().setLayout(new BorderLayout());
  		
+		jInternalFrame.addPropertyChangeListener(JInternalFrame.IS_MAXIMUM_PROPERTY, new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				manager.resizeDesktop();
+			}
+		});
+		
 		jInternalFrame.addComponentListener(new ComponentListener() {
 
 			@Override
@@ -928,15 +937,19 @@ public class Desktop extends JDesktopPane {
 			return null;
 		}
 
-		protected void resizeDesktop() {
+		public void resizeDesktop() {
 			int x = 0;
 			int y = 0;
 			JScrollPane scrollPane = getScrollPane();
 			Insets scrollInsets = getScrollPaneInsets();
 
 			if (scrollPane != null) {
+				boolean isMaximized = false;
 				JInternalFrame allFrames[] = desktop.getAllFrames();
 				for (int i = 0; i < allFrames.length; i++) {
+					if (allFrames[i].isMaximum()) {
+						isMaximized = true;
+					}
 					if (allFrames[i].getX() + allFrames[i].getWidth() > x) {
 						x = allFrames[i].getX() + allFrames[i].getWidth();
 					}
@@ -949,9 +962,9 @@ public class Desktop extends JDesktopPane {
 					d.setSize(d.getWidth() - scrollInsets.left - scrollInsets.right, d.getHeight() - scrollInsets.top - scrollInsets.bottom);
 				}
 
-				if (x <= d.getWidth())
+				if (x <= d.getWidth() || isMaximized)
 					x = ((int) d.getWidth()) - 20;
-				if (y <= d.getHeight())
+				if (y <= d.getHeight() || isMaximized)
 					y = ((int) d.getHeight()) - 20;
 				desktop.setAllSize(x, y);
 				scrollPane.invalidate();

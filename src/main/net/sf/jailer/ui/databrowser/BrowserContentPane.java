@@ -15,14 +15,18 @@
  */
 package net.sf.jailer.ui.databrowser;
 
+import java.awt.BasicStroke;
 import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -258,6 +262,45 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		this.currentClosure = currentClosure;
 		
 		initComponents();
+		
+		rowsTable = new JTable() {
+			private int x[] = new int[2];
+			private int y[] = new int[2];
+			private Color color = new Color(0, 0, 200);
+			@Override
+			public void paint(Graphics graphics) {
+				super.paint(graphics);
+				if (!(graphics instanceof Graphics2D)) return;
+				RowSorter rowSorter = rowsTable.getRowSorter();
+				for (int i = 0; i < rowsTable.getRowCount(); ++i) {
+					if (rowSorter.convertRowIndexToView(i) != i) {
+						return;
+					}
+				}
+				int maxI = Math.min(rowsTable.getRowCount(), rows.size());
+				
+				for (int i = 0; i < maxI; ++i) {
+					if (rows.get(i).isBlockEnd()) {
+						Graphics2D g2d = (Graphics2D) graphics;
+		    	    	g2d.setColor(color);
+		    	    	g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+		    	    	g2d.setStroke(new BasicStroke(1));
+						Rectangle r = rowsTable.getCellRect(i, 0, false);
+						x[0] = (int) r.getMinX();
+						y[0] = (int) r.getMaxY();
+						r = rowsTable.getCellRect(i, rowsTable.getColumnCount() - 1, false);
+						x[1] = (int) r.getMaxX();
+						y[1] = (int) r.getMaxY();
+		        	    g2d.drawPolyline(x, y, 2);
+					}
+				}
+			}
+		};
+		
+		rowsTable.setAutoCreateRowSorter(true);
+        rowsTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
+        jScrollPane1.setViewportView(rowsTable);
+		
 		andCondition.setText(ConditionEditor.toSingleLine(condition));
 		from.setText(this.dataModel.getDisplayName(table));
 		if (association == null) {
@@ -611,6 +654,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 			if (parentRows != null) {
+				if (!newRows.isEmpty()) {
+					newRows.get(newRows.size() - 1).setBlockEnd(true);
+				}
 				for (Row row: newRows) {
 					Row exRow = rowSet.get(row.rowId);
 					if (exRow != null) {
@@ -620,7 +666,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						addRowToRowLink(pRow, row);
 						rowSet.put(row.rowId, row);
 						--limit;
-						// TODO
 					}
 				}
 			} else {
