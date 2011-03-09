@@ -34,6 +34,20 @@ public class Row {
 	}
 	
 	/**
+	 * @param isBlockEnd <code>true</code> if this row is the last one of a block.
+	 */
+	public void setBlockEnd(boolean isBlockEnd) {
+		this.isBlockEnd = isBlockEnd;
+	}
+
+	/**
+	 * @return <code>true</code> if this row is the last one of a block.
+	 */
+	public boolean isBlockEnd() {
+		return isBlockEnd;
+	}
+
+	/**
 	 * Unique ID, also serves as SQL predicate which identifies this row.
 	 */
 	public final String rowId;
@@ -42,5 +56,10 @@ public class Row {
 	 * Column values.
 	 */
 	public final Object[] values;
+	
+	/**
+	 * <code>true</code> if this row is the last one of a block.
+	 */
+	private boolean isBlockEnd = false;
 	
 }
