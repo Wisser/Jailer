@@ -1527,7 +1527,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             		DataBrowser.main(args);
             		return;
             	case 1: break;
-            	default: return;
+            	default: System.exit(0);
             	}
             	
             	String file = null;
