@@ -436,7 +436,8 @@ public class Desktop extends JDesktopPane {
 		if (parent != null) {
 			x = parent.internalFrame.getX() + parent.internalFrame.getWidth() + DISTANCE;
 		}
-		int h = fullSize || association == null || (association.getCardinality() != Cardinality.MANY_TO_ONE && association.getCardinality() != Cardinality.ONE_TO_ONE)? HEIGHT : browserContentPane.getMinimumSize().height + MIN_HEIGHT; 
+		// int h = fullSize || association == null || (association.getCardinality() != Cardinality.MANY_TO_ONE && association.getCardinality() != Cardinality.ONE_TO_ONE)? HEIGHT : browserContentPane.getMinimumSize().height + MIN_HEIGHT; 
+		int h = HEIGHT; 
 		int y = MIN;
 		Rectangle r = new Rectangle(x, y, BROWSERTABLE_DEFAULT_WIDTH, h);
 		for (;;) {

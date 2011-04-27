@@ -1,3 +1,6 @@
+3.5.7
+ - Further Data Browser GUI improvements.
+
 3.5.6
  - Data Browser GUI improvements.
 
