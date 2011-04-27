@@ -21,6 +21,7 @@ import java.util.List;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.RowSorter;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -45,12 +46,14 @@ public abstract class DetailsView extends javax.swing.JPanel {
     /** Creates new form DetailsView 
      * @param rowSorter 
     */
-    public DetailsView(List<Row> rows, int size, DataModel dataModel, Table table, int rowIndex, RowSorter<? extends TableModel> rowSorter) {
+    public DetailsView(List<Row> rows, int size, DataModel dataModel, Table table, int rowIndex, RowSorter<? extends TableModel> rowSorter, boolean showSpinner) {
         this.table = table;
     	this.rows = rows;
     	this.rowSorter = rowSorter;
         initComponents();
-        rowIndex = rowSorter.convertRowIndexToView(rowIndex);
+        if (rowSorter != null) {
+        	rowIndex = rowSorter.convertRowIndexToView(rowIndex);
+        }
         final SpinnerNumberModel model = new SpinnerNumberModel(rowIndex + 1, 1, size, -1);
         rowSpinner.setModel(model);
         rowSpinner.addChangeListener(new ChangeListener() {
@@ -59,6 +62,13 @@ public abstract class DetailsView extends javax.swing.JPanel {
 				setCurrentRow((Integer) model.getValue() - 1);
 			}
 		});
+        if (!showSpinner) {
+        	jLabel1.setVisible(false);
+        	rowSpinner.setVisible(false);
+        	jScrollPane1.setBorder(null);
+        	jScrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+			jScrollPane1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		}
         setCurrentRow(rowIndex);
     }
 
@@ -77,7 +87,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
             jPanel1.add(l, gridBagConstraints);
 
             JTextField f = new JTextField();
-            Object v = rows.get(rowSorter.convertRowIndexToModel(row)).values[i];
+            Object v = rows.get(rowSorter != null? rowSorter.convertRowIndexToModel(row) : row).values[i];
 			f.setText(v == null? "" : v.toString());
 			f.setEnabled(v != null);
             gridBagConstraints = new java.awt.GridBagConstraints();

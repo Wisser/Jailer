@@ -61,7 +61,9 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
+import javax.swing.JViewport;
 import javax.swing.RowSorter;
+import javax.swing.ScrollPaneConstants;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -210,7 +212,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private List<Row> parentRows;
 	protected final Set<Row> currentClosure;
-	
+	private DetailsView singleRowDetailsView;
+	private int initialRowHeight;
+
 	/**
 	 * For concurrent reload of rows.
 	 */
@@ -262,6 +266,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		this.currentClosure = currentClosure;
 		
 		initComponents();
+		
+		initialRowHeight = rowsTable.getRowHeight();
 		
 		rowsTable = new JTable() {
 			private int x[] = new int[2];
@@ -322,6 +328,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		rowsTable.setShowGrid(false);
 		final TableCellRenderer defaultTableCellRenderer = rowsTable.getDefaultRenderer(String.class);
+		
 		rowsTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
 
 			final Color BG1 = new Color(255, 255, 255);
@@ -334,6 +341,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 				isSelected = currentRowSelection == row || currentRowSelection == -2;
+				
+				if (value instanceof Row) {
+					Row theRow = (Row) value;
+					return singleRowDetailsView;
+				}
+				
 				Component render = defaultTableCellRenderer.getTableCellRendererComponent(table, value, isSelected, false, row, column);
 				final RowSorter<?> rowSorter = rowsTable.getRowSorter();
 				if (render instanceof JLabel) {
@@ -376,6 +389,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						Rectangle r = rowsTable.getCellRect(ri, 0, false);
 						int x = Math.max((int) e.getPoint().x, (int) r.getMinX());
 						int y = (int) r.getMaxY() - 2;
+						if (singleRowDetailsView != null) {
+							y = e.getY();
+						}
 						Point p = SwingUtilities.convertPoint(rowsTable, x, y, null);
 						JPopupMenu popup = createPopupMenu(row, i, p.x + getOwner().getX(), p.y + getOwner().getY());
 						popup.show(rowsTable, x, y);
@@ -509,7 +525,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					JDialog d = new JDialog(getOwner(), dataModel.getDisplayName(table), true);
-					d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter()) {
+					d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter(), true) {
 						@Override
 						protected void onRowChanged(int row) {
 							setCurrentRowSelection(row);
@@ -838,55 +854,81 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				pkColumns.add(i);
 			}
 		}
-		DefaultTableModel dtm = new DefaultTableModel(columnNames, 0) {
-			@Override
-			public boolean isCellEditable(int row, int column) {
-				return false;
-			}
-		};
-		int rn = 0;
-		for (Row row : rows) {
-			Object[] rowData = new Object[table.getColumns().size()];
-			for (int i = 0; i < table.getColumns().size(); ++i) {
-				rowData[i] = row.values[i];
-			}
-			dtm.addRow(rowData);
-			if (++rn >= limit) {
-				break;
-			}
-		}
-		rowsTable.setModel(dtm);
 		
-		TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(dtm);
-		for (int i = 0; i < columnNames.length; ++i) {
-			sorter.setComparator(i, new Comparator<Object>() {
-				@SuppressWarnings("unchecked")
+		DefaultTableModel dtm;
+		singleRowDetailsView = null;
+		int rn = 0;
+		if (rows.size() != 1) {
+			dtm = new DefaultTableModel(columnNames, 0) {
 				@Override
-				public int compare(Object o1, Object o2) {
-					if (o1 == null && o2 == null) {
-						return 0;
-					}
-					if (o1 == null) {
-						return -1;
-					}
-					if (o2 == null) {
-						return 1;
-					}
-					if (o1.getClass().equals(o2.getClass())) {
-						if (o1 instanceof Comparable<?>) {
-							return ((Comparable) o1).compareTo(o2);
-						}
-						return 0;
-					}
-					return o1.getClass().getName().compareTo(o2.getClass().getName());
+				public boolean isCellEditable(int row, int column) {
+					return false;
 				}
-			});
+			};
+			for (Row row : rows) {
+				Object[] rowData = new Object[table.getColumns().size()];
+				for (int i = 0; i < table.getColumns().size(); ++i) {
+					rowData[i] = row.values[i];
+				}
+				dtm.addRow(rowData);
+				if (++rn >= limit) {
+					break;
+				}
+			}
+			rowsTable.setModel(dtm);
+			rowsTable.setRowHeight(initialRowHeight);
+			
+			TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(dtm);
+			for (int i = 0; i < columnNames.length; ++i) {
+				sorter.setComparator(i, new Comparator<Object>() {
+					@SuppressWarnings("unchecked")
+					@Override
+					public int compare(Object o1, Object o2) {
+						if (o1 == null && o2 == null) {
+							return 0;
+						}
+						if (o1 == null) {
+							return -1;
+						}
+						if (o2 == null) {
+							return 1;
+						}
+						if (o1.getClass().equals(o2.getClass())) {
+							if (o1 instanceof Comparable<?>) {
+								return ((Comparable) o1).compareTo(o2);
+							}
+							return 0;
+						}
+						return o1.getClass().getName().compareTo(o2.getClass().getName());
+					}
+				});
+			}
+			rowsTable.setRowSorter(sorter);
+		} else {
+			singleRowDetailsView = new DetailsView(Collections.singletonList(rows.get(0)), 1, dataModel, BrowserContentPane.this.table, 0, null, false) {					
+				@Override
+				protected void onRowChanged(int row) {
+				}
+			};
+			dtm = new DefaultTableModel(new String[] { "Single Row Details" }, 0) {
+				@Override
+				public boolean isCellEditable(int row, int column) {
+					return false;
+				}
+			};
+			for (Row row : rows) {
+				dtm.addRow(new Object[] { row });
+				if (++rn >= limit) {
+					break;
+				}
+			}
+			rowsTable.setModel(dtm);
+			rowsTable.setRowHeight(singleRowDetailsView.getPreferredSize().height);
 		}
-		rowsTable.setRowSorter(sorter);
 	    
 		for (int i = 0; i < rowsTable.getColumnCount(); i++) {
             TableColumn column = rowsTable.getColumnModel().getColumn(i);
-            int width = (Desktop.BROWSERTABLE_DEFAULT_WIDTH - 14) / rowsTable.getColumnCount();
+            int width = (Desktop.BROWSERTABLE_DEFAULT_WIDTH - 18) / rowsTable.getColumnCount();
             
             Component comp = rowsTable.getDefaultRenderer(String.class).
             						getTableCellRendererComponent(
@@ -896,7 +938,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
             for (int line = 0; line < rowsTable.getRowCount(); ++line) {
 	            comp = rowsTable.getCellRenderer(line, i).getTableCellRendererComponent(rowsTable, dtm.getValueAt(line, i), false, false, line, i);
-	            width = Math.min(Math.max(width, comp.getPreferredSize().width + 16), 400);
+	            width = Math.max(width, comp.getPreferredSize().width + (singleRowDetailsView == null? 16 : 0));
+	            if (singleRowDetailsView == null) {
+	            	width = Math.min(width, 400);
+	            }
             }
             
             column.setPreferredWidth(width);
