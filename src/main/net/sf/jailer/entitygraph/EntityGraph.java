@@ -303,17 +303,41 @@ public class EntityGraph {
         if (joinCondition != null) {
         	joinCondition = SqlUtil.resolvePseudoColumns(joinCondition, isInverseAssociation? null : "E", isInverseAssociation? "E" : null, today, birthdayOfSubject);
         }
-        String select =
-            "Select " + (joinedTable != null? "distinct " : "") + "" + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS TODAY, '" + table.getName() + "' AS TYPE" +
-            (source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, '" + source.getName() + "' AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
-            " From " + table.getName() + " " + alias +
-            " left join " + SQLDialect.dmlTableReference(ENTITY, session) + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type='" + table.getName() + "' and " +
-            pkEqualsEntityID(table, alias, "Duplicate") + 
-            (joinedTable != null? ", " + joinedTable.getName() + " " + joinedTableAlias + " ": "") +
-            (joinWithEntity? ", " + SQLDialect.dmlTableReference(ENTITY, session) + " E" : "") +
-            " Where (" + condition + ") and Duplicate.type is null" +
-            (joinedTable != null? " and (" + joinCondition + ")" : "") +
-            (limit > 0? " fetch first " + limit + " rows only" : ""); 
+        String select;
+        if (Configuration.forDbms(session).isAvoidLeftJoin()) {
+        	// bug fix for [ jailer-Bugs-3294893 ] Outer Join for selecting dependant entries and Oracle 10
+        	// mixing left joins and theta-style joins causes problems on oracle DBMS
+        	select =
+                "Select " + (joinedTable != null? "distinct " : "") + "" + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS TODAY, '" + table.getName() + "' AS TYPE" +
+                (source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, '" + source.getName() + "' AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
+                " From " + table.getName() + " " + alias
+    				+
+                (joinedTable != null? ", " + joinedTable.getName() + " " + joinedTableAlias + " ": "") +
+                (joinWithEntity? ", " + SQLDialect.dmlTableReference(ENTITY, session) + " E" : "") +
+                " Where (" + condition + ") " +
+                	// CW	"and Duplicate.type is null" +
+                (joinedTable != null? " and (" + joinCondition + ")" : "") +
+
+    				" AND NOT EXISTS (select * from " + SQLDialect.dmlTableReference(ENTITY, session)
+    				+ " DuplicateExists where r_entitygraph=" + graphID + " " + "AND DuplicateExists.type='"
+    				+ table.getName()
+    				+ "' and " + pkEqualsEntityID(table, alias, "DuplicateExists") + ")"
+    				+
+                (limit > 0? " fetch first " + limit + " rows only" : "");
+
+        } else {
+        	select =
+	            "Select " + (joinedTable != null? "distinct " : "") + "" + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS TODAY, '" + table.getName() + "' AS TYPE" +
+	            (source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, '" + source.getName() + "' AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
+	            " From " + table.getName() + " " + alias +
+	            " left join " + SQLDialect.dmlTableReference(ENTITY, session) + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type='" + table.getName() + "' and " +
+	            pkEqualsEntityID(table, alias, "Duplicate") + 
+	            (joinedTable != null? ", " + joinedTable.getName() + " " + joinedTableAlias + " ": "") +
+	            (joinWithEntity? ", " + SQLDialect.dmlTableReference(ENTITY, session) + " E" : "") +
+	            " Where (" + condition + ") and Duplicate.type is null" +
+	            (joinedTable != null? " and (" + joinCondition + ")" : "") +
+	            (limit > 0? " fetch first " + limit + " rows only" : "");
+        }
         
         if (source != null && explain) {
             String max = "";

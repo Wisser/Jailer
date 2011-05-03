@@ -1,3 +1,7 @@
+3.5.8
+ - bug fix for [ jailer-Bugs-3294893 ] Outer Join for selecting dependant entries and Oracle 10
+  mixing left joins and theta-style joins caused problems on oracle DBMS      	
+
 3.5.7
  - Further Data Browser GUI improvements.
 
