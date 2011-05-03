@@ -3,7 +3,6 @@ EMPLOYEE; T.NAME='${employee-name}'; ; .embedded
 
 # from A (or association name); to B; restriction-condition
 inverse-DEPARTMENT; ; ignore
-inverse-BOSS; ; ignore
 inverse-PROJECT; ; ignore
 inverse-ROLE; ; ignore
 inverse-SALARY; ; ignore
@@ -36,6 +35,7 @@ ROLE; <?xml version="1.0" encoding="UTF-8" standalone="no"?>\n<role xmlns:j="htt
 PROJECT; <?xml version="1.0" encoding="UTF-8" standalone="no"?>\n<project xmlns:j="http://jailer.sf.net/">\n    <!--columns of PROJECT as T-->\n    <project_description>SQL:T.DESCRIPTION</project_description>\n    <project_start_date>SQL:T.START_DATE</project_start_date>\n    <project_end_date>SQL:T.END_DATE</project_end_date>\n</project>
 PROJECT_PARTICIPATION; <?xml version="1.0" encoding="UTF-8" standalone="no"?>\n<project_participation xmlns:j="http://jailer.sf.net/">\n    <!--columns of PROJECT_PARTICIPATION as T-->\n    <start_date>SQL:T.START_DATE</start_date>\n    <end_date>SQL:T.END_DATE</end_date>\n    <!--associated ROLE row-->\n    <j:assoc>ROLE</j:assoc>\n    <!--associated PROJECT row-->\n    <j:assoc>PROJECT</j:assoc>\n</project_participation>
 DEPARTMENT; <?xml version="1.0" encoding="UTF-8" standalone="no"?>\n<department xmlns:j="http://jailer.sf.net/" deptno="SQL:T.DEPTNO">\n    <!--columns of DEPARTMENT as T-->\n    <name>SQL:T.NAME</name>\n    <location>SQL:T.LOCATION</location>\n</department>
+#! block upserts
 
 #! block filters
 
@@ -46,9 +46,9 @@ EMPLOYEE; BOSS#; -41.745963805266626; -69.9528069883284; 1.0
 EMPLOYEE; ROLE; 107.4111348302336; 90.36657518763403; 1.0
 EMPLOYEE; PROJECT; 270.71401723489475; -4.019052749278217; 1.0
 EMPLOYEE; $ZOOMBOX; 0.0; 0.0; 1.0
-EMPLOYEE; BONUS; -177.91060377315253; -64.48735854019623; 1.0
-EMPLOYEE; DEPARTMENT; -38.34457182130592; 95.1431476735292; 1.0
 EMPLOYEE; PROJECT_PARTICIPATION; 106.20831216593035; -3.732194262449468; 1.0
+EMPLOYEE; DEPARTMENT; -38.34457182130592; 95.1431476735292; 1.0
+EMPLOYEE; BONUS; -177.91060377315253; -64.48735854019623; 1.0
 
 #! block version
-3.1
+3.5.7

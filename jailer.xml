@@ -119,6 +119,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<!-- for Oracle -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:oracle.*" />
+			<property name="avoidLeftJoin" value="true" />
 			<property name="statisticRenovator">
 				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
 					<constructor-arg value="script/oracle/gatherStatistics.sql" />
