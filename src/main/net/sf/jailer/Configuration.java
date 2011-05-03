@@ -103,6 +103,7 @@ public class Configuration {
 	public String emptyCLOBValue = null;
 	public String emptyBLOBValue = null;
 	public String binaryPattern = "x'%s'";
+	public boolean avoidLeftJoin = false;
 	
 	/**
 	 * Manages session local temporary tables.
@@ -407,6 +408,14 @@ public class Configuration {
         }
         return qvalue.toString();
     }
+
+    public boolean isAvoidLeftJoin() {
+		return avoidLeftJoin;
+	}
+
+	public void setAvoidLeftJoin(boolean avoidLeftJoin) {
+		this.avoidLeftJoin = avoidLeftJoin;
+	}
 
 	/**
 	 * @param sqlLimitSuffix the sqlLimitSuffix to set
