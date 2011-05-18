@@ -58,7 +58,6 @@ import javax.swing.event.InternalFrameListener;
 
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
-import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.UIUtil;
@@ -539,7 +538,7 @@ public class Desktop extends JDesktopPane {
 				int x2 = tableBrowser.parent.internalFrame.getX();
 				int y = cellRect.y;
 				y = cellRect.height * i;
-				int y2 = tableBrowser.parent.internalFrame.getY() + y + cellRect.height / 2;
+				int y2 = tableBrowser.parent.internalFrame.getY() + y + Math.min(cellRect.height / 2, 100);
 				if (midx < x1) {
 					x2 += tableBrowser.parent.internalFrame.getWidth() - BORDER;
 				} else {
@@ -550,7 +549,7 @@ public class Desktop extends JDesktopPane {
 					y2 += p.getY();
 					p = p.getParent();
 				}
-				int min = tableBrowser.parent.internalFrame.getY() + cellRect.height;
+				int min = tableBrowser.parent.internalFrame.getY() + Math.min(cellRect.height, 20);
 				if (y2 < min) {
 					y2 = min;
 				}
