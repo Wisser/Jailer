@@ -1,3 +1,6 @@
+3.6
+ - Integrated Query Builder into Data Browser.
+
 3.5.9
  - minor GUI improvements.
 

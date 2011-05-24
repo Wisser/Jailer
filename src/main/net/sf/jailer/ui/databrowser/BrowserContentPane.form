@@ -246,7 +246,7 @@
     </Component>
     <Component class="javax.swing.JButton" name="loadButton">
       <Properties>
-        <Property name="text" type="java.lang.String" value="refresh"/>
+        <Property name="text" type="java.lang.String" value="Refresh"/>
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="loadButtonActionPerformed"/>
@@ -288,7 +288,7 @@
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
           <Font name="DejaVu Sans" size="13" style="1"/>
         </Property>
-        <Property name="text" type="java.lang.String" value=" as A "/>
+        <Property name="text" type="java.lang.String" value=" as A        "/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -374,10 +374,23 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="relatedRowsLabel">
           <Properties>
-            <Property name="text" type="java.lang.String" value=" related rows "/>
+            <Property name="text" type="java.lang.String" value=" Related Rows "/>
           </Properties>
         </Component>
       </SubComponents>
     </Container>
+    <Component class="javax.swing.JButton" name="showSqlButton">
+      <Properties>
+        <Property name="text" type="java.lang.String" value="Query Builder"/>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="showSqlButtonActionPerformed"/>
+      </Events>
+      <Constraints>
+        <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
+          <GridBagConstraints gridX="5" gridY="4" gridWidth="2" gridHeight="2" fill="0" ipadX="0" ipadY="0" insetsTop="0" insetsLeft="0" insetsBottom="0" insetsRight="0" anchor="12" weightX="0.0" weightY="0.0"/>
+        </Constraint>
+      </Constraints>
+    </Component>
   </SubComponents>
 </Form>

@@ -60,6 +60,8 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.ConditionEditor;
+import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.UIUtil;
 import prefuse.util.GraphicsLib;
 
@@ -103,6 +105,8 @@ public class Desktop extends JDesktopPane {
 	
 	private Set<Row> currentClosure = new HashSet<Row>();
 	
+	private final QueryBuilderDialog queryBuilderDialog;
+		
 	/**
 	 * Constructor.
 	 * 
@@ -114,6 +118,8 @@ public class Desktop extends JDesktopPane {
 		this.parentFrame = parentFrame;
 		this.datamodel = datamodel;
 		this.jailerIcon = jailerIcon;
+		this.queryBuilderDialog = new QueryBuilderDialog(parentFrame);
+
 		try {
 			this.session = session;
 			// trigger sql dialect guessing
@@ -310,6 +316,12 @@ public class Desktop extends JDesktopPane {
 
 		final RowBrowser tableBrowser = new RowBrowser();
 		BrowserContentPane browserContentPane = new BrowserContentPane(datamodel.get(), table, condition, session, parent == null || parentRowIndex < 0? null : parent.browserContentPane.rows.get(parentRowIndex), parent == null || parentRowIndex >= 0? null : parent.browserContentPane.rows, association, parentFrame, currentClosure) {
+			
+			@Override
+			protected QueryBuilderDialog getQueryBuilderDialog() {
+				return queryBuilderDialog;
+			}
+
 			@Override
 			protected void navigateTo(Association association, int rowIndex, Row row) {
 				addTableBrowser(tableBrowser, rowIndex, association.destination, association, "");
@@ -361,6 +373,25 @@ public class Desktop extends JDesktopPane {
 							}
 						}
 					}
+				}
+			}
+
+			@Override
+			protected void createAssociationList(List<Association> associations, List<String> whereClauses) {
+				for (RowBrowser rb = tableBrowser; rb != null; rb = rb.parent) {
+					String andC = ConditionEditor.toMultiLine(rb.browserContentPane.andCondition.getText().trim()).replaceAll("(\r|\n)+", " ");
+					if (rb.association != null) {
+						associations.add(rb.association.reversalAssociation);
+					} else {
+						whereClauses.add(andC.length() == 0? null : andC);
+						break;
+					}
+					if (rb.rowIndex >= 0 && !(rb.rowIndex == 0 && rb.parent != null && rb.parent.browserContentPane != null && rb.parent.browserContentPane.rows != null && rb.parent.browserContentPane.rows.size() == 1)) {
+						String w = rb.browserContentPane.parentRow.rowId;
+						whereClauses.add(andC.length() == 0? w : "(" + w + ") and (" + andC + ")");
+						break;
+					}
+					whereClauses.add(andC.length() == 0? null : andC);
 				}
 			}
 		};
