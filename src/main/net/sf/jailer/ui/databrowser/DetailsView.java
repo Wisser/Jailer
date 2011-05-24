@@ -115,12 +115,19 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	            JLabel f = new JLabel();
 				f.setText((v == null? "null" : v.toString()) + "    ");
 	    		f.setFont(v == null? italic : nonbold);
+	    		if (v == null) {
+	    			f.setForeground(Color.GRAY);
+	    		}
 	            jPanel1.add(f, gridBagConstraints);
 	            f.setBackground(i % 2 == 0? BG1 : BG2);
 	            l.setBackground(i % 2 == 0? BG1 : BG2);
 	            f.setOpaque(true);
 	            l.setOpaque(true);
-	            l.setForeground(FG1);
+	            if (table.primaryKey != null && table.primaryKey.getColumns().contains(c)) {
+	            	l.setForeground(FG1);
+	            } else {
+	            	l.setForeground(Color.BLUE);
+	            }
             }
             
             l = new JLabel();
