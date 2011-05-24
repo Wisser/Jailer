@@ -308,7 +308,7 @@ public class EntityGraph {
         	// bug fix for [ jailer-Bugs-3294893 ] Outer Join for selecting dependant entries and Oracle 10
         	// mixing left joins and theta-style joins causes problems on oracle DBMS
         	select =
-                "Select " + (joinedTable != null? "distinct " : "") + "" + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS TODAY, '" + table.getName() + "' AS TYPE" +
+                "Select " + (joinedTable != null? "distinct " : "") + "" + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS BIRTHDAY, '" + table.getName() + "' AS TYPE" +
                 (source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, '" + source.getName() + "' AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
                 " From " + table.getName() + " " + alias
     				+
@@ -327,7 +327,7 @@ public class EntityGraph {
 
         } else {
         	select =
-	            "Select " + (joinedTable != null? "distinct " : "") + "" + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS TODAY, '" + table.getName() + "' AS TYPE" +
+	            "Select " + (joinedTable != null? "distinct " : "") + "" + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS BIRTHDAY, '" + table.getName() + "' AS TYPE" +
 	            (source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, '" + source.getName() + "' AS SOURCE_TYPE, " + pkList(source, joinedTableAlias, "PRE_")) +
 	            " From " + table.getName() + " " + alias +
 	            " left join " + SQLDialect.dmlTableReference(ENTITY, session) + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type='" + table.getName() + "' and " +
@@ -350,8 +350,8 @@ public class EntityGraph {
 	                max += "max(PRE_" + column.name + ")";
             	}
             }
-            select = "Select GRAPH_ID, " + upkColumnList(table, null) + ", TODAY, TYPE, ASSOCIATION, max(SOURCE_TYPE), " + max + " From (" + select + ") Q " +
-                     "Group by GRAPH_ID, " + upkColumnList(table, null) + ", TODAY, TYPE, ASSOCIATION";
+            select = "Select GRAPH_ID, " + upkColumnList(table, null) + ", BIRTHDAY, TYPE, ASSOCIATION, max(SOURCE_TYPE), " + max + " From (" + select + ") Q " +
+                     "Group by GRAPH_ID, " + upkColumnList(table, null) + ", BIRTHDAY, TYPE, ASSOCIATION";
         }
         
         String insert = "Insert into " + SQLDialect.dmlTableReference(ENTITY, session) + " (r_entitygraph, " + upkColumnList(table, null) + ", birthday, type" + (source == null || !explain? "" : ", association, PRE_TYPE, " + upkColumnList(source, "PRE_"))  + ") " + select;
