@@ -25,7 +25,9 @@ import java.awt.event.ItemListener;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
@@ -290,6 +292,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     	public boolean selectColumns;
 		public String whereClause;
 		public String alias;
+		public String aliasSuggestion;
     }
     
     /**
@@ -509,6 +512,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     		a.aliasTextField.setBackground(a.originalBGColor);
     	}
         for (Relationship a: relationships) {
+        	a.aliasSuggestion = null;
         	for (Relationship b: relationships) {
         		if (a != b) {
         			String ta = a.aliasTextField.getText().trim();
@@ -522,6 +526,29 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         				tb = qualifyNamesCB.isSelected()? tableB.getName() : tableB.getUnqualifiedName();
         			}
         			if (ta.equalsIgnoreCase(tb)) {
+        				String as = null;
+        				String aName = tableA.getUnqualifiedName();
+        				for (int i = 1; i <= aName.length(); ++i) {
+        					as = aName.substring(0, i);
+        					if (as.endsWith("_")) {
+        						continue;
+        					}
+        					boolean unique = true;
+        					for (Relationship c: relationships) {
+        						Table tableC = c.association == null? subject : c.association.destination;
+        	        			if (!tableC.getUnqualifiedName().equalsIgnoreCase(aName)) {
+        	        				if (tableC.getUnqualifiedName().toLowerCase().startsWith(as.toLowerCase())) {
+        	        					unique = false;
+        	        					break;
+        	        				}
+        	        			}
+        					}
+        					if (unique) {
+        						break;
+        					}
+        				}
+        				a.aliasSuggestion = as;
+        				
 	        			Color bg = new Color(255, 150, 140);
 	        			a.aliasTextField.setBackground(bg);
 	        			b.aliasTextField.setBackground(bg);
@@ -713,6 +740,26 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 			joinAWithBButton.setVisible(true);
 		}
 		resetRelationshipsPanel();
+		
+		List<JTextField> tf = new ArrayList<JTextField>();
+		List<String> as = new ArrayList<String>();
+		for (Relationship r: relationships) {
+			if (r.aliasSuggestion != null) {
+				tf.add(r.aliasTextField);
+				as.add(r.aliasSuggestion);
+			}
+		}
+		Map<String, Integer> counterPerAlias = new HashMap<String, Integer>();
+		for (int i = 0; i < tf.size(); ++i) {
+			Integer c = counterPerAlias.get(as.get(i));
+			if (c == null) {
+				c = 1;
+			}
+			counterPerAlias.put(as.get(i), c + 1);
+			tf.get(i).setText(as.get(i) + c);
+		}
+		checkAliases();
+		
 		setVisible(true);
 	}
     

@@ -1,3 +1,6 @@
+3.6.1
+ - Further Data Browser GUI improvements.
+
 3.6
  - Integrated Query Builder into Data Browser.
  - Avoid using "TODAY" alias in SQL queries as it is a reserved keyword in H2 DBMS.
