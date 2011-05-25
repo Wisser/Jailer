@@ -330,6 +330,11 @@ public class Desktop extends JDesktopPane {
 			@Override
 			protected void onContentChange(List<Row> rows) {
 				updateChildren(tableBrowser, rows);
+				for (RowBrowser rb: tableBrowsers) {
+					if (rb.parent == tableBrowser) {
+						updateChildren(rb, rb.browserContentPane.rows);
+					}
+				}
 			}
 
 			@Override
@@ -463,12 +468,13 @@ public class Desktop extends JDesktopPane {
 		final int MIN = 0, HEIGHT = 460, MIN_HEIGHT = 80, DISTANCE = 32;
 
 		int x = MIN;
+		int y = MIN;
 		if (parent != null) {
 			x = parent.internalFrame.getX() + parent.internalFrame.getWidth() + DISTANCE;
+			y = parent.internalFrame.getY();
 		}
 		// int h = fullSize || association == null || (association.getCardinality() != Cardinality.MANY_TO_ONE && association.getCardinality() != Cardinality.ONE_TO_ONE)? HEIGHT : browserContentPane.getMinimumSize().height + MIN_HEIGHT; 
 		int h = HEIGHT; 
-		int y = MIN;
 		Rectangle r = new Rectangle(x, y, BROWSERTABLE_DEFAULT_WIDTH, h);
 		for (;;) {
 			boolean ok = true;
@@ -511,17 +517,33 @@ public class Desktop extends JDesktopPane {
 			for (RowToRowLink rowToRowLink: tableBrowser.rowToRowLinks) {
 				rowToRowLink.childRowIndex = -1;
 				for (int i = 0; i < rows.size(); ++i) {
-					if (rowToRowLink.childRow.rowId.equals(rows.get(i).rowId)) {
+					if (rowToRowLink.childRow == rows.get(i)) {
 						rowToRowLink.childRowIndex = i;
 						break;
+					}
+				}
+				if (rowToRowLink.childRowIndex < 0) {
+					for (int i = 0; i < rows.size(); ++i) {
+						if (rowToRowLink.childRow.rowId.equals(rows.get(i).rowId)) {
+							rowToRowLink.childRowIndex = i;
+							break;
+						}
 					}
 				}
 				rowToRowLink.parentRowIndex = -1;
 				List<Row> parentRows = tableBrowser.parent.browserContentPane.rows;
 				for (int i = 0; i < parentRows.size(); ++i) {
-					if (rowToRowLink.parentRow.rowId.equals(parentRows.get(i).rowId)) {
+					if (rowToRowLink.parentRow == parentRows.get(i)) {
 						rowToRowLink.parentRowIndex = i;
 						break;
+					}
+				}
+				if (rowToRowLink.parentRowIndex < 0) {
+					for (int i = 0; i < parentRows.size(); ++i) {
+						if (rowToRowLink.parentRow.rowId.equals(parentRows.get(i).rowId)) {
+							rowToRowLink.parentRowIndex = i;
+							break;
+						}
 					}
 				}
 			}
@@ -554,7 +576,7 @@ public class Desktop extends JDesktopPane {
 				return changed;
 			}
 			if (tableBrowser.parent != null) {
-				int BORDER = 12;
+				int BORDER = 8;
 				int x1 = tableBrowser.internalFrame.getX() + tableBrowser.internalFrame.getWidth() / 2;
 				int y1 = tableBrowser.internalFrame.getY() + tableBrowser.internalFrame.getHeight() / 2;
 				int midx = tableBrowser.parent.internalFrame.getX() + tableBrowser.parent.internalFrame.getWidth() / 2;
