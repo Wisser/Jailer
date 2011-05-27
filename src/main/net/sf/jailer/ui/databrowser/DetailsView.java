@@ -20,6 +20,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.util.List;
 
+import javax.swing.BorderFactory;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.RowSorter;
@@ -67,7 +68,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
         if (!showSpinner) {
         	jLabel1.setVisible(false);
         	rowSpinner.setVisible(false);
-        	jScrollPane1.setBorder(null);
+//        	jScrollPane1.setBorder(null);
         	jScrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 			jScrollPane1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		}
@@ -82,26 +83,33 @@ public abstract class DetailsView extends javax.swing.JPanel {
     private final Color BG2 = new Color(230, 255, 255);
     private final Color FG1 = new Color(155, 0, 0);
 	
+    public void setBorderColor(Color color) {
+		jScrollPane1.setBorder(BorderFactory.createEtchedBorder(color, Color.GRAY));
+    }
+    
     private void setCurrentRow(int row, boolean selectableFields) {
     	jPanel1.removeAll();
     	int i = 0;
     	java.awt.GridBagConstraints gridBagConstraints;
-    	for (Column c: table.getColumns()) {
+    	while (i < table.getColumns().size()) {
+    		Column c = table.getColumns().get(i);
     		JLabel l = new JLabel();
     		l.setText(" " + c.name + "  ");
     		l.setFont(nonbold);
     		gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             gridBagConstraints.weightx = 0;
-            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+            gridBagConstraints.weighty = 0;
+            gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
             gridBagConstraints.gridx = 0;
             gridBagConstraints.gridy = i;
             jPanel1.add(l, gridBagConstraints);
 
             gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-            gridBagConstraints.weightx = 0;
+            gridBagConstraints.weighty = 0;
+            gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+            gridBagConstraints.weightx = 1;
             gridBagConstraints.gridx = 1;
             gridBagConstraints.gridy = i;
             Object v = rows.get(rowSorter != null? rowSorter.convertRowIndexToModel(row) : row).values[i];
@@ -130,24 +138,25 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	            }
             }
             
-            l = new JLabel();
-    		l.setText(" ");
-    		gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-            gridBagConstraints.weightx = 1.0;
-            gridBagConstraints.gridx = 2;
-            gridBagConstraints.gridy = i;
-            gridBagConstraints.fill = GridBagConstraints.BOTH;
-            jPanel1.add(l, gridBagConstraints);
+//          l = new JLabel();
+//    		l.setText(" ");
+//    		gridBagConstraints = new java.awt.GridBagConstraints();
+//            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+//            gridBagConstraints.weightx = 1.0;
+//            gridBagConstraints.gridx = 2;
+//            gridBagConstraints.gridy = i;
+//            gridBagConstraints.fill = GridBagConstraints.BOTH;
+//            jPanel1.add(l, gridBagConstraints);
             
             ++i;
     	}
-    	if (!selectableFields) {
+    	if (selectableFields) {
     		JLabel l = new JLabel();
-    		l.setText("                                                  ");
+    		l.setText(" ");
     		gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
             gridBagConstraints.weightx = 0;
+            gridBagConstraints.weighty = 1;
             gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
             gridBagConstraints.gridx = 1;
             gridBagConstraints.gridy = i;
@@ -210,6 +219,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jScrollPane1, gridBagConstraints);

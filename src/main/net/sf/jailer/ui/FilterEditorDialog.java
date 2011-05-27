@@ -22,7 +22,7 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
@@ -173,7 +173,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	/**
 	 * Maps columns to the text-field with which to edit the filter expression.
 	 */
-	private Map<Column, JTextField> filterTextfieldsPerColumn = new HashMap<Column, JTextField>();
+	private Map<Column, JTextField> filterTextfieldsPerColumn = new IdentityHashMap<Column, JTextField>();
 	
 	/**
 	 * The editor for filter conditions.
