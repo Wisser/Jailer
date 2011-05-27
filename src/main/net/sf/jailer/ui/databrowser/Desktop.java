@@ -104,6 +104,7 @@ public class Desktop extends JDesktopPane {
 	public Session session;
 	
 	private Set<Row> currentClosure = new HashSet<Row>();
+	private Set<String> currentClosureRowIDs = new HashSet<String>();
 	
 	private final QueryBuilderDialog queryBuilderDialog;
 		
@@ -315,7 +316,7 @@ public class Desktop extends JDesktopPane {
 		});
 
 		final RowBrowser tableBrowser = new RowBrowser();
-		BrowserContentPane browserContentPane = new BrowserContentPane(datamodel.get(), table, condition, session, parent == null || parentRowIndex < 0? null : parent.browserContentPane.rows.get(parentRowIndex), parent == null || parentRowIndex >= 0? null : parent.browserContentPane.rows, association, parentFrame, currentClosure) {
+		BrowserContentPane browserContentPane = new BrowserContentPane(datamodel.get(), table, condition, session, parent == null || parentRowIndex < 0? null : parent.browserContentPane.rows.get(parentRowIndex), parent == null || parentRowIndex >= 0? null : parent.browserContentPane.rows, association, parentFrame, currentClosure, currentClosureRowIDs) {
 			
 			@Override
 			protected QueryBuilderDialog getQueryBuilderDialog() {
@@ -367,13 +368,43 @@ public class Desktop extends JDesktopPane {
 
 			@Override
 			protected void findClosure(Row row) {
-				if (!currentClosure.contains(row)) {
-					currentClosure.add(row);
-					for (RowBrowser child: tableBrowsers) {
-						if (child.parent == tableBrowser) {
-							for (RowToRowLink rowToRowLink: child.rowToRowLinks) {
-								if (row.rowId.equals(rowToRowLink.parentRow.rowId)) {
-									child.browserContentPane.findClosure(rowToRowLink.childRow);
+				Set<Row> rows = new HashSet<Row>();
+				findClosure(row, rows, false);
+				currentClosure.addAll(rows);
+				rows = new HashSet<Row>();
+				findClosure(row, rows, true);
+				currentClosure.addAll(rows);
+			}
+				
+			@Override
+			protected void findClosure(Row row, Set<Row> closure, boolean forward) {
+				if (!closure.contains(row)) {
+					closure.add(row);
+					if (forward) {
+						for (RowBrowser child: tableBrowsers) {
+							if (child.parent == tableBrowser) {
+								if (child.browserContentPane.parentRow != null) {
+									if (row.rowId.equals(child.browserContentPane.parentRow.rowId)) {
+										for (Row r: child.browserContentPane.rows) {
+											child.browserContentPane.findClosure(r, closure, forward);
+										}
+									}
+								}
+								for (RowToRowLink rowToRowLink: child.rowToRowLinks) {
+									if (row.rowId.equals(rowToRowLink.parentRow.rowId)) {
+										child.browserContentPane.findClosure(rowToRowLink.childRow, closure, forward);
+									}
+								}
+							}
+						}
+					} else {
+						if (tableBrowser.parent != null) {
+							if (tableBrowser.browserContentPane.parentRow != null) {
+								tableBrowser.parent.browserContentPane.findClosure(tableBrowser.browserContentPane.parentRow, closure, forward);
+							}
+							for (RowToRowLink rowToRowLink: tableBrowser.rowToRowLinks) {
+								if (row.rowId.equals(rowToRowLink.childRow.rowId)) {
+									tableBrowser.parent.browserContentPane.findClosure(rowToRowLink.parentRow, closure, forward);
 								}
 							}
 						}
