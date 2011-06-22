@@ -532,7 +532,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-				popup = createPopupMenu(null, -1, 0, 0);
+				if (rows.size() == 1) {
+					popup = createPopupMenu(rows.get(0), 0, 0, 0);
+				} else {
+					popup = createPopupMenu(null, -1, 0, 0);
+				}
 				setCurrentRowSelection(-2);
 				popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
 					@Override
@@ -563,7 +567,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 		limitBox.setModel(new DefaultComboBoxModel(new Integer[] { 100, 200, 500, 1000, 2000, 5000 }));
-		limitBox.setSelectedIndex(0);
+		limitBox.setSelectedIndex(association == null? 0 : 1);
 		updateTableModel(0);
 		reloadRows();
 	}
@@ -1502,8 +1506,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private void showSqlButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_showSqlButtonActionPerformed
 		List<String> whereClauses = new ArrayList<String>();
 		List<Association> associationsOnPath = new ArrayList<Association>();
-		createAssociationList(associationsOnPath, whereClauses);
-		getQueryBuilderDialog().buildQuery(table, true, false, associationsOnPath, whereClauses, dataModel);
+		createAssociationList(associationsOnPath, whereClauses, -1);
+		
+		int backCount = getQueryBuilderPathSelector().selectBackCount(associationsOnPath);
+		if (backCount >= 0) {
+			whereClauses = new ArrayList<String>();
+			associationsOnPath = new ArrayList<Association>();
+			createAssociationList(associationsOnPath, whereClauses, backCount);
+			getQueryBuilderDialog().buildQuery(table, true, false, associationsOnPath, whereClauses, dataModel);
+		}
 	}// GEN-LAST:event_showSqlButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1586,7 +1597,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private void updateMode(String mode) {
 		((CardLayout) cardPanel.getLayout()).show(cardPanel, mode);
-		relatedRowsPanel.setVisible("table".equals(mode) && rows.size() > 1);
+		relatedRowsPanel.setVisible("table".equals(mode) && rows.size() >= 1);
 	}
 
     /**
@@ -1629,7 +1640,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	protected abstract void beforeReload();
 
-	protected abstract void createAssociationList(List<Association> associations, List<String> whereClauses);
+	protected abstract void createAssociationList(List<Association> associations, List<String> whereClauses, int backCount);
 
 	protected abstract void addRowToRowLink(Row pRow, Row exRow);
 
@@ -1639,6 +1650,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract void findClosure(Row row, Set<Row> closure, boolean forward);
 
 	protected abstract QueryBuilderDialog getQueryBuilderDialog();
+	protected abstract QueryBuilderPathSelector getQueryBuilderPathSelector();
 
     private Icon dropDownIcon;
     {
