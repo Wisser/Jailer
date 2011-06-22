@@ -1,3 +1,7 @@
+3.6.2
+ - Further Data Browser GUI improvements.
+ - Minor bug fixes.
+
 3.6.1
  - Fix for bug [3308328] "Filter definition updates not correctly detected and saved"
  - Further Data Browser GUI improvements.

@@ -20,6 +20,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.FileWriter;
@@ -33,18 +35,15 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-
-import sdoc.SyntaxSupport;
 
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.SqlUtil;
+import sdoc.SyntaxSupport;
 
 /**
  * Query Builder Dialog.
@@ -265,6 +264,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     private void singleLineCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_singleLineCBItemStateChanged
     	if (singleLineCB.isSelected()) {
     		sqlTextArea.setText(sqlTextArea.getText().replaceAll(" *(\n|\r)+ *", " "));
+    		sqlTextArea.setCaretPosition(0);
     	} else {
     		updateSQL();
     	}
@@ -453,9 +453,9 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 			selectColumnsCB.setSelected(relationship.selectColumns);
 	        
 	        final int index = y;
-	        selectColumnsCB.addChangeListener(new ChangeListener() {
+	        selectColumnsCB.addItemListener(new ItemListener() {
 				@Override
-				public void stateChanged(ChangeEvent e) {
+				public void itemStateChanged(ItemEvent e) {
 					relationships.get(index).selectColumns = selectColumnsCB.isSelected();
 					updateSQL();
 				}
@@ -578,6 +578,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     	sqlIsSingleLine = singleLineCB.isSelected();
     	qualifyTableNames = qualifyNamesCB.isSelected();
     	sqlTextArea.setText((prevSQL = createSQL(sqlIsSingleLine, qualifyTableNames)) + suffix);
+    	sqlTextArea.setCaretPosition(0);  
     }
     
     /**
@@ -700,6 +701,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 			sql.append(" " + lf);
 		} else {
 			sql.append(" ");
+			return sql.toString().replaceAll(" *(\n|\r)+ *", " ");
 		}
 		return sql.toString();
 	}

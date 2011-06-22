@@ -63,6 +63,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.util.SqlUtil;
 import prefuse.util.GraphicsLib;
 
 /**
@@ -107,6 +108,7 @@ public class Desktop extends JDesktopPane {
 	private Set<String> currentClosureRowIDs = new HashSet<String>();
 	
 	private final QueryBuilderDialog queryBuilderDialog;
+	private final QueryBuilderPathSelector queryBuilderPathSelector;
 		
 	/**
 	 * Constructor.
@@ -120,6 +122,7 @@ public class Desktop extends JDesktopPane {
 		this.datamodel = datamodel;
 		this.jailerIcon = jailerIcon;
 		this.queryBuilderDialog = new QueryBuilderDialog(parentFrame);
+		this.queryBuilderPathSelector = new QueryBuilderPathSelector(parentFrame, true);
 
 		try {
 			this.session = session;
@@ -324,6 +327,11 @@ public class Desktop extends JDesktopPane {
 			}
 
 			@Override
+			protected QueryBuilderPathSelector getQueryBuilderPathSelector() {
+				return queryBuilderPathSelector;
+			}
+
+			@Override
 			protected void navigateTo(Association association, int rowIndex, Row row) {
 				addTableBrowser(tableBrowser, rowIndex, association.destination, association, "");
 			}
@@ -413,11 +421,20 @@ public class Desktop extends JDesktopPane {
 			}
 
 			@Override
-			protected void createAssociationList(List<Association> associations, List<String> whereClauses) {
+			protected void createAssociationList(List<Association> associations, List<String> whereClauses, int backCount) {
 				for (RowBrowser rb = tableBrowser; rb != null; rb = rb.parent) {
+					boolean stop = false;
+					if (backCount >= 0) {
+						if (--backCount < 0) {
+							stop = true;
+						}
+					}
+					
 					String andC = ConditionEditor.toMultiLine(rb.browserContentPane.andCondition.getText().trim()).replaceAll("(\r|\n)+", " ");
 					if (rb.association != null) {
-						associations.add(rb.association.reversalAssociation);
+						if (!stop) {
+							associations.add(rb.association.reversalAssociation);
+						}
 					} else {
 						whereClauses.add(andC.length() == 0? null : andC);
 						break;
@@ -425,6 +442,20 @@ public class Desktop extends JDesktopPane {
 					if (rb.rowIndex >= 0 && !(rb.rowIndex == 0 && rb.parent != null && rb.parent.browserContentPane != null && rb.parent.browserContentPane.rows != null && rb.parent.browserContentPane.rows.size() == 1)) {
 						String w = rb.browserContentPane.parentRow.rowId;
 						whereClauses.add(andC.length() == 0? w : "(" + w + ") and (" + andC + ")");
+						break;
+					}
+					if (stop) {
+						StringBuilder rowIds = new StringBuilder("");
+						boolean f = true;
+						for (Row row: rb.browserContentPane.rows) {
+							if (!f) {
+								rowIds.append(" or\n       ");
+							}
+							f = false;
+							rowIds.append(SqlUtil.replaceAliases(row.rowId, "A", "A"));
+						}
+						rowIds.append("");
+						whereClauses.add(f? null : rowIds.toString());
 						break;
 					}
 					whereClauses.add(andC.length() == 0? null : andC);
