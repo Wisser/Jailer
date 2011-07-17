@@ -61,7 +61,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		instance.addSupport(SyntaxSupport.SQL_LEXER, sqlTextArea);
 		setLocation(100, 150);
 		pack();
-		setSize(Math.max(600, getWidth()), 500);
+		setSize(Math.max(700, getWidth()), 500);
 		UIUtil.initPeer();
     }
     

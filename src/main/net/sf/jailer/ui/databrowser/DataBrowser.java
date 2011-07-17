@@ -466,7 +466,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		try {
 			DataModelEditor dataModelEditor = new DataModelEditor(this, false, null);
 			dataModelEditor.setVisible(true);
-			datamodel.set(new DataModel());
+			desktop.reloadDataModel();
 			askForDataModel();
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
@@ -491,7 +491,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword(), null, null, false, true)) {
 					DataModelEditor dataModelEditor = new DataModelEditor(this, true, null);
 					dataModelEditor.setVisible(true);
-					datamodel.set(new DataModel());
+					desktop.reloadDataModel();
 					askForDataModel();
 				}
 
