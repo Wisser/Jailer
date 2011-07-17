@@ -176,7 +176,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * Table to read rows from.
 	 */
-	private final Table table;
+	Table table;
 
 	/**
 	 * Parent row, or <code>null</code>.
@@ -186,7 +186,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * The data model.
 	 */
-	private final DataModel dataModel;
+	DataModel dataModel;
 
 	/**
 	 * {@link Association} with parent row, or <code>null</code>.

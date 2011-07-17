@@ -1151,4 +1151,26 @@ public class Desktop extends JDesktopPane {
 		repaintDesktop();
 	}
 	
+	/**
+	 * Reloads the data model and replaces the tables in all browser windows.
+	 */
+	public void reloadDataModel() throws Exception {
+		DataModel oldModel = datamodel.get();
+		DataModel newModel = new DataModel();
+		
+		for (RowBrowser rb: tableBrowsers) {
+			if (rb.browserContentPane != null) {
+				rb.browserContentPane.dataModel = newModel;
+				if (rb.browserContentPane.table != null) {
+					Table newTable = newModel.getTable(rb.browserContentPane.table.getName());
+					if (newTable != null) {
+						rb.browserContentPane.table = newTable;
+					}
+				}
+			}
+			updateChildren(rb, rb.browserContentPane.rows);
+		}
+		
+		datamodel.set(newModel);
+	}
 }

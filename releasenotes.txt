@@ -1,3 +1,6 @@
+3.6.3
+ - Fixed a bug concerning data model changes not affecting table browsers.
+
 3.6.2
  - Further Data Browser GUI improvements.
  - Minor bug fixes.
