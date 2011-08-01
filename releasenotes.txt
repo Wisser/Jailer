@@ -1,3 +1,6 @@
+3.6.4
+ - Added start scripts for the Data Browser.
+
 3.6.3
  - Fixed a bug concerning data model changes not affecting table browsers.
 

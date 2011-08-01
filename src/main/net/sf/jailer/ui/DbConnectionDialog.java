@@ -671,7 +671,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			return;
 		}
 
-		store();
+//		store();
 
 		isConnected = false;
 
