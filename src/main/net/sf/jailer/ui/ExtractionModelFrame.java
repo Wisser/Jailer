@@ -1519,16 +1519,17 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     		    	customizeNimbus();
     			} catch (Exception x) {
     			}
-    			JFrame dummy = new JFrame();
-    			dummy.setIconImage(new ImageIcon(ExtractionModelFrame.class.getResource("/net/sf/jailer/resource/jailer.png")).getImage());
-    	    	switch (JOptionPane.showOptionDialog(dummy, "Choose Module", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null,
-            			new Object[] { "Data Browser", "Database Subsetter" }, null)) {
-            	case 0: 
-            		DataBrowser.main(args);
-            		return;
-            	case 1: break;
-            	default: System.exit(0);
-            	}
+            	
+//    			JFrame dummy = new JFrame();
+//    			dummy.setIconImage(new ImageIcon(ExtractionModelFrame.class.getResource("/net/sf/jailer/resource/jailer.png")).getImage());
+//    	    	switch (JOptionPane.showOptionDialog(dummy, "Choose Module", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null,
+//            			new Object[] { "Data Browser", "Database Subsetter" }, null)) {
+//            	case 0: 
+//            		DataBrowser.main(args);
+//            		return;
+//            	case 1: break;
+//            	default: System.exit(0);
+//            	}
             	
             	String file = null;
             	if (CommandLineParser.getInstance().arguments != null) {
