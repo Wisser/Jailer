@@ -150,6 +150,7 @@ public class SqlScriptExecutor {
 		String line;
 		File lobFile = CommandLineParser.getInstance().newFile("lob." + System.currentTimeMillis());
 		Writer out = new FileWriter(lobFile);
+		long length = 0;
 		while ((line = reader.readLine()) != null) {
 		    // line = line.trim();
 			if (line.startsWith(UNFINISHED_MULTILINE_COMMENT)) {
@@ -176,13 +177,14 @@ public class SqlScriptExecutor {
 						}
 					}
 					out.write(c);
+					++length;
 				}
 			} else {
 				break;
 			}
 		}
 		out.close();
-		session.insertClob(table, column, where, lobFile);
+		session.insertClob(table, column, where, lobFile, length);
 		lobFile.delete();
 	}
     
@@ -201,6 +203,7 @@ public class SqlScriptExecutor {
 		String line;
 		File lobFile = CommandLineParser.getInstance().newFile("lob." + System.currentTimeMillis());
 		Writer out = new FileWriter(lobFile);
+		long length = 0;
 		while ((line = reader.readLine()) != null) {
 		    // line = line.trim();
 			if (line.startsWith(UNFINISHED_MULTILINE_COMMENT)) {
@@ -227,13 +230,14 @@ public class SqlScriptExecutor {
 						}
 					}
 					out.write(c);
+					++length;
 				}
 			} else {
 				break;
 			}
 		}
 		out.close();
-		session.insertSQLXML(table, column, where, lobFile);
+		session.insertSQLXML(table, column, where, lobFile, length);
 		lobFile.delete();
 	}
     

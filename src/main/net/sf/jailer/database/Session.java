@@ -534,7 +534,7 @@ public class Session {
     /**
      * Inserts a CLob.
      */
-    public void insertClob(String table, String column, String where, File lobFile) throws SQLException, IOException {
+    public void insertClob(String table, String column, String where, File lobFile, long length) throws SQLException, IOException {
     	String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
         _log.info(sqlUpdate);
         PreparedStatement statement = null;
@@ -542,7 +542,7 @@ public class Session {
 	        statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
 	        CancellationHandler.begin(statement, null);
 	        InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile));
-			statement.setCharacterStream(1, inputStreamReader, (int) lobFile.length());
+			statement.setCharacterStream(1, inputStreamReader, (int) length);
 	        statement.execute();
 	        statement.close();
 	        CancellationHandler.end(statement, null);
@@ -556,7 +556,7 @@ public class Session {
     /**
      * Inserts a SQL-XML.
      */
-    public void insertSQLXML(String table, String column, String where, File lobFile) throws SQLException, IOException {
+    public void insertSQLXML(String table, String column, String where, File lobFile, long length) throws SQLException, IOException {
     	String sqlUpdate = "Update " + table + " set " + column + "=? where " + where;
         _log.info(sqlUpdate);
         PreparedStatement statement = null;
@@ -564,7 +564,7 @@ public class Session {
 	        statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
 	        CancellationHandler.begin(statement, null);
 	        InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile));
-			statement.setCharacterStream(1, inputStreamReader, (int) lobFile.length());
+			statement.setCharacterStream(1, inputStreamReader, (int) length);
 	        statement.execute();
 	        statement.close();
 	        CancellationHandler.end(statement, null);
