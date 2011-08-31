@@ -91,6 +91,10 @@ public class CsvFile {
         }
     };
     
+    public static interface LineFilter {
+    	boolean accept(Line line);
+    }
+    
     /**
      * List of lines.
      */
@@ -107,7 +111,16 @@ public class CsvFile {
      * @param csvFile the csv file
      */
     public CsvFile(File csvFile) throws Exception {
-    	this(csvFile, null);
+    	this(csvFile, null, null);
+    }
+
+    /**
+     * Constructor.
+     * 
+     * @param csvFile the csv file
+     */
+    public CsvFile(File csvFile, LineFilter filter) throws Exception {
+    	this(csvFile, null, filter);
     }
 
     /**
@@ -117,6 +130,16 @@ public class CsvFile {
      * @param block the block to read, <code>null</code> to read default block
      */
     public CsvFile(File csvFile, String block) throws Exception {
+    	this(csvFile, block, null);
+    }
+    
+    /**
+     * Constructor.
+     * 
+     * @param csvFile the csv file
+     * @param block the block to read, <code>null</code> to read default block
+     */
+    public CsvFile(File csvFile, String block, LineFilter filter) throws Exception {
         BufferedReader reader = new BufferedReader(new FileReader(csvFile));
         String line = null;
         int lineNr = 0;
@@ -154,7 +177,10 @@ public class CsvFile {
             while (row.size() < 100) {
                 row.add("");
             }
-            rows.add(new Line("line " + lineNr + ", file " + csvFile.getName(), row));
+            Line cvsLine = new Line("line " + lineNr + ", file " + csvFile.getName(), row);
+			if (filter == null || filter.accept(cvsLine)) {
+				rows.add(cvsLine);
+			}
         }
         reader.close();
     }

@@ -223,7 +223,7 @@ public class ModelBuilder {
         resetTableFile(tableDefinitions);
 
         // re-read data model with new tables
-        dataModel = new DataModel(MODEL_BUILDER_TABLES_CSV, MODEL_BUILDER_ASSOCIATIONS_CSV);
+        dataModel = new DataModel(MODEL_BUILDER_TABLES_CSV, MODEL_BUILDER_ASSOCIATIONS_CSV, new HashMap<String, String>(), assocFilter);
 
         Collection<Association> associations = new ArrayList<Association>();
         Map<Association, String[]> namingSuggestion = new HashMap<Association, String[]>();
@@ -395,4 +395,6 @@ public class ModelBuilder {
         resetAssociationFile("");
     }
 
+    public static CsvFile.LineFilter assocFilter = null;
+    
 }

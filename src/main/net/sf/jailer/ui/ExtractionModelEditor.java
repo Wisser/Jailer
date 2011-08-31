@@ -81,6 +81,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.datamodel.AggregationSchema;
@@ -411,6 +412,26 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         instance.addSupport(SyntaxSupport.XML_LEXER, xmlSketch);
 		setOrientation(horizontalLayout);
 		connectivityState.setText(connectionState);
+		connectivityState.setToolTipText(connectionState);
+		
+		String modelname = "Data Model \"" + dataModel.getName() + "\"";
+		String lastMod = dataModel.getLastModifiedAsString();
+		if (lastMod.length() > 0) {
+			lastMod = " (" + lastMod + ")";
+		}
+		modelName.setText(modelname);
+		modelName.setToolTipText(modelname + lastMod);
+		
+		String modelpath = CommandLineParser.getInstance().datamodelFolder;
+		try {
+			modelpath = CommandLineParser.getInstance().newFile(modelpath).getAbsolutePath();
+		} catch (Throwable t) {
+			// use default modelpath
+		}
+		modelpath += File.separator;
+		modelPath.setText(modelpath);
+		modelPath.setToolTipText(modelpath);
+		
 		subjectConditionEditor = new ConditionEditor(extractionModelFrame, parametersGetter);
 		subjectConditionEditor.setTitle("Subject condition");
 		restrictionConditionEditor = new ConditionEditor(extractionModelFrame, parametersGetter);
@@ -657,11 +678,16 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jPanel5 = new javax.swing.JPanel();
         xmlTagApply = new javax.swing.JButton();
         mapColumns = new javax.swing.JButton();
+        jPanel11 = new javax.swing.JPanel();
+        legende1 = new javax.swing.JPanel();
+        modelName = new javax.swing.JLabel();
+        modelPath = new javax.swing.JLabel();
         legende = new javax.swing.JPanel();
         dependsOn = new javax.swing.JLabel();
         hasDependent = new javax.swing.JLabel();
         associatedWith = new javax.swing.JLabel();
         ignored = new javax.swing.JLabel();
+        legende2 = new javax.swing.JPanel();
         connectivityState = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -1011,14 +1037,48 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         add(jSplitPane1, gridBagConstraints);
 
+        jPanel11.setLayout(new java.awt.GridBagLayout());
+
+        legende1.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        legende1.setLayout(new java.awt.GridBagLayout());
+
+        modelName.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        modelName.setText("Data Model \"Demo\"");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 12);
+        legende1.add(modelName, gridBagConstraints);
+
+        modelPath.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        modelPath.setForeground(java.awt.Color.gray);
+        modelPath.setText("/home/jailer/datamodel/");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        legende1.add(modelPath, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        jPanel11.add(legende1, gridBagConstraints);
+
+        legende.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         legende.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
-        dependsOn.setFont(new java.awt.Font("Dialog", 0, 12));
+        dependsOn.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         dependsOn.setForeground(new java.awt.Color(170, 0, 0));
-        dependsOn.setText("depends on");
+        dependsOn.setText(" depends on");
         legende.add(dependsOn);
 
-        hasDependent.setFont(new java.awt.Font("Dialog", 0, 12));
+        hasDependent.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         hasDependent.setForeground(new java.awt.Color(0, 112, 0));
         hasDependent.setText("   has dependent");
         legende.add(hasDependent);
@@ -1028,25 +1088,45 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         associatedWith.setText("   associated with");
         legende.add(associatedWith);
 
-        ignored.setFont(new java.awt.Font("Dialog", 0, 12));
+        ignored.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         ignored.setForeground(new java.awt.Color(153, 153, 153));
-        ignored.setText("   disabled");
+        ignored.setText("   disabled ");
         legende.add(ignored);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 6);
-        add(legende, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        jPanel11.add(legende, gridBagConstraints);
 
-        connectivityState.setFont(new java.awt.Font("Dialog", 0, 12));
+        legende2.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        legende2.setLayout(new java.awt.GridBagLayout());
+
+        connectivityState.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         connectivityState.setText("offline");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+        legende2.add(connectivityState, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        jPanel11.add(legende2, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        add(connectivityState, gridBagConstraints);
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(jPanel11, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void openClosureViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openClosureViewActionPerformed
@@ -2398,6 +2478,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
+    private javax.swing.JPanel jPanel11;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
@@ -2411,7 +2492,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JPanel legende;
+    private javax.swing.JPanel legende1;
+    private javax.swing.JPanel legende2;
     private javax.swing.JButton mapColumns;
+    private javax.swing.JLabel modelName;
+    private javax.swing.JLabel modelPath;
     private javax.swing.JButton openClosureView;
     private javax.swing.JButton openDataBrowser;
     private javax.swing.JLabel openSubjectConditionEditor;

@@ -17,10 +17,12 @@
 package net.sf.jailer.datamodel;
 
 import java.io.File;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -34,6 +36,7 @@ import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.CsvFile;
+import net.sf.jailer.util.CsvFile.LineFilter;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.SqlUtil;
 
@@ -73,7 +76,12 @@ public class DataModel {
      * Internal version number. Incremented on each modification.
      */
     public long version = 0;
-    
+
+    /**
+     * Default model name.
+     */
+	public static final String DEFAULT_NAME = "New Model";
+
     /**
      * For creation of primary-keys.
      */
@@ -91,6 +99,13 @@ public class DataModel {
      */
     public static String getTablesFile() {
     	return getDatamodelFolder() + File.separator + "table.csv";
+    }
+
+    /**
+     * Gets name of file containing the model name
+     */
+    public static String getModelNameFile() {
+    	return getDatamodelFolder() + File.separator + "modelname.csv";
     }
 
     /**
@@ -153,6 +168,16 @@ public class DataModel {
 	 * XML settings for exportation into XML files.
 	 */
 	private XmlSettings xmlSettings = new XmlSettings();
+
+	/**
+	 * Name of the model.
+	 */
+	private String name;
+
+	/**
+	 * Time of last modification.
+	 */
+	private Long lastModified;
 	
     /**
      * Gets a table by name.
@@ -173,6 +198,24 @@ public class DataModel {
     public Table getTableByDisplayName(String displayName) {
         return tablesByDisplayName.get(displayName);
     }
+
+	/**
+	 * Gets name of the model.
+	 * 
+	 * @return name of the model
+	 */
+	public String getName() {
+		return name;
+	}
+
+	/**
+	 * Gets time of last modification.
+	 * 
+	 * @return time of last modification
+	 */
+	public Long getLastModified() {
+		return lastModified;
+	}
 
     /**
      * Gets display name of a table
@@ -210,7 +253,7 @@ public class DataModel {
      * and builds the relational data model.
      */
     public DataModel(Map<String, String> sourceSchemaMapping) throws Exception {
-        this(null, null, sourceSchemaMapping);
+        this(null, null, sourceSchemaMapping, null);
     }
 
     /**
@@ -221,7 +264,7 @@ public class DataModel {
      * @param additionalAssociationsFile association file to read too
      */
     public DataModel(String additionalTablesFile, String additionalAssociationsFile) throws Exception {
-    	this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>());
+    	this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null);
     }
 
     /**
@@ -231,9 +274,10 @@ public class DataModel {
      * @param additionalTablesFile table file to read too
      * @param additionalAssociationsFile association file to read too
      */
-    public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping) throws Exception {
+    public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter) throws Exception {
     	// tables
-    	CsvFile tablesFile = new CsvFile(CommandLineParser.getInstance().newFile(getTablesFile()));
+    	File nTablesFile = CommandLineParser.getInstance().newFile(getTablesFile());
+		CsvFile tablesFile = new CsvFile(nTablesFile);
         List<CsvFile.Line> tableList = new ArrayList<CsvFile.Line>(tablesFile.getLines());
         if (additionalTablesFile != null) {
             tableList.addAll(new CsvFile(CommandLineParser.getInstance().newFile(additionalTablesFile)).getLines());
@@ -285,7 +329,7 @@ public class DataModel {
         }
         
         // associations
-        List<CsvFile.Line> associationList = new ArrayList<CsvFile.Line>(new CsvFile(CommandLineParser.getInstance().newFile(getAssociationsFile())).getLines());
+        List<CsvFile.Line> associationList = new ArrayList<CsvFile.Line>(new CsvFile(CommandLineParser.getInstance().newFile(getAssociationsFile()), assocFilter).getLines());
         if (additionalAssociationsFile != null) {
             associationList.addAll(new CsvFile(CommandLineParser.getInstance().newFile(additionalAssociationsFile)).getLines());
         }
@@ -294,11 +338,11 @@ public class DataModel {
             try {
                 Table tableA = (Table) tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0)));
                 if (tableA == null) {
-                    throw new RuntimeException("Table '" + line.cells.get(0) + "' not found");
+                     continue; // throw new RuntimeException("Table '" + line.cells.get(0) + "' not found");
                 }
                 Table tableB = (Table) tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(1)));
                 if (tableB == null) {
-                    throw new RuntimeException("Table '" + line.cells.get(1) + "' not found");
+                    continue; // throw new RuntimeException("Table '" + line.cells.get(1) + "' not found");
                 }
                 boolean insertSourceBeforeDestination = "A".equalsIgnoreCase(line.cells.get(2)); 
                 boolean insertDestinationBeforeSource = "B".equalsIgnoreCase(line.cells.get(2));
@@ -311,8 +355,9 @@ public class DataModel {
                 if ("".equals(name)) {
                     name = null;
                 }
-                Association associationA = new Association(tableA, tableB, insertSourceBeforeDestination, insertDestinationBeforeSource, joinCondition, this, false, cardinality);
-                Association associationB = new Association(tableB, tableA, insertDestinationBeforeSource, insertSourceBeforeDestination, joinCondition, this, true, cardinality.reverse());
+                String author = line.cells.get(6);
+                Association associationA = new Association(tableA, tableB, insertSourceBeforeDestination, insertDestinationBeforeSource, joinCondition, this, false, cardinality, author);
+                Association associationB = new Association(tableB, tableA, insertDestinationBeforeSource, insertSourceBeforeDestination, joinCondition, this, true, cardinality.reverse(), author);
                 associationA.reversalAssociation = associationB;
                 associationB.reversalAssociation = associationA;
                 tableA.associations.add(associationA);
@@ -333,6 +378,24 @@ public class DataModel {
             }
         }
         initDisplayNames();
+        
+        // model name
+        File nameFile = CommandLineParser.getInstance().newFile(getModelNameFile());
+        name = DEFAULT_NAME;
+    	lastModified = null;
+        try {
+        	lastModified = nTablesFile.lastModified();
+	        if (nameFile.exists()) {
+	        	List<CsvFile.Line> nameList = new ArrayList<CsvFile.Line>(new CsvFile(nameFile).getLines());
+	        	if (nameList.size() > 0) {
+	        		CsvFile.Line line =  nameList.get(0);
+	        		name = line.cells.get(0);
+	        		lastModified = Long.parseLong(line.cells.get(1));
+	        	}
+	        }
+        } catch (Throwable t) {
+        	// keep defaults
+        }
     }
 
     /**
@@ -638,5 +701,18 @@ public class DataModel {
     	}
     	return parameters;
     }
+
+    /**
+     * Gets {@link #getLastModified()} as String.
+     * 
+     * @return {@link #getLastModified()} as String
+     */
+	public String getLastModifiedAsString() {
+		try {
+			return SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.MEDIUM, SimpleDateFormat.MEDIUM).format(new Date(getLastModified()));
+		} catch (Throwable t) {
+			return "";
+		}
+	}
     
 }

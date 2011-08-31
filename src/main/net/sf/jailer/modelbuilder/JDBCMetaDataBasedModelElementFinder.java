@@ -185,7 +185,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
             	hasPK = true;
             	int keySeq = resultSet.getInt(5);
             	if (session.dbms == DBMS.SQLITE) {
-            		// SQlite driver does'nt return the keySeq
+            		// SQlite driver doesn't return the keySeq
             		keySeq = nextKeySeq++;
             	}
                 pk.put(keySeq, new Column(quoting.quote(resultSet.getString(4)), "", 0, -1));

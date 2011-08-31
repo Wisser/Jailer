@@ -31,16 +31,17 @@ import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
-import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
@@ -53,8 +54,9 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
-import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.datamodel.DataModel.NoPrimaryKeyException;
+import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.graphical_view.LayoutStorage;
@@ -147,11 +149,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private void updateMenuItems() {
 		connectDb.setSelected(dbConnectionDialog.isConnected);
 		extractionModelEditor.connectivityState.setText(getConnectivityState());
+		extractionModelEditor.connectivityState.setToolTipText(getConnectivityState());
     }
 	
 	private String getConnectivityState() {
 		if (dbConnectionDialog != null && dbConnectionDialog.isConnected) {
-			return dbConnectionDialog.currentConnection.user + " at " + (dbConnectionDialog.currentConnection.url);
+			return dbConnectionDialog.currentConnection.user + "@" + (dbConnectionDialog.currentConnection.url);
 		} else {
 			return "offline";
 		}
@@ -181,7 +184,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenuBar2 = new javax.swing.JMenuBar();
         fileMenu = new javax.swing.JMenu();
         newModel = new javax.swing.JMenuItem();
-        jSeparator3 = new javax.swing.JSeparator();
         load = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JSeparator();
         save = new javax.swing.JMenuItem();
@@ -224,14 +226,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         steptime100 = new javax.swing.JRadioButtonMenuItem();
         steptime200 = new javax.swing.JRadioButtonMenuItem();
         steptime500 = new javax.swing.JRadioButtonMenuItem();
+        jMenu1 = new javax.swing.JMenu();
+        updateDataModel = new javax.swing.JMenuItem();
+        openDataModelEditor = new javax.swing.JMenuItem();
         jMenu3 = new javax.swing.JMenu();
         dataExport = new javax.swing.JMenuItem();
         dataImport = new javax.swing.JMenuItem();
-        jSeparator6 = new javax.swing.JSeparator();
-        updateDataModel = new javax.swing.JMenuItem();
-        openDataModelEditor = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JSeparator();
         openDataBrowserItem = new javax.swing.JMenuItem();
+        closureToolMenuItem = new javax.swing.JMenuItem();
         queryBuilder = new javax.swing.JMenuItem();
         cycleView = new javax.swing.JMenuItem();
         renderHtml = new javax.swing.JMenuItem();
@@ -276,14 +279,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
 
         newModel.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
-        newModel.setText("New Model");
+        newModel.setText("New");
         newModel.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 newModelActionPerformed(evt);
             }
         });
         fileMenu.add(newModel);
-        fileMenu.add(jSeparator3);
 
         load.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_O, java.awt.event.InputEvent.CTRL_MASK));
         load.setText("Load");
@@ -585,6 +587,26 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenuBar2.add(viewMenu);
 
+        jMenu1.setText("Data Model");
+
+        updateDataModel.setText("Analyze Database");
+        updateDataModel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                updateDataModelActionPerformed(evt);
+            }
+        });
+        jMenu1.add(updateDataModel);
+
+        openDataModelEditor.setLabel("Data Model Editor");
+        openDataModelEditor.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                openDataModelEditorActionPerformed(evt);
+            }
+        });
+        jMenu1.add(openDataModelEditor);
+
+        jMenuBar2.add(jMenu1);
+
         jMenu3.setText("Tools");
 
         dataExport.setLabel("Export Data");
@@ -602,23 +624,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
         jMenu3.add(dataImport);
-        jMenu3.add(jSeparator6);
-
-        updateDataModel.setText("Analyze Database");
-        updateDataModel.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                updateDataModelActionPerformed(evt);
-            }
-        });
-        jMenu3.add(updateDataModel);
-
-        openDataModelEditor.setLabel("Data Model Editor");
-        openDataModelEditor.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openDataModelEditorActionPerformed(evt);
-            }
-        });
-        jMenu3.add(openDataModelEditor);
         jMenu3.add(jSeparator5);
 
         openDataBrowserItem.setText("Data Browser");
@@ -628,6 +633,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
         jMenu3.add(openDataBrowserItem);
+
+        closureToolMenuItem.setText("Closure Browser");
+        closureToolMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                closureToolMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu3.add(closureToolMenuItem);
 
         queryBuilder.setText("Query Builder");
         queryBuilder.addActionListener(new java.awt.event.ActionListener() {
@@ -909,7 +922,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	private void openDataModelEditor(Table toEdit) {
 		try {
     		if (saveIfNeeded("edit data model", true)) {
-       			DataModelEditor dataModelEditor = new DataModelEditor(this, false, toEdit);
+    			String modelname = extractionModelEditor.dataModel == null? DataModel.DEFAULT_NAME : extractionModelEditor.dataModel.getName();
+       			DataModelEditor dataModelEditor = new DataModelEditor(this, false, false, toEdit, null, null, modelname, null);
        			dataModelEditor.setVisible(true);
        		//	if (dataModelEditor.saved) {
        				reload();
@@ -928,19 +942,28 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		        	List<String> args = new ArrayList<String>();
 		        	args.add("build-model");
 		        	dbConnectionDialog.addDbArgs(args);
+		        	
+		        	AnalyseOptionsDialog analyseOptionsDialog = new AnalyseOptionsDialog(this, extractionModelEditor.dataModel);
 		        	boolean[] isDefaultSchema = new boolean[1];
-	        		String schema = dbConnectionDialog.selectDBSchema(this, isDefaultSchema);
-	        		if (!"".equals(schema)) {
-		        		if (schema != null) {
+		        	String[] defaultSchema = new String[1];
+	        		List<String> schemas = dbConnectionDialog.getDBSchemas(defaultSchema);
+	        		if (analyseOptionsDialog.edit(schemas, defaultSchema[0], isDefaultSchema, dbConnectionDialog.currentConnection.user)) {
+	        			String schema = analyseOptionsDialog.getSelectedSchema();
+	        			if (schema != null) {
 		        			args.add("-schema");
 		        			args.add(schema);
 		        		}
 		        		if (!isDefaultSchema[0]) {
 		        			args.add("-qualifyNames");
 		        		}
-			        	if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword(), null, null, false, true)) {
-		        			DataModelEditor dataModelEditor = new DataModelEditor(this, true, null);
-							dataModelEditor.setVisible(true);
+						ModelBuilder.assocFilter = analyseOptionsDialog.getAssociationLineFilter();
+						if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword(), null, null, false, true)) {
+			        		ModelBuilder.assocFilter = null;
+			    			String modelname = extractionModelEditor.dataModel == null? DataModel.DEFAULT_NAME : extractionModelEditor.dataModel.getName();
+			        		DataModelEditor dataModelEditor = new DataModelEditor(this, true, analyseOptionsDialog.isRemoving(), null, analyseOptionsDialog.getTableLineFilter(), analyseOptionsDialog.getAssociationLineFilter(), modelname, schema == null? dbConnectionDialog.getName() : schema);
+							if (dataModelEditor.dataModelHasChanged()) {
+								dataModelEditor.setVisible(true);
+							}
 		           //			if (dataModelEditor.saved) {
 		           				reload();
 		           //			}
@@ -948,9 +971,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		        		}
 	        		}
 	        	}
+    			askForDataModel(this);
     		}
         } catch (Exception e) {
         	UIUtil.showException(this, "Error", e);
+        } finally {
+        	ModelBuilder.assocFilter = null;
         }
     }//GEN-LAST:event_updateDataModelActionPerformed
 
@@ -1404,6 +1430,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private void openDataBrowserItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openDataBrowserItemActionPerformed
         openDataBrowser(extractionModelEditor.root, "");
     }//GEN-LAST:event_openDataBrowserItemActionPerformed
+
+    private void closureToolMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closureToolMenuItemActionPerformed
+    	openClosureView(extractionModelEditor.root);
+    }//GEN-LAST:event_closureToolMenuItemActionPerformed
     
     boolean isHorizontalLayout = false;
 	
@@ -1442,6 +1472,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 */
 	public static void customizeNimbus() {
 		try {
+			ToolTipManager.sharedInstance().setDismissDelay(20000);
 	    	Color bgSelColor = new Color(170, 200, 255);
 			// very (!) ugly trick to change nimbus default colors, but I found no better way
 			Object o = UIManager.get("Tree:TreeCell[Focused+Selected].backgroundPainter");
@@ -1594,10 +1625,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		associations.delete();
 		File exDel = new File(DataModel.getExcludeFromDeletionFile());
 		exDel.delete();
-		File iData= new File(DataModel.getInitialDataTablesFile());
+		File iData = new File(DataModel.getInitialDataTablesFile());
 		iData.delete();
-		File vers= new File(DataModel.getVersionFile());
+		File vers = new File(DataModel.getVersionFile());
 		vers.delete();
+		File name = new File(DataModel.getModelNameFile());
+		name.delete();
 		try {
 			PrintWriter out = new PrintWriter(new FileOutputStream(tables));
 			out.println("# Name; Upsert; Primary key; ; Author");
@@ -1640,6 +1673,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			out = new PrintWriter(new FileOutputStream(vers));
 			out.println(Jailer.VERSION);
 			out.close();
+			out = new PrintWriter(name);
+			out.println("# table; display name");
+			out.println("Demo; " + (new Date().getTime()));
+			out.close();
 			extractionModelFrame.load("Demo.csv");
 		} catch (Exception e) {
 			UIUtil.showException(extractionModelFrame, "Error", e);
@@ -1648,6 +1685,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem closureMenuItem;
+    private javax.swing.JMenuItem closureToolMenuItem;
     private javax.swing.JMenuItem collapseAll;
     private javax.swing.JCheckBoxMenuItem connectDb;
     private javax.swing.JMenuItem cycleView;
@@ -1665,6 +1703,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem helpForum;
     private javax.swing.JCheckBoxMenuItem horizontalLayoutMenuItem;
     private javax.swing.JMenuItem ignoreAll;
+    private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
@@ -1678,10 +1717,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator11;
     private javax.swing.JSeparator jSeparator12;
     private javax.swing.JSeparator jSeparator2;
-    private javax.swing.JSeparator jSeparator3;
     private javax.swing.JSeparator jSeparator4;
     private javax.swing.JSeparator jSeparator5;
-    private javax.swing.JSeparator jSeparator6;
     private javax.swing.JSeparator jSeparator7;
     private javax.swing.JSeparator jSeparator8;
     private javax.swing.JSeparator jSeparator9;

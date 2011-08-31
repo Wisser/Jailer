@@ -1,3 +1,8 @@
+3.6.6
+ - Improved schema analyzer.
+ - Improved progress view.
+ - Added status bar to Data Browser.
+
 3.6.5
  - Fix for bug [ jailer-Bugs-3394456 ] "IOException: 36 char of CLOB data cannot be read"
 

@@ -373,6 +373,8 @@ public class AssociationEditor extends javax.swing.JDialog {
 		for (Line table: tables) {
 			sortedTableNames.add(table.cells.get(0));
 		}
+		sortedTableNames.add(association.cells.get(0));
+		sortedTableNames.add(association.cells.get(1));
 		for (String tableName: sortedTableNames) {
 			tablesModel1.addElement(tableName);
 			tablesModel2.addElement(tableName);

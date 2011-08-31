@@ -92,7 +92,7 @@ public class Association extends ModelElement {
      * Unique association ID. -1 if id is not yet defined.
      */
     int id = -1;
-    
+
     /**
      * Constructor.
      * 
@@ -108,6 +108,25 @@ public class Association extends ModelElement {
      * @param cardinality the cardinality (optional)
      */
     public Association(Table source, Table destination, boolean insertSourceBeforeDestination, boolean insertDestinationBeforeSource, String joinCondition, DataModel dataModel, boolean reversed, Cardinality cardinality) {
+    	this(source, destination, insertSourceBeforeDestination, insertDestinationBeforeSource, joinCondition, dataModel, reversed, cardinality, null);
+    }
+
+    /**
+     * Constructor.
+     * 
+     * @param source the source table
+     * @param destination the destination table
+     * @param joinCondition the join-condition for join with destination table
+     * @param insertSourceBeforeDestination whether or not to insert source-rows before destination rows
+     *             in order to prevent foreign-key-constraint violation
+     * @param insertDestinationBeforeSource whether or not to insert destination-rows before source-rows
+     *             in order to prevent foreign-key-constraint violation
+     * @param dataModel data-model containing this association
+     * @param reversed <code>true</code> for reversed association
+     * @param cardinality the cardinality (optional)
+     * @param author the author
+     */
+    public Association(Table source, Table destination, boolean insertSourceBeforeDestination, boolean insertDestinationBeforeSource, String joinCondition, DataModel dataModel, boolean reversed, Cardinality cardinality, String author) {
         this.source = source;
         this.destination = destination;
         this.insertSourceBeforeDestination = insertSourceBeforeDestination;
@@ -116,6 +135,9 @@ public class Association extends ModelElement {
         this.dataModel = dataModel;
         this.reversed = reversed;
         this.cardinality = cardinality;
+        if (author != null) {
+        	setAuthor(author);
+        }
     }
 
     /**
