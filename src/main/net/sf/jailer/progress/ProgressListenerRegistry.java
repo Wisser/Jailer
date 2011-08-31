@@ -54,7 +54,10 @@ public class ProgressListenerRegistry {
 	
 	private static ProgressListener NULL_PROGRESS_LISTENER = new ProgressListener() {
 		@Override
-		public void startedCollection(int day, ModelElement association) {
+		public void collectionJobEnqueued(int day, ModelElement association) {
+		}
+		@Override
+		public void collectionJobStarted(int day, ModelElement modelElement) {
 		}
 		@Override
 		public void collected(int day, ModelElement association, long numberOfRows) {

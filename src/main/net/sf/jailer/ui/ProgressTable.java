@@ -64,7 +64,8 @@ public class ProgressTable extends JTable {
 	private final List<Color> bgColors = new ArrayList<Color>();
 	private final Color BG1 = new Color(255, 255, 255);
 	private final Color BG2 = new Color(240, 255, 255);
-	private final Color SELECTED_FG = new Color(255, 40, 0);
+	private final Color SELECTED_FG = new Color(180, 160, 0);
+	private final Color INPROGRESS_FG = new Color(255, 40, 0);
 
 	/**
 	 * Holds infos about a cell.
@@ -77,6 +78,7 @@ public class ProgressTable extends JTable {
 		// Calculated
 		public int row, column;
 		public List<CellInfo> parents;
+		public boolean inProgress = false;
 	};
 
 	/**
@@ -164,8 +166,8 @@ public class ProgressTable extends JTable {
 					}
 					if (cellInfo.numberOfRows < 0) {
 						numberRender.setText("?");
-						tableRender.setForeground(SELECTED_FG);
-						numberRender.setForeground(SELECTED_FG);
+						tableRender.setForeground(cellInfo.inProgress? INPROGRESS_FG : SELECTED_FG);
+						numberRender.setForeground(cellInfo.inProgress? INPROGRESS_FG : SELECTED_FG);
 					} else if (cellInfo.numberOfRows == 0) {
 						numberRender.setText(cellInfo.numberOfRows + " rows");
 						tableRender.setForeground(Color.GRAY);
@@ -342,8 +344,10 @@ public class ProgressTable extends JTable {
 		}
 		Rectangle r = getCellRect(getRowCount() - 1, 1, true);
 		Rectangle visible = getVisibleRect();
-
-		return visible.y <= r.y && visible.y + visible.height >= r.y + r.height;
+		
+		boolean isVisible = r.y <= visible.y + visible.height;
+		return isVisible;
+//		return visible.y <= r.y && visible.y + visible.height >= r.y + r.height;
 	}
 
 	/**
@@ -592,7 +596,9 @@ public class ProgressTable extends JTable {
 			}
 		}
 		if (scrollToBottom && getRowCount() > 0) {
-			scrollRectToVisible(getCellRect(getRowCount() - 1, 1, true));
+			Rectangle cellRect = getCellRect(getRowCount() - 1, 1, true);
+			scrollRectToVisible(cellRect);
+			scrollRectToVisible(cellRect);
 		}
 		invalidate();
 		repaint();

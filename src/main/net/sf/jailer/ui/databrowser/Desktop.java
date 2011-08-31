@@ -527,7 +527,7 @@ public class Desktop extends JDesktopPane {
 	}
 
 	private Rectangle layout(final boolean fullSize, final RowBrowser parent, Association association, BrowserContentPane browserContentPane, Collection<RowBrowser> ignore) {
-		final int MIN = 0, HEIGHT = 460, MIN_HEIGHT = 80, DISTANCE = 32;
+		final int MIN = 0, HEIGHT = 460, /* MIN_HEIGHT = 80, */ DISTANCE = 32;
 
 		int x = MIN;
 		int y = MIN;
@@ -1155,7 +1155,6 @@ public class Desktop extends JDesktopPane {
 	 * Reloads the data model and replaces the tables in all browser windows.
 	 */
 	public void reloadDataModel() throws Exception {
-		DataModel oldModel = datamodel.get();
 		DataModel newModel = new DataModel();
 		
 		for (RowBrowser rb: tableBrowsers) {

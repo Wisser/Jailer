@@ -26,12 +26,20 @@ import net.sf.jailer.datamodel.Table;
 public interface ProgressListener {
 
 	/**
+	 * A collection-job has been enqueued.
+	 * 
+	 * @param day the day
+	 * @param modelElement the association or table to be resolved
+	 */
+	void collectionJobEnqueued(int day, ModelElement modelElement);
+	
+	/**
 	 * Collection of rows has been started.
 	 * 
 	 * @param day the day
 	 * @param modelElement the association or table to be resolved
 	 */
-	void startedCollection(int day, ModelElement modelElement);
+	void collectionJobStarted(int day, ModelElement modelElement);
 	
 	/**
 	 * Rows have been collected.

@@ -712,6 +712,24 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}// GEN-LAST:event_jButton1ActionPerformed
 
 	/**
+	 * Gets all DB schemas.
+	 * 
+	 * @param defaultSchema array of size 1 to put default schema into (null if no schema exists)
+	 * @return all DB schemas
+	 */
+	public List<String> getDBSchemas(String[] defaultSchema) throws Exception {
+		Session session = new Session(currentConnection.driverClass,
+				currentConnection.url, currentConnection.user,
+				currentConnection.password);
+		List<String> schemas = JDBCMetaDataBasedModelElementFinder.getSchemas(
+				session, currentConnection.user);
+		defaultSchema[0] = JDBCMetaDataBasedModelElementFinder
+				.getDefaultSchema(session, currentConnection.user);
+		session.shutDown();
+		return schemas;
+	}
+
+	/**
 	 * Selects the DB-schema to analyze.
 	 * 
 	 * @param isDefaultSchema
@@ -798,4 +816,5 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}
 
 	private static final long serialVersionUID = -3983034803834547687L;
+
 }

@@ -77,6 +77,9 @@ public class UIProgressListener implements ProgressListener {
 
 	private final DataModel dataModel;
 
+	private Map<Table, Integer> inProgress = new HashMap<Table, Integer>();
+	private boolean cleanupLastLine = false;
+
 	/**
 	 * Constructor.
 	 * 
@@ -167,6 +170,7 @@ public class UIProgressListener implements ProgressListener {
 		for (Map.Entry<ModelElement, Long> e : collections.get(day).entrySet()) {
 			ProgressTable.CellInfo cell = row.get(getDestination(e.getKey()));
 			if (cell != null) {
+				cell.inProgress = inProgress.containsKey(getDestination(e.getKey()));
 				if (e.getValue() == null) {
 					cell.numberOfRows = -1;
 				} else {
@@ -176,6 +180,7 @@ public class UIProgressListener implements ProgressListener {
 				}
 			} else {
 				cell = new ProgressTable.CellInfo();
+				cell.inProgress = inProgress.containsKey(getDestination(e.getKey()));
 				cell.numberOfRows = e.getValue() == null ? -1 : e.getValue();
 				cell.tableName = dataModel.getDisplayName(getDestination(e.getKey()));
 				cell.parentNames = new HashSet<String>();
@@ -188,12 +193,15 @@ public class UIProgressListener implements ProgressListener {
 			}
 		}
 		List<ProgressTable.CellInfo> theRow = new ArrayList<ProgressTable.CellInfo>(row.values());
-		if (day < today) {
-			for (Iterator<ProgressTable.CellInfo> i = theRow.iterator(); i.hasNext();) {
-				if (i.next().numberOfRows == 0) {
-					i.remove();
+		if (day < today || cleanupLastLine ) {
+			if (day > 1) {
+				for (Iterator<ProgressTable.CellInfo> i = theRow.iterator(); i.hasNext();) {
+					if (i.next().numberOfRows == 0) {
+						i.remove();
+					}
 				}
 			}
+			cleanupLastLine = false;
 		}
 		if (day == lastUpdated) {
 			progressTable.replaceLastRow(theRow, day);
@@ -222,6 +230,13 @@ public class UIProgressListener implements ProgressListener {
 	 */
 	@Override
 	public synchronized void collected(int day, ModelElement modelElement, long rc) {
+		Table destination = getDestination(modelElement);
+		Integer count = inProgress.get(destination);
+		if (count == null || count <= 1) {
+			inProgress.remove(destination);
+		} else {
+			inProgress.put(destination, count - 1);
+		}
 		if (collections.size() > day) {
 			collections.get(day).put(modelElement, rc);
 			if (rc < 0) {
@@ -243,7 +258,7 @@ public class UIProgressListener implements ProgressListener {
 	}
 
 	/**
-	 * Collection of rows has been started.
+	 * A collection-job has been enqueued.
 	 * 
 	 * @param day
 	 *            the day
@@ -251,12 +266,31 @@ public class UIProgressListener implements ProgressListener {
 	 *            the association or table to be resolved
 	 */
 	@Override
-	public synchronized void startedCollection(int day, ModelElement modelElement) {
+	public synchronized void collectionJobEnqueued(int day, ModelElement modelElement) {
 		today = day;
 		while (collections.size() <= today) {
 			collections.add(new HashMap<ModelElement, Long>());
 		}
 		collections.get(today).put(modelElement, null);
+		lastRowIsUptodate = false;
+	}
+
+	/**
+	 * A collection-job has been enqueued.
+	 * 
+	 * @param day the day
+	 * @param modelElement the association or table to be resolved
+	 */
+	@Override
+	public synchronized void collectionJobStarted(int day, ModelElement modelElement) {
+		Table destination = getDestination(modelElement);
+		Integer count = inProgress.get(destination);
+		if (count == null) {
+			count = 1;
+		} else {
+			count = count + 1;
+		}
+		inProgress.put(destination, count);
 		lastRowIsUptodate = false;
 	}
 
@@ -292,6 +326,8 @@ public class UIProgressListener implements ProgressListener {
 		this.currentStep = stage;
 		this.isErrorStage = isErrorStage;
 		this.stopClock = isFinalStage;
+		this.lastRowIsUptodate = false;
+		this.cleanupLastLine = true;
 	}
 
 }

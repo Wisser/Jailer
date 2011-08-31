@@ -100,7 +100,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "3.6.5";
+	public static final String VERSION = "3.6.6";
 
 	/**
 	 * The relational data model.
@@ -202,7 +202,8 @@ public class Jailer {
 		int today = entityGraph.getAge();
 		entityGraph.setAge(today + 1);
 		Map<Table, Collection<Association>> progress = new HashMap<Table, Collection<Association>>();
-		ProgressListenerRegistry.getProgressListener().startedCollection(1, table);
+		ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(1, table);
+		ProgressListenerRegistry.getProgressListener().collectionJobStarted(1, table);
 		long rc = entityGraph.addEntities(table, condition, today, limit);
 		ProgressListenerRegistry.getProgressListener().collected(1, table, rc);
 		if (rc > 0) {
@@ -268,7 +269,8 @@ public class Jailer {
 				_log.info("exporting all " + datamodel.getDisplayName(table));
 
 				int today = entityGraph.getAge();
-				ProgressListenerRegistry.getProgressListener().startedCollection(1, table);
+				ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(1, table);
+				ProgressListenerRegistry.getProgressListener().collectionJobStarted(1, table);
 				long rc = entityGraph.addEntities(table, "1=1", today, 0);
 				ProgressListenerRegistry.getProgressListener().collected(1, table, rc);
 				entityGraph.setAge(today + 1);
@@ -338,7 +340,7 @@ public class Jailer {
 
 				String jc = association.getJoinCondition();
 		        if (jc != null) {
-		        	ProgressListenerRegistry.getProgressListener().startedCollection(today, association);
+		        	ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today, association);
 		        }
 				JobManager.Job job = new JobManager.Job() {
 					public void run() throws Exception {
@@ -346,6 +348,7 @@ public class Jailer {
 						if (association.getJoinCondition() != null) {
 							_log.info("resolving " + datamodel.getDisplayName(table) + " -> " + association.toString(0, true) + "...");
 						}
+						ProgressListenerRegistry.getProgressListener().collectionJobStarted(today, association);
 						long rc = entityGraph.resolveAssociation(table, association, today);
 						ProgressListenerRegistry.getProgressListener().collected(today, association, rc);
 						if (rc >= 0) {

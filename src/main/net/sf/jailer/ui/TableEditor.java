@@ -761,6 +761,14 @@ public class TableEditor extends javax.swing.JDialog {
 			tableLine.cells.set(0, nameField.getText().trim());
 			tableLine.cells.set(1, upsertCheckbox.isSelected()? "Y" : "N");
 			
+			// update author
+			for (int i = 0; i < tableLine.cells.size() ; ++i) {
+				if ("".equals(tableLine.cells.get(i))) {
+					tableLine.cells.set(i+1, DataModelEditor.DATA_MODEL_EDITOR_AUTHOR);
+					break;
+				}
+			}
+			
 			//rename associations source/destination
 			for (Line a: associations) {
 				if (a.cells.get(0).equalsIgnoreCase(origName.trim())) {
