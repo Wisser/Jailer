@@ -85,7 +85,12 @@ public class SqlUtil {
             if (c == 'A' || c == 'B' || c == 'a' || c == 'b') {
                 if (i + 1 < condition.length() && condition.charAt(i + 1) == '.') {
                     if (i == 0 || chars.indexOf(condition.charAt(i - 1)) < 0) {
-                        result.append(c == 'A' || c == 'a'? aliasA : aliasB);
+                        String alias = c == 'A' || c == 'a'? aliasA : aliasB;
+                        if (alias == null) {
+                        	++i; // skip '.'
+                        } else {
+                        	result.append(alias);
+                        }
                         continue;
                     }
                 }

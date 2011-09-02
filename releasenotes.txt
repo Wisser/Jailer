@@ -1,3 +1,7 @@
+3.6.7
+ - Improved syntax highlighting.
+ - 
+
 3.6.6
  - Improved schema analyzer.
  - Improved progress view.

@@ -281,7 +281,10 @@ public class CommandLineParser {
 
 	@Option(name="-no-sorting", usage="if set, the exported rows will not be sorted according to foreign key constraints")
     public boolean noSorting = false;
-
+	
+	@Option(name="-transactional", usage="if set, import rows transactional")
+    public boolean transactional = false;
+	
 	@Argument
     public List<String> arguments = new ArrayList<String>();
 
