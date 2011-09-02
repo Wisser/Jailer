@@ -27,8 +27,6 @@ import net.sf.jailer.xml.XmlUtil;
 
 import org.w3c.dom.Document;
 
-import sdoc.SyntaxSupport;
-
 /**
  * XML Column Mapping Dialog.
  *
@@ -60,8 +58,8 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         		 }
         	 }
         });
+        mappingField.setContentType("text/xml");
         UIUtil.initPeer();
-        SyntaxSupport.getInstance().addSupport(SyntaxSupport.XML_LEXER, mappingField); 
     }
 
     /**
@@ -92,7 +90,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 			try {
 				// try again with default template,
 				// there was a bug in Jailer 3.0 which causes corruption of XML templates
-				// in windows platform
+				// on windows platform
 				mappingField.setText(XmlUtil.build(table.getDefaultXmlTemplate()));
 			} catch (Exception e2) {
 				UIUtil.showException(parent, "Error", e);
@@ -117,10 +115,8 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        tableCombobox = new net.sf.jailer.ui.JComboBox();
+        tableCombobox = new javax.swing.JComboBox();
         jLabel2 = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        mappingField = new javax.swing.JTextArea();
         jPanel2 = new javax.swing.JPanel();
         formatButton = new javax.swing.JButton();
         resetButton = new javax.swing.JButton();
@@ -128,6 +124,8 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
         paramPanel = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        mappingField = new javax.swing.JEditorPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("XML Column Mapping");
@@ -158,21 +156,6 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel1.add(jLabel2, gridBagConstraints);
-
-        mappingField.setColumns(20);
-        mappingField.setRows(5);
-        mappingField.setOpaque(false);
-        jScrollPane1.setViewportView(mappingField);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 20;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
-        jPanel1.add(jScrollPane1, gridBagConstraints);
 
         formatButton.setText("Format");
         formatButton.addActionListener(new java.awt.event.ActionListener() {
@@ -224,6 +207,18 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanel1.add(paramPanel, gridBagConstraints);
 
+        jScrollPane2.setViewportView(mappingField);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        jPanel1.add(jScrollPane2, gridBagConstraints);
+
         getContentPane().add(jPanel1);
 
         pack();
@@ -272,8 +267,8 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextArea mappingField;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JEditorPane mappingField;
     private javax.swing.JButton okButton;
     private javax.swing.JPanel paramPanel;
     private javax.swing.JButton resetButton;

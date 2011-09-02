@@ -29,7 +29,6 @@ import javax.swing.JSeparator;
 
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
-import sdoc.SyntaxSupport;
 
 /**
  * Editor for multi-line SQL conditions with parameter support.
@@ -49,14 +48,12 @@ public class ConditionEditor extends javax.swing.JDialog {
         setSize(600, 400);
         
         if (parametersGetter != null) {
-        	paramsPanel.add(parameterSelector = new ParameterSelector(this, textArea, parametersGetter));
+        	paramsPanel.add(parameterSelector = new ParameterSelector(this, editorPane, parametersGetter));
         } else {
         	paramsPanel.setVisible(false);
         }
         
-        SyntaxSupport instance = SyntaxSupport.getInstance();
-        instance.highlightCurrent(false);
-		instance.addSupport(SyntaxSupport.SQL_LEXER, textArea);
+        editorPane.setContentType("text/sql");
 		table1dropDown.setText(null);
 		table1dropDown.setIcon(dropDownIcon);
 		table2dropDown.setText(null);
@@ -111,9 +108,9 @@ public class ConditionEditor extends javax.swing.JDialog {
 			JMenuItem m = new JMenuItem(c);
 			m.addActionListener(new ActionListener () {
 				public void actionPerformed(ActionEvent e) {
-					if (textArea.isEnabled()) {
-						if (textArea.isEditable()) {
-							textArea.replaceSelection(c);
+					if (editorPane.isEnabled()) {
+						if (editorPane.isEditable()) {
+							editorPane.replaceSelection(c);
 						}
 					}
 				}
@@ -134,8 +131,6 @@ public class ConditionEditor extends javax.swing.JDialog {
 
         jPanel1 = new javax.swing.JPanel();
         paramsPanel = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        textArea = new javax.swing.JTextArea();
         jPanel2 = new javax.swing.JPanel();
         table1label = new javax.swing.JLabel();
         table1name = new javax.swing.JLabel();
@@ -147,6 +142,8 @@ public class ConditionEditor extends javax.swing.JDialog {
         jPanel3 = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        editorPane = new javax.swing.JEditorPane();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         getContentPane().setLayout(new java.awt.GridBagLayout());
@@ -161,19 +158,6 @@ public class ConditionEditor extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weighty = 1.0;
         jPanel1.add(paramsPanel, gridBagConstraints);
-
-        textArea.setColumns(20);
-        textArea.setRows(5);
-        textArea.setOpaque(false);
-        jScrollPane1.setViewportView(textArea);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel1.add(jScrollPane1, gridBagConstraints);
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
@@ -265,6 +249,16 @@ public class ConditionEditor extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         jPanel1.add(jPanel3, gridBagConstraints);
 
+        jScrollPane2.setViewportView(editorPane);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(jScrollPane2, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 10;
@@ -326,12 +320,12 @@ public class ConditionEditor extends javax.swing.JDialog {
 			this.table2dropDown.setVisible(false);
 		}
 		ok = false;
-		textArea.setText(condition);
+		editorPane.setText(condition);
 		if (parameterSelector != null) {
 			parameterSelector.updateParameters();
 		}
 		setVisible(true);
-		return ok? textArea.getText() : null;
+		return ok? editorPane.getText() : null;
 	}
     
     /**
@@ -383,11 +377,12 @@ public class ConditionEditor extends javax.swing.JDialog {
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
+    private javax.swing.JEditorPane editorPane;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JButton okButton;
     private javax.swing.JPanel paramsPanel;
     private javax.swing.JLabel table1dropDown;
@@ -396,7 +391,6 @@ public class ConditionEditor extends javax.swing.JDialog {
     private javax.swing.JLabel table2dropDown;
     private javax.swing.JLabel table2label;
     private javax.swing.JLabel table2name;
-    private javax.swing.JTextArea textArea;
     // End of variables declaration//GEN-END:variables
     
     private Icon dropDownIcon;

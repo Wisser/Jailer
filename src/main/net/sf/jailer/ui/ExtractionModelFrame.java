@@ -45,6 +45,8 @@ import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
+import jsyntaxpane.DefaultSyntaxKit;
+
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.DDLCreator;
 import net.sf.jailer.Jailer;
@@ -852,7 +854,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      */
 	public void openDataBrowser(Table root, String condition) {
     	if (dbConnectionDialog.isConnected || dbConnectionDialog.connect("Data Browser")) {
-			DataBrowser dataBrowser;
+			updateMenuItems();
+    		DataBrowser dataBrowser;
 			try {
 				dataBrowser = new DataBrowser(extractionModelEditor.dataModel, root, condition, dbConnectionDialog, true);
 				dataBrowser.setVisible(true);
@@ -946,7 +949,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		        	AnalyseOptionsDialog analyseOptionsDialog = new AnalyseOptionsDialog(this, extractionModelEditor.dataModel);
 		        	boolean[] isDefaultSchema = new boolean[1];
 		        	String[] defaultSchema = new String[1];
-	        		List<String> schemas = dbConnectionDialog.getDBSchemas(defaultSchema);
+		        	setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		        	List<String> schemas;
+		        	try {
+		    			schemas = dbConnectionDialog.getDBSchemas(defaultSchema);
+		    		} finally {
+		    			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		    		}
 	        		if (analyseOptionsDialog.edit(schemas, defaultSchema[0], isDefaultSchema, dbConnectionDialog.currentConnection.user)) {
 	        			String schema = analyseOptionsDialog.getSelectedSchema();
 	        			if (schema != null) {
@@ -1550,6 +1559,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     		    	customizeNimbus();
     			} catch (Exception x) {
     			}
+            	try {
+        	    	DefaultSyntaxKit.initKit();
+            	} catch (Exception x) {
+    			}
             	
 //    			JFrame dummy = new JFrame();
 //    			dummy.setIconImage(new ImageIcon(ExtractionModelFrame.class.getResource("/net/sf/jailer/resource/jailer.png")).getImage());
@@ -1587,7 +1600,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         	    	}
     	    	}
                 extractionModelFrame.setLocation(40, 40);
-                extractionModelFrame.setSize(960, 660);
+                extractionModelFrame.setSize(1100, 660);
                 extractionModelFrame.setVisible(true);
                 askForDataModel(extractionModelFrame);
             }

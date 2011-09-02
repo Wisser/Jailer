@@ -41,7 +41,6 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.SqlUtil;
-import sdoc.SyntaxSupport;
 
 /**
  * Query Builder Dialog.
@@ -54,9 +53,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     public QueryBuilderDialog(java.awt.Frame parent) {
         super(parent, true);
         initComponents();
-        SyntaxSupport instance = SyntaxSupport.getInstance();
-        instance.highlightCurrent(false);
-		instance.addSupport(SyntaxSupport.SQL_LEXER, sqlTextArea);
+        sqlTextArea.setContentType("text/sql");
 		setLocation(100, 150);
 		pack();
 		setSize(Math.max(700, getWidth()), 500);
@@ -74,14 +71,14 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
         relationshipsPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        sqlTextArea = new javax.swing.JTextArea();
         jPanel3 = new javax.swing.JPanel();
-        singleLineCB = new javax.swing.JCheckBox();
         qualifyNamesCB = new javax.swing.JCheckBox();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        sqlTextArea = new javax.swing.JEditorPane();
         jPanel2 = new javax.swing.JPanel();
         joinAWithBButton = new javax.swing.JButton();
         saveButton = new javax.swing.JButton();
+        clipboardSingleLineButton = new javax.swing.JButton();
         clipboardButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -101,38 +98,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1), "SQL Query", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("DejaVu Sans", 0, 12), new java.awt.Color(86, 82, 125))); // NOI18N
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        sqlTextArea.setColumns(20);
-        sqlTextArea.setRows(5);
-        sqlTextArea.setOpaque(false);
-        jScrollPane1.setViewportView(sqlTextArea);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        jPanel1.add(jScrollPane1, gridBagConstraints);
-
         jPanel3.setLayout(new java.awt.GridBagLayout());
-
-        singleLineCB.setText("single line  ");
-        singleLineCB.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                singleLineCBStateChanged(evt);
-            }
-        });
-        singleLineCB.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                singleLineCBItemStateChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        jPanel3.add(singleLineCB, gridBagConstraints);
 
         qualifyNamesCB.setText("qualify table names");
         qualifyNamesCB.addChangeListener(new javax.swing.event.ChangeListener() {
@@ -162,6 +128,17 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         jPanel1.add(jPanel3, gridBagConstraints);
+
+        jScrollPane2.setViewportView(sqlTextArea);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        jPanel1.add(jScrollPane2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -201,6 +178,19 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         jPanel2.add(saveButton, gridBagConstraints);
 
+        clipboardSingleLineButton.setText(" Copy as Single Line ");
+        clipboardSingleLineButton.setToolTipText(" Copy the query as a single line to the clipboard");
+        clipboardSingleLineButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                clipboardSingleLineButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 4);
+        jPanel2.add(clipboardSingleLineButton, gridBagConstraints);
+
         clipboardButton.setText(" Copy to Clipboard ");
         clipboardButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -210,7 +200,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 4);
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         jPanel2.add(clipboardButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -241,9 +231,6 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         sqlTextArea.select(0, 0);
     }//GEN-LAST:event_clipboardButtonActionPerformed
 
-    private void singleLineCBStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_singleLineCBStateChanged
-}//GEN-LAST:event_singleLineCBStateChanged
-
     private void qualifyNamesCBStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_qualifyNamesCBStateChanged
 }//GEN-LAST:event_qualifyNamesCBStateChanged
 
@@ -259,14 +246,14 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     	updateSQL();
     }//GEN-LAST:event_qualifyNamesCBItemStateChanged
 
-    private void singleLineCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_singleLineCBItemStateChanged
-    	if (singleLineCB.isSelected()) {
-    		sqlTextArea.setText(sqlTextArea.getText().replaceAll(" *(\n|\r)+ *", " "));
-    		sqlTextArea.setCaretPosition(0);
-    	} else {
-    		updateSQL();
-    	}
-    }//GEN-LAST:event_singleLineCBItemStateChanged
+    private void clipboardSingleLineButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clipboardSingleLineButtonActionPerformed
+        String orig = sqlTextArea.getText();
+        sqlTextArea.setText(orig.replaceAll(" *(\n|\r)+ *", " "));
+        sqlTextArea.selectAll();
+        sqlTextArea.copy();
+        sqlTextArea.setText(orig);
+        sqlTextArea.select(0, 0);
+}//GEN-LAST:event_clipboardSingleLineButtonActionPerformed
 
     private Font font = new JLabel("normal").getFont();
     
@@ -556,7 +543,6 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     	}
     }
 	
-    private boolean sqlIsSingleLine = false;
     private boolean qualifyTableNames = false;
     private String prevSQL = "";
     
@@ -569,14 +555,10 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     	String suffix = "";
     	if (sql.startsWith(currentSql)) {
     		suffix = sql.substring(currentSql.length());
-    		if (sqlIsSingleLine) {
-    			suffix = suffix.replaceAll("(\n|\r)+", " ");
-    		}
     	}
-    	sqlIsSingleLine = singleLineCB.isSelected();
     	qualifyTableNames = qualifyNamesCB.isSelected();
-    	sqlTextArea.setText((prevSQL = createSQL(sqlIsSingleLine, qualifyTableNames)) + suffix);
-    	sqlTextArea.setCaretPosition(0);  
+    	sqlTextArea.setText((prevSQL = createSQL(false, qualifyTableNames)) + suffix);
+    	sqlTextArea.setCaretPosition(0);
     }
     
     /**
@@ -788,16 +770,16 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton clipboardButton;
+    private javax.swing.JButton clipboardSingleLineButton;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
-    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JButton joinAWithBButton;
     private javax.swing.JCheckBox qualifyNamesCB;
     private javax.swing.JPanel relationshipsPanel;
     private javax.swing.JButton saveButton;
-    private javax.swing.JCheckBox singleLineCB;
-    private javax.swing.JTextArea sqlTextArea;
+    private javax.swing.JEditorPane sqlTextArea;
     // End of variables declaration//GEN-END:variables
     
     private static final long serialVersionUID = -2801831496446636545L;

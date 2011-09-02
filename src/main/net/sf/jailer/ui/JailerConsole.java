@@ -17,10 +17,10 @@ package net.sf.jailer.ui;
 
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
@@ -50,7 +50,7 @@ public class JailerConsole {
      * @param showExplainLogButton <code>true</code> for offering a button to open the explain-log-file
      * @param progressPanel progress panel, optional
      */
-	public JailerConsole(Frame owner, JDialog dialog, boolean showLogfileButton, boolean showExplainLogButton, ProgressPanel progressPanel, boolean fullSize) {
+	public JailerConsole(Window owner, JDialog dialog, boolean showLogfileButton, boolean showExplainLogButton, ProgressPanel progressPanel, boolean fullSize) {
 		this.dialog = dialog == null? new JDialog(owner) : dialog;
         this.progressPanel = progressPanel;
         this.fullSize = fullSize;
@@ -98,7 +98,7 @@ public class JailerConsole {
         	dialog.setSize(new Dimension(1010, 740));
            	dialog.setLocation(10, 50);
         } else {
-        	dialog.setSize(new Dimension(400, 400));
+        	dialog.setSize(new Dimension(600, 400));
         	dialog.setLocation(200, 250);
         }
         dialog.setContentPane(jPanel);

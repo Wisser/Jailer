@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui.databrowser;
 
+import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -41,6 +42,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
+
+import jsyntaxpane.DefaultSyntaxKit;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Jailer;
@@ -142,6 +145,10 @@ public class DataBrowser extends javax.swing.JFrame {
 		if (dbConnectionDialog != null) {
 			ConnectionInfo connection = dbConnectionDialog.currentConnection;
 			session = new Session(connection.driverClass, connection.url, connection.user, connection.password);
+			List<String> args = new ArrayList<String>();
+			dbConnectionDialog.addDbArgs(args);
+			session.setCliArguments(args);
+			session.setPassword(dbConnectionDialog.getPassword());
 		}
 		desktop = new Desktop(this.datamodel, jailerIcon, session, this);
 
@@ -217,8 +224,12 @@ public class DataBrowser extends javax.swing.JFrame {
 			// use default modelpath
 		}
 		modelpath += File.separator;
-		modelPath.setText(modelpath);
 		modelPath.setToolTipText(modelpath);
+		final int MAX_LENGTH = 50;
+		if (modelpath.length() > MAX_LENGTH + 4) {
+			modelpath = modelpath.substring(0, MAX_LENGTH/2) + "..." + modelpath.substring(modelpath.length() - MAX_LENGTH/2);
+		}
+		modelPath.setText(modelpath);
 	}
 
 	/**
@@ -575,6 +586,7 @@ public class DataBrowser extends javax.swing.JFrame {
 						System.exit(0);
 					}
 					ToolTipManager.sharedInstance().setDismissDelay(20000);
+					DefaultSyntaxKit.initKit();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -607,7 +619,12 @@ public class DataBrowser extends javax.swing.JFrame {
 			AnalyseOptionsDialog analyseOptionsDialog = new AnalyseOptionsDialog(this, datamodel == null? null : datamodel.get());
         	boolean[] isDefaultSchema = new boolean[1];
         	String[] defaultSchema = new String[1];
-    		List<String> schemas = dbConnectionDialog.getDBSchemas(defaultSchema);
+    		List<String> schemas;
+    		try {
+    			schemas = dbConnectionDialog.getDBSchemas(defaultSchema);
+    		} finally {
+    			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+    		}
     		if (analyseOptionsDialog.edit(schemas, defaultSchema[0], isDefaultSchema, dbConnectionDialog.currentConnection.user)) {
     			String schema = analyseOptionsDialog.getSelectedSchema();
 				if (schema != null) {

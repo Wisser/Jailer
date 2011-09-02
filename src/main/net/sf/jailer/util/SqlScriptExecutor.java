@@ -56,6 +56,34 @@ public class SqlScriptExecutor {
     private static final Logger _log = Logger.getLogger(SqlScriptExecutor.class);
 
     /**
+     * Number of executed statements (UI support)
+     */
+    private static int lastStatementCount;
+    
+    /**
+     * Reads in and executes a SQL-script.
+     * 
+     * @param scriptFileName the name of the script-file
+     * @param session for execution of statements
+     */
+    public static void executeScript(String scriptFileName, Session session, boolean transactional) throws IOException, SQLException {
+    	if (!transactional) {
+    		executeScript(scriptFileName, session);
+    		return;
+    	}
+    	try {
+    		executeScript(scriptFileName, session);
+    		session.commitAll();
+    	} catch (IOException e) {
+    		session.rollbackAll();
+    		throw e;
+    	} catch (SQLException e) {
+    		session.rollbackAll();
+    		throw e;
+    	}
+    }
+    
+    /**
      * Reads in and executes a SQL-script.
      * 
      * @param scriptFileName the name of the script-file
@@ -77,6 +105,7 @@ public class SqlScriptExecutor {
         long linesRead = 0;
         long bytesRead = 0;
         long t = System.currentTimeMillis();
+        int count = 0;
         while ((line = reader.readLine()) != null) {
         	bytesRead += line.length() + 1;
             line = line.trim();
@@ -102,7 +131,10 @@ public class SqlScriptExecutor {
             	boolean silent = session.getSilent();
             	session.setSilent(silent || stmt.trim().toLowerCase().startsWith("drop"));
             	try {
-                	session.execute(stmt);
+                	if (stmt.trim().length() > 0) {
+                		session.execute(stmt);
+                		++count;
+                	}
                 } catch (SQLException e) {
                 	// drops may fail
                 	if (!stmt.trim().toLowerCase().startsWith("drop")) {
@@ -133,6 +165,7 @@ public class SqlScriptExecutor {
         reader.close();
         _log.info(linesRead + " statements (100%)");
     	_log.info("successfully read file '" + scriptFileName + "'");
+    	setLastStatementCount(count);
     }
 
     /**
@@ -269,5 +302,19 @@ public class SqlScriptExecutor {
 		session.insertBlob(table, column, where, lobFile);
 		lobFile.delete();
 	}
+	
+    /**
+     * Sets number of executed statements (UI support)
+     */
+    private static synchronized void setLastStatementCount(int count) {
+    	lastStatementCount = count;
+    }
+
+    /**
+     * Sets number of executed statements (UI support)
+     */
+    public static synchronized int getLastStatementCount() {
+    	return lastStatementCount;
+    }
 
 }

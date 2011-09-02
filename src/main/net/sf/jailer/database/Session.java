@@ -33,6 +33,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Properties;
 
 import net.sf.jailer.util.CancellationHandler;
@@ -72,6 +73,8 @@ public class Session {
      * No SQL-Exceptions will be logged in silent mode. 
      */
     private boolean silent = false;
+    
+    private final boolean transactional;
     
     /**
      * Reads a JDBC-result-set.
@@ -192,7 +195,7 @@ public class Session {
      * @param password the DB-password
      */
     public Session(String driverClassName, final String dbUrl, final String user, final String password) throws Exception {
-    	this(driverClassName, dbUrl, user, password, null);
+    	this(driverClassName, dbUrl, user, password, null, false);
     }
     
     /**
@@ -203,7 +206,8 @@ public class Session {
      * @param user the DB-user
      * @param password the DB-password
      */
-    public Session(String driverClassName, final String dbUrl, final String user, final String password, final TemporaryTableScope scope) throws Exception {
+    public Session(String driverClassName, final String dbUrl, final String user, final String password, final TemporaryTableScope scope, boolean transactional) throws Exception {
+    	this.transactional = transactional;
         _log.info("connect to user " + user + " at "+ dbUrl);
         if (classLoaderForJdbcDriver != null) {
             Driver d = (Driver)Class.forName(driverClassName, true, classLoaderForJdbcDriver).newInstance();
@@ -226,6 +230,9 @@ public class Session {
                 if (con == null) {
                     con = DriverManager.getConnection(dbUrl, user, password);
                     boolean ac = scope == null || scope != TemporaryTableScope.TRANSACTION_LOCAL;
+                    if (Session.this.transactional) {
+                    	ac = false;
+                    }
                     _log.info("set auto commit to " + ac);
                     con.setAutoCommit(ac);
                     try {
@@ -668,6 +675,19 @@ public class Session {
     }
     
     /**
+     * Commits all connections.
+     */
+    public void commitAll() throws SQLException {
+    	for (Connection con: connections) {
+            try {
+            	con.commit();
+            } catch(SQLException e) {
+        		_log.warn(e.getMessage());
+        	}
+     	}
+    }
+    
+    /**
      * Gets optional schema for database analysis.
      * 
      * @return optional schema for database analysis
@@ -701,5 +721,43 @@ public class Session {
     	}
     	temporaryTableSession = null;
     }
+
+    /**
+     * CLI connection arguments (UI support)
+     */
+    private List<String> cliArguments;
     
+    /**
+     * Connection password (UI support)
+     */
+    private String password;
+    
+    /**
+     * Gets connection password (UI support)
+     */
+    public synchronized String getPassword() {
+		return password;
+	}
+
+    /**
+     * Sets connection password (UI support)
+     */
+	public synchronized void setPassword(String password) {
+		this.password = password;
+	}
+    
+	/**
+     * Sets CLI connection arguments (UI support)
+     */
+	public synchronized void setCliArguments(List<String> args) {
+		this.cliArguments = args;
+	}
+	
+	/**
+	 * Gets CLI connection arguments (UI support)
+	 */
+	public synchronized List<String> getCliArguments() {
+		return cliArguments;
+	}
+
 }

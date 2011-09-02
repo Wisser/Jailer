@@ -15,12 +15,12 @@ import java.util.Set;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
-import javax.swing.JTextArea;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.text.JTextComponent;
 
 import net.sf.jailer.datamodel.ParameterHandler;
 
@@ -46,7 +46,7 @@ public class ParameterSelector extends javax.swing.JPanel {
 	private List<String> parameters;
 	
 	/** Creates new form ParametersEditor */
-    public ParameterSelector(final Component parent, final JTextArea textArea, ParametersGetter parametersGetter) {
+    public ParameterSelector(final Component parent, final JTextComponent textArea, ParametersGetter parametersGetter) {
     	this.parametersGetter = parametersGetter;
     	parameters = new ArrayList<String>();
     	

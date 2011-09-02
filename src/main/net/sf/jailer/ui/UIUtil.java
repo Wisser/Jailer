@@ -16,7 +16,7 @@
 package net.sf.jailer.ui;
 
 import java.awt.Component;
-import java.awt.Frame;
+import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.BufferedReader;
@@ -199,10 +199,30 @@ public class UIUtil {
      * @param password CLI argument to print as "*****"
      * @return <code>true</code> iff call succeeded
      */
-    public static boolean runJailer(Frame ownerOfConsole, List<String> cliArgs, 
+    public static boolean runJailer(Window ownerOfConsole, List<String> cliArgs, 
     		boolean showLogfileButton, final boolean printCommandLine, boolean showExplainLogButton, 
     		final boolean closeOutputWindow, String continueOnErrorQuestion, String password,
     		final ProgressListener progressListener, final ProgressPanel progressPanel, final boolean showExeptions, boolean fullSize) {
+    	return runJailer(ownerOfConsole, cliArgs, showLogfileButton, printCommandLine, showExplainLogButton, closeOutputWindow, continueOnErrorQuestion, password, progressListener, progressPanel, showExeptions, fullSize, false);
+    }
+
+	/**
+     * Calls the Jailer export engine via CLI.
+     * 
+     * @param ownerOfConsole owner component of jailer console
+     * @param cliArgs CLI arguments
+     * @param showLogfileButton console property
+     * @param printCommandLine if true, print CLI command line
+     * @param showExplainLogButton console property
+     * @param closeOutputWindow if <code>true</code>, close console immediately after call
+     * @param continueOnErrorQuestion to ask when call fails
+     * @param password CLI argument to print as "*****"
+     * @return <code>true</code> iff call succeeded
+     */
+    public static boolean runJailer(Window ownerOfConsole, List<String> cliArgs, 
+    		boolean showLogfileButton, final boolean printCommandLine, boolean showExplainLogButton, 
+    		final boolean closeOutputWindow, String continueOnErrorQuestion, String password,
+    		final ProgressListener progressListener, final ProgressPanel progressPanel, final boolean showExeptions, boolean fullSize, final boolean closeOutputWindowOnError) {
     	JDialog dialog = new JDialog(ownerOfConsole);
         List<String> args = new ArrayList<String>(cliArgs);
         final StringBuffer arglist = createCLIArgumentString(password, args);
@@ -354,7 +374,7 @@ public class UIUtil {
 		    					if (progressListener != null) {
 		    						progressListener.newStage(exp[0] == null? "finished" : "failed", exp[0] != null, true);
 		    					}
-		    					if ((exp[0] instanceof CancellationException) || (closeOutputWindow && result[0] && exp[0] == null && warnings.length() == 0)) {
+		    					if ((exp[0] instanceof CancellationException) || closeOutputWindowOnError || (closeOutputWindow && result[0] && exp[0] == null && warnings.length() == 0)) {
 		                    		outputView.dialog.setVisible(false);
 			                    } else {
 			                    	outputView.finish(result[0] && exp[0] == null);
@@ -407,7 +427,11 @@ public class UIUtil {
         args.add(CommandLineParser.getInstance().datamodelFolder);
         args.add("-script-enhancer");
         args.add(CommandLineParser.getInstance().enhancerFolder);
-    	final StringBuffer arglist = new StringBuffer();
+        if (CommandLineParser.getInstance().workingFolder != null) {
+        	args.add("-working-folder");
+        	args.add(CommandLineParser.getInstance().workingFolder);
+        }
+        final StringBuffer arglist = new StringBuffer();
         for (String arg: args) {
         	if (arg != null && arg.equals(password) && password.length() > 0) {
         		arglist.append(" \"<password>\"");

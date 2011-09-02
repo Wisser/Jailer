@@ -100,7 +100,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "3.6.6";
+	public static final String VERSION = "3.6.7";
 
 	/**
 	 * The relational data model.
@@ -1048,8 +1048,17 @@ public class Jailer {
 				if (clp.arguments.size() != 6) {
 					CommandLineParser.printUsage();
 				} else {
-					SqlScriptExecutor.executeScript(clp.arguments.get(1), new Session(clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4),
-							clp.arguments.get(5)));
+					Session session = new Session(clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4),
+							clp.arguments.get(5), null, clp.transactional);
+					try {
+						SqlScriptExecutor.executeScript(clp.arguments.get(1), session, clp.transactional);
+					} finally {
+						try {
+							session.shutDown();
+						} catch (Exception e) {
+							// ignore
+						}
+					}
 				}
 			} else if ("print-datamodel".equalsIgnoreCase(command)) {
 				printDataModel(clp.arguments, clp.withClosures);
@@ -1136,7 +1145,7 @@ public class Jailer {
 			String dbUser, String dbPassword, boolean explain, int threads, ScriptFormat scriptFormat) throws Exception {
 		_log.info("exporting '" + extractionModelFileName + "' to '" + scriptFile + "'");
 
-		Session session = new Session(driverClassName, dbUrl, dbUser, dbPassword, CommandLineParser.getInstance().getTemporaryTableScope());
+		Session session = new Session(driverClassName, dbUrl, dbUser, dbPassword, CommandLineParser.getInstance().getTemporaryTableScope(), false);
 		if (CommandLineParser.getInstance().getTemporaryTableScope() != TemporaryTableScope.GLOBAL) {
 			DDLCreator.createDDL(session, CommandLineParser.getInstance().getTemporaryTableScope());
 		}
