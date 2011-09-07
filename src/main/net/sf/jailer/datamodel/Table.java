@@ -16,6 +16,9 @@
 package net.sf.jailer.datamodel;
 
 import java.io.IOException;
+import java.sql.DatabaseMetaData;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -27,6 +30,9 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import net.sf.jailer.database.DBMS;
+import net.sf.jailer.database.Session;
+import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 import net.sf.jailer.xml.NodeVisitor;
 import net.sf.jailer.xml.XmlUtil;
@@ -512,6 +518,22 @@ public class Table extends ModelElement implements Comparable<Table> {
      */
 	public String getOriginalName() {
 		return originalName == null? name : originalName;
+	}
+
+	/**
+	 * Tests whether the table exists.
+	 * 
+	 * @param session to access the database
+	 * @param defaultSchema schema to search in if table is unqualified
+	 * @return <code>true</code> if table exists
+	 */
+	public boolean exists(Session session, String defaultSchema) throws SQLException {
+		DatabaseMetaData metaData = session.getMetaData();
+		Quoting quoting = new Quoting(metaData);
+		ResultSet rs = metaData.getTables(null, quoting.unquote(getSchema(defaultSchema)), quoting.unquote(getUnqualifiedName()), new String[] { "TABLE" });
+		boolean exists = rs.next();
+		rs.close();
+		return exists;
 	}
 
 }

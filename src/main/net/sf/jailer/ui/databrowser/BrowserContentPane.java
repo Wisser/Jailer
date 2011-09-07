@@ -61,6 +61,7 @@ import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
@@ -78,6 +79,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.UIUtil;
@@ -138,19 +140,40 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				public void run() {
 					Exception e;
 					int l;
+					boolean limitExceeded = false;
 					synchronized (rows) {
 						e = exception;
 						l = limit;
+						if (rows.size() > limit) {
+							limitExceeded = true;
+							rows.remove(rows.size() - 1);
+						}
 						isCanceled = true; // done
 					}
 					if (e != null) {
 						updateMode("error");
-						UIUtil.showException(null, "Error", e);
+						if (!asking) {
+							try {
+								if (!table.exists(session, JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchemaName()))) {
+									asking = true;
+									String schemaMappingOption = "Schema Mapping";
+									if (1 == JOptionPane.showOptionDialog(BrowserContentPane.this, "Table \"" + table.getName() + "\" not found!", "Unknown table", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Cancel", schemaMappingOption }, schemaMappingOption)) {
+										openSchemaMappingDialog();
+									}
+									asking = false;
+								} else {
+									UIUtil.showException(null, "Error", e);
+								}
+							} catch (Exception e1) {
+								asking = false;
+								UIUtil.showException(null, "Error", e);
+							}
+						}
 					} else {
 						onContentChange(new ArrayList<Row>());
 						BrowserContentPane.this.rows.clear();
 						BrowserContentPane.this.rows.addAll(rows);
-						updateTableModel(l);
+						updateTableModel(l, limitExceeded);
 						onContentChange(rows);
 						updateMode("table");
 					}
@@ -168,7 +191,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			CancellationHandler.cancel(this);
 		}
 	}
-
+	
+	private static boolean asking = false;
+	
 	/**
 	 * Current LoadJob.
 	 */
@@ -346,7 +371,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				super.paint(graphics);
 				if (!(graphics instanceof Graphics2D))
 					return;
-				RowSorter rowSorter = rowsTable.getRowSorter();
+				RowSorter<? extends TableModel> rowSorter = rowsTable.getRowSorter();
 				for (int i = 0; i < rowsTable.getRowCount(); ++i) {
 					if (rowSorter.convertRowIndexToView(i) != i) {
 						return;
@@ -573,7 +598,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-				popup = createSqlPopupMenu(BrowserContentPane.this.parentRow, 0, 200, 100);
+				popup = createSqlPopupMenu(BrowserContentPane.this.parentRow, 0, 300, 300);
 				setCurrentRowSelection(-2);
 				popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
 					@Override
@@ -605,7 +630,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 		limitBox.setModel(new DefaultComboBoxModel(new Integer[] { 100, 200, 500, 1000, 2000, 5000 }));
 		limitBox.setSelectedIndex(association == null? 0 : 1);
-		updateTableModel(0);
+		updateTableModel(0, false);
 		reloadRows();
 	}
 
@@ -680,13 +705,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			});
 			
 			JMenu sql = new JMenu("SQL/DML");
-			
+			final String rowName = dataModel.getDisplayName(table) + "(" + SqlUtil.replaceAliases(row.rowId, null, null) + ")";
 			JMenuItem insert = new JMenuItem("Insert");
 			sql.add(insert);
 			insert.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					openSQLDialog(x, y, SQLDMLBuilder.buildInsert(table, row, session));
+					openSQLDialog("Insert Row " + rowName, x, y, SQLDMLBuilder.buildInsert(table, row, session));
 				}
 			});
 			JMenuItem update = new JMenuItem("Update");
@@ -694,7 +719,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			update.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					openSQLDialog(x, y, SQLDMLBuilder.buildUpdate(table, row, session));
+					openSQLDialog("Update Row " + rowName, x, y, SQLDMLBuilder.buildUpdate(table, row, session));
 				}
 			});
 			JMenuItem delete = new JMenuItem("Delete");
@@ -702,7 +727,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			delete.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					openSQLDialog(x, y, SQLDMLBuilder.buildDelete(table, row, session));
+					openSQLDialog("Delete Row " + rowName, x, y, SQLDMLBuilder.buildDelete(table, row, session));
 				}
 			});
 			
@@ -746,28 +771,37 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 		popup.add(new JSeparator());
-		JMenuItem insert = new JMenuItem("Insert");
+		JMenuItem insertNewRow = new JMenuItem("Insert New Row");
+		popup.add(insertNewRow);
+		final String tableName = dataModel.getDisplayName(table);
+		insertNewRow.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				openSQLDialog("Insert New Row Into " + tableName, x, y, SQLDMLBuilder.buildInsert(table, createNewRow(parentrow, table), session));
+			}
+		});
+		JMenuItem insert = new JMenuItem("Inserts");
 		popup.add(insert);
 		insert.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				openSQLDialog(x, y, SQLDMLBuilder.buildInsert(table, rows, session));
+				openSQLDialog("Insert Into " + tableName, x, y, SQLDMLBuilder.buildInsert(table, rows, session));
 			}
 		});
-		JMenuItem update = new JMenuItem("Update");
+		JMenuItem update = new JMenuItem("Updates");
 		popup.add(update);
 		update.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				openSQLDialog(x, y, SQLDMLBuilder.buildUpdate(table, rows, session));
+				openSQLDialog("Update " + tableName, x, y, SQLDMLBuilder.buildUpdate(table, rows, session));
 			}
 		});
-		JMenuItem delete = new JMenuItem("Delete");
+		JMenuItem delete = new JMenuItem("Deletes");
 		popup.add(delete);
 		delete.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				openSQLDialog(x, y, SQLDMLBuilder.buildDelete(table, rows, session));
+				openSQLDialog("Delete from " + tableName, x, y, SQLDMLBuilder.buildDelete(table, rows, session));
 			}
 		});
 		insert.setEnabled(rows.size() > 0);
@@ -777,11 +811,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return popup;
 	}
 
-	private void openSQLDialog(int x, int y, String sql) {
+	private void openSQLDialog(String titel, int x, int y, String sql) {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		JDialog d;
 		try {
-			d = new JDialog(getOwner(), "SQL/DML", true);
+			d = new JDialog(getOwner(), "SQL/DML - " + titel, true);
 			d.getContentPane().add(new SQLDMLPanel(sql, session, new Runnable() {
 				@Override
 				public void run() {
@@ -871,7 +905,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * Reloads rows.
 	 */
-	private void reloadRows() {
+	public void reloadRows() {
 		cancelLoadJob();
 		updateMode("loading");
 		int limit = 100;
@@ -1080,7 +1114,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 						if (pkColumnNames.contains(column.name) || isPK) {
 							String cVal = SqlUtil.toSql(o, session);
-							rowId += (rowId.length() == 0 ? "" : " and ") + "B." + column.name + "=" + cVal;
+							rowId += (rowId.length() == 0 ? "" : " and ") + "B." + column.name + ("null".equalsIgnoreCase(cVal)? " is null" : ("=" + cVal));
 						}
 						if (o == null || resultSet.wasNull()) {
 							value = null;
@@ -1106,8 +1140,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * 
 	 * @param limit
 	 *            row limit
+	 * @param limitExceeded 
 	 */
-	private void updateTableModel(int limit) {
+	private void updateTableModel(int limit, boolean limitExceeded) {
 		pkColumns.clear();
 		String[] columnNames = new String[table.getColumns().size()];
 		final Set<String> pkColumnNames = new HashSet<String>();
@@ -1161,7 +1196,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 						if (o1.getClass().equals(o2.getClass())) {
 							if (o1 instanceof Comparable<?>) {
-								return ((Comparable) o1).compareTo(o2);
+								return ((Comparable<Object>) o1).compareTo(o2);
 							}
 							return 0;
 						}
@@ -1214,8 +1249,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (size > limit) {
 			size = limit;
 		}
-		rowsCount.setText((rn >= limit ? " more than " : " ") + size + " row" + (size != 1 ? "s" : ""));
-		rowsCount.setForeground(rn >= limit ? Color.RED : new JLabel().getForeground());
+		rowsCount.setText((limitExceeded ? " more than " : " ") + size + " row" + (size != 1 ? "s" : ""));
+		rowsCount.setForeground(limitExceeded ? Color.RED : new JLabel().getForeground());
 		int nndr = noNonDistinctRows;
 		if (noDistinctRows + noNonDistinctRows >= limit) {
 			--nndr;
@@ -1657,10 +1692,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		reloadRows();
 	}// GEN-LAST:event_limitBoxItemStateChanged
 
-	private void showSqlButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_showSqlButtonActionPerformed
-		openQueryBuilder();
-	}// GEN-LAST:event_showSqlButtonActionPerformed
-
 	private void openQueryBuilder() {
 		List<String> whereClauses = new ArrayList<String>();
 		List<Association> associationsOnPath = new ArrayList<Association>();
@@ -1791,6 +1822,40 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		popup.show(label, 0, label.getHeight());
 	}
 
+	/**
+	 * Creates new row. Fills in foreign key.
+	 * 
+	 * @param parentrow row holding the primary key
+	 * @param table the table of the new row
+	 * @return new row of table
+	 */
+	private Row createNewRow(Row parentrow, Table table) {
+		Row row = new Row(null, new Object[table.getColumns().size()]);
+		if (parentrow != null && association != null) {
+			Map<Column, Column> sToDMap = association.createSourceToDestinationKeyMapping();
+			for (Map.Entry<Column, Column> e: sToDMap.entrySet()) {
+				int iS = -1;
+				for (int i = 0; i < association.source.getColumns().size(); ++i) {
+					if (e.getKey() == association.source.getColumns().get(i)) {
+						iS = i;
+						break;
+					}
+				}
+				int iD = -1;
+				for (int i = 0; i < association.destination.getColumns().size(); ++i) {
+					if (e.getValue() == association.destination.getColumns().get(i)) {
+						iD = i;
+						break;
+					}
+				}
+				if (iS >= 0 && iD >= 0) {
+					row.values[iD] = parentrow.values[iS];
+				}
+			}
+		}
+		return row;
+	}
+
 	protected abstract void navigateTo(Association association, int rowIndex, Row row);
 
 	protected abstract void onContentChange(List<Row> rows);
@@ -1810,6 +1875,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	protected abstract QueryBuilderDialog getQueryBuilderDialog();
 	protected abstract QueryBuilderPathSelector getQueryBuilderPathSelector();
+
+	protected abstract void openSchemaMappingDialog();
 
     private Icon dropDownIcon;
     {

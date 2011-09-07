@@ -16,6 +16,10 @@
 
 package net.sf.jailer.datamodel;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.SqlUtil;
 
@@ -435,5 +439,71 @@ public class Association extends ModelElement {
     public DataModel getDataModel() {
     	return dataModel;
     }
-        
+
+    /**
+     * Maps source-columns to destination-columns, if this represents an equi-join.
+     * Otherwise it returns an empty map.
+     * 
+     * @return map from source-columns to destination-columns, if this represents an equi-join
+     */
+	public Map<Column, Column> createSourceToDestinationKeyMapping() {
+		String[] equations = getUnrestrictedJoinCondition().trim().replaceAll("\\(|\\)", "").split(" *(a|A)(n|N)(d|D) *");
+		Map<Column, Column> mapping = new HashMap<Column, Column>();
+		for (String equation: equations) {
+			String hs[] = equation.split(" *= *");
+			if (hs.length != 2) {
+				return Collections.emptyMap();
+			}
+			String lhs[] = hs[0].split(" *\\. *");
+			String rhs[] = hs[1].split(" *\\. *");
+			if (lhs.length != 2 || rhs.length != 2 || lhs[0].length() != 1 || rhs[0].length() != 1) {
+				return Collections.emptyMap();
+			}
+			String dColumn = null, sColumn = null;
+			if ("A".equalsIgnoreCase(lhs[0])) {
+				sColumn = lhs[1];
+			}
+			if ("B".equalsIgnoreCase(lhs[0])) {
+				dColumn = lhs[1];
+			}
+			if ("A".equalsIgnoreCase(rhs[0])) {
+				sColumn = rhs[1];
+			}
+			if ("B".equalsIgnoreCase(rhs[0])) {
+				dColumn = rhs[1];
+			}
+			if (sColumn == null || dColumn == null) {
+				return Collections.emptyMap();
+			}
+			
+			if (reversed) {
+				String h = sColumn;
+				sColumn = dColumn;
+				dColumn = h;
+			}
+			
+			Column sourceColumn = null;
+			for (Column c: source.getColumns()) {
+				if (c.name.equals(sColumn)) {
+					sourceColumn = c;
+					break;
+				}
+			}
+			Column destinationColumn = null;
+			for (Column c: destination.getColumns()) {
+				if (c.name.equals(dColumn)) {
+					destinationColumn = c;
+					break;
+				}
+			}
+			if (sourceColumn == null || destinationColumn == null) {
+				return Collections.emptyMap();
+			}
+			
+			mapping.put(sourceColumn, destinationColumn);
+		}
+		
+		return mapping;
+	}
+
 }

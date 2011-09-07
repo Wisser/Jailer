@@ -91,14 +91,14 @@ public class SqlScriptExecutor {
      */
     public static void executeScript(String scriptFileName, Session session) throws IOException, SQLException {
         _log.info("reading file '" + scriptFileName + "'");
-    	BufferedReader reader;
+    	BufferedReader bufferedReader;
     	long fileSize = 0;
     	if (scriptFileName.toLowerCase().endsWith(".gz") || scriptFileName.toLowerCase().endsWith(".zip")) {
-    		reader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(scriptFileName))));
+    		bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(scriptFileName))));
     	} else {
     		File f = CommandLineParser.getInstance().newFile(scriptFileName);
     		fileSize = f.length();
-    		reader = new BufferedReader(new FileReader(f));
+    		bufferedReader = new BufferedReader(new FileReader(f));
     	}
         String line = null;
         StringBuffer currentStatement = new StringBuffer();
@@ -106,26 +106,26 @@ public class SqlScriptExecutor {
         long bytesRead = 0;
         long t = System.currentTimeMillis();
         int count = 0;
-        while ((line = reader.readLine()) != null) {
+        LineReader lineReader = new LineReader(bufferedReader);
+        while ((line = lineReader.readLine()) != null) {
         	bytesRead += line.length() + 1;
             line = line.trim();
             if (line.length() == 0 || line.startsWith("--")) {
             	if (line.startsWith(UNFINISHED_MULTILINE_COMMENT)) {
             		String cmd = line.substring(UNFINISHED_MULTILINE_COMMENT.length());
             		if (cmd.startsWith("XML")) {
-            			importSQLXML(cmd.substring(3).trim(), reader, session);
+            			importSQLXML(cmd.substring(3).trim(), lineReader, session);
             		}
             		if (cmd.startsWith("CLOB")) {
-            			importCLob(cmd.substring(4).trim(), reader, session);
+            			importCLob(cmd.substring(4).trim(), lineReader, session);
             		}
             		if (cmd.startsWith("BLOB")) {
-            			importBLob(cmd.substring(4).trim(), reader, session);
+            			importBLob(cmd.substring(4).trim(), lineReader, session);
             		}
             	}
                 continue;
             }
             if (line.endsWith(";")) {
-            	++linesRead;
             	currentStatement.append(line.substring(0, line.length() - 1));
             	String stmt = currentStatement.toString();
             	boolean silent = session.getSilent();
@@ -133,7 +133,8 @@ public class SqlScriptExecutor {
             	try {
                 	if (stmt.trim().length() > 0) {
                 		session.execute(stmt);
-                		++count;
+                		++linesRead;
+                    	++count;
                 	}
                 } catch (SQLException e) {
                 	// drops may fail
@@ -162,19 +163,38 @@ public class SqlScriptExecutor {
             }
             CancellationHandler.checkForCancellation(null);
         }
-        reader.close();
+        bufferedReader.close();
         _log.info(linesRead + " statements (100%)");
     	_log.info("successfully read file '" + scriptFileName + "'");
     	setLastStatementCount(count);
     }
 
+    private static class LineReader {
+
+    	private final BufferedReader reader;
+    	private boolean eofRead = false;
+    	
+		public LineReader(BufferedReader reader) {
+			this.reader = reader;
+		}
+
+		public String readLine() throws IOException {
+			String line = reader.readLine();
+			if (line == null && !eofRead) {
+				eofRead = true;
+				return ";";
+			}
+			return line;
+		}
+    }
+    
     /**
      * Imports clob from sql-script.
      * 
      * @param clobLocator locates the clob
-     * @param reader for reading content
+     * @param lineReader for reading content
      */
-	private static void importCLob(final String clobLocator, final BufferedReader reader, Session session) throws IOException, SQLException {
+	private static void importCLob(final String clobLocator, final LineReader lineReader, Session session) throws IOException, SQLException {
 		int c1 = clobLocator.indexOf(',');
 		int c2 = clobLocator.indexOf(',', c1 + 1);
 		String table = clobLocator.substring(0, c1).trim();
@@ -184,7 +204,7 @@ public class SqlScriptExecutor {
 		File lobFile = CommandLineParser.getInstance().newFile("lob." + System.currentTimeMillis());
 		Writer out = new FileWriter(lobFile);
 		long length = 0;
-		while ((line = reader.readLine()) != null) {
+		while ((line = lineReader.readLine()) != null) {
 		    // line = line.trim();
 			if (line.startsWith(UNFINISHED_MULTILINE_COMMENT)) {
 				String content = line.substring(UNFINISHED_MULTILINE_COMMENT.length());
@@ -225,9 +245,9 @@ public class SqlScriptExecutor {
      * Imports SQL-XML from sql-script.
      * 
      * @param xmlLocator locates the XML column
-     * @param reader for reading content
+     * @param lineReader for reading content
      */
-	private static void importSQLXML(final String xmlLocator, final BufferedReader reader, Session session) throws IOException, SQLException {
+	private static void importSQLXML(final String xmlLocator, final LineReader lineReader, Session session) throws IOException, SQLException {
 		int c1 = xmlLocator.indexOf(',');
 		int c2 = xmlLocator.indexOf(',', c1 + 1);
 		String table = xmlLocator.substring(0, c1).trim();
@@ -237,7 +257,7 @@ public class SqlScriptExecutor {
 		File lobFile = CommandLineParser.getInstance().newFile("lob." + System.currentTimeMillis());
 		Writer out = new FileWriter(lobFile);
 		long length = 0;
-		while ((line = reader.readLine()) != null) {
+		while ((line = lineReader.readLine()) != null) {
 		    // line = line.trim();
 			if (line.startsWith(UNFINISHED_MULTILINE_COMMENT)) {
 				String content = line.substring(UNFINISHED_MULTILINE_COMMENT.length());
@@ -278,9 +298,9 @@ public class SqlScriptExecutor {
      * Imports blob from sql-script.
      * 
      * @param clobLocator locates the clob
-     * @param reader for reading content
+     * @param lineReader for reading content
      */
-	private static void importBLob(final String clobLocator, final BufferedReader reader, Session session) throws IOException, SQLException {
+	private static void importBLob(final String clobLocator, final LineReader lineReader, Session session) throws IOException, SQLException {
 		int c1 = clobLocator.indexOf(',');
 		int c2 = clobLocator.indexOf(',', c1 + 1);
 		String table = clobLocator.substring(0, c1).trim();
@@ -289,7 +309,7 @@ public class SqlScriptExecutor {
 		String line;
 		File lobFile = CommandLineParser.getInstance().newFile("lob." + System.currentTimeMillis());
 		OutputStream out = new FileOutputStream(lobFile);
-		while ((line = reader.readLine()) != null) {
+		while ((line = lineReader.readLine()) != null) {
 		    line = line.trim();
 			if (line.startsWith(UNFINISHED_MULTILINE_COMMENT)) {
 				String content = line.substring(UNFINISHED_MULTILINE_COMMENT.length());

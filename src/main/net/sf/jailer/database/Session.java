@@ -347,7 +347,7 @@ public class Session {
      * 
      * @return DB schema name
      */
-    public Object getSchemaName() {
+    public String getSchemaName() {
         return schemaName;
     }
 

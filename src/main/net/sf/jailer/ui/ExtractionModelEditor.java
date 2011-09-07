@@ -1039,7 +1039,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         legende1.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         legende1.setLayout(new java.awt.GridBagLayout());
 
-        modelName.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        modelName.setFont(new java.awt.Font("Dialog", 0, 12));
         modelName.setText("Data Model \"Demo\"");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1105,7 +1105,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         legende2.add(connectivityState, gridBagConstraints);

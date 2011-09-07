@@ -45,7 +45,7 @@ public class SQLDMLBuilder {
 		StringBuilder sb = new StringBuilder();
 		
 		for (Row row: unique(rows)) {
-			sb.append(buildUpdate(table, row, session)).append("\n");
+			sb.append(buildUpdate(table, row, session)).append(";\n\n");
 		}
 		return sb.toString();
 	}
@@ -71,7 +71,7 @@ public class SQLDMLBuilder {
 			sql += (f? "" : ", \n    ") + name + " = " + value;
 			f = false;
 		}
-		sql += " \nWhere " + SqlUtil.replaceAliases(row.rowId, null, null) + ";\n";
+		sql += " \nWhere " + SqlUtil.replaceAliases(row.rowId, null, null);
 		return sql;
 	}
 	
@@ -87,7 +87,7 @@ public class SQLDMLBuilder {
 		StringBuilder sb = new StringBuilder();
 		
 		for (Row row: unique(rows)) {
-			sb.append(buildInsert(table, row, session)).append("\n");
+			sb.append(buildInsert(table, row, session)).append(";\n\n");
 		}
 		return sb.toString();
 	}
@@ -115,7 +115,7 @@ public class SQLDMLBuilder {
 			values += (f? "" : ", \n    ") + value;
 			f = false;
 		}
-		sql += ") \nValues ( \n    " + values + ")" + ";\n";
+		sql += ") \nValues ( \n    " + values + ")";
 		return sql;
 	}
 	
@@ -128,7 +128,7 @@ public class SQLDMLBuilder {
 	 * @return update statement for row
 	 */
 	public static String buildDelete(Table table, Row row, Session session) {
-		String sql = "Delete from " + table.getName() + " Where " + SqlUtil.replaceAliases(row.rowId, null, null) + ";\n";
+		String sql = "Delete from " + table.getName() + " Where " + SqlUtil.replaceAliases(row.rowId, null, null);
 		return sql;
 	}
 
@@ -144,7 +144,7 @@ public class SQLDMLBuilder {
 		StringBuilder sb = new StringBuilder();
 		
 		for (Row row: unique(rows)) {
-			sb.append(buildDelete(table, row, session));
+			sb.append(buildDelete(table, row, session)).append(";\n");
 		}
 		return sb.toString();
 	}

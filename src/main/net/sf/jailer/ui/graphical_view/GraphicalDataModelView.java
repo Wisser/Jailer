@@ -178,7 +178,6 @@ public class GraphicalDataModelView extends JPanel {
      * @param width
      * @param height initial size
      */
-    @SuppressWarnings("unchecked")
 	public GraphicalDataModelView(final DataModel model, ExtractionModelEditor modelEditor, Table subject, boolean expandSubject, int width, int height) {
     	super(new BorderLayout());
     	this.model = model;

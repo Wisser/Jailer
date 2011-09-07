@@ -25,7 +25,6 @@ import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import net.sf.jailer.CommandLineParser;
-import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.SqlScriptExecutor;
@@ -245,7 +244,6 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 	    		}
 	    		PrintWriter out = new PrintWriter(CommandLineParser.getInstance().newFile(sqlFile));
 	    		out.println(sqlTextArea.getText());
-	    		out.println(";");
 	    		out.close();
     		} catch (Exception e) {
     			UIUtil.showException(this, "Error", e);

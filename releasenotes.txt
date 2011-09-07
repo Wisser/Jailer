@@ -1,6 +1,7 @@
 3.6.7
- - Improved syntax highlighting.
- - 
+ - Added ability to edit data by automatically creating SQL/DML statements based on rows (Feature Request [3176294])
+ - Improved syntax highlighting. 
+ - Integrated Schema Mapping Dialog into Data Browser.
 
 3.6.6
  - Improved schema analyzer.
