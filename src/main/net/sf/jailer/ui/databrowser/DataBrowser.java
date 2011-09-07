@@ -19,6 +19,7 @@ import java.awt.Cursor;
 import java.awt.Image;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.BufferedReader;
@@ -30,6 +31,7 @@ import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -44,7 +46,6 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
 import jsyntaxpane.DefaultSyntaxKit;
-
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.database.Session;
@@ -108,7 +109,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	 */
 	public DataBrowser(DataModel datamodel, Table root, String condition, DbConnectionDialog dbConnectionDialog, boolean embedded) throws Exception {
 		this.datamodel = new Reference<DataModel>(datamodel);
-		this.dbConnectionDialog = dbConnectionDialog;
+		this.dbConnectionDialog = dbConnectionDialog != null? new DbConnectionDialog(dbConnectionDialog) : null;
 		initComponents();
 		setTitle("Jailer " + Jailer.VERSION + " Data Browser");
 		if (embedded) {
@@ -129,8 +130,6 @@ public class DataBrowser extends javax.swing.JFrame {
 		} catch (Throwable t) {
 		}
 
-		updateStatusBar();
-		
 		try {
 			setIconImage((jailerIcon = new ImageIcon(getClass().getResource("/net/sf/jailer/resource/jailer.png"))).getImage());
 		} catch (Throwable t) {
@@ -143,14 +142,9 @@ public class DataBrowser extends javax.swing.JFrame {
 		jailerIcon.setImage(jailerIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
 
 		if (dbConnectionDialog != null) {
-			ConnectionInfo connection = dbConnectionDialog.currentConnection;
-			session = new Session(connection.driverClass, connection.url, connection.user, connection.password);
-			List<String> args = new ArrayList<String>();
-			dbConnectionDialog.addDbArgs(args);
-			session.setCliArguments(args);
-			session.setPassword(dbConnectionDialog.getPassword());
+			createSession(dbConnectionDialog);
 		}
-		desktop = new Desktop(this.datamodel, jailerIcon, session, this);
+		desktop = new Desktop(this.datamodel, jailerIcon, session, this, dbConnectionDialog);
 
 		jScrollPane1.setViewportView(desktop);
 		addWindowListener(new WindowListener() {
@@ -189,25 +183,67 @@ public class DataBrowser extends javax.swing.JFrame {
 		if (root != null) {
 			desktop.addTableBrowser(null, 0, root, null, condition);
 		}
+		schemaNamePanel.addMouseListener(new java.awt.event.MouseAdapter() {
+			private boolean in = false;
+
+			@Override
+			public void mousePressed(MouseEvent e) {
+				desktop.openSchemaMappingDialog(false);
+			}
+
+			public void mouseEntered(java.awt.event.MouseEvent evt) {
+				in = true;
+				updateBorder();
+			}
+
+			public void mouseExited(java.awt.event.MouseEvent evt) {
+				in = false;
+				updateBorder();
+			}
+
+			private void updateBorder() {
+				schemaNamePanel.setBorder(new javax.swing.border.SoftBevelBorder(in ? javax.swing.border.BevelBorder.LOWERED
+						: javax.swing.border.BevelBorder.RAISED));
+			}
+		});
+		updateStatusBar();
+	}
+
+	private void createSession(DbConnectionDialog dbConnectionDialog)
+			throws Exception {
+		ConnectionInfo connection = dbConnectionDialog.currentConnection;
+		session = new Session(connection.driverClass, connection.url, connection.user, connection.password);
+		List<String> args = new ArrayList<String>();
+		dbConnectionDialog.addDbArgs(args);
+		session.setCliArguments(args);
+		session.setPassword(dbConnectionDialog.getPassword());
 	}
 
 	protected void setConnection(DbConnectionDialog dbConnectionDialog) throws Exception {
 		if (dbConnectionDialog != null) {
+			dbConnectionDialog = new DbConnectionDialog(dbConnectionDialog);
+		}
+		this.dbConnectionDialog = dbConnectionDialog;
+		desktop.dbConnectionDialog = dbConnectionDialog;
+		if (dbConnectionDialog != null) {
 			ConnectionInfo connection = dbConnectionDialog.currentConnection;
 			if (connection != null) {
-				session = new Session(connection.driverClass, connection.url, connection.user, connection.password);
+				createSession(dbConnectionDialog);
 				desktop.session = session;
-				this.dbConnectionDialog = dbConnectionDialog;
 				updateStatusBar();
 			}
 		}
 	}
 
-	private void updateStatusBar() {
+	public void updateStatusBar() {
+		final int MAX_LENGTH = 50;
 		ConnectionInfo connection = dbConnectionDialog != null? dbConnectionDialog.currentConnection : null;
 		String dburl = connection != null ? (connection.user + "@" + connection.url) : " ";
-		connectivityState.setText(dburl);
 		connectivityState.setToolTipText(dburl);
+		if (dburl.length() > MAX_LENGTH) {
+			dburl = dburl.substring(0, MAX_LENGTH - 3) + "...";
+		}
+		connectivityState.setText(dburl);
 		DataModel dataModel = datamodel != null? datamodel.get() : null;
 		String modelname = "Data Model \"" + (dataModel == null? DataModel.DEFAULT_NAME : dataModel.getName()) + "\"";
 		String lastMod = dataModel == null? "" : dataModel.getLastModifiedAsString();
@@ -225,11 +261,29 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 		modelpath += File.separator;
 		modelPath.setToolTipText(modelpath);
-		final int MAX_LENGTH = 50;
 		if (modelpath.length() > MAX_LENGTH + 4) {
 			modelpath = modelpath.substring(0, MAX_LENGTH/2) + "..." + modelpath.substring(modelpath.length() - MAX_LENGTH/2);
 		}
 		modelPath.setText(modelpath);
+		
+		String nonDefaultSchema = null;
+		if (desktop.schemaMapping != null) {
+			for (Map.Entry<String, String> e: desktop.schemaMapping.entrySet()) {
+				if (!e.getKey().equalsIgnoreCase(e.getValue())) {
+					nonDefaultSchema = e.getValue();
+					break;
+				}
+			}
+		}
+		schemaNamePanel.setVisible(nonDefaultSchema != null);
+		if (nonDefaultSchema != null) {
+			if (nonDefaultSchema.equals("")) {
+				schemaName.setText("Default Schema");
+			} else {
+				schemaName.setText("Schema " + nonDefaultSchema + "");
+			}
+//			schemaName.setToolTipText(schemaName.getText());
+		}
 	}
 
 	/**
@@ -256,12 +310,16 @@ public class DataBrowser extends javax.swing.JFrame {
         hasDependent = new javax.swing.JLabel();
         associatedWith = new javax.swing.JLabel();
         ignored = new javax.swing.JLabel();
+        schemaNamePanel = new javax.swing.JPanel();
+        schemaName = new javax.swing.JLabel();
         legende2 = new javax.swing.JPanel();
         connectivityState = new javax.swing.JLabel();
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        schemaMappingMenuItem = new javax.swing.JMenuItem();
+        jSeparator3 = new javax.swing.JPopupMenu.Separator();
         cloaseAllMenuItem = new javax.swing.JMenuItem();
         menuTools = new javax.swing.JMenu();
         analyseMenuItem = new javax.swing.JMenuItem();
@@ -301,7 +359,7 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 12);
         legende1.add(modelName, gridBagConstraints);
 
-        modelPath.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        modelPath.setFont(new java.awt.Font("Dialog", 0, 12));
         modelPath.setForeground(java.awt.Color.gray);
         modelPath.setText("/home/jailer/datamodel/");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -330,17 +388,17 @@ public class DataBrowser extends javax.swing.JFrame {
 
         hasDependent.setFont(new java.awt.Font("Dialog", 0, 12));
         hasDependent.setForeground(new java.awt.Color(0, 112, 0));
-        hasDependent.setText("   has dependent");
+        hasDependent.setText("  has dependent");
         legende.add(hasDependent);
 
         associatedWith.setFont(new java.awt.Font("Dialog", 0, 12));
         associatedWith.setForeground(new java.awt.Color(0, 100, 255));
-        associatedWith.setText("   associated with");
+        associatedWith.setText("  associated with");
         legende.add(associatedWith);
 
         ignored.setFont(new java.awt.Font("Dialog", 0, 12));
         ignored.setForeground(new java.awt.Color(153, 153, 153));
-        ignored.setText("   disabled ");
+        ignored.setText("  disabled ");
         legende.add(ignored);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -350,17 +408,40 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         jPanel11.add(legende, gridBagConstraints);
 
+        schemaNamePanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        schemaNamePanel.setLayout(new java.awt.GridBagLayout());
+
+        schemaName.setFont(new java.awt.Font("Dialog", 0, 12));
+        schemaName.setText("Schema");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 12);
+        schemaNamePanel.add(schemaName, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        jPanel11.add(schemaNamePanel, gridBagConstraints);
+
         legende2.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         legende2.setLayout(new java.awt.GridBagLayout());
 
-        connectivityState.setFont(new java.awt.Font("Dialog", 0, 12));
+        connectivityState.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         connectivityState.setText("offline");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 6);
         legende2.add(connectivityState, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -368,7 +449,6 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
         jPanel11.add(legende2, gridBagConstraints);
 
@@ -387,6 +467,15 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         jMenu1.add(jMenuItem1);
         jMenu1.add(jSeparator2);
+
+        schemaMappingMenuItem.setText("Schema Mapping");
+        schemaMappingMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                schemaMappingMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(schemaMappingMenuItem);
+        jMenu1.add(jSeparator3);
 
         cloaseAllMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
         cloaseAllMenuItem.setText("Close All");
@@ -431,14 +520,14 @@ public class DataBrowser extends javax.swing.JFrame {
         menuWindow.add(jMenuItem2);
         menuWindow.add(jSeparator1);
 
-        view.setLabel("Look&Feel");
+        view.setText("Look&Feel");
         menuWindow.add(view);
 
         jMenuBar1.add(menuWindow);
 
         jMenu2.setText("Help");
 
-        helpForum.setLabel("Help Forum");
+        helpForum.setText("Forum");
         helpForum.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 helpForumActionPerformed(evt);
@@ -472,6 +561,10 @@ public class DataBrowser extends javax.swing.JFrame {
     private void cloaseAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cloaseAllMenuItemActionPerformed
     	desktop.closeAll();
     }//GEN-LAST:event_cloaseAllMenuItemActionPerformed
+
+    private void schemaMappingMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_schemaMappingMenuItemActionPerformed
+        desktop.openSchemaMappingDialog(false);
+    }//GEN-LAST:event_schemaMappingMenuItemActionPerformed
 
 	private void openNewTableBrowser() {
 		new NewTableBrowser(this, datamodel.get()) {
@@ -557,6 +650,11 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			public void run() {
+				try {
+					DefaultSyntaxKit.initKit();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 				DataModel datamodel;
 				try {
 					CommandLineParser.parse(args, true);
@@ -581,12 +679,14 @@ public class DataBrowser extends javax.swing.JFrame {
 					if (dbConnectionDialog.connect("Jailer Data Browser")) {
 						dataBrowser.setConnection(dbConnectionDialog);
 						dataBrowser.askForDataModel();
+						dataBrowser.desktop.openSchemaMappingDialog(true);
+						dataBrowser.updateStatusBar();
 						dataBrowser.openNewTableBrowser();
 					} else {
 						System.exit(0);
 					}
+					ToolTipManager.sharedInstance().setInitialDelay(500);
 					ToolTipManager.sharedInstance().setDismissDelay(20000);
-					DefaultSyntaxKit.initKit();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -602,7 +702,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			String modelname = datamodel == null || datamodel.get() == null? DataModel.DEFAULT_NAME : datamodel.get().getName();
     		DataModelEditor dataModelEditor = new DataModelEditor(this, false, false, null, null, null, modelname, null);
 			dataModelEditor.setVisible(true);
-			desktop.reloadDataModel();
+			desktop.reloadDataModel(desktop.schemaMapping);
 			updateStatusBar();
 			askForDataModel();
 		} catch (Exception e) {
@@ -620,6 +720,7 @@ public class DataBrowser extends javax.swing.JFrame {
         	boolean[] isDefaultSchema = new boolean[1];
         	String[] defaultSchema = new String[1];
     		List<String> schemas;
+    		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
     		try {
     			schemas = dbConnectionDialog.getDBSchemas(defaultSchema);
     		} finally {
@@ -642,7 +743,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	        		if (dataModelEditor.dataModelHasChanged()) {
 						dataModelEditor.setVisible(true);
 					}
-	        		desktop.reloadDataModel();
+	        		desktop.reloadDataModel(desktop.schemaMapping);
 					updateStatusBar();
 					askForDataModel();
 				}
@@ -679,6 +780,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
+    private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPanel legende;
     private javax.swing.JPanel legende1;
     private javax.swing.JPanel legende2;
@@ -686,6 +788,9 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenu menuWindow;
     private javax.swing.JLabel modelName;
     private javax.swing.JLabel modelPath;
+    private javax.swing.JMenuItem schemaMappingMenuItem;
+    private javax.swing.JLabel schemaName;
+    private javax.swing.JPanel schemaNamePanel;
     private javax.swing.JMenu view;
     // End of variables declaration//GEN-END:variables
 

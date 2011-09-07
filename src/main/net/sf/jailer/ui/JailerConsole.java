@@ -95,7 +95,7 @@ public class JailerConsole {
         	jPanel.add(contentPane, gridBagConstraints);
         } 
         if (fullSize) {
-        	dialog.setSize(new Dimension(1010, 740));
+        	dialog.setSize(new Dimension(1110, 740));
            	dialog.setLocation(10, 50);
         } else {
         	dialog.setSize(new Dimension(600, 400));

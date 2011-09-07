@@ -42,7 +42,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import javax.swing.DefaultDesktopManager;
 import javax.swing.Icon;
@@ -61,6 +63,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.ConditionEditor;
+import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.SqlUtil;
@@ -100,16 +103,22 @@ public class Desktop extends JDesktopPane {
 	private boolean renderLinks;
 
 	/**
+	 * Schema mapping.
+	 */
+	public final Map<String, String> schemaMapping = new TreeMap<String, String>();
+	
+	/**
 	 * DB session.
 	 */
 	public Session session;
+	DbConnectionDialog dbConnectionDialog;
 	
 	private Set<Row> currentClosure = new HashSet<Row>();
 	private Set<String> currentClosureRowIDs = new HashSet<String>();
 	
 	private final QueryBuilderDialog queryBuilderDialog;
 	private final QueryBuilderPathSelector queryBuilderPathSelector;
-		
+	
 	/**
 	 * Constructor.
 	 * 
@@ -117,12 +126,13 @@ public class Desktop extends JDesktopPane {
 	 * @param jailerIcon icon for the frames
 	 * @param session DB-session
 	 */
-	public Desktop(Reference<DataModel> datamodel, Icon jailerIcon, Session session, JFrame parentFrame) {
+	public Desktop(Reference<DataModel> datamodel, Icon jailerIcon, Session session, DataBrowser parentFrame, DbConnectionDialog dbConnectionDialog) {
 		this.parentFrame = parentFrame;
 		this.datamodel = datamodel;
 		this.jailerIcon = jailerIcon;
 		this.queryBuilderDialog = new QueryBuilderDialog(parentFrame);
 		this.queryBuilderPathSelector = new QueryBuilderPathSelector(parentFrame, true);
+		this.dbConnectionDialog = dbConnectionDialog;
 
 		try {
 			this.session = session;
@@ -460,6 +470,11 @@ public class Desktop extends JDesktopPane {
 					}
 					whereClauses.add(andC.length() == 0? null : andC);
 				}
+			}
+
+			@Override
+			protected void openSchemaMappingDialog() {
+				Desktop.this.openSchemaMappingDialog(false);
 			}
 		};
 		
@@ -1100,7 +1115,7 @@ public class Desktop extends JDesktopPane {
 		}
 	}
 
-	private final JFrame parentFrame;
+	private final DataBrowser parentFrame;
 
 	public void layoutBrowser() {
 		List<RowBrowser> all = new ArrayList<RowBrowser>(tableBrowsers);
@@ -1154,14 +1169,26 @@ public class Desktop extends JDesktopPane {
 	/**
 	 * Reloads the data model and replaces the tables in all browser windows.
 	 */
-	public void reloadDataModel() throws Exception {
-		DataModel newModel = new DataModel();
+	public void reloadDataModel(Map<String, String> schemamapping) throws Exception {
+		DataModel newModel = new DataModel(schemamapping);
 		
 		for (RowBrowser rb: tableBrowsers) {
 			if (rb.browserContentPane != null) {
 				rb.browserContentPane.dataModel = newModel;
-				if (rb.browserContentPane.table != null) {
-					Table newTable = newModel.getTable(rb.browserContentPane.table.getName());
+				if (rb.browserContentPane.table != null && datamodel.get() != null) {
+					Table oldTable = rb.browserContentPane.table;
+					Table newTable = null;
+					if (oldTable.getOriginalName() != null) {
+						for (Table t: newModel.getTables()) {
+							if (oldTable.getOriginalName().equals(t.getOriginalName())) {
+								newTable = t;
+								break;
+							}
+						}
+					}
+					if (newTable == null) {
+						newTable = newModel.getTableByDisplayName(datamodel.get().getDisplayName(oldTable));
+					}
 					if (newTable != null) {
 						rb.browserContentPane.table = newTable;
 					}
@@ -1172,4 +1199,44 @@ public class Desktop extends JDesktopPane {
 		
 		datamodel.set(newModel);
 	}
+
+	/**
+	 * Reloads the rows in all root-table-browsers.
+	 */
+	public void reloadRoots() throws Exception {
+		for (RowBrowser rb: tableBrowsers) {
+			if (rb.browserContentPane != null) {
+				if (rb.parent == null) {
+					rb.browserContentPane.reloadRows();
+				}
+			}
+		}
+	}
+
+	private boolean loadSchemaMapping = true;
+	
+	public void openSchemaMappingDialog(boolean silent) {
+		try {
+			Map<String, String> mapping = schemaMapping;
+			if (loadSchemaMapping || silent) {
+				mapping = SchemaMappingDialog.restore(dbConnectionDialog);
+				loadSchemaMapping = false;
+			}
+			if (!silent) {
+				SchemaMappingDialog schemaMappingDialog = new SchemaMappingDialog(parentFrame, datamodel.get(), dbConnectionDialog, session, mapping);
+				mapping = schemaMappingDialog.getMapping();
+			}
+			if (mapping != null) {
+				SchemaMappingDialog.store(mapping, dbConnectionDialog);
+				schemaMapping.clear();
+				schemaMapping.putAll(mapping);
+				parentFrame.updateStatusBar();
+				reloadDataModel(mapping);
+				reloadRoots();
+			}
+		} catch (Exception e) {
+			UIUtil.showException(this, "Error", e);
+		}
+	}
+
 }

@@ -65,7 +65,11 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	/**
 	 * Holds connection information.
 	 */
-	public static class ConnectionInfo implements Serializable {
+	public static class ConnectionInfo implements Serializable, Cloneable {
+		@Override
+		protected Object clone() throws CloneNotSupportedException {
+			return super.clone();
+		}
 		private static final long serialVersionUID = -8034755966212631808L;
 		public String alias = "";
 		public String driverClass = "";
@@ -100,6 +104,22 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		setTitle((reason == null ? "" : (reason + " - ")) + "Connect.");
 		setVisible(true);
 		return isConnected;
+	}
+
+	/** Creates new form DbConnectionDialog */
+	public DbConnectionDialog(DbConnectionDialog other) {
+		super(other.parent, true);
+		this.parent = other.parent;
+		this.isConnected = other.isConnected;
+		this.connectionList = other.connectionList;
+		if (other.currentConnection != null) {
+			try {
+				this.currentConnection = (ConnectionInfo) other.currentConnection.clone();
+			} catch (CloneNotSupportedException e) {
+				this.currentConnection = other.currentConnection;
+			}
+		}
+		initComponents();
 	}
 
 	/** Creates new form DbConnectionDialog */

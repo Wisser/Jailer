@@ -1481,6 +1481,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 */
 	public static void customizeNimbus() {
 		try {
+			ToolTipManager.sharedInstance().setInitialDelay(500);
 			ToolTipManager.sharedInstance().setDismissDelay(20000);
 	    	Color bgSelColor = new Color(170, 200, 255);
 			// very (!) ugly trick to change nimbus default colors, but I found no better way
@@ -1562,6 +1563,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             	try {
         	    	DefaultSyntaxKit.initKit();
             	} catch (Exception x) {
+            		x.printStackTrace();
     			}
             	
 //    			JFrame dummy = new JFrame();
