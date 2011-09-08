@@ -89,7 +89,7 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
 	                String line;
 	                while ((line = in.readLine()) != null) {
 	                    script.append(line);
-	                    script.append(System.getProperty("line.separator"));
+	                    script.append(System.getProperty("line.separator", "\n"));
 	                }
 	                in.close();
 	            }

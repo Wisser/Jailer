@@ -463,8 +463,10 @@ public class UIUtil {
      */
 	public static void showException(Component parent, String title, Throwable t) {
 		t.printStackTrace();
-		while (t.getCause() != null && t != t.getCause()) {
-			t = t.getCause();
+		if (!(t instanceof ClassNotFoundException)) {
+			while (t.getCause() != null && t != t.getCause()) {
+				t = t.getCause();
+			}
 		}
 		StringBuilder msg = new StringBuilder();
 		int maxwidth = 80;

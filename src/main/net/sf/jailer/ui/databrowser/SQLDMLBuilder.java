@@ -45,7 +45,7 @@ public class SQLDMLBuilder {
 		StringBuilder sb = new StringBuilder();
 		
 		for (Row row: unique(rows)) {
-			sb.append(buildUpdate(table, row, session)).append(";\n\n");
+			sb.append(buildUpdate(table, row, session)).append(";" + LF + LF);
 		}
 		return sb.toString();
 	}
@@ -59,7 +59,7 @@ public class SQLDMLBuilder {
 	 * @return update statement for row
 	 */
 	public static String buildUpdate(Table table, Row row, Session session) {
-		String sql = "Update " + table.getName() + " \nSet ";
+		String sql = "Update " + table.getName() + " " + LF + "Set ";
 		boolean f = true;
 		int i = 0;
 		for (Column column : table.getColumns()) {
@@ -68,10 +68,10 @@ public class SQLDMLBuilder {
 			if (value == null) {
 				continue;
 			}
-			sql += (f? "" : ", \n    ") + name + " = " + value;
+			sql += (f? "" : ", " + LF + "    ") + name + " = " + value;
 			f = false;
 		}
-		sql += " \nWhere " + SqlUtil.replaceAliases(row.rowId, null, null);
+		sql += " " + LF + "Where " + SqlUtil.replaceAliases(row.rowId, null, null);
 		return sql;
 	}
 	
@@ -87,7 +87,7 @@ public class SQLDMLBuilder {
 		StringBuilder sb = new StringBuilder();
 		
 		for (Row row: unique(rows)) {
-			sb.append(buildInsert(table, row, session)).append(";\n\n");
+			sb.append(buildInsert(table, row, session)).append(";" + LF + LF);
 		}
 		return sb.toString();
 	}
@@ -101,7 +101,7 @@ public class SQLDMLBuilder {
 	 * @return update statement for row
 	 */
 	public static String buildInsert(Table table, Row row, Session session) {
-		String sql = "Insert into " + table.getName() + " ( \n    ";
+		String sql = "Insert into " + table.getName() + " (" + LF + "    ";
 		String values = "";
 		boolean f = true;
 		int i = 0;
@@ -111,11 +111,11 @@ public class SQLDMLBuilder {
 			if (value == null) {
 				continue;
 			}
-			sql += (f? "" : ", \n    ") + name;
-			values += (f? "" : ", \n    ") + value;
+			sql += (f? "" : ", " + LF + "    ") + name;
+			values += (f? "" : ", " + LF + "    ") + value;
 			f = false;
 		}
-		sql += ") \nValues ( \n    " + values + ")";
+		sql += ") " + LF + "Values (" + LF + "    " + values + ")";
 		return sql;
 	}
 	
@@ -144,7 +144,7 @@ public class SQLDMLBuilder {
 		StringBuilder sb = new StringBuilder();
 		
 		for (Row row: unique(rows)) {
-			sb.append(buildDelete(table, row, session)).append(";\n");
+			sb.append(buildDelete(table, row, session)).append(";" + LF + "");
 		}
 		return sb.toString();
 	}
@@ -180,5 +180,7 @@ public class SQLDMLBuilder {
 		}
 		return SqlUtil.toSql(value, session);
 	}
+	
+	private static final String LF = System.getProperty("line.separator", "\n");
 	
 }
