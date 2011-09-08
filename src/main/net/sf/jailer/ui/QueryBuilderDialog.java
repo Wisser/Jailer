@@ -53,8 +53,21 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     public QueryBuilderDialog(java.awt.Frame parent) {
         super(parent, true);
         initComponents();
+        mlmTextField.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				appendMLM(mlmTextField.getText());
+			}
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				appendMLM(mlmTextField.getText());
+			}
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				appendMLM(mlmTextField.getText());
+			}
+		});
         sqlTextArea.setContentType("text/sql");
-		setLocation(100, 150);
 		pack();
 		setSize(Math.max(700, getWidth()), 500);
 		UIUtil.initPeer();
@@ -72,13 +85,15 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         relationshipsPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
-        qualifyNamesCB = new javax.swing.JCheckBox();
         jScrollPane2 = new javax.swing.JScrollPane();
         sqlTextArea = new javax.swing.JEditorPane();
         jPanel2 = new javax.swing.JPanel();
         joinAWithBButton = new javax.swing.JButton();
         saveButton = new javax.swing.JButton();
         clipboardSingleLineButton = new javax.swing.JButton();
+        jPanel4 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        mlmTextField = new javax.swing.JTextField();
         clipboardButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -99,30 +114,6 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
-
-        qualifyNamesCB.setText("qualify table names");
-        qualifyNamesCB.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                qualifyNamesCBStateChanged(evt);
-            }
-        });
-        qualifyNamesCB.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                qualifyNamesCBItemStateChanged(evt);
-            }
-        });
-        qualifyNamesCB.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                qualifyNamesCBActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel3.add(qualifyNamesCB, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
@@ -191,6 +182,30 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 4);
         jPanel2.add(clipboardSingleLineButton, gridBagConstraints);
 
+        jPanel4.setLayout(new java.awt.GridBagLayout());
+
+        jLabel1.setText("multi-line continuation  ");
+        jLabel1.setToolTipText("multi-line continuation character");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel4.add(jLabel1, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 16;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        jPanel4.add(mlmTextField, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        jPanel2.add(jPanel4, gridBagConstraints);
+
         clipboardButton.setText(" Copy to Clipboard ");
         clipboardButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -231,20 +246,9 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         sqlTextArea.select(0, 0);
     }//GEN-LAST:event_clipboardButtonActionPerformed
 
-    private void qualifyNamesCBStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_qualifyNamesCBStateChanged
-}//GEN-LAST:event_qualifyNamesCBStateChanged
-
-    private void qualifyNamesCBActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_qualifyNamesCBActionPerformed
-    }//GEN-LAST:event_qualifyNamesCBActionPerformed
-
     private void joinAWithBButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_joinAWithBButtonActionPerformed
         createPathQuery(null);
     }//GEN-LAST:event_joinAWithBButtonActionPerformed
-
-    private void qualifyNamesCBItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_qualifyNamesCBItemStateChanged
-        checkAliases();
-    	updateSQL();
-    }//GEN-LAST:event_qualifyNamesCBItemStateChanged
 
     private void clipboardSingleLineButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_clipboardSingleLineButtonActionPerformed
         String orig = sqlTextArea.getText();
@@ -505,10 +509,10 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         			String tb = b.aliasTextField.getText().trim();
         			Table tableB = b.association == null? subject : b.association.destination;
         			if (ta.length() == 0) {
-        				ta = qualifyNamesCB.isSelected()? tableA.getName() : tableA.getUnqualifiedName();
+        				ta = tableA.getName();
         			}
         			if (tb.length() == 0) {
-        				tb = qualifyNamesCB.isSelected()? tableB.getName() : tableB.getUnqualifiedName();
+        				tb = tableB.getName();
         			}
         			if (ta.equalsIgnoreCase(tb)) {
         				String as = null;
@@ -543,30 +547,30 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     	}
     }
 	
-    private boolean qualifyTableNames = false;
     private String prevSQL = "";
     
     /**
      * Updates the SQL query.
      */
     private void updateSQL() {
+    	appendMLM("");
     	String currentSql = prevSQL; // createSQL(sqlIsSingleLine, qualifyTableNames);
     	String sql = sqlTextArea.getText();
     	String suffix = "";
     	if (sql.startsWith(currentSql)) {
     		suffix = sql.substring(currentSql.length());
     	}
-    	qualifyTableNames = qualifyNamesCB.isSelected();
-    	sqlTextArea.setText((prevSQL = createSQL(false, qualifyTableNames)) + suffix);
+    	sqlTextArea.setText((prevSQL = createSQL(false)) + suffix);
+    	appendMLM(mlmTextField.getText());
     	sqlTextArea.setCaretPosition(0);
     }
     
     /**
      * Creates SQL query.
      */
-	private String createSQL(boolean singleLine, boolean qualifyTableNames) {
+	private String createSQL(boolean singleLine) {
 		StringBuffer sql = new StringBuffer("Select ");
-		String lf = System.getProperty("line.separator");
+		String lf = System.getProperty("line.separator", "\n");
 		String tab = "       ";
 		
 		if (!singleLine) {
@@ -588,11 +592,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 			Table t = r.association == null? subject : r.association.destination;
 			r.alias = r.aliasTextField.getText().trim();
 			if (r.alias.equals("")) {
-				if (qualifyTableNames) {
-					r.alias = t.getName();
-				} else {
-					r.alias = t.getUnqualifiedName();
-				}
+				r.alias = t.getName();
 			}
 			if (r.selectColumns) {
 				selectAll = false;
@@ -631,16 +631,12 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 			} else if (relationships.size() > 1) {
 				sql.append(singleLine? "" : (lf + tab));
 			}
-			if (qualifyTableNames) {
-				sql.append(t.getName());
-			} else {
-				sql.append(t.getUnqualifiedName());
-			}
+			sql.append(t.getName());
 			String alias = r.aliasTextField.getText().trim();
 			if (alias.length() > 0) {
 				sql.append(" " + alias);
 			} else {
-				alias = qualifyTableNames? t.getName() : t.getUnqualifiedName();
+				alias = t.getName();
 			}
 			if (r.association != null) {
 				if (!r.association.reversed) {
@@ -683,7 +679,11 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 			sql.append(" ");
 			return sql.toString().replaceAll(" *(\n|\r)+ *", " ");
 		}
-		return sql.toString();
+		String sqlString = sql.toString().trim();
+		if (sqlString.indexOf("Where") < 0) {
+			sqlString += lf;
+		}
+		return sqlString;
 	}
 
 	/**
@@ -703,6 +703,8 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		if (table == null) {
 			return;
 		}
+		sqlTextArea.setText("");
+		mlmTextField.setText("");
 		this.datamodel = datamodel;
 		subject = table;
 		relationships.clear();
@@ -742,6 +744,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		}
 		checkAliases();
 		
+		setLocation(getParent().getX() + (getParent().getWidth() - getWidth()) / 2, getParent().getY() + (getParent().getHeight() - getHeight()) / 2);
 		setVisible(true);
 	}
     
@@ -767,16 +770,46 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     	}
 		resetRelationshipsPanel();
 	}
-
+    
+    private String mlm = "";
+    
+    private void appendMLM(String mlm) {
+    	mlm = mlm.trim();
+    	if (mlm.length() > 1) {
+    		mlm = mlm.substring(0, 1);
+    	}
+    	if (this.mlm.equals(mlm)) {
+    		return;
+    	}
+    	if (this.mlm.length() > 0) {
+    		String omlm = this.mlm;
+    		if ("\\|[]()^-$".indexOf(omlm) >= 0) {
+    			omlm = "\\" + omlm;
+    		}
+    		sqlTextArea.setText(sqlTextArea.getText().replaceAll(" " + omlm + "([\n\r])", "$1"));
+    		sqlTextArea.select(0, 0);
+    	}
+    	this.mlm = mlm;
+    	if (mlm.length() > 0) {
+    		if ("\\".equals(mlm) || "$".equals(mlm)) {
+    			mlm = "\\" + mlm;
+    		}
+    		sqlTextArea.setText(sqlTextArea.getText().replaceAll("([^\n\r;])([\n\r])", "$1 " + mlm + "$2"));
+    		sqlTextArea.select(0, 0);
+    	}
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton clipboardButton;
     private javax.swing.JButton clipboardSingleLineButton;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JButton joinAWithBButton;
-    private javax.swing.JCheckBox qualifyNamesCB;
+    private javax.swing.JTextField mlmTextField;
     private javax.swing.JPanel relationshipsPanel;
     private javax.swing.JButton saveButton;
     private javax.swing.JEditorPane sqlTextArea;

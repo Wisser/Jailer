@@ -429,7 +429,7 @@ public class Session {
             String line;
             while ((line = in.readLine()) != null) {
                 result.append(line);
-                result.append(System.getProperty("line.separator"));
+                result.append(System.getProperty("line.separator", "\n"));
             }
             in.close();
         } catch (IOException e) {

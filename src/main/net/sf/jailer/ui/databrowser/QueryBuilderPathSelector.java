@@ -44,8 +44,7 @@ public class QueryBuilderPathSelector extends javax.swing.JDialog {
 				okButton.grabFocus();
 			}
 		});
-        setLocation(150, 200);
-		pack();
+        pack();
 		setSize(Math.max(400, getWidth()), getHeight());
 		UIUtil.initPeer();
     }
@@ -183,6 +182,7 @@ public class QueryBuilderPathSelector extends javax.swing.JDialog {
     	}
     	toComboBox.setModel(model);
     	toComboBox.setSelectedIndex(i - 1);
+		setLocation(getParent().getX() + (getParent().getWidth() - getWidth()) / 2, getParent().getY() + (getParent().getHeight() - getHeight()) / 2);
     	setVisible(true);
 		return ok? backCount : -1;
 	}

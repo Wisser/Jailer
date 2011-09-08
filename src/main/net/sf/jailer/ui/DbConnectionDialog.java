@@ -724,6 +724,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			con.close();
 			isConnected = true;
 			setVisible(false);
+		} catch (ClassNotFoundException e) {
+			UIUtil.showException(this, "Could not connect to DB", new ClassNotFoundException("JDBC driver class not found: " + e.getMessage(), e));
+			return;
 		} catch (Exception e) {
 			UIUtil.showException(this, "Could not connect to DB", e);
 			return;
