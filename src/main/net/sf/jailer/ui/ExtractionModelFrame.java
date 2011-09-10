@@ -1562,7 +1562,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     			}
             	try {
         	    	DefaultSyntaxKit.initKit();
-            	} catch (Exception x) {
+            	} catch (Throwable x) {
             		x.printStackTrace();
     			}
             	
@@ -1602,7 +1602,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         	    	}
     	    	}
                 extractionModelFrame.setLocation(40, 40);
-                extractionModelFrame.setSize(1100, 660);
+                extractionModelFrame.setSize(1100, 640);
                 extractionModelFrame.setVisible(true);
                 askForDataModel(extractionModelFrame);
             }

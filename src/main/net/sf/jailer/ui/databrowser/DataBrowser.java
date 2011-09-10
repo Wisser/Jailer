@@ -179,7 +179,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 		});
 		setLocation(100, 100);
-		setSize(900, 600);
+		setSize(900, 580);
 		if (root != null) {
 			desktop.addTableBrowser(null, 0, root, null, condition);
 		}
@@ -652,7 +652,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			public void run() {
 				try {
 					DefaultSyntaxKit.initKit();
-				} catch (Exception e) {
+				} catch (Throwable e) {
 					e.printStackTrace();
 				}
 				DataModel datamodel;

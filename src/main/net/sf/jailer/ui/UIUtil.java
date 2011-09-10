@@ -16,6 +16,8 @@
 package net.sf.jailer.ui;
 
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
@@ -30,6 +32,7 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -45,6 +48,7 @@ import javax.swing.WindowConstants;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Jailer;
+import net.sf.jailer.database.SqlException;
 import net.sf.jailer.progress.ProgressListener;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
@@ -464,14 +468,25 @@ public class UIUtil {
 	public static void showException(Component parent, String title, Throwable t) {
 		t.printStackTrace();
 		if (!(t instanceof ClassNotFoundException)) {
-			while (t.getCause() != null && t != t.getCause()) {
+			while (t.getCause() != null && t != t.getCause() && !(t instanceof SqlException)) {
 				t = t.getCause();
 			}
 		}
+		if (t instanceof SqlException) {
+			String message = ((SqlException) t).message;
+			String sql = ((SqlException) t).sqlStatement;
+			new SqlErrorDialog(parent == null? null : SwingUtilities.getWindowAncestor(parent), lineWrap(message).toString(), lineWrap(sql).toString());
+			return;
+		}
+		StringBuilder msg = lineWrap(t.getMessage());
+		JOptionPane.showMessageDialog(parent, msg.toString().trim(), title + " - " + t.getClass().getName(), JOptionPane.ERROR_MESSAGE);
+	}
+
+	private static StringBuilder lineWrap(String message) {
 		StringBuilder msg = new StringBuilder();
 		int maxwidth = 80;
 		Pattern wrapRE = Pattern.compile("(\\S\\S{" + maxwidth + ",}|.{1," + maxwidth + "})(\\s+|$)");
-	    Matcher m = wrapRE.matcher(t.getMessage() == null ? "" : t.getMessage());
+	    Matcher m = wrapRE.matcher(message == null ? "" : message);
 		while (m.find()) { 
 			String line = m.group();
 			while (line.length() > maxwidth + 10) {
@@ -480,7 +495,7 @@ public class UIUtil {
 			}
 			msg.append(line + (line.endsWith("\n")? "" : "\n"));
 		}
-		JOptionPane.showMessageDialog(parent, msg.toString().trim(), title + " - " + t.getClass().getName(), JOptionPane.ERROR_MESSAGE);
+		return msg;
 	}
 
 	/**
@@ -518,5 +533,18 @@ public class UIUtil {
 		} catch (InterruptedException e) {
 		}
     }
+
+	public static void fit(JDialog d) {
+		try {
+			// Get the size of the screen
+			Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
+			int hd = d.getY() + d.getHeight() - (dim.height - 80);
+			if (hd > 0) {
+				d.setSize(d.getWidth(), Math.max(d.getHeight() - hd, 150));
+			}
+		} catch (Throwable t) {
+			// ignore
+		}
+	}
     
 }

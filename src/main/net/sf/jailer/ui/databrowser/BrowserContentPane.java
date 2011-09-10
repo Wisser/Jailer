@@ -162,11 +162,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 									}
 									asking = false;
 								} else {
-									UIUtil.showException(null, "Error", e);
+									UIUtil.showException(BrowserContentPane.this, "Error", e);
 								}
 							} catch (Exception e1) {
 								asking = false;
-								UIUtil.showException(null, "Error", e);
+								UIUtil.showException(BrowserContentPane.this, "Error", e);
 							}
 						}
 					} else {
@@ -825,6 +825,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			d.pack();
 			d.setLocation(x - 50, y - 100);
 			d.setSize(700, Math.max(d.getHeight() + 20, 400));
+			UIUtil.fit(d);
 		} finally {
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
