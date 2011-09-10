@@ -132,6 +132,7 @@ public class JailerConsole {
                 }
             }
         });
+		UIUtil.fit(this.dialog);
     }
 
     /**

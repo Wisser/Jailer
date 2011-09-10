@@ -745,6 +745,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		checkAliases();
 		
 		setLocation(getParent().getX() + (getParent().getWidth() - getWidth()) / 2, getParent().getY() + (getParent().getHeight() - getHeight()) / 2);
+		UIUtil.fit(this);
 		setVisible(true);
 	}
     

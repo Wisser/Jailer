@@ -411,7 +411,7 @@ public class Session {
         	if (!silent) {
         		_log.error("Error executing query", e);
         	}
-	    	throw new SQLException("\"" + e.getMessage() + "\" in statement \"" + sqlQuery + "\"");
+	    	throw new SqlException("\"" + e.getMessage() + "\" in statement \"" + sqlQuery + "\"", sqlQuery, e);
         }
     }
 
@@ -478,7 +478,7 @@ public class Session {
 		        	CancellationHandler.checkForCancellation(null);
 		        	CancellationHandler.end(statement, null);
 		        	if (++failures > 10 || e.getErrorCode() != -911) {
-		    	    	throw new SQLException("\"" + e.getMessage() + "\" in statement \"" + sqlUpdate + "\"");
+		    	    	throw new SqlException("\"" + e.getMessage() + "\" in statement \"" + sqlUpdate + "\"", sqlUpdate, e);
 	                }
 	                // deadlock
 	                serializeAccess = true;
@@ -534,7 +534,7 @@ public class Session {
 	    	if (!silent) {
 	    		_log.error("Error executing statement", e);
 	    	}
-	    	throw new SQLException("\"" + e.getMessage() + "\" in statement \"" + sqlUpdate + "\"");
+	    	throw new SqlException("\"" + e.getMessage() + "\" in statement \"" + sqlUpdate + "\"", sqlUpdate, e);
 	    }
     }
 
@@ -623,7 +623,7 @@ public class Session {
 	    	if (!silent) {
     			_log.error("Error executing statement", e);
 	    	}
-	    	throw new SQLException("\"" + e.getMessage() + "\" in statement \"" + sql + "\"");
+	    	throw new SqlException("\"" + e.getMessage() + "\" in statement \"" + sql + "\"", sql, e);
 	    }
     }
     

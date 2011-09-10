@@ -252,7 +252,8 @@ public class ExportDialog extends javax.swing.JDialog {
         placeholder.setVisible(false);
         placeholder1.setVisible(false);
         UIUtil.initPeer();
-        setVisible(true);
+		UIUtil.fit(this);
+		setVisible(true);
         try {
 			if (initScopeButtonThread != null) {
 				initScopeButtonThread.join();
