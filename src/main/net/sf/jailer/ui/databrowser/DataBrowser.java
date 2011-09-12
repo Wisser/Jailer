@@ -317,6 +317,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenuBar1 = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem3 = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
         schemaMappingMenuItem = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
@@ -434,7 +435,7 @@ public class DataBrowser extends javax.swing.JFrame {
         legende2.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         legende2.setLayout(new java.awt.GridBagLayout());
 
-        connectivityState.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        connectivityState.setFont(new java.awt.Font("Dialog", 0, 12));
         connectivityState.setText("offline");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -466,6 +467,15 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         jMenu1.add(jMenuItem1);
+
+        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem3.setText("New SQL Browser");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem3);
         jMenu1.add(jSeparator2);
 
         schemaMappingMenuItem.setText("Schema Mapping");
@@ -565,6 +575,10 @@ public class DataBrowser extends javax.swing.JFrame {
     private void schemaMappingMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_schemaMappingMenuItemActionPerformed
         desktop.openSchemaMappingDialog(false);
     }//GEN-LAST:event_schemaMappingMenuItemActionPerformed
+
+    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
+    	desktop.addTableBrowser(null, 0, null, null, "");
+   	}//GEN-LAST:event_jMenuItem3ActionPerformed
 
 	private void openNewTableBrowser() {
 		new NewTableBrowser(this, datamodel.get()) {
@@ -774,6 +788,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
+    private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel11;

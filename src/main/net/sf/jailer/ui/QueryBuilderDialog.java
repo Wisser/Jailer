@@ -68,6 +68,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 			}
 		});
         sqlTextArea.setContentType("text/sql");
+        sqlEditButton.setVisible(false);
 		pack();
 		setSize(Math.max(700, getWidth()), 500);
 		UIUtil.initPeer();
@@ -95,6 +96,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         mlmTextField = new javax.swing.JTextField();
         clipboardButton = new javax.swing.JButton();
+        sqlEditButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Query Builder");
@@ -218,6 +220,20 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         jPanel2.add(clipboardButton, gridBagConstraints);
 
+        sqlEditButton.setText(" Execute ");
+        sqlEditButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sqlEditButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        jPanel2.add(sqlEditButton, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 30;
@@ -258,6 +274,10 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         sqlTextArea.setText(orig);
         sqlTextArea.select(0, 0);
 }//GEN-LAST:event_clipboardSingleLineButtonActionPerformed
+
+    private void sqlEditButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sqlEditButtonActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_sqlEditButtonActionPerformed
 
     private Font font = new JLabel("normal").getFont();
     
@@ -564,7 +584,20 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     	appendMLM(mlmTextField.getText());
     	sqlTextArea.setCaretPosition(0);
     }
-    
+
+    /**
+     * Gets current SQL statement.
+     * 
+     * @return current SQL statement
+     */
+	public String getSQL() {
+		appendMLM("");
+    	String sql = sqlTextArea.getText();
+    	appendMLM(mlmTextField.getText());
+    	sqlTextArea.setCaretPosition(0);
+    	return sql;
+	}
+
     /**
      * Creates SQL query.
      */
@@ -813,6 +846,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     private javax.swing.JTextField mlmTextField;
     private javax.swing.JPanel relationshipsPanel;
     private javax.swing.JButton saveButton;
+    public javax.swing.JButton sqlEditButton;
     private javax.swing.JEditorPane sqlTextArea;
     // End of variables declaration//GEN-END:variables
     

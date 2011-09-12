@@ -29,6 +29,8 @@ import java.awt.Polygon;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.Shape;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.geom.AffineTransform;
@@ -134,6 +136,15 @@ public class Desktop extends JDesktopPane {
 		this.queryBuilderPathSelector = new QueryBuilderPathSelector(parentFrame, true);
 		this.dbConnectionDialog = dbConnectionDialog;
 
+		this.queryBuilderDialog.sqlEditButton.setVisible(true);
+		this.queryBuilderDialog.sqlEditButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				addTableBrowser(null, 0, null, null, queryBuilderDialog.getSQL());
+				queryBuilderDialog.setVisible(false);
+			}
+		});
+		
 		try {
 			this.session = session;
 			// trigger sql dialect guessing
@@ -263,7 +274,7 @@ public class Desktop extends JDesktopPane {
 	 * 
 	 * @param parent parent browser
 	 * @param parentRowIndex index of parent row in the parent's row browser, -1 for all rows
-	 * @param table to read rows from
+	 * @param table to read rows from. Open SQL browser if table is <code>null</code>.
 	 * @param association to navigate, or <code>null</code>
 	 * @param condition 
 	 * @return new row-browser
@@ -277,7 +288,7 @@ public class Desktop extends JDesktopPane {
 			}
 		}
 		
-		JInternalFrame jInternalFrame = new JInternalFrame(datamodel.get().getDisplayName(table));
+		JInternalFrame jInternalFrame = new JInternalFrame(table == null? "SQL" : datamodel.get().getDisplayName(table));
 		jInternalFrame.setClosable(true);
 		jInternalFrame.setIconifiable(true);
 		jInternalFrame.setMaximizable(true);
@@ -523,7 +534,11 @@ public class Desktop extends JDesktopPane {
 		checkDesktopSize();
 		this.scrollRectToVisible(jInternalFrame.getBounds());
 		jInternalFrame.toFront();
-		browserContentPane.andCondition.grabFocus();
+		if (browserContentPane.sqlBrowserContentPane != null) {
+			browserContentPane.sqlBrowserContentPane.sqlEditorPane.grabFocus();
+		} else {
+			browserContentPane.andCondition.grabFocus();
+		}
 		return tableBrowser;
 	}
 
@@ -1186,7 +1201,7 @@ public class Desktop extends JDesktopPane {
 							}
 						}
 					}
-					if (newTable == null) {
+					if (newTable == null && oldTable.getName() != null) {
 						newTable = newModel.getTableByDisplayName(datamodel.get().getDisplayName(oldTable));
 					}
 					if (newTable != null) {

@@ -475,16 +475,15 @@ public class UIUtil {
 		if (t instanceof SqlException) {
 			String message = ((SqlException) t).message;
 			String sql = ((SqlException) t).sqlStatement;
-			new SqlErrorDialog(parent == null? null : SwingUtilities.getWindowAncestor(parent), lineWrap(message).toString(), lineWrap(sql).toString());
+			new SqlErrorDialog(parent == null? null : SwingUtilities.getWindowAncestor(parent), lineWrap(message, 120).toString(), lineWrap(sql, 140).toString());
 			return;
 		}
-		StringBuilder msg = lineWrap(t.getMessage());
+		StringBuilder msg = lineWrap(t.getMessage(), 80);
 		JOptionPane.showMessageDialog(parent, msg.toString().trim(), title + " - " + t.getClass().getName(), JOptionPane.ERROR_MESSAGE);
 	}
 
-	private static StringBuilder lineWrap(String message) {
+	private static StringBuilder lineWrap(String message, int maxwidth) {
 		StringBuilder msg = new StringBuilder();
-		int maxwidth = 80;
 		Pattern wrapRE = Pattern.compile("(\\S\\S{" + maxwidth + ",}|.{1," + maxwidth + "})(\\s+|$)");
 	    Matcher m = wrapRE.matcher(message == null ? "" : message);
 		while (m.find()) { 
@@ -493,7 +492,7 @@ public class UIUtil {
 				msg.append(line.substring(0, maxwidth) + "\n");
 				line = line.substring(maxwidth);
 			}
-			msg.append(line + (line.endsWith("\n")? "" : "\n"));
+			msg.append(line + (line.contains("\n")? "" : "\n"));
 		}
 		return msg;
 	}

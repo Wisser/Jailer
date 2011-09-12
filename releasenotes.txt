@@ -1,3 +1,6 @@
+3.6.8
+ - Added ability to edit and execute arbitrary SQL statements in Data Browser.
+
 3.6.7
  - Added ability to edit data by automatically creating SQL/DML statements based on rows (Feature Request [3176294])
  - Improved syntax highlighting. 
