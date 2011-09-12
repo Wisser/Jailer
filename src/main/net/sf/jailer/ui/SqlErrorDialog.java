@@ -18,7 +18,6 @@ package net.sf.jailer.ui;
 import java.awt.Window;
 
 import javax.swing.Icon;
-import javax.swing.ImageIcon;
 import javax.swing.JLabel;
 import javax.swing.UIManager;
 
@@ -48,6 +47,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
         }
         sqlEditorPane.setContentType("text/sql");
         sqlEditorPane.setText(sql.trim());
+        sqlEditorPane.setCaretPosition(0);
         try {
         	errorLabel.setText(null);
            	Icon errorIcon = UIManager.getIcon("OptionPane.errorIcon");
@@ -81,6 +81,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
         errorLabel = new javax.swing.JLabel();
         messagePanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("SQL Statement failed");
@@ -131,11 +132,29 @@ public class SqlErrorDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
         getContentPane().add(messagePanel, gridBagConstraints);
 
+        jButton1.setText("  OK  ");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        getContentPane().add(jButton1, gridBagConstraints);
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        setVisible(false);
+    }//GEN-LAST:event_jButton1ActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel errorLabel;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
