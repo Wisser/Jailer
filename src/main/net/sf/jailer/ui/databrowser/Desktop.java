@@ -1129,7 +1129,9 @@ public abstract class Desktop extends JDesktopPane {
 			rb.browserContentPane.cancelLoadJob();
 		}
 		try {
-			session.shutDown();
+			if (session != null) {
+				session.shutDown();
+			}
 		} catch (SQLException e) {
 			// exception already has been logged
 		}

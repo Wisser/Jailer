@@ -215,7 +215,13 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}
 
 	private boolean inRefresh = false;
+
+	private String jdbcHelpURL = "http://jailer.sourceforge.net/doc/jdbc.html?src=app";
 	
+	public synchronized void setJdbcHelpURL(String jdbcHelpURL) {
+		this.jdbcHelpURL = jdbcHelpURL;
+	}
+
 	/**
 	 * Refreshes the dialog after model changes.
 	 */
@@ -680,7 +686,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
      * @return <code>true</code> if connection has been edited
      */
 	private boolean edit(ConnectionInfo ci) {
-		return new DbConnectionDetailsEditor(parent).edit(ci);
+		return new DbConnectionDetailsEditor(parent, jdbcHelpURL).edit(ci);
 	}
 
 	private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-

@@ -1,0 +1,121 @@
+.spacer
+{
+	HEIGHT:2px;
+	BACKGROUND-COLOR:#FFCC00;
+}
+.lmenu
+{
+	BACKGROUND-COLOR:#FFCC00;
+}
+BODY
+{
+	FONT-SIZE:13px;
+	COLOR:#000022;
+	FONT-FAMILY:Tahoma;
+}
+A.tlink:link
+{
+	COLOR:#000044;
+	TEXT-DECORATION:none;
+	FONT-WEIGHT:normal;
+	FONT-SIZE:14px;
+}
+A.tlink:visited
+{
+	COLOR:#000044;
+	TEXT-DECORATION:none;
+	FONT-WEIGHT:normal;
+	FONT-SIZE:14px;
+}
+A.tlink:hover
+{
+	TEXT-DECORATION:underline;
+}
+A.llink:link
+{
+	COLOR:#003399;
+	TEXT-DECORATION:none;
+	FONT-WEIGHT:normal;
+	FONT-SIZE:13px;
+}
+A.llink:visited
+{
+	COLOR:#003399;
+	TEXT-DECORATION:none;
+	FONT-WEIGHT:normal;
+	FONT-SIZE:13px;
+}
+A.llink:hover
+{
+	TEXT-DECORATION:underline;
+}
+.llinkA
+{
+	COLOR:#003399;
+	TEXT-DECORATION:none;
+	FONT-WEIGHT:bold;
+	FONT-SIZE:14px;
+}
+.tlinkA
+{
+	COLOR:#000044;
+	TEXT-DECORATION:none;
+	FONT-WEIGHT:bold;
+	FONT-SIZE:15px;
+}
+.content
+{
+	padding-top:3px;
+	padding-left:10px;
+	margin-left:10px;
+	margin-right:2px;
+}
+.footer
+{
+	padding-top:3px;
+	font-size:8px;
+	padding-left:20px;
+	margin-left:10px;
+	text-align:center;
+	border-top:1px solid #003399;
+}
+.bannerbackground
+{
+	background-color:#FFFFFF;
+}
+.contentbackground
+{
+	background-color:#FFFFFF;
+}
+.lmenucontainer
+{
+	background-image:url(./vgradp.gif);
+}
+.nav1background
+{
+	background-image:url(./bg1.JPG);
+}
+.slogan
+{
+	color:#000055;
+}
+.content2background
+{
+	font-family:Arial, Helvetica, sans-serif;
+	font-size:12px;
+}
+
+/*** Highlight Markup Styles ***/
+#vc_markup .num  { color: #000000; }
+#vc_markup .esc  { color: #bd8d8b; }
+#vc_markup .str  { color: #bd8d8b; }
+#vc_markup .dstr { color: #bd8d8b; }
+#vc_markup .slc  { color: #ac2020; font-style: italic; }
+#vc_markup .com  { color: #ac2020; font-style: italic; }
+#vc_markup .dir  { color: #000000; }
+#vc_markup .sym  { color: #000000; }
+#vc_markup .line { color: #555555; }
+#vc_markup .kwa  { color: #9c20ee; font-weight: bold; }
+#vc_markup .kwb  { color: #208920; }
+#vc_markup .kwc  { color: #0000ff; }
+#vc_markup .kwd  { color: #404040; }

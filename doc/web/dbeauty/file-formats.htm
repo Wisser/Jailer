@@ -1,0 +1,256 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+  
+  <title>Jailer</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <meta name="description" content="Data Export Tool">
+<link rel="shortcut icon" href="favicon.ico">
+
+  <meta name="keywords" content="data export referential integrity java jdbc dbms">
+  <link rel="stylesheet" type="text/css" href="file-formats-Dateien/styles.css"></head>
+<body left-margin="0" top-margin="0">
+<div align="left">
+<table style="text-align: left; position: absolute; left: 0pt; top: 0pt;" border="0" cellpadding="0" cellspacing="0" height="407" width="100%">
+  <tbody>
+    <tr>
+      <td colspan="2" class="bannerbackground" height="33" width="100%">
+      <table border="0" cellpadding="0" cellspacing="0">
+        <tbody>
+          <tr>
+            <td><img src="logo.png" hspace="10"></td>
+            <td class="slogan" width="100%">Relational Data Browsing</td>
+            <td style="text-align: right; width: 100%;"><table border="0" cellpadding="0" cellspacing="0"><tbody><tr><td><a href="http://sourceforge.net/projects/jailer/"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=197260&amp;type=1" alt="SourceForge.net Logo" style="border: 0px solid ;"></a></td></tr><tr><td><a href="http://www.java.net"><img src="javanet_button_90.gif" alt="java.net Member Button: 90px wide" border="0" height="25" width="90"></a></td></tr></tbody></table></td>
+          </tr>
+        </tbody>
+      </table>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2" class="nav1background" height="33" width="100%">&nbsp;
+      <b><font color="#ffffff"><a href="home.htm" target="_self" class="tlink">Home</a> &nbsp;&nbsp;&nbsp; <a href="quicktour.htm" target="_self" class="tlink">Quick Tour</a> &nbsp;&nbsp;&nbsp;<a href="exporting-data.htm" target="_self" class="tlink">Tutorial</a> &nbsp;&nbsp;&nbsp;<a href="data-browsing.html" target="_self" class="tlink">Data Browser</a> &nbsp;&nbsp;&nbsp;<a href="faq.html" target="_self" class="tlink">FAQ</a>
+&nbsp;&nbsp;&nbsp; <a href="design.htm" target="_self" class="tlinkA">Documentation</a> &nbsp;&nbsp;&nbsp; <a href="http://sourceforge.net/forum/?group_id=197260" target="_self" class="tlink">Forum</a>&nbsp;&nbsp;&nbsp; <a href="http://sourceforge.net/project/showfiles.php?group_id=197260" target="_self" class="tlink">Download</a> &nbsp;&nbsp;&nbsp;
+&nbsp;&nbsp;&nbsp;</font></b></td>
+    </tr>
+    <tr>
+      <td colspan="2" class="spacer" width="100%">
+      </td>
+    </tr>
+    <tr>
+      <td class="lmenucontainer" height="100%" valign="top" width="14%">
+      <div align="center">
+      <center>
+      <table border="0" cellpadding="0" cellspacing="0" width="100%">
+        <tbody>
+          <tr>
+            <td width="100%"><br>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      </center>
+      </div>
+      <ul>
+        <li><a href="design.htm" target="_self" class="llink">Design</a></li>
+        <li><a href="file-formats.htm" target="_self" class="llinkA">File
+Formats</a></li>
+      </ul>
+      <table border="0" cellpadding="5" cellspacing="0" width="100%">
+        <tbody>
+          <tr>
+            <td class="content2background"><img style="width: 160px; height: 1px;" alt="" src="architecture-Dateien/vgradp.gif"></td>
+          </tr>
+        </tbody>
+      </table>
+      <p>&nbsp;</p>
+      </td>
+      <td class="contentbackground" height="418" valign="top" width="86%">
+      <div align="right">
+      <table border="0" cellpadding="0" cellspacing="0" height="542" width="98%">
+        <tbody>
+          <tr>
+            <td class="contentbackground" height="21" width="100%"><br>
+            </td>
+          </tr>
+          <tr>
+            <td class="content" height="520" valign="top" width="100%"><small><small>&nbsp;</small></small><br>
+A Jailer model is stored in an extended CSV file format <font size="2"><small>('</small><small>Comma
+Separated Values')</small><br>
+            </font>
+            <ul>
+              <li>the separating character is ';' </li>
+              <li>empty lines are ignored </li>
+              <li>Lines starting with '#' are comments and will be
+ignored </li>
+              <li>Lines starting with '#include' will be replaced with
+the content of the file specified thereafter.<br>
+              </li>
+            </ul>
+            <h4><br>
+            </h4>
+            <h3>Data Model</h3>
+            <h4><a name="table-datei">Table-File<span style="font-family: monospace;"> (datamodel/table.csv)</span></a>&nbsp;</h4>
+For each table the following information is required:
+            <div class="level3">
+            <ul>
+              <li class="level1">
+                <div class="li"><span style="font-weight: bold;">Name</span><br>
+                </div>
+              </li>
+              <li class="level1"><span style="font-weight: bold;">upsert</span>
+                <br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+N: generate <big><span style="font-family: monospace;"><font size="4">INSERT</font></span></big>-statements
+for entities of this table<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+Y: generate '<big><span style="font-family: monospace;"><font size="4">INSERT
+IF NOT EXISTS</font></span></big>' + <big><span style="font-family: monospace;"><font size="4">UPDATE</font></span></big>-statements<br>
+              </li>
+              <li class="level1">
+                <div class="li"><span style="font-weight: bold;">Primary-Key</span>
+';'-separeted primary key columns in SQL syntax</div>
+              </li>
+              <li class="level1"><span style="font-weight: bold;">Author</span></li>
+            </ul>
+            <p>Example: </p>
+            <table class="inline" border="1" cellpadding="2" cellspacing="0">
+              <tbody>
+                <tr>
+                  <td style="background-color: rgb(153, 255, 255);"><strong>Name</strong></td>
+                  <td class="rightalign" style="background-color: rgb(153, 255, 255);"><strong>upsert</strong></td>
+                  <td class="rightalign" style="background-color: rgb(153, 255, 255);"><strong>primary keys</strong></td>
+                  <td style="vertical-align: top; background-color: rgb(153, 255, 255);"><span style="font-weight: bold;">author</span><br>
+                  </td>
+                </tr>
+                <tr>
+                  <td>DEPARTMENT</td>
+                  <td class="rightalign">Y<br>
+                  </td>
+                  <td class="rightalign">DEPTNO INTEGER</td>
+                  <td style="vertical-align: top;">IBM DB2 JDBC Driver</td>
+                </tr>
+                <tr>
+                  <td>EMPLOYEE</td>
+                  <td class="rightalign">N</td>
+                  <td class="rightalign">EMPNO INTEGER</td>
+                  <td style="vertical-align: top;">IBM DB2 JDBC Driver</td>
+                </tr>
+                <tr>
+                  <td>SALARYGRADE</td>
+                  <td class="rightalign">Y<br>
+                  </td>
+                  <td class="rightalign">GRADE INTEGER;LOSAL
+INTEGER;HISAL INTEGER</td>
+                  <td style="vertical-align: top;">IBM DB2 JDBC Driver</td>
+                </tr>
+              </tbody>
+            </table>
+            <br>
+            </div>
+            <h4><a name="associations-datei">Associations-File<span style="font-family: monospace;"> (datamodel/association.csv)</span></a>&nbsp;</h4>
+For each table the following information is required:
+            <div class="level3">
+            <ul>
+              <li class="level1" style="font-weight: bold;">
+                <div class="li"><span style="font-weight: normal;">Table
+A source or association name</span><br>
+                </div>
+              </li>
+              <li class="level1"><span style="font-weight: bold;">Table
+B </span>destination </li>
+              <li class="level1"><span style="font-weight: bold;">insert-first</span>
+specifies dependency:<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <big><span style="font-family: monospace;"><font size="4">- A</font></span></big> if B depends on A<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span style="font-family: monospace;">- </span><big><span style="font-family: monospace;"><font size="4">B</font></span></big>
+if A depends on B<br>
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+- nothing if the association is not a dependency </li>
+              <li class="level1"><span style="font-weight: bold;">Cardinality</span>
+of the association. 1:1, 1:n, n:1, n:m<br>
+              </li>
+              <li class="level1">
+                <div class="li"><span style="font-weight: bold;">Join-Condition</span>
+of the association. Use the table-aliases <span style="font-style: italic;">A</span> und <span style="font-style: italic;">B</span>.</div>
+              </li>
+              <li class="level1"><span style="font-weight: bold;">Name.</span>
+Optional name of the association. Names are neccessary to refer to
+reflexive associations or if more than one association between the same
+two tables exists.<br>
+              </li>
+              <li class="level1">
+                <div class="li"><span style="font-weight: bold;">Author</span></div>
+              </li>
+            </ul>
+            <br>
+            <p>Example:<br>
+            </p>
+            <table class="inline" border="1" cellpadding="2" cellspacing="0">
+              <tbody>
+                <tr>
+                  <td style="background-color: rgb(153, 255, 255);"><strong>Table
+A</strong></td>
+                  <td class="rightalign" style="background-color: rgb(153, 255, 255);"><strong>Table B</strong></td>
+                  <td class="rightalign" style="background-color: rgb(153, 255, 255);"><strong>first-insert</strong></td>
+                  <td style="vertical-align: top; background-color: rgb(153, 255, 255);"><strong>cardinality</strong><br>
+                  </td>
+                  <td style="background-color: rgb(153, 255, 255);"><strong>join-condition</strong></td>
+                  <td style="vertical-align: top; background-color: rgb(153, 255, 255);"><strong>Name</strong></td>
+                  <td style="vertical-align: top; background-color: rgb(153, 255, 255);"><span style="font-weight: bold;">author</span></td>
+                </tr>
+                <tr>
+                  <td><small>DEPARTMENT</small></td>
+                  <td class="rightalign"><small>EMPLOYEE</small></td>
+                  <td class="rightalign"><small>A<br>
+                  </small></td>
+                  <td style="vertical-align: middle;"><small>1:n<br>
+                  </small></td>
+                  <td class="rightalign"><small>A.DEPTNO=B.DEPTNO </small></td>
+                  <td style="vertical-align: top;"><small><br>
+                  </small></td>
+                  <td style="vertical-align: top;"><small>JDBC Driver</small></td>
+                </tr>
+                <tr>
+                  <td><small>EMPLOYEE</small></td>
+                  <td class="rightalign"><small>EMPLOYEE</small></td>
+                  <td class="rightalign"><small>A</small></td>
+                  <td style="vertical-align: middle;"><small>1:n<br>
+                  </small></td>
+                  <td class="rightalign"><small>A.EMPNO=B.BOSS </small></td>
+                  <td style="vertical-align: top;"><small>SUBORDINATE</small></td>
+                  <td style="vertical-align: top;"><small>JDBC Driver</small></td>
+                </tr>
+                <tr>
+                  <td><small>EMPLOYEE</small></td>
+                  <td class="rightalign"><small>SALARYGRADE</small></td>
+                  <td class="rightalign"><small><br>
+                  </small></td>
+                  <td style="vertical-align: middle;"><small>n:1<br>
+                  </small></td>
+                  <td class="rightalign"><small>A.SALARY BETWEEN
+B.LOSAL AND B.HISAL </small></td>
+                  <td style="vertical-align: top;"><small><br>
+                  </small></td>
+                  <td style="vertical-align: top;"><small>Wisser<br>
+                  </small></td>
+                </tr>
+              </tbody>
+            </table>
+            </div>
+            <br><div class="level2"><br></div><br><div class="level2"><br></div><span style="font-family: monospace;"></span><span style="font-family: monospace;"></span><br><br></td>
+          </tr>
+        </tbody>
+      </table>
+      </div>
+      <p>&nbsp; </p>
+      </td>
+    </tr>
+    <tr>
+      <td height="12" valign="top" width="14%"><br>
+      </td>
+      <td><br>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</div>
+<script type="text/javascript">var pkBaseURL = (("https:" == document.location.protocol) ? "https://sourceforge.net/apps/piwik/jailer/" : "http://sourceforge.net/apps/piwik/jailer/"); document.write(unescape("%3Cscript src='" + pkBaseURL + "piwik.js' type='text/javascript'%3E%3C/script%3E")); </script><script type="text/javascript"> try { var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", 3); piwikTracker.trackPageView(); piwikTracker.enableLinkTracking(); } catch( err ) {} </script></body></html>

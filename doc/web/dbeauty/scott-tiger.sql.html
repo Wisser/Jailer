@@ -1,0 +1,500 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+  <meta content="text/html; charset=ISO-8859-1"
+ http-equiv="content-type">
+  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="stylesheet" type="text/css"
+ href="exporting-data-Dateien/styles.css">
+  <title>Jailer</title>
+</head>
+<body>
+<div id="vc_markup">
+<pre><span class="hl line"></span><span class="hl slc">-- creates some test-tables and data</span><br><span
+ class="hl line"></span><span class="hl line"></span><span
+ class="hl slc">-- DROP TABLE EMPLOYEE;</span><br><span class="hl line"></span><span
+ class="hl slc">-- DROP TABLE DEPARTMENT;</span><br><span
+ class="hl line"></span><span class="hl slc">-- DROP TABLE SALARYGRADE;</span><br><span
+ class="hl line"></span><span class="hl slc">-- DROP TABLE BONUS;</span><br><span
+ class="hl line"></span><span class="hl slc">-- DROP TABLE PROJECT;<br></span><span
+ class="hl slc">-- DROP TABLE PROJECT_PARTICIPATION;</span><br><span
+ class="hl slc">-- DROP TABLE ROLE;<br></span><span class="hl line"></span><span
+ class="hl slc"></span><br><span class="hl line"></span><span
+ class="hl kwa">CREATE TABLE</span> <span class="hl kwd">EMPLOYEE</span><span
+ class="hl sym">(</span><br><span class="hl line"></span>   empno      <span
+ class="hl kwb">INTEGER</span> <span class="hl kwa">NOT NULL</span><span
+ class="hl sym">,</span><br><span class="hl line"></span>   name       <span
+ class="hl kwb">VARCHAR</span><span class="hl sym">(</span><span
+ class="hl num">10</span><span class="hl sym">),</span><br><span
+ class="hl line"></span>   job        <span class="hl kwb">VARCHAR</span><span
+ class="hl sym">(</span><span class="hl num">9</span><span
+ class="hl sym">),</span><br><span class="hl line"></span>   boss       <span
+ class="hl kwb">INTEGER</span><span class="hl sym">,</span><br><span
+ class="hl line"></span>   hiredate   VARCHAR<span class="hl sym">(</span><span
+ class="hl num">12</span><span class="hl sym">),</span><br><span
+ class="hl line"></span>   salary     <span class="hl kwd">DECIMAL</span><span
+ class="hl sym">(</span><span class="hl num">7</span><span
+ class="hl sym">,</span> <span class="hl num">2</span><span
+ class="hl sym">),</span><br><span class="hl line"></span>   comm       <span
+ class="hl kwd">DECIMAL</span><span class="hl sym">(</span><span
+ class="hl num">7</span><span class="hl sym">,</span> <span
+ class="hl num">2</span><span class="hl sym">),</span><br><span
+ class="hl line"></span>   deptno     <span class="hl kwb">INTEGER</span><br><span
+ class="hl line"></span><span class="hl sym">);</span><br><span
+ class="hl line"> </span><br><span class="hl line"></span><span
+ class="hl kwa">CREATE TABLE</span> <span class="hl kwd">DEPARTMENT</span><span
+ class="hl sym">(</span><br><span class="hl line"></span>   deptno     <span
+ class="hl kwb">INTEGER</span> <span class="hl kwa">NOT NULL</span><span
+ class="hl sym">,</span><br><span class="hl line"></span>   name       <span
+ class="hl kwb">VARCHAR</span><span class="hl sym">(</span><span
+ class="hl num">14</span><span class="hl sym">),</span><br><span
+ class="hl line"></span>   location   <span class="hl kwb">VARCHAR</span><span
+ class="hl sym">(</span><span class="hl num">13</span><span
+ class="hl sym">)</span><br><span class="hl line"></span><span
+ class="hl sym">);</span><br><span class="hl line"><br></span><span
+ class="hl line"></span><span class="hl kwa">CREATE TABLE</span> <span
+ class="hl kwd">SALARYGRADE</span><span class="hl sym">(</span><br><span
+ class="hl line"></span>   grade      <span class="hl kwb">INTEGER</span> <span
+ class="hl kwa">NOT NULL</span><span class="hl sym">,</span><br><span
+ class="hl line"></span>   losal      <span class="hl kwb">INTEGER</span> <span
+ class="hl kwa">NOT NULL</span><span class="hl sym">,</span><br><span
+ class="hl line"></span>   hisal      <span class="hl kwb">INTEGER</span> <span
+ class="hl kwa">NOT NULL</span><br><span class="hl line"></span><span
+ class="hl sym">);</span><br><span class="hl line"><br></span><span
+ class="hl line"></span><span class="hl kwa">CREATE TABLE</span> <span
+ class="hl kwd">BONUS</span> <span class="hl sym">(</span><br><span
+ class="hl line"></span>   ename      <span class="hl kwb">VARCHAR</span><span
+ class="hl sym">(</span><span class="hl num">10</span><span
+ class="hl sym">)</span> <span class="hl kwa">NOT NULL</span><span
+ class="hl sym">,</span><br><span class="hl line"></span>   job        <span
+ class="hl kwb">VARCHAR</span><span class="hl sym">(</span><span
+ class="hl num">9</span><span class="hl sym">)</span> <span
+ class="hl kwa">NOT NULL</span><span class="hl sym">,</span><br><span
+ class="hl line"></span>   sal        <span class="hl kwd">DECIMAL</span><span
+ class="hl sym">(</span><span class="hl num">7</span><span
+ class="hl sym">,</span> <span class="hl num">2</span><span
+ class="hl sym">),</span><br><span class="hl line"></span>   comm       <span
+ class="hl kwd">DECIMAL</span><span class="hl sym">(</span><span
+ class="hl num">7</span><span class="hl sym">,</span> <span
+ class="hl num">2</span><span class="hl sym">)</span><br><span
+ class="hl line"></span><span class="hl sym">);</span><br><br><span
+ class="hl line"></span><span class="hl kwa">CREATE TABLE</span> <span
+ class="hl kwd">PROJECT</span><span class="hl sym">(</span><br><span
+ class="hl line"></span>   projectno    <span class="hl kwb">INTEGER</span> <span
+ class="hl kwa">NOT NULL</span><span class="hl sym">,</span><br><span
+ class="hl line"></span>   description  <span class="hl kwb">VARCHAR</span><span
+ class="hl sym">(</span><span class="hl num">100</span><span
+ class="hl sym">),</span><br><span class="hl line"></span>   start_date   <span
+ class="hl kwb">VARCHAR</span><span class="hl sym">(</span><span
+ class="hl num">12</span><span class="hl sym">),</span><br><span
+ class="hl line"></span>   end_date     <span class="hl kwb">VARCHAR</span><span
+ class="hl sym">(</span><span class="hl num">12</span><span
+ class="hl sym">)</span><br><span class="hl line"></span><span
+ class="hl sym">);</span><br><span class="hl line"></span><br><span
+ class="hl line"></span><span class="hl kwa">CREATE TABLE</span> <span
+ class="hl kwd">PROJECT_PARTICIPATION</span><span class="hl sym">(</span><br><span
+ class="hl line"></span>   projectno    <span class="hl kwb">INTEGER</span> <span
+ class="hl kwa">NOT NULL</span><span class="hl sym">,</span><br><span
+ class="hl line"></span>   empno        <span class="hl kwb">INTEGER</span> <span
+ class="hl kwa">NOT NULL</span><span class="hl sym">,</span><br><span
+ class="hl line"></span>   start_date   <span class="hl kwb">VARCHAR</span><span
+ class="hl sym">(</span><span class="hl num">12</span><span
+ class="hl sym">)</span> <span class="hl kwa">NOT NULL</span><span
+ class="hl sym">,</span><br><span class="hl line"></span>   end_date     <span
+ class="hl kwb">VARCHAR</span><span class="hl sym">(</span><span
+ class="hl num">12</span><span class="hl sym">),<br></span>   role_id      <span
+ class="hl kwb">INTEGER</span><br><span class="hl line"></span><span
+ class="hl sym">);</span><br><span class="hl kwa"><br>CREATE TABLE</span> <span
+ class="hl kwd">ROLE</span><span class="hl sym">(</span>
+<span class="hl line"></span>   role_id      <span class="hl kwb">INTEGER</span> <span
+ class="hl kwa">NOT NULL</span><span class="hl sym">,</span>
+<span class="hl line"></span>   description  <span class="hl kwb">VARCHAR</span><span
+ class="hl sym">(</span><span class="hl num">100</span><span
+ class="hl sym">)</span>
+<span class="hl line"></span><span class="hl sym">);</span><span
+ class="hl line"><br><br></span><span class="hl slc">-- Primary Keys</span><br><span
+ class="hl line"></span><span class="hl kwa">ALTER TABLE</span> EMPLOYEE<br><span
+ class="hl line"> </span>  <span class="hl kwa">ADD CONSTRAINT</span> emp_pk<br><span
+ class="hl line"> </span>  <span class="hl kwa">PRIMARY KEY</span> <span
+ class="hl sym">(</span>empno<span class="hl sym">);</span><br><br><span
+ class="hl kwa">ALTER TABLE</span> DEPARTMENT<br><span class="hl line"> </span>  <span
+ class="hl kwa">ADD CONSTRAINT</span> dept_pk<br><span class="hl line"> </span>  <span
+ class="hl kwa">PRIMARY KEY</span> <span class="hl sym">(</span>deptno<span
+ class="hl sym">);</span><br><br><span class="hl kwa">ALTER TABLE</span> SALARYGRADE<br><span
+ class="hl line"> </span>  <span class="hl kwa">ADD CONSTRAINT</span> salgrade_pk<br><span
+ class="hl line"> </span>  <span class="hl kwa">PRIMARY KEY</span> <span
+ class="hl sym">(</span>grade<span class="hl sym">);</span><br><span
+ class="hl line"></span><br><span class="hl line"></span><span
+ class="hl kwa">ALTER TABLE</span> BONUS<br><span class="hl line"> </span>  <span
+ class="hl kwa">ADD CONSTRAINT</span> bonus_pk<br><span class="hl line"> </span>  <span
+ class="hl kwa">PRIMARY KEY</span> <span class="hl sym">(</span>ename<span
+ class="hl sym">,</span> job<span class="hl sym">);</span><br><br><span
+ class="hl line"></span><span class="hl kwa">ALTER TABLE</span> PROJECT<br><span
+ class="hl line"> </span>  <span class="hl kwa">ADD CONSTRAINT</span> project_pk<br><span
+ class="hl line"></span>   <span class="hl kwa">PRIMARY KEY</span> <span
+ class="hl sym">(</span>projectno<span class="hl sym">);</span><br><span
+ class="hl line"> </span><br><span class="hl line"></span><span
+ class="hl kwa">ALTER TABLE</span> PROJECT_PARTICIPATION<br><span
+ class="hl line">   </span><span class="hl kwa">ADD CONSTRAINT</span> participation_pk<br><span
+ class="hl line"></span>   <span class="hl kwa">PRIMARY KEY</span> <span
+ class="hl sym">(</span>projectno<span class="hl sym">,</span> empno<span
+ class="hl sym">,</span> start_date<span class="hl sym">);</span><br><span
+ class="hl kwa"><br>ALTER TABLE</span> ROLE<br><span class="hl line">   </span><span
+ class="hl kwa">ADD CONSTRAINT</span> role_pk<br><span class="hl line">   </span><span
+ class="hl kwa">PRIMARY KEY</span> <span class="hl sym">(</span>role_id<span
+ class="hl sym">);<br><br></span><span class="hl line"></span><span
+ class="hl line"></span><span class="hl slc">-- EMPLOYEE to DEPARTMENT</span><br><span
+ class="hl line"></span><span class="hl kwa">ALTER TABLE</span> EMPLOYEE<br><span
+ class="hl line"> </span>  <span class="hl kwa">ADD CONSTRAINT</span> department<br><span
+ class="hl line"> </span>  <span class="hl kwa">FOREIGN KEY</span> <span
+ class="hl sym">(</span>deptno<span class="hl sym">)</span><br><span
+ class="hl line"> </span>  <span class="hl kwa">REFERENCES</span> <span
+ class="hl kwd">DEPARTMENT</span> <span class="hl sym">(</span>deptno<span
+ class="hl sym">);</span><br><br><span class="hl line"></span><span
+ class="hl line"></span><span class="hl slc">-- EMPLOYEE to EMPLOYEE</span><br><span
+ class="hl line"></span><span class="hl kwa">ALTER TABLE</span> EMPLOYEE<br><span
+ class="hl line">   </span><span class="hl kwa">ADD CONSTRAINT</span> boss<br><span
+ class="hl line">   </span><span class="hl kwa">FOREIGN KEY</span> <span
+ class="hl sym">(</span>boss<span class="hl sym">)</span><br><span
+ class="hl line">   </span><span class="hl kwa">REFERENCES</span> <span
+ class="hl kwd">EMPLOYEE</span> <span class="hl sym">(</span>empno<span
+ class="hl sym">);</span><br><span class="hl line"> </span><br><span
+ class="hl line"></span><span class="hl slc">-- EMPLOYEE to PROJECT_PARTICIPATION</span><br><span
+ class="hl line"></span><span class="hl kwa">ALTER TABLE</span> PROJECT_PARTICIPATION<br><span
+ class="hl line">   </span><span class="hl kwa">ADD CONSTRAINT</span> employee<br><span
+ class="hl line"> </span>  <span class="hl kwa">FOREIGN KEY</span> <span
+ class="hl sym">(</span>empno<span class="hl sym">)</span><br><span
+ class="hl line"> </span>  <span class="hl kwa">REFERENCES</span> <span
+ class="hl kwd">EMPLOYEE</span> <span class="hl sym">(</span>empno<span
+ class="hl sym">);</span><br><br><span class="hl line"></span><span
+ class="hl line"></span><span class="hl slc">-- PROJECT to PROJECT_PARTICIPATION</span><br><span
+ class="hl line"></span><span class="hl kwa">ALTER TABLE</span> PROJECT_PARTICIPATION<br><span
+ class="hl line">  </span> <span class="hl kwa">ADD CONSTRAINT</span> project<br><span
+ class="hl line"> </span>  <span class="hl kwa">FOREIGN KEY</span> <span
+ class="hl sym">(</span>projectno<span class="hl sym">)</span><br><span
+ class="hl line"> </span>  <span class="hl kwa">REFERENCES</span> <span
+ class="hl kwd">PROJECT</span> <span class="hl sym">(</span>projectno<span
+ class="hl sym">);</span><br><span class="hl slc"><br>-- ROLE to PROJECT_PARTICIPATION</span>
+<span class="hl line"></span><span class="hl kwa">ALTER TABLE</span> PROJECT_PARTICIPATION<br><span
+ class="hl line"> </span>  <span class="hl kwa">ADD CONSTRAINT</span> role<br><span
+ class="hl line"> </span>  <span class="hl kwa">FOREIGN KEY</span> <span
+ class="hl sym">(</span>role_id<span class="hl sym">)</span>
+<span class="hl line"> </span>  <span class="hl kwa">REFERENCES</span> <span
+ class="hl kwd">ROLE</span> <span class="hl sym">(</span>role_id<span
+ class="hl sym">);<br><br></span><span class="hl line"></span><span
+ class="hl line"></span><span class="hl slc">-- data</span><br><span
+ class="hl line"></span><span class="hl line"></span><span
+ class="hl kwa">INSERT INTO</span> DEPARTMENT <span class="hl kwa">VALUES</span> <span
+ class="hl sym">(</span><span class="hl num">10</span><span
+ class="hl sym">,</span> <span class="hl str">'ACCOUNTING'</span><span
+ class="hl sym">,</span> <span class="hl str">'NEW YORK'</span><span
+ class="hl sym">);</span><br><span class="hl line"></span><span
+ class="hl kwa">INSERT INTO</span> DEPARTMENT <span class="hl kwa">VALUES</span> <span
+ class="hl sym">(</span><span class="hl num">20</span><span
+ class="hl sym">,</span> <span class="hl str">'RESEARCH'</span><span
+ class="hl sym">,</span>   <span class="hl str">'DALLAS'</span><span
+ class="hl sym">);</span><br><span class="hl line"></span><span
+ class="hl kwa">INSERT INTO</span> DEPARTMENT <span class="hl kwa">VALUES</span> <span
+ class="hl sym">(</span><span class="hl num">30</span><span
+ class="hl sym">,</span> <span class="hl str">'SALES'</span><span
+ class="hl sym">,</span>      <span class="hl str">'CHICAGO'</span><span
+ class="hl sym">);</span><br><span class="hl line"></span><span
+ class="hl kwa">INSERT INTO</span> DEPARTMENT <span class="hl kwa">VALUES</span> <span
+ class="hl sym">(</span><span class="hl num">40</span><span
+ class="hl sym">,</span> <span class="hl str">'OPERATIONS'</span><span
+ class="hl sym">,</span> <span class="hl str">'BOSTON'</span><span
+ class="hl sym">);</span><br><span class="hl line"> </span><br><span
+ class="hl line"></span><span class="hl kwa">INSERT INTO</span> EMPLOYEE <span
+ class="hl kwa">VALUES</span> <span class="hl sym">(</span><span
+ class="hl num">7839</span><span class="hl sym">,</span> <span
+ class="hl str">'KING'</span><span class="hl sym">,</span>   <span
+ class="hl str">'PRESIDENT'</span><span class="hl sym">,</span> <span
+ class="hl kwa">NULL</span><span class="hl sym">,</span> <span
+ class="hl str">'1981-11-17'</span><span class="hl sym">,</span> <span
+ class="hl num">5000</span><span class="hl sym">,</span> <span
+ class="hl kwa">NULL</span><span class="hl sym">,</span> <span
+ class="hl num">10</span><span class="hl sym">);</span><br><span
+ class="hl line"> </span>   <span class="hl kwa">INSERT INTO</span> EMPLOYEE <span
+ class="hl kwa">VALUES</span> <span class="hl sym">(</span><span
+ class="hl num">7566</span><span class="hl sym">,</span> <span
+ class="hl str">'JONES'</span><span class="hl sym">,</span>  <span
+ class="hl str">'MANAGER'</span><span class="hl sym">,</span>   <span
+ class="hl num">7839</span><span class="hl sym">,</span> <span
+ class="hl str">'1981-04-02'</span><span class="hl sym">,</span>  <span
+ class="hl num">2975</span><span class="hl sym">,</span> <span
+ class="hl kwa">NULL</span><span class="hl sym">,</span> <span
+ class="hl num">20</span><span class="hl sym">);</span><br><span
+ class="hl line"> </span>      <span class="hl kwa">INSERT INTO</span> EMPLOYEE <span
+ class="hl kwa">VALUES</span><span class="hl sym">(</span><span
+ class="hl num">7788</span><span class="hl sym">,</span> <span
+ class="hl str">'SCOTT'</span><span class="hl sym">,</span>  <span
+ class="hl str">'ANALYST'</span><span class="hl sym">,</span>   <span
+ class="hl num">7566</span><span class="hl sym">,</span> <span
+ class="hl str">'1982-12-09'</span><span class="hl sym">,</span> <span
+ class="hl num">3000</span><span class="hl sym">,</span> <span
+ class="hl kwa">NULL</span><span class="hl sym">,</span> <span
+ class="hl num">20</span><span class="hl sym">);</span><br><span
+ class="hl line"> </span>         <span class="hl kwa">INSERT INTO</span> EMPLOYEE <span
+ class="hl kwa">VALUES</span><span class="hl sym">(</span><span
+ class="hl num">7876</span><span class="hl sym">,</span> <span
+ class="hl str">'ADAMS'</span><span class="hl sym">,</span>  <span
+ class="hl str">'CLERK'</span><span class="hl sym">,</span>     <span
+ class="hl num">7788</span><span class="hl sym">,</span> <span
+ class="hl str">'1983-01-12'</span><span class="hl sym">,</span> <span
+ class="hl num">1100</span><span class="hl sym">,</span> <span
+ class="hl kwa">NULL</span><span class="hl sym">,</span> <span
+ class="hl num">20</span><span class="hl sym">);</span><br><span
+ class="hl line"> </span>      <span class="hl kwa">INSERT INTO</span> EMPLOYEE <span
+ class="hl kwa">VALUES</span><span class="hl sym">(</span><span
+ class="hl num">7902</span><span class="hl sym">,</span> <span
+ class="hl str">'FORD'</span><span class="hl sym">,</span>   <span
+ class="hl str">'ANALYST'</span><span class="hl sym">,</span>   <span
+ class="hl num">7566</span><span class="hl sym">,</span> <span
+ class="hl str">'1981-12-03'</span><span class="hl sym">,</span>  <span
+ class="hl num">3000</span><span class="hl sym">,</span> <span
+ class="hl kwa">NULL</span><span class="hl sym">,</span> <span
+ class="hl num">20</span><span class="hl sym">);</span><br><span
+ class="hl line"> </span>         <span class="hl kwa">INSERT INTO</span> EMPLOYEE <span
+ class="hl kwa">VALUES</span><span class="hl sym">(</span><span
+ class="hl num">7369</span><span class="hl sym">,</span> <span
+ class="hl str">'SMITH'</span><span class="hl sym">,</span>  <span
+ class="hl str">'CLERK'</span><span class="hl sym">,</span>     <span
+ class="hl num">7902</span><span class="hl sym">,</span> <span
+ class="hl str">'1980-12-17'</span><span class="hl sym">,</span>  <span
+ class="hl num">800</span><span class="hl sym">,</span> <span
+ class="hl kwa">NULL</span><span class="hl sym">,</span> <span
+ class="hl num">20</span><span class="hl sym">);</span><br><span
+ class="hl line"> </span>   <span class="hl kwa">INSERT INTO</span> EMPLOYEE <span
+ class="hl kwa">VALUES</span> <span class="hl sym">(</span><span
+ class="hl num">7698</span><span class="hl sym">,</span> <span
+ class="hl str">'BLAKE'</span><span class="hl sym">,</span>  <span
+ class="hl str">'MANAGER'</span><span class="hl sym">,</span>   <span
+ class="hl num">7839</span><span class="hl sym">,</span> <span
+ class="hl str">'1981-05-01'</span><span class="hl sym">,</span>  <span
+ class="hl num">2850</span><span class="hl sym">,</span> <span
+ class="hl kwa">NULL</span><span class="hl sym">,</span> <span
+ class="hl num">30</span><span class="hl sym">);</span><br><span
+ class="hl line"> </span>      <span class="hl kwa">INSERT INTO</span> EMPLOYEE <span
+ class="hl kwa">VALUES</span><span class="hl sym">(</span><span
+ class="hl num">7499</span><span class="hl sym">,</span> <span
+ class="hl str">'ALLEN'</span><span class="hl sym">,</span>  <span
+ class="hl str">'SALESMAN'</span><span class="hl sym">,</span>  <span
+ class="hl num">7698</span><span class="hl sym">,</span> <span
+ class="hl str">'1981-02-20'</span><span class="hl sym">,</span> <span
+ class="hl num">1600</span><span class="hl sym">,</span>  <span
+ class="hl num">300</span><span class="hl sym">,</span> <span
+ class="hl num">30</span><span class="hl sym">);</span><br><span
+ class="hl line"> </span>      <span class="hl kwa">INSERT INTO</span> EMPLOYEE <span
+ class="hl kwa">VALUES</span><span class="hl sym">(</span><span
+ class="hl num">7521</span><span class="hl sym">,</span> <span
+ class="hl str">'WARD'</span><span class="hl sym">,</span>   <span
+ class="hl str">'SALESMAN'</span><span class="hl sym">,</span>  <span
+ class="hl num">7698</span><span class="hl sym">,</span> <span
+ class="hl str">'1981-02-22'</span><span class="hl sym">,</span> <span
+ class="hl num">1250</span><span class="hl sym">,</span>  <span
+ class="hl num">500</span><span class="hl sym">,</span> <span
+ class="hl num">30</span><span class="hl sym">);</span><br><span
+ class="hl line"> </span>      <span class="hl kwa">INSERT INTO</span> EMPLOYEE <span
+ class="hl kwa">VALUES</span><span class="hl sym">(</span><span
+ class="hl num">7654</span><span class="hl sym">,</span> <span
+ class="hl str">'MARTIN'</span><span class="hl sym">,</span> <span
+ class="hl str">'SALESMAN'</span><span class="hl sym">,</span>  <span
+ class="hl num">7698</span><span class="hl sym">,</span> <span
+ class="hl str">'1981-09-28'</span><span class="hl sym">,</span> <span
+ class="hl num">1250</span><span class="hl sym">,</span> <span
+ class="hl num">1400</span><span class="hl sym">,</span> <span
+ class="hl num">30</span><span class="hl sym">);</span><br><span
+ class="hl line"> </span>      <span class="hl kwa">INSERT INTO</span> EMPLOYEE <span
+ class="hl kwa">VALUES</span><span class="hl sym">(</span><span
+ class="hl num">7844</span><span class="hl sym">,</span> <span
+ class="hl str">'TURNER'</span><span class="hl sym">,</span> <span
+ class="hl str">'SALESMAN'</span><span class="hl sym">,</span>  <span
+ class="hl num">7698</span><span class="hl sym">,</span> <span
+ class="hl str">'1981-09-08'</span><span class="hl sym">,</span>  <span
+ class="hl num">1500</span><span class="hl sym">,</span>    <span
+ class="hl num">0</span><span class="hl sym">,</span> <span
+ class="hl num">30</span><span class="hl sym">);</span><br><span
+ class="hl line"> </span>      <span class="hl kwa">INSERT INTO</span> EMPLOYEE <span
+ class="hl kwa">VALUES</span><span class="hl sym">(</span><span
+ class="hl num">7900</span><span class="hl sym">,</span> <span
+ class="hl str">'JAMES'</span><span class="hl sym">,</span>  <span
+ class="hl str">'CLERK'</span><span class="hl sym">,</span>     <span
+ class="hl num">7698</span><span class="hl sym">,</span> <span
+ class="hl str">'1981-12-03'</span><span class="hl sym">,</span>   <span
+ class="hl num">950</span><span class="hl sym">,</span> <span
+ class="hl kwa">NULL</span><span class="hl sym">,</span> <span
+ class="hl num">30</span><span class="hl sym">);</span><br><span
+ class="hl line"> </span>   <span class="hl kwa">INSERT INTO</span> EMPLOYEE <span
+ class="hl kwa">VALUES</span><span class="hl sym">(</span><span
+ class="hl num">7782</span><span class="hl sym">,</span> <span
+ class="hl str">'CLARK'</span><span class="hl sym">,</span>  <span
+ class="hl str">'MANAGER'</span><span class="hl sym">,</span>   <span
+ class="hl num">7839</span><span class="hl sym">,</span> <span
+ class="hl str">'1981-06-09'</span><span class="hl sym">,</span>  <span
+ class="hl num">2450</span><span class="hl sym">,</span> <span
+ class="hl kwa">NULL</span><span class="hl sym">,</span> <span
+ class="hl num">10</span><span class="hl sym">);</span><br><span
+ class="hl line"> </span>      <span class="hl kwa">INSERT INTO</span> EMPLOYEE <span
+ class="hl kwa">VALUES</span><span class="hl sym">(</span><span
+ class="hl num">7934</span><span class="hl sym">,</span> <span
+ class="hl str">'MILLER'</span><span class="hl sym">,</span> <span
+ class="hl str">'CLERK'</span><span class="hl sym">,</span>     <span
+ class="hl num">7782</span><span class="hl sym">,</span> <span
+ class="hl str">'1982-01-23'</span><span class="hl sym">,</span> <span
+ class="hl num">1300</span><span class="hl sym">,</span> <span
+ class="hl kwa">NULL</span><span class="hl sym">,</span> <span
+ class="hl num">10</span><span class="hl sym">);</span><br><span
+ class="hl line"> </span><br><span class="hl line"></span><span
+ class="hl kwa">INSERT INTO</span> SALARYGRADE <span class="hl kwa">VALUES</span> <span
+ class="hl sym">(</span><span class="hl num">1</span><span
+ class="hl sym">,</span>  <span class="hl num">700</span><span
+ class="hl sym">,</span> <span class="hl num">1200</span><span
+ class="hl sym">);</span><br><span class="hl line"></span><span
+ class="hl kwa">INSERT INTO</span> SALARYGRADE <span class="hl kwa">VALUES</span> <span
+ class="hl sym">(</span><span class="hl num">2</span><span
+ class="hl sym">,</span> <span class="hl num">1201</span><span
+ class="hl sym">,</span> <span class="hl num">1400</span><span
+ class="hl sym">);</span><br><span class="hl line"></span><span
+ class="hl kwa">INSERT INTO</span> SALARYGRADE <span class="hl kwa">VALUES</span> <span
+ class="hl sym">(</span><span class="hl num">3</span><span
+ class="hl sym">,</span> <span class="hl num">1401</span><span
+ class="hl sym">,</span> <span class="hl num">2000</span><span
+ class="hl sym">);</span><br><span class="hl line"></span><span
+ class="hl kwa">INSERT INTO</span> SALARYGRADE <span class="hl kwa">VALUES</span> <span
+ class="hl sym">(</span><span class="hl num">4</span><span
+ class="hl sym">,</span> <span class="hl num">2001</span><span
+ class="hl sym">,</span> <span class="hl num">3000</span><span
+ class="hl sym">);</span><br><span class="hl line"></span><span
+ class="hl kwa">INSERT INTO</span> SALARYGRADE <span class="hl kwa">VALUES</span> <span
+ class="hl sym">(</span><span class="hl num">5</span><span
+ class="hl sym">,</span> <span class="hl num">3001</span><span
+ class="hl sym">,</span> <span class="hl num">9999</span><span
+ class="hl sym">);</span><br><span class="hl line"> </span><br><span
+ class="hl line"></span><span class="hl kwa">INSERT INTO</span> ROLE <span
+ class="hl kwa">VALUES</span> <span class="hl sym">(</span><span
+ class="hl num">100</span><span class="hl sym">,</span> <span
+ class="hl str">'Developer'</span><span class="hl sym">);</span>
+<span class="hl line"></span><span class="hl kwa">INSERT INTO</span> ROLE <span
+ class="hl kwa">VALUES</span> <span class="hl sym">(</span><span
+ class="hl num">101</span><span class="hl sym">,</span> <span
+ class="hl str">'Researcher'</span><span class="hl sym">);</span>
+<span class="hl line"></span><span class="hl kwa">INSERT INTO</span> ROLE <span
+ class="hl kwa">VALUES</span> <span class="hl sym">(</span><span
+ class="hl num">102</span><span class="hl sym">,</span> <span
+ class="hl str">'Project manager'</span><span class="hl sym">);<br><br></span><span
+ class="hl line"></span><span class="hl kwa">INSERT INTO</span> PROJECT <span
+ class="hl kwa">VALUES</span> <span class="hl sym">(</span><span
+ class="hl num">1001</span><span class="hl sym">,</span> <span
+ class="hl str">'Development of Novel Magnetic Suspension System'</span><span
+ class="hl sym">,</span> <span class="hl str">'2006-01-01'</span><span
+ class="hl sym">,</span> <span class="hl str">'2007-08-13'</span><span
+ class="hl sym">);</span><br><span class="hl line"></span><span
+ class="hl kwa">INSERT INTO</span> PROJECT <span class="hl kwa">VALUES</span> <span
+ class="hl sym">(</span><span class="hl num">1002</span><span
+ class="hl sym">,</span> <span class="hl str">'Research on thermofluid dynamics in Microdroplets'</span><span
+ class="hl sym">,</span> <span class="hl str">'2006-08-22'</span><span
+ class="hl sym">,</span> <span class="hl str">'2007-03-20'</span><span
+ class="hl sym">);</span><br><span class="hl line"></span><span
+ class="hl kwa">INSERT INTO</span> PROJECT <span class="hl kwa">VALUES</span> <span
+ class="hl sym">(</span><span class="hl num">1003</span><span
+ class="hl sym">,</span> <span class="hl str">'Foundation of Quantum Technology'</span><span
+ class="hl sym">,</span> <span class="hl str">'2007-02-24'</span><span
+ class="hl sym">,</span> <span class="hl str">'2008-07-31'</span><span
+ class="hl sym">);</span><br><span class="hl line"></span><span
+ class="hl kwa">INSERT INTO</span> PROJECT <span class="hl kwa">VALUES</span> <span
+ class="hl sym">(</span><span class="hl num">1004</span><span
+ class="hl sym">,</span> <span class="hl str">'High capacity optical network'</span><span
+ class="hl sym">,</span> <span class="hl str">'2008-01-01'</span><span
+ class="hl sym">,</span> <span class="hl kwa">null</span><span
+ class="hl sym">);</span><br><span class="hl line"> </span><br><span
+ class="hl line"></span><span class="hl kwa">INSERT INTO</span> PROJECT_PARTICIPATION <span
+ class="hl kwa">VALUES</span> <span class="hl sym">(</span><span
+ class="hl num">1001</span><span class="hl sym">,</span> <span
+ class="hl num">7902</span><span class="hl sym">,</span> <span
+ class="hl str">'2006-01-01'</span><span class="hl sym">,</span> <span
+ class="hl str">'2006-12-30'</span><span class="hl sym">, 102);</span><br><span
+ class="hl line"></span><span class="hl kwa">INSERT INTO</span> PROJECT_PARTICIPATION <span
+ class="hl kwa">VALUES</span> <span class="hl sym">(</span><span
+ class="hl num">1001</span><span class="hl sym">,</span> <span
+ class="hl num">7369</span><span class="hl sym">,</span> <span
+ class="hl str">'2006-01-01'</span><span class="hl sym">,</span> <span
+ class="hl str">'2007-08-13'</span><span class="hl sym">, 100);</span><br><span
+ class="hl line"></span><span class="hl kwa">INSERT INTO</span> PROJECT_PARTICIPATION <span
+ class="hl kwa">VALUES</span> <span class="hl sym">(</span><span
+ class="hl num">1001</span><span class="hl sym">,</span> <span
+ class="hl num">7788</span><span class="hl sym">,</span> <span
+ class="hl str">'2006-05-15'</span><span class="hl sym">,</span> <span
+ class="hl str">'2006-11-01'</span><span class="hl sym">, 100);</span><br><span
+ class="hl line"><br></span><span class="hl line"></span><span
+ class="hl kwa">INSERT INTO</span> PROJECT_PARTICIPATION <span
+ class="hl kwa">VALUES</span> <span class="hl sym">(</span><span
+ class="hl num">1002</span><span class="hl sym">,</span> <span
+ class="hl num">7876</span><span class="hl sym">,</span> <span
+ class="hl str">'2006-08-22'</span><span class="hl sym">,</span> <span
+ class="hl str">'2007-03-20'</span><span class="hl sym">, 102);</span><br><span
+ class="hl line"></span><span class="hl kwa">INSERT INTO</span> PROJECT_PARTICIPATION <span
+ class="hl kwa">VALUES</span> <span class="hl sym">(</span><span
+ class="hl num">1002</span><span class="hl sym">,</span> <span
+ class="hl num">7782</span><span class="hl sym">,</span> <span
+ class="hl str">'2006-08-22'</span><span class="hl sym">,</span> <span
+ class="hl str">'2007-03-20'</span><span class="hl sym">, 101);</span><br><span
+ class="hl line"></span><span class="hl kwa">INSERT INTO</span> PROJECT_PARTICIPATION <span
+ class="hl kwa">VALUES</span> <span class="hl sym">(</span><span
+ class="hl num">1002</span><span class="hl sym">,</span> <span
+ class="hl num">7934</span><span class="hl sym">,</span> <span
+ class="hl str">'2007-01-01'</span><span class="hl sym">,</span> <span
+ class="hl str">'2007-03-20'</span><span class="hl sym">, 101);</span><br><span
+ class="hl line"></span><span class="hl line"></span><span
+ class="hl kwa"><br>INSERT INTO</span> PROJECT_PARTICIPATION <span
+ class="hl kwa">VALUES</span> <span class="hl sym">(</span><span
+ class="hl num">1003</span><span class="hl sym">,</span> <span
+ class="hl num">7566</span><span class="hl sym">,</span> <span
+ class="hl str">'2007-02-24'</span><span class="hl sym">,</span> <span
+ class="hl str">'2008-07-31'</span><span class="hl sym">, 102);</span><br><span
+ class="hl line"></span><span class="hl kwa">INSERT INTO</span> PROJECT_PARTICIPATION <span
+ class="hl kwa">VALUES</span> <span class="hl sym">(</span><span
+ class="hl num">1003</span><span class="hl sym">,</span> <span
+ class="hl num">7900</span><span class="hl sym">,</span> <span
+ class="hl str">'2007-02-24'</span><span class="hl sym">,</span> <span
+ class="hl str">'2007-01-31'</span><span class="hl sym">, 101);</span><br><span
+ class="hl line"></span><span class="hl kwa"><br>INSERT INTO</span> PROJECT_PARTICIPATION <span
+ class="hl kwa">VALUES</span> <span class="hl sym">(</span><span
+ class="hl num">1004</span><span class="hl sym">,</span> <span
+ class="hl num">7499</span><span class="hl sym">,</span> <span
+ class="hl str">'2008-01-01'</span><span class="hl sym">,</span> <span
+ class="hl kwa">null</span><span class="hl sym">, 102);</span><br><span
+ class="hl line"></span><span class="hl kwa">INSERT INTO</span> PROJECT_PARTICIPATION <span
+ class="hl kwa">VALUES</span> <span class="hl sym">(</span><span
+ class="hl num">1004</span><span class="hl sym">,</span> <span
+ class="hl num">7521</span><span class="hl sym">,</span> <span
+ class="hl str">'2008-05-01'</span><span class="hl sym">,</span> <span
+ class="hl kwa">null</span><span class="hl sym">, 101);</span><br><span
+ class="hl line"></span><span class="hl kwa">INSERT INTO</span> PROJECT_PARTICIPATION <span
+ class="hl kwa">VALUES</span> <span class="hl sym">(</span><span
+ class="hl num">1004</span><span class="hl sym">,</span> <span
+ class="hl num">7654</span><span class="hl sym">,</span> <span
+ class="hl str">'2008-04-15'</span><span class="hl sym">,</span> <span
+ class="hl kwa">null</span><span class="hl sym">, 101);</span><br><span
+ class="hl line"></span><span class="hl kwa">INSERT INTO</span> PROJECT_PARTICIPATION <span
+ class="hl kwa">VALUES</span> <span class="hl sym">(</span><span
+ class="hl num">1004</span><span class="hl sym">,</span> <span
+ class="hl num">7844</span><span class="hl sym">,</span> <span
+ class="hl str">'2008-02-01'</span><span class="hl sym">,</span> <span
+ class="hl kwa">null</span><span class="hl sym">, 101);</span><br><span
+ class="hl line"></span><span class="hl kwa">INSERT INTO</span> PROJECT_PARTICIPATION <span
+ class="hl kwa">VALUES</span> <span class="hl sym">(</span><span
+ class="hl num">1004</span><span class="hl sym">,</span> <span
+ class="hl num">7900</span><span class="hl sym">,</span> <span
+ class="hl str">'2008-03-01'</span><span class="hl sym">,</span> <span
+ class="hl str">'2008-04-01'</span><span class="hl sym">, 101);</span><br><span
+ class="hl line"></span><span class="hl kwa">INSERT INTO</span> PROJECT_PARTICIPATION <span
+ class="hl kwa">VALUES</span> <span class="hl sym">(</span><span
+ class="hl num">1004</span><span class="hl sym">,</span> <span
+ class="hl num">7900</span><span class="hl sym">,</span> <span
+ class="hl str">'2008-05-20'</span><span class="hl sym">,</span> <span
+ class="hl kwa">null</span><span class="hl sym">, 101);</span><span
+ class="hl line"><br></span>
+</pre>
+</div>
+<script type="text/javascript">var pkBaseURL = (("https:" == document.location.protocol) ? "https://sourceforge.net/apps/piwik/jailer/" : "http://sourceforge.net/apps/piwik/jailer/"); document.write(unescape("%3Cscript src='" + pkBaseURL + "piwik.js' type='text/javascript'%3E%3C/script%3E")); </script><script type="text/javascript"> try { var piwikTracker = Piwik.getTracker(pkBaseURL + "piwik.php", 3); piwikTracker.trackPageView(); piwikTracker.enableLinkTracking(); } catch( err ) {} </script></body>
+</html>
