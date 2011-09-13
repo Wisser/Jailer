@@ -86,7 +86,7 @@ public class SQLBrowserContentPane extends javax.swing.JPanel {
         editorPanel.add(detailsButton, gridBagConstraints);
 
         fetchLabel.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
-        fetchLabel.setText(" Limit  ");
+        fetchLabel.setText(" Row Limit  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;

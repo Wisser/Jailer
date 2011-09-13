@@ -494,7 +494,7 @@
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="helpContent">
               <Properties>
-                <Property name="text" type="java.lang.String" value="Content"/>
+                <Property name="text" type="java.lang.String" value="Manual"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="helpContentActionPerformed"/>

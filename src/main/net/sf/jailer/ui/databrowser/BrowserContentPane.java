@@ -156,11 +156,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						updateMode("error");
 						if (!asking) {
 							try {
-								if (!table.exists(session, JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchemaName()))) {
+								if (table.getName() != null && !table.exists(session, JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchemaName()))) {
 									asking = true;
 									String schemaMappingOption = "Schema Mapping";
-									if (1 == JOptionPane.showOptionDialog(BrowserContentPane.this, "Table \"" + table.getName() + "\" not found!", "Unknown table", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Cancel", schemaMappingOption }, schemaMappingOption)) {
-										openSchemaMappingDialog();
+									switch (JOptionPane.showOptionDialog(BrowserContentPane.this, "Table \"" + table.getName() + "\" not found!", "Unknown table", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Cancel", schemaMappingOption, "Analyze Database" }, "Cancel")) {
+									case 1: openSchemaMappingDialog(); break;
+									case 2: openSchemaAnalyzer(); break;
 									}
 									asking = false;
 								} else {
@@ -658,6 +659,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	        gridBagConstraints = new java.awt.GridBagConstraints();
 	        gridBagConstraints.gridx = 2;
 	        gridBagConstraints.gridy = 5;
+	        gridBagConstraints.gridwidth = 2;
 	        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
 	        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
 	        gridBagConstraints.weightx = 0;
@@ -1953,7 +1955,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract QueryBuilderPathSelector getQueryBuilderPathSelector();
 
 	protected abstract void openSchemaMappingDialog();
-
+	protected abstract void openSchemaAnalyzer();
+	
     private void openDetails(final int x, final int y) {
 		JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), true);
 		d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, 0, rowsTable.getRowSorter(), true) {
