@@ -38,6 +38,7 @@ import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -326,7 +327,7 @@ public class DataBrowser extends javax.swing.JFrame {
         schemaName = new javax.swing.JLabel();
         legende2 = new javax.swing.JPanel();
         connectivityState = new javax.swing.JLabel();
-        jMenuBar1 = new javax.swing.JMenuBar();
+        menuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
@@ -341,7 +342,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenuItem2 = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         view = new javax.swing.JMenu();
-        jMenu2 = new javax.swing.JMenu();
+        helpMenu = new javax.swing.JMenu();
         jMenuItem4 = new javax.swing.JMenuItem();
         helpForum = new javax.swing.JMenuItem();
         aboutMenuItem = new javax.swing.JMenuItem();
@@ -509,7 +510,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         jMenu1.add(cloaseAllMenuItem);
 
-        jMenuBar1.add(jMenu1);
+        menuBar.add(jMenu1);
 
         menuTools.setText("Data Model");
 
@@ -529,7 +530,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         menuTools.add(dataModelEditorjMenuItem);
 
-        jMenuBar1.add(menuTools);
+        menuBar.add(menuTools);
 
         menuWindow.setText("Window");
 
@@ -546,9 +547,9 @@ public class DataBrowser extends javax.swing.JFrame {
         view.setText("Look&Feel");
         menuWindow.add(view);
 
-        jMenuBar1.add(menuWindow);
+        menuBar.add(menuWindow);
 
-        jMenu2.setText("Help");
+        helpMenu.setText("Help");
 
         jMenuItem4.setText("Manual");
         jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
@@ -556,7 +557,7 @@ public class DataBrowser extends javax.swing.JFrame {
                 jMenuItem4ActionPerformed(evt);
             }
         });
-        jMenu2.add(jMenuItem4);
+        helpMenu.add(jMenuItem4);
 
         helpForum.setText("Forum");
         helpForum.addActionListener(new java.awt.event.ActionListener() {
@@ -564,7 +565,7 @@ public class DataBrowser extends javax.swing.JFrame {
                 helpForumActionPerformed(evt);
             }
         });
-        jMenu2.add(helpForum);
+        helpMenu.add(helpForum);
 
         aboutMenuItem.setText("About Jailer");
         aboutMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -572,11 +573,11 @@ public class DataBrowser extends javax.swing.JFrame {
                 aboutMenuItemActionPerformed(evt);
             }
         });
-        jMenu2.add(aboutMenuItem);
+        helpMenu.add(aboutMenuItem);
 
-        jMenuBar1.add(jMenu2);
+        menuBar.add(helpMenu);
 
-        setJMenuBar(jMenuBar1);
+        setJMenuBar(menuBar);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -736,6 +737,9 @@ public class DataBrowser extends javax.swing.JFrame {
 					dataBrowser.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 					dataBrowser.setVisible(true);
 					DbConnectionDialog dbConnectionDialog = new DbConnectionDialog(dataBrowser);
+					if (DataBrowserContext.isStandAlone()) {
+						dbConnectionDialog.setJdbcHelpURL("http://dbeauty.sourceforge.net/jdbc.html");
+					}
 					if (dbConnectionDialog.connect(DataBrowserContext.getAppName(true))) {
 						dataBrowser.setConnection(dbConnectionDialog);
 						dataBrowser.askForDataModel();
@@ -743,7 +747,18 @@ public class DataBrowser extends javax.swing.JFrame {
 						dataBrowser.updateStatusBar();
 						dataBrowser.openNewTableBrowser();
 					} else {
-						System.exit(0);
+//						System.exit(0);
+						for (int i = 0; i < dataBrowser.menuBar.getMenuCount(); ++i) {
+							JMenu menu = dataBrowser.menuBar.getMenu(i);
+							if (menu != dataBrowser.helpMenu) {
+								for (int j = 0; j < menu.getItemCount(); ++j) {
+									JMenuItem item = menu.getItem(j);
+									if (item != null) {
+										item.setEnabled(false);
+									}
+								}
+							}
+						}
 					}
 					ToolTipManager.sharedInstance().setInitialDelay(500);
 					ToolTipManager.sharedInstance().setDismissDelay(20000);
@@ -827,12 +842,11 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JLabel dependsOn;
     private javax.swing.JLabel hasDependent;
     private javax.swing.JMenuItem helpForum;
+    private javax.swing.JMenu helpMenu;
     private javax.swing.JLabel ignored;
     private javax.swing.JInternalFrame jInternalFrame1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMenu1;
-    private javax.swing.JMenu jMenu2;
-    private javax.swing.JMenuBar jMenuBar1;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;
@@ -846,6 +860,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel legende;
     private javax.swing.JPanel legende1;
     private javax.swing.JPanel legende2;
+    private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenu menuTools;
     private javax.swing.JMenu menuWindow;
     private javax.swing.JLabel modelName;

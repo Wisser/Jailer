@@ -60,7 +60,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	}
 	
     /** Creates new form DbConnectionDialog */
-    public DbConnectionDetailsEditor(java.awt.Frame parent) {
+    public DbConnectionDetailsEditor(java.awt.Frame parent, final String jdbcHelpURL) {
         super(parent, true);
         initComponents();
         setLocation(120, 170);
@@ -107,7 +107,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         helpjdbc.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
             	try {
-            		BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/doc/jdbc.html?src=app"));
+            		BrowserLauncher.openURL(new URI(jdbcHelpURL));
             	} catch (Exception e) {
             		UIUtil.showException(DbConnectionDetailsEditor.this, "Error", e);
             	}
