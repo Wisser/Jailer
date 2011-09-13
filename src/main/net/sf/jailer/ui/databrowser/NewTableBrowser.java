@@ -25,8 +25,9 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 
 /**
- *
- * @author wisser
+ * Dialog for selecting the table for a new table browser.
+ * 
+ * @author Ralf Wisser
  */
 @SuppressWarnings("serial")
 public abstract class NewTableBrowser extends javax.swing.JDialog {
@@ -35,6 +36,8 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
     public NewTableBrowser(java.awt.Frame parent, DataModel datamodel) {
         super(parent, true);
         initComponents();
+        
+        analyzeButton.setVisible(DataBrowserContext.isSupportsDataModelUpdates());
         
         DefaultListModel model = new DefaultListModel();
         List<String> tables = new ArrayList<String>();
@@ -70,6 +73,7 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
         tableList = new javax.swing.JList();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        analyzeButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("New Table Browser");
@@ -98,7 +102,7 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -112,7 +116,7 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
@@ -125,9 +129,22 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 3;
         jPanel1.add(cancelButton, gridBagConstraints);
+
+        analyzeButton.setText(" Analyze Database ");
+        analyzeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                analyzeButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 16);
+        jPanel1.add(analyzeButton, gridBagConstraints);
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
 
@@ -150,9 +167,16 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
         }
     }//GEN-LAST:event_okButtonActionPerformed
 
-    abstract void openTableBrowser(String tableName);
+    private void analyzeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analyzeButtonActionPerformed
+        setVisible(false);
+        openDatabaseAnalyzer();
+    }//GEN-LAST:event_analyzeButtonActionPerformed
 
-	// Variables declaration - do not modify//GEN-BEGIN:variables
+    abstract void openTableBrowser(String tableName);
+    abstract void openDatabaseAnalyzer();
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton analyzeButton;
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;

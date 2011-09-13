@@ -77,7 +77,7 @@ import prefuse.util.GraphicsLib;
  * @author Ralf Wisser
  */
 @SuppressWarnings("serial")
-public class Desktop extends JDesktopPane {
+public abstract class Desktop extends JDesktopPane {
 
 	/**
 	 * The {@link DataModel}.
@@ -482,10 +482,15 @@ public class Desktop extends JDesktopPane {
 					whereClauses.add(andC.length() == 0? null : andC);
 				}
 			}
-
+			
 			@Override
 			protected void openSchemaMappingDialog() {
 				Desktop.this.openSchemaMappingDialog(false);
+			}
+			
+			@Override
+			protected void openSchemaAnalyzer() {
+				Desktop.this.openSchemaAnalyzer();
 			}
 		};
 		
@@ -1229,6 +1234,8 @@ public class Desktop extends JDesktopPane {
 	}
 
 	private boolean loadSchemaMapping = true;
+	
+	public abstract void openSchemaAnalyzer();
 	
 	public void openSchemaMappingDialog(boolean silent) {
 		try {

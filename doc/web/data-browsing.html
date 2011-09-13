@@ -1,0 +1,223 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head><title>Jailer</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="description" content="Data Export Tool">
+<link rel="shortcut icon" href="favicon.ico">
+<meta name="keywords" content="data export referential integrity java jdbc dbms">
+<link rel="stylesheet" type="text/css" href="exporting-data-Dateien/styles.css">
+</head>
+<body left-margin="0" top-margin="0">
+<div align="left">
+<table style="text-align: left; position: absolute; left: 0pt; top: 0pt;" border="0" cellpadding="0" cellspacing="0" height="407" width="100%">
+<tbody>
+<tr>
+<td colspan="2" class="bannerbackground" height="33" width="100%">
+<table border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td><img src="exporting-data-Dateien/logo.png" hspace="10"></td>
+<td class="slogan" width="100%">Database&nbsp;Subsetting&nbsp;Tool</td>
+<td style="text-align: right; width: 100%;">
+<table border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td><a href="http://sourceforge.net/projects/jailer/"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=197260&amp;type=1" alt="SourceForge.net Logo" style="border: 0px solid ;"></a></td>
+</tr>
+<tr>
+<td><a href="http://www.java.net"><img src="javanet_button_90.gif" alt="java.net Member Button: 90px wide" border="0" height="25" width="90"></a></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr>
+<td colspan="2" class="nav1background" height="33" width="100%">&nbsp; <b><font color="#ffffff"><a href="home.htm" target="_self" class="tlink">Home</a> &nbsp;&nbsp;&nbsp; <a href="quicktour.htm" target="_self" class="tlink">Quick
+Tour</a> &nbsp;&nbsp;&nbsp;<a href="exporting-data.htm" target="_self" class="tlink">Tutorial</a>
+&nbsp;&nbsp;&nbsp;<a href="data-browsing.html" target="_self" class="tlinkA">Data Browser</a>
+&nbsp;&nbsp;&nbsp;<a href="faq.html" target="_self" class="tlink">FAQ</a>
+&nbsp;&nbsp;&nbsp; <a href="design.htm" target="_self" class="tlink">Documentation</a>
+&nbsp;&nbsp;&nbsp; <a href="http://sourceforge.net/forum/?group_id=197260" target="_self" class="tlink">Forum</a>&nbsp;&nbsp;&nbsp;
+<a href="http://sourceforge.net/project/showfiles.php?group_id=197260" target="_self" class="tlink">Download</a>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</font></b></td>
+</tr>
+<tr>
+<td colspan="2" class="spacer" width="100%">
+</td>
+</tr>
+<tr>
+<td class="lmenucontainer" height="100%" valign="top" width="14%">
+<div align="center">
+<center>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody>
+<tr>
+<td width="100%"><br>
+</td>
+</tr>
+</tbody>
+</table>
+</center>
+</div>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+<tbody>
+<tr>
+<td class="content2background"> <ul>
+<li><a href="data-browsing.html" target="_self" class="llinkA">Data Browser</a></li>
+</ul>
+<img style="width: 160px; height: 1px;" alt="" src="architecture-Dateien/vgradp.gif"></td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+</td>
+<td class="contentbackground" height="418" valign="top" width="86%">
+<div align="right">
+<table border="0" cellpadding="0" cellspacing="0" height="542" width="98%">
+<tbody>
+<tr>
+<td class="contentbackground" height="21" width="100%"> <br>
+</td>
+</tr>
+<tr>
+<td class="content" height="520" valign="top" width="100%"> <small><small>&nbsp;</small></small><br>
+<span style="font-weight: bold;">Relational
+Data Browsing</span><br>
+<br>
+<h4>1. Connect to the Database</h4>
+Start the Data Browser (<span style="font-family: monospace;">JailerDataBrowser.exe
+</span>or <span style="font-family: monospace;">jailerDataBrowser.bat</span>
+on windows platform)<br>
+<p>
+<table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td style="vertical-align: top; background-color: rgb(230, 255, 230);"><span style="font-family: monospace;">$ sh jailerDataBrowser.sh</span><span style="font-family: monospace;"></span><br>
+</td>
+</tr>
+</tbody>
+</table>
+<br>
+The first time you start the Databrowser you will be asked for the
+database connection information.</p>
+<p><img style="width: 409px; height: 316px;" alt="" src="dbs1.gif"><br>
+</p>
+<p>Select the DBMS you are using from the displayed
+list, and fill out the following form:<br>
+</p>
+<img style="width: 570px; height: 294px;" alt="" src="dbs2.gif">
+<p>Finally click on "Connect".</p>
+<p></p>
+<h4>1. Analyze the Database</h4>
+<p>The first time you use the Databrowser you will be
+asked for a Data Model.</p>
+<p><img style="width: 325px; height: 147px;" alt="" src="dbs3.gif"></p>
+<p>A data model holds information about the tables in
+the database and all
+associations between them.<br>
+Most of the information can be retrieved automatically by analyzing
+the database schema.<br>
+<br>
+Click on<span style="font-style: italic;"> Analyze Database</span><br>
+<br>
+<img style="width: 327px; height: 243px;" alt="" src="dbs4.gif"><br>
+<br>
+Select the schema you want to analyze and click on<span style="font-style: italic;"> OK</span><big style="font-style: italic;"><span style="font-family: monospace;"></span></big><span style="font-style: italic;">.</span>
+Jailer finds seven tables and five associations:<br>
+<br>
+<img src="exporting-data-Dateien/screen3.png"><br>
+<br>
+<br>
+Two associations are still missing: <br>
+</p>
+<ul>
+<li>an employee is classified into a
+salary grade depending on his salary</li>
+<li>employees may receive bonuses</li>
+</ul>
+<p> <br>
+Add the definitions manually (<big><span style="font-family: monospace;"><span style="font-family: mon;"><span style="font-style: italic;">Add</span>-</span></span></big>Button
+under <big><span style="font-family: monospace;"><font size="4">Associations</font></span></big>):<br>
+<br>
+<img src="exporting-data-Dateien/screen4.png"><br>
+<br>
+<img src="exporting-data-Dateien/screen42.png"><br>
+<br>
+<br>
+<br>
+</p>
+<h4>3. Browse a Table<br>
+</h4>
+Select the menu item "New Table Browser" from "File" and choose
+"EMPLOYEE" as the table you want to browse:
+<p><img style="width: 317px; height: 214px;" alt="" src="dbs5.gif"><br>
+<br>
+</p>
+<p>A Table Browser appears showing the&nbsp;rows
+of table EMPLOYEE.</p>
+<p><img style="width: 820px; height: 512px;" alt="" src="dbs6.gif"><br>
+</p>
+<h4><br>
+</h4>
+<h4><br>
+3. Browse related Rows</h4>
+Select the "Children" item from the "Related Rows" drop-down menu and
+choose "EMPLOYEE on inverse-BOSS".<br>
+<br>
+<img style="width: 946px; height: 522px;" alt="" src="dbs8.gif"><br>
+<br>
+<br>
+Another Table Browser appears showing the subordinates of each Employee
+(the&nbsp;inverse of the "BOSS" relationship)<br>
+<br>
+<img style="width: 946px; height: 522px;" alt="" src="dbs7.gif"><br>
+<br>
+<br>
+<br>
+<h4>3. Generate SQL-Query</h4>
+Within each table browser, a SQL-Query can be generated which selects
+exactly the browser's content.<br>
+Essentially it's a join of all the tables&nbsp;in the navigation
+chain.
+<p>Close the second "EMPLOYEE" browser, navigate from
+EMPLOYEE to PROJECT_PARTICIPATION, and from there to&nbsp;PROJECT.</p>
+<p>Choose "<span style="font-style: italic;">Query
+Builder</span>" item from the "<span style="font-style: italic;">SQL/Query</span>" menu in
+the "PROJECT" browser:</p>
+<p><img style="width: 601px; height: 370px;" alt="" src="dbs9.gif"></p>
+<p>The Query Builder form lets you save the query
+into a file, copy it to the clipboard &nbsp;or even execute it.<br>
+Choose "Execute" to get a query-result browser:</p>
+<img style="width: 990px; height: 667px;" alt="" src="dbs10.gif"><br>
+<p></p>
+<p>Within this query-result browser, you can edit the
+query&nbsp;anyway you want.<br>
+</p>
+<p><img style="width: 810px; height: 519px;" alt="" src="dbs11.gif"></p>
+<p></p>
+<p></p>
+<p></p>
+<p><br>
+</p>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>&nbsp; </p>
+</td>
+</tr>
+<tr>
+<td height="12" valign="top" width="14%"><br>
+</td>
+<td><br>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</body></html>

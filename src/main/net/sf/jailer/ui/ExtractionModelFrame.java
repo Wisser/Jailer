@@ -680,7 +680,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenu2.setText("Help");
 
-        helpContent.setText("Content");
+        helpContent.setText("Manual");
         helpContent.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 helpContentActionPerformed(evt);

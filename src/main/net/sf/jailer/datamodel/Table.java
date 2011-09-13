@@ -530,7 +530,35 @@ public class Table extends ModelElement implements Comparable<Table> {
 	public boolean exists(Session session, String defaultSchema) throws SQLException {
 		DatabaseMetaData metaData = session.getMetaData();
 		Quoting quoting = new Quoting(metaData);
-		ResultSet rs = metaData.getTables(null, quoting.unquote(getSchema(defaultSchema)), quoting.unquote(getUnqualifiedName()), new String[] { "TABLE" });
+		String schema = quoting.unquote(getSchema(defaultSchema));
+		String tableName = quoting.unquote(getUnqualifiedName());
+		if (exists(metaData, schema, tableName)) {
+			return true;
+		}
+		String schemaToLower = schema.equals(getSchema(defaultSchema))? (schema.toLowerCase()) : schema;
+		String tableNameToLower = tableName.equals(getUnqualifiedName())? (tableName.toLowerCase()) : tableName;
+		if (exists(metaData, schemaToLower, tableNameToLower)) {
+			return true;
+		}
+		String schemaToUpper = schema.equals(getSchema(defaultSchema))? (schema.toUpperCase()) : schema;
+		String tableNameToUpper = tableName.equals(getUnqualifiedName())? (tableName.toUpperCase()) : tableName;
+		if (exists(metaData, schemaToUpper, tableNameToUpper)) {
+			return true;
+		}
+		return false;
+	}
+ 
+	/**
+	 * Tests whether the table exists.
+	 * 
+	 * @param metaData JDBC meta data
+	 * @param schema schema
+	 * @param tableName table name
+	 * @return <code>true</code> if table exists
+	 */
+	private boolean exists(DatabaseMetaData metaData, String schema,
+			String tableName) throws SQLException {
+		ResultSet rs = metaData.getTables(null, schema, tableName, new String[] { "TABLE" });
 		boolean exists = rs.next();
 		rs.close();
 		return exists;

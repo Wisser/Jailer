@@ -5,9 +5,7 @@
 <meta name="description" content="Data Export Tool">
 <link rel="shortcut icon" href="favicon.ico">
 <meta name="keywords" content="data export referential integrity java jdbc dbms">
-<link rel="stylesheet" type="text/css" href="exporting-data-Dateien/styles.css">
-</head>
-
+<link rel="stylesheet" type="text/css" href="exporting-data-Dateien/styles.css"></head>
 <body left-margin="0" top-margin="0">
 <div align="left">
 <table style="text-align: left; position: absolute; left: 0pt; top: 0pt;" border="0" cellpadding="0" cellspacing="0" height="407" width="100%">
@@ -38,7 +36,7 @@
 </tr>
 <tr>
 <td colspan="2" class="nav1background" height="33" width="100%">&nbsp; <b><font color="#ffffff"><a href="home.htm" target="_self" class="tlink">Home</a> &nbsp;&nbsp;&nbsp; <a href="quicktour.htm" target="_self" class="tlink">Quick
-Tour</a> &nbsp;&nbsp;&nbsp;<a href="exporting-data.htm" target="_self" class="tlinkA">Tutorial</a> &nbsp;&nbsp;&nbsp;<a href="faq.html" target="_self" class="tlink">FAQ</a>
+Tour</a> &nbsp;&nbsp;&nbsp;<a href="exporting-data.htm" target="_self" class="tlinkA">Tutorial</a> &nbsp;&nbsp;&nbsp;<a href="data-browsing.html" target="_self" class="tlink">Data Browser</a> &nbsp;&nbsp;&nbsp;<a href="faq.html" target="_self" class="tlink">FAQ</a>
 &nbsp;&nbsp;&nbsp; <a href="design.htm" target="_self" class="tlink">Documentation</a>
 &nbsp;&nbsp;&nbsp; <a href="http://sourceforge.net/forum/?group_id=197260" target="_self" class="tlink">Forum</a>&nbsp;&nbsp;&nbsp;
 <a href="http://sourceforge.net/project/showfiles.php?group_id=197260" target="_self" class="tlink">Download</a>
@@ -107,7 +105,7 @@ Make sure that the script runs successfully.<br>
 <table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
 <tbody>
 <tr>
-<td style="vertical-align: top; background-color: rgb(230, 255, 230);"><span style="font-family: monospace;">$ db2 connect to wisser </span><span style="font-family: monospace;">user scott </span><span style="font-family: monospace;">using tiger<span style="font-family: mon;"><span style="font-style: italic;"></span></span></span><span style="font-family: monospace;"><span style="color: rgb(51, 51, 255); font-style: italic;"></span></span><br>
+<td style="vertical-align: top; background-color: rgb(230, 255, 230);"><span style="font-family: monospace;">$ db2 connect to wisser </span><span style="font-family: monospace;">user wisser </span><span style="font-family: monospace;">using <span style="font-style: italic;">&lt;password&gt;</span><span style="font-family: mon;"><span style="font-style: italic;"></span></span></span><span style="font-family: monospace;"><span style="color: rgb(51, 51, 255); font-style: italic;"></span></span><br>
 <span style="font-family: monospace;">$
 db2 -tvf
 script/scott-tiger.sql<br>
@@ -142,16 +140,15 @@ associations between them.<br>
 Most of the information can be retrieved automatically by analyzing
 the database schema.<br>
 <br>
-Click on<span style="font-style: italic;">Analyze Database</span><br>
-<br>
-<img src="exporting-data-Dateien/screen2.png"><br>
-<br>
-<br>
-Select the setting for your DBMS and enter the connection parameter.<br>
-You may change the setting name if you like.<br>
-<br>
-Click on<span style="font-style: italic;"> Connect</span><big style="font-style: italic;"><span style="font-family: monospace;"></span></big><span style="font-style: italic;">.</span>
-Jailer finds six tables and four associations:<br>
+Click on<span style="font-style: italic;"> Analyze Database</span> (fka "Introspect DB").<br>You will be asked for the
+database connection information.
+</p><p><img style="width: 409px; height: 316px;" alt="" src="dbs1.gif"><br><br>
+</p>
+<p>Select the DBMS you are using from the displayed
+list, and fill out the following form:<br>
+</p>
+<img style="width: 570px; height: 294px;" alt="" src="dbs2.gif"><p><br>Finally click on<span style="font-style: italic;"> Connect</span><big style="font-style: italic;"><span style="font-family: monospace;"></span></big><span style="font-style: italic;">.</span>
+Jailer finds seven tables and five associations:<br>
 <br>
 <img src="exporting-data-Dateien/screen3.png"><br>
 <br>
@@ -203,13 +200,10 @@ dialog appears:</p>
 Type <big><span style="font-family: monospace;"><font size="4">scott.sql</font></span></big>
 into the first field. This defines the name of the export file to be
 generated. <br>
-Click on <span style="font-style: italic;">Export Data</span>.
-After
-exportation the<span style="font-style: italic;"> Export
-Statistic</span>
-is shown:<br>
+Click on <span style="font-style: italic;">Export Data</span>. The<span style="font-style: italic;"> Progress Panel</span>
+shows:<br>
 <br>
-<img src="exporting-data-Dateien/screen9.png"><br>
+<img style="width: 999px; height: 553px;" alt="" src="dbs12.gif"><br>
 <br>
 <br>
 Jailer has generated a file <a href="scott.sql.html"><img style="border: 0px solid ; width: 13px; height: 13px;" src="exporting-data-Dateien/arrow.gif" hspace="4"><big><span style="font-family: monospace;"><font size="4">scott.sql</font></span></big></a>
@@ -226,7 +220,7 @@ Let Jailer explain why:<br>
 <br>
 Open the <span style="font-family: monospace;">Explain.log</span>:<br>
 <br>
-<img src="exporting-data-Dateien/screen11.png"><br>
+<img style="width: 280px; height: 196px;" alt="" src="dbs13.gif"><br>
 <br>
 <img src="exporting-data-Dateien/screen12.png"><br>
 <br>
@@ -277,7 +271,7 @@ condition.<br>
 <span style="font-style: italic;"></span>Use
 <span style="font-style: italic;">Tools-&gt;Export
 Data</span> again. Jailer
-will now export only the data related to Scott.<br>
+will now export only the data related with Scott.<br>
 <br>
 <table style="background-color: rgb(51, 102, 255); text-align: left;" border="0" cellpadding="2" cellspacing="0">
 <tbody>

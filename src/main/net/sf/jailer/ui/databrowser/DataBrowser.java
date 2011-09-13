@@ -110,12 +110,19 @@ public class DataBrowser extends javax.swing.JFrame {
 	public DataBrowser(DataModel datamodel, Table root, String condition, DbConnectionDialog dbConnectionDialog, boolean embedded) throws Exception {
 		this.datamodel = new Reference<DataModel>(datamodel);
 		this.dbConnectionDialog = dbConnectionDialog != null? new DbConnectionDialog(dbConnectionDialog) : null;
+		if (embedded) {
+			DataBrowserContext.setSupportsDataModelUpdates(false);
+		}
 		initComponents();
-		setTitle("Jailer " + Jailer.VERSION + " Data Browser");
+		setTitle(DataBrowserContext.getAppName(false));
 		if (embedded) {
 			menuTools.setVisible(false);
 		}
 
+		if (DataBrowserContext.isStandAlone()) {
+			aboutMenuItem.setText("About " + DataBrowserContext.getAppName(true));
+		}
+		
 		try {
 			for (final LookAndFeelInfo lfInfo : UIManager.getInstalledLookAndFeels()) {
 				JMenuItem mItem = new JMenuItem();
@@ -144,7 +151,12 @@ public class DataBrowser extends javax.swing.JFrame {
 		if (dbConnectionDialog != null) {
 			createSession(dbConnectionDialog);
 		}
-		desktop = new Desktop(this.datamodel, jailerIcon, session, this, dbConnectionDialog);
+		desktop = new Desktop(this.datamodel, jailerIcon, session, this, dbConnectionDialog) {
+			@Override
+			public void openSchemaAnalyzer() {
+				updateDataModel();
+			}
+		};
 
 		jScrollPane1.setViewportView(desktop);
 		addWindowListener(new WindowListener() {
@@ -330,8 +342,9 @@ public class DataBrowser extends javax.swing.JFrame {
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         view = new javax.swing.JMenu();
         jMenu2 = new javax.swing.JMenu();
-        helpForum = new javax.swing.JMenuItem();
         jMenuItem4 = new javax.swing.JMenuItem();
+        helpForum = new javax.swing.JMenuItem();
+        aboutMenuItem = new javax.swing.JMenuItem();
 
         jPanel1.setLayout(new java.awt.BorderLayout());
 
@@ -537,6 +550,14 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jMenu2.setText("Help");
 
+        jMenuItem4.setText("Manual");
+        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem4ActionPerformed(evt);
+            }
+        });
+        jMenu2.add(jMenuItem4);
+
         helpForum.setText("Forum");
         helpForum.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -545,13 +566,13 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         jMenu2.add(helpForum);
 
-        jMenuItem4.setText("About Jailer");
-        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+        aboutMenuItem.setText("About Jailer");
+        aboutMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem4ActionPerformed(evt);
+                aboutMenuItemActionPerformed(evt);
             }
         });
-        jMenu2.add(jMenuItem4);
+        jMenu2.add(aboutMenuItem);
 
         jMenuBar1.add(jMenu2);
 
@@ -580,26 +601,51 @@ public class DataBrowser extends javax.swing.JFrame {
     	desktop.addTableBrowser(null, 0, null, null, "");
    	}//GEN-LAST:event_jMenuItem3ActionPerformed
 
+    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
+        try {
+        	if (DataBrowserContext.isStandAlone()) {
+        		BrowserLauncher.openURL(new URI("http://dbeauty.sourceforge.net"));
+        	} else {
+        		BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/doc/data-browsing.html"));
+        	}
+		} catch (Exception e) {
+			UIUtil.showException(this, "Error", e);
+		}
+    }//GEN-LAST:event_jMenuItem4ActionPerformed
+
 	private void openNewTableBrowser() {
 		new NewTableBrowser(this, datamodel.get()) {
         	@Override
 			void openTableBrowser(String tableName) {
 				desktop.addTableBrowser(null, 0, datamodel.get().getTableByDisplayName(tableName), null, "");
+			}
+			@Override
+			void openDatabaseAnalyzer() {
+				updateDataModel();
 			}  	
         };
 	}
 
 	private void helpForumActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_helpForumActionPerformed
 		try {
-			BrowserLauncher.openURL(new URI("https://sourceforge.net/forum/?group_id=197260"));
+			if (DataBrowserContext.isStandAlone()) {
+				BrowserLauncher.openURL(new URI("https://sourceforge.net/p/dbeauty/discussion/help/"));
+			} else {
+				BrowserLauncher.openURL(new URI("https://sourceforge.net/forum/?group_id=197260"));
+			}
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
 		}
 	}// GEN-LAST:event_helpForumActionPerformed
 
-	private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem4ActionPerformed
+	private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem4ActionPerformed
 		About about = new About(this, true);
-		about.setTitle("Jailer " + Jailer.VERSION);
+		about.setTitle(DataBrowserContext.getAppName(false));
+		if (DataBrowserContext.isStandAlone()) {
+			about.homeTextField.setText("http://dbeauty.sourceforge.net");
+			about.forumTextField.setText("https://sourceforge.net/p/dbeauty/discussion/help/");
+			about.nameLabel.setText(DataBrowserContext.getAppName(false));
+		}
 		about.pack();
 		about.setLocation(getLocation().x + (getSize().width - about.getPreferredSize().width) / 2, getLocation().y
 				+ (getSize().height - about.getPreferredSize().height) / 2);
@@ -690,7 +736,7 @@ public class DataBrowser extends javax.swing.JFrame {
 					dataBrowser.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 					dataBrowser.setVisible(true);
 					DbConnectionDialog dbConnectionDialog = new DbConnectionDialog(dataBrowser);
-					if (dbConnectionDialog.connect("Jailer Data Browser")) {
+					if (dbConnectionDialog.connect(DataBrowserContext.getAppName(true))) {
 						dataBrowser.setConnection(dbConnectionDialog);
 						dataBrowser.askForDataModel();
 						dataBrowser.desktop.openSchemaMappingDialog(true);
@@ -772,6 +818,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JMenuItem analyseMenuItem;
     private javax.swing.JLabel associatedWith;
     private javax.swing.JMenuItem cloaseAllMenuItem;
@@ -838,7 +885,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private void askForDataModel() {
 		if (datamodel.get().getTables().isEmpty()) {
-			switch (JOptionPane.showOptionDialog(this, "No Data Model found.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION,
+			switch (JOptionPane.showOptionDialog(this, "No Data Model found.", DataBrowserContext.getAppName(true), JOptionPane.YES_NO_OPTION,
 					JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor" }, null)) {
 			case 0:
 				updateDataModel();
@@ -848,7 +895,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				break;
 			}
 		} else if (!new File(DataModel.getColumnsFile()).exists()) {
-			switch (JOptionPane.showOptionDialog(this, "No column definition found.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION,
+			switch (JOptionPane.showOptionDialog(this, "No column definition found.", DataBrowserContext.getAppName(true), JOptionPane.YES_NO_OPTION,
 					JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor" }, null)) {
 			case 0:
 				updateDataModel();
