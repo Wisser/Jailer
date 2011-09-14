@@ -31,6 +31,7 @@ rm -rf jailerGUI.*
 rm -rf jailer.sh jailer.bat Demo.csv domainmodel example Jailer.exe README releasenotes.txt Jailer.html
 mv README-dbeauty README
 mv releasenotes-dbeauty.txt releasenotes.txt
+echo "DBeauty" > .standalone
 
 cd ..
 rm $1.zip
