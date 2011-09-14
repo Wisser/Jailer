@@ -23,6 +23,9 @@ rm svn-commit.tmp
 mv datamodel.def datamodel
 rm -rf datamodel.scr
 ls jailer.jar
+
+rm -rf README-dbeauty releasenotes-dbeauty.txt
+
 cd ..
 rm $1.zip
 zip -r $1.zip jailer 
