@@ -630,7 +630,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	private void helpForumActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_helpForumActionPerformed
 		try {
 			if (DataBrowserContext.isStandAlone()) {
-				BrowserLauncher.openURL(new URI("https://sourceforge.net/p/dbeauty/discussion/help/"));
+				BrowserLauncher.openURL(new URI("https://sourceforge.net/apps/phpbb/dbeauty/index.php"));
 			} else {
 				BrowserLauncher.openURL(new URI("https://sourceforge.net/forum/?group_id=197260"));
 			}
@@ -644,7 +644,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		about.setTitle(DataBrowserContext.getAppName(false));
 		if (DataBrowserContext.isStandAlone()) {
 			about.homeTextField.setText("http://dbeauty.sourceforge.net");
-			about.forumTextField.setText("https://sourceforge.net/p/dbeauty/discussion/help/");
+			about.forumTextField.setText("https://sourceforge.net/apps/phpbb/dbeauty/index.php");
 			about.nameLabel.setText(DataBrowserContext.getAppName(false));
 		}
 		about.pack();
