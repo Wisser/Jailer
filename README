@@ -1,47 +1,70 @@
 Database Subsetting Tool
 
-Jailer is a tool for database subsetting, schema browsing, and rendering. It exports consistent, referentially intact row-sets from relational databases. It removes obsolete data without violating integrity. It is DBMS agnostic (by using JDBC), platform independent, and generates DbUnit datasets, hierarchically structured XML, and topologically sorted SQL-DML.
+Jailer is a tool for database subsetting, schema and data browsing. It exports consistent, 
+referentially intact row-sets from relational databases. It removes obsolete data without 
+violating integrity. It is DBMS agnostic (by using JDBC), platform independent, and generates 
+DbUnit datasets, hierarchically structured XML, and topologically sorted SQL-DML.
 
 
 Features
 
-    * Exports consistent and referentially intact row-sets from your productive database 
+    * Exports consistent and referentially intact row-sets from your productive database
       and imports the data into your development and test environment.
     * Improves database performance by removing and archiving obsolete data without violating integrity.
     * Generates hierarchically structured XML, topologically sorted SQL-DML and DbUnit datasets.
     * Open Source. Entirely written in Java. Platform independent. DBMS agnostic.
 
 
+
 Installation
 ============
 
-Unpack thei file jailer_2.9.1.zip. You will get the following files:
-$unzip jailer_2.9.1.zip
-$cd jailer_2.9.1
+Unpack the file jailer_n.n.n.zip. You will get the following files:
+$unzip jailer_3.6.4.zip
+$cd jailer
 $ll
-drwxr-xr-x  5 wisser users    152 2008-05-06 10:10 doc
-drwxr-xr-x  5 wisser users    120 2008-04-28 16:17 epilog
-drwxr-xr-x  3 wisser users    232 2008-06-16 13:00 extractionmodel
--rw-r--r--  1 wisser users    381 2008-04-28 16:18 jailer.bat
--rwxr-xr-x  1 wisser users  29184 2008-06-16 08:41 Jailer.exe
--rw-r--r--  1 wisser users    449 2008-05-23 14:30 jailerGUI.bat
--rw-r--r--  1 wisser users    378 2008-04-28 16:18 jailerGUI.sh
--rw-r--r--  1 wisser users    102 2008-06-16 08:41 Jailer.html
--rw-r--r--  1 wisser users 379148 2008-06-16 13:00 jailer.jar
--rw-r--r--  1 wisser users    335 2008-04-28 16:18 jailer.sh
-drwxr-xr-x  3 wisser users    272 2008-04-28 16:18 lib
--rw-r--r--  1 wisser users   1573 2008-04-28 16:18 license-prefuse.txt
--rw-r--r--  1 wisser users  10172 2008-04-28 16:18 license.txt
-drwxr-xr-x  5 wisser users    120 2008-04-28 16:17 prolog
--rw-r--r--  1 wisser users    398 2008-05-02 09:03 README
--rw-r--r--  1 wisser users   1733 2008-06-17 08:42 releasenotes.txt
+-rw-r--r-- 1 wisser users   5090 2011-08-04 08:46 build.xml
+drwxr-xr-x 2 wisser users   4096 2011-08-04 08:46 datamodel
+-rw-r--r-- 1 wisser users   3527 2011-08-04 08:46 Demo.csv
+drwxr-xr-x 2 wisser users   4096 2011-08-04 08:46 domainmodel
+-rwxr-xr-x 1 wisser users   2784 2011-08-04 08:46 driverlist.csv
+drwxr-xr-x 4 wisser users   4096 2011-08-04 08:46 epilog
+drwxr-xr-x 2 wisser users   4096 2011-08-04 08:46 example
+drwxr-xr-x 2 wisser users   4096 2011-08-04 08:46 extractionmodel
+-rw-r--r-- 1 wisser users    429 2011-08-04 08:46 jailer.bat
+-rw-r--r-- 1 wisser users    500 2011-08-04 08:46 jailerDataBrowser.bat
+-rwxr-xr-x 1 wisser users  43008 2011-08-04 08:46 jailerDataBrowser.exe
+-rwxr-xr-x 1 wisser users    444 2011-08-04 08:46 jailerDataBrowser.sh
+-rwxr-xr-x 1 wisser users  36352 2011-08-04 08:46 Jailer.exe
+-rw-r--r-- 1 wisser users    497 2011-08-04 08:46 jailerGUI.bat
+-rw-r--r-- 1 wisser users    441 2011-08-04 08:46 jailerGUI.sh
+-rw-r--r-- 1 wisser users    129 2011-08-04 08:46 Jailer.html
+-rw-r--r-- 1 wisser users 934386 2011-08-04 08:46 jailer.jar
+-rw-r--r-- 1 wisser users    378 2011-08-04 08:46 jailer.sh
+-rw-r--r-- 1 wisser users  12448 2011-08-04 08:46 jailer.xml
+drwxr-xr-x 2 wisser users   4096 2011-08-04 08:46 lib
+-rw-r--r-- 1 wisser users   1573 2011-08-04 08:46 license-prefuse.txt
+-rw-r--r-- 1 wisser users  10172 2011-08-04 08:46 license.txt
+drwxr-xr-x 4 wisser users   4096 2011-08-04 08:46 prolog
+-rw-r--r-- 1 wisser users   2340 2011-08-04 08:46 README
+-rw-r--r-- 1 wisser users  10694 2011-08-04 08:46 releasenotes.txt
+drwxr-xr-x 2 wisser users   4096 2011-08-04 08:46 render
+drwxr-xr-x 9 wisser users   4096 2011-08-04 08:46 script
+drwxr-xr-x 4 wisser users   4096 2011-08-04 08:46 src
+drwxr-xr-x 2 wisser users   4096 2011-08-04 08:46 template
 
 
-On windows platform execute Jailer.exe. 
-You can also start jailerGUI.bat or start Jailer by double-clicking on the jailer.jar file.
+Database Subsetter
 
-On Unix/Linux platform execute the script jailerGUI.sh 
-or use java -jar jailer.jar
+On windows platform execute Jailer.exe. You can also start jailerGUI.bat or start Jailer by double-clicking the jailer.jar file.
+On Unix/Linux platform execute the script jailerGUI.sh or use java -jar jailer.jar
+
+
+Data Browser
+
+On windows platform execute jailerDataBrowser.exe, or use jailerDataBrowser.bat
+On Unix/Linux platform execute the script jailerDataBrowser.sh
+
 
 
 

@@ -1,0 +1,51 @@
+Database Subsetting Tool
+
+Jailer is a tool for database subsetting, schema browsing, and rendering. It exports consistent, referentially intact row-sets from relational databases. It removes obsolete data without violating integrity. It is DBMS agnostic (by using JDBC), platform independent, and generates DbUnit datasets, hierarchically structured XML, and topologically sorted SQL-DML.
+
+
+Features
+
+    * Exports consistent and referentially intact row-sets from your productive database 
+      and imports the data into your development and test environment.
+    * Improves database performance by removing and archiving obsolete data without violating integrity.
+    * Generates hierarchically structured XML, topologically sorted SQL-DML and DbUnit datasets.
+    * Open Source. Entirely written in Java. Platform independent. DBMS agnostic.
+
+
+Installation
+============
+
+Unpack the file jailer_2.9.1.zip. You will get the following files:
+$unzip jailer_2.9.1.zip
+$cd jailer_2.9.1
+$ll
+drwxr-xr-x  5 wisser users    152 2008-05-06 10:10 doc
+drwxr-xr-x  5 wisser users    120 2008-04-28 16:17 epilog
+drwxr-xr-x  3 wisser users    232 2008-06-16 13:00 extractionmodel
+-rw-r--r--  1 wisser users    381 2008-04-28 16:18 jailer.bat
+-rwxr-xr-x  1 wisser users  29184 2008-06-16 08:41 Jailer.exe
+-rw-r--r--  1 wisser users    449 2008-05-23 14:30 jailerGUI.bat
+-rw-r--r--  1 wisser users    378 2008-04-28 16:18 jailerGUI.sh
+-rw-r--r--  1 wisser users    102 2008-06-16 08:41 Jailer.html
+-rw-r--r--  1 wisser users 379148 2008-06-16 13:00 jailer.jar
+-rw-r--r--  1 wisser users    335 2008-04-28 16:18 jailer.sh
+drwxr-xr-x  3 wisser users    272 2008-04-28 16:18 lib
+-rw-r--r--  1 wisser users   1573 2008-04-28 16:18 license-prefuse.txt
+-rw-r--r--  1 wisser users  10172 2008-04-28 16:18 license.txt
+drwxr-xr-x  5 wisser users    120 2008-04-28 16:17 prolog
+-rw-r--r--  1 wisser users    398 2008-05-02 09:03 README
+-rw-r--r--  1 wisser users   1733 2008-06-17 08:42 releasenotes.txt
+
+
+On windows platform execute Jailer.exe. 
+You can also start jailerGUI.bat or start Jailer by double-clicking on the jailer.jar file.
+
+On Unix/Linux platform execute the script jailerGUI.sh 
+or use java -jar jailer.jar
+
+
+
+Home:    http://jailer.sourceforge.net/
+Forum:   https://sourceforge.net/forum/?group_id=197260
+Support: rwisser@users.sourceforge.net
+
