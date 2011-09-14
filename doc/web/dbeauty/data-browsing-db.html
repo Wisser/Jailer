@@ -82,10 +82,17 @@ Data Browsing</td>
 </tr>
 <tr>
 <td class="content" height="520" valign="top" width="100%"> <small><small>&nbsp;</small></small><br>
-<span style="font-weight: bold;">Relational
-Data Browsing</span><br>
+<span style="font-weight: bold;">
+A
+quick tour through DBeauty</span><br>
 <br>
-<h4>1. Connect to the Database</h4>
+<h4>1. Preparation</h4>
+<ul>
+<li>Install DBeauty. </li>
+<li>Create the demo database by executing the
+script&nbsp;<a href="scott-tiger.sql-db.html" target="_blank" class="llink">dbeauty/script/scott-tiger.sql</a></li>
+</ul>
+<h4><br>2. Connect to the Database</h4>
 Start the Data Browser (<span style="font-family: monospace;">dbeauty.exe
 </span>or <span style="font-family: monospace;">dbeauty.bat</span>
 on windows platform)<br>
@@ -99,7 +106,7 @@ on windows platform)<br>
 </tbody>
 </table>
 <br>
-The first time you start the Databrowser you will be asked for the
+The first time you start DBeauty you will be asked for the
 database connection information.</p>
 <p><img style="width: 409px; height: 316px;" alt="" src="dbs1.gif"><br>
 </p>
@@ -110,7 +117,7 @@ list, and fill out the following form:<br>
 <img style="width: 570px; height: 294px;" alt="" src="dbs2.gif">
 <p>Finally click on "Connect".</p>
 <p></p>
-<h4>1. Analyze the Database</h4>
+<h4>3. Analyze the Database</h4>
 <p>The first time you use the Databrowser you will be
 asked for a Data Model.</p>
 <p><img style="width: 325px; height: 147px;" alt="" src="dbs3.gif"></p>
@@ -151,7 +158,7 @@ under <big><span style="font-family: monospace;"><font size="4">Associations</fo
 <br>
 <br>
 </p>
-<h4>3. Browse a Table<br>
+<h4>4. Browse a Table<br>
 </h4>
 Select the menu item "New Table Browser" from "File" and choose
 "EMPLOYEE" as the table you want to browse:
@@ -165,8 +172,7 @@ of table EMPLOYEE.</p>
 <h4><br>
 </h4>
 <h4><br>
-<br>
-3. Browse related Rows</h4>
+<br>5. Browse related Rows</h4>
 Select the "Children" item from the "Related Rows" drop-down menu and
 choose "EMPLOYEE on inverse-BOSS".<br>
 <br>
@@ -181,7 +187,7 @@ Another Table Browser appears showing the subordinates of each Employee
 <br>
 <br>
 <br>
-<h4>3. Generate SQL-Query</h4>
+<h4>6. Generate SQL-Query</h4>
 Within each table browser, a SQL-Query can be generated which selects
 exactly the browser's content.<br>
 Essentially it's a join of all the tables&nbsp;in the navigation

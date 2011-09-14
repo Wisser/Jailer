@@ -1,5 +1,16 @@
 DBeauty - Relational Data Browser
 
+A relationship-oriented Database Browser,
+providing insight into both the data and the correlation between the rows.
+
+
+Features
+
+    * See the contents of any SQL database
+    * Navigate through the database by following foreign-key-based or user-defined relationships
+    * Automatic detection of foreign keys
+    * SQL/DML generator
+    * Execution of arbitrary SQL queries
 
 
 
