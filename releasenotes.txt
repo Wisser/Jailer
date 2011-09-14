@@ -1,3 +1,6 @@
+3.6.9
+ - Minor GUI improvements.
+
 3.6.8
  - Added ability to edit and execute arbitrary SQL statements in Data Browser.
 
