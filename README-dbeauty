@@ -7,7 +7,7 @@ Provides insight into both the data and the interrelation of the rows.
 Features
 
     * See the contents of any SQL database
-    * Navigate bidirectional through the database by following foreign-key-based or user-defined relationships
+    * Navigate bidirectionally through the database by following foreign-key-based or user-defined relationships
     * Automatic detection of foreign keys
     * SQL/DML generator
     * Execution of arbitrary SQL queries
