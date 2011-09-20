@@ -232,6 +232,11 @@ public class SqlUtil {
     public static DateFormat defaultTimestampFormat = new SimpleDateFormat("yyyy-MM-dd HH.mm.ss");
 
     /**
+     * Default time stamp format (for 'to_date' function).
+     */
+    public static DateFormat defaultDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+    /**
      * <code>true</code> if 'to_timestamp' function is used for writing out timestamps instead of formatting them.
      */
 	public static boolean useToTimestampFunction = false;
@@ -259,6 +264,13 @@ public class SqlUtil {
         }
 
         if (content instanceof java.sql.Date) {
+        	if (useToTimestampFunction) {
+        		String format;
+        		synchronized(defaultDateFormat) {
+	        		format = defaultDateFormat.format((Date) content);
+	       		}
+				return "to_date('" + format + "', 'YYYY-MM-DD')";
+        	}
         	if (dateFormat != null) {
         		synchronized(dateFormat) {
         			return "'" + dateFormat.format((Date) content) + "'";
