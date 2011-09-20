@@ -290,7 +290,7 @@ public abstract class Desktop extends JDesktopPane {
 		
 		JInternalFrame jInternalFrame = new JInternalFrame(table == null? "SQL" : datamodel.get().getDisplayName(table));
 		jInternalFrame.setClosable(true);
-		jInternalFrame.setIconifiable(true);
+		jInternalFrame.setIconifiable(false);
 		jInternalFrame.setMaximizable(true);
 		jInternalFrame.setVisible(true);
 		
