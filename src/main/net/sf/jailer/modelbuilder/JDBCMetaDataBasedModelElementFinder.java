@@ -28,6 +28,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.database.DBMS;
@@ -44,6 +46,7 @@ import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
 import org.apache.log4j.Logger;
+import org.springframework.jdbc.core.SqlTypeValue;
 
 /**
  * Finds associations and tables by analyzing the JDBC meta data.
@@ -190,6 +193,14 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
             	}
                 pk.put(keySeq, new Column(quoting.quote(resultSet.getString(4)), "", 0, -1));
             }
+            if (!hasPK) {
+            	_log.info("find unique index of table " + tableName);
+                hasPK = findUniqueIndexBasedKey(metaData, quoting, session, tmp, pk);
+            }
+            if (!hasPK) {
+            	_log.info("find unique index of table " + tableName);
+                hasPK = findUniqueIndexBasedKey(metaData, quoting, session, tmp, pk);
+            }
             _log.info((hasPK? "" : "no ") + "primary key found for table " + tableName);
             resultSet.close();
             CancellationHandler.checkForCancellation(null);
@@ -258,6 +269,99 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     }
 
     /**
+     * Find a key of a table based on an unique index on non-nullable columns.
+     */
+    private boolean findUniqueIndexBasedKey(DatabaseMetaData metaData, Quoting quoting, Session session, Table tmp, Map<Integer, Column> pk) {
+    	try {
+    		ResultSet resultSet = metaData.getColumns(null, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), "%");
+        	
+    		List<String> nonNullColumns = new ArrayList<String>();
+    		boolean hasNullable = false;
+    		while (resultSet.next()) {
+    			int type = resultSet.getInt(5);
+    			if (resultSet.getInt(11) == DatabaseMetaData.columnNoNulls) {
+    				nonNullColumns.add(resultSet.getString(4));
+    				if (!(
+    						type == Types.BIGINT ||
+    						type == Types.BOOLEAN ||
+    						type == Types.CHAR ||
+    						type == Types.DATE ||
+    						type == Types.DECIMAL ||
+    						type == Types.DOUBLE ||
+    						type == Types.FLOAT ||
+    						type == Types.INTEGER ||
+    						type == Types.NCHAR ||
+    						type == Types.NVARCHAR ||
+    						type == Types.REAL ||
+    						type == Types.SMALLINT ||
+    						type == Types.TIME ||
+    						type == Types.TIMESTAMP ||
+    						type == Types.TINYINT ||
+    						type == Types.VARCHAR
+    					)) {
+    					hasNullable = true;
+    				}
+    			} else {
+    				hasNullable = true;
+    			}
+    		}
+    		resultSet.close();
+    		
+    		if (nonNullColumns.isEmpty()) {
+    			return false;
+    		}
+    		
+    		resultSet = metaData.getIndexInfo(null, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), true, true);
+	        Map<String, List<String>> indexes = new TreeMap<String, List<String>>();
+	        while (resultSet.next()) {
+	        	String indexName = resultSet.getString(6);
+	        	if (indexName == null) {
+	        		continue;
+	        	}
+	        	List<String> indexColumns = indexes.get(indexName);
+	        	if (indexColumns == null) {
+	        		indexColumns = new ArrayList<String>();
+	        		indexes.put(indexName, indexColumns);
+	        	}
+	        	indexColumns.add(resultSet.getString(9));
+	        }
+	        resultSet.close();
+
+	        for (String index: indexes.keySet()) {
+	        	List<Column> columns = new ArrayList<Column>();
+	        	boolean isNullable = false;
+	        	for (String column: indexes.get(index)) {
+	        		if (column == null || !nonNullColumns.contains(column)) {
+	        			isNullable = true;
+	        			break;
+	        		}
+	        		columns.add(new Column(quoting.quote(column), "", 0, -1));
+	        	}
+	        	if (!isNullable && !columns.isEmpty()) {
+	        		for (int i = 1; i <= columns.size(); ++i) {
+	        			pk.put(i, columns.get(i - 1));
+	        		}
+	        		return true;
+	        	}
+	        }
+	        
+	        if (!hasNullable) {
+	        	if (nonNullColumns.size() <= 6) {
+	        		for (int i = 1; i <= nonNullColumns.size(); ++i) {
+	        			pk.put(i, new Column(quoting.quote(nonNullColumns.get(i - 1)), "", 0, -1));
+	        		}
+	        		return true;
+	        	}
+	        }
+	        
+	        return false;
+    	} catch (Exception e) {
+    		_log.error(e.getMessage(), e);
+    		return false;
+    	}
+	}
+    
+	/**
      * Checks syntactical correctness of names.
      * 
      * @param name a table or column name

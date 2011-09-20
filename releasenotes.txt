@@ -1,3 +1,6 @@
+3.6.10
+ - If a table has no primary key, an unique index on non-nullable columns is used as a key instead.
+
 3.6.9
  - Minor GUI improvements.
 
