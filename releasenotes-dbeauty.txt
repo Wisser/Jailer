@@ -1,3 +1,6 @@
+1.2
+  - Fixed a bug concerning DATE literals in Oracle, DBeauty now uses the "TO_DATE" function to specify the date pattern.
+
 1.1
   - If a table has no primary key, an unique index on non-nullable columns is used as a key instead.
 

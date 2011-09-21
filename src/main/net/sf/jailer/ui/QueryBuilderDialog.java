@@ -19,18 +19,22 @@ import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
+import java.awt.Image;
 import java.awt.Insets;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
@@ -295,6 +299,9 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
      * Relationship.
      */
     private class Relationship {
+    	public List<Relationship> children = new ArrayList<Relationship>();
+    	public Relationship parent;
+    	public int level;
     	public Association association;
     	public JTextField aliasTextField;
     	public Color originalBGColor;
@@ -302,22 +309,40 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		public String whereClause;
 		public String alias;
 		public String aliasSuggestion;
+		public List<Relationship> flatten(int level, Relationship parent, boolean withLastPseudoChild) {
+			this.level = level;
+			this.parent = parent;
+			List<Relationship> flat = new ArrayList<Relationship>();
+			flat.add(this);
+			if (withLastPseudoChild) {
+				Relationship lastChild = new Relationship();
+				lastChild.parent = this;
+				lastChild.level = level + 1;
+				flat.add(lastChild);
+			}
+			for (Relationship child: children) {
+				flat.addAll(child.flatten(level + 1, this, withLastPseudoChild));
+			}
+			return flat;
+		}
     }
     
     /**
-     * Relationships.
+     * Root relationship.
      */
-    private List<Relationship> relationships = new ArrayList<Relationship>();
+    private Relationship rootRelationship;
     
     private void resetRelationshipsPanel() {
     	relationshipsPanel.removeAll();
-    	Table lastTable = null;
-    	for (int y = 0; y <= relationships.size(); ++y) {
-    		Relationship relationship = y < relationships.size()? relationships.get(y) : null;
+    	// Table lastTable = null;
+    	List<Relationship> relationships = rootRelationship.flatten(0, null, true);
+    	for (int y = 0; y < relationships.size(); ++y) {
+    		final Relationship relationship = relationships.get(y);
     		
 	    	javax.swing.JLabel label;
 	
 			label = new javax.swing.JLabel();
+			final JLabel joinLabel = label;
 			label.setText(y == 0? " From  " : " Join  ");
 			label.setFont(nonBoldFont);
 				
@@ -334,10 +359,11 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 	        gridBagConstraints.gridy = y;
 	        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 	        gridBagConstraints.weightx = 0.0;
-	        gridBagConstraints.insets = new Insets(0, 0, 2, 0);
+	        gridBagConstraints.insets = new Insets(0, 0 + relationship.level * 12, 2, 0);
 	        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-	        if (relationship == null || relationship.association != null) {
-	        	JComboBox tableCB = new JComboBox() {
+	        JComboBox tableCB = null;
+	        if (relationship != rootRelationship) {
+	        	tableCB = new JComboBox() {
 					private boolean layingOut = false;
 	        	    public void doLayout() {
 	        	        try {
@@ -363,15 +389,15 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 	        	};
 	        	DefaultComboBoxModel aModel = new DefaultComboBoxModel();
 	        	aModel.addElement("");
+	        	Table lastTable = relationship.parent == rootRelationship? subject : relationship.parent.association.destination;
         		for (Association a: lastTable.associations) {
        				aModel.addElement(joinTableRender(lastTable, a));
         		}
 	        	tableCB.setModel(aModel);
-	        	if (relationship != null) {
+	        	if (relationship.association != null) {
 	        		tableCB.setSelectedItem(joinTableRender(lastTable, relationship.association));
 	        	}
 	        	final Table ft = lastTable;
-	        	final int index = y;
 	        	tableCB.addItemListener(new ItemListener() {
 					@Override
 					public void itemStateChanged(ItemEvent e) {
@@ -384,19 +410,15 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 								}
 							}
 							if (sa != null) {
-								if (relationships.size() <= index) {
-									relationships.add(new Relationship());
-								}
-								boolean cut = false;
-								if (relationships.get(index).association == null || relationships.get(index).association.destination != sa.destination) {
-									cut = true;
-								}
-								relationships.get(index).association = sa;
-								if (cut) {
-									relationships = relationships.subList(0, index + 1);
+								relationship.association = sa;
+								relationship.children.clear();
+								if (relationship.parent != null && !relationship.parent.children.contains(relationship)) {
+									relationship.parent.children.add(relationship);
 								}
 							} else {
-								relationships = relationships.subList(0, index);
+								if (relationship.parent != null) {
+									relationship.parent.children.remove(relationship);
+								}
 							}
 							resetRelationshipsPanel();
 							updateSQL();
@@ -409,83 +431,114 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 	        	label.setText(subject.getName());
 		        relationshipsPanel.add(label, gridBagConstraints);
 	        }
-		    
-	        if (relationship == null) {
-	        	continue;
+	        
+	        if (relationship.association == null && relationship != rootRelationship) {
+		        final JLabel jlabel = new javax.swing.JLabel();
+				jlabel.setText(null);
+				jlabel.setIcon(joinImage);
+				
+				gridBagConstraints = new java.awt.GridBagConstraints();
+		        gridBagConstraints.gridx = 3;
+		        gridBagConstraints.gridy = y - 1;
+		        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+		        gridBagConstraints.weightx = 0.0;
+		        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		        gridBagConstraints.insets = new Insets(0, 8, 0, 0);
+		        relationshipsPanel.add(jlabel, gridBagConstraints);
+		        
+		        final JComponent finalTCB = tableCB;
+		        finalTCB.setVisible(false);
+		        joinLabel.setVisible(false);
+            	jlabel.setEnabled(false);
+        
+		        jlabel.addMouseListener(new java.awt.event.MouseAdapter() {
+		            public void mouseEntered(java.awt.event.MouseEvent evt) {
+		            	jlabel.setEnabled(true);
+		            }
+		            public void mouseExited(java.awt.event.MouseEvent evt) {
+		            	jlabel.setEnabled(false);
+		            }
+		            public void mouseClicked(java.awt.event.MouseEvent evt) {
+		            	finalTCB.setVisible(true);
+		                joinLabel.setVisible(true);
+		                jlabel.setVisible(false);
+				    }
+				});
 	        }
 	        
-	        label = new javax.swing.JLabel();
-			label.setText("   as ");
-			label.setFont(nonBoldFont);
-			
-			gridBagConstraints = new java.awt.GridBagConstraints();
-	        gridBagConstraints.gridx = 3;
-	        gridBagConstraints.gridy = y;
-	        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-	        gridBagConstraints.weightx = 0.0;
-	        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-	        relationshipsPanel.add(label, gridBagConstraints);
+	        if (relationship.association != null || relationship == rootRelationship) {
+		        label = new javax.swing.JLabel();
+				label.setText("   as ");
+				label.setFont(nonBoldFont);
+				
+				gridBagConstraints = new java.awt.GridBagConstraints();
+		        gridBagConstraints.gridx = 4;
+		        gridBagConstraints.gridy = y;
+		        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+		        gridBagConstraints.weightx = 0.0;
+		        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		        relationshipsPanel.add(label, gridBagConstraints);
+		
+		        String alias = "";
+		        if (relationship != null && relationship.aliasTextField != null) {
+		        	alias = relationship.aliasTextField.getText();
+		        }
+		        JTextField aliasField = new JTextField(alias);
+				relationship.aliasTextField = aliasField;
+				relationship.originalBGColor = aliasField.getBackground();
+				aliasField.getDocument().addDocumentListener(new DocumentListener() {
+					@Override
+					public void changedUpdate(DocumentEvent e) {
+						checkAliases();
+						updateSQL();
+					}
+					@Override
+					public void insertUpdate(DocumentEvent e) {
+						checkAliases();
+						updateSQL();
+					}
+					@Override
+					public void removeUpdate(DocumentEvent e) {
+						checkAliases();
+						updateSQL();
+					}
+				});
+				gridBagConstraints = new java.awt.GridBagConstraints();
+		        gridBagConstraints.gridx = 5;
+		        gridBagConstraints.gridy = y;
+		        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+		        gridBagConstraints.weightx = 0.0;
+		        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		        relationshipsPanel.add(aliasField, gridBagConstraints);
 	
-	        String alias = "";
-	        if (relationship != null && relationship.aliasTextField != null) {
-	        	alias = relationship.aliasTextField.getText();
+		        final JCheckBox selectColumnsCB = new JCheckBox("select columns");
+				selectColumnsCB.setSelected(relationship.selectColumns);
+		        
+		        selectColumnsCB.addItemListener(new ItemListener() {
+					@Override
+					public void itemStateChanged(ItemEvent e) {
+						relationship.selectColumns = selectColumnsCB.isSelected();
+						updateSQL();
+					}
+		        });
+		        
+				gridBagConstraints = new java.awt.GridBagConstraints();
+		        gridBagConstraints.gridx = 7;
+		        gridBagConstraints.gridy = y;
+		        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+		        gridBagConstraints.weightx = 1.0;
+		        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		        gridBagConstraints.insets = new Insets(0, 10, 0, 0);
+		        relationshipsPanel.add(selectColumnsCB, gridBagConstraints);
 	        }
-	        JTextField aliasField = new JTextField(alias);
-			relationship.aliasTextField = aliasField;
-			relationship.originalBGColor = aliasField.getBackground();
-			aliasField.getDocument().addDocumentListener(new DocumentListener() {
-				@Override
-				public void changedUpdate(DocumentEvent e) {
-					checkAliases();
-					updateSQL();
-				}
-				@Override
-				public void insertUpdate(DocumentEvent e) {
-					checkAliases();
-					updateSQL();
-				}
-				@Override
-				public void removeUpdate(DocumentEvent e) {
-					checkAliases();
-					updateSQL();
-				}
-			});
-			gridBagConstraints = new java.awt.GridBagConstraints();
-	        gridBagConstraints.gridx = 4;
-	        gridBagConstraints.gridy = y;
-	        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-	        gridBagConstraints.weightx = 0.0;
-	        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-	        relationshipsPanel.add(aliasField, gridBagConstraints);
-
-	        final JCheckBox selectColumnsCB = new JCheckBox("select columns");
-			selectColumnsCB.setSelected(relationship.selectColumns);
-	        
-	        final int index = y;
-	        selectColumnsCB.addItemListener(new ItemListener() {
-				@Override
-				public void itemStateChanged(ItemEvent e) {
-					relationships.get(index).selectColumns = selectColumnsCB.isSelected();
-					updateSQL();
-				}
-	        });
-	        
-			gridBagConstraints = new java.awt.GridBagConstraints();
-	        gridBagConstraints.gridx = 7;
-	        gridBagConstraints.gridy = y;
-	        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-	        gridBagConstraints.weightx = 1.0;
-	        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-	        gridBagConstraints.insets = new Insets(0, 10, 0, 0);
-	        relationshipsPanel.add(selectColumnsCB, gridBagConstraints);
-	        lastTable = relationship == null? null : relationship.association == null? subject : relationship.association.destination;
+	        // lastTable = relationship == null? null : relationship.association == null? subject : relationship.association.destination;
     	}
         
     	JLabel label = new javax.swing.JLabel();
 		label.setText("                ");
 		
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = relationships.size() + 1;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weighty = 1.0;
@@ -517,6 +570,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
      * Checks aliases, renders naming conflicts.
      */
     private void checkAliases() {
+    	List<Relationship> relationships = rootRelationship.flatten(0, null, false);
     	for (Relationship a: relationships) {
     		a.aliasTextField.setBackground(a.originalBGColor);
     	}
@@ -606,6 +660,15 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		String lf = System.getProperty("line.separator", "\n");
 		String tab = "       ";
 		
+		List<Relationship> relationships = rootRelationship.flatten(0, null, false);
+		boolean needsIndent = false;
+		for (Relationship r: relationships) {
+			if (r.children.size() > 1) {
+				needsIndent = true;
+				break;
+			}
+		}
+		
 		if (!singleLine) {
 			int sa = 0;
 			for (int i = 0; i < relationships.size(); ++i) {
@@ -655,14 +718,20 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 			sql.append(" ");
 		}
 		sql.append("From ");
-		String lastAlias = "";
+		// String lastAlias = "";
 		for (Relationship r: relationships) {
+			String indent = "";
+			if (needsIndent) {
+				for (int l = 0; l < r.level; ++l) {
+					indent += "  ";
+				}
+			}
 			Table t = r.association == null? subject : r.association.destination;
 			if (r.association != null) {
-				sql.append(singleLine? " " : (lf + tab));
+				sql.append(singleLine? " " : (lf + tab + indent));
 				sql.append("join ");
 			} else if (relationships.size() > 1) {
-				sql.append(singleLine? "" : (lf + tab));
+				sql.append(singleLine? "" : (lf + tab + indent));
 			}
 			sql.append(t.getName());
 			String alias = r.aliasTextField.getText().trim();
@@ -671,6 +740,13 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 			} else {
 				alias = t.getName();
 			}
+			String lastAlias = "";
+			if (r.parent != null) {
+				lastAlias = r.parent.aliasTextField.getText().trim();
+				if (lastAlias.length() <= 0) {
+					lastAlias = r.association == null? subject.getName() : r.association.source.getName();
+				}
+			}
 			if (r.association != null) {
 				if (!r.association.reversed) {
 					sql.append(" on " + SqlUtil.replaceAliases(r.association.getUnrestrictedJoinCondition(), lastAlias, alias));
@@ -678,7 +754,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 					sql.append(" on " + SqlUtil.replaceAliases(r.association.getUnrestrictedJoinCondition(), alias, lastAlias));
 				}
 			}
-			lastAlias = alias; 
+			// lastAlias = alias; 
 		}
 		
 		boolean f = true;
@@ -740,10 +816,11 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		mlmTextField.setText("");
 		this.datamodel = datamodel;
 		subject = table;
-		relationships.clear();
+		// relationships.clear();
 		Relationship firstR = new Relationship();
+		rootRelationship = firstR;
 		firstR.selectColumns = true;
-		relationships.add(firstR);
+		// relationships.add(firstR);
 		firstR.whereClause = null;
 		if (whereClauses != null && whereClauses.size() > 0) {
 			firstR.whereClause = whereClauses.get(0);
@@ -760,7 +837,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		
 		List<JTextField> tf = new ArrayList<JTextField>();
 		List<String> as = new ArrayList<String>();
-		for (Relationship r: relationships) {
+		for (Relationship r: rootRelationship.flatten(0, null, false)) {
 			if (r.aliasSuggestion != null) {
 				tf.add(r.aliasTextField);
 				as.add(r.aliasSuggestion);
@@ -785,9 +862,10 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 	private List<Association> associationsOnPath;
 	
     private void createPathQuery(List<String> whereClauses) {
-    	relationships.clear();
+    	// relationships.clear();
     	Relationship firstR = new Relationship();
-		relationships.add(firstR);
+    	rootRelationship = firstR;
+		// relationships.add(firstR);
 		firstR.selectColumns = true;
 		if (whereClauses != null && whereClauses.size() > 0) {
 			firstR.whereClause = whereClauses.get(0);
@@ -800,7 +878,8 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     		if (whereClauses != null && whereClauses.size() > i + 1) {
     			r.whereClause = whereClauses.get(i + 1);
     		}
-    		relationships.add(r);
+    		firstR.children.add(r);
+    		firstR = r;
     	}
 		resetRelationshipsPanel();
 	}
@@ -850,5 +929,17 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     private javax.swing.JEditorPane sqlTextArea;
     // End of variables declaration//GEN-END:variables
     
+    private ImageIcon joinImage = null;
+	{
+		String dir = "/net/sf/jailer/resource";
+		
+		// load image
+		try {
+			joinImage = new ImageIcon(new ImageIcon(getClass().getResource(dir + "/collapsed.png")).getImage().getScaledInstance(22, 18, Image.SCALE_SMOOTH));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
     private static final long serialVersionUID = -2801831496446636545L;
 }
