@@ -74,6 +74,17 @@ public class UIUtil {
      * @param description description of file to chose
      */
     public static String choseFile(File selectedFile, String startDir, final String description, final String extension, Component parent, boolean addExtension, boolean forLoad) {
+    	return choseFile(selectedFile, startDir, description, extension, parent, addExtension, forLoad, true);
+    }
+    
+    /**
+     * Opens file chooser.
+     * 
+     * @param selectedFile if not <code>null</code> this file will be selected initially
+     * @param startDir directory to start with
+     * @param description description of file to chose
+     */
+    public static String choseFile(File selectedFile, String startDir, final String description, final String extension, Component parent, boolean addExtension, boolean forLoad, final boolean allowZip) {
     	String newStartDir = restoreCurrentDir(extension);
     	if (newStartDir != null) {
     		startDir = newStartDir;
@@ -87,7 +98,9 @@ public class UIUtil {
             }
             public String getDescription() {
             	if (extension.endsWith(".sql") || extension.endsWith(".xml")) {
-            		return "*" + extension + " *" + extension + ".zip";
+            		if (allowZip) {
+            			return "*" + extension + " *" + extension + ".zip";
+            		}
             	}
                 return "*" + extension;
             }

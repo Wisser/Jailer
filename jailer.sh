@@ -16,4 +16,4 @@ CP=$CP:$LIB/spring.jar
 CP=$CP:$LIB/sdoc-0.5.0-beta.jar
 CP=$CP:jailer.jar
 
-java -Xmx256M -cp $CP net.sf.jailer.Jailer "$@"
+java -Xmx1024M -cp $CP net.sf.jailer.Jailer "$@"
