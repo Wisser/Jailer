@@ -37,6 +37,8 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.FileWriter;
+import java.io.PrintWriter;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.ResultSet;
@@ -98,6 +100,11 @@ import net.sf.jailer.util.SqlUtil;
  */
 @SuppressWarnings("serial")
 public abstract class BrowserContentPane extends javax.swing.JPanel {
+
+	/**
+	 * Allowed row limits.
+	 */
+	private static final Integer[] ROW_LIMITS = new Integer[] { 200, 500, 1000, 2000, 5000, 10000, 50000, 100000 };
 
 	/**
 	 * Concurrently loads rows.
@@ -643,7 +650,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						: javax.swing.border.BevelBorder.RAISED));
 			}
 		});
-		limitBox.setModel(new DefaultComboBoxModel(new Integer[] { 100, 200, 500, 1000, 2000, 5000 }));
+		limitBox.setModel(new DefaultComboBoxModel(ROW_LIMITS));
 		limitBox.setSelectedIndex(association == null? 0 : 1);
 		updateTableModel(0, false);
 		
@@ -832,7 +839,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		insert.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				openSQLDialog("Insert Into " + tableName, x, y, SQLDMLBuilder.buildInsert(table, rows, session));
+				openSQLDialog("Insert Into " + tableName, x, y, new Object() { public String toString() { return SQLDMLBuilder.buildInsert(table, rows, session); }});
 			}
 		});
 		JMenuItem update = new JMenuItem("Updates");
@@ -840,7 +847,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		update.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				openSQLDialog("Update " + tableName, x, y, SQLDMLBuilder.buildUpdate(table, rows, session));
+				openSQLDialog("Update " + tableName, x, y,  new Object() { public String toString() { return SQLDMLBuilder.buildUpdate(table, rows, session); }});
 			}
 		});
 		JMenuItem delete = new JMenuItem("Deletes");
@@ -848,7 +855,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		delete.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				openSQLDialog("Delete from " + tableName, x, y, SQLDMLBuilder.buildDelete(table, rows, session));
+				openSQLDialog("Delete from " + tableName, x, y,  new Object() { public String toString() { return SQLDMLBuilder.buildDelete(table, rows, session); }});
 			}
 		});
 		insert.setEnabled(rows.size() > 0);
@@ -858,12 +865,28 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return popup;
 	}
 
-	private void openSQLDialog(String titel, int x, int y, String sql) {
+	private void openSQLDialog(String titel, int x, int y, Object sql) {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		JDialog d;
 		try {
+			String sqlString = sql.toString();
+			if (sqlString.length() > 2L*1024L*1024L) {
+				if (1 == JOptionPane.showOptionDialog(this, "SQL Script is too long (" + sqlString.length() + " Byte) to be edited.", "SQL Script too long", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Ok", "Save" }, "Save")) {
+					String fn = UIUtil.choseFile(null, ".", "Save SQL Script", "", this, false, false);
+			        if (fn != null) {
+			            try {
+			                PrintWriter out = new PrintWriter(new FileWriter(fn));
+			                out.print(sqlString);
+			                out.close();
+			            } catch (Throwable e) {
+			                UIUtil.showException(this, "Error saving script", e);
+			            }
+			        }
+				}
+				return;
+			}
 			d = new JDialog(getOwner(), "SQL/DML - " + titel, true);
-			d.getContentPane().add(new SQLDMLPanel(sql, session, new Runnable() {
+			d.getContentPane().add(new SQLDMLPanel(sqlString, session, new Runnable() {
 				@Override
 				public void run() {
 					reloadRows();
@@ -873,6 +896,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			d.setLocation(x - 50, y - 100);
 			d.setSize(700, Math.max(d.getHeight() + 20, 400));
 			UIUtil.fit(d);
+		} catch (Throwable e) {
+			UIUtil.showException(this, "Error", e);
+			return;
 		} finally {
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
