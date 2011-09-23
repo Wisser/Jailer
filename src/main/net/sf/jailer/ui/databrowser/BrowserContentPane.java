@@ -85,6 +85,7 @@ import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.SqlUtil;
@@ -768,7 +769,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				insert.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						openSQLDialog("Insert Row " + rowName, x, y, SQLDMLBuilder.buildInsert(table, row, session));
+						openSQLDialog("Insert Row " + rowName, x, y, SQLDMLBuilder.buildInsert(table, row, true, session));
 					}
 				});
 				JMenuItem update = new JMenuItem("Update");
@@ -776,7 +777,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				update.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						openSQLDialog("Update Row " + rowName, x, y, SQLDMLBuilder.buildUpdate(table, row, session));
+						openSQLDialog("Update Row " + rowName, x, y, SQLDMLBuilder.buildUpdate(table, row, true, session));
 					}
 				});
 				JMenuItem delete = new JMenuItem("Delete");
@@ -784,7 +785,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				delete.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						openSQLDialog("Delete Row " + rowName, x, y, SQLDMLBuilder.buildDelete(table, row, session));
+						openSQLDialog("Delete Row " + rowName, x, y, SQLDMLBuilder.buildDelete(table, row, true, session));
 					}
 				});
 				popup.add(sql);
@@ -823,7 +824,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		insertNewRow.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				openSQLDialog("Insert New Row Into " + tableName, x, y, SQLDMLBuilder.buildInsert(table, createNewRow(parentrow, table), session));
+				openSQLDialog("Insert New Row Into " + tableName, x, y, SQLDMLBuilder.buildInsert(table, createNewRow(parentrow, table), true, session));
 			}
 		});
 		JMenuItem insert = new JMenuItem("Inserts");
@@ -1771,17 +1772,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}// GEN-LAST:event_limitBoxItemStateChanged
 
 	private void openQueryBuilder() {
-		List<String> whereClauses = new ArrayList<String>();
-		List<Association> associationsOnPath = new ArrayList<Association>();
-		createAssociationList(associationsOnPath, whereClauses, -1);
 		
-		int backCount = getQueryBuilderPathSelector().selectBackCount(associationsOnPath);
-		if (backCount >= 0) {
-			whereClauses = new ArrayList<String>();
-			associationsOnPath = new ArrayList<Association>();
-			createAssociationList(associationsOnPath, whereClauses, backCount);
-			getQueryBuilderDialog().buildQuery(table, true, false, associationsOnPath, whereClauses, dataModel);
-		}
+		QueryBuilderDialog.Relationship root = createQBRelations();
+		root.selectColumns = true;
+		getQueryBuilderDialog().buildQuery(table, root, dataModel);
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1942,7 +1936,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	protected abstract void beforeReload();
 
-	protected abstract void createAssociationList(List<Association> associations, List<String> whereClauses, int backCount);
+	protected abstract QueryBuilderDialog.Relationship createQBRelations();
+	protected abstract List<QueryBuilderDialog.Relationship> createQBChildrenRelations(RowBrowser tabu);
 
 	protected abstract void addRowToRowLink(Row pRow, Row exRow);
 

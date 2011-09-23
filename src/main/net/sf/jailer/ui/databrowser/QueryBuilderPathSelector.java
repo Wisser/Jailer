@@ -27,6 +27,7 @@ import net.sf.jailer.ui.UIUtil;
 /**
  * Query Builder Path Selector Dialog.
  * 
+ * @deprecated this dialog is no longer used
  * @author Ralf Wisser
  */
 public class QueryBuilderPathSelector extends javax.swing.JDialog {

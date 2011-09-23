@@ -32,7 +32,6 @@ import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -359,7 +358,7 @@ public class UIUtil {
 		                if (printCommandLine) {
 		                    _log.info("arguments: " + arglist.toString().trim());
 		                }
-		            	result[0] = Jailer.jailerMain(argsarray, warnings, progressListener);
+		            	result[0] = Jailer.jailerMain(argsarray, disableWarnings? new StringBuffer() : warnings, progressListener);
 		            } catch (Throwable t) {
 		            	synchronized (UIUtil.class) {
 		            		exp[0] = t;
@@ -545,5 +544,7 @@ public class UIUtil {
 			// ignore
 		}
 	}
-    
+	
+	public static boolean disableWarnings = false;
+
 }

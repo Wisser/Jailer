@@ -67,6 +67,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.QueryBuilderDialog;
+import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.SqlUtil;
 import prefuse.util.GraphicsLib;
@@ -441,48 +442,86 @@ public abstract class Desktop extends JDesktopPane {
 				}
 			}
 
-			@Override
-			protected void createAssociationList(List<Association> associations, List<String> whereClauses, int backCount) {
-				for (RowBrowser rb = tableBrowser; rb != null; rb = rb.parent) {
-					boolean stop = false;
-					if (backCount >= 0) {
-						if (--backCount < 0) {
-							stop = true;
-						}
+			private void createAnchorSQL(RowBrowser rb, StringBuilder rowIds) {
+				boolean f = true;
+				for (Row row: rb.browserContentPane.rows) {
+					if (!f) {
+						rowIds.append(" or\n       ");
 					}
-					
-					String andC = ConditionEditor.toMultiLine(rb.browserContentPane.andCondition.getText().trim()).replaceAll("(\r|\n)+", " ");
-					if (rb.association != null) {
-						if (!stop) {
-							associations.add(rb.association.reversalAssociation);
-						}
-					} else {
-						whereClauses.add(andC.length() == 0? null : andC);
-						break;
-					}
-					if (rb.rowIndex >= 0 && !(rb.rowIndex == 0 && rb.parent != null && rb.parent.browserContentPane != null && rb.parent.browserContentPane.rows != null && rb.parent.browserContentPane.rows.size() == 1)) {
-						String w = rb.browserContentPane.parentRow.rowId;
-						whereClauses.add(andC.length() == 0? w : "(" + w + ") and (" + andC + ")");
-						break;
-					}
-					if (stop) {
-						StringBuilder rowIds = new StringBuilder("");
-						boolean f = true;
-						for (Row row: rb.browserContentPane.rows) {
-							if (!f) {
-								rowIds.append(" or\n       ");
-							}
-							f = false;
-							rowIds.append(SqlUtil.replaceAliases(row.rowId, "A", "A"));
-						}
-						rowIds.append("");
-						whereClauses.add(f? null : rowIds.toString());
-						break;
-					}
-					whereClauses.add(andC.length() == 0? null : andC);
+					f = false;
+					rowIds.append(SqlUtil.replaceAliases(row.rowId, "A", "A"));
 				}
+				rowIds.append("");
 			}
-			
+
+			@Override
+			protected QueryBuilderDialog.Relationship createQBRelations() {
+				QueryBuilderDialog.Relationship root = new QueryBuilderDialog.Relationship();
+				root.whereClause = ConditionEditor.toMultiLine(andCondition.getText().trim()).replaceAll("(\r|\n)+", " ");
+				if (root.whereClause.length() == 0) {
+					root.whereClause = null;
+				}
+				StringBuilder rowIds = new StringBuilder("");
+				createAnchorSQL(tableBrowser, rowIds);
+				root.anchorWhereClause = rowIds.length() == 0? null : rowIds.toString();
+				
+				root.children.addAll(createQBChildrenRelations(null));
+				
+				Association a = association;
+				
+				QueryBuilderDialog.Relationship r = root;
+				RowBrowser childRB = tableBrowser;
+				for (RowBrowser rb = tableBrowser.parent; rb != null && a != null; rb = rb.parent) {
+					QueryBuilderDialog.Relationship child = new QueryBuilderDialog.Relationship();
+					child.children.addAll(rb.browserContentPane.createQBChildrenRelations(childRB));
+					child.parent = r;
+					r.children.add(0, child);
+					child.whereClause = ConditionEditor.toMultiLine(rb.browserContentPane.andCondition.getText().trim()).replaceAll("(\r|\n)+", " ");
+					if (child.whereClause.length() == 0) {
+						child.whereClause = null;
+					}
+					child.association = a.reversalAssociation;
+					r.anchor = child.association;
+					a = rb.association;
+					rowIds = new StringBuilder("");
+					createAnchorSQL(rb, rowIds);
+					child.anchorWhereClause = rowIds.length() == 0? null : rowIds.toString();
+					
+					if (childRB.rowIndex >= 0 && !(childRB.rowIndex == 0 && childRB.parent != null && childRB.parent.browserContentPane != null && childRB.parent.browserContentPane.rows != null && childRB.parent.browserContentPane.rows.size() == 1)) {
+						String w = childRB.browserContentPane.parentRow.rowId;
+						r.whereClause = (r.whereClause == null || r.whereClause.length() == 0)? w : "(" + w + ") and (" + r.whereClause + ")";
+						break;
+					}
+
+					r = child;
+					childRB = rb;
+				}
+				return root;
+			}
+
+			@Override
+			protected List<Relationship> createQBChildrenRelations(RowBrowser tabu) {
+				List<QueryBuilderDialog.Relationship> result = new ArrayList<QueryBuilderDialog.Relationship>();
+				for (RowBrowser rb: tableBrowsers) {
+					if (rb.parent == tableBrowser && rb != tabu) {
+						if (!(rb.rowIndex >= 0 && !(rb.rowIndex == 0 && rb.parent != null && rb.parent.browserContentPane != null && rb.parent.browserContentPane.rows != null && rb.parent.browserContentPane.rows.size() == 1))) {
+							QueryBuilderDialog.Relationship child = new QueryBuilderDialog.Relationship();
+							child.whereClause = ConditionEditor.toMultiLine(rb.browserContentPane.andCondition.getText().trim()).replaceAll("(\r|\n)+", " ");
+							child.joinOperator = QueryBuilderDialog.JoinOperator.LeftJoin;
+							if (child.whereClause.length() == 0) {
+								child.whereClause = null;
+							}
+							child.association = rb.association;
+							if (child.association != null) {
+								child.children.addAll(rb.browserContentPane.createQBChildrenRelations(tabu));
+								result.add(child);
+							}
+						}
+					}
+				}
+				return result;
+			}
+
 			@Override
 			protected void openSchemaMappingDialog() {
 				Desktop.this.openSchemaMappingDialog(false);
