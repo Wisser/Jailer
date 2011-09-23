@@ -104,7 +104,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * Allowed row limits.
 	 */
-	private static final Integer[] ROW_LIMITS = new Integer[] { 200, 500, 1000, 2000, 5000, 10000, 50000, 100000 };
+	private static final Integer[] ROW_LIMITS = new Integer[] { 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 70000, 100000 };
 
 	/**
 	 * Concurrently loads rows.
