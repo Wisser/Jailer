@@ -811,6 +811,9 @@ public class DataBrowser extends javax.swing.JFrame {
 					args.add("-qualifyNames");
 				}
 				ModelBuilder.assocFilter = analyseOptionsDialog.getAssociationLineFilter();
+				if (DataBrowserContext.isStandAlone()) {
+					UIUtil.disableWarnings = true;
+				}
 				if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword(), null, null, false, true)) {
 					ModelBuilder.assocFilter = null;
 					String modelname = datamodel == null || datamodel.get() == null? DataModel.DEFAULT_NAME : datamodel.get().getName();

@@ -45,7 +45,7 @@ public class SQLDMLBuilder {
 		StringBuilder sb = new StringBuilder();
 		
 		for (Row row: unique(rows)) {
-			sb.append(buildUpdate(table, row, session)).append(";" + LF + LF);
+			sb.append(buildUpdate(table, row, false, session)).append(";" + LF + LF);
 		}
 		return sb.toString();
 	}
@@ -58,7 +58,7 @@ public class SQLDMLBuilder {
 	 * @param session current DB session
 	 * @return update statement for row
 	 */
-	public static String buildUpdate(Table table, Row row, Session session) {
+	public static String buildUpdate(Table table, Row row, boolean withComments, Session session) {
 		String sql = "Update " + table.getName() + " " + LF + "Set ";
 		boolean f = true;
 		int i = 0;
@@ -68,13 +68,20 @@ public class SQLDMLBuilder {
 			if (value == null) {
 				continue;
 			}
-			sql += (f? "" : ", " + LF + "    ") + name + " = " + value;
+			sql += (f? "" : ", " + LF + "    ") + name + " = " + value + comment(withComments, column, false);
 			f = false;
 		}
 		sql += " " + LF + "Where " + SqlUtil.replaceAliases(row.rowId, null, null);
 		return sql;
 	}
 	
+	private static String comment(boolean withComments, Column column, boolean withName) {
+		if (withComments) {
+			return "   /* " + (withName? column.toSQL(null) : (column.toSQL(null).substring(column.name.length())).trim()) + " */";
+		}
+		return "";
+	}
+
 	/**
 	 * Build Insert statements.
 	 * 
@@ -87,7 +94,7 @@ public class SQLDMLBuilder {
 		StringBuilder sb = new StringBuilder();
 		
 		for (Row row: unique(rows)) {
-			sb.append(buildInsert(table, row, session)).append(";" + LF + LF);
+			sb.append(buildInsert(table, row, false, session)).append(";" + LF + LF);
 		}
 		return sb.toString();
 	}
@@ -100,7 +107,7 @@ public class SQLDMLBuilder {
 	 * @param session current DB session
 	 * @return update statement for row
 	 */
-	public static String buildInsert(Table table, Row row, Session session) {
+	public static String buildInsert(Table table, Row row, boolean withComments, Session session) {
 		String sql = "Insert into " + table.getName() + " (" + LF + "    ";
 		String values = "";
 		boolean f = true;
@@ -111,8 +118,8 @@ public class SQLDMLBuilder {
 			if (value == null) {
 				continue;
 			}
-			sql += (f? "" : ", " + LF + "    ") + name;
-			values += (f? "" : ", " + LF + "    ") + value;
+			sql += (f? "" : ", " + LF + "    ") + name + comment(withComments, column, false);
+			values += (f? "" : ", " + LF + "    ") + value + comment(withComments, column, true);
 			f = false;
 		}
 		sql += ") " + LF + "Values (" + LF + "    " + values + ")";
@@ -127,7 +134,7 @@ public class SQLDMLBuilder {
 	 * @param session current DB session
 	 * @return update statement for row
 	 */
-	public static String buildDelete(Table table, Row row, Session session) {
+	public static String buildDelete(Table table, Row row, boolean withComments, Session session) {
 		String sql = "Delete from " + table.getName() + " Where " + SqlUtil.replaceAliases(row.rowId, null, null);
 		return sql;
 	}
@@ -144,7 +151,7 @@ public class SQLDMLBuilder {
 		StringBuilder sb = new StringBuilder();
 		
 		for (Row row: unique(rows)) {
-			sb.append(buildDelete(table, row, session)).append(";" + LF + "");
+			sb.append(buildDelete(table, row, false, session)).append(";" + LF + "");
 		}
 		return sb.toString();
 	}
