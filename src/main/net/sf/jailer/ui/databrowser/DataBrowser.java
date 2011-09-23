@@ -60,6 +60,7 @@ import net.sf.jailer.ui.DataModelEditor;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.util.SqlUtil;
 
 import org.apache.log4j.PropertyConfigurator;
 
@@ -671,6 +672,9 @@ public class DataBrowser extends javax.swing.JFrame {
 	 *            the command line arguments
 	 */
 	public static void main(final String args[]) {
+		
+//		UIUtil.showMaxMemory();
+		
 		// check working folder
 		String configFileName = "jailer.xml";
 		File configFile = new File(configFileName);

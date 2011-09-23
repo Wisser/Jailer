@@ -1505,7 +1505,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(final String args[]) {
-       	// check working folder
+    	
+//		UIUtil.showMaxMemory();
+    	
+    	// check working folder
         String configFileName = "jailer.xml";
         File configFile = new File(configFileName);
         if (!configFile.exists()) {

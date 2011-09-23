@@ -151,7 +151,7 @@ public class UIUtil {
      * File to store current directory of file chooser.
      */
     private final static File cdSettings = new File(".cdsettings");
-    
+	
     /**
      * Stores current directory of file chooser.
      * 
@@ -559,5 +559,22 @@ public class UIUtil {
 	}
 	
 	public static boolean disableWarnings = false;
+
+	/**
+	 * Tries to get as much memory as possible and shows it's size.
+	 */
+	public static void showMaxMemory() {
+		long memSize = 0;
+		try {
+			final int MB = 1024*1024;
+		    List<byte[]> mem = new ArrayList<byte[]>();
+			while (true) {
+				mem.add(new byte[MB]);
+				memSize += MB;
+			}
+		} catch (OutOfMemoryError e) {
+			JOptionPane.showConfirmDialog(null, "MaxMem=" + memSize, "", JOptionPane.INFORMATION_MESSAGE);
+		}
+	}
 
 }
