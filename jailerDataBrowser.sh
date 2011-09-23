@@ -23,5 +23,5 @@ CP=$CP:jailer.jar
 
 # echo $CP
 
-java -Xmx512M -cp $CP net.sf.jailer.ui.databrowser.DataBrowser $@
+java -Xmx1024M -cp $CP net.sf.jailer.ui.databrowser.DataBrowser $@
 

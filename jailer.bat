@@ -15,4 +15,4 @@ set CP=%CP%;%LIB%\spring.jar
 set CP=%CP%;%LIB%\sdoc-0.5.0-beta.jar
 set CP=%CP%;jailer.jar
 
-java -Xmx256M -cp %CP% net.sf.jailer.Jailer %*
+java -Xmx1024M -cp %CP% net.sf.jailer.Jailer %*
