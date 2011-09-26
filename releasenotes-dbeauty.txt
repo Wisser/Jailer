@@ -1,3 +1,7 @@
+1.3
+  - Extended row limits in Data Browser.
+  - Reduced memory footprint.
+
 1.2
   - Fixed a bug concerning DATE literals in Oracle, DBeauty now uses the "TO_DATE" function to specify the date pattern.
   - Improved Query Builder.
