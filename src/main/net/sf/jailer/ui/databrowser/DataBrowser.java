@@ -60,7 +60,6 @@ import net.sf.jailer.ui.DataModelEditor;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
 import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.util.SqlUtil;
 
 import org.apache.log4j.PropertyConfigurator;
 
@@ -111,7 +110,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	 */
 	public DataBrowser(DataModel datamodel, Table root, String condition, DbConnectionDialog dbConnectionDialog, boolean embedded) throws Exception {
 		this.datamodel = new Reference<DataModel>(datamodel);
-		this.dbConnectionDialog = dbConnectionDialog != null? new DbConnectionDialog(dbConnectionDialog) : null;
+		this.dbConnectionDialog = dbConnectionDialog != null? new DbConnectionDialog(this, dbConnectionDialog) : null;
 		if (embedded) {
 			DataBrowserContext.setSupportsDataModelUpdates(false);
 		}
@@ -235,7 +234,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	protected void setConnection(DbConnectionDialog dbConnectionDialog) throws Exception {
 		if (dbConnectionDialog != null) {
-			dbConnectionDialog = new DbConnectionDialog(dbConnectionDialog);
+			dbConnectionDialog = new DbConnectionDialog(this, dbConnectionDialog);
 		}
 		this.dbConnectionDialog = dbConnectionDialog;
 		desktop.dbConnectionDialog = dbConnectionDialog;
@@ -343,6 +342,8 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenuItem2 = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         view = new javax.swing.JMenu();
+        jMenu2 = new javax.swing.JMenu();
+        createExtractionModelMenuItem = new javax.swing.JMenuItem();
         helpMenu = new javax.swing.JMenu();
         jMenuItem4 = new javax.swing.JMenuItem();
         helpForum = new javax.swing.JMenuItem();
@@ -550,6 +551,18 @@ public class DataBrowser extends javax.swing.JFrame {
 
         menuBar.add(menuWindow);
 
+        jMenu2.setText("Tools");
+
+        createExtractionModelMenuItem.setText("Create Extraction Model");
+        createExtractionModelMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createExtractionModelMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu2.add(createExtractionModelMenuItem);
+
+        menuBar.add(jMenu2);
+
         helpMenu.setText("Help");
 
         jMenuItem4.setText("Manual");
@@ -614,6 +627,10 @@ public class DataBrowser extends javax.swing.JFrame {
 			UIUtil.showException(this, "Error", e);
 		}
     }//GEN-LAST:event_jMenuItem4ActionPerformed
+
+    private void createExtractionModelMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_createExtractionModelMenuItemActionPerformed
+        desktop.createExtractionModel();
+    }//GEN-LAST:event_createExtractionModelMenuItemActionPerformed
 
 	private void openNewTableBrowser() {
 		new NewTableBrowser(this, datamodel.get()) {
@@ -738,7 +755,7 @@ public class DataBrowser extends javax.swing.JFrame {
 					} catch (Exception x) {
 					}
 					DataBrowser dataBrowser = new DataBrowser(datamodel, null, "", null, false);
-					dataBrowser.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+					dataBrowser.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 					dataBrowser.setVisible(true);
 					DbConnectionDialog dbConnectionDialog = new DbConnectionDialog(dataBrowser);
 					if (DataBrowserContext.isStandAlone()) {
@@ -845,6 +862,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JLabel associatedWith;
     private javax.swing.JMenuItem cloaseAllMenuItem;
     public javax.swing.JLabel connectivityState;
+    private javax.swing.JMenuItem createExtractionModelMenuItem;
     private javax.swing.JMenuItem dataModelEditorjMenuItem;
     private javax.swing.JLabel dependsOn;
     private javax.swing.JLabel hasDependent;
@@ -854,6 +872,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JInternalFrame jInternalFrame1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem2;
     private javax.swing.JMenuItem jMenuItem3;

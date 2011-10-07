@@ -42,11 +42,13 @@ import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.swing.DefaultDesktopManager;
 import javax.swing.Icon;
@@ -54,6 +56,7 @@ import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
+import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
@@ -281,7 +284,9 @@ public abstract class Desktop extends JDesktopPane {
 	 * @return new row-browser
 	 */
 	public synchronized RowBrowser addTableBrowser(final RowBrowser parent, int parentRowIndex, final Table table, final Association association, String condition) {
+		Set<String> titles = new HashSet<String>();
 		for (RowBrowser rb: tableBrowsers) {
+			titles.add(rb.internalFrame.getTitle());
 			try {
 				rb.internalFrame.setMaximum(false);
 			} catch (PropertyVetoException e) {
@@ -289,7 +294,21 @@ public abstract class Desktop extends JDesktopPane {
 			}
 		}
 		
-		JInternalFrame jInternalFrame = new JInternalFrame(table == null? "SQL" : datamodel.get().getDisplayName(table));
+		String title = null;
+		if (table != null) {
+			title = datamodel.get().getDisplayName(table);
+			if (titles.contains(title)) {
+				for (int i = 2; ; ++i) {
+					String titelPlusI = title + " (" + i + ")";
+					if (!titles.contains(titelPlusI)) {
+						title = titelPlusI;
+						break;
+					}
+				}
+			}
+		}
+		
+		JInternalFrame jInternalFrame = new JInternalFrame(table == null? "SQL" : title);
 		jInternalFrame.setClosable(true);
 		jInternalFrame.setIconifiable(false);
 		jInternalFrame.setMaximizable(true);
@@ -442,11 +461,11 @@ public abstract class Desktop extends JDesktopPane {
 				}
 			}
 
-			private void createAnchorSQL(RowBrowser rb, StringBuilder rowIds) {
+			private void createAnchorSQL(RowBrowser rb, StringBuilder rowIds, boolean indent) {
 				boolean f = true;
 				for (Row row: rb.browserContentPane.rows) {
 					if (!f) {
-						rowIds.append(" or\n       ");
+						rowIds.append(indent? " or\n       " : " or\n");
 					}
 					f = false;
 					rowIds.append(SqlUtil.replaceAliases(row.rowId, "A", "A"));
@@ -455,25 +474,29 @@ public abstract class Desktop extends JDesktopPane {
 			}
 
 			@Override
-			protected QueryBuilderDialog.Relationship createQBRelations() {
+			protected QueryBuilderDialog.Relationship createQBRelations(boolean withParents) {
 				QueryBuilderDialog.Relationship root = new QueryBuilderDialog.Relationship();
 				root.whereClause = ConditionEditor.toMultiLine(andCondition.getText().trim()).replaceAll("(\r|\n)+", " ");
 				if (root.whereClause.length() == 0) {
 					root.whereClause = null;
 				}
 				StringBuilder rowIds = new StringBuilder("");
-				createAnchorSQL(tableBrowser, rowIds);
+				createAnchorSQL(tableBrowser, rowIds, withParents);
 				root.anchorWhereClause = rowIds.length() == 0? null : rowIds.toString();
 				
-				root.children.addAll(createQBChildrenRelations(null));
+				root.children.addAll(createQBChildrenRelations(null, !withParents));
 				
 				Association a = association;
 				
 				QueryBuilderDialog.Relationship r = root;
 				RowBrowser childRB = tableBrowser;
 				for (RowBrowser rb = tableBrowser.parent; rb != null && a != null; rb = rb.parent) {
+					if (!withParents) {
+						root.needsAnchor = true;
+						break;
+					}
 					QueryBuilderDialog.Relationship child = new QueryBuilderDialog.Relationship();
-					child.children.addAll(rb.browserContentPane.createQBChildrenRelations(childRB));
+					child.children.addAll(rb.browserContentPane.createQBChildrenRelations(childRB, false));
 					child.parent = r;
 					r.children.add(0, child);
 					child.whereClause = ConditionEditor.toMultiLine(rb.browserContentPane.andCondition.getText().trim()).replaceAll("(\r|\n)+", " ");
@@ -484,15 +507,17 @@ public abstract class Desktop extends JDesktopPane {
 					r.anchor = child.association;
 					a = rb.association;
 					rowIds = new StringBuilder("");
-					createAnchorSQL(rb, rowIds);
+					createAnchorSQL(rb, rowIds, true);
 					child.anchorWhereClause = rowIds.length() == 0? null : rowIds.toString();
+
+					r.originalParent = child;
 					
 					if (childRB.rowIndex >= 0 && !(childRB.rowIndex == 0 && childRB.parent != null && childRB.parent.browserContentPane != null && childRB.parent.browserContentPane.rows != null && childRB.parent.browserContentPane.rows.size() == 1)) {
 						String w = childRB.browserContentPane.parentRow.rowId;
 						r.whereClause = (r.whereClause == null || r.whereClause.length() == 0)? w : "(" + w + ") and (" + r.whereClause + ")";
 						break;
 					}
-
+					
 					r = child;
 					childRB = rb;
 				}
@@ -500,20 +525,29 @@ public abstract class Desktop extends JDesktopPane {
 			}
 
 			@Override
-			protected List<Relationship> createQBChildrenRelations(RowBrowser tabu) {
+			protected List<Relationship> createQBChildrenRelations(RowBrowser tabu, boolean all) {
 				List<QueryBuilderDialog.Relationship> result = new ArrayList<QueryBuilderDialog.Relationship>();
 				for (RowBrowser rb: tableBrowsers) {
 					if (rb.parent == tableBrowser && rb != tabu) {
-						if (!(rb.rowIndex >= 0 && !(rb.rowIndex == 0 && rb.parent != null && rb.parent.browserContentPane != null && rb.parent.browserContentPane.rows != null && rb.parent.browserContentPane.rows.size() == 1))) {
+						boolean singleRowParent = rb.rowIndex >= 0 && !(rb.rowIndex == 0 && rb.parent != null && rb.parent.browserContentPane != null && rb.parent.browserContentPane.rows != null && rb.parent.browserContentPane.rows.size() == 1);
+						if (true) { // all || !singleRowParent) {
 							QueryBuilderDialog.Relationship child = new QueryBuilderDialog.Relationship();
 							child.whereClause = ConditionEditor.toMultiLine(rb.browserContentPane.andCondition.getText().trim()).replaceAll("(\r|\n)+", " ");
 							child.joinOperator = QueryBuilderDialog.JoinOperator.LeftJoin;
 							if (child.whereClause.length() == 0) {
 								child.whereClause = null;
 							}
+							if (singleRowParent) {
+								String andIsParent = rb.browserContentPane.parentRow.rowId;
+								if (child.whereClause == null) {
+									child.whereClause = andIsParent;
+								} else {
+									child.whereClause = "(" + child.whereClause + ") and (" + andIsParent + ")";
+								}
+							}
 							child.association = rb.association;
 							if (child.association != null) {
-								child.children.addAll(rb.browserContentPane.createQBChildrenRelations(tabu));
+								child.children.addAll(rb.browserContentPane.createQBChildrenRelations(tabu, all));
 								result.add(child);
 							}
 						}
@@ -530,6 +564,11 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			protected void openSchemaAnalyzer() {
 				Desktop.this.openSchemaAnalyzer();
+			}
+
+			@Override
+			protected DbConnectionDialog getDbConnectionDialog() {
+				return dbConnectionDialog;
 			}
 		};
 		
@@ -1299,6 +1338,27 @@ public abstract class Desktop extends JDesktopPane {
 			}
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
+		}
+	}
+
+	/**
+	 * Lets user chose a table browser and creates an extraction model for it.
+	 */
+	public void createExtractionModel() {
+		Set<String> titles = new TreeSet<String>();
+		Map<String, RowBrowser> rowBrowserByTitle = new HashMap<String, Desktop.RowBrowser>();
+		for (RowBrowser rb: tableBrowsers) {
+			if (rb.browserContentPane.table != null && !(rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable)) {
+				titles.add(rb.internalFrame.getTitle());
+				rowBrowserByTitle.put(rb.internalFrame.getTitle(), rb);
+			}
+		}
+		String s = (String) JOptionPane.showInputDialog(this.parentFrame,
+				"Select subject table", "Subject",
+				JOptionPane.QUESTION_MESSAGE, null, titles.toArray(),
+				null);
+		if (s != null) {
+			rowBrowserByTitle.get(s).browserContentPane.openExtractionModelEditor();
 		}
 	}
 
