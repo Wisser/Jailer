@@ -64,7 +64,7 @@ public class RestrictionDefinition {
 	 * @param name name of restriction or <code>null</code>
 	 * @param condition restriction condition
 	 */
-	private RestrictionDefinition(Table from, Table to, String name, String condition, boolean isIgnored) {
+	public RestrictionDefinition(Table from, Table to, String name, String condition, boolean isIgnored) {
 		this.from = from;
 		this.to = to;
 		this.name = name;

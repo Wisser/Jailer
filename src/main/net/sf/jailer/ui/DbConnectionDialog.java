@@ -107,9 +107,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}
 
 	/** Creates new form DbConnectionDialog */
-	public DbConnectionDialog(DbConnectionDialog other) {
-		super(other.parent, true);
-		this.parent = other.parent;
+	public DbConnectionDialog(java.awt.Frame parent, DbConnectionDialog other) {
+		this(parent);
 		this.isConnected = other.isConnected;
 		this.connectionList = other.connectionList;
 		if (other.currentConnection != null) {
@@ -119,7 +118,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				this.currentConnection = other.currentConnection;
 			}
 		}
-		initComponents();
 	}
 
 	/** Creates new form DbConnectionDialog */

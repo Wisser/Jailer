@@ -43,6 +43,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -356,6 +357,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		public String whereClause;
 		public String anchorWhereClause;
 		public Association anchor;
+		public boolean needsAnchor = false;
     	public Association association;
     	public JoinOperator joinOperator = JoinOperator.Join;
     	
@@ -366,6 +368,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
     	public boolean selectColumns;
 		public String alias;
 		public String aliasSuggestion;
+		public Relationship originalParent;
 		
 		public List<Association> getPathToRoot() {
 			List<Association> path = new ArrayList<Association>();
@@ -852,7 +855,8 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		}
 		sql.append("From ");
 		// String lastAlias = "";
-		for (Relationship r: relationships) {
+		for (int i = 0; i < relationships.size(); ++i) {
+			Relationship r = relationships.get(i);
 			String indent = "";
 			if (needsIndent) {
 				for (int l = 0; l < r.level; ++l) {
@@ -874,18 +878,26 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 				alias = t.getName();
 			}
 			String lastAlias = "";
-			if (r.parent != null) {
-				lastAlias = r.parent.aliasTextField.getText().trim();
+			Relationship parent = r.parent;
+			if (parent != null) {
+				lastAlias = parent.aliasTextField.getText().trim();
 				if (lastAlias.length() <= 0) {
-					lastAlias = r.association == null? subject.getName() : r.association.source.getName();
+					lastAlias = parent.association == null? subject.getName() : parent.association.destination.getName();
 				}
 			}
 			if (r.association != null) {
+				String jc;
 				if (!r.association.reversed) {
-					sql.append(" on " + SqlUtil.replaceAliases(r.association.getUnrestrictedJoinCondition(), lastAlias, alias));
+					jc = SqlUtil.replaceAliases(r.association.getUnrestrictedJoinCondition(), lastAlias, alias);
 				} else {
-					sql.append(" on " + SqlUtil.replaceAliases(r.association.getUnrestrictedJoinCondition(), alias, lastAlias));
+					jc = SqlUtil.replaceAliases(r.association.getUnrestrictedJoinCondition(), alias, lastAlias);
 				}
+				if (r.joinOperator == JoinOperator.LeftJoin && r.originalParent == null) {
+					if (r.whereClause != null) {
+						jc = "(" + jc + ") and (" + SqlUtil.replaceAliases(r.whereClause, r.alias, lastAlias) + ")";
+					}
+				}
+				sql.append(" on " + jc);
 			}
 			// lastAlias = alias; 
 		}
@@ -900,8 +912,18 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		}
 
 		for (int i = 0; i < relationships.size(); ++i) {
-			Relationship pr = relationships.get((i + 1) % relationships.size());
 			Relationship r = relationships.get(i);
+			String lastAlias = "";
+			Relationship parent = r.originalParent;
+			if (parent == null) {
+				parent = r.parent;
+			}
+			if (parent != null) {
+				lastAlias = parent.aliasTextField.getText().trim();
+				if (lastAlias.length() <= 0) {
+					lastAlias = parent.association == null? subject.getName() : parent.association.destination.getName();
+				}
+			}
 			boolean appendAnd = true;
 			if (r.anchorWhereClause != null && r.anchor != null) {
 				boolean anchorExists = false;
@@ -921,11 +943,11 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 						sql.append(singleLine? " " : (lf + tab));
 						sql.append("and ");
 					}
-					sql.append("(" + SqlUtil.replaceAliases(r.anchorWhereClause, r.alias, pr.alias) + ")");
+					sql.append("(" + SqlUtil.replaceAliases(r.anchorWhereClause, r.alias, lastAlias) + ")");
 					f = false;
 				}
 			}
-			if (appendAnd && r.whereClause != null) {
+			if (appendAnd && r.whereClause != null && (r.joinOperator == JoinOperator.Join || r.originalParent != null)) {
 				if (f) {
 					sql.append(singleLine? " " : lf);
 					sql.append("Where");
@@ -934,7 +956,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 					sql.append(singleLine? " " : (lf + tab));
 					sql.append("and ");
 				}
-				sql.append("(" + SqlUtil.replaceAliases(r.whereClause, r.alias, pr.alias) + ")");
+				sql.append("(" + SqlUtil.replaceAliases(r.whereClause, r.alias, lastAlias) + ")");
 				f = false;
 			}
 		}

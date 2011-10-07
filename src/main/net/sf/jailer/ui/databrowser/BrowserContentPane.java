@@ -37,6 +37,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.sql.Blob;
@@ -45,14 +46,18 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLXML;
 import java.sql.Types;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.swing.DefaultComboBoxModel;
@@ -76,7 +81,9 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
+import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
@@ -85,7 +92,11 @@ import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.ui.ConditionEditor;
+import net.sf.jailer.ui.DbConnectionDialog;
+import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.QueryBuilderDialog;
+import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
+import net.sf.jailer.ui.RestrictionDefinition;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.util.CancellationException;
@@ -268,7 +279,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private DetailsView singleRowDetailsView;
 	private int initialRowHeight;
 	public SQLBrowserContentPane sqlBrowserContentPane;
-	
+
 	/**
 	 * For concurrent reload of rows.
 	 */
@@ -299,7 +310,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 	}
 	
-	private static class SqlStatementTable extends Table {
+	static class SqlStatementTable extends Table {
 		public SqlStatementTable(String name, PrimaryKey primaryKey, boolean defaultUpsert) {
 			super(name, primaryKey, defaultUpsert);
 		}
@@ -767,8 +778,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						whereClauses.add(SqlUtil.replaceAliases(row.rowId, "A", "A"));
 						getQueryBuilderDialog().buildQuery(table, true, false, new ArrayList<Association>(), whereClauses, dataModel);
 					}
+				});			
+
+				JMenuItem sr = new JMenuItem("Select Row");
+				popup.add(sr);
+				sr.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						andCondition.setText(SqlUtil.replaceAliases(row.rowId, "A", "A"));
+						reloadRows();
+					}
 				});
-				
+
 				JMenu sql = new JMenu("SQL/DML");
 				final String rowName = dataModel.getDisplayName(table) + "(" + SqlUtil.replaceAliases(row.rowId, null, null) + ")";
 				JMenuItem insert = new JMenuItem("Insert");
@@ -812,6 +833,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				openQueryBuilder();
+			}
+		});
+		JMenuItem extractionModel = new JMenuItem(DataBrowserContext.isStandAlone()? "Create Extraction Model" : "Extraction Model Editor");
+		popup.add(extractionModel);
+		extractionModel.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				openExtractionModelEditor();
 			}
 		});
 		popup.add(new JSeparator());
@@ -863,6 +892,237 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		delete.setEnabled(rows.size() > 0);
 		
 		return popup;
+	}
+
+	void openExtractionModelEditor() {
+		Component parent = SwingUtilities.getWindowAncestor(this);
+		if (parent == null) {
+			parent = this;
+		}
+		parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		try {
+			String file;
+			String ts = new SimpleDateFormat("HH-mm-ss-SSS").format(new Date());
+			File newFile;
+			
+			Table stable = table;
+			String subjectCondition;
+			
+			QueryBuilderDialog.Relationship root = createQBRelations(false);
+			Collection<Association> restrictedAssociations = new HashSet<Association>();
+			Collection<Association> restrictedDependencies = new HashSet<Association>();
+			Collection<RestrictionDefinition> restrictedDependencyDefinitions = new HashSet<RestrictionDefinition>();
+			List<RestrictionDefinition> restrictionDefinitions = createRestrictions(root, stable, restrictedAssociations, restrictedDependencies, restrictedDependencyDefinitions);
+			
+			if (!restrictedDependencies.isEmpty()) {
+				Set<String> parents = new TreeSet<String>();
+				for (Association association: restrictedDependencies) {
+					parents.add(dataModel.getDisplayName(association.destination));
+				}
+				String pList = "";
+				int i = 0;
+				for (String p: parents) {
+					pList += p + "\n";
+					if (++i > 20) {
+						break;
+					}
+				}
+				int option = JOptionPane.showOptionDialog(parent, "Disregarded parent tables:\n\n" + pList + "\n", "Disregarded parent tables", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "regard parent tables", "Ok" }, "regard parent tables");
+				switch (option) {
+				case 0:
+					restrictionDefinitions.removeAll(restrictedDependencyDefinitions);
+					for (Association a: restrictedDependencies) {
+						disableDisregardedNonParentsOfDestination(a, restrictedAssociations, restrictionDefinitions);
+					}
+					// TODO regard
+					break;
+				case 1:
+					break;
+				default: return;
+				}
+			}
+			
+			subjectCondition = root.needsAnchor? root.anchorWhereClause : root.whereClause;
+			if (subjectCondition == null) {
+				subjectCondition = "";
+			}
+			subjectCondition = SqlUtil.replaceAliases(subjectCondition, "T", "T");
+			
+			for (int i = 1; ; ++i) {
+				file = "extractionmodel" + File.separator + "by-example";
+				newFile = CommandLineParser.getInstance().newFile(file);
+				newFile.mkdirs();
+				file += File.separator + "EbE-" + (dataModel.getDisplayName(stable).replaceAll("[\"'\\[\\]]", "")) + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".csv";
+				newFile = CommandLineParser.getInstance().newFile(file);
+				if (!newFile.exists()) {
+					break;
+				}
+			}
+			dataModel.save(file, stable, subjectCondition, ScriptFormat.SQL, restrictionDefinitions);
+
+			if (DataBrowserContext.isStandAlone()) {
+				parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        		JOptionPane.showMessageDialog(parent, "Jailer Extraction Model created:\n'" + file+ "'\n\nJailer Database Subsetter Tool can be found at http://jailer.sourceforge.net", "Jailer Extraction Model", JOptionPane.INFORMATION_MESSAGE);
+			} else {
+				ExtractionModelFrame extractionModelFrame = ExtractionModelFrame.createFrame(file);
+				extractionModelFrame.setDbConnectionDialogClone(getDbConnectionDialog());
+				extractionModelFrame.markDirty();
+				extractionModelFrame.expandAll();
+				newFile.delete();
+			}
+		} catch (Throwable e) {
+			parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			UIUtil.showException(this, "Error", e);
+		} finally {
+			parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		}
+	}
+
+	private void disableDisregardedNonParentsOfDestination(Association a,
+			Collection<Association> regardedAssociations,
+			List<RestrictionDefinition> restrictionDefinitions) {
+		for (Association npa: a.destination.associations) {
+			if (!regardedAssociations.contains(npa)) {
+				regardedAssociations.add(npa);
+				if (npa.isInsertDestinationBeforeSource()) {
+					disableDisregardedNonParentsOfDestination(npa, regardedAssociations, restrictionDefinitions);
+				} else {
+					RestrictionDefinition rest = new RestrictionDefinition(npa.source, npa.destination, npa.getName(), null, true);
+					restrictionDefinitions.add(rest);
+				}
+			}
+		}
+	}
+
+	private static class RestrictionLiteral {
+		public String condition;
+		public int distanceFromRoot;
+		public boolean isIgnored;
+		public String toString() {
+			return "Cond:" + condition + " Dist: " + distanceFromRoot + " isIgnored: " + isIgnored;
+		}
+	}
+	
+	/**
+	 * Creates restriction according to the given {@link Relationship} tree.
+	 * 
+	 * @param root root of tree
+	 * @return restrictions
+	 */
+	private List<RestrictionDefinition> createRestrictions(Relationship root, Table subject, Collection<Association> restrictedAssociations, Collection<Association> restrictedDependencies, Collection<RestrictionDefinition> restrictedDependencyDefinitions) {
+		List<RestrictionDefinition> restrictionDefinitions = new ArrayList<RestrictionDefinition>();
+		
+		Map<Association, List<RestrictionLiteral>> restrictionLiterals = new HashMap<Association, List<RestrictionLiteral>>();
+		collectRestrictionLiterals(restrictionLiterals, root, subject, 0);
+		
+		for (Association association: restrictionLiterals.keySet()) {
+			List<RestrictionLiteral> lits = restrictionLiterals.get(association);
+			
+			boolean useDistance = false;
+			boolean hasTrue = false;
+			boolean hasNotTrue = false;
+			boolean hasNotFalse = false;
+			Integer lastDist = null;
+			for (RestrictionLiteral l: lits) {
+				if (lastDist != null && lastDist != l.distanceFromRoot) {
+					useDistance = true;
+				}
+				lastDist = l.distanceFromRoot;
+				if (!l.isIgnored) {
+					hasNotFalse = true;
+					if (l.condition == null || l.condition.trim().length() == 0) {
+						hasTrue = true;
+					} else {
+						hasNotTrue = true;
+					}
+				} else {
+					hasNotTrue = true;
+				}
+			}
+			
+			boolean isIgnored;
+			String condition = null;
+			
+			if (!hasNotFalse) {
+				isIgnored = true;
+			} else if (!hasNotTrue) {
+				isIgnored = false;
+			} else if (hasTrue && !useDistance) {
+				isIgnored = false;
+			} else {
+				for (RestrictionLiteral l: lits) {
+					if (!l.isIgnored) {
+						String c = null;
+						if (useDistance) {
+							c = l.distanceFromRoot == 0? "A.$IS_SUBJECT" : ("A.$DISTANCE=" + l.distanceFromRoot);
+						}
+						if (l.condition != null && l.condition.trim().length() > 0) {
+							if (c == null) {
+								c = l.condition;
+							} else {
+								c = c + " and (" + l.condition + ")";
+							}
+						}
+						if (condition == null) {
+							condition = c;
+						} else {
+							condition += " or " + c;
+						}
+					}
+				}
+				isIgnored = false;
+			}
+			
+			if (isIgnored || (condition != null && condition.trim().length() != 0)) {
+				RestrictionDefinition rest = new RestrictionDefinition(association.source, association.destination, association.getName(), condition, isIgnored);
+				restrictionDefinitions.add(rest);
+				restrictedAssociations.add(association);
+				if (association.isInsertDestinationBeforeSource()) {
+					restrictedDependencies.add(association);
+					restrictedDependencyDefinitions.add(rest);
+				}
+			}
+		}
+		
+		return restrictionDefinitions;
+	}
+
+	/**
+	 * Collects restriction literals per association according to a given {@link Relationship} tree.
+	 * 
+	 * @param restrictionLiterals to put literals into
+	 * @param root root of tree
+	 * @param distanceFromRoot distance
+	 */
+	private void collectRestrictionLiterals(Map<Association, List<RestrictionLiteral>> restrictionLiterals, Relationship root, Table subject, int distanceFromRoot) {
+		for (Association association: subject.associations) {
+			List<Relationship> children = new ArrayList<QueryBuilderDialog.Relationship>();
+			for (Relationship r: root.children) {
+				if (r.association == association) {
+					children.add(r);
+				}
+			}
+			if (children.isEmpty()) {
+				children.add(null);
+			}
+			for (Relationship child: children) {
+				RestrictionLiteral restrictionLiteral = new RestrictionLiteral();
+				restrictionLiteral.distanceFromRoot = distanceFromRoot;
+				restrictionLiteral.isIgnored = false;
+				if (child == null) {
+					restrictionLiteral.isIgnored = true;
+				} else {
+					restrictionLiteral.condition = child.whereClause == null? "" : SqlUtil.replaceAliases(child.whereClause, "B", "A");
+					collectRestrictionLiterals(restrictionLiterals, child, association.destination, distanceFromRoot + 1);
+				}
+				List<RestrictionLiteral> literals = restrictionLiterals.get(association);
+				if (literals == null) {
+					literals = new ArrayList<BrowserContentPane.RestrictionLiteral>();
+					restrictionLiterals.put(association, literals);
+				}
+				literals.add(restrictionLiteral);
+			}
+		}
 	}
 
 	private void openSQLDialog(String titel, int x, int y, Object sql) {
@@ -1799,7 +2059,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private void openQueryBuilder() {
 		
-		QueryBuilderDialog.Relationship root = createQBRelations();
+		QueryBuilderDialog.Relationship root = createQBRelations(true);
 		root.selectColumns = true;
 		getQueryBuilderDialog().buildQuery(table, root, dataModel);
 	}
@@ -1962,8 +2222,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	protected abstract void beforeReload();
 
-	protected abstract QueryBuilderDialog.Relationship createQBRelations();
-	protected abstract List<QueryBuilderDialog.Relationship> createQBChildrenRelations(RowBrowser tabu);
+	protected abstract QueryBuilderDialog.Relationship createQBRelations(boolean withParents);
+	protected abstract List<QueryBuilderDialog.Relationship> createQBChildrenRelations(RowBrowser tabu, boolean all);
 
 	protected abstract void addRowToRowLink(Row pRow, Row exRow);
 
@@ -1977,6 +2237,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	protected abstract void openSchemaMappingDialog();
 	protected abstract void openSchemaAnalyzer();
+	protected abstract DbConnectionDialog getDbConnectionDialog();
 	
     private void openDetails(final int x, final int y) {
 		JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), true);

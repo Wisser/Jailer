@@ -17,6 +17,8 @@
 package net.sf.jailer.datamodel;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -33,8 +35,12 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 
 import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.Jailer;
+import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
+import net.sf.jailer.ui.RestrictionDefinition;
+import net.sf.jailer.ui.graphical_view.LayoutStorage;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.LineFilter;
 import net.sf.jailer.util.PrintUtil;
@@ -714,5 +720,117 @@ public class DataModel {
 			return "";
 		}
 	}
-    
+
+	/**
+	 * Saves the data model.
+	 * 
+	 * @param file the file name
+	 * @param stable 
+	 * @param stable the subject table
+	 * @param subjectCondition 
+	 * @param scriptFormat
+	 * 
+	 */
+	public void save(String file, Table stable, String subjectCondition, ScriptFormat scriptFormat, List<RestrictionDefinition> restrictionDefinitions) throws FileNotFoundException {
+		File extractionModel = new File(file);
+		PrintWriter out = new PrintWriter(extractionModel);
+		out.println("# subject; condition;  limit; restrictions");
+		out.println(CsvFile.encodeCell("" + stable.getName()) + "; " + CsvFile.encodeCell(subjectCondition) + "; ; " + RestrictionModel.EMBEDDED);
+		saveRestrictions(out, restrictionDefinitions);
+		saveXmlMapping(out);
+		out.println();
+		out.println(CsvFile.BLOCK_INDICATOR + "export modus");
+		out.println(scriptFormat);
+		out.println();
+		out.println(CsvFile.BLOCK_INDICATOR + "xml settings");
+		out.println(CsvFile.encodeCell(getXmlSettings().datePattern) + ";" + 
+			    CsvFile.encodeCell(getXmlSettings().timestampPattern) + ";" +
+			    CsvFile.encodeCell(getXmlSettings().rootTag));
+		out.println(CsvFile.BLOCK_INDICATOR + "xml column mapping");
+		for (Table table: getTables()) {
+			String xmlMapping = table.getXmlTemplate();
+			if (xmlMapping != null) {
+				out.println(CsvFile.encodeCell(table.getName()) + "; " + CsvFile.encodeCell(xmlMapping));
+			}
+		}
+		out.println(CsvFile.BLOCK_INDICATOR + "upserts");
+		for (Table table: getTables()) {
+			if (table.upsert != null) {
+				out.println(CsvFile.encodeCell(table.getName()) + "; " + CsvFile.encodeCell(table.upsert.toString()));
+			}
+		}
+		saveFilters(out);
+		out.println();
+		LayoutStorage.store(out);
+		out.println();
+		out.println(CsvFile.BLOCK_INDICATOR + "version");
+		out.println(Jailer.VERSION);
+		out.close();
+	}
+	
+	/**
+	 * Saves xml mappings.
+	 * 
+	 * @param out to save xml mappings into
+	 */
+	private void saveXmlMapping(PrintWriter out) {
+		out.println();
+		out.println(CsvFile.BLOCK_INDICATOR + "xml-mapping");
+		for (Table table: getTables()) {
+			for (Association a: table.associations) {
+				String name = a.getName();
+				String tag = a.getAggregationTagName();
+				String aggregation = a.getAggregationSchema().name();
+				out.println(CsvFile.encodeCell(name) + ";" + CsvFile.encodeCell(tag) + ";" + CsvFile.encodeCell(aggregation));
+			}
+		}
+	}
+
+	/**
+	 * Saves restrictions only.
+	 * 
+	 * @param out to save restrictions into
+	 * @param restrictionDefinitions 
+	 */
+	private void saveRestrictions(PrintWriter out, List<RestrictionDefinition> restrictionDefinitions) {
+		out.println();
+		out.println("# from A (or association name); to B; restriction-condition");
+		for (RestrictionDefinition rd: restrictionDefinitions) {
+			String condition = rd.isIgnored? "ignore" : rd.condition;
+			if (rd.name == null || rd.name.trim().length() == 0) {
+				out.println(CsvFile.encodeCell(rd.from.getName()) + "; " + CsvFile.encodeCell(rd.to.getName()) + "; " + CsvFile.encodeCell(condition));
+			} else {
+				out.println(CsvFile.encodeCell(rd.name) + "; ; " + CsvFile.encodeCell(condition));
+			}
+		}
+	}
+
+	/**
+	 * Saves restrictions only.
+	 * 
+	 * @param file to save restrictions into
+	 */
+	public void saveRestrictions(File file, List<RestrictionDefinition> restrictionDefinitions) throws Exception {
+		PrintWriter out = new PrintWriter(file);
+		saveRestrictions(out, restrictionDefinitions);
+		out.close();
+	}
+
+	/**
+	 * Saves filters.
+	 * 
+	 * @param out to save filters into
+	 */
+	private void saveFilters(PrintWriter out) {
+		out.println();
+		out.println(CsvFile.BLOCK_INDICATOR + "filters");
+		for (Table table: getTables()) {
+			for (Column c: table.getColumns()) {
+				if (c.getFilterExpression() != null) {
+					out.println(CsvFile.encodeCell(table.getName()) + ";" + CsvFile.encodeCell(c.name) + ";" + CsvFile.encodeCell(c.getFilterExpression()));
+				}
+			}
+		}
+	}
+
 }

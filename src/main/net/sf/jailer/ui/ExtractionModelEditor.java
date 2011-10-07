@@ -82,7 +82,6 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import net.sf.jailer.CommandLineParser;
-import net.sf.jailer.Jailer;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
@@ -92,7 +91,6 @@ import net.sf.jailer.datamodel.ModelElement;
 import net.sf.jailer.datamodel.ParameterHandler;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.ExtractionModel;
-import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.ui.graphical_view.AssociationRenderer;
 import net.sf.jailer.ui.graphical_view.GraphicalDataModelView;
 import net.sf.jailer.ui.graphical_view.LayoutStorage;
@@ -2114,41 +2112,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			if (stable == null) {
 				return true;
 			}
-			File extractionModel = new File(extractionModelFile);
-			// TODO: refactoring, move save-functionality into Model-class
-			PrintWriter out = new PrintWriter(extractionModel);
-			out.println("# subject; condition;  limit; restrictions");
-			out.println(CsvFile.encodeCell("" + stable.getName()) + "; " + CsvFile.encodeCell(ConditionEditor.toMultiLine(condition.getText())) + "; ; " + RestrictionModel.EMBEDDED);
-			saveRestrictions(out);
-			saveXmlMapping(out);
-			out.println();
-			out.println(CsvFile.BLOCK_INDICATOR + "export modus");
-			out.println(scriptFormat);
-			out.println();
-			out.println(CsvFile.BLOCK_INDICATOR + "xml settings");
-			out.println(CsvFile.encodeCell(dataModel.getXmlSettings().datePattern) + ";" + 
-				    CsvFile.encodeCell(dataModel.getXmlSettings().timestampPattern) + ";" +
-				    CsvFile.encodeCell(dataModel.getXmlSettings().rootTag));
-			out.println(CsvFile.BLOCK_INDICATOR + "xml column mapping");
-			for (Table table: dataModel.getTables()) {
-				String xmlMapping = table.getXmlTemplate();
-				if (xmlMapping != null) {
-					out.println(CsvFile.encodeCell(table.getName()) + "; " + CsvFile.encodeCell(xmlMapping));
-				}
-			}
-			out.println(CsvFile.BLOCK_INDICATOR + "upserts");
-			for (Table table: dataModel.getTables()) {
-				if (table.upsert != null) {
-					out.println(CsvFile.encodeCell(table.getName()) + "; " + CsvFile.encodeCell(table.upsert.toString()));
-				}
-			}
-			saveFilters(out);
-			out.println();
-			LayoutStorage.store(out);
-			out.println();
-			out.println(CsvFile.BLOCK_INDICATOR + "version");
-			out.println(Jailer.VERSION);
-			out.close();
+			dataModel.save(extractionModelFile, stable, ConditionEditor.toMultiLine(condition.getText()), scriptFormat, currentRestrictionDefinitions);
 			needsSave = false;
 			extractionModelFrame.updateTitle(needsSave);
 		} catch (Exception e) {
@@ -2159,27 +2123,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	}
 
 	/**
-	 * Saves xml mappings.
-	 * 
-	 * @param out to save xml mappings into
-	 */
-	private void saveXmlMapping(PrintWriter out) {
-		out.println();
-		out.println(CsvFile.BLOCK_INDICATOR + "xml-mapping");
-		for (Table table: dataModel.getTables()) {
-			for (Association a: table.associations) {
-				String name = a.getName();
-				String tag = a.getAggregationTagName();
-				String aggregation = a.getAggregationSchema().name();
-				out.println(CsvFile.encodeCell(name) + ";" + CsvFile.encodeCell(tag) + ";" + CsvFile.encodeCell(aggregation));
-			}
-		}
-	}
-
-	/**
 	 * Saves restrictions only.
 	 * 
 	 * @param out to save restrictions into
+	 * @param restrictionDefinitions 
 	 */
 	private void saveRestrictions(PrintWriter out) {
 		out.println();
@@ -2203,23 +2150,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		PrintWriter out = new PrintWriter(file);
 		saveRestrictions(out);
 		out.close();
-	}
-
-	/**
-	 * Saves filters.
-	 * 
-	 * @param out to save filters into
-	 */
-	private void saveFilters(PrintWriter out) {
-		out.println();
-		out.println(CsvFile.BLOCK_INDICATOR + "filters");
-		for (Table table: dataModel.getTables()) {
-			for (Column c: table.getColumns()) {
-				if (c.getFilterExpression() != null) {
-					out.println(CsvFile.encodeCell(table.getName()) + ";" + CsvFile.encodeCell(c.name) + ";" + CsvFile.encodeCell(c.getFilterExpression()));
-				}
-			}
-		}
 	}
 
 	/**

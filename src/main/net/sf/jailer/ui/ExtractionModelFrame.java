@@ -38,6 +38,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
+import javax.swing.JFrame;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -78,7 +79,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	/**
 	 * Dialog for DB-connects.
 	 */
-	private final DbConnectionDialog dbConnectionDialog;
+	private DbConnectionDialog dbConnectionDialog;
 	
 	/**
 	 * The filter editor.
@@ -858,6 +859,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     		DataBrowser dataBrowser;
 			try {
 				dataBrowser = new DataBrowser(extractionModelEditor.dataModel, root, condition, dbConnectionDialog, true);
+				dataBrowser.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 				dataBrowser.setVisible(true);
 			} catch (Exception e) {
 				UIUtil.showException(this, "Error", e);
@@ -1163,6 +1165,17 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	}
 	}
 
+    /**
+     * Sets a clone of a given {@link DbConnectionDialog}.
+     */
+    public void setDbConnectionDialogClone(DbConnectionDialog dbConnectionDialog) {
+    	try {
+    		this.dbConnectionDialog = new DbConnectionDialog(this, dbConnectionDialog);
+    	} finally {
+        	updateMenuItems();
+    	}
+	}
+
 	private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
 		About about = new About(this, true);
 		about.setTitle("Jailer " + Jailer.VERSION);
@@ -1238,8 +1251,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	}
 
 	private void expandAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_expandAllActionPerformed
-    	extractionModelEditor.expand();
+    	expandAll();
     }//GEN-LAST:event_expandAllActionPerformed
+
+	public void expandAll() {
+		extractionModelEditor.expand();
+	}
 
     private void showIgnoredActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showIgnoredActionPerformed
 //      extractionModelEditor.refresh(true, false);
@@ -1308,10 +1325,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	                "",
 	                JOptionPane.YES_NO_OPTION,
 	                JOptionPane.QUESTION_MESSAGE)) {
-	    		System.exit(0);
+	    		dispose();
 	    	}
 	    } else {
-	    	System.exit(0);
+	    	dispose();
 	    }
     }
 
@@ -1586,27 +1603,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             			file = CommandLineParser.getInstance().arguments.get(0);
             		}	
             	}
-            	boolean isHorizonal = false;
-    	    	try {
-    	    		File setting = new File(ORIENTATIONSETTING);
-    	    		BufferedReader in = new BufferedReader(new FileReader(setting));
-    	    		String or = in.readLine();
-    	    		in.close();
-    	    		isHorizonal = Boolean.valueOf(or);
-    	    	} catch (Exception x) {
-    	    	}
-                ExtractionModelFrame extractionModelFrame = new ExtractionModelFrame(file, isHorizonal);
-                try {
-    	    		extractionModelFrame.setIconImage(new ImageIcon(extractionModelFrame.getClass().getResource("/net/sf/jailer/resource/jailer.png")).getImage());
-    	    	} catch (Throwable t) {
-        	    	try {
-        	    		extractionModelFrame.setIconImage(new ImageIcon(extractionModelFrame.getClass().getResource("/net/sf/jailer/resource/jailer.gif")).getImage());
-        	    	} catch (Throwable t2) {
-        	    	}
-    	    	}
-                extractionModelFrame.setLocation(40, 40);
-                extractionModelFrame.setSize(1100, 640);
-                extractionModelFrame.setVisible(true);
+            	ExtractionModelFrame extractionModelFrame = createFrame(file);
                 askForDataModel(extractionModelFrame);
             }
 
@@ -1701,7 +1698,39 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		}
 	}
 	
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+    public static ExtractionModelFrame createFrame(String file) {
+		boolean isHorizonal = false;
+		try {
+			File setting = new File(ORIENTATIONSETTING);
+			BufferedReader in = new BufferedReader(new FileReader(setting));
+			String or = in.readLine();
+			in.close();
+			isHorizonal = Boolean.valueOf(or);
+		} catch (Exception x) {
+		}
+		ExtractionModelFrame extractionModelFrame = new ExtractionModelFrame(file, isHorizonal);
+		try {
+			extractionModelFrame.setIconImage(new ImageIcon(extractionModelFrame.getClass().getResource("/net/sf/jailer/resource/jailer.png")).getImage());
+		} catch (Throwable t) {
+			try {
+				extractionModelFrame.setIconImage(new ImageIcon(extractionModelFrame.getClass().getResource("/net/sf/jailer/resource/jailer.gif")).getImage());
+			} catch (Throwable t2) {
+			}
+		}
+		extractionModelFrame.setLocation(40, 40);
+		extractionModelFrame.setSize(1100, 640);
+		extractionModelFrame.setVisible(true);
+		return extractionModelFrame;
+	}
+
+	/**
+     * Marks the model as dirty (needs save)
+     */
+	public void markDirty() {
+		extractionModelEditor.markDirty();
+	}
+
+	// Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem closureMenuItem;
     private javax.swing.JMenuItem closureToolMenuItem;
     private javax.swing.JMenuItem collapseAll;
