@@ -28,7 +28,7 @@ import net.sf.jailer.Jailer;
 public class DataBrowserContext {
 
 	private static String STANDALONE_APP_NAME = "DBeauty";
-	private static String STANDALONE_APP_VERSION = "1.3";
+	private static String STANDALONE_APP_VERSION = "1.4";
 	
 	private static boolean supportsDataModelUpdates = true;
 	private static Boolean standAlone = null;

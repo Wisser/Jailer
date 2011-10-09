@@ -781,11 +781,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				});			
 
 				JMenuItem sr = new JMenuItem("Select Row");
+				sr.setEnabled(rows.size() > 1);
 				popup.add(sr);
 				sr.addActionListener(new ActionListener() {
 					@Override
 					public void actionPerformed(ActionEvent e) {
-						andCondition.setText(SqlUtil.replaceAliases(row.rowId, "A", "A"));
+						String cond = SqlUtil.replaceAliases(row.rowId, "A", "A");
+						String currentCond = andCondition.getText().trim();
+						if (currentCond.length() > 0) {
+							cond = "(" + cond + ") and (" + currentCond + ")";
+						}
+						andCondition.setText(cond);
 						reloadRows();
 					}
 				});
@@ -934,7 +940,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					for (Association a: restrictedDependencies) {
 						disableDisregardedNonParentsOfDestination(a, restrictedAssociations, restrictionDefinitions);
 					}
-					// TODO regard
 					break;
 				case 1:
 					break;
@@ -1009,7 +1014,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param root root of tree
 	 * @return restrictions
 	 */
-	private List<RestrictionDefinition> createRestrictions(Relationship root, Table subject, Collection<Association> restrictedAssociations, Collection<Association> restrictedDependencies, Collection<RestrictionDefinition> restrictedDependencyDefinitions) {
+	private List<RestrictionDefinition> createRestrictions(Relationship root, Table subject, Collection<Association> regardedAssociations, Collection<Association> restrictedDependencies, Collection<RestrictionDefinition> restrictedDependencyDefinitions) {
 		List<RestrictionDefinition> restrictionDefinitions = new ArrayList<RestrictionDefinition>();
 		
 		Map<Association, List<RestrictionLiteral>> restrictionLiterals = new HashMap<Association, List<RestrictionLiteral>>();
@@ -1073,10 +1078,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				isIgnored = false;
 			}
 			
+			regardedAssociations.add(association);
 			if (isIgnored || (condition != null && condition.trim().length() != 0)) {
 				RestrictionDefinition rest = new RestrictionDefinition(association.source, association.destination, association.getName(), condition, isIgnored);
 				restrictionDefinitions.add(rest);
-				restrictedAssociations.add(association);
 				if (association.isInsertDestinationBeforeSource()) {
 					restrictedDependencies.add(association);
 					restrictedDependencyDefinitions.add(rest);
