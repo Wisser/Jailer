@@ -194,7 +194,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		setLocation(100, 100);
 		setSize(900, 580);
 		if (root != null) {
-			desktop.addTableBrowser(null, 0, root, null, condition);
+			desktop.addTableBrowser(null, 0, root, null, condition, null, null, true);
 		}
 		schemaNamePanel.addMouseListener(new java.awt.event.MouseAdapter() {
 			private boolean in = false;
@@ -331,6 +331,9 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
+        jSeparator4 = new javax.swing.JPopupMenu.Separator();
+        storeSessionItem = new javax.swing.JMenuItem();
+        restoreSessionItem = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
         schemaMappingMenuItem = new javax.swing.JMenuItem();
         jSeparator3 = new javax.swing.JPopupMenu.Separator();
@@ -484,7 +487,7 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         jMenu1.add(jMenuItem1);
 
-        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
         jMenuItem3.setText("New SQL Browser");
         jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -492,6 +495,25 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         jMenu1.add(jMenuItem3);
+        jMenu1.add(jSeparator4);
+
+        storeSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        storeSessionItem.setText("Store Session");
+        storeSessionItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                storeSessionItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(storeSessionItem);
+
+        restoreSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
+        restoreSessionItem.setText("Restore Session");
+        restoreSessionItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                restoreSessionItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(restoreSessionItem);
         jMenu1.add(jSeparator2);
 
         schemaMappingMenuItem.setText("Schema Mapping");
@@ -613,7 +635,7 @@ public class DataBrowser extends javax.swing.JFrame {
     }//GEN-LAST:event_schemaMappingMenuItemActionPerformed
 
     private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem3ActionPerformed
-    	desktop.addTableBrowser(null, 0, null, null, "");
+    	desktop.addTableBrowser(null, 0, null, null, "", null, null, true);
    	}//GEN-LAST:event_jMenuItem3ActionPerformed
 
     private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem4ActionPerformed
@@ -632,11 +654,19 @@ public class DataBrowser extends javax.swing.JFrame {
         desktop.createExtractionModel();
     }//GEN-LAST:event_createExtractionModelMenuItemActionPerformed
 
+    private void storeSessionItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_storeSessionItemActionPerformed
+        desktop.storeSession();
+    }//GEN-LAST:event_storeSessionItemActionPerformed
+
+    private void restoreSessionItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restoreSessionItemActionPerformed
+        desktop.restoreSession();
+    }//GEN-LAST:event_restoreSessionItemActionPerformed
+
 	private void openNewTableBrowser() {
 		new NewTableBrowser(this, datamodel.get()) {
         	@Override
 			void openTableBrowser(String tableName) {
-				desktop.addTableBrowser(null, 0, datamodel.get().getTableByDisplayName(tableName), null, "");
+				desktop.addTableBrowser(null, 0, datamodel.get().getTableByDisplayName(tableName), null, "", null, null, true);
 			}
 			@Override
 			void openDatabaseAnalyzer() {
@@ -883,6 +913,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
+    private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPanel legende;
     private javax.swing.JPanel legende1;
     private javax.swing.JPanel legende2;
@@ -891,9 +922,11 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenu menuWindow;
     private javax.swing.JLabel modelName;
     private javax.swing.JLabel modelPath;
+    private javax.swing.JMenuItem restoreSessionItem;
     private javax.swing.JMenuItem schemaMappingMenuItem;
     private javax.swing.JLabel schemaName;
     private javax.swing.JPanel schemaNamePanel;
+    private javax.swing.JMenuItem storeSessionItem;
     private javax.swing.JMenu view;
     // End of variables declaration//GEN-END:variables
 
