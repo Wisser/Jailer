@@ -1,11 +1,11 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
-<html><head><title>Jailer - Deleting Data</title>
+<html><head><title>Jailer - Subset by Example</title>
 
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="description" content="Data Export Tool">
-<meta name="keywords" content="data export referential integrity java jdbc dbms">
-<link rel="stylesheet" type="text/css" href="deleting-data-Dateien/styles.css">
 <link rel="shortcut icon" href="favicon.ico">
+<meta name="keywords" content="data export referential integrity java jdbc dbms">
+<link rel="stylesheet" type="text/css" href="exporting-data-Dateien/styles.css">
 </head>
 <body left-margin="0" top-margin="0">
 <div align="left">
@@ -16,7 +16,7 @@
 <table border="0" cellpadding="0" cellspacing="0">
 <tbody>
 <tr>
-<td><img src="deleting-data-Dateien/logo.png" hspace="10"></td>
+<td><img src="exporting-data-Dateien/logo.png" hspace="10"></td>
 <td class="slogan" width="100%">Database&nbsp;Subsetting&nbsp;Tool</td>
 <td style="text-align: right; width: 100%;">
 <table border="0" cellpadding="0" cellspacing="0">
@@ -43,8 +43,7 @@ Tour</a> &nbsp;&nbsp;&nbsp;<a href="exporting-data.htm" target="_self" class="tl
 &nbsp;&nbsp;&nbsp; <a href="design.htm" target="_self" class="tlink">Documentation</a>
 &nbsp;&nbsp;&nbsp; <a href="http://sourceforge.net/forum/?group_id=197260" target="_self" class="tlink">Forum</a>&nbsp;&nbsp;&nbsp;
 <a href="http://sourceforge.net/project/showfiles.php?group_id=197260" target="_self" class="tlink">Download</a>
-&nbsp;&nbsp;&nbsp;
-&nbsp;&nbsp;&nbsp;</font></b></td>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</font></b></td>
 </tr>
 <tr>
 <td colspan="2" class="spacer" width="100%">
@@ -67,11 +66,10 @@ Tour</a> &nbsp;&nbsp;&nbsp;<a href="exporting-data.htm" target="_self" class="tl
 <ul>
 <li><a href="exporting-data.htm" target="_self" class="llink">SQL
 Export</a></li>
-<li><a href="subset-by-example.html" target="_self" class="llink">Subset&nbsp;By&nbsp;Example</a></li>
+<li><a href="subset-by-example.html" target="_self" class="llinkA">Subset&nbsp;By&nbsp;Example</a></li>
 <li><a href="exporting-xml.html" target="_self" class="llink">XML
-Export<br>
-</a></li>
-<li><a href="deleting-data.htm" target="_self" class="llinkA">Deleting
+Export</a></li>
+<li><a href="deleting-data.htm" target="_self" class="llink">Deleting
 Data</a></li>
 </ul>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
@@ -81,6 +79,7 @@ Data</a></li>
 </tr>
 </tbody>
 </table>
+<p>&nbsp;</p>
 </td>
 <td class="contentbackground" height="418" valign="top" width="86%">
 <div align="right">
@@ -92,80 +91,25 @@ Data</a></li>
 </tr>
 <tr>
 <td class="content" height="520" valign="top" width="100%"> <small><small>&nbsp;</small></small><br>
-This tutorial shows you how to delete rows from database without
-violating integrity of the remaining data.<br>
+<span style="font-style: italic;">Subset By
+Example</span> is an easy way to create extraction models.<br><br>
+Use the Data Browser to collect all the rows to be extracted and let
+Jailer create a model for&nbsp;that subset.<br>
+<h4>Objective</h4>
+Exporting all the data related to the employee named 'Scott' into a
+SQL-script.<br>
 <br>
-Deleting data <span style="font-style: italic;"></span>is
-closely
-coupled with data exportation. The same restrictions are applied,
-no row will be deleted which is not also exported. This way you can
-always restore deleted rows by re-importing them.<br>
-<br>
-A <span style="font-style: italic;">delete-script</span>
-contains
-DELETE statements for all exported rows which
-are not associated with any non-exported row according to the
-restricted data model.
-Additionally tables can be excluded from deletion so that their rows
-will never be deleted, see
-step 2.<br>
-<h4><br>
-Objective</h4>
-Delete all projects which have ended before 2008-01-01. Delete all
-associated participations too but no role and no employee.<br>
-<br>
-<h3> </h3>
-<h4>Step 1. Delete projects<br>
+<h4>Step 1. Setup the database<br>
 </h4>
-Create a new model. Select table PROJECT as subject table and enter
-T.END_DATE&lt;'2008-01-01' as subject condition.<br>
-<br>
-In order to prevent the deletion of a PROJECT_PARTICIPATION, which is
-not associated with an old project but with a role of a participation
-in an old project, disable the association from ROLE to
-PROJECT_PARTICIPATION. Do the same with the association from EMPLOYEE
-to PROJECT_PARTICIPATION.<br>
-<br>
-Disable all associations to EMPLOYEE too. This will reduce the set of
-exported employee-rows to those employees who have participated in an
-old project.<br>
-<br>
-<img alt="" src="delt1.gif"><br>
-<br>
-<br>
-Open the data export dialog. Enter <span style="font-style: italic;">delete-old-projects.sql</span>
-as name for the delete-script and start the exportation.<br>
-<p> <img src="deleting-data-Dateien/screen17.png"><br>
-</p>
-<p><img alt="" src="delt2.gif"><br>
-</p>
+Do the steps 1 and 2 from the tutorial "SQL Export", if you don't
+already have done it.
+<h4>Step 2. Collect Rows</h4>
+<p></p>
 <p><br>
-Jailer
-has generated a script for the deletion of the two old projects and the
-six associated participations, but also for the deletion of six
-employees and one role. This role is the role of an participation in an
-old project, but not of a remaining one. The six employees have
-participated in an old project but in none of the remaining projects.<br>
-<br>
-</p>
-<h4>Step 2. Prevent employees and roles from being
-deleted<br>
-</h4>
-Open the data model editor (<span style="font-style: italic;">Tools-&gt;Data
-Model Editor</span>). Edit the table EMPLOYEE and switch on the
-check-box "<span style="font-style: italic;">exclude from
-deletion</span>".
-Do the same with table ROLE.<br>
-<br>
-<img alt="" src="delt3.gif" style="width: 600px; height: 350px;"><br>
-<p><br>
-<span style="font-style: italic;">Export Data </span>again.
-Employees and roles are now excluded from deletion:<br>
-<br>
 <table style="background-color: rgb(51, 102, 255); text-align: left;" border="0" cellpadding="2" cellspacing="0">
 <tbody>
 <tr>
-<td style="vertical-align: top; height: 24px; background-color: rgb(202, 225, 235);"><big><span style="font-family: monospace;"><span style="font-weight: bold;"><span style="font-family: monospace;">delete-old-projects.sql </span></span></span><span style="font-family: monospace;"></span></big><br>
+<td style="vertical-align: top; height: 24px; background-color: rgb(202, 225, 235);"><big><span style="font-family: monospace;"><span style="font-weight: bold;"><span style="font-family: monospace;">scott.sql </span></span></span><span style="font-family: monospace;"></span></big><br>
 </td>
 </tr>
 </tbody>
@@ -173,60 +117,70 @@ Employees and roles are now excluded from deletion:<br>
 <table style="width: 100%; text-align: left;" border="0" cellpadding="0" cellspacing="0">
 <tbody>
 <tr>
-<td style="vertical-align: top; background-color: rgb(202, 225, 235);" colspan="2"><span style="font-family: monospace;"></span><span style="color: rgb(255, 0, 0); font-family: monospace;"></span><span style="font-family: monospace;">-- generated by Jailer at
-Wed Fri May
-02 12:37:07 CEST 2008&nbsp; from wisser@desktop<br>
+<td style="vertical-align: top; background-color: rgb(202, 225, 235);" colspan="2"><span style="font-family: monospace;">--
+generated by
+Jailer at Sat May 03 12:38:33 CEST 2008&nbsp; from wisser@desktop<br>
 --<br>
 -- extraction model:&nbsp; EMPLOYEE where NAME='SCOTT'
 (extractionmodel/scott.csv)<br>
 -- database URL:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 jdbc:db2://localhost/wisser<br>
 -- database user:&nbsp;&nbsp;&nbsp;&nbsp; scott<br>
--- Exported Entities: 25<br>
+-- Exported Entities: 13<br>
 --&nbsp;&nbsp;&nbsp;&nbsp;
 DEPARTMENT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 2<br>
 --&nbsp;&nbsp;&nbsp;&nbsp;
 EMPLOYEE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-8<br>
+3<br>
 --&nbsp;&nbsp;&nbsp;&nbsp;
 PROJECT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 2<br>
 --&nbsp;&nbsp;&nbsp;&nbsp;
 PROJECT_PARTICIPATION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-6<br>
+2<br>
 --&nbsp;&nbsp;&nbsp;&nbsp;
 ROLE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-3<br>
+2<br>
 --&nbsp;&nbsp;&nbsp;&nbsp;
 SALARYGRADE&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-4<br>
---<br>
--- Tabu-tables:&nbsp; { EMPLOYEE, ROLE }<br>
---<br>
--- Deleted Entities: 8<br>
---&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-PROJECT&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
 2<br>
---&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-PROJECT_PARTICIPATION&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-6<br>
 <br>
 <br>
 <br>
-Delete from PROJECT_PARTICIPATION Where (PROJECTNO, EMPNO, START_DATE)
-in (values (1001, 7369, '2006-01-01'), (1001, 7788, '2006-05-15'),
-(1001, 7902, '2006-01-01'), (1002, 7782, '2006-08-22'), (1002, 7876,
-'2006-08-22'), (1002, 7934, '2007-01-01'));<br>
-Delete from PROJECT Where PROJECTNO in (1001, 1002);<br>
+Insert into SALARYGRADE(GRADE, LOSAL, HISAL) values (4, 2001, 3000),
+(5, 3001, 9999);<br>
+Insert into ROLE(ROLE_ID, DESCRIPTION) values (100, 'Developer'), (102,
+'Project manager');<br>
+Insert into PROJECT(PROJECTNO, DESCRIPTION, START_DATE, END_DATE)
+values (1001, 'Development of Novel Magnetic Suspension System',
+'2006-01-01', '2007-08-13'), (1003, 'Foundation of Quantum Technology',
+'2007-02-24', '2008-07-31');<br>
+Insert into DEPARTMENT(DEPTNO, NAME, LOCATION) values (20, 'RESEARCH',
+'DALLAS'), (10, 'ACCOUNTING', 'NEW YORK');<br>
+Insert into EMPLOYEE(EMPNO, NAME, JOB, BOSS, HIREDATE, SALARY, COMM,
+DEPTNO) values (7839, 'KING', 'PRESIDENT', null, '1981-11-17', 5000.00,
+null, 10);<br>
+Insert into EMPLOYEE(EMPNO, NAME, JOB, BOSS, HIREDATE, SALARY, COMM,
+DEPTNO) values (7566, 'JONES', 'MANAGER', 7839, '1981-04-02', 2975.00,
+null, 20);<br>
+Insert into EMPLOYEE(EMPNO, NAME, JOB, BOSS, HIREDATE, SALARY, COMM,
+DEPTNO) values (7788, 'SCOTT', 'ANALYST', 7566, '1982-12-09', 3000.00,
+null, 20);<br>
+Insert into PROJECT_PARTICIPATION(PROJECTNO, EMPNO, START_DATE,
+END_DATE, ROLE_ID) values (1003, 7566, '2007-02-24', '2008-07-31', 102);<br>
+Insert into PROJECT_PARTICIPATION(PROJECTNO, EMPNO, START_DATE,
+END_DATE, ROLE_ID) values (1001, 7788, '2006-05-15', '2006-11-01', 100);<br>
 <br>
 </span></td>
 </tr>
 </tbody>
 </table>
 <br>
-</p>
 <br>
+</p>
+<p><br>
+</p>
 <p><br>
 <br>
 </p>
@@ -239,10 +193,9 @@ Delete from PROJECT Where PROJECTNO in (1001, 1002);<br>
 </td>
 </tr>
 <tr>
-<td height="12" valign="top" width="14%">
-<br>
+<td height="12" valign="top" width="14%"><br>
 </td>
-<td> <br>
+<td><br>
 </td>
 </tr>
 </tbody>

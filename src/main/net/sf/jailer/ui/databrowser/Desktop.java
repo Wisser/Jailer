@@ -38,6 +38,9 @@ import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyVetoException;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -63,6 +66,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
@@ -72,6 +76,8 @@ import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.util.CsvFile;
+import net.sf.jailer.util.CsvFile.Line;
 import net.sf.jailer.util.SqlUtil;
 import prefuse.util.GraphicsLib;
 
@@ -144,7 +150,7 @@ public abstract class Desktop extends JDesktopPane {
 		this.queryBuilderDialog.sqlEditButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				addTableBrowser(null, 0, null, null, queryBuilderDialog.getSQL());
+				addTableBrowser(null, 0, null, null, queryBuilderDialog.getSQL(), null, null, true);
 				queryBuilderDialog.setVisible(false);
 			}
 		});
@@ -169,11 +175,12 @@ public abstract class Desktop extends JDesktopPane {
 							}
 						}
 						try {
-							Thread.sleep(100);
+							Thread.sleep(300);
 							SwingUtilities.invokeAndWait(new Runnable() {
 								@Override
 								public void run() {
-									if (calculateLinks()) {
+									boolean cl = calculateLinks();
+									if (cl) {
 										repaintDesktop();
 									}
 								}
@@ -281,9 +288,11 @@ public abstract class Desktop extends JDesktopPane {
 	 * @param table to read rows from. Open SQL browser if table is <code>null</code>.
 	 * @param association to navigate, or <code>null</code>
 	 * @param condition 
+	 * @param selectDistinct 
+	 * @param limit 
 	 * @return new row-browser
 	 */
-	public synchronized RowBrowser addTableBrowser(final RowBrowser parent, int parentRowIndex, final Table table, final Association association, String condition) {
+	public synchronized RowBrowser addTableBrowser(final RowBrowser parent, int parentRowIndex, final Table table, final Association association, String condition, Integer limit, Boolean selectDistinct, boolean reload) {
 		Set<String> titles = new HashSet<String>();
 		for (RowBrowser rb: tableBrowsers) {
 			titles.add(rb.internalFrame.getTitle());
@@ -360,7 +369,7 @@ public abstract class Desktop extends JDesktopPane {
 		});
 
 		final RowBrowser tableBrowser = new RowBrowser();
-		BrowserContentPane browserContentPane = new BrowserContentPane(datamodel.get(), table, condition, session, parent == null || parentRowIndex < 0? null : parent.browserContentPane.rows.get(parentRowIndex), parent == null || parentRowIndex >= 0? null : parent.browserContentPane.rows, association, parentFrame, currentClosure, currentClosureRowIDs) {
+		BrowserContentPane browserContentPane = new BrowserContentPane(datamodel.get(), table, condition, session, parent == null || parentRowIndex < 0? null : parent.browserContentPane.rows.get(parentRowIndex), parent == null || parentRowIndex >= 0? null : parent.browserContentPane.rows, association, parentFrame, currentClosure, currentClosureRowIDs, limit, selectDistinct, reload) {
 			
 			@Override
 			protected QueryBuilderDialog getQueryBuilderDialog() {
@@ -374,15 +383,18 @@ public abstract class Desktop extends JDesktopPane {
 
 			@Override
 			protected void navigateTo(Association association, int rowIndex, Row row) {
-				addTableBrowser(tableBrowser, rowIndex, association.destination, association, "");
+				addTableBrowser(tableBrowser, rowIndex, association.destination, association, "", null, null, true);
 			}
 
 			@Override
-			protected void onContentChange(List<Row> rows) {
+			protected void onContentChange(List<Row> rows, boolean reloadChildren) {
 				updateChildren(tableBrowser, rows);
 				for (RowBrowser rb: tableBrowsers) {
 					if (rb.parent == tableBrowser) {
 						updateChildren(rb, rb.browserContentPane.rows);
+						if (reloadChildren && rb.browserContentPane.parentRow == null) {
+							rb.browserContentPane.reloadRows();
+						}
 					}
 				}
 			}
@@ -903,17 +915,18 @@ public abstract class Desktop extends JDesktopPane {
 			Graphics2D g2d = (Graphics2D) graphics;
 			if (renderLinks) {
 				for (boolean pbg: new Boolean[] { true, false}) {
+					Set<Long> linesHash = new HashSet<Long>(200000);
 					for (RowBrowser tableBrowser : tableBrowsers) {
 						if (!tableBrowser.internalFrame.isIcon() && (tableBrowser.parent == null || !tableBrowser.parent.internalFrame.isIcon())) {
 							Color color = pbg? Color.white : tableBrowser.color;
 							if (tableBrowser.parent != null && tableBrowser.rowIndex >= 0) {
 								Point2D start = new Point2D.Double(tableBrowser.x2, tableBrowser.y2);
 								Point2D end = new Point2D.Double(tableBrowser.x1, tableBrowser.y1);
-								paintLink(start, end, color, g2d, tableBrowser, pbg, true);
+								paintLink(start, end, color, g2d, tableBrowser, pbg, true, linesHash);
 							}
 							for (RowToRowLink rowToRowLink: tableBrowser.rowToRowLinks) {
 								if (rowToRowLink.x1 >= 0) {
-									paintLink(new Point2D.Double(rowToRowLink.x2, rowToRowLink.y2), new Point2D.Double(rowToRowLink.x1, rowToRowLink.y1), color, g2d, tableBrowser, pbg, false);
+									paintLink(new Point2D.Double(rowToRowLink.x2, rowToRowLink.y2), new Point2D.Double(rowToRowLink.x1, rowToRowLink.y1), color, g2d, tableBrowser, pbg, false, linesHash);
 								}
 							}
 						}
@@ -923,7 +936,7 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 	
-	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect) {
+	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect, Set<Long> lineHashes) {
 		g2d.setColor(color);
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 		g2d.setStroke(new BasicStroke(!intersect? (pbg? 3 : 1) : (pbg? 5 : 3)));
@@ -948,6 +961,12 @@ public abstract class Desktop extends JDesktopPane {
 		if (start.distance(end) < 2)
 			return;
 
+		long lineHash = ((long) start.hashCode()) + (((long) Integer.MAX_VALUE) + 1) * ((long) end.hashCode());
+		if (lineHashes.contains(lineHash)) {
+			return;
+		}
+		lineHashes.add(lineHash);
+		
 		// create the arrow head shape
 		m_arrowHead = new Polygon();
 		double ws = 0.5;
@@ -1359,6 +1378,144 @@ public abstract class Desktop extends JDesktopPane {
 				null);
 		if (s != null) {
 			rowBrowserByTitle.get(s).browserContentPane.openExtractionModelEditor();
+		}
+	}
+
+	/**
+	 * Stores browser session.
+	 */
+	public void storeSession() {
+		String fnProp = null;
+		int i = 1;
+		Map<RowBrowser, Integer> browserNumber = new HashMap<Desktop.RowBrowser, Integer>();
+		for (RowBrowser rb: tableBrowsers) {
+			browserNumber.put(rb, i++);
+			if (fnProp == null && rb.parent == null && rb.browserContentPane.table != null) {
+				if (!(rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable)) {
+					fnProp = datamodel.get().getDisplayName(rb.browserContentPane.table).replace(' ', '-').replace('\"', '-').replace('\'', '-').replace('(', '-').replace(')', '-') + ".dbs";
+				}
+			}
+		}
+
+		File startDir = CommandLineParser.getInstance().newFile("session");
+		Component pFrame = SwingUtilities.getWindowAncestor(this);
+		if (pFrame == null) {
+			pFrame = this;
+		}
+		String sFile = UIUtil.choseFile(fnProp == null? null : new File(startDir, fnProp), startDir.getPath(), "Store Session", ".dbs", pFrame, true, false);
+		
+		if (sFile != null) {
+			try {
+				FileWriter out = new FileWriter(new File(sFile));
+
+				for (RowBrowser rb: tableBrowsers) {
+					if (rb.parent == null) {
+						storeSession(rb, browserNumber, out);
+					}
+				}
+				out.close();
+			} catch (Throwable e) {
+				UIUtil.showException(this, "Error", e);
+			}
+		}
+	}
+
+	/**
+	 * Recursively stores row-browser session.
+	 */
+	private void storeSession(RowBrowser rb, Map<RowBrowser, Integer> browserNumber, FileWriter out) throws IOException {
+		final String LF = System.getProperty("line.separator", "\n");
+		if (rb.browserContentPane.table != null) {
+			String csv = browserNumber.get(rb) + "; " + (rb.parent == null? "" : browserNumber.get(rb.parent)) + "; ";
+			
+			String where = rb.browserContentPane.andCondition.getText().trim();
+			
+			if (rb.browserContentPane.parentRow != null) {
+				if (where.length() > 0) {
+					where = "(" + where + ") and (" + rb.browserContentPane.parentRow.rowId + ")";
+				} else {
+					where = rb.browserContentPane.parentRow.rowId;
+				}
+			}
+			
+			csv += where + "; ";
+			
+			csv += rb.internalFrame.getLocation().x + "; " + rb.internalFrame.getLocation().y + "; ";
+			csv += rb.internalFrame.getSize().width + "; " + rb.internalFrame.getSize().height + "; ";
+			csv += rb.browserContentPane.limitBox.getSelectedItem() + "; " + rb.browserContentPane.selectDistinctCheckBox.isSelected() + "; ";
+
+			if (rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable) {
+				csv += "Q; " + CsvFile.encodeCell(rb.browserContentPane.sqlBrowserContentPane.sqlEditorPane.getText()) + "; ";
+			} else {
+				csv += "T; " + CsvFile.encodeCell(rb.browserContentPane.table.getName()) + "; "
+					+ (rb.association == null? "" : CsvFile.encodeCell(rb.association.getName())) + "; ";
+			}
+			out.append(csv).append(LF);
+			for (RowBrowser child: tableBrowsers) {
+				if (child.parent == rb) {
+					storeSession(child, browserNumber, out);
+				}
+			}
+		}
+	}
+
+	/**
+	 * Restores browser session.
+	 */
+	public void restoreSession() {
+		File startDir = CommandLineParser.getInstance().newFile("session");
+		Component pFrame = SwingUtilities.getWindowAncestor(this);
+		if (pFrame == null) {
+			pFrame = this;
+		}
+		String sFile = UIUtil.choseFile(null, startDir.getPath(), "Store Session", ".dbs", pFrame, true, true);
+		
+		if (sFile != null) {
+			try {
+				Map<String, RowBrowser> rbByID = new HashMap<String, Desktop.RowBrowser>();
+				List<Line> lines = new CsvFile(new File(sFile)).getLines();
+				closeAll();
+				Collection<RowBrowser> toBeLoaded = new ArrayList<Desktop.RowBrowser>();
+				for (CsvFile.Line l: lines) {
+					String id = l.cells.get(0);
+					String parent = l.cells.get(1);
+					String where = l.cells.get(2);
+					Point loc = new Point(Integer.parseInt(l.cells.get(3)), Integer.parseInt(l.cells.get(4)));
+					Dimension size = new Dimension(Integer.parseInt(l.cells.get(5)), Integer.parseInt(l.cells.get(6)));
+					int limit = Integer.parseInt(l.cells.get(7));
+					boolean selectDistinct = Boolean.parseBoolean(l.cells.get(8));
+					RowBrowser rb = null;
+					if ("T".equals(l.cells.get(9))) {
+						Table table = datamodel.get().getTable(l.cells.get(10));
+						if (table != null) {
+							Association association = datamodel.get().namedAssociations.get(l.cells.get(11));
+							RowBrowser parentRB = rbByID.get(parent);
+							rb = addTableBrowser(parentRB, -1, table, association, where, limit, selectDistinct, false);
+							if (id.length() > 0) {
+								rbByID.put(id, rb);
+							}
+							if (parentRB == null) {
+								toBeLoaded.add(rb);
+							}
+						}
+					} else {
+						rb = addTableBrowser(null, 0, null, null, where, limit, selectDistinct, false);
+						toBeLoaded.add(rb);
+					}
+					if (rb != null) {
+						rb.internalFrame.setLocation(loc);
+						rb.internalFrame.setSize(size);
+					}
+				}
+				checkDesktopSize();
+				this.scrollRectToVisible(new Rectangle(0, 0, 1, 1));
+				
+				for (RowBrowser rb: toBeLoaded) {
+					rb.browserContentPane.reloadRows();
+				}
+			} catch (Throwable e) {
+				UIUtil.showException(this, "Error", e);
+			}
 		}
 	}
 

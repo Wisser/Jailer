@@ -1,3 +1,6 @@
+3.7
+ - Implemented the "Subset by Example" feature: create extraction models according to current data browser session.
+
 3.6.12
  - Extended row limits in Data Browser.
  - Reduced memory footprint.

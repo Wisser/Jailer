@@ -519,7 +519,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			final JScrollPane scrollPanel = new JScrollPane() {
 				@Override
 				public Dimension getMinimumSize() {
-					return new Dimension(Math.max(editorPanel.getMinimumSize().width, 340), editorPanel.getMinimumSize().height);
+					return new Dimension(Math.max(editorPanel.getMinimumSize().width, 380), editorPanel.getMinimumSize().height);
 					// return editorPanel.getMinimumSize();
 				}
 				private static final long serialVersionUID = -947582621664272477L;
