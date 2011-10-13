@@ -1512,7 +1512,7 @@ public abstract class Desktop extends JDesktopPane {
 						} else {
 							Association association = datamodel.get().namedAssociations.get(l.cells.get(11));
 							RowBrowser parentRB = rbByID.get(parent);
-							rb = addTableBrowser(parentRB, -1, table, association, where, limit, selectDistinct, false);
+							rb = addTableBrowser(parentRB, -1, table, parentRB != null? association : null, where, limit, selectDistinct, false);
 							if (id.length() > 0) {
 								rbByID.put(id, rb);
 							}
