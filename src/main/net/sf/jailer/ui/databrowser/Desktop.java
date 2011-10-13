@@ -765,7 +765,8 @@ public abstract class Desktop extends JDesktopPane {
 				return changed;
 			}
 			if (tableBrowser.parent != null) {
-				int BORDER = 8;
+				int BORDER = 6;
+				int BOT_H = 32;
 				int x1 = tableBrowser.internalFrame.getX() + tableBrowser.internalFrame.getWidth() / 2;
 				int y1 = tableBrowser.internalFrame.getY() + tableBrowser.internalFrame.getHeight() / 2;
 				int midx = tableBrowser.parent.internalFrame.getX() + tableBrowser.parent.internalFrame.getWidth() / 2;
@@ -795,7 +796,7 @@ public abstract class Desktop extends JDesktopPane {
 				if (y2 < min) {
 					y2 = min;
 				}
-				int max = tableBrowser.parent.internalFrame.getY() + tableBrowser.parent.internalFrame.getHeight();
+				int max = tableBrowser.parent.internalFrame.getY() + tableBrowser.parent.internalFrame.getHeight() - BOT_H;
 				if (y2 > max) {
 					y2 = max;
 				}
@@ -845,7 +846,7 @@ public abstract class Desktop extends JDesktopPane {
 							if (y1 < min) {
 								y1 = min;
 							}
-							max = tableBrowser.internalFrame.getY() + tableBrowser.internalFrame.getHeight();
+							max = tableBrowser.internalFrame.getY() + tableBrowser.internalFrame.getHeight() - BOT_H;
 							if (y1 > max) {
 								y1 = max;
 							}
@@ -874,7 +875,7 @@ public abstract class Desktop extends JDesktopPane {
 							if (y2 < min) {
 								y2 = min;
 							}
-							max = tableBrowser.parent.internalFrame.getY() + tableBrowser.parent.internalFrame.getHeight();
+							max = tableBrowser.parent.internalFrame.getY() + tableBrowser.parent.internalFrame.getHeight() - BOT_H;
 							if (y2 > max) {
 								y2 = max;
 							}
