@@ -626,7 +626,7 @@ public class DataBrowser extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
-        openNewTableBrowser();
+        openNewTableBrowser(false);
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void jMenuItem2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem2ActionPerformed
@@ -669,8 +669,8 @@ public class DataBrowser extends javax.swing.JFrame {
         desktop.restoreSession();
     }//GEN-LAST:event_restoreSessionItemActionPerformed
 
-	private void openNewTableBrowser() {
-		new NewTableBrowser(this, datamodel.get()) {
+	private void openNewTableBrowser(boolean offerAlternatives) {
+		new NewTableBrowser(this, datamodel.get(), offerAlternatives) {
         	@Override
 			void openTableBrowser(String tableName) {
 				desktop.addTableBrowser(null, 0, datamodel.get().getTableByDisplayName(tableName), null, "", null, null, true);
@@ -678,6 +678,10 @@ public class DataBrowser extends javax.swing.JFrame {
 			@Override
 			void openDatabaseAnalyzer() {
 				updateDataModel();
+			}
+			@Override
+			void restoreSession() {
+				desktop.restoreSession();
 			}  	
         };
 	}
@@ -803,9 +807,8 @@ public class DataBrowser extends javax.swing.JFrame {
 						dataBrowser.askForDataModel();
 						dataBrowser.desktop.openSchemaMappingDialog(true);
 						dataBrowser.updateStatusBar();
-						dataBrowser.openNewTableBrowser();
+						dataBrowser.openNewTableBrowser(true);
 					} else {
-//						System.exit(0);
 						for (int i = 0; i < dataBrowser.menuBar.getMenuCount(); ++i) {
 							JMenu menu = dataBrowser.menuBar.getMenu(i);
 							if (menu != dataBrowser.helpMenu) {
