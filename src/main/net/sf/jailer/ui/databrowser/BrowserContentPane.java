@@ -2482,7 +2482,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private void updateWhereField() {
 		if (association != null) {
-			where.setText(parentRow == null ? (parentRows.size() > 0? parentRows.get(0).rowId + (parentRows.size() > 1? " or ..." : "") : "") : parentRow.rowId);
+			where.setText(parentRow == null ? (parentRows != null && parentRows.size() > 0? parentRows.get(0).rowId + (parentRows.size() > 1? " or ..." : "") : "") : parentRow.rowId);
 		}
 	}
 
