@@ -303,7 +303,6 @@
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="selectDistinctCheckBox">
                   <Properties>
-                    <Property name="selected" type="boolean" value="true"/>
                     <Property name="text" type="java.lang.String" value="select distinct (-100 rows)"/>
                   </Properties>
                   <Events>
@@ -445,7 +444,7 @@
         <Property name="font" type="java.awt.Font" editor="org.netbeans.beaninfo.editors.FontEditor">
           <Font name="DejaVu Sans" size="13" style="1"/>
         </Property>
-        <Property name="text" type="java.lang.String" value=" from "/>
+        <Property name="text" type="java.lang.String" value=" From "/>
       </Properties>
       <Constraints>
         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">

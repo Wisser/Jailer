@@ -198,6 +198,7 @@ public abstract class Desktop extends JDesktopPane {
 		} catch (Exception e) {
 			UIUtil.showException(null, "Error", e);
 		}
+		updateMenu();
 	}
 
 	public class RowToRowLink {
@@ -634,6 +635,7 @@ public abstract class Desktop extends JDesktopPane {
 		} else {
 			browserContentPane.andCondition.grabFocus();
 		}
+		updateMenu();
 		return tableBrowser;
 	}
 
@@ -1283,6 +1285,7 @@ public abstract class Desktop extends JDesktopPane {
 			updateChildren(rb, rb.browserContentPane.rows);
 		}
 		repaintDesktop();
+		updateMenu();
 	}
 	
 	/**
@@ -1381,6 +1384,21 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
+	private void updateMenu() {
+		boolean hasTableBrowser = false;
+		boolean hasIFrame = false;
+		
+		for (RowBrowser rb: tableBrowsers) {
+			hasIFrame = true;
+			if (!(rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable)) {
+				hasTableBrowser = true;
+			}
+		}
+		updateMenu(hasTableBrowser, hasIFrame);
+	}
+	
+	protected abstract void updateMenu(boolean hasTableBrowser, boolean hasIFrame);
+	
 	/**
 	 * Stores browser session.
 	 */
@@ -1476,6 +1494,7 @@ public abstract class Desktop extends JDesktopPane {
 				List<Line> lines = new CsvFile(new File(sFile)).getLines();
 				closeAll();
 				Collection<RowBrowser> toBeLoaded = new ArrayList<Desktop.RowBrowser>();
+				List<String> unknownTables = new ArrayList<String>();
 				for (CsvFile.Line l: lines) {
 					String id = l.cells.get(0);
 					String parent = l.cells.get(1);
@@ -1487,7 +1506,9 @@ public abstract class Desktop extends JDesktopPane {
 					RowBrowser rb = null;
 					if ("T".equals(l.cells.get(9))) {
 						Table table = datamodel.get().getTable(l.cells.get(10));
-						if (table != null) {
+						if (table == null) {
+							unknownTables.add(l.cells.get(10));
+						} else {
 							Association association = datamodel.get().namedAssociations.get(l.cells.get(11));
 							RowBrowser parentRB = rbByID.get(parent);
 							rb = addTableBrowser(parentRB, -1, table, association, where, limit, selectDistinct, false);
@@ -1512,6 +1533,13 @@ public abstract class Desktop extends JDesktopPane {
 				
 				for (RowBrowser rb: toBeLoaded) {
 					rb.browserContentPane.reloadRows();
+				}
+				if (!unknownTables.isEmpty()) {
+					String pList = "";
+					for (String ut: unknownTables) {
+						pList += ut + "\n";
+					}
+					JOptionPane.showMessageDialog(pFrame, "Unknown tables:\n\n" + pList + "\n");
 				}
 			} catch (Throwable e) {
 				UIUtil.showException(this, "Error", e);

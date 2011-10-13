@@ -463,9 +463,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			joinPanel.setVisible(false);
 			onPanel.setVisible(false);
 			wherePanel.setVisible(false);
-			jLabel1.setVisible(false);
-			jLabel4.setVisible(false);
-			jLabel9.setVisible(false);
+//			jLabel1.setVisible(false);
+//			jLabel4.setVisible(false);
+//			jLabel9.setVisible(false);
+			
+			jLabel1.setText(" ");
+			jLabel4.setText(" ");
+			jLabel9.setText(" ");
+			
 			jLabel6.setVisible(false);
 			dropB.setVisible(false);
 			andLabel.setText(" Where ");
@@ -474,7 +479,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	        gridBagConstraints.gridy = 4;
 	        gridBagConstraints.gridheight = 1;
 	        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-	        add(sqlPanel, gridBagConstraints);
+//	        add(sqlPanel, gridBagConstraints);
 		} else {
 			join.setText(dataModel.getDisplayName(association.source));
 			on.setText(!association.reversed ? SqlUtil.reversRestrictionCondition(association.getUnrestrictedJoinCondition()) : association
@@ -1488,7 +1493,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private void reloadRows(String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, Object context, int limit, boolean useOLAPLimitation,
 			String sqlLimitSuffix, boolean selectDistinct) throws SQLException {
 		try {
-			reloadRows0(andCond, parentRows, rows, context, limit, useOLAPLimitation, sqlLimitSuffix, selectDistinct);
+			reloadRows0(andCond, parentRows, rows, context, Math.max(5000, limit), useOLAPLimitation, sqlLimitSuffix, selectDistinct);
 		} catch (SQLException e) {
 			if (selectDistinct) {
 				// try without "distinct"
@@ -2066,7 +2071,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel6.add(rowsCount, gridBagConstraints);
 
-        selectDistinctCheckBox.setSelected(true);
         selectDistinctCheckBox.setText("select distinct (-100 rows)");
         selectDistinctCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -2162,7 +2166,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         add(openEditorLabel, gridBagConstraints);
 
         jLabel3.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
-        jLabel3.setText(" from ");
+        jLabel3.setText(" From ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 4;
@@ -2190,7 +2194,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         });
         jPanel3.add(limitBox);
 
-        jLabel7.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
+        jLabel7.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
         jLabel7.setText(" rows");
         jPanel3.add(jLabel7);
 
