@@ -1515,8 +1515,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 */
 	private void reloadRows0(String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, Object context, int limit, boolean useOLAPLimitation,
 			String sqlLimitSuffix, boolean selectDistinct) throws SQLException {
-		String sql = "Select " + (selectDistinct? "distinct " : "");
+		String sql = "Select "; // + (selectDistinct? "distinct " : "");
 		final Set<String> pkColumnNames = new HashSet<String>();
+		final Set<String> parentPkColumnNames = new HashSet<String>();
 		final boolean selectParentPK = association != null && parentRows != null && parentRows.size() > 1;
 		
 		if (table instanceof SqlStatementTable) {
@@ -1549,6 +1550,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			f = true;
 			String orderBy = "";
+			if (selectParentPK) {
+				for (Column pk : association.source.primaryKey.getColumns()) {
+					parentPkColumnNames.add(pk.name);
+					orderBy += (f ? "" : ", ") + "B." + pk.name;
+					f = false;
+				}
+			}
 			for (Column pk : table.primaryKey.getColumns()) {
 				pkColumnNames.add(pk.name);
 				orderBy += (f ? "" : ", ") + "A." + pk.name;
@@ -1627,7 +1635,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					if (selectParentPK) {
 						Object v[] = new Object[association.source.primaryKey.getColumns().size()];
 						for (Column column : association.source.primaryKey.getColumns()) {
-							parentRowId = readRowFromResultSet(pkColumnNames, resultSet, i, vi, parentRowId, v, column);
+							parentRowId = readRowFromResultSet(parentPkColumnNames, resultSet, i, vi, parentRowId, v, column);
 							++i;
 							++vi;
 						}
