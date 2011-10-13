@@ -33,11 +33,19 @@ import net.sf.jailer.datamodel.Table;
 public abstract class NewTableBrowser extends javax.swing.JDialog {
 
     /** Creates new form NewTableBrowser */
-    public NewTableBrowser(java.awt.Frame parent, DataModel datamodel) {
+    public NewTableBrowser(java.awt.Frame parent, DataModel datamodel, boolean offerAlternatives) {
         super(parent, true);
         initComponents();
         
         analyzeButton.setVisible(DataBrowserContext.isSupportsDataModelUpdates());
+        
+        if (offerAlternatives) {
+        	setTitle(DataBrowserContext.getAppName(true));
+        	okButton.setText(" Open Table ");
+        } else {
+        	analyzeButton.setVisible(false);
+        	restoreSessionButton.setVisible(false);
+        }
         
         DefaultListModel model = new DefaultListModel();
         List<String> tables = new ArrayList<String>();
@@ -53,7 +61,7 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
         tableList.setModel(model);
         
         pack();
-        setSize(getWidth(), 400);
+        setSize(Math.max(400, getWidth()), 400);
         setLocation(300, 100);
         setVisible(true);
     }
@@ -68,24 +76,19 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
         jScrollPane1 = new javax.swing.JScrollPane();
         tableList = new javax.swing.JList();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
         analyzeButton = new javax.swing.JButton();
+        restoreSessionButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("New Table Browser");
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText("Table                                          ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel1.add(jLabel1, gridBagConstraints);
+        jScrollPane1.setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED), "Tables"));
 
         tableList.setModel(new javax.swing.AbstractListModel() {
             String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
@@ -102,7 +105,7 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridwidth = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -116,7 +119,7 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
@@ -129,7 +132,7 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 3;
         jPanel1.add(cancelButton, gridBagConstraints);
 
@@ -143,8 +146,20 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 16);
         jPanel1.add(analyzeButton, gridBagConstraints);
+
+        restoreSessionButton.setText(" Restore Session ");
+        restoreSessionButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                restoreSessionButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 16);
+        jPanel1.add(restoreSessionButton, gridBagConstraints);
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
 
@@ -172,16 +187,22 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
         openDatabaseAnalyzer();
     }//GEN-LAST:event_analyzeButtonActionPerformed
 
+    private void restoreSessionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restoreSessionButtonActionPerformed
+    	setVisible(false);
+    	restoreSession();
+    }//GEN-LAST:event_restoreSessionButtonActionPerformed
+
     abstract void openTableBrowser(String tableName);
     abstract void openDatabaseAnalyzer();
+    abstract void restoreSession();
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton analyzeButton;
     private javax.swing.JButton cancelButton;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton okButton;
+    private javax.swing.JButton restoreSessionButton;
     private javax.swing.JList tableList;
     // End of variables declaration//GEN-END:variables
 
