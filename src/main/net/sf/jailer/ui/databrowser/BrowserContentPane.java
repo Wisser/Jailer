@@ -1197,7 +1197,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		JDialog d;
 		try {
-			String sqlString = sql.toString();
+			String LF = System.getProperty("line.separator", "\n");
+			String sqlString = sql.toString().trim() + LF;
 			if (sqlString.length() > 2L*1024L*1024L) {
 				if (1 == JOptionPane.showOptionDialog(this, "SQL Script is too long (" + (sqlString.length() / 1024) + " KB) to be edited.", "SQL Script too long", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Ok", "Save Script" }, "Save Script")) {
 					String fn = UIUtil.choseFile(null, ".", "Save SQL Script", ".sql", this, false, false, false);

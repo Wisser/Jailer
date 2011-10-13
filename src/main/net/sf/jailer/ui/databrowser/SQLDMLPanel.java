@@ -61,7 +61,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 //		instance.addSupport(SyntaxSupport.SQL_LEXER, sqlTextArea3);
         statusLabel.setText("");
         sqlTextArea.setContentType("text/sql");
-        sqlTextArea.setText(sql.trim());
+        sqlTextArea.setText(sql);
         sqlTextArea.select(0, 0);
         
         mlmTextField.getDocument().addDocumentListener(new DocumentListener() {
