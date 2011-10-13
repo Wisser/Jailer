@@ -303,7 +303,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
                 in.close();
                 connectionList = cis;
                 if (i >= 0 && i < connectionList.size()) {
-                	currentConnection = connectionList.get(i);
+//                	currentConnection = connectionList.get(i);
                 }
                 return;
             }

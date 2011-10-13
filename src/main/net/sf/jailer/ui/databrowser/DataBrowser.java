@@ -157,8 +157,15 @@ public class DataBrowser extends javax.swing.JFrame {
 			public void openSchemaAnalyzer() {
 				updateDataModel();
 			}
-		};
 
+			@Override
+			protected void updateMenu(boolean hasTableBrowser, boolean hasIFrame) {
+				storeSessionItem.setEnabled(hasIFrame);
+				createExtractionModelMenuItem.setEnabled(hasTableBrowser);
+				jMenuItem2.setEnabled(hasIFrame);
+			}
+		};
+		
 		jScrollPane1.setViewportView(desktop);
 		addWindowListener(new WindowListener() {
 			@Override
