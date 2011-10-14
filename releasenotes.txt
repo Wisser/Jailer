@@ -1,5 +1,6 @@
 3.7
- - Implemented the "Subset by Example" feature: create extraction models according to current data browser session.
+ - Implemented the "Subset by Example" feature: Use the Data Browser to collect all the rows to be extracted and let Jailer create a model for that subset.
+ - Store/Restore of browser sessions (Feature Request ID: 3176291)
 
 3.6.12
  - Extended row limits in Data Browser.
