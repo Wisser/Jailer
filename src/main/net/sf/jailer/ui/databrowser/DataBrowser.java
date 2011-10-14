@@ -348,12 +348,12 @@ public class DataBrowser extends javax.swing.JFrame {
         menuTools = new javax.swing.JMenu();
         analyseMenuItem = new javax.swing.JMenuItem();
         dataModelEditorjMenuItem = new javax.swing.JMenuItem();
+        jMenu2 = new javax.swing.JMenu();
+        createExtractionModelMenuItem = new javax.swing.JMenuItem();
         menuWindow = new javax.swing.JMenu();
         jMenuItem2 = new javax.swing.JMenuItem();
         jSeparator1 = new javax.swing.JPopupMenu.Separator();
         view = new javax.swing.JMenu();
-        jMenu2 = new javax.swing.JMenu();
-        createExtractionModelMenuItem = new javax.swing.JMenuItem();
         helpMenu = new javax.swing.JMenu();
         jMenuItem4 = new javax.swing.JMenuItem();
         helpForum = new javax.swing.JMenuItem();
@@ -563,6 +563,18 @@ public class DataBrowser extends javax.swing.JFrame {
 
         menuBar.add(menuTools);
 
+        jMenu2.setText("Tools");
+
+        createExtractionModelMenuItem.setText("Create Extraction Model");
+        createExtractionModelMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createExtractionModelMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu2.add(createExtractionModelMenuItem);
+
+        menuBar.add(jMenu2);
+
         menuWindow.setText("Window");
 
         jMenuItem2.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
@@ -579,18 +591,6 @@ public class DataBrowser extends javax.swing.JFrame {
         menuWindow.add(view);
 
         menuBar.add(menuWindow);
-
-        jMenu2.setText("Tools");
-
-        createExtractionModelMenuItem.setText("Create Extraction Model");
-        createExtractionModelMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                createExtractionModelMenuItemActionPerformed(evt);
-            }
-        });
-        jMenu2.add(createExtractionModelMenuItem);
-
-        menuBar.add(jMenu2);
 
         helpMenu.setText("Help");
 
