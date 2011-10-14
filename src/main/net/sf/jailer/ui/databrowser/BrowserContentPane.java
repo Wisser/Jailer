@@ -194,7 +194,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 					} else {
 						Set<String> prevIDs = new TreeSet<String>();
+						int prevSize = 0;
 						if (BrowserContentPane.this.rows != null) {
+							prevSize = BrowserContentPane.this.rows.size();
 							for (Row r: BrowserContentPane.this.rows) {
 								prevIDs.add(r.rowId);
 							}
@@ -209,7 +211,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								currentIDs.add(r.rowId);
 							}
 						}
-						onContentChange(rows, rows.isEmpty() || !prevIDs.equals(currentIDs));
+						onContentChange(rows, rows.isEmpty() || rows.size() != prevSize || !prevIDs.equals(currentIDs) || rows.size() != currentIDs.size());
 						updateMode("table");
 						updateWhereField();
 					}
@@ -1393,6 +1395,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			Map<String, Row> rowSet, int NUM_PARENTS) throws SQLException {
 		List<List<Row>> parentBlocks = new ArrayList<List<Row>>();
 		List<Row> currentBlock = new ArrayList<Row>();
+		Set<String> regPRows = new HashSet<String>();
 		parentBlocks.add(currentBlock);
 		for (Row pRow : pRows) {
 			if (currentBlock.size() >= NUM_PARENTS) {
@@ -1441,6 +1444,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				pRowBlock.add(null);
 			}
 			for (Row pRow: pRowBlock) {
+				boolean dupParent = false;
+				if (pRow != null) {
+					if (regPRows.contains(pRow.rowId)) {
+						dupParent = true;
+					}
+					regPRows.add(pRow.rowId);
+				}
 				List<Row> newRows = new ArrayList<Row>();
 				String rId = pRow == null? "" : pRow.rowId;
 				if (newBlockRows.get(rId) != null) {
@@ -1452,12 +1462,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 					for (Row row : newRows) {
 						Row exRow = rowSet.get(row.rowId);
-						if (exRow != null) {
-							++noNonDistinctRows;
-						} else {
-							++noDistinctRows;
+						if (!dupParent) {
+							if (exRow != null) {
+								++noNonDistinctRows;
+							} else {
+								++noDistinctRows;
+							}
 						}
-						if (exRow != null && selectDistinct) {
+						if (exRow != null && (selectDistinct || dupParent)) {
 							addRowToRowLink(pRow, exRow);
 						} else {
 							rows.add(row);
