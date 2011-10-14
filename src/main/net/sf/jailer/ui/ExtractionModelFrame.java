@@ -241,7 +241,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         queryBuilder = new javax.swing.JMenuItem();
         cycleView = new javax.swing.JMenuItem();
         renderHtml = new javax.swing.JMenuItem();
-        printDatamodel = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         helpContent = new javax.swing.JMenuItem();
         tutorial = new javax.swing.JMenuItem();
@@ -669,14 +668,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         jMenu3.add(renderHtml);
 
-        printDatamodel.setLabel("Print Data Model");
-        printDatamodel.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                printDatamodelActionPerformed(evt);
-            }
-        });
-        jMenu3.add(printDatamodel);
-
         jMenuBar2.add(jMenu3);
 
         jMenu2.setText("Help");
@@ -815,18 +806,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         	UIUtil.showException(this, "Error", e);
         }
     }//GEN-LAST:event_dataImportActionPerformed
-
-    private void printDatamodelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printDatamodelActionPerformed
-    	try {
-        	List<String> args = new ArrayList<String>();
-        	args.add("print-datamodel");
-        	File file = saveRestrictions();
-        	args.add(file.getName());
-        	UIUtil.runJailer(this, args, false, true, false, false, null, dbConnectionDialog.getPassword(), null, null, false, true);
-        } catch (Exception e) {
-        	UIUtil.showException(this, "Error", e);
-        }
-	}//GEN-LAST:event_printDatamodelActionPerformed
 
 	/**
 	 * Looks up "show disabled associations" setting.
@@ -1730,7 +1709,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		extractionModelEditor.markDirty();
 	}
 
-	// Variables declaration - do not modify//GEN-BEGIN:variables
+    // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem closureMenuItem;
     private javax.swing.JMenuItem closureToolMenuItem;
     private javax.swing.JMenuItem collapseAll;
@@ -1773,7 +1752,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem newModel;
     private javax.swing.JMenuItem openDataBrowserItem;
     private javax.swing.JMenuItem openDataModelEditor;
-    private javax.swing.JMenuItem printDatamodel;
     private javax.swing.JMenuItem queryBuilder;
     private javax.swing.JMenuItem refresh;
     private javax.swing.JMenuItem removeAllRestrictions;
