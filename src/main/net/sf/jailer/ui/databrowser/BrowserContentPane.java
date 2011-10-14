@@ -2384,7 +2384,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private void updateMode(String mode) {
 		((CardLayout) cardPanel.getLayout()).show(cardPanel, mode);
-		relatedRowsPanel.setVisible("table".equals(mode) && rows.size() >= 1);
+//		relatedRowsPanel.setVisible("table".equals(mode) && rows.size() >= 1);
 	}
 
     /**
