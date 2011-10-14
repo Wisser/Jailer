@@ -527,7 +527,8 @@ public abstract class Desktop extends JDesktopPane {
 					
 					if (childRB.rowIndex >= 0 && !(childRB.rowIndex == 0 && childRB.parent != null && childRB.parent.browserContentPane != null && childRB.parent.browserContentPane.rows != null && childRB.parent.browserContentPane.rows.size() == 1)) {
 						String w = childRB.browserContentPane.parentRow.rowId;
-						r.whereClause = (r.whereClause == null || r.whereClause.length() == 0)? w : "(" + w + ") and (" + r.whereClause + ")";
+						child.whereClause = null;
+						r.whereClause = w; // (r.whereClause == null || r.whereClause.length() == 0)? w : "(" + w + ") and (" + r.whereClause + ")";
 						break;
 					}
 					
