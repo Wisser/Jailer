@@ -344,6 +344,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			ConnectionInfo ci = new ConnectionInfo();
 			ci.alias = "DemoDatabase";
 			ci.driverClass = "org.h2.Driver";
+			ci.jar1 = "lib" + File.separator + "h2-1.3.160.jar";
 			ci.url = "jdbc:h2:demo";
 			ci.user = "sa";
 			ci.password = "";

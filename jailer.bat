@@ -13,7 +13,6 @@ set CP=%CP%;%LIB%\log4j.jar
 set CP=%CP%;%LIB%\args4j.jar
 set CP=%CP%;%LIB%\spring.jar
 set CP=%CP%;%LIB%\sdoc-0.5.0-beta.jar
-set CP=%CP%;%LIB%\h2-1.3.160.jar
 set CP=%CP%;jailer.jar
 
 java -Xmx1024M -cp %CP% net.sf.jailer.Jailer %*
