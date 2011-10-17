@@ -1281,15 +1281,15 @@ public abstract class Desktop extends JDesktopPane {
 	public void layoutBrowser(LayoutMode layoutMode) {
 		this.layoutMode = layoutMode;
 		List<RowBrowser> all = new ArrayList<RowBrowser>(tableBrowsers);
-		List<RowBrowser> column = new ArrayList<RowBrowser>();
+		List<RowBrowser> roots = new ArrayList<RowBrowser>();
 		for (RowBrowser rb: all) {
 			if (rb.parent == null) {
-				column.add(rb);
+				roots.add(rb);
 			}
 		}
-		while (!column.isEmpty()) {
+		while (!roots.isEmpty()) {
 			List<RowBrowser> nextColumn = new ArrayList<RowBrowser>();
-			for (RowBrowser rb: column) {
+			for (RowBrowser rb: roots) {
 				try {
 					rb.internalFrame.setMaximum(false);
 				} catch (PropertyVetoException e) {
@@ -1304,8 +1304,9 @@ public abstract class Desktop extends JDesktopPane {
 					}
 				}
 			}
-			column = nextColumn;
+			roots = nextColumn;
 		}
+		checkDesktopSize();
 	}
 
 	public void closeAll() {

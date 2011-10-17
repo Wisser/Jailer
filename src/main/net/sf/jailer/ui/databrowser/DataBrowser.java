@@ -121,7 +121,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	 */
 	public DataBrowser(DataModel datamodel, Table root, String condition, DbConnectionDialog dbConnectionDialog, boolean embedded) throws Exception {
 		this.datamodel = new Reference<DataModel>(datamodel);
-		this.dbConnectionDialog = dbConnectionDialog != null? new DbConnectionDialog(this, dbConnectionDialog) : null;
+		this.dbConnectionDialog = dbConnectionDialog != null? new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName()) : null;
 		if (embedded) {
 			DataBrowserContext.setSupportsDataModelUpdates(false);
 		}
@@ -275,7 +275,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	protected void setConnection(DbConnectionDialog dbConnectionDialog) throws Exception {
 		if (dbConnectionDialog != null) {
-			dbConnectionDialog = new DbConnectionDialog(this, dbConnectionDialog);
+			dbConnectionDialog = new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName());
 		}
 		this.dbConnectionDialog = dbConnectionDialog;
 		desktop.dbConnectionDialog = dbConnectionDialog;
@@ -886,7 +886,7 @@ public class DataBrowser extends javax.swing.JFrame {
 					DataBrowser dataBrowser = new DataBrowser(datamodel, null, "", null, false);
 					dataBrowser.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 					dataBrowser.setVisible(true);
-					DbConnectionDialog dbConnectionDialog = new DbConnectionDialog(dataBrowser);
+					DbConnectionDialog dbConnectionDialog = new DbConnectionDialog(dataBrowser, DataBrowserContext.getAppName());
 					if (DataBrowserContext.isStandAlone()) {
 						dbConnectionDialog.setJdbcHelpURL("http://dbeauty.sourceforge.net/jdbc.html");
 					}

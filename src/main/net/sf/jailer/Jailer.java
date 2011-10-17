@@ -100,8 +100,13 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "3.7.1";
-
+	public static final String VERSION = "3.8";
+	
+	/**
+	 * The Jailer application name.
+	 */
+	public static final String APPLICATION_NAME = "Jailer";
+	
 	/**
 	 * The relational data model.
 	 */
