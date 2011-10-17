@@ -413,6 +413,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			DatabaseMetaData metaData = session.getMetaData();
 			String dbName = metaData.getDatabaseProductName();
 			boolean isPostgreSQL = dbName != null && dbName.toLowerCase().contains("PostgreSQL".toLowerCase());
+			boolean isH2Sql = dbName != null && dbName.toLowerCase().startsWith("H2".toLowerCase());
 			ResultSet rs = metaData.getSchemas();
 			while (rs.next()) {
 				schemas.add(rs.getString("TABLE_SCHEM"));
@@ -421,7 +422,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			String userSchema = null;
 			for (Iterator<String> i = schemas.iterator(); i.hasNext(); ) {
 				String schema = i.next().trim();
-				if (isPostgreSQL && "public".equalsIgnoreCase(schema)) {
+				if ((isPostgreSQL || isH2Sql) && "public".equalsIgnoreCase(schema)) {
 					return schema;
 				}
 				if (!schema.equalsIgnoreCase(userName.trim())) {
