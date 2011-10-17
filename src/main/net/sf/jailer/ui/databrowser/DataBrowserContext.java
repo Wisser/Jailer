@@ -28,7 +28,7 @@ import net.sf.jailer.Jailer;
 public class DataBrowserContext {
 
 	private static String STANDALONE_APP_NAME = "DBeauty";
-	private static String STANDALONE_APP_VERSION = "1.4.1";
+	private static String STANDALONE_APP_VERSION = "1.5";
 	
 	private static boolean supportsDataModelUpdates = true;
 	private static Boolean standAlone = null;
@@ -58,7 +58,14 @@ public class DataBrowserContext {
 		if (isStandAlone()) {
 			return STANDALONE_APP_NAME + " " + STANDALONE_APP_VERSION + (shortName? "" : " - Relational Data Browser");
 		}
-		return "Jailer " + Jailer.VERSION + (shortName? "" : " - Data Browser");
+		return Jailer.APPLICATION_NAME + " " + Jailer.VERSION + (shortName? "" : " - Data Browser");
+	}
+	
+	public static String getAppName() {
+		if (isStandAlone()) {
+			return STANDALONE_APP_NAME;
+		}
+		return Jailer.APPLICATION_NAME;
 	}
 	
 }

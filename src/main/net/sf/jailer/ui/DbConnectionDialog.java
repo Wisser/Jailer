@@ -107,8 +107,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}
 
 	/** Creates new form DbConnectionDialog */
-	public DbConnectionDialog(java.awt.Frame parent, DbConnectionDialog other) {
-		this(parent);
+	public DbConnectionDialog(java.awt.Frame parent, DbConnectionDialog other, String applicationName) {
+		this(parent, applicationName);
 		this.isConnected = other.isConnected;
 		this.connectionList = other.connectionList;
 		if (other.currentConnection != null) {
@@ -120,9 +120,14 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 	}
 
-	/** Creates new form DbConnectionDialog */
-	public DbConnectionDialog(java.awt.Frame parent) {
+	/** 
+	 * Creates new form DbConnectionDialog
+	 * 
+	 * @param applicationName application name. Used to create the name of the demo database alias. 
+	 */
+	public DbConnectionDialog(java.awt.Frame parent, String applicationName) {
 		super(parent, true);
+		this.applicationName = applicationName;
 		this.parent = parent;
 		loadConnectionList();
 		initComponents();
@@ -215,6 +220,11 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	private boolean inRefresh = false;
 
 	private String jdbcHelpURL = "http://jailer.sourceforge.net/doc/jdbc.html?src=app";
+
+	/**
+	 * Application name. Used to create the name of the demo database alias. 
+	 */
+	private final String applicationName;
 	
 	public synchronized void setJdbcHelpURL(String jdbcHelpURL) {
 		this.jdbcHelpURL = jdbcHelpURL;
@@ -342,7 +352,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 		if (connectionList.size() == 0) {
 			ConnectionInfo ci = new ConnectionInfo();
-			ci.alias = "DemoDatabase";
+			ci.alias = applicationName + "DemoDatabase";
 			ci.driverClass = "org.h2.Driver";
 			ci.jar1 = "lib" + File.separator + "h2-1.3.160.jar";
 			ci.url = "jdbc:h2:demo";

@@ -121,7 +121,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         extractionModelEditor.extractionModelFile = extractionModelFile;
         pack();
         updateTitle(extractionModelEditor.needsSave);
-        dbConnectionDialog = new DbConnectionDialog(this);
+        dbConnectionDialog = new DbConnectionDialog(this, Jailer.APPLICATION_NAME);
         try {
 	        for (final LookAndFeelInfo lfInfo: UIManager.getInstalledLookAndFeels()) {
 	        	JMenuItem mItem = new JMenuItem();
@@ -1157,7 +1157,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      */
     public void setDbConnectionDialogClone(DbConnectionDialog dbConnectionDialog) {
     	try {
-    		this.dbConnectionDialog = new DbConnectionDialog(this, dbConnectionDialog);
+    		this.dbConnectionDialog = new DbConnectionDialog(this, dbConnectionDialog, Jailer.APPLICATION_NAME);
     	} finally {
         	updateMenuItems();
     	}
