@@ -13,6 +13,8 @@ Informix Dynamic Server;jdbc:informix-sqli://<HOST>:<PORT>/<DB>:INFORMIXSERVER=<
 InstantDB (v3.13 and earlier);jdbc:idb:<DB>;jdbc.idbDriver
 InstantDB (v3.14 and later);jdbc:idb:<DB>;org.enhydra.instantdb.jdbc.idbDriver
 Interbase (InterClient Driver);jdbc:interbase://<HOST>/<DB>;interbase.interclient.Driver
+H2 embedded (Java SQL database);jdbc:h2:<DB-File>;org.h2.Driver
+H2 TCP (Java SQL database);jdbc:h2:tcp://<HOST>/<DB-File>;org.h2.Driver
 HyperSQL;jdbc:hsqldb:<file|hsql|http>:<DB>;org.hsqldb.jdbcDriver
 Microsoft SQL Server (jTDS);jdbc:jtds:sqlserver://<server>[:<port>][/<database>];net.sourceforge.jtds.jdbc.Driver
 Microsoft SQL Server (JTurbo Driver);jdbc:JTurbo://<HOST>:<PORT>/<DB>;com.ashna.jturbo.driver.Driver
