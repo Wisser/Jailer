@@ -1828,23 +1828,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			rowsTable.setRowHeight(singleRowDetailsView.getPreferredSize().height);
 		}
 
-		for (int i = 0; i < rowsTable.getColumnCount(); i++) {
-			TableColumn column = rowsTable.getColumnModel().getColumn(i);
-			int width = (Desktop.BROWSERTABLE_DEFAULT_WIDTH - 18) / rowsTable.getColumnCount();
-
-			Component comp = rowsTable.getDefaultRenderer(String.class).getTableCellRendererComponent(rowsTable, column.getHeaderValue(), false, false, 0, i);
-			width = Math.max(width, comp.getPreferredSize().width);
-
-			for (int line = 0; line < rowsTable.getRowCount(); ++line) {
-				comp = rowsTable.getCellRenderer(line, i).getTableCellRendererComponent(rowsTable, dtm.getValueAt(line, i), false, false, line, i);
-				width = Math.max(width, comp.getPreferredSize().width + (singleRowDetailsView == null ? 16 : 0));
-				if (singleRowDetailsView == null) {
-					width = Math.min(width, 400);
-				}
-			}
-
-			column.setPreferredWidth(width);
-		}
+		adjustRowTableColumnsWidth();
 		rowsTable.setIntercellSpacing(new Dimension(0, 0));
 		int size = rows.size();
 		if (size > limit) {
@@ -1861,6 +1845,27 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		if (sqlBrowserContentPane != null) {
 			sqlBrowserContentPane.detailsButton.setEnabled(!rows.isEmpty());
+		}
+	}
+
+	public void adjustRowTableColumnsWidth() {
+		DefaultTableModel dtm = (DefaultTableModel) rowsTable.getModel();
+		for (int i = 0; i < rowsTable.getColumnCount(); i++) {
+			TableColumn column = rowsTable.getColumnModel().getColumn(i);
+			int width = ((int) (Desktop.BROWSERTABLE_DEFAULT_WIDTH * getLayoutFactor()) - 18) / rowsTable.getColumnCount();
+
+			Component comp = rowsTable.getDefaultRenderer(String.class).getTableCellRendererComponent(rowsTable, column.getHeaderValue(), false, false, 0, i);
+			width = Math.max(width, comp.getPreferredSize().width);
+
+			for (int line = 0; line < rowsTable.getRowCount(); ++line) {
+				comp = rowsTable.getCellRenderer(line, i).getTableCellRendererComponent(rowsTable, dtm.getValueAt(line, i), false, false, line, i);
+				width = Math.max(width, comp.getPreferredSize().width + (singleRowDetailsView == null ? 16 : 0));
+				if (singleRowDetailsView == null) {
+					width = Math.min(width, 400);
+				}
+			}
+
+			column.setPreferredWidth(width);
 		}
 	}
 
@@ -2477,6 +2482,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract void openSchemaMappingDialog();
 	protected abstract void openSchemaAnalyzer();
 	protected abstract DbConnectionDialog getDbConnectionDialog();
+	protected abstract double getLayoutFactor();
 	
     private void openDetails(final int x, final int y) {
 		JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), true);

@@ -117,7 +117,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         initAnimationSteptime();
         isHorizontalLayout = isHorizonal;
         horizontalLayoutMenuItem.setSelected(isHorizontalLayout);
-        editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelFile, this, isHorizontalLayout, getConnectivityState()), "editor");
+        editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip()), "editor");
         extractionModelEditor.extractionModelFile = extractionModelFile;
         pack();
         updateTitle(extractionModelEditor.needsSave);
@@ -152,12 +152,20 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private void updateMenuItems() {
 		connectDb.setSelected(dbConnectionDialog.isConnected);
 		extractionModelEditor.connectivityState.setText(getConnectivityState());
-		extractionModelEditor.connectivityState.setToolTipText(getConnectivityState());
+		extractionModelEditor.connectivityState.setToolTipText(getConnectivityStateToolTip());
     }
 	
 	private String getConnectivityState() {
 		if (dbConnectionDialog != null && dbConnectionDialog.isConnected) {
-			return dbConnectionDialog.currentConnection.user + "@" + (dbConnectionDialog.currentConnection.url);
+			return dbConnectionDialog.currentConnection.user + "@" + (dbConnectionDialog.currentConnection.alias);
+		} else {
+			return "offline";
+		}
+	}
+	
+	private String getConnectivityStateToolTip() {
+		if (dbConnectionDialog != null && dbConnectionDialog.isConnected) {
+			return (dbConnectionDialog.currentConnection.url);
 		} else {
 			return "offline";
 		}
@@ -1183,7 +1191,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			extractionModelEditor.extractionModelFrame = null;
 			editorPanel.remove(extractionModelEditor);
 			extractionModelEditor = null;
-    		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(modelFile, this, isHorizontalLayout, getConnectivityState()), "editor");
+    		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(modelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip()), "editor");
 			((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
 			validate();
 			updateTitle(extractionModelEditor.needsSave);
@@ -1201,7 +1209,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	    		extractionModelEditor.extractionModelFrame = null;
 	    		editorPanel.remove(extractionModelEditor);
 				extractionModelEditor = null;
-	    		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(null, this, isHorizontalLayout, getConnectivityState()), "editor");
+	    		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(null, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip()), "editor");
 	    		((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
 	    		validate();
 	    		updateTitle(extractionModelEditor.needsSave);
@@ -1218,7 +1226,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 	    	extractionModelEditor.extractionModelFrame = null;
 			editorPanel.remove(extractionModelEditor);
-			editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelEditor.extractionModelFile, this, isHorizontalLayout, getConnectivityState()), "editor");
+			editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelEditor.extractionModelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip()), "editor");
 			((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
 			validate();
 			updateTitle(extractionModelEditor.needsSave);
@@ -1583,14 +1591,18 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             		}	
             	}
             	ExtractionModelFrame extractionModelFrame = createFrame(file);
-                askForDataModel(extractionModelFrame);
+                try {
+					askForDataModel(extractionModelFrame);
+				} catch (Exception e) {
+					UIUtil.showException(extractionModelFrame, "Error", e);
+				}
             }
 
         });
     }
     
     private static void askForDataModel(
-			ExtractionModelFrame extractionModelFrame) {
+			ExtractionModelFrame extractionModelFrame) throws Exception {
 		if (extractionModelFrame.extractionModelEditor == null || extractionModelFrame.extractionModelEditor.dataModel == null || extractionModelFrame.extractionModelEditor.dataModel.getTables().isEmpty()) {
         	switch (JOptionPane.showOptionDialog(extractionModelFrame, "No Data Model found.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor", "Demo" }, null)) {
         		case 0: extractionModelFrame.updateDataModelActionPerformed(null); break;
@@ -1610,7 +1622,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      * 
      * @param extractionModelFrame the editor frame
      */
-	private static void demo(ExtractionModelFrame extractionModelFrame) {
+	public static void demo(ExtractionModelFrame extractionModelFrame) throws Exception {
 		File tables = new File(DataModel.getTablesFile());
 		tables.delete();
 		File columns = new File(DataModel.getColumnsFile());
@@ -1671,9 +1683,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			out.println("# table; display name");
 			out.println("Demo; " + (new Date().getTime()));
 			out.close();
-			extractionModelFrame.load("Demo.csv");
+			if (extractionModelFrame != null) {
+				extractionModelFrame.load("Demo.csv");
+			}
 		} catch (Exception e) {
-			UIUtil.showException(extractionModelFrame, "Error", e);
+			if (extractionModelFrame != null) {
+				UIUtil.showException(extractionModelFrame, "Error", e);
+			} else {
+				throw e;
+			}
 		}
 	}
 	

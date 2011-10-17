@@ -209,7 +209,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * @param extractionModelFile file containing the model
 	 * @param extractionModelFrame the enclosing frame
      */
-	public ExtractionModelEditor(String extractionModelFile, ExtractionModelFrame extractionModelFrame, boolean horizontalLayout, String connectionState) {
+	public ExtractionModelEditor(String extractionModelFile, ExtractionModelFrame extractionModelFrame, boolean horizontalLayout, String connectionState, String connectionStateToolTip) {
 		this.extractionModelFrame = extractionModelFrame;
 		this.extractionModelFile = extractionModelFile;
 		ParameterSelector.ParametersGetter parametersGetter = new ParameterSelector.ParametersGetter() {
@@ -407,7 +407,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         xmlSketch.setContentType("text/xml");
 		setOrientation(horizontalLayout);
 		connectivityState.setText(connectionState);
-		connectivityState.setToolTipText(connectionState);
+		connectivityState.setToolTipText(connectionStateToolTip);
 		
 		String modelname = "Data Model \"" + dataModel.getName() + "\"";
 		String lastMod = dataModel.getLastModifiedAsString();
