@@ -1,5 +1,5 @@
-Layout; TINY
-1; ; ; 0; 0; 253; 253; 200; false; T; EMPLOYEE; ; 
-2; 1; ; 285; 0; 253; 253; 500; false; T; DEPARTMENT; DEPARTMENT; 
-3; 1; ; 285; 264; 253; 253; 500; false; T; PROJECT_PARTICIPATION; inverse-EMPLOYEE; 
-4; 3; ; 570; 264; 253; 253; 500; false; T; PROJECT; PROJECT; 
+Layout; MEDIUM
+1; ; ; 0; 0; 460; 460; 200; false; T; EMPLOYEE; ; 
+2; 1; ; 492; 0; 460; 460; 500; false; T; DEPARTMENT; DEPARTMENT; 
+3; 1; ; 492; 472; 460; 460; 500; false; T; PROJECT_PARTICIPATION; inverse-EMPLOYEE; 
+4; 3; ; 984; 472; 460; 460; 500; false; T; PROJECT; PROJECT; 
