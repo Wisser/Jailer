@@ -293,6 +293,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	private void loadConnectionList() {
 		connectionList = new ArrayList<ConnectionInfo>();
 		currentConnection = null;
+		boolean ok = false;
 		
 		try {
             File file = new File(CONNECTIONS_FILE);
@@ -305,40 +306,52 @@ public class DbConnectionDialog extends javax.swing.JDialog {
                 if (i >= 0 && i < connectionList.size()) {
 //                	currentConnection = connectionList.get(i);
                 }
-                return;
+                ok = true;
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
         
-		// migration of old settings
-		try {
-			File settingsFile = new File(".connect.ui");
-			if (settingsFile.exists()) {
-				ObjectInputStream in = new ObjectInputStream(
-						new FileInputStream(settingsFile));
-				Map<String, Map<String, String>> settings = (Map<String, Map<String, String>>) in
-						.readObject();
-				in.close();
-				for (String name : settings.keySet()) {
-					if (settings.get(name).get("dbUser").trim().length() > 0) {
-						ConnectionInfo ci = new ConnectionInfo();
-						ci.alias = name;
-						ci.driverClass = settings.get(name).get("driver");
-						ci.user = settings.get(name).get("dbUser");
-						ci.url = settings.get(name).get("dbUrl");
-						ci.password = settings.get(name).get("password");
-						ci.jar1 = settings.get(name).get("jar1");
-						ci.jar2 = settings.get(name).get("jar2");
-						connectionList.add(ci);
+		if (!ok) {
+			// migration of old settings
+			try {
+				File settingsFile = new File(".connect.ui");
+				if (settingsFile.exists()) {
+					ObjectInputStream in = new ObjectInputStream(
+							new FileInputStream(settingsFile));
+					Map<String, Map<String, String>> settings = (Map<String, Map<String, String>>) in
+							.readObject();
+					in.close();
+					for (String name : settings.keySet()) {
+						if (settings.get(name).get("dbUser").trim().length() > 0) {
+							ConnectionInfo ci = new ConnectionInfo();
+							ci.alias = name;
+							ci.driverClass = settings.get(name).get("driver");
+							ci.user = settings.get(name).get("dbUser");
+							ci.url = settings.get(name).get("dbUrl");
+							ci.password = settings.get(name).get("password");
+							ci.jar1 = settings.get(name).get("jar1");
+							ci.jar2 = settings.get(name).get("jar2");
+							connectionList.add(ci);
+						}
 					}
 				}
-				if (connectionList.size() > 0) {
-					currentConnection = connectionList.get(0);
-				}
+			} catch (Exception e) {
+				// ignore
 			}
-		} catch (Exception e) {
-			// ignore
+		}
+		if (connectionList.size() == 0) {
+			ConnectionInfo ci = new ConnectionInfo();
+			ci.alias = "DemoDatabase";
+			ci.driverClass = "org.h2.Driver";
+			ci.url = "jdbc:h2:demo";
+			ci.user = "sa";
+			ci.password = "";
+			connectionList.add(ci);
+			store();
+		}
+		if (connectionList.size() == 1) {
+			currentConnection = connectionList.get(0);
 		}
 	}
 

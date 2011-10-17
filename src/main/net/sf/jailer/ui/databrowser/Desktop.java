@@ -346,6 +346,15 @@ public abstract class Desktop extends JDesktopPane {
 			}
 		});
 		
+		jInternalFrame.addPropertyChangeListener(JInternalFrame.IS_SELECTED_PROPERTY, new PropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent evt) {
+				if (Boolean.TRUE.equals(evt.getNewValue())) {
+					updateMenu();
+				}
+			}
+		});
+		
 		jInternalFrame.addComponentListener(new ComponentListener() {
 
 			@Override
@@ -584,6 +593,11 @@ public abstract class Desktop extends JDesktopPane {
 			protected DbConnectionDialog getDbConnectionDialog() {
 				return dbConnectionDialog;
 			}
+
+			@Override
+			protected double getLayoutFactor() {
+				return layoutMode.factor;
+			}
 		};
 		
 		Rectangle r = layout(parentRowIndex < 0, parent, association, browserContentPane, new ArrayList<RowBrowser>());
@@ -630,7 +644,11 @@ public abstract class Desktop extends JDesktopPane {
 
 		checkDesktopSize();
 		this.scrollRectToVisible(jInternalFrame.getBounds());
-		jInternalFrame.toFront();
+		try {
+			jInternalFrame.setSelected(true);
+		} catch (PropertyVetoException e1) {
+			// ignore
+		}
 		if (browserContentPane.sqlBrowserContentPane != null) {
 			browserContentPane.sqlBrowserContentPane.sqlEditorPane.grabFocus();
 		} else {
@@ -664,8 +682,8 @@ public abstract class Desktop extends JDesktopPane {
 			y = parent.internalFrame.getY();
 		}
 		// int h = fullSize || association == null || (association.getCardinality() != Cardinality.MANY_TO_ONE && association.getCardinality() != Cardinality.ONE_TO_ONE)? HEIGHT : browserContentPane.getMinimumSize().height + MIN_HEIGHT; 
-		int h = HEIGHT; 
-		Rectangle r = new Rectangle(x, y, BROWSERTABLE_DEFAULT_WIDTH, h);
+		int h = (int) (HEIGHT * layoutMode.factor); 
+		Rectangle r = new Rectangle(x, y, (int) (BROWSERTABLE_DEFAULT_WIDTH * layoutMode.factor), h);
 		for (;;) {
 			boolean ok = true;
 			for (RowBrowser tb : tableBrowsers) {
@@ -674,7 +692,7 @@ public abstract class Desktop extends JDesktopPane {
 					break;
 				}
 			}
-			r = new Rectangle(x, y, BROWSERTABLE_DEFAULT_WIDTH, h);
+			r = new Rectangle(x, y, (int) (BROWSERTABLE_DEFAULT_WIDTH * layoutMode.factor), h);
 			y += 8;
 			if (ok) {
 				break;
@@ -801,6 +819,11 @@ public abstract class Desktop extends JDesktopPane {
 				if (y2 > max) {
 					y2 = max;
 				}
+				
+				if (tableBrowser.rowIndex < 0) {
+					y2 = tableBrowser.parent.internalFrame.getY() + tableBrowser.parent.internalFrame.getHeight() / 2;
+				}
+				
 				if (x1 != tableBrowser.x1 || y1 != tableBrowser.y1 || x2 != tableBrowser.x2 || y2 != tableBrowser.y2) {
 					changed = true;
 					tableBrowser.x1 = x1;
@@ -923,7 +946,7 @@ public abstract class Desktop extends JDesktopPane {
 					for (RowBrowser tableBrowser : tableBrowsers) {
 						if (!tableBrowser.internalFrame.isIcon() && (tableBrowser.parent == null || !tableBrowser.parent.internalFrame.isIcon())) {
 							Color color = pbg? Color.white : tableBrowser.color;
-							if (tableBrowser.parent != null && tableBrowser.rowIndex >= 0) {
+							if (tableBrowser.parent != null && (tableBrowser.rowIndex >= 0 || tableBrowser.rowToRowLinks.isEmpty())) {
 								Point2D start = new Point2D.Double(tableBrowser.x2, tableBrowser.y2);
 								Point2D end = new Point2D.Double(tableBrowser.x1, tableBrowser.y1);
 								paintLink(start, end, color, g2d, tableBrowser, pbg, true, linesHash);
@@ -1239,8 +1262,24 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	private final DataBrowser parentFrame;
-
-	public void layoutBrowser() {
+	
+	public static enum LayoutMode {
+		TINY(0.55),
+		SMALL(0.75),
+		MEDIUM(1.0),
+		LARGE(1.4);
+		
+		public final double factor;
+		
+		private LayoutMode(double factor) {
+			this.factor = factor;
+		}
+	}
+	
+	private LayoutMode layoutMode = LayoutMode.MEDIUM;
+	
+	public void layoutBrowser(LayoutMode layoutMode) {
+		this.layoutMode = layoutMode;
 		List<RowBrowser> all = new ArrayList<RowBrowser>(tableBrowsers);
 		List<RowBrowser> column = new ArrayList<RowBrowser>();
 		for (RowBrowser rb: all) {
@@ -1257,6 +1296,7 @@ public abstract class Desktop extends JDesktopPane {
 					// ignore
 				}
 				rb.internalFrame.setBounds(layout(rb.rowIndex < 0, rb.parent, rb.association, rb.browserContentPane, all));
+				rb.browserContentPane.adjustRowTableColumnsWidth();
 				all.remove(rb);
 				for (RowBrowser rbc: all) {
 					if (rbc.parent == rb) {
@@ -1273,6 +1313,7 @@ public abstract class Desktop extends JDesktopPane {
 			close(rb);
 			getDesktopManager().closeFrame(rb.internalFrame);
 		}
+		updateMenu();
 	}
 
 	private void close(final RowBrowser tableBrowser) {
@@ -1400,6 +1441,8 @@ public abstract class Desktop extends JDesktopPane {
 	}
 	
 	protected abstract void updateMenu(boolean hasTableBrowser, boolean hasIFrame);
+	protected abstract void updateMenu(LayoutMode layoutMode);
+	private final String LF = System.getProperty("line.separator", "\n");
 	
 	/**
 	 * Stores browser session.
@@ -1428,6 +1471,8 @@ public abstract class Desktop extends JDesktopPane {
 			try {
 				FileWriter out = new FileWriter(new File(sFile));
 
+				out.write("Layout; " + layoutMode + LF);
+				
 				for (RowBrowser rb: tableBrowsers) {
 					if (rb.parent == null) {
 						storeSession(rb, browserNumber, out);
@@ -1444,7 +1489,6 @@ public abstract class Desktop extends JDesktopPane {
 	 * Recursively stores row-browser session.
 	 */
 	private void storeSession(RowBrowser rb, Map<RowBrowser, Integer> browserNumber, FileWriter out) throws IOException {
-		final String LF = System.getProperty("line.separator", "\n");
 		if (rb.browserContentPane.table != null) {
 			String csv = browserNumber.get(rb) + "; " + (rb.parent == null? "" : browserNumber.get(rb.parent)) + "; ";
 			
@@ -1498,6 +1542,16 @@ public abstract class Desktop extends JDesktopPane {
 				Collection<RowBrowser> toBeLoaded = new ArrayList<Desktop.RowBrowser>();
 				List<String> unknownTables = new ArrayList<String>();
 				for (CsvFile.Line l: lines) {
+					if (l.cells.get(0).equals("Layout")) {
+						try {
+							layoutMode = LayoutMode.valueOf(l.cells.get(1));
+							updateMenu(layoutMode);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						continue;
+					}
+					
 					String id = l.cells.get(0);
 					String parent = l.cells.get(1);
 					String where = l.cells.get(2);
@@ -1547,6 +1601,14 @@ public abstract class Desktop extends JDesktopPane {
 				UIUtil.showException(this, "Error", e);
 			}
 		}
+	}
+
+	public JInternalFrame[] getAllFramesFromTableBrowsers() {
+		List<JInternalFrame> frames = new ArrayList<JInternalFrame>();
+		for (RowBrowser rb: tableBrowsers) {
+			frames.add(rb.internalFrame);
+		}
+		return frames.toArray(new JInternalFrame[frames.size()]);
 	}
 
 }
