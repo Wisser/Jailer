@@ -1823,6 +1823,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 			private static final long serialVersionUID = 2657584557290860355L;
 		};
+		r.setOpenIcon(null);
+		r.setLeafIcon(null);
+		r.setClosedIcon(null);
 		return r;
 	}
 
