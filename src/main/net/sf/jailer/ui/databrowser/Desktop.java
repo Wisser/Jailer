@@ -791,10 +791,15 @@ public abstract class Desktop extends JDesktopPane {
 				int midx = tableBrowser.parent.internalFrame.getX() + tableBrowser.parent.internalFrame.getWidth() / 2;
 
 				Rectangle cellRect = new Rectangle();
+				boolean ignoreScrolling = false;
 				int i = 0;
 				if (tableBrowser.rowIndex >= 0) {
 					i = tableBrowser.parent.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(tableBrowser.rowIndex);
 					cellRect = tableBrowser.parent.browserContentPane.rowsTable.getCellRect(i, 0, true);
+					if (tableBrowser.parent.browserContentPane.rows != null && tableBrowser.parent.browserContentPane.rows.size() == 1) {
+						cellRect.setBounds(cellRect.x, 0, cellRect.width, Math.min(cellRect.height, 20));
+						ignoreScrolling = true;
+					}
 				}
 
 				int x2 = tableBrowser.parent.internalFrame.getX();
@@ -807,6 +812,9 @@ public abstract class Desktop extends JDesktopPane {
 					x2 += BORDER;
 				}
 				Container p = tableBrowser.parent.browserContentPane.rowsTable;
+				if (ignoreScrolling) {
+					p = p.getParent();
+				}
 				while (p != tableBrowser.parent.internalFrame) {
 					y2 += p.getY();
 					p = p.getParent();
@@ -847,10 +855,14 @@ public abstract class Desktop extends JDesktopPane {
 							int dmin = Math.min(dll, Math.min(dlr, Math.min(drl, drr)));
 							r2 = dmin == drl || dmin == drr;
 							r1 = dmin == dlr || dmin == drr;
-							
+							ignoreScrolling = false;
 							if (rowToRowLink.childRowIndex >= 0) {
 								i = tableBrowser.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(rowToRowLink.childRowIndex);
 								cellRect = tableBrowser.browserContentPane.rowsTable.getCellRect(i, 0, true);
+								if (tableBrowser.browserContentPane.rows != null && tableBrowser.browserContentPane.rows.size() == 1) {
+									cellRect.setBounds(cellRect.x, 0, cellRect.width, Math.min(cellRect.height, 20));
+									ignoreScrolling = true;
+								}
 							}
 		
 							x1 = tableBrowser.internalFrame.getX();
@@ -862,6 +874,9 @@ public abstract class Desktop extends JDesktopPane {
 								x1 += BORDER;
 							}
 							p = tableBrowser.browserContentPane.rowsTable;
+							if (ignoreScrolling) {
+								p = p.getParent();
+							}
 							while (p != tableBrowser.internalFrame) {
 								y1 += p.getY();
 								p = p.getParent();
@@ -874,12 +889,16 @@ public abstract class Desktop extends JDesktopPane {
 							if (y1 > max) {
 								y1 = max;
 							}
-							
+							ignoreScrolling = false;
 							cellRect = new Rectangle();
 							i = 0;
 							if (rowToRowLink.parentRowIndex >= 0) {
 								i = tableBrowser.parent.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(rowToRowLink.parentRowIndex);
 								cellRect = tableBrowser.parent.browserContentPane.rowsTable.getCellRect(i, 0, true);
+								if (tableBrowser.parent.browserContentPane.rows != null && tableBrowser.parent.browserContentPane.rows.size() == 1) {
+									cellRect.setBounds(cellRect.x, 0, cellRect.width, Math.min(cellRect.height, 20));
+									ignoreScrolling = true;
+								}
 							}
 		
 							x2 = tableBrowser.parent.internalFrame.getX();
@@ -891,6 +910,9 @@ public abstract class Desktop extends JDesktopPane {
 								x2 += BORDER;
 							}
 							p = tableBrowser.parent.browserContentPane.rowsTable;
+							if (ignoreScrolling) {
+								p = p.getParent();
+							}
 							while (p != tableBrowser.parent.internalFrame) {
 								y2 += p.getY();
 								p = p.getParent();
@@ -949,11 +971,11 @@ public abstract class Desktop extends JDesktopPane {
 							if (tableBrowser.parent != null && (tableBrowser.rowIndex >= 0 || tableBrowser.rowToRowLinks.isEmpty())) {
 								Point2D start = new Point2D.Double(tableBrowser.x2, tableBrowser.y2);
 								Point2D end = new Point2D.Double(tableBrowser.x1, tableBrowser.y1);
-								paintLink(start, end, color, g2d, tableBrowser, pbg, true, linesHash);
+								paintLink(start, end, color, g2d, tableBrowser, pbg, true, linesHash, tableBrowser.parent == null || tableBrowser.rowIndex < 0);
 							}
 							for (RowToRowLink rowToRowLink: tableBrowser.rowToRowLinks) {
 								if (rowToRowLink.x1 >= 0) {
-									paintLink(new Point2D.Double(rowToRowLink.x2, rowToRowLink.y2), new Point2D.Double(rowToRowLink.x1, rowToRowLink.y1), color, g2d, tableBrowser, pbg, false, linesHash);
+									paintLink(new Point2D.Double(rowToRowLink.x2, rowToRowLink.y2), new Point2D.Double(rowToRowLink.x1, rowToRowLink.y1), color, g2d, tableBrowser, pbg, false, linesHash, false);
 								}
 							}
 						}
@@ -963,11 +985,13 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 	
-	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect, Set<Long> lineHashes) {
+	private void paintLink(Point2D start, Point2D end, Color color, Graphics2D g2d, RowBrowser tableBrowser, boolean pbg, boolean intersect, Set<Long> lineHashes, boolean dotted) {
 		g2d.setColor(color);
 		g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-		g2d.setStroke(new BasicStroke(!intersect? (pbg? 3 : 1) : (pbg? 5 : 3)));
-
+		BasicStroke stroke = new BasicStroke(!intersect? (pbg? 3 : 1) : (pbg? 5 : 3));
+		g2d.setStroke(dotted? new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), 
+				new float[] { 2f, 6f }, 1.0f) : stroke);
+		
 		AffineTransform t = new AffineTransform();
 		t.setToRotation(Math.PI / 4);
 		Point2D p = new Point2D.Double(), shift = new Point2D.Double();
@@ -1610,6 +1634,28 @@ public abstract class Desktop extends JDesktopPane {
 			frames.add(rb.internalFrame);
 		}
 		return frames.toArray(new JInternalFrame[frames.size()]);
+	}
+
+	public List<RowBrowser> getRootBrowsers() {
+		List<RowBrowser> roots = new ArrayList<Desktop.RowBrowser>();
+		
+		for (RowBrowser rb: tableBrowsers) {
+			if (rb.parent == null) {
+				roots.add(rb);
+			}
+		}
+		return roots;
+	}
+
+	public List<RowBrowser> getChildBrowsers(RowBrowser parent) {
+		List<RowBrowser> roots = new ArrayList<Desktop.RowBrowser>();
+		
+		for (RowBrowser rb: tableBrowsers) {
+			if (rb.parent == parent) {
+				roots.add(rb);
+			}
+		}
+		return roots;
 	}
 
 }

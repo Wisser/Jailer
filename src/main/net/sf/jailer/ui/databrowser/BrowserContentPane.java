@@ -561,7 +561,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							y = e.getY();
 						}
 						Point p = SwingUtilities.convertPoint(rowsTable, x, y, null);
-						JPopupMenu popup = createPopupMenu(row, i, p.x + getOwner().getX(), p.y + getOwner().getY());
+						JPopupMenu popup;
+						popup = createPopupMenu(row, i, p.x + getOwner().getX(), p.y + getOwner().getY(), rows.size() == 1);
 						popup.show(rowsTable, x, y);
 						popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
 
@@ -621,11 +622,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-				if (rows.size() == 1) {
-					popup = createPopupMenu(rows.get(0), 0, 0, 0);
-				} else {
-					popup = createPopupMenu(null, -1, 0, 0);
-				}
+//				if (rows.size() == 1) {
+//					popup = createPopupMenu(rows.get(0), 0, 0, 0);
+//				} else {
+					popup = createPopupMenu(null, -1, 0, 0, false);
+//				}
 				setCurrentRowSelection(-2);
 				popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
 					@Override
@@ -747,8 +748,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	/**
 	 * Creates popup menu for navigation.
+	 * @param navigateFromAllRows 
 	 */
-	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y) {
+	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows) {
 		List<String> assList = new ArrayList<String>();
 		Map<String, Association> assMap = new HashMap<String, Association>();
 		for (Association a : table.associations) {
@@ -775,10 +777,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		Collections.sort(assList);
 
 		JPopupMenu popup = new JPopupMenu();
-		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Parents", "1");
-		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Children", "2");
-		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Associated Rows", "3");
-		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Detached Rows", "4");
+		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Parents", "1", navigateFromAllRows);
+		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Children", "2", navigateFromAllRows);
+		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Associated Rows", "3", navigateFromAllRows);
+		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Detached Rows", "4", navigateFromAllRows);
 
 		if (row != null) {
 			if (!(table instanceof SqlStatementTable)) {
@@ -1253,7 +1255,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	private JPopupMenu createNavigationMenu(JPopupMenu popup, final Row row, final int rowIndex, List<String> assList, Map<String, Association> assMap,
-			String title, String prefix) {
+			String title, String prefix, final boolean navigateFromAllRows) {
 		JMenu nav = new JMenu(title);
 		if (prefix.equals("1")) {
 			nav.setForeground(new java.awt.Color(170, 0, 0));
@@ -1292,7 +1294,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			item.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					highlightedRows.add(rowIndex);
-					navigateTo(association, rowIndex, row);
+					if (navigateFromAllRows) {
+						navigateTo(association, -1, null);
+					} else {
+						navigateTo(association, rowIndex, row);
+					}
 				}
 			});
 			if (current != null) {

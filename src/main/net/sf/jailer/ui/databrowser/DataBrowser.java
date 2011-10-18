@@ -16,10 +16,8 @@
 package net.sf.jailer.ui.databrowser;
 
 import java.awt.Cursor;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Image;
-import java.awt.Insets;
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -34,6 +32,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -44,21 +43,27 @@ import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
-import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JToggleButton;
+import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
+import javax.swing.tree.TreePath;
 
 import jsyntaxpane.DefaultSyntaxKit;
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.ModelBuilder;
@@ -68,9 +73,9 @@ import net.sf.jailer.ui.BrowserLauncher;
 import net.sf.jailer.ui.DataModelEditor;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
-import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
 import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 
 import org.apache.log4j.PropertyConfigurator;
 
@@ -126,6 +131,14 @@ public class DataBrowser extends javax.swing.JFrame {
 			DataBrowserContext.setSupportsDataModelUpdates(false);
 		}
 		initComponents();
+		
+		DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
+		renderer.setOpenIcon(null);
+		renderer.setLeafIcon(null);
+		renderer.setClosedIcon(null);
+		navigationTree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode("")));
+		
+		navigationTree.setCellRenderer(renderer);
 		
 		ButtonGroup buttonGroup = new ButtonGroup();
 		
@@ -353,9 +366,6 @@ public class DataBrowser extends javax.swing.JFrame {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel1 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jInternalFrame1 = new javax.swing.JInternalFrame();
-        jLabel1 = new javax.swing.JLabel();
         jPanel11 = new javax.swing.JPanel();
         legende1 = new javax.swing.JPanel();
         modelName = new javax.swing.JLabel();
@@ -369,6 +379,15 @@ public class DataBrowser extends javax.swing.JFrame {
         schemaName = new javax.swing.JLabel();
         legende2 = new javax.swing.JPanel();
         connectivityState = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        jSplitPane1 = new javax.swing.JSplitPane();
+        jPanel3 = new javax.swing.JPanel();
+        jPanel4 = new javax.swing.JPanel();
+        navigationTreeScrollPane = new javax.swing.JScrollPane();
+        navigationTree = new javax.swing.JTree();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jInternalFrame1 = new javax.swing.JInternalFrame();
+        jLabel1 = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -398,23 +417,6 @@ public class DataBrowser extends javax.swing.JFrame {
         aboutMenuItem = new javax.swing.JMenuItem();
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
-
-        jScrollPane1.setAutoscrolls(true);
-
-        jInternalFrame1.setVisible(true);
-
-        jLabel1.setText("jLabel1");
-        jInternalFrame1.getContentPane().add(jLabel1, java.awt.BorderLayout.CENTER);
-
-        jScrollPane1.setViewportView(jInternalFrame1);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel1.add(jScrollPane1, gridBagConstraints);
 
         jPanel11.setLayout(new java.awt.GridBagLayout());
 
@@ -529,6 +531,68 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(jPanel11, gridBagConstraints);
+
+        jPanel2.setLayout(new java.awt.GridBagLayout());
+
+        jSplitPane1.setDividerLocation(240);
+        jSplitPane1.setContinuousLayout(true);
+        jSplitPane1.setOneTouchExpandable(true);
+
+        jPanel3.setLayout(new java.awt.GridBagLayout());
+
+        jPanel4.setLayout(new java.awt.GridBagLayout());
+
+        navigationTree.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                navigationTreeMouseClicked(evt);
+            }
+        });
+        navigationTreeScrollPane.setViewportView(navigationTree);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel4.add(navigationTreeScrollPane, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel3.add(jPanel4, gridBagConstraints);
+
+        jSplitPane1.setLeftComponent(jPanel3);
+
+        jScrollPane1.setAutoscrolls(true);
+
+        jInternalFrame1.setVisible(true);
+
+        jLabel1.setText("jLabel1");
+        jInternalFrame1.getContentPane().add(jLabel1, java.awt.BorderLayout.CENTER);
+
+        jScrollPane1.setViewportView(jInternalFrame1);
+
+        jSplitPane1.setRightComponent(jScrollPane1);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel2.add(jSplitPane1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(jPanel2, gridBagConstraints);
 
         getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
 
@@ -756,6 +820,28 @@ public class DataBrowser extends javax.swing.JFrame {
     private void largeLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_largeLayoutRadioButtonMenuItemActionPerformed
         desktop.layoutBrowser(Desktop.LayoutMode. LARGE);
     }//GEN-LAST:event_largeLayoutRadioButtonMenuItemActionPerformed
+
+    private void navigationTreeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_navigationTreeMouseClicked
+    	if (evt.getButton() == MouseEvent.BUTTON3) {
+            if (evt.getClickCount() == 1) {
+                TreePath node = navigationTree.getPathForLocation(evt.getX(), evt.getY());
+                if (node != null) {
+                    Object sel = node.getLastPathComponent();
+                    if (sel instanceof DefaultMutableTreeNode) {
+                        Object selNode = ((DefaultMutableTreeNode) sel).getUserObject();
+                        RowBrowser rowBrowser = null;
+                        if (selNode instanceof TreeNodeForRowBrowser) {
+                            rowBrowser = ((TreeNodeForRowBrowser) selNode).rowBrowser;
+                        }
+                        if (rowBrowser != null) {
+                        	JPopupMenu popup = rowBrowser.browserContentPane.createPopupMenu(null, -1, 0, 0, false);
+                        	popup.show(evt.getComponent(), evt.getX(), evt.getY());
+                        }
+                    }
+                }
+            }
+        }
+    }//GEN-LAST:event_navigationTreeMouseClicked
 
 	private void openNewTableBrowser(boolean offerAlternatives) {
 		new NewTableBrowser(this, datamodel.get(), offerAlternatives) {
@@ -1006,11 +1092,15 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel11;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
+    private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JRadioButtonMenuItem largeLayoutRadioButtonMenuItem;
     private javax.swing.JPanel legende;
     private javax.swing.JPanel legende1;
@@ -1021,6 +1111,8 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenu menuWindow;
     private javax.swing.JLabel modelName;
     private javax.swing.JLabel modelPath;
+    private javax.swing.JTree navigationTree;
+    private javax.swing.JScrollPane navigationTreeScrollPane;
     private javax.swing.JMenuItem restoreSessionItem;
     private javax.swing.JMenuItem schemaMappingMenuItem;
     private javax.swing.JLabel schemaName;
@@ -1087,99 +1179,189 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 	}
 
-	private JPanel iFramesPanel = null;
+//	private JPanel iFramesPanel = null;
 	
 	private void updateIFramesBar() {
 		if (desktop == null) {
 			return;
 		}
 		
-		if (iFramesPanel != null) {
-			jPanel1.remove(iFramesPanel);
-		}
+		updateNavigationTree();
 		
-		iFramesPanel = new JPanel();
-		int num = desktop.getAllFrames().length;
-		if (num == 0) {
-			jPanel1.revalidate();
-			return;
-		}
-		int COLUMNS = 9;
-		int y = 1;
-		iFramesPanel.setLayout(new GridBagLayout());
-
-		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = y;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1;
-        JPanel iFramesRowPanel = new JPanel();
-        iFramesRowPanel.setLayout(new GridBagLayout());
-        iFramesPanel.add(iFramesRowPanel, gridBagConstraints);
-        
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = COLUMNS + 2;
-        gridBagConstraints.gridy = y;
-        gridBagConstraints.weightx = 1;
-        iFramesRowPanel.add(new JLabel(" "), gridBagConstraints);
-        
-		int x = 1;
-		JInternalFrame activeFrame = desktop.getSelectedFrame();
-		for (final JInternalFrame iFrame: desktop.getAllFramesFromTableBrowsers()) {
-	    	if (++x > COLUMNS) {
-	    		x = 1;
-	    		++y;
-				gridBagConstraints = new java.awt.GridBagConstraints();
-		        gridBagConstraints.gridx = 1;
-		        gridBagConstraints.gridy = y;
-		        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		        gridBagConstraints.anchor = GridBagConstraints.WEST;
-		        gridBagConstraints.weightx = 1;
-		        iFramesRowPanel = new JPanel();
-		        iFramesRowPanel.setLayout(new GridBagLayout());
-		        iFramesPanel.add(iFramesRowPanel, gridBagConstraints);
-		        gridBagConstraints = new java.awt.GridBagConstraints();
-		        gridBagConstraints.gridx = COLUMNS + 2;
-		        gridBagConstraints.gridy = y;
-		        gridBagConstraints.weightx = 1;
-		        iFramesRowPanel.add(new JLabel(" "), gridBagConstraints);
-	    	}
-			
-			final JToggleButton toggleButton = new JToggleButton();
-			toggleButton.setText(iFrame.getTitle());
-			toggleButton.setSelected(activeFrame == iFrame);
-			
-			toggleButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					toggleButton.setSelected(true);
-					try {
-						desktop.scrollRectToVisible(iFrame.getBounds());
-						iFrame.setSelected(true);
-						iFrame.grabFocus();
-					} catch (PropertyVetoException e1) {
-						// ignore
-					}
-				}
-			});
-			gridBagConstraints = new java.awt.GridBagConstraints();
-	        gridBagConstraints.gridx = x;
-	        gridBagConstraints.gridy = y;
-	        iFramesRowPanel.add(toggleButton, gridBagConstraints);
-		}
-        
-		gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new Insets(0, 0, 4, 0);
-        jPanel1.add(iFramesPanel, gridBagConstraints);
-        
-        jPanel1.revalidate();
+		// iFramesPanel is obsolete
+		return;
+		
+//		if (iFramesPanel != null) {
+//			jPanel1.remove(iFramesPanel);
+//		}
+//		
+//		iFramesPanel = new JPanel();
+//		int num = desktop.getAllFrames().length;
+//		if (num == 0) {
+//			jPanel1.revalidate();
+//			return;
+//		}
+//		int COLUMNS = 9;
+//		int y = 1;
+//		iFramesPanel.setLayout(new GridBagLayout());
+//
+//		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+//        gridBagConstraints.gridx = 1;
+//        gridBagConstraints.gridy = y;
+//        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+//        gridBagConstraints.anchor = GridBagConstraints.WEST;
+//        gridBagConstraints.weightx = 1;
+//        JPanel iFramesRowPanel = new JPanel();
+//        iFramesRowPanel.setLayout(new GridBagLayout());
+//        iFramesPanel.add(iFramesRowPanel, gridBagConstraints);
+//        
+//        gridBagConstraints = new java.awt.GridBagConstraints();
+//        gridBagConstraints.gridx = COLUMNS + 2;
+//        gridBagConstraints.gridy = y;
+//        gridBagConstraints.weightx = 1;
+//        iFramesRowPanel.add(new JLabel(" "), gridBagConstraints);
+//        
+//		int x = 1;
+//		JInternalFrame activeFrame = desktop.getSelectedFrame();
+//		for (final JInternalFrame iFrame: desktop.getAllFramesFromTableBrowsers()) {
+//	    	if (++x > COLUMNS) {
+//	    		x = 1;
+//	    		++y;
+//				gridBagConstraints = new java.awt.GridBagConstraints();
+//		        gridBagConstraints.gridx = 1;
+//		        gridBagConstraints.gridy = y;
+//		        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+//		        gridBagConstraints.anchor = GridBagConstraints.WEST;
+//		        gridBagConstraints.weightx = 1;
+//		        iFramesRowPanel = new JPanel();
+//		        iFramesRowPanel.setLayout(new GridBagLayout());
+//		        iFramesPanel.add(iFramesRowPanel, gridBagConstraints);
+//		        gridBagConstraints = new java.awt.GridBagConstraints();
+//		        gridBagConstraints.gridx = COLUMNS + 2;
+//		        gridBagConstraints.gridy = y;
+//		        gridBagConstraints.weightx = 1;
+//		        iFramesRowPanel.add(new JLabel(" "), gridBagConstraints);
+//	    	}
+//			
+//			final JToggleButton toggleButton = new JToggleButton();
+//			toggleButton.setText(iFrame.getTitle());
+//			toggleButton.setSelected(activeFrame == iFrame);
+//			
+//			toggleButton.addActionListener(new ActionListener() {
+//				@Override
+//				public void actionPerformed(ActionEvent e) {
+//					toggleButton.setSelected(true);
+//					try {
+//						desktop.scrollRectToVisible(iFrame.getBounds());
+//						iFrame.setSelected(true);
+//						iFrame.grabFocus();
+//					} catch (PropertyVetoException e1) {
+//						// ignore
+//					}
+//				}
+//			});
+//			gridBagConstraints = new java.awt.GridBagConstraints();
+//	        gridBagConstraints.gridx = x;
+//	        gridBagConstraints.gridy = y;
+//	        iFramesRowPanel.add(toggleButton, gridBagConstraints);
+//		}
+//        
+//		gridBagConstraints = new java.awt.GridBagConstraints();
+//        gridBagConstraints.gridx = 1;
+//        gridBagConstraints.gridy = 2;
+//        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+//        gridBagConstraints.weightx = 1.0;
+//        gridBagConstraints.insets = new Insets(0, 0, 4, 0);
+//        jPanel1.add(iFramesPanel, gridBagConstraints);
+//        
+//        jPanel1.revalidate();
 	}
 	
+	private Map<JInternalFrame, TreeNodeForRowBrowser> treeNodeByIFrame = new HashMap<JInternalFrame, DataBrowser.TreeNodeForRowBrowser>();
+	private TreeSelectionListener navigationTreeListener = null;
+	
+	private class TreeNodeForRowBrowser {
+		public final RowBrowser rowBrowser;
+		public final int rowIndex;
+		private final String title;
+		
+		public TreeNodeForRowBrowser(RowBrowser rowBrowser, int rowIndex) {
+			this.rowBrowser = rowBrowser;
+			this.rowIndex = rowIndex;
+			this.title = rowBrowser.internalFrame.getTitle();
+			treeNodeByIFrame.put(rowBrowser.internalFrame, this);
+		}
+		public String toString() {
+			return title;
+		}
+	}
+	
+	private void updateNavigationTree() {
+		if (navigationTreeListener != null) {
+			navigationTree.getSelectionModel().removeTreeSelectionListener(navigationTreeListener);
+		}
+
+		ConnectionInfo connection = dbConnectionDialog != null? dbConnectionDialog.currentConnection : null;
+		DefaultMutableTreeNode root = new DefaultMutableTreeNode(connection != null ? connection.alias : " ");
+
+		treeNodeByIFrame.clear();
+		int[] count = new int[1];
+		count[0] = 1;
+		for (RowBrowser rb: desktop.getRootBrowsers()) {
+			DefaultMutableTreeNode node = new DefaultMutableTreeNode(new TreeNodeForRowBrowser(rb, count[0]++));
+			root.add(node);
+			addChildNodes(node, rb, count);
+		}
+		DefaultTreeModel treeModel = new DefaultTreeModel(root);
+		navigationTree.setModel(treeModel);
+		for (int i = 0; i < count[0]; ++i) {
+			navigationTree.expandRow(i);
+		}
+		JInternalFrame activeFrame = desktop.getSelectedFrame();
+		if (activeFrame != null) {
+			TreeNodeForRowBrowser node = treeNodeByIFrame.get(activeFrame);
+			if (node != null) {
+				navigationTree.setSelectionRow(node.rowIndex);
+				Rectangle bounds = navigationTree.getRowBounds(node.rowIndex);
+				navigationTree.scrollRectToVisible(new Rectangle(bounds.x, bounds.y, 1, bounds.height));
+			}
+		}
+		
+		navigationTreeListener = new TreeSelectionListener() {
+			@Override
+			public void valueChanged(TreeSelectionEvent e) {
+				if (e.getPath() != null) {
+					Object lastPathComponent = e.getPath().getLastPathComponent();
+					if (lastPathComponent != null && lastPathComponent instanceof DefaultMutableTreeNode) {
+						Object userObject = ((DefaultMutableTreeNode) lastPathComponent).getUserObject();
+						if (userObject instanceof TreeNodeForRowBrowser) {
+							try {
+								JInternalFrame iFrame = ((TreeNodeForRowBrowser) userObject).rowBrowser.internalFrame;
+								desktop.scrollRectToVisible(iFrame.getBounds());
+								iFrame.setSelected(true);
+								iFrame.grabFocus();
+							} catch (PropertyVetoException e1) {
+								// ignore
+							}
+							return;
+						}
+					}
+				}
+				updateNavigationTree();
+			}
+		};
+		
+		navigationTree.getSelectionModel().addTreeSelectionListener(navigationTreeListener);
+	}
+
+	private void addChildNodes(DefaultMutableTreeNode node, RowBrowser browser, int[] count) {
+		for (RowBrowser rb: desktop.getChildBrowsers(browser)) {
+			DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(new TreeNodeForRowBrowser(rb, count[0]++));
+			node.add(childNode);
+			addChildNodes(childNode, rb, count);
+		}
+	}
+
 	// initialize log4j
 	static {
 		InputStream in = Jailer.class.getResourceAsStream("/net/sf/jailer/resource/log4j.properties");

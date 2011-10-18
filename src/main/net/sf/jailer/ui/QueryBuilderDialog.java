@@ -968,9 +968,8 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 			return sql.toString().replaceAll(" *(\n|\r)+ *", " ");
 		}
 		String sqlString = sql.toString().trim();
-		if (sqlString.indexOf("Where") < 0) {
-			sqlString += lf;
-		}
+		sqlString += lf;
+		
 		return sqlString;
 	}
 
