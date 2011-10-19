@@ -195,6 +195,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				storeSessionItem.setEnabled(hasIFrame);
 				createExtractionModelMenuItem.setEnabled(hasTableBrowser);
 				updateIFramesBar();
+				super.updateMenu(hasTableBrowser, hasIFrame);
 			}
 
 			@Override
@@ -1317,7 +1318,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		public TreeNodeForRowBrowser(RowBrowser rowBrowser, int rowIndex) {
 			this.rowBrowser = rowBrowser;
 			this.rowIndex = rowIndex;
-			this.title = rowBrowser.internalFrame.getTitle();
+			this.title = " " + rowBrowser.internalFrame.getTitle() + "     ";
 			treeNodeByIFrame.put(rowBrowser.internalFrame, this);
 		}
 		public String toString() {
@@ -1331,7 +1332,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 
 		ConnectionInfo connection = dbConnectionDialog != null? dbConnectionDialog.currentConnection : null;
-		DefaultMutableTreeNode root = new DefaultMutableTreeNode(connection != null ? connection.alias : " ");
+		DefaultMutableTreeNode root = new DefaultMutableTreeNode(connection != null ? " " + connection.alias : " ");
 
 		treeNodeByIFrame.clear();
 		
