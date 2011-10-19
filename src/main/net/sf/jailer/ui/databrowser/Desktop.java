@@ -1303,7 +1303,7 @@ public abstract class Desktop extends JDesktopPane {
 	private final DataBrowser parentFrame;
 	
 	public static enum LayoutMode {
-		TINY(0.567),
+		TINY(0.569),
 		SMALL(0.75),
 		MEDIUM(1.0),
 		LARGE(1.4);
@@ -1318,6 +1318,7 @@ public abstract class Desktop extends JDesktopPane {
 	private LayoutMode layoutMode = LayoutMode.MEDIUM;
 	
 	public void layoutBrowser() {
+		JInternalFrame selectedFrame = getSelectedFrame();
 		List<RowBrowser> all = new ArrayList<RowBrowser>(tableBrowsers);
 		List<RowBrowser> roots = new ArrayList<RowBrowser>();
 		for (RowBrowser rb: all) {
@@ -1345,7 +1346,15 @@ public abstract class Desktop extends JDesktopPane {
 			roots = nextColumn;
 		}
 		checkDesktopSize();
-		makePrimaryRootVisible();
+		if (selectedFrame != null) {
+			try {
+				selectedFrame.setSelected(true);
+			} catch (PropertyVetoException e) {
+				// ignore
+			}
+			Rectangle bounds = selectedFrame.getBounds();
+			this.scrollRectToVisible(bounds);
+		}
 	}
 	
 	private Map<Rectangle, double[]> precBounds = new HashMap<Rectangle, double[]>();
