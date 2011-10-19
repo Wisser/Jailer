@@ -850,10 +850,13 @@ public class DataBrowser extends javax.swing.JFrame {
                     if (sel instanceof DefaultMutableTreeNode) {
                         Object selNode = ((DefaultMutableTreeNode) sel).getUserObject();
                         RowBrowser rowBrowser = null;
+                        int row = 0;
                         if (selNode instanceof TreeNodeForRowBrowser) {
                             rowBrowser = ((TreeNodeForRowBrowser) selNode).rowBrowser;
+                            row = ((TreeNodeForRowBrowser) selNode).rowIndex;
                         }
                         if (rowBrowser != null) {
+                        	navigationTree.setSelectionRow(row);
                         	JPopupMenu popup = rowBrowser.browserContentPane.createPopupMenu(null, -1, 0, 0, false);
                         	popup.show(evt.getComponent(), evt.getX(), evt.getY());
                         }
