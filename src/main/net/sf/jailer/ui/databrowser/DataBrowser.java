@@ -46,7 +46,6 @@ import javax.swing.JInternalFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
-import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
@@ -63,7 +62,6 @@ import jsyntaxpane.DefaultSyntaxKit;
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.database.Session;
-import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.ModelBuilder;
@@ -298,6 +296,9 @@ public class DataBrowser extends javax.swing.JFrame {
 				createSession(dbConnectionDialog);
 				desktop.session = session;
 				updateStatusBar();
+				if (desktop != null) {
+					desktop.updateMenu();
+				}
 			}
 		}
 	}
@@ -393,18 +394,20 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
+        cloaseAllMenuItem = new javax.swing.JMenuItem();
+        jSeparator3 = new javax.swing.JPopupMenu.Separator();
         storeSessionItem = new javax.swing.JMenuItem();
         restoreSessionItem = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
         schemaMappingMenuItem = new javax.swing.JMenuItem();
-        jSeparator3 = new javax.swing.JPopupMenu.Separator();
-        cloaseAllMenuItem = new javax.swing.JMenuItem();
         menuTools = new javax.swing.JMenu();
         analyseMenuItem = new javax.swing.JMenuItem();
         dataModelEditorjMenuItem = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
         createExtractionModelMenuItem = new javax.swing.JMenuItem();
         menuWindow = new javax.swing.JMenu();
+        layoutMenuItem = new javax.swing.JMenuItem();
+        jSeparator5 = new javax.swing.JPopupMenu.Separator();
         tinyLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
         smallLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
         mediumLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
@@ -568,6 +571,12 @@ public class DataBrowser extends javax.swing.JFrame {
         jSplitPane1.setLeftComponent(jPanel3);
 
         jScrollPane1.setAutoscrolls(true);
+        jScrollPane1.setWheelScrollingEnabled(false);
+        jScrollPane1.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
+            public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
+                jScrollPane1MouseWheelMoved(evt);
+            }
+        });
 
         jInternalFrame1.setVisible(true);
 
@@ -617,6 +626,16 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenu1.add(jMenuItem3);
         jMenu1.add(jSeparator4);
 
+        cloaseAllMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        cloaseAllMenuItem.setText("Close All");
+        cloaseAllMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cloaseAllMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(cloaseAllMenuItem);
+        jMenu1.add(jSeparator3);
+
         storeSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
         storeSessionItem.setText("Store Session");
         storeSessionItem.addActionListener(new java.awt.event.ActionListener() {
@@ -643,20 +662,10 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         jMenu1.add(schemaMappingMenuItem);
-        jMenu1.add(jSeparator3);
-
-        cloaseAllMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
-        cloaseAllMenuItem.setText("Close All");
-        cloaseAllMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cloaseAllMenuItemActionPerformed(evt);
-            }
-        });
-        jMenu1.add(cloaseAllMenuItem);
 
         menuBar.add(jMenu1);
 
-        menuTools.setText("Data Model");
+        menuTools.setText("DataModel");
 
         analyseMenuItem.setText("Analyse Database");
         analyseMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -689,6 +698,16 @@ public class DataBrowser extends javax.swing.JFrame {
         menuBar.add(jMenu2);
 
         menuWindow.setText("Window");
+
+        layoutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
+        layoutMenuItem.setText("Arrange Layout");
+        layoutMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                layoutMenuItemActionPerformed(evt);
+            }
+        });
+        menuWindow.add(layoutMenuItem);
+        menuWindow.add(jSeparator5);
 
         tinyLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_1, java.awt.event.InputEvent.CTRL_MASK));
         tinyLayoutRadioButtonMenuItem.setText("Tiny Layout");
@@ -806,19 +825,19 @@ public class DataBrowser extends javax.swing.JFrame {
     }//GEN-LAST:event_restoreSessionItemActionPerformed
 
     private void tinyLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tinyLayoutRadioButtonMenuItemActionPerformed
-        desktop.layoutBrowser(Desktop.LayoutMode.TINY);
+        desktop.rescaleLayout(Desktop.LayoutMode.TINY);
     }//GEN-LAST:event_tinyLayoutRadioButtonMenuItemActionPerformed
 
     private void smallLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_smallLayoutRadioButtonMenuItemActionPerformed
-        desktop.layoutBrowser(Desktop.LayoutMode.SMALL);
+        desktop.rescaleLayout(Desktop.LayoutMode.SMALL);
     }//GEN-LAST:event_smallLayoutRadioButtonMenuItemActionPerformed
 
     private void mediumLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mediumLayoutRadioButtonMenuItemActionPerformed
-        desktop.layoutBrowser(Desktop.LayoutMode.MEDIUM);
+        desktop.rescaleLayout(Desktop.LayoutMode.MEDIUM);
     }//GEN-LAST:event_mediumLayoutRadioButtonMenuItemActionPerformed
 
     private void largeLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_largeLayoutRadioButtonMenuItemActionPerformed
-        desktop.layoutBrowser(Desktop.LayoutMode. LARGE);
+        desktop.rescaleLayout(Desktop.LayoutMode.LARGE);
     }//GEN-LAST:event_largeLayoutRadioButtonMenuItemActionPerformed
 
     private void navigationTreeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_navigationTreeMouseClicked
@@ -842,6 +861,14 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         }
     }//GEN-LAST:event_navigationTreeMouseClicked
+
+    private void layoutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_layoutMenuItemActionPerformed
+    	desktop.layoutBrowser();
+    }//GEN-LAST:event_layoutMenuItemActionPerformed
+
+    private void jScrollPane1MouseWheelMoved(java.awt.event.MouseWheelEvent evt) {//GEN-FIRST:event_jScrollPane1MouseWheelMoved
+        desktop.onMouseWheelMoved(evt);
+    }//GEN-LAST:event_jScrollPane1MouseWheelMoved
 
 	private void openNewTableBrowser(boolean offerAlternatives) {
 		new NewTableBrowser(this, datamodel.get(), offerAlternatives) {
@@ -1100,8 +1127,10 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
+    private javax.swing.JPopupMenu.Separator jSeparator5;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JRadioButtonMenuItem largeLayoutRadioButtonMenuItem;
+    private javax.swing.JMenuItem layoutMenuItem;
     private javax.swing.JPanel legende;
     private javax.swing.JPanel legende1;
     private javax.swing.JPanel legende2;
@@ -1182,15 +1211,15 @@ public class DataBrowser extends javax.swing.JFrame {
 //	private JPanel iFramesPanel = null;
 	
 	private void updateIFramesBar() {
-		if (desktop == null) {
-			return;
-		}
-		
 		updateNavigationTree();
 		
 		// iFramesPanel is obsolete
 		return;
 		
+//		if (desktop == null) {
+//			return;
+//		}
+//		
 //		if (iFramesPanel != null) {
 //			jPanel1.remove(iFramesPanel);
 //		}
@@ -1305,19 +1334,22 @@ public class DataBrowser extends javax.swing.JFrame {
 		DefaultMutableTreeNode root = new DefaultMutableTreeNode(connection != null ? connection.alias : " ");
 
 		treeNodeByIFrame.clear();
+		
 		int[] count = new int[1];
 		count[0] = 1;
-		for (RowBrowser rb: desktop.getRootBrowsers()) {
-			DefaultMutableTreeNode node = new DefaultMutableTreeNode(new TreeNodeForRowBrowser(rb, count[0]++));
-			root.add(node);
-			addChildNodes(node, rb, count);
+		if (desktop != null) {
+			for (RowBrowser rb: desktop.getRootBrowsers()) {
+				DefaultMutableTreeNode node = new DefaultMutableTreeNode(new TreeNodeForRowBrowser(rb, count[0]++));
+				root.add(node);
+				addChildNodes(node, rb, count);
+			}
 		}
 		DefaultTreeModel treeModel = new DefaultTreeModel(root);
 		navigationTree.setModel(treeModel);
 		for (int i = 0; i < count[0]; ++i) {
 			navigationTree.expandRow(i);
 		}
-		JInternalFrame activeFrame = desktop.getSelectedFrame();
+		JInternalFrame activeFrame = desktop != null? desktop.getSelectedFrame() : null;
 		if (activeFrame != null) {
 			TreeNodeForRowBrowser node = treeNodeByIFrame.get(activeFrame);
 			if (node != null) {

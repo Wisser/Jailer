@@ -323,7 +323,11 @@ public abstract class Desktop extends JDesktopPane {
 		jInternalFrame.setIconifiable(false);
 		jInternalFrame.setMaximizable(true);
 		jInternalFrame.setVisible(true);
-		
+		jInternalFrame.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
+            public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
+                onMouseWheelMoved(evt);
+            }
+        });
 		javax.swing.GroupLayout jInternalFrame1Layout = new javax.swing.GroupLayout(jInternalFrame.getContentPane());
 		jInternalFrame.getContentPane().setLayout(jInternalFrame1Layout);
 		jInternalFrame1Layout.setHorizontalGroup(jInternalFrame1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGap(0, 162,
@@ -598,10 +602,20 @@ public abstract class Desktop extends JDesktopPane {
 			protected double getLayoutFactor() {
 				return layoutMode.factor;
 			}
+
+			@Override
+			protected List<RowBrowser> getChildBrowsers() {
+				return Desktop.this.getChildBrowsers(tableBrowser);
+			}
 		};
 		
 		Rectangle r = layout(parentRowIndex < 0, parent, association, browserContentPane, new ArrayList<RowBrowser>());
-
+		browserContentPane.rowsTableScrollPane.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
+            public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
+                onMouseWheelMoved(evt);
+            }
+        });
+		
 		jInternalFrame.setBounds(r);
 		
 		tableBrowser.internalFrame = jInternalFrame;
@@ -673,12 +687,12 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	private Rectangle layout(final boolean fullSize, final RowBrowser parent, Association association, BrowserContentPane browserContentPane, Collection<RowBrowser> ignore) {
-		final int MIN = 0, HEIGHT = 460, /* MIN_HEIGHT = 80, */ DISTANCE = 32;
+		final int MIN = 0, HEIGHT = 460, /* MIN_HEIGHT = 80, */ DISTANCE = 64;
 
-		int x = MIN;
-		int y = MIN;
+		int x = (int) (MIN * layoutMode.factor);
+		int y = (int) (MIN * layoutMode.factor);
 		if (parent != null) {
-			x = parent.internalFrame.getX() + parent.internalFrame.getWidth() + DISTANCE;
+			x = (int) (parent.internalFrame.getX() + parent.internalFrame.getWidth() + DISTANCE * layoutMode.factor);
 			y = parent.internalFrame.getY();
 		}
 		// int h = fullSize || association == null || (association.getCardinality() != Cardinality.MANY_TO_ONE && association.getCardinality() != Cardinality.ONE_TO_ONE)? HEIGHT : browserContentPane.getMinimumSize().height + MIN_HEIGHT; 
@@ -693,7 +707,7 @@ public abstract class Desktop extends JDesktopPane {
 				}
 			}
 			r = new Rectangle(x, y, (int) (BROWSERTABLE_DEFAULT_WIDTH * layoutMode.factor), h);
-			y += 8;
+			y += 8 * layoutMode.factor;
 			if (ok) {
 				break;
 			}
@@ -1288,7 +1302,7 @@ public abstract class Desktop extends JDesktopPane {
 	private final DataBrowser parentFrame;
 	
 	public static enum LayoutMode {
-		TINY(0.55),
+		TINY(0.567),
 		SMALL(0.75),
 		MEDIUM(1.0),
 		LARGE(1.4);
@@ -1302,8 +1316,7 @@ public abstract class Desktop extends JDesktopPane {
 	
 	private LayoutMode layoutMode = LayoutMode.MEDIUM;
 	
-	public void layoutBrowser(LayoutMode layoutMode) {
-		this.layoutMode = layoutMode;
+	public void layoutBrowser() {
 		List<RowBrowser> all = new ArrayList<RowBrowser>(tableBrowsers);
 		List<RowBrowser> roots = new ArrayList<RowBrowser>();
 		for (RowBrowser rb: all) {
@@ -1331,6 +1344,59 @@ public abstract class Desktop extends JDesktopPane {
 			roots = nextColumn;
 		}
 		checkDesktopSize();
+	}
+	
+	private Map<Rectangle, double[]> precBounds = new HashMap<Rectangle, double[]>();
+	
+	public void rescaleLayout(LayoutMode layoutMode) {
+		double scale = layoutMode.factor / this.layoutMode.factor;
+		this.layoutMode = layoutMode;
+		Map<Rectangle, double[]> newPrecBounds = new HashMap<Rectangle, double[]>();
+		for (RowBrowser rb: new ArrayList<RowBrowser>(tableBrowsers)) {
+			if (rb.internalFrame.isMaximum()) {
+				try {
+					rb.internalFrame.setMaximum(false);
+				} catch (PropertyVetoException e) {
+					// ignore
+				}
+    		}
+			Rectangle bounds = rb.internalFrame.getBounds();
+			Rectangle newBounds;
+			double[] pBounds = precBounds.get(bounds);
+			if (pBounds == null) {
+				pBounds = new double[] { bounds.x * scale, bounds.y * scale, bounds.width * scale, bounds.height * scale };
+			} else {
+				pBounds = new double[] { pBounds[0] * scale, pBounds[1] * scale, pBounds[2] * scale, pBounds[3] * scale };
+			}
+			newBounds = new Rectangle((int) pBounds[0], (int) pBounds[1], (int) pBounds[2], (int) pBounds[3]);
+			rb.internalFrame.setBounds(newBounds);
+			rb.browserContentPane.adjustRowTableColumnsWidth();
+			newPrecBounds.put(newBounds, pBounds);
+		}
+		precBounds = newPrecBounds;
+		manager.resizeDesktop();
+		updateMenu(layoutMode);
+	}
+
+	void onMouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
+		int d = 0;
+        if (evt.getWheelRotation() < 0) {
+        	d = -1;
+        }
+        if (evt.getWheelRotation() > 0) {
+        	d = 1;
+        }
+        if (d != 0) {
+        	for (RowBrowser rb: new ArrayList<RowBrowser>(tableBrowsers)) {
+    			if (rb.internalFrame.isMaximum()) {
+    				return;
+    			}
+    		}
+        	d += layoutMode.ordinal();
+        	if (d >= 0 && d < LayoutMode.values().length) {
+        		rescaleLayout(LayoutMode.values()[d]);
+        	}
+        }
 	}
 
 	public void closeAll() {
@@ -1452,7 +1518,7 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
-	private void updateMenu() {
+	void updateMenu() {
 		boolean hasTableBrowser = false;
 		boolean hasIFrame = false;
 		

@@ -73,13 +73,19 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
+import javax.swing.JTree;
 import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
@@ -457,7 +463,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		rowsTable.setAutoCreateRowSorter(true);
 		rowsTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
-		jScrollPane1.setViewportView(rowsTable);
+		rowsTableScrollPane.setViewportView(rowsTable);
 
 		andCondition.setText(ConditionEditor.toSingleLine(condition));
 		from.setText(table == null? "" : this.dataModel.getDisplayName(table));
@@ -961,32 +967,83 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			Collection<RestrictionDefinition> restrictedDependencyDefinitions = new HashSet<RestrictionDefinition>();
 			List<RestrictionDefinition> restrictionDefinitions = createRestrictions(root, stable, restrictedAssociations, restrictedDependencies, restrictedDependencyDefinitions);
 			
-			if (!restrictedDependencies.isEmpty()) {
+//			if (!restrictedDependencies.isEmpty()) {
 				Set<String> parents = new TreeSet<String>();
 				for (Association association: restrictedDependencies) {
 					parents.add(dataModel.getDisplayName(association.destination));
 				}
-				String pList = "";
-				int i = 0;
-				for (String p: parents) {
-					pList += p + "\n";
-					if (++i > 20) {
-						break;
+//				String pList = "";
+//				int i = 0;
+//				for (String p: parents) {
+//					pList += p + "\n";
+//					if (++i > 20) {
+//						break;
+//					}
+//				}
+				
+				final SbEDialog sbEDialog = new SbEDialog(SwingUtilities.getWindowAncestor(this),
+						"Create Extraction Model for Subject \"" + dataModel.getDisplayName(stable) + "\".", (parents.isEmpty()? "" : ("\n\n" + parents.size() + " disregarded parent tables.")));
+				sbEDialog.regardButton.setVisible(!parents.isEmpty());
+				DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
+					@Override
+					public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row,
+							boolean hasFocus) {
+						Component result = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
+						if (value instanceof DefaultMutableTreeNode) {
+							if (!(((DefaultMutableTreeNode) value).getUserObject() instanceof String)) {
+								if (result instanceof JLabel) {
+									((JLabel) result).setForeground(Color.red);
+								} else {
+									((JLabel) result).setForeground(Color.black);
+								}
+							}
+						}
+						return result;
 					}
+					
+				};
+				renderer.setOpenIcon(null);
+				renderer.setLeafIcon(null);
+				renderer.setClosedIcon(null);
+				sbEDialog.browserTree.setCellRenderer(renderer);
+				int[] count = new int[] { 0 };
+				DefaultTreeModel treeModel = new DefaultTreeModel(addChildNodes(this, restrictedDependencies, count));
+				sbEDialog.browserTree.setModel(treeModel);
+				for (int i = 0; i < count[0]; ++i) {
+					sbEDialog.browserTree.expandRow(i);
 				}
-				int option = JOptionPane.showOptionDialog(parent, "Disregarded parent tables:\n\n" + pList + "\n", "Disregarded parent tables", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "regard parent tables", "Ok" }, "regard parent tables");
-				switch (option) {
-				case 0:
+				sbEDialog.browserTree.scrollRowToVisible(0);
+				sbEDialog.browserTree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
+					@Override
+					public void valueChanged(TreeSelectionEvent e) {
+						sbEDialog.browserTree.getSelectionModel().clearSelection();
+					}
+				});
+				sbEDialog.setVisible(true);
+				
+				if (!sbEDialog.ok) {
+					return;
+				}
+				if (sbEDialog.regardButton.isSelected()) {
 					restrictionDefinitions.removeAll(restrictedDependencyDefinitions);
 					for (Association a: restrictedDependencies) {
 						disableDisregardedNonParentsOfDestination(a, restrictedAssociations, restrictionDefinitions);
 					}
-					break;
-				case 1:
-					break;
-				default: return;
 				}
-			}
+				
+//				int option = JOptionPane.showOptionDialog(parent, "Disregarded parent tables:\n\n" + pList + "\n", "Disregarded parent tables", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "regard parent tables", "Ok" }, "regard parent tables");
+//				switch (option) {
+//				case 0:
+//					restrictionDefinitions.removeAll(restrictedDependencyDefinitions);
+//					for (Association a: restrictedDependencies) {
+//						disableDisregardedNonParentsOfDestination(a, restrictedAssociations, restrictionDefinitions);
+//					}
+//					break;
+//				case 1:
+//					break;
+//				default: return;
+//				}
+//			}
 			
 			subjectCondition = root.needsAnchor? root.anchorWhereClause : root.whereClause;
 			if (subjectCondition == null) {
@@ -1022,6 +1079,28 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		} finally {
 			parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
+	}
+	
+	private DefaultMutableTreeNode addChildNodes(BrowserContentPane browserContentPane, Collection<Association> restrictedDependencies, int[] count) {
+		DefaultMutableTreeNode node = new DefaultMutableTreeNode(dataModel.getDisplayName(browserContentPane.table));
+		count[0]++;
+		Set<Table> regardedChildren = new HashSet<Table>();
+		for (RowBrowser rb: browserContentPane.getChildBrowsers()) {
+			DefaultMutableTreeNode childNode = addChildNodes(rb.browserContentPane, restrictedDependencies, count);
+			node.add(childNode);
+			regardedChildren.add(rb.browserContentPane.table);
+		}
+		for (final Association dep: restrictedDependencies) {
+			if (dep.source == browserContentPane.table && !regardedChildren.contains(dep.destination)) {
+				node.add(new DefaultMutableTreeNode(new Object() {
+					String item = dataModel.getDisplayName(dep.destination);
+					public String toString() {
+						return item;
+					}
+				}));
+			}
+		}
+		return node;
 	}
 
 	private void disableDisregardedNonParentsOfDestination(Association a,
@@ -1088,6 +1167,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		for (RestrictionLiteral l: lits) {
 			
 			if (l.isIgnoredIfReversalIsRestricted) {
+				
+				// TODO limit recursion
+				
 				RestrictionDefinition revRest = createRestrictionDefinition(association.reversalAssociation, restrictionLiterals);
 				if (revRest.isIgnored || (revRest.condition != null && revRest.condition.trim().length() > 0)) {
 					l.isIgnored = true;
@@ -1904,7 +1986,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         cancelLoadButton = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
+        rowsTableScrollPane = new javax.swing.JScrollPane();
         rowsTable = new javax.swing.JTable();
         jPanel6 = new javax.swing.JPanel();
         rowsCount = new javax.swing.JLabel();
@@ -2076,7 +2158,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         cardPanel.add(jPanel2, "loading");
 
-        jPanel1.setLayout(new java.awt.BorderLayout());
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        rowsTableScrollPane.setWheelScrollingEnabled(false);
 
         rowsTable.setAutoCreateRowSorter(true);
         rowsTable.setModel(new javax.swing.table.DefaultTableModel(
@@ -2091,9 +2175,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
             }
         ));
         rowsTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
-        jScrollPane1.setViewportView(rowsTable);
+        rowsTableScrollPane.setViewportView(rowsTable);
 
-        jPanel1.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(rowsTableScrollPane, gridBagConstraints);
 
         jPanel6.setLayout(new java.awt.GridBagLayout());
 
@@ -2111,7 +2201,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         });
         jPanel6.add(selectDistinctCheckBox, new java.awt.GridBagConstraints());
 
-        jPanel1.add(jPanel6, java.awt.BorderLayout.SOUTH);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        jPanel1.add(jPanel6, gridBagConstraints);
 
         cardPanel.add(jPanel1, "table");
 
@@ -2342,7 +2437,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel9;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel join;
     private javax.swing.JPanel joinPanel;
     javax.swing.JComboBox limitBox;
@@ -2354,6 +2448,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JPanel relatedRowsPanel;
     private javax.swing.JLabel rowsCount;
     public javax.swing.JTable rowsTable;
+    javax.swing.JScrollPane rowsTableScrollPane;
     javax.swing.JCheckBox selectDistinctCheckBox;
     private javax.swing.JLabel sqlLabel1;
     private javax.swing.JPanel sqlPanel;
@@ -2489,6 +2584,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract void openSchemaAnalyzer();
 	protected abstract DbConnectionDialog getDbConnectionDialog();
 	protected abstract double getLayoutFactor();
+	protected abstract List<RowBrowser> getChildBrowsers();
 	
     private void openDetails(final int x, final int y) {
 		JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), true);
