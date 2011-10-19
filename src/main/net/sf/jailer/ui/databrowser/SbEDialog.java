@@ -82,7 +82,7 @@ public class SbEDialog extends javax.swing.JDialog {
         setTitle("Create Extraction Model");
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Table Structure"));
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Model Structure"));
         jPanel1.setLayout(new java.awt.BorderLayout());
 
         jScrollPane1.setViewportView(browserTree);
@@ -146,7 +146,7 @@ public class SbEDialog extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
@@ -159,17 +159,16 @@ public class SbEDialog extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         jPanel2.add(jButton3, gridBagConstraints);
 
         regardButton.setSelected(true);
-        regardButton.setText("Regard parent tables ");
+        regardButton.setText("Regard parent tables  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridy = 2;
         jPanel2.add(regardButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();

@@ -1142,7 +1142,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		collectRestrictionLiterals(restrictionLiterals, root, subject, 0);
 		
 		for (Association association: restrictionLiterals.keySet()) {
-			RestrictionDefinition rest = createRestrictionDefinition(association, restrictionLiterals);
+			RestrictionDefinition rest = createRestrictionDefinition(association, restrictionLiterals, true);
 			
 			regardedAssociations.add(association);
 			if (rest.isIgnored || (rest.condition != null && rest.condition.trim().length() != 0)) {
@@ -1157,7 +1157,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return restrictionDefinitions;
 	}
 
-	private RestrictionDefinition createRestrictionDefinition(Association association, Map<Association, List<RestrictionLiteral>> restrictionLiterals) {
+	private RestrictionDefinition createRestrictionDefinition(Association association, Map<Association, List<RestrictionLiteral>> restrictionLiterals, boolean checkReversal) {
 		List<RestrictionLiteral> lits = restrictionLiterals.get(association);
 		boolean useDistance = false;
 		boolean hasTrue = false;
@@ -1168,16 +1168,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			
 			if (l.isIgnoredIfReversalIsRestricted) {
 				
-				// TODO limit recursion
-				
-				RestrictionDefinition revRest = createRestrictionDefinition(association.reversalAssociation, restrictionLiterals);
-				if (revRest.isIgnored || (revRest.condition != null && revRest.condition.trim().length() > 0)) {
-					l.isIgnored = true;
+				if (checkReversal) {
+					RestrictionDefinition revRest = createRestrictionDefinition(association.reversalAssociation, restrictionLiterals, false);
+					if (revRest.isIgnored || (revRest.condition != null && revRest.condition.trim().length() > 0)) {
+						l.isIgnored = true;
+					} else {
+						l.isIgnored = false;
+						l.condition = null;
+					}
+					l.isIgnoredIfReversalIsRestricted = false;
 				} else {
-					l.isIgnored = false;
-					l.condition = null;
+					l.isIgnored = true;
+					l.isIgnoredIfReversalIsRestricted = false;
 				}
-				l.isIgnoredIfReversalIsRestricted = false;
 			}
 			
 			if (lastDist != null && lastDist != l.distanceFromRoot) {
@@ -1256,7 +1259,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				restrictionLiteral.isIgnored = false;
 				if (child == null) {
 					restrictionLiteral.isIgnored = true;
-					if (association.isInsertDestinationBeforeSource()) {
+//					if (association.isInsertDestinationBeforeSource()) {
 						if (root.association != null && association == root.association.reversalAssociation) {
 							if (association.getCardinality() == Cardinality.MANY_TO_ONE
 									||
@@ -1264,7 +1267,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								restrictionLiteral.isIgnoredIfReversalIsRestricted = true;
 							}
 						}
-					}
+//					}
 				} else {
 					restrictionLiteral.condition = child.whereClause == null? "" : SqlUtil.replaceAliases(child.whereClause, "B", "A");
 					collectRestrictionLiterals(restrictionLiterals, child, association.destination, distanceFromRoot + 1);
@@ -1373,6 +1376,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 			final JMenuItem item = new JMenuItem("  " + (name.substring(1)));
 
+			for (RowBrowser child: getChildBrowsers()) {
+				if (association == child.association) {
+					item.setFont(new Font(item.getFont().getName(), item.getFont().getStyle() | Font.ITALIC, item.getFont().getSize()));
+					break;
+				}
+			}
+			
 			item.addActionListener(new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					highlightedRows.add(rowIndex);

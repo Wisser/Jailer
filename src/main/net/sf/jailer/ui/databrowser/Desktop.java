@@ -1531,9 +1531,16 @@ public abstract class Desktop extends JDesktopPane {
 		updateMenu(hasTableBrowser, hasIFrame);
 	}
 	
-	protected abstract void updateMenu(boolean hasTableBrowser, boolean hasIFrame);
+	protected void updateMenu(boolean hasTableBrowser, boolean hasIFrame) {
+		if (!hasIFrame) {
+			if (!hasTableBrowser) {
+				currentSessionFileName = null;
+			}
+		}
+	}
 	protected abstract void updateMenu(LayoutMode layoutMode);
 	private final String LF = System.getProperty("line.separator", "\n");
+	private String currentSessionFileName = null;
 	
 	/**
 	 * Stores browser session.
@@ -1546,11 +1553,15 @@ public abstract class Desktop extends JDesktopPane {
 			browserNumber.put(rb, i++);
 			if (fnProp == null && rb.parent == null && rb.browserContentPane.table != null) {
 				if (!(rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable)) {
-					fnProp = datamodel.get().getDisplayName(rb.browserContentPane.table).replace(' ', '-').replace('\"', '-').replace('\'', '-').replace('(', '-').replace(')', '-') + ".dbs";
+					fnProp = datamodel.get().getDisplayName(rb.browserContentPane.table).replace(' ', '-').replace('\"', '-').replace('\'', '-').replace('(', '-').replace(')', '-').toLowerCase() + ".dbs";
 				}
 			}
 		}
 
+		if (currentSessionFileName != null) {
+			fnProp = currentSessionFileName;
+		}
+		
 		File startDir = CommandLineParser.getInstance().newFile("session");
 		Component pFrame = SwingUtilities.getWindowAncestor(this);
 		if (pFrame == null) {
@@ -1570,6 +1581,7 @@ public abstract class Desktop extends JDesktopPane {
 					}
 				}
 				out.close();
+				currentSessionFileName = sFile;
 			} catch (Throwable e) {
 				UIUtil.showException(this, "Error", e);
 			}
@@ -1688,6 +1700,7 @@ public abstract class Desktop extends JDesktopPane {
 					}
 					JOptionPane.showMessageDialog(pFrame, "Unknown tables:\n\n" + pList + "\n");
 				}
+				currentSessionFileName = sFile;
 			} catch (Throwable e) {
 				UIUtil.showException(this, "Error", e);
 			}
