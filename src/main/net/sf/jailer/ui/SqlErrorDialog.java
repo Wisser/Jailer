@@ -56,7 +56,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
         	// ignore
         }
         pack();
-        setSize(Math.min(getWidth(), 1000), Math.min(getHeight(), 600));
+        setSize(Math.min(getWidth(), 1000), Math.min(getHeight() + 32, 600));
         if (parent == null) {
         	setLocation(200, 100);
         } else {
