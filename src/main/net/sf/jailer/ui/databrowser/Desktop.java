@@ -76,6 +76,7 @@ import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
 import net.sf.jailer.util.SqlUtil;
@@ -1344,6 +1345,7 @@ public abstract class Desktop extends JDesktopPane {
 			roots = nextColumn;
 		}
 		checkDesktopSize();
+		makePrimaryRootVisible();
 	}
 	
 	private Map<Rectangle, double[]> precBounds = new HashMap<Rectangle, double[]>();
@@ -1688,7 +1690,7 @@ public abstract class Desktop extends JDesktopPane {
 					}
 				}
 				checkDesktopSize();
-				this.scrollRectToVisible(new Rectangle(0, 0, 1, 1));
+				makePrimaryRootVisible();
 				
 				for (RowBrowser rb: toBeLoaded) {
 					rb.browserContentPane.reloadRows();
@@ -1704,6 +1706,29 @@ public abstract class Desktop extends JDesktopPane {
 			} catch (Throwable e) {
 				UIUtil.showException(this, "Error", e);
 			}
+		}
+	}
+
+	private void makePrimaryRootVisible() {
+		RowBrowser root = null;
+		for (RowBrowser rb: getRootBrowsers()) {
+			if (rb.browserContentPane.table != null) {
+				if (!(rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable)) {
+					root = rb;
+					break;
+				}
+			}
+		}
+		if (root != null) {
+			try {
+				root.internalFrame.setSelected(true);
+			} catch (PropertyVetoException e) {
+				// ignore
+			}
+			Rectangle bounds = root.internalFrame.getBounds();
+			this.scrollRectToVisible(bounds);
+		} else {
+			this.scrollRectToVisible(new Rectangle(0, 0, 1, 1));
 		}
 	}
 
