@@ -1,0 +1,6 @@
+Layout; SMALL
+1; ; ; 0; 174; 344; 344; 200; false; T; PROJECT; ; 
+2; 1; ; 392; 174; 344; 344; 500; false; T; PROJECT_PARTICIPATION; inverse-PROJECT; 
+3; 2; ; 785; 0; 344; 344; 500; false; T; EMPLOYEE; EMPLOYEE; 
+5; 3; ; 1179; 0; 344; 344; 500; false; T; DEPARTMENT; DEPARTMENT; 
+4; 2; ; 785; 351; 344; 344; 500; false; T; ROLE; ROLE; 
