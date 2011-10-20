@@ -660,6 +660,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				if (line.cells.get(0).equals(s)) {
 			    	ci.url = line.cells.get(1);
 					ci.driverClass = line.cells.get(2);
+					ci.jar1 = line.cells.get(3);
 					ci.alias = s;
 				}
 			}
