@@ -76,7 +76,7 @@ import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
+import net.sf.jailer.ui.databrowser.TreeLayoutOptimizer.Node;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
 import net.sf.jailer.util.SqlUtil;
@@ -104,6 +104,7 @@ public abstract class Desktop extends JDesktopPane {
 	 * Default width of a row-browser frame.
 	 */
 	public static final int BROWSERTABLE_DEFAULT_WIDTH = 460;
+	private final int BROWSERTABLE_DEFAULT_MIN = 0, BROWSERTABLE_DEFAULT_HEIGHT = 460, BROWSERTABLE_DEFAULT_DISTANCE = 64;
 
 	/**
 	 * <code>true</code> while the desktop is visible.
@@ -610,7 +611,7 @@ public abstract class Desktop extends JDesktopPane {
 			}
 		};
 		
-		Rectangle r = layout(parentRowIndex < 0, parent, association, browserContentPane, new ArrayList<RowBrowser>());
+		Rectangle r = layout(parentRowIndex < 0, parent, association, browserContentPane, new ArrayList<RowBrowser>(), 0, -1);
 		browserContentPane.rowsTableScrollPane.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
             public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
                 onMouseWheelMoved(evt);
@@ -687,17 +688,21 @@ public abstract class Desktop extends JDesktopPane {
 		return color;
 	}
 
-	private Rectangle layout(final boolean fullSize, final RowBrowser parent, Association association, BrowserContentPane browserContentPane, Collection<RowBrowser> ignore) {
-		final int MIN = 0, HEIGHT = 460, /* MIN_HEIGHT = 80, */ DISTANCE = 64;
-
-		int x = (int) (MIN * layoutMode.factor);
-		int y = (int) (MIN * layoutMode.factor);
+	private Rectangle layout(final boolean fullSize, final RowBrowser parent, Association association, BrowserContentPane browserContentPane, Collection<RowBrowser> ignore, int maxH, int xPosition) {
+		int x = (int) (BROWSERTABLE_DEFAULT_MIN * layoutMode.factor);
+		int y = (int) (BROWSERTABLE_DEFAULT_MIN * layoutMode.factor);
 		if (parent != null) {
-			x = (int) (parent.internalFrame.getX() + parent.internalFrame.getWidth() + DISTANCE * layoutMode.factor);
+			x = (int) (parent.internalFrame.getX() + parent.internalFrame.getWidth() + BROWSERTABLE_DEFAULT_DISTANCE * layoutMode.factor);
 			y = parent.internalFrame.getY();
 		}
+		if (maxH > 0) {
+			y = maxH;
+		}
+		if (xPosition >= 0) {
+			x = (int) (xPosition * (BROWSERTABLE_DEFAULT_WIDTH + BROWSERTABLE_DEFAULT_DISTANCE) * layoutMode.factor);
+		}
 		// int h = fullSize || association == null || (association.getCardinality() != Cardinality.MANY_TO_ONE && association.getCardinality() != Cardinality.ONE_TO_ONE)? HEIGHT : browserContentPane.getMinimumSize().height + MIN_HEIGHT; 
-		int h = (int) (HEIGHT * layoutMode.factor); 
+		int h = (int) (BROWSERTABLE_DEFAULT_HEIGHT * layoutMode.factor); 
 		Rectangle r = new Rectangle(x, y, (int) (BROWSERTABLE_DEFAULT_WIDTH * layoutMode.factor), h);
 		for (;;) {
 			boolean ok = true;
@@ -1320,31 +1325,21 @@ public abstract class Desktop extends JDesktopPane {
 	public void layoutBrowser() {
 		JInternalFrame selectedFrame = getSelectedFrame();
 		List<RowBrowser> all = new ArrayList<RowBrowser>(tableBrowsers);
-		List<RowBrowser> roots = new ArrayList<RowBrowser>();
-		for (RowBrowser rb: all) {
-			if (rb.parent == null) {
-				roots.add(rb);
+		layout(all, 0);
+		
+		optimizeLayout();
+
+		all.clear();
+		int maxH = 0;
+		for (RowBrowser rb: tableBrowsers) {
+			if (rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable) {
+				all.add(rb);
+			} else {
+				maxH = Math.max(maxH, rb.internalFrame.getBounds().y + rb.internalFrame.getBounds().height);
 			}
 		}
-		while (!roots.isEmpty()) {
-			List<RowBrowser> nextColumn = new ArrayList<RowBrowser>();
-			for (RowBrowser rb: roots) {
-				try {
-					rb.internalFrame.setMaximum(false);
-				} catch (PropertyVetoException e) {
-					// ignore
-				}
-				rb.internalFrame.setBounds(layout(rb.rowIndex < 0, rb.parent, rb.association, rb.browserContentPane, all));
-				rb.browserContentPane.adjustRowTableColumnsWidth();
-				all.remove(rb);
-				for (RowBrowser rbc: all) {
-					if (rbc.parent == rb) {
-						nextColumn.add(rbc);
-					}
-				}
-			}
-			roots = nextColumn;
-		}
+		layout(all, maxH + (int) (16 * layoutMode.factor));
+		
 		checkDesktopSize();
 		if (selectedFrame != null) {
 			try {
@@ -1356,7 +1351,84 @@ public abstract class Desktop extends JDesktopPane {
 			this.scrollRectToVisible(bounds);
 		}
 	}
+
+	private void layout(List<RowBrowser> toLayout, int maxH) {
+		List<RowBrowser> roots = new ArrayList<RowBrowser>();
+		for (RowBrowser rb: toLayout) {
+			if (rb.parent == null) {
+				roots.add(rb);
+			}
+		}
+		while (!roots.isEmpty()) {
+			List<RowBrowser> nextColumn = new ArrayList<RowBrowser>();
+			int i = 0;
+			for (RowBrowser rb: roots) {
+				try {
+					rb.internalFrame.setMaximum(false);
+				} catch (PropertyVetoException e) {
+					// ignore
+				}
+				int xPosition = -1;
+				if (maxH > 0) {
+					xPosition = i;
+				}
+				rb.internalFrame.setBounds(layout(rb.rowIndex < 0, rb.parent, rb.association, rb.browserContentPane, toLayout, maxH, xPosition));
+				rb.browserContentPane.adjustRowTableColumnsWidth();
+				toLayout.remove(rb);
+				for (RowBrowser rbc: toLayout) {
+					if (rbc.parent == rb) {
+						nextColumn.add(rbc);
+					}
+				}
+				++i;
+			}
+			roots = nextColumn;
+		}
+	}
 	
+	/**
+	 * Experimental layout optimization.
+	 */
+	private void optimizeLayout() {
+		TreeLayoutOptimizer.Node<RowBrowser> root = new TreeLayoutOptimizer.Node<RowBrowser>(null);
+		collectChildren(root);
+		TreeLayoutOptimizer.optimizeTreeLayout(root);
+		arrangeNodes(root);
+	}
+
+	private void collectChildren(Node<RowBrowser> root) {
+		List<RowBrowser> children;
+		if (root.getUserObject() == null) {
+			children = getRootBrowsers();
+		} else {
+			children = getChildBrowsers(root.getUserObject());
+		}
+		for (RowBrowser rb: children) {
+			if (rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable) {
+				continue;
+			}
+			TreeLayoutOptimizer.Node<RowBrowser> childNode = new TreeLayoutOptimizer.Node<RowBrowser>(rb);
+			root.addChild(childNode);
+			collectChildren(childNode);
+		}
+	}
+
+	private void arrangeNodes(Node<RowBrowser> root) {
+		if (root.getUserObject() != null) {
+			JInternalFrame iFrame = root.getUserObject().internalFrame;
+			int x = (int) (BROWSERTABLE_DEFAULT_MIN * layoutMode.factor);
+			int y = (int) (BROWSERTABLE_DEFAULT_MIN * layoutMode.factor);
+			x += (root.getLevel() - 1) * (int) ((BROWSERTABLE_DEFAULT_WIDTH + BROWSERTABLE_DEFAULT_DISTANCE) * layoutMode.factor);
+			y += (int) (root.getPosition() * (BROWSERTABLE_DEFAULT_HEIGHT + 8) * layoutMode.factor);
+			int h = (int) (BROWSERTABLE_DEFAULT_HEIGHT * layoutMode.factor); 
+			Rectangle r = new Rectangle(x, y, (int) (BROWSERTABLE_DEFAULT_WIDTH * layoutMode.factor), h);
+			iFrame.setBounds(r);
+		}
+		for (Node<RowBrowser> child: root.getChildren()) {
+			arrangeNodes(child);
+		}
+	}
+
 	private Map<Rectangle, double[]> precBounds = new HashMap<Rectangle, double[]>();
 	
 	public void rescaleLayout(LayoutMode layoutMode) {
@@ -1564,7 +1636,7 @@ public abstract class Desktop extends JDesktopPane {
 			browserNumber.put(rb, i++);
 			if (fnProp == null && rb.parent == null && rb.browserContentPane.table != null) {
 				if (!(rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable)) {
-					fnProp = datamodel.get().getDisplayName(rb.browserContentPane.table).replace(' ', '-').replace('\"', '-').replace('\'', '-').replace('(', '-').replace(')', '-').toLowerCase() + ".dbs";
+					fnProp = datamodel.get().getDisplayName(rb.browserContentPane.table).replace(' ', '-').replace('\"', '-').replace('\'', '-').replace('(', '-').replace(')', '-').toLowerCase() + ".dbl";
 				}
 			}
 		}
@@ -1573,12 +1645,12 @@ public abstract class Desktop extends JDesktopPane {
 			fnProp = currentSessionFileName;
 		}
 		
-		File startDir = CommandLineParser.getInstance().newFile("session");
+		File startDir = CommandLineParser.getInstance().newFile("layout");
 		Component pFrame = SwingUtilities.getWindowAncestor(this);
 		if (pFrame == null) {
 			pFrame = this;
 		}
-		String sFile = UIUtil.choseFile(fnProp == null? null : new File(startDir, fnProp), startDir.getPath(), "Store Session", ".dbs", pFrame, true, false);
+		String sFile = UIUtil.choseFile(fnProp == null? null : new File(startDir, fnProp), startDir.getPath(), "Store Layout", ".dbl", pFrame, true, false);
 		
 		if (sFile != null) {
 			try {
@@ -1641,12 +1713,12 @@ public abstract class Desktop extends JDesktopPane {
 	 * Restores browser session.
 	 */
 	public void restoreSession() {
-		File startDir = CommandLineParser.getInstance().newFile("session");
+		File startDir = CommandLineParser.getInstance().newFile("layout");
 		Component pFrame = SwingUtilities.getWindowAncestor(this);
 		if (pFrame == null) {
 			pFrame = this;
 		}
-		String sFile = UIUtil.choseFile(null, startDir.getPath(), "Store Session", ".dbs", pFrame, true, true);
+		String sFile = UIUtil.choseFile(null, startDir.getPath(), "Store Layout", ".dbl", pFrame, true, true);
 		
 		if (sFile != null) {
 			try {

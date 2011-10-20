@@ -395,11 +395,11 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
-        cloaseAllMenuItem = new javax.swing.JMenuItem();
-        jSeparator3 = new javax.swing.JPopupMenu.Separator();
         storeSessionItem = new javax.swing.JMenuItem();
         restoreSessionItem = new javax.swing.JMenuItem();
         jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        cloaseAllMenuItem = new javax.swing.JMenuItem();
+        jSeparator3 = new javax.swing.JPopupMenu.Separator();
         schemaMappingMenuItem = new javax.swing.JMenuItem();
         menuTools = new javax.swing.JMenu();
         analyseMenuItem = new javax.swing.JMenuItem();
@@ -627,6 +627,25 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenu1.add(jMenuItem3);
         jMenu1.add(jSeparator4);
 
+        storeSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        storeSessionItem.setText("Store Layout");
+        storeSessionItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                storeSessionItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(storeSessionItem);
+
+        restoreSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
+        restoreSessionItem.setText("Restore Layout");
+        restoreSessionItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                restoreSessionItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(restoreSessionItem);
+        jMenu1.add(jSeparator2);
+
         cloaseAllMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
         cloaseAllMenuItem.setText("Close All");
         cloaseAllMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -636,25 +655,6 @@ public class DataBrowser extends javax.swing.JFrame {
         });
         jMenu1.add(cloaseAllMenuItem);
         jMenu1.add(jSeparator3);
-
-        storeSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
-        storeSessionItem.setText("Store Session");
-        storeSessionItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                storeSessionItemActionPerformed(evt);
-            }
-        });
-        jMenu1.add(storeSessionItem);
-
-        restoreSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
-        restoreSessionItem.setText("Restore Session");
-        restoreSessionItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                restoreSessionItemActionPerformed(evt);
-            }
-        });
-        jMenu1.add(restoreSessionItem);
-        jMenu1.add(jSeparator2);
 
         schemaMappingMenuItem.setText("Schema Mapping");
         schemaMappingMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -867,7 +867,12 @@ public class DataBrowser extends javax.swing.JFrame {
     }//GEN-LAST:event_navigationTreeMouseClicked
 
     private void layoutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_layoutMenuItemActionPerformed
-    	desktop.layoutBrowser();
+    	setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		try {
+			desktop.layoutBrowser();
+		} finally {
+			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		}
     }//GEN-LAST:event_layoutMenuItemActionPerformed
 
     private void jScrollPane1MouseWheelMoved(java.awt.event.MouseWheelEvent evt) {//GEN-FIRST:event_jScrollPane1MouseWheelMoved

@@ -1,10 +1,15 @@
+1.4.2
+  - Tree navigator.
+  - Automatic Layouting.
+  - Desktop scaling.
+
 1.4.1
   - Query Builder generated incorrect queries when applied on a restored session. This bug has been fixed.
   - Added Demo Database.
 
 1.4
   - Implemented the "Subset by Example" feature: Use the Data Browser to collect all the rows to be extracted and let DBeauty create a model for that subset.
-  - Store/Restore of browser sessions
+  - Store/Restore of browser layouts
 
 1.3
   - Extended row limits in Data Browser.

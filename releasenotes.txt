@@ -1,10 +1,16 @@
+3.7.2
+  - Data Browser improvements:
+    - Tree navigator.
+    - Automatic Layouting.
+    - Desktop scaling.
+
 3.7.1
  - Query Builder generated incorrect queries when applied on a restored session. This bug has been fixed.
  - Added Demo Database.
 
 3.7
  - Implemented the "Subset by Example" feature: Use the Data Browser to collect all the rows to be extracted and let Jailer create a model for that subset.
- - Store/Restore of browser sessions (Feature Request ID: 3176291)
+ - Store/Restore of browser layouts (Feature Request ID: 3176291)
 
 3.6.12
  - Extended row limits in Data Browser.
