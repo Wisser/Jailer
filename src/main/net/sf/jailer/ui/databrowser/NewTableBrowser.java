@@ -148,7 +148,7 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(analyzeButton, gridBagConstraints);
 
-        restoreSessionButton.setText(" Restore Session ");
+        restoreSessionButton.setText(" Restore Layout ");
         restoreSessionButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 restoreSessionButtonActionPerformed(evt);

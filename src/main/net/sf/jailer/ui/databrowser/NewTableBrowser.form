@@ -115,7 +115,7 @@
         </Component>
         <Component class="javax.swing.JButton" name="restoreSessionButton">
           <Properties>
-            <Property name="text" type="java.lang.String" value=" Restore Session "/>
+            <Property name="text" type="java.lang.String" value=" Restore Layout "/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="restoreSessionButtonActionPerformed"/>
