@@ -1487,21 +1487,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		try {
 			ToolTipManager.sharedInstance().setInitialDelay(500);
 			ToolTipManager.sharedInstance().setDismissDelay(20000);
-	    	Color bgSelColor = new Color(170, 200, 255);
-			// very (!) ugly trick to change nimbus default colors, but I found no better way
-			Object o = UIManager.get("Tree:TreeCell[Focused+Selected].backgroundPainter");
-			if (o != null) {
-		    	Field f = o.getClass().getDeclaredField("color2");
-		    	f.setAccessible(true);
-				f.set(o, bgSelColor);
-			}
-			o = UIManager.get("Tree:TreeCell[Enabled+Selected].backgroundPainter");
-			if (o != null) {
-		    	Field f = o.getClass().getDeclaredField("color2");
-		    	f.setAccessible(true);
-				f.set(o, bgSelColor);
-			}
 		} catch (Exception x) {
+			x.printStackTrace();
 		}
 	}
 

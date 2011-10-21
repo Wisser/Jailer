@@ -1380,7 +1380,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		public TreeNodeForRowBrowser(RowBrowser rowBrowser, int rowIndex) {
 			this.rowBrowser = rowBrowser;
 			this.rowIndex = rowIndex;
-			this.title = " " + rowBrowser.internalFrame.getTitle() + "     ";
+			this.title = " " + rowBrowser.internalFrame.getTitle() + "  ";
 			treeNodeByIFrame.put(rowBrowser.internalFrame, this);
 		}
 

@@ -1793,7 +1793,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					DefaultMutableTreeNode node = (DefaultMutableTreeNode) value;
 					if (node.getUserObject() instanceof Table) {
 						text = dataModel.getDisplayName(((Table) node.getUserObject()));
-						setTextSelectionColor(Color.BLACK);
+//						setTextSelectionColor(Color.BLACK);
 						setTextNonSelectionColor(Color.BLACK);
 					} else if (node.getUserObject() instanceof Association) {
 						Association association = (Association) node.getUserObject();
@@ -1804,16 +1804,16 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 							text += "  ";
 						}
 						if (association.isIgnored()) {
-							setTextSelectionColor(ignored.getForeground());
+//							setTextSelectionColor(ignored.getForeground());
 							setTextNonSelectionColor(ignored.getForeground());
 						} else if (association.isInsertDestinationBeforeSource()) {
-							setTextSelectionColor(dependsOn.getForeground());
+//							setTextSelectionColor(dependsOn.getForeground());
 							setTextNonSelectionColor(dependsOn.getForeground());
 						} else if (association.isInsertSourceBeforeDestination()) {
-							setTextSelectionColor(hasDependent.getForeground());
+//							setTextSelectionColor(hasDependent.getForeground());
 							setTextNonSelectionColor(hasDependent.getForeground());
 						} else {
-							setTextSelectionColor(associatedWith.getForeground());
+//							setTextSelectionColor(associatedWith.getForeground());
 							setTextNonSelectionColor(associatedWith.getForeground());
 						}
 						return wrapTreeNode(super.getTreeCellRendererComponent(tree, text, selected, expanded, leaf, row, hasFocus), selected, association);
