@@ -1431,8 +1431,13 @@ public abstract class Desktop extends JDesktopPane {
 
 	private Map<Rectangle, double[]> precBounds = new HashMap<Rectangle, double[]>();
 	
-	public void rescaleLayout(LayoutMode layoutMode) {
+	public void rescaleLayout(LayoutMode layoutMode, Point fixed) {
 		double scale = layoutMode.factor / this.layoutMode.factor;
+		
+		if (fixed == null) {
+			fixed = new Point(getVisibleRect().x + getVisibleRect().width / 2, getVisibleRect().y + getVisibleRect().height / 2);
+		}
+		
 		this.layoutMode = layoutMode;
 		Map<Rectangle, double[]> newPrecBounds = new HashMap<Rectangle, double[]>();
 		for (RowBrowser rb: new ArrayList<RowBrowser>(tableBrowsers)) {
@@ -1458,6 +1463,13 @@ public abstract class Desktop extends JDesktopPane {
 		}
 		precBounds = newPrecBounds;
 		manager.resizeDesktop();
+		
+		Rectangle vr = new Rectangle(
+				Math.max(0, (int) (fixed.x * scale - getVisibleRect().width / 2)),
+				Math.max(0, (int) (fixed.y * scale - getVisibleRect().height / 2)),
+				getVisibleRect().width,
+				getVisibleRect().height);
+		scrollRectToVisible(vr);
 		updateMenu(layoutMode);
 	}
 
@@ -1477,7 +1489,7 @@ public abstract class Desktop extends JDesktopPane {
     		}
         	d += layoutMode.ordinal();
         	if (d >= 0 && d < LayoutMode.values().length) {
-        		rescaleLayout(LayoutMode.values()[d]);
+        		rescaleLayout(LayoutMode.values()[d], null);
         	}
         }
 	}
