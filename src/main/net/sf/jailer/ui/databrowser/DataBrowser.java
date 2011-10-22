@@ -1251,6 +1251,8 @@ public class DataBrowser extends javax.swing.JFrame {
 					break;
 				case 2:
 					ExtractionModelFrame.demo(null);
+					desktop.reloadDataModel(desktop.schemaMapping);
+					updateStatusBar();
 					break;
 				}
 			} else if (!new File(DataModel.getColumnsFile()).exists()) {

@@ -1,3 +1,7 @@
+3.7.3
+  - Java 7 compatibility fix.
+  - Desktop dragging.
+
 3.7.2
   - Data Browser improvements:
     - Tree navigator.
