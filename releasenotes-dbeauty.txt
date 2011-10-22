@@ -1,3 +1,7 @@
+1.4.3
+  - Java 7 compatibility fix.
+  - Desktop dragging.
+
 1.4.2
   - Tree navigator.
   - Automatic Layouting.
