@@ -659,7 +659,7 @@ public abstract class Desktop extends JDesktopPane {
 		});
 
 		checkDesktopSize();
-		this.scrollRectToVisible(jInternalFrame.getBounds());
+		this.scrollToCenter(jInternalFrame);
 		try {
 			jInternalFrame.setSelected(true);
 		} catch (PropertyVetoException e1) {
@@ -1347,8 +1347,7 @@ public abstract class Desktop extends JDesktopPane {
 			} catch (PropertyVetoException e) {
 				// ignore
 			}
-			Rectangle bounds = selectedFrame.getBounds();
-			this.scrollRectToVisible(bounds);
+			this.scrollToCenter(selectedFrame);
 		}
 	}
 
@@ -1818,8 +1817,7 @@ public abstract class Desktop extends JDesktopPane {
 			} catch (PropertyVetoException e) {
 				// ignore
 			}
-			Rectangle bounds = root.internalFrame.getBounds();
-			this.scrollRectToVisible(bounds);
+			this.scrollToCenter(root.internalFrame);
 		} else {
 			this.scrollRectToVisible(new Rectangle(0, 0, 1, 1));
 		}
@@ -1853,6 +1851,26 @@ public abstract class Desktop extends JDesktopPane {
 			}
 		}
 		return roots;
+	}
+
+	/**
+	 * Scrolls an iFrame to the center of the desktop.
+	 */
+	public void scrollToCenter(JInternalFrame iFrame) {
+		int w = getVisibleRect().width;
+		int h = getVisibleRect().height;
+		int x = iFrame.getBounds().x + iFrame.getBounds().width / 2 - getVisibleRect().width / 2;
+		int y = iFrame.getBounds().y + iFrame.getBounds().height / 2 - getVisibleRect().height / 2;
+		if (x < 0) {
+			w += x;
+			x = 0;
+		}
+		if (y < 0) {
+			h += y;
+			y = 0;
+		}
+		Rectangle r = new Rectangle(x, y, Math.max(1, w), Math.max(1, h));
+		scrollRectToVisible(r);
 	}
 
 }

@@ -1,3 +1,6 @@
+1.4.4
+  - moves new table browser to center of the desktop.
+
 1.4.3
   - Java 7 compatibility fix.
   - Desktop dragging.
