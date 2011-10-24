@@ -1435,7 +1435,20 @@ public class DataBrowser extends javax.swing.JFrame {
 						if (userObject instanceof TreeNodeForRowBrowser) {
 							try {
 								JInternalFrame iFrame = ((TreeNodeForRowBrowser) userObject).rowBrowser.internalFrame;
-								desktop.scrollRectToVisible(iFrame.getBounds());
+								int w = desktop.getVisibleRect().width;
+								int h = desktop.getVisibleRect().height;
+								int x = iFrame.getBounds().x + iFrame.getBounds().width / 2 - desktop.getVisibleRect().width / 2;
+								int y = iFrame.getBounds().y + iFrame.getBounds().height / 2 - desktop.getVisibleRect().height / 2;
+								if (x < 0) {
+									w += x;
+									x = 0;
+								}
+								if (y < 0) {
+									h += y;
+									y = 0;
+								}
+								Rectangle r = new Rectangle(x, y, Math.max(1, w), Math.max(1, h));
+								desktop.scrollRectToVisible(r);
 								iFrame.setSelected(true);
 								iFrame.grabFocus();
 							} catch (PropertyVetoException e1) {
