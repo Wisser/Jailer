@@ -317,5 +317,12 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<property name="urlPattern" value="jdbc:hsqldb.*" />
 			<property name="sqlLimitSuffix" value="LIMIT %s" />
 		</bean>
+
+        <!-- for H2 -->
+        <bean class="net.sf.jailer.Configuration">
+            <property name="urlPattern" value="jdbc:h2.*" />
+            <property name="sqlLimitSuffix" value="LIMIT %s" />
+        </bean>
 	</util:list>
+	
 </beans>

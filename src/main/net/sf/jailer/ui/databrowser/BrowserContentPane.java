@@ -251,7 +251,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * Parent row, or <code>null</code>.
 	 */
-	final Row parentRow;
+	Row parentRow;
 
 	/**
 	 * The data model.
@@ -261,7 +261,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * {@link Association} with parent row, or <code>null</code>.
 	 */
-	private final Association association;
+	private Association association;
 
 	/**
 	 * Rows to render.
@@ -291,7 +291,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * DB session.
 	 */
-	private final Session session;
+	Session session;
 
 	private int currentRowSelection = -1;
 
@@ -467,36 +467,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		andCondition.setText(ConditionEditor.toSingleLine(condition));
 		from.setText(table == null? "" : this.dataModel.getDisplayName(table));
-		if (association == null) {
-			joinPanel.setVisible(false);
-			onPanel.setVisible(false);
-			wherePanel.setVisible(false);
-//			jLabel1.setVisible(false);
-//			jLabel4.setVisible(false);
-//			jLabel9.setVisible(false);
-			
-			jLabel1.setText(" ");
-			jLabel4.setText(" ");
-			jLabel9.setText(" ");
-			
-			jLabel6.setVisible(false);
-			dropB.setVisible(false);
-			andLabel.setText(" Where ");
-			java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-	        gridBagConstraints.gridx = 8;
-	        gridBagConstraints.gridy = 4;
-	        gridBagConstraints.gridheight = 1;
-	        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-//	        add(sqlPanel, gridBagConstraints);
-		} else {
-			join.setText(dataModel.getDisplayName(association.source));
-			on.setText(!association.reversed ? SqlUtil.reversRestrictionCondition(association.getUnrestrictedJoinCondition()) : association
-					.getUnrestrictedJoinCondition());
-			updateWhereField();
-			join.setToolTipText(join.getText());
-			on.setToolTipText(on.getText());
-			where.setToolTipText(where.getText());
-		}
+		adjustGui();
 		rowsTable.setShowGrid(false);
 		final TableCellRenderer defaultTableCellRenderer = rowsTable.getDefaultRenderer(String.class);
 
@@ -749,6 +720,35 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		suppressReload = false;
 		if (reload) {
 			reloadRows();
+		}
+	}
+
+	private void adjustGui() {
+		if (this.association == null) {
+			joinPanel.setVisible(false);
+			onPanel.setVisible(false);
+			wherePanel.setVisible(false);
+			
+			jLabel1.setText(" ");
+			jLabel4.setText(" ");
+			jLabel9.setText(" ");
+			
+			jLabel6.setVisible(false);
+			dropB.setVisible(false);
+			andLabel.setText(" Where ");
+			java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+	        gridBagConstraints.gridx = 8;
+	        gridBagConstraints.gridy = 4;
+	        gridBagConstraints.gridheight = 1;
+	        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+		} else {
+			join.setText(this.dataModel.getDisplayName(this.association.source));
+			on.setText(!this.association.reversed ? SqlUtil.reversRestrictionCondition(this.association.getUnrestrictedJoinCondition()) : this.association
+					.getUnrestrictedJoinCondition());
+			updateWhereField();
+			join.setToolTipText(join.getText());
+			on.setToolTipText(on.getText());
+			where.setToolTipText(where.getText());
 		}
 	}
 
@@ -1604,7 +1604,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private void reloadRows(String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, Object context, int limit, boolean useOLAPLimitation,
 			String sqlLimitSuffix, boolean selectDistinct) throws SQLException {
 		try {
-			reloadRows0(andCond, parentRows, rows, context, Math.max(5000, limit), useOLAPLimitation, sqlLimitSuffix, selectDistinct);
+			reloadRows0(andCond, parentRows, rows, context, parentRows == null? limit : Math.max(5000, limit), useOLAPLimitation, sqlLimitSuffix, selectDistinct);
 		} catch (SQLException e) {
 			if (selectDistinct) {
 				// try without "distinct"
@@ -2615,6 +2615,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (association != null) {
 			where.setText(parentRow == null ? (parentRows != null && parentRows.size() > 0? parentRows.get(0).rowId + (parentRows.size() > 1? " or ..." : "") : "") : parentRow.rowId);
 		}
+	}
+
+	public void convertToRoot() {
+		association = null;
+		parentRow = null;
+		parentRows = null;
+		currentClosureRowIDs.clear();
+		adjustGui();
+		reloadRows();
 	}
 
 	private Icon dropDownIcon;
