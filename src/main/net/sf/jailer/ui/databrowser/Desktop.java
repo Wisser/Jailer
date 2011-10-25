@@ -275,6 +275,13 @@ public abstract class Desktop extends JDesktopPane {
 		 * Row-to-row links.
 		 */
 		public List<RowToRowLink> rowToRowLinks = new ArrayList<RowToRowLink>();
+
+		public void convertToRoot() {
+			rowIndex = -1;
+			association = null;
+			parent = null;
+			browserContentPane.convertToRoot();
+		}
 		
 	};
 
@@ -651,7 +658,7 @@ public abstract class Desktop extends JDesktopPane {
 			}
 			@Override
 			public void internalFrameClosed(InternalFrameEvent e) {
-				close(tableBrowser);
+				close(tableBrowser, true);
 			}
 			@Override
 			public void internalFrameActivated(InternalFrameEvent e) {
@@ -1495,20 +1502,27 @@ public abstract class Desktop extends JDesktopPane {
 
 	public void closeAll() {
 		for (RowBrowser rb: new ArrayList<RowBrowser>(tableBrowsers)) {
-			close(rb);
+			close(rb, false);
 			getDesktopManager().closeFrame(rb.internalFrame);
 		}
 		updateMenu();
 	}
 
-	private void close(final RowBrowser tableBrowser) {
+	private void close(final RowBrowser tableBrowser, boolean convertChildrenToRoots) {
+		List<RowBrowser> children = new ArrayList<RowBrowser>();
 		for (RowBrowser tb: tableBrowsers) {
 			if (tb.parent == tableBrowser) {
 				tb.parent = null;
+				children.add(tb);
 			}
 		}
 		tableBrowsers.remove(tableBrowser);
 		tableBrowser.browserContentPane.cancelLoadJob();
+		if (convertChildrenToRoots) {
+			for (RowBrowser child: children) {
+				child.convertToRoot();
+			}
+		}
 		for (RowBrowser rb: tableBrowsers) {
 			updateChildren(rb, rb.browserContentPane.rows);
 		}
@@ -1840,6 +1854,10 @@ public abstract class Desktop extends JDesktopPane {
 			}
 		}
 		return roots;
+	}
+
+	public List<RowBrowser> getBrowsers() {
+		return new ArrayList<Desktop.RowBrowser>(tableBrowsers);
 	}
 
 	public List<RowBrowser> getChildBrowsers(RowBrowser parent) {

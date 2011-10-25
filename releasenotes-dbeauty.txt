@@ -1,6 +1,7 @@
 1.4.4
   - moves new table browser to center of the desktop.
-
+  - "Reconnect" and "New Window" menu items added.
+  
 1.4.3
   - Java 7 compatibility fix.
   - Desktop dragging.

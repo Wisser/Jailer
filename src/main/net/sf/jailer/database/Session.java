@@ -228,11 +228,22 @@ public class Session {
         	temporaryTableScope = scope;
         }
         connectionFactory = new ConnectionFactory() {
+        	private Connection defaultConnection = null;
             public Connection getConnection() throws SQLException {
                 Connection con = temporaryTableSession == null? connection.get() : temporaryTableSession;
                 
                 if (con == null) {
-                    con = DriverManager.getConnection(dbUrl, user, password);
+                	try {
+                		con = DriverManager.getConnection(dbUrl, user, password);
+                		defaultConnection = con;
+                	} catch (SQLException e) {
+                		if (defaultConnection != null) {
+                			// fall back to default connection
+                			con = defaultConnection;
+                		} else {
+                			throw e;
+                		}
+                	}
                     boolean ac = scope == null || scope != TemporaryTableScope.TRANSACTION_LOCAL;
                     if (Session.this.transactional) {
                     	ac = false;
@@ -258,7 +269,16 @@ public class Session {
                 		temporaryTableSession = con;
                 	} else {
                         connection.set(con);
-                        connections.add(con);
+                        boolean addCon = true;
+                        for (Connection c: connections) {
+                        	if (c == con) {
+                        		addCon = false;
+                        		break;
+                        	}
+                        }
+                        if (addCon) {
+                        	connections.add(con);
+                        }
                 	}
                 }
                 return con;
