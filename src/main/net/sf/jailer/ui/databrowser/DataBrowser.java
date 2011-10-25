@@ -1124,7 +1124,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		if (DataBrowserContext.isStandAlone()) {
 			dbConnectionDialog.setJdbcHelpURL("http://dbeauty.sourceforge.net/jdbc.html");
 		}
-		if (dbConnectionDialog.currentConnection != null || dbConnectionDialog.connect(DataBrowserContext.getAppName(true))) {
+		if (dbConnectionDialog.isConnected || dbConnectionDialog.connect(DataBrowserContext.getAppName(true))) {
 			dataBrowser.setConnection(dbConnectionDialog);
 			dataBrowser.askForDataModel();
 			dataBrowser.desktop.openSchemaMappingDialog(true);
