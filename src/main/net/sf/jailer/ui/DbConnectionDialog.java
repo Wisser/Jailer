@@ -60,7 +60,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	/**
 	 * <code>true</code> if valid connection is available.
 	 */
-	boolean isConnected = false;
+	public boolean isConnected = false;
 
 	/**
 	 * Holds connection information.
