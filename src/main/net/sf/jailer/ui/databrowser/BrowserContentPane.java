@@ -533,26 +533,28 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 					if (lastMenu == null || !lastMenu.isVisible()) {
 						setCurrentRowSelection(ri);
-						Rectangle r = rowsTable.getCellRect(ri, 0, false);
-						int x = Math.max((int) e.getPoint().x, (int) r.getMinX());
-						int y = (int) r.getMaxY() - 2;
-						if (singleRowDetailsView != null) {
-							y = e.getY();
-						}
-						Point p = SwingUtilities.convertPoint(rowsTable, x, y, null);
-						JPopupMenu popup;
-						popup = createPopupMenu(row, i, p.x + getOwner().getX(), p.y + getOwner().getY(), rows.size() == 1);
-						popup.show(rowsTable, x, y);
-						popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
-
-							@Override
-							public void propertyChange(PropertyChangeEvent evt) {
-								if (Boolean.FALSE.equals(evt.getNewValue())) {
-									setCurrentRowSelection(-1);
-								}
+						if (e.getButton() != MouseEvent.BUTTON1 || e.getClickCount() > 1) {
+							Rectangle r = rowsTable.getCellRect(ri, 0, false);
+							int x = Math.max((int) e.getPoint().x, (int) r.getMinX());
+							int y = (int) r.getMaxY() - 2;
+							if (singleRowDetailsView != null) {
+								y = e.getY();
 							}
-						});
-						lastMenu = popup;
+							Point p = SwingUtilities.convertPoint(rowsTable, x, y, null);
+							JPopupMenu popup;
+							popup = createPopupMenu(row, i, p.x + getOwner().getX(), p.y + getOwner().getY(), rows.size() == 1);
+							popup.show(rowsTable, x, y);
+							popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
+	
+								@Override
+								public void propertyChange(PropertyChangeEvent evt) {
+									if (Boolean.FALSE.equals(evt.getNewValue())) {
+										setCurrentRowSelection(-1);
+									}
+								}
+							});
+							lastMenu = popup;
+						}
 					}
 				}
 			}
