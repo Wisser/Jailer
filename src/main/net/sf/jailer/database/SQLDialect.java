@@ -131,19 +131,19 @@ public class SQLDialect {
 	/**
 	 * Binary data literal pattern.
 	 */
-	public static String binaryPattern = "x'%s'";
+//	public static String binaryPattern = "x'%s'";
 	
 	/**
 	 * Empty CLOB as SQL literal, <code>null</code> if DBMS does not support CLOB literals.
 	 * For instance: "empty_clob()"
 	 */
-	public static String emptyCLOBValue = null;
+//	public static String emptyCLOBValue = null;
 
 	/**
 	 * Empty BLOB as SQL literal, <code>null</code> if DBMS does not support BLOB literals.
 	 * For instance: "empty_blob()"
 	 */
-	public static String emptyBLOBValue = null;
+//	public static String emptyBLOBValue = null;
 
 	/**
 	 * Current dialect.
@@ -316,16 +316,16 @@ public class SQLDialect {
 		
 		session.setSilent(false);
 		
-		Configuration c = Configuration.forDbms(session);
-		SqlUtil.dateFormat = c.dateFormat;
-		SqlUtil.nanoSep = c.nanoSep;
-		SqlUtil.appendNanosToTimestamp = c.appendNanosToTimestamp;
-		SqlUtil.appendMillisToTimestamp = c.appendMillisToTimestamp;
-		SqlUtil.useToTimestampFunction = c.useToTimestampFunction;
-		SqlUtil.timestampFormat = c.timestampFormat;
-		emptyCLOBValue = c.emptyCLOBValue;
-		emptyBLOBValue = c.emptyBLOBValue;
-		binaryPattern = c.binaryPattern;	
+//		Configuration c = Configuration.forDbms(session);
+//		SqlUtil.dateFormat = c.dateFormat;
+//		SqlUtil.nanoSep = c.nanoSep;
+//		SqlUtil.appendNanosToTimestamp = c.appendNanosToTimestamp;
+//		SqlUtil.appendMillisToTimestamp = c.appendMillisToTimestamp;
+//		SqlUtil.useToTimestampFunction = c.useToTimestampFunction;
+//		SqlUtil.timestampFormat = c.timestampFormat;
+//		emptyCLOBValue = c.emptyCLOBValue;
+//		emptyBLOBValue = c.emptyBLOBValue;
+//		binaryPattern = c.binaryPattern;	
 	}
 
 	/**

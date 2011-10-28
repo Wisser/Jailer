@@ -193,7 +193,8 @@ public class DMLTransformer implements ResultSetReader {
                 	if (mdColumnType == Types.SQLXML) {
                 		emptyLobValue[i] = null;
                 	} else {
-                		emptyLobValue[i] = (mdColumnType == Types.BLOB)? SQLDialect.emptyBLOBValue : SQLDialect.emptyCLOBValue;
+                		Configuration c = Configuration.forDbms(session);
+                		emptyLobValue[i] = (mdColumnType == Types.BLOB)? c.emptyBLOBValue : c.emptyCLOBValue;
                 	}
                     if (emptyLobValue[i] == null) {
                     	continue;

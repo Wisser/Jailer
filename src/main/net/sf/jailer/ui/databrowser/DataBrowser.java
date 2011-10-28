@@ -339,6 +339,8 @@ public class DataBrowser extends javax.swing.JFrame {
 			if (connection != null) {
 				createSession(dbConnectionDialog);
 				desktop.session = session;
+				// trigger sql dialect guessing
+				datamodel.get().getUniversalPrimaryKey(session);
 				updateStatusBar();
 				if (desktop != null) {
 					desktop.updateMenu();
