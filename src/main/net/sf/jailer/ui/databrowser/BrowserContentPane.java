@@ -1338,9 +1338,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			Rectangle pos = rowsTable.getCellRect(i, 0, false);
 			rowsTable.scrollRectToVisible(new Rectangle(visibleRect.x, pos.y, 1, pos.height));
 		}
-		if (currentClosure.size() == 1) {
-			currentClosure.clear();
-		}
+//		if (currentClosure.size() == 1) {
+//			currentClosure.clear();
+//		}
 		currentClosureRowIDs.clear();
 		for (Pair<BrowserContentPane, Row> r: currentClosure) {
 			currentClosureRowIDs.add(new Pair<BrowserContentPane, String>(r.a, r.b.rowId));
