@@ -554,6 +554,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								}
 							});
 							lastMenu = popup;
+						} else {
+							setCurrentRowSelection(-1);
 						}
 					}
 				}
