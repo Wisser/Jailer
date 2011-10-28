@@ -532,8 +532,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					Row row = rows.get(i);
 
 					if (lastMenu == null || !lastMenu.isVisible()) {
-						setCurrentRowSelection(ri);
 						if (e.getButton() != MouseEvent.BUTTON1 || e.getClickCount() > 1) {
+							currentRowSelection = ri;
+							onRedraw();
+//							setCurrentRowSelection(ri);
 							Rectangle r = rowsTable.getCellRect(ri, 0, false);
 							int x = Math.max((int) e.getPoint().x, (int) r.getMinX());
 							int y = (int) r.getMaxY() - 2;
@@ -549,12 +551,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								@Override
 								public void propertyChange(PropertyChangeEvent evt) {
 									if (Boolean.FALSE.equals(evt.getNewValue())) {
-										setCurrentRowSelection(-1);
+										currentRowSelection = -1;
+										onRedraw();
+//										setCurrentRowSelection(-1);
 									}
 								}
 							});
 							lastMenu = popup;
 						} else {
+							setCurrentRowSelection(ri);
 							setCurrentRowSelection(-1);
 						}
 					}
