@@ -311,6 +311,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private static final LinkedBlockingQueue<LoadJob> runnableQueue = new LinkedBlockingQueue<LoadJob>();
 
 	/**
+	 * Alias for row number column.
+	 */
+	private static final String ROWNUMBERALIAS = "RN";
+
+	/**
 	 * Maximum number of concurrent DB connections.
 	 */
 	private static int MAX_CONCURRENT_CONNECTIONS = 5;
@@ -1696,7 +1701,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			table.setColumns(new ArrayList<Column>());
 		} else {
 			String olapPrefix = "Select ";
-			String olapSuffix = ") S Where S.jlr_rnum__ <= " + limit + " Order by S.jlr_rnum__";
+			String olapSuffix = ") S Where S." + ROWNUMBERALIAS + " <= " + limit + " Order by S." + ROWNUMBERALIAS + "";
 			if (sqlLimitSuffix != null && sqlLimitSuffix.toLowerCase().startsWith("top ")) {
 				sql += (sqlLimitSuffix.replace("%s", Integer.toString(limit))) + " ";
 			}
@@ -1738,7 +1743,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (useOLAPLimitation) {
 					sql += "order by " + orderBy;
 				}
-				sql += ") as jlr_rnum__";
+				sql += ") as " + ROWNUMBERALIAS + "";
 			}
 			sql += " From ";
 			if (association != null) {
