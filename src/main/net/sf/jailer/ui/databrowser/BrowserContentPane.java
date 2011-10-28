@@ -108,6 +108,7 @@ import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
+import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -296,8 +297,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private int currentRowSelection = -1;
 
 	private List<Row> parentRows;
-	protected final Set<Row> currentClosure;
-	protected Set<String> currentClosureRowIDs;
+	protected final Set<Pair<BrowserContentPane, Row>> currentClosure;
+	protected Set<Pair<BrowserContentPane, String>> currentClosureRowIDs;
 	private DetailsView singleRowDetailsView;
 	private int initialRowHeight;
 	public SQLBrowserContentPane sqlBrowserContentPane;
@@ -364,7 +365,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param reload 
 	 */
 	public BrowserContentPane(final DataModel dataModel, final Table table, String condition, Session session, Row parentRow, List<Row> parentRows,
-			final Association association, Frame parentFrame, Set<Row> currentClosure, Set<String> currentClosureRowIDs, Integer limit, Boolean selectDistinct, boolean reload) {
+			final Association association, Frame parentFrame, Set<Pair<BrowserContentPane, Row>> currentClosure, Set<Pair<BrowserContentPane, String>> currentClosureRowIDs, Integer limit, Boolean selectDistinct, boolean reload) {
 		this.table = table;
 		this.session = session;
 		this.dataModel = dataModel;
@@ -488,14 +489,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				
 				if (value instanceof Row) {
 					Row theRow = (Row) value;
-					singleRowDetailsView.setBorderColor(isSelected? render.getBackground() : BrowserContentPane.this.currentClosureRowIDs.contains(theRow.rowId)? BG3 : Color.WHITE);
+					Pair<BrowserContentPane, String> pair = new Pair<BrowserContentPane, String>(BrowserContentPane.this, theRow.rowId);
+					singleRowDetailsView.setBorderColor(isSelected? render.getBackground() : BrowserContentPane.this.currentClosureRowIDs.contains(pair)? BG3 : Color.WHITE);
 					return singleRowDetailsView;
 				}
 
 				final RowSorter<?> rowSorter = rowsTable.getRowSorter();
 				if (render instanceof JLabel) {
 					if (!isSelected) {
-						if (row < rows.size() && BrowserContentPane.this.currentClosureRowIDs.contains(rows.get(rowSorter.convertRowIndexToModel(row)).rowId)) {
+						if (row < rows.size() && BrowserContentPane.this.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(BrowserContentPane.this, rows.get(rowSorter.convertRowIndexToModel(row)).rowId))) {
 							((JLabel) render).setBackground(BG3);
 						} else {
 							((JLabel) render).setBackground((row % 2 == 0) ? BG1 : BG2);
@@ -1328,14 +1330,63 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (i >= 0) {
 			currentClosure.clear();
 			findClosure(rows.get(rowsTable.getRowSorter().convertRowIndexToModel(i)));
+			Rectangle visibleRect = rowsTable.getVisibleRect();
+			Rectangle pos = rowsTable.getCellRect(i, 0, false);
+			rowsTable.scrollRectToVisible(new Rectangle(visibleRect.x, pos.y, 1, pos.height));
 		}
 		if (currentClosure.size() == 1) {
 			currentClosure.clear();
 		}
 		currentClosureRowIDs.clear();
-		for (Row r: currentClosure) {
-			currentClosureRowIDs.add(r.rowId);
+		for (Pair<BrowserContentPane, Row> r: currentClosure) {
+			currentClosureRowIDs.add(new Pair<BrowserContentPane, String>(r.a, r.b.rowId));
 		}
+		
+		Set<RowBrowser> toAdjust = new HashSet<Desktop.RowBrowser>(getChildBrowsers());
+		if (getParentBrowser() != null) {
+			toAdjust.add(getParentBrowser());
+		}
+		
+		for (RowBrowser rb: toAdjust) {
+			List<Row> rowsOfRB = new ArrayList<Row>();
+			for (Pair<BrowserContentPane, Row> r: currentClosure) {
+				if (r.a == rb.browserContentPane) {
+					rowsOfRB.add(r.b);
+				}
+			}
+			if (!rowsOfRB.isEmpty()) {
+				Rectangle firstRowPos = null;
+				Rectangle lastRowPos = null;
+				Rectangle visibleRect = rb.browserContentPane.rowsTable.getVisibleRect();
+				for (Row r: rowsOfRB) {
+					int index = rb.browserContentPane.rows.indexOf(r);
+					if (index < 0) {
+						System.err.println("? row not found: " + r.rowId);
+						continue;
+					}
+					index = rb.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(index);
+					Rectangle pos = rb.browserContentPane.rowsTable.getCellRect(index, 0, false);
+					if (pos.y >= visibleRect.y && pos.y + pos.height < visibleRect.y + visibleRect.height) {
+						// already a visible row
+						firstRowPos = null;
+						break;
+					}
+					if (firstRowPos == null || firstRowPos.y > pos.y) {
+						firstRowPos = pos;
+					}
+					if (lastRowPos == null || lastRowPos.y < pos.y) {
+						lastRowPos = pos;
+					}
+				}
+				if (lastRowPos != null) {
+					rb.browserContentPane.rowsTable.scrollRectToVisible(new Rectangle(visibleRect.x, lastRowPos.y, 1, lastRowPos.height));
+				}
+				if (firstRowPos != null) {
+					rb.browserContentPane.rowsTable.scrollRectToVisible(new Rectangle(visibleRect.x, firstRowPos.y, 1, firstRowPos.height));
+				}
+			}
+		}
+		
 		onRedraw();
 	}
 
@@ -2585,7 +2636,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract JFrame getOwner();
 
 	protected abstract void findClosure(Row row);
-	protected abstract void findClosure(Row row, Set<Row> closure, boolean forward);
+	protected abstract void findClosure(Row row, Set<Pair<BrowserContentPane, Row>> closure, boolean forward);
 
 	protected abstract QueryBuilderDialog getQueryBuilderDialog();
 	protected abstract QueryBuilderPathSelector getQueryBuilderPathSelector();
@@ -2595,6 +2646,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract DbConnectionDialog getDbConnectionDialog();
 	protected abstract double getLayoutFactor();
 	protected abstract List<RowBrowser> getChildBrowsers();
+	protected abstract RowBrowser getParentBrowser();
 	
     private void openDetails(final int x, final int y) {
 		JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), true);

@@ -79,6 +79,7 @@ import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.TreeLayoutOptimizer.Node;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
+import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.SqlUtil;
 import prefuse.util.GraphicsLib;
 
@@ -127,8 +128,8 @@ public abstract class Desktop extends JDesktopPane {
 	public Session session;
 	DbConnectionDialog dbConnectionDialog;
 	
-	private Set<Row> currentClosure = new HashSet<Row>();
-	private Set<String> currentClosureRowIDs = new HashSet<String>();
+	private Set<Pair<BrowserContentPane, Row>> currentClosure = new HashSet<Pair<BrowserContentPane,Row>>();
+	private Set<Pair<BrowserContentPane, String>> currentClosureRowIDs = new HashSet<Pair<BrowserContentPane,String>>();
 	
 	private final QueryBuilderDialog queryBuilderDialog;
 	private final QueryBuilderPathSelector queryBuilderPathSelector;
@@ -452,18 +453,19 @@ public abstract class Desktop extends JDesktopPane {
 
 			@Override
 			protected void findClosure(Row row) {
-				Set<Row> rows = new HashSet<Row>();
+				Set<Pair<BrowserContentPane, Row>> rows = new HashSet<Pair<BrowserContentPane,Row>>();
 				findClosure(row, rows, false);
 				currentClosure.addAll(rows);
-				rows = new HashSet<Row>();
+				rows = new HashSet<Pair<BrowserContentPane,Row>>();
 				findClosure(row, rows, true);
 				currentClosure.addAll(rows);
 			}
 				
 			@Override
-			protected void findClosure(Row row, Set<Row> closure, boolean forward) {
-				if (!closure.contains(row)) {
-					closure.add(row);
+			protected void findClosure(Row row, Set<Pair<BrowserContentPane, Row>> closure, boolean forward) {
+				Pair<BrowserContentPane, Row> thisRow = new Pair<BrowserContentPane, Row>(this, row);
+				if (!closure.contains(thisRow)) {
+					closure.add(thisRow);
 					if (forward) {
 						for (RowBrowser child: tableBrowsers) {
 							if (child.parent == tableBrowser) {
@@ -616,6 +618,12 @@ public abstract class Desktop extends JDesktopPane {
 			protected List<RowBrowser> getChildBrowsers() {
 				return Desktop.this.getChildBrowsers(tableBrowser);
 			}
+			
+			@Override
+			protected RowBrowser getParentBrowser() {
+				return tableBrowser.parent;
+			}
+			
 		};
 		
 		Rectangle r = layout(parentRowIndex < 0, parent, association, browserContentPane, new ArrayList<RowBrowser>(), 0, -1);
@@ -1778,6 +1786,9 @@ public abstract class Desktop extends JDesktopPane {
 						} else {
 							Association association = datamodel.get().namedAssociations.get(l.cells.get(11));
 							RowBrowser parentRB = rbByID.get(parent);
+							if (association == null) {
+								parentRB = null;
+							}
 							rb = addTableBrowser(parentRB, -1, table, parentRB != null? association : null, where, limit, selectDistinct, false);
 							if (id.length() > 0) {
 								rbByID.put(id, rb);

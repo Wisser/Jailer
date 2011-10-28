@@ -215,16 +215,16 @@ public class SqlUtil {
     	JAILER_MH_TABLES.add(EntityGraph.DEPENDENCY);
     	JAILER_MH_TABLES.add(SQLDialect.CONFIG_TABLE_);
     }
-    
+	
     /**
      * To be used for date formatting.
      */
-    public static DateFormat dateFormat = null;
+//    public static DateFormat dateFormat = null;
     
     /**
      * To be used for time stamp formatting.
      */
-    public static DateFormat timestampFormat = null;
+//    public static DateFormat timestampFormat = null;
 
     /**
      * Default time stamp format (for 'to_timestamp' function).
@@ -239,11 +239,11 @@ public class SqlUtil {
     /**
      * <code>true</code> if 'to_timestamp' function is used for writing out timestamps instead of formatting them.
      */
-	public static boolean useToTimestampFunction = false;
+//	public static boolean useToTimestampFunction = false;
 
-    public static boolean appendNanosToTimestamp = true;
-    public static boolean appendMillisToTimestamp = false;
-	public static char nanoSep = '.';
+//    public static boolean appendNanosToTimestamp = true;
+//    public static boolean appendMillisToTimestamp = false;
+//	public static char nanoSep = '.';
 
 	public static DBMS dbms;
     
@@ -263,35 +263,37 @@ public class SqlUtil {
             return "null";
         }
 
+        Configuration c = Configuration.forDbms(session);
+		
         if (content instanceof java.sql.Date) {
-        	if (useToTimestampFunction) {
+        	if (c.useToTimestampFunction) {
         		String format;
         		synchronized(defaultDateFormat) {
 	        		format = defaultDateFormat.format((Date) content);
 	       		}
 				return "to_date('" + format + "', 'YYYY-MM-DD')";
         	}
-        	if (dateFormat != null) {
-        		synchronized(dateFormat) {
-        			return "'" + dateFormat.format((Date) content) + "'";
+        	if (c.dateFormat != null) {
+        		synchronized(c.dateFormat) {
+        			return "'" + c.dateFormat.format((Date) content) + "'";
         		}
         	}
             return "'" + content + "'";
         }
         if (content instanceof java.sql.Timestamp) {
-        	if (useToTimestampFunction) {
+        	if (c.useToTimestampFunction) {
         		String format;
         		synchronized(defaultTimestampFormat) {
 	        		format = defaultTimestampFormat.format((Date) content);
-	       			format += getNanoString((Timestamp) content, appendNanosToTimestamp);
+	       			format += getNanoString((Timestamp) content, c.appendNanosToTimestamp, c.nanoSep);
         		}
 				return "to_timestamp('" + format + "', 'YYYY-MM-DD HH24:MI:SS.FF')";
-        	} else if (timestampFormat != null) {
+        	} else if (c.timestampFormat != null) {
         		String format;
-        		synchronized(timestampFormat) {
-	        		format = timestampFormat.format((Date) content);
-	        		if (appendMillisToTimestamp) {
-	        			format += getNanoString((Timestamp) content, appendNanosToTimestamp);
+        		synchronized(c.timestampFormat) {
+	        		format = c.timestampFormat.format((Date) content);
+	        		if (c.appendMillisToTimestamp) {
+	        			format += getNanoString((Timestamp) content, c.appendNanosToTimestamp, c.nanoSep);
 	        		}
         		}
 				return "'" + format + "'";
@@ -308,7 +310,7 @@ public class SqlUtil {
         		hex.append(hexChar[(b >> 4) & 15]);
         		hex.append(hexChar[b & 15]);
         	}
-        	return SQLDialect.binaryPattern.replace("%s", hex);
+        	return c.binaryPattern.replace("%s", hex);
         }
         if (content instanceof Time) {
         	return "'" + content + "'";
@@ -332,8 +334,9 @@ public class SqlUtil {
      * Gets nano string suffix of a timestamp.
      * 
      * @param timestamp the timestamp
+     * @param nanoSep 
      */
-    private static String getNanoString(Timestamp timestamp, boolean full) {
+    private static String getNanoString(Timestamp timestamp, boolean full, char nanoSep) {
     	String zeros = "000000000";
     	int nanos = timestamp.getNanos();
     	String nanosString = Integer.toString(nanos);

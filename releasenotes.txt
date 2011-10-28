@@ -1,3 +1,7 @@
+3.7.5
+  - Fixed a bug concerning DATE literals in Oracle, the data browser now uses the "TO_DATE" function to specify the date pattern.
+  - Minor GUI improvements.
+
 3.7.4
   - moves new table browser to center of the desktop.
   - "Reconnect" and "New Window" menu items added.
@@ -25,7 +29,6 @@
  - Reduced memory footprint.
 
 3.6.11
- - Fixed a bug concerning DATE literals in Oracle, Jailer now uses the "TO_DATE" function to specify the date pattern.
  - Improved Query Builder.
 
 3.6.10

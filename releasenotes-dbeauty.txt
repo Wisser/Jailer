@@ -1,3 +1,7 @@
+1.4.5
+  - Fixed a bug concerning DATE literals in Oracle, DBeauty now uses the "TO_DATE" function to specify the date pattern.
+  - Minor GUI improvements.
+
 1.4.4
   - moves new table browser to center of the desktop.
   - "Reconnect" and "New Window" menu items added.
@@ -24,7 +28,6 @@
   - Reduced memory footprint.
 
 1.2
-  - Fixed a bug concerning DATE literals in Oracle, DBeauty now uses the "TO_DATE" function to specify the date pattern.
   - Improved Query Builder.
 
 1.1
