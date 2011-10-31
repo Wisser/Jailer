@@ -262,7 +262,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * {@link Association} with parent row, or <code>null</code>.
 	 */
-	private Association association;
+	Association association;
 
 	/**
 	 * Rows to render.
@@ -1356,12 +1356,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			currentClosureRowIDs.add(new Pair<BrowserContentPane, String>(r.a, r.b.rowId));
 		}
 		
-		Set<RowBrowser> toAdjust = new HashSet<Desktop.RowBrowser>(getChildBrowsers());
-		if (getParentBrowser() != null) {
-			toAdjust.add(getParentBrowser());
-		}
+//		Set<RowBrowser> toAdjust = new HashSet<Desktop.RowBrowser>(getChildBrowsers());
+//		if (getParentBrowser() != null) {
+//			toAdjust.add(getParentBrowser());
+//		}
+		
+		List<RowBrowser> toAdjust = getTableBrowser();
 		
 		for (RowBrowser rb: toAdjust) {
+			if (rb.browserContentPane == this) {
+				continue;
+			}
 			List<Row> rowsOfRB = new ArrayList<Row>();
 			for (Pair<BrowserContentPane, Row> r: currentClosure) {
 				if (r.a == rb.browserContentPane) {
@@ -1375,7 +1380,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				for (Row r: rowsOfRB) {
 					int index = rb.browserContentPane.rows.indexOf(r);
 					if (index < 0) {
-						System.err.println("? row not found: " + r.rowId);
+						for (int n = 0; n < rb.browserContentPane.rows.size(); ++n) {
+							if (r.rowId.equals(rb.browserContentPane.rows.get(n).rowId)) {
+								index = n;
+								break;
+							}
+						}
+					}
+					if (index < 0) {
+						// not visible due to distinct selection
 						continue;
 					}
 					index = rb.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(index);
@@ -2661,6 +2674,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract double getLayoutFactor();
 	protected abstract List<RowBrowser> getChildBrowsers();
 	protected abstract RowBrowser getParentBrowser();
+	protected abstract List<RowBrowser> getTableBrowser();
 	
     private void openDetails(final int x, final int y) {
 		JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), true);
