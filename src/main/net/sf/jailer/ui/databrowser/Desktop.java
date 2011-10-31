@@ -623,6 +623,11 @@ public abstract class Desktop extends JDesktopPane {
 			protected RowBrowser getParentBrowser() {
 				return tableBrowser.parent;
 			}
+
+			@Override
+			protected List<RowBrowser> getTableBrowser() {
+				return new ArrayList<Desktop.RowBrowser>(Desktop.this.tableBrowsers);
+			}
 			
 		};
 		

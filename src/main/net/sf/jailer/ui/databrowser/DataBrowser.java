@@ -34,10 +34,14 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
+import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -66,11 +70,13 @@ import jsyntaxpane.DefaultSyntaxKit;
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.About;
 import net.sf.jailer.ui.AnalyseOptionsDialog;
+import net.sf.jailer.ui.AssociationListUI;
 import net.sf.jailer.ui.BrowserLauncher;
 import net.sf.jailer.ui.DataModelEditor;
 import net.sf.jailer.ui.DbConnectionDialog;
@@ -115,6 +121,11 @@ public class DataBrowser extends javax.swing.JFrame {
 	private Session session;
 
 	/**
+	 * The border browser.
+	 */
+	private final AssociationListUI borderBrowser;
+	
+	/**
 	 * Constructor.
 	 * 
 	 * @param datamodel
@@ -129,11 +140,14 @@ public class DataBrowser extends javax.swing.JFrame {
 	public DataBrowser(DataModel datamodel, Table root, String condition, DbConnectionDialog dbConnectionDialog, boolean embedded) throws Exception {
 		this.datamodel = new Reference<DataModel>(datamodel);
 		this.dbConnectionDialog = dbConnectionDialog != null ? new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName()) : null;
+		this.borderBrowser = new AssociationListUI();
 		if (embedded) {
 			DataBrowserContext.setSupportsDataModelUpdates(false);
 		}
 		initComponents();
-
+		borderBrowserPanel.add(borderBrowser, java.awt.BorderLayout.CENTER);
+		borderBrowser.setModel(datamodel.namedAssociations.values());
+		
 		DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
 		renderer.setOpenIcon(null);
 		renderer.setLeafIcon(null);
@@ -288,8 +302,8 @@ public class DataBrowser extends javax.swing.JFrame {
 		desktop.addMouseMotionListener(mia);
 		desktop.addMouseListener(mia);
 
-		setLocation(100, 100);
-		setSize(900, 580);
+		setLocation(100, 50);
+		setSize(900, 680);
 		if (root != null) {
 			desktop.addTableBrowser(null, 0, root, null, condition, null, null, true);
 		}
@@ -437,9 +451,11 @@ public class DataBrowser extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         jSplitPane1 = new javax.swing.JSplitPane();
         jPanel3 = new javax.swing.JPanel();
+        jSplitPane2 = new javax.swing.JSplitPane();
         jPanel4 = new javax.swing.JPanel();
         navigationTreeScrollPane = new javax.swing.JScrollPane();
         navigationTree = new javax.swing.JTree();
+        borderBrowserPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jInternalFrame1 = new javax.swing.JInternalFrame();
         jLabel1 = new javax.swing.JLabel();
@@ -595,11 +611,17 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        jSplitPane1.setDividerLocation(240);
+        jSplitPane1.setDividerLocation(340);
         jSplitPane1.setContinuousLayout(true);
         jSplitPane1.setOneTouchExpandable(true);
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
+
+        jSplitPane2.setDividerLocation(250);
+        jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane2.setResizeWeight(1.0);
+        jSplitPane2.setContinuousLayout(true);
+        jSplitPane2.setOneTouchExpandable(true);
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
@@ -618,13 +640,18 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.weighty = 1.0;
         jPanel4.add(navigationTreeScrollPane, gridBagConstraints);
 
+        jSplitPane2.setLeftComponent(jPanel4);
+
+        borderBrowserPanel.setLayout(new java.awt.BorderLayout());
+        jSplitPane2.setRightComponent(borderBrowserPanel);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        jPanel3.add(jPanel4, gridBagConstraints);
+        jPanel3.add(jSplitPane2, gridBagConstraints);
 
         jSplitPane1.setLeftComponent(jPanel3);
 
@@ -1135,6 +1162,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				dataBrowser.openNewTableBrowser(true);
 			}
 		} else {
+			dataBrowser.setConnection(dbConnectionDialog);
 			for (int i = 0; i < dataBrowser.menuBar.getMenuCount(); ++i) {
 				JMenu menu = dataBrowser.menuBar.getMenu(i);
 				if (menu != dataBrowser.helpMenu) {
@@ -1221,6 +1249,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem aboutMenuItem;
     private javax.swing.JMenuItem analyseMenuItem;
     private javax.swing.JLabel associatedWith;
+    private javax.swing.JPanel borderBrowserPanel;
     private javax.swing.JMenuItem cloaseAllMenuItem;
     public javax.swing.JLabel connectivityState;
     private javax.swing.JMenuItem createExtractionModelMenuItem;
@@ -1251,6 +1280,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator6;
     private javax.swing.JPopupMenu.Separator jSeparator7;
     private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JRadioButtonMenuItem largeLayoutRadioButtonMenuItem;
     private javax.swing.JMenuItem layoutMenuItem;
     private javax.swing.JPanel legende;
@@ -1340,6 +1370,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private void updateIFramesBar() {
 		updateNavigationTree();
+		updateBorderBrowser();
 
 		// iFramesPanel is obsolete
 		return;
@@ -1434,6 +1465,41 @@ public class DataBrowser extends javax.swing.JFrame {
 		// jPanel1.add(iFramesPanel, gridBagConstraints);
 		//
 		// jPanel1.revalidate();
+	}
+
+	private void updateBorderBrowser() {
+		Collection<Association> model = new HashSet<Association>();
+		if (desktop != null) {
+			List<RowBrowser> allChildren = new ArrayList<RowBrowser>();
+			for (RowBrowser rb: desktop.getBrowsers()) {
+				if (rb.internalFrame == desktop.getSelectedFrame()) {
+					allChildren = collectChildren(rb);
+					break;
+				}
+			}
+			for (RowBrowser rb: allChildren) {
+				if (rb.browserContentPane.table != null) {
+					Set<Association> associations = new HashSet<Association>(rb.browserContentPane.table.associations);
+					for (RowBrowser c: desktop.getChildBrowsers(rb)) {
+						if (c.browserContentPane.association != null) {
+							associations.remove(c.browserContentPane.association);
+						}
+					}
+					model.addAll(associations);
+				}
+			}
+		}
+		
+		borderBrowser.setModel(model);
+	}
+
+	private List<RowBrowser> collectChildren(RowBrowser rb) {
+		List<RowBrowser> result = new ArrayList<Desktop.RowBrowser>();
+		result.add(rb);
+		for (RowBrowser c: desktop.getChildBrowsers(rb)) {
+			result.addAll(collectChildren(c));
+		}
+		return result;
 	}
 
 	private Map<JInternalFrame, TreeNodeForRowBrowser> treeNodeByIFrame = new HashMap<JInternalFrame, DataBrowser.TreeNodeForRowBrowser>();
