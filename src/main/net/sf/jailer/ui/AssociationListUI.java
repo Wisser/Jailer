@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,6 +46,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -78,6 +80,8 @@ public class AssociationListUI extends javax.swing.JPanel {
 		});
     }
 
+    private Double pixelPerTableNameChar = null;
+    
     /**
      * Sets the model.
      * 
@@ -86,6 +90,26 @@ public class AssociationListUI extends javax.swing.JPanel {
     public void setModel(Collection<Association> model) {
     	this.model = new ArrayList<Association>(model);
     	selection.retainAll(model);
+    	if (pixelPerTableNameChar == null) {
+	    	Iterator<Association> firstAssociationI = model.iterator();
+	    	if (firstAssociationI.hasNext()) {
+	    		Association firstAssociation = firstAssociationI.next();
+	    		double size = 0.0;
+	    		int l = 0;
+				for (Table t: firstAssociation.getDataModel().getTables()) {
+	    			String tName = firstAssociation.getDataModel().getDisplayName(t);
+	    			size += new JLabel(tName).getMinimumSize().width;
+	    			l += tName.length();
+				}
+				pixelPerTableNameChar = 8.0;
+				if (l > 0) {
+					pixelPerTableNameChar = size / l;
+				}
+				if (pixelPerTableNameChar < 5.0) {
+					pixelPerTableNameChar = 5.0;
+				}
+	    	}
+    	}
     	updateModel();
     }
     
@@ -361,8 +385,8 @@ public class AssociationListUI extends javax.swing.JPanel {
 			label.setToolTipText(tooltip);
 		}
 		if (shorten) {
-			if (text.length() > 12) {
-				text = text.substring(0, 12) + "...";
+			if (text.length() > 30) {
+				text = text.substring(0, 30) + "...";
 			}
 		}
 		label.setText(text + "  ");
