@@ -142,7 +142,12 @@ public class DataBrowser extends javax.swing.JFrame {
 	public DataBrowser(DataModel datamodel, Table root, String condition, DbConnectionDialog dbConnectionDialog, boolean embedded) throws Exception {
 		this.datamodel = new Reference<DataModel>(datamodel);
 		this.dbConnectionDialog = dbConnectionDialog != null ? new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName()) : null;
-		this.borderBrowser = new AssociationListUI(true);
+		this.borderBrowser = new AssociationListUI("resolve", true) {
+			@Override
+			protected void applyAction(Collection<AssociationModel> selection) {
+				resolveSelection(selection);
+			}
+		};
 		if (embedded) {
 			DataBrowserContext.setSupportsDataModelUpdates(false);
 		}
@@ -1512,9 +1517,32 @@ public class DataBrowser extends javax.swing.JFrame {
 		public String getSourceName() {
 	    	return rowBrowser.internalFrame.getTitle();
 	    }
+		@Override
+		public boolean equals(Object other) {
+			if (other instanceof BrowserAssociationModel) {
+				BrowserAssociationModel otherModel = (BrowserAssociationModel) other;
+				return rowBrowser == otherModel.rowBrowser && association == otherModel.association;
+			}
+			return false;
+		}
+		@Override
+		public int hashCode() {
+			return rowBrowser.hashCode() + 3 * association.hashCode();
+		}
+		public RowBrowser getRowBrowser() {
+			return rowBrowser;
+		}
+		public Association getAssociation() {
+			return association;
+		}
 	}
 	
+	private boolean disableBorderBrowserUpdates = false;
+	
 	private void updateBorderBrowser() {
+		if (disableBorderBrowserUpdates) {
+			return;
+		}
 		Collection<AssociationModel> model = new ArrayList<AssociationModel>();
 		if (desktop != null) {
 			titleLabel.setText(" Related Rows");
@@ -1543,6 +1571,28 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 		
 		borderBrowser.setModel(model);
+	}
+
+	protected void resolveSelection(Collection<AssociationModel> selection) {
+		try {
+			disableBorderBrowserUpdates = true;
+			JInternalFrame currentSelection = desktop.getSelectedFrame();
+			for (AssociationModel a: selection) {
+				BrowserAssociationModel associationModel = (BrowserAssociationModel) a;
+				desktop.addTableBrowser(associationModel.getRowBrowser(), -1, associationModel.getAssociation().destination, 
+						associationModel.getAssociation(), "", null, null, true);
+			}
+			if (currentSelection != null) {
+				try {
+					currentSelection.setSelected(true);
+				} catch (PropertyVetoException e) {
+					// ignore
+				}
+			}
+		} finally {
+			disableBorderBrowserUpdates = false;
+			updateBorderBrowser();
+		}
 	}
 
 	private List<RowBrowser> collectChildren(RowBrowser rb) {
