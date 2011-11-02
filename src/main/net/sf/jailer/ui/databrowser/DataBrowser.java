@@ -41,7 +41,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
-import java.util.Stack;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -58,6 +57,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.border.TitledBorder;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -77,6 +77,8 @@ import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.About;
 import net.sf.jailer.ui.AnalyseOptionsDialog;
 import net.sf.jailer.ui.AssociationListUI;
+import net.sf.jailer.ui.AssociationListUI.AssociationModel;
+import net.sf.jailer.ui.AssociationListUI.DefaultAssociationModel;
 import net.sf.jailer.ui.BrowserLauncher;
 import net.sf.jailer.ui.DataModelEditor;
 import net.sf.jailer.ui.DbConnectionDialog;
@@ -140,13 +142,12 @@ public class DataBrowser extends javax.swing.JFrame {
 	public DataBrowser(DataModel datamodel, Table root, String condition, DbConnectionDialog dbConnectionDialog, boolean embedded) throws Exception {
 		this.datamodel = new Reference<DataModel>(datamodel);
 		this.dbConnectionDialog = dbConnectionDialog != null ? new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName()) : null;
-		this.borderBrowser = new AssociationListUI();
+		this.borderBrowser = new AssociationListUI(true);
 		if (embedded) {
 			DataBrowserContext.setSupportsDataModelUpdates(false);
 		}
 		initComponents();
 		borderBrowserPanel.add(borderBrowser, java.awt.BorderLayout.CENTER);
-		borderBrowser.setModel(datamodel.namedAssociations.values());
 		
 		DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
 		renderer.setOpenIcon(null);
@@ -455,6 +456,9 @@ public class DataBrowser extends javax.swing.JFrame {
         jPanel4 = new javax.swing.JPanel();
         navigationTreeScrollPane = new javax.swing.JScrollPane();
         navigationTree = new javax.swing.JTree();
+        jLabel2 = new javax.swing.JLabel();
+        borderBrowserTitledPanel = new javax.swing.JPanel();
+        titleLabel = new javax.swing.JLabel();
         borderBrowserPanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jInternalFrame1 = new javax.swing.JInternalFrame();
@@ -623,6 +627,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jSplitPane2.setContinuousLayout(true);
         jSplitPane2.setOneTouchExpandable(true);
 
+        jPanel4.setBorder(null);
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
         navigationTree.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -634,16 +639,43 @@ public class DataBrowser extends javax.swing.JFrame {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         jPanel4.add(navigationTreeScrollPane, gridBagConstraints);
 
+        jLabel2.setText(" Navigation Tree");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel4.add(jLabel2, gridBagConstraints);
+
         jSplitPane2.setLeftComponent(jPanel4);
 
+        borderBrowserTitledPanel.setBorder(null);
+        borderBrowserTitledPanel.setLayout(new java.awt.GridBagLayout());
+
+        titleLabel.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        borderBrowserTitledPanel.add(titleLabel, gridBagConstraints);
+
         borderBrowserPanel.setLayout(new java.awt.BorderLayout());
-        jSplitPane2.setRightComponent(borderBrowserPanel);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        borderBrowserTitledPanel.add(borderBrowserPanel, gridBagConstraints);
+
+        jSplitPane2.setRightComponent(borderBrowserTitledPanel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1250,6 +1282,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem analyseMenuItem;
     private javax.swing.JLabel associatedWith;
     private javax.swing.JPanel borderBrowserPanel;
+    private javax.swing.JPanel borderBrowserTitledPanel;
     private javax.swing.JMenuItem cloaseAllMenuItem;
     public javax.swing.JLabel connectivityState;
     private javax.swing.JMenuItem createExtractionModelMenuItem;
@@ -1261,6 +1294,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JLabel ignored;
     private javax.swing.JInternalFrame jInternalFrame1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuItem jMenuItem1;
@@ -1303,6 +1337,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JRadioButtonMenuItem smallLayoutRadioButtonMenuItem;
     private javax.swing.JMenuItem storeSessionItem;
     private javax.swing.JRadioButtonMenuItem tinyLayoutRadioButtonMenuItem;
+    private javax.swing.JLabel titleLabel;
     private javax.swing.JMenu view;
     // End of variables declaration//GEN-END:variables
 
@@ -1467,13 +1502,28 @@ public class DataBrowser extends javax.swing.JFrame {
 		// jPanel1.revalidate();
 	}
 
+	private static class BrowserAssociationModel extends DefaultAssociationModel {
+		private final RowBrowser rowBrowser;
+		public BrowserAssociationModel(RowBrowser rowBrowser, Association association) {
+			super(association);
+			this.rowBrowser = rowBrowser;
+		}
+		@Override
+		public String getSourceName() {
+	    	return rowBrowser.internalFrame.getTitle();
+	    }
+	}
+	
 	private void updateBorderBrowser() {
-		Collection<Association> model = new HashSet<Association>();
+		Collection<AssociationModel> model = new ArrayList<AssociationModel>();
 		if (desktop != null) {
+			titleLabel.setText(" Related Rows");
 			List<RowBrowser> allChildren = new ArrayList<RowBrowser>();
 			for (RowBrowser rb: desktop.getBrowsers()) {
 				if (rb.internalFrame == desktop.getSelectedFrame()) {
-					allChildren = collectChildren(rb);
+					allChildren.add(rb);
+					allChildren.addAll(collectChildren(rb));
+					titleLabel.setText(" Related Rows of Subtree " + rb.internalFrame.getTitle());
 					break;
 				}
 			}
@@ -1485,7 +1535,9 @@ public class DataBrowser extends javax.swing.JFrame {
 							associations.remove(c.browserContentPane.association);
 						}
 					}
-					model.addAll(associations);
+					for (Association association: associations) {
+						model.add(new BrowserAssociationModel(rb, association));	
+					}
 				}
 			}
 		}
@@ -1495,7 +1547,9 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private List<RowBrowser> collectChildren(RowBrowser rb) {
 		List<RowBrowser> result = new ArrayList<Desktop.RowBrowser>();
-		result.add(rb);
+		for (RowBrowser c: desktop.getChildBrowsers(rb)) {
+			result.add(c);
+		}
 		for (RowBrowser c: desktop.getChildBrowsers(rb)) {
 			result.addAll(collectChildren(c));
 		}
