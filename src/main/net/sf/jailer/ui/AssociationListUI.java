@@ -38,6 +38,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
@@ -46,6 +48,8 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 
 import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.datamodel.Cardinality;
+import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.SqlUtil;
 
@@ -57,17 +61,149 @@ import net.sf.jailer.util.SqlUtil;
 public class AssociationListUI extends javax.swing.JPanel {
 
 	/**
+	 * Association model for this UI.
+	 */
+	public interface AssociationModel {
+		
+		/**
+	     * The source table.
+	     */
+	    String getSourceName();
+
+	    /**
+	     * The destination table.
+	     */
+	    String getDestinationName();
+
+	    /**
+	     * The join-condition for joining source with destination table.
+	     */
+	    String getJoinCondition();
+	    
+	    /**
+	     * The cardinality.
+	     */
+	    Cardinality getCardinality();
+	    
+	    /**
+	     * Whether or not to insert source-rows before destination rows
+	     * in order to prevent foreign-key-constraint violation.
+	     */
+	    boolean isInsertSourceBeforeDestination();
+	    
+	    /**
+	     * Whether or not to insert destination-rows before source-rows
+	     * in order to prevent foreign-key-constraint violation.
+	     */
+	    boolean isInsertDestinationBeforeSource();
+	    
+	    /**
+	     * <code>true</code> for reversed association.
+	     */
+	    boolean isReversed();
+
+	    /**
+	     * The name of the association.
+	     */
+	    String getName();
+
+		DataModel getDataModel();
+	    
+	};
+	
+	/**
+	 * Default implementation of an association model for this UI.
+	 */
+	public static class DefaultAssociationModel implements AssociationModel {
+		
+		protected final Association association;
+		
+		public DefaultAssociationModel(Association association) {
+			this.association = association;
+		}
+		
+		/**
+	     * The source table.
+	     */
+	    public String getSourceName() {
+	    	return association.getDataModel().getDisplayName(association.source);
+	    }
+
+	    /**
+	     * The destination table.
+	     */
+	    public String getDestinationName() {
+	    	return association.getDataModel().getDisplayName(association.destination);
+	    }
+
+	    /**
+	     * The join-condition for joining source with destination table.
+	     */
+	    public String getJoinCondition() {
+	    	return association.getJoinCondition();
+	    }
+	    
+	    /**
+	     * The cardinality.
+	     */
+	    public Cardinality getCardinality() {
+	    	return association.getCardinality();
+	    }
+	    
+	    /**
+	     * Whether or not to insert source-rows before destination rows
+	     * in order to prevent foreign-key-constraint violation.
+	     */
+	    public boolean isInsertSourceBeforeDestination() {
+	    	return association.isInsertSourceBeforeDestination();
+	    }
+	    
+	    /**
+	     * Whether or not to insert destination-rows before source-rows
+	     * in order to prevent foreign-key-constraint violation.
+	     */
+	    public boolean isInsertDestinationBeforeSource() {
+	    	return association.isInsertDestinationBeforeSource();
+	    }
+	    
+	    /**
+	     * <code>true</code> for reversed association.
+	     */
+	    public boolean isReversed() {
+	    	return association.reversed;
+	    }
+
+	    /**
+	     * The name of the association.
+	     */
+	    public String getName() {
+	    	return association.getName();
+	    }
+
+		public DataModel getDataModel() {
+			return association.getDataModel();
+		}
+	    
+	};
+	
+	/**
 	 * The model.
 	 */
-	private List<Association> model = new ArrayList<Association>();
+	private List<AssociationModel> model = new ArrayList<AssociationModel>();
 	
 	/**
 	 * Selected associations.
 	 */
-	private Set<Association> selection = new HashSet<Association>();
+	private Set<AssociationModel> selection = new HashSet<AssociationModel>();
+	
+	/**
+	 * Keep order of associations according to the source-table?
+	 */
+	private final boolean stableSourceOrder;
 	
 	/** Creates new form AssociationListUI */
-    public AssociationListUI() {
+    public AssociationListUI(boolean stableSourceOrder) {
+    	this.stableSourceOrder = stableSourceOrder;
         initComponents();
         groupByComboBox.setModel(new DefaultComboBoxModel(GroupByDefinition.values()));
         groupByComboBox.setSelectedIndex(0);
@@ -87,13 +223,13 @@ public class AssociationListUI extends javax.swing.JPanel {
      * 
      * @param model the model
      */
-    public void setModel(Collection<Association> model) {
-    	this.model = new ArrayList<Association>(model);
+    public void setModel(Collection<AssociationModel> model) {
+    	this.model = new ArrayList<AssociationModel>(model);
     	selection.retainAll(model);
     	if (pixelPerTableNameChar == null) {
-	    	Iterator<Association> firstAssociationI = model.iterator();
+	    	Iterator<AssociationModel> firstAssociationI = model.iterator();
 	    	if (firstAssociationI.hasNext()) {
-	    		Association firstAssociation = firstAssociationI.next();
+	    		AssociationModel firstAssociation = firstAssociationI.next();
 	    		double size = 0.0;
 	    		int l = 0;
 				for (Table t: firstAssociation.getDataModel().getTables()) {
@@ -114,59 +250,80 @@ public class AssociationListUI extends javax.swing.JPanel {
     }
     
     private interface ColumnContentGetter {
-    	abstract String getContent(Association association);
+    	abstract String getContent(AssociationModel association);
 		abstract String getDisplayName();
+		abstract Color getFgColor(String groupKey);
     };
     
     private static class TypeGetter implements ColumnContentGetter {
-    	public String getContent(Association association) {
+    	private static final String PARENT = "Parent";
+    	private static final String CHILD = "Child";
+    	public String getContent(AssociationModel association) {
     		if (association.isInsertDestinationBeforeSource()) {
-    			return "Parent";
+    			return PARENT;
     		}
     		return "Child";
     	}
 		public String getDisplayName() {
 			return "Type";
 		}
+		public Color getFgColor(String groupKey) {
+			if (PARENT.equals(groupKey)) {
+				return Color.red;
+			}
+			if (CHILD.equals(groupKey)) {
+				return new Color(0, 100, 0);
+			}
+			return null;
+		}
     };
     
     private static class SourceGetter implements ColumnContentGetter {
-    	public String getContent(Association association) {
-    		return association.getDataModel().getDisplayName(association.source);
+    	public String getContent(AssociationModel association) {
+    		return association.getSourceName();
     	}
 		public String getDisplayName() {
-			return "Source";
+			return "From";
+		}
+		public Color getFgColor(String groupKey) {
+			return null;
 		}
     };
 
     private static class DestinationGetter implements ColumnContentGetter {
-    	public String getContent(Association association) {
-    		return association.getDataModel().getDisplayName(association.destination);
+    	public String getContent(AssociationModel association) {
+    		return association.getDestinationName();
     	}
 		public String getDisplayName() {
-			return "Destination";
+			return "To";
+		}
+		public Color getFgColor(String groupKey) {
+			return null;
 		}
     };
 
     private static class AssociationNameGetter implements ColumnContentGetter {
-    	public String getContent(Association association) {
+    	public String getContent(AssociationModel association) {
     		return association.getName();
     	}
 		public String getDisplayName() {
-			return "Association";
+			return "Association Name";
+		}
+		public Color getFgColor(String groupKey) {
+			return null;
 		}
     };
 
     private class Node {
-    	public final Collection<Association> associations;
-    	public final ColumnContentGetter columnContentGetter;
+    	public final Collection<AssociationModel> associations;
     	public final List<Node> children = new ArrayList<AssociationListUI.Node>();
 		public final String group;
-    	
-    	public Node(String group, Collection<Association> associations, ColumnContentGetter columnContentGetter) {
+    	public final Color fgColor;
+		
+    	public Node(String group, Collection<AssociationModel> associations, Color fgColor) {
     		this.group = group;
     		this.associations = associations;
-    		this.columnContentGetter = columnContentGetter;
+    		this.fgColor = fgColor;
     	}
 
 		public boolean isLinear() {
@@ -239,7 +396,7 @@ public class AssociationListUI extends javax.swing.JPanel {
 //        listPanel.add(sep, gridBagConstraints);
     	
         int[] y = new int[] { 2 };
-    	updateUI(roots, 0, y, new boolean[] { false }, new HashMap<Integer, Integer>());
+    	updateUI(roots, 0, y, new boolean[] { false }, new HashMap<Integer, Integer>(), new Node[5]);
     	JLabel l = new JLabel(" ");
     	l.setBackground(Color.WHITE);
     	l.setOpaque(true);
@@ -254,7 +411,7 @@ public class AssociationListUI extends javax.swing.JPanel {
         revalidate();
     }
     
-    private void updateUI(List<Node> nodes, int level, int[] y, boolean[] groupStart, Map<Integer, Integer> minLevelPerY) {
+    private void updateUI(List<Node> nodes, int level, int[] y, boolean[] groupStart, Map<Integer, Integer> minLevelPerY, Node[] lastRowContent) {
     	boolean firstNode = true;
     	Node pred = null;
     	for (Node node: nodes) {
@@ -270,7 +427,21 @@ public class AssociationListUI extends javax.swing.JPanel {
     		}
     		if (!firstNode) {
     			for (int x = 0; x < level; ++x) {
-    	    		JComponent l = createLabel(node, y[0], " ", null, false, false, bgColor, null, false);
+    				String lastText = " ";
+    				Color lastFgColor = null;
+    				if (lastRowContent[x] != null) {
+    					lastText = lastRowContent[x].group;
+    					lastFgColor = lastRowContent[x].fgColor;
+    					if (lastFgColor != null) {
+    						lastFgColor = new Color(
+    								lastFgColor.getRed() + 2 * (255 - lastFgColor.getRed()) / 3,
+    								lastFgColor.getGreen() + 2 * (255 - lastFgColor.getGreen()) / 3,
+    								lastFgColor.getBlue() + 2 * (255 - lastFgColor.getBlue()) / 3);
+    					} else {
+    						lastFgColor = Color.lightGray;
+    					}
+    				}
+    	    		JComponent l = createLabel(node, y[0], lastText, null, false, false, bgColor, lastFgColor, false, false);
     	    		gridBagConstraints = new java.awt.GridBagConstraints();
     	            gridBagConstraints.gridx = x + 1;
     	            gridBagConstraints.gridy = y[0];
@@ -279,13 +450,14 @@ public class AssociationListUI extends javax.swing.JPanel {
     			}
     		}
     		groupStart[0] = groupStart[0] || (y[0] > 0 && (!node.isLinear() || pred != null && !pred.isLinear())); // level < minLevelPerY.get(y[0] - 1));
-    		Association a = node.associations.iterator().next();
+    		AssociationModel a = node.associations.iterator().next();
 			String joinCondition = a.getJoinCondition();
-			if (a.reversed) {
+			if (a.isReversed()) {
 				joinCondition = SqlUtil.reversRestrictionCondition(joinCondition);
 			}
-			JComponent l = createLabel(node, y[0], node.group, level >= 3? joinCondition : null, level < 3, groupStart[0], bgColor, level >= 3? Color.gray : null, node.isSelected());
-    		gridBagConstraints = new java.awt.GridBagConstraints();
+			JComponent l = createLabel(node, y[0], node.group, level >= 3? joinCondition : null, level < 3, groupStart[0], bgColor, level >= 3? Color.gray : node.fgColor, node.isSelected(), true);
+			lastRowContent[level] = node;
+			gridBagConstraints = new java.awt.GridBagConstraints();
             gridBagConstraints.gridx = level + 1;
             gridBagConstraints.gridy = y[0];
             gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -318,7 +490,7 @@ public class AssociationListUI extends javax.swing.JPanel {
         		if (node.associations.size() != 1) {
         			System.err.println("node.associations.size() != 1, " + node.associations.size());
         		} else {
-        			final Association association = a;
+        			final AssociationModel association = a;
                     checkbox.setSelected(selection.contains(association));
         			checkbox.addItemListener(new ItemListener() {
 						@Override
@@ -333,7 +505,7 @@ public class AssociationListUI extends javax.swing.JPanel {
 					});
         		}
             } else {
-            	updateUI(node.children, level + 1, y, groupStart, minLevelPerY);
+            	updateUI(node.children, level + 1, y, groupStart, minLevelPerY, lastRowContent);
             }
             firstNode = false;
             pred = node;
@@ -345,7 +517,7 @@ public class AssociationListUI extends javax.swing.JPanel {
     private Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
     private Font nonbold = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
 	
-    private JComponent createLabel(final Node node, final int y, String text, String tooltip, boolean shorten, final boolean firstOfGroup, Color bgColor, Color fgColor, boolean selected) {
+    private JComponent createLabel(final Node node, final int y, String text, String tooltip, boolean shorten, final boolean firstOfGroup, Color bgColor, Color fgColor, boolean selected, boolean addListener) {
     	final JPanel panel = new JPanel() {
 			@Override
     		public void paint(Graphics graphics) {
@@ -363,10 +535,13 @@ public class AssociationListUI extends javax.swing.JPanel {
     		}
 			private static final long serialVersionUID = 5285941807747744395L;
     	};
-		panel.setLayout(new GridBagLayout());
+		if (selected) {
+			bgColor = new Color(220, 225, 255);
+		}
+    	panel.setLayout(new GridBagLayout());
 		final JLabel label = new JLabel();
 		label.setOpaque(true);
-		label.setFont(selected? bold : nonbold);
+		label.setFont(nonbold);
 		if (fgColor != null) {
 			label.setForeground(fgColor);
 		}
@@ -385,15 +560,13 @@ public class AssociationListUI extends javax.swing.JPanel {
 			label.setToolTipText(tooltip);
 		}
 		if (shorten) {
-			if (text.length() > 30) {
-				text = text.substring(0, 30) + "...";
-			}
+			text = shorten(text);
 		}
 		label.setText(text + "  ");
 		label.setBackground(bgColor);
 		panel.setBackground(bgColor);
 		
-		if ("".equals(text.trim())) {
+		if (!addListener) {
 			return panel;
 		}
 		MouseListener l;
@@ -440,26 +613,61 @@ public class AssociationListUI extends javax.swing.JPanel {
 		return panel;
 	}
     
-    /**
+    private Map<String, String> shortForms = new HashMap<String, String>();
+    
+    private String shorten(String text) {
+    	if (shortForms.containsKey(text)) {
+    		return shortForms.get(text);
+    	}
+    	Pattern p = Pattern.compile("^(.*) (\\([0-9]*\\))$");
+    	Matcher matcher = p.matcher(text);
+    	String pre = text;
+    	String suf = "";
+    	if (matcher.matches()) {
+    		pre = matcher.group(1);
+    		suf = matcher.group(2);
+    	}
+    	
+    	String shortText = text;
+    	int maxWidth = (int) ((pixelPerTableNameChar == null? 8 : pixelPerTableNameChar) * 30.0);
+    	
+    	for (int i = pre.length() - 2; i > 3; --i) {
+    		if (new JLabel(shortText).getMinimumSize().width <= maxWidth) {
+    			break;
+    		}
+    		shortText = pre.substring(0, i) + "..." + suf;
+		}
+    	
+    	shortForms.put(text, shortText);
+		return shortText;
+	}
+
+	/**
      * Create hierarchy of associations.
      * 
      * @param columnContentGetter the {@link ColumnContentGetter}
      * @param i index of current {@link ColumnContentGetter}
      * @return list of nodes
      */
-    private List<Node> createHierarchy(ColumnContentGetter[] columnContentGetter, int i, Collection<Association> associations) {
-    	SortedMap<String, Collection<Association>> groups = new TreeMap<String, Collection<Association>>();
-    	for (Association association: associations) {
+    private List<Node> createHierarchy(ColumnContentGetter[] columnContentGetter, int i, Collection<AssociationModel> associations) {
+    	SortedMap<String, Collection<AssociationModel>> groups = new TreeMap<String, Collection<AssociationModel>>();
+    	List<String> groupKeys = new ArrayList<String>();
+    	for (AssociationModel association: associations) {
     		String key = columnContentGetter[i].getContent(association);
     		if (!groups.containsKey(key)) {
-    			groups.put(key, new ArrayList<Association>());
+    			groups.put(key, new ArrayList<AssociationModel>());
+    			groupKeys.add(key);
     		}
     		groups.get(key).add(association);
     	}
     	List<Node> result = new ArrayList<Node>();
-    	for (String groupKey: groups.keySet()) {
-    		Collection<Association> group = groups.get(groupKey);
-    		Node node = new Node(groupKey, group, columnContentGetter[i]);
+    	Iterable<String> gk = groups.keySet();
+    	if (stableSourceOrder && (columnContentGetter[i] instanceof SourceGetter)) {
+    		gk = groupKeys;
+    	}
+    	for (String groupKey: gk) {
+    		Collection<AssociationModel> group = groups.get(groupKey);
+    		Node node = new Node(groupKey, group, columnContentGetter[i].getFgColor(groupKey));
     		result.add(node);
     		if (i + 1 < columnContentGetter.length) {
     			node.children.addAll(createHierarchy(columnContentGetter, i + 1, group));
