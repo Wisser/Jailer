@@ -58,7 +58,7 @@ import net.sf.jailer.util.SqlUtil;
  *
  * @author Ralf Wisser
  */
-public class AssociationListUI extends javax.swing.JPanel {
+public abstract class AssociationListUI extends javax.swing.JPanel {
 
 	/**
 	 * Association model for this UI.
@@ -197,14 +197,20 @@ public class AssociationListUI extends javax.swing.JPanel {
 	private Set<AssociationModel> selection = new HashSet<AssociationModel>();
 	
 	/**
+	 * Hidden associations.
+	 */
+	private Set<AssociationModel> hidden = new HashSet<AssociationModel>();
+	
+	/**
 	 * Keep order of associations according to the source-table?
 	 */
 	private final boolean stableSourceOrder;
 	
 	/** Creates new form AssociationListUI */
-    public AssociationListUI(boolean stableSourceOrder) {
+    public AssociationListUI(String actionButtonText, boolean stableSourceOrder) {
     	this.stableSourceOrder = stableSourceOrder;
         initComponents();
+        doItButton.setText(actionButtonText);
         groupByComboBox.setModel(new DefaultComboBoxModel(GroupByDefinition.values()));
         groupByComboBox.setSelectedIndex(0);
         groupByComboBox.addItemListener(new ItemListener() {
@@ -226,6 +232,7 @@ public class AssociationListUI extends javax.swing.JPanel {
     public void setModel(Collection<AssociationModel> model) {
     	this.model = new ArrayList<AssociationModel>(model);
     	selection.retainAll(model);
+    	hidden.retainAll(model);
     	if (pixelPerTableNameChar == null) {
 	    	Iterator<AssociationModel> firstAssociationI = model.iterator();
 	    	if (firstAssociationI.hasNext()) {
@@ -365,13 +372,37 @@ public class AssociationListUI extends javax.swing.JPanel {
     private List<Node> roots;
     
     /**
+     * Hides selected associations.
+     */
+    private void hideSelection() {
+    	hidden.addAll(selection);
+    	selection.clear();
+    	updateModel();
+    }
+
+    /**
+     * Unhides hidden associations.
+     */
+    private void unhideHidden() {
+    	hidden.clear();
+    	updateModel();
+    }
+
+    /**
+     * Performes action on selected associations.
+     */
+    protected abstract void applyAction(Collection<AssociationModel> selection);
+    
+    /**
      * Updates the model UI.
      */
     private void updateModel() {
     	listPanel.removeAll();
     	allMouseListener.clear();
     	ColumnContentGetter[] columnContentGetter = ((GroupByDefinition) groupByComboBox.getSelectedItem()).columnContentGetter;
-		roots = createHierarchy(columnContentGetter, 0, model);
+    	Collection<AssociationModel> unhidden = new ArrayList<AssociationListUI.AssociationModel>(model);
+    	unhidden.removeAll(hidden);
+		roots = createHierarchy(columnContentGetter, 0, unhidden);
     	for (int x = 0; x <= columnContentGetter.length; ++x) {
     		String text = x == 0? " " : columnContentGetter[x - 1].getDisplayName();
     		JLabel title = new JLabel(text + "  ");
@@ -384,16 +415,6 @@ public class AssociationListUI extends javax.swing.JPanel {
             gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
             listPanel.add(title, gridBagConstraints);
     	}
-//		JPanel sep = new JPanel();
-//		sep.setMinimumSize(new Dimension(10, 2));
-//		sep.setBackground(Color.DARK_GRAY);
-//		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-//        gridBagConstraints.gridx = 0;
-//        gridBagConstraints.gridy = 1;
-//        gridBagConstraints.gridwidth = 4;
-//        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-//        gridBagConstraints.weighty = 1.0;
-//        listPanel.add(sep, gridBagConstraints);
     	
         int[] y = new int[] { 2 };
     	updateUI(roots, 0, y, new boolean[] { false }, new HashMap<Integer, Integer>(), new Node[5]);
@@ -408,6 +429,12 @@ public class AssociationListUI extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.weightx = 1.0;
         listPanel.add(l, gridBagConstraints);
+        
+        infoLabel.setText(selection.size() + " selected association" + (selection.size() == 1? "" : "s") + ", " + hidden.size() + " hidden ");
+        hideButton.setEnabled(!selection.isEmpty());
+        doItButton.setEnabled(!selection.isEmpty());
+        unhideButton.setEnabled(!hidden.isEmpty());
+        
         revalidate();
     }
     
@@ -691,6 +718,11 @@ public class AssociationListUI extends javax.swing.JPanel {
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         groupByComboBox = new javax.swing.JComboBox();
+        infoLabel = new javax.swing.JLabel();
+        jPanel4 = new javax.swing.JPanel();
+        hideButton = new javax.swing.JButton();
+        unhideButton = new javax.swing.JButton();
+        doItButton = new javax.swing.JButton();
 
         setLayout(new java.awt.BorderLayout());
 
@@ -709,10 +741,12 @@ public class AssociationListUI extends javax.swing.JPanel {
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText("Group by ");
+        jLabel1.setText(" Group by ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
         jPanel2.add(jLabel1, gridBagConstraints);
 
         groupByComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
@@ -720,7 +754,6 @@ public class AssociationListUI extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
         jPanel2.add(groupByComboBox, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -730,17 +763,85 @@ public class AssociationListUI extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(jPanel2, gridBagConstraints);
 
+        infoLabel.setText(" 12 selected, 0 hidden");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
+        jPanel1.add(infoLabel, gridBagConstraints);
+
+        jPanel4.setLayout(new java.awt.GridBagLayout());
+
+        hideButton.setText("hide");
+        hideButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                hideButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        jPanel4.add(hideButton, gridBagConstraints);
+
+        unhideButton.setText("unhide");
+        unhideButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                unhideButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        jPanel4.add(unhideButton, gridBagConstraints);
+
+        doItButton.setText("doIt");
+        doItButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                doItButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        jPanel4.add(doItButton, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jPanel1.add(jPanel4, gridBagConstraints);
+
         add(jPanel1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void hideButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hideButtonActionPerformed
+        hideSelection();
+    }//GEN-LAST:event_hideButtonActionPerformed
+
+    private void unhideButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unhideButtonActionPerformed
+        unhideHidden();
+    }//GEN-LAST:event_unhideButtonActionPerformed
+
+    private void doItButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doItButtonActionPerformed
+        applyAction(new ArrayList<AssociationListUI.AssociationModel>(selection));
+    }//GEN-LAST:event_doItButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton doItButton;
     private javax.swing.JComboBox groupByComboBox;
+    private javax.swing.JButton hideButton;
+    private javax.swing.JLabel infoLabel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPanel listPanel;
+    private javax.swing.JButton unhideButton;
     // End of variables declaration//GEN-END:variables
 
 	private static final long serialVersionUID = -5302225732569622137L;
