@@ -1,3 +1,6 @@
+3.7.6
+  - Fixed a bug concerning multi-line VARCHAR content. (Jailer Bug ID: 3432301)
+
 3.7.5
   - Fixed a bug concerning DATE literals in Oracle, the data browser now uses the "TO_DATE" function to specify the date pattern.
   - Minor GUI improvements.
