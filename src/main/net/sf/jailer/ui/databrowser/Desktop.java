@@ -16,11 +16,12 @@
 package net.sf.jailer.ui.databrowser;
 
 import java.awt.BasicStroke;
-import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Insets;
@@ -59,7 +60,9 @@ import javax.swing.JComponent;
 import javax.swing.JDesktopPane;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
@@ -74,13 +77,13 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.QueryBuilderDialog;
-import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.databrowser.TreeLayoutOptimizer.Node;
 import net.sf.jailer.util.CsvFile;
-import net.sf.jailer.util.CsvFile.Line;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.SqlUtil;
+import net.sf.jailer.util.CsvFile.Line;
 import prefuse.util.GraphicsLib;
 
 /**
@@ -351,8 +354,6 @@ public abstract class Desktop extends JDesktopPane {
 		}
 		add(jInternalFrame, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
-		jInternalFrame.getContentPane().setLayout(new BorderLayout());
- 		
 		jInternalFrame.addPropertyChangeListener(JInternalFrame.IS_MAXIMUM_PROPERTY, new PropertyChangeListener() {
 			@Override
 			public void propertyChange(PropertyChangeEvent evt) {
@@ -650,7 +651,7 @@ public abstract class Desktop extends JDesktopPane {
 		}
 		tableBrowsers.add(tableBrowser);
 
-		jInternalFrame.getContentPane().add(browserContentPane, java.awt.BorderLayout.CENTER);
+		initIFrame(jInternalFrame, browserContentPane);
 		jInternalFrame.addInternalFrameListener(new InternalFrameListener() {
 			@Override
 			public void internalFrameOpened(InternalFrameEvent e) {
@@ -692,6 +693,44 @@ public abstract class Desktop extends JDesktopPane {
 		}
 		updateMenu();
 		return tableBrowser;
+	}
+
+	private void initIFrame(final JInternalFrame jInternalFrame,
+			final BrowserContentPane browserContentPane) {
+		final JPanel thumbnail = new JPanel();
+		thumbnail.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
+		for (int i = 0; i < jInternalFrame.getTitle().length(); ++i) {
+			thumbnail.add(new JLabel(jInternalFrame.getTitle().substring(i, i + 1)));
+		}
+		jInternalFrame.getContentPane().setLayout(new CardLayout());
+ 		
+		jInternalFrame.getContentPane().add(browserContentPane, "C");
+		jInternalFrame.getContentPane().add(thumbnail, "T");
+		initIFrameContent(jInternalFrame, browserContentPane, thumbnail);
+		jInternalFrame.addComponentListener(new ComponentListener() {
+			@Override
+			public void componentHidden(ComponentEvent e) {
+			}
+			@Override
+			public void componentMoved(ComponentEvent e) {
+			}
+			@Override
+			public void componentResized(ComponentEvent e) {
+				initIFrameContent(jInternalFrame, browserContentPane, thumbnail);
+			}
+			@Override
+			public void componentShown(ComponentEvent e) {
+			}
+		});
+	}
+
+	private void initIFrameContent(final JInternalFrame jInternalFrame,
+			final BrowserContentPane browserContentPane, final JPanel thumbnail) {
+		if (jInternalFrame.getWidth() < 150 || jInternalFrame.getHeight() < 150) {
+			((CardLayout) jInternalFrame.getContentPane().getLayout()).show(jInternalFrame.getContentPane(), "T");
+		} else {
+			((CardLayout) jInternalFrame.getContentPane().getLayout()).show(jInternalFrame.getContentPane(), "C");
+		}
 	}
 
 	private Color getAssociationColor(Association association) {
@@ -1328,7 +1367,7 @@ public abstract class Desktop extends JDesktopPane {
 	private final DataBrowser parentFrame;
 	
 	public static enum LayoutMode {
-		THUMBNAIL(0.35),
+		THUMBNAIL(0.22),
 		TINY(0.569),
 		SMALL(0.75),
 		MEDIUM(1.0),
