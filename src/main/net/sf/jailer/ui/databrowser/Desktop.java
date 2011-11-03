@@ -1514,7 +1514,11 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	public void closeAll() {
-		for (RowBrowser rb: new ArrayList<RowBrowser>(tableBrowsers)) {
+		closeAll(new ArrayList<RowBrowser>(tableBrowsers));
+	}
+	
+	public void closeAll(Collection<RowBrowser> toClose) {
+		for (RowBrowser rb: toClose) {
 			close(rb, false);
 			getDesktopManager().closeFrame(rb.internalFrame);
 		}

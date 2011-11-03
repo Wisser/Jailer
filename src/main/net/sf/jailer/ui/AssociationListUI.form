@@ -51,7 +51,7 @@
           <SubComponents>
             <Component class="javax.swing.JLabel" name="jLabel1">
               <Properties>
-                <Property name="text" type="java.lang.String" value=" Group by "/>
+                <Property name="text" type="java.lang.String" value=" Sorted by "/>
               </Properties>
               <Constraints>
                 <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -99,7 +99,7 @@
           <SubComponents>
             <Component class="javax.swing.JButton" name="hideButton">
               <Properties>
-                <Property name="text" type="java.lang.String" value="hide"/>
+                <Property name="text" type="java.lang.String" value="Hide"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="hideButtonActionPerformed"/>
@@ -112,7 +112,7 @@
             </Component>
             <Component class="javax.swing.JButton" name="unhideButton">
               <Properties>
-                <Property name="text" type="java.lang.String" value="unhide"/>
+                <Property name="text" type="java.lang.String" value="Unhide"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="unhideButtonActionPerformed"/>
