@@ -95,6 +95,13 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<entry key="GRAPHIC" value="VARCHAR"/>
 				</map>
 			</property>
+            <property name="stringLiteralEscapeSequences">
+                <map>
+                    <entry key="'" value="\'"/>
+                    <entry key="\n" value="' || char(10) || '"/>
+                    <entry key="\r" value="' || char(13) || '"/>
+               </map>
+            </property>
 			<property name="sqlLimitSuffix" value="fetch first %s rows only" />
 			<property name="statisticRenovator">
 				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
@@ -125,6 +132,13 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<constructor-arg value="script/oracle/gatherStatistics.sql" />
 				</bean>
 			</property>
+            <property name="stringLiteralEscapeSequences">
+                <map>
+                    <entry key="'" value="\'"/>
+                    <entry key="\n" value="' || char(10) || '"/>
+                    <entry key="\r" value="' || char(13) || '"/>
+               </map>
+            </property>
 			<property name="emptyCLOBValue" value="empty_clob()" />
 			<property name="emptyBLOBValue" value="empty_blob()" />
 			<property name="binaryPattern" value="hextoraw('%s')" />
@@ -204,6 +218,13 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern"
 				value="jdbc:sqlserver.*|jdbc:inetdae.*|jdbc:JTurbo.*|jdbc:weblogic:mssqlserver.*|jdbc:jtds:sqlserver.*" />
+            <property name="stringLiteralEscapeSequences">
+                <map>
+                    <entry key="'" value="\'"/>
+                    <entry key="\n" value="' + char(10) + '"/>
+                    <entry key="\r" value="' + char(13) + '"/>
+               </map>
+            </property>
 			<property name="exportBlocks">
 				<set>
 				   <value>timestamp</value>
@@ -322,6 +343,13 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
         <bean class="net.sf.jailer.Configuration">
             <property name="urlPattern" value="jdbc:h2.*" />
             <property name="sqlLimitSuffix" value="LIMIT %s" />
+            <property name="stringLiteralEscapeSequences">
+                <map>
+                    <entry key="'" value="\'"/>
+                    <entry key="\n" value="' || char(10) || '"/>
+                    <entry key="\r" value="' || char(13) || '"/>
+               </map>
+            </property>
         </bean>
 	</util:list>
 	
