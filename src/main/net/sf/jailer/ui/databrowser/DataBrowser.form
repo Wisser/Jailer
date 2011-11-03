@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
-<Form version="1.3" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
+<Form version="1.3" maxVersion="1.5" type="org.netbeans.modules.form.forminfo.JFrameFormInfo">
   <NonVisualComponents>
     <Menu class="javax.swing.JMenuBar" name="menuBar">
       <SubComponents>
@@ -496,7 +496,7 @@
                   <SubComponents>
                     <Container class="javax.swing.JSplitPane" name="jSplitPane2">
                       <Properties>
-                        <Property name="dividerLocation" type="int" value="250"/>
+                        <Property name="dividerLocation" type="int" value="350"/>
                         <Property name="orientation" type="int" value="0"/>
                         <Property name="resizeWeight" type="double" value="1.0"/>
                         <Property name="continuousLayout" type="boolean" value="true"/>

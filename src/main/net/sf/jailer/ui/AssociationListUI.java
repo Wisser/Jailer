@@ -256,68 +256,73 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
     	updateModel();
     }
     
-    private interface ColumnContentGetter {
-    	abstract String getContent(AssociationModel association);
-		abstract String getDisplayName();
-		abstract Color getFgColor(String groupKey);
+    private static final Color GREEN = new Color(0, 160, 0);
+	private static final Color RED = Color.red;
+	
+	private static abstract class ColumnContentGetter {
+    	public abstract String getContent(AssociationModel association);
+    	public abstract String getDisplayName();
+    	public Color getFgColor(Collection<AssociationModel> group) {
+			Color fg = null;
+			for (AssociationModel associationModel: group) {
+				Color c = GREEN;
+				if (associationModel.isInsertSourceBeforeDestination()) {
+					c = GREEN;
+				} else if (associationModel.isInsertDestinationBeforeSource()) {
+					c = RED;
+				}
+				if (fg == null || fg == c) {
+					fg = c;
+				} else {
+					fg = null;
+					break;
+				}
+			}
+			return fg;
+		}
     };
     
-    private static class TypeGetter implements ColumnContentGetter {
+    private static class TypeGetter extends ColumnContentGetter {
     	private static final String PARENT = "Parent";
     	private static final String CHILD = "Child";
     	public String getContent(AssociationModel association) {
     		if (association.isInsertDestinationBeforeSource()) {
     			return PARENT;
     		}
-    		return "Child";
+    		return CHILD;
     	}
 		public String getDisplayName() {
 			return "Type";
 		}
-		public Color getFgColor(String groupKey) {
-			if (PARENT.equals(groupKey)) {
-				return Color.red;
-			}
-			if (CHILD.equals(groupKey)) {
-				return new Color(0, 100, 0);
-			}
-			return null;
-		}
     };
     
-    private static class SourceGetter implements ColumnContentGetter {
+    private static class SourceGetter extends ColumnContentGetter {
     	public String getContent(AssociationModel association) {
     		return association.getSourceName();
     	}
 		public String getDisplayName() {
 			return "From";
 		}
-		public Color getFgColor(String groupKey) {
+		public Color getFgColor(Collection<AssociationModel> group) {
 			return null;
 		}
     };
 
-    private static class DestinationGetter implements ColumnContentGetter {
+    private static class DestinationGetter extends ColumnContentGetter {
     	public String getContent(AssociationModel association) {
     		return association.getDestinationName();
     	}
 		public String getDisplayName() {
 			return "To";
 		}
-		public Color getFgColor(String groupKey) {
-			return null;
-		}
     };
 
-    private static class AssociationNameGetter implements ColumnContentGetter {
+    private static class AssociationNameGetter extends ColumnContentGetter {
     	public String getContent(AssociationModel association) {
     		return association.getName();
     	}
 		public String getDisplayName() {
 			return "Association Name";
-		}
-		public Color getFgColor(String groupKey) {
-			return null;
 		}
     };
 
@@ -340,6 +345,15 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 		public boolean isSelected() {
 			return selection.containsAll(associations);
 		}
+
+		public Collection<Node> getSubNodes() {
+			Collection<Node> subNodes = new ArrayList<Node>();
+			for (Node child: children) {
+				subNodes.add(child);
+				subNodes.addAll(child.getSubNodes());
+			}
+			return subNodes;
+		}
     }
 
     private static ColumnContentGetter TYPE_CG = new TypeGetter();
@@ -348,12 +362,12 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
     private static ColumnContentGetter ASSOCIATION_NAME_CG = new AssociationNameGetter();
     
     private enum GroupByDefinition {
-    	TSD("Type, Source, Destination", new ColumnContentGetter[] { TYPE_CG, SOURCE_CG, DESTINATION_CG, ASSOCIATION_NAME_CG }),
-    	TDS("Type, Destination, Source", new ColumnContentGetter[] { TYPE_CG, DESTINATION_CG, SOURCE_CG, ASSOCIATION_NAME_CG }),
-    	STD("Source, Type, Destination", new ColumnContentGetter[] { SOURCE_CG, TYPE_CG, DESTINATION_CG, ASSOCIATION_NAME_CG }),
-    	DTS("Destination, Type, Source", new ColumnContentGetter[] { DESTINATION_CG, TYPE_CG, SOURCE_CG, ASSOCIATION_NAME_CG }),
-    	SDT("Source, Destination, Type", new ColumnContentGetter[] { SOURCE_CG, DESTINATION_CG, TYPE_CG, ASSOCIATION_NAME_CG }),
-    	DST("Destination, Source, Type", new ColumnContentGetter[] { DESTINATION_CG, SOURCE_CG, TYPE_CG, ASSOCIATION_NAME_CG });
+    	TSD("Type, From, To", new ColumnContentGetter[] { TYPE_CG, SOURCE_CG, DESTINATION_CG, ASSOCIATION_NAME_CG }),
+    	TDS("Type, To, From", new ColumnContentGetter[] { TYPE_CG, DESTINATION_CG, SOURCE_CG, ASSOCIATION_NAME_CG }),
+    	STD("From, Type, To", new ColumnContentGetter[] { SOURCE_CG, TYPE_CG, DESTINATION_CG, ASSOCIATION_NAME_CG }),
+    	DTS("To, Type, From", new ColumnContentGetter[] { DESTINATION_CG, TYPE_CG, SOURCE_CG, ASSOCIATION_NAME_CG }),
+    	SDT("From, To, Type", new ColumnContentGetter[] { SOURCE_CG, DESTINATION_CG, TYPE_CG, ASSOCIATION_NAME_CG }),
+    	DST("To, From, Type", new ColumnContentGetter[] { DESTINATION_CG, SOURCE_CG, TYPE_CG, ASSOCIATION_NAME_CG });
     	
     	public final ColumnContentGetter[] columnContentGetter;
     	public final String displayName;
@@ -369,6 +383,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
     };
     
     private List<MouseListener> allMouseListener = new ArrayList<MouseListener>();
+    private Map<Node, List<MouseListener>> mouseListenerPerNode = new HashMap<Node, List<MouseListener>>();
     private List<Node> roots;
     
     /**
@@ -399,21 +414,24 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
     private void updateModel() {
     	listPanel.removeAll();
     	allMouseListener.clear();
+    	mouseListenerPerNode.clear();
     	ColumnContentGetter[] columnContentGetter = ((GroupByDefinition) groupByComboBox.getSelectedItem()).columnContentGetter;
     	Collection<AssociationModel> unhidden = new ArrayList<AssociationListUI.AssociationModel>(model);
     	unhidden.removeAll(hidden);
 		roots = createHierarchy(columnContentGetter, 0, unhidden);
-    	for (int x = 0; x <= columnContentGetter.length; ++x) {
-    		String text = x == 0? " " : columnContentGetter[x - 1].getDisplayName();
-    		JLabel title = new JLabel(text + "  ");
-    		title.setBackground(Color.WHITE);
-    		title.setOpaque(true);
-    		title.setFont(bold);
-    		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.gridx = x;
-            gridBagConstraints.gridy = 0;
-            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-            listPanel.add(title, gridBagConstraints);
+    	if (!unhidden.isEmpty()) {
+			for (int x = 0; x <= columnContentGetter.length; ++x) {
+	    		String text = x == 0? " " : columnContentGetter[x - 1].getDisplayName();
+	    		JLabel title = new JLabel(text + "  ");
+	    		title.setBackground(Color.WHITE);
+	    		title.setOpaque(true);
+	    		title.setFont(bold);
+	    		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+	            gridBagConstraints.gridx = x;
+	            gridBagConstraints.gridy = 0;
+	            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+	            listPanel.add(title, gridBagConstraints);
+	    	}
     	}
     	
         int[] y = new int[] { 2 };
@@ -468,7 +486,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
     						lastFgColor = Color.lightGray;
     					}
     				}
-    	    		JComponent l = createLabel(node, y[0], lastText, null, false, false, bgColor, lastFgColor, false, false);
+    	    		JComponent l = createLabel(node, y[0], shorten(lastText), null, false, false, bgColor, lastFgColor, false, false);
     	    		gridBagConstraints = new java.awt.GridBagConstraints();
     	            gridBagConstraints.gridx = x + 1;
     	            gridBagConstraints.gridy = y[0];
@@ -512,7 +530,8 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
                 gridBagConstraints.insets = new Insets(2, 0, 2, 0);
                 final JCheckBox checkbox = new JCheckBox("  ");
                 p.add(checkbox, gridBagConstraints);
-        		p.setBackground(bgColor);
+                p.setBackground(bgColor);
+                checkbox.setBackground(bgColor);
         		
         		if (node.associations.size() != 1) {
         			System.err.println("node.associations.size() != 1, " + node.associations.size());
@@ -598,7 +617,8 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 		}
 		MouseListener l;
 		label.addMouseListener(l = new MouseListener() {
-			Color bgColor;
+			Color bgColorL;
+			Color bgColorP;
 			@Override
 			public void mouseReleased(MouseEvent e) {
 			}
@@ -607,20 +627,45 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 			}
 			@Override
 			public void mouseExited(MouseEvent e) {
-				if (bgColor != null) {
-					label.setBackground(bgColor);
+				if (e != null) {
+					for (Node subNode: node.getSubNodes()) {
+						for (MouseListener l: mouseListenerPerNode.get(subNode)) {
+							if (l != this) {
+								l.mouseExited(null);
+							}
+						}
+					}
+				}
+				if (bgColorL != null) {
+					label.setBackground(bgColorL);
+				}
+				if (bgColorP != null) {
+					panel.setBackground(bgColorP);
 				}
 			}
 			@Override
 			public void mouseEntered(MouseEvent e) {
-				for (MouseListener l: allMouseListener) {
-					if (l != this) {
-						l.mouseExited(e);
+				if (e != null) {
+					for (MouseListener l: allMouseListener) {
+						if (l != this) {
+							l.mouseExited(null);
+						}
+					}
+					for (Node subNode: node.getSubNodes()) {
+						for (MouseListener l: mouseListenerPerNode.get(subNode)) {
+							if (l != this) {
+								l.mouseEntered(null);
+							}
+						}
 					}
 				}
-				if (bgColor == null) {
-					bgColor = label.getBackground();
+				if (bgColorL == null) {
+					bgColorL = label.getBackground();
 				}
+				if (bgColorP == null) {
+					bgColorP = panel.getBackground();
+				}
+				panel.setBackground(BGCOLOR_OF_SELECTED_ROW);
 				label.setBackground(BGCOLOR_OF_SELECTED_ROW);
 			}
 			@Override
@@ -637,6 +682,10 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 			}
 		});
 		allMouseListener.add(l);
+		if (mouseListenerPerNode.get(node) == null) {
+			mouseListenerPerNode.put(node, new ArrayList<MouseListener>());
+		}
+		mouseListenerPerNode.get(node).add(l);
 		return panel;
 	}
     
@@ -694,7 +743,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
     	}
     	for (String groupKey: gk) {
     		Collection<AssociationModel> group = groups.get(groupKey);
-    		Node node = new Node(groupKey, group, columnContentGetter[i].getFgColor(groupKey));
+    		Node node = new Node(groupKey, group, columnContentGetter[i].getFgColor(group));
     		result.add(node);
     		if (i + 1 < columnContentGetter.length) {
     			node.children.addAll(createHierarchy(columnContentGetter, i + 1, group));
@@ -741,7 +790,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText(" Group by ");
+        jLabel1.setText(" Sorted by ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -773,7 +822,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
-        hideButton.setText("hide");
+        hideButton.setText("Hide");
         hideButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 hideButtonActionPerformed(evt);
@@ -784,7 +833,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         jPanel4.add(hideButton, gridBagConstraints);
 
-        unhideButton.setText("unhide");
+        unhideButton.setText("Unhide");
         unhideButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 unhideButtonActionPerformed(evt);

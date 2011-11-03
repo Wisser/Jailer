@@ -97,7 +97,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			</property>
             <property name="stringLiteralEscapeSequences">
                 <map>
-                    <entry key="'" value="\'"/>
+                    <entry key="'" value="''"/>
                     <entry key="\n" value="' || char(10) || '"/>
                     <entry key="\r" value="' || char(13) || '"/>
                </map>
@@ -134,7 +134,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			</property>
             <property name="stringLiteralEscapeSequences">
                 <map>
-                    <entry key="'" value="\'"/>
+                    <entry key="'" value="''"/>
                     <entry key="\n" value="' || char(10) || '"/>
                     <entry key="\r" value="' || char(13) || '"/>
                </map>
@@ -220,7 +220,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 				value="jdbc:sqlserver.*|jdbc:inetdae.*|jdbc:JTurbo.*|jdbc:weblogic:mssqlserver.*|jdbc:jtds:sqlserver.*" />
             <property name="stringLiteralEscapeSequences">
                 <map>
-                    <entry key="'" value="\'"/>
+                    <entry key="'" value="''"/>
                     <entry key="\n" value="' + char(10) + '"/>
                     <entry key="\r" value="' + char(13) + '"/>
                </map>
@@ -345,7 +345,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
             <property name="sqlLimitSuffix" value="LIMIT %s" />
             <property name="stringLiteralEscapeSequences">
                 <map>
-                    <entry key="'" value="\'"/>
+                    <entry key="'" value="''"/>
                     <entry key="\n" value="' || char(10) || '"/>
                     <entry key="\r" value="' || char(13) || '"/>
                </map>

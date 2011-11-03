@@ -16,7 +16,6 @@
 package net.sf.jailer.ui;
 
 import java.awt.CardLayout;
-import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -28,7 +27,6 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Date;
@@ -47,7 +45,6 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
 import jsyntaxpane.DefaultSyntaxKit;
-
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.DDLCreator;
 import net.sf.jailer.Jailer;
@@ -57,8 +54,8 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
-import net.sf.jailer.datamodel.DataModel.NoPrimaryKeyException;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.datamodel.DataModel.NoPrimaryKeyException;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.ui.databrowser.DataBrowser;
@@ -1577,7 +1574,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             			file = CommandLineParser.getInstance().arguments.get(0);
             		}	
             	}
-            	ExtractionModelFrame extractionModelFrame = createFrame(file);
+            	ExtractionModelFrame extractionModelFrame = createFrame(file, true);
                 try {
 					askForDataModel(extractionModelFrame);
 				} catch (Exception e) {
@@ -1682,7 +1679,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		}
 	}
 	
-    public static ExtractionModelFrame createFrame(String file) {
+    public static ExtractionModelFrame createFrame(String file, boolean maximize) {
 		boolean isHorizonal = false;
 		try {
 			File setting = new File(ORIENTATIONSETTING);
@@ -1704,6 +1701,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		extractionModelFrame.setLocation(40, 40);
 		extractionModelFrame.setSize(1100, 640);
 		extractionModelFrame.setVisible(true);
+		if (maximize) {
+			extractionModelFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+		}
 		return extractionModelFrame;
 	}
 

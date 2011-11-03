@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui.databrowser;
 
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Image;
@@ -35,6 +36,7 @@ import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -52,12 +54,12 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
-import javax.swing.border.TitledBorder;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -77,14 +79,14 @@ import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.About;
 import net.sf.jailer.ui.AnalyseOptionsDialog;
 import net.sf.jailer.ui.AssociationListUI;
-import net.sf.jailer.ui.AssociationListUI.AssociationModel;
-import net.sf.jailer.ui.AssociationListUI.DefaultAssociationModel;
 import net.sf.jailer.ui.BrowserLauncher;
 import net.sf.jailer.ui.DataModelEditor;
 import net.sf.jailer.ui.DbConnectionDialog;
-import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
 import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.AssociationListUI.AssociationModel;
+import net.sf.jailer.ui.AssociationListUI.DefaultAssociationModel;
+import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 
 import org.apache.log4j.PropertyConfigurator;
@@ -142,7 +144,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	public DataBrowser(DataModel datamodel, Table root, String condition, DbConnectionDialog dbConnectionDialog, boolean embedded) throws Exception {
 		this.datamodel = new Reference<DataModel>(datamodel);
 		this.dbConnectionDialog = dbConnectionDialog != null ? new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName()) : null;
-		this.borderBrowser = new AssociationListUI("resolve", true) {
+		this.borderBrowser = new AssociationListUI("Resolve", true) {
 			@Override
 			protected void applyAction(Collection<AssociationModel> selection) {
 				resolveSelection(selection);
@@ -626,7 +628,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
-        jSplitPane2.setDividerLocation(250);
+        jSplitPane2.setDividerLocation(350);
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane2.setResizeWeight(1.0);
         jSplitPane2.setContinuousLayout(true);
@@ -927,7 +929,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         private void newWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newWindowMenuItemActionPerformed
             try {
-				openNewDataBrowser(datamodel.get(), dbConnectionDialog);
+				openNewDataBrowser(datamodel.get(), dbConnectionDialog, false);
 			} catch (Exception e) {
 				UIUtil.showException(this, "Error", e);
 			}
@@ -1005,6 +1007,14 @@ public class DataBrowser extends javax.swing.JFrame {
 		if (evt.getButton() == MouseEvent.BUTTON3) {
 			if (evt.getClickCount() == 1) {
 				TreePath node = navigationTree.getPathForLocation(evt.getX(), evt.getY());
+				if (node == null) {
+					for (int x = navigationTree.getWidth(); x > 0; x -= 32) {
+						node = navigationTree.getPathForLocation(x, evt.getY());
+						if (node != null) {
+							break;
+						}
+					}
+				}
 				if (node != null) {
 					Object sel = node.getLastPathComponent();
 					if (sel instanceof DefaultMutableTreeNode) {
@@ -1018,6 +1028,27 @@ public class DataBrowser extends javax.swing.JFrame {
 						if (rowBrowser != null) {
 							navigationTree.setSelectionRow(row);
 							JPopupMenu popup = rowBrowser.browserContentPane.createPopupMenu(null, -1, 0, 0, false);
+							JPopupMenu popup2 = rowBrowser.browserContentPane.createSqlPopupMenu(null, -1, 0, 0, true);
+							popup.add(new JSeparator());
+							for (Component c: popup2.getComponents()) {
+								popup.add(c);
+							}
+							popup.add(new JSeparator());
+							JMenuItem m = new JMenuItem("Close" + (desktop.getChildBrowsers(rowBrowser).isEmpty()? "" : " Subtree"));
+							popup.add(m);
+							final RowBrowser rb = rowBrowser;
+							m.addActionListener(new ActionListener() {
+								@Override
+								public void actionPerformed(ActionEvent e) {
+									closeSubTree(rb);
+								}
+								private void closeSubTree(RowBrowser rb) {
+									for (RowBrowser c: desktop.getChildBrowsers(rb)) {
+										closeSubTree(c);
+									}
+									desktop.closeAll(Collections.singleton(rb));
+								}
+							});
 							popup.show(evt.getComponent(), evt.getX(), evt.getY());
 						}
 					}
@@ -1167,7 +1198,7 @@ public class DataBrowser extends javax.swing.JFrame {
 						UIManager.setLookAndFeel(plaf);
 					} catch (Exception x) {
 					}
-					openNewDataBrowser(datamodel, null);
+					openNewDataBrowser(datamodel, null, true); 
 					ToolTipManager.sharedInstance().setInitialDelay(500);
 					ToolTipManager.sharedInstance().setDismissDelay(20000);
 				} catch (Exception e) {
@@ -1177,10 +1208,13 @@ public class DataBrowser extends javax.swing.JFrame {
 		});
 	}
 
-	private static void openNewDataBrowser(DataModel datamodel, DbConnectionDialog dbConnectionDialog) throws Exception {
+	private static DataBrowser openNewDataBrowser(DataModel datamodel, DbConnectionDialog dbConnectionDialog, boolean maximize) throws Exception {
 		boolean silent = dbConnectionDialog != null;
 		DataBrowser dataBrowser = new DataBrowser(datamodel, null, "", null, false);
 		dataBrowser.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+		if (maximize) {
+			dataBrowser.setExtendedState(JFrame.MAXIMIZED_BOTH);
+		}
 		dataBrowser.setVisible(true);
 		if (dbConnectionDialog == null) {
 			dbConnectionDialog = new DbConnectionDialog(dataBrowser, DataBrowserContext.getAppName());
@@ -1212,6 +1246,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				}
 			}
 		}
+		return dataBrowser;
 	}
 
 	/**

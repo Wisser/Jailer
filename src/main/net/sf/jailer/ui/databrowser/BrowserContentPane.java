@@ -202,10 +202,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					} else {
 						Set<String> prevIDs = new TreeSet<String>();
 						int prevSize = 0;
+						long prevHash = 0;
 						if (BrowserContentPane.this.rows != null) {
 							prevSize = BrowserContentPane.this.rows.size();
 							for (Row r: BrowserContentPane.this.rows) {
 								prevIDs.add(r.rowId);
+								try {
+									for (Object v: r.values) {
+										if (v != null) {
+											prevHash = 2 * prevHash + v.hashCode();
+										}
+									}
+								} catch (RuntimeException e1) {
+									// ignore
+								}
 							}
 						}
 						onContentChange(new ArrayList<Row>(), false);
@@ -213,12 +223,22 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						BrowserContentPane.this.rows.addAll(rows);
 						updateTableModel(l, limitExceeded);
 						Set<String> currentIDs = new TreeSet<String>();
+						long currentHash = 0;
 						if (rows != null) {
 							for (Row r: rows) {
 								currentIDs.add(r.rowId);
+								try {
+									for (Object v: r.values) {
+										if (v != null) {
+											currentHash = 2 * currentHash + v.hashCode();
+										}
+									}
+								} catch (RuntimeException e1) {
+									// ignore
+								}
 							}
 						}
-						onContentChange(rows, rows.isEmpty() || rows.size() != prevSize || !prevIDs.equals(currentIDs) || rows.size() != currentIDs.size());
+						onContentChange(rows, rows.isEmpty() || currentHash != prevHash || rows.size() != prevSize || !prevIDs.equals(currentIDs) || rows.size() != currentIDs.size());
 						updateMode("table");
 						updateWhereField();
 					}
@@ -655,7 +675,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-				popup = createSqlPopupMenu(BrowserContentPane.this.parentRow, 0, 300, 300);
+				popup = createSqlPopupMenu(BrowserContentPane.this.parentRow, 0, 300, 300, false);
 				setCurrentRowSelection(-2);
 				popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
 					@Override
@@ -893,8 +913,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	/**
 	 * Creates popup menu for SQL.
+	 * @param forNavTree 
 	 */
-	public JPopupMenu createSqlPopupMenu(final Row parentrow, final int rowIndex, final int x, final int y) {
+	public JPopupMenu createSqlPopupMenu(final Row parentrow, final int rowIndex, final int x, final int y, boolean forNavTree) {
 		JPopupMenu popup = new JPopupMenu();
 		JMenuItem qb = new JMenuItem("Open Query Builder");
 		popup.add(qb);
@@ -912,6 +933,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				openExtractionModelEditor();
 			}
 		});
+		
+		if (forNavTree) {
+			return popup;
+		}
+		
 		popup.add(new JSeparator());
 		JMenuItem det = new JMenuItem("Details");
 		popup.add(det);
@@ -1083,7 +1109,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         		JOptionPane.showMessageDialog(parent, "Jailer Extraction Model created:\n'" + file+ "'\n\nJailer Database Subsetter Tool can be found at http://jailer.sourceforge.net", "Jailer Extraction Model", JOptionPane.INFORMATION_MESSAGE);
 			} else {
-				ExtractionModelFrame extractionModelFrame = ExtractionModelFrame.createFrame(file);
+				ExtractionModelFrame extractionModelFrame = ExtractionModelFrame.createFrame(file, false);
 				extractionModelFrame.setDbConnectionDialogClone(getDbConnectionDialog());
 				extractionModelFrame.markDirty();
 				extractionModelFrame.expandAll();
