@@ -1328,6 +1328,7 @@ public abstract class Desktop extends JDesktopPane {
 	private final DataBrowser parentFrame;
 	
 	public static enum LayoutMode {
+		THUMBNAIL(0.35),
 		TINY(0.569),
 		SMALL(0.75),
 		MEDIUM(1.0),
@@ -1508,7 +1509,8 @@ public abstract class Desktop extends JDesktopPane {
     		}
         	d += layoutMode.ordinal();
         	if (d >= 0 && d < LayoutMode.values().length) {
-        		rescaleLayout(LayoutMode.values()[d], null);
+        		Point fixed = SwingUtilities.convertPoint(evt.getComponent(), evt.getPoint().x, evt.getPoint().y, Desktop.this);
+        		rescaleLayout(LayoutMode.values()[d], fixed);
         	}
         }
 	}

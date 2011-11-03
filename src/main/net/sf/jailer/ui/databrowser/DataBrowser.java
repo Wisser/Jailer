@@ -166,6 +166,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 		ButtonGroup buttonGroup = new ButtonGroup();
 
+		buttonGroup.add(thumbnailLayoutRadioButtonMenuItem);
 		buttonGroup.add(tinyLayoutRadioButtonMenuItem);
 		buttonGroup.add(smallLayoutRadioButtonMenuItem);
 		buttonGroup.add(mediumLayoutRadioButtonMenuItem);
@@ -234,6 +235,8 @@ public class DataBrowser extends javax.swing.JFrame {
 					mediumLayoutRadioButtonMenuItem.setSelected(true);
 				} else if (layoutMode == Desktop.LayoutMode.LARGE) {
 					largeLayoutRadioButtonMenuItem.setSelected(true);
+				} else if (layoutMode == Desktop.LayoutMode.THUMBNAIL) {
+					thumbnailLayoutRadioButtonMenuItem.setSelected(true);
 				}
 			}
 		};
@@ -491,6 +494,7 @@ public class DataBrowser extends javax.swing.JFrame {
         menuWindow = new javax.swing.JMenu();
         layoutMenuItem = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
+        thumbnailLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
         tinyLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
         smallLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
         mediumLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
@@ -842,6 +846,15 @@ public class DataBrowser extends javax.swing.JFrame {
         menuWindow.add(layoutMenuItem);
         menuWindow.add(jSeparator5);
 
+        thumbnailLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_0, java.awt.event.InputEvent.CTRL_MASK));
+        thumbnailLayoutRadioButtonMenuItem.setText("Thumbnail Layout");
+        thumbnailLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                thumbnailLayoutRadioButtonMenuItemActionPerformed(evt);
+            }
+        });
+        menuWindow.add(thumbnailLayoutRadioButtonMenuItem);
+
         tinyLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_1, java.awt.event.InputEvent.CTRL_MASK));
         tinyLayoutRadioButtonMenuItem.setText("Tiny Layout");
         tinyLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -946,6 +959,10 @@ public class DataBrowser extends javax.swing.JFrame {
 	        	}
             }
         }//GEN-LAST:event_reconnectMenuItemActionPerformed
+
+        private void thumbnailLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_thumbnailLayoutRadioButtonMenuItemActionPerformed
+        	desktop.rescaleLayout(Desktop.LayoutMode.THUMBNAIL, null);
+}//GEN-LAST:event_thumbnailLayoutRadioButtonMenuItemActionPerformed
 
 	private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem1ActionPerformed
 		openNewTableBrowser(false);
@@ -1376,6 +1393,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel schemaNamePanel;
     private javax.swing.JRadioButtonMenuItem smallLayoutRadioButtonMenuItem;
     private javax.swing.JMenuItem storeSessionItem;
+    private javax.swing.JRadioButtonMenuItem thumbnailLayoutRadioButtonMenuItem;
     private javax.swing.JRadioButtonMenuItem tinyLayoutRadioButtonMenuItem;
     private javax.swing.JLabel titleLabel;
     private javax.swing.JMenu view;
