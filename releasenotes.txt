@@ -1,4 +1,5 @@
 3.7.6
+  - Border-Browser Feature introduced in data browser.
   - Fixed a bug concerning multi-line VARCHAR content. (Jailer Bug ID: 3432301)
 
 3.7.5
