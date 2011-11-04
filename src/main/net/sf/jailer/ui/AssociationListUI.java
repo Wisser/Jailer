@@ -140,7 +140,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 	     * The join-condition for joining source with destination table.
 	     */
 	    public String getJoinCondition() {
-	    	return association.getJoinCondition();
+	    	return association.getUnrestrictedJoinCondition();
 	    }
 	    
 	    /**

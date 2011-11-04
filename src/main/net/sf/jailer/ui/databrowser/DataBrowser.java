@@ -313,8 +313,8 @@ public class DataBrowser extends javax.swing.JFrame {
 		desktop.addMouseMotionListener(mia);
 		desktop.addMouseListener(mia);
 
-		setLocation(100, 50);
-		setSize(900, 680);
+		setLocation(60, 50);
+		setSize(900, 640);
 		if (root != null) {
 			desktop.addTableBrowser(null, 0, root, null, condition, null, null, true);
 		}
