@@ -256,7 +256,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
     	updateModel();
     }
     
-    private static final Color GREEN = new Color(0, 160, 0);
+    private static final Color GREEN = new Color(0, 130, 0);
 	private static final Color RED = Color.red;
 	
 	private static abstract class ColumnContentGetter {
