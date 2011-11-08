@@ -59,6 +59,7 @@ public class SqlScriptExecutor {
      * Number of executed statements (UI support)
      */
     private static int lastStatementCount;
+    private static long totalRowCount;
     
     /**
      * Reads in and executes a SQL-script.
@@ -103,6 +104,7 @@ public class SqlScriptExecutor {
         String line = null;
         StringBuffer currentStatement = new StringBuffer();
         long linesRead = 0;
+        long totalRowCount = 0;
         long bytesRead = 0;
         long t = System.currentTimeMillis();
         int count = 0;
@@ -132,7 +134,7 @@ public class SqlScriptExecutor {
             	session.setSilent(silent || stmt.trim().toLowerCase().startsWith("drop"));
             	try {
                 	if (stmt.trim().length() > 0) {
-                		session.execute(stmt);
+                		totalRowCount += session.execute(stmt);
                 		++linesRead;
                     	++count;
                 	}
@@ -166,7 +168,7 @@ public class SqlScriptExecutor {
         bufferedReader.close();
         _log.info(linesRead + " statements (100%)");
     	_log.info("successfully read file '" + scriptFileName + "'");
-    	setLastStatementCount(count);
+    	setLastStatementCount(count, totalRowCount);
     }
 
     private static class LineReader {
@@ -326,8 +328,9 @@ public class SqlScriptExecutor {
     /**
      * Sets number of executed statements (UI support)
      */
-    private static synchronized void setLastStatementCount(int count) {
+    private static synchronized void setLastStatementCount(int count, long rowCount) {
     	lastStatementCount = count;
+    	totalRowCount = rowCount;
     }
 
     /**
@@ -336,5 +339,12 @@ public class SqlScriptExecutor {
     public static synchronized int getLastStatementCount() {
     	return lastStatementCount;
     }
-
+    
+    /**
+     * Sets number of executed statements (UI support)
+     */
+    public static synchronized long getTotalRowCount() {
+    	return totalRowCount;
+    }
+    
 }

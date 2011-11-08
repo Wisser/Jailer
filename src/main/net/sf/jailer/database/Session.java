@@ -633,13 +633,14 @@ public class Session {
      * 
      * @param sql the SQL-Statement
      */
-    public void execute(String sql) throws SQLException {
+    public long execute(String sql) throws SQLException {
         _log.info(sql);
+        long rc = 0;
         try {
         	CancellationHandler.checkForCancellation(null);
 	        Statement statement = connectionFactory.getConnection().createStatement();
 	        CancellationHandler.begin(statement, null);
-	        statement.execute(sql);
+	        rc = statement.executeUpdate(sql);
 	        statement.close();
 	        CancellationHandler.end(statement, null);
 	    } catch (SQLException e) {
@@ -649,6 +650,7 @@ public class Session {
 	    	}
 	    	throw new SqlException("\"" + e.getMessage() + "\" in statement \"" + sql + "\"", sql, e);
 	    }
+        return rc;
     }
     
     /**
