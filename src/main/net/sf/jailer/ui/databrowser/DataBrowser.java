@@ -48,12 +48,15 @@ import java.util.logging.Logger;
 
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
@@ -87,6 +90,8 @@ import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.AssociationListUI.AssociationModel;
 import net.sf.jailer.ui.AssociationListUI.DefaultAssociationModel;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
+import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
+import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 
 import org.apache.log4j.PropertyConfigurator;
@@ -279,6 +284,9 @@ public class DataBrowser extends javax.swing.JFrame {
 			Container c;
 
 			public void mouseDragged(MouseEvent e) {
+				if (e.getButton() == MouseEvent.BUTTON3) {
+					return;
+				}
 				c = desktop.getParent();
 				if (c instanceof JViewport) {
 					JViewport jv = (JViewport) c;
@@ -300,13 +308,88 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 
 			public void mousePressed(MouseEvent e) {
+				if (e.getButton() == MouseEvent.BUTTON3) {
+					return;
+				}
 				setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
 				m_XDifference = e.getX();
 				m_YDifference = e.getY();
 			}
 
 			public void mouseReleased(MouseEvent e) {
+				if (e.getButton() == MouseEvent.BUTTON3) {
+					return;
+				}
 				setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+			}
+
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				if (e.getButton() != MouseEvent.BUTTON3) {
+					return;
+				}
+				JPopupMenu popup = new JPopupMenu();
+				JMenuItem i = new JMenuItem("Arrange Layout");
+				popup.add(i);
+				i.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						layoutMenuItemActionPerformed(e);
+					}
+				});
+				ButtonGroup group = new ButtonGroup();
+				popup.add(new JSeparator());
+				i = new JRadioButtonMenuItem("Thumbnail Layout");
+				i.setSelected(desktop.layoutMode == LayoutMode.THUMBNAIL);
+				group.add(i);
+				popup.add(i);
+				i.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						thumbnailLayoutRadioButtonMenuItemActionPerformed(e);
+					}
+				});
+				i = new JRadioButtonMenuItem("Tiny Layout");
+				i.setSelected(desktop.layoutMode == LayoutMode.TINY);
+				group.add(i);
+				popup.add(i);
+				i.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						tinyLayoutRadioButtonMenuItemActionPerformed(e);
+					}
+				});
+				i = new JRadioButtonMenuItem("Small Layout");
+				i.setSelected(desktop.layoutMode == LayoutMode.SMALL);
+				group.add(i);
+				popup.add(i);
+				i.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						smallLayoutRadioButtonMenuItemActionPerformed(e);
+					}
+				});
+				i = new JRadioButtonMenuItem("Medium Layout");
+				i.setSelected(desktop.layoutMode == LayoutMode.MEDIUM);
+				group.add(i);
+				popup.add(i);
+				i.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						mediumLayoutRadioButtonMenuItemActionPerformed(e);
+					}
+				});
+				i = new JRadioButtonMenuItem("Large Layout");
+				i.setSelected(desktop.layoutMode == LayoutMode.LARGE);
+				group.add(i);
+				popup.add(i);
+				i.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						largeLayoutRadioButtonMenuItemActionPerformed(e);
+					}
+				});
+				popup.show(desktop, e.getX(), e.getY());
 			}
 		};
 

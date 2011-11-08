@@ -24,6 +24,8 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Polygon;
@@ -77,13 +79,13 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.QueryBuilderDialog;
-import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
+import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.TreeLayoutOptimizer.Node;
 import net.sf.jailer.util.CsvFile;
+import net.sf.jailer.util.CsvFile.Line;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.SqlUtil;
-import net.sf.jailer.util.CsvFile.Line;
 import prefuse.util.GraphicsLib;
 
 /**
@@ -698,9 +700,22 @@ public abstract class Desktop extends JDesktopPane {
 	private void initIFrame(final JInternalFrame jInternalFrame,
 			final BrowserContentPane browserContentPane) {
 		final JPanel thumbnail = new JPanel();
-		thumbnail.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
+		final JPanel thumbnailInner = new JPanel();
+		thumbnail.setLayout(new GridBagLayout());
+		GridBagConstraints gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.gridwidth = 1;
+		gridBagConstraints.gridheight = 1;
+		gridBagConstraints.weightx = 1;
+		gridBagConstraints.weighty = 1;
+		gridBagConstraints.fill = GridBagConstraints.BOTH;
+		gridBagConstraints.insets = new Insets(8, 8, 8, 8);
+		thumbnail.add(thumbnailInner, gridBagConstraints);
+
+		thumbnailInner.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
 		for (int i = 0; i < jInternalFrame.getTitle().length(); ++i) {
-			thumbnail.add(new JLabel(jInternalFrame.getTitle().substring(i, i + 1)));
+			thumbnailInner.add(new JLabel(jInternalFrame.getTitle().substring(i, i + 1)));
 		}
 		jInternalFrame.getContentPane().setLayout(new CardLayout());
  		
@@ -1380,7 +1395,7 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 	
-	private LayoutMode layoutMode = LayoutMode.MEDIUM;
+	LayoutMode layoutMode = LayoutMode.MEDIUM;
 	
 	public void layoutBrowser() {
 		JInternalFrame selectedFrame = getSelectedFrame();
