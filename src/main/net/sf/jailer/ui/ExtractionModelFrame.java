@@ -29,6 +29,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
@@ -54,8 +55,8 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
-import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.datamodel.DataModel.NoPrimaryKeyException;
+import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.ui.databrowser.DataBrowser;
@@ -87,6 +88,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 * The "Find Table" dialog.
 	 */
 	final ClosureView closureView;
+
+	/**
+	 * The border browser.
+	 */
+	final ClosureBorderDialog closureBorderView;
 
 	/**
 	 * The "Cycle View" dialog.
@@ -134,6 +140,22 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         }
         updateMenuItems();
         closureView = new ClosureView(this);
+        closureBorderView = new ClosureBorderDialog(this) {
+			private static final long serialVersionUID = -7426280043553389753L;
+			@Override
+			protected Table getRoot() {
+				return extractionModelEditor.root;
+			}
+			@Override
+			protected DataModel getDataModel() {
+				return extractionModelEditor.dataModel;
+			}
+			@Override
+			protected void removeRestrictions(Collection<Association> associations) {
+				extractionModelEditor.removeRestrictions(associations);
+			}
+        };
+        
         cycleViewDialog = new CyclesView(this);
         filterEditorDialog = new FilterEditorDialog(this, new ParameterSelector.ParametersGetter() {
 			@Override
@@ -243,6 +265,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jSeparator5 = new javax.swing.JSeparator();
         openDataBrowserItem = new javax.swing.JMenuItem();
         closureToolMenuItem = new javax.swing.JMenuItem();
+        closureBorderToolMenuItem = new javax.swing.JMenuItem();
         queryBuilder = new javax.swing.JMenuItem();
         cycleView = new javax.swing.JMenuItem();
         renderHtml = new javax.swing.JMenuItem();
@@ -594,7 +617,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
         jMenuBar2.add(viewMenu);
 
-        jMenu1.setText("Data Model");
+        jMenu1.setText("DataModel");
 
         updateDataModel.setText("Analyze Database");
         updateDataModel.addActionListener(new java.awt.event.ActionListener() {
@@ -648,6 +671,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             }
         });
         jMenu3.add(closureToolMenuItem);
+
+        closureBorderToolMenuItem.setText("Closure Border Browser");
+        closureBorderToolMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                closureBorderToolMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu3.add(closureBorderToolMenuItem);
 
         queryBuilder.setText("Query Builder");
         queryBuilder.addActionListener(new java.awt.event.ActionListener() {
@@ -1444,6 +1475,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private void closureToolMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closureToolMenuItemActionPerformed
     	openClosureView(extractionModelEditor.root);
     }//GEN-LAST:event_closureToolMenuItemActionPerformed
+
+    private void closureBorderToolMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closureBorderToolMenuItemActionPerformed
+    	closureBorderView.setVisible(true);
+    	closureBorderView.toFront();
+    }//GEN-LAST:event_closureBorderToolMenuItemActionPerformed
     
     boolean isHorizontalLayout = false;
 	
@@ -1715,6 +1751,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem closureBorderToolMenuItem;
     private javax.swing.JMenuItem closureMenuItem;
     private javax.swing.JMenuItem closureToolMenuItem;
     private javax.swing.JMenuItem collapseAll;

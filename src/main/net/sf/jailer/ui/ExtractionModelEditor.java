@@ -1209,6 +1209,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			root = table;
 			tree.setModel(getModel());
 			resetGraphEditor(true, true, false, true);
+			if (extractionModelFrame != null && extractionModelFrame.closureBorderView != null) {
+				extractionModelFrame.closureBorderView.refresh();
+			}
 		}
 	}
 	
@@ -1584,10 +1587,27 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			initRestrictionEditor(currentAssociation, currentNode);
 			initialRestrictionCondition = saveInitialRestrictionCondition;
 			extractionModelFrame.closureView.refresh();
+			extractionModelFrame.closureBorderView.refresh();
 			tree.grabFocus();
     	}
     }
     
+    public void removeRestrictions(Collection<Association> associations) {
+    	for (Association association: associations) {
+    		if (!needsSave) {
+    			needsSave = true;
+    			extractionModelFrame.updateTitle(needsSave);
+    		}
+    		String condition = "";
+			dataModel.getRestrictionModel().addRestriction(association.source, association, condition, "GUI", true, new HashMap<String, String>());
+    	}
+		tree.repaint();
+		graphView.display.invalidate();
+		restrictionsTable.setModel(restrictionTableModel());
+		extractionModelFrame.closureView.refresh();
+		extractionModelFrame.closureBorderView.refresh();
+    }
+
 	/**
      * Gets model of the associations-tree.
      */
@@ -2263,8 +2283,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		initRestrictionEditor(currentAssociation, currentNode);
 		graphView.resetExpandedState();
 		extractionModelFrame.closureView.refresh();
+		extractionModelFrame.closureBorderView.refresh();
 	}
-	
+	 
 	/**
 	 * Checks if {@link #removeAllRestrictions(Table)} is applicable.
 	 */
@@ -2307,6 +2328,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		initRestrictionEditor(currentAssociation, currentNode);
 		graphView.resetExpandedState();
 		extractionModelFrame.closureView.refresh();
+		extractionModelFrame.closureBorderView.refresh();
 	}
 
 	/**

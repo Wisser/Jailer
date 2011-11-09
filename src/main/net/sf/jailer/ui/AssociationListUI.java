@@ -66,8 +66,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 	private enum AssociationType {
 		CHILD("1Child", GREEN),
 		ASSOC("2Association", new Color(0, 0, 150)),
-		PARENT("3Parent", RED),
-		IGNORED("4Detached", Color.DARK_GRAY);
+		PARENT("3Parent", RED);
 		
 		public final String name;
 		public final Color color;
@@ -178,9 +177,6 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 
 		@Override
 		public AssociationType getType() {
-			if (association.getJoinCondition() == null) {
-				return AssociationType.IGNORED;
-			}
 			if (association.isInsertSourceBeforeDestination()) {
 				return AssociationType.CHILD;
 			}
@@ -190,6 +186,19 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 			return AssociationType.ASSOC;
 		}
 	    
+		@Override
+		public boolean equals(Object obj) {
+			if (obj instanceof DefaultAssociationModel) {
+				return association.equals(((DefaultAssociationModel) obj).association);
+			}
+			return false;
+		}
+
+		@Override
+		public int hashCode() {
+			return association.hashCode();
+		}
+
 	};
 	
 	/**
