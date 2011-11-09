@@ -387,7 +387,7 @@
                           <SubComponents>
                             <Component class="javax.swing.JButton" name="openDataBrowser">
                               <Properties>
-                                <Property name="text" type="java.lang.String" value="Data"/>
+                                <Property name="text" type="java.lang.String" value="Data Browser"/>
                                 <Property name="toolTipText" type="java.lang.String" value="Open Data Browser"/>
                               </Properties>
                               <Events>
@@ -401,7 +401,7 @@
                             </Component>
                             <Component class="javax.swing.JButton" name="openClosureView">
                               <Properties>
-                                <Property name="text" type="java.lang.String" value="Closure"/>
+                                <Property name="text" type="java.lang.String" value="Closure Browser"/>
                                 <Property name="toolTipText" type="java.lang.String" value="Open Closure Browser"/>
                               </Properties>
                               <Events>

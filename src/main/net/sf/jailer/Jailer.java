@@ -100,7 +100,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "3.7.6";
+	public static final String VERSION = "3.7.7";
 	
 	/**
 	 * The Jailer application name.

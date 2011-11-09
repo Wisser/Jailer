@@ -2307,6 +2307,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel6.add(rowsCount, gridBagConstraints);
 
+        selectDistinctCheckBox.setSelected(true);
         selectDistinctCheckBox.setText("select distinct (-100 rows)");
         selectDistinctCheckBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

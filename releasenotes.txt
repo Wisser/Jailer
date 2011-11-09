@@ -1,3 +1,7 @@
+3.7.7
+  - Added desktop context menu.
+  - Minor GUI improvements.
+
 3.7.6
   - Border-Browser Feature introduced in data browser.
   - Fixed a bug concerning multi-line VARCHAR content. (Jailer Bug ID: 3432301)
