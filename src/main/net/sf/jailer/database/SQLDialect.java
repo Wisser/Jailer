@@ -296,7 +296,11 @@ public class SQLDialect {
 					continue;
 				}
 				try {
-					session.execute(sqlDialect.upsertMode.testSQL_.replaceAll("\\$", SQLDialect.dmlTableReference(TMP_TABLE_, session)));
+					session.executeQuery(sqlDialect.upsertMode.testSQL_.replaceAll("\\$", SQLDialect.dmlTableReference(TMP_TABLE_, session)), new Session.AbstractResultSetReader() {
+						@Override
+						public void readCurrentRow(ResultSet resultSet) throws SQLException {
+						}
+					});
 				} catch (Exception e) {
 					ok = false;
 					_sqllog.info(e.getMessage());

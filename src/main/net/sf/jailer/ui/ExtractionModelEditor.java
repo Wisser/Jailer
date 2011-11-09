@@ -895,7 +895,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jPanel9.setLayout(new java.awt.BorderLayout());
 
-        openDataBrowser.setText("Data");
+        openDataBrowser.setText("Data Browser");
         openDataBrowser.setToolTipText("Open Data Browser");
         openDataBrowser.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -904,7 +904,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         });
         jPanel9.add(openDataBrowser, java.awt.BorderLayout.WEST);
 
-        openClosureView.setText("Closure");
+        openClosureView.setText("Closure Browser");
         openClosureView.setToolTipText("Open Closure Browser");
         openClosureView.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

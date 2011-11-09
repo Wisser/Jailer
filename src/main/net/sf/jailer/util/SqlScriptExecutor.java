@@ -56,25 +56,22 @@ public class SqlScriptExecutor {
     private static final Logger _log = Logger.getLogger(SqlScriptExecutor.class);
 
     /**
-     * Number of executed statements (UI support)
-     */
-    private static int lastStatementCount;
-    private static long totalRowCount;
-    
-    /**
      * Reads in and executes a SQL-script.
      * 
      * @param scriptFileName the name of the script-file
      * @param session for execution of statements
+     * 
+     * @return Pair(statementCount, rowCount)
      */
-    public static void executeScript(String scriptFileName, Session session, boolean transactional) throws IOException, SQLException {
+    public static Pair<Integer, Long> executeScript(String scriptFileName, Session session, boolean transactional) throws IOException, SQLException {
     	if (!transactional) {
     		executeScript(scriptFileName, session);
-    		return;
+    		return new Pair<Integer, Long>(0, 0L);
     	}
     	try {
-    		executeScript(scriptFileName, session);
+    		Pair<Integer, Long> r = executeScript(scriptFileName, session);
     		session.commitAll();
+    		return r;
     	} catch (IOException e) {
     		session.rollbackAll();
     		throw e;
@@ -89,8 +86,10 @@ public class SqlScriptExecutor {
      * 
      * @param scriptFileName the name of the script-file
      * @param session for execution of statements
+     * 
+     * @return Pair(statementCount, rowCount)
      */
-    public static void executeScript(String scriptFileName, Session session) throws IOException, SQLException {
+    public static Pair<Integer, Long> executeScript(String scriptFileName, Session session) throws IOException, SQLException {
         _log.info("reading file '" + scriptFileName + "'");
     	BufferedReader bufferedReader;
     	long fileSize = 0;
@@ -168,7 +167,11 @@ public class SqlScriptExecutor {
         bufferedReader.close();
         _log.info(linesRead + " statements (100%)");
     	_log.info("successfully read file '" + scriptFileName + "'");
-    	setLastStatementCount(count, totalRowCount);
+    	Pair<Integer, Long> r = new Pair<Integer, Long>(count, totalRowCount);
+		synchronized (SqlScriptExecutor.class) {
+	    	lastRowCount = r;
+		}
+    	return r;
     }
 
     private static class LineReader {
@@ -324,27 +327,14 @@ public class SqlScriptExecutor {
 		session.insertBlob(table, column, where, lobFile);
 		lobFile.delete();
 	}
-	
-    /**
-     * Sets number of executed statements (UI support)
-     */
-    private static synchronized void setLastStatementCount(int count, long rowCount) {
-    	lastStatementCount = count;
-    	totalRowCount = rowCount;
-    }
 
-    /**
-     * Sets number of executed statements (UI support)
-     */
-    public static synchronized int getLastStatementCount() {
-    	return lastStatementCount;
-    }
-    
-    /**
-     * Sets number of executed statements (UI support)
-     */
-    public static synchronized long getTotalRowCount() {
-    	return totalRowCount;
-    }
-    
+	private static Pair<Integer, Long> lastRowCount = null;
+	
+	public static synchronized Pair<Integer, Long> getLastStatementCount() {
+		if (lastRowCount != null) {
+			return lastRowCount;
+		}
+		return new Pair<Integer, Long>(0, 0L);
+	}
+	
 }

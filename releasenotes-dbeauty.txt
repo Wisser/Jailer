@@ -1,3 +1,7 @@
+1.5.1
+  - Added desktop context menu.
+  - Minor GUI improvements.
+
 1.5
   - Border-Browser Feature introduced.
   - Fixed a bug concerning multi-line VARCHAR content. (Jailer Bug ID: 3432301)

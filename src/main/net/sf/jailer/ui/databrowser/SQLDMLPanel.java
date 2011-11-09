@@ -334,11 +334,11 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 			args.addAll(session.getCliArguments());
 			args.add("-transactional");
 			if (UIUtil.runJailer(SwingUtilities.getWindowAncestor(this), args, false, true, false, true, null, session.getPassword(), null, null, false, false, true)) {
-				statusLabel.setText("Executed " + SqlScriptExecutor.getLastStatementCount() + " statements. " +
-						SqlScriptExecutor.getLastStatementCount() + " rows affected");
+				statusLabel.setText("Executed " + SqlScriptExecutor.getLastStatementCount().a + " statements. " +
+						SqlScriptExecutor.getLastStatementCount().b + " rows affected");
 				statusLabel.setForeground(new Color(0, 100, 0));
 				afterExecution.run();
-				JOptionPane.showMessageDialog(this, "Successfully executed " + SqlScriptExecutor.getLastStatementCount() + " statements.\n" + SqlScriptExecutor.getLastStatementCount() + " rows affected.", "SQL/DML", JOptionPane.INFORMATION_MESSAGE);
+				JOptionPane.showMessageDialog(this, "Successfully executed " + SqlScriptExecutor.getLastStatementCount().a + " statements.\n" + SqlScriptExecutor.getLastStatementCount().b + " rows affected.", "SQL/DML", JOptionPane.INFORMATION_MESSAGE);
 		 
 			} else {
 				statusLabel.setText("Error, rolled back");

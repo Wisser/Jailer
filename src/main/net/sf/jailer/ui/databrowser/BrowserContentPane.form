@@ -307,6 +307,7 @@
                 </Component>
                 <Component class="javax.swing.JCheckBox" name="selectDistinctCheckBox">
                   <Properties>
+                    <Property name="selected" type="boolean" value="true"/>
                     <Property name="text" type="java.lang.String" value="select distinct (-100 rows)"/>
                   </Properties>
                   <Events>

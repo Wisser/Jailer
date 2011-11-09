@@ -61,6 +61,24 @@ import net.sf.jailer.util.SqlUtil;
 public abstract class AssociationListUI extends javax.swing.JPanel {
 
 	/**
+	 * Types of {@link Association}.
+	 */
+	private enum AssociationType {
+		CHILD("1Child", GREEN),
+		ASSOC("2Association", new Color(0, 0, 150)),
+		PARENT("3Parent", RED),
+		IGNORED("4Detached", Color.DARK_GRAY);
+		
+		public final String name;
+		public final Color color;
+		
+		private AssociationType(String name, Color color) {
+			this.name = name;
+			this.color = color;
+		}
+	};
+	
+	/**
 	 * Association model for this UI.
 	 */
 	public interface AssociationModel {
@@ -85,17 +103,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 	     */
 	    Cardinality getCardinality();
 	    
-	    /**
-	     * Whether or not to insert source-rows before destination rows
-	     * in order to prevent foreign-key-constraint violation.
-	     */
-	    boolean isInsertSourceBeforeDestination();
-	    
-	    /**
-	     * Whether or not to insert destination-rows before source-rows
-	     * in order to prevent foreign-key-constraint violation.
-	     */
-	    boolean isInsertDestinationBeforeSource();
+	    AssociationType getType();
 	    
 	    /**
 	     * <code>true</code> for reversed association.
@@ -151,22 +159,6 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 	    }
 	    
 	    /**
-	     * Whether or not to insert source-rows before destination rows
-	     * in order to prevent foreign-key-constraint violation.
-	     */
-	    public boolean isInsertSourceBeforeDestination() {
-	    	return association.isInsertSourceBeforeDestination();
-	    }
-	    
-	    /**
-	     * Whether or not to insert destination-rows before source-rows
-	     * in order to prevent foreign-key-constraint violation.
-	     */
-	    public boolean isInsertDestinationBeforeSource() {
-	    	return association.isInsertDestinationBeforeSource();
-	    }
-	    
-	    /**
 	     * <code>true</code> for reversed association.
 	     */
 	    public boolean isReversed() {
@@ -182,6 +174,20 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 
 		public DataModel getDataModel() {
 			return association.getDataModel();
+		}
+
+		@Override
+		public AssociationType getType() {
+			if (association.getJoinCondition() == null) {
+				return AssociationType.IGNORED;
+			}
+			if (association.isInsertSourceBeforeDestination()) {
+				return AssociationType.CHILD;
+			}
+			if (association.isInsertDestinationBeforeSource()) {
+				return AssociationType.PARENT;
+			}
+			return AssociationType.ASSOC;
 		}
 	    
 	};
@@ -265,12 +271,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
     	public Color getFgColor(Collection<AssociationModel> group) {
 			Color fg = null;
 			for (AssociationModel associationModel: group) {
-				Color c = GREEN;
-				if (associationModel.isInsertSourceBeforeDestination()) {
-					c = GREEN;
-				} else if (associationModel.isInsertDestinationBeforeSource()) {
-					c = RED;
-				}
+				Color c = associationModel.getType().color;
 				if (fg == null || fg == c) {
 					fg = c;
 				} else {
@@ -283,13 +284,8 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
     };
     
     private static class TypeGetter extends ColumnContentGetter {
-    	private static final String PARENT = "Parent";
-    	private static final String CHILD = "Child";
     	public String getContent(AssociationModel association) {
-    		if (association.isInsertDestinationBeforeSource()) {
-    			return PARENT;
-    		}
-    		return CHILD;
+    		return association.getType().name;
     	}
 		public String getDisplayName() {
 			return "Type";
@@ -743,7 +739,11 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
     	}
     	for (String groupKey: gk) {
     		Collection<AssociationModel> group = groups.get(groupKey);
-    		Node node = new Node(groupKey, group, columnContentGetter[i].getFgColor(group));
+    		String gName = groupKey;
+    		if (columnContentGetter[i] instanceof TypeGetter) {
+    			gName = gName.substring(1);
+    		}
+    		Node node = new Node(gName, group, columnContentGetter[i].getFgColor(group));
     		result.add(node);
     		if (i + 1 < columnContentGetter.length) {
     			node.children.addAll(createHierarchy(columnContentGetter, i + 1, group));
