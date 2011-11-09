@@ -393,7 +393,7 @@
         </Menu>
         <Menu class="javax.swing.JMenu" name="jMenu1">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Data Model"/>
+            <Property name="text" type="java.lang.String" value="DataModel"/>
           </Properties>
           <SubComponents>
             <MenuItem class="javax.swing.JMenuItem" name="updateDataModel">
@@ -451,6 +451,14 @@
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="closureToolMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="closureBorderToolMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Closure Border Browser"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="closureBorderToolMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="queryBuilder">
