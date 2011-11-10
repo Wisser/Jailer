@@ -1699,6 +1699,11 @@ public class DataBrowser extends javax.swing.JFrame {
 							associations.remove(c.browserContentPane.association);
 						}
 					}
+					if (rb.browserContentPane.association != null) {
+						if (rb.parent == null || allChildren.contains(rb.parent)) {
+							associations.remove(rb.browserContentPane.association.reversalAssociation);
+						}
+					}
 					for (Association association: associations) {
 						model.add(new BrowserAssociationModel(rb, association));	
 					}

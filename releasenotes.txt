@@ -1,3 +1,7 @@
+3.7.8
+  - Fixed a performance issue within the Data Browser.
+  - Improved rendering of null values.
+
 3.7.7
   - Added desktop context menu.
   - Minor GUI improvements.

@@ -1600,6 +1600,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     		}
     		String condition = "";
 			dataModel.getRestrictionModel().addRestriction(association.source, association, condition, "GUI", true, new HashMap<String, String>());
+			graphView.setSelection(association);
     	}
 		tree.repaint();
 		graphView.display.invalidate();
