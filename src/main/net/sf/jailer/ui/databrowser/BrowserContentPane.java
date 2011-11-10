@@ -335,6 +335,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 */
 	private static final String ROWNUMBERALIAS = "RN";
 
+	protected static final String NULL = "null";
+
 	/**
 	 * Maximum number of concurrent DB connections.
 	 */
@@ -505,7 +507,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final Color FG1 = new Color(155, 0, 0);
 			final Font font = new JLabel().getFont();
 			final Font nonbold = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
-			final Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
+			final Font bold = new Font(nonbold.getName(), nonbold.getStyle() | Font.BOLD, nonbold.getSize());
+			final Font italic = new Font(nonbold.getName(), nonbold.getStyle() | Font.ITALIC, nonbold.getSize());
+			final Font italicBold = new Font(nonbold.getName(), nonbold.getStyle() | Font.ITALIC | Font.BOLD, nonbold.getSize());
 
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 				isSelected = currentRowSelection == row || currentRowSelection == -2;
@@ -529,8 +533,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 					}
 					((JLabel) render).setForeground(pkColumns.contains(rowsTable.convertColumnIndexToModel(column)) ? FG1 : Color.BLACK);
+					boolean isNull = false;
+					if (((JLabel) render).getText() == NULL) {
+						((JLabel) render).setForeground(Color.gray);
+						((JLabel) render).setFont(italic);
+						isNull = true;
+					}
 					try {
-						((JLabel) render).setFont(highlightedRows.contains(rowSorter.convertRowIndexToModel(row)) ? bold : nonbold);
+						if (isNull) {
+							((JLabel) render).setFont(highlightedRows.contains(rowSorter.convertRowIndexToModel(row)) ? italicBold : italic);
+						} else {
+							((JLabel) render).setFont(highlightedRows.contains(rowSorter.convertRowIndexToModel(row)) ? bold : nonbold);
+						}
 					} catch (Exception e) {
 						// ignore
 					}
@@ -1973,6 +1987,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				Object[] rowData = new Object[table.getColumns().size()];
 				for (int i = 0; i < table.getColumns().size(); ++i) {
 					rowData[i] = row.values[i];
+					if (rowData[i] == null) {
+						rowData[i] = NULL;
+					}
 				}
 				dtm.addRow(rowData);
 				if (++rn >= limit) {

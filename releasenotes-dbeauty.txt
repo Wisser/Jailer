@@ -1,3 +1,7 @@
+1.5.2
+  - Fixed a performance issue.
+  - Improved rendering of null values.
+
 1.5.1
   - Added desktop context menu.
   - Minor GUI improvements.

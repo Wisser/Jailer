@@ -212,9 +212,14 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 	private Set<AssociationModel> selection = new HashSet<AssociationModel>();
 	
 	/**
-	 * Hidden associations.
+	 * Hidden model associations.
 	 */
 	private Set<AssociationModel> hidden = new HashSet<AssociationModel>();
+	
+	/**
+	 * All hidden associations.
+	 */
+	private Set<AssociationModel> hiddenAll = new HashSet<AssociationModel>();
 	
 	/**
 	 * Keep order of associations according to the source-table?
@@ -247,6 +252,8 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
     public void setModel(Collection<AssociationModel> model) {
     	this.model = new ArrayList<AssociationModel>(model);
     	selection.retainAll(model);
+    	hidden.clear();
+    	hidden.addAll(hiddenAll);
     	hidden.retainAll(model);
     	if (pixelPerTableNameChar == null) {
 	    	Iterator<AssociationModel> firstAssociationI = model.iterator();
@@ -396,6 +403,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
      */
     private void hideSelection() {
     	hidden.addAll(selection);
+    	hiddenAll.addAll(selection);
     	selection.clear();
     	updateModel();
     }
@@ -405,6 +413,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
      */
     private void unhideHidden() {
     	hidden.clear();
+    	hiddenAll.clear();
     	updateModel();
     }
 

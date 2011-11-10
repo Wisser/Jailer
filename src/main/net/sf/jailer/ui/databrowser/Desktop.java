@@ -50,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -798,6 +799,7 @@ public abstract class Desktop extends JDesktopPane {
 	protected synchronized void updateChildren(RowBrowser tableBrowser, List<Row> rows) {
 		boolean hasParent = false;
 		tableBrowser.browserContentPane.highlightedRows.clear();
+
 		for (RowBrowser rowBrowser: tableBrowsers) {
 			if (rowBrowser == tableBrowser.parent) {
 				hasParent = true;
@@ -813,40 +815,74 @@ public abstract class Desktop extends JDesktopPane {
 				}
 			}
 		}
+
 		if (!hasParent) {
 			tableBrowser.rowToRowLinks.clear();
 		} else {
+			Map<Row, Integer> rowIndex = new IdentityHashMap<Row, Integer>();
+			Map<String, Integer> rowIDIndex = new HashMap<String, Integer>();
+			Map<Row, Integer> parentRowIndex = new IdentityHashMap<Row, Integer>();
+			Map<String, Integer> parentRowIDIndex = new HashMap<String, Integer>();
+			for (int i = 0; i < rows.size(); ++i) {
+				Integer iI = i;
+				Row r = rows.get(i);
+				rowIndex.put(r, iI);
+				rowIDIndex.put(r.rowId, iI);
+			}
+			List<Row> parentRows = tableBrowser.parent.browserContentPane.rows;
+			for (int i = 0; i < parentRows.size(); ++i) {
+				Integer iI = i;
+				Row r = parentRows.get(i);
+				parentRowIndex.put(r, iI);
+				parentRowIDIndex.put(r.rowId, iI);
+			}
 			for (RowToRowLink rowToRowLink: tableBrowser.rowToRowLinks) {
 				rowToRowLink.childRowIndex = -1;
-				for (int i = 0; i < rows.size(); ++i) {
-					if (rowToRowLink.childRow == rows.get(i)) {
-						rowToRowLink.childRowIndex = i;
-						break;
-					}
+				Integer i = rowIndex.get(rowToRowLink.childRow);
+				if (i != null) {
+					rowToRowLink.childRowIndex = i;
 				}
+//				for (int i = 0; i < rows.size(); ++i) {
+//					if (rowToRowLink.childRow == rows.get(i)) {
+//						rowToRowLink.childRowIndex = i;
+//						break;
+//					}
+//				}
 				if (rowToRowLink.childRowIndex < 0) {
-					for (int i = 0; i < rows.size(); ++i) {
-						if (rowToRowLink.childRow.rowId.equals(rows.get(i).rowId)) {
-							rowToRowLink.childRowIndex = i;
-							break;
-						}
+					i = rowIDIndex.get(rowToRowLink.childRow.rowId);
+					if (i != null) {
+						rowToRowLink.childRowIndex = i;
 					}
+//					for (int i = 0; i < rows.size(); ++i) {
+//						if (rowToRowLink.childRow.rowId.equals(rows.get(i).rowId)) {
+//							rowToRowLink.childRowIndex = i;
+//							break;
+//						}
+//					}
 				}
 				rowToRowLink.parentRowIndex = -1;
-				List<Row> parentRows = tableBrowser.parent.browserContentPane.rows;
-				for (int i = 0; i < parentRows.size(); ++i) {
-					if (rowToRowLink.parentRow == parentRows.get(i)) {
-						rowToRowLink.parentRowIndex = i;
-						break;
-					}
+				i = parentRowIndex.get(rowToRowLink.parentRow);
+				if (i != null) {
+					rowToRowLink.parentRowIndex = i;
 				}
+//				for (int i = 0; i < parentRows.size(); ++i) {
+//					if (rowToRowLink.parentRow == parentRows.get(i)) {
+//						rowToRowLink.parentRowIndex = i;
+//						break;
+//					}
+//				}
+				
 				if (rowToRowLink.parentRowIndex < 0) {
-					for (int i = 0; i < parentRows.size(); ++i) {
-						if (rowToRowLink.parentRow.rowId.equals(parentRows.get(i).rowId)) {
-							rowToRowLink.parentRowIndex = i;
-							break;
-						}
+					i = parentRowIDIndex.get(rowToRowLink.parentRow.rowId);
+					if (i != null) {
+						rowToRowLink.parentRowIndex = i;
 					}
+//					for (int i = 0; i < parentRows.size(); ++i) {
+//						if (rowToRowLink.parentRow.rowId.equals(parentRows.get(i).rowId)) {
+//							rowToRowLink.parentRowIndex = i;
+//							break;
+//						}
+//					}
 				}
 			}
 		}
