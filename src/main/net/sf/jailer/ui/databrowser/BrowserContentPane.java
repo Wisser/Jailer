@@ -2143,6 +2143,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         sqlLabel1 = new javax.swing.JLabel();
         dropA = new javax.swing.JLabel();
         dropB = new javax.swing.JLabel();
+        hideButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -2156,7 +2157,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -2198,7 +2199,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 5;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -2496,10 +2497,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 8;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 6;
         gridBagConstraints.gridheight = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 2);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 2);
         add(sqlPanel, gridBagConstraints);
 
         dropA.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
@@ -2515,6 +2516,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 5;
         add(dropB, gridBagConstraints);
+
+        hideButton.setText("Hide");
+        hideButton.setToolTipText("Hide this table from view");
+        hideButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                hideButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 8;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        add(hideButton, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
         private void cancelLoadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelLoadButtonActionPerformed
@@ -2525,6 +2540,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         private void selectDistinctCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectDistinctCheckBoxActionPerformed
         	reloadRows();
         }//GEN-LAST:event_selectDistinctCheckBoxActionPerformed
+
+        private void hideButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hideButtonActionPerformed
+            onHide();
+        }//GEN-LAST:event_hideButtonActionPerformed
 
 	private void loadButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_loadButtonActionPerformed
 		reloadRows();
@@ -2550,6 +2569,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JLabel dropB;
     private javax.swing.JLabel fetchLabel;
     private javax.swing.JLabel from;
+    private javax.swing.JButton hideButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel2;
@@ -2696,6 +2716,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract void onContentChange(List<Row> rows, boolean reloadChildren);
 
 	protected abstract void onRedraw();
+	protected abstract void onHide();
 
 	protected abstract void beforeReload();
 

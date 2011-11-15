@@ -18,7 +18,11 @@ package net.sf.jailer.ui.databrowser;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
@@ -48,16 +52,17 @@ import java.util.logging.Logger;
 
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
-import javax.swing.JButton;
-import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
+import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
+import javax.swing.JToggleButton;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
@@ -82,15 +87,14 @@ import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.About;
 import net.sf.jailer.ui.AnalyseOptionsDialog;
 import net.sf.jailer.ui.AssociationListUI;
+import net.sf.jailer.ui.AssociationListUI.AssociationModel;
+import net.sf.jailer.ui.AssociationListUI.DefaultAssociationModel;
 import net.sf.jailer.ui.BrowserLauncher;
 import net.sf.jailer.ui.DataModelEditor;
 import net.sf.jailer.ui.DbConnectionDialog;
+import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
 import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.ui.AssociationListUI.AssociationModel;
-import net.sf.jailer.ui.AssociationListUI.DefaultAssociationModel;
-import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
-import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
 import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 
@@ -160,7 +164,35 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 		initComponents();
 		borderBrowserPanel.add(borderBrowser, java.awt.BorderLayout.CENTER);
-		
+
+		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+        gridBagConstraints.weightx = 0;
+        gridBagConstraints.weighty = 0;
+        jPanel4.add(new JPanel() {
+			@Override
+			public Dimension getMinimumSize() {
+				return new Dimension(1, 300);
+			}
+			private static final long serialVersionUID = -947582621664272477L;
+		}, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+        gridBagConstraints.weightx = 0;
+        gridBagConstraints.weighty = 0;
+        borderBrowserTitledPanel.add(new JPanel() {
+			@Override
+			public Dimension getMinimumSize() {
+				return new Dimension(1, 180);
+			}
+			private static final long serialVersionUID = -947582621664272477L;
+		}, gridBagConstraints);
+        
 		DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
 		renderer.setOpenIcon(null);
 		renderer.setLeafIcon(null);
@@ -456,7 +488,7 @@ public class DataBrowser extends javax.swing.JFrame {
 						rb.browserContentPane.session = session;
 						rb.browserContentPane.rows.clear();
 					}
-					for (RowBrowser rb: desktop.getRootBrowsers()) {
+					for (RowBrowser rb: desktop.getRootBrowsers(false)) {
 						rb.browserContentPane.reloadRows();
 					}
 				}
@@ -553,9 +585,11 @@ public class DataBrowser extends javax.swing.JFrame {
         borderBrowserTitledPanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
         borderBrowserPanel = new javax.swing.JPanel();
+        jPanel5 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jInternalFrame1 = new javax.swing.JInternalFrame();
         jLabel1 = new javax.swing.JLabel();
+        hiddenPanel = new javax.swing.JPanel();
         menuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         jMenuItem1 = new javax.swing.JMenuItem();
@@ -781,6 +815,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jSplitPane1.setLeftComponent(jPanel3);
 
+        jPanel5.setLayout(new java.awt.BorderLayout());
+
         jScrollPane1.setAutoscrolls(true);
         jScrollPane1.setWheelScrollingEnabled(false);
         jScrollPane1.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
@@ -796,7 +832,13 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jScrollPane1.setViewportView(jInternalFrame1);
 
-        jSplitPane1.setRightComponent(jScrollPane1);
+        jPanel5.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+
+        hiddenPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Hidden"));
+        hiddenPanel.setLayout(new java.awt.GridBagLayout());
+        jPanel5.add(hiddenPanel, java.awt.BorderLayout.SOUTH);
+
+        jSplitPane1.setRightComponent(jPanel5);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1134,7 +1176,7 @@ public class DataBrowser extends javax.swing.JFrame {
 								popup.add(c);
 							}
 							popup.add(new JSeparator());
-							JMenuItem m = new JMenuItem("Close" + (desktop.getChildBrowsers(rowBrowser).isEmpty()? "" : " Subtree"));
+							JMenuItem m = new JMenuItem("Close" + (desktop.getChildBrowsers(rowBrowser, false).isEmpty()? "" : " Subtree"));
 							popup.add(m);
 							final RowBrowser rb = rowBrowser;
 							m.addActionListener(new ActionListener() {
@@ -1143,7 +1185,7 @@ public class DataBrowser extends javax.swing.JFrame {
 									closeSubTree(rb);
 								}
 								private void closeSubTree(RowBrowser rb) {
-									for (RowBrowser c: desktop.getChildBrowsers(rb)) {
+									for (RowBrowser c: desktop.getChildBrowsers(rb, false)) {
 										closeSubTree(c);
 									}
 									desktop.closeAll(Collections.singleton(rb));
@@ -1431,6 +1473,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JLabel hasDependent;
     private javax.swing.JMenuItem helpForum;
     private javax.swing.JMenu helpMenu;
+    private javax.swing.JPanel hiddenPanel;
     private javax.swing.JLabel ignored;
     private javax.swing.JInternalFrame jInternalFrame1;
     private javax.swing.JLabel jLabel1;
@@ -1445,6 +1488,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
@@ -1542,105 +1586,100 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 	}
 
-	// private JPanel iFramesPanel = null;
-
 	private void updateIFramesBar() {
 		updateNavigationTree();
 		updateBorderBrowser();
-
+		updateHiddenPanel();
+		
 		// iFramesPanel is obsolete
 		return;
+	}
+	
+	private void updateHiddenPanel() {
+		if (desktop == null) {
+			return;
+		}
 
-		// if (desktop == null) {
-		// return;
-		// }
-		//
-		// if (iFramesPanel != null) {
-		// jPanel1.remove(iFramesPanel);
-		// }
-		//
-		// iFramesPanel = new JPanel();
-		// int num = desktop.getAllFrames().length;
-		// if (num == 0) {
-		// jPanel1.revalidate();
-		// return;
-		// }
-		// int COLUMNS = 9;
-		// int y = 1;
-		// iFramesPanel.setLayout(new GridBagLayout());
-		//
-		// GridBagConstraints gridBagConstraints = new
-		// java.awt.GridBagConstraints();
-		// gridBagConstraints.gridx = 1;
-		// gridBagConstraints.gridy = y;
-		// gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		// gridBagConstraints.anchor = GridBagConstraints.WEST;
-		// gridBagConstraints.weightx = 1;
-		// JPanel iFramesRowPanel = new JPanel();
-		// iFramesRowPanel.setLayout(new GridBagLayout());
-		// iFramesPanel.add(iFramesRowPanel, gridBagConstraints);
-		//
-		// gridBagConstraints = new java.awt.GridBagConstraints();
-		// gridBagConstraints.gridx = COLUMNS + 2;
-		// gridBagConstraints.gridy = y;
-		// gridBagConstraints.weightx = 1;
-		// iFramesRowPanel.add(new JLabel(" "), gridBagConstraints);
-		//
-		// int x = 1;
-		// JInternalFrame activeFrame = desktop.getSelectedFrame();
-		// for (final JInternalFrame iFrame:
-		// desktop.getAllFramesFromTableBrowsers()) {
-		// if (++x > COLUMNS) {
-		// x = 1;
-		// ++y;
-		// gridBagConstraints = new java.awt.GridBagConstraints();
-		// gridBagConstraints.gridx = 1;
-		// gridBagConstraints.gridy = y;
-		// gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		// gridBagConstraints.anchor = GridBagConstraints.WEST;
-		// gridBagConstraints.weightx = 1;
-		// iFramesRowPanel = new JPanel();
-		// iFramesRowPanel.setLayout(new GridBagLayout());
-		// iFramesPanel.add(iFramesRowPanel, gridBagConstraints);
-		// gridBagConstraints = new java.awt.GridBagConstraints();
-		// gridBagConstraints.gridx = COLUMNS + 2;
-		// gridBagConstraints.gridy = y;
-		// gridBagConstraints.weightx = 1;
-		// iFramesRowPanel.add(new JLabel(" "), gridBagConstraints);
-		// }
-		//
-		// final JToggleButton toggleButton = new JToggleButton();
-		// toggleButton.setText(iFrame.getTitle());
-		// toggleButton.setSelected(activeFrame == iFrame);
-		//
-		// toggleButton.addActionListener(new ActionListener() {
-		// @Override
-		// public void actionPerformed(ActionEvent e) {
-		// toggleButton.setSelected(true);
-		// try {
-		// desktop.scrollRectToVisible(iFrame.getBounds());
-		// iFrame.setSelected(true);
-		// iFrame.grabFocus();
-		// } catch (PropertyVetoException e1) {
-		// // ignore
-		// }
-		// }
-		// });
-		// gridBagConstraints = new java.awt.GridBagConstraints();
-		// gridBagConstraints.gridx = x;
-		// gridBagConstraints.gridy = y;
-		// iFramesRowPanel.add(toggleButton, gridBagConstraints);
-		// }
-		//
-		// gridBagConstraints = new java.awt.GridBagConstraints();
-		// gridBagConstraints.gridx = 1;
-		// gridBagConstraints.gridy = 2;
-		// gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		// gridBagConstraints.weightx = 1.0;
-		// gridBagConstraints.insets = new Insets(0, 0, 4, 0);
-		// jPanel1.add(iFramesPanel, gridBagConstraints);
-		//
-		// jPanel1.revalidate();
+		hiddenPanel.removeAll();
+		hiddenPanel.setVisible(false);
+		
+		int num = desktop.getAllFrames().length;
+		if (num == 0) {
+			jPanel1.revalidate();
+			return;
+		}
+		int COLUMNS = 7;
+		int y = 1;
+		
+		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = y;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.anchor = GridBagConstraints.WEST;
+		gridBagConstraints.weightx = 1;
+		JPanel iFramesRowPanel = new JPanel();
+		iFramesRowPanel.setLayout(new GridBagLayout());
+		hiddenPanel.add(iFramesRowPanel, gridBagConstraints);
+
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = COLUMNS + 2;
+		gridBagConstraints.gridy = y;
+		gridBagConstraints.weightx = 1;
+		iFramesRowPanel.add(new JLabel(" "), gridBagConstraints);
+
+		int x = 1;
+		boolean visible = false;
+		for (final RowBrowser rb : desktop.getBrowsers()) {
+			if (!rb.isHidden()) {
+				continue;
+			}
+			visible = true;
+			if (++x > COLUMNS) {
+				x = 1;
+				++y;
+				gridBagConstraints = new java.awt.GridBagConstraints();
+				gridBagConstraints.gridx = 1;
+				gridBagConstraints.gridy = y;
+				gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+				gridBagConstraints.anchor = GridBagConstraints.WEST;
+				gridBagConstraints.weightx = 1;
+				iFramesRowPanel = new JPanel();
+				iFramesRowPanel.setLayout(new GridBagLayout());
+				hiddenPanel.add(iFramesRowPanel, gridBagConstraints);
+				gridBagConstraints = new java.awt.GridBagConstraints();
+				gridBagConstraints.gridx = COLUMNS + 2;
+				gridBagConstraints.gridy = y;
+				gridBagConstraints.weightx = 1;
+				iFramesRowPanel.add(new JLabel(" "), gridBagConstraints);
+			}
+
+			final JToggleButton toggleButton = new JToggleButton();
+			toggleButton.setText(rb.internalFrame.getTitle());
+			toggleButton.setSelected(false);
+
+			toggleButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					toggleButton.setSelected(true);
+					rb.setHidden(false);
+				}
+			});
+			gridBagConstraints = new java.awt.GridBagConstraints();
+			gridBagConstraints.gridx = x;
+			gridBagConstraints.gridy = y;
+			iFramesRowPanel.add(toggleButton, gridBagConstraints);
+			
+			hiddenPanel.setVisible(visible);
+		}
+
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 2;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.insets = new Insets(0, 0, 4, 0);
+		
+		jPanel1.revalidate();
 	}
 
 	private static class BrowserAssociationModel extends DefaultAssociationModel {
@@ -1684,7 +1723,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			titleLabel.setText(" Related Rows");
 			List<RowBrowser> allChildren = new ArrayList<RowBrowser>();
 			for (RowBrowser rb: desktop.getBrowsers()) {
-				if (rb.internalFrame == desktop.getSelectedFrame()) {
+				if (rb.internalFrame == desktop.getSelectedFrame() && !rb.isHidden()) {
 					allChildren.add(rb);
 					allChildren.addAll(collectChildren(rb));
 					titleLabel.setText(" Related Rows of Subtree " + rb.internalFrame.getTitle());
@@ -1694,13 +1733,13 @@ public class DataBrowser extends javax.swing.JFrame {
 			for (RowBrowser rb: allChildren) {
 				if (rb.browserContentPane.table != null) {
 					Set<Association> associations = new HashSet<Association>(rb.browserContentPane.table.associations);
-					for (RowBrowser c: desktop.getChildBrowsers(rb)) {
+					for (RowBrowser c: desktop.getChildBrowsers(rb, false)) {
 						if (c.browserContentPane.association != null) {
 							associations.remove(c.browserContentPane.association);
 						}
 					}
-					if (rb.browserContentPane.association != null) {
-						if (rb.parent == null || allChildren.contains(rb.parent)) {
+					if (rb.browserContentPane.association != null && rb.parent != null) {
+						if (allChildren.contains(rb.parent)) {
 							associations.remove(rb.browserContentPane.association.reversalAssociation);
 						}
 					}
@@ -1738,10 +1777,10 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private List<RowBrowser> collectChildren(RowBrowser rb) {
 		List<RowBrowser> result = new ArrayList<Desktop.RowBrowser>();
-		for (RowBrowser c: desktop.getChildBrowsers(rb)) {
+		for (RowBrowser c: desktop.getChildBrowsers(rb, true)) {
 			result.add(c);
 		}
-		for (RowBrowser c: desktop.getChildBrowsers(rb)) {
+		for (RowBrowser c: desktop.getChildBrowsers(rb, true)) {
 			result.addAll(collectChildren(c));
 		}
 		return result;
@@ -1780,7 +1819,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		int[] count = new int[1];
 		count[0] = 1;
 		if (desktop != null) {
-			for (RowBrowser rb : desktop.getRootBrowsers()) {
+			for (RowBrowser rb : desktop.getRootBrowsers(true)) {
 				DefaultMutableTreeNode node = new DefaultMutableTreeNode(new TreeNodeForRowBrowser(rb, count[0]++));
 				root.add(node);
 				addChildNodes(node, rb, count);
@@ -1831,7 +1870,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	}
 
 	private void addChildNodes(DefaultMutableTreeNode node, RowBrowser browser, int[] count) {
-		for (RowBrowser rb : desktop.getChildBrowsers(browser)) {
+		for (RowBrowser rb : desktop.getChildBrowsers(browser, true)) {
 			DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(new TreeNodeForRowBrowser(rb, count[0]++));
 			node.add(childNode);
 			addChildNodes(childNode, rb, count);
