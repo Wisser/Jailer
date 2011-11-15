@@ -1951,6 +1951,27 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	/**
+	 * True if row-limit is exceeded.
+	 */
+	private boolean isLimitExceeded = false;
+	
+	/**
+	 * True a parent row-limit is exceeded.
+	 */
+	private boolean isParentLimitExceeded() {
+		RowBrowser parent = getParentBrowser();
+		
+		while (parent != null) {
+			if (parent.browserContentPane.isLimitExceeded) {
+				return true;
+			}
+			parent = parent.browserContentPane.getParentBrowser();
+		}
+		
+		return false;
+	}
+	
+	/**
 	 * Updates the model of the {@link #rowsTable}.
 	 * 
 	 * @param limit
@@ -2054,7 +2075,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			size = limit;
 		}
 		rowsCount.setText((limitExceeded ? " more than " : " ") + size + " row" + (size != 1 ? "s" : ""));
-		rowsCount.setForeground(limitExceeded ? Color.RED : new JLabel().getForeground());
+		rowsCount.setForeground(limitExceeded || isParentLimitExceeded()? Color.RED : new JLabel().getForeground());
 		int nndr = noNonDistinctRows;
 		if (noDistinctRows + noNonDistinctRows >= limit) {
 			--nndr;
@@ -2065,6 +2086,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (sqlBrowserContentPane != null) {
 			sqlBrowserContentPane.detailsButton.setEnabled(!rows.isEmpty());
 		}
+		
+		isLimitExceeded = limitExceeded;
 	}
 
 	public void adjustRowTableColumnsWidth() {
