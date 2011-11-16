@@ -652,9 +652,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jPanel8 = new javax.swing.JPanel();
         jLabel7 = new javax.swing.JLabel();
         openSubjectConditionEditor = new javax.swing.JLabel();
-        subjectTable = new javax.swing.JComboBox();
+        subjectTable = new net.sf.jailer.ui.JComboBox();
         jPanel10 = new javax.swing.JPanel();
-        exportFormat = new javax.swing.JComboBox();
+        exportFormat = new net.sf.jailer.ui.JComboBox();
         exportButton = new javax.swing.JButton();
         openXmlSettings = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
@@ -662,7 +662,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         tree = new javax.swing.JTree();
         jPanel6 = new javax.swing.JPanel();
         jLabel9 = new javax.swing.JLabel();
-        rootTable = new javax.swing.JComboBox();
+        rootTable = new net.sf.jailer.ui.JComboBox();
         jPanel9 = new javax.swing.JPanel();
         openDataBrowser = new javax.swing.JButton();
         openClosureView = new javax.swing.JButton();
@@ -671,7 +671,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        aggregationCombobox = new javax.swing.JComboBox();
+        aggregationCombobox = new net.sf.jailer.ui.JComboBox();
         tagField = new javax.swing.JTextField();
         jPanel5 = new javax.swing.JPanel();
         xmlTagApply = new javax.swing.JButton();

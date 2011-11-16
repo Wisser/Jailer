@@ -784,7 +784,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
         listPanel = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        groupByComboBox = new javax.swing.JComboBox();
+        groupByComboBox = new net.sf.jailer.ui.JComboBox();
         infoLabel = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         hideButton = new javax.swing.JButton();

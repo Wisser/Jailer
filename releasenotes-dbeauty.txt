@@ -1,5 +1,7 @@
-1.6
+1.5.3
   - Added ability to hide table-browser windows from views.
+  - Added context menu for thumbnailed browser windows.
+  - Filter-condition historization.
 
 1.5.2
   - Fixed a performance issue.
