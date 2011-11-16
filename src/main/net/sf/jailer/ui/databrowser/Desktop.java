@@ -36,6 +36,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Point2D;
 import java.beans.PropertyChangeEvent;
@@ -66,6 +68,7 @@ import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JViewport;
 import javax.swing.SwingUtilities;
@@ -299,6 +302,9 @@ public abstract class Desktop extends JDesktopPane {
 		 * Hides/unhides RowBrowser.
 		 */
 		public void setHidden(boolean hidden) {
+			if (hidden == this.hidden) {
+				return;
+			}
 			rbSourceToLinks = null;
 			if (hidden) {
 				internalFrame.setVisible(false);
@@ -349,12 +355,8 @@ public abstract class Desktop extends JDesktopPane {
 		Set<String> titles = new HashSet<String>();
 		for (RowBrowser rb: tableBrowsers) {
 			titles.add(rb.internalFrame.getTitle());
-			try {
-				rb.internalFrame.setMaximum(false);
-			} catch (PropertyVetoException e) {
-				// ignore
-			}
 		}
+		demaximize();
 		
 		String title = null;
 		if (table != null) {
@@ -553,7 +555,7 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			protected QueryBuilderDialog.Relationship createQBRelations(boolean withParents) {
 				QueryBuilderDialog.Relationship root = new QueryBuilderDialog.Relationship();
-				root.whereClause = ConditionEditor.toMultiLine(andCondition.getText().trim()).replaceAll("(\r|\n)+", " ");
+				root.whereClause = ConditionEditor.toMultiLine(getAndConditionText().trim()).replaceAll("(\r|\n)+", " ");
 				if (root.whereClause.length() == 0) {
 					root.whereClause = null;
 				}
@@ -576,7 +578,7 @@ public abstract class Desktop extends JDesktopPane {
 					child.children.addAll(rb.browserContentPane.createQBChildrenRelations(childRB, false));
 					child.parent = r;
 					r.children.add(0, child);
-					child.whereClause = ConditionEditor.toMultiLine(rb.browserContentPane.andCondition.getText().trim()).replaceAll("(\r|\n)+", " ");
+					child.whereClause = ConditionEditor.toMultiLine(rb.browserContentPane.getAndConditionText().trim()).replaceAll("(\r|\n)+", " ");
 					if (child.whereClause.length() == 0) {
 						child.whereClause = null;
 					}
@@ -610,7 +612,7 @@ public abstract class Desktop extends JDesktopPane {
 						boolean singleRowParent = rb.rowIndex >= 0 && !(rb.rowIndex == 0 && rb.parent != null && rb.parent.browserContentPane != null && rb.parent.browserContentPane.rows != null && rb.parent.browserContentPane.rows.size() == 1);
 						if (true) { // all || !singleRowParent) {
 							QueryBuilderDialog.Relationship child = new QueryBuilderDialog.Relationship();
-							child.whereClause = ConditionEditor.toMultiLine(rb.browserContentPane.andCondition.getText().trim()).replaceAll("(\r|\n)+", " ");
+							child.whereClause = ConditionEditor.toMultiLine(rb.browserContentPane.getAndConditionText().trim()).replaceAll("(\r|\n)+", " ");
 							child.joinOperator = QueryBuilderDialog.JoinOperator.LeftJoin;
 							if (child.whereClause.length() == 0) {
 								child.whereClause = null;
@@ -671,7 +673,18 @@ public abstract class Desktop extends JDesktopPane {
 
 			@Override
 			protected void onHide() {
+				demaximize();
 				tableBrowser.setHidden(true);
+			}
+
+			@Override
+			protected void unhide() {
+				tableBrowser.setHidden(false);
+			}
+
+			@Override
+			protected void adjustClosure(BrowserContentPane tabu) {
+				Desktop.this.adjustClosure(tabu);
 			}
 			
 		};
@@ -739,6 +752,19 @@ public abstract class Desktop extends JDesktopPane {
 		return tableBrowser;
 	}
 
+	/**
+	 * Demaximizes all internal frames.
+	 */
+	private void demaximize() {
+		for (RowBrowser rb: tableBrowsers) {
+			try {
+				rb.internalFrame.setMaximum(false);
+			} catch (PropertyVetoException e) {
+				// ignore
+			}
+		}
+	}
+
 	private void initIFrame(final JInternalFrame jInternalFrame,
 			final BrowserContentPane browserContentPane) {
 		final JPanel thumbnail = new JPanel();
@@ -763,6 +789,15 @@ public abstract class Desktop extends JDesktopPane {
  		
 		jInternalFrame.getContentPane().add(browserContentPane, "C");
 		jInternalFrame.getContentPane().add(thumbnail, "T");
+		
+		thumbnail.addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent e) {
+				JPopupMenu popup = browserContentPane.createPopupMenu(null, -1, 0, 0, false);
+				popup.show(e.getComponent(), e.getX(), e.getY());
+			}
+		});
+		
 		initIFrameContent(jInternalFrame, browserContentPane, thumbnail);
 		jInternalFrame.addComponentListener(new ComponentListener() {
 			@Override
@@ -951,7 +986,7 @@ public abstract class Desktop extends JDesktopPane {
 	 * 
 	 * @return <code>true</code> iff something has changed
 	 */
-	private boolean calculateLinks() {
+	private synchronized boolean calculateLinks() {
 		boolean changed = false;
 		for (RowBrowser tableBrowser : tableBrowsers) {
 			JInternalFrame internalFrame = tableBrowser.internalFrame;
@@ -1244,7 +1279,19 @@ public abstract class Desktop extends JDesktopPane {
 							for (Map.Entry<String, List<Link>> e: links.entrySet()) {
 								for (Link link: e.getValue()) {
 									link.visible = false;
-									List<Link> ll = rbSourceToLinks.get(link.to).get(link.destRowID);
+									
+									List<Link> ll;
+									if (link.destRowID == ALL) {
+										ll = new ArrayList<Desktop.Link>();
+										for (List<Link> values: rbSourceToLinks.get(link.to).values()) {
+											for (Link l: values) {
+												ll.add(l);
+											}
+										}
+									} else {
+										ll = rbSourceToLinks.get(link.to).get(link.destRowID);
+									}
+									
 									toJoinList.clear();
 									if (ll != null) {
 										toJoinList.addAll(ll);
@@ -1774,6 +1821,7 @@ public abstract class Desktop extends JDesktopPane {
 				getVisibleRect().height);
 		scrollRectToVisible(vr);
 		updateMenu(layoutMode);
+		adjustClosure(null);
 	}
 
 	void onMouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
@@ -2005,7 +2053,7 @@ public abstract class Desktop extends JDesktopPane {
 		if (rb.browserContentPane.table != null) {
 			String csv = browserNumber.get(rb) + "; " + (rb.parent == null? "" : browserNumber.get(rb.parent)) + "; ";
 			
-			String where = rb.browserContentPane.andCondition.getText().trim();
+			String where = rb.browserContentPane.getAndConditionText().trim();
 			
 			if (rb.browserContentPane.parentRow != null) {
 				if (where.length() > 0) {
@@ -2205,9 +2253,71 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	/**
+	 * Adjusts scroll-position of each table browser s.t. rows in closure are visible.
+	 * 
+	 * @param tabu don't adjust this one
+	 */
+	protected synchronized void adjustClosure(BrowserContentPane tabu) {
+		for (RowBrowser rb: tableBrowsers) {
+			if (rb.browserContentPane == tabu) {
+				continue;
+			}
+			List<Row> rowsOfRB = new ArrayList<Row>();
+			for (Pair<BrowserContentPane, Row> r: currentClosure) {
+				if (r.a == rb.browserContentPane) {
+					rowsOfRB.add(r.b);
+				}
+			}
+			if (!rowsOfRB.isEmpty()) {
+				Rectangle firstRowPos = null;
+				Rectangle lastRowPos = null;
+				Rectangle visibleRect = rb.browserContentPane.rowsTable.getVisibleRect();
+				for (Row r: rowsOfRB) {
+					int index = rb.browserContentPane.rows.indexOf(r);
+					if (index < 0) {
+						for (int n = 0; n < rb.browserContentPane.rows.size(); ++n) {
+							if (r.rowId.equals(rb.browserContentPane.rows.get(n).rowId)) {
+								index = n;
+								break;
+							}
+						}
+					}
+					if (index < 0) {
+						// not visible due to distinct selection
+						continue;
+					}
+					index = rb.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(index);
+					Rectangle pos = rb.browserContentPane.rowsTable.getCellRect(index, 0, false);
+					if (pos.y >= visibleRect.y && pos.y + pos.height < visibleRect.y + visibleRect.height) {
+						// already a visible row
+						firstRowPos = null;
+						lastRowPos = null;
+						break;
+					}
+					if (firstRowPos == null || firstRowPos.y > pos.y) {
+						firstRowPos = pos;
+					}
+					if (lastRowPos == null || lastRowPos.y < pos.y) {
+						lastRowPos = pos;
+					}
+				}
+				if (lastRowPos != null) {
+					rb.browserContentPane.rowsTable.scrollRectToVisible(new Rectangle(visibleRect.x, lastRowPos.y - lastRowPos.height, 1, 3 * lastRowPos.height));
+				}
+				if (firstRowPos != null) {
+					rb.browserContentPane.rowsTable.scrollRectToVisible(new Rectangle(visibleRect.x, firstRowPos.y - firstRowPos.height, 1, 3 * firstRowPos.height));
+				}
+			}
+		}
+		
+		repaintDesktop();
+	}
+
+	/**
 	 * Scrolls an iFrame to the center of the desktop.
 	 */
 	public void scrollToCenter(JInternalFrame iFrame) {
+		demaximize();
 		int w = getVisibleRect().width;
 		int h = getVisibleRect().height;
 		int x = iFrame.getBounds().x + iFrame.getBounds().width / 2 - getVisibleRect().width / 2;

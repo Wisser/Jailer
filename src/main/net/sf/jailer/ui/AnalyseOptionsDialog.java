@@ -195,7 +195,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
         schemaLabel = new javax.swing.JLabel();
-        schemaComboBox = new javax.swing.JComboBox();
+        schemaComboBox = new net.sf.jailer.ui.JComboBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Analyze Database");

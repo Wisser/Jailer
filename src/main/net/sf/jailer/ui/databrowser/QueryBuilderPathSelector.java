@@ -61,7 +61,7 @@ public class QueryBuilderPathSelector extends javax.swing.JDialog {
 
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        toComboBox = new javax.swing.JComboBox();
+        toComboBox = new net.sf.jailer.ui.JComboBox();
         fromLabel = new javax.swing.JLabel();
         okButton = new javax.swing.JButton();
         jLabel3 = new javax.swing.JLabel();

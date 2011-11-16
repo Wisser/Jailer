@@ -10,6 +10,7 @@ cd ..
 mv $1.co/trunk/* jailer
 cd jailer
 sed "s/new javax.swing.JComboBox()/new net.sf.jailer.ui.JComboBox()/g" src/main/net/sf/jailer/ui/*.java --in-place
+sed "s/new javax.swing.JComboBox()/new net.sf.jailer.ui.JComboBox()/g" src/main/net/sf/jailer/ui/databrowser/*.java --in-place
 cp doc/web/home.htm doc/web/index.html
 rm -rf doc/htdocs
 find -iname ".svn" -exec rm -rf '{}' \;

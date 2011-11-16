@@ -31,8 +31,8 @@ import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
@@ -73,6 +73,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
@@ -173,7 +174,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					synchronized (rows) {
 						e = exception;
 						l = limit;
-						if (rows.size() > limit) {
+						while (rows.size() > limit) {
 							limitExceeded = true;
 							rows.remove(rows.size() - 1);
 						}
@@ -181,6 +182,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 					if (e != null) {
 						updateMode("error");
+						unhide();
 						if (!asking) {
 							try {
 								if (table.getName() != null && !table.exists(session, JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchemaName()))) {
@@ -238,6 +240,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								}
 							}
 						}
+						setPendingState(false, true);
 						onContentChange(rows, rows.isEmpty() || currentHash != prevHash || rows.size() != prevSize || !prevIDs.equals(currentIDs) || rows.size() != currentIDs.size());
 						updateMode("table");
 						updateWhereField();
@@ -341,7 +344,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * Maximum number of concurrent DB connections.
 	 */
 	private static int MAX_CONCURRENT_CONNECTIONS = 5;
-
+	
+	/**
+	 * And-condition-combobox model.
+	 */
+	private final DefaultComboBoxModel andCondModel = new DefaultComboBoxModel();
+	
 	static {
 		// initialize listeners for #runnableQueue
 		for (int i = 0; i < MAX_CONCURRENT_CONNECTIONS; ++i) {
@@ -410,6 +418,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		initComponents();
 		
+		setPendingState(false, false);
+		
 		dropA.setText(null);
 		dropA.setIcon(dropDownIcon);
 		dropA.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -442,11 +452,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	        });
 		}
 		
-		andCondition.addKeyListener(new KeyAdapter() {
-			public void keyPressed(KeyEvent e) {
-				int key = e.getKeyCode();
-				if (key == KeyEvent.VK_ENTER) {
-					reloadRows();
+		andCondModel.addElement("");
+		andCondition.setModel(andCondModel);
+
+		andCondition.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				if (!suppessReloadOnAndConditionAction) {
+					if (e.getStateChange() == ItemEvent.SELECTED) {
+						historizeAndCondition(e.getItem());
+						reloadRows();
+					}
 				}
 			}
 		});
@@ -493,7 +509,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		rowsTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
 		rowsTableScrollPane.setViewportView(rowsTable);
 
-		andCondition.setText(ConditionEditor.toSingleLine(condition));
+		setAndCondition(condition, true);
 		from.setText(table == null? "" : this.dataModel.getDisplayName(table));
 		adjustGui();
 		rowsTable.setShowGrid(false);
@@ -624,10 +640,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		openEditorLabel.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				String cond = andConditionEditor.edit(andCondition.getText(), "Table", "A", table, null, null, null, false);
+				String cond = andConditionEditor.edit(getAndConditionText(), "Table", "A", table, null, null, null, false);
 				if (cond != null) {
-					if (!andCondition.getText().equals(ConditionEditor.toSingleLine(cond))) {
-						andCondition.setText(ConditionEditor.toSingleLine(cond));
+					if (!getAndConditionText().equals(ConditionEditor.toSingleLine(cond))) {
+						setAndCondition(cond, true);
 						loadButton.grabFocus();
 						reloadRows();
 					}
@@ -772,7 +788,50 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			reloadRows();
 		}
 	}
+	
+	void setPendingState(boolean pending, boolean propagate) {
+		((CardLayout) pendingNonpendingPanel.getLayout()).show(pendingNonpendingPanel, pending? "pending" : "nonpending");
+		if (propagate) {
+			for (RowBrowser child: getChildBrowsers()) {
+				child.browserContentPane.setPendingState(pending, propagate);
+			}
+		}
+	}
 
+	protected void historizeAndCondition(Object item) {
+		if (item == null) {
+			return;
+		}
+		for (int i = 0; i < andCondModel.getSize(); ++i) {
+			if (item.equals(andCondModel.getElementAt(i))) {
+				return;
+			}
+		}
+		andCondModel.insertElementAt(item, 1);
+	}
+
+	private boolean suppessReloadOnAndConditionAction = false;
+	
+	void setAndCondition(String cond, boolean historize) {
+		try {
+			suppessReloadOnAndConditionAction = true;
+			andCondition.setSelectedItem(ConditionEditor.toSingleLine(cond));
+			if (historize) {
+				historizeAndCondition(ConditionEditor.toSingleLine(cond));
+			}
+		} finally {
+			suppessReloadOnAndConditionAction = false;
+		}
+	}
+
+	String getAndConditionText() {
+		Object sel = andCondition.getSelectedItem();
+		if (sel == null) {
+			return "";
+		}
+		return sel.toString();
+	}
+	
 	private void adjustGui() {
 		if (this.association == null) {
 			joinPanel.setVisible(false);
@@ -884,11 +943,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						String cond = SqlUtil.replaceAliases(row.rowId, "A", "A");
-						String currentCond = andCondition.getText().trim();
+						String currentCond = getAndConditionText().trim();
 						if (currentCond.length() > 0) {
 							cond = "(" + cond + ") and (" + currentCond + ")";
 						}
-						andCondition.setText(cond);
+						andCondition.setSelectedItem(cond);
 						reloadRows();
 					}
 				});
@@ -1401,60 +1460,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 //			toAdjust.add(getParentBrowser());
 //		}
 		
-		List<RowBrowser> toAdjust = getTableBrowser();
-		
-		for (RowBrowser rb: toAdjust) {
-			if (rb.browserContentPane == this) {
-				continue;
-			}
-			List<Row> rowsOfRB = new ArrayList<Row>();
-			for (Pair<BrowserContentPane, Row> r: currentClosure) {
-				if (r.a == rb.browserContentPane) {
-					rowsOfRB.add(r.b);
-				}
-			}
-			if (!rowsOfRB.isEmpty()) {
-				Rectangle firstRowPos = null;
-				Rectangle lastRowPos = null;
-				Rectangle visibleRect = rb.browserContentPane.rowsTable.getVisibleRect();
-				for (Row r: rowsOfRB) {
-					int index = rb.browserContentPane.rows.indexOf(r);
-					if (index < 0) {
-						for (int n = 0; n < rb.browserContentPane.rows.size(); ++n) {
-							if (r.rowId.equals(rb.browserContentPane.rows.get(n).rowId)) {
-								index = n;
-								break;
-							}
-						}
-					}
-					if (index < 0) {
-						// not visible due to distinct selection
-						continue;
-					}
-					index = rb.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(index);
-					Rectangle pos = rb.browserContentPane.rowsTable.getCellRect(index, 0, false);
-					if (pos.y >= visibleRect.y && pos.y + pos.height < visibleRect.y + visibleRect.height) {
-						// already a visible row
-						firstRowPos = null;
-						break;
-					}
-					if (firstRowPos == null || firstRowPos.y > pos.y) {
-						firstRowPos = pos;
-					}
-					if (lastRowPos == null || lastRowPos.y < pos.y) {
-						lastRowPos = pos;
-					}
-				}
-				if (lastRowPos != null) {
-					rb.browserContentPane.rowsTable.scrollRectToVisible(new Rectangle(visibleRect.x, lastRowPos.y, 1, lastRowPos.height));
-				}
-				if (firstRowPos != null) {
-					rb.browserContentPane.rowsTable.scrollRectToVisible(new Rectangle(visibleRect.x, firstRowPos.y, 1, firstRowPos.height));
-				}
-			}
-		}
-		
-		onRedraw();
+		adjustClosure(this);
 	}
 
 	private JPopupMenu createNavigationMenu(JPopupMenu popup, final Row row, final int rowIndex, List<String> assList, Map<String, Association> assMap,
@@ -1523,18 +1529,23 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return popup;
 	}
 
+	private long lastReloadTS = 0;
+	
 	/**
 	 * Reloads rows.
 	 */
 	public void reloadRows() {
 		if (!suppressReload) {
+			lastReloadTS = System.currentTimeMillis();
 			cancelLoadJob();
+			setPendingState(true, true);
 			updateMode("loading");
+			setPendingState(false, false);
 			int limit = 100;
 			if (limitBox.getSelectedItem() instanceof Integer) {
 				limit = (Integer) limitBox.getSelectedItem();
 			}
-			LoadJob reloadJob = new LoadJob(limit, (table instanceof SqlStatementTable)? sqlBrowserContentPane.sqlEditorPane.getText() : andCondition.getText(), selectDistinctCheckBox.isSelected());
+			LoadJob reloadJob = new LoadJob(limit, (table instanceof SqlStatementTable)? sqlBrowserContentPane.sqlEditorPane.getText() : getAndConditionText(), selectDistinctCheckBox.isSelected());
 			synchronized (this) {
 				currentLoadJob = reloadJob;
 			}
@@ -1956,19 +1967,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private boolean isLimitExceeded = false;
 	
 	/**
-	 * True a parent row-limit is exceeded.
+	 * Parent having row-limit exceeded.
 	 */
-	private boolean isParentLimitExceeded() {
+	private RowBrowser parentWithExceededLimit() {
 		RowBrowser parent = getParentBrowser();
 		
 		while (parent != null) {
 			if (parent.browserContentPane.isLimitExceeded) {
-				return true;
+				return parent;
 			}
 			parent = parent.browserContentPane.getParentBrowser();
 		}
 		
-		return false;
+		return null;
 	}
 	
 	/**
@@ -2075,7 +2086,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			size = limit;
 		}
 		rowsCount.setText((limitExceeded ? " more than " : " ") + size + " row" + (size != 1 ? "s" : ""));
-		rowsCount.setForeground(limitExceeded || isParentLimitExceeded()? Color.RED : new JLabel().getForeground());
+		RowBrowser theParentWithExceededLimit = parentWithExceededLimit();
+		rowsCount.setForeground(limitExceeded || theParentWithExceededLimit != null? Color.RED : new JLabel().getForeground());
+		
+		if (theParentWithExceededLimit == null) {
+			rowsCount.setToolTipText(null);
+		} else {
+			rowsCount.setToolTipText("potentially incomplete because " + theParentWithExceededLimit.internalFrame.getTitle() + " exceeded row limit");
+		}
+		
 		int nndr = noNonDistinctRows;
 		if (noDistinctRows + noNonDistinctRows >= limit) {
 			--nndr;
@@ -2125,8 +2144,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         wherePanel = new javax.swing.JPanel();
         where = new javax.swing.JLabel();
         jPanel7 = new javax.swing.JPanel();
-        andCondition = new javax.swing.JTextField();
         loadButton = new javax.swing.JButton();
+        andCondition = new javax.swing.JComboBox();
         onPanel = new javax.swing.JPanel();
         on = new javax.swing.JLabel();
         joinPanel = new javax.swing.JPanel();
@@ -2135,6 +2154,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel10 = new javax.swing.JPanel();
         from = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
+        pendingNonpendingPanel = new javax.swing.JPanel();
         cardPanel = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
@@ -2149,6 +2169,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jLabel10 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         jLabel8 = new javax.swing.JLabel();
+        jPanel8 = new javax.swing.JPanel();
+        jLabel11 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
@@ -2187,12 +2209,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         add(wherePanel, gridBagConstraints);
 
         jPanel7.setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel7.add(andCondition, gridBagConstraints);
 
         loadButton.setText(" Reload ");
         loadButton.addActionListener(new java.awt.event.ActionListener() {
@@ -2204,6 +2220,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         jPanel7.add(loadButton, gridBagConstraints);
+
+        andCondition.setEditable(true);
+        andCondition.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        jPanel7.add(andCondition, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
@@ -2281,6 +2306,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         add(jPanel10, gridBagConstraints);
+
+        pendingNonpendingPanel.setLayout(new java.awt.CardLayout());
 
         cardPanel.setLayout(new java.awt.CardLayout());
 
@@ -2398,6 +2425,24 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         cardPanel.add(jPanel4, "cancelled");
 
+        pendingNonpendingPanel.add(cardPanel, "nonpending");
+
+        jPanel8.setLayout(new java.awt.GridBagLayout());
+
+        jLabel11.setFont(new java.awt.Font("DejaVu Sans", 1, 14)); // NOI18N
+        jLabel11.setForeground(new java.awt.Color(141, 16, 16));
+        jLabel11.setText("pending...");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 8, 0);
+        jPanel8.add(jLabel11, gridBagConstraints);
+
+        pendingNonpendingPanel.add(jPanel8, "pending");
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 12;
@@ -2405,7 +2450,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        add(cardPanel, gridBagConstraints);
+        add(pendingNonpendingPanel, gridBagConstraints);
 
         jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
         jLabel1.setText(" Join ");
@@ -2569,7 +2614,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         }//GEN-LAST:event_hideButtonActionPerformed
 
 	private void loadButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_loadButtonActionPerformed
-		reloadRows();
+		if (System.currentTimeMillis() - lastReloadTS > 200) {
+			reloadRows();
+		}
 	}// GEN-LAST:event_loadButtonActionPerformed
 
 	private void limitBoxItemStateChanged(java.awt.event.ItemEvent evt) {// GEN-FIRST:event_limitBoxItemStateChanged
@@ -2584,7 +2631,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    public javax.swing.JTextField andCondition;
+    javax.swing.JComboBox andCondition;
     private javax.swing.JLabel andLabel;
     private javax.swing.JButton cancelLoadButton;
     private javax.swing.JPanel cardPanel;
@@ -2595,6 +2642,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JButton hideButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -2611,6 +2659,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
     private javax.swing.JLabel join;
     private javax.swing.JPanel joinPanel;
@@ -2619,6 +2668,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JLabel on;
     private javax.swing.JPanel onPanel;
     private javax.swing.JLabel openEditorLabel;
+    private javax.swing.JPanel pendingNonpendingPanel;
     private javax.swing.JLabel relatedRowsLabel;
     private javax.swing.JPanel relatedRowsPanel;
     private javax.swing.JLabel rowsCount;
@@ -2689,7 +2739,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				public void actionPerformed(ActionEvent e) {
 					if (andCondition.isEnabled()) {
 						if (andCondition.isEditable()) {
-							andCondition.replaceSelection(c);
+							if (andCondition.getEditor() != null && (andCondition.getEditor().getEditorComponent() instanceof JTextField)) {
+								JTextField f = ((JTextField) andCondition.getEditor().getEditorComponent());
+								int pos = f.getCaretPosition();
+								String current = f.getText();
+								if (pos < 0 || pos >= current.length()) {
+									setAndCondition(current + c, false);
+								} else {
+									setAndCondition(current.substring(0, pos) + c + current.substring(pos), false);
+									f.setCaretPosition(pos + c.length());
+								}
+							}
 							andCondition.grabFocus();
 						}
 					}
@@ -2763,6 +2823,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract List<RowBrowser> getChildBrowsers();
 	protected abstract RowBrowser getParentBrowser();
 	protected abstract List<RowBrowser> getTableBrowser();
+	protected abstract void unhide();
+	protected abstract void adjustClosure(BrowserContentPane tabu);
 	
     private void openDetails(final int x, final int y) {
 		JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), true);

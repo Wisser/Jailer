@@ -1,5 +1,7 @@
 3.7.9
   - Added ability to hide table-browser windows from views.
+  - Added context menu for thumbnailed browser windows.
+  - Filter-condition historization.
 
 3.7.8
   - Fixed a performance issue within the Data Browser.
