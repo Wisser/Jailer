@@ -129,7 +129,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * Concurrently loads rows.
 	 */
-	private final class LoadJob {
+	final class LoadJob {
 		private List<Row> rows = Collections.synchronizedList(new ArrayList<Row>());
 		private Exception exception;
 		private boolean isCanceled = false;
@@ -329,11 +329,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private boolean suppressReload;
 
 	/**
-	 * For concurrent reload of rows.
-	 */
-	private static final LinkedBlockingQueue<LoadJob> runnableQueue = new LinkedBlockingQueue<LoadJob>();
-
-	/**
 	 * Alias for row number column.
 	 */
 	private static final String ROWNUMBERALIAS = "RN";
@@ -341,34 +336,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected static final String NULL = "null";
 
 	/**
-	 * Maximum number of concurrent DB connections.
-	 */
-	private static int MAX_CONCURRENT_CONNECTIONS = 5;
-	
-	/**
 	 * And-condition-combobox model.
 	 */
 	private final DefaultComboBoxModel andCondModel = new DefaultComboBoxModel();
-	
-	static {
-		// initialize listeners for #runnableQueue
-		for (int i = 0; i < MAX_CONCURRENT_CONNECTIONS; ++i) {
-			Thread t = new Thread(new Runnable() {
-				@Override
-				public void run() {
-					for (;;) {
-						try {
-							runnableQueue.take().run();
-						} catch (InterruptedException e) {
-							// ignore
-						}
-					}
-				}
-			}, "browser-" + i);
-			t.setDaemon(true);
-			t.start();
-		}
-	}
 	
 	static class SqlStatementTable extends Table {
 		public SqlStatementTable(String name, PrimaryKey primaryKey, boolean defaultUpsert) {
@@ -1592,7 +1562,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			synchronized (this) {
 				currentLoadJob = reloadJob;
 			}
-			runnableQueue.add(reloadJob);
+			getRunnableQueue().add(reloadJob);
 		}
 	}
 
@@ -2851,7 +2821,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract void showInNewWindow();
 	protected abstract void appendLayout();
 	protected abstract void adjustClosure(BrowserContentPane tabu);
-	
+	protected abstract LinkedBlockingQueue<LoadJob> getRunnableQueue();
+
+
     private void openDetails(final int x, final int y) {
 		JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), true);
 		d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, 0, rowsTable.getRowSorter(), true) {
