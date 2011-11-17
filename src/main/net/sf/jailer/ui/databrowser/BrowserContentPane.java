@@ -422,6 +422,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		dropA.setText(null);
 		dropA.setIcon(dropDownIcon);
+		sqlLabel1.setIcon(dropDownIcon);
 		dropA.addMouseListener(new java.awt.event.MouseAdapter() {
 			public void mousePressed(java.awt.event.MouseEvent evt) {
 				openColumnDropDownBox(dropA, "A", table);
@@ -765,6 +766,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	        gridBagConstraints.weighty = 0;
 	        sqlBrowserContentPane.editorPanel.add(limitBox, gridBagConstraints);
 	        sqlBrowserContentPane.rowListPanel.add(cardPanel, java.awt.BorderLayout.CENTER);
+	        cardPanel.setVisible(true);
 	        sqlBrowserContentPane.sqlEditorPane.setContentType("text/sql");
 	        sqlBrowserContentPane.sqlEditorPane.setText(condition);
 	        sqlBrowserContentPane.sqlEditorPane.setCaretPosition(0);
@@ -998,6 +1000,23 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				openQueryBuilder();
 			}
 		});
+		JMenuItem snw = new JMenuItem("Show in New Window");
+		popup.add(snw);
+		snw.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				showInNewWindow();
+			}
+		});
+		JMenuItem al = new JMenuItem("Append Layout...");
+		popup.add(al);
+		al.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				appendLayout();
+			}
+		});
+		popup.add(new JSeparator());
 		JMenuItem extractionModel = new JMenuItem("Create Extraction Model");
 		popup.add(extractionModel);
 		extractionModel.addActionListener(new ActionListener() {
@@ -1007,23 +1026,23 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 		
-		if (forNavTree) {
-			return popup;
+		popup.add(new JSeparator());
+		if (!forNavTree) {
+			JMenuItem det = new JMenuItem("Details");
+			popup.add(det);
+			det.setEnabled(rows.size() > 0);
+			det.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					openDetails(x, y);
+				}
+			});
 		}
-		
-		popup.add(new JSeparator());
-		JMenuItem det = new JMenuItem("Details");
-		popup.add(det);
-		det.setEnabled(rows.size() > 0);
-		det.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				openDetails(x, y);
-			}
-		});
-		popup.add(new JSeparator());
+//		popup.add(new JSeparator());
+		JMenu sqlDml = new JMenu("SQL/DML");
+		popup.add(sqlDml);
 		JMenuItem insertNewRow = new JMenuItem("Insert New Row");
-		popup.add(insertNewRow);
+		sqlDml.add(insertNewRow);
 		final String tableName = dataModel.getDisplayName(table);
 		insertNewRow.addActionListener(new ActionListener() {
 			@Override
@@ -1032,7 +1051,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 		JMenuItem insert = new JMenuItem("Inserts");
-		popup.add(insert);
+		sqlDml.add(insert);
 		insert.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -1040,7 +1059,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 		JMenuItem update = new JMenuItem("Updates");
-		popup.add(update);
+		sqlDml.add(update);
 		update.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -1048,7 +1067,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 		JMenuItem delete = new JMenuItem("Deletes");
-		popup.add(delete);
+		sqlDml.add(delete);
 		delete.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
@@ -1059,6 +1078,29 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		update.setEnabled(rows.size() > 0);
 		delete.setEnabled(rows.size() > 0);
 		
+		popup.add(new JSeparator());
+		JMenuItem m = new JMenuItem("Hide from View");
+		popup.add(m);
+		m.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				onHide();
+			}
+		});
+		m = new JMenuItem("Close" + (getChildBrowsers().isEmpty()? "" : " Subtree"));
+		popup.add(m);
+		m.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				closeSubTree(BrowserContentPane.this);
+			}
+			private void closeSubTree(BrowserContentPane cp) {
+				for (RowBrowser c: cp.getChildBrowsers()) {
+					closeSubTree(c.browserContentPane);
+				}
+				cp.close();
+			}
+		});
 		return popup;
 	}
 
@@ -1428,6 +1470,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			d.pack();
 			d.setLocation(x - 50, y - 100);
 			d.setSize(700, Math.max(d.getHeight() + 20, 400));
+			d.setLocation(getOwner().getX() + (getOwner().getWidth() - d.getWidth()) / 2, getOwner().getY() + (getOwner().getHeight() - d.getHeight()) / 2);
 			UIUtil.fit(d);
 		} catch (Throwable e) {
 			UIUtil.showException(this, "Error", e);
@@ -2188,7 +2231,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         sqlLabel1 = new javax.swing.JLabel();
         dropA = new javax.swing.JLabel();
         dropB = new javax.swing.JLabel();
-        hideButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -2429,7 +2471,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         jPanel8.setLayout(new java.awt.GridBagLayout());
 
-        jLabel11.setFont(new java.awt.Font("DejaVu Sans", 1, 14)); // NOI18N
+        jLabel11.setFont(new java.awt.Font("DejaVu Sans", 1, 14));
         jLabel11.setForeground(new java.awt.Color(141, 16, 16));
         jLabel11.setText("pending...");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -2560,15 +2602,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         sqlPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         sqlPanel.setLayout(new javax.swing.BoxLayout(sqlPanel, javax.swing.BoxLayout.LINE_AXIS));
 
-        sqlLabel1.setText(" SQL/Query ");
+        sqlLabel1.setText(" Menu ");
         sqlPanel.add(sqlLabel1);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 8;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.gridheight = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 2);
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
         add(sqlPanel, gridBagConstraints);
 
         dropA.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
@@ -2584,20 +2626,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 5;
         add(dropB, gridBagConstraints);
-
-        hideButton.setText("Hide");
-        hideButton.setToolTipText("Hide this table from view");
-        hideButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                hideButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 8;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.gridheight = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        add(hideButton, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
         private void cancelLoadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelLoadButtonActionPerformed
@@ -2608,10 +2636,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         private void selectDistinctCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectDistinctCheckBoxActionPerformed
         	reloadRows();
         }//GEN-LAST:event_selectDistinctCheckBoxActionPerformed
-
-        private void hideButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_hideButtonActionPerformed
-            onHide();
-        }//GEN-LAST:event_hideButtonActionPerformed
 
 	private void loadButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_loadButtonActionPerformed
 		if (System.currentTimeMillis() - lastReloadTS > 200) {
@@ -2639,7 +2663,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JLabel dropB;
     private javax.swing.JLabel fetchLabel;
     private javax.swing.JLabel from;
-    private javax.swing.JButton hideButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -2824,6 +2847,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract RowBrowser getParentBrowser();
 	protected abstract List<RowBrowser> getTableBrowser();
 	protected abstract void unhide();
+	protected abstract void close();
+	protected abstract void showInNewWindow();
+	protected abstract void appendLayout();
 	protected abstract void adjustClosure(BrowserContentPane tabu);
 	
     private void openDetails(final int x, final int y) {
@@ -2844,6 +2870,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private void updateWhereField() {
 		if (association != null) {
 			where.setText(parentRow == null ? (parentRows != null && parentRows.size() > 0? parentRows.get(0).rowId + (parentRows.size() > 1? " or ..." : "") : "") : parentRow.rowId);
+			where.setToolTipText(where.getText());
 		}
 	}
 

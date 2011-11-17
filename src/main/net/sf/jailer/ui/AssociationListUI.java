@@ -227,10 +227,11 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 	private final boolean stableSourceOrder;
 	
 	/** Creates new form AssociationListUI */
-    public AssociationListUI(String actionButtonText, boolean stableSourceOrder) {
+    public AssociationListUI(String actionButtonText, String actionButtonToolTip, boolean stableSourceOrder) {
     	this.stableSourceOrder = stableSourceOrder;
         initComponents();
         doItButton.setText(actionButtonText);
+        doItButton.setToolTipText(actionButtonToolTip);
         groupByComboBox.setModel(new DefaultComboBoxModel(GroupByDefinition.values()));
         groupByComboBox.setSelectedIndex(0);
         groupByComboBox.addItemListener(new ItemListener() {
