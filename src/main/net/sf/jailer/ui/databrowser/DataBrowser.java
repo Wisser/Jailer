@@ -308,7 +308,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 			@Override
 			public void windowClosing(WindowEvent e) {
-				desktop.stop();
+//				desktop.stop();
 			}
 
 			@Override
