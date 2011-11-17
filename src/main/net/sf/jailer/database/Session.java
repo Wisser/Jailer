@@ -676,9 +676,11 @@ public class Session {
      * Closes all connections.
      */
     public void shutDown() throws SQLException {
+    	_log.info("closing connection...");
         for (Connection con: connections) {
             con.close();
         }
+    	_log.info("connection closed");
     }
     
     /**

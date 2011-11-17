@@ -59,6 +59,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.swing.DefaultDesktopManager;
 import javax.swing.Icon;
@@ -87,6 +88,7 @@ import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.databrowser.BrowserContentPane.LoadJob;
 import net.sf.jailer.ui.databrowser.TreeLayoutOptimizer.Node;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
@@ -718,6 +720,11 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			protected void appendLayout() {
 				Desktop.this.restoreSession(tableBrowser);
+			}
+
+			@Override
+			protected LinkedBlockingQueue<LoadJob> getRunnableQueue() {
+				return runnableQueue;
 			}
 
 		};
@@ -1685,12 +1692,19 @@ public abstract class Desktop extends JDesktopPane {
 		for (RowBrowser rb: tableBrowsers) {
 			rb.browserContentPane.cancelLoadJob();
 		}
-		try {
-			if (session != null) {
-				session.shutDown();
-			}
-		} catch (SQLException e) {
-			// exception already has been logged
+		if (session != null) {
+			new Thread(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						synchronized (session) {
+							session.shutDown();
+						}
+					} catch (SQLException e) {
+						// exception already has been logged
+					}
+				}
+			}).start();
 		}
 	}
 
@@ -2472,4 +2486,35 @@ public abstract class Desktop extends JDesktopPane {
 		scrollRectToVisible(r);
 	}
 
+	/**
+	 * For concurrent reload of rows.
+	 */
+	private final LinkedBlockingQueue<LoadJob> runnableQueue = new LinkedBlockingQueue<LoadJob>();
+
+	/**
+	 * Maximum number of concurrent DB connections.
+	 */
+	private static int MAX_CONCURRENT_CONNECTIONS = 4;
+	private static int desktopNr = 1;
+	{
+		// initialize listeners for #runnableQueue
+		for (int i = 0; i < MAX_CONCURRENT_CONNECTIONS; ++i) {
+			Thread t = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					for (;;) {
+						try {
+							runnableQueue.take().run();
+						} catch (InterruptedException e) {
+							// ignore
+						}
+					}
+				}
+			}, "browser-" + desktopNr + "-" + i);
+			t.setDaemon(true);
+			t.start();
+		}
+		desktopNr++;
+	}
+	
 }
