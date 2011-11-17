@@ -1,6 +1,8 @@
 3.7.9
   - Added ability to hide table-browser windows from views.
+  - Added ability to append a stored layout.
   - Added context menu for thumbnailed browser windows.
+  - Added "Show in New Window" feature.
   - Filter-condition historization.
 
 3.7.8

@@ -40,7 +40,6 @@ import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -111,7 +110,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	/**
 	 * The desktop.
 	 */
-	private Desktop desktop;
+	Desktop desktop;
 
 	/**
 	 * Icon for the frame.
@@ -153,7 +152,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	public DataBrowser(DataModel datamodel, Table root, String condition, DbConnectionDialog dbConnectionDialog, boolean embedded) throws Exception {
 		this.datamodel = new Reference<DataModel>(datamodel);
 		this.dbConnectionDialog = dbConnectionDialog != null ? new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName()) : null;
-		this.borderBrowser = new AssociationListUI("Resolve", true) {
+		this.borderBrowser = new AssociationListUI("Resolve", "Resolve selected Associations", true) {
 			@Override
 			protected void applyAction(Collection<AssociationModel> selection) {
 				resolveSelection(selection);
@@ -163,6 +162,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			DataBrowserContext.setSupportsDataModelUpdates(false);
 		}
 		initComponents();
+		hiddenPanel.setVisible(false);
 		borderBrowserPanel.add(borderBrowser, java.awt.BorderLayout.CENTER);
 
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -274,6 +274,16 @@ public class DataBrowser extends javax.swing.JFrame {
 					largeLayoutRadioButtonMenuItem.setSelected(true);
 				} else if (layoutMode == Desktop.LayoutMode.THUMBNAIL) {
 					thumbnailLayoutRadioButtonMenuItem.setSelected(true);
+				}
+			}
+
+			@Override
+			protected DataBrowser openNewDataBrowser() {
+				try {
+					return DataBrowser.openNewDataBrowser(DataBrowser.this.datamodel.get(), dbConnectionDialog, false);
+				} catch (Exception e) {
+					UIUtil.showException(this, "Error", e);
+					return null;
 				}
 			}
 		};
@@ -1126,7 +1136,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	}// GEN-LAST:event_storeSessionItemActionPerformed
 
 	private void restoreSessionItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_restoreSessionItemActionPerformed
-		desktop.restoreSession();
+		desktop.restoreSession(null);
 	}// GEN-LAST:event_restoreSessionItemActionPerformed
 
 	private void tinyLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_tinyLayoutRadioButtonMenuItemActionPerformed
@@ -1175,22 +1185,6 @@ public class DataBrowser extends javax.swing.JFrame {
 							for (Component c: popup2.getComponents()) {
 								popup.add(c);
 							}
-							popup.add(new JSeparator());
-							JMenuItem m = new JMenuItem("Close" + (desktop.getChildBrowsers(rowBrowser, false).isEmpty()? "" : " Subtree"));
-							popup.add(m);
-							final RowBrowser rb = rowBrowser;
-							m.addActionListener(new ActionListener() {
-								@Override
-								public void actionPerformed(ActionEvent e) {
-									closeSubTree(rb);
-								}
-								private void closeSubTree(RowBrowser rb) {
-									for (RowBrowser c: desktop.getChildBrowsers(rb, false)) {
-										closeSubTree(c);
-									}
-									desktop.closeAll(Collections.singleton(rb));
-								}
-							});
 							popup.show(evt.getComponent(), evt.getX(), evt.getY());
 						}
 					}
@@ -1200,13 +1194,17 @@ public class DataBrowser extends javax.swing.JFrame {
 	}// GEN-LAST:event_navigationTreeMouseClicked
 
 	private void layoutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_layoutMenuItemActionPerformed
+		arrangeLayout();
+	}// GEN-LAST:event_layoutMenuItemActionPerformed
+
+	public void arrangeLayout() {
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		try {
 			desktop.layoutBrowser();
 		} finally {
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
-	}// GEN-LAST:event_layoutMenuItemActionPerformed
+	}
 
 	private void jScrollPane1MouseWheelMoved(java.awt.event.MouseWheelEvent evt) {// GEN-FIRST:event_jScrollPane1MouseWheelMoved
 		desktop.onMouseWheelMoved(evt);
@@ -1226,7 +1224,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 			@Override
 			void restoreSession() {
-				desktop.restoreSession();
+				desktop.restoreSession(null);
 			}
 		};
 	}
@@ -1341,7 +1339,7 @@ public class DataBrowser extends javax.swing.JFrame {
 					} catch (Exception x) {
 					}
 					openNewDataBrowser(datamodel, null, true); 
-					ToolTipManager.sharedInstance().setInitialDelay(500);
+					ToolTipManager.sharedInstance().setInitialDelay(400);
 					ToolTipManager.sharedInstance().setDismissDelay(20000);
 				} catch (Exception e) {
 					e.printStackTrace();

@@ -44,7 +44,7 @@ public abstract class ClosureBorderDialog extends javax.swing.JDialog {
         super(parent, false);
         initComponents();
         
-        associationListUI = new AssociationListUI("Remove Restrictions", false) {
+        associationListUI = new AssociationListUI("Remove Restrictions", "Remove Restrictions from selected Associations", false) {
 			private static final long serialVersionUID = 1129925600909956307L;
 			@Override
 			protected void applyAction(Collection<AssociationModel> selection) {

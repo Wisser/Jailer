@@ -1,6 +1,8 @@
-1.5.3
+1.6
   - Added ability to hide table-browser windows from views.
+  - Added ability to append a stored layout.
   - Added context menu for thumbnailed browser windows.
+  - Added "Show in New Window" feature.
   - Filter-condition historization.
 
 1.5.2
