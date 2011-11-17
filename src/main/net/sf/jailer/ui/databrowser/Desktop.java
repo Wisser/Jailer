@@ -117,7 +117,7 @@ public abstract class Desktop extends JDesktopPane {
 	/**
 	 * Default width of a row-browser frame.
 	 */
-	public static final int BROWSERTABLE_DEFAULT_WIDTH = 460;
+	public static final int BROWSERTABLE_DEFAULT_WIDTH = 476;
 	private final int BROWSERTABLE_DEFAULT_MIN = 0, BROWSERTABLE_DEFAULT_HEIGHT = 460, BROWSERTABLE_DEFAULT_DISTANCE = 64;
 
 	/**
