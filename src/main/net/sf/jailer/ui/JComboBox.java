@@ -40,7 +40,7 @@ public class JComboBox extends javax.swing.JComboBox {
     public Dimension getSize() {
         Dimension sz = super.getSize();
         if (!layingOut) {
-            sz.width = Math.max(sz.width, getPreferredSize().width);
+            sz.width = Math.min(800, Math.max(sz.width, getPreferredSize().width));
         }
         return sz;
     }
