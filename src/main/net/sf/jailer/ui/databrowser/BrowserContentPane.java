@@ -2193,7 +2193,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         fetchLabel = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         limitBox = new javax.swing.JComboBox();
-        jLabel7 = new javax.swing.JLabel();
         relatedRowsPanel = new javax.swing.JPanel();
         relatedRowsLabel = new javax.swing.JLabel();
         jPanel9 = new javax.swing.JPanel();
@@ -2534,10 +2533,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         });
         jPanel3.add(limitBox);
 
-        jLabel7.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
-        jLabel7.setText(" rows");
-        jPanel3.add(jLabel7);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 9;
@@ -2641,7 +2636,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
