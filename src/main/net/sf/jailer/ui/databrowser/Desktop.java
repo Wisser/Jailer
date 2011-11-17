@@ -2456,7 +2456,12 @@ public abstract class Desktop extends JDesktopPane {
 		if (limitO instanceof Integer) {
 			limit = (Integer) limitO;
 		}
-		RowBrowser rb = newDataBrowser.desktop.addTableBrowser(parent, tableBrowser.rowIndex, tableBrowser.browserContentPane.table, tableBrowser.browserContentPane.association, rootCond == null? tableBrowser.browserContentPane.getAndConditionText() : rootCond, limit, tableBrowser.browserContentPane.selectDistinctCheckBox.isSelected(), false);
+		RowBrowser rb;
+		if (parent == null) {
+			rb = newDataBrowser.desktop.addTableBrowser(null, -1, tableBrowser.browserContentPane.table, null, rootCond == null? tableBrowser.browserContentPane.getAndConditionText() : rootCond, limit, tableBrowser.browserContentPane.selectDistinctCheckBox.isSelected(), false);
+		} else {
+			rb = newDataBrowser.desktop.addTableBrowser(parent, tableBrowser.rowIndex, tableBrowser.browserContentPane.table, tableBrowser.browserContentPane.association, rootCond == null? tableBrowser.browserContentPane.getAndConditionText() : rootCond, limit, tableBrowser.browserContentPane.selectDistinctCheckBox.isSelected(), false);
+		}
 		rb.setHidden(tableBrowser.isHidden());
 		
 		for (RowBrowser child: getChildBrowsers(tableBrowser, false)) {
