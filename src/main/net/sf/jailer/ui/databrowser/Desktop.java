@@ -2424,13 +2424,15 @@ public abstract class Desktop extends JDesktopPane {
 
 			StringBuilder cond = new StringBuilder();
 			Set<String> known = new HashSet<String>();
-			for (Row r: tableBrowser.browserContentPane.rows) {
-				if (!known.contains(r.rowId)) {
-					known.add(r.rowId);
-					if (cond.length() > 0) {
-						cond.append(" or \n");
+			synchronized (this) {
+				for (Row r: tableBrowser.browserContentPane.rows) {
+					if (!known.contains(r.rowId)) {
+						known.add(r.rowId);
+						if (cond.length() > 0) {
+							cond.append(" or \n");
+						}
+						cond.append("(" + SqlUtil.replaceAliases(r.rowId, "A", "A") + ")");
 					}
-					cond.append("(" + SqlUtil.replaceAliases(r.rowId, "A", "A") + ")");
 				}
 			}
 			
