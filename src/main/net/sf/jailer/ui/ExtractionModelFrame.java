@@ -951,6 +951,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
        				reload();
        		//	}
        			askForDataModel(this);
+    			closureBorderView.refresh();
     		}
         } catch (Exception e) {
         	UIUtil.showException(this, "Error", e);
@@ -1224,6 +1225,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(modelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip()), "editor");
 			((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
 			validate();
+			closureBorderView.refresh();
 			updateTitle(extractionModelEditor.needsSave);
 		} catch (Throwable t) {
 			UIUtil.showException(this, "Error", t);
@@ -1242,6 +1244,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	    		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(null, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip()), "editor");
 	    		((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
 	    		validate();
+				closureBorderView.refresh();
 	    		updateTitle(extractionModelEditor.needsSave);
 	    	}
 		} catch (Throwable t) {
@@ -1259,6 +1262,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelEditor.extractionModelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip()), "editor");
 			((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
 			validate();
+			closureBorderView.refresh();
 			updateTitle(extractionModelEditor.needsSave);
 		} catch (Throwable t) {
 			UIUtil.showException(this, "Error", t);
@@ -1637,6 +1641,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
                	case 1: extractionModelFrame.openDataModelEditorActionPerformed(null); break;
             }
         }
+		if (extractionModelFrame.closureBorderView != null) {
+			extractionModelFrame.closureBorderView.refresh();
+		}
 	}
     
     /**

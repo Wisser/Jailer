@@ -2261,7 +2261,9 @@ public abstract class Desktop extends JDesktopPane {
 					}
 					JOptionPane.showMessageDialog(pFrame, "Unknown tables:\n\n" + pList + "\n");
 				}
-				currentSessionFileName = sFile;
+				if (toBeAppended == null) {
+					currentSessionFileName = sFile;
+				}
 			} catch (Throwable e) {
 				UIUtil.showException(this, "Error", e);
 			}
