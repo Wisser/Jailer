@@ -216,7 +216,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 		sortLineList(associations, false);
 		initComponents();
 		
-		String modelpath = CommandLineParser.getInstance().datamodelFolder;
+		String modelpath = CommandLineParser.getInstance().getDataModelFolder();
 		try {
 			modelpath = CommandLineParser.getInstance().newFile(modelpath).getAbsolutePath();
 		} catch (Throwable t) {
@@ -861,9 +861,16 @@ public class DataModelEditor extends javax.swing.JDialog {
      * Saves the model name.
      */
     private void saveName() throws FileNotFoundException {
+    	createNameFile(nameTextField.getText());
+	}
+
+    /**
+     * Saves the model name.
+     */
+    public static void createNameFile(String name) throws FileNotFoundException {
     	PrintWriter out = new PrintWriter(DataModel.getModelNameFile());
 		out.println("# name; last modification");
-		out.println(CsvFile.encodeCell(nameTextField.getText()) + "; " + CsvFile.encodeCell(Long.toString(new Date().getTime())));
+		out.println(CsvFile.encodeCell(name) + "; " + CsvFile.encodeCell(Long.toString(new Date().getTime())));
 		out.close();
 	}
 

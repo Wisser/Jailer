@@ -440,7 +440,7 @@ public class UIUtil {
 
 	public static StringBuffer createCLIArgumentString(String password, List<String> args) {
 		args.add("-datamodel");
-        args.add(CommandLineParser.getInstance().datamodelFolder);
+        args.add(CommandLineParser.getInstance().getDataModelFolder());
         args.add("-script-enhancer");
         args.add(CommandLineParser.getInstance().enhancerFolder);
         if (CommandLineParser.getInstance().workingFolder != null) {
