@@ -79,7 +79,6 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
         jScrollPane1 = new javax.swing.JScrollPane();
         tableList = new javax.swing.JList();
         okButton = new javax.swing.JButton();
-        cancelButton = new javax.swing.JButton();
         analyzeButton = new javax.swing.JButton();
         restoreSessionButton = new javax.swing.JButton();
 
@@ -125,17 +124,6 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(okButton, gridBagConstraints);
 
-        cancelButton.setText(" Cancel ");
-        cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
-        gridBagConstraints.gridy = 3;
-        jPanel1.add(cancelButton, gridBagConstraints);
-
         analyzeButton.setText(" Analyze Database ");
         analyzeButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -166,10 +154,6 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        setVisible(false);
-    }//GEN-LAST:event_cancelButtonActionPerformed
-
     private void tableListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_tableListValueChanged
         okButton.setEnabled(true);
     }//GEN-LAST:event_tableListValueChanged
@@ -198,7 +182,6 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton analyzeButton;
-    private javax.swing.JButton cancelButton;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JButton okButton;

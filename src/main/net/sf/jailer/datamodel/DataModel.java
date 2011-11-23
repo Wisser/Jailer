@@ -53,6 +53,8 @@ import net.sf.jailer.util.SqlUtil;
  */
 public class DataModel {
 
+	public static final String MODELNAME_CSV_FILE = "modelname.csv";
+
 	/**
      * Maps table-names to tables.
      */
@@ -97,7 +99,7 @@ public class DataModel {
      * Gets name of data model folder.
      */
     public static String getDatamodelFolder() {
-    	return CommandLineParser.getInstance().datamodelFolder;
+    	return CommandLineParser.getInstance().getDataModelFolder();
     }
 
     /**
@@ -111,7 +113,7 @@ public class DataModel {
      * Gets name of file containing the model name
      */
     public static String getModelNameFile() {
-    	return getDatamodelFolder() + File.separator + "modelname.csv";
+    	return getDatamodelFolder() + File.separator + MODELNAME_CSV_FILE;
     }
 
     /**

@@ -1497,8 +1497,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			return;
 		}
 		String title = "Jailer " + Jailer.VERSION + " Extraction Model Editor";
-		if (!"datamodel".equals(CommandLineParser.getInstance().datamodelFolder)) {
-			title += " (" + new File(CommandLineParser.getInstance().datamodelFolder).getName() + ")";
+		if (!"datamodel".equals(CommandLineParser.getInstance().getDataModelFolder())) {
+			title += " (" + new File(CommandLineParser.getInstance().getDataModelFolder()).getName() + ")";
 		}
         if (extractionModelEditor.extractionModelFile == null) {
         	title = "New Model - " + title;
@@ -1611,16 +1611,30 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 //            	}
             	
             	String file = null;
-            	if (CommandLineParser.getInstance().arguments != null) {
-            		if (CommandLineParser.getInstance().arguments.size() > 0) {
-            			file = CommandLineParser.getInstance().arguments.get(0);
-            		}	
-            	}
-            	ExtractionModelFrame extractionModelFrame = createFrame(file, true);
                 try {
-					askForDataModel(extractionModelFrame);
+	            	if (CommandLineParser.getInstance().arguments != null) {
+	            		if (CommandLineParser.getInstance().arguments.size() > 0) {
+	            			file = CommandLineParser.getInstance().arguments.get(0);
+	            		}	
+	            	}
+	            	final String finalFile = file;
+	            	// TODO: skip dmmd if file is given
+	            	DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(Jailer.APPLICATION_NAME + " " + Jailer.VERSION + " - Database Subsetting Tool") {
+						@Override
+						protected void onSelect() {
+			            	ExtractionModelFrame extractionModelFrame = null;
+			            	try {
+			            		extractionModelFrame = createFrame(finalFile, true);
+			            		askForDataModel(extractionModelFrame);
+							} catch (Exception e) {
+								UIUtil.showException(extractionModelFrame, "Error", e);
+							}
+						}
+						private static final long serialVersionUID = 1L;
+	            	};
+	            	dataModelManagerDialog.setVisible(true);
 				} catch (Exception e) {
-					UIUtil.showException(extractionModelFrame, "Error", e);
+					UIUtil.showException(null, "Error", e);
 				}
             }
 

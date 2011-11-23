@@ -49,6 +49,7 @@ import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.util.ClasspathUtil;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
+import net.sf.jailer.util.Pair;
 
 /**
  * Database connection dialog.
@@ -78,6 +79,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		public String password = "";
 		public String jar1 = "";
 		public String jar2 = "";
+		public transient String dataModelFolder = null;
 	}
 
 	/**
@@ -102,6 +104,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 */
 	public boolean connect(String reason) {
 		setTitle((reason == null ? "" : (reason + " - ")) + "Connect.");
+		refresh();
 		setVisible(true);
 		return isConnected;
 	}
@@ -205,15 +208,17 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		Object[][] data = new Object[connectionList.size()][];
 		int i = 0;
 		for (ConnectionInfo ci: connectionList) {
-			data[i++] = new Object[] { ci.alias, ci.user, ci.url };
+			Pair<String, Long> modelDetails = DataModelManager.getModelDetails(ci.dataModelFolder);
+			data[i++] = new Object[] { ci.alias, ci.user, ci.url, modelDetails == null? "" : modelDetails.a };
 		}
-		connectionsTable.setModel(new DefaultTableModel(data, new String[] { "Alias", "User", "URL" }) {
+		DefaultTableModel tableModel = new DefaultTableModel(data, new String[] { "Alias", "User", "URL", "Data Model" }) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
 				return false;
 			}
 			private static final long serialVersionUID = 1535384744352159695L;
-		});
+		};
+		connectionsTable.setModel(tableModel);
 		return data;
 	}
 

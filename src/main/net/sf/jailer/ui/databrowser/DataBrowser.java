@@ -525,7 +525,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		modelName.setText(modelname);
 		modelName.setToolTipText(modelname + lastMod);
 
-		String modelpath = CommandLineParser.getInstance().datamodelFolder;
+		String modelpath = CommandLineParser.getInstance().getDataModelFolder();
 		try {
 			modelpath = CommandLineParser.getInstance().newFile(modelpath).getAbsolutePath();
 		} catch (Throwable t) {

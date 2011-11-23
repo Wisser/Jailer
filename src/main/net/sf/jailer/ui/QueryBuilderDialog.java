@@ -43,7 +43,6 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.util.SqlUtil;
 
 /**

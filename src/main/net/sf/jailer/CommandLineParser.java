@@ -345,6 +345,39 @@ public class CommandLineParser {
     }
     
     /**
+     * Folder of current data model.
+     */
+    private String currentModelSubfolder = null;
+    
+    /**
+     * Sets folder of current data model.
+     * 
+     * @param modelFolder the folder, <code>null</code> for default model
+     */
+	public void setCurrentModelSubfolder(String modelFolder) {
+		currentModelSubfolder = modelFolder;
+	}
+
+	/**
+     * Gets folder of current data model.
+     * 
+     * @return modelFolder the folder, <code>null</code> for default model
+     */
+	public String getCurrentModelSubfolder() {
+		return currentModelSubfolder;
+	}
+
+	/**
+     * Gets fully qualified folder name of current data model.
+     */
+	public String getDataModelFolder() {
+		if (currentModelSubfolder == null) {
+			return datamodelFolder;
+		}
+		return datamodelFolder + File.separator + currentModelSubfolder;
+	}
+	
+	/**
      * Names of 'tabu' tables.
      */
     private CsvFile tabuTableNames = null;
