@@ -82,7 +82,11 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		this.applicationName = applicationName;
 		initComponents();
 
-		InfoBar infoBar = new InfoBar(applicationName, "Select a Data Model");
+		InfoBar infoBar = new InfoBar("Data Model Configuration", 
+				"A data model is a set of interrelated tables. Acquire information about\n" +
+				"tables by analyzing database schemas, or use the data model editor to\n" +
+				"manually define tables and associations.\n" +
+				"Select a data model to work with.");
 		UIUtil.replace(infoBarLabel, infoBar);
 		
 		String modelpath = CommandLineParser.getInstance().getDataModelFolder();
@@ -324,7 +328,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         locationLabel = new javax.swing.JLabel();
         jButton2 = new javax.swing.JButton();
         okButton = new javax.swing.JButton();
-        jLabel11 = new javax.swing.JLabel();
         jScrollPane2 = new javax.swing.JScrollPane();
         dataModelsTable = new javax.swing.JTable();
         jPanel3 = new javax.swing.JPanel();
@@ -393,12 +396,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(jPanel2, gridBagConstraints);
-
-        jLabel11.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 10;
-        jPanel1.add(jLabel11, gridBagConstraints);
 
         jScrollPane2.setBorder(javax.swing.BorderFactory.createTitledBorder("Data Models"));
 
@@ -633,7 +630,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JButton editButton;
     private javax.swing.JLabel infoBarLabel;
     private javax.swing.JButton jButton2;
-    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
