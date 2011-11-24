@@ -16,7 +16,11 @@
 package net.sf.jailer.ui;
 
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.LayoutManager;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.WindowAdapter;
@@ -39,8 +43,10 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFileChooser;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
@@ -575,6 +581,13 @@ public class UIUtil {
 		} catch (OutOfMemoryError e) {
 			JOptionPane.showConfirmDialog(null, "MaxMem=" + memSize, "", JOptionPane.INFORMATION_MESSAGE);
 		}
+	}
+
+	public static void replace(JComponent component, JComponent replacement) {
+		Container parent = component.getParent();
+		GridBagConstraints c = ((GridBagLayout) parent.getLayout()).getConstraints(component);
+		parent.remove(component);
+		parent.add(replacement, c);
 	}
 
 }
