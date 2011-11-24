@@ -82,6 +82,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		this.applicationName = applicationName;
 		initComponents();
 
+		InfoBar infoBar = new InfoBar(applicationName, "Select a Data Model");
+		UIUtil.replace(infoBarLabel, infoBar);
+		
 		String modelpath = CommandLineParser.getInstance().getDataModelFolder();
 		try {
 			modelpath = CommandLineParser.getInstance().newFile(modelpath).getAbsolutePath();
@@ -92,10 +95,14 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		locationLabel.setToolTipText(modelpath);
 		
 		try {
-			setIconImage(new ImageIcon(getClass().getResource("/net/sf/jailer/resource/jailer.png")).getImage());
+			ImageIcon imageIcon = new ImageIcon(getClass().getResource("/net/sf/jailer/resource/jailer.png"));
+			setIconImage(imageIcon.getImage());
+			infoBar.setIcon(imageIcon);
 		} catch (Throwable t) {
 			try {
-				setIconImage(new ImageIcon(getClass().getResource("/net/sf/jailer/resource/jailer.gif")).getImage());
+				ImageIcon imageIcon = new ImageIcon(getClass().getResource("/net/sf/jailer/resource/jailer.gif"));
+				setIconImage(imageIcon.getImage());
+				infoBar.setIcon(imageIcon);
 			} catch (Throwable t2) {
 			}
 		}
@@ -325,6 +332,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         editButton = new javax.swing.JButton();
         analyzeButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
+        infoBarLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Connect with DB");
@@ -475,6 +483,14 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         jPanel1.add(jPanel3, gridBagConstraints);
 
+        infoBarLabel.setText("info bar");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 11;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jPanel1.add(infoBarLabel, gridBagConstraints);
+
         getContentPane().add(jPanel1, "card2");
 
         pack();
@@ -615,6 +631,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JTable dataModelsTable;
     private javax.swing.JButton deleteButton;
     private javax.swing.JButton editButton;
+    private javax.swing.JLabel infoBarLabel;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
