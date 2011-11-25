@@ -148,7 +148,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		if (infoBar == null) {
 			infoBar = new InfoBar("Connect with Database", 
 					"Select a connection to the database, or create a new connection.\n" +
-					"Note that new connections will be assigned to the datamodel \"" + DataModelManager.getModelDetails(DataModelManager.getCurrentModelSubfolder()).a + "\".");
+					"New connections will be assigned to the datamodel \"" + DataModelManager.getModelDetails(DataModelManager.getCurrentModelSubfolder()).a + "\".");
 		}
 		
 		UIUtil.replace(infoBarLabel, infoBar);
@@ -175,6 +175,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 								((JLabel) render)
 										.setBackground((row % 2 == 0) ? BG1
 												: BG2);
+							} else {
+								((JLabel) render).setBackground(new Color(160, 160, 255));
 							}
 							boolean inContext = isAssignedToDataModel(row);
 							if (inContext) {
@@ -402,6 +404,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			ci.url = "jdbc:h2:demo";
 			ci.user = "sa";
 			ci.password = "";
+			ci.dataModelFolder = "Demo";
 			connectionList.add(ci);
 			store();
 		}

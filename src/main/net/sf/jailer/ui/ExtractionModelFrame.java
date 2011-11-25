@@ -22,7 +22,6 @@ import java.awt.event.ActionListener;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -30,7 +29,6 @@ import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -1505,9 +1503,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			return;
 		}
 		String title = "Jailer " + Jailer.VERSION + " Extraction Model Editor";
-		if (!"datamodel".equals(CommandLineParser.getInstance().getDataModelFolder())) {
-			title += " (" + new File(CommandLineParser.getInstance().getDataModelFolder()).getName() + ")";
-		}
+//		if (!"datamodel".equals(CommandLineParser.getInstance().getDataModelFolder())) {
+//			title += " (" + new File(CommandLineParser.getInstance().getDataModelFolder()).getName() + ")";
+//		}
         if (extractionModelEditor.extractionModelFile == null) {
         	title = "New Model - " + title;
         } else {
@@ -1658,10 +1656,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private static void askForDataModel(
 			ExtractionModelFrame extractionModelFrame) throws Exception {
 		if (extractionModelFrame.extractionModelEditor == null || extractionModelFrame.extractionModelEditor.dataModel == null || extractionModelFrame.extractionModelEditor.dataModel.getTables().isEmpty()) {
-        	switch (JOptionPane.showOptionDialog(extractionModelFrame, "Data model \"" + DataModelManager.getModelDetails(DataModelManager.getCurrentModelSubfolder()).a + "\" is empty.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor", "Demo" }, null)) {
+        	switch (JOptionPane.showOptionDialog(extractionModelFrame, "Data model \"" + DataModelManager.getModelDetails(DataModelManager.getCurrentModelSubfolder()).a + "\" is empty.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor" }, null)) {
         		case 0: extractionModelFrame.updateDataModelActionPerformed(null); break;
                	case 1: extractionModelFrame.openDataModelEditorActionPerformed(null); break;
-               	case 2: demo(extractionModelFrame); break;
         	}
         } else if (!new File(DataModel.getColumnsFile()).exists()) {
            	switch (JOptionPane.showOptionDialog(extractionModelFrame, "No column definition found.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor" }, null)) {
@@ -1673,85 +1670,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			extractionModelFrame.closureBorderView.refresh();
 		}
 	}
-    
-    /**
-     * Creates demo datamodel and loads demo extraction model.
-     * 
-     * @param extractionModelFrame the editor frame
-     */
-	public static void demo(ExtractionModelFrame extractionModelFrame) throws Exception {
-		File tables = new File(DataModel.getTablesFile());
-		tables.delete();
-		File columns = new File(DataModel.getColumnsFile());
-		columns.delete();
-		File associations = new File(DataModel.getAssociationsFile());
-		associations.delete();
-		File exDel = new File(DataModel.getExcludeFromDeletionFile());
-		exDel.delete();
-		File iData = new File(DataModel.getInitialDataTablesFile());
-		iData.delete();
-		File vers = new File(DataModel.getVersionFile());
-		vers.delete();
-		File name = new File(DataModel.getModelNameFile());
-		name.delete();
-		try {
-			PrintWriter out = new PrintWriter(new FileOutputStream(tables));
-			out.println("# Name; Upsert; Primary key; ; Author");
-			out.println("ROLE; N; ROLE_ID INTEGER; ; Demo; ; ");
-			out.println("BONUS; N; ENAME VARCHAR(10); JOB VARCHAR(9); ; Demo; ; ");
-			out.println("DEPARTMENT; N; DEPTNO INTEGER; ; Demo; ; ");
-			out.println("EMPLOYEE; N; EMPNO INTEGER; ; Demo; ; ");
-			out.println("SALARYGRADE; N; GRADE INTEGER; ; Demo; ; ");
-			out.println("PROJECT; N; PROJECTNO INTEGER; ; Demo; ;");
-			out.println("PROJECT_PARTICIPATION; N; PROJECTNO INTEGER; EMPNO INTEGER; START_DATE VARCHAR(12); ; Demo; ;");
-			out.close();
-			out = new PrintWriter(new FileOutputStream(associations));
-			out.println("# Table A; Table B; First-insert; Cardinality; Join-condition; Name; Author");
-			out.println("PROJECT_PARTICIPATION; ROLE; B; n:1; A.ROLE_ID=B.ROLE_ID; ROLE; Demo; ; ");
-			out.println("EMPLOYEE; BONUS; ; 1:1; A.NAME=B.ENAME and A.JOB=B.JOB; BONUS; Demo; ; ");
-			out.println("EMPLOYEE; SALARYGRADE; ; n:1; A.SALARY BETWEEN B.LOSAL and B.HISAL; SALARY; Demo; ; ");
-			out.println("EMPLOYEE; DEPARTMENT; B; n:1; A.DEPTNO=B.DEPTNO; DEPARTMENT; Demo; ; ");
-			out.println("EMPLOYEE; EMPLOYEE; B; n:1; A.BOSS=B.EMPNO; BOSS; Demo; ; ");
-			out.println("PROJECT_PARTICIPATION; EMPLOYEE; B; n:1; A.EMPNO=B.EMPNO; EMPLOYEE; Demo; ; ");
-			out.println("PROJECT_PARTICIPATION; PROJECT; B; n:1; A.PROJECTNO=B.PROJECTNO; PROJECT; Demo; ; "); 
-			out.close();
-			out = new PrintWriter(new FileOutputStream(columns));
-			out.println("# Table; Columns");
-			out.println("ROLE; ROLE_ID INTEGER; DESCRIPTION VARCHAR(100); ;");
-			out.println("BONUS; ENAME VARCHAR(10); JOB VARCHAR(9); SAL DECIMAL(7, 2); COMM DECIMAL(7, 2); ;");
-			out.println("DEPARTMENT; DEPTNO INTEGER; NAME VARCHAR(14); LOCATION VARCHAR(13); ;");
-			out.println("EMPLOYEE; EMPNO INTEGER; NAME VARCHAR(10); JOB VARCHAR(9); BOSS INTEGER; HIREDATE VARCHAR(12); SALARY DECIMAL(7, 2); COMM DECIMAL(7, 2); DEPTNO INTEGER; ;");
-			out.println("SALARYGRADE; GRADE INTEGER; LOSAL INTEGER; HISAL INTEGER; ;");
-			out.println("PROJECT; PROJECTNO INTEGER; DESCRIPTION VARCHAR(100); START_DATE VARCHAR(12); END_DATE VARCHAR(12); ;");
-			out.println("PROJECT_PARTICIPATION; PROJECTNO INTEGER; EMPNO INTEGER; START_DATE VARCHAR(12); END_DATE VARCHAR(12); ROLE_ID INTEGER; ;");
-			out.close();
-			out = new PrintWriter(new FileOutputStream(exDel));
-			out.println("DEPARTMENT");
-			out.println("SALARYGRADE");
-			out.println("ROLE");
-			out.close();
-			out = new PrintWriter(new FileOutputStream(iData));
-			// out.println("SALARYGRADE");
-			out.close();
-			out = new PrintWriter(new FileOutputStream(vers));
-			out.println(Jailer.VERSION);
-			out.close();
-			out = new PrintWriter(name);
-			out.println("# table; display name");
-			out.println("Demo; " + (new Date().getTime()));
-			out.close();
-			if (extractionModelFrame != null) {
-				extractionModelFrame.load("Demo.csv");
-			}
-		} catch (Exception e) {
-			if (extractionModelFrame != null) {
-				UIUtil.showException(extractionModelFrame, "Error", e);
-			} else {
-				throw e;
-			}
-		}
-	}
-	
+    	
     public static ExtractionModelFrame createFrame(String file, boolean maximize) {
 		boolean isHorizonal = false;
 		try {

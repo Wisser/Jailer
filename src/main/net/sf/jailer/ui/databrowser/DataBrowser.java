@@ -86,15 +86,14 @@ import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.About;
 import net.sf.jailer.ui.AnalyseOptionsDialog;
 import net.sf.jailer.ui.AssociationListUI;
-import net.sf.jailer.ui.DataModelManager;
-import net.sf.jailer.ui.DataModelManagerDialog;
 import net.sf.jailer.ui.AssociationListUI.AssociationModel;
 import net.sf.jailer.ui.AssociationListUI.DefaultAssociationModel;
 import net.sf.jailer.ui.BrowserLauncher;
 import net.sf.jailer.ui.DataModelEditor;
+import net.sf.jailer.ui.DataModelManager;
+import net.sf.jailer.ui.DataModelManagerDialog;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
-import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
@@ -1330,7 +1329,7 @@ public class DataBrowser extends javax.swing.JFrame {
 						UIManager.setLookAndFeel(plaf);
 					} catch (Exception x) {
 					}
-					DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(Jailer.APPLICATION_NAME + " " + Jailer.VERSION + " - Database Subsetting Tool") {
+					DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(DataBrowserContext.getAppName(true) + " - Relational Data Browser") {
 						@Override
 						protected void onSelect() {
 			            	try {
@@ -1379,7 +1378,9 @@ public class DataBrowser extends javax.swing.JFrame {
 				dataBrowser.openNewTableBrowser(true);
 			}
 		} else {
-			dataBrowser.setConnection(dbConnectionDialog);
+			if (dbConnectionDialog.isConnected) {
+				dataBrowser.setConnection(dbConnectionDialog);
+			}
 			for (int i = 0; i < dataBrowser.menuBar.getMenuCount(); ++i) {
 				JMenu menu = dataBrowser.menuBar.getMenu(i);
 				if (menu != dataBrowser.helpMenu) {
@@ -1561,17 +1562,12 @@ public class DataBrowser extends javax.swing.JFrame {
 		try {
 			if (datamodel.get().getTables().isEmpty()) {
 				switch (JOptionPane.showOptionDialog(this, "Data model \"" + DataModelManager.getModelDetails(DataModelManager.getCurrentModelSubfolder()).a + "\" is empty.", DataBrowserContext.getAppName(true), JOptionPane.YES_NO_OPTION,
-						JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor", "Demo" }, null)) {
+						JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor" }, null)) {
 				case 0:
 					updateDataModel();
 					break;
 				case 1:
 					openDataModelEditor();
-					break;
-				case 2:
-					ExtractionModelFrame.demo(null);
-					desktop.reloadDataModel(desktop.schemaMapping);
-					updateStatusBar();
 					break;
 				}
 			} else if (!new File(DataModel.getColumnsFile()).exists()) {
