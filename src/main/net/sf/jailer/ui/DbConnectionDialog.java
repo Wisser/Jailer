@@ -718,7 +718,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			}
 		} catch (Exception e) {
 		}
-		if (edit(ci)) {
+		if (edit(ci, true)) {
 			for (int nr = 1; ; ++nr) {
     			String newAlias = ci.alias + (nr > 1? " (" + nr + ")" : "");
     			boolean found = false;
@@ -743,7 +743,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
     private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
 		if (currentConnection == null) return;
-    	if (edit(currentConnection)) {
+    	if (edit(currentConnection, false)) {
 			refresh();
     		store();
     	}
@@ -758,10 +758,11 @@ public class DbConnectionDialog extends javax.swing.JDialog {
      * Opens detail editor for a connection.
      * 
      * @param ci the connection
+     * @param forNew 
      * @return <code>true</code> if connection has been edited
      */
-	private boolean edit(ConnectionInfo ci) {
-		return new DbConnectionDetailsEditor(parent, jdbcHelpURL).edit(ci);
+	private boolean edit(ConnectionInfo ci, boolean forNew) {
+		return new DbConnectionDetailsEditor(parent, jdbcHelpURL, forNew).edit(ci);
 	}
 
 	private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
