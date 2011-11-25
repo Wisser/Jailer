@@ -587,7 +587,9 @@ public class UIUtil {
 		Container parent = component.getParent();
 		GridBagConstraints c = ((GridBagLayout) parent.getLayout()).getConstraints(component);
 		parent.remove(component);
-		parent.add(replacement, c);
+		if (replacement != null) {
+			parent.add(replacement, c);
+		}
 	}
 
 }

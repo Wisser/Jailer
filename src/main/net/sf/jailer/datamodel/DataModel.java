@@ -39,6 +39,7 @@ import net.sf.jailer.Jailer;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
+import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.RestrictionDefinition;
 import net.sf.jailer.ui.graphical_view.LayoutStorage;
 import net.sf.jailer.util.CsvFile;
@@ -53,6 +54,7 @@ import net.sf.jailer.util.SqlUtil;
  */
 public class DataModel {
 
+	public static final String TABLE_CSV_FILE = "table.csv";
 	public static final String MODELNAME_CSV_FILE = "modelname.csv";
 
 	/**
@@ -106,7 +108,7 @@ public class DataModel {
      * Gets name of file containing the table definitions.
      */
     public static String getTablesFile() {
-    	return getDatamodelFolder() + File.separator + "table.csv";
+    	return getDatamodelFolder() + File.separator + TABLE_CSV_FILE;
     }
 
     /**
@@ -740,6 +742,12 @@ public class DataModel {
 		out.println(CsvFile.encodeCell("" + stable.getName()) + "; " + CsvFile.encodeCell(subjectCondition) + "; ; " + RestrictionModel.EMBEDDED);
 		saveRestrictions(out, restrictionDefinitions);
 		saveXmlMapping(out);
+		out.println();
+		out.println(CsvFile.BLOCK_INDICATOR + "datamodelfolder");
+		String currentModelSubfolder = DataModelManager.getCurrentModelSubfolder();
+		if (currentModelSubfolder != null) {
+			out.println(currentModelSubfolder);
+		}
 		out.println();
 		out.println(CsvFile.BLOCK_INDICATOR + "export modus");
 		out.println(scriptFormat);

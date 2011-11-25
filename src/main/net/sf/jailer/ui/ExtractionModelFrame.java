@@ -57,6 +57,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.DataModel.NoPrimaryKeyException;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.ui.databrowser.DataBrowser;
@@ -124,7 +125,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         extractionModelEditor.extractionModelFile = extractionModelFile;
         pack();
         updateTitle(extractionModelEditor.needsSave);
-        dbConnectionDialog = new DbConnectionDialog(this, Jailer.APPLICATION_NAME);
+        dbConnectionDialog = new DbConnectionDialog(this, Jailer.APPLICATION_NAME, null);
         try {
 	        for (final LookAndFeelInfo lfInfo: UIManager.getInstalledLookAndFeels()) {
 	        	JMenuItem mItem = new JMenuItem();
@@ -1218,6 +1219,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      */
 	private void load(String modelFile) {
 		try {
+			String dmf = ExtractionModel.loadDatamodelFolder(modelFile);
+			if (dmf == null && DataModelManager.getCurrentModelSubfolder() != null
+				||
+				dmf != null && !dmf.equals(DataModelManager.getCurrentModelSubfolder())) {
+				JOptionPane.showMessageDialog(this, "Unable to load \"" + new File(modelFile).getName() + "\"\nExtraction model is assigned to data model \"" + DataModelManager.getModelDetails(dmf).a + "\"", "Wrong Data Model", JOptionPane.ERROR_MESSAGE);
+				return;
+			}
 			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			extractionModelEditor.extractionModelFrame = null;
 			editorPanel.remove(extractionModelEditor);
@@ -1618,21 +1626,35 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	            		}	
 	            	}
 	            	final String finalFile = file;
-	            	// TODO: skip dmmd if file is given
-	            	DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(Jailer.APPLICATION_NAME + " " + Jailer.VERSION + " - Database Subsetting Tool") {
-						@Override
-						protected void onSelect() {
-			            	ExtractionModelFrame extractionModelFrame = null;
-			            	try {
-			            		extractionModelFrame = createFrame(finalFile, true);
-			            		askForDataModel(extractionModelFrame);
-							} catch (Exception e) {
-								UIUtil.showException(extractionModelFrame, "Error", e);
+	            	if (file != null && new File(file).exists()) {
+	            		DataModelManager.setCurrentModelSubfolder(ExtractionModel.loadDatamodelFolder(file));
+	            		createFrame(finalFile, true);
+	            	} else {
+		            	DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(Jailer.APPLICATION_NAME + " " + Jailer.VERSION + " - Database Subsetting Tool") {
+							@Override
+							protected void onSelect() {
+				            	ExtractionModelFrame extractionModelFrame = null;
+				            	try {
+				            		extractionModelFrame = createFrame(finalFile, true);
+				            		final ExtractionModelFrame finalExtractionModelFrame = extractionModelFrame;
+					            	SwingUtilities.invokeLater(new Runnable() {
+										@Override
+										public void run() {
+											try {
+												askForDataModel(finalExtractionModelFrame);
+											} catch (Exception e) {
+												UIUtil.showException(finalExtractionModelFrame, "Error", e);
+											}
+										}
+									});
+								} catch (Exception e) {
+									UIUtil.showException(extractionModelFrame, "Error", e);
+								}
 							}
-						}
-						private static final long serialVersionUID = 1L;
-	            	};
-	            	dataModelManagerDialog.setVisible(true);
+							private static final long serialVersionUID = 1L;
+		            	};
+		            	dataModelManagerDialog.setVisible(true);
+	            	}
 				} catch (Exception e) {
 					UIUtil.showException(null, "Error", e);
 				}
@@ -1644,7 +1666,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private static void askForDataModel(
 			ExtractionModelFrame extractionModelFrame) throws Exception {
 		if (extractionModelFrame.extractionModelEditor == null || extractionModelFrame.extractionModelEditor.dataModel == null || extractionModelFrame.extractionModelEditor.dataModel.getTables().isEmpty()) {
-        	switch (JOptionPane.showOptionDialog(extractionModelFrame, "No Data Model found.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor", "Demo" }, null)) {
+        	switch (JOptionPane.showOptionDialog(extractionModelFrame, "Data model \"" + DataModelManager.getModelDetails(DataModelManager.getCurrentModelSubfolder()).a + "\" is empty.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor", "Demo" }, null)) {
         		case 0: extractionModelFrame.updateDataModelActionPerformed(null); break;
                	case 1: extractionModelFrame.openDataModelEditorActionPerformed(null); break;
                	case 2: demo(extractionModelFrame); break;

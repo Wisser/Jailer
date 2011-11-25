@@ -86,6 +86,8 @@ import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.About;
 import net.sf.jailer.ui.AnalyseOptionsDialog;
 import net.sf.jailer.ui.AssociationListUI;
+import net.sf.jailer.ui.DataModelManager;
+import net.sf.jailer.ui.DataModelManagerDialog;
 import net.sf.jailer.ui.AssociationListUI.AssociationModel;
 import net.sf.jailer.ui.AssociationListUI.DefaultAssociationModel;
 import net.sf.jailer.ui.BrowserLauncher;
@@ -1321,10 +1323,8 @@ public class DataBrowser extends javax.swing.JFrame {
 				} catch (Throwable e) {
 					e.printStackTrace();
 				}
-				DataModel datamodel;
 				try {
 					CommandLineParser.parse(args, true);
-					datamodel = new DataModel();
 					try {
 						File plafSetting = new File(PLAFSETTING);
 						String plaf;
@@ -1338,10 +1338,24 @@ public class DataBrowser extends javax.swing.JFrame {
 						UIManager.setLookAndFeel(plaf);
 					} catch (Exception x) {
 					}
-					openNewDataBrowser(datamodel, null, true); 
+					DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(Jailer.APPLICATION_NAME + " " + Jailer.VERSION + " - Database Subsetting Tool") {
+						@Override
+						protected void onSelect() {
+			            	try {
+			            		final DataModel datamodel;
+			            		datamodel = new DataModel();
+								openNewDataBrowser(datamodel, null, true); 
+							} catch (Exception e) {
+								UIUtil.showException(null, "Error", e);
+							}
+						}
+						private static final long serialVersionUID = 1L;
+	            	};
 					ToolTipManager.sharedInstance().setInitialDelay(400);
 					ToolTipManager.sharedInstance().setDismissDelay(20000);
-				} catch (Exception e) {
+	            	
+					dataModelManagerDialog.setVisible(true);
+	            } catch (Exception e) {
 					e.printStackTrace();
 				}
 			}
@@ -1357,7 +1371,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 		dataBrowser.setVisible(true);
 		if (dbConnectionDialog == null) {
-			dbConnectionDialog = new DbConnectionDialog(dataBrowser, DataBrowserContext.getAppName());
+			dbConnectionDialog = new DbConnectionDialog(dataBrowser, DataBrowserContext.getAppName(), null);
 		} else {
 			dbConnectionDialog = new DbConnectionDialog(dataBrowser, dbConnectionDialog, DataBrowserContext.getAppName());
 		}
@@ -1554,7 +1568,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	private void askForDataModel() {
 		try {
 			if (datamodel.get().getTables().isEmpty()) {
-				switch (JOptionPane.showOptionDialog(this, "No Data Model found.", DataBrowserContext.getAppName(true), JOptionPane.YES_NO_OPTION,
+				switch (JOptionPane.showOptionDialog(this, "Data model \"" + DataModelManager.getModelDetails(DataModelManager.getCurrentModelSubfolder()).a + "\" is empty.", DataBrowserContext.getAppName(true), JOptionPane.YES_NO_OPTION,
 						JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor", "Demo" }, null)) {
 				case 0:
 					updateDataModel();

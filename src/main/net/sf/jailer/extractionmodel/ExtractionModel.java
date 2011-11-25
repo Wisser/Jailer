@@ -211,4 +211,12 @@ public class ExtractionModel {
         }
     }
     
+    public static String loadDatamodelFolder(String fileName) throws Exception {
+        List<CsvFile.Line> dmf = new CsvFile(CommandLineParser.getInstance().newFile(fileName), "datamodelfolder").getLines();
+        if (dmf.size() > 0) {
+        	return dmf.get(0).cells.get(0);
+        }
+        return null;
+    }
+    
 }

@@ -79,7 +79,14 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		public String password = "";
 		public String jar1 = "";
 		public String jar2 = "";
-		public transient String dataModelFolder = null;
+		public transient String dataModelFolder;
+		
+		/**
+		 * Constructor.
+		 */
+		public ConnectionInfo() {
+			dataModelFolder = DataModelManager.getCurrentModelSubfolder();
+		}
 	}
 
 	/**
@@ -108,10 +115,12 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		setVisible(true);
 		return isConnected;
 	}
-
+	
+	private final InfoBar infoBar;
+	
 	/** Creates new form DbConnectionDialog */
 	public DbConnectionDialog(java.awt.Frame parent, DbConnectionDialog other, String applicationName) {
-		this(parent, applicationName);
+		this(parent, applicationName, other.infoBar == null? null : new InfoBar(other.infoBar));
 		this.isConnected = other.isConnected;
 		this.connectionList = other.connectionList;
 		if (other.currentConnection != null) {
@@ -128,13 +137,22 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 * 
 	 * @param applicationName application name. Used to create the name of the demo database alias. 
 	 */
-	public DbConnectionDialog(java.awt.Frame parent, String applicationName) {
+	public DbConnectionDialog(java.awt.Frame parent, String applicationName, InfoBar infoBar) {
 		super(parent, true);
 		this.applicationName = applicationName;
 		this.parent = parent;
+		this.infoBar = infoBar;
 		loadConnectionList();
 		initComponents();
 
+		if (infoBar == null) {
+			infoBar = new InfoBar("Connect with Database", 
+					"Select a connection to the database, or create a new connection.\n" +
+					"Note that new connections will be assigned to the datamodel \"" + DataModelManager.getModelDetails(DataModelManager.getCurrentModelSubfolder()).a + "\".");
+		}
+		
+		UIUtil.replace(infoBarLabel, infoBar);
+		
 		int i;
 		initTableModel();
 		
@@ -150,12 +168,20 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 						Component render = defaultTableCellRenderer
 								.getTableCellRendererComponent(table, value,
 										isSelected, hasFocus, row, column);
-						if (render instanceof JLabel && !isSelected) {
-							final Color BG1 = new Color(255, 255, 255);
-							final Color BG2 = new Color(230, 255, 255);
-							((JLabel) render)
-									.setBackground((row % 2 == 0) ? BG1
-											: BG2);
+						if (render instanceof JLabel) {
+							if (!isSelected) {
+								final Color BG1 = new Color(255, 255, 255);
+								final Color BG2 = new Color(230, 255, 255);
+								((JLabel) render)
+										.setBackground((row % 2 == 0) ? BG1
+												: BG2);
+							}
+							boolean inContext = isAssignedToDataModel(row);
+							if (inContext) {
+								((JLabel) render).setForeground(Color.black);
+							} else {
+								((JLabel) render).setForeground(Color.gray);
+							}
 						}
 						return render;
 					}
@@ -196,7 +222,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		
 		setLocation(100, 150);
 		pack();
-		setSize(Math.max(680, getWidth()), 300);
+		setSize(Math.max(710, getWidth()), 350);
 		refresh();
 		UIUtil.initPeer();
 	}
@@ -275,7 +301,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			copy.setEnabled(currentConnection != null);
 			upButton.setEnabled(currentConnection != null && selectedRow > 0);
 			downButton.setEnabled(currentConnection != null && selectedRow < connectionList.size() - 1);
-			jButton1.setEnabled(currentConnection != null);
+			jButton1.setEnabled(currentConnection != null && selectedRow >= 0 && selectedRow < connectionList.size() && isAssignedToDataModel(selectedRow));
 		} finally {
 			inRefresh = false;
 		}
@@ -295,6 +321,11 @@ public class DbConnectionDialog extends javax.swing.JDialog {
             ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
             out.writeObject(connectionList);
             out.writeInt(connectionList.indexOf(currentConnection));
+            List<String> dataModels = new ArrayList<String>();
+            for (ConnectionInfo ci: connectionList) {
+            	dataModels.add(ci.dataModelFolder);
+            }
+            out.writeObject(dataModels);
             out.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -316,6 +347,14 @@ public class DbConnectionDialog extends javax.swing.JDialog {
             	ObjectInputStream in = new ObjectInputStream(new FileInputStream(CONNECTIONS_FILE));
                 List<ConnectionInfo> cis = (List<ConnectionInfo>) in.readObject();
                 int i = in.readInt();
+                try {
+                	List<String> dma = (List<String>) in.readObject();
+                	for (int n = 0; n < dma.size(); ++n) {
+                		cis.get(n).dataModelFolder = dma.get(n);
+                	}
+                } catch (Throwable t) {
+                	// ignore. pre 3.8 files do not contain data model assignments.
+                }
                 in.close();
                 connectionList = cis;
                 if (i >= 0 && i < connectionList.size()) {
@@ -382,13 +421,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         jButton2 = new javax.swing.JButton();
         jButton1 = new javax.swing.JButton();
-        jLabel11 = new javax.swing.JLabel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        connectionsTable = new javax.swing.JTable();
         jPanel3 = new javax.swing.JPanel();
         newButton = new javax.swing.JButton();
         editButton = new javax.swing.JButton();
@@ -396,20 +431,16 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         deleteButton = new javax.swing.JButton();
         upButton = new javax.swing.JButton();
         downButton = new javax.swing.JButton();
+        infoBarLabel = new javax.swing.JLabel();
+        jPanel4 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        connectionsTable = new javax.swing.JTable();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Connect with DB");
         getContentPane().setLayout(new java.awt.CardLayout());
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
-
-        jLabel1.setText(" Connections");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
-        jPanel1.add(jLabel1, gridBagConstraints);
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
@@ -450,33 +481,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(jPanel2, gridBagConstraints);
 
-        jLabel11.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 10;
-        jPanel1.add(jLabel11, gridBagConstraints);
-
-        connectionsTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        jScrollPane2.setViewportView(connectionsTable);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 20;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel1.add(jScrollPane2, gridBagConstraints);
-
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
         newButton.setText(" New ");
@@ -489,7 +493,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 10;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(16, 4, 2, 0);
         jPanel3.add(newButton, gridBagConstraints);
 
         editButton.setText(" Edit ");
@@ -562,6 +566,46 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 20;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         jPanel1.add(jPanel3, gridBagConstraints);
+
+        infoBarLabel.setText("info bar");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 11;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jPanel1.add(infoBarLabel, gridBagConstraints);
+
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Connections"));
+        jPanel4.setLayout(new java.awt.GridBagLayout());
+
+        connectionsTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane2.setViewportView(connectionsTable);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel4.add(jScrollPane2, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(jPanel4, gridBagConstraints);
 
         getContentPane().add(jPanel1, "card2");
 
@@ -856,13 +900,13 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     private javax.swing.JButton deleteButton;
     private javax.swing.JButton downButton;
     private javax.swing.JButton editButton;
+    private javax.swing.JLabel infoBarLabel;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel11;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JButton newButton;
     private javax.swing.JButton upButton;
@@ -870,6 +914,12 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
 	public String getPassword() {
 		return currentConnection.password;
+	}
+
+	private boolean isAssignedToDataModel(int row) {
+		String rowFN = connectionList.get(row).dataModelFolder;
+		String fn = DataModelManager.getCurrentModelSubfolder();
+		return fn == null && rowFN == null || (fn != null && fn.equals(rowFN));
 	}
 
 	private static final long serialVersionUID = -3983034803834547687L;
