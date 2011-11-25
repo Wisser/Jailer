@@ -58,7 +58,7 @@ public class DataBrowserContext {
 		if (isStandAlone()) {
 			return STANDALONE_APP_NAME + " " + STANDALONE_APP_VERSION + (shortName? "" : " - Relational Data Browser");
 		}
-		return Jailer.APPLICATION_NAME + " " + Jailer.VERSION + (shortName? "" : " - Data Browser");
+		return Jailer.APPLICATION_NAME + " " + Jailer.VERSION + (shortName? "" : " - Relational Data Browser");
 	}
 	
 	public static String getAppName() {
