@@ -59,10 +59,19 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		return isOk;
 	}
 	
-    /** Creates new form DbConnectionDialog */
-    public DbConnectionDetailsEditor(java.awt.Frame parent, final String jdbcHelpURL) {
+    /** Creates new form DbConnectionDialog 
+     * @param forNew */
+    public DbConnectionDetailsEditor(java.awt.Frame parent, final String jdbcHelpURL, boolean forNew) {
         super(parent, true);
         initComponents();
+        if (forNew) {
+        	UIUtil.replace(infoBarLabel, new InfoBar("New Connection",
+        			"Enter connection credentials for the database.\n" +
+        			"Replace placeholders (\"<...>\") with appropriate URL parameters."));
+        } else {
+        	UIUtil.replace(infoBarLabel, new InfoBar("Edit Connection",
+        			"Edit connection credentials for the database."));
+        }
         setLocation(120, 170);
         load1.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -151,13 +160,13 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
         jButton2 = new javax.swing.JButton();
-        jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
         password = new javax.swing.JPasswordField();
         load1 = new javax.swing.JLabel();
         helpjdbc = new javax.swing.JLabel();
         load2 = new javax.swing.JLabel();
         alias = new javax.swing.JTextField();
+        infoBarLabel = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Database Connection");
@@ -298,12 +307,6 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.weighty = 1.0;
         jPanel1.add(jPanel2, gridBagConstraints);
 
-        jLabel10.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        jPanel1.add(jLabel10, gridBagConstraints);
-
         jLabel11.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
@@ -345,6 +348,15 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(alias, gridBagConstraints);
+
+        infoBarLabel.setText("info bar");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 11;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+        jPanel1.add(infoBarLabel, gridBagConstraints);
 
         getContentPane().add(jPanel1, "card2");
 
@@ -392,10 +404,10 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     public javax.swing.JTextField dbUrl;
     public javax.swing.JTextField driverClass;
     private javax.swing.JLabel helpjdbc;
+    private javax.swing.JLabel infoBarLabel;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
