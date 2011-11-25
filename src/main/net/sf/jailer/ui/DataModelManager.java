@@ -43,7 +43,9 @@ public class DataModelManager {
 	public static List<String> getModelFolderNames() {
 		File dmFolder = CommandLineParser.getInstance().newFile(getBaseFolder());
 		List<String> folders = new ArrayList<String>();
-		folders.add(null);
+		if (new File(dmFolder, DataModel.TABLE_CSV_FILE).exists()) {
+			folders.add(null);
+		}
 		File[] files = dmFolder.listFiles();
 		if (files != null) {
 			for (File f : files) {
