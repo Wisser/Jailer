@@ -1574,14 +1574,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     		if (!file.exists()) {
     			file.mkdir();
     		}
-    		file = new File(DataModel.getTablesFile());
-    		if (!file.exists()) {
-    			file.createNewFile();
-    		}
-    		file = new File(DataModel.getAssociationsFile());
-    		if (!file.exists()) {
-    			file.createNewFile();
-    		}
     	} catch (Exception e) {
     	}
         java.awt.EventQueue.invokeLater(new Runnable() {
