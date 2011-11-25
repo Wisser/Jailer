@@ -34,9 +34,13 @@ public class InfoBar extends JPanel {
 	private static final long serialVersionUID = -6737420167295938488L;
 	private final Font font = new JLabel().getFont();
 	private final Font big = new Font(font.getName(), font.getStyle() | Font.BOLD, (int) (font.getSize() * 1.2));
+	private final String titel;
+	private final String message;
 	
 	/** Creates new form SqlErrorDialog */
 	public InfoBar(String titel, String message) {
+		this.titel = titel;
+		this.message = message;
 		initComponents();
 		int y = 1;
 		if (titel != null) {
@@ -68,6 +72,13 @@ public class InfoBar extends JPanel {
 			setIcon(UIManager.getIcon("OptionPane.informationIcon"));
 		} catch (Throwable t) {
 			// ignore
+		}
+	}
+
+	public InfoBar(InfoBar infoBar) {
+		this(infoBar.titel, infoBar.message);
+		if (infoBar.iconLabel.getIcon() != null) {
+			setIcon(infoBar.iconLabel.getIcon());
 		}
 	}
 

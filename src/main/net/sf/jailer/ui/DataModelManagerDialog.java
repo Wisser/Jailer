@@ -83,9 +83,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		initComponents();
 
 		InfoBar infoBar = new InfoBar("Data Model Configuration", 
-				"A data model is a set of interrelated tables. Acquire information about\n" +
-				"tables by analyzing database schemas, or use the data model editor to\n" +
-				"manually define tables and associations.\n" +
+				"A data model is a set of interrelated tables. Acquire information about tables by analyzing\n" +
+				"database schemas, or use the data model editor to manually define tables and associations.\n" +
 				"Select a data model to work with.");
 		UIUtil.replace(infoBarLabel, infoBar);
 		
@@ -266,7 +265,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	            column.setPreferredWidth(width);
 	        }
 			editButton.setEnabled(currentModel != null);
-			deleteButton.setEnabled(currentModel != null && currentModel.length() > 0);
+			deleteButton.setEnabled(currentModel != null);
 			okButton.setEnabled(currentModel != null);
 			analyzeButton.setEnabled(currentModel != null);
 		} finally {
@@ -495,15 +494,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
     private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
         if (currentModel != null) {
-        	if (currentModel.length() > 0) {
-        		if (JOptionPane.showConfirmDialog(this, "Do you really want to delete Data Model \"" + modelDetails.get(currentModel).a + "\"?", "Delete", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-        			modelList.remove(currentModel);
-        			DataModelManager.deleteModel(currentModel);
-        			dataModelsTable.getSelectionModel().clearSelection();
-        			refresh();
-            		store();
-        		}
-        	}
+    		if (JOptionPane.showConfirmDialog(this, "Do you really want to delete Data Model \"" + modelDetails.get(currentModel).a + "\"?", "Delete", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+    			modelList.remove(currentModel);
+    			DataModelManager.deleteModel(currentModel);
+    			dataModelsTable.getSelectionModel().clearSelection();
+    			refresh();
+        		store();
+    		}
         }
     }//GEN-LAST:event_deleteButtonActionPerformed
 
@@ -548,7 +545,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		activateCurrentModel();
 		
 		try {
-			DbConnectionDialog dbConnectionDialog = new DbConnectionDialog(this, applicationName);
+			DbConnectionDialog dbConnectionDialog = new DbConnectionDialog(this, applicationName,
+					new InfoBar("Connect with Database", 
+							"Select a connection to the database to be analyzed, or create a new connection.\n" +
+							"Note that new connections will be assigned to the datamodel \"" + modelDetails.get(currentModel).a + "\"."));
 	        if (dbConnectionDialog.connect("Analyze Database")) {
 	        	List<String> args = new ArrayList<String>();
 	        	args.add("build-model");
@@ -616,9 +616,12 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		activateCurrentModel();
 		
 		hasSelectedModel = true;
-		setVisible(false);
+		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		store();
 		onSelect();
+		setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		setVisible(false);
+		dispose();
 	}// GEN-LAST:event_okButtonActionPerformed
 
     protected abstract void onSelect();
