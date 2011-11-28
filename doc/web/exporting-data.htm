@@ -5,8 +5,7 @@
 <meta name="description" content="Data Export Tool">
 <link rel="shortcut icon" href="favicon.ico">
 <meta name="keywords" content="data export referential integrity java jdbc dbms">
-<link rel="stylesheet" type="text/css" href="exporting-data-Dateien/styles.css">
-</head>
+<link rel="stylesheet" type="text/css" href="exporting-data-Dateien/styles.css"></head>
 <body left-margin="0" top-margin="0">
 <div align="left">
 <table style="text-align: left; position: absolute; left: 0pt; top: 0pt;" border="0" cellpadding="0" cellspacing="0" height="407" width="100%">
@@ -64,14 +63,13 @@ Tour</a> &nbsp;&nbsp;&nbsp;<a href="exporting-data.htm" target="_self" class="tl
 </center>
 </div>
 <ul>
-<li><a href="exporting-data.htm" target="_self" class="llinkA">SQL
-Export</a></li>
-<li><a href="subset-by-example.html" target="_self" class="llink">Subset&nbsp;By&nbsp;Example</a></li>
-<li><a href="exporting-xml.html" target="_self" class="llink">XML
-Export<br>
-</a></li>
-<li><a href="deleting-data.htm" target="_self" class="llink">Deleting
-Data</a></li>
+<li><small>Basic</small></li><ul><li><a href="exporting-data.htm" target="_self" class="llinkA">SQL
+Export</a></li></ul>
+
+<ul><li><a href="exporting-xml.html" target="_self" class="llink">XML
+Export</a></li><li><a href="deleting-data.htm" target="_self" class="llink">Deleting
+Data</a></li></ul>
+<li><small>Advanced</small></li><ul><li><a href="subset-by-example.html" target="_self" class="llink">Subset&nbsp;By&nbsp;Example</a></li></ul>
 </ul>
 <table border="0" cellpadding="5" cellspacing="0" width="100%">
 <tbody>
@@ -133,21 +131,18 @@ on windows platform)<br>
 </tr>
 </tbody>
 </table>
-<br>
-<img src="exporting-data-Dateien/screen1.png"><br>
+</p><p>
+and create a new data model. Press <span style="font-style: italic;">New</span> and enter "Tutorial" as the name for the new model.</p><p>
+<img style="width: 697px; height: 280px;" alt="" src="screenshot4.1.gif"><br>
 </p>
-<p><br>
-The first time you start Jailer you will be asked for a data model.<br>
-<br>
-A data model holds information about the tables in the database and all
+<p><br>A data model holds information about the tables in the database and all
 associations between them.<br>
 Most of the information can be retrieved automatically by analyzing
 the database schema.<br>
 <br>
-Click on<span style="font-style: italic;"> Analyze Database</span>
-(fka "Introspect DB").<br>
+Click on<span style="font-style: italic;"> Analyze Database</span>.<br>
 You will be asked for the
-database connection information.
+database connection information.<br></p><p><img style="width: 655px; height: 328px;" alt="" src="screenshot4.2.gif"></p><p>Create a new connection.<br>
 </p>
 <p><img style="width: 409px; height: 316px;" alt="" src="dbs1.gif"><br>
 <br>
@@ -155,7 +150,7 @@ database connection information.
 <p>Select the DBMS you are using from the displayed
 list, and fill out the following form:<br>
 </p>
-<img style="width: 570px; height: 294px;" alt="" src="dbs2.gif">
+<img style="width: 570px; height: 369px;" alt="" src="screenshot4.3.gif"><br>
 <p><br>
 Finally click on<span style="font-style: italic;"> Connect</span><big style="font-style: italic;"><span style="font-family: monospace;"></span></big><span style="font-style: italic;">.</span>
 Jailer finds seven tables and five associations:<br>
@@ -177,9 +172,7 @@ under <big><span style="font-family: monospace;"><font size="4">Associations</fo
 <img src="exporting-data-Dateien/screen4.png"><br>
 <br>
 <img src="exporting-data-Dateien/screen42.png"><br>
-<br>
-Note that Jailer now knows more about the data model than the DBMS.<br>
-<br>
+<br>The data model is&nbsp;now complete.<br><br>
 </p>
 <h4>Step 3. Export employee Scott (unrestricted)<br>
 </h4>
