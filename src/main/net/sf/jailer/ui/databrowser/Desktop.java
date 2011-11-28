@@ -60,6 +60,8 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.DefaultDesktopManager;
 import javax.swing.Icon;
@@ -822,8 +824,19 @@ public abstract class Desktop extends JDesktopPane {
 		thumbnail.add(thumbnailInner, gridBagConstraints);
 
 		thumbnailInner.setLayout(new FlowLayout(FlowLayout.CENTER, 0, 0));
-		for (int i = 0; i < jInternalFrame.getTitle().length(); ++i) {
-			thumbnailInner.add(new JLabel(jInternalFrame.getTitle().substring(i, i + 1)));
+		String title = jInternalFrame.getTitle();
+		String suffix = null;
+		Pattern tPat = Pattern.compile("^(.*)(\\([0-9]+\\))$");
+		Matcher matcher = tPat.matcher(title);
+		if (matcher.matches()) {
+			title = matcher.group(1);
+			suffix = matcher.group(2);
+		}
+		for (int i = 0; i < title.length(); ++i) {
+			thumbnailInner.add(new JLabel(title.substring(i, i + 1)));
+		}
+		if (suffix != null) {
+			thumbnailInner.add(new JLabel(suffix));
 		}
 		jInternalFrame.getContentPane().setLayout(new CardLayout());
  		

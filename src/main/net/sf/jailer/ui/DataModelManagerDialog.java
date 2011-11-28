@@ -549,7 +549,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			DbConnectionDialog dbConnectionDialog = new DbConnectionDialog(this, applicationName,
 					new InfoBar("Connect with Database", 
 							"Select a connection to the database to be analyzed, or create a new connection.\n" +
-							"Note that new connections will be assigned to the datamodel \"" + modelDetails.get(currentModel).a + "\"."));
+							"New connections will be assigned to the datamodel \"" + modelDetails.get(currentModel).a + "\"."));
 	        if (dbConnectionDialog.connect("Analyze Database")) {
 	        	List<String> args = new ArrayList<String>();
 	        	args.add("build-model");
