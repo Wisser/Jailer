@@ -286,7 +286,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			try {
 	            File file = new File(MODEL_SELECTION_FILE);
 	            BufferedWriter out = new BufferedWriter(new FileWriter(file));
-	            out.write(currentModel);
+	            out.write(currentModel + "\n");
 	            out.close();
 	        } catch (Exception e) {
 	            e.printStackTrace();
