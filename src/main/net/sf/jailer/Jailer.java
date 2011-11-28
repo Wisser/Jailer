@@ -678,7 +678,7 @@ public class Jailer {
 					}
 					sMsg += " ]\n";
 				}
-				msg = sMsg;
+				msg = sMsg + "\nConsider to disable the option \"topological sorting\" in the Data Export dialog";
 			} catch (Throwable t) {
 				_log.warn("cycle analysis failed: " + t.getMessage());
 			}
