@@ -105,7 +105,11 @@ public class DataModelManager {
 			// keep defaults
 		}
 		if (name == null) {
-			name = "Default";
+			if (modelFolder == null) {
+				name = "Default";
+			} else {
+				name = modelFolder;
+			}
 		}
 		return new Pair<String, Long>(name, lastModified);
 	}
