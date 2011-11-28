@@ -342,6 +342,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		connectionList = new ArrayList<ConnectionInfo>();
 		currentConnection = null;
 		boolean ok = false;
+		boolean preV4 = true;
 		
 		try {
             File file = new File(CONNECTIONS_FILE);
@@ -354,8 +355,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
                 	for (int n = 0; n < dma.size(); ++n) {
                 		cis.get(n).dataModelFolder = dma.get(n);
                 	}
+                	preV4 = false;
                 } catch (Throwable t) {
-                	// ignore. pre 3.8 files do not contain data model assignments.
+                	// ignore. pre 4.0 files do not contain data model assignments.
                 }
                 in.close();
                 connectionList = cis;
@@ -398,13 +400,25 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 		if (connectionList.size() == 0) {
 			ConnectionInfo ci = new ConnectionInfo();
-			ci.alias = applicationName + "DemoDatabase";
+			ci.alias = "Demo Scott";
 			ci.driverClass = "org.h2.Driver";
 			ci.jar1 = "lib" + File.separator + "h2-1.3.160.jar";
-			ci.url = "jdbc:h2:demo";
+			ci.url = "jdbc:h2:demo-scott";
 			ci.user = "sa";
 			ci.password = "";
-			ci.dataModelFolder = "Demo";
+			ci.dataModelFolder = "Demo-Scott";
+			connectionList.add(ci);
+			store();
+		}
+		if (preV4) {
+			ConnectionInfo ci = new ConnectionInfo();
+			ci.alias = "Demo Sakila";
+			ci.driverClass = "org.h2.Driver";
+			ci.jar1 = "lib" + File.separator + "h2-1.3.160.jar";
+			ci.url = "jdbc:h2:demo-sakila";
+			ci.user = "sa";
+			ci.password = "";
+			ci.dataModelFolder = "Demo-Sakila";
 			connectionList.add(ci);
 			store();
 		}
