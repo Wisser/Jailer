@@ -726,7 +726,13 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				if (line.cells.get(0).equals(s)) {
 			    	ci.url = line.cells.get(1);
 					ci.driverClass = line.cells.get(2);
-					ci.jar1 = line.cells.get(3);
+					String[] jars = line.cells.get(3).replace("/", File.separator).split(" ");
+					if (jars.length > 0) {
+						ci.jar1 = jars[0];
+					}
+					if (jars.length > 1) {
+						ci.jar2 = jars[1];
+					}
 					ci.alias = s;
 				}
 			}
