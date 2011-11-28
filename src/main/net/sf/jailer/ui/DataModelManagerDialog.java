@@ -539,6 +539,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         hasSelectedModel = false;
         setVisible(false);
+        dispose();
     }//GEN-LAST:event_jButton2ActionPerformed
 
     private void analyzeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analyzeButtonActionPerformed
