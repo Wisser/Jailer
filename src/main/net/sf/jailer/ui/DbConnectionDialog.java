@@ -139,7 +139,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 */
 	public DbConnectionDialog(java.awt.Frame parent, String applicationName, InfoBar infoBar) {
 		super(parent, true);
-		this.applicationName = applicationName;
 		this.parent = parent;
 		this.infoBar = infoBar;
 		loadConnectionList();
@@ -254,11 +253,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
 	private String jdbcHelpURL = "http://jailer.sourceforge.net/doc/jdbc.html?src=app";
 
-	/**
-	 * Application name. Used to create the name of the demo database alias. 
-	 */
-	private final String applicationName;
-	
 	public synchronized void setJdbcHelpURL(String jdbcHelpURL) {
 		this.jdbcHelpURL = jdbcHelpURL;
 	}

@@ -733,9 +733,9 @@ public class DataModel {
 	 * @param stable the subject table
 	 * @param subjectCondition 
 	 * @param scriptFormat
-	 * 
+	 * @param positions table positions or <code>null</code>
 	 */
-	public void save(String file, Table stable, String subjectCondition, ScriptFormat scriptFormat, List<RestrictionDefinition> restrictionDefinitions) throws FileNotFoundException {
+	public void save(String file, Table stable, String subjectCondition, ScriptFormat scriptFormat, List<RestrictionDefinition> restrictionDefinitions, Map<String, Map<String, double[]>> positions) throws FileNotFoundException {
 		File extractionModel = new File(file);
 		PrintWriter out = new PrintWriter(extractionModel);
 		out.println("# subject; condition;  limit; restrictions");
@@ -771,7 +771,11 @@ public class DataModel {
 		}
 		saveFilters(out);
 		out.println();
-		LayoutStorage.store(out);
+		if (positions == null) {
+			LayoutStorage.store(out);
+		} else {
+			LayoutStorage.store(out, positions);
+		}
 		out.println();
 		out.println(CsvFile.BLOCK_INDICATOR + "version");
 		out.println(Jailer.VERSION);

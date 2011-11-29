@@ -1212,6 +1212,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			if (extractionModelFrame != null && extractionModelFrame.closureBorderView != null) {
 				extractionModelFrame.closureBorderView.refresh();
 			}
+			if (extractionModelFrame != null && extractionModelFrame.restrictedDependenciesView != null) {
+				extractionModelFrame.restrictedDependenciesView.refresh();
+			}
 		}
 	}
 	
@@ -1588,6 +1591,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			initialRestrictionCondition = saveInitialRestrictionCondition;
 			extractionModelFrame.closureView.refresh();
 			extractionModelFrame.closureBorderView.refresh();
+			extractionModelFrame.restrictedDependenciesView.refresh();
 			tree.grabFocus();
     	}
     }
@@ -1607,6 +1611,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		restrictionsTable.setModel(restrictionTableModel());
 		extractionModelFrame.closureView.refresh();
 		extractionModelFrame.closureBorderView.refresh();
+		extractionModelFrame.restrictedDependenciesView.refresh();
     }
 
 	/**
@@ -2136,7 +2141,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			if (stable == null) {
 				return true;
 			}
-			dataModel.save(extractionModelFile, stable, ConditionEditor.toMultiLine(condition.getText()), scriptFormat, currentRestrictionDefinitions);
+			dataModel.save(extractionModelFile, stable, ConditionEditor.toMultiLine(condition.getText()), scriptFormat, currentRestrictionDefinitions, null);
 			needsSave = false;
 			extractionModelFrame.updateTitle(needsSave);
 		} catch (Exception e) {
@@ -2285,6 +2290,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		graphView.resetExpandedState();
 		extractionModelFrame.closureView.refresh();
 		extractionModelFrame.closureBorderView.refresh();
+		extractionModelFrame.restrictedDependenciesView.refresh();
 	}
 	 
 	/**
@@ -2330,6 +2336,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		graphView.resetExpandedState();
 		extractionModelFrame.closureView.refresh();
 		extractionModelFrame.closureBorderView.refresh();
+		extractionModelFrame.restrictedDependenciesView.refresh();
 	}
 
 	/**
