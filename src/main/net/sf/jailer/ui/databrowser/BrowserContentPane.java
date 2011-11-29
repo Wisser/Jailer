@@ -54,9 +54,11 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -1188,7 +1190,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					break;
 				}
 			}
-			dataModel.save(file, stable, subjectCondition, ScriptFormat.SQL, restrictionDefinitions);
+			Map<String, Map<String, double[]>> positions = new TreeMap<String, Map<String,double[]>>();
+			collectPositions(positions);
+			dataModel.save(file, stable, subjectCondition, ScriptFormat.SQL, restrictionDefinitions, positions);
 
 			if (DataBrowserContext.isStandAlone()) {
 				parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -1225,6 +1229,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						return item;
 					}
 				}));
+				count[0]++;
 			}
 		}
 		return node;
@@ -2816,6 +2821,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract void appendLayout();
 	protected abstract void adjustClosure(BrowserContentPane tabu);
 	protected abstract LinkedBlockingQueue<LoadJob> getRunnableQueue();
+	/**
+	 * Collect layout of tables in a extraction model.
+	 * 
+	 * @param positions to put positions into
+	 */
+	protected abstract void collectPositions(Map<String, Map<String, double[]>> positions);
 
 
     private void openDetails(final int x, final int y) {

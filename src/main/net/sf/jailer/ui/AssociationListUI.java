@@ -690,10 +690,16 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 						selection.removeAll(node.associations);
 					} else {
 						selection.addAll(node.associations);
+						Node leaf = node;
+						while (leaf.children != null && leaf.children.size() > 0) {
+							leaf = leaf.children.get(0);
+						}
+						if (leaf.associations.size() > 0) {
+							onSelect(leaf.associations.iterator().next());
+						}
 					}
 					updateModel();
 				}
-				
 			}
 		});
 		allMouseListener.add(l);
@@ -704,7 +710,10 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 		return panel;
 	}
     
-    private Map<String, String> shortForms = new HashMap<String, String>();
+    protected void onSelect(AssociationModel association) {
+	}
+
+	private Map<String, String> shortForms = new HashMap<String, String>();
     
     private String shorten(String text) {
     	if (shortForms.containsKey(text)) {

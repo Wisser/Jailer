@@ -477,6 +477,14 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="cycleViewActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JMenuItem" name="restrictedDependenciesToolMenuItem">
+              <Properties>
+                <Property name="text" type="java.lang.String" value="Restricted Dependencies View"/>
+              </Properties>
+              <Events>
+                <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="restrictedDependenciesToolMenuItemActionPerformed"/>
+              </Events>
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="renderHtml">
               <Properties>
                 <Property name="text" type="java.lang.String" value="HTML Rendering"/>

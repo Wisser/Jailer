@@ -54,6 +54,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -727,6 +728,11 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			protected LinkedBlockingQueue<LoadJob> getRunnableQueue() {
 				return runnableQueue;
+			}
+
+			@Override
+			protected void collectPositions(Map<String, Map<String, double[]>> positions) {
+				Desktop.this.collectPositions(tableBrowser, positions);
 			}
 
 		};
@@ -2506,6 +2512,42 @@ public abstract class Desktop extends JDesktopPane {
 		}
 		Rectangle r = new Rectangle(x, y, Math.max(1, w), Math.max(1, h));
 		scrollRectToVisible(r);
+	}
+
+	/**
+	 * Collect layout of tables in a extraction model.
+	 * 
+	 * @param positions to put positions into
+	 */
+	private void collectPositions(RowBrowser root, Map<String, Map<String, double[]>> positions) {
+		List<Pair<RowBrowser, Pair<Integer, Integer>>> toDo = new LinkedList<Pair<RowBrowser,Pair<Integer,Integer>>>();
+		toDo.add(new Pair<RowBrowser, Pair<Integer, Integer>>(root, new Pair<Integer, Integer>(1, 1)));
+		String subject = root.browserContentPane.table.getName(); // datamodel.get().getDisplayName(root.browserContentPane.table);
+		double scaleX = 0.35 / layoutMode.factor;
+		double scaleY = 0.3 / layoutMode.factor;
+		double scher = 2;
+		
+		while (!toDo.isEmpty()) {
+			Pair<RowBrowser, Pair<Integer, Integer>> rowBrowser = toDo.remove(0);
+			int i = 1;
+			for (RowBrowser child: getChildBrowsers(rowBrowser.a, true)) {
+				toDo.add(new Pair<RowBrowser, Pair<Integer, Integer>>(child, new Pair<Integer, Integer>(rowBrowser.b.a + 1, i++)));
+			}
+			String table = rowBrowser.a.browserContentPane.table.getName(); // datamodel.get().getDisplayName(rowBrowser.a.browserContentPane.table);
+			Map<String, double[]> tablePos = positions.get(subject);
+			if (tablePos == null) {
+				tablePos = new TreeMap<String, double[]>();
+				positions.put(subject, tablePos);
+			}
+			if (!tablePos.containsKey(table)) {
+				double x = rowBrowser.a.internalFrame.getX();
+				double y = rowBrowser.a.internalFrame.getY();
+				tablePos.put(table, new double[] { x * scaleX + scher * (2 * (rowBrowser.b.b % 2) - 1), y * scaleY + scher * (2 * (rowBrowser.b.a % 2) - 1), 1.0 });
+//			} else {
+//				double[] pos = tablePos.get(table);
+//				tablePos.put(table, new double[] { pos[0], pos[1], 0.0 });
+			}
+		}
 	}
 
 	/**

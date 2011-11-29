@@ -37,12 +37,16 @@ public abstract class ClosureBorderDialog extends javax.swing.JDialog {
 
     private static final long serialVersionUID = -7151994890007647782L;
     
-    private AssociationListUI associationListUI;
+    protected AssociationListUI associationListUI;
     
 	/** Creates new form ClosureBorderDialog */
-    public ClosureBorderDialog(java.awt.Frame parent) {
+    public ClosureBorderDialog(java.awt.Frame parent, boolean withInfoLine) {
         super(parent, false);
         initComponents();
+        if (!withInfoLine) {
+        	rootNameLabel.setVisible(false);
+        	jLabel1.setVisible(false);
+        }
         
         associationListUI = new AssociationListUI("Remove Restrictions", "Remove Restrictions from selected Associations", false) {
 			private static final long serialVersionUID = 1129925600909956307L;
@@ -53,6 +57,10 @@ public abstract class ClosureBorderDialog extends javax.swing.JDialog {
 					associations.add(((DefaultAssociationModel) associationModel).association);
 				}
 				removeRestrictions(associations);
+			}
+			@Override
+		    protected void onSelect(AssociationModel association) {
+				ClosureBorderDialog.this.onSelect(((DefaultAssociationModel) association).association);
 			}
         };
         
@@ -154,5 +162,6 @@ public abstract class ClosureBorderDialog extends javax.swing.JDialog {
 
 	protected abstract Table getRoot();
 	protected abstract DataModel getDataModel();
+	protected abstract void onSelect(Association association);
 
 }
