@@ -65,7 +65,7 @@ public class ClasspathUtil {
 		}
 		File file = new File(jarName1);
 		if (!file.exists()) {
-			throw new FileNotFoundException("jar file not found: " + jarName1);
+			throw new FileNotFoundException("Jar-file not found: '" + jarName1 + "'");
 		}
 		_log.info("added '" + jarName1 + "' to classpath");
 		if (jarName2 == null) {
@@ -73,7 +73,7 @@ public class ClasspathUtil {
 		} else {
 			File file2 = new File(jarName2);
 			if (!file2.exists()) {
-				throw new FileNotFoundException("jar file not found: " + jarName2);
+				throw new FileNotFoundException("Jar-file not found: '" + jarName2 + "'");
 			}
 			_log.info("added '" + jarName2 + "' to classpath");
 			urls = new URL[] { file.toURI().toURL(),

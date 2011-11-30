@@ -791,8 +791,16 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
 		isConnected = false;
 
-		String d1 = currentConnection.jar1.trim();
-		String d2 = currentConnection.jar2.trim();
+		if (testConnection(this, currentConnection)) {
+			isConnected = true;
+			setVisible(false);
+		}
+
+	}// GEN-LAST:event_jButton1ActionPerformed
+
+	public static boolean testConnection(Component parent, ConnectionInfo ci) {
+		String d1 = ci.jar1.trim();
+		String d2 = ci.jar2.trim();
 		if (d1.length() == 0) {
 			d1 = null;
 		}
@@ -802,33 +810,30 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		try {
 			Session.setClassLoaderForJdbcDriver(ClasspathUtil.addJarToClasspath(d1, d2));
 		} catch (Exception e) {
-			UIUtil.showException(this, "Error loading driver jars", e);
-			return;
+			UIUtil.showException(parent, "Error loading driver jars", e);
+			return false;
 		}
 
 		try {
 			if (Session.classLoaderForJdbcDriver != null) {
 				Driver d = (Driver) Class.forName(
-						currentConnection.driverClass, true,
+						ci.driverClass, true,
 						Session.classLoaderForJdbcDriver).newInstance();
 				DriverManager.registerDriver(new Session.DriverShim(d));
 			} else {
-				Class.forName(currentConnection.driverClass);
+				Class.forName(ci.driverClass);
 			}
-			Connection con = DriverManager.getConnection(currentConnection.url,
-					currentConnection.user, currentConnection.password);
+			Connection con = DriverManager.getConnection(ci.url, ci.user, ci.password);
 			con.close();
-			isConnected = true;
-			setVisible(false);
+			return true;
 		} catch (ClassNotFoundException e) {
-			UIUtil.showException(this, "Could not connect to DB", new ClassNotFoundException("JDBC driver class not found: " + e.getMessage(), e));
-			return;
+			UIUtil.showException(parent, "Could not connect to DB", new ClassNotFoundException("JDBC driver class not found: '" + e.getMessage() + "'", e));
+			return false;
 		} catch (Exception e) {
-			UIUtil.showException(this, "Could not connect to DB", e);
-			return;
+			UIUtil.showException(parent, "Could not connect to DB", e);
+			return false;
 		}
-
-	}// GEN-LAST:event_jButton1ActionPerformed
+	}
 
 	/**
 	 * Gets all DB schemas.

@@ -1,5 +1,6 @@
 4.0
   - Multi data model support.
+  - "Subset by Example" feature.
   - Added a second demo-model.
 
 3.7.10

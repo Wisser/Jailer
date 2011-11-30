@@ -20,6 +20,7 @@ import java.net.URI;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JOptionPane;
 
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
 
@@ -158,8 +159,9 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         dbUrl = new javax.swing.JTextField();
         user = new javax.swing.JTextField();
         jPanel2 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
+        okButton = new javax.swing.JButton();
+        cancelButton = new javax.swing.JButton();
+        testConnectionButton = new javax.swing.JButton();
         jLabel11 = new javax.swing.JLabel();
         password = new javax.swing.JPasswordField();
         load1 = new javax.swing.JLabel();
@@ -269,10 +271,36 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        jButton1.setText(" Ok ");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        okButton.setText(" Ok ");
+        okButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                okButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        jPanel2.add(okButton, gridBagConstraints);
+
+        cancelButton.setText(" Cancel ");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel2.add(cancelButton, gridBagConstraints);
+
+        testConnectionButton.setText(" Test Connection ");
+        testConnectionButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                testConnectionButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -280,23 +308,8 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
-        jPanel2.add(jButton1, gridBagConstraints);
-
-        jButton2.setText(" Cancel ");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        jPanel2.add(jButton2, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 12);
+        jPanel2.add(testConnectionButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -363,27 +376,30 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    @SuppressWarnings("deprecation")
-	private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-    	isOk = true;
+   private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
+    	if (fillConnectionInfo()) {
+       		isOk = true;
+       		setVisible(false);
+        }
+    }//GEN-LAST:event_okButtonActionPerformed
+
+   	@SuppressWarnings("deprecation")
+	private boolean fillConnectionInfo() {
+		boolean ok = true;
         Color red = new Color(255, 200, 180);
 		if (alias.getText().trim().length() == 0) {
         	alias.setBackground(red);
-        	isOk = false;
+        	ok = false;
         }
-//        if (user.getText().trim().length() == 0) {
-//        	user.setBackground(red);
-//        	isOk = false;
-//        }
         if (driverClass.getText().trim().length() == 0) {
         	driverClass.setBackground(red);
-        	isOk = false;
+        	ok = false;
         }
         if (dbUrl.getText().trim().length() == 0) {
         	dbUrl.setBackground(red);
-        	isOk = false;
+        	ok = false;
         }
-        if (isOk) {
+        if (ok) {
         	ci.alias = alias.getText().trim();
         	ci.driverClass = driverClass.getText().trim();
         	ci.jar1 = jar1.getText().trim();
@@ -391,22 +407,29 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         	ci.url = dbUrl.getText().trim();
         	ci.user = user.getText().trim();
         	ci.password = password.getText().trim();
-        	setVisible(false);
         }
-    }//GEN-LAST:event_jButton1ActionPerformed
+        return ok;
+	}
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         setVisible(false);
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_cancelButtonActionPerformed
+
+    private void testConnectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testConnectionButtonActionPerformed
+        if (fillConnectionInfo()) {
+        	if (DbConnectionDialog.testConnection(this, ci)) {
+        		JOptionPane.showMessageDialog(this, "Successfully established connection.", "Connected", JOptionPane.INFORMATION_MESSAGE);
+        	}
+        }
+    }//GEN-LAST:event_testConnectionButtonActionPerformed
    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JTextField alias;
+    private javax.swing.JButton cancelButton;
     public javax.swing.JTextField dbUrl;
     public javax.swing.JTextField driverClass;
     private javax.swing.JLabel helpjdbc;
     private javax.swing.JLabel infoBarLabel;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
@@ -423,7 +446,9 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     private javax.swing.JTextField jar2;
     private javax.swing.JLabel load1;
     private javax.swing.JLabel load2;
+    private javax.swing.JButton okButton;
     private javax.swing.JPasswordField password;
+    private javax.swing.JButton testConnectionButton;
     public javax.swing.JTextField user;
     // End of variables declaration//GEN-END:variables
 
