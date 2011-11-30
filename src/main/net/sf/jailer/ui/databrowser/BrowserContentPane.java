@@ -2358,8 +2358,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        rowsTableScrollPane.setWheelScrollingEnabled(false);
-
         rowsTable.setAutoCreateRowSorter(true);
         rowsTable.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {

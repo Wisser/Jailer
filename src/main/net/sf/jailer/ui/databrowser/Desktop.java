@@ -1899,6 +1899,7 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	void onMouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
+		if (evt.isConsumed() && !evt.isControlDown()) return; // TODO
 		int d = 0;
         if (evt.getWheelRotation() < 0) {
         	d = -1;
