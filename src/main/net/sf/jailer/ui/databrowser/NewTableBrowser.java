@@ -23,6 +23,7 @@ import javax.swing.DefaultListModel;
 
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.UIUtil;
 
 /**
  * Dialog for selecting the table for a new table browser.
@@ -36,6 +37,8 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
     public NewTableBrowser(java.awt.Frame parent, DataModel datamodel, boolean offerAlternatives) {
         super(parent, true);
         initComponents();
+        
+        UIUtil.wireComponentWithButton(tableList, okButton);
         
         analyzeButton.setVisible(DataBrowserContext.isSupportsDataModelUpdates());
         
