@@ -1,5 +1,6 @@
 2.0
   - Multi data model support.
+  - "Subset by Example" feature.
   - Added a second demo-model.
 
 1.6.1

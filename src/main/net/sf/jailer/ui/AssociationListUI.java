@@ -558,6 +558,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 						public void itemStateChanged(ItemEvent e) {
 							if (checkbox.isSelected()) {
 								selection.add(association);
+								onSelect(association);
 							} else {
 								selection.remove(association);
 							}
