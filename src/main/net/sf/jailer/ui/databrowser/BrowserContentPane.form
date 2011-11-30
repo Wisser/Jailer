@@ -272,6 +272,9 @@
               <Layout class="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout"/>
               <SubComponents>
                 <Container class="javax.swing.JScrollPane" name="rowsTableScrollPane">
+                  <Properties>
+                    <Property name="wheelScrollingEnabled" type="boolean" value="false"/>
+                  </Properties>
                   <AuxValues>
                     <AuxValue name="JavaCodeGenerator_VariableModifier" type="java.lang.Integer" value="0"/>
                     <AuxValue name="autoScrollPane" type="java.lang.Boolean" value="true"/>
