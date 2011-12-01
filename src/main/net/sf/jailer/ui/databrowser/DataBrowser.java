@@ -1110,6 +1110,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private void thumbnailLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_thumbnailLayoutRadioButtonMenuItemActionPerformed
 		desktop.rescaleLayout(Desktop.LayoutMode.THUMBNAIL, null);
+		wheelzoomTip();
 	}// GEN-LAST:event_thumbnailLayoutRadioButtonMenuItemActionPerformed
 
 	private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem1ActionPerformed
@@ -1154,18 +1155,26 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private void tinyLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_tinyLayoutRadioButtonMenuItemActionPerformed
 		desktop.rescaleLayout(Desktop.LayoutMode.TINY, null);
+		wheelzoomTip();
 	}// GEN-LAST:event_tinyLayoutRadioButtonMenuItemActionPerformed
+
+	private void wheelzoomTip() {
+		TipDialog.showTip(this, "WHEELZOOM", "While holding down the Ctrl-key you can use the mouse-wheel to zoom in or out.");
+	}
 
 	private void smallLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_smallLayoutRadioButtonMenuItemActionPerformed
 		desktop.rescaleLayout(Desktop.LayoutMode.SMALL, null);
+		wheelzoomTip();
 	}// GEN-LAST:event_smallLayoutRadioButtonMenuItemActionPerformed
 
 	private void mediumLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_mediumLayoutRadioButtonMenuItemActionPerformed
 		desktop.rescaleLayout(Desktop.LayoutMode.MEDIUM, null);
+		wheelzoomTip();
 	}// GEN-LAST:event_mediumLayoutRadioButtonMenuItemActionPerformed
 
 	private void largeLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_largeLayoutRadioButtonMenuItemActionPerformed
 		desktop.rescaleLayout(Desktop.LayoutMode.LARGE, null);
+		wheelzoomTip();
 	}// GEN-LAST:event_largeLayoutRadioButtonMenuItemActionPerformed
 
 	private void navigationTreeMouseClicked(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_navigationTreeMouseClicked
