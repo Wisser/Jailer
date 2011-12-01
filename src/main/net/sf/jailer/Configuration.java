@@ -96,7 +96,7 @@ public class Configuration {
     public SimpleDateFormat dateFormat = null;
 
 	public char nanoSep = '.';
-	public boolean appendNanosToTimestamp = false;
+	public boolean appendNanosToTimestamp = true;
 	public boolean appendMillisToTimestamp = false;
 	public boolean useToTimestampFunction = false;
 	public DateFormat timestampFormat = null;
