@@ -2052,9 +2052,6 @@ public abstract class Desktop extends JDesktopPane {
 	 * Reloads the data model and replaces the tables in all browser windows.
 	 */
 	public void reloadDataModel(Map<String, String> schemamapping, boolean forAll) throws Exception {
-		DataModel newModel = new DataModel(schemamapping);
-		datamodel.set(newModel);
-		
 		try {
 			Component pFrame = SwingUtilities.getWindowAncestor(this);
 			if (pFrame == null) {
@@ -2062,6 +2059,10 @@ public abstract class Desktop extends JDesktopPane {
 			}
 			String filename = ".tempsession-" + System.currentTimeMillis();
 			storeSession(filename);
+			
+			DataModel newModel = new DataModel(schemamapping);
+			datamodel.set(newModel);
+			
 			restoreSession(null, pFrame, filename);
 			File file = new File(filename);
 			file.delete();
@@ -2149,7 +2150,7 @@ public abstract class Desktop extends JDesktopPane {
 				schemaMapping.clear();
 				schemaMapping.putAll(mapping);
 				parentFrame.updateStatusBar();
-				reloadDataModel(mapping);
+				reloadDataModel(mapping, !silent);
 				reloadRoots();
 			}
 		} catch (Exception e) {
