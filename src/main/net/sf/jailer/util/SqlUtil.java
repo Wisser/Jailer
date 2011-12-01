@@ -283,11 +283,14 @@ public class SqlUtil {
         if (content instanceof java.sql.Timestamp) {
         	if (c.useToTimestampFunction) {
         		String format;
+        		String nanoFormat;
         		synchronized(defaultTimestampFormat) {
 	        		format = defaultTimestampFormat.format((Date) content);
-	       			format += getNanoString((Timestamp) content, c.appendNanosToTimestamp, c.nanoSep);
+	        		String nanoString = getNanoString((Timestamp) content, c.appendNanosToTimestamp, c.nanoSep);
+	        		nanoFormat = "FFFFFFFFFFFF".substring(0, nanoString.length());
+	    			format += nanoString;
         		}
-				return "to_timestamp('" + format + "', 'YYYY-MM-DD HH24.MI.SS.FF')";
+				return "to_timestamp('" + format + "', 'YYYY-MM-DD HH24.MI.SS." + nanoFormat + "')";
         	} else if (c.timestampFormat != null) {
         		String format;
         		synchronized(c.timestampFormat) {
