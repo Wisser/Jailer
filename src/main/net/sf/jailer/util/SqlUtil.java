@@ -287,7 +287,7 @@ public class SqlUtil {
         		synchronized(defaultTimestampFormat) {
 	        		format = defaultTimestampFormat.format((Date) content);
 	        		String nanoString = getNanoString((Timestamp) content, c.appendNanosToTimestamp, c.nanoSep);
-	        		nanoFormat = "FFFFFFFFFFFF".substring(0, nanoString.length());
+	        		nanoFormat = "FFFFFFFFFFFFFFF".substring(1, nanoString.length());
 	    			format += nanoString;
         		}
 				return "to_timestamp('" + format + "', 'YYYY-MM-DD HH24.MI.SS." + nanoFormat + "')";

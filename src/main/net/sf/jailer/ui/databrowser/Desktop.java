@@ -2053,33 +2053,59 @@ public abstract class Desktop extends JDesktopPane {
 	 */
 	public void reloadDataModel(Map<String, String> schemamapping, boolean forAll) throws Exception {
 		DataModel newModel = new DataModel(schemamapping);
-
-		for (RowBrowser rb : tableBrowsers) {
-			if (rb.browserContentPane != null) {
-				rb.browserContentPane.dataModel = newModel;
-				if (rb.browserContentPane.table != null && datamodel.get() != null) {
-					Table oldTable = rb.browserContentPane.table;
-					Table newTable = null;
-					if (oldTable.getOriginalName() != null) {
-						for (Table t : newModel.getTables()) {
-							if (oldTable.getOriginalName().equals(t.getOriginalName())) {
-								newTable = t;
-								break;
-							}
-						}
-					}
-					if (newTable == null && oldTable.getName() != null) {
-						newTable = newModel.getTableByDisplayName(datamodel.get().getDisplayName(oldTable));
-					}
-					if (newTable != null) {
-						rb.browserContentPane.table = newTable;
-					}
-				}
-			}
-			updateChildren(rb, rb.browserContentPane.rows);
-		}
-
 		datamodel.set(newModel);
+		
+		try {
+			Component pFrame = SwingUtilities.getWindowAncestor(this);
+			if (pFrame == null) {
+				pFrame = this;
+			}
+			String filename = ".tempsession-" + System.currentTimeMillis();
+			storeSession(filename);
+			restoreSession(null, pFrame, filename);
+			File file = new File(filename);
+			file.delete();
+		} catch (Throwable e) {
+			UIUtil.showException(this, "Error", e);
+		}
+		
+		
+//
+//		for (RowBrowser rb : tableBrowsers) {
+//			if (rb.browserContentPane != null) {
+//				rb.browserContentPane.dataModel = newModel;
+//				if (rb.browserContentPane.table != null && datamodel.get() != null) {
+//					Table oldTable = rb.browserContentPane.table;
+//					Table newTable = null;
+//					if (oldTable.getOriginalName() != null) {
+//						for (Table t : newModel.getTables()) {
+//							if (oldTable.getOriginalName().equals(t.getOriginalName())) {
+//								newTable = t;
+//								break;
+//							}
+//						}
+//					}
+//					if (newTable == null && oldTable.getName() != null) {
+//						newTable = newModel.getTableByDisplayName(datamodel.get().getDisplayName(oldTable));
+//					}
+//					if (newTable != null) {
+//						rb.browserContentPane.table = newTable;
+//					}
+//				}
+//				Association association = rb.browserContentPane.association;
+//				if (association != null && datamodel.get() != null) {
+//					Association newAssociation = newModel.namedAssociations.get(association.getName());
+//					if (newAssociation != null) {
+//						if (association.source.equals(newAssociation.source)) {
+//							if (association.destination.equals(newAssociation.destination)) {
+//								rb.browserContentPane.association = newAssociation;
+//							}
+//						}
+//					}
+//				}
+//			}
+//			updateChildren(rb, rb.browserContentPane.rows);
+//		}
 
 		if (forAll) {
 			for (Desktop desktop : desktops) {
@@ -2181,10 +2207,7 @@ public abstract class Desktop extends JDesktopPane {
 	 */
 	public void storeSession() {
 		String fnProp = null;
-		int i = 1;
-		Map<RowBrowser, Integer> browserNumber = new HashMap<Desktop.RowBrowser, Integer>();
 		for (RowBrowser rb : tableBrowsers) {
-			browserNumber.put(rb, i++);
 			if (fnProp == null && rb.parent == null && rb.browserContentPane.table != null) {
 				if (!(rb.browserContentPane.table instanceof BrowserContentPane.SqlStatementTable)) {
 					fnProp = datamodel.get().getDisplayName(rb.browserContentPane.table).replace(' ', '-').replace('\"', '-').replace('\'', '-')
@@ -2207,21 +2230,34 @@ public abstract class Desktop extends JDesktopPane {
 
 		if (sFile != null) {
 			try {
-				FileWriter out = new FileWriter(new File(sFile));
-
-				out.write("Layout; " + layoutMode + LF);
-
-				for (RowBrowser rb : tableBrowsers) {
-					if (rb.parent == null) {
-						storeSession(rb, browserNumber, out);
-					}
-				}
-				out.close();
-				currentSessionFileName = sFile;
+				storeSession(sFile);
 			} catch (Throwable e) {
 				UIUtil.showException(this, "Error", e);
 			}
+			currentSessionFileName = sFile;
 		}
+	}
+
+	/**
+	 * Stores browser session.
+	 */
+	private void storeSession(String sFile) throws IOException {
+		int i = 1;
+		Map<RowBrowser, Integer> browserNumber = new HashMap<Desktop.RowBrowser, Integer>();
+		for (RowBrowser rb : tableBrowsers) {
+			browserNumber.put(rb, i++);
+		}
+		
+		FileWriter out = new FileWriter(new File(sFile));
+
+		out.write("Layout; " + layoutMode + LF);
+
+		for (RowBrowser rb : tableBrowsers) {
+			if (rb.parent == null) {
+				storeSession(rb, browserNumber, out);
+			}
+		}
+		out.close();
 	}
 
 	/**
@@ -2273,109 +2309,116 @@ public abstract class Desktop extends JDesktopPane {
 			pFrame = this;
 		}
 		String sFile = UIUtil.choseFile(null, startDir.getPath(), toBeAppended == null ? "Restore Layout" : "Append Layout", ".dbl", pFrame, true, true);
-		String tbaPeerID = null;
-
+		
 		if (sFile != null) {
 			try {
-				Map<String, RowBrowser> rbByID = new HashMap<String, Desktop.RowBrowser>();
-				List<Line> lines = new CsvFile(new File(sFile)).getLines();
-				if (toBeAppended == null) {
-					closeAll();
-				}
-				Collection<RowBrowser> toBeLoaded = new ArrayList<Desktop.RowBrowser>();
-				List<String> unknownTables = new ArrayList<String>();
-				for (CsvFile.Line l : lines) {
-					if (l.cells.get(0).equals("Layout")) {
-						try {
-							if (toBeAppended == null) {
-								layoutMode = LayoutMode.valueOf(l.cells.get(1));
-								updateMenu(layoutMode);
-							}
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						continue;
-					}
-
-					String id = l.cells.get(0);
-					String parent = l.cells.get(1);
-					String where = l.cells.get(2);
-					Point loc = new Point(Integer.parseInt(l.cells.get(3)), Integer.parseInt(l.cells.get(4)));
-					Dimension size = new Dimension(Integer.parseInt(l.cells.get(5)), Integer.parseInt(l.cells.get(6)));
-					int limit = Integer.parseInt(l.cells.get(7));
-					boolean selectDistinct = Boolean.parseBoolean(l.cells.get(8));
-					RowBrowser rb = null;
-					if ("T".equals(l.cells.get(9))) {
-						Table table = datamodel.get().getTable(l.cells.get(10));
-						if (table == null) {
-							unknownTables.add(l.cells.get(10));
-						} else {
-							Association association = datamodel.get().namedAssociations.get(l.cells.get(11));
-							RowBrowser parentRB = rbByID.get(parent);
-							if (association == null) {
-								parentRB = null;
-							}
-							boolean add = true;
-							if (toBeAppended != null) {
-								if (tbaPeerID == null) {
-									add = false;
-									if (parent.trim().length() == 0 && table.equals(toBeAppended.browserContentPane.table)) {
-										tbaPeerID = id;
-									}
-								} else {
-									if (tbaPeerID.equals(parent)) {
-										parentRB = toBeAppended;
-									} else if (!rbByID.containsKey(parent)) {
-										add = false;
-									}
-								}
-							}
-							if (add) {
-								rb = addTableBrowser(parentRB, -1, table, parentRB != null ? association : null, where, limit, selectDistinct, false);
-								if (id.length() > 0) {
-									rbByID.put(id, rb);
-								}
-								if (parentRB == null || parentRB == toBeAppended) {
-									toBeLoaded.add(rb);
-								}
-							}
-						}
-					} else {
-						if (toBeAppended == null) {
-							rb = addTableBrowser(null, 0, null, null, where, limit, selectDistinct, false);
-							toBeLoaded.add(rb);
-						}
-					}
-					if (rb != null) {
-						rb.setHidden(Boolean.parseBoolean(l.cells.get(12)));
-						if (toBeAppended == null) {
-							rb.internalFrame.setLocation(loc);
-							rb.internalFrame.setSize(size);
-						}
-					}
-				}
-				checkDesktopSize();
-				makePrimaryRootVisible();
-
-				for (RowBrowser rb : toBeLoaded) {
-					rb.browserContentPane.reloadRows();
-				}
-				if (toBeAppended != null && toBeLoaded.isEmpty()) {
-					JOptionPane.showMessageDialog(pFrame,
-							"Layout doesn't contain table \"" + datamodel.get().getDisplayName(toBeAppended.browserContentPane.table) + "\" as root.");
-				} else if (!unknownTables.isEmpty()) {
-					String pList = "";
-					for (String ut : unknownTables) {
-						pList += ut + "\n";
-					}
-					JOptionPane.showMessageDialog(pFrame, "Unknown tables:\n\n" + pList + "\n");
-				}
+				restoreSession(toBeAppended, pFrame, sFile);
 				if (toBeAppended == null) {
 					currentSessionFileName = sFile;
 				}
 			} catch (Throwable e) {
 				UIUtil.showException(this, "Error", e);
 			}
+		}
+	}
+
+	/**
+	 * Restores browser session.
+	 */
+	private void restoreSession(RowBrowser toBeAppended, Component pFrame, String sFile) throws Exception {
+		String tbaPeerID = null;
+		Map<String, RowBrowser> rbByID = new HashMap<String, Desktop.RowBrowser>();
+		List<Line> lines = new CsvFile(new File(sFile)).getLines();
+		if (toBeAppended == null) {
+			closeAll();
+		}
+		Collection<RowBrowser> toBeLoaded = new ArrayList<Desktop.RowBrowser>();
+		List<String> unknownTables = new ArrayList<String>();
+		for (CsvFile.Line l : lines) {
+			if (l.cells.get(0).equals("Layout")) {
+				try {
+					if (toBeAppended == null) {
+						layoutMode = LayoutMode.valueOf(l.cells.get(1));
+						updateMenu(layoutMode);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				continue;
+			}
+
+			String id = l.cells.get(0);
+			String parent = l.cells.get(1);
+			String where = l.cells.get(2);
+			Point loc = new Point(Integer.parseInt(l.cells.get(3)), Integer.parseInt(l.cells.get(4)));
+			Dimension size = new Dimension(Integer.parseInt(l.cells.get(5)), Integer.parseInt(l.cells.get(6)));
+			int limit = Integer.parseInt(l.cells.get(7));
+			boolean selectDistinct = Boolean.parseBoolean(l.cells.get(8));
+			RowBrowser rb = null;
+			if ("T".equals(l.cells.get(9))) {
+				Table table = datamodel.get().getTable(l.cells.get(10));
+				if (table == null) {
+					unknownTables.add(l.cells.get(10));
+				} else {
+					Association association = datamodel.get().namedAssociations.get(l.cells.get(11));
+					RowBrowser parentRB = rbByID.get(parent);
+					if (association == null) {
+						parentRB = null;
+					}
+					boolean add = true;
+					if (toBeAppended != null) {
+						if (tbaPeerID == null) {
+							add = false;
+							if (parent.trim().length() == 0 && table.equals(toBeAppended.browserContentPane.table)) {
+								tbaPeerID = id;
+							}
+						} else {
+							if (tbaPeerID.equals(parent)) {
+								parentRB = toBeAppended;
+							} else if (!rbByID.containsKey(parent)) {
+								add = false;
+							}
+						}
+					}
+					if (add) {
+						rb = addTableBrowser(parentRB, -1, table, parentRB != null ? association : null, where, limit, selectDistinct, false);
+						if (id.length() > 0) {
+							rbByID.put(id, rb);
+						}
+						if (parentRB == null || parentRB == toBeAppended) {
+							toBeLoaded.add(rb);
+						}
+					}
+				}
+			} else {
+				if (toBeAppended == null) {
+					rb = addTableBrowser(null, 0, null, null, where, limit, selectDistinct, false);
+					toBeLoaded.add(rb);
+				}
+			}
+			if (rb != null) {
+				rb.setHidden(Boolean.parseBoolean(l.cells.get(12)));
+				if (toBeAppended == null) {
+					rb.internalFrame.setLocation(loc);
+					rb.internalFrame.setSize(size);
+				}
+			}
+		}
+		checkDesktopSize();
+		makePrimaryRootVisible();
+
+		for (RowBrowser rb : toBeLoaded) {
+			rb.browserContentPane.reloadRows();
+		}
+		if (toBeAppended != null && toBeLoaded.isEmpty()) {
+			JOptionPane.showMessageDialog(pFrame,
+					"Layout doesn't contain table \"" + datamodel.get().getDisplayName(toBeAppended.browserContentPane.table) + "\" as root.");
+		} else if (!unknownTables.isEmpty()) {
+			String pList = "";
+			for (String ut : unknownTables) {
+				pList += ut + "\n";
+			}
+			JOptionPane.showMessageDialog(pFrame, "Unknown tables:\n\n" + pList + "\n");
 		}
 	}
 
