@@ -97,6 +97,7 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
             public int getSize() { return strings.length; }
             public Object getElementAt(int i) { return strings[i]; }
         });
+        tableList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         tableList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
                 tableListValueChanged(evt);
