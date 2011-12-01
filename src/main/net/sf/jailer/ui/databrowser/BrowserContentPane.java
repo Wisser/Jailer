@@ -54,7 +54,6 @@ import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -972,6 +971,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				openQueryBuilder();
 			}
 		});
+		
+		popup.add(new JSeparator());
+		
 		JMenuItem snw = new JMenuItem("Show in New Window");
 		popup.add(snw);
 		snw.addActionListener(new ActionListener() {
@@ -999,6 +1001,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 		
 		popup.add(new JSeparator());
+		
 		if (!forNavTree) {
 			JMenuItem det = new JMenuItem("Details");
 			popup.add(det);
