@@ -2,6 +2,7 @@
   - Multi data model support.
   - "Subset by Example" feature.
   - Added a second demo-model.
+  - Bug fixes.
 
 1.6.1
   - Fixed a bug concerning appending of layouts.
