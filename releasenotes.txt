@@ -2,6 +2,7 @@
   - Multi data model support.
   - "Subset by Example" feature.
   - Added a second demo-model.
+  - Bug fixes.
 
 3.7.10
   - Fixed a bug concerning appending of layouts in the data browser.
