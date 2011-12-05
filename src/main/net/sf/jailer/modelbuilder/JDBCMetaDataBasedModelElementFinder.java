@@ -29,9 +29,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
-import java.util.TreeSet;
 
 import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.Configuration;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
@@ -46,7 +46,6 @@ import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
 import org.apache.log4j.Logger;
-import org.springframework.jdbc.core.SqlTypeValue;
 
 /**
  * Finds associations and tables by analyzing the JDBC meta data.
@@ -493,6 +492,11 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
             }
             if (typesWithLength.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
                 length = resultSet.getInt(7);
+                if (type == Types.VARCHAR) {
+                	if (Configuration.forDbms(session).getVarcharLengthLimit() != null) {
+                		length = Configuration.forDbms(session).getVarcharLengthLimit();
+                	}
+                }
             }
             if (sqlType != null && sqlType.equalsIgnoreCase("uniqueidentifier")) {
             	length = 0;

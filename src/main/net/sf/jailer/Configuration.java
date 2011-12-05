@@ -76,7 +76,9 @@ public class Configuration {
      */
     private String sqlLimitSuffix;
     
-    /**
+    private Integer varcharLengthLimit = null;
+    
+	/**
      * Maps characters to escape sequences according to {@link #stringLiteralEscapeSequences}.
      */
     private Map<Character, String> charToEscapeSequence = new HashMap<Character, String>();
@@ -431,4 +433,12 @@ public class Configuration {
 		return sqlLimitSuffix;
 	}
     
+    public Integer getVarcharLengthLimit() {
+		return varcharLengthLimit;
+	}
+
+	public void setVarcharLengthLimit(Integer varcharLengthLimit) {
+		this.varcharLengthLimit = varcharLengthLimit;
+	}
+
 }
