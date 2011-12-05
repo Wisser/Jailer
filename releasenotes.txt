@@ -1,3 +1,6 @@
+4.0.1
+  - Configurable VARCHAR-length limit. Workaround for Informix JDBC-driver bug.
+
 4.0
   - Multi data model support.
   - "Subset by Example" feature.
