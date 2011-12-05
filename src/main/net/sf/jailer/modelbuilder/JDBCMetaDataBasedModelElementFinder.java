@@ -494,7 +494,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 length = resultSet.getInt(7);
                 if (type == Types.VARCHAR) {
                 	if (Configuration.forDbms(session).getVarcharLengthLimit() != null) {
-                		length = Configuration.forDbms(session).getVarcharLengthLimit();
+                		length = Math.min(length, Configuration.forDbms(session).getVarcharLengthLimit());
                 	}
                 }
             }
