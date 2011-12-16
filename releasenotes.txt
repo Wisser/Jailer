@@ -1,3 +1,6 @@
+4.0.2
+  - Fixed a bug concerning TIMESTAMP pattern in Oracle.
+
 4.0.1
   - Configurable VARCHAR-length limit. Workaround for Informix JDBC-driver bug.
 

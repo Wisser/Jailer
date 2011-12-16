@@ -1,3 +1,6 @@
+2.0.1
+  - Fixed a bug concerning TIMESTAMP pattern in Oracle.
+
 2.0
   - Multi data model support.
   - "Subset by Example" feature.
