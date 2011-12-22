@@ -98,7 +98,7 @@ public class DeletionTransformer implements ResultSetReader {
                     		+ SqlUtil.toSql(SqlUtil.getObject(resultSet, quoting.unquote(pkColumn.name), typeCache), session);
                     firstTime = false;
                 }
-                writeToScriptFile(delete + "\n");
+                writeToScriptFile(delete + ";\n");
         	} else {
 	            String deleteHead;
 	            String item;
