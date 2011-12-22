@@ -1,3 +1,6 @@
+4.0.3
+  - Added missing ';' at end of lines in generated delete script on DB2 on Z/OS
+
 4.0.2
   - Fixed a bug concerning TIMESTAMP pattern in Oracle.
 
