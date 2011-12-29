@@ -1,3 +1,6 @@
+4.0.4.beta
+  - Support for DB2's FIELD PROCS (experimental)
+
 4.0.3
   - Added missing ';' at end of lines in generated delete script on DB2 on Z/OS
 
