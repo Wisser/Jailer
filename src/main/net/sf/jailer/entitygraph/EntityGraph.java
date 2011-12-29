@@ -903,7 +903,8 @@ public class EntityGraph {
             Column tableColumn = match.get(column);
             sb.append(entityAlias + "." + columnPrefix + column.name);
             if (tableColumn != null) {
-                sb.append("=" + tableAlias + "." + tableColumn.name);
+            	// TODO
+                sb.append("= CAST(" + tableAlias + "." + tableColumn.name + " as " + tableColumn.toSQL(null).substring(tableColumn.name.length()).trim() + ")");
             } else {
                 sb.append(" is null");
             }
