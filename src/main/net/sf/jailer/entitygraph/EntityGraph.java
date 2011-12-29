@@ -904,7 +904,9 @@ public class EntityGraph {
             sb.append(entityAlias + "." + columnPrefix + column.name);
             if (tableColumn != null) {
             	// TODO
-                sb.append("= CAST(" + tableAlias + "." + tableColumn.name + " as " + tableColumn.toSQL(null).substring(tableColumn.name.length()).trim() + ")");
+//                sb.append("= CAST(" + tableAlias + "." + tableColumn.name + " as " + tableColumn.toSQL(null).substring(tableColumn.name.length()).trim() + ")");
+                
+                sb.append("=" + tableAlias + "." + tableColumn.name);
             } else {
                 sb.append(" is null");
             }
