@@ -1,4 +1,4 @@
-4.0.4.beta2
+4.0.4.beta3
   - Support for DB2's FIELD PROCS (experimental)
 
 4.0.3
