@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.entitygraph;
 
+import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -35,6 +36,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.progress.ProgressListenerRegistry;
+import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -95,6 +97,18 @@ public class EntityGraph {
         this.graphID = graphID;
         this.session = session;
         this.universalPrimaryKey = universalPrimaryKey;
+        
+        File fieldProcTablesFile = new File("field-proc-tables.csv");
+        if (fieldProcTablesFile.exists()) {
+        	try {
+				for (CsvFile.Line line: new CsvFile(fieldProcTablesFile).getLines()) {
+					fieldProcTables.add(line.cells.get(0).toLowerCase());
+				}
+				Session._log.info("tables with field procedures: " + fieldProcTables);
+			} catch (Exception e) {
+				throw new RuntimeException(e.getMessage(), e);
+			}
+        }
     }
     
     /**
@@ -887,6 +901,8 @@ public class EntityGraph {
     	return pkEqualsEntityID(table, tableAlias, entityAlias, "");
     }
 
+    private final Set<String> fieldProcTables = new HashSet<String>();
+    
     /**
      * Gets a SQL comparition expression for comparing rows with entities.
      * 
@@ -907,9 +923,11 @@ public class EntityGraph {
 //                sb.append("= CAST(" + tableAlias + "." + tableColumn.name + " as " + tableColumn.toSQL(null).substring(tableColumn.name.length()).trim() + ")");
 //                sb.append("= CAST(" + tableAlias + "." + tableColumn.name + " as " + tableColumn.type + ")");
                 
-            	sb.append(" = " + tableColumn.type + "(" + tableAlias + "." + tableColumn.name + ")");
-           	
-//                sb.append("=" + tableAlias + "." + tableColumn.name);
+            	if (fieldProcTables.contains(table.getUnqualifiedName().toLowerCase())) {
+            		sb.append(" = " + tableColumn.type + "(" + tableAlias + "." + tableColumn.name + ")");
+            	} else {
+            		sb.append("=" + tableAlias + "." + tableColumn.name);
+            	}
             } else {
                 sb.append(" is null");
             }
