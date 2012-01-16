@@ -1,5 +1,6 @@
-4.0.4.beta3
-  - Support for DB2's FIELD PROCS (experimental)
+4.0.4
+  - Support for DB2's FIELD PROCS
+  - Fixed a bug concerning NPE if HTML-rendering is used without a database connection.
 
 4.0.3
   - Added missing ';' at end of lines in generated delete script on DB2 on Z/OS
