@@ -1165,7 +1165,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         	args.add("render-datamodel");
         	File file = saveRestrictions();
         	args.add(file.getName());
-        	UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword(), null, null, false, true);
+        	UIUtil.runJailer(this, args, false, true, false, true, null, null /* dbConnectionDialog.getPassword() */, null, null, false, true);
         	BrowserLauncher.openURL(table == null? "render/index.html" : ("render/" + HtmlDataModelRenderer.toFileName(table)));
         } catch (Exception e) {
         	UIUtil.showException(this, "Error", e);
