@@ -1,3 +1,6 @@
+2.0.2
+  - Minor bug fixes.
+
 2.0.1
   - Fixed a bug concerning TIMESTAMP pattern in Oracle.
 
