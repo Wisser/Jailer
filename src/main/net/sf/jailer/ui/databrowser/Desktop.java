@@ -498,7 +498,7 @@ public abstract class Desktop extends JDesktopPane {
 				for (RowBrowser rb : tableBrowsers) {
 					if (rb.parent == tableBrowser) {
 						updateChildren(rb, rb.browserContentPane.rows);
-						if (reloadChildren && rb.browserContentPane.parentRow == null) {
+						if (/* reloadChildren && */ rb.browserContentPane.parentRow == null) {
 							rb.browserContentPane.reloadRows();
 						}
 					}
