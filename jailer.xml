@@ -99,8 +99,8 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
             <property name="stringLiteralEscapeSequences">
                 <map>
                     <entry key="'" value="''"/>
-                    <entry key="\n" value="' || char(10) || '"/>
-                    <entry key="\r" value="' || char(13) || '"/>
+                    <entry key="\n" value="' || chr(10) || '"/>
+                    <entry key="\r" value="' || chr(13) || '"/>
                </map>
             </property>
 			<property name="sqlLimitSuffix" value="fetch first %s rows only" />

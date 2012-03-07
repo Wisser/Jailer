@@ -1,3 +1,6 @@
+4.0.5
+  - Fixed a bug concerning multi-line VARCHARs in DB2.
+
 4.0.4
   - Support for DB2's FIELD PROCS
   - Fixed a bug concerning NPE on HTML-rendering without a database connection.

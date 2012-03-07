@@ -1,3 +1,6 @@
+2.0.4
+  - Fixed a bug concerning multi-line VARCHARs in DB2.
+
 2.0.2
   - Minor bug fixes.
 
