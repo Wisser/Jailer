@@ -1,3 +1,6 @@
+4.0.6
+  - Fixed a bug concerning multi-line VARCHARs in Oracle.
+
 4.0.5
   - Fixed a bug concerning multi-line VARCHARs in DB2.
 
