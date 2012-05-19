@@ -1,3 +1,6 @@
+4.0.8
+  - Java 6 compatibility
+
 4.0.7
   - Fixed a bug concerning multi-line VARCHARs in Oracle.
 
