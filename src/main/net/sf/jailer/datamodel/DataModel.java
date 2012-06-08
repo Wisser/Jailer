@@ -346,13 +346,14 @@ public class DataModel {
         for (CsvFile.Line line: associationList) {
             String location = line.location;
             try {
+            	String associationLoadFailedMessage = "Unable to load association from " + line.cells.get(0) + " to " + line.cells.get(1) + " on " + line.cells.get(4) + " because: ";
                 Table tableA = (Table) tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0)));
                 if (tableA == null) {
-                     continue; // throw new RuntimeException("Table '" + line.cells.get(0) + "' not found");
+                     throw new RuntimeException(associationLoadFailedMessage + "Table '" + line.cells.get(0) + "' not found");
                 }
                 Table tableB = (Table) tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(1)));
                 if (tableB == null) {
-                    continue; // throw new RuntimeException("Table '" + line.cells.get(1) + "' not found");
+                     throw new RuntimeException(associationLoadFailedMessage + "Table '" + line.cells.get(1) + "' not found");
                 }
                 boolean insertSourceBeforeDestination = "A".equalsIgnoreCase(line.cells.get(2)); 
                 boolean insertDestinationBeforeSource = "B".equalsIgnoreCase(line.cells.get(2));
@@ -426,6 +427,15 @@ public class DataModel {
 
     	for (Table table: getTables()) {
     		String uName = table.getUnqualifiedName();
+    		if (uName != null && uName.length() > 0) {
+                char fc = uName.charAt(0);
+                if (!Character.isLetterOrDigit(fc) && fc != '_') {
+                   String fcStr = Character.toString(fc);
+                   if (uName.startsWith(fcStr) && uName.endsWith(fcStr)) {
+                       uName = uName.substring(1, uName.length() -1);
+                   }
+                }
+    		}
     		String schema = table.getSchema(null);
     		String displayName;
     		if (nonUniqueUnqualifiedNames.contains(uName) && schema != null) {

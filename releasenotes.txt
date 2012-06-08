@@ -1,3 +1,6 @@
+4.0.9
+  - improved display-name-concept. Quoted table names will now be displayed unquoted.
+
 4.0.8
   - Java 6 compatibility
 
