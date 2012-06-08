@@ -349,11 +349,13 @@ public class DataModel {
             	String associationLoadFailedMessage = "Unable to load association from " + line.cells.get(0) + " to " + line.cells.get(1) + " on " + line.cells.get(4) + " because: ";
                 Table tableA = (Table) tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0)));
                 if (tableA == null) {
-                     continue; // throw new RuntimeException(associationLoadFailedMessage + "Table '" + line.cells.get(0) + "' not found");
+                     // continue;
+                     throw new RuntimeException(associationLoadFailedMessage + "Table '" + line.cells.get(0) + "' not found");
                 }
                 Table tableB = (Table) tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(1)));
                 if (tableB == null) {
-                	continue; // throw new RuntimeException(associationLoadFailedMessage + "Table '" + line.cells.get(1) + "' not found");
+                	// continue;
+                	throw new RuntimeException(associationLoadFailedMessage + "Table '" + line.cells.get(1) + "' not found");
                 }
                 boolean insertSourceBeforeDestination = "A".equalsIgnoreCase(line.cells.get(2)); 
                 boolean insertDestinationBeforeSource = "B".equalsIgnoreCase(line.cells.get(2));
