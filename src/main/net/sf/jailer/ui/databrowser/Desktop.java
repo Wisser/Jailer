@@ -888,6 +888,7 @@ public abstract class Desktop extends JDesktopPane {
 				for (Component c : popup2.getComponents()) {
 					popup.add(c);
 				}
+				UIUtil.fit(popup);
 				popup.show(e.getComponent(), e.getX(), e.getY());
 			}
 		});

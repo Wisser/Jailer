@@ -2752,6 +2752,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			});
 			popup.add(m);
 		}
+		UIUtil.fit(popup);
 		popup.show(label, 0, label.getHeight());
 	}
 

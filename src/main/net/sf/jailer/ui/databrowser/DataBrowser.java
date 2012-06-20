@@ -1207,6 +1207,7 @@ public class DataBrowser extends javax.swing.JFrame {
 							for (Component c : popup2.getComponents()) {
 								popup.add(c);
 							}
+							UIUtil.fit(popup);
 							popup.show(evt.getComponent(), evt.getX(), evt.getY());
 						}
 					}
