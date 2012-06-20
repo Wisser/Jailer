@@ -149,6 +149,7 @@ public class CyclesView extends javax.swing.JDialog {
                 	Table table = getDataModel().getTableByDisplayName((String) value);
                 	if (table != null) {
 						JPopupMenu popup = CyclesView.this.extractionModelFrame.extractionModelEditor.graphView.createPopupMenu(table, false);
+						UIUtil.fit(popup);
 						popup.show(e.getComponent(), e.getX(), e.getY());
                 	}
                 }

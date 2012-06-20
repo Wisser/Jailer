@@ -1,3 +1,7 @@
+4.0.10
+  - fixed a bug concerning pre-populated alias fields for tables with quoted names in the QueryBuilder-UI.
+  - minor GUI improvements
+
 4.0.9
   - improved display-name-concept. Quoted table names will now be displayed unquoted.
 

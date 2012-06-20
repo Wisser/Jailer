@@ -117,6 +117,7 @@ public class ConditionEditor extends javax.swing.JDialog {
 			});
 			popup.add(m);
 		}
+		UIUtil.fit(popup);
 		popup.show(label, 0, label.getHeight());
 	}
 	
