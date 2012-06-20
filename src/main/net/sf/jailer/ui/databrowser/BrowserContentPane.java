@@ -890,6 +890,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					d.pack();
 					d.setLocation(x, y);
 					d.setSize(400, d.getHeight() + 20);
+					UIUtil.fit(d);
 					d.setVisible(true);
 					setCurrentRowSelection(-1);
 				}
@@ -2844,6 +2845,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		d.pack();
 		d.setLocation(x, y);
 		d.setSize(400, d.getHeight() + 20);
+		UIUtil.fit(d);
 		d.setVisible(true);
 		setCurrentRowSelection(-1);
 	}
