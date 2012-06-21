@@ -249,6 +249,13 @@ public class DMLTransformer implements ResultSetReader {
                     	// explicit cast needed
                     	cVal = "timestamp " + cVal;
                     }
+                    if (SqlUtil.dbms == DBMS.POSTGRESQL) {
+                    	// explicit cast needed
+                    	int mdColumnType = resultSet.getMetaData().getColumnType(i);
+                    	if (mdColumnType == Types.TIME) {
+                    		cVal = "time " + cVal;
+                    	}
+                    }
                 	if (content != null && emptyLobValue[i] != null) {
                 		cVal = emptyLobValue[i];
                 	}
