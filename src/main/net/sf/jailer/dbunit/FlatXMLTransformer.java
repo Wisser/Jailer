@@ -99,11 +99,30 @@ public class FlatXMLTransformer implements ResultSetReader {
     		schema = mappedSchema;
     	}
     	if (schema.length() == 0) {
-    		return t.getUnqualifiedName();
+    		return unquote(t.getUnqualifiedName());
     	}
-		return schema + "." + t.getUnqualifiedName();
+		return unquote(schema) + "." + unquote(t.getUnqualifiedName());
 	}
-    
+
+    /**
+     * Removes quotes from table name.
+     * 
+     * @param name the table name
+     * @return table name without quotes
+     */
+	private String unquote(String name) {
+		if (!name.isEmpty()) {
+			char fc = name.charAt(0);
+			if (!Character.isLetterOrDigit(fc) && fc != '_') {
+				String fcStr = Character.toString(fc);
+				if (name.startsWith(fcStr) && name.endsWith(fcStr)) {
+					name = name.substring(1, name.length() - 1);
+				}
+			}
+		}
+		return name;
+	}
+
 	/**
 	 * Reads result-set and writes into export-script.
 	 */
