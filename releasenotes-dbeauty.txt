@@ -1,3 +1,6 @@
+2.0.9
+  - Fixed a bug where FlatXMLTransformer would produce invalid XML when table names were quoted.
+
 2.0.8
   - fixed a bug concerning pre-populated alias fields for tables with quoted names in the QueryBuilder-UI.
   - minor GUI improvements

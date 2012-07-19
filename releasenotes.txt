@@ -1,3 +1,6 @@
+4.0.12
+  - Fixed a bug where FlatXMLTransformer would produce invalid XML when table names were quoted.
+
 4.0.11
   - Fix for bug 3536695: "Upserts don't work for certain postgres types (e.g time)"
 
