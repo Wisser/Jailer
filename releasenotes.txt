@@ -1,3 +1,6 @@
+4.0.13
+  - Workaround for ORA-08176.
+
 4.0.12
   - Fixed a bug where FlatXMLTransformer would produce invalid XML when table names were quoted.
 

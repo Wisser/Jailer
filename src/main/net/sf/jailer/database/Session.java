@@ -501,8 +501,8 @@ public class Session {
 	            } catch (SQLException e) {
 		        	CancellationHandler.checkForCancellation(null);
 		        	CancellationHandler.end(statement, null);
-		        	if (++failures > 10 || e.getErrorCode() != -911) {
-		    	    	throw new SqlException("\"" + e.getMessage() + "\" in statement \"" + sqlUpdate + "\"", sqlUpdate, e);
+		        	if (++failures > 10 || (e.getErrorCode() != -911 && e.getErrorCode() != 8176)) {
+		        		throw new SqlException("\"" + e.getMessage() + "\" in statement \"" + sqlUpdate + "\"", sqlUpdate, e);
 	                }
 	                // deadlock
 	                serializeAccess = true;
