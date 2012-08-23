@@ -219,6 +219,8 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern"
 				value="jdbc:sqlserver.*|jdbc:inetdae.*|jdbc:JTurbo.*|jdbc:weblogic:mssqlserver.*|jdbc:jtds:sqlserver.*" />
+			<property name="emptyCLOBValue" value="''" />
+			<property name="emptyBLOBValue" value="0x" />
             <property name="stringLiteralEscapeSequences">
                 <map>
                     <entry key="'" value="''"/>
