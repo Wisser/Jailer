@@ -1,3 +1,6 @@
+2.0.11
+  - Fixed a bug concerning BLOB/CLOB support for MS SQL
+
 2.0.10
   - Workaround for ORA-08176.
 
