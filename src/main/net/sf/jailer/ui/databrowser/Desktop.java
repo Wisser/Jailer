@@ -1963,7 +1963,7 @@ public abstract class Desktop extends JDesktopPane {
 					}
 				}
 
-				direction = (e.getWheelRotation() < 0) ? (-1) : 1;
+				direction = (e.getPreciseWheelRotation() < 0) ? (-1) : 1;
 
 				int oldValue = toScroll.getValue();
 				int blockIncrement = toScroll.getUnitIncrement(direction);
