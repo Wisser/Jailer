@@ -49,6 +49,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -1963,7 +1964,15 @@ public abstract class Desktop extends JDesktopPane {
 					}
 				}
 
-				direction = (e.getPreciseWheelRotation() < 0) ? (-1) : 1;
+				direction = (e.getWheelRotation() < 0) ? (-1) : 1;
+				
+				try {
+					Method getPreciseWheelRotation = e.getClass().getMethod("getPreciseWheelRotation");
+					double pwr = (Double) getPreciseWheelRotation.invoke(e);					
+					direction = (pwr < 0) ? (-1) : 1;
+				} catch (Exception exc) {
+					// ignored
+				}
 
 				int oldValue = toScroll.getValue();
 				int blockIncrement = toScroll.getUnitIncrement(direction);
