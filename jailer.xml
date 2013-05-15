@@ -83,10 +83,28 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<entry key="datetime" value="datetime year to fraction"/>
 					<entry key="serial" value="int"/>
 					<entry key="serial8" value="int8"/>
-				</map>
+					<entry key="bigserial" value="bigint"/>
+        		</map>
 			</property>
+	        <property name="sqlLimitSuffix" value="FIRST %s" />
+			<property name="statisticRenovator">
+                <bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
+                    <constructor-arg value="script/informix/update_statistics.sql" />
+                </bean>
+            </property>
+            <property name="sessionTemporaryTableManager">
+	            <bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
+	                <property name="dmlTableReferencePrefix" value="" />
+	                <property name="createTablePrefix" value="CREATE RAW TABLE " />
+	                <property name="createTableSuffix" value=" extent size 51200 next size 25000" />
+	                <property name="createIndexPrefix" value="CREATE INDEX " />
+	                <property name="createIndexSuffix" value="" />
+	                <property name="indexTablePrefix" value="" />
+	                <property name="dropTablePrefix" value="DROP TABLE " />
+	            </bean>
+	        </property>
 		</bean>
-
+		
 		<!-- for IBM DB2 -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:db2.*" />
