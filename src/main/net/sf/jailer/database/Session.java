@@ -66,9 +66,14 @@ public class Session {
     private static Connection temporaryTableSession = null;
     
     /**
-     * Scope of temporary tables.
+     * Shared scope of temporary tables.
      */
     private static TemporaryTableScope temporaryTableScope;
+    
+    /**
+     * Scope of temporary tables.
+     */
+    public final TemporaryTableScope scope;
     
     /**
      * No SQL-Exceptions will be logged in silent mode. 
@@ -212,7 +217,8 @@ public class Session {
      */
     public Session(String driverClassName, final String dbUrl, final String user, final String password, final TemporaryTableScope scope, boolean transactional) throws Exception {
     	this.transactional = transactional;
-        _log.info("connect to user " + user + " at "+ dbUrl);
+        this.scope = scope;
+    	_log.info("connect to user " + user + " at "+ dbUrl);
         if (classLoaderForJdbcDriver != null) {
             Driver d = (Driver)Class.forName(driverClassName, true, classLoaderForJdbcDriver).newInstance();
             DriverManager.registerDriver(new DriverShim(d));

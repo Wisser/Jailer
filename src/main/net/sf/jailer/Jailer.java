@@ -1247,7 +1247,11 @@ public class Jailer {
 				jailer.entityGraph.session.rollbackAll();
 				jailer.entityGraph.delete();
 				if (exportedEntities != null) {
-					exportedEntities.delete();
+					if (jailer.entityGraph.session.scope == TemporaryTableScope.GLOBAL) {
+						exportedEntities.delete();
+					} else {
+						_log.info("skipping clean up of temporary tables");
+					}
 				}
 				_log.info("cleaned up");
 				jailer.shutDown();
@@ -1260,7 +1264,11 @@ public class Jailer {
 				_log.info("cleaning up...");
 				jailer.entityGraph.delete();
 				if (exportedEntities != null) {
-					exportedEntities.delete();
+					if (jailer.entityGraph.session.scope == TemporaryTableScope.GLOBAL) {
+						exportedEntities.delete();
+					} else {
+						_log.info("skipping clean up of temporary tables");
+					}
 				}
 				jailer.shutDown();
 			} catch (Throwable t) {
