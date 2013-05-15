@@ -1788,7 +1788,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		} else {
 			String olapPrefix = "Select ";
 			String olapSuffix = ") S Where S." + ROWNUMBERALIAS + " <= " + limit + " Order by S." + ROWNUMBERALIAS + "";
-			if (sqlLimitSuffix != null && sqlLimitSuffix.toLowerCase().startsWith("top ")) {
+			boolean limitSuffixInSelectClause = sqlLimitSuffix != null &&
+					(sqlLimitSuffix.toLowerCase().startsWith("top ") || sqlLimitSuffix.toLowerCase().startsWith("first "));
+			if (sqlLimitSuffix != null && limitSuffixInSelectClause) {
 				sql += (sqlLimitSuffix.replace("%s", Integer.toString(limit))) + " ";
 			}
 			boolean f = true;
@@ -1875,7 +1877,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (useOLAPLimitation) {
 				sql = olapPrefix + sql + olapSuffix;
 			}
-			if (sqlLimitSuffix != null && !sqlLimitSuffix.toLowerCase().startsWith("top ")) {
+			if (sqlLimitSuffix != null && !limitSuffixInSelectClause) {
 				sql += " " + (sqlLimitSuffix.replace("%s", Integer.toString(limit)));
 			}
 		}
