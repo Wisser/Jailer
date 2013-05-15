@@ -95,12 +95,21 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
             <property name="sessionTemporaryTableManager">
 	            <bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
 	                <property name="dmlTableReferencePrefix" value="" />
+                    <property name="createTablePrefix" value="CREATE TEMP TABLE " />
+                    <property name="createTableSuffix" value=" WITH NO LOG" />
+                    <property name="createIndexPrefix" value="CREATE INDEX " />
+                    <property name="createIndexSuffix" value="" />
+                    <property name="indexTablePrefix" value="" />
+                    <property name="dropTablePrefix" value="DROP TABLE " />
+                <!-- 
+	                <property name="dmlTableReferencePrefix" value="" />
 	                <property name="createTablePrefix" value="CREATE RAW TABLE " />
 	                <property name="createTableSuffix" value=" extent size 51200 next size 25000" />
 	                <property name="createIndexPrefix" value="CREATE INDEX " />
 	                <property name="createIndexSuffix" value="" />
 	                <property name="indexTablePrefix" value="" />
 	                <property name="dropTablePrefix" value="DROP TABLE " />
+	            -->
 	            </bean>
 	        </property>
 		</bean>
