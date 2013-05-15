@@ -1,5 +1,6 @@
 4.0.15
   - Added support for high-resolution mouse-wheels.
+  - Added support for Informix nonlogging raw tables (thanks to Cesar Martins)
 
 4.0.14
   - Fixed a bug concerning BLOB/CLOB support for MS SQL
