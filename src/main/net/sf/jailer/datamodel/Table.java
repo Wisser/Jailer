@@ -30,7 +30,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
