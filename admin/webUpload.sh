@@ -5,7 +5,7 @@ mkdir ~/tmp/jailer
 mkdir ~/tmp/1
 mkdir ~/tmp/1.co
 cd ~/tmp/1.co
-svn co https://jailer.svn.sf.net/svnroot/jailer/trunk/doc/web
+svn checkout --username=rwisser https://svn.code.sf.net/p/jailer/code/trunk/doc/web jailer-code
 cd ..
 mv 1.co/web/* jailer
 cd jailer
