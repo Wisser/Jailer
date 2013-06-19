@@ -299,7 +299,10 @@ public class SqlUtil {
 	        			format += getNanoString((Timestamp) content, c.appendNanosToTimestamp, c.nanoSep);
 	        		}
         		}
-				return "'" + format + "'";
+				content = format;
+        	}
+        	if (c.timestampPattern != null) {
+        		return c.timestampPattern.replace("%s", "'" + content + "'");
         	}
             return "'" + content + "'";
         }

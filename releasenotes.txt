@@ -1,3 +1,6 @@
+4.0.16
+  - Added support for Informix's "datetime year to day/month/minute" column type.
+
 4.0.15
   - Added support for high-resolution mouse-wheels.
   - Added support for Informix nonlogging raw tables (thanks to Cesar Martins)

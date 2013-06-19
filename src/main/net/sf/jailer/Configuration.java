@@ -106,6 +106,7 @@ public class Configuration {
 	public String emptyBLOBValue = null;
 	public String binaryPattern = "x'%s'";
 	public boolean avoidLeftJoin = false;
+	public String timestampPattern = null;
 	
 	/**
 	 * Manages session local temporary tables.
@@ -439,6 +440,20 @@ public class Configuration {
 
 	public void setVarcharLengthLimit(Integer varcharLengthLimit) {
 		this.varcharLengthLimit = varcharLengthLimit;
+	}
+
+	/**
+	 * @return the timestampPattern
+	 */
+	public String getTimestampPattern() {
+		return timestampPattern;
+	}
+
+	/**
+	 * @param timestampPattern the timestampPattern to set
+	 */
+	public void setTimestampPattern(String timestampPattern) {
+		this.timestampPattern = timestampPattern;
 	}
 
 }
