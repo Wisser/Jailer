@@ -1,3 +1,6 @@
+4.0.17
+  - Workaround for ORA-01424.
+
 4.0.16
   - Added support for Informix's "datetime year to day/month/minute" column type.
 
