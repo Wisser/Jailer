@@ -367,7 +367,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
      * @return <code>true</code> if name is syntactically correct
      */
     private boolean isValidName(String name) {
-		return name != null && !name.contains("$");
+		return name != null && !name.contains("$") && !name.contains("/") && !name.contains("=");
 	}
 
 	/**
