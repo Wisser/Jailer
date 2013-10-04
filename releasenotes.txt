@@ -1,3 +1,6 @@
+4.0.18
+  - changed order of which the prolog/epilog files are included into the export script.
+
 4.0.17
   - Workaround for ORA-01424.
 
