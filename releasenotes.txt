@@ -1,3 +1,7 @@
+4.1
+  - added support for Postgres HStore data type.
+  - internal refactorings.
+
 4.0.18
   - changed order of which the prolog/epilog files are included into the export script.
 

@@ -367,7 +367,9 @@ public class SqlUtil {
     	}
     	return nanosString;
     }
-
+    
+    private static final int TYPE_HSTORE = 10500;
+    
     /**
      * Gets object from result-set.
      * 
@@ -385,7 +387,13 @@ public class SqlUtil {
 					if (type == Types.DATE) {
 						type = Types.TIMESTAMP;
 					}
-				}
+				 }
+				 if (dbms == DBMS.POSTGRESQL) {
+	                String typeName = resultSet.getMetaData().getColumnTypeName(i);
+	                if ("hstore".equalsIgnoreCase(typeName)) {
+	                    type = TYPE_HSTORE;
+	                }
+	             }
 			} catch (Exception e) {
 				type = Types.OTHER;
 			}
@@ -411,7 +419,9 @@ public class SqlUtil {
 		}
 		Object object = resultSet.getObject(i);
 		if (dbms == DBMS.POSTGRESQL) {
-			if (object instanceof Boolean) {
+			if (type == TYPE_HSTORE) {
+                return resultSet.getString(i);
+            } else if (object instanceof Boolean) {
 				String typeName = resultSet.getMetaData().getColumnTypeName(i);
 				if (typeName != null && typeName.toLowerCase().equals("bit")) {
 					final String value = Boolean.TRUE.equals(object)? "B'1'" : "B'0'";
