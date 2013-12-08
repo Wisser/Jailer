@@ -309,6 +309,9 @@ public class SqlUtil {
         if (content instanceof String) {
             return "'" + Configuration.forDbms(session).convertToStringLiteral((String) content) + "'";
         }
+        if (content instanceof HStoreWrapper) {
+            return "'" + Configuration.forDbms(session).convertToStringLiteral(content.toString()) + "'::hstore";
+        }
         if (content instanceof byte[]) {
         	byte[] data = (byte[]) content;
         	StringBuilder hex = new StringBuilder((data.length + 1) * 2);
@@ -370,6 +373,16 @@ public class SqlUtil {
     
     private static final int TYPE_HSTORE = 10500;
     
+    static class HStoreWrapper {
+        private final String value;
+        public HStoreWrapper(String value) {
+            this.value = value;
+        }
+        public String toString() {
+            return value;
+        }
+    }
+
     /**
      * Gets object from result-set.
      * 
@@ -420,7 +433,7 @@ public class SqlUtil {
 		Object object = resultSet.getObject(i);
 		if (dbms == DBMS.POSTGRESQL) {
 			if (type == TYPE_HSTORE) {
-                return resultSet.getString(i);
+				return new HStoreWrapper(resultSet.getString(i));
             } else if (object instanceof Boolean) {
 				String typeName = resultSet.getMetaData().getColumnTypeName(i);
 				if (typeName != null && typeName.toLowerCase().equals("bit")) {
