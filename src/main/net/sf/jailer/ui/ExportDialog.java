@@ -146,14 +146,14 @@ public class ExportDialog extends javax.swing.JDialog {
         } catch (Exception e) {
 		}
         
-        sortedCheckBox.setEnabled(ScriptFormat.SQL.equals(scriptFormat) || ScriptFormat.DBUNIT_FLAT_XML.equals(scriptFormat));
+        sortedCheckBox.setEnabled(ScriptFormat.SQL.equals(scriptFormat) || ScriptFormat.DBUNIT_FLAT_XML.equals(scriptFormat) || ScriptFormat.LIQUIBASE_XML.equals(scriptFormat));
         sortedCheckBox.setSelected(true);
         upsertCheckbox.setEnabled(ScriptFormat.SQL.equals(scriptFormat));
         rowsPerThread.setEnabled(ScriptFormat.SQL.equals(scriptFormat));
 
     	Map<JTextField, String> defaults = new HashMap<JTextField, String>();
 
-    	if ((!ScriptFormat.SQL.equals(scriptFormat)) && (!ScriptFormat.DBUNIT_FLAT_XML.equals(scriptFormat))) {
+    	if ((!ScriptFormat.SQL.equals(scriptFormat)) && (!ScriptFormat.DBUNIT_FLAT_XML.equals(scriptFormat)) && !ScriptFormat.LIQUIBASE_XML.equals(scriptFormat)) {
         	schemaMappingPanel.setVisible(false);
         } else {
         	schemaMappingPanel.setVisible(true);

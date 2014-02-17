@@ -64,6 +64,7 @@ import net.sf.jailer.domainmodel.DomainModel;
 import net.sf.jailer.enhancer.ScriptEnhancer;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.extractionmodel.ExtractionModel;
+import net.sf.jailer.liquibase.LiquibaseXMLTransformer;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.progress.ProgressListener;
 import net.sf.jailer.progress.ProgressListenerRegistry;
@@ -83,6 +84,7 @@ import net.sf.jailer.xml.XmlUtil;
 
 import org.apache.log4j.Logger;
 import org.apache.log4j.PropertyConfigurator;
+import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * Tool for database subsetting, schema browsing, and rendering. It exports
@@ -131,6 +133,8 @@ public class Jailer {
 	 * Comment header of the export-script.
 	 */
 	private StringBuffer commentHeader = new StringBuffer();
+	
+	private String filepath;
 
 	/**
 	 * Constructor.
@@ -503,6 +507,8 @@ public class Jailer {
 		if (scriptType == ScriptType.INSERT) {
 			if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
 				return new FlatXMLTransformer(table, transformerHandler, entityGraph.session.getMetaData());
+			}else if(ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat())){
+				return new LiquibaseXMLTransformer(table,transformerHandler,entityGraph.session.getMetaData(),filepath);
 			} else {
 				return new DMLTransformer(table, outputWriter, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities,
 						entityGraph.session.getMetaData(), entityGraph.session);
@@ -533,6 +539,25 @@ public class Jailer {
 		if (scriptType == ScriptType.INSERT && ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
 			StreamResult streamResult = new StreamResult(new OutputStreamWriter(outputStream, Charset.defaultCharset()));
 			transformerHandler = XmlUtil.createTransformerHandler(commentHeader.toString(), "dataset", streamResult);
+		}else if(scriptType == ScriptType.INSERT && ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat())){
+			StreamResult streamResult = new StreamResult(
+					new OutputStreamWriter(outputStream,
+							Charset.defaultCharset()));
+			
+		
+			transformerHandler = XmlUtil.createTransformerHandler(commentHeader.toString(), "", streamResult);	//root tag removed to add namespaces 
+
+			AttributesImpl attrdatabaseChangeLog = new AttributesImpl();
+			attrdatabaseChangeLog.addAttribute("", "", "xmlns:xsi", "", "http://www.w3.org/2001/XMLSchema-instance");
+			attrdatabaseChangeLog.addAttribute("", "", "xmlns:ext", "", "http://www.liquibase.org/xml/ns/dbchangelog-ext");
+			attrdatabaseChangeLog.addAttribute("", "", "xsi:schemaLocation", "", "http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.0.xsd http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd");
+			transformerHandler.startElement("http://www.liquibase.org/xml/ns/dbchangelog", "", "databaseChangeLog",attrdatabaseChangeLog);
+			
+			AttributesImpl attrchangeset = new AttributesImpl();
+			attrchangeset.addAttribute("", "", "id", "","JailerExport" );
+			attrchangeset.addAttribute("", "", "author", "",System.getProperty("user.name") );
+			
+			transformerHandler.startElement("", "", "changeSet", attrchangeset);
 		} else {
 			result = new OutputStreamWriter(outputStream);
 			result.append(commentHeader);
@@ -564,7 +589,7 @@ public class Jailer {
 		final OutputStreamWriter fResult = result;
 		long rest;
 
-		if (scriptType == ScriptType.INSERT && ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+		if (scriptType == ScriptType.INSERT && (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())||ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat()))) {
 			Set<Table> remaining = new HashSet<Table>(dependentTables);
 
 			// topologically sort remaining tables while ignoring reflexive
@@ -645,8 +670,16 @@ public class Jailer {
 		if (transformerHandler != null) {
 			String content = "\n";
 			transformerHandler.characters(content.toCharArray(), 0, content.length());
-			transformerHandler.endElement("", "", "dataset");
+			if (ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+
+				transformerHandler.endElement("","", "changeSet");
+				transformerHandler.endElement("","", "databaseChangeLog");
+				
+			} else if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+				transformerHandler.endElement("", "", "dataset");			
+			}
 			transformerHandler.endDocument();
+
 		}
 
 		if (rest > 0) {
@@ -873,7 +906,7 @@ public class Jailer {
 			_log.info("independent tables: " + asString(independentTables));
 			List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 			for (final Table independentTable : independentTables) {
-				if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+				if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())||ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
 					// export rows sequentially, don't mix rows of different
 					// tables in a dataset!
 					writeEntities(result, transformerHandler, scriptType, independentTable, true);
@@ -885,7 +918,7 @@ public class Jailer {
 					});
 				}
 			}
-			if (!ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+			if (!ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat()) || !ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
 				jobManager.executeJobs(jobs);
 			}
 			tables.removeAll(independentTables);
