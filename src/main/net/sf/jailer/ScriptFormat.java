@@ -35,7 +35,10 @@ public enum ScriptFormat {
 	/**
 	 * DbUnit's FlatXmlDataSet format.
 	 */
-	DBUNIT_FLAT_XML("DbUnit flat dataset", "DbUnit flat dataset Export", ".xml");
+	DBUNIT_FLAT_XML("DbUnit flat dataset", "DbUnit flat dataset Export", ".xml"),
+	
+	
+	LIQUIBASE_XML("Liquibase", "Liquibase Export", ".xml");
 
 	/**
 	 * Constructor.
