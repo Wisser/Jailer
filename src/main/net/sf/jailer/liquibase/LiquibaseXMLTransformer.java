@@ -121,15 +121,15 @@ public class LiquibaseXMLTransformer implements ResultSetReader {
 		AttributesImpl attrcolumn = new AttributesImpl();
 		String columnname = singleRow.getMetaData().getColumnName(columncount);
 		Integer columnType = singleRow.getMetaData().getColumnType(columncount);
-		Object object =singleRow.getObject(columncount);
+		singleRow.getObject(columncount);
 				
-		if(object!=null){
+		if (!singleRow.wasNull()){
 		
 			switch(columnType){
 					
 			case Types.CLOB:
 				count=count+1;
-				Clob clobValue = (Clob) object;
+				Clob clobValue = singleRow.getClob(columncount);
 				int lengthc = (int) clobValue.length();	
 				String clobcontent=clobValue.getSubString(1, lengthc);
 				String clobname=rowElementName.toLowerCase()+"_"+count+"_clop.ch";
@@ -139,7 +139,7 @@ public class LiquibaseXMLTransformer implements ResultSetReader {
 				
 			case Types.NCLOB:
 				count=count+1;
-				NClob nclobValue = (NClob) object;
+				NClob nclobValue = singleRow.getNClob(columncount);
 				int lengthnc = (int) nclobValue.length();	
 				String nclobcontent=nclobValue.getSubString(1, lengthnc);
 				String nclobname=rowElementName.toLowerCase()+"_"+count+"_clop.nch";
@@ -149,7 +149,7 @@ public class LiquibaseXMLTransformer implements ResultSetReader {
 				
 			case Types.BLOB:
 				count=count+1;			
-				Blob blob = (Blob) object;
+				Blob blob = singleRow.getBlob(columncount);
 				byte[] blobcontent = blob.getBytes(1, (int) blob.length());
 				String blobname=rowElementName.toLowerCase()+"_"+count+"_clop.bin";
 				attrcolumn=createAtrribute(columnname,VALUE_BLOBFILE,blobname);
@@ -175,54 +175,39 @@ public class LiquibaseXMLTransformer implements ResultSetReader {
 				break;
 					
 			case Types.NUMERIC:
-				BigDecimal bigdecimalvalue= (BigDecimal) object; 			
+			case Types.DECIMAL:
+				BigDecimal bigdecimalvalue= singleRow.getBigDecimal(columncount); 			
 				attrcolumn=createAtrribute(columnname,VALUE_NUMERIC,bigdecimalvalue.toString());
 				break;
 				
 			case Types.INTEGER:
-				Integer integervalue= (Integer) object; 			
+			case Types.SMALLINT:
+				Integer integervalue= singleRow.getInt(columncount);
 				attrcolumn=createAtrribute(columnname,VALUE_NUMERIC,integervalue.toString());
 				break;
 				
 			case Types.FLOAT:
-				Float floatvalue= (Float) object; 			
+				Float floatvalue= singleRow.getFloat(columncount);		
 				attrcolumn=createAtrribute(columnname,VALUE_NUMERIC,floatvalue.toString());
 				break;
 				
 			case Types.DOUBLE:
-				Double doublevalue= (Double) object; 			
+				Double doublevalue= singleRow.getDouble(columncount); 			
 				attrcolumn=createAtrribute(columnname,VALUE_NUMERIC,doublevalue.toString());		
 				break;
 				
 			case Types.ROWID:
-				RowId rowidvalue= (RowId) object; 			
+				RowId rowidvalue= singleRow.getRowId(columncount);
 				attrcolumn=createAtrribute(columnname,VALUE,rowidvalue.toString());
 				break;
 							
 			case Types.VARCHAR:
-				attrcolumn=createAtrribute(columnname,VALUE,object.toString());
-				break;
-				
 			case Types.CHAR:
-				attrcolumn=createAtrribute(columnname,VALUE,object.toString());
-				break;
-				
 			case Types.LONGVARCHAR:
-				attrcolumn=createAtrribute(columnname,VALUE,object.toString());
-				
-				break;
-				
 			case Types.NVARCHAR:
-				attrcolumn=createAtrribute(columnname,VALUE,object.toString());
-				
-				break;
-				
 			case Types.NCHAR:
-				attrcolumn=createAtrribute(columnname,VALUE,object.toString());
-				break;
-				
 			case Types.LONGNVARCHAR:
-				attrcolumn=createAtrribute(columnname,VALUE,object.toString());
+				attrcolumn=createAtrribute(columnname,VALUE,singleRow.getString(columncount));
 				break;
 				
 			case Types.BOOLEAN:
@@ -231,18 +216,20 @@ public class LiquibaseXMLTransformer implements ResultSetReader {
 				break;
 				
 			case Types.ARRAY:
-				Array arrayvalue= (Array) object; 
+				Array arrayvalue= singleRow.getArray(columncount); 
 				attrcolumn=createAtrribute(columnname,VALUE,arrayvalue.toString());				
 				break;
 				
 			case Types.REF:
-				Ref refvalue= (Ref) object; 
+				Ref refvalue= singleRow.getRef(columncount);
 				attrcolumn=createAtrribute(columnname,VALUE,refvalue.toString());					
 				break;
 							
 			default:
+				attrcolumn=createAtrribute(columnname,VALUE_NUMERIC,singleRow.getString(columncount));
+				break;
 				
-				throw new RuntimeException("Falscher Datentyp: "+singleRow.getMetaData().getColumnTypeName(columncount));
+//				throw new RuntimeException("Falscher Datentyp: "+singleRow.getMetaData().getColumnTypeName(columncount));
 				
 			}
 			
