@@ -1,3 +1,6 @@
+4.2
+  - added support for Liquibase file format (thanks to achimgrie) 
+
 4.1
   - added support for Postgres HStore data type.
   - internal refactorings.
