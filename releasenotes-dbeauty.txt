@@ -1,3 +1,7 @@
+2.1.1
+  - fixed a bug concerning the determination of the universal-primary-key.
+  - fixed a bug in file chooser window (thanks to oliver45)
+
 2.1
   - added support for Postgres HStore data type.
   - internal refactorings.
