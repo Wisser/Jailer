@@ -96,7 +96,7 @@ public class PrimaryKey {
     	}
     }
 
-	private boolean isAssignable(Column uPKColumn, Column entityColumn) {
+	public static boolean  isAssignable(Column uPKColumn, Column entityColumn) {
 		if (!uPKColumn.type.equals(entityColumn.type)) {
 			return false;
 		}
@@ -189,5 +189,33 @@ public class PrimaryKey {
     public String toString() {
         return toSQL(null);
     }
-    
+
+    public static boolean isIncreasable(Column uPKColumn, Column column) {
+        if(!uPKColumn.type.equals(column.type)) {
+            return false;
+        }
+
+        if((uPKColumn.precision < 0) && (column.precision >=0) ) {
+            return false;
+        }
+
+        if((uPKColumn.precision >=0) && (column.precision < 0)) {
+            return false;
+        }
+
+        if(uPKColumn.length == 0 && column.length > 0) {
+            return false;
+        }
+
+        if(uPKColumn.length < column.length) {
+            return true;
+        }
+
+        if(uPKColumn.precision < column.precision) {
+            return true;
+        }
+
+        // never should get THIS far !
+        return false;
+    }
 }
