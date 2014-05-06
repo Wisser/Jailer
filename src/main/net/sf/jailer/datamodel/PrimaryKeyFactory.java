@@ -88,7 +88,8 @@ public class PrimaryKeyFactory {
 							universalPrimaryKey.getColumns().set(
 									i,
 									new Column(uPKColumn.name, uPKColumn.type,
-											column.length, column.precision));
+											Math.max(column.length, uPKColumn.length),
+                                            Math.max(column.precision,uPKColumn.precision)));
 						}
 						assigned = true;
 						assignedUPKColumns.add(i);
@@ -110,34 +111,24 @@ public class PrimaryKeyFactory {
 				for (int i = 0; i < universalPrimaryKey.getColumns().size(); ++i) {
 					Column uPKColumn = universalPrimaryKey.getColumns().get(i);
 					Column column = columns.get(n);
-					if (uPKColumn.type.equalsIgnoreCase(column.type) && column.precision < 0 && uPKColumn.precision < 0) {
-						if (column.length > 0 && uPKColumn.length > 0 && column.length > uPKColumn.length) {
-							// increase length
-							universalPrimaryKey.getColumns().set(
-									i,
-									new Column(uPKColumn.name, uPKColumn.type,
-											column.length, column.precision));
-						}
-						++n;
-						if (n >= columns.size()) {
-							break;
-						}
-					}
-					if (uPKColumn.type.equalsIgnoreCase(column.type) && column.precision >= 0 && uPKColumn.precision >= 0
-							&& (column.length >= uPKColumn.length && column.precision >= uPKColumn.precision
-							 || column.length <= uPKColumn.length && column.precision <= uPKColumn.precision)) {
-						if (column.length > 0 && column.length > uPKColumn.length) {
-							// increase length
-							universalPrimaryKey.getColumns().set(
-									i,
-									new Column(uPKColumn.name, uPKColumn.type,
-											column.length, column.precision));
-						}
-						++n;
-						if (n >= columns.size()) {
-							break;
-						}
-					}
+
+                    if(PrimaryKey.isAssignable(uPKColumn,column)) {
+                        ++n;
+                    } else {
+                        if(PrimaryKey.isIncreasable(uPKColumn, column)) {
+                            // increase length
+                            universalPrimaryKey.getColumns().set(
+                                    i,
+                                    new Column(uPKColumn.name, uPKColumn.type,
+                                            Math.max(column.length, uPKColumn.length),
+                                            Math.max(column.precision,uPKColumn.precision)));
+                            ++n;
+                        }
+
+                    }
+                    if(n>=columns.size()) {
+                        break;
+                    }
 				}
 			}
 			// add new columns to universal primary key

@@ -145,13 +145,26 @@ public class UIUtil {
 			try {
 				File f = fileChooser.getSelectedFile();
 				String work = new File(".").getCanonicalPath();
-				fn = f.getName();
-				f = f.getParentFile();
-				while (f != null && !f.getCanonicalPath().equals(work)) {
-					fn = f.getName() + File.separator + fn;
+				// START BUG FIX #1
+				if (f.getCanonicalPath().startsWith(work)) {
+					// STOP BUG FIX #1
+					fn = f.getName();
 					f = f.getParentFile();
+					while (f != null && !f.getCanonicalPath().equals(work)) {
+						fn = f.getName() + File.separator + fn;
+						f = f.getParentFile();
+					}
+					// START BUG FIX #1
+				} else {
+					fn = f.getCanonicalPath();
 				}
-				if (addExtension && !fn.endsWith(extension)) {
+				// STOP BUG FIX #1
+				// START BUG FIX #2 if (addExtension && !fn.endsWith(extension))
+				// {
+				if (addExtension
+						&& !(fn.endsWith(extension) || (allowZip && fn
+								.endsWith(extension + ".zip")))) {
+					// STOP BUG FIX #2
 					fn += extension;
 				}
 				try {
@@ -164,7 +177,12 @@ public class UIUtil {
 			} catch (IOException e1) {
 				try {
 					fn = fileChooser.getSelectedFile().getCanonicalPath();
-					if (addExtension && !fn.endsWith(extension)) {
+					// START BUG FIX #2 if (addExtension &&
+					// !fn.endsWith(extension)) {
+					if (addExtension
+							&& !(fn.endsWith(extension) || (allowZip && fn
+									.endsWith(extension + ".zip")))) {
+						// STOP BUG FIX #2
 						fn += extension;
 					}
 					return fn;
