@@ -299,6 +299,20 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<entry key="\\" value="\\"/>
 				</map>
 			</property>
+			<property name="typeReplacement">
+				<map>
+					<entry key="TINYINT" value="INT"/>
+					<entry key="SMALLINT" value="INT"/>
+					<entry key="MEDIUMINT" value="INT"/>
+					<entry key="INT" value="BIGINT"/>
+					<entry key="INTEGER" value="BIGINT"/>
+					<entry key="tinyint" value="int"/>
+					<entry key="smallint" value="int"/>
+					<entry key="mediumint" value="int"/>
+					<entry key="int" value="bigint"/>
+					<entry key="integer" value="bigint"/>
+				</map>
+			</property>
 			<property name="sqlLimitSuffix" value="LIMIT 0, %s" />
 			<property name="statisticRenovator">
 				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
