@@ -1,3 +1,6 @@
+2.1.2
+  - fixed an incompatibility with Java 8.
+
 2.1.1
   - fixed a bug concerning the determination of the universal-primary-key.
   - fixed a bug in file chooser window (thanks to oliver45)
