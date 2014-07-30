@@ -1,3 +1,6 @@
+4.2.4
+  - added support for postgresql UUID type.
+
 4.2.3
   - fixed an incompatibility with Java 8.
 
