@@ -29,6 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.DBMS;
@@ -329,6 +330,12 @@ public class SqlUtil {
         		// PostgreSQL bit values
         		return "B'" + content + "'";
         	}
+        }
+        if (content instanceof UUID) {
+        	if (dbms == DBMS.POSTGRESQL) {
+        		return "'" + content + "'::uuid";
+        	}
+        	return "'" + content + "'";
         }
         if (Configuration.forDbms(session).isIdentityInserts()) {
         	// Boolean mapping for MSSQL/Sybase
