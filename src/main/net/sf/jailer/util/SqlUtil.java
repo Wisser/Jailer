@@ -16,6 +16,7 @@
 package net.sf.jailer.util;
 
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
@@ -398,18 +399,18 @@ public class SqlUtil {
      * @param typeCache for caching types
      * @return object
      */
-	public static Object getObject(ResultSet resultSet, int i, Map<Integer, Integer> typeCache) throws SQLException {
+	public static Object getObject(ResultSet resultSet, ResultSetMetaData resultSetMetaData, int i, Map<Integer, Integer> typeCache) throws SQLException {
 		Integer type = typeCache.get(i);
 		if (type == null) {
 			try {
-				type = resultSet.getMetaData().getColumnType(i);
+				type = resultSetMetaData.getColumnType(i);
 				if (SQLDialect.treatDateAsTimestamp) {
 					if (type == Types.DATE) {
 						type = Types.TIMESTAMP;
 					}
 				 }
 				 if (dbms == DBMS.POSTGRESQL) {
-	                String typeName = resultSet.getMetaData().getColumnTypeName(i);
+	                String typeName = resultSetMetaData.getColumnTypeName(i);
 	                if ("hstore".equalsIgnoreCase(typeName)) {
 	                    type = TYPE_HSTORE;
 	                }
@@ -425,7 +426,7 @@ public class SqlUtil {
 		if (type == Types.DATE) {
 			if (dbms == DBMS.MySQL) {
 				// YEAR
-				String typeName = resultSet.getMetaData().getColumnTypeName(i);
+				String typeName = resultSetMetaData.getColumnTypeName(i);
 				if (typeName != null && typeName.toUpperCase().equals("YEAR")) {
 					int result = resultSet.getInt(i);
 					if (resultSet.wasNull()) {
@@ -442,7 +443,7 @@ public class SqlUtil {
 			if (type == TYPE_HSTORE) {
 				return new HStoreWrapper(resultSet.getString(i));
             } else if (object instanceof Boolean) {
-				String typeName = resultSet.getMetaData().getColumnTypeName(i);
+				String typeName = resultSetMetaData.getColumnTypeName(i);
 				if (typeName != null && typeName.toLowerCase().equals("bit")) {
 					final String value = Boolean.TRUE.equals(object)? "B'1'" : "B'0'";
 					return new Object() {
@@ -464,11 +465,11 @@ public class SqlUtil {
      * @param typeCache for caching types
      * @return type according to {@link Types}
      */
-	public static int getColumnType(ResultSet resultSet, int i, Map<Integer, Integer> typeCache) throws SQLException {
+	public static int getColumnType(ResultSet resultSet, ResultSetMetaData resultSetMetaData, int i, Map<Integer, Integer> typeCache) throws SQLException {
 		Integer type = typeCache.get(i);
 		if (type == null) {
 			try {
-				type = resultSet.getMetaData().getColumnType(i);
+				type = resultSetMetaData.getColumnType(i);
 			} catch (Exception e) {
 				type = Types.OTHER;
 			}
@@ -485,14 +486,14 @@ public class SqlUtil {
      * @param typeCache for caching types
      * @return object
      */
-	public static int getColumnType(ResultSet resultSet, String columnName, Map<String, Integer> typeCache) throws SQLException {
+	public static int getColumnType(ResultSet resultSet, ResultSetMetaData resultSetMetaData, String columnName, Map<String, Integer> typeCache) throws SQLException {
 		Integer type = typeCache.get(columnName);
 		if (type == null) {
 			try {
 				type = Types.OTHER;
-				for (int i = resultSet.getMetaData().getColumnCount(); i > 0; --i) {
-					if (columnName.equalsIgnoreCase(resultSet.getMetaData().getColumnName(i))) {
-						type = resultSet.getMetaData().getColumnType(i);
+				for (int i = resultSetMetaData.getColumnCount(); i > 0; --i) {
+					if (columnName.equalsIgnoreCase(resultSetMetaData.getColumnName(i))) {
+						type = resultSetMetaData.getColumnType(i);
 						break;
 					}
 				}
@@ -511,14 +512,14 @@ public class SqlUtil {
      * @param typeCache for caching types
      * @return object
      */
-	public static Object getObject(ResultSet resultSet, String columnName, Map<String, Integer> typeCache) throws SQLException {
+	public static Object getObject(ResultSet resultSet, ResultSetMetaData resultSetMetaData, String columnName, Map<String, Integer> typeCache) throws SQLException {
 		Integer type = typeCache.get(columnName);
 		if (type == null) {
 			try {
 				type = Types.OTHER;
-				for (int i = resultSet.getMetaData().getColumnCount(); i > 0; --i) {
-					if (columnName.equalsIgnoreCase(resultSet.getMetaData().getColumnName(i))) {
-						type = resultSet.getMetaData().getColumnType(i);
+				for (int i = resultSetMetaData.getColumnCount(); i > 0; --i) {
+					if (columnName.equalsIgnoreCase(resultSetMetaData.getColumnName(i))) {
+						type = resultSetMetaData.getColumnType(i);
 						break;
 					}
 				}

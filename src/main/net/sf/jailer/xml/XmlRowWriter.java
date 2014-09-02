@@ -22,6 +22,7 @@ import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.Date;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.sql.Types;
@@ -146,6 +147,11 @@ public class XmlRowWriter {
 		private final ResultSet resultSet;
 		
 		/**
+		 * Meta data.
+		 */
+		private final ResultSetMetaData resultSetMetaData;
+		
+		/**
 		 * The table from which the data comes.
 		 */
 		private final Table table;
@@ -170,8 +176,9 @@ public class XmlRowWriter {
 		 * 
 		 * @param resultSet to read rows from
 		 */
-		public XmlWritingNodeVisitor(ResultSet resultSet, Table table, Association association, Session session) {
+		public XmlWritingNodeVisitor(ResultSet resultSet, ResultSetMetaData resultSetMetaData, Table table, Association association, Session session) {
 			this.resultSet = resultSet;
+			this.resultSetMetaData = resultSetMetaData;
 			this.table = table;
 			this.association = association;
 			this.session = session;
@@ -194,7 +201,7 @@ public class XmlRowWriter {
 						typeCache = new HashMap<String, Integer>();
 						typeCachesForStringKey.put(table, typeCache);
 					}
-					type = SqlUtil.getColumnType(resultSet, columnName, typeCache);
+					type = SqlUtil.getColumnType(resultSet, resultSetMetaData, columnName, typeCache);
 					if ((type == Types.BLOB || type == Types.CLOB) && session.dbms != DBMS.SQLITE) {
 						Object object = resultSet.getObject(columnName);
 						if (returnNull && (object == null || resultSet.wasNull())) {
@@ -215,7 +222,7 @@ public class XmlRowWriter {
 							return "";
 						}
 					} else {
-						Object o = SqlUtil.getObject(resultSet, columnName, typeCache);
+						Object o = SqlUtil.getObject(resultSet, resultSetMetaData, columnName, typeCache);
 						if (returnNull && (o == null || resultSet.wasNull())) {
 							return null;
 						}

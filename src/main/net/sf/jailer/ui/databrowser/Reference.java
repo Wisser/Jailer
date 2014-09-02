@@ -17,7 +17,7 @@ package net.sf.jailer.ui.databrowser;
 
 
 /**
- * Mutual reference to an object.
+ * Mutable reference to an object.
  * 
  * @author Ralf Wisser
  *

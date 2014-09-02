@@ -29,7 +29,7 @@ import javax.xml.transform.sax.TransformerHandler;
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.SQLDialect;
-import net.sf.jailer.database.Session.ResultSetReader;
+import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.Base64;
 
@@ -43,7 +43,7 @@ import org.xml.sax.helpers.AttributesImpl;
  * @see http://www.dbunit.org/
  * @author Ralf Wisser
  */
-public class FlatXMLTransformer implements ResultSetReader {
+public class FlatXMLTransformer extends AbstractResultSetReader {
 
 	/**
 	 * Name of XML row element, or <code>null</code> if the table name can not
@@ -128,10 +128,10 @@ public class FlatXMLTransformer implements ResultSetReader {
 	 */
 	public void readCurrentRow(ResultSet resultSet) throws SQLException {
 		if (columnLabel == null) {
-			columnCount = resultSet.getMetaData().getColumnCount();
+			columnCount = getMetaData(resultSet).getColumnCount();
 			columnLabel = new String[columnCount + 1];
 			for (int i = 1; i <= columnCount; ++i) {
-				String mdColumnLabel = resultSet.getMetaData()
+				String mdColumnLabel = getMetaData(resultSet)
 						.getColumnLabel(i);
 				columnLabel[i] = mdColumnLabel;
 			}
@@ -172,7 +172,7 @@ public class FlatXMLTransformer implements ResultSetReader {
 		Integer type = typeCache.get(i);
 		if (type == null) {
 			try {
-				type = resultSet.getMetaData().getColumnType(i);
+				type = getMetaData(resultSet).getColumnType(i);
 				if (SQLDialect.treatDateAsTimestamp) {
 					if (type == Types.DATE) {
 						type = Types.TIMESTAMP;

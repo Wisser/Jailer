@@ -37,6 +37,7 @@ import java.util.Map;
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.SQLDialect.UPSERT_MODE;
+import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
@@ -51,7 +52,7 @@ import net.sf.jailer.util.SqlUtil;
  * 
  * @author Ralf Wisser
  */
-public class DMLTransformer implements ResultSetReader {
+public class DMLTransformer extends AbstractResultSetReader {
 
     /**
      * The table to read from.
@@ -175,7 +176,7 @@ public class DMLTransformer implements ResultSetReader {
      */
     public void readCurrentRow(ResultSet resultSet) throws SQLException {
     	if (columnLabel == null) {
-            columnCount = resultSet.getMetaData().getColumnCount();
+            columnCount = getMetaData(resultSet).getColumnCount();
             columnLabel = new String[columnCount + 1];
             lobColumns = new ArrayList<String>();
             emptyLobValue = new String[columnCount + 1];
@@ -183,8 +184,8 @@ public class DMLTransformer implements ResultSetReader {
             labelCSL = "";
             tableHasLobs = false;
             for (int i = 1; i <= columnCount; ++i) {
-                String mdColumnLabel = quoting.quote(resultSet.getMetaData().getColumnLabel(i));
-                int mdColumnType = resultSet.getMetaData().getColumnType(i);
+                String mdColumnLabel = quoting.quote(getMetaData(resultSet).getColumnLabel(i));
+                int mdColumnType = getMetaData(resultSet).getColumnType(i);
                 
                 if ((mdColumnType == Types.BLOB || mdColumnType == Types.CLOB || mdColumnType == Types.SQLXML) && session.dbms != DBMS.SQLITE) {
                 	tableHasLobs = true;
@@ -215,7 +216,7 @@ public class DMLTransformer implements ResultSetReader {
                 if (columnLabel[i] == null) {
                 	continue;
                 }
-            	Object content = SqlUtil.getObject(resultSet, i, typeCache);
+            	Object content = SqlUtil.getObject(resultSet, getMetaData(resultSet), i, typeCache);
                 if (resultSet.wasNull()) {
                     content = null;
                 }
@@ -240,7 +241,7 @@ public class DMLTransformer implements ResultSetReader {
                     if (columnLabel[i] == null) {
                     	continue;
                     }
-                    Object content = SqlUtil.getObject(resultSet, i, typeCache);
+                    Object content = SqlUtil.getObject(resultSet, getMetaData(resultSet), i, typeCache);
                     if (resultSet.wasNull()) {
                         content = null;
                     }
@@ -251,7 +252,7 @@ public class DMLTransformer implements ResultSetReader {
                     }
                     if (SqlUtil.dbms == DBMS.POSTGRESQL) {
                     	// explicit cast needed
-                    	int mdColumnType = resultSet.getMetaData().getColumnType(i);
+                    	int mdColumnType = getMetaData(resultSet).getColumnType(i);
                     	if (mdColumnType == Types.TIME) {
                     		cVal = "time " + cVal;
                     	}
@@ -485,7 +486,7 @@ public class DMLTransformer implements ResultSetReader {
 	                if (columnLabel[j] == null) {
 	                	continue;
 	                }
-	                Object content = SqlUtil.getObject(resultSet, j, typeCache);
+	                Object content = SqlUtil.getObject(resultSet, getMetaData(resultSet), j, typeCache);
 	                if (resultSet.wasNull()) {
 	                    content = null;
 	                }

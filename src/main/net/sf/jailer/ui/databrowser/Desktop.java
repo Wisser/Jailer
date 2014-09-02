@@ -95,7 +95,6 @@ import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.ui.databrowser.BrowserContentPane.LoadJob;
 import net.sf.jailer.ui.databrowser.TreeLayoutOptimizer.Node;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
@@ -751,7 +750,7 @@ public abstract class Desktop extends JDesktopPane {
 			}
 
 			@Override
-			protected LinkedBlockingQueue<LoadJob> getRunnableQueue() {
+			protected LinkedBlockingQueue<Runnable> getRunnableQueue() {
 				return runnableQueue;
 			}
 
@@ -2708,7 +2707,7 @@ public abstract class Desktop extends JDesktopPane {
 	/**
 	 * For concurrent reload of rows.
 	 */
-	private final LinkedBlockingQueue<LoadJob> runnableQueue = new LinkedBlockingQueue<LoadJob>();
+	private final LinkedBlockingQueue<Runnable> runnableQueue = new LinkedBlockingQueue<Runnable>();
 
 	/**
 	 * Maximum number of concurrent DB connections.
@@ -2726,6 +2725,8 @@ public abstract class Desktop extends JDesktopPane {
 							runnableQueue.take().run();
 						} catch (InterruptedException e) {
 							// ignore
+						} catch (Throwable t) {
+							t.printStackTrace();
 						}
 					}
 				}
