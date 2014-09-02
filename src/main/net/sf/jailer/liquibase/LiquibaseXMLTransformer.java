@@ -8,7 +8,6 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
-
 import java.sql.Array;
 import java.sql.Blob;
 import java.sql.Clob;
@@ -18,24 +17,21 @@ import java.sql.Ref;
 import java.sql.ResultSet;
 import java.sql.RowId;
 import java.sql.SQLException;
-
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.SimpleDateFormat;
 
 import javax.xml.transform.sax.TransformerHandler;
-import net.sf.jailer.CommandLineParser;
 
-import net.sf.jailer.database.Session.ResultSetReader;
+import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.Base64;
 
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-public class LiquibaseXMLTransformer implements ResultSetReader {
-	
-	
+public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 	
 	private static final String VALUE_DATE = "valueDate";
 	private static final String VALUE_NUMERIC = "valueNumeric";
@@ -89,7 +85,7 @@ public class LiquibaseXMLTransformer implements ResultSetReader {
 	
 	public void readCurrentRow(ResultSet singleRow) throws SQLException {
 
-		int columnCount = singleRow.getMetaData().getColumnCount();
+		int columnCount = getMetaData(singleRow).getColumnCount();
 
 		try {
 
@@ -119,8 +115,8 @@ public class LiquibaseXMLTransformer implements ResultSetReader {
 	private AttributesImpl getColumnAttributes(ResultSet singleRow, int columncount) throws SQLException {		
 		
 		AttributesImpl attrcolumn = new AttributesImpl();
-		String columnname = singleRow.getMetaData().getColumnName(columncount);
-		Integer columnType = singleRow.getMetaData().getColumnType(columncount);
+		String columnname = getMetaData(singleRow).getColumnName(columncount);
+		Integer columnType = getMetaData(singleRow).getColumnType(columncount);
 		singleRow.getObject(columncount);
 				
 		if (!singleRow.wasNull()){

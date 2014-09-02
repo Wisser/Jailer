@@ -29,6 +29,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerConfigurationException;
 
 import net.sf.jailer.database.Session;
+import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
@@ -47,7 +48,7 @@ import org.xml.sax.SAXException;
  * 
  * @author Ralf Wisser
  */
-public class XmlExportTransformer implements ResultSetReader {
+public class XmlExportTransformer extends AbstractResultSetReader {
 
 	/**
 	 * The table to read from.
@@ -158,7 +159,7 @@ public class XmlExportTransformer implements ResultSetReader {
 				sb.append(", ");
 			}
 			f = false;
-			sb.append(SqlUtil.toSql(SqlUtil.getObject(resultSet, "PK" + i++,
+			sb.append(SqlUtil.toSql(SqlUtil.getObject(resultSet, getMetaData(resultSet), "PK" + i++,
 					getTypeCache(table)), session));
 		}
 		sb.append(")");
@@ -183,7 +184,7 @@ public class XmlExportTransformer implements ResultSetReader {
 		}
 		final Map<String, Association> finalAssociationMap = associationMap;
 		
-		XmlUtil.visitDocumentNodes(tableMapping.template, xmlRowWriter.new XmlWritingNodeVisitor(resultSet, table, association, session) {
+		XmlUtil.visitDocumentNodes(tableMapping.template, xmlRowWriter.new XmlWritingNodeVisitor(resultSet, getMetaData(resultSet), table, association, session) {
 			public void visitAssociationElement(String associationName) {
 				final Association sa = finalAssociationMap.get(associationName);
 				if (sa != null) {
@@ -206,9 +207,9 @@ public class XmlExportTransformer implements ResultSetReader {
 							};
 							try {
 								xmlRowWriter.startList(sa);
-								entityGraph.readDependentEntities(sa.destination, sa, resultSet, reader, getTypeCache(sa.destination), getTableMapping(sa.destination).selectionSchema, getTableMapping(sa.destination).originalPKAliasPrefix);
+								entityGraph.readDependentEntities(sa.destination, sa, resultSet, getMetaData(resultSet), reader, getTypeCache(sa.destination), getTableMapping(sa.destination).selectionSchema, getTableMapping(sa.destination).originalPKAliasPrefix);
 								if (cyclicAggregatedTables.contains(sa.destination)) {
-									entityGraph.markDependentEntitiesAsTraversed(sa, resultSet, getTypeCache(sa.destination));
+									entityGraph.markDependentEntitiesAsTraversed(sa, resultSet, getMetaData(resultSet), getTypeCache(sa.destination));
 								}
 								xmlRowWriter.endList(sa);
 							} catch (Exception e) {

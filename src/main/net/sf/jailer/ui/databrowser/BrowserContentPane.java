@@ -78,6 +78,8 @@ import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.RowSorter;
 import javax.swing.SwingUtilities;
+import javax.swing.event.PopupMenuEvent;
+import javax.swing.event.PopupMenuListener;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -93,6 +95,7 @@ import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.Column;
@@ -130,7 +133,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * Concurrently loads rows.
 	 */
-	final class LoadJob {
+	final class LoadJob implements Runnable {
 		private List<Row> rows = Collections.synchronizedList(new ArrayList<Row>());
 		private Exception exception;
 		private boolean isCanceled = false;
@@ -870,6 +873,27 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Associated Rows", "3", navigateFromAllRows);
 		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Detached Rows", "4", navigateFromAllRows);
 
+		
+		// TODO
+//		popup.addPopupMenuListener(new PopupMenuListener() {
+//			
+//			@Override
+//			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+//				System.out.println("shown");
+//			}
+//			
+//			@Override
+//			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+//				System.out.println("hidden");
+//			}
+//			
+//			@Override
+//			public void popupMenuCanceled(PopupMenuEvent e) {
+//				System.out.println("weg");
+//			}
+//		});
+		
+		
 		if (row != null) {
 			if (!(table instanceof SqlStatementTable)) {
 				popup.add(new JSeparator());
@@ -1484,7 +1508,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		adjustClosure(this);
 	}
-
+	
+	private static final String RC_PLACEHOLDER = "      ";
+	
 	private JPopupMenu createNavigationMenu(JPopupMenu popup, final Row row, final int rowIndex, List<String> assList, Map<String, Association> assMap,
 			String title, String prefix, final boolean navigateFromAllRows) {
 		JMenu nav = new JMenu(title);
@@ -1520,7 +1546,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				current = p;
 			}
 
-			final JMenuItem item = new JMenuItem("  " + (name.substring(1)));
+			final JMenuItem item = new JMenuItem("  " + (name.substring(1)) + RC_PLACEHOLDER);
 
 			for (RowBrowser child: getChildBrowsers()) {
 				if (association == child.association) {
@@ -1539,6 +1565,40 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 				}
 			});
+			
+			
+			// TODO
+//			final JMenuItem fitem = item;
+//			getRunnableQueue().add(new Runnable() {
+//				@Override
+//				public void run() {
+//					try {
+//						List<Row> r;
+//						if (rowIndex < 0) {
+//							r = rows;
+//						} else {
+//							r = Collections.singletonList(row);
+//						}
+////						final long count = countRows(r, getAndConditionText(), association, this);
+//						
+//						final int MAX_RC = 1000;
+//						RowCounter rc = new RowCounter(table, association, r, session);
+//						final long count = rc.countRows(getAndConditionText(), this, MAX_RC + 1, false);
+//						SwingUtilities.invokeLater(new Runnable() {
+//							@Override
+//							public void run() {
+//								fitem.setText(fitem.getText().substring(0, fitem.getText().length() - RC_PLACEHOLDER.length()) + " (" + ((count > MAX_RC)? (">" + MAX_RC) : count) + ")");
+//								if (count == 0) {
+//									fitem.setForeground(Color.gray);
+//								}
+//							}
+//						});
+//					} catch (SQLException e) {
+//						e.printStackTrace();
+//					}
+//				}
+//			});
+			
 			if (current != null) {
 				current.add(item);
 			} else {
@@ -1618,19 +1678,25 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 1);
 		} else {
 			try {
-				loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 10000);
+				loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 510);
 				return;
 			} catch (SQLException e) {
 				Session._log.warn("failed, try another blocking-size");
 			}
 			try {
-				loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 1000);
+				loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 300);
 				return;
 			} catch (SQLException e) {
 				Session._log.warn("failed, try another blocking-size");
 			}
 			try {
 				loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 100);
+				return;
+			} catch (SQLException e) {
+				Session._log.warn("failed, try another blocking-size");
+			}
+			try {
+				loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 40);
 				return;
 			} catch (SQLException e) {
 				Session._log.warn("failed, try another blocking-size");
@@ -1882,15 +1948,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		}
 		if (sql.length() > 0) {
-			session.executeQuery(sql, new Session.ResultSetReader() {
+			session.executeQuery(sql, new AbstractResultSetReader() {
 	
 				Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
 	
 				@Override
 				public void readCurrentRow(ResultSet resultSet) throws SQLException {
 					if ((table instanceof SqlStatementTable) && rows.isEmpty()) {
-						for (int ci = 1; ci <= resultSet.getMetaData().getColumnCount(); ++ci) {
-							table.getColumns().add(new Column(resultSet.getMetaData().getColumnName(ci), resultSet.getMetaData().getColumnTypeName(ci), -1, -1));
+						for (int ci = 1; ci <= getMetaData(resultSet).getColumnCount(); ++ci) {
+							table.getColumns().add(new Column(getMetaData(resultSet).getColumnName(ci), getMetaData(resultSet).getColumnTypeName(ci), -1, -1));
 						}
 					}
 					
@@ -1929,7 +1995,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				private String readRowFromResultSet(final Set<String> pkColumnNames, ResultSet resultSet, int i, int vi, String rowId, Object[] v, Column column)
 						throws SQLException {
 					Object value = "";
-					int type = SqlUtil.getColumnType(resultSet, i, typeCache);
+					int type = SqlUtil.getColumnType(resultSet, getMetaData(resultSet), i, typeCache);
 					if (type == Types.BLOB || type == Types.CLOB || type == Types.SQLXML) {
 						Object object = resultSet.getObject(i);
 						if (object == null || resultSet.wasNull()) {
@@ -1957,7 +2023,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							};
 						}
 					} else {
-						Object o = SqlUtil.getObject(resultSet, i, typeCache);
+						Object o = SqlUtil.getObject(resultSet, getMetaData(resultSet), i, typeCache);
 						boolean isPK = false;
 						if (pkColumnNames.isEmpty()) {
 							isPK = type != Types.BLOB && type != Types.CLOB && type != Types.DATALINK && type != Types.JAVA_OBJECT && type != Types.NCLOB
@@ -1976,10 +2042,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 					v[vi] = value;
 					return rowId;
-				}
-	
-				@Override
-				public void close() {
 				}
 			}, null, context, limit);
 		}
@@ -2827,7 +2889,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract void showInNewWindow();
 	protected abstract void appendLayout();
 	protected abstract void adjustClosure(BrowserContentPane tabu);
-	protected abstract LinkedBlockingQueue<LoadJob> getRunnableQueue();
+	protected abstract LinkedBlockingQueue<Runnable> getRunnableQueue();
 	/**
 	 * Collect layout of tables in a extraction model.
 	 * 

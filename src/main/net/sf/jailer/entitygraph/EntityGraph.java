@@ -17,6 +17,7 @@ package net.sf.jailer.entitygraph;
 
 import java.io.File;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -769,7 +770,7 @@ public class EntityGraph {
      * @param reader reads the entities
      * @param selectionSchema the selection schema
      */
-    public void readDependentEntities(Table table, Association association, ResultSet resultSet, ResultSetReader reader, Map<String, Integer> typeCache, String selectionSchema, String originalPKAliasPrefix) throws SQLException {
+    public void readDependentEntities(Table table, Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, ResultSetReader reader, Map<String, Integer> typeCache, String selectionSchema, String originalPKAliasPrefix) throws SQLException {
     	String select;
     	if (originalPKAliasPrefix != null) {
         	StringBuffer selectOPK = new StringBuffer();
@@ -783,13 +784,13 @@ public class EntityGraph {
     			"Select " + selectionSchema + " from (" +  
     			"Select " + selectOPK + ", " + filteredSelectionClause(table) + " from " + table.getName() + " T join " + SQLDialect.dmlTableReference(DEPENDENCY, session) + " D on " +
 	    		 pkEqualsEntityID(table, "T", "D", "TO_") + " and D.to_type='" + table.getName() + "'" +
-	    		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", typeCache, session) +
+	    		 " Where " + pkEqualsEntityID(association.source, resultSet, resultSetMetaData, "D", "FROM_", typeCache, session) +
 	    	     " and D.from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
 	    	     " and D.r_entitygraph=" + graphID + ") T";
     	} else {
 	    	select = "Select " + selectionSchema + " from " + table.getName() + " T join " + SQLDialect.dmlTableReference(DEPENDENCY, session) + " D on " +
 	    		 pkEqualsEntityID(table, "T", "D", "TO_") + " and D.to_type='" + table.getName() + "'" +
-	    		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", typeCache, session) +
+	    		 " Where " + pkEqualsEntityID(association.source, resultSet, resultSetMetaData, "D", "FROM_", typeCache, session) +
 	    	     " and D.from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
 	    	     " and D.r_entitygraph=" + graphID;
     	}
@@ -804,16 +805,16 @@ public class EntityGraph {
      * @param association the dependency
      * @param resultSet current row is given entity
      */
-    public void markDependentEntitiesAsTraversed(Association association, ResultSet resultSet, Map<String, Integer> typeCache) throws SQLException {
+    public void markDependentEntitiesAsTraversed(Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, Map<String, Integer> typeCache) throws SQLException {
     	String update;
     	if (session.dbms == DBMS.SYBASE) {
     		update = "Update " + SQLDialect.dmlTableReference(DEPENDENCY, session) + " set traversed=1" +
-    		 " Where " + pkEqualsEntityID(association.source, resultSet, SQLDialect.dmlTableReference(DEPENDENCY, session), "FROM_", typeCache, session) +
+    		 " Where " + pkEqualsEntityID(association.source, resultSet, resultSetMetaData, SQLDialect.dmlTableReference(DEPENDENCY, session), "FROM_", typeCache, session) +
     		 " and " + SQLDialect.dmlTableReference(DEPENDENCY, session) + ".from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
     		 " and " + SQLDialect.dmlTableReference(DEPENDENCY, session) + ".r_entitygraph=" + graphID;
     	} else {
     		update = "Update " + SQLDialect.dmlTableReference(DEPENDENCY, session) + " D set traversed=1" +
-    		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", typeCache, session) +
+    		 " Where " + pkEqualsEntityID(association.source, resultSet, resultSetMetaData, "D", "FROM_", typeCache, session) +
     	     " and D.from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
     	     " and D.r_entitygraph=" + graphID;
     	}
@@ -866,7 +867,7 @@ public class EntityGraph {
      * @param resultSet
      * @return a SQL comparition expression for comparing rows of <code>table</code> with current row of resultSet
      */
-    private String pkEqualsEntityID(Table table, ResultSet resultSet, String alias, String columnPrefix, Map<String, Integer> typeCache, Session session) throws SQLException {
+    private String pkEqualsEntityID(Table table, ResultSet resultSet, ResultSetMetaData resultSetMetaData, String alias, String columnPrefix, Map<String, Integer> typeCache, Session session) throws SQLException {
     	Map<Column, Column> match = universalPrimaryKey.match(table.primaryKey);
         StringBuffer sb = new StringBuffer();
         for (Column column: universalPrimaryKey.getColumns()) {
@@ -883,7 +884,7 @@ public class EntityGraph {
             		}
             		++i;
             	}
-                sb.append("=" + SqlUtil.toSql(SqlUtil.getObject(resultSet, "PK" + i /* tableColumn.name*/, typeCache), session));
+                sb.append("=" + SqlUtil.toSql(SqlUtil.getObject(resultSet, resultSetMetaData, "PK" + i /* tableColumn.name*/, typeCache), session));
             } else {
                 sb.append(" is null");
             }
@@ -919,10 +920,6 @@ public class EntityGraph {
             Column tableColumn = match.get(column);
             sb.append(entityAlias + "." + columnPrefix + column.name);
             if (tableColumn != null) {
-            	// TODO
-//                sb.append("= CAST(" + tableAlias + "." + tableColumn.name + " as " + tableColumn.toSQL(null).substring(tableColumn.name.length()).trim() + ")");
-//                sb.append("= CAST(" + tableAlias + "." + tableColumn.name + " as " + tableColumn.type + ")");
-                
             	if (fieldProcTables.contains(table.getUnqualifiedName().toLowerCase())) {
             		sb.append(" = " + tableColumn.type + "(" + tableAlias + "." + tableColumn.name + ")");
             	} else {

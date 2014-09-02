@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
@@ -36,7 +37,7 @@ import net.sf.jailer.util.SqlUtil;
  * 
  * @author Ralf Wisser
  */
-public class DeletionTransformer implements ResultSetReader {
+public class DeletionTransformer extends AbstractResultSetReader {
 
     /**
      * The table to read from.
@@ -95,7 +96,7 @@ public class DeletionTransformer implements ResultSetReader {
                 boolean firstTime = true;
                 for (Column pkColumn: table.primaryKey.getColumns()) {
                 	delete += (firstTime? "" : " and ") + pkColumn.name + "="
-                    		+ SqlUtil.toSql(SqlUtil.getObject(resultSet, quoting.unquote(pkColumn.name), typeCache), session);
+                    		+ SqlUtil.toSql(SqlUtil.getObject(resultSet, getMetaData(resultSet), quoting.unquote(pkColumn.name), typeCache), session);
                     firstTime = false;
                 }
                 writeToScriptFile(delete + ";\n");
@@ -104,14 +105,14 @@ public class DeletionTransformer implements ResultSetReader {
 	            String item;
 	            if (table.primaryKey.getColumns().size() == 1) {
 	                deleteHead = "Delete from " + qualifiedTableName(table) + " Where " + table.primaryKey.getColumns().get(0).name + " in (";
-	                item = SqlUtil.toSql(SqlUtil.getObject(resultSet, quoting.unquote(table.primaryKey.getColumns().get(0).name), typeCache), session);
+	                item = SqlUtil.toSql(SqlUtil.getObject(resultSet, getMetaData(resultSet), quoting.unquote(table.primaryKey.getColumns().get(0).name), typeCache), session);
 	            } else {
 	                deleteHead = "Delete from " + qualifiedTableName(table) + " Where (";
 	                item = "(";
 	                boolean firstTime = true;
 	                for (Column pkColumn: table.primaryKey.getColumns()) {
 	                    deleteHead += (firstTime? "" : ", ") + pkColumn.name;
-	                    item += (firstTime? "" : ", ") + SqlUtil.toSql(SqlUtil.getObject(resultSet, quoting.unquote(pkColumn.name), typeCache), session);
+	                    item += (firstTime? "" : ", ") + SqlUtil.toSql(SqlUtil.getObject(resultSet, getMetaData(resultSet), quoting.unquote(pkColumn.name), typeCache), session);
 	                    firstTime = false;
 	                }
 	                item += ")";

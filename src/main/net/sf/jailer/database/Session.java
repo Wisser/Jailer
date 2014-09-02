@@ -28,6 +28,7 @@ import java.sql.DriverManager;
 import java.sql.DriverPropertyInfo;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
@@ -102,9 +103,29 @@ public class Session {
     
     /**
      * Reads a JDBC-result-set.
+     * Caches a {@link ResultSetMetaData}.
      */
     public static abstract class AbstractResultSetReader implements ResultSetReader {
     
+    	private ResultSet owner;
+    	private ResultSetMetaData metaData;
+    	
+    	/**
+    	 * Gets and cache meta data of a result set.
+    	 * 
+    	 * @param resultSet
+    	 * @return meta data of resultSet
+    	 * @throws SQLException 
+    	 */
+    	protected ResultSetMetaData getMetaData(ResultSet resultSet) throws SQLException {
+    		if (owner == resultSet) {
+    			return metaData;
+    		}
+    		owner = resultSet;
+    		metaData = resultSet.getMetaData();
+    		return metaData;
+    	}
+    	
         /**
          * Does nothing.
          */
