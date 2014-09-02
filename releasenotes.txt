@@ -1,3 +1,6 @@
+4.2.5
+   - Fixed a performance issue related to ResultSet#getMetaData and Postgresql 9.1 JDBC driver. 
+
 4.2.4
   - added support for postgresql UUID type.
 
