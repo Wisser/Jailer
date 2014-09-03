@@ -422,6 +422,20 @@ public class Session {
      * @param context cancellation context
      */
     public long executeQuery(String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, int limit) throws SQLException {
+    	return executeQuery(sqlQuery, reader, alternativeSQL, context, limit, 0);
+    }
+
+    /**
+     * Executes a SQL-Query (SELECT) with timeout.
+     * 
+     * @param sqlQuery the query in SQL
+     * @param reader the reader for the result
+     * @param alternativeSQL query to be executed if sqlQuery fails
+     * @param limit row limit, 0 for unlimited
+     * @param context cancellation context
+     * @param timeout the timeout in sec
+     */
+    public long executeQuery(String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, int limit, int timeout) throws SQLException {
         _log.info(sqlQuery);
         long rc = 0;
         try {
@@ -430,6 +444,9 @@ public class Session {
 	        CancellationHandler.begin(statement, context);
 	        ResultSet resultSet;
 	        try {
+	        	if (timeout > 0) {
+	        		statement.setQueryTimeout(timeout);
+	        	}
 	        	resultSet = statement.executeQuery(sqlQuery);
 	        } catch (SQLException e) {
 	        	if (alternativeSQL != null) {

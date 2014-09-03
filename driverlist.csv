@@ -16,16 +16,16 @@ Interbase (InterClient Driver);jdbc:interbase://<HOST>/<DB>;interbase.interclien
 H2 embedded (Java SQL database);jdbc:h2:<DB-File>;org.h2.Driver;lib/h2-1.3.160.jar
 H2 TCP (Java SQL database);jdbc:h2:tcp://<HOST>/<DB-File>;org.h2.Driver;lib/h2-1.3.160.jar
 HyperSQL;jdbc:hsqldb:<file|hsql|http>:<DB>;org.hsqldb.jdbcDriver
-Microsoft SQL Server (jTDS);jdbc:jtds:sqlserver://<server>[:<port>][/<database>];net.sourceforge.jtds.jdbc.Driver;lib/jtds-1.2.5.jar
+Microsoft SQL Server (jTDS);jdbc:jtds:sqlserver://<server>[:<port>][/<database>];net.sourceforge.jtds.jdbc.Driver;lib/jtds-1.3.1.jar
 # Microsoft SQL Server (JTurbo Driver);jdbc:JTurbo://<HOST>:<PORT>/<DB>;com.ashna.jturbo.driver.Driver
 # Microsoft SQL Server (Sprinta Driver);jdbc:inetdae:<HOST>:<PORT>?database=<DB>;com.inet.tds.TdsDriver
 # Microsoft SQL Server 2000 (Microsoft Driver);jdbc:microsoft:sqlserver://<HOST>:<PORT>[\;DatabaseName=<DB>];com.microsoft.jdbc.sqlserver.SQLServerDriver
-# Microsoft SQL Server 2005 (Microsoft Driver);jdbc:sqlserver://<HOST>:<PORT>[\;DatabaseName=<DB>];com.microsoft.sqlserver.jdbc.SQLServerDriver
+Microsoft SQL Server (Microsoft Driver);jdbc:sqlserver://<HOST>:<PORT>[\;DatabaseName=<DB>];com.microsoft.sqlserver.jdbc.SQLServerDriver
 MySQL (MM.MySQL Driver);jdbc:mysql://<HOST>:<PORT>/<DB>;org.gjt.mm.mysql.Driver;lib/mysql-connector-java-5.1.5-bin.jar
 Oracle OCI 9i;jdbc:oracle:oci:@<SID>;oracle.jdbc.driver.OracleDriver
 # PostgreSQL (v6.5 and earlier);jdbc:postgresql://<HOST>:<PORT>/<DB>;postgresql.Driver
 PostgreSQL (v7.2 and later);jdbc:postgresql://<HOST>:<PORT>/<DB>;org.postgresql.Driver;lib/postgresql-9.1-901.jdbc4.jar
-Sybase (jTDS);jdbc:jtds:sybase://<server>[:<port>][/<database>];net.sourceforge.jtds.jdbc.Driver;lib/jtds-1.2.5.jar
+Sybase (jTDS);jdbc:jtds:sybase://<server>[:<port>][/<database>];net.sourceforge.jtds.jdbc.Driver;lib/jtds-1.3.1.jar
 # Sybase (jConnect 4.2 and earlier);jdbc:sybase:Tds:<HOST>:<PORT>;com.sybase.jdbc.SybDriver
 # Sybase (jConnect 5.2);jdbc:sybase:Tds:<HOST>:<PORT>;com.sybase.jdbc2.jdbc.SybDriver 
 # Sybase (jConnect 6.0);jdbc:sybase:Tds:<HOST>:<PORT>;com.sybase.jdbc3.jdbc.SybDriver

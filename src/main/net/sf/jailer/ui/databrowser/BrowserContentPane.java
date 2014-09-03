@@ -26,6 +26,7 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -59,7 +60,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
@@ -133,7 +134,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * Concurrently loads rows.
 	 */
-	final class LoadJob implements Runnable {
+	final class LoadJob implements RunnableWithPriority {
 		private List<Row> rows = Collections.synchronizedList(new ArrayList<Row>());
 		private Exception exception;
 		private boolean isCanceled = false;
@@ -158,6 +159,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					return;
 				}
 			}
+			rowCountCache.clear();
 			try {
 				reloadRows(andCond, rows, this, l + 1, selectDistinct);
 			} catch (SQLException e) {
@@ -248,6 +250,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						onContentChange(rows, rows.isEmpty() || currentHash != prevHash || rows.size() != prevSize || !prevIDs.equals(currentIDs) || rows.size() != currentIDs.size());
 						updateMode("table");
 						updateWhereField();
+						if (reloadAction != null) {
+							reloadAction.run();
+						}
 					}
 				}
 			});
@@ -262,9 +267,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			CancellationHandler.cancel(this);
 		}
+
+		@Override
+		public int getPriority() {
+			return 100;
+		}
 	}
 	
 	private static boolean asking = false;
+
+	private Runnable reloadAction;
+	
+	public void setOnReloadAction(Runnable runnable) {
+		reloadAction = runnable;
+	}
 	
 	/**
 	 * Current LoadJob.
@@ -296,6 +312,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 */
 	List<Row> rows = new ArrayList<Row>();
 
+	/**
+	 * Cache for association row count.
+	 */
+	private final Map<Pair<String, Association>, Pair<Long, Long>> rowCountCache = 
+			Collections.synchronizedMap(new HashMap<Pair<String,Association>, Pair<Long,Long>>());
+	
+	private final long MAX_ROWCOUNTCACHE_RETENTION_TIME = 5 * 60 * 1000L;
+	
 	/**
 	 * Number of non-distinct rows;
 	 */
@@ -547,6 +571,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		rowsTable.setColumnSelectionAllowed(false);
 		rowsTable.setCellSelectionEnabled(false);
 		rowsTable.setEnabled(false);
+		
+		rowsTableScrollPane.getVerticalScrollBar().setUnitIncrement(32);
+		
 		rowsTable.addMouseListener(new MouseListener() {
 			private JPopupMenu lastMenu;
 
@@ -837,6 +864,57 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 	}
 
+	private class AllNonEmptyItem extends JMenuItem {
+		int todo;
+		int done;
+		private List<ActionListener> todoList = new ArrayList<ActionListener>();
+		private final String initText = "All non-empty ";
+		
+		AllNonEmptyItem() {
+			setEnabled(false);
+			addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					Component parent = SwingUtilities.getWindowAncestor(BrowserContentPane.this);
+					if (parent == null) {
+						parent = BrowserContentPane.this;
+					}
+					parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					try {
+						for (ActionListener al: todoList) {
+							al.actionPerformed(e);
+						}
+					} finally {
+						parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+					}
+				}
+			});
+		}
+
+		public void rowsCounted(long count, ActionListener itemAction) {
+			++done;
+			if (count != 0) {
+				todoList.add(itemAction);
+			}
+			int p = todo > 0? (100 * done) / todo : 0;
+			if (done < todo) {
+				setText(initText + "(" + p + "%)  ");
+			} else {
+				setText(initText + "(" + todoList.size() + ")");
+				setEnabled(true);
+			}
+		}
+		
+		public void setInitialText() {
+			if (todoList.isEmpty()) {
+				setText(initText);
+			} else {
+				setText(initText + "(100%)  ");
+			}
+		}
+		
+	};
+	
 	/**
 	 * Creates popup menu for navigation.
 	 * @param navigateFromAllRows 
@@ -867,32 +945,50 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		Collections.sort(assList);
 
+		final Object context = new Object();
+		AllNonEmptyItem allNonEmpty = new AllNonEmptyItem();
+		
 		JPopupMenu popup = new JPopupMenu();
-		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Parents", "1", navigateFromAllRows);
-		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Children", "2", navigateFromAllRows);
-		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Associated Rows", "3", navigateFromAllRows);
-		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Detached Rows", "4", navigateFromAllRows);
+		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Parents", "1", navigateFromAllRows, 80, allNonEmpty, context);
+		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Children", "2", navigateFromAllRows, 60, allNonEmpty, context);
+		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Associated Rows", "3", navigateFromAllRows, 40, allNonEmpty, context);
+		popup = createNavigationMenu(popup, row, rowIndex, assList, assMap, "Detached Rows", "4", navigateFromAllRows, 40, allNonEmpty, context);
+		
+		popup.addPopupMenuListener(new PopupMenuListener() {
+			
+			@Override
+			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
+			}
+			
+			@Override
+			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
+				cancel();
+			}
+			
+			@Override
+			public void popupMenuCanceled(PopupMenuEvent e) {
+				cancel();
+			}
 
+			private void cancel() {
+				CancellationHandler.cancelSilently(context);
+				getRunnableQueue().add(new RunnableWithPriority() {
+					
+					@Override
+					public void run() {
+						CancellationHandler.reset(context);
+					}
+					
+					@Override
+					public int getPriority() {
+						return 0;
+					}
+				});
+			}
+		});
 		
-		// TODO
-//		popup.addPopupMenuListener(new PopupMenuListener() {
-//			
-//			@Override
-//			public void popupMenuWillBecomeVisible(PopupMenuEvent e) {
-//				System.out.println("shown");
-//			}
-//			
-//			@Override
-//			public void popupMenuWillBecomeInvisible(PopupMenuEvent e) {
-//				System.out.println("hidden");
-//			}
-//			
-//			@Override
-//			public void popupMenuCanceled(PopupMenuEvent e) {
-//				System.out.println("weg");
-//			}
-//		});
-		
+		popup.add(allNonEmpty);
+		allNonEmpty.setInitialText();
 		
 		if (row != null) {
 			if (!(table instanceof SqlStatementTable)) {
@@ -1509,10 +1605,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		adjustClosure(this);
 	}
 	
-	private static final String RC_PLACEHOLDER = "      ";
-	
 	private JPopupMenu createNavigationMenu(JPopupMenu popup, final Row row, final int rowIndex, List<String> assList, Map<String, Association> assMap,
-			String title, String prefix, final boolean navigateFromAllRows) {
+			String title, String prefix, final boolean navigateFromAllRows, final int rowCountPriority, final AllNonEmptyItem allNonEmptyItem, final Object context) {
 		JMenu nav = new JMenu(title);
 		if (prefix.equals("1")) {
 			nav.setForeground(new java.awt.Color(170, 0, 0));
@@ -1527,6 +1621,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			nav.setForeground(new java.awt.Color(153, 153, 153));
 		}
 		JMenu current = nav;
+		
+		current.getPopupMenu().setLayout(new GridBagLayout());
+				
 		int l = 0;
 		for (String name : assList) {
 			if (!name.startsWith(prefix)) {
@@ -1536,26 +1633,43 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final Association association = assMap.get(name);
 
 			if (++l > 30) {
-				l = 1;
 				JMenu p = new JMenu("more...");
 				if (current != null) {
-					current.add(p);
+					GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+			        gridBagConstraints.gridx = 1;
+			        gridBagConstraints.gridy = l;
+			        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+			        gridBagConstraints.weightx = 1.0; 
+					current.getPopupMenu().add(p, gridBagConstraints);
 				} else {
 					popup.add(p);
 				}
+				l = 1;
 				current = p;
+				current.getPopupMenu().setLayout(new GridBagLayout());
 			}
 
-			final JMenuItem item = new JMenuItem("  " + (name.substring(1)) + RC_PLACEHOLDER);
-
+			final JMenuItem item = new JMenuItem("  " + (name.substring(1)) + "   ");
+			final JLabel countLabel = new JLabel(". >99999 ") {
+				@Override
+				public void paint(Graphics g) {
+					if (!getText().startsWith(".")) {
+						super.paint(g);
+					}
+				}
+			};
+			
+			boolean excludeFromANEmpty = false;
 			for (RowBrowser child: getChildBrowsers()) {
 				if (association == child.association) {
 					item.setFont(new Font(item.getFont().getName(), item.getFont().getStyle() | Font.ITALIC, item.getFont().getSize()));
+					excludeFromANEmpty = true;
 					break;
 				}
 			}
 			
-			item.addActionListener(new ActionListener() {
+			final ActionListener itemAction = new ActionListener() {
 				public void actionPerformed(ActionEvent e) {
 					highlightedRows.add(rowIndex);
 					if (navigateFromAllRows) {
@@ -1564,43 +1678,82 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						navigateTo(association, rowIndex, row);
 					}
 				}
+			};
+			item.addActionListener(itemAction);
+			if (!excludeFromANEmpty) {
+				allNonEmptyItem.todo++;
+			}
+			final boolean fExcludeFromANEmpty = excludeFromANEmpty;
+			
+			getRunnableQueue().add(new RunnableWithPriority() {
+				
+				final int MAX_RC = 1000;
+				
+				@Override
+				public int getPriority() {
+					return rowCountPriority;
+				}
+
+				@Override
+				public void run() {
+					List<Row> r;
+					Pair<String, Association> key;
+					if (rowIndex < 0) {
+						r = rows;
+						key = new Pair<String, Association>("", association);
+					} else {
+						r = Collections.singletonList(row);
+						key = new Pair<String, Association>(row.rowId, association);
+					}
+
+					Pair<Long, Long> cachedCount = rowCountCache.get(key);
+					long rowCount;
+					
+					if (cachedCount != null && cachedCount.b > System.currentTimeMillis()) {
+						rowCount = cachedCount.a;
+					} else {
+						RowCounter rc = new RowCounter(table, association, r, session);
+						try {
+							rowCount = rc.countRows(getAndConditionText(), context, MAX_RC + 1, false);
+						} catch (SQLException e) {
+							rowCount = -1;
+						}
+						rowCountCache.put(key, new Pair<Long, Long>(rowCount, System.currentTimeMillis() + MAX_ROWCOUNTCACHE_RETENTION_TIME));
+					}
+					
+					final long count = rowCount;
+					
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							String cs = " " + (count < 0? "?" : (count > MAX_RC)? (">" + MAX_RC) : count) + " ";
+							countLabel.setText(cs);
+							if (count == 0) {
+								countLabel.setForeground(Color.lightGray);
+							}
+							if (!fExcludeFromANEmpty) {
+								allNonEmptyItem.rowsCounted(count, itemAction);
+							}
+						}
+					});
+				}
 			});
 			
-			
-			// TODO
-//			final JMenuItem fitem = item;
-//			getRunnableQueue().add(new Runnable() {
-//				@Override
-//				public void run() {
-//					try {
-//						List<Row> r;
-//						if (rowIndex < 0) {
-//							r = rows;
-//						} else {
-//							r = Collections.singletonList(row);
-//						}
-////						final long count = countRows(r, getAndConditionText(), association, this);
-//						
-//						final int MAX_RC = 1000;
-//						RowCounter rc = new RowCounter(table, association, r, session);
-//						final long count = rc.countRows(getAndConditionText(), this, MAX_RC + 1, false);
-//						SwingUtilities.invokeLater(new Runnable() {
-//							@Override
-//							public void run() {
-//								fitem.setText(fitem.getText().substring(0, fitem.getText().length() - RC_PLACEHOLDER.length()) + " (" + ((count > MAX_RC)? (">" + MAX_RC) : count) + ")");
-//								if (count == 0) {
-//									fitem.setForeground(Color.gray);
-//								}
-//							}
-//						});
-//					} catch (SQLException e) {
-//						e.printStackTrace();
-//					}
-//				}
-//			});
-			
 			if (current != null) {
-				current.add(item);
+				GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+		        gridBagConstraints.gridx = 1;
+		        gridBagConstraints.gridy = l;
+		        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		        gridBagConstraints.weightx = 1.0; 
+				current.getPopupMenu().add(item, gridBagConstraints);
+				gridBagConstraints = new java.awt.GridBagConstraints();
+		        gridBagConstraints.gridx = 2;
+		        gridBagConstraints.gridy = l;
+		        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+		        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+		        gridBagConstraints.weightx = 1.0; 
+				current.getPopupMenu().add(countLabel, gridBagConstraints);
 			} else {
 				popup.add(item);
 			}
@@ -1853,7 +2006,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			table.setColumns(new ArrayList<Column>());
 		} else {
 			String olapPrefix = "Select ";
-			String olapSuffix = ") S Where S." + ROWNUMBERALIAS + " <= " + limit + " Order by S." + ROWNUMBERALIAS + "";
+			String olapSuffix = ") S Where S." + ROWNUMBERALIAS + " <= " + limit;
 			boolean limitSuffixInSelectClause = sqlLimitSuffix != null &&
 					(sqlLimitSuffix.toLowerCase().startsWith("top ") || sqlLimitSuffix.toLowerCase().startsWith("first "));
 			if (sqlLimitSuffix != null && limitSuffixInSelectClause) {
@@ -1880,22 +2033,25 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			f = true;
 			String orderBy = "";
+			String olapOrderBy = "";
 			if (selectParentPK) {
 				for (Column pk : association.source.primaryKey.getColumns()) {
 					parentPkColumnNames.add(pk.name);
 					orderBy += (f ? "" : ", ") + "B." + pk.name;
+					olapOrderBy += (f ? "" : ", ") + "S." + pk.name;
 					f = false;
 				}
 			}
 			for (Column pk : table.primaryKey.getColumns()) {
 				pkColumnNames.add(pk.name);
 				orderBy += (f ? "" : ", ") + "A." + pk.name;
+				olapOrderBy += (f ? "" : ", ") + "S." + pk.name;
 				f = false;
 			}
 			if (useOLAPLimitation) {
 				sql += ", row_number() over(";
 				if (useOLAPLimitation) {
-					sql += "order by " + orderBy;
+					sql += "order by -1"; // + orderBy;
 				}
 				sql += ") as " + ROWNUMBERALIAS + "";
 			}
@@ -1941,7 +2097,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			olapPrefix += " From (";
 			if (useOLAPLimitation) {
-				sql = olapPrefix + sql + olapSuffix;
+				sql = olapPrefix + sql + olapSuffix + " Order by " + olapOrderBy;
 			}
 			if (sqlLimitSuffix != null && !limitSuffixInSelectClause) {
 				sql += " " + (sqlLimitSuffix.replace("%s", Integer.toString(limit)));
@@ -2889,7 +3045,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract void showInNewWindow();
 	protected abstract void appendLayout();
 	protected abstract void adjustClosure(BrowserContentPane tabu);
-	protected abstract LinkedBlockingQueue<Runnable> getRunnableQueue();
+	
+	public interface RunnableWithPriority extends Runnable {
+		int getPriority();
+	};
+	
+	protected abstract PriorityBlockingQueue<RunnableWithPriority> getRunnableQueue();
+	
 	/**
 	 * Collect layout of tables in a extraction model.
 	 * 

@@ -4,10 +4,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.Session;
@@ -26,6 +24,7 @@ public class RowCounter {
 	private final Association association;
 	private final Session session;
 	private final List<Row> theRows;
+	private final int TIMEOUT = 6;
 	
 	public RowCounter(Table table, Association association, List<Row> theRows, Session session) {
 		this.table = table;
@@ -47,32 +46,56 @@ public class RowCounter {
 		List<Row> pRows = theRows;
 		pRows = new ArrayList<Row>(pRows);
 		Map<String, Row> rowSet = new HashMap<String, Row>();
+		long maxTime = System.currentTimeMillis() + 1000 * TIMEOUT;
 		
 		if (association != null && association.source.primaryKey.getColumns().isEmpty()) {
-			loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 1);
+			try {
+				loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 1, maxTime);
+			} catch (SQLException e) {
+				if (System.currentTimeMillis() >= maxTime) {
+					return -1;
+				}
+				throw e;
+			}
 		} else {
 			try {
-				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 200);
+				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 258, maxTime);
 			} catch (SQLException e) {
+				if (System.currentTimeMillis() >= maxTime) {
+					return -1;
+				}
 				Session._log.warn("failed, try another blocking-size");
 			}
 			try {
-				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 100);
+				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 100, maxTime);
 			} catch (SQLException e) {
+				if (System.currentTimeMillis() >= maxTime) {
+					return -1;
+				}
 				Session._log.warn("failed, try another blocking-size");
 			}
 			try {
-				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 40);
+				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 40, maxTime);
 			} catch (SQLException e) {
+				if (System.currentTimeMillis() >= maxTime) {
+					return -1;
+				}
 				Session._log.warn("failed, try another blocking-size");
 			}
 		}
 		
-		return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 1);
+		try {
+			return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 1, maxTime);
+		} catch (SQLException e) {
+			if (System.currentTimeMillis() >= maxTime) {
+				return -1;
+			}
+			throw e;
+		}
 	}
 
 	private long loadRowBlocks(String andCond, Object context, int limit, boolean selectDistinct, List<Row> pRows,
-			Map<String, Row> rowSet, int NUM_PARENTS) throws SQLException {
+			Map<String, Row> rowSet, int NUM_PARENTS, long maxTime) throws SQLException {
 		List<List<Row>> parentBlocks = new ArrayList<List<Row>>();
 		List<Row> currentBlock = new ArrayList<Row>();
 		parentBlocks.add(currentBlock);
@@ -87,6 +110,11 @@ public class RowCounter {
 		long rc = 0;
 		
 		if (!pRows.isEmpty()) for (List<Row> pRowBlockI : parentBlocks) {
+
+			if (System.currentTimeMillis() >= maxTime) {
+				return -1;
+			}
+
 			List<Row> pRowBlock = pRowBlockI;
 			Map<String, List<Row>> newBlockRows = new HashMap<String, List<Row>>();
 			boolean loaded = false;
@@ -99,9 +127,12 @@ public class RowCounter {
 			if (Configuration.forDbms(session).getSqlLimitSuffix() != null) {
 				try {
 					session.setSilent(true);
-					brc += countRows(andCond, pRowBlock, newBlockRows, context, limit, false, Configuration.forDbms(session).getSqlLimitSuffix(), selectDistinct);
+					brc += countRows(andCond, pRowBlock, newBlockRows, context, limit, false, Configuration.forDbms(session).getSqlLimitSuffix(), selectDistinct, maxTime);
 					loaded = true;
 				} catch (SQLException e) {
+					if (System.currentTimeMillis() >= maxTime) {
+						return -1;
+					}
 					Session._log.warn("failed, try another limit-strategy");
 				} finally {
 					session.setSilent(false);
@@ -110,15 +141,18 @@ public class RowCounter {
 			if (!loaded) {
 				try {
 					session.setSilent(true);
-					brc += countRows(andCond, pRowBlock, newBlockRows, context, limit, true, null, selectDistinct);
+					brc += countRows(andCond, pRowBlock, newBlockRows, context, limit, true, null, selectDistinct, maxTime);
 					loaded = true;
 				} catch (SQLException e) {
+					if (System.currentTimeMillis() >= maxTime) {
+						return -1;
+					}
 					Session._log.warn("failed, try another limit-strategy");
 				} finally {
 					session.setSilent(false);
 				}
 				if (!loaded) {
-					brc += countRows(andCond, pRowBlock, newBlockRows, context, limit, false, null, selectDistinct);
+					brc += countRows(andCond, pRowBlock, newBlockRows, context, limit, false, null, selectDistinct, maxTime);
 				}
 			}
 			rc += brc;
@@ -146,7 +180,7 @@ public class RowCounter {
 	 * @param selectDistinct 
 	 */
 	public long countRows(String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, Object context, int limit, boolean useOLAPLimitation,
-			String sqlLimitSuffix, boolean selectDistinct) throws SQLException {
+			String sqlLimitSuffix, boolean selectDistinct, long maxTime) throws SQLException {
 		String sql = "Select "; // + (selectDistinct? "distinct " : "");
 		
 		{
@@ -175,7 +209,8 @@ public class RowCounter {
 			}
 			if (useOLAPLimitation) {
 				sql += ", row_number() over(";
-				sql += "order by " + orderBy;
+				// sql += "order by " + orderBy;
+				sql += "order by -1";
 				sql += ") as " + ROWNUMBERALIAS + "";
 			}
 			sql += " From ";
@@ -224,6 +259,8 @@ public class RowCounter {
 		final long[] rc = new long[1];
 		if (sql.length() > 0) {
 			sql = "Select count(*) From (" + sql + ") JLASRCNT";
+			int timeout = (int) Math.max(1, (maxTime - System.currentTimeMillis()) / 1000);
+
 			session.executeQuery(sql, new Session.ResultSetReader() {
 	
 				@Override
@@ -234,7 +271,7 @@ public class RowCounter {
 				@Override
 				public void close() {
 				}
-			}, null, context, 0);
+			}, null, context, 0, timeout);
 		}
 		return rc[0];
 	}

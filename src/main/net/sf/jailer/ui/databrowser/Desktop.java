@@ -20,6 +20,7 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Graphics;
@@ -54,6 +55,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.IdentityHashMap;
@@ -63,7 +65,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.PriorityBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -95,7 +97,9 @@ import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.databrowser.BrowserContentPane.RunnableWithPriority;
 import net.sf.jailer.ui.databrowser.TreeLayoutOptimizer.Node;
+import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
 import net.sf.jailer.util.Pair;
@@ -154,6 +158,8 @@ public abstract class Desktop extends JDesktopPane {
 	private final QueryBuilderDialog queryBuilderDialog;
 	private final QueryBuilderPathSelector queryBuilderPathSelector;
 
+	private Method getPreciseWheelRotation; 
+	
 	/**
 	 * Constructor.
 	 * 
@@ -180,6 +186,12 @@ public abstract class Desktop extends JDesktopPane {
 				queryBuilderDialog.setVisible(false);
 			}
 		});
+
+		try {
+			getPreciseWheelRotation = MouseWheelEvent.class.getMethod("getPreciseWheelRotation");
+		} catch (Exception exc) {
+			// ignored
+		}
 
 		try {
 			this.session = session;
@@ -750,7 +762,7 @@ public abstract class Desktop extends JDesktopPane {
 			}
 
 			@Override
-			protected LinkedBlockingQueue<Runnable> getRunnableQueue() {
+			protected PriorityBlockingQueue<RunnableWithPriority> getRunnableQueue() {
 				return runnableQueue;
 			}
 
@@ -868,12 +880,42 @@ public abstract class Desktop extends JDesktopPane {
 			title = matcher.group(1);
 			suffix = matcher.group(2);
 		}
+		
+//		boolean isEmpty = browserContentPane.get
+		
+		List<String> labels = new ArrayList<String>();
+		final List<JLabel> jLabels = new ArrayList<JLabel>();
+		
 		for (int i = 0; i < title.length(); ++i) {
-			thumbnailInner.add(new JLabel(title.substring(i, i + 1)));
+			labels.add(title.substring(i, i + 1));
 		}
 		if (suffix != null) {
-			thumbnailInner.add(new JLabel(suffix));
+			labels.add(suffix);
 		}
+		for (String l: labels) {
+			JLabel jl = new JLabel(l);
+			jLabels.add(jl);
+			thumbnailInner.add(jl);
+		}
+		
+		browserContentPane.setOnReloadAction(new Runnable() {
+			
+			@Override
+			public void run() {
+				if (browserContentPane.rows != null) {
+					if (browserContentPane.rows.size() == 0) {
+						for (JLabel l: jLabels) {
+							l.setForeground(Color.GRAY);
+						}
+					} else {
+						for (JLabel l: jLabels) {
+							l.setForeground(Color.BLACK);
+						}
+					}
+				}
+			}
+		});
+		
 		jInternalFrame.getContentPane().setLayout(new CardLayout());
 
 		jInternalFrame.getContentPane().add(browserContentPane, "C");
@@ -1915,37 +1957,43 @@ public abstract class Desktop extends JDesktopPane {
 			fixed = new Point(getVisibleRect().x + getVisibleRect().width / 2, getVisibleRect().y + getVisibleRect().height / 2);
 		}
 
-		this.layoutMode = layoutMode;
-		Map<Rectangle, double[]> newPrecBounds = new HashMap<Rectangle, double[]>();
-		for (RowBrowser rb : new ArrayList<RowBrowser>(tableBrowsers)) {
-			if (rb.internalFrame.isMaximum()) {
-				try {
-					rb.internalFrame.setMaximum(false);
-				} catch (PropertyVetoException e) {
-					// ignore
+		try {
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			
+			this.layoutMode = layoutMode;
+			Map<Rectangle, double[]> newPrecBounds = new HashMap<Rectangle, double[]>();
+			for (RowBrowser rb : new ArrayList<RowBrowser>(tableBrowsers)) {
+				if (rb.internalFrame.isMaximum()) {
+					try {
+						rb.internalFrame.setMaximum(false);
+					} catch (PropertyVetoException e) {
+						// ignore
+					}
 				}
+				Rectangle bounds = rb.internalFrame.getBounds();
+				Rectangle newBounds;
+				double[] pBounds = precBounds.get(bounds);
+				if (pBounds == null) {
+					pBounds = new double[] { bounds.x * scale, bounds.y * scale, bounds.width * scale, bounds.height * scale };
+				} else {
+					pBounds = new double[] { pBounds[0] * scale, pBounds[1] * scale, pBounds[2] * scale, pBounds[3] * scale };
+				}
+				newBounds = new Rectangle((int) pBounds[0], (int) pBounds[1], (int) pBounds[2], (int) pBounds[3]);
+				rb.internalFrame.setBounds(newBounds);
+				rb.browserContentPane.adjustRowTableColumnsWidth();
+				newPrecBounds.put(newBounds, pBounds);
 			}
-			Rectangle bounds = rb.internalFrame.getBounds();
-			Rectangle newBounds;
-			double[] pBounds = precBounds.get(bounds);
-			if (pBounds == null) {
-				pBounds = new double[] { bounds.x * scale, bounds.y * scale, bounds.width * scale, bounds.height * scale };
-			} else {
-				pBounds = new double[] { pBounds[0] * scale, pBounds[1] * scale, pBounds[2] * scale, pBounds[3] * scale };
-			}
-			newBounds = new Rectangle((int) pBounds[0], (int) pBounds[1], (int) pBounds[2], (int) pBounds[3]);
-			rb.internalFrame.setBounds(newBounds);
-			rb.browserContentPane.adjustRowTableColumnsWidth();
-			newPrecBounds.put(newBounds, pBounds);
+			precBounds = newPrecBounds;
+			manager.resizeDesktop();
+	
+			Rectangle vr = new Rectangle(Math.max(0, (int) (fixed.x * scale - getVisibleRect().width / 2)), Math.max(0,
+					(int) (fixed.y * scale - getVisibleRect().height / 2)), getVisibleRect().width, getVisibleRect().height);
+			scrollRectToVisible(vr);
+			updateMenu(layoutMode);
+			adjustClosure(null);
+		} finally {
+			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
-		precBounds = newPrecBounds;
-		manager.resizeDesktop();
-
-		Rectangle vr = new Rectangle(Math.max(0, (int) (fixed.x * scale - getVisibleRect().width / 2)), Math.max(0,
-				(int) (fixed.y * scale - getVisibleRect().height / 2)), getVisibleRect().width, getVisibleRect().height);
-		scrollRectToVisible(vr);
-		updateMenu(layoutMode);
-		adjustClosure(null);
 	}
 
 	void onMouseWheelMoved(java.awt.event.MouseWheelEvent e, JScrollPane scrollPane) {
@@ -1963,31 +2011,39 @@ public abstract class Desktop extends JDesktopPane {
 					}
 				}
 
-				direction = (e.getWheelRotation() < 0) ? (-1) : 1;
+				if (e.getWheelRotation() != 0) {
+					direction = (e.getWheelRotation() < 0) ? (-1) : 1;
+				}
+			
+				double f = 1.0;
 				
-				try {
-					Method getPreciseWheelRotation = e.getClass().getMethod("getPreciseWheelRotation");
-					double pwr = (Double) getPreciseWheelRotation.invoke(e);					
-					direction = (pwr < 0) ? (-1) : 1;
-				} catch (Exception exc) {
-					// ignored
+				if (getPreciseWheelRotation != null) {
+					try {
+						double pwr = (Double) getPreciseWheelRotation.invoke(e);					
+						direction = pwr == 0? 0 : (pwr < 0) ? (-1) : 1;
+						f = Math.abs(pwr);
+					} catch (Exception exc) {
+						// ignored
+					}
 				}
 
-				int oldValue = toScroll.getValue();
-				int blockIncrement = toScroll.getUnitIncrement(direction);
-				// allow for partial page overlapping
-				// blockIncrement -= 10;
-				int delta = blockIncrement * ((direction > 0) ? +1 : -1);
-				int newValue = oldValue + delta;
-
-				// Check for overflow.
-				if ((delta > 0) && (newValue < oldValue)) {
-					newValue = toScroll.getMaximum();
-				} else if ((delta < 0) && (newValue > oldValue)) {
-					newValue = toScroll.getMinimum();
+				if (direction != 0) {
+					int oldValue = toScroll.getValue();
+					int blockIncrement = toScroll.getUnitIncrement(direction);
+					// allow for partial page overlapping
+					// blockIncrement -= 10;
+					int delta = (int) (f * blockIncrement * ((direction > 0) ? +1 : -1));
+					int newValue = oldValue + delta;
+	
+					// Check for overflow.
+					if ((delta > 0) && (newValue < oldValue)) {
+						newValue = toScroll.getMaximum();
+					} else if ((delta < 0) && (newValue > oldValue)) {
+						newValue = toScroll.getMinimum();
+					}
+	
+					toScroll.setValue(newValue);
 				}
-
-				toScroll.setValue(newValue);
 			}
 		}
 	}
@@ -2239,12 +2295,17 @@ public abstract class Desktop extends JDesktopPane {
 		String sFile = UIUtil.choseFile(fnProp == null ? null : new File(startDir, fnProp), startDir.getPath(), "Store Layout", ".dbl", pFrame, true, false);
 
 		if (sFile != null) {
-			try {
-				storeSession(sFile);
-			} catch (Throwable e) {
-				UIUtil.showException(this, "Error", e);
+			File file = new File(sFile);
+			if (!file.exists() || JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(
+					pFrame, 
+					"The file '" + sFile + " already exists. Do you wont to replace the existing file?", "Store Layout", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+				try {
+					storeSession(sFile);
+				} catch (Throwable e) {
+					UIUtil.showException(this, "Error", e);
+				}
+				currentSessionFileName = sFile;
 			}
-			currentSessionFileName = sFile;
 		}
 	}
 
@@ -2707,13 +2768,19 @@ public abstract class Desktop extends JDesktopPane {
 	/**
 	 * For concurrent reload of rows.
 	 */
-	private final LinkedBlockingQueue<Runnable> runnableQueue = new LinkedBlockingQueue<Runnable>();
+	private final PriorityBlockingQueue<RunnableWithPriority> runnableQueue = new PriorityBlockingQueue<RunnableWithPriority>(100,
+			new Comparator<RunnableWithPriority>() {
+
+				@Override
+				public int compare(RunnableWithPriority o1,	RunnableWithPriority o2) {
+					return o2.getPriority() - o1.getPriority();
+				}
+			});
 
 	/**
 	 * Maximum number of concurrent DB connections.
 	 */
-	private static int MAX_CONCURRENT_CONNECTIONS = 4;
-	private static int desktopNr = 1;
+	private static final int MAX_CONCURRENT_CONNECTIONS = 6;
 	{
 		// initialize listeners for #runnableQueue
 		for (int i = 0; i < MAX_CONCURRENT_CONNECTIONS; ++i) {
@@ -2721,20 +2788,23 @@ public abstract class Desktop extends JDesktopPane {
 				@Override
 				public void run() {
 					for (;;) {
+						RunnableWithPriority take = null;
 						try {
-							runnableQueue.take().run();
+							take = runnableQueue.take();
+							take.run();
 						} catch (InterruptedException e) {
+							// ignore
+						} catch (CancellationException e) {
 							// ignore
 						} catch (Throwable t) {
 							t.printStackTrace();
 						}
 					}
 				}
-			}, "browser-" + desktopNr + "-" + i);
+			}, "PQueue Worker " + i);
 			t.setDaemon(true);
 			t.start();
 		}
-		desktopNr++;
 	}
 
 }
