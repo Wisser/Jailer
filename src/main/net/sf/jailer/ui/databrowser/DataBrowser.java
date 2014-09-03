@@ -1754,43 +1754,52 @@ public class DataBrowser extends javax.swing.JFrame {
 		if (disableBorderBrowserUpdates) {
 			return;
 		}
-		Collection<AssociationModel> model = new ArrayList<AssociationModel>();
-		if (desktop != null) {
-			titleLabel.setText(" Related Rows");
-			List<RowBrowser> allChildren = new ArrayList<RowBrowser>();
-			for (RowBrowser rb : desktop.getBrowsers()) {
-				if (rb.internalFrame == desktop.getSelectedFrame() && !rb.isHidden()) {
-					allChildren.add(rb);
-					allChildren.addAll(collectChildren(rb));
-					titleLabel.setText(" Related Rows of Subtree " + rb.internalFrame.getTitle());
-					break;
-				}
-			}
-			for (RowBrowser rb : allChildren) {
-				if (rb.browserContentPane.table != null) {
-					Set<Association> associations = new HashSet<Association>(rb.browserContentPane.table.associations);
-					for (RowBrowser c : desktop.getChildBrowsers(rb, false)) {
-						if (c.browserContentPane.association != null) {
-							associations.remove(c.browserContentPane.association);
-						}
-					}
-					if (rb.browserContentPane.association != null && rb.parent != null) {
-						if (allChildren.contains(rb.parent)) {
-							associations.remove(rb.browserContentPane.association.reversalAssociation);
-						}
-					}
-					for (Association association : associations) {
-						model.add(new BrowserAssociationModel(rb, association));
+		
+		try {
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			
+			Collection<AssociationModel> model = new ArrayList<AssociationModel>();
+			if (desktop != null) {
+				titleLabel.setText(" Related Rows");
+				List<RowBrowser> allChildren = new ArrayList<RowBrowser>();
+				for (RowBrowser rb : desktop.getBrowsers()) {
+					if (rb.internalFrame == desktop.getSelectedFrame() && !rb.isHidden()) {
+						allChildren.add(rb);
+						allChildren.addAll(collectChildren(rb));
+						titleLabel.setText(" Related Rows of Subtree " + rb.internalFrame.getTitle());
+						break;
 					}
 				}
+				for (RowBrowser rb : allChildren) {
+					if (rb.browserContentPane.table != null) {
+						Set<Association> associations = new HashSet<Association>(rb.browserContentPane.table.associations);
+						for (RowBrowser c : desktop.getChildBrowsers(rb, false)) {
+							if (c.browserContentPane.association != null) {
+								associations.remove(c.browserContentPane.association);
+							}
+						}
+						if (rb.browserContentPane.association != null && rb.parent != null) {
+							if (allChildren.contains(rb.parent)) {
+								associations.remove(rb.browserContentPane.association.reversalAssociation);
+							}
+						}
+						for (Association association : associations) {
+							model.add(new BrowserAssociationModel(rb, association));
+						}
+					}
+				}
 			}
+	
+			borderBrowser.setModel(model);
+		} finally {
+			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
-
-		borderBrowser.setModel(model);
 	}
 
 	protected void resolveSelection(Collection<AssociationModel> selection) {
 		try {
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			
 			disableBorderBrowserUpdates = true;
 			JInternalFrame currentSelection = desktop.getSelectedFrame();
 			for (AssociationModel a : selection) {
@@ -1806,6 +1815,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				}
 			}
 		} finally {
+			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			disableBorderBrowserUpdates = false;
 			updateBorderBrowser();
 		}

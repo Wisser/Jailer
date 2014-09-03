@@ -45,6 +45,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import net.sf.jailer.datamodel.Association;
@@ -910,7 +911,9 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
     }//GEN-LAST:event_unhideButtonActionPerformed
 
     private void doItButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_doItButtonActionPerformed
-        applyAction(new ArrayList<AssociationListUI.AssociationModel>(selection));
+    	if (selection.size() < 50 || JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Resolve " + selection.size() + " associations?", "Resolve", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
+        	applyAction(new ArrayList<AssociationListUI.AssociationModel>(selection));
+    	}
     }//GEN-LAST:event_doItButtonActionPerformed
 
 

@@ -73,6 +73,15 @@ public class CancellationHandler {
 	}
 
 	/**
+	 * Requests cancellation without logging.
+	 * 
+	 * @param context cancellation context, <code>null</code> for default context
+	 */
+	public static void cancelSilently(Object context) {
+		synchronizedCancel(context);
+	}
+
+	/**
 	 * Requests cancellation.
 	 * 
 	 * @param context cancellation context, <code>null</code> for default context
