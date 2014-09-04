@@ -94,6 +94,7 @@ import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.ui.graphical_view.AssociationRenderer;
 import net.sf.jailer.ui.graphical_view.GraphicalDataModelView;
 import net.sf.jailer.ui.graphical_view.LayoutStorage;
+import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.SqlUtil;
 
@@ -1331,7 +1332,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
      * Opens a drop-down box which allows the user to select columns for restriction definitions.
      */
 	private void openColumnDropDownBox(JLabel label, String alias, Table table) {
-		JPopupMenu popup = new JPopupMenu();
+		JPopupMenu popup = new JScrollPopupMenu();
 		List<String> columns = new ArrayList<String>();
 		
 		for (Column c: table.getColumns()) {

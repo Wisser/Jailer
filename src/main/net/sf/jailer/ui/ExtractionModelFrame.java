@@ -129,6 +129,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         pack();
         updateTitle(extractionModelEditor.needsSave);
         dbConnectionDialog = new DbConnectionDialog(this, Jailer.APPLICATION_NAME, null);
+
+		// L&F can no longer be changed
+        view.setVisible(false);
+        
         try {
 	        for (final LookAndFeelInfo lfInfo: UIManager.getInstalledLookAndFeels()) {
 	        	JMenuItem mItem = new JMenuItem();
@@ -1633,15 +1637,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             public void run() {
             	
             	try {
-    	    		File plafSetting = new File(PLAFSETTING);
+            		// L&F can no longer be changed
+//    	    		File plafSetting = new File(PLAFSETTING);
     	    		String plaf;
-    	    		if (!plafSetting.exists()) {
+//    	    		if (!plafSetting.exists()) {
     	    			plaf = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
-    	    		} else {
-	    	    		BufferedReader in = new BufferedReader(new FileReader(plafSetting));
-	    	    		plaf = in.readLine();
-	    	    		in.close();
-    	    		}
+//    	    		} else {
+//	    	    		BufferedReader in = new BufferedReader(new FileReader(plafSetting));
+//	    	    		plaf = in.readLine();
+//	    	    		in.close();
+//    	    		}
     		    	UIManager.setLookAndFeel(plaf);
     		    	customizeNimbus();
     			} catch (Exception x) {

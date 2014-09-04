@@ -60,6 +60,8 @@ import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.database.SqlException;
 import net.sf.jailer.progress.ProgressListener;
+import net.sf.jailer.ui.scrollmenu.JScrollC2PopupMenu;
+import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 
@@ -750,28 +752,30 @@ public class UIUtil {
 	}
 
 	public static void fit(JPopupMenu popup) {
-		final int MAX_ITEMS = 40;
-		Component[] comps = popup.getComponents();
-		popup.removeAll();
-		JMenu current = null;
-		int ci = 1;
-		for (int i = 0; i < comps.length; ++i) {
-			if (ci > MAX_ITEMS && i < comps.length - 5) {
-				ci = 1;
-				JMenu newMenu = new JMenu("more...");
-				if (current == null) {
-					popup.add(newMenu);
-				} else {
-					current.add(newMenu);
+		if (!(popup instanceof JScrollPopupMenu || popup instanceof JScrollC2PopupMenu)) {
+			final int MAX_ITEMS = 40;
+			Component[] comps = popup.getComponents();
+			popup.removeAll();
+			JMenu current = null;
+			int ci = 1;
+			for (int i = 0; i < comps.length; ++i) {
+				if (ci > MAX_ITEMS && i < comps.length - 5) {
+					ci = 1;
+					JMenu newMenu = new JMenu("more...");
+					if (current == null) {
+						popup.add(newMenu);
+					} else {
+						current.add(newMenu);
+					}
+					current = newMenu;
 				}
-				current = newMenu;
+				if (current == null) {
+					popup.add(comps[i]);
+				} else {
+					current.add(comps[i]);
+				}
+				++ci;
 			}
-			if (current == null) {
-				popup.add(comps[i]);
-			} else {
-				current.add(comps[i]);
-			}
-			++ci;
 		}
 	}
 

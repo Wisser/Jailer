@@ -231,6 +231,10 @@ public class DataBrowser extends javax.swing.JFrame {
 		if (DataBrowserContext.isStandAlone()) {
 			aboutMenuItem.setText("About " + DataBrowserContext.getAppName(true));
 		}
+		
+		// L&F can no longer be changed
+		jSeparator6.setVisible(false);
+		view.setVisible(false);
 
 		try {
 			for (final LookAndFeelInfo lfInfo : UIManager.getInstalledLookAndFeels()) {
@@ -1340,15 +1344,16 @@ public class DataBrowser extends javax.swing.JFrame {
 				try {
 					CommandLineParser.parse(args, true);
 					try {
-						File plafSetting = new File(PLAFSETTING);
+						// L&F can no longer be changed
+//						File plafSetting = new File(PLAFSETTING);
 						String plaf;
-						if (!plafSetting.exists()) {
+//						if (!plafSetting.exists()) {
 							plaf = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
-						} else {
-							BufferedReader in = new BufferedReader(new FileReader(plafSetting));
-							plaf = in.readLine();
-							in.close();
-						}
+//						} else {
+//							BufferedReader in = new BufferedReader(new FileReader(plafSetting));
+//							plaf = in.readLine();
+//							in.close();
+//						}
 						UIManager.setLookAndFeel(plaf);
 					} catch (Exception x) {
 					}
