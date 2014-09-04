@@ -53,6 +53,8 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.ExtractionModelEditor;
 import net.sf.jailer.ui.QueryBuilderDialog;
+import net.sf.jailer.ui.scrollmenu.JScrollMenu;
+import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import prefuse.Display;
 import prefuse.Visualization;
 import prefuse.action.Action;
@@ -667,12 +669,12 @@ public class GraphicalDataModelView extends JPanel {
      * @return the popup menu
      */
 	public JPopupMenu createPopupMenu(final Table table, boolean withNavigation) {
-		JPopupMenu popup = new JPopupMenu();
+		JPopupMenu popup = new JScrollPopupMenu();
 
 		JMenu navigateTo = null;
 		
 		if (withNavigation) {
-			navigateTo = new JMenu("Show Associated Table");
+			navigateTo = new JScrollMenu("Show Associated Table");
 			List<Association> aList = new ArrayList<Association>();
 			Set<Table> includedTables = new HashSet<Table>();
 			for (Association a: table.associations) {
@@ -692,8 +694,8 @@ public class GraphicalDataModelView extends JPanel {
 			});
 			navigateTo.setEnabled(false);
 			JMenu currentMenu = navigateTo;
-			int numItems = 0;
-			final int MAX_ITEMS = 30;
+//			int numItems = 0;
+//			final int MAX_ITEMS = 30;
 			for (final Association a: aList) {
 				String miText = a.getDataModel().getDisplayName(a.destination);
 				JMenuItem mi = new JMenuItem();
@@ -714,12 +716,12 @@ public class GraphicalDataModelView extends JPanel {
 				} else {
 					navigateTo.setEnabled(true);
 				}
-				if (numItems++ > MAX_ITEMS) {
-					JMenu nextMenu = new JMenu("More");
-					currentMenu.add(nextMenu);
-					currentMenu = nextMenu;
-					numItems = 1;
-				}
+//				if (numItems++ > MAX_ITEMS) {
+//					JMenu nextMenu = new JMenu("More");
+//					currentMenu.add(nextMenu);
+//					currentMenu = nextMenu;
+//					numItems = 1;
+//				}
 				currentMenu.add(mi);
 			}
 		}

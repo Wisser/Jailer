@@ -26,7 +26,6 @@ import java.awt.Frame;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -112,6 +111,8 @@ import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.RestrictionDefinition;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
+import net.sf.jailer.ui.scrollmenu.JScrollC2Menu;
+import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.Pair;
@@ -868,7 +869,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		int todo;
 		int done;
 		private List<ActionListener> todoList = new ArrayList<ActionListener>();
-		private final String initText = "All non-empty ";
+		private final String initText = "Counting rows... ";
 		
 		AllNonEmptyItem() {
 			setEnabled(false);
@@ -898,18 +899,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			int p = todo > 0? (100 * done) / todo : 0;
 			if (done < todo) {
-				setText(initText + "(" + p + "%)  ");
+				setText(initText + p + "%");
 			} else {
-				setText(initText + "(" + todoList.size() + ")");
+				setText("All non-empty (" + todoList.size() + ")");
 				setEnabled(true);
 			}
 		}
 		
 		public void setInitialText() {
 			if (todoList.isEmpty()) {
-				setText(initText);
+				setText("All non-empty (0)");
 			} else {
-				setText(initText + "(100%)  ");
+				setText(initText + "100%");
 			}
 		}
 		
@@ -1607,7 +1608,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	
 	private JPopupMenu createNavigationMenu(JPopupMenu popup, final Row row, final int rowIndex, List<String> assList, Map<String, Association> assMap,
 			String title, String prefix, final boolean navigateFromAllRows, final int rowCountPriority, final AllNonEmptyItem allNonEmptyItem, final Object context) {
-		JMenu nav = new JMenu(title);
+		JMenu nav = new JScrollC2Menu(title);
 		if (prefix.equals("1")) {
 			nav.setForeground(new java.awt.Color(170, 0, 0));
 		}
@@ -1622,8 +1623,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		JMenu current = nav;
 		
-		current.getPopupMenu().setLayout(new GridBagLayout());
-				
 		int l = 0;
 		for (String name : assList) {
 			if (!name.startsWith(prefix)) {
@@ -1632,23 +1631,25 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 			final Association association = assMap.get(name);
 
-			if (++l > 30) {
-				JMenu p = new JMenu("more...");
-				if (current != null) {
-					GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-			        gridBagConstraints.gridx = 1;
-			        gridBagConstraints.gridy = l;
-			        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-			        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-			        gridBagConstraints.weightx = 1.0; 
-					current.getPopupMenu().add(p, gridBagConstraints);
-				} else {
-					popup.add(p);
-				}
-				l = 1;
-				current = p;
-				current.getPopupMenu().setLayout(new GridBagLayout());
-			}
+			++l;
+			
+//			if (++l > 300) {
+//				JMenu p = new JMenu("more...");
+//				if (current != null) {
+//					GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+//			        gridBagConstraints.gridx = 1;
+//			        gridBagConstraints.gridy = l;
+//			        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+//			        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+//			        gridBagConstraints.weightx = 1.0; 
+//					current.getPopupMenu().add(p, gridBagConstraints);
+//				} else {
+//					popup.add(p);
+//				}
+//				l = 1;
+//				current = p;
+//				current.getPopupMenu().setLayout(new GridBagLayout());
+//			}
 
 			final JMenuItem item = new JMenuItem("  " + (name.substring(1)) + "   ");
 			final JLabel countLabel = new JLabel(". >99999 ") {
@@ -1663,9 +1664,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			boolean excludeFromANEmpty = false;
 			for (RowBrowser child: getChildBrowsers()) {
 				if (association == child.association) {
-					item.setFont(new Font(item.getFont().getName(), item.getFont().getStyle() | Font.ITALIC, item.getFont().getSize()));
-					excludeFromANEmpty = true;
-					break;
+					if (rowIndex < 0 && child.rowIndex < 0 || rowIndex == child.rowIndex) {
+						item.setFont(new Font(item.getFont().getName(), item.getFont().getStyle() | Font.ITALIC, item.getFont().getSize()));
+						excludeFromANEmpty = true;
+						break;
+					}
 				}
 			}
 			
@@ -2938,7 +2941,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
      * Opens a drop-down box which allows the user to select columns for restriction definitions.
      */
 	private void openColumnDropDownBox(JLabel label, String alias, Table table) {
-		JPopupMenu popup = new JPopupMenu();
+		JPopupMenu popup = new JScrollPopupMenu();
 		List<String> columns = new ArrayList<String>();
 		
 		for (Column c: table.getColumns()) {
