@@ -193,6 +193,7 @@ public class RowCounter {
 			}
 			boolean f = true;
 			int i = 0;
+			
 			for (Column column : association.destination.getColumns()) {
 				String name = column.name;
 				sql += (!f ? ", " : "") + "A." + name + " AS A" + i;
@@ -245,9 +246,9 @@ public class RowCounter {
 				}
 				whereExists = true;
 			}
-			if (andCond.trim().length() > 0) {
-				sql += (whereExists ? " and" : " Where") + " (" + ConditionEditor.toMultiLine(andCond) + ")";
-			}
+//			if (andCond.trim().length() > 0) {
+//				sql += (whereExists ? " and" : " Where") + " (" + ConditionEditor.toMultiLine(andCond) + ")";
+//			}
 			olapPrefix += " From (";
 			if (useOLAPLimitation) {
 				sql = olapPrefix + sql + olapSuffix;
