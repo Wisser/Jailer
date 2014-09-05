@@ -835,6 +835,13 @@ public abstract class Desktop extends JDesktopPane {
 			// ignore
 		}
 		if (browserContentPane.sqlBrowserContentPane != null) {
+			if (this.layoutMode == LayoutMode.THUMBNAIL || this.layoutMode == LayoutMode.TINY) {
+				try {
+					jInternalFrame.setMaximum(true);
+				} catch (PropertyVetoException e1) {
+					// ignore
+				}
+			}
 			browserContentPane.sqlBrowserContentPane.sqlEditorPane.grabFocus();
 		} else {
 			browserContentPane.andCondition.grabFocus();
