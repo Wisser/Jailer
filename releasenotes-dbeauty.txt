@@ -1,3 +1,6 @@
+2.2.1
+  - Minor bug fixes. 
+
 2.2
   - Data Browser has been improved.
   - Fixed a performance issue related to ResultSet#getMetaData and Postgresql 9.1 JDBC driver. 
