@@ -12,7 +12,6 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.util.SqlUtil;
 
 /**

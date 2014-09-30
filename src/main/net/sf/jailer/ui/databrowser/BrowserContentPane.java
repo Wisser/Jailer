@@ -793,7 +793,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 	}
 	
+	boolean isPending = false;
+	
 	void setPendingState(boolean pending, boolean propagate) {
+		isPending = pending;
 		((CardLayout) pendingNonpendingPanel.getLayout()).show(pendingNonpendingPanel, pending? "pending" : "nonpending");
 		if (propagate) {
 			for (RowBrowser child: getChildBrowsers()) {
@@ -833,7 +836,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (sel == null) {
 			return "";
 		}
-		return sel.toString();
+		return sel.toString().trim();
 	}
 	
 	private void adjustGui() {
@@ -916,6 +919,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 	};
 	
+	private String currentSelectedRowCondition = "";
+	
 	/**
 	 * Creates popup menu for navigation.
 	 * @param navigateFromAllRows 
@@ -988,8 +993,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 		
-		popup.add(allNonEmpty);
-		allNonEmpty.setInitialText();
+		if (!isPending && !rows.isEmpty()) {
+			popup.add(allNonEmpty);
+			allNonEmpty.setInitialText();
+		}
 		
 		if (row != null) {
 			if (!(table instanceof SqlStatementTable)) {
@@ -1031,22 +1038,37 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 				});			
 
-				JMenuItem sr = new JMenuItem("Select Row");
-				sr.setEnabled(rows.size() > 1);
-				popup.add(sr);
-				sr.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						String cond = SqlUtil.replaceAliases(row.rowId, "A", "A");
-						String currentCond = getAndConditionText().trim();
-						if (currentCond.length() > 0) {
-							cond = "(" + cond + ") and (" + currentCond + ")";
+				if (!currentSelectedRowCondition.equals("") 
+						&& currentSelectedRowCondition.equals(getAndConditionText())
+						&& rows.size() == 1) {
+					JMenuItem sr = new JMenuItem("Deselect Row");
+					popup.add(sr);
+					sr.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							andCondition.setSelectedItem("");
+							reloadRows();
 						}
-						andCondition.setSelectedItem(cond);
-						reloadRows();
-					}
-				});
-
+					});
+				} else {
+					JMenuItem sr = new JMenuItem("Select Row");
+					sr.setEnabled(rows.size() > 1);
+					popup.add(sr);
+					sr.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							String cond = SqlUtil.replaceAliases(row.rowId, "A", "A");
+							String currentCond = getAndConditionText().trim();
+							if (currentCond.length() > 0) {
+								cond = "(" + cond + ") and (" + currentCond + ")";
+							}
+							andCondition.setSelectedItem(cond);
+							currentSelectedRowCondition = cond;
+							reloadRows();
+						}
+					});
+				}
+				
 				JMenu sql = new JMenu("SQL/DML");
 				final String rowName = dataModel.getDisplayName(table) + "(" + SqlUtil.replaceAliases(row.rowId, null, null) + ")";
 				JMenuItem insert = new JMenuItem("Insert");
@@ -1688,59 +1710,61 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			final boolean fExcludeFromANEmpty = excludeFromANEmpty;
 			
-			getRunnableQueue().add(new RunnableWithPriority() {
-				
-				final int MAX_RC = 1000;
-				
-				@Override
-				public int getPriority() {
-					return rowCountPriority;
-				}
-
-				@Override
-				public void run() {
-					List<Row> r;
-					Pair<String, Association> key;
-					if (rowIndex < 0) {
-						r = rows;
-						key = new Pair<String, Association>("", association);
-					} else {
-						r = Collections.singletonList(row);
-						key = new Pair<String, Association>(row.rowId, association);
+			if (!isPending && !rows.isEmpty()) {
+				getRunnableQueue().add(new RunnableWithPriority() {
+					
+					final int MAX_RC = 1000;
+					
+					@Override
+					public int getPriority() {
+						return rowCountPriority;
 					}
-
-					Pair<Long, Long> cachedCount = rowCountCache.get(key);
-					long rowCount;
-					
-					if (cachedCount != null && cachedCount.b > System.currentTimeMillis()) {
-						rowCount = cachedCount.a;
-					} else {
-						RowCounter rc = new RowCounter(table, association, r, session);
-						try {
-							rowCount = rc.countRows(getAndConditionText(), context, MAX_RC + 1, false);
-						} catch (SQLException e) {
-							rowCount = -1;
+	
+					@Override
+					public void run() {
+						List<Row> r;
+						Pair<String, Association> key;
+						if (rowIndex < 0) {
+							r = rows;
+							key = new Pair<String, Association>("", association);
+						} else {
+							r = Collections.singletonList(row);
+							key = new Pair<String, Association>(row.rowId, association);
 						}
-						rowCountCache.put(key, new Pair<Long, Long>(rowCount, System.currentTimeMillis() + MAX_ROWCOUNTCACHE_RETENTION_TIME));
+	
+						Pair<Long, Long> cachedCount = rowCountCache.get(key);
+						long rowCount;
+						
+						if (cachedCount != null && cachedCount.b > System.currentTimeMillis()) {
+							rowCount = cachedCount.a;
+						} else {
+							RowCounter rc = new RowCounter(table, association, r, session);
+							try {
+								rowCount = rc.countRows(getAndConditionText(), context, MAX_RC + 1, false);
+							} catch (SQLException e) {
+								rowCount = -1;
+							}
+							rowCountCache.put(key, new Pair<Long, Long>(rowCount, System.currentTimeMillis() + MAX_ROWCOUNTCACHE_RETENTION_TIME));
+						}
+						
+						final long count = rowCount;
+						
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								String cs = " " + (count < 0? "?" : (count > MAX_RC)? (">" + MAX_RC) : count) + " ";
+								countLabel.setText(cs);
+								if (count == 0) {
+									countLabel.setForeground(Color.lightGray);
+								}
+								if (!fExcludeFromANEmpty) {
+									allNonEmptyItem.rowsCounted(count, itemAction);
+								}
+							}
+						});
 					}
-					
-					final long count = rowCount;
-					
-					SwingUtilities.invokeLater(new Runnable() {
-						@Override
-						public void run() {
-							String cs = " " + (count < 0? "?" : (count > MAX_RC)? (">" + MAX_RC) : count) + " ";
-							countLabel.setText(cs);
-							if (count == 0) {
-								countLabel.setForeground(Color.lightGray);
-							}
-							if (!fExcludeFromANEmpty) {
-								allNonEmptyItem.rowsCounted(count, itemAction);
-							}
-						}
-					});
-				}
-			});
+				});
+			}
 			
 			if (current != null) {
 				GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1777,6 +1801,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			lastReloadTS = System.currentTimeMillis();
 			cancelLoadJob();
 			setPendingState(true, true);
+			rows.clear();
 			updateMode("loading");
 			setPendingState(false, false);
 			int limit = 100;
