@@ -138,16 +138,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	final class LoadJob implements RunnableWithPriority {
 		private List<Row> rows = Collections.synchronizedList(new ArrayList<Row>());
 		private Exception exception;
-		private boolean isCanceled = false;
+		private boolean isCanceled;
 		private final int limit;
 		private final String andCond;
 		private final boolean selectDistinct;
-		
+		private boolean finished;
+
 		public LoadJob(int limit, String andCond, boolean selectDistinct) {
 			this.andCond = andCond;
 			this.selectDistinct = selectDistinct;
 			synchronized (this) {
 				this.limit = limit;
+				finished = false;
+				isCanceled = false;
 			}
 		}
 
@@ -163,15 +166,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			rowCountCache.clear();
 			try {
 				reloadRows(andCond, rows, this, l + 1, selectDistinct);
+				CancellationHandler.checkForCancellation(this);
+				synchronized (this) {
+					finished = true;
+				}
 			} catch (SQLException e) {
-				CancellationHandler.reset(this);
 				synchronized (rows) {
 					exception = e;
 				}
 			} catch (CancellationException e) {
 				Session._log.info("cancelled");
+				CancellationHandler.reset(this);
 				return;
 			}
+			CancellationHandler.reset(this);
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
@@ -248,7 +256,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							}
 						}
 						setPendingState(false, true);
-						onContentChange(rows, rows.isEmpty() || currentHash != prevHash || rows.size() != prevSize || !prevIDs.equals(currentIDs) || rows.size() != currentIDs.size());
+						onContentChange(rows, true); // rows.isEmpty() || currentHash != prevHash || rows.size() != prevSize || !prevIDs.equals(currentIDs) || rows.size() != currentIDs.size());
 						updateMode("table");
 						updateWhereField();
 						if (reloadAction != null) {
@@ -265,6 +273,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					return;
 				}
 				isCanceled = true;
+				if (finished) {
+					return;
+				}
 			}
 			CancellationHandler.cancel(this);
 		}
@@ -1799,7 +1810,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	public void reloadRows() {
 		if (!suppressReload) {
 			lastReloadTS = System.currentTimeMillis();
-			cancelLoadJob();
+			cancelLoadJob(true);
 			setPendingState(true, true);
 			rows.clear();
 			updateMode("loading");
@@ -2394,6 +2405,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (singleRowDetailsView == null) {
 					width = Math.min(width, 400);
 				}
+				if (line > 2000) {
+					break;
+				}
 			}
 
 			column.setPreferredWidth(width);
@@ -2851,7 +2865,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
         private void cancelLoadButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelLoadButtonActionPerformed
-            cancelLoadJob();
+            cancelLoadJob(false);
             updateMode("cancelled");
         }//GEN-LAST:event_cancelLoadButtonActionPerformed
 
@@ -2946,14 +2960,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	/**
 	 * Cancels current load job.
+	 * @param propagate 
 	 */
-	public void cancelLoadJob() {
+	public void cancelLoadJob(boolean propagate) {
 		LoadJob cLoadJob;
 		synchronized (this) {
 			cLoadJob = currentLoadJob;
 		}
 		if (cLoadJob != null) {
 			cLoadJob.cancel();
+		}
+		if (propagate) {
+			for (RowBrowser child: getChildBrowsers()) {
+				child.browserContentPane.cancelLoadJob(propagate);
+			}
 		}
 	}
 
