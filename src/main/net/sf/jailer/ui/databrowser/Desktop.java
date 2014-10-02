@@ -510,7 +510,7 @@ public abstract class Desktop extends JDesktopPane {
 				for (RowBrowser rb : tableBrowsers) {
 					if (rb.parent == tableBrowser) {
 						updateChildren(rb, rb.browserContentPane.rows);
-						if (/* reloadChildren && */ rb.browserContentPane.parentRow == null) {
+						if (reloadChildren && rb.browserContentPane.parentRow == null) {
 							rb.browserContentPane.reloadRows();
 						}
 					}
@@ -1815,7 +1815,7 @@ public abstract class Desktop extends JDesktopPane {
 		running = false;
 		desktops.remove(this);
 		for (RowBrowser rb : tableBrowsers) {
-			rb.browserContentPane.cancelLoadJob();
+			rb.browserContentPane.cancelLoadJob(false);
 		}
 		if (session != null) {
 			new Thread(new Runnable() {
@@ -2100,7 +2100,7 @@ public abstract class Desktop extends JDesktopPane {
 			}
 		}
 		tableBrowsers.remove(tableBrowser);
-		tableBrowser.browserContentPane.cancelLoadJob();
+		tableBrowser.browserContentPane.cancelLoadJob(true);
 		if (convertChildrenToRoots) {
 			for (RowBrowser child : children) {
 				child.convertToRoot();
