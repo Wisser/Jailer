@@ -1,3 +1,6 @@
+4.3.2
+  - Fix for http://sourceforge.net/p/dbeauty/tickets/3/
+
 4.3.1
   - Minor bug fixes. 
 
