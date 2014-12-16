@@ -2074,17 +2074,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			String orderBy = "";
 			String olapOrderBy = "";
 			if (selectParentPK) {
+				int j = 0;
 				for (Column pk : association.source.primaryKey.getColumns()) {
 					parentPkColumnNames.add(pk.name);
 					orderBy += (f ? "" : ", ") + "B." + pk.name;
-					olapOrderBy += (f ? "" : ", ") + "S." + pk.name;
+					olapOrderBy += (f ? "" : ", ") + "S.B" + j;
+					++j;
 					f = false;
 				}
 			}
+			int j = 0;
 			for (Column pk : table.primaryKey.getColumns()) {
 				pkColumnNames.add(pk.name);
 				orderBy += (f ? "" : ", ") + "A." + pk.name;
-				olapOrderBy += (f ? "" : ", ") + "S." + pk.name;
+				olapOrderBy += (f ? "" : ", ") + "S.A" + j;
+				++j;
 				f = false;
 			}
 			if (useOLAPLimitation) {
@@ -2160,7 +2164,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					if (selectParentPK) {
 						Object v[] = new Object[association.source.primaryKey.getColumns().size()];
 						for (Column column : association.source.primaryKey.getColumns()) {
-							parentRowId = readRowFromResultSet(parentPkColumnNames, resultSet, i, vi, parentRowId, v, column);
+							parentRowId = readRowFromResultSet(parentPkColumnNames, resultSet, i, vi, parentRowId, v, column, null);
 							++i;
 							++vi;
 						}
@@ -2170,15 +2174,24 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 					}
 					
-					String rowId = "";
+					Map<String, String> pkColumn = new HashMap<String, String>();
 					
 					Object v[] = new Object[table.getColumns().size()];
 					vi = 0;
 					for (Column column : table.getColumns()) {
-						rowId = readRowFromResultSet(pkColumnNames, resultSet, i, vi, rowId, v, column);
+						readRowFromResultSet(pkColumnNames, resultSet, i, vi, "", v, column, pkColumn);
 						++i;
 						++vi;
 					}
+					
+					String rowId = "";
+					for (Column column : table.primaryKey.getColumns()) {
+						if (rowId.length() > 0) {
+							rowId += " and ";
+						}
+						rowId += pkColumn.get(column.name);
+					}
+					
 					List<Row> cRows = rows.get(parentRowId);
 					if (cRows == null) {
 						cRows = new ArrayList<Row>();
@@ -2187,7 +2200,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					cRows.add(new Row(rowId, v));
 				}
 
-				private String readRowFromResultSet(final Set<String> pkColumnNames, ResultSet resultSet, int i, int vi, String rowId, Object[] v, Column column)
+				private String readRowFromResultSet(final Set<String> pkColumnNames, ResultSet resultSet, int i, int vi, String rowId, Object[] v, Column column, Map<String, String> pkColumn)
 						throws SQLException {
 					Object value = "";
 					int type = SqlUtil.getColumnType(resultSet, getMetaData(resultSet), i, typeCache);
@@ -2226,7 +2239,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 						if (pkColumnNames.contains(column.name) || isPK) {
 							String cVal = SqlUtil.toSql(o, session);
-							rowId += (rowId.length() == 0 ? "" : " and ") + "B." + column.name + ("null".equalsIgnoreCase(cVal)? " is null" : ("=" + cVal));
+							String pkValue = "B." + column.name + ("null".equalsIgnoreCase(cVal)? " is null" : ("=" + cVal));
+							if (pkColumn != null) {
+								pkColumn.put(column.name, pkValue);
+							}
+							rowId += (rowId.length() == 0 ? "" : " and ") + pkValue;
 						}
 						if (o == null || resultSet.wasNull()) {
 							value = null;
