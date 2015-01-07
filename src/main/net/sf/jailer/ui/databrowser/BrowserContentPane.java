@@ -2150,7 +2150,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			session.executeQuery(sql, new AbstractResultSetReader() {
 	
 				Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
-	
+				int rowNr = 0;
+				
 				@Override
 				public void readCurrentRow(ResultSet resultSet) throws SQLException {
 					if ((table instanceof SqlStatementTable) && rows.isEmpty()) {
@@ -2185,11 +2186,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 					
 					String rowId = "";
-					for (Column column : table.primaryKey.getColumns()) {
-						if (rowId.length() > 0) {
-							rowId += " and ";
+					if (table.primaryKey != null) {
+						for (Column column : table.primaryKey.getColumns()) {
+							if (rowId.length() > 0) {
+								rowId += " and ";
+							}
+							rowId += pkColumn.get(column.name);
 						}
-						rowId += pkColumn.get(column.name);
+					} else {
+						rowId = Integer.toString(++rowNr);
 					}
 					
 					List<Row> cRows = rows.get(parentRowId);
