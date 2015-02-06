@@ -1,3 +1,6 @@
+4.3.4
+  - Workaround for http://bugs.mysql.com/bug.php?id=47108
+
 4.3.3
   - Fix for http://sourceforge.net/p/dbeauty/tickets/4/
 

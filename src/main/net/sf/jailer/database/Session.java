@@ -261,7 +261,24 @@ public class Session {
                 
                 if (con == null) {
                 	try {
-                		con = DriverManager.getConnection(dbUrl, user, password);
+                		if (dbUrl.startsWith("jdbc:mysql:")) {
+	                		try {
+	                			 java.util.Properties info = new java.util.Properties();
+	                			 if (user != null) {
+	                				 info.put("user", user);
+	                			 }
+	                			 if (password != null) {
+	                				 info.put("password", password);
+	                			 }
+	                			 info.put("noDatetimeStringSync", "true");
+	                			 con = DriverManager.getConnection(dbUrl, info);
+	                		} catch (SQLException e2) {
+	                			// ignore
+	                		}
+                		}
+                		if (con == null) {
+                			con = DriverManager.getConnection(dbUrl, user, password);
+                		}
                 		defaultConnection = con;
                 	} catch (SQLException e) {
                 		if (defaultConnection != null) {
