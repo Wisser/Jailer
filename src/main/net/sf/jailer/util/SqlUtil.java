@@ -420,23 +420,27 @@ public class SqlUtil {
 			}
 			typeCache.put(i, type);
 		}
-		if (type == Types.TIMESTAMP) {
-			return resultSet.getTimestamp(i);
-		}
-		if (type == Types.DATE) {
-			if (dbms == DBMS.MySQL) {
-				// YEAR
-				String typeName = resultSetMetaData.getColumnTypeName(i);
-				if (typeName != null && typeName.toUpperCase().equals("YEAR")) {
-					int result = resultSet.getInt(i);
-					if (resultSet.wasNull()) {
-						return null;
-					}
-					return result;
-				}
+		try {
+			if (type == Types.TIMESTAMP) {
+				return resultSet.getTimestamp(i);
 			}
-			Date date = resultSet.getDate(i);
-			return date;
+			if (type == Types.DATE) {
+				if (dbms == DBMS.MySQL) {
+					// YEAR
+					String typeName = resultSetMetaData.getColumnTypeName(i);
+					if (typeName != null && typeName.toUpperCase().equals("YEAR")) {
+						int result = resultSet.getInt(i);
+						if (resultSet.wasNull()) {
+							return null;
+						}
+						return result;
+					}
+				}
+				Date date = resultSet.getDate(i);
+				return date;
+			}
+		} catch (SQLException e) {
+			return resultSet.getString(i);
 		}
 		Object object = resultSet.getObject(i);
 		if (dbms == DBMS.POSTGRESQL) {
