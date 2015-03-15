@@ -7,7 +7,7 @@ mkdir ~/tmp/1.co
 cd ~/tmp/1.co
 svn checkout --username=rwisser https://svn.code.sf.net/p/jailer/code/trunk/doc/web jailer-code
 cd ..
-mv 1.co/web/* jailer
+mv 1.co/jailer-code/* jailer
 cd jailer
 
 find . -iname "*.htm" -exec sed "s|class=\"spacer\" .*width=\"100%\"> *<br>|class=\"spacer\" width=\"100%\">|g" '{}' --in-place  \;

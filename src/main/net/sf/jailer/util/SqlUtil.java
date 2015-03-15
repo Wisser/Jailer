@@ -421,6 +421,9 @@ public class SqlUtil {
 			typeCache.put(i, type);
 		}
 		try {
+			if (type == Types.ARRAY) {
+				return resultSet.getString(i);
+			}
 			if (type == Types.TIMESTAMP) {
 				return resultSet.getTimestamp(i);
 			}

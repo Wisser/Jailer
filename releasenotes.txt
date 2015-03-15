@@ -1,3 +1,6 @@
+4.3.5
+  - added support for ARRAY type.
+
 4.3.4
   - Workaround for http://bugs.mysql.com/bug.php?id=47108
 
