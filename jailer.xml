@@ -198,6 +198,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<entry key="serial4" value="int4"/>
 				</map>
 			</property>
+			<property name="binaryPattern" value="E'\\x%s'" />
 			<property name="statisticRenovator">
 				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
 					<constructor-arg value="script/postgres/update_statistics.sql" />
