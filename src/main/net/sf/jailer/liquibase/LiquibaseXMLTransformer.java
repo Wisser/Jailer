@@ -254,7 +254,7 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 
 	private void writeclob(String clobcontent, String clobname) {
 
-		File f = new File(ScriptFile);
+		File f = new File(ScriptFile).getAbsoluteFile();
 
 		try {
 			FileOutputStream fos = new FileOutputStream(f.getParent() + "\\"+ clobname);
@@ -274,7 +274,7 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 			}
 
 		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+			throw new RuntimeException(e);
 		}
 
 	}
