@@ -257,7 +257,7 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		File f = new File(ScriptFile).getAbsoluteFile();
 
 		try {
-			FileOutputStream fos = new FileOutputStream(f.getParent() + "\\"+ clobname);
+			FileOutputStream fos = new FileOutputStream(new File(f.getParent(), clobname));
 			try {
 				BufferedWriter out = new BufferedWriter(new OutputStreamWriter(fos, "UTF8"));
 
