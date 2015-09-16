@@ -1,3 +1,6 @@
+4.3.6
+  - fixed a bug concerning CLOB export in Liquibase format.
+
 4.3.5
   - added support for ARRAY type.
 

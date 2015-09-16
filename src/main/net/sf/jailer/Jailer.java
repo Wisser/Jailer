@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2012 the original author or authors.
+ * Copyright 2007 - 2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -102,7 +102,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "4.3.5";
+	public static final String VERSION = "4.3.6";
 	
 	/**
 	 * The Jailer application name.
@@ -134,8 +134,6 @@ public class Jailer {
 	 */
 	private StringBuffer commentHeader = new StringBuffer();
 	
-	private String filepath;
-
 	/**
 	 * Constructor.
 	 * 
@@ -480,9 +478,9 @@ public class Jailer {
 	 * @param orderByPK
 	 *            if <code>true</code>, result will be ordered by primary keys
 	 */
-	private void writeEntities(OutputStreamWriter result, TransformerHandler transformerHandler, ScriptType scriptType, Table table, boolean orderByPK)
+	private void writeEntities(OutputStreamWriter result, TransformerHandler transformerHandler, ScriptType scriptType, Table table, boolean orderByPK, String filepath)
 			throws Exception {
-		ResultSetReader reader = createResultSetReader(result, transformerHandler, scriptType, table);
+		ResultSetReader reader = createResultSetReader(result, transformerHandler, scriptType, table, filepath);
 		entityGraph.readEntities(table, reader, orderByPK);
 		entityGraph.deleteEntities(table);
 	}
@@ -502,7 +500,7 @@ public class Jailer {
 	 * 
 	 * @return result set reader for processing the rows to be exported
 	 */
-	private ResultSetReader createResultSetReader(OutputStreamWriter outputWriter, TransformerHandler transformerHandler, ScriptType scriptType, Table table)
+	private ResultSetReader createResultSetReader(OutputStreamWriter outputWriter, TransformerHandler transformerHandler, ScriptType scriptType, Table table, String filepath)
 			throws SQLException {
 		if (scriptType == ScriptType.INSERT) {
 			if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
@@ -527,7 +525,7 @@ public class Jailer {
 	 * @param progress
 	 *            set of tables to account for extraction
 	 */
-	public void writeEntities(String sqlScriptFile, final ScriptType scriptType, final Set<Table> progress, Session session) throws Exception {
+	public void writeEntities(final String sqlScriptFile, final ScriptType scriptType, final Set<Table> progress, Session session) throws Exception {
 		_log.info("writing file '" + sqlScriptFile + "'...");
 
 		OutputStream outputStream = new FileOutputStream(sqlScriptFile);
@@ -573,7 +571,7 @@ public class Jailer {
 		}
 
 		// first write entities of independent tables
-		final Set<Table> dependentTables = writeEntitiesOfIndependentTables(result, transformerHandler, scriptType, progress);
+		final Set<Table> dependentTables = writeEntitiesOfIndependentTables(result, transformerHandler, scriptType, progress, sqlScriptFile);
 
 		// then write entities of tables having cyclic-dependencies
 		_log.info("cyclic dependencies for: " + asString(dependentTables));
@@ -619,7 +617,7 @@ public class Jailer {
 						entityGraph.markIndependentEntities(independentTable);
 						// don't use jobManager, export rows sequentially, don't
 						// mix rows of different tables in a dataset!
-						ResultSetReader reader = createResultSetReader(fResult, fTransformerHandler, scriptType, independentTable);
+						ResultSetReader reader = createResultSetReader(fResult, fTransformerHandler, scriptType, independentTable, sqlScriptFile);
 						entityGraph.readMarkedEntities(independentTable, reader, true);
 						entityGraph.deleteIndependentEntities(independentTable);
 						long newRest = entityGraph.getSize();
@@ -642,7 +640,7 @@ public class Jailer {
 				for (final Table table : dependentTables) {
 					jobs.add(new JobManager.Job() {
 						public void run() throws Exception {
-							ResultSetReader reader = createResultSetReader(fResult, fTransformerHandler, scriptType, table);
+							ResultSetReader reader = createResultSetReader(fResult, fTransformerHandler, scriptType, table, sqlScriptFile);
 							entityGraph.readMarkedEntities(table, reader, false);
 						}
 					});
@@ -898,7 +896,7 @@ public class Jailer {
 	 * @return set of tables from which no entities are written
 	 */
 	Set<Table> writeEntitiesOfIndependentTables(final OutputStreamWriter result, final TransformerHandler transformerHandler, final ScriptType scriptType,
-			Set<Table> progress) throws Exception {
+			Set<Table> progress, final String filepath) throws Exception {
 		Set<Table> tables = new HashSet<Table>(progress);
 
 		Set<Table> independentTables = datamodel.getIndependentTables(tables);
@@ -909,11 +907,11 @@ public class Jailer {
 				if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())||ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
 					// export rows sequentially, don't mix rows of different
 					// tables in a dataset!
-					writeEntities(result, transformerHandler, scriptType, independentTable, true);
+					writeEntities(result, transformerHandler, scriptType, independentTable, true, filepath);
 				} else {
 					jobs.add(new JobManager.Job() {
 						public void run() throws Exception {
-							writeEntities(result, transformerHandler, scriptType, independentTable, false);
+							writeEntities(result, transformerHandler, scriptType, independentTable, false, filepath);
 						}
 					});
 				}
