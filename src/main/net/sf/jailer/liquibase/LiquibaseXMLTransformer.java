@@ -42,14 +42,14 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 	
 	private final String rowElementName;
 	private final TransformerHandler transformerHandler;
-	private String ScriptFile;
+	private final File scriptFile;
 	private int count=0;
 	
 	
-	public LiquibaseXMLTransformer(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData, String sqlScriptFile) throws SQLException {
+	public LiquibaseXMLTransformer(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData, String scriptFile) throws SQLException {
 		this.transformerHandler = transformerHandler;
 		this.rowElementName = qualifiedTableName(table);
-		this.ScriptFile= sqlScriptFile;
+		this.scriptFile = new File(scriptFile);
 	}
 	
 	
@@ -128,7 +128,7 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 				Clob clobValue = singleRow.getClob(columncount);
 				int lengthc = (int) clobValue.length();	
 				String clobcontent=clobValue.getSubString(1, lengthc);
-				String clobname=rowElementName.toLowerCase()+"_"+count+"_clop.ch";
+				String clobname=lobName(".txt");
 				attrcolumn=createAtrribute(columnname,VALUE_CLOBFILE,clobname);
 				writeclob(clobcontent,clobname);
 				break;
@@ -138,7 +138,7 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 				NClob nclobValue = singleRow.getNClob(columncount);
 				int lengthnc = (int) nclobValue.length();	
 				String nclobcontent=nclobValue.getSubString(1, lengthnc);
-				String nclobname=rowElementName.toLowerCase()+"_"+count+"_clop.nch";
+				String nclobname=lobName(".txt");
 				attrcolumn=createAtrribute(columnname,VALUE_NCLOBFILE,nclobname);
 				writeclob(nclobcontent,nclobname);
 				break;
@@ -147,7 +147,7 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 				count=count+1;			
 				Blob blob = singleRow.getBlob(columncount);
 				byte[] blobcontent = blob.getBytes(1, (int) blob.length());
-				String blobname=rowElementName.toLowerCase()+"_"+count+"_clop.bin";
+				String blobname=lobName(".bin");
 				attrcolumn=createAtrribute(columnname,VALUE_BLOBFILE,blobname);
 				writeclob(Base64.encodeBytes(blobcontent),blobname);
 				break;
@@ -237,6 +237,24 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		return attrcolumn;
 	}
 
+	private String lobName(String suffix) {
+		String path = "";
+		final int MAX_FILES_PER_FOLDER = 100;
+		
+		long i = 1;
+		for (;;) {
+			i *= MAX_FILES_PER_FOLDER;
+			long folderNumber = (count / i) * i;
+			if (folderNumber > 0) {
+				path = File.separator + folderNumber + path;
+			} else {
+				break;
+			}	
+		}
+		return scriptFile.getName() + ".lob" + File.separator
+				+ rowElementName.toLowerCase() + path + File.separator
+				+ count + suffix;
+	}
 
 	private AttributesImpl createAtrribute(String columnname, String valuetype,String value) {
 		
@@ -254,10 +272,14 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 
 	private void writeclob(String clobcontent, String clobname) {
 
-		File f = new File(ScriptFile).getAbsoluteFile();
-
+		File lobFile = new File(scriptFile.getParent(), clobname);
+		File parent = lobFile.getParentFile();
+		if (parent != null) {
+			parent.mkdirs(); //ensure that the child table name dir exists
+		}
+		
 		try {
-			FileOutputStream fos = new FileOutputStream(new File(f.getParent(), clobname));
+			FileOutputStream fos = new FileOutputStream(lobFile);
 			try {
 				BufferedWriter out = new BufferedWriter(new OutputStreamWriter(fos, "UTF8"));
 
