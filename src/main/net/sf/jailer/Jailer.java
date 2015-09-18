@@ -102,7 +102,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "4.3.6";
+	public static final String VERSION = "4.3.7";
 	
 	/**
 	 * The Jailer application name.
@@ -506,7 +506,10 @@ public class Jailer {
 			if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
 				return new FlatXMLTransformer(table, transformerHandler, entityGraph.session.getMetaData());
 			}else if(ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat())){
-				return new LiquibaseXMLTransformer(table,transformerHandler,entityGraph.session.getMetaData(),filepath);
+				return new LiquibaseXMLTransformer(table,transformerHandler,entityGraph.session.getMetaData(),filepath,
+						CommandLineParser.getInstance().xmlDatePattern,
+						CommandLineParser.getInstance().xmlTimePattern,
+						CommandLineParser.getInstance().xmlTimeStampPattern);
 			} else {
 				return new DMLTransformer(table, outputWriter, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities,
 						entityGraph.session.getMetaData(), entityGraph.session);

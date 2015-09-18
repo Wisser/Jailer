@@ -1,5 +1,8 @@
+4.3.7
+  - refinements to timestamp, date, time format mask config for liquibase export. (thanks to from Jason Pell) 
+
 4.3.6
-  - fixed a bug concerning CLOB export in Liquibase format.
+  - fixed a bug concerning CLOB export in Liquibase format. (thanks to from Jason Pell) 
 
 4.3.5
   - added support for ARRAY type.

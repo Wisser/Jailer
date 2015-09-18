@@ -106,10 +106,11 @@ public class CommandLineParser {
         System.out.println("  jailer export [options] <extraction-model> <jdbc-driver-class> <db-URL> <db-user> <db-password>");
         System.out.println("    extracts data (see option '-e') and optionally creates a delete-script (see option '-d')");
         System.out.println("    -where subject condition. Optional, overrides condition in extraction-model");
-        System.out.println("    -xml export entities into XML file (instead of SQL)");
+        System.out.println("    -format [SQL, XML, DBUNIT_FLAT_XML or LIQUIBASE_XML]");
         System.out.println("    -xml-root root tag of XML export file");
-        System.out.println("    -xml-date pattern for dates in XML export file");
-        System.out.println("    -xml-timestamp pattern for time-stamps in XML export file");
+        System.out.println("    -xml-date pattern for dates in XML and LIQUIBASE_XML export file");
+        System.out.println("    -xml-time pattern for times in XML and LIQUIBASE_XML export file");
+        System.out.println("    -xml-timestamp pattern for time-stamps in XML and LIQUIBASE_XML export file");
         System.out.println("    -t prevents deletion of entities from 'tabu'-tables");
         System.out.println();
         System.out.println("  jailer create-ddl");
@@ -198,7 +199,7 @@ public class CommandLineParser {
     	return ScriptFormat.valueOf(format);
     }
     
-    @Option(name="-format",usage="export file format: SQL, XML or DBUNIT_FLAT_XML")
+    @Option(name="-format",usage="export file format: SQL, XML, DBUNIT_FLAT_XML or LIQUIBASE_XML")
     public String format = "SQL";
     
     @Option(name="-xml",usage="export entities into XML file (deprecated, use -format XML instead)")
@@ -207,10 +208,13 @@ public class CommandLineParser {
     @Option(name="-xml-root",usage="root tag of XML export file",metaVar="tag-name")
     public String xmlRootTag = "entities";
 
-    @Option(name="-xml-date",usage="pattern for dates in XML export file",metaVar="pattern")
+    @Option(name="-xml-date",usage="pattern for dates in XML and LIQUIBASE_XML export file",metaVar="pattern")
     public String xmlDatePattern = "yyyy-MM-dd";
+    
+    @Option(name="-xml-time",usage="pattern for times in XML and LIQUIBASE_XML export file",metaVar="pattern")
+    public String xmlTimePattern = "HH.mm.ss";
 
-    @Option(name="-xml-timestamp",usage="pattern for time-stamps in XML export file",metaVar="pattern")
+    @Option(name="-xml-timestamp",usage="pattern for time-stamps in XML and LIQUIBASE_XML export file",metaVar="pattern")
     public String xmlTimeStampPattern = "yyyy-MM-dd-HH.mm.ss";
     
     @Option(name="-c",usage="print restricted data-model with closures")
