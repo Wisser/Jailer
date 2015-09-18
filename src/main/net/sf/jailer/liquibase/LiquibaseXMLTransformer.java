@@ -45,11 +45,29 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 	private final File scriptFile;
 	private int count=0;
 	
+	/**
+	 * Pattern for dates.
+	 */
+	private final SimpleDateFormat datePattern;
 	
-	public LiquibaseXMLTransformer(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData, String scriptFile) throws SQLException {
+	/**
+	 * Pattern for dates.
+	 */
+	private final SimpleDateFormat timePattern;
+	
+	/**
+	 * Pattern for time-stamps.
+	 */
+	private final SimpleDateFormat timestampPattern;
+	
+	public LiquibaseXMLTransformer(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData, 
+			String scriptFile, String datePattern, String timePattern, String timestampPattern) throws SQLException {
 		this.transformerHandler = transformerHandler;
 		this.rowElementName = qualifiedTableName(table);
 		this.scriptFile = new File(scriptFile);
+		this.datePattern = new SimpleDateFormat(datePattern);
+		this.timePattern = new SimpleDateFormat(timePattern);
+		this.timestampPattern = new SimpleDateFormat(timestampPattern);
 	}
 	
 	
@@ -154,19 +172,19 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 				
 			case Types.TIMESTAMP:		
 				Timestamp ts = singleRow.getTimestamp(columncount);
-				String datetimestamp = changeDateFormat(ts);
+				String datetimestamp = timestampPattern.format(ts);
 				attrcolumn=createAtrribute(columnname,VALUE_DATE,datetimestamp);		
 				break;
 				
 			case Types.TIME:	
 				Timestamp t = singleRow.getTimestamp(columncount);
-				String datetime = changeDateFormat(t);
+				String datetime = timePattern.format(t);
 				attrcolumn=createAtrribute(columnname,VALUE_DATE,datetime);		
 				break;
 				
 			case Types.DATE:	
 				Timestamp d = singleRow.getTimestamp(columncount);
-				String datedate = changeDateFormat(d);
+				String datedate = datePattern.format(d);
 				attrcolumn=createAtrribute(columnname,VALUE_DATE,datedate);		
 				break;
 					
@@ -301,17 +319,6 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 
 	}
 
-
-	private String changeDateFormat(Timestamp value) {
-	
-		String pattern = "yyyy-MM-dd'T'HH:mm:ss";
-		SimpleDateFormat format = new SimpleDateFormat(pattern);			
-		String dates=format.format(value);
-		
-		return dates;	
-	}
-
-	
 	public void close() {}
 
 }
