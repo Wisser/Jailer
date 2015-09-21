@@ -107,23 +107,23 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		int columnCount = getMetaData(singleRow).getColumnCount();
 
 		try {
-
 			AttributesImpl attrinsert = new AttributesImpl();
 			attrinsert.addAttribute("", "", "tableName", "", rowElementName);
 
-			transformerHandler.startElement("", "", "insert", attrinsert);
-
-			for (int i = 1; i <= columnCount; i++) {
-
-				AttributesImpl attrcolumn = getColumnAttributes(singleRow, i);
-
-				if(attrcolumn.getValue("name")!=null){
-				transformerHandler.startElement("", "", "column", attrcolumn);
-				transformerHandler.endElement("", "", "column");
+			synchronized (transformerHandler) {
+				transformerHandler.startElement("", "", "insert", attrinsert);
+	
+				for (int i = 1; i <= columnCount; i++) {
+	
+					AttributesImpl attrcolumn = getColumnAttributes(singleRow, i);
+	
+					if(attrcolumn.getValue("name")!=null){
+					transformerHandler.startElement("", "", "column", attrcolumn);
+					transformerHandler.endElement("", "", "column");
+					}
 				}
+				transformerHandler.endElement("", "", "insert");
 			}
-			transformerHandler.endElement("", "", "insert");
-
 		} catch (SAXException e) {
 			throw new RuntimeException(e);
 		}
