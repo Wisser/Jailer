@@ -1090,4 +1090,13 @@ public class EntityGraph {
         session.shutDown();
     }
 
+    private int lobCount = 0;
+    
+    /**
+     * Increments lob-counter and returns new value.
+     */
+	public synchronized int incLobCount() {
+		return ++lobCount;
+	}
+
 }
