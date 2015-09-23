@@ -907,7 +907,7 @@ public class Jailer {
 			_log.info("independent tables: " + asString(independentTables));
 			List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 			for (final Table independentTable : independentTables) {
-				if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())||ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+				if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat()) || ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
 					// export rows sequentially, don't mix rows of different
 					// tables in a dataset!
 					writeEntities(result, transformerHandler, scriptType, independentTable, true, filepath);
@@ -919,7 +919,7 @@ public class Jailer {
 					});
 				}
 			}
-			if (!ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat()) || !ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+			if (!jobs.isEmpty()) {
 				jobManager.executeJobs(jobs);
 			}
 			tables.removeAll(independentTables);
