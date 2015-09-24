@@ -145,30 +145,46 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 			case Types.CLOB:
 				count = entityGraph.incLobCount();
 				Clob clobValue = singleRow.getClob(columncount);
-				int lengthc = (int) clobValue.length();	
-				String clobcontent=clobValue.getSubString(1, lengthc);
-				String clobname=lobName(count, ".txt");
-				attrcolumn=createAttribute(columnname,VALUE_CLOBFILE,clobname);
-				writeClob(clobcontent,clobname);
+				int lengthc = (int) clobValue.length();
+				// liquibase treats an empty clob file as though no file exists
+				if (lengthc > 0) {
+    				String clobcontent=clobValue.getSubString(1, lengthc);
+    				String clobname=lobName(count, ".txt");
+    				attrcolumn=createAttribute(columnname,VALUE_CLOBFILE,clobname);
+    				writeClob(clobcontent,clobname);
+				} else {
+				    attrcolumn=createAttribute(columnname,VALUE_CLOBFILE,null);
+				}
 				break;
 				
 			case Types.NCLOB:
 				count = entityGraph.incLobCount();
 				NClob nclobValue = singleRow.getNClob(columncount);
-				int lengthnc = (int) nclobValue.length();	
-				String nclobcontent=nclobValue.getSubString(1, lengthnc);
-				String nclobname=lobName(count, ".txt");
-				attrcolumn=createAttribute(columnname,VALUE_NCLOBFILE,nclobname);
-				writeClob(nclobcontent,nclobname);
+				int lengthnc = (int) nclobValue.length();
+				// liquibase treats an empty clob file as though no file exists
+				if (lengthnc > 0) {
+    				String nclobcontent=nclobValue.getSubString(1, lengthnc);
+    				String nclobname=lobName(count, ".txt");
+    				attrcolumn=createAttribute(columnname,VALUE_NCLOBFILE,nclobname);
+    				writeClob(nclobcontent,nclobname);
+				} else {
+				    attrcolumn=createAttribute(columnname,VALUE_NCLOBFILE,null);
+				}
 				break;
 				
 			case Types.BLOB:
 				count = entityGraph.incLobCount();
 				Blob blob = singleRow.getBlob(columncount);
-				byte[] blobcontent = blob.getBytes(1, (int) blob.length());
-				String blobname=lobName(count, ".bin");
-				attrcolumn=createAttribute(columnname,VALUE_BLOBFILE,blobname);
-				writeBlob(blobcontent, blobname);
+				int lengthb = (int) blob.length();
+				// liquibase treats an empty blob file as though no file exists
+				if (lengthb > 0) {
+    				byte[] blobcontent = blob.getBytes(1, lengthb);
+    				String blobname=lobName(count, ".bin");
+    				attrcolumn=createAttribute(columnname,VALUE_BLOBFILE,blobname);
+    				writeBlob(blobcontent, blobname);
+				} else {
+				    attrcolumn=createAttribute(columnname,VALUE_BLOBFILE,null);
+				}
 				break;
 				
 			case Types.TIMESTAMP:		
