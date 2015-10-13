@@ -65,7 +65,7 @@ public class Session {
      * The session in which temporary tables lives, if any.
      */
     private static Connection temporaryTableSession = null;
-    
+        
     /**
      * Shared scope of temporary tables.
      */
@@ -82,6 +82,7 @@ public class Session {
     private boolean silent = false;
     
     private final boolean transactional;
+    public final boolean local;
     
     /**
      * Reads a JDBC-result-set.
@@ -98,7 +99,7 @@ public class Session {
         /**
          * Finalizes reading.
          */
-        void close();
+        void close() throws SQLException;
     }
     
     /**
@@ -227,7 +228,7 @@ public class Session {
     public Session(String driverClassName, final String dbUrl, final String user, final String password) throws Exception {
     	this(driverClassName, dbUrl, user, password, null, false);
     }
-    
+
     /**
      * Constructor.
      * 
@@ -237,7 +238,21 @@ public class Session {
      * @param password the DB-password
      */
     public Session(String driverClassName, final String dbUrl, final String user, final String password, final TemporaryTableScope scope, boolean transactional) throws Exception {
+    	this(driverClassName, dbUrl, user, password, scope, transactional, false);
+    }
+    
+    /**
+     * Constructor.
+     * 
+     * @param driverClassName name of JDBC-driver class
+     * @param dbUrl the database URL
+     * @param user the DB-user
+     * @param password the DB-password
+     * @param local <code>true</code> for the local entity-graph database
+     */
+    public Session(String driverClassName, final String dbUrl, final String user, final String password, final TemporaryTableScope scope, boolean transactional, final boolean local) throws Exception {
     	this.transactional = transactional;
+    	this.local = local;
         this.scope = scope;
     	_log.info("connect to user " + user + " at "+ dbUrl);
         if (classLoaderForJdbcDriver != null) {
@@ -257,7 +272,7 @@ public class Session {
         connectionFactory = new ConnectionFactory() {
         	private Connection defaultConnection = null;
             public Connection getConnection() throws SQLException {
-                Connection con = temporaryTableSession == null? connection.get() : temporaryTableSession;
+                Connection con = local? connection.get() : temporaryTableSession == null? connection.get() : temporaryTableSession;
                 
                 if (con == null) {
                 	try {
@@ -333,7 +348,9 @@ public class Session {
         dbms = logDriverInfo(connection);
         
         // TODO: remove this ugly hack
-        SqlUtil.dbms = dbms;
+        if (!local) {
+        	SqlUtil.dbms = dbms;
+        }
     }
 
     /**
@@ -495,6 +512,9 @@ public class Session {
         	CancellationHandler.checkForCancellation(context);
         	if (!silent) {
         		_log.error("Error executing query", e);
+        	}
+        	if (e instanceof SqlException) {
+        		throw e;
         	}
 	    	throw new SqlException("\"" + e.getMessage() + "\" in statement \"" + sqlQuery + "\"", sqlQuery, e);
         }

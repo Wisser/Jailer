@@ -285,11 +285,11 @@ public class UIUtil {
 			final boolean closeOutputWindow, String continueOnErrorQuestion,
 			String password, final ProgressListener progressListener,
 			final ProgressPanel progressPanel, final boolean showExeptions,
-			boolean fullSize) {
+			boolean fullSize, boolean returnFalseOnError) {
 		return runJailer(ownerOfConsole, cliArgs, showLogfileButton,
 				printCommandLine, showExplainLogButton, closeOutputWindow,
 				continueOnErrorQuestion, password, progressListener,
-				progressPanel, showExeptions, fullSize, false);
+				progressPanel, showExeptions, fullSize, false, returnFalseOnError);
 	}
 
 	/**
@@ -319,7 +319,8 @@ public class UIUtil {
 			final boolean closeOutputWindow, String continueOnErrorQuestion,
 			String password, final ProgressListener progressListener,
 			final ProgressPanel progressPanel, final boolean showExeptions,
-			boolean fullSize, final boolean closeOutputWindowOnError) {
+			boolean fullSize, final boolean closeOutputWindowOnError,
+			boolean returnFalseOnError) {
 		JDialog dialog = new JDialog(ownerOfConsole);
 		List<String> args = new ArrayList<String>(cliArgs);
 		final StringBuffer arglist = createCLIArgumentString(password, args);
@@ -525,7 +526,11 @@ public class UIUtil {
 			outputView.dialog.setVisible(true);
 			synchronized (UIUtil.class) {
 				if (exp[0] != null) {
-					throw exp[0];
+					if (returnFalseOnError) {
+						result[0] = false;
+					} else {
+						throw exp[0];
+					}
 				}
 			}
 			if (!result[0] && continueOnErrorQuestion != null) {

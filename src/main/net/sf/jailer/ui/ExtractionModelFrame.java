@@ -880,7 +880,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     				args.add(sqlFile);
     				dbConnectionDialog.addDbArgs(args);
     				disconnect();
-    				UIUtil.runJailer(this, args, false, true, false, false, null, dbConnectionDialog.getPassword(), null, null, false, true);
+    				UIUtil.runJailer(this, args, false, true, false, false, null, dbConnectionDialog.getPassword(), null, null, false, true, false);
     			}
     		}
     	} catch (Exception e) {
@@ -1030,7 +1030,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		        			args.add("-qualifyNames");
 		        		}
 						ModelBuilder.assocFilter = analyseOptionsDialog.getAssociationLineFilter();
-						if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword(), null, null, false, true)) {
+						if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword(), null, null, false, true, false)) {
 			        		ModelBuilder.assocFilter = null;
 			    			String modelname = extractionModelEditor.dataModel == null? DataModel.DEFAULT_NAME : extractionModelEditor.dataModel.getName();
 			        		DataModelEditor dataModelEditor = new DataModelEditor(this, true, analyseOptionsDialog.isRemoving(), null, analyseOptionsDialog.getTableLineFilter(), analyseOptionsDialog.getAssociationLineFilter(), modelname, schema == null? dbConnectionDialog.getName() : schema);
@@ -1102,12 +1102,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				        		if (!exportDialog.getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL) || DDLCreator.isUptodate(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4)) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
 				        			"Automatic creation of working-tables failed!\n" +
 			        				"Please execute the Jailer-DDL manually (jailer_ddl.sql)\n\n" +
-			        				"Continue Data Export?", dbConnectionDialog.getPassword(), null, null, false, false)) {
+			        				"Continue Data Export?", dbConnectionDialog.getPassword(), null, null, false, false, true)) {
 					        		ProgressTable progressTable = new ProgressTable();
 					        		ProgressPanel progressPanel = new ProgressPanel(progressTable);
 					        		UIProgressListener progressListener = new UIProgressListener(progressTable, progressPanel, extractionModelEditor.dataModel);
 					        		try {
-					        			UIUtil.runJailer(this, args, true, true, exportDialog.explain.isSelected(), false /* !exportDialog.explain.isSelected() */, null, dbConnectionDialog.getPassword(), progressListener, progressPanel, true, true);
+					        			UIUtil.runJailer(this, args, true, true, exportDialog.explain.isSelected(), false /* !exportDialog.explain.isSelected() */, null, dbConnectionDialog.getPassword(), progressListener, progressPanel, true, true, false);
 					        		} finally {
 					        			progressListener.stop();
 					        		}
@@ -1169,7 +1169,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         	args.add("render-datamodel");
         	File file = saveRestrictions();
         	args.add(file.getName());
-        	UIUtil.runJailer(this, args, false, true, false, true, null, null /* dbConnectionDialog.getPassword() */, null, null, false, true);
+        	UIUtil.runJailer(this, args, false, true, false, true, null, null /* dbConnectionDialog.getPassword() */, null, null, false, true, false);
         	BrowserLauncher.openURL(table == null? "render/index.html" : ("render/" + HtmlDataModelRenderer.toFileName(table)));
         } catch (Exception e) {
         	UIUtil.showException(this, "Error", e);
@@ -1188,7 +1188,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	        	args.add(to.getName());
 	        	File file = saveRestrictions();
 	        	args.add(file.getName());
-	        	UIUtil.runJailer(this, args, false, false, false, false, null, dbConnectionDialog.getPassword(), null, null, false, true);
+	        	UIUtil.runJailer(this, args, false, false, false, false, null, dbConnectionDialog.getPassword(), null, null, false, true, false);
 	        } catch (Exception e) {
 	        	UIUtil.showException(this, "Error", e);
 	        }

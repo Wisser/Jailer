@@ -128,6 +128,8 @@ public class Configuration {
 	 */
 	private static boolean doMinimizeUPK = false;
 
+	public static Object localEntityGraphConfiguration;
+	
 	/**
 	 * Replacement for null in DBUnit datasets.
 	 */
@@ -179,6 +181,9 @@ public class Configuration {
 	        if (theApplicationContext.containsBean("null-column-placeholder")) {
 	        	nullColumnPlaceholder = (String) theApplicationContext.getBean("null-column-placeholder");
 	        }
+	        if (theApplicationContext.containsBean("local-entity-graph")) {
+		        localEntityGraphConfiguration = theApplicationContext.getBean("local-entity-graph");
+	        }
     	}
     	return theApplicationContext;
     }
@@ -187,7 +192,7 @@ public class Configuration {
      * Holds configurations.
      */
     private static Map<String, Configuration> perUrl = new HashMap<String, Configuration>();
-    
+
     /**
      * Gets DBMS specific configuration.
      * 

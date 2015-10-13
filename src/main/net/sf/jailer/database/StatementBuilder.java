@@ -73,6 +73,16 @@ public class StatementBuilder {
     public boolean isAppendable(String head, String item) {
         return body.size() < maxBodySize && (this.head == null || this.head.equals(head));
     }
+    
+    /**
+     * Checks whether an item is appendable to previously appended items.
+     * 
+     * @param head the statements head
+     * @return <code>true</code> iff item is appendable
+     */
+    public boolean isAppendable(String head) {
+        return isAppendable(head, null);
+    }
 
     /**
      * Builds the SQL-statement and resets the builder.
@@ -81,7 +91,7 @@ public class StatementBuilder {
      */
     public String build() {
         if (this.head != null) {
-            StringBuffer sqlStatement = new StringBuffer(head);
+            StringBuilder sqlStatement = new StringBuilder(head);
             boolean firstTime = true;
             for (String item: body) {
                 if (!firstTime) {
@@ -123,6 +133,13 @@ public class StatementBuilder {
      */
 	public boolean isEmpty() {
 		return body.isEmpty();
+	}
+
+	/**
+	 * Returns the size of the current statement.
+	 */
+	public int size() {
+		return body.size();
 	}
     
 }

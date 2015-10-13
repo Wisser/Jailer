@@ -52,7 +52,7 @@ public class DDLCreator {
 			session = new Session(driverClass, dbUrl, user, password);
 		}
 		try {
-			return createDDL(session, temporaryTableScope);
+			return createDDL(new DataModel(), session, temporaryTableScope);
 		} finally {
 			if (session != null) {
 				try { session.shutDown(); } catch (Exception e) { /* ignore */ }
@@ -63,28 +63,33 @@ public class DDLCreator {
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	public static boolean createDDL(Session session, TemporaryTableScope temporaryTableScope) throws Exception {
-		try {
-			return createDDL(session, temporaryTableScope, 0);
-		} catch (SQLException e) {
-		}
-		// reconnect and retry with another index type
-		session.reconnect();
-		try {
-			return createDDL(session, temporaryTableScope, 1);
-		} catch (SQLException e) {
-		}
-		// reconnect and retry with another index type
-		session.reconnect();
-		return createDDL(session, temporaryTableScope, 2);
+	public static void createDDL(Session localSession, TemporaryTableScope temporaryTableScope) throws Exception {
+		createDDL(new DataModel(), localSession, temporaryTableScope);
 	}
 
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	private static boolean createDDL(Session session, TemporaryTableScope temporaryTableScope, int indexType) throws Exception {
-		DataModel dataModel = new DataModel();
+	public static boolean createDDL(DataModel datamodel, Session session, TemporaryTableScope temporaryTableScope) throws Exception {
+		try {
+			return createDDL(datamodel, session, temporaryTableScope, 0);
+		} catch (SQLException e) {
+		}
+		// reconnect and retry with another index type
+		session.reconnect();
+		try {
+			return createDDL(datamodel, session, temporaryTableScope, 1);
+		} catch (SQLException e) {
+		}
+		// reconnect and retry with another index type
+		session.reconnect();
+		return createDDL(datamodel, session, temporaryTableScope, 2);
+	}
 
+	/**
+	 * Creates the DDL for the working-tables.
+	 */
+	private static boolean createDDL(DataModel dataModel, Session session, TemporaryTableScope temporaryTableScope, int indexType) throws Exception {
 		String template = "script" + File.separator + "ddl-template.sql";
 		String contraint = session != null && (session.dbms == DBMS.SYBASE || session.dbms == DBMS.MySQL) ? " NULL" : "";
 		Map<String, String> typeReplacement = Configuration.forDbms(session).getTypeReplacement();
