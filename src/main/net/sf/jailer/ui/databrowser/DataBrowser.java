@@ -1475,7 +1475,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				if (DataBrowserContext.isStandAlone()) {
 					UIUtil.disableWarnings = true;
 				}
-				if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword(), null, null, false, true)) {
+				if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword(), null, null, false, true, false)) {
 					ModelBuilder.assocFilter = null;
 					String modelname = datamodel == null || datamodel.get() == null ? DataModel.DEFAULT_NAME : datamodel.get().getName();
 					DataModelEditor dataModelEditor = new DataModelEditor(this, true, analyseOptionsDialog.isRemoving(), null,

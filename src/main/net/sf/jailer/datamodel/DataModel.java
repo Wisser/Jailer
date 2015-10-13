@@ -97,7 +97,7 @@ public class DataModel {
     /**
      * For creation of primary-keys.
      */
-    private final PrimaryKeyFactory primaryKeyFactory = new PrimaryKeyFactory();
+    private final PrimaryKeyFactory primaryKeyFactory;
 
     /**
      * Gets name of data model folder.
@@ -261,8 +261,16 @@ public class DataModel {
      * Reads in <code>table.csv</code> and <code>association.csv</code>
      * and builds the relational data model.
      */
+    public DataModel(PrimaryKeyFactory primaryKeyFactory, Map<String, String> sourceSchemaMapping) throws Exception {
+        this(null, null, sourceSchemaMapping, null, primaryKeyFactory);
+    }
+
+    /**
+     * Reads in <code>table.csv</code> and <code>association.csv</code>
+     * and builds the relational data model.
+     */
     public DataModel() throws Exception {
-        this(null, null);
+        this(null, null, new PrimaryKeyFactory());
     }
 
     /**
@@ -270,7 +278,18 @@ public class DataModel {
      * and builds the relational data model.
      */
     public DataModel(Map<String, String> sourceSchemaMapping) throws Exception {
-        this(null, null, sourceSchemaMapping, null);
+        this(null, null, sourceSchemaMapping, null, new PrimaryKeyFactory());
+    }
+
+    /**
+     * Reads in <code>table.csv</code> and <code>association.csv</code>
+     * and builds the relational data model.
+     * 
+     * @param additionalTablesFile table file to read too
+     * @param additionalAssociationsFile association file to read too
+     */
+    public DataModel(String additionalTablesFile, String additionalAssociationsFile, PrimaryKeyFactory primaryKeyFactory) throws Exception {
+    	this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, primaryKeyFactory);
     }
 
     /**
@@ -281,7 +300,7 @@ public class DataModel {
      * @param additionalAssociationsFile association file to read too
      */
     public DataModel(String additionalTablesFile, String additionalAssociationsFile) throws Exception {
-    	this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null);
+    	this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, new PrimaryKeyFactory());
     }
 
     /**
@@ -292,6 +311,18 @@ public class DataModel {
      * @param additionalAssociationsFile association file to read too
      */
     public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter) throws Exception {
+    	this(additionalTablesFile, additionalAssociationsFile, sourceSchemaMapping, assocFilter, new PrimaryKeyFactory());
+    }
+    
+    /**
+     * Reads in <code>table.csv</code> and <code>association.csv</code>
+     * and builds the relational data model.
+     * 
+     * @param additionalTablesFile table file to read too
+     * @param additionalAssociationsFile association file to read too
+     */
+    public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, PrimaryKeyFactory primaryKeyFactory) throws Exception {
+    	this.primaryKeyFactory = primaryKeyFactory;
     	try {
 	    	// tables
 	    	File nTablesFile = CommandLineParser.getInstance().newFile(getTablesFile());

@@ -62,7 +62,7 @@ public class ExplainTool {
      * @param session
      *            for executing SQL-statements
      */
-    public static void explain(final EntityGraph graph, final Set<Table> tablesToIgnore, final Session session, final DataModel datamodel) throws Exception {
+    public static void explain(final EntityGraph graph, final Set<Table> tablesToIgnore, final Session session) throws Exception {
         _log.info("generating explain.log...");
     	final Set<String> namesOfTablesToIgnore = new HashSet<String>();
         for (Table table: tablesToIgnore) {
@@ -89,7 +89,7 @@ public class ExplainTool {
                 }
                 if (!namesOfTablesToIgnore.contains(type)) {
                     try {
-                        writer.append(path(graph, session, type, keys, datamodel));
+                        writer.append(path(graph, session, type, keys, graph.getDatamodel()));
                         writer.append(".\n");
                     } catch (IOException e) {
                         throw new RuntimeException(e);
