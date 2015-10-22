@@ -1063,4 +1063,9 @@ public class RemoteEntityGraph extends EntityGraph {
 		// nothing to do
 	}
 
+	@Override
+	public Session getTargetSession() {
+		return session;
+	}
+
 }

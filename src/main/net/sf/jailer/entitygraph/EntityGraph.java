@@ -393,5 +393,7 @@ public abstract class EntityGraph {
         statistic.add(0, "" + total[0]);
         return statistic;
     }
+
+	public abstract Session getTargetSession();
     
 }

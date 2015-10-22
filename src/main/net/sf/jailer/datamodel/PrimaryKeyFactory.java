@@ -161,9 +161,6 @@ public class PrimaryKeyFactory {
 	 */
 	public PrimaryKey getUniversalPrimaryKey(Session session) {
 		closed = true;
-		if (session != null) {
-			SQLDialect.guessDialect(universalPrimaryKey, session);
-		}
 		return universalPrimaryKey;
 	}
 

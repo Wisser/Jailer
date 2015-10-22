@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.StatisticRenovator;
 import net.sf.jailer.database.TemporaryTableManager;
@@ -107,7 +108,37 @@ public class Configuration {
 	public String binaryPattern = "x'%s'";
 	public boolean avoidLeftJoin = false;
 	public String timestampPattern = null;
+	public String dbms = "Unknown";
+	public SQLDialect sqlDialect = new SQLDialect();
 	
+	/**
+	 * @return the dbms
+	 */
+	public String getDbms() {
+		return dbms;
+	}
+
+	/**
+	 * @param dbms the dbms to set
+	 */
+	public void setDbms(String dbms) {
+		this.dbms = dbms;
+	}
+
+	/**
+	 * @return the sqlDialect
+	 */
+	public SQLDialect getSqlDialect() {
+		return sqlDialect;
+	}
+
+	/**
+	 * @return the sqlDialect
+	 */
+	public void setSqlDialect(SQLDialect sqlDialect) {
+		this.sqlDialect = sqlDialect;
+	}
+
 	/**
 	 * Manages session local temporary tables.
 	 */

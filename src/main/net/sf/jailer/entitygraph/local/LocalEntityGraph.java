@@ -1399,4 +1399,9 @@ public class LocalEntityGraph extends EntityGraph {
 		return dataModel;
 	}
 
+	@Override
+	public Session getTargetSession() {
+		return remoteSession;
+	}
+
 }

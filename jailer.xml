@@ -98,6 +98,16 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<!-- for Informix -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:informix.*" />
+
+			<property name="dbms" value="Informix"/>
+			<property name="sqlDialect">
+				<bean class="net.sf.jailer.database.SQLDialect">
+					<property name="supportsMultiRowInserts" value="true"/>
+					<property name="needsValuesKeywordForDeletes" value="true"/>
+					<property name="supportsInClauseForDeletes" value="true"/>
+					<property name="upsertMode" value="DB2"/>
+				</bean>
+			</property>
 			<property name="timestampPattern" value="cast(%s as datetime year to fraction)" />
 			<property name="varcharLengthLimit"	value="255" />
 			<property name="typeReplacement">
@@ -139,6 +149,16 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<!-- for IBM DB2 -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:db2.*" />
+
+			<property name="dbms" value="IBM DB2"/>
+			<property name="sqlDialect">
+				<bean class="net.sf.jailer.database.SQLDialect">
+					<property name="supportsMultiRowInserts" value="true"/>
+					<property name="needsValuesKeywordForDeletes" value="true"/>
+					<property name="supportsInClauseForDeletes" value="true"/>
+					<property name="upsertMode" value="DB2"/>
+				</bean>
+			</property>
 			<property name="typeReplacement">
 				<map>
 					<entry key="graphic" value="varchar"/>
@@ -176,6 +196,16 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<!-- for Oracle -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:oracle.*" />
+
+			<property name="dbms" value="Oracle"/>
+			<property name="sqlDialect">
+				<bean class="net.sf.jailer.database.SQLDialect">
+					<property name="supportsMultiRowInserts" value="false"/>
+					<property name="needsValuesKeywordForDeletes" value="false"/>
+					<property name="supportsInClauseForDeletes" value="true"/>
+					<property name="upsertMode" value="MERGE"/>
+				</bean>
+			</property>
 			<property name="avoidLeftJoin" value="true" />
 			<property name="statisticRenovator">
 				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
@@ -209,6 +239,16 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<!-- for PostgreSQL -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:postgres.*" />
+
+			<property name="dbms" value="PostgreSQL"/>
+			<property name="sqlDialect">
+				<bean class="net.sf.jailer.database.SQLDialect">
+					<property name="supportsMultiRowInserts" value="true"/>
+					<property name="needsValuesKeywordForDeletes" value="true"/>
+					<property name="supportsInClauseForDeletes" value="true"/>
+					<property name="upsertMode" value="DB2"/>
+				</bean>
+			</property>
 			<property name="typeReplacement">
 				<map>
 					<entry key="DOUBLE" value="DOUBLE PRECISION"/>
@@ -243,6 +283,16 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<!-- for Cloudscape -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:cloudscape.*" />
+
+			<property name="dbms" value="Cloudscape"/>
+			<property name="sqlDialect">
+				<bean class="net.sf.jailer.database.SQLDialect">
+					<property name="supportsMultiRowInserts" value="false"/>
+					<property name="needsValuesKeywordForDeletes" value="false"/>
+					<property name="supportsInClauseForDeletes" value="false"/>
+					<property name="upsertMode" value="FROM_JL_DUAL"/>
+				</bean>
+			</property>
 			<property name="statisticRenovator">
 				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
 					<constructor-arg value="script/cloudscape/update_statistics.sql" />
@@ -253,6 +303,16 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<!-- for Firebird -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:firebirdsql.*" />
+
+			<property name="dbms" value="Firebird"/>
+			<property name="sqlDialect">
+				<bean class="net.sf.jailer.database.SQLDialect">
+					<property name="supportsMultiRowInserts" value="false"/>
+					<property name="needsValuesKeywordForDeletes" value="false"/>
+					<property name="supportsInClauseForDeletes" value="false"/>
+					<property name="upsertMode" value="FROM_JL_DUAL"/>
+				</bean>
+			</property>
 			<property name="typeReplacement">
 				<map>
 					<entry key="DOUBLE" value="DOUBLE PRECISION"/>
@@ -269,6 +329,16 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern"
 				value="jdbc:sqlserver.*|jdbc:inetdae.*|jdbc:JTurbo.*|jdbc:weblogic:mssqlserver.*|jdbc:jtds:sqlserver.*" />
+
+			<property name="dbms" value="Microsoft SQL Server"/>
+			<property name="sqlDialect">
+				<bean class="net.sf.jailer.database.SQLDialect">
+					<property name="supportsMultiRowInserts" value="true"/>
+					<property name="needsValuesKeywordForDeletes" value="false"/>
+					<property name="supportsInClauseForDeletes" value="false"/>
+					<property name="upsertMode" value="DB2"/>
+				</bean>
+			</property>
 			<property name="emptyCLOBValue" value="''" />
 			<property name="emptyBLOBValue" value="0x" />
             <property name="stringLiteralEscapeSequences">
@@ -308,6 +378,16 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<!-- for MySQL -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:mysql.*" />
+
+			<property name="dbms" value="MySQL"/>
+			<property name="sqlDialect">
+				<bean class="net.sf.jailer.database.SQLDialect">
+					<property name="supportsMultiRowInserts" value="true"/>
+					<property name="needsValuesKeywordForDeletes" value="false"/>
+					<property name="supportsInClauseForDeletes" value="true"/>
+					<property name="upsertMode" value="FROM_DUAL"/>
+				</bean>
+			</property>
 			<property name="stringLiteralEscapeSequences">
 				<map>
 					<entry key="\0" value="\0"/>
@@ -346,6 +426,16 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<!-- for Derby -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:derby.*" />
+
+			<property name="dbms" value="Derby"/>
+			<property name="sqlDialect">
+				<bean class="net.sf.jailer.database.SQLDialect">
+					<property name="supportsMultiRowInserts" value="false"/>
+					<property name="needsValuesKeywordForDeletes" value="false"/>
+					<property name="supportsInClauseForDeletes" value="false"/>
+					<property name="upsertMode" value="FROM_JL_DUAL"/>
+				</bean>
+			</property>
 			<property name="statisticRenovator">
 				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
 					<constructor-arg value="script/derby/update_statistics.sql" />
@@ -356,6 +446,16 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<!-- for Sybase -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:sybase.*|jdbc:jtds:sybase.*" />
+
+			<property name="dbms" value="Sybase"/>
+			<property name="sqlDialect">
+				<bean class="net.sf.jailer.database.SQLDialect">
+					<property name="supportsMultiRowInserts" value="true"/>
+					<property name="needsValuesKeywordForDeletes" value="false"/>
+					<property name="supportsInClauseForDeletes" value="false"/>
+					<property name="upsertMode" value="DB2"/>
+				</bean>
+			</property>
 			<property name="exportBlocks">
 				<set>
 				   <value>timestamp</value>
@@ -386,6 +486,16 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
     	<!-- for SQlite -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:sqlite.*" />
+			
+			<property name="dbms" value="SQLite"/>
+			<property name="sqlDialect">
+				<bean class="net.sf.jailer.database.SQLDialect">
+					<property name="supportsMultiRowInserts" value="false"/>
+					<property name="needsValuesKeywordForDeletes" value="false"/>
+					<property name="supportsInClauseForDeletes" value="false"/>
+					<property name="upsertMode" value="FROM_JL_DUAL"/>
+				</bean>
+			</property>
 			<property name="sqlLimitSuffix" value="LIMIT %s" />
 			<property name="sessionTemporaryTableManager">
 				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
@@ -403,12 +513,32 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
     	<!-- for HSQL -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:hsqldb.*" />
+
+			<property name="dbms" value="HSQL"/>
+			<property name="sqlDialect">
+				<bean class="net.sf.jailer.database.SQLDialect">
+					<property name="supportsMultiRowInserts" value="false"/>
+					<property name="needsValuesKeywordForDeletes" value="false"/>
+					<property name="supportsInClauseForDeletes" value="false"/>
+					<property name="upsertMode" value="FROM_JL_DUAL"/>
+				</bean>
+			</property>
 			<property name="sqlLimitSuffix" value="LIMIT %s" />
 		</bean>
 
         <!-- for H2 -->
         <bean class="net.sf.jailer.Configuration">
             <property name="urlPattern" value="jdbc:h2.*" />
+
+			<property name="dbms" value="H2"/>
+			<property name="sqlDialect">
+				<bean class="net.sf.jailer.database.SQLDialect">
+					<property name="supportsMultiRowInserts" value="true"/>
+					<property name="needsValuesKeywordForDeletes" value="false"/>
+					<property name="supportsInClauseForDeletes" value="true"/>
+					<property name="upsertMode" value="FROM_DUAL"/>
+				</bean>
+			</property>
             <property name="sqlLimitSuffix" value="LIMIT %s" />
             <property name="stringLiteralEscapeSequences">
                 <map>

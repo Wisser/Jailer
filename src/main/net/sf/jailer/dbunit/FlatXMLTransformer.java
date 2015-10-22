@@ -28,7 +28,7 @@ import javax.xml.transform.sax.TransformerHandler;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
-import net.sf.jailer.database.SQLDialect;
+import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.Base64;
@@ -71,6 +71,8 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 	 */
 	private Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
 
+	private final DBMS dbms;
+
 	/**
 	 * Constructor.
 	 * 
@@ -81,9 +83,10 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 	 * @param metaData
 	 *            database meta data
 	 */
-	public FlatXMLTransformer(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData) throws SQLException {
+	public FlatXMLTransformer(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData, DBMS dbms) throws SQLException {
 		this.transformerHandler = transformerHandler;
 		this.rowElementName = qualifiedTableName(table);
+		this.dbms = dbms;
 	}
 	
 	/**
@@ -142,7 +145,7 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 				if (columnLabel[i] == null) {
 					continue;
 				}
-				String value = getValue(resultSet, i, typeCache);
+				String value = getValue(resultSet, i, typeCache, dbms);
 				if (value != null) {
 					attr.addAttribute("", "", columnLabel[i], "CDATA", value);
 				}
@@ -165,15 +168,16 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 	 *            column index
 	 * @param typeCache
 	 *            for caching types
+	 * @param dbms 
 	 * @return object
 	 */
-	private String getValue(ResultSet resultSet, int i, Map<Integer, Integer> typeCache) throws SQLException {
+	private String getValue(ResultSet resultSet, int i, Map<Integer, Integer> typeCache, DBMS dbms) throws SQLException {
 		Object object;
 		Integer type = typeCache.get(i);
 		if (type == null) {
 			try {
 				type = getMetaData(resultSet).getColumnType(i);
-				if (SQLDialect.treatDateAsTimestamp) {
+				if (dbms == DBMS.ORACLE) {
 					if (type == Types.DATE) {
 						type = Types.TIMESTAMP;
 					}
