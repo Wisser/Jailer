@@ -1,3 +1,6 @@
+4.4
+  - internal refactorings.
+
 4.3.9
   - don't write empty lob files for liquibase export. (thanks to Jason Pell)
 

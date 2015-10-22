@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2012 the original author or authors.
+ * Copyright 2007 - 2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,7 +36,6 @@ import java.util.Map;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
-import net.sf.jailer.database.SQLDialect.UPSERT_MODE;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
@@ -145,6 +144,11 @@ public class DMLTransformer extends AbstractResultSetReader {
     private Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
 
     /**
+     * SQL Dialect.
+     */
+	private final SQLDialect currentDialect;
+
+    /**
      * Constructor.
      * 
      * @param table the table to read from
@@ -157,7 +161,8 @@ public class DMLTransformer extends AbstractResultSetReader {
         this.upsertOnly = upsertOnly;
         this.table = table;
         this.scriptFileWriter = scriptFileWriter;
-        this.insertStatementBuilder = new StatementBuilder(SQLDialect.currentDialect.supportsMultiRowInserts || session.dbms == DBMS.ORACLE || session.dbms == DBMS.SQLITE? maxBodySize : 1);
+        this.currentDialect = Configuration.forDbms(session).getSqlDialect();
+        this.insertStatementBuilder = new StatementBuilder(currentDialect.supportsMultiRowInserts || session.dbms == DBMS.ORACLE || session.dbms == DBMS.SQLITE? maxBodySize : 1);
         this.quoting = new Quoting(metaData);
         this.session = session;
         tableHasIdentityColumn = false;
@@ -299,7 +304,7 @@ public class DMLTransformer extends AbstractResultSetReader {
                     whereWOAlias.append(pk.name + "=" + value);
                 }
 
-                if (SQLDialect.currentDialect.upsertMode == UPSERT_MODE.ORACLE && !tableHasLobs) {
+                if (currentDialect.upsertMode == UPSERT_MODE.MERGE && !tableHasLobs) {
                 	// MERGE INTO JL_TMP T USING (SELECT 1 c1, 2 c2 from dual) incoming 
                 	// ON (T.c1 = incoming.c1) 
                 	// WHEN MATCHED THEN UPDATE SET T.c2 = incoming.c2 
@@ -348,7 +353,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 	                	item = "Select " + namedValues + " from dual";
 	                }
                 	sb.append(insertHead, item, " UNION ALL ", terminator.toString());
-                } else if (SQLDialect.currentDialect.upsertMode == UPSERT_MODE.DB2) {
+                } else if (currentDialect.upsertMode == UPSERT_MODE.DB2) {
                 	insertHead += "Select * From (values ";
 	                StringBuffer terminator = new StringBuffer(") as Q(" + columnsWONull + ") Where not exists (Select * from " + qualifiedTableName(table) + " T "
 	                        + "Where ");
@@ -367,8 +372,8 @@ public class DMLTransformer extends AbstractResultSetReader {
 	                sb.append(insertHead, item, ", ", terminator.toString());
                 } else {
                 	String item = "Select " + valuesWONull + " From " + 
-                		(SQLDialect.currentDialect.upsertMode == UPSERT_MODE.FROM_DUAL || 
-                		 SQLDialect.currentDialect.upsertMode == UPSERT_MODE.ORACLE? // oracle table with lobs
+                		(currentDialect.upsertMode == UPSERT_MODE.FROM_DUAL || 
+                		 currentDialect.upsertMode == UPSERT_MODE.MERGE? // oracle table with lobs
                 				 "dual" : SQLDialect.DUAL_TABLE);
                 	StringBuffer terminator = new StringBuffer(" Where not exists (Select * from " + qualifiedTableName(table) + " T "
 	                        + "Where ");
@@ -386,7 +391,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 	                sb.append(insertHead, item, ", ", terminator.toString());
                 }
                 
-                if (SQLDialect.currentDialect.upsertMode != UPSERT_MODE.ORACLE || tableHasLobs) {
+                if (currentDialect.upsertMode != UPSERT_MODE.MERGE || tableHasLobs) {
 	                StringBuffer insert = new StringBuffer("");
 	                insert.append("Update " + qualifiedTableName(table) + " set ");
 	                f = true;

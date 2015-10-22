@@ -229,7 +229,9 @@ public class XmlUtil {
         	newline = "\n";
         }
 		commentHeader = (newline + commentHeader).replaceAll("\\n--", newline + " ");
+		transformerHandler.characters("\n".toCharArray(), 0, 1);
         transformerHandler.comment(commentHeader.toCharArray(), 0, commentHeader.toCharArray().length);
+		transformerHandler.characters("\n".toCharArray(), 0, 1);
 		if (rootTag.length() > 0) {
 			transformerHandler.startElement("", "", rootTag, null);
 		}

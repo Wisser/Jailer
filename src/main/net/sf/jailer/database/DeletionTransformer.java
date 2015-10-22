@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2012 the original author or authors.
+ * Copyright 2007 - 2015 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.Configuration;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
@@ -68,7 +69,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
      * For quoting of column names.
      */
     private final Quoting quoting;
-    
+
     /**
      * Constructor.
      * 
@@ -91,16 +92,22 @@ public class DeletionTransformer extends AbstractResultSetReader {
      */
     public void readCurrentRow(ResultSet resultSet) throws SQLException {
         try {
-        	if (SqlUtil.dbms == DBMS.SYBASE || (SQLDialect.currentDialect != null && !SQLDialect.currentDialect.supportsInClauseForDeletes)) {
-        		String delete = "Delete from " + qualifiedTableName(table) + " Where ";
+        	final SQLDialect currentDialect = Configuration.forDbms(session).getSqlDialect();
+            
+        	if (SqlUtil.dbms == DBMS.SYBASE || (currentDialect != null && !currentDialect.supportsInClauseForDeletes)) {
+        		String deleteHead = "Delete from " + qualifiedTableName(table) + " Where (";
                 boolean firstTime = true;
+                String item = "";
                 for (Column pkColumn: table.primaryKey.getColumns()) {
-                	delete += (firstTime? "" : " and ") + pkColumn.name + "="
+                	item += (firstTime? "" : " and ") + pkColumn.name + "="
                     		+ SqlUtil.toSql(SqlUtil.getObject(resultSet, getMetaData(resultSet), quoting.unquote(pkColumn.name), typeCache), session);
                     firstTime = false;
                 }
-                writeToScriptFile(delete + ";\n");
-        	} else {
+                if (!deleteStatementBuilder.isAppendable(deleteHead, item)) {
+	                writeToScriptFile(deleteStatementBuilder.build());
+	            }
+	            deleteStatementBuilder.append(deleteHead, item, ") or (", ");\n");
+              	} else {
 	            String deleteHead;
 	            String item;
 	            if (table.primaryKey.getColumns().size() == 1) {
@@ -117,7 +124,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
 	                }
 	                item += ")";
 	                deleteHead += ") in (";
-	                if (SQLDialect.currentDialect.needsValuesKeywordForDeletes) {
+	                if (currentDialect.needsValuesKeywordForDeletes) {
 	                	deleteHead += "values ";
 	                }
 	            }

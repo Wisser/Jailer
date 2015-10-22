@@ -304,7 +304,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		    		});
 					try {
 						session.reconnect();
-						DDLCreator.createDDL(session, TemporaryTableScope.SESSION_LOCAL);
+						DDLCreator.createDDL(dataModel, session, TemporaryTableScope.SESSION_LOCAL);
 			    		SwingUtilities.invokeLater(new Runnable() {
 							public void run() {
 					    		synchronized (ExportDialog.this) {
@@ -580,7 +580,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 0;
         sourceSchemaMappingPanel.add(jLabel18, gridBagConstraints);
 
-        jLabel19.setFont(new java.awt.Font("Dialog", 0, 12));
+        jLabel19.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         jLabel19.setText(" "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
@@ -610,7 +610,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 0;
         schemaMappingPanel.add(jLabel13, gridBagConstraints);
 
-        jLabel14.setFont(new java.awt.Font("Dialog", 0, 12));
+        jLabel14.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         jLabel14.setText(" "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
@@ -778,7 +778,7 @@ public class ExportDialog extends javax.swing.JDialog {
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
-        subjectTable.setFont(new java.awt.Font("Dialog", 0, 12));
+        subjectTable.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         subjectTable.setText("jLabel11"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -950,7 +950,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         jPanel1.add(placeholder1, gridBagConstraints);
 
-        sortedCheckBox.setText("topological sorting");
+        sortedCheckBox.setText("sort topologically");
         sortedCheckBox.setToolTipText("sort exported rows according to dependencies");
         sortedCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         sortedCheckBox.addActionListener(new java.awt.event.ActionListener() {
@@ -1004,8 +1004,8 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 6);
         jPanel2.add(jButton1, gridBagConstraints);
 
-        jLabel2.setFont(new java.awt.Font("Dialog", 0, 12));
-        jLabel2.setText(" * '.zip' extension for compressed files"); // NOI18N
+        jLabel2.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        jLabel2.setText(" *  add '.zip' suffix for compressed files"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;

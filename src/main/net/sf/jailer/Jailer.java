@@ -63,7 +63,7 @@ import net.sf.jailer.dbunit.FlatXMLTransformer;
 import net.sf.jailer.domainmodel.DomainModel;
 import net.sf.jailer.enhancer.ScriptEnhancer;
 import net.sf.jailer.entitygraph.EntityGraph;
-import net.sf.jailer.entitygraph.local.LocalEntityGraph;
+import net.sf.jailer.entitygraph.remote.RemoteEntityGraph;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.liquibase.LiquibaseXMLTransformer;
 import net.sf.jailer.modelbuilder.ModelBuilder;
@@ -240,6 +240,9 @@ public class Jailer {
 			String l = (firstLine ? "Exported Rows:     " : "    ") + line;
 			_log.info(l);
 			appendCommentHeader(l);
+			if (firstLine) {
+				appendCommentHeader("");
+			}
 			firstLine = false;
 		}
 //		if (CommandLineParser.getInstance().getScriptFormat() != ScriptFormat.XML) {
@@ -503,21 +506,22 @@ public class Jailer {
 	 */
 	private ResultSetReader createResultSetReader(OutputStreamWriter outputWriter, TransformerHandler transformerHandler, ScriptType scriptType, Table table, String filepath)
 			throws SQLException {
+		Session targetSession = entityGraph.getTargetSession();
 		if (scriptType == ScriptType.INSERT) {
 			if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
-				return new FlatXMLTransformer(table, transformerHandler, entityGraph.getSession().getMetaData());
+				return new FlatXMLTransformer(table, transformerHandler, targetSession.getMetaData(), targetSession.dbms);
 			}else if(ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat())){
-				return new LiquibaseXMLTransformer(table,transformerHandler,entityGraph.getSession().getMetaData(), entityGraph, filepath,
+				return new LiquibaseXMLTransformer(table,transformerHandler,targetSession.getMetaData(), entityGraph, filepath,
 						CommandLineParser.getInstance().xmlDatePattern,
 						CommandLineParser.getInstance().xmlTimePattern,
 						CommandLineParser.getInstance().xmlTimeStampPattern);
 			} else {
 				return new DMLTransformer(table, outputWriter, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities,
-						entityGraph.getSession().getMetaData(), entityGraph.getSession());
+						targetSession.getMetaData(), targetSession);
 			}
 		} else {
-			return new DeletionTransformer(table, outputWriter, CommandLineParser.getInstance().numberOfEntities, entityGraph.getSession().getMetaData(),
-					entityGraph.getSession());
+			return new DeletionTransformer(table, outputWriter, CommandLineParser.getInstance().numberOfEntities, targetSession.getMetaData(),
+					targetSession);
 		}
 	}
 
@@ -822,7 +826,7 @@ public class Jailer {
 
 		XmlExportTransformer reader = new XmlExportTransformer(outputStream, commentHeader.toString(), entityGraph, progress, cyclicAggregatedTables,
 				CommandLineParser.getInstance().xmlRootTag, CommandLineParser.getInstance().xmlDatePattern,
-				CommandLineParser.getInstance().xmlTimeStampPattern, entityGraph.getSession());
+				CommandLineParser.getInstance().xmlTimeStampPattern, entityGraph.getTargetSession());
 
 		for (Table table : sortedTables) {
 			entityGraph.markRoots(table);
@@ -1192,9 +1196,11 @@ public class Jailer {
 
 		ExtractionModel extractionModel = new ExtractionModel(extractionModelFileName, CommandLineParser.getInstance().getSourceSchemaMapping(), CommandLineParser.getInstance().getParameters());
 
+		_log.info(Configuration.forDbms(session).getSqlDialect());
+		
 		// TODO
-//		EntityGraph entityGraph = RemoteEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, extractionModel.dataModel.getUniversalPrimaryKey(session));
-		EntityGraph entityGraph = LocalEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session);
+		EntityGraph entityGraph = RemoteEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, extractionModel.dataModel.getUniversalPrimaryKey(session));
+//		EntityGraph entityGraph = LocalEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session);
 
 		entityGraph.setExplain(explain);
 		final Jailer jailer = new Jailer(threads);
@@ -1214,6 +1220,7 @@ public class Jailer {
 		if (CommandLineParser.getInstance().noSorting) {
 			jailer.appendCommentHeader("                   unsorted");
 		}
+		jailer.appendCommentHeader("Database:          " + Configuration.forDbms(session).dbms);
 		jailer.appendCommentHeader("Database URL:      " + dbUrl);
 		jailer.appendCommentHeader("Database User:     " + dbUser);
 		jailer.appendCommentHeader("");
@@ -1449,6 +1456,9 @@ public class Jailer {
 			_log.info(line);
 			String l = (firstLine ? "Deleted Entities: " : "     ") + line;
 			appendCommentHeader(l);
+			if (firstLine) {
+				appendCommentHeader("");
+			}
 			firstLine = false;
 		}
 		appendCommentHeader("");

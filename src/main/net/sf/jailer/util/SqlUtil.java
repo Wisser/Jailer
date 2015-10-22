@@ -241,11 +241,6 @@ public class SqlUtil {
     /**
      * <code>true</code> if 'to_timestamp' function is used for writing out timestamps instead of formatting them.
      */
-//	public static boolean useToTimestampFunction = false;
-
-//    public static boolean appendNanosToTimestamp = true;
-//    public static boolean appendMillisToTimestamp = false;
-//	public static char nanoSep = '.';
 
 	public static DBMS dbms;
     
@@ -404,7 +399,7 @@ public class SqlUtil {
 		if (type == null) {
 			try {
 				type = resultSetMetaData.getColumnType(i);
-				if (SQLDialect.treatDateAsTimestamp) {
+				if (dbms == DBMS.ORACLE) {
 					if (type == Types.DATE) {
 						type = Types.TIMESTAMP;
 					}

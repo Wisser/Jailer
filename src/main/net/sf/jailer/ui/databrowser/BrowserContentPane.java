@@ -1473,10 +1473,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 			
-			if (lastDist != null && lastDist != l.distanceFromRoot) {
-				useDistance = true;
-			}
-			lastDist = l.distanceFromRoot;
+			// disabled since 5.0 
+			
+//			if (lastDist != null && lastDist != l.distanceFromRoot) {
+//				useDistance = true;
+//			}
+//			lastDist = l.distanceFromRoot;
+			
 			if (!l.isIgnored) {
 				hasNotFalse = true;
 				if (l.condition == null || l.condition.trim().length() == 0) {
