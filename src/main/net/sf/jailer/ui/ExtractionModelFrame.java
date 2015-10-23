@@ -1529,7 +1529,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
     private void cycleViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cycleViewActionPerformed
 		cycleViewDialog.refresh();
-		cycleViewDialog.setVisible(true);
+//		cycleViewDialog.setVisible(true);
 		cycleViewDialog.toFront();
 		cycleViewDialog.findCycles();
     }//GEN-LAST:event_cycleViewActionPerformed

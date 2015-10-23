@@ -223,7 +223,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		
 		setLocation(100, 150);
 		pack();
-		setSize(Math.max(710, getWidth()), 350);
+		setSize(Math.max(710, getWidth()), 450);
 		refresh();
 		UIUtil.initPeer();
 	}

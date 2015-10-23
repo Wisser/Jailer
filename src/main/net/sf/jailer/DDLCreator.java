@@ -223,6 +223,33 @@ public class DDLCreator {
 		return false;
 	}
 
+
+	/**
+	 * Checks whether working-tables schema is present.
+	 * 
+	 * @return <code>true</code> if working-tables schema is present
+	 */
+	public static boolean isPresent(Session session) {
+		try {
+			try {
+				final boolean[] uptodate = new boolean[] { false };
+				session.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE_ + " where jkey='upk'",
+					new Session.ResultSetReader() {
+						public void readCurrentRow(ResultSet resultSet) throws SQLException {
+							uptodate[0] = true;
+						}
+						public void close() {
+						}
+					});
+				return uptodate[0];
+			} catch (Exception e) {
+				return false;
+			}
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
 	/**
 	 * Checks for conflicts of existing tables and working-tables.
 	 * 

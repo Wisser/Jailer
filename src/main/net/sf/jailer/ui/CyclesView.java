@@ -220,12 +220,12 @@ public class CyclesView extends javax.swing.JDialog {
 		});
 		setLocation(500, 150);
         setSize(600, 400);
-        setAlwaysOnTop(true);
+//        setAlwaysOnTop(true);
     }
 
     private class FindCyclesDialog extends javax.swing.JDialog {
         public FindCyclesDialog() {
-            super(extractionModelFrame, true);
+            super(extractionModelFrame, false);
             initComponents();
             UIUtil.initPeer();
         }
@@ -289,10 +289,12 @@ public class CyclesView extends javax.swing.JDialog {
 						@Override
 						public void run() {
 							findCyclesDialog.setVisible(false);
+							CyclesView.this.setVisible(true);
 							refreshTableModel(cycles);
 						}
 					});
 				} catch (CancellationException ce) {
+					CancellationHandler.reset(null);
 					SwingUtilities.invokeLater(new Runnable() {
 						@Override
 						public void run() {

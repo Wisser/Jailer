@@ -1,3 +1,7 @@
+5.0
+  - Ability to collect rows in a separate embedded database.
+    This allows it to export data from read-only databases.
+
 4.4
   - internal refactorings.
 
