@@ -241,12 +241,12 @@ public class CycleFinder {
 				for (Association association: table.associations) {
 					if (cycle.contains(association.destination)) {
 						if (association.isInsertSourceBeforeDestination()) {
-							if (!tabu.contains(new Pair<Table, Table>(association.source, association.destination))) {
+							if (!tabu.contains(new Pair<Table, Table>(association.destination, association.source))) {
 								hasOut = true;
 							}
 						}
 						if (association.isInsertDestinationBeforeSource()) {
-							if (!tabu.contains(new Pair<Table, Table>(association.destination, association.source))) {
+							if (!tabu.contains(new Pair<Table, Table>(association.source, association.destination))) {
 								hasIn = true;
 							}
 						}
