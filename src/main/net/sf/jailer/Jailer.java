@@ -704,6 +704,7 @@ public class Jailer {
 				_log.info("starting cycle analysis...");
 				ProgressListenerRegistry.getProgressListener().newStage("cycle error, analysing...", true, false);
 				String sMsg = msgTitel + "Paths:\n";
+				int i = 0;
 				for (CycleFinder.Path path: CycleFinder.findCycle(datamodel, cycle)) {
 					List<Table> pList = new ArrayList<Table>();
 					path.fillPath(pList);
@@ -717,8 +718,12 @@ public class Jailer {
 						sMsg += datamodel.getDisplayName(t);
 					}
 					sMsg += " ]\n";
+					if (++i > 30) {
+						sMsg += "...\n";
+						break;
+					}
 				}
-				msg = sMsg + "\nConsider to disable the option \"topological sorting\" in the Data Export dialog";
+				msg = sMsg + "\nConsider to disable the option \"sort topologically\" in the Data Export dialog";
 			} catch (CancellationException e) {
 				CancellationHandler.reset(null);
 			} catch (Throwable t) {
