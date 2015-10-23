@@ -265,7 +265,7 @@ public class CommandLineParser {
     @Option(name="-upsert-only",usage="generate 'upsert'-statements for all entities (in export-file)")
     public boolean upsertOnly = false;
     
-    @Option(name="-scope",usage="scope of working tables, GLOBAL, SESSION_LOCAL or TRANSACTION_LOCAL")
+    @Option(name="-scope",usage="scope of working tables, GLOBAL, SESSION_LOCAL or LOCAL_DATABASE")
     public String scope = null;
 
 	@Option(name="-datamodel", usage="folder holding the data model. Defaults to './datamodel'")

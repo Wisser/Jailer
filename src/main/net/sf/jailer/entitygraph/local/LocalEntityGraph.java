@@ -1356,7 +1356,7 @@ public class LocalEntityGraph extends EntityGraph {
      * @param explain <code>true</code> iff predecessors of each entity must be stored
      */
     public void setExplain(boolean explain) {
-        this.explain = explain;
+        this.explain = false; // explain feature is not yet implemented for local entity graph
     }
 
     /**

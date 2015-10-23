@@ -63,6 +63,7 @@ import net.sf.jailer.dbunit.FlatXMLTransformer;
 import net.sf.jailer.domainmodel.DomainModel;
 import net.sf.jailer.enhancer.ScriptEnhancer;
 import net.sf.jailer.entitygraph.EntityGraph;
+import net.sf.jailer.entitygraph.local.LocalEntityGraph;
 import net.sf.jailer.entitygraph.remote.RemoteEntityGraph;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.liquibase.LiquibaseXMLTransformer;
@@ -103,7 +104,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "4.4";
+	public static final String VERSION = "5.0";
 	
 	/**
 	 * The Jailer application name.
@@ -718,6 +719,8 @@ public class Jailer {
 					sMsg += " ]\n";
 				}
 				msg = sMsg + "\nConsider to disable the option \"topological sorting\" in the Data Export dialog";
+			} catch (CancellationException e) {
+				CancellationHandler.reset(null);
 			} catch (Throwable t) {
 				_log.warn("cycle analysis failed: " + t.getMessage());
 			}
@@ -1190,7 +1193,8 @@ public class Jailer {
 		_log.info("exporting '" + extractionModelFileName + "' to '" + scriptFile + "'");
 
 		Session session = new Session(driverClassName, dbUrl, dbUser, dbPassword, CommandLineParser.getInstance().getTemporaryTableScope(), false);
-		if (CommandLineParser.getInstance().getTemporaryTableScope() != TemporaryTableScope.GLOBAL) {
+		if (CommandLineParser.getInstance().getTemporaryTableScope() == TemporaryTableScope.SESSION_LOCAL
+		 || CommandLineParser.getInstance().getTemporaryTableScope() == TemporaryTableScope.TRANSACTION_LOCAL) {
 			DDLCreator.createDDL(session, CommandLineParser.getInstance().getTemporaryTableScope());
 		}
 
@@ -1198,9 +1202,12 @@ public class Jailer {
 
 		_log.info(Configuration.forDbms(session).getSqlDialect());
 		
-		// TODO
-		EntityGraph entityGraph = RemoteEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, extractionModel.dataModel.getUniversalPrimaryKey(session));
-//		EntityGraph entityGraph = LocalEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session);
+		EntityGraph entityGraph;
+		if (CommandLineParser.getInstance().getTemporaryTableScope() == TemporaryTableScope.LOCAL_DATABASE) {
+			entityGraph = LocalEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session);
+		} else {
+			entityGraph = RemoteEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, extractionModel.dataModel.getUniversalPrimaryKey(session));
+		}
 
 		entityGraph.setExplain(explain);
 		final Jailer jailer = new Jailer(threads);

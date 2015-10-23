@@ -146,7 +146,7 @@ public class TableEditor extends javax.swing.JDialog {
 				updateEnableState();
 			}
         });
-        setSize(600, 400);
+        setSize(600, 600);
         setLocation(parent.getLocation().x + parent.getSize().width/2 - getPreferredSize().width/2,
     			parent.getLocation().y + parent.getSize().height/2 - getPreferredSize().height/2);
         
@@ -597,19 +597,32 @@ public class TableEditor extends javax.swing.JDialog {
     }//GEN-LAST:event_updateButtonActionPerformed
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-    	try {
-    		Column column = Column.parse(this.column.getText());
-    		currentColumnLine.cells.add(currentColumnLine.length, column.toSQL(null) + (column.isIdentityColumn? " identity" : ""));
-    		currentColumnLine.length++;
-    		if (primaryKey.isSelected()) {
-        		currentTableLine.cells.add(currentTableLine.length - 2, column.toSQL(null) + (column.isIdentityColumn? " identity" : ""));
-        		currentTableLine.length++;
-    		}
-    		columnsTable.setModel(columnsTableModel());
-    		updateEnableState();
-    		needsSave = true;
-    	} catch (Exception e) {
-    		// ignore
+    	for (int i = 0; ; ++i) {
+	    	Column column = null;
+	    	if (i == 0) {
+		    	try {
+		    		column = Column.parse(this.column.getText());
+		    	} catch (Exception e) {
+		    		// ignore
+		    	}
+	    	}
+	    	if (column == null) {
+	    		column = new Column("new" + (i > 0? i : ""), "varchar", 100, -1);
+	    	}
+			String newColumn = column.toSQL(null) + (column.isIdentityColumn? " identity" : "");
+			if (currentColumnLine.cells.contains(newColumn)) {
+				continue;
+			}
+			currentColumnLine.cells.add(currentColumnLine.length, newColumn);
+			currentColumnLine.length++;
+			if (primaryKey.isSelected()) {
+	    		currentTableLine.cells.add(currentTableLine.length - 2, newColumn);
+	    		currentTableLine.length++;
+			}
+			columnsTable.setModel(columnsTableModel());
+			updateEnableState();
+			needsSave = true;
+			break;
     	}
     }//GEN-LAST:event_addButtonActionPerformed
 
@@ -826,7 +839,7 @@ public class TableEditor extends javax.swing.JDialog {
 				}
 			}
 		}
-		addButton.setEnabled(current != null && !currentExists);
+		addButton.setEnabled(true); // current != null && !currentExists);
 		updateButton.setEnabled(current != null && currentExists);
 		deleteButton.setEnabled(current != null && currentExists);
 		upButton.setEnabled(columnsTable.getSelectedRow() > 0);

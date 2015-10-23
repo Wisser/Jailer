@@ -522,7 +522,7 @@ public class ProgressTable extends JTable {
 			}
 			row = newRow;
 		} else {
-			int cd = 100000;
+			int cd = 50000;
 			int maxParentRow = 1;
 			if (parentRow != null) {
 				for (CellInfo i: parentRow) {
@@ -531,11 +531,10 @@ public class ProgressTable extends JTable {
 					}
 				}
 			}
-			List<CellInfo> bestRow = null;
+			List<CellInfo> bestRow;
 			double fitness = fitness(row, maxParentRow);
+			bestRow = new ArrayList<CellInfo>(row);
 			do {
-				double best = -1;
-				bestRow = null;
 				for (int a = row.size() - 1; a >= 0; --a) {
 					for (int b = a - 1; b >= 0; --b) {
 						CellInfo cA = row.get(a);
@@ -544,19 +543,22 @@ public class ProgressTable extends JTable {
 						row.set(b, cA);
 						double f = fitness(row, maxParentRow);
 						if (f < fitness) {
-							if (best < 0 || best > f) {
-								bestRow = new ArrayList<CellInfo>(row);
-								best = f;
-							}
+							bestRow = new ArrayList<CellInfo>(row);
+							fitness = f;
 						}
 						row.set(a, cA);
 						row.set(b, cB);
 						--cd;
+						if (cd < 0) {
+							break;
+						}
+					}
+					if (cd < 0) {
+						break;
 					}
 				}
 				if (bestRow != null) {
 					row = bestRow;
-					fitness = best;
 				}
 			} while (bestRow != null && cd > 0);
 	

@@ -31,5 +31,5 @@ Sybase (jTDS);jdbc:jtds:sybase://<server>[:<port>][/<database>];net.sourceforge.
 # Sybase (jConnect 6.0);jdbc:sybase:Tds:<HOST>:<PORT>;com.sybase.jdbc3.jdbc.SybDriver
 Derby;jdbc:derby://<HOST>:<PORT>/<DB>;org.apache.derby.jdbc.ClientDriver;lib/derbyclient.jar lib/derbytools.jar
 Derby embedded;jdbc:derby:<DB>;org.apache.derby.jdbc.EmbeddedDriver;lib/derbyclient.jar lib/derbytools.jar
-SQLite;jdbc:sqlite:<file>;org.sqlite.JDBC;lib/sqlite-jdbc-3.6.20.1.jar
+SQLite;jdbc:sqlite:<file>;org.sqlite.JDBC;lib/sqlite-jdbc-3.8.11.2.jar
 <other>;
