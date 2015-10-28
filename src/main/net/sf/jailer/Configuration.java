@@ -85,8 +85,9 @@ public class Configuration {
     private Map<Character, String> charToEscapeSequence = new HashMap<Character, String>();
     { charToEscapeSequence.put('\'', "''"); }
     private char[] keysOfCharToEscapeSequence = new char[] { '\'' };
+    private String ncharPrefix = null;
     
-    /**
+	/**
      * Set of type names for which no data must be exported.
      */
     public Set<String> exportBlocks = new HashSet<String>();
@@ -490,6 +491,20 @@ public class Configuration {
 	 */
 	public void setTimestampPattern(String timestampPattern) {
 		this.timestampPattern = timestampPattern;
+	}
+
+    /**
+	 * @return the ncharPrefix
+	 */
+	public String getNcharPrefix() {
+		return ncharPrefix;
+	}
+
+	/**
+	 * @param ncharPrefix the ncharPrefix to set
+	 */
+	public void setNcharPrefix(String ncharPrefix) {
+		this.ncharPrefix = ncharPrefix;
 	}
 
 }

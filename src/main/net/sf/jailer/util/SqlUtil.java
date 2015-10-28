@@ -303,6 +303,13 @@ public class SqlUtil {
         	}
             return "'" + content + "'";
         }
+        if (content instanceof NCharWrapper) {
+        	String prefix = Configuration.forDbms(session).getNcharPrefix();
+        	if (prefix == null) {
+        		prefix = "";
+        	}
+			return prefix + "'" + Configuration.forDbms(session).convertToStringLiteral(content.toString()) + "'";
+        }
         if (content instanceof String) {
             return "'" + Configuration.forDbms(session).convertToStringLiteral((String) content) + "'";
         }
@@ -386,6 +393,16 @@ public class SqlUtil {
         }
     }
 
+    static class NCharWrapper {
+        private final String value;
+        public NCharWrapper(String value) {
+            this.value = value;
+        }
+        public String toString() {
+            return value;
+        }
+    }
+
     /**
      * Gets object from result-set.
      * 
@@ -441,6 +458,11 @@ public class SqlUtil {
 			return resultSet.getString(i);
 		}
 		Object object = resultSet.getObject(i);
+		if (type == Types.NCHAR || type == Types.NVARCHAR) {
+			if (object instanceof String) {
+				object = new NCharWrapper((String) object);
+			}
+		}
 		if (dbms == DBMS.POSTGRESQL) {
 			if (type == TYPE_HSTORE) {
 				return new HStoreWrapper(resultSet.getString(i));

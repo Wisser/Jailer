@@ -104,7 +104,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "5.0";
+	public static final String VERSION = "5.0.1";
 	
 	/**
 	 * The Jailer application name.
@@ -543,16 +543,20 @@ public class Jailer {
 		}
 		TransformerHandler transformerHandler = null;
 		OutputStreamWriter result = null;
+		Charset charset = Charset.defaultCharset();
+		if (CommandLineParser.getInstance().uTF8) {
+			charset = Charset.forName("UTF8");
+		}
 		if (scriptType == ScriptType.INSERT && ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
-			StreamResult streamResult = new StreamResult(new OutputStreamWriter(outputStream, Charset.defaultCharset()));
-			transformerHandler = XmlUtil.createTransformerHandler(commentHeader.toString(), "dataset", streamResult);
-		}else if(scriptType == ScriptType.INSERT && ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat())){
+			StreamResult streamResult = new StreamResult(new OutputStreamWriter(outputStream, charset));
+			transformerHandler = XmlUtil.createTransformerHandler(commentHeader.toString(), "dataset", streamResult, charset);
+		} else if(scriptType == ScriptType.INSERT && ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat())){
 			StreamResult streamResult = new StreamResult(
 					new OutputStreamWriter(outputStream,
-							Charset.defaultCharset()));
+							charset));
 			
 		
-			transformerHandler = XmlUtil.createTransformerHandler(commentHeader.toString(), "", streamResult);	//root tag removed to add namespaces 
+			transformerHandler = XmlUtil.createTransformerHandler(commentHeader.toString(), "", streamResult, charset);	//root tag removed to add namespaces 
 
 			AttributesImpl attrdatabaseChangeLog = new AttributesImpl();
 			attrdatabaseChangeLog.addAttribute("", "", "xmlns:xsi", "", "http://www.w3.org/2001/XMLSchema-instance");
@@ -566,7 +570,11 @@ public class Jailer {
 			
 			transformerHandler.startElement("", "", "changeSet", attrchangeset);
 		} else {
-			result = new OutputStreamWriter(outputStream);
+			if (CommandLineParser.getInstance().uTF8) {
+				result = new OutputStreamWriter(outputStream, charset);
+			} else {
+				result = new OutputStreamWriter(outputStream);
+			}
 			result.append(commentHeader);
 			// result.append(System.getProperty("line.separator"));
 			for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
@@ -832,9 +840,14 @@ public class Jailer {
 		Set<Table> cyclicAggregatedTables = getCyclicAggregatedTables(progress);
 		_log.info("cyclic aggregated tables: " + PrintUtil.tableSetAsString(cyclicAggregatedTables));
 
+		Charset charset = Charset.defaultCharset();
+		if (CommandLineParser.getInstance().uTF8) {
+			charset = Charset.forName("UTF8");
+		}
+		
 		XmlExportTransformer reader = new XmlExportTransformer(outputStream, commentHeader.toString(), entityGraph, progress, cyclicAggregatedTables,
 				CommandLineParser.getInstance().xmlRootTag, CommandLineParser.getInstance().xmlDatePattern,
-				CommandLineParser.getInstance().xmlTimeStampPattern, entityGraph.getTargetSession());
+				CommandLineParser.getInstance().xmlTimeStampPattern, entityGraph.getTargetSession(), charset);
 
 		for (Table table : sortedTables) {
 			entityGraph.markRoots(table);

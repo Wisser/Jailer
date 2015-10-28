@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
 import javax.swing.JTextField;
 
 /**
@@ -36,7 +38,7 @@ public class Settings  {
     /**
      * The formular fields.
      */
-    private final Map<String, JTextField> fields;
+    private final Map<String, JComponent> fields;
 
     /**
      * The name of the file holding the settings.
@@ -61,7 +63,7 @@ public class Settings  {
      * @param fields the formular fields
      */
     @SuppressWarnings("unchecked")
-	public Settings(String fileName, Map<String, JTextField> fields) {
+	public Settings(String fileName, Map<String, JComponent> fields) {
         this.FILENAME = fileName;
         this.fields = fields;
         boolean isNew = true;
@@ -96,8 +98,12 @@ public class Settings  {
     public void save(String name) {
         if (name != null && name.trim().length() > 0) {
             Map<String, String> setting = new HashMap<String, String>();
-            for (Map.Entry<String, JTextField> entry: fields.entrySet()) {
-                setting.put(entry.getKey(), entry.getValue().getText());
+            for (Map.Entry<String, JComponent> entry: fields.entrySet()) {
+            	if (entry.getValue() instanceof JTextField) {
+            		setting.put(entry.getKey(), ((JTextField) entry.getValue()).getText());
+            	} else if (entry.getValue() instanceof JCheckBox) {
+            		setting.put(entry.getKey(), Boolean.valueOf(((JCheckBox) entry.getValue()).isSelected()).toString());
+            	}
             }
             settings.put(name.trim(), setting);
             currentSetting = name;
@@ -128,8 +134,12 @@ public class Settings  {
         if (name != null && name.trim().length() > 0) {
             Map<String, String> setting = settings.get(name.trim());
             if (setting != null) {
-                for (Map.Entry<String, JTextField> entry: fields.entrySet()) {
-                    entry.getValue().setText(setting.get(entry.getKey()));
+                for (Map.Entry<String, JComponent> entry: fields.entrySet()) {
+                	if (entry.getValue() instanceof JTextField) {
+                		((JTextField) entry.getValue()).setText(setting.get(entry.getKey()));
+                	} else if (entry.getValue() instanceof JCheckBox) {
+                		((JCheckBox) entry.getValue()).setSelected(Boolean.valueOf(setting.get(entry.getKey())));
+                	}
                 }
             }
         }

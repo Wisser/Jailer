@@ -17,6 +17,7 @@ package net.sf.jailer.xml;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.nio.charset.Charset;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -118,8 +119,8 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	 */
 	public XmlExportTransformer(OutputStream out, String commentHeader,
 			EntityGraph entityGraph, Set<Table> totalProgress, Set<Table> cyclicAggregatedTables,
-			String rootTag, String datePattern, String timestampPattern, Session session) throws TransformerConfigurationException, SAXException {
-		this.xmlRowWriter = new XmlRowWriter(out, commentHeader, rootTag, datePattern, timestampPattern);
+			String rootTag, String datePattern, String timestampPattern, Session session, Charset charset) throws TransformerConfigurationException, SAXException {
+		this.xmlRowWriter = new XmlRowWriter(out, commentHeader, rootTag, datePattern, timestampPattern, charset);
 		this.entityGraph = entityGraph;
 		this.totalProgress = totalProgress;
 		this.cyclicAggregatedTables = cyclicAggregatedTables;

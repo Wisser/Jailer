@@ -208,7 +208,7 @@ public class XmlUtil {
 	 * @param streamResult stream result
 	 */
 	public static TransformerHandler createTransformerHandler(String commentHeader, String rootTag,
-			StreamResult streamResult)
+			StreamResult streamResult, Charset charset)
 			throws TransformerFactoryConfigurationError,
 			TransformerConfigurationException, SAXException {
 		SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
@@ -219,7 +219,7 @@ public class XmlUtil {
         }
         TransformerHandler transformerHandler = tf.newTransformerHandler();
         Transformer serializer = transformerHandler.getTransformer();
-        serializer.setOutputProperty(OutputKeys.ENCODING, Charset.defaultCharset().name());
+        serializer.setOutputProperty(OutputKeys.ENCODING, charset.name());
         serializer.setOutputProperty(OutputKeys.METHOD, "xml");
         serializer.setOutputProperty(OutputKeys.INDENT, "yes");
         transformerHandler.setResult(streamResult);

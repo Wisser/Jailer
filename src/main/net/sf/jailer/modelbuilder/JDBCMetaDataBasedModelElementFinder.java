@@ -65,6 +65,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     private final Set<String> typesWithLength = new HashSet<String>();
     {
     	typesWithLength.add("NVARCHAR2");
+    	typesWithLength.add("NVARCHAR");
     	typesWithLength.add("NCHAR");
     	typesWithLength.add("RAW");
     }
