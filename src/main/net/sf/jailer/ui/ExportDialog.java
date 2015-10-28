@@ -32,6 +32,7 @@ import java.util.Set;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -132,11 +133,12 @@ public class ExportDialog extends javax.swing.JDialog {
         
         setModal(true);
         setLocation(100, 150);
-        Map<String, JTextField> fields = new HashMap<String, JTextField>();
+        Map<String, JComponent> fields = new HashMap<String, JComponent>();
         fields.put("insert", insert);
         fields.put("delete", delete);
         fields.put("threads", threads);
         fields.put("rowsPerThread", rowsPerThread);
+        fields.put("unicode", unicode);
         for (Map.Entry<String, JTextField> e: parameterEditor.textfieldsPerParameter.entrySet()) {
         	fields.put("$" + e.getKey(), e.getValue());
         }
@@ -240,6 +242,7 @@ public class ExportDialog extends javax.swing.JDialog {
         rowsPerThread.getDocument().addDocumentListener(dl);
         upsertCheckbox.addActionListener(al);
         explain.addActionListener(al);
+        unicode.addActionListener(al);
         sortedCheckBox.addActionListener(al);
         scopeGlobal.addActionListener(al);
         scopeSession.addActionListener(al);
@@ -393,7 +396,7 @@ public class ExportDialog extends javax.swing.JDialog {
      * @param fields to put newly created text fields into
      * @param defaults to put default values for newly created text fields into
      */
-    private void initSchemaMapping(DataModel dataModel, Map<String, JTextField> fields, Map<JTextField, String> defaults) {
+    private void initSchemaMapping(DataModel dataModel, Map<String, JComponent> fields, Map<JTextField, String> defaults) {
     	Set<String> distinctSchemas = new HashSet<String>();
     	
     	for (Table table: dataModel.getTables()) {
@@ -462,7 +465,7 @@ public class ExportDialog extends javax.swing.JDialog {
      * @param fields to put newly created text fields into
      * @param defaults to put default values for newly created text fields into
      */
-    private void initSourceSchemaMapping(DataModel dataModel, Map<String, JTextField> fields, Map<JTextField, String> defaults) {
+    private void initSourceSchemaMapping(DataModel dataModel, Map<String, JComponent> fields, Map<JTextField, String> defaults) {
     	Set<String> distinctSchemas = new HashSet<String>();
     	
     	for (Table table: dataModel.getTables()) {
@@ -590,6 +593,7 @@ public class ExportDialog extends javax.swing.JDialog {
         copyButton = new javax.swing.JButton();
         placeholder1 = new javax.swing.JLabel();
         sortedCheckBox = new javax.swing.JCheckBox();
+        unicode = new javax.swing.JCheckBox();
         jPanel7 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -871,7 +875,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jPanel8.add(scopeGlobal, gridBagConstraints);
 
         buttonGroup1.add(scopeLocal);
-        scopeLocal.setText("Local database");
+        scopeLocal.setText("local database");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 55;
@@ -1050,6 +1054,20 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 0);
         jPanel1.add(sortedCheckBox, gridBagConstraints);
 
+        unicode.setText("UTF-8 encoding"); // NOI18N
+        unicode.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        unicode.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                unicodeActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 46;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 4, 0);
+        jPanel1.add(unicode, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -1163,6 +1181,9 @@ public class ExportDialog extends javax.swing.JDialog {
 
     private void scopeSessionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeSessionActionPerformed
     }//GEN-LAST:event_scopeSessionActionPerformed
+
+    private void unicodeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_unicodeActionPerformed
+    }//GEN-LAST:event_unicodeActionPerformed
     
     public boolean isOk() {
 		return isOk;
@@ -1185,6 +1206,9 @@ public class ExportDialog extends javax.swing.JDialog {
     	}
     	if (explain.isSelected()) {
     		args.add("-explain");
+    	}
+    	if (unicode.isSelected()) {
+    		args.add("-UTF8");
     	}
     	if (upsertCheckbox.isSelected()) {
     		args.add("-upsert-only");
@@ -1376,6 +1400,7 @@ public class ExportDialog extends javax.swing.JDialog {
     public javax.swing.JPanel sourceSchemaMappingPanel;
     private javax.swing.JLabel subjectTable;
     private javax.swing.JTextField threads;
+    public javax.swing.JCheckBox unicode;
     private javax.swing.JCheckBox upsertCheckbox;
     private javax.swing.JTextField where;
     // End of variables declaration//GEN-END:variables

@@ -199,6 +199,9 @@ public class CommandLineParser {
     	return ScriptFormat.valueOf(format);
     }
     
+    @Option(name="-UTF8",usage="use UTF-8 encoding")
+    public boolean uTF8 = false;
+    
     @Option(name="-format",usage="export file format: SQL, XML, DBUNIT_FLAT_XML or LIQUIBASE_XML")
     public String format = "SQL";
     

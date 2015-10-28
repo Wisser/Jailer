@@ -91,6 +91,11 @@ public class LocalEntityGraph extends EntityGraph {
 			Object value = SqlUtil.getObject(resultSet, resultSetMetaData, i, typeCache);
 			if (!allUPK && !isUPKColumn(columnNames[i - 1])) {
 				value = SqlUtil.toSql(value, session);
+			} else if (value instanceof String && isNUPKColumn(columnNames[i - 1])) {
+				String prefix = Configuration.forDbms(remoteSession).getNcharPrefix();
+				if (prefix != null) {
+					value = prefix + value;
+				}
 			}
 			return (String) value;
 		}
@@ -119,8 +124,9 @@ public class LocalEntityGraph extends EntityGraph {
 	}
 
 	private Set<String> upkColumnNames = null;
+	private Set<String> nupkColumnNames = null;
 	
-	private boolean isUPKColumn(String columnName) {
+	private synchronized boolean isUPKColumn(String columnName) {
 		if (upkColumnNames == null) {
 			upkColumnNames = new HashSet<String>();
 			for (Column c: universalPrimaryKey.getColumns()) {
@@ -128,6 +134,19 @@ public class LocalEntityGraph extends EntityGraph {
 			}
 		}
 		return upkColumnNames.contains(columnName);
+	}
+
+	private synchronized boolean isNUPKColumn(String columnName) {
+		if (nupkColumnNames == null) {
+			nupkColumnNames = new HashSet<String>();
+			String localNPKType = getConfiguration().getLocalNPKType();
+			for (Column c: universalPrimaryKey.getColumns()) {
+				if (c.type.equalsIgnoreCase(localNPKType)) {
+					nupkColumnNames.add(c.name);
+				}
+			}
+		}
+		return nupkColumnNames.contains(columnName);
 	}
 
 	private static LocalConfiguration localConfiguration = null;
@@ -174,7 +193,11 @@ public class LocalEntityGraph extends EntityGraph {
 			public PrimaryKey createPrimaryKey(List<Column> columns) {
 				List<Column> localPK = new ArrayList<Column>(columns.size());
 				for (Column c: columns) {
-					localPK.add(new Column(c.name, getConfiguration().localPKType, getConfiguration().localPKLength, -1));
+					if (c.type.equalsIgnoreCase("nvarchar") || c.type.equalsIgnoreCase("nchar")) {
+						localPK.add(new Column(c.name, getConfiguration().localNPKType, getConfiguration().localPKLength, -1));
+					} else {
+						localPK.add(new Column(c.name, getConfiguration().localPKType, getConfiguration().localPKLength, -1));
+					}
 				}
 				return super.createPrimaryKey(localPK);
 			}

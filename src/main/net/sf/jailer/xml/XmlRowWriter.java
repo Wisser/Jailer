@@ -92,12 +92,12 @@ public class XmlRowWriter {
 	 * @param datePattern pattern for dates
 	 * @param timestampPattern pattern for time-stamps
 	 */
-	public XmlRowWriter(OutputStream out, String commentHeader, String rootTag, String datePattern, String timestampPattern) throws SAXException, TransformerConfigurationException {
+	public XmlRowWriter(OutputStream out, String commentHeader, String rootTag, String datePattern, String timestampPattern, Charset charset) throws SAXException, TransformerConfigurationException {
 		this.rootTag = rootTag;
 		this.datePattern = new SimpleDateFormat(datePattern);
 		this.timestampPattern = new SimpleDateFormat(timestampPattern);
-		StreamResult streamResult = new StreamResult(new OutputStreamWriter(out, Charset.defaultCharset()));
-		transformerHandler = XmlUtil.createTransformerHandler(commentHeader, rootTag, streamResult);
+		StreamResult streamResult = new StreamResult(new OutputStreamWriter(out, charset));
+		transformerHandler = XmlUtil.createTransformerHandler(commentHeader, rootTag, streamResult, charset);
 	}
 
 	/**

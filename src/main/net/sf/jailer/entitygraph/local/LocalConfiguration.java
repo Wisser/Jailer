@@ -23,6 +23,7 @@ package net.sf.jailer.entitygraph.local;
 public class LocalConfiguration {
 
 	public String localPKType = "VARCHAR";
+	public String localNPKType = "NVARCHAR";
 	public int localPKLength = 10000;
 
 	/**
@@ -108,4 +109,16 @@ public class LocalConfiguration {
 		this.lib = lib;
 	}
 	
+	/**
+	 * @return the localNPKType
+	 */
+	public String getLocalNPKType() {
+		return localNPKType;
+	}
+	/**
+	 * @param localNPKType the localNPKType to set
+	 */
+	public void setLocalNPKType(String localNPKType) {
+		this.localNPKType = localNPKType;
+	}
 }
