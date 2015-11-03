@@ -367,6 +367,8 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			</property>
 			<property name="identityInserts" value="true"/>
 			<property name="binaryPattern" value="0x%s" />
+			
+			<!-- unsolved problem with temp table and collations
 			<property name="sessionTemporaryTableManager">
 				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
 					<property name="dmlTableReferencePrefix" value="#" />
@@ -378,6 +380,8 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<property name="dropTablePrefix" value="DROP TABLE #" />
 				</bean>
 			</property>
+			-->
+			
 		</bean>
 		
 		<!-- for MySQL -->
