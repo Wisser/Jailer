@@ -427,6 +427,17 @@ public class SqlUtil {
 	                    type = TYPE_HSTORE;
 	                }
 	             }
+				 // workaround for JDTS bug
+				 if (type == Types.VARCHAR) {
+					 if ("nvarchar".equalsIgnoreCase(resultSetMetaData.getColumnTypeName(i))) {
+						 type = Types.NVARCHAR;
+					 }
+				 }
+				 if (type == Types.CHAR) {
+					 if ("nchar".equalsIgnoreCase(resultSetMetaData.getColumnTypeName(i))) {
+						 type = Types.NCHAR;
+					 }
+				 }
 			} catch (Exception e) {
 				type = Types.OTHER;
 			}

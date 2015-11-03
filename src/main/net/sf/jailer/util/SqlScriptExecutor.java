@@ -25,12 +25,14 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.zip.GZIPInputStream;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.database.Session;
 
+import org.apache.derby.impl.tools.ij.util;
 import org.apache.log4j.Logger;
 
 /**
@@ -93,13 +95,40 @@ public class SqlScriptExecutor {
         _log.info("reading file '" + scriptFileName + "'");
     	BufferedReader bufferedReader;
     	long fileSize = 0;
-    	if (scriptFileName.toLowerCase().endsWith(".gz") || scriptFileName.toLowerCase().endsWith(".zip")) {
-    		bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(new FileInputStream(scriptFileName))));
+    	File file = CommandLineParser.getInstance().newFile(scriptFileName);
+		FileInputStream inputStream = new FileInputStream(file);
+		
+		Charset encoding = Charset.defaultCharset();
+		
+		Charset uTF8 = null;
+		try {
+			uTF8 = Charset.forName("UTF8");
+		} catch (Exception e) {
+			// ignore
+		}
+		
+		if (uTF8 != null) {
+			// retrieve encoding
+			if (scriptFileName.toLowerCase().endsWith(".gz") || scriptFileName.toLowerCase().endsWith(".zip")) {
+				bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), uTF8), 1);
+	    	} else {
+	    		bufferedReader = new BufferedReader(new InputStreamReader(inputStream, uTF8), 1);
+	    	}
+			String line = bufferedReader.readLine();
+			if (line != null && line.contains("encoding UTF-8")) {
+				encoding = uTF8;
+			}
+			bufferedReader.close();
+		}
+		
+		inputStream = new FileInputStream(file);
+		if (scriptFileName.toLowerCase().endsWith(".gz") || scriptFileName.toLowerCase().endsWith(".zip")) {
+			bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), encoding));
     	} else {
-    		File f = CommandLineParser.getInstance().newFile(scriptFileName);
-    		fileSize = f.length();
-    		bufferedReader = new BufferedReader(new FileReader(f));
+    		fileSize = file.length();
+    		bufferedReader = new BufferedReader(new InputStreamReader(inputStream, encoding));
     	}
+		
         String line = null;
         StringBuffer currentStatement = new StringBuffer();
         long linesRead = 0;
