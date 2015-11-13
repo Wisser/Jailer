@@ -37,9 +37,12 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Reader;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.ResultSet;
@@ -374,6 +377,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private static final String ROWNUMBERALIAS = "RN";
 
 	protected static final String NULL = "null";
+
+	protected static final int MAXLOBLENGTH = 2000;
 
 	/**
 	 * And-condition-combobox model.
@@ -2208,6 +2213,32 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					cRows.add(new Row(rowId, v));
 				}
 
+				private String readClob(Clob clob) throws SQLException, IOException {
+					return readCharacterStream(clob.getCharacterStream());
+				}
+
+				private String readSQLXML(SQLXML xml) throws SQLException, IOException {
+					return readCharacterStream(xml.getCharacterStream());
+				}
+
+				private String readCharacterStream(final Reader reader)
+						throws IOException {
+					final StringBuilder sb = new StringBuilder();
+			        final BufferedReader br = new BufferedReader(reader);
+
+			        int b;
+			        while(-1 != (b = br.read()))
+			        {
+			            sb.append((char)b);
+			            if (sb.length() > MAXLOBLENGTH) {
+			            	sb.append("...");
+			            	break;
+			            }
+			        }
+			        br.close();
+			        return sb.toString();
+				}
+
 				private String readRowFromResultSet(final Set<String> pkColumnNames, ResultSet resultSet, int i, int vi, String rowId, Object[] v, Column column, Map<String, String> pkColumn)
 						throws SQLException {
 					Object value = "";
@@ -2218,25 +2249,52 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							value = null;
 						}
 						if (object instanceof Blob) {
-							value = new LobValue() {
-								public String toString() {
-									return "<Blob>";
-								}
-							};
+							try {
+								final long length = ((Blob) object).length();
+								value = new LobValue() {
+									public String toString() {
+										return "<Blob> " + length + " bytes";
+									}
+								};
+							} catch (Exception e) {
+								value = new LobValue() {
+									public String toString() {
+										return "<Blob>";
+									}
+								};
+							}
 						}
 						if (object instanceof Clob) {
-							value = new LobValue() {
-								public String toString() {
-									return "<Clob>";
-								}
-							};
+							try {
+								final String content = readClob((Clob) object);
+								value = new LobValue() {
+									public String toString() {
+										return content;
+									}
+								};
+							} catch (Exception e) {
+								value = new LobValue() {
+									public String toString() {
+										return "<Clob>";
+									}
+								};e.printStackTrace();
+							}
 						}
 						if (object instanceof SQLXML) {
-							value = new LobValue() {
-								public String toString() {
-									return "<XML>";
-								}
-							};
+							try {
+								final String content = readSQLXML((SQLXML) object);
+								value = new LobValue() {
+									public String toString() {
+										return content;
+									}
+								};
+							} catch (Exception e) {
+								value = new LobValue() {
+									public String toString() {
+										return "<XML>";
+									}
+								};e.printStackTrace();
+							}
 						}
 					} else {
 						Object o = SqlUtil.getObject(resultSet, getMetaData(resultSet), i, typeCache);

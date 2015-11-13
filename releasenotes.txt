@@ -1,3 +1,6 @@
+5.0.2
+  - Viewing contents of CLOB and XML column types 
+
 5.0.1
   - Unicode support.
 
