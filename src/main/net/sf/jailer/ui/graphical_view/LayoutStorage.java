@@ -49,10 +49,18 @@ public class LayoutStorage {
 		if (table == null) {
 			throw new RuntimeException("table is null");
 		}
-		Map<String, double[]> posMap = tablePositions.get(rootTable);
-		if (posMap == null) {
-			posMap = new HashMap<String, double[]>();
-			tablePositions.put(rootTable, posMap);
+		Map<String, double[]> posMap;
+		if (tempPosistions != null) {
+			posMap = tempPosistions;
+			if (position != null) {
+				position[2] = 1;
+			}
+		} else {
+			posMap = tablePositions.get(rootTable);
+			if (posMap == null) {
+				posMap = new HashMap<String, double[]>();
+				tablePositions.put(rootTable, posMap);
+			}
 		}
 		posMap.put(table, position);
 	}
@@ -63,11 +71,13 @@ public class LayoutStorage {
 	 * @param rootTable root table for which the layout is
 	 */
 	public static void checkSignificance(String rootTable) {
-		Map<String, double[]> layout = tablePositions.get(rootTable);
-		if (!isSignificant(rootTable, layout)) {
-			tablePositions.remove(rootTable);
-		} else {
-			globalTablePositions.put(rootTable, new HashMap<String, double[]>(layout));
+		if (tempPosistions == null) {
+			Map<String, double[]> layout = tablePositions.get(rootTable);
+			if (!isSignificant(rootTable, layout)) {
+				tablePositions.remove(rootTable);
+			} else {
+				globalTablePositions.put(rootTable, new HashMap<String, double[]>(layout));
+			}
 		}
 	}
 
@@ -134,6 +144,10 @@ public class LayoutStorage {
 	 * @return position: x, y, isFixed
 	 */
 	public static double[] getPosition(String rootTable, String table) {
+		if (tempPosistions != null) {
+			double[] pos = tempPosistions.get(table);
+			return pos;
+		}
 		if (enabled) {
 			readGlobalLayout(rootTable);
 			Map<String, double[]> posMap = tablePositions.get(rootTable);
@@ -151,6 +165,9 @@ public class LayoutStorage {
 	 * @return positions of all tables for a the root-table
 	 */
 	public static Map<String, double[]> getPositions(String root) {
+		if (tempPosistions != null) {
+			return tempPosistions;
+		}
 		if (enabled) {
 			readGlobalLayout(root);
 			return tablePositions.get(root);
@@ -164,7 +181,9 @@ public class LayoutStorage {
 	 * @param root the root table
 	 */
 	public static void removeAll(String root) {
-		tablePositions.remove(root);
+		if (tempPosistions == null) {
+			tablePositions.remove(root);
+		}
 	}
 
 	/**
@@ -173,8 +192,10 @@ public class LayoutStorage {
 	 * @param root the root table
 	 */
 	public static void removeAll() {
-		tablePositions.clear();
-		globalTablePositions.clear();
+		if (tempPosistions == null) {
+			tablePositions.clear();
+			globalTablePositions.clear();
+		}
 	}
 
 	/**
@@ -296,6 +317,11 @@ public class LayoutStorage {
 	}
 
 	/**
+	 * Stores positions temporarily (for undo/redo).
+	 */
+	private static Map<String, double[]> tempPosistions = null;
+
+	/**
 	 * Stores positions per root-table (local).
 	 */
 	private static Map<String, Map<String, double[]>> tablePositions = Collections.synchronizedMap(new HashMap<String, Map<String,double[]>>());
@@ -304,5 +330,9 @@ public class LayoutStorage {
 	 * Stores positions per root-table (global).
 	 */
 	private static Map<String, Map<String, double[]>> globalTablePositions = Collections.synchronizedMap(new HashMap<String, Map<String,double[]>>());
+
+	public static void setTempStorage(Map<String, double[]> tmp) {
+		tempPosistions = tmp;
+	}
 
 }

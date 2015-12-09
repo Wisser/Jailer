@@ -35,16 +35,19 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.PrintWriter;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Stack;
 import java.util.Vector;
 
 import javax.swing.ComboBoxModel;
@@ -262,6 +265,26 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			graphView = new GraphicalDataModelView(dataModel, this, subject, true, 648, 579);
 		}
 		graphContainer.add(graphView);
+
+		layeredPane.removeAll();
+		layeredPane.setLayer(graphContainer, 1);
+		layeredPane.setLayer(toolBarPanel, 2);
+		layeredPane.setLayout(new GridBagLayout());
+		GridBagConstraints gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        layeredPane.add(graphContainer, gridBagConstraints);
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 0;
+        gridBagConstraints.weighty = 0;
+        layeredPane.add(toolBarPanel, gridBagConstraints);
 		
 		AssociationRenderer.COLOR_ASSOCIATION = associatedWith.getForeground();
 		AssociationRenderer.COLOR_DEPENDENCY = dependsOn.getForeground();
@@ -293,7 +316,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		
 		restrictionsTable.setShowGrid(false);
 		
-		java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -484,6 +507,18 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
             	openSubjectConditionEditor.setIcon(conditionEditorIcon);
            }
         });
+		
+		leftButton.setIcon(leftIcon);
+		leftButton.setPressedIcon(leftIconP);
+		
+		leftButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				undo();
+			}
+		});
+		
+		updateLeftButton();
 	}
 
 	void setOrientation(boolean horizontal) {
@@ -637,6 +672,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jSplitPane1 = new javax.swing.JSplitPane();
+        jpanel = new javax.swing.JPanel();
+        layeredPane = new javax.swing.JLayeredPane();
+        toolBarPanel = new javax.swing.JPanel();
+        leftButton = new javax.swing.JButton();
         graphContainer = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         editorPanel = new javax.swing.JPanel();
@@ -697,8 +736,28 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jSplitPane1.setContinuousLayout(true);
         jSplitPane1.setOneTouchExpandable(true);
 
+        jpanel.setLayout(new java.awt.BorderLayout());
+
+        toolBarPanel.setBackground(new java.awt.Color(255, 255, 255));
+        toolBarPanel.setOpaque(false);
+        toolBarPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+
+        leftButton.setToolTipText("back");
+        leftButton.setContentAreaFilled(false);
+        leftButton.setIconTextGap(0);
+        leftButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+        toolBarPanel.add(leftButton);
+
+        toolBarPanel.setBounds(0, 0, 5, 5);
+        layeredPane.add(toolBarPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
+
         graphContainer.setLayout(new java.awt.BorderLayout());
-        jSplitPane1.setBottomComponent(graphContainer);
+        graphContainer.setBounds(0, 0, 0, 0);
+        layeredPane.add(graphContainer, javax.swing.JLayeredPane.DEFAULT_LAYER);
+
+        jpanel.add(layeredPane, java.awt.BorderLayout.CENTER);
+
+        jSplitPane1.setBottomComponent(jpanel);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -1192,11 +1251,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     	}
     }//GEN-LAST:event_aggregationComboboxActionPerformed
 
+    private boolean rootTableItemStateChangedSetRoot = true;
     private void rootTableItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rootTableItemStateChanged
     	if (evt.getItem() != null) {
     		if (evt.getStateChange() == ItemEvent.SELECTED) {
     			Table table = dataModel.getTableByDisplayName(evt.getItem().toString());
-    			setRoot(table);
+    			if (rootTableItemStateChangedSetRoot) {
+    				setRoot(table, true);
+    			}
     		}
     	}
     }//GEN-LAST:event_rootTableItemStateChanged
@@ -1206,11 +1268,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
      * 
      * @param table the new root
      */
-	public void setRoot(Table table) {
+	public void setRoot(Table table, boolean storeLayout) {
 		if (table != null) {
 			root = table;
 			tree.setModel(getModel());
-			resetGraphEditor(true, true, false, true);
+			resetGraphEditor(true, storeLayout, false, true);
 			if (extractionModelFrame != null && extractionModelFrame.closureBorderView != null) {
 				extractionModelFrame.closureBorderView.refresh();
 			}
@@ -2031,7 +2093,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					}
 					
 					if (i == 2) {
-						setRoot(restrictionDefinition.from);
+						setRoot(restrictionDefinition.from, true);
 						break;
 					}
 					// make association part of tree
@@ -2417,6 +2479,65 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 		return currentSubjectClosure;
 	}
+
+	
+	private static final int MAX_UNDOSTACKSIZE = 20;
+
+	private static class Layout {
+		Table root;
+		Map<String, double[]> positions = new HashMap<String,double[]>();
+	};
+	
+	private Deque<Layout> undoStack = new ArrayDeque<Layout>();
+	
+	public void captureLayout() {
+		try {
+			if (graphView != null) {
+				Layout layout = new Layout();
+				layout.root = root;
+				LayoutStorage.setTempStorage(layout.positions);
+				graphView.storeLayout();
+				
+				if (!undoStack.isEmpty()) {
+					if (undoStack.peek().positions.keySet().equals(layout.positions.keySet())) {
+						return;
+					}
+				}
+				
+				undoStack.push(layout);
+				if (undoStack.size() > MAX_UNDOSTACKSIZE) {
+					undoStack.removeLast();
+				}
+				updateLeftButton();
+			}
+		} finally {
+			LayoutStorage.setTempStorage(null);
+		}
+	}
+	
+	public void undo() {
+		if (!undoStack.isEmpty()) {
+			Layout layout = undoStack.pop();
+			recaptureLayout(layout);
+		}
+		updateLeftButton();
+	}
+
+	private void updateLeftButton() {
+		leftButton.setVisible(!undoStack.isEmpty());
+	}
+	
+	private void recaptureLayout(final Layout layout) {
+		try {
+			LayoutStorage.setTempStorage(layout.positions);
+			setRoot(layout.root, false);
+			rootTableItemStateChangedSetRoot = false;
+			rootTable.setSelectedItem(dataModel.getDisplayName(layout.root));
+		} finally {
+			rootTableItemStateChangedSetRoot = true;
+			LayoutStorage.setTempStorage(null);
+		}
+	}
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox aggregationCombobox;
@@ -2455,6 +2576,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JPanel jpanel;
+    private javax.swing.JLayeredPane layeredPane;
+    private javax.swing.JButton leftButton;
     private javax.swing.JPanel legende;
     private javax.swing.JPanel legende1;
     private javax.swing.JPanel legende2;
@@ -2469,6 +2593,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JComboBox rootTable;
     private javax.swing.JComboBox subjectTable;
     private javax.swing.JTextField tagField;
+    private javax.swing.JPanel toolBarPanel;
     private javax.swing.JTree tree;
     private javax.swing.JPanel xmlMappingPanel;
     private javax.swing.JEditorPane xmlSketch;
@@ -2478,6 +2603,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private Icon dropDownIcon;
     private Icon conditionEditorIcon;
     private Icon conditionEditorSelectedIcon;
+    private Icon leftIcon;
+    private Icon leftIconP;
 	{
 		String dir = "/net/sf/jailer/resource";
 		
@@ -2494,6 +2621,16 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 		try {
 			conditionEditorSelectedIcon = new ImageIcon(getClass().getResource(dir + "/edit_s.png"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			leftIconP = new ImageIcon(getClass().getResource(dir + "/leftp.png"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			leftIcon = new ImageIcon(getClass().getResource(dir + "/left.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
