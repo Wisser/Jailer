@@ -371,6 +371,7 @@ public class GraphicalDataModelView extends JPanel {
 	            	}
 	            	Table table = model.getTable(item.getString("label"));
 	            	if (table != null && e.getClickCount() > 1) {
+            			GraphicalDataModelView.this.modelEditor.captureLayout();
 	            		if (expandedTables.contains(table)) {
 	            			collapseTable(theGraph, table, false);
 	            			display.pan(1, 0);
@@ -589,7 +590,8 @@ public class GraphicalDataModelView extends JPanel {
         layout.setVisualization(visualization);
         animate.add(layout);
         layout.run();
-        Action a = new Action() {
+        final Map<String, double[]> posMap = LayoutStorage.getPositions(root.getName());
+    	Action a = new Action() {
         	boolean done = false;
 			@Override
 			public void run(double frac) {
@@ -602,7 +604,7 @@ public class GraphicalDataModelView extends JPanel {
 					            if (item.canGetString("label") ) {
 					            	String tableName;
 			                		tableName = item.getString("label");
-					            	double[] pos = LayoutStorage.getPosition(root.getName(), tableName);
+					            	double[] pos = posMap.get(tableName);
 					            	if (pos != null) {
 					            		item.setX(pos[0]);
 					            		item.setY(pos[1]);
@@ -708,6 +710,7 @@ public class GraphicalDataModelView extends JPanel {
 				}
 				mi.addActionListener(new ActionListener () {
 					public void actionPerformed(ActionEvent e) {
+						GraphicalDataModelView.this.modelEditor.captureLayout();
 						GraphicalDataModelView.this.modelEditor.select(a);
 					}
 				});
@@ -735,6 +738,7 @@ public class GraphicalDataModelView extends JPanel {
 		JMenuItem selectAsRoot = new JMenuItem("Focus " + table.getName());
 		selectAsRoot.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
+				GraphicalDataModelView.this.modelEditor.captureLayout();
 				modelEditor.setRootSelection(table);
 			}
 		});
@@ -747,6 +751,7 @@ public class GraphicalDataModelView extends JPanel {
 		JMenuItem showReachability = new JMenuItem("Show Reachability");
 		showReachability.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
+				GraphicalDataModelView.this.modelEditor.captureLayout();
 		        modelEditor.showReachability(table);
 			}
 		});
@@ -759,6 +764,7 @@ public class GraphicalDataModelView extends JPanel {
 		JMenuItem hide = new JMenuItem("Hide " + table.getName());
 		hide.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
+				GraphicalDataModelView.this.modelEditor.captureLayout();
 				hideTable(table);
 				display.invalidate();
 			}
@@ -1568,6 +1574,8 @@ public class GraphicalDataModelView extends JPanel {
 	 * @param reachableTable if not <code>null</code>, expand only tables from which this table is reachable
 	 */
 	public void expandAll(boolean expandOnlyVisibleTables, Table reachableTable) {
+		modelEditor.captureLayout();
+		
 		Set<Table> onPath = new HashSet<Table>();
 		if (reachableTable != null) {
 			List<Table> toExpand = new ArrayList<Table>();
@@ -1676,8 +1684,12 @@ public class GraphicalDataModelView extends JPanel {
 				}
 			}
 			if (askNow) {
-				if (JOptionPane.NO_OPTION != JOptionPane.showConfirmDialog(modelEditor.extractionModelFrame, "More than " + EXPAND_LIMIT + " visible tables!\nStop expansion?", "", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE)) {
+				int option = JOptionPane.showConfirmDialog(modelEditor.extractionModelFrame, "More than " + EXPAND_LIMIT + " visible tables!\nStop expansion?", "", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
+				if (JOptionPane.NO_OPTION != option) {
 					stop = true;
+					if (JOptionPane.CANCEL_OPTION == option) {
+						GraphicalDataModelView.this.modelEditor.undo();
+					}
 				}
 			} else {
 				stop = true;

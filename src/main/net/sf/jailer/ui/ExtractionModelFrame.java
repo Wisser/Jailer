@@ -1346,6 +1346,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
     private void collapseAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_collapseAllActionPerformed
         try {
+        	extractionModelEditor.captureLayout();
 	    	LayoutStorage.enabled = false;
         	extractionModelEditor.refresh(false, true, false, true);
 	        extractionModelEditor.resetGraphEditor(true, false, true, true);
@@ -1355,6 +1356,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_collapseAllActionPerformed
 
     private void refreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshActionPerformed
+    	extractionModelEditor.captureLayout();
     	extractionModelEditor.refresh(false, true, false, false);
     }//GEN-LAST:event_refreshActionPerformed
 

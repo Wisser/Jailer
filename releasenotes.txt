@@ -1,3 +1,6 @@
+5.1
+  - Better UI and Improved navigation.
+
 5.0.2
   - Viewing contents of CLOB and XML column types 
 
