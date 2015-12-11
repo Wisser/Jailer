@@ -2503,9 +2503,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	
 	private Deque<Layout> undoStack = new ArrayDeque<Layout>();
 	
-	public void captureLayout() {
+	private int captureLevel = 0;
+	public synchronized void captureLayout() {
 		try {
-			if (graphView != null) {
+			if (graphView != null && captureLevel == 0) {
 				Layout layout = new Layout();
 				layout.root = root;
 //				layout.bounds = graphView.getDisplayBounds();
@@ -2526,10 +2527,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 		} finally {
 			LayoutStorage.setTempStorage(null);
+			++captureLevel;
 		}
 	}
 	
-	public void checkLayoutStack() {
+	public synchronized void checkLayoutStack() {
+		if (captureLevel > 0) {
+			--captureLevel;
+		}
 		if (!undoStack.isEmpty()) {
 			if (undoStack.peek().positions.keySet().equals(graphView.visibleItems())) {
 				undoStack.pop();

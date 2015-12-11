@@ -375,21 +375,24 @@ public class GraphicalDataModelView extends JPanel {
 	            	Table table = model.getTable(item.getString("label"));
 	            	if (table != null && e.getClickCount() > 1) {
             			GraphicalDataModelView.this.modelEditor.captureLayout();
-	            		if (expandedTables.contains(table)) {
-	            			collapseTable(theGraph, table, false);
-	            			display.pan(1, 0);
-	            			display.pan(0, 1);
-	            			Association sa = selectedAssociation;
-		            		setSelection(null);
-		            		setSelection(sa);
-	            			visualization.invalidateAll();
-	            			display.invalidate();
-	            		} else {
-		    	            expandTable(theGraph, table);
-	            			visualization.invalidateAll();
-	            			display.invalidate();
-	            		}
-	    				GraphicalDataModelView.this.modelEditor.checkLayoutStack();
+            			try {
+		            		if (expandedTables.contains(table)) {
+		            			collapseTable(theGraph, table, false);
+		            			display.pan(1, 0);
+		            			display.pan(0, 1);
+		            			Association sa = selectedAssociation;
+			            		setSelection(null);
+			            		setSelection(sa);
+		            			visualization.invalidateAll();
+		            			display.invalidate();
+		            		} else {
+			    	            expandTable(theGraph, table);
+		            			visualization.invalidateAll();
+		            			display.invalidate();
+		            		}
+        				} finally {
+        					GraphicalDataModelView.this.modelEditor.checkLayoutStack();
+        				}
 		            }
 				}
             	super.itemPressed(item, e);
@@ -742,8 +745,11 @@ public class GraphicalDataModelView extends JPanel {
 		selectAsRoot.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				GraphicalDataModelView.this.modelEditor.captureLayout();
-				modelEditor.setRootSelection(table);
-				GraphicalDataModelView.this.modelEditor.checkLayoutStack();
+				try {
+					modelEditor.setRootSelection(table);
+				} finally {
+					GraphicalDataModelView.this.modelEditor.checkLayoutStack();
+				}
 			}
 		});
 		JMenuItem dataBrowser = new JMenuItem("Browse Data");
@@ -756,8 +762,11 @@ public class GraphicalDataModelView extends JPanel {
 		showReachability.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				GraphicalDataModelView.this.modelEditor.captureLayout();
-		        modelEditor.showReachability(table);
-				GraphicalDataModelView.this.modelEditor.checkLayoutStack();
+				try {
+					modelEditor.showReachability(table);
+				} finally {
+					GraphicalDataModelView.this.modelEditor.checkLayoutStack();
+				}
 			}
 		});
 		JMenuItem zoomToFit = new JMenuItem("Zoom To Fit");
@@ -1581,127 +1590,129 @@ public class GraphicalDataModelView extends JPanel {
 	 */
 	public void expandAll(boolean expandOnlyVisibleTables, Table reachableTable) {
 		modelEditor.captureLayout();
-		
-		Set<Table> onPath = new HashSet<Table>();
-		if (reachableTable != null) {
-			List<Table> toExpand = new ArrayList<Table>();
-			toExpand.addAll(tableNodes.keySet());
-			onPath.addAll(tableNodes.keySet());
-			while (!toExpand.isEmpty()) {
-				Table table = toExpand.remove(0);
-				for (Association association: table.associations) {
-					if (!association.isIgnored() && !onPath.contains(association.destination)) {
-						if (association.destination.closure(true).contains(reachableTable)) {
-							onPath.add(association.destination);
-							toExpand.add(association.destination);
-						}
-					}
-				}
-			}
-			for (;;) {
-				Set<Table> toRemove = new HashSet<Table>();
-				Set<Table> refTables = new HashSet<Table>();
-				Set<Table> toIgnore = new HashSet<Table>();
-				for (Table initTable: tableNodes.keySet()) {
-					toIgnore.addAll(initTable.closure(true));
-				}
-				toIgnore.removeAll(onPath);
-				for (Table table: onPath) {
-					/* if (!table.equals(reachableTable) && !tableNodes.containsKey(table)) */ {
-						refTables.clear();
-						for (Association association: table.associations) {
-							if (!association.destination.equals(table) && onPath.contains(association.destination)) {
-								refTables.add(association.destination);
-							}
-						}
-						boolean isIn = toIgnore.contains(table);
-						toIgnore.add(table);
-						for (Table toCheck: refTables) {
-							if (!toCheck.equals(reachableTable) && !tableNodes.containsKey(toCheck)) {
-								boolean reach = toCheck.closure(toIgnore, true).contains(reachableTable);
-								if (!reach) {
-									model.transpose();
-									for (Table initTable: tableNodes.keySet()) {
-										reach = toCheck.closure(toIgnore, true).contains(initTable);
-										if (reach) {
-											break;
-										}
-									}
-									model.transpose();
-								}
-								if (!reach) {
-									toRemove.add(toCheck);
-								}
-							}
-						}
-						if (!isIn) {
-							toIgnore.remove(table);
-						}
-					}
-				}
-				if (!toRemove.isEmpty()) {
-					onPath.removeAll(toRemove);
-					toIgnore.addAll(toRemove);
-					toRemove.clear();
-				} else {
-					break;
-				}
-			}
-		}
-		
-		boolean stop = false;
-		List<Table> toExpand = new ArrayList<Table>();
-		toExpand.addAll(tableNodes.keySet());
-		while (!stop) {
-			boolean askNow = false;
-			synchronized (visualization) {
-				boolean ask = tableNodes.size() <= EXPAND_LIMIT;
+		try {
+			Set<Table> onPath = new HashSet<Table>();
+			if (reachableTable != null) {
+				List<Table> toExpand = new ArrayList<Table>();
+				toExpand.addAll(tableNodes.keySet());
+				onPath.addAll(tableNodes.keySet());
 				while (!toExpand.isEmpty()) {
 					Table table = toExpand.remove(0);
-					if (reachableTable != null) {
-						for (Association association: table.associations) {
-							if (onPath.contains(association.destination) && !tableNodes.containsKey(association.destination)) {
-							List<Table> tables = expandTable(theGraph, table, association);
-							if (!expandOnlyVisibleTables) {
-								toExpand.addAll(tables);
+					for (Association association: table.associations) {
+						if (!association.isIgnored() && !onPath.contains(association.destination)) {
+							if (association.destination.closure(true).contains(reachableTable)) {
+								onPath.add(association.destination);
+								toExpand.add(association.destination);
 							}
 						}
 					}
-//						for (Association association: table.associations) {
-//							if (!association.isIgnored() && !tableNodes.containsKey(association.destination)) {
-//								if (association.destination.closure(true).contains(reachableTable)) {
-//									List<Table> tables = expandTable(theGraph, table, association);
-//									if (!expandOnlyVisibleTables) {
-//										toExpand.addAll(tables);
-//									}
-//								}
-//							}
-//						}
-					} else {
-						List<Table> tables = expandTable(theGraph, table);
-						if (!expandOnlyVisibleTables) {
-							toExpand.addAll(tables);
+				}
+				for (;;) {
+					Set<Table> toRemove = new HashSet<Table>();
+					Set<Table> refTables = new HashSet<Table>();
+					Set<Table> toIgnore = new HashSet<Table>();
+					for (Table initTable: tableNodes.keySet()) {
+						toIgnore.addAll(initTable.closure(true));
+					}
+					toIgnore.removeAll(onPath);
+					for (Table table: onPath) {
+						/* if (!table.equals(reachableTable) && !tableNodes.containsKey(table)) */ {
+							refTables.clear();
+							for (Association association: table.associations) {
+								if (!association.destination.equals(table) && onPath.contains(association.destination)) {
+									refTables.add(association.destination);
+								}
+							}
+							boolean isIn = toIgnore.contains(table);
+							toIgnore.add(table);
+							for (Table toCheck: refTables) {
+								if (!toCheck.equals(reachableTable) && !tableNodes.containsKey(toCheck)) {
+									boolean reach = toCheck.closure(toIgnore, true).contains(reachableTable);
+									if (!reach) {
+										model.transpose();
+										for (Table initTable: tableNodes.keySet()) {
+											reach = toCheck.closure(toIgnore, true).contains(initTable);
+											if (reach) {
+												break;
+											}
+										}
+										model.transpose();
+									}
+									if (!reach) {
+										toRemove.add(toCheck);
+									}
+								}
+							}
+							if (!isIn) {
+								toIgnore.remove(table);
+							}
 						}
 					}
-					if (ask && tableNodes.size() > EXPAND_LIMIT) {
-						askNow = true;
+					if (!toRemove.isEmpty()) {
+						onPath.removeAll(toRemove);
+						toIgnore.addAll(toRemove);
+						toRemove.clear();
+					} else {
 						break;
 					}
 				}
 			}
-			if (askNow) {
-				int option = JOptionPane.showConfirmDialog(modelEditor.extractionModelFrame, "More than " + EXPAND_LIMIT + " visible tables!\nStop expansion?", "", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
-				if (JOptionPane.NO_OPTION != option) {
-					stop = true;
-					if (JOptionPane.CANCEL_OPTION == option) {
-						GraphicalDataModelView.this.modelEditor.undo();
+			
+			boolean stop = false;
+			List<Table> toExpand = new ArrayList<Table>();
+			toExpand.addAll(tableNodes.keySet());
+			while (!stop) {
+				boolean askNow = false;
+				synchronized (visualization) {
+					boolean ask = tableNodes.size() <= EXPAND_LIMIT;
+					while (!toExpand.isEmpty()) {
+						Table table = toExpand.remove(0);
+						if (reachableTable != null) {
+							for (Association association: table.associations) {
+								if (onPath.contains(association.destination) && !tableNodes.containsKey(association.destination)) {
+								List<Table> tables = expandTable(theGraph, table, association);
+								if (!expandOnlyVisibleTables) {
+									toExpand.addAll(tables);
+								}
+							}
+						}
+	//						for (Association association: table.associations) {
+	//							if (!association.isIgnored() && !tableNodes.containsKey(association.destination)) {
+	//								if (association.destination.closure(true).contains(reachableTable)) {
+	//									List<Table> tables = expandTable(theGraph, table, association);
+	//									if (!expandOnlyVisibleTables) {
+	//										toExpand.addAll(tables);
+	//									}
+	//								}
+	//							}
+	//						}
+						} else {
+							List<Table> tables = expandTable(theGraph, table);
+							if (!expandOnlyVisibleTables) {
+								toExpand.addAll(tables);
+							}
+						}
+						if (ask && tableNodes.size() > EXPAND_LIMIT) {
+							askNow = true;
+							break;
+						}
 					}
 				}
-			} else {
-				stop = true;
+				if (askNow) {
+					int option = JOptionPane.showConfirmDialog(modelEditor.extractionModelFrame, "More than " + EXPAND_LIMIT + " visible tables!\nStop expansion?", "", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
+					if (JOptionPane.NO_OPTION != option) {
+						stop = true;
+						if (JOptionPane.CANCEL_OPTION == option) {
+							GraphicalDataModelView.this.modelEditor.undo();
+						}
+					}
+				} else {
+					stop = true;
+				}
 			}
+		} finally {
+			GraphicalDataModelView.this.modelEditor.checkLayoutStack();
 		}
-		GraphicalDataModelView.this.modelEditor.checkLayoutStack();
 	}
 	
 	/**
