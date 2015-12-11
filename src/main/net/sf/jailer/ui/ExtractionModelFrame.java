@@ -1350,6 +1350,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	    	LayoutStorage.enabled = false;
         	extractionModelEditor.refresh(false, true, false, true);
 	        extractionModelEditor.resetGraphEditor(true, false, true, true);
+	    	extractionModelEditor.checkLayoutStack();
         } finally {
 	    	LayoutStorage.enabled = true;
         }
@@ -1358,6 +1359,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private void refreshActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshActionPerformed
     	extractionModelEditor.captureLayout();
     	extractionModelEditor.refresh(false, true, false, false);
+    	extractionModelEditor.checkLayoutStack();
     }//GEN-LAST:event_refreshActionPerformed
 
     private void saveAsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveAsActionPerformed
