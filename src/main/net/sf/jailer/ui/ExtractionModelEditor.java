@@ -33,6 +33,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.geom.Rectangle2D;
 import java.io.File;
 import java.io.PrintWriter;
 import java.util.ArrayDeque;
@@ -1358,6 +1359,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private void treeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_treeValueChanged
     	suppressRestrictionSelection = true;
     	try {
+    		captureLayout();
 	    	if (evt.getNewLeadSelectionPath() != null) {
 	    		DefaultMutableTreeNode node = ((DefaultMutableTreeNode) evt.getNewLeadSelectionPath().getLastPathComponent());
 				Object selection = node.getUserObject();
@@ -1372,6 +1374,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	    	}
     	} finally {
     		suppressRestrictionSelection = false;
+    		checkLayoutStack();
     	}
     	if (evt.getPath() != null && evt.getPath().getLastPathComponent() != null) {
     		Object node = evt.getPath().getLastPathComponent();
@@ -2018,48 +2021,53 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
      * @return <code>true</code> if table was selected
      */
 	public boolean select(Table table) {
-		if (root != null) {
-			if (root.equals(table)) {
-				Object r = tree.getModel().getRoot();
-				if (r != null && r instanceof DefaultMutableTreeNode) {
-					TreePath treePath = new TreePath(((DefaultMutableTreeNode) r).getPath());
-					tree.setSelectionPath(treePath);
-					tree.scrollPathToVisible(treePath);
-					return true;
-				}
-			}
-		}
-		for (DefaultMutableTreeNode node: treeNodes) {
-			if (node.getChildCount() > 0) {
-				Table t = null;
-				Association a = null;
-				if (node.getUserObject() instanceof Association) {
-					a = (Association) node.getUserObject();
-					t = a.destination;
-				}
-				if (t != null && a != null && table.equals(t)) {
-					select(a);
-					TreePath treePath = new TreePath(node.getPath());
-					tree.expandPath(treePath);
-					for (int i = 0; i < node.getChildCount(); ++i) {
-						DefaultMutableTreeNode c = (DefaultMutableTreeNode) node.getChildAt(i);
-						tree.collapsePath(new TreePath(c.getPath()));
+		try {
+			captureLayout();
+			if (root != null) {
+				if (root.equals(table)) {
+					Object r = tree.getModel().getRoot();
+					if (r != null && r instanceof DefaultMutableTreeNode) {
+						TreePath treePath = new TreePath(((DefaultMutableTreeNode) r).getPath());
+						tree.setSelectionPath(treePath);
+						tree.scrollPathToVisible(treePath);
+						return true;
 					}
-					tree.scrollPathToVisible(treePath);
-					return true;
 				}
 			}
-		}
-		Association first = null;
-		for (Association a: table.associations) {
-			if (first == null || dataModel.getDisplayName(first.destination).compareTo(dataModel.getDisplayName(a.destination)) < 0) {
-				first = a;
+			for (DefaultMutableTreeNode node: treeNodes) {
+				if (node.getChildCount() > 0) {
+					Table t = null;
+					Association a = null;
+					if (node.getUserObject() instanceof Association) {
+						a = (Association) node.getUserObject();
+						t = a.destination;
+					}
+					if (t != null && a != null && table.equals(t)) {
+						select(a);
+						TreePath treePath = new TreePath(node.getPath());
+						tree.expandPath(treePath);
+						for (int i = 0; i < node.getChildCount(); ++i) {
+							DefaultMutableTreeNode c = (DefaultMutableTreeNode) node.getChildAt(i);
+							tree.collapsePath(new TreePath(c.getPath()));
+						}
+						tree.scrollPathToVisible(treePath);
+						return true;
+					}
+				}
 			}
+			Association first = null;
+			for (Association a: table.associations) {
+				if (first == null || dataModel.getDisplayName(first.destination).compareTo(dataModel.getDisplayName(a.destination)) < 0) {
+					first = a;
+				}
+			}
+			if (first != null) {
+				return select(first);
+			}
+			return false;
+		} finally {
+			checkLayoutStack();
 		}
-		if (first != null) {
-			return select(first);
-		}
-		return false;
 	}
 	
     /**
@@ -2071,6 +2079,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		if (!suppressRestrictionSelection) {
 			suppressRestrictionSelection = true;
 			try {
+				captureLayout();
 				DefaultMutableTreeNode toSelect = null;
 				for (int i = 0; i < 3; ++i) {
 					for (DefaultMutableTreeNode node: treeNodes) {
@@ -2110,6 +2119,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				}
 			} finally {
 				suppressRestrictionSelection = false;
+				checkLayoutStack();
 			}
 		}
 	}
@@ -2122,6 +2132,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
      */
 	public boolean select(Association association) {
 		if (!suppressRestrictionSelection) {
+			captureLayout();
 			suppressRestrictionSelection = true;
 			try {
 				DefaultMutableTreeNode toSelect = null;
@@ -2146,6 +2157,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				}
 			} finally {
 				suppressRestrictionSelection = false;
+				checkLayoutStack();
 			}
 		}
 		return false;
@@ -2485,6 +2497,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
 	private static class Layout {
 		Table root;
+		Rectangle2D bounds;
 		Map<String, double[]> positions = new HashMap<String,double[]>();
 	};
 	
@@ -2495,6 +2508,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			if (graphView != null) {
 				Layout layout = new Layout();
 				layout.root = root;
+//				layout.bounds = graphView.getDisplayBounds();
 				LayoutStorage.setTempStorage(layout.positions);
 				graphView.storeLayout();
 				
@@ -2512,6 +2526,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 		} finally {
 			LayoutStorage.setTempStorage(null);
+		}
+	}
+	
+	public void checkLayoutStack() {
+		if (!undoStack.isEmpty()) {
+			if (undoStack.peek().positions.keySet().equals(graphView.visibleItems())) {
+				undoStack.pop();
+				updateLeftButton();
+			}
 		}
 	}
 	
@@ -2533,6 +2556,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			setRoot(layout.root, false);
 			rootTableItemStateChangedSetRoot = false;
 			rootTable.setSelectedItem(dataModel.getDisplayName(layout.root));
+//			graphView.setDisplayBounds(layout.bounds);
 		} finally {
 			rootTableItemStateChangedSetRoot = true;
 			LayoutStorage.setTempStorage(null);

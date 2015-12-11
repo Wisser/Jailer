@@ -19,6 +19,7 @@ import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.Shape;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -46,6 +47,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
+
+import com.sun.crypto.provider.DESParameters;
 
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.datamodel.Association;
@@ -386,6 +389,7 @@ public class GraphicalDataModelView extends JPanel {
 	            			visualization.invalidateAll();
 	            			display.invalidate();
 	            		}
+	    				GraphicalDataModelView.this.modelEditor.checkLayoutStack();
 		            }
 				}
             	super.itemPressed(item, e);
@@ -710,7 +714,6 @@ public class GraphicalDataModelView extends JPanel {
 				}
 				mi.addActionListener(new ActionListener () {
 					public void actionPerformed(ActionEvent e) {
-						GraphicalDataModelView.this.modelEditor.captureLayout();
 						GraphicalDataModelView.this.modelEditor.select(a);
 					}
 				});
@@ -740,6 +743,7 @@ public class GraphicalDataModelView extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				GraphicalDataModelView.this.modelEditor.captureLayout();
 				modelEditor.setRootSelection(table);
+				GraphicalDataModelView.this.modelEditor.checkLayoutStack();
 			}
 		});
 		JMenuItem dataBrowser = new JMenuItem("Browse Data");
@@ -753,6 +757,7 @@ public class GraphicalDataModelView extends JPanel {
 			public void actionPerformed(ActionEvent e) {
 				GraphicalDataModelView.this.modelEditor.captureLayout();
 		        modelEditor.showReachability(table);
+				GraphicalDataModelView.this.modelEditor.checkLayoutStack();
 			}
 		});
 		JMenuItem zoomToFit = new JMenuItem("Zoom To Fit");
@@ -767,6 +772,7 @@ public class GraphicalDataModelView extends JPanel {
 				GraphicalDataModelView.this.modelEditor.captureLayout();
 				hideTable(table);
 				display.invalidate();
+				GraphicalDataModelView.this.modelEditor.checkLayoutStack();
 			}
 		});
 		if (table.equals(root)) {
@@ -1695,6 +1701,7 @@ public class GraphicalDataModelView extends JPanel {
 				stop = true;
 			}
 		}
+		GraphicalDataModelView.this.modelEditor.checkLayoutStack();
 	}
 	
 	/**
@@ -1829,5 +1836,24 @@ public class GraphicalDataModelView extends JPanel {
 		modelEditor.onApply(false);
 	}
 
+	public Set<String> visibleItems() {
+		Set<String> result = new HashSet<String>();
+        synchronized (visualization) {
+	        Iterator items = visualization.items(BooleanLiteral.TRUE);
+	        while (items.hasNext()) {
+	            VisualItem item = (VisualItem)items.next();
+	            if (item.canGetString("label") ) {
+	            	String tableName;
+	            	tableName = item.getString("label");
+	            	if (tableName != null) {
+	            		result.add(tableName);
+	            	}
+	            }
+	        }
+        }
+        return result;
+	}
+
 	private static final long serialVersionUID = -5938101712807557555L;
+
 }
