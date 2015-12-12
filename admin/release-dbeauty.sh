@@ -16,6 +16,7 @@ rm -rf doc/htdocs
 find -iname ".svn" -exec rm -rf '{}' \;
 find -iname ".cvs*" -exec rm -rf '{}' \;
 ant package
+chmod a+x *.sh
 rm -rf admin
 rm -rf doc
 rm -rf out
