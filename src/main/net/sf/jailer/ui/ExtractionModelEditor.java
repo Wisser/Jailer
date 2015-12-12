@@ -2535,10 +2535,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		if (captureLevel > 0) {
 			--captureLevel;
 		}
-		if (!undoStack.isEmpty()) {
-			if (undoStack.peek().positions.keySet().equals(graphView.visibleItems())) {
-				undoStack.pop();
-				updateLeftButton();
+		if (captureLevel == 0) {
+			if (!undoStack.isEmpty()) {
+				if (undoStack.peek().positions.keySet().equals(graphView.visibleItems())) {
+					undoStack.pop();
+					updateLeftButton();
+				}
 			}
 		}
 	}
