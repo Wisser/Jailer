@@ -2,7 +2,7 @@
 
 instdir=`dirname $0`
 cd $instdir
-
+ 
 LIB=lib
 CP=.:out:out/classes:out/jailer.jar
 
