@@ -48,7 +48,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Stack;
 import java.util.Vector;
 
 import javax.swing.ComboBoxModel;
@@ -2526,7 +2525,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				updateLeftButton();
 			}
 		} finally {
-			LayoutStorage.setTempStorage(null);
+			if (captureLevel == 0) {
+				LayoutStorage.setTempStorage(null);
+			}
 			++captureLevel;
 		}
 	}
@@ -2548,7 +2549,29 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	public void undo() {
 		if (!undoStack.isEmpty()) {
 			Layout layout = undoStack.pop();
-			recaptureLayout(layout);
+			try {
+				++captureLevel;
+				LayoutStorage.setTempStorage(layout.positions);
+				Table table = layout.root;
+				if (table != null) {
+					root = table;
+					tree.setModel(getModel());
+					resetGraphEditor(true, false, false, false);
+					if (extractionModelFrame != null && extractionModelFrame.closureBorderView != null) {
+						extractionModelFrame.closureBorderView.refresh();
+					}
+					if (extractionModelFrame != null && extractionModelFrame.restrictedDependenciesView != null) {
+						extractionModelFrame.restrictedDependenciesView.refresh();
+					}
+				}
+				rootTableItemStateChangedSetRoot = false;
+				rootTable.setSelectedItem(dataModel.getDisplayName(layout.root));
+	//			graphView.setDisplayBounds(layout.bounds);
+			} finally {
+				--captureLevel;
+				rootTableItemStateChangedSetRoot = true;
+				LayoutStorage.setTempStorage(null);
+			}
 		}
 		updateLeftButton();
 	}
@@ -2557,20 +2580,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		leftButton.setVisible(!undoStack.isEmpty());
 	}
 	
-	private void recaptureLayout(final Layout layout) {
-		try {
-			LayoutStorage.setTempStorage(layout.positions);
-			setRoot(layout.root, false);
-			rootTableItemStateChangedSetRoot = false;
-			rootTable.setSelectedItem(dataModel.getDisplayName(layout.root));
-//			graphView.setDisplayBounds(layout.bounds);
-		} finally {
-			rootTableItemStateChangedSetRoot = true;
-			LayoutStorage.setTempStorage(null);
-		}
-	}
-	
-    // Variables declaration - do not modify//GEN-BEGIN:variables
+	// Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox aggregationCombobox;
     private javax.swing.JLabel associatedWith;
     javax.swing.JTextField condition;
