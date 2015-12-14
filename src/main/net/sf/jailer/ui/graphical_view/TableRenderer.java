@@ -40,6 +40,7 @@ import java.util.Set;
 
 import javax.swing.ImageIcon;
 
+import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
@@ -625,7 +626,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 		if (image == null) {
 			return 1;
 		}
-		return m_headerDim.height / (double) image.getHeight(null) * (image == collapsedImage? 1.0 : 1.2);
+		return m_headerDim.height / (double) image.getHeight(null) * ((image == collapsedImage || image == collapsedRedImage)? 1.0 : 1.2);
 	}
 
 	private final void drawString(Graphics2D g, FontMetrics fm, String text,
@@ -955,7 +956,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 				.getString("label"));
 		if (table != null) {
 			if (!graphicalDataModelView.expandedTables.contains(table)) {
-				img[i++] = collapsedImage;
+				img[i++] = getCollapsedImage(table);
 			}
 			if (table.equals(graphicalDataModelView.modelEditor.getSubject())) {
 				img[i++] = subjectImage;
@@ -985,6 +986,23 @@ public class TableRenderer extends AbstractShapeRenderer {
 			}
 		}
 		return img;
+	}
+
+	private Map<String, Image> collapsedImages = new HashMap<String, Image>();
+	
+	private Image getCollapsedImage(Table table) {
+		if (collapsedImages.containsKey(table.getName())) {
+			return collapsedImages.get(table.getName());
+		}
+		
+		Set<String> destNames = new HashSet<String>();
+		for (Association a: table.associations) {
+			destNames.add(a.destination.getName());
+		}
+		
+		Image image = destNames.size() > 20? collapsedRedImage : collapsedImage;
+		collapsedImages.put(table.getName(), image);
+		return image;
 	}
 
 	/**
@@ -1136,6 +1154,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 	private Image excludeFromDeletionImage = null;
 	private Image allRowsImage = null;
 	private Image collapsedImage = null;
+	private Image collapsedRedImage = null;
 	private Image upsertImage = null;
 	private Image subjectImage = null;
 	private Image filterImage = null;
@@ -1155,6 +1174,11 @@ public class TableRenderer extends AbstractShapeRenderer {
 		}
 		try {
 			collapsedImage = new ImageIcon(getClass().getResource(dir + "/collapsed.png")).getImage();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		try {
+			collapsedRedImage = new ImageIcon(getClass().getResource(dir + "/collapsedred.png")).getImage();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
