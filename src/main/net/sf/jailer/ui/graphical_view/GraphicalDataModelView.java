@@ -845,12 +845,12 @@ public class GraphicalDataModelView extends JPanel {
 //		});
 		removeRestrictions.setEnabled(modelEditor.isRemovalOfAllRestrictionsApplicable(table));
 		
-		JMenuItem findTable = new JMenuItem("Browse Closure");
-		findTable.addActionListener(new ActionListener () {
-			public void actionPerformed(ActionEvent e) {
-				modelEditor.extractionModelFrame.openClosureView(table);
-			}
-		});
+//		JMenuItem findTable = new JMenuItem("Browse Closure");
+//		findTable.addActionListener(new ActionListener () {
+//			public void actionPerformed(ActionEvent e) {
+//				modelEditor.extractionModelFrame.openClosureView(table);
+//			}
+//		});
 
 		JMenuItem filterEditor= new JMenuItem("Edit Filters...");
 		filterEditor.addActionListener(new ActionListener () {
@@ -867,7 +867,7 @@ public class GraphicalDataModelView extends JPanel {
 			popup.add(navigateTo);
 		}
 		popup.add(dataBrowser);
-		popup.add(findTable);
+//		popup.add(findTable);
 		popup.add(showReachability);
 //		popup.add(select);
 		popup.add(new JSeparator());
@@ -956,7 +956,7 @@ public class GraphicalDataModelView extends JPanel {
 				setRestriction(association, true);
 			}
 		});
-		JMenuItem enable = new JMenuItem("Remove Restriction");
+		JMenuItem enable = new JMenuItem("Enable Association");
 		enable.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				setRestriction(association, false);

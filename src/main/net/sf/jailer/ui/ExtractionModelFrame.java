@@ -84,16 +84,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	private final FilterEditorDialog filterEditorDialog;
 	
 	/**
-	 * The "Find Table" dialog.
-	 */
-	final ClosureView closureView;
-
-	/**
-	 * The border browser.
-	 */
-	final ClosureBorderDialog closureBorderView;
-
-	/**
 	 * The border browser.
 	 */
 	final ClosureBorderDialog restrictedDependenciesView;
@@ -146,30 +136,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	        }
         } catch (Throwable t) {
         }
-        updateMenuItems();
-        closureView = new ClosureView(this);
-        closureBorderView = new ClosureBorderDialog(this, true) {
-			private static final long serialVersionUID = -7426280043553389753L;
-			@Override
-			protected Table getRoot() {
-				return extractionModelEditor == null? null : extractionModelEditor.root;
-			}
-			@Override
-			protected DataModel getDataModel() {
-				return extractionModelEditor == null? null : extractionModelEditor.dataModel;
-			}
-			@Override
-			protected void removeRestrictions(Collection<Association> associations) {
-				if (extractionModelEditor != null) {
-					extractionModelEditor.removeRestrictions(associations);
-				}
-			}
-			@Override
-			protected void onSelect(Association association) {
-				extractionModelEditor.select(association);
-			}
-        };
         
+        updateMenuItems();
+
         restrictedDependenciesView = new RestrictedDependenciesListDialog(this) {
 			private static final long serialVersionUID = -7426280043553389753L;
 			@Override
@@ -300,8 +269,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         dataImport = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JSeparator();
         openDataBrowserItem = new javax.swing.JMenuItem();
-        closureToolMenuItem = new javax.swing.JMenuItem();
-        closureBorderToolMenuItem = new javax.swing.JMenuItem();
         queryBuilder = new javax.swing.JMenuItem();
         cycleView = new javax.swing.JMenuItem();
         restrictedDependenciesToolMenuItem = new javax.swing.JMenuItem();
@@ -701,22 +668,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         jMenu3.add(openDataBrowserItem);
 
-        closureToolMenuItem.setText("Closure Browser");
-        closureToolMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                closureToolMenuItemActionPerformed(evt);
-            }
-        });
-        jMenu3.add(closureToolMenuItem);
-
-        closureBorderToolMenuItem.setText("Closure Border Browser");
-        closureBorderToolMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                closureBorderToolMenuItemActionPerformed(evt);
-            }
-        });
-        jMenu3.add(closureBorderToolMenuItem);
-
         queryBuilder.setText("Query Builder");
         queryBuilder.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -903,9 +854,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      * @param tableToSelect the table to select initially or <code>null</code> to keep the current selection
      */
 	public void openClosureView(Table tableToSelect) {
-		closureView.refresh(tableToSelect);
-		closureView.setVisible(true);
-		closureView.toFront();
+//		closureView.refresh(tableToSelect);
+//		closureView.setVisible(true);
+//		closureView.toFront();
 	}
 	
 	/**
@@ -994,7 +945,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
        				reload();
        		//	}
        			askForDataModel(this);
-    			closureBorderView.refresh();
+    			extractionModelEditor.closureBorderView.refresh();
     			restrictedDependenciesView.refresh();
     		}
         } catch (Exception e) {
@@ -1282,7 +1233,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(modelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip()), "editor");
 			((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
 			validate();
-			closureBorderView.refresh();
+			extractionModelEditor.closureBorderView.refresh();
 			restrictedDependenciesView.refresh();
 			updateTitle(extractionModelEditor.needsSave);
 		} catch (Throwable t) {
@@ -1302,7 +1253,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	    		editorPanel.add(extractionModelEditor = new ExtractionModelEditor(null, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip()), "editor");
 	    		((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
 	    		validate();
-				closureBorderView.refresh();
+	    		extractionModelEditor.closureBorderView.refresh();
 				restrictedDependenciesView.refresh();
 	    		updateTitle(extractionModelEditor.needsSave);
 	    	}
@@ -1321,7 +1272,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			editorPanel.add(extractionModelEditor = new ExtractionModelEditor(extractionModelEditor.extractionModelFile, this, isHorizontalLayout, getConnectivityState(), getConnectivityStateToolTip()), "editor");
 			((CardLayout) editorPanel.getLayout()).show(editorPanel, "editor");
 			validate();
-			closureBorderView.refresh();
+			extractionModelEditor.closureBorderView.refresh();
 			restrictedDependenciesView.refresh();
 			updateTitle(extractionModelEditor.needsSave);
 		} catch (Throwable t) {
@@ -1550,8 +1501,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_closureToolMenuItemActionPerformed
 
     private void closureBorderToolMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closureBorderToolMenuItemActionPerformed
-    	closureBorderView.setVisible(true);
-    	closureBorderView.toFront();
+    	extractionModelEditor.closureBorderView.setVisible(true);
+    	extractionModelEditor.closureBorderView.toFront();
     }//GEN-LAST:event_closureBorderToolMenuItemActionPerformed
 
     private void restrictedDependenciesToolMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_restrictedDependenciesToolMenuItemActionPerformed
@@ -1733,8 +1684,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
                	case 1: extractionModelFrame.openDataModelEditorActionPerformed(null); break;
             }
         }
-		if (extractionModelFrame.closureBorderView != null) {
-			extractionModelFrame.closureBorderView.refresh();
+		if (extractionModelFrame.extractionModelEditor != null) {
+			if (extractionModelFrame.extractionModelEditor.closureBorderView != null) {
+				extractionModelFrame.extractionModelEditor.closureBorderView.refresh();
+			}
 		}
 		if (extractionModelFrame.restrictedDependenciesView != null) {
 			extractionModelFrame.restrictedDependenciesView.refresh();
@@ -1777,9 +1730,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenuItem closureBorderToolMenuItem;
     private javax.swing.JMenuItem closureMenuItem;
-    private javax.swing.JMenuItem closureToolMenuItem;
     private javax.swing.JMenuItem collapseAll;
     private javax.swing.JCheckBoxMenuItem connectDb;
     private javax.swing.JMenuItem cycleView;

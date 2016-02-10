@@ -18,6 +18,7 @@ package net.sf.jailer.ui;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -67,6 +68,7 @@ import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -91,7 +93,6 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.ModelElement;
-import net.sf.jailer.datamodel.ParameterHandler;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.ui.graphical_view.AssociationRenderer;
@@ -198,6 +199,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	private boolean isHorizontalLayout = false;
 	
 	/**
+	 * The border browser.
+	 */
+	ClosureBorderDialog closureBorderView;
+
+	/**
 	 * Multi-line editor for subject condition.
 	 */
 	private ConditionEditor subjectConditionEditor;
@@ -253,9 +259,48 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			return;
 		}
 
-		boolean saveNeedsSave = needsSave;
+        boolean saveNeedsSave = needsSave;
 		initComponents();
-		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+
+		closureBorderView = new ClosureBorderDialog(this.extractionModelFrame, true) {
+			private static final long serialVersionUID = -7426280043553389753L;
+			@Override
+			protected Table getRoot() {
+				return root;
+			}
+			@Override
+			protected DataModel getDataModel() {
+				return dataModel;
+			}
+			@Override
+			protected void removeRestrictions(Collection<Association> associations) {
+				removeRestrictions(associations);
+			}
+			@Override
+			protected void onSelect(Association association) {
+				select(association);
+			}
+        };
+
+		closureView = new ClosureView(this, rootTable) {
+			@Override
+			protected void repaintClosureView() {
+				jSplitPane2.repaint();
+				jSplitPane2.setDividerLocation(jSplitPane2.getDividerLocation() - 1);
+				jSplitPane2.setDividerLocation(jSplitPane2.getDividerLocation() + 1);
+			}
+		};
+		
+		closureView.addTabComponent("Closure Border", closureBorderView.getContentPane());
+		closureBorderView.dispose();
+		
+        Container cVContentPane = closureView.getContentPane();
+        closureView.dispose();
+		toolPanel.add(cVContentPane, java.awt.BorderLayout.CENTER);
+
+		validate();
+        
+        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		tree.setExpandsSelectedPaths(true);
 		restrictionEditor = new RestrictionEditor();
 		
@@ -521,6 +566,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		updateLeftButton();
 	}
 
+	/**
+	 * The "closure view" component.
+	 */
+	private ClosureView closureView;
+
 	void setOrientation(boolean horizontal) {
 		isHorizontalLayout = horizontal;
 		
@@ -586,7 +636,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	        gridBagConstraints.gridx = 0;
 	        gridBagConstraints.gridy = 0;
 	        gridBagConstraints.weightx = 1;
-	        gridBagConstraints.weighty = 1;
+	        gridBagConstraints.weighty = 0;
 	        gridBagConstraints.fill = GridBagConstraints.BOTH;
 	        
 			panel2.add(jPanel3, gridBagConstraints);
@@ -671,19 +721,21 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        jScrollPane4 = new javax.swing.JScrollPane();
+        restrictionsTable = new javax.swing.JTable();
         jSplitPane1 = new javax.swing.JSplitPane();
         jpanel = new javax.swing.JPanel();
+        jPanel12 = new javax.swing.JPanel();
+        jSplitPane2 = new javax.swing.JSplitPane();
         layeredPane = new javax.swing.JLayeredPane();
         toolBarPanel = new javax.swing.JPanel();
         leftButton = new javax.swing.JButton();
         graphContainer = new javax.swing.JPanel();
+        toolPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         editorPanel = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jLabel6 = new javax.swing.JLabel();
-        jScrollPane4 = new javax.swing.JScrollPane();
-        restrictionsTable = new javax.swing.JTable();
-        jLabel8 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
@@ -698,14 +750,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         exportButton = new javax.swing.JButton();
         openXmlSettings = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        tree = new javax.swing.JTree();
+        jPanel13 = new javax.swing.JPanel();
         jPanel6 = new javax.swing.JPanel();
-        jLabel9 = new javax.swing.JLabel();
         rootTable = new javax.swing.JComboBox();
         jPanel9 = new javax.swing.JPanel();
-        openDataBrowser = new javax.swing.JButton();
-        openClosureView = new javax.swing.JButton();
+        resetFocus = new javax.swing.JButton();
+        jPanel14 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tree = new javax.swing.JTree();
         inspectorHolder = new javax.swing.JPanel();
         xmlMappingPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -730,6 +782,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         legende2 = new javax.swing.JPanel();
         connectivityState = new javax.swing.JLabel();
 
+        restrictionsTable.setModel(restrictionTableModel());
+        jScrollPane4.setViewportView(restrictionsTable);
+
         setLayout(new java.awt.GridBagLayout());
 
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
@@ -737,6 +792,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jSplitPane1.setOneTouchExpandable(true);
 
         jpanel.setLayout(new java.awt.BorderLayout());
+
+        jPanel12.setLayout(new java.awt.BorderLayout());
+
+        jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane2.setResizeWeight(1.0);
+        jSplitPane2.setToolTipText("");
+        jSplitPane2.setOneTouchExpandable(true);
 
         toolBarPanel.setBackground(new java.awt.Color(255, 255, 255));
         toolBarPanel.setOpaque(false);
@@ -755,7 +817,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         graphContainer.setBounds(0, 0, 0, 0);
         layeredPane.add(graphContainer, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
-        jpanel.add(layeredPane, java.awt.BorderLayout.CENTER);
+        jSplitPane2.setTopComponent(layeredPane);
+
+        toolPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Closure", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, null, new java.awt.Color(82, 86, 125)));
+        toolPanel.setLayout(new java.awt.BorderLayout());
+        jSplitPane2.setBottomComponent(toolPanel);
+
+        jPanel12.add(jSplitPane2, java.awt.BorderLayout.CENTER);
+
+        jpanel.add(jPanel12, java.awt.BorderLayout.CENTER);
 
         jSplitPane1.setBottomComponent(jpanel);
 
@@ -763,7 +833,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         editorPanel.setLayout(new java.awt.GridLayout(1, 4));
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Subject ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Subject ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
         jPanel3.setMaximumSize(new java.awt.Dimension(2147483647, 2147483647));
         jPanel3.setMinimumSize(new java.awt.Dimension(158, 122));
         jPanel3.setLayout(new java.awt.GridBagLayout());
@@ -775,33 +845,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel3.add(jLabel6, gridBagConstraints);
 
-        restrictionsTable.setModel(restrictionTableModel());
-        jScrollPane4.setViewportView(restrictionsTable);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 14;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel3.add(jScrollPane4, gridBagConstraints);
-
-        jLabel8.setFont(new java.awt.Font("Dialog", 2, 14)); // NOI18N
-        jLabel8.setText("Restrictions");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 13;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
-        jPanel3.add(jLabel8, gridBagConstraints);
-
         jLabel4.setText(" To");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
         jPanel3.add(jLabel4, gridBagConstraints);
 
@@ -903,14 +952,58 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.weighty = 1.0;
         jPanel3.add(jPanel10, gridBagConstraints);
 
         editorPanel.add(jPanel3);
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Association ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
         jPanel4.setLayout(new java.awt.BorderLayout(0, 4));
 
-        jScrollPane1.setBorder(null);
+        jPanel13.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Focus", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
+        jPanel13.setForeground(new java.awt.Color(86, 82, 125));
+        jPanel13.setToolTipText("");
+        jPanel13.setLayout(new java.awt.BorderLayout());
+
+        jPanel6.setLayout(new java.awt.GridBagLayout());
+
+        rootTable.setMaximumRowCount(18);
+        rootTable.setModel(getTableListModel());
+        rootTable.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                rootTableItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        jPanel6.add(rootTable, gridBagConstraints);
+
+        jPanel9.setLayout(new java.awt.BorderLayout());
+
+        resetFocus.setText("Reset");
+        resetFocus.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                resetFocusActionPerformed(evt);
+            }
+        });
+        jPanel9.add(resetFocus, java.awt.BorderLayout.CENTER);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
+        jPanel6.add(jPanel9, gridBagConstraints);
+
+        jPanel13.add(jPanel6, java.awt.BorderLayout.NORTH);
+
+        jPanel4.add(jPanel13, java.awt.BorderLayout.PAGE_START);
+
+        jPanel14.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Association", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(82, 86, 125))); // NOI18N
+        jPanel14.setLayout(new java.awt.BorderLayout());
+
         jScrollPane1.setAutoscrolls(true);
 
         tree.setModel(getModel());
@@ -928,70 +1021,18 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         });
         jScrollPane1.setViewportView(tree);
 
-        jPanel4.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+        jPanel14.add(jScrollPane1, java.awt.BorderLayout.CENTER);
 
-        jPanel6.setLayout(new java.awt.GridBagLayout());
-
-        jLabel9.setText(" Focus ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        jPanel6.add(jLabel9, gridBagConstraints);
-
-        rootTable.setMaximumRowCount(18);
-        rootTable.setModel(getTableListModel());
-        rootTable.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                rootTableItemStateChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel6.add(rootTable, gridBagConstraints);
-
-        jPanel9.setLayout(new java.awt.BorderLayout());
-
-        openDataBrowser.setText("Data Browser");
-        openDataBrowser.setToolTipText("Open Data Browser");
-        openDataBrowser.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openDataBrowserActionPerformed(evt);
-            }
-        });
-        jPanel9.add(openDataBrowser, java.awt.BorderLayout.WEST);
-
-        openClosureView.setText("Closure Browser");
-        openClosureView.setToolTipText("Open Closure Browser");
-        openClosureView.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openClosureViewActionPerformed(evt);
-            }
-        });
-        jPanel9.add(openClosureView, java.awt.BorderLayout.EAST);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 0, 0);
-        jPanel6.add(jPanel9, gridBagConstraints);
-
-        jPanel4.add(jPanel6, java.awt.BorderLayout.NORTH);
+        jPanel4.add(jPanel14, java.awt.BorderLayout.CENTER);
 
         editorPanel.add(jPanel4);
 
-        inspectorHolder.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "Restriction ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
+        inspectorHolder.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Restriction ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
         inspectorHolder.setMinimumSize(new java.awt.Dimension(100, 400));
         inspectorHolder.setLayout(new java.awt.GridBagLayout());
         editorPanel.add(inspectorHolder);
 
-        xmlMappingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED), "XML Mapping ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
+        xmlMappingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "XML Mapping ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
         xmlMappingPanel.setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setText(" Aggregation ");
@@ -1186,10 +1227,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         add(jPanel11, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void openClosureViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openClosureViewActionPerformed
-    	extractionModelFrame.openClosureView(root);
-    }//GEN-LAST:event_openClosureViewActionPerformed
-
     private void treeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_treeMouseClicked
     	if (evt.getButton() == MouseEvent.BUTTON3) {
             if (evt.getClickCount() == 1) {
@@ -1273,8 +1310,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			root = table;
 			tree.setModel(getModel());
 			resetGraphEditor(true, storeLayout, false, true);
-			if (extractionModelFrame != null && extractionModelFrame.closureBorderView != null) {
-				extractionModelFrame.closureBorderView.refresh();
+			if (extractionModelFrame != null && closureBorderView != null) {
+				closureBorderView.refresh();
 			}
 			if (extractionModelFrame != null && extractionModelFrame.restrictedDependenciesView != null) {
 				extractionModelFrame.restrictedDependenciesView.refresh();
@@ -1344,10 +1381,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     		tableNames.add(dataModel.getDisplayName(table));
     	}
     	Collections.sort(tableNames);
-        if (subject != null) {
-	    	tableNames.add(0, dataModel.getDisplayName(subject));
-	        tableNames.add(1, "---");
-        }
+//        if (subject != null) {
+//	    	tableNames.add(0, dataModel.getDisplayName(subject));
+//	        tableNames.add(1, "---");
+//        }
     	DefaultComboBoxModel model = new DefaultComboBoxModel(tableNames);
         return model;
     }
@@ -1656,8 +1693,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			String saveInitialRestrictionCondition = initialRestrictionCondition;
 			initRestrictionEditor(currentAssociation, currentNode);
 			initialRestrictionCondition = saveInitialRestrictionCondition;
-			extractionModelFrame.closureView.refresh();
-			extractionModelFrame.closureBorderView.refresh();
+			closureView.refresh();
+			closureBorderView.refresh();
 			extractionModelFrame.restrictedDependenciesView.refresh();
 			tree.grabFocus();
     	}
@@ -1676,8 +1713,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		tree.repaint();
 		graphView.display.invalidate();
 		restrictionsTable.setModel(restrictionTableModel());
-		extractionModelFrame.closureView.refresh();
-		extractionModelFrame.closureBorderView.refresh();
+		closureView.refresh();
+		closureBorderView.refresh();
 		extractionModelFrame.restrictedDependenciesView.refresh();
     }
 
@@ -1839,39 +1876,27 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		validate();
     }//GEN-LAST:event_onExportModusChanged
 
-    private void openDataBrowserActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openDataBrowserActionPerformed
-    	String cond = "";
-		if (root != null && root.equals(subject)) {
-			cond = ConditionEditor.toMultiLine(condition.getText());
-			if (cond.equals("1=1")) {
-				cond = "";
-			}
-			Set<String> parameters = new HashSet<String>();
-			ParameterHandler.collectParameter(cond, parameters);
-			if (!parameters.isEmpty()) {
-				cond = "";
-			}
-			cond = SqlUtil.replaceAlias(cond, "A");
-		}
-		extractionModelFrame.openDataBrowser(root, cond);
-    }//GEN-LAST:event_openDataBrowserActionPerformed
-
     private void subjectTableItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_subjectTableItemStateChanged
-        Object selectedItem = subjectTable.getSelectedItem();
-	   if (selectedItem instanceof String) {
-	                         if (dataModel.getTableByDisplayName(selectedItem.toString()) != null) {
-	                                 currentSubjectClosure = null; // force re-calculation
-	                                 subject = dataModel.getTableByDisplayName(selectedItem.toString());
-	                         }
-	                 }
-	         rootTable.setModel(getTableListModel());
-	         rootTable.setSelectedItem(null);
-	         rootTable.setSelectedItem(selectedItem);
-	         if (!needsSave) {
-	                         needsSave = true;
-	                         extractionModelFrame.updateTitle(needsSave);
-	                 } 
+		Object selectedItem = subjectTable.getSelectedItem();
+		if (selectedItem instanceof String) {
+			if (dataModel.getTableByDisplayName(selectedItem.toString()) != null) {
+				currentSubjectClosure = null; // force re-calculation
+				subject = dataModel.getTableByDisplayName(selectedItem
+						.toString());
+			}
+		}
+		rootTable.setModel(getTableListModel());
+		rootTable.setSelectedItem(null);
+		rootTable.setSelectedItem(selectedItem);
+		if (!needsSave) {
+			needsSave = true;
+			extractionModelFrame.updateTitle(needsSave);
+		}
     }//GEN-LAST:event_subjectTableItemStateChanged
+
+    private void resetFocusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetFocusActionPerformed
+        rootTable.setSelectedItem(subjectTable.getSelectedItem());
+    }//GEN-LAST:event_resetFocusActionPerformed
 		  
 	/**
 	 * Renderer for the tree-view.
@@ -2364,8 +2389,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		restrictionsTable.setModel(restrictionTableModel());
 		initRestrictionEditor(currentAssociation, currentNode);
 		graphView.resetExpandedState();
-		extractionModelFrame.closureView.refresh();
-		extractionModelFrame.closureBorderView.refresh();
+		closureView.refresh();
+		closureBorderView.refresh();
 		extractionModelFrame.restrictedDependenciesView.refresh();
 	}
 	 
@@ -2410,8 +2435,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		restrictionsTable.setModel(restrictionTableModel());
 		initRestrictionEditor(currentAssociation, currentNode);
 		graphView.resetExpandedState();
-		extractionModelFrame.closureView.refresh();
-		extractionModelFrame.closureBorderView.refresh();
+		closureView.refresh();
+		closureBorderView.refresh();
 		extractionModelFrame.restrictedDependenciesView.refresh();
 	}
 
@@ -2557,8 +2582,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					root = table;
 					tree.setModel(getModel());
 					resetGraphEditor(true, false, false, false);
-					if (extractionModelFrame != null && extractionModelFrame.closureBorderView != null) {
-						extractionModelFrame.closureBorderView.refresh();
+					if (extractionModelFrame != null && closureBorderView != null) {
+						closureBorderView.refresh();
 					}
 					if (extractionModelFrame != null && extractionModelFrame.restrictedDependenciesView != null) {
 						extractionModelFrame.restrictedDependenciesView.refresh();
@@ -2580,7 +2605,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		leftButton.setVisible(!undoStack.isEmpty());
 	}
 	
-	// Variables declaration - do not modify//GEN-BEGIN:variables
+    // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox aggregationCombobox;
     private javax.swing.JLabel associatedWith;
     javax.swing.JTextField condition;
@@ -2600,11 +2625,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel11;
+    private javax.swing.JPanel jPanel12;
+    private javax.swing.JPanel jPanel13;
+    private javax.swing.JPanel jPanel14;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
@@ -2617,6 +2643,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JPanel jpanel;
     private javax.swing.JLayeredPane layeredPane;
     private javax.swing.JButton leftButton;
@@ -2626,15 +2653,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JButton mapColumns;
     private javax.swing.JLabel modelName;
     private javax.swing.JLabel modelPath;
-    private javax.swing.JButton openClosureView;
-    private javax.swing.JButton openDataBrowser;
     private javax.swing.JLabel openSubjectConditionEditor;
     private javax.swing.JButton openXmlSettings;
+    private javax.swing.JButton resetFocus;
     private javax.swing.JTable restrictionsTable;
     private javax.swing.JComboBox rootTable;
     private javax.swing.JComboBox subjectTable;
     private javax.swing.JTextField tagField;
     private javax.swing.JPanel toolBarPanel;
+    private javax.swing.JPanel toolPanel;
     private javax.swing.JTree tree;
     private javax.swing.JPanel xmlMappingPanel;
     private javax.swing.JEditorPane xmlSketch;

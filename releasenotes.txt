@@ -1,3 +1,6 @@
+5.2
+  - Added "Closure View" and "Closure Border View" tools.
+
 5.1
   - Better UI and Improved navigation.
 
