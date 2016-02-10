@@ -18,6 +18,7 @@ package net.sf.jailer.ui;
 import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
@@ -45,17 +46,17 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
-import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -70,17 +71,17 @@ import net.sf.jailer.util.SqlUtil;
  *
  * @author Ralf Wisser
  */
-public class ClosureView extends javax.swing.JDialog {
+public abstract class ClosureView extends javax.swing.JDialog {
 
 	/**
 	 * Maximum number of tables in a closure-table's line.
 	 */
-	private final static int MAX_TABLES_PER_LINE = 4;
+	private final static int MAX_TABLES_PER_LINE = 6;
 	
 	/**
-	 * The extraction model frame.
+	 * The extraction model editor.
 	 */
-	private final ExtractionModelFrame extractionModelFrame;
+	private final ExtractionModelEditor extractionModelEditor;
 	
 	/**
 	 * Currently selected table (in closure-table).
@@ -104,18 +105,22 @@ public class ClosureView extends javax.swing.JDialog {
 	 * Holds infos about a cell in the closure-table.
 	 */
 	private Map<String, CellInfo> cellInfo = new HashMap<String, CellInfo>();
+
+	private final JComboBox rootTable;
 	
-    /** Creates new form FindDialog */
-    public ClosureView(ExtractionModelFrame extractionModelFrame) {
-        super(extractionModelFrame, false);
-    	this.extractionModelFrame = extractionModelFrame;
+    /** Creates new form FindDialog 
+     * @param rootTable */
+    public ClosureView(ExtractionModelEditor extractionModelEditor, JComboBox rootTable) {
+        super();
+    	this.extractionModelEditor = extractionModelEditor;
+    	this.rootTable = rootTable;
         initComponents();
         
         showOnlyEnabledCheckBox.setMnemonic(KeyEvent.VK_S);
-        disableAssocButton.setMnemonic(KeyEvent.VK_D);
-        disableAssocButton.setEnabled(false);
+//        disableAssocButton.setMnemonic(KeyEvent.VK_D);
+//        disableAssocButton.setEnabled(false);
         
-        tableSelection.setMaximumRowCount(22);
+//        tableSelection.setMaximumRowCount(22);
         
         closureTable = new JTable() {
 			private static final long serialVersionUID = 8960056200057023368L;
@@ -158,7 +163,7 @@ public class ClosureView extends javax.swing.JDialog {
         jScrollPane1.setViewportView(closureTable);
 
         closureTable.addMouseListener(new MouseListener() {
-			public void mouseClicked(MouseEvent e) {
+			public void mouseClicked(final MouseEvent e) {
 				// context menu
                 if (SwingUtilities.isRightMouseButton(e)) {
                 	int row = closureTable.rowAtPoint(e.getPoint());
@@ -168,8 +173,48 @@ public class ClosureView extends javax.swing.JDialog {
                 	if (value == null || !(value instanceof String)) return;
                 	Table table = getDataModel().getTableByDisplayName((String) value);
                 	if (table != null) {
-						JPopupMenu popup = ClosureView.this.extractionModelFrame.extractionModelEditor.graphView.createPopupMenu(table, false);
+						JPopupMenu popup = ClosureView.this.extractionModelEditor.graphView.createPopupMenu(table, false);
 						popup.show(e.getComponent(), e.getX(), e.getY());
+                	}
+                }
+                if (SwingUtilities.isLeftMouseButton(e)) {
+                	int row = closureTable.rowAtPoint(e.getPoint());
+                	int column = closureTable.columnAtPoint(e.getPoint());
+                	if (row < 0 || column < 0) return;
+                	
+                	final Rectangle cellRect = closureTable.getCellRect(row, column, false);
+                	
+                	Object value = closureTable.getModel().getValueAt(row, column);
+                	if (value == null || !(value instanceof String)) return;
+                	final Table table = getDataModel().getTableByDisplayName((String) value);
+                	if (table != null) {
+						JMenuItem restrictAll = new JMenuItem("Disable Associations");
+						restrictAll.addActionListener(new ActionListener () {
+							public void actionPerformed(ActionEvent e) {
+								ClosureView.this.extractionModelEditor.ignoreAll(table);
+							}
+						});
+						restrictAll.setEnabled(ClosureView.this.extractionModelEditor.isIgnoreAllApplicable(table));
+						
+						JMenuItem removeRestrictions = new JMenuItem("Remove Restrictions");
+						removeRestrictions.addActionListener(new ActionListener () {
+							public void actionPerformed(ActionEvent e) {
+								ClosureView.this.extractionModelEditor.removeAllRestrictions(table);
+							}
+						});
+						removeRestrictions.setEnabled(ClosureView.this.extractionModelEditor.isRemovalOfAllRestrictionsApplicable(table));
+						
+						final JPopupMenu popup = new JPopupMenu();
+						popup.add(restrictAll);
+						popup.add(new JSeparator());
+						popup.add(removeRestrictions);
+						
+						if (cellInfo.containsKey(value)) {
+							selectTableCell(column, row);
+						}
+						
+						ClosureView.this.extractionModelEditor.graphView.createPopupMenu(table, false);
+						popup.show(e.getComponent(), cellRect.x, cellRect.y + cellRect.height);
                 	}
                 }
 			}
@@ -198,7 +243,9 @@ public class ClosureView extends javax.swing.JDialog {
 				}
 				Component render = defaultTableCellRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				if (render instanceof JLabel && !isSelected) {
-					((JLabel) render).setBackground(bgColor.get(row));
+					if (row < bgColor.size()) {
+						((JLabel) render).setBackground(bgColor.get(row));
+					}
 				}
 				CellInfo cellInfo = ClosureView.this.cellInfo.get(selectedTable);
 				if (render instanceof JLabel) {
@@ -235,53 +282,9 @@ public class ClosureView extends javax.swing.JDialog {
 			}
 		});
 		closureTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		closureTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			@Override
-			public void valueChanged(ListSelectionEvent evt) {
-		        int col = closureTable.getSelectedColumn();
-				int row = closureTable.getSelectedRow();
-				if (col >= 1 && row >= 0) {
-					String displayName = (String) closureTable.getModel().getValueAt(row, col);
-					closureTable.getSelectionModel().clearSelection();
-					if (displayName != null && !"".equals(displayName)) {
-//						if (selectedTable == null || !selectedTable.equals(displayName)) {
-							selectedTable = displayName;
-					        disableAssocButton.setEnabled(true);
-							repaint();
-							Table table = getDataModel().getTableByDisplayName(selectedTable);
-							if (table != null) {
-								CellInfo selectionInfo = cellInfo.get(selectedTable);
-								if (selectionInfo != null) {
-									Association association = null;
-									if (selectionInfo.pathToRoot != null && selectionInfo.pathToRoot.size() > 0) {
-										Table pre = getDataModel().getTableByDisplayName(selectionInfo.pathToRoot.get(selectionInfo.pathToRoot.size() - 1));
-										if (pre != null) {
-											for (Association a: pre.associations) {
-												if (!a.isIgnored()) {
-													if (a.destination.equals(table)) {
-														association = a;
-														break;
-													}
-												}
-											}
-										}
-									}
-									if (association != null && ClosureView.this.extractionModelFrame.extractionModelEditor.select(association)) {
-										return;
-									}
-								}
-								if (!ClosureView.this.extractionModelFrame.extractionModelEditor.select(table)) {
-									ClosureView.this.extractionModelFrame.extractionModelEditor.setRootSelection(table);
-								}
-							}
-//						}
-					}
-				}
-			}
-		});
-		tableSelection.addItemListener(new java.awt.event.ItemListener() {
+		rootTable.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
-            	Table table = getDataModel().getTableByDisplayName((String) tableSelection.getSelectedItem());
+            	Table table = getDataModel().getTableByDisplayName((String) ClosureView.this.rootTable.getSelectedItem());
 				refresh(table);
             }
         });
@@ -290,14 +293,54 @@ public class ClosureView extends javax.swing.JDialog {
         setSize(500, 500);
         setAlwaysOnTop(true);
     }
-    
+
+	private void selectTableCell(int col, int row) {
+		if (col >= 1 && row >= 0) {
+			String displayName = (String) closureTable.getModel().getValueAt(row, col);
+			closureTable.getSelectionModel().clearSelection();
+			if (displayName != null && !"".equals(displayName)) {
+//				if (selectedTable == null || !selectedTable.equals(displayName)) {
+					selectedTable = displayName;
+//			        disableAssocButton.setEnabled(true);
+					repaintClosureView();
+					Table table = getDataModel().getTableByDisplayName(selectedTable);
+					if (table != null) {
+						CellInfo selectionInfo = cellInfo.get(selectedTable);
+						if (selectionInfo != null) {
+							Association association = null;
+							if (selectionInfo.pathToRoot != null && selectionInfo.pathToRoot.size() > 0) {
+								Table pre = getDataModel().getTableByDisplayName(selectionInfo.pathToRoot.get(selectionInfo.pathToRoot.size() - 1));
+								if (pre != null) {
+									for (Association a: pre.associations) {
+										if (!a.isIgnored()) {
+											if (a.destination.equals(table)) {
+												association = a;
+												break;
+											}
+										}
+									}
+								}
+							}
+							if (association != null && ClosureView.this.extractionModelEditor.select(association)) {
+								return;
+							}
+						}
+						if (!ClosureView.this.extractionModelEditor.select(table)) {
+							ClosureView.this.extractionModelEditor.setRootSelection(table);
+						}
+					}
+//				}
+			}
+		}
+	}
+	
     /**
      * Gets current data model.
      * 
      * @return current data model
      */
     private DataModel getDataModel() {
-    	return extractionModelFrame.extractionModelEditor.dataModel;
+    	return extractionModelEditor.dataModel;
     }
 
     /**
@@ -320,7 +363,7 @@ public class ClosureView extends javax.swing.JDialog {
     	
     	// table list model
     	if (tableToSelect == null) {
-    		Object currentSelection = tableSelection.getSelectedItem();
+    		Object currentSelection = rootTable.getSelectedItem();
     		if (currentSelection instanceof String) {
     			tableToSelect = getDataModel().getTableByDisplayName((String) currentSelection);
     		}
@@ -330,13 +373,13 @@ public class ClosureView extends javax.swing.JDialog {
     		tableNames.add(getDataModel().getDisplayName(table));
     	}
     	Collections.sort(tableNames);
-    	DefaultComboBoxModel model = new DefaultComboBoxModel(tableNames);
-        tableSelection.setModel(model);
-    	if (tableToSelect != null) {
-    		tableSelection.setSelectedItem(getDataModel().getDisplayName(tableToSelect));
-    	} else {
-    		tableSelection.setSelectedItem(0);
-    	}
+//    	DefaultComboBoxModel model = new DefaultComboBoxModel(tableNames);
+//        tableSelection.setModel(model);
+//    	if (tableToSelect != null) {
+//    		tableSelection.setSelectedItem(getDataModel().getDisplayName(tableToSelect));
+//    	} else {
+//    		tableSelection.setSelectedItem(0);
+//    	}
     	
     	// table model
     	refreshTableModel();
@@ -355,8 +398,8 @@ public class ClosureView extends javax.swing.JDialog {
     	} else {
     		selectedTable = null;
     	}
-    	disableAssocButton.setEnabled(false);
-    	repaint();
+//    	disableAssocButton.setEnabled(false);
+    	repaintClosureView();
     }
     
     /**
@@ -390,18 +433,27 @@ public class ClosureView extends javax.swing.JDialog {
 		int distance = 0;
 		final Color BG1 = new Color(255, 255, 255);
 		final Color BG2 = new Color(230, 255, 255);
+		final Color BG3 = new Color(220, 220, 220);
 		bgColor.clear();
-		bgColor.add(BG1);
+		
+		boolean invLineRendered = false;
 		
 		while (!currentLine.isEmpty()) {
 			// add current line to table model
+			if (invLineRendered) {
+				Object[] lineAsObjects = new Object[MAX_TABLES_PER_LINE + 1];
+				Arrays.fill(lineAsObjects, "");
+				data.add(lineAsObjects);
+				bgColor.add(BG3);
+			}
+			
 			Collections.sort(currentLine);
 			Object[] lineAsObjects = new Object[MAX_TABLES_PER_LINE + 1];
 			Arrays.fill(lineAsObjects, "");
 			int col = 0;
-			lineAsObjects[col++] = distance > 0? ("" + distance) : "";
+			lineAsObjects[col++] = invLineRendered? "infinite" : distance > 0? ("" + distance) : "";
 			for (String t: currentLine) {
-				CellInfo cellInfo = this.cellInfo.get(t);
+				CellInfo cellInfo = invLineRendered? new CellInfo() : this.cellInfo.get(t);
 				if (col <= MAX_TABLES_PER_LINE) {
 					cellInfo.column = col;
 					lineAsObjects[col++] = t;					
@@ -440,6 +492,18 @@ public class ClosureView extends javax.swing.JDialog {
 					}
 				}
 			}
+			
+			if (nextLine.isEmpty() && !invLineRendered) {
+				for (Table table: getDataModel().getTables()) {
+					String displayName = getDataModel().getDisplayName(table);
+					if (!visited.contains(displayName)) {
+						nextLine.add(displayName);
+						visited.add(displayName);
+					}
+				}
+				invLineRendered = true;
+			}
+			
 			currentLine = nextLine;
 			++distance;
 		}
@@ -474,12 +538,12 @@ public class ClosureView extends javax.swing.JDialog {
             column.setPreferredWidth(width);
         }
 		closureTable.setIntercellSpacing(new Dimension(0, 0));
-    	disableAssocButton.setEnabled(false);
+//    	disableAssocButton.setEnabled(false);
 	}
 
 	private Table getSelectedTable() {
 		Table selectedTable = null;
-    	Object currentSelection = tableSelection.getSelectedItem();
+    	Object currentSelection = rootTable.getSelectedItem();
 		if (currentSelection instanceof String) {
 			selectedTable = getDataModel().getTableByDisplayName((String) currentSelection);
 		}
@@ -555,8 +619,8 @@ public class ClosureView extends javax.swing.JDialog {
 	    		}
 	    		Font font = nonbold;
 	    		Color bgc = bgColor;
-	    		if (extractionModelFrame.extractionModelEditor.graphView.selectedAssociation != null &&
-	    			assocName.equals(extractionModelFrame.extractionModelEditor.graphView.selectedAssociation.getName())) {
+	    		if (extractionModelEditor.graphView.selectedAssociation != null &&
+	    			assocName.equals(extractionModelEditor.graphView.selectedAssociation.getName())) {
 	    			bgc = new Color(255, 230, 220);
 	    		}
 	    		JLabel l = createLabel(y, null, assocName, bgc, distance == 0 || !firstTime? " " : (" " + distance + " "), false);
@@ -595,11 +659,11 @@ public class ClosureView extends javax.swing.JDialog {
 						editedAssociations.add(assocName);
 						Association association = getDataModel().namedAssociations.get(assocName);
 						if (association != null) {
-							if (!ClosureView.this.extractionModelFrame.extractionModelEditor.select(association)) {
-								ClosureView.this.extractionModelFrame.extractionModelEditor.setRootSelection(association.destination);
-								ClosureView.this.extractionModelFrame.extractionModelEditor.select(association);
+							if (!ClosureView.this.extractionModelEditor.select(association)) {
+								ClosureView.this.extractionModelEditor.setRootSelection(association.destination);
+								ClosureView.this.extractionModelEditor.select(association);
 							}
-							extractionModelFrame.extractionModelEditor.graphView.setRestriction(association, !checkBox.isSelected());
+							extractionModelEditor.graphView.setRestriction(association, !checkBox.isSelected());
 						}
 					}
 				});
@@ -672,7 +736,7 @@ public class ClosureView extends javax.swing.JDialog {
 				public void actionPerformed(ActionEvent e) {
 					noAssocLimitTableName = st != null? st.getName() : null;
 					refreshAssociationView(getSelectedTable());
-					repaint();
+					repaintClosureView();
 				}
 			});
             gridBagConstraints = new java.awt.GridBagConstraints();
@@ -727,7 +791,7 @@ public class ClosureView extends javax.swing.JDialog {
 	                	if (tableName != null) {
 	                		Table table = getDataModel().getTable(tableName);
 		                	if (table != null) {
-								JPopupMenu popup = ClosureView.this.extractionModelFrame.extractionModelEditor.graphView.createPopupMenu(table, false);
+								JPopupMenu popup = ClosureView.this.extractionModelEditor.graphView.createPopupMenu(table, false);
 								popup.show(e.getComponent(), e.getX(), e.getY());
 		                	}
 	                	}
@@ -735,12 +799,12 @@ public class ClosureView extends javax.swing.JDialog {
 					else if (SwingUtilities.isLeftMouseButton(e)) {
 						Association association = getDataModel().namedAssociations.get(assocName);
 						if (association != null) {
-							if (!ClosureView.this.extractionModelFrame.extractionModelEditor.select(association)) {
-								ClosureView.this.extractionModelFrame.extractionModelEditor.setRootSelection(association.destination);
-								ClosureView.this.extractionModelFrame.extractionModelEditor.select(association);
+							if (!ClosureView.this.extractionModelEditor.select(association)) {
+								ClosureView.this.extractionModelEditor.setRootSelection(association.destination);
+								ClosureView.this.extractionModelEditor.select(association);
 							}
 							refreshAssociationView(getSelectedTable());
-							repaint();
+							repaintClosureView();
 						}
 					}
 				}
@@ -826,15 +890,12 @@ public class ClosureView extends javax.swing.JDialog {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        tableSelection = new net.sf.jailer.ui.JComboBox();
+        contentPanel = new javax.swing.JPanel();
         tabbedPane = new javax.swing.JTabbedPane();
         tablePane = new javax.swing.JPanel();
         tablePanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         closureTable = new javax.swing.JTable();
-        disableAssocButton = new javax.swing.JButton();
         associationPane = new javax.swing.JPanel();
         associationPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -851,28 +912,12 @@ public class ClosureView extends javax.swing.JDialog {
         tabAssTabPanel = new javax.swing.JPanel();
         tabAssAssPanel = new javax.swing.JPanel();
 
+        contentPanel.setLayout(new java.awt.GridBagLayout());
+
         setTitle("Closure Browser");
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        jPanel1.setLayout(new java.awt.GridBagLayout());
-
-        jLabel1.setText(" Focus ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel1.add(jLabel1, gridBagConstraints);
-
-        tableSelection.setMaximumRowCount(32);
-        tableSelection.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Eintrag 1", "Eintrag 2", "Eintrag 3", "Eintrag 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 20;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 2);
-        jPanel1.add(tableSelection, gridBagConstraints);
-
+        tabbedPane.setMinimumSize(new java.awt.Dimension(182, 190));
         tabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
             public void stateChanged(javax.swing.event.ChangeEvent evt) {
                 tabbedPaneStateChanged(evt);
@@ -882,6 +927,8 @@ public class ClosureView extends javax.swing.JDialog {
         tablePane.setLayout(new javax.swing.BoxLayout(tablePane, javax.swing.BoxLayout.LINE_AXIS));
 
         tablePanel.setLayout(new java.awt.GridBagLayout());
+
+        jScrollPane1.setMinimumSize(new java.awt.Dimension(23, 64));
 
         closureTable.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         closureTable.setModel(new javax.swing.table.DefaultTableModel(
@@ -895,6 +942,8 @@ public class ClosureView extends javax.swing.JDialog {
                 "Titel 1", "Titel 2", "Titel 3", "Titel 4"
             }
         ));
+        closureTable.setMinimumSize(new java.awt.Dimension(60, 80));
+        closureTable.setPreferredSize(new java.awt.Dimension(300, 80));
         closureTable.setSurrendersFocusOnKeystroke(true);
         jScrollPane1.setViewportView(closureTable);
 
@@ -908,21 +957,6 @@ public class ClosureView extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 2);
         tablePanel.add(jScrollPane1, gridBagConstraints);
 
-        disableAssocButton.setText(" Disable associations ");
-        disableAssocButton.setToolTipText("disables each association with the selected table\n(except dependencies), possibly removing the table from the closure.");
-        disableAssocButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                disableAssocButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 100;
-        gridBagConstraints.gridwidth = 30;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
-        tablePanel.add(disableAssocButton, gridBagConstraints);
-
         tablePane.add(tablePanel);
 
         tabbedPane.addTab("Table", tablePane);
@@ -933,7 +967,6 @@ public class ClosureView extends javax.swing.JDialog {
 
         jScrollPane2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        assocViewPanel.setBorder(null);
         assocViewPanel.setLayout(new java.awt.GridBagLayout());
 
         jLabel2.setText(" Distance  ");
@@ -999,7 +1032,6 @@ public class ClosureView extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 4, 4, 4);
         associationPanel.add(showOnlyEnabledCheckBox, gridBagConstraints);
 
         associationPane.add(associationPanel);
@@ -1040,25 +1072,10 @@ public class ClosureView extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        jPanel1.add(tabbedPane, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        getContentPane().add(jPanel1, gridBagConstraints);
+        getContentPane().add(tabbedPane, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void disableAssocButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_disableAssocButtonActionPerformed
-    	Table table = getDataModel().getTableByDisplayName(selectedTable);
-		if (table != null) {
-			extractionModelFrame.extractionModelEditor.ignoreAll(table);
-		}
-    }//GEN-LAST:event_disableAssocButtonActionPerformed
 
     private void showOnlyEnabledCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_showOnlyEnabledCheckBoxItemStateChanged
         clearView();
@@ -1085,22 +1102,22 @@ public class ClosureView extends javax.swing.JDialog {
 	private void clearView() {
 		editedAssociations.clear();
         refreshAssociationView(getSelectedTable());
-        repaint();
+        repaintClosureView();
 	}
+
+    protected abstract void repaintClosureView();
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel assocViewPanel;
     private javax.swing.JPanel associationPane;
     private javax.swing.JPanel associationPanel;
     private javax.swing.JTable closureTable;
-    private javax.swing.JButton disableAssocButton;
-    private javax.swing.JLabel jLabel1;
+    public javax.swing.JPanel contentPanel;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
-    private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
@@ -1112,10 +1129,13 @@ public class ClosureView extends javax.swing.JDialog {
     private javax.swing.JPanel tableAssociationPane;
     private javax.swing.JPanel tablePane;
     private javax.swing.JPanel tablePanel;
-    private javax.swing.JComboBox tableSelection;
     // End of variables declaration//GEN-END:variables
     
 	private static final long serialVersionUID = 5485949274233292142L;
 	private Font normalfont = new JLabel("normal").getFont();
 	private Font nonbold = new Font(normalfont.getName(), normalfont.getStyle() & ~Font.BOLD, normalfont.getSize());
+
+	public void addTabComponent(String titel, Container tab) {
+		 tabbedPane.addTab(titel, tab);
+	}
 }
