@@ -46,6 +46,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
@@ -55,7 +56,6 @@ import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
 import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
@@ -98,6 +98,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 	 */
 	private class CellInfo {
 		public int row, column;
+		boolean ignored = false;
 		List<String> pathToRoot = new ArrayList<String>();
 	};
 
@@ -135,27 +136,64 @@ public abstract class ClosureView extends javax.swing.JDialog {
 				Graphics2D g2d = (Graphics2D) graphics;
 				CellInfo selectionInfo = cellInfo.get(selectedTable);
 				if (selectionInfo == null) return;
-				int[] x = new int[selectionInfo.pathToRoot.size() + 1];
-				int[] y = new int[selectionInfo.pathToRoot.size() + 1];
+				List<Integer> x = new ArrayList<Integer>();
+				List<Integer> y = new ArrayList<Integer>();
+				List<Boolean> ignored = new ArrayList<Boolean>();
 				
 				int pos = 0;
 				for (String t: selectionInfo.pathToRoot) {
 					CellInfo posInfo = cellInfo.get(t);
 					Rectangle r = closureTable.getCellRect(posInfo.row, posInfo.column, false);
-					x[pos] = (int) r.getCenterX();
-					y[pos] = (int) r.getCenterY();
+					x.add((int) r.getCenterX());
+					y.add((int) r.getCenterY());
+					ignored.add(posInfo.ignored);
 					++pos;
 				}
 				CellInfo posInfo = selectionInfo;
 				Rectangle r = closureTable.getCellRect(posInfo.row, posInfo.column, false);
-				x[pos] = (int) r.getCenterX();
-				y[pos] = (int) r.getCenterY();
+				x.add((int) r.getCenterX());
+				y.add((int) r.getCenterY());
+				ignored.add(posInfo.ignored);
 				++pos;
-				Color color = new Color(0, 120, 255, 60);
-    	    	g2d.setColor(color);
-    	    	g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-    	    	g2d.setStroke(new BasicStroke(5));
-        	    g2d.drawPolyline(x, y, pos);
+    	    	
+				for (boolean drawIgnored: new boolean[] { true, false }) {
+					int start = 1;
+					while (start < x.size()) {
+						int end = start + 1;
+						while (end < x.size()) {
+							if (((boolean) ignored.get(start)) ^ ((boolean) ignored.get(end))) {
+								break;
+							} else {
+								++end;
+							}
+						}
+						if (start < end && !(((boolean) ignored.get(start)) ^ drawIgnored)) {
+							int size = end - start + 1;
+							int[] xArr = new int[size];
+			    	    	for (int i = 0; i < size; ++i) {
+			    	    		xArr[i] = x.get(start - 1 + i);
+			    	    	}
+			    	    	int[] yArr = new int[size];
+			    	    	for (int i = 0; i < size; ++i) {
+			    	    		yArr[i] = y.get(start -1 + i);
+			    	    	}
+			
+			    	    	Color color = new Color(0, 80, 255, 60);
+			    	    	g2d.setColor(color);
+			    	    	g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+
+			    	    	if (drawIgnored) {
+			    	    		BasicStroke stroke = new BasicStroke(3);
+			    	    		g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
+			    					1.0f));
+			    	    	} else {
+			    	    		g2d.setStroke(new BasicStroke(5));
+			    	    	}
+			        	    g2d.drawPolyline(xArr, yArr, size);
+						}
+						start = end;
+					}
+				}
 			}
         };
         closureTable.setShowGrid(false);
@@ -230,6 +268,8 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			}
         });
         
+        searchComboBox.setMaximumRowCount(30);
+        
         final TableCellRenderer defaultTableCellRenderer = closureTable.getDefaultRenderer(String.class);
 		closureTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
 			private Font font = new JLabel("normal").getFont();
@@ -265,6 +305,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 					if (cellInfo != null && selectedTable != null) {
 						if (selectedTable.equals(value) || cellInfo.pathToRoot.contains(value)) {
 							((JLabel) render).setFont(bold);
+							((JLabel) render).setBackground(new Color(255, 230, 200));
 						}
 					}
 					Table t = getDataModel().getTableByDisplayName((String) value);
@@ -312,6 +353,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			if (displayName != null && !"".equals(displayName)) {
 //				if (selectedTable == null || !selectedTable.equals(displayName)) {
 					selectedTable = displayName;
+					searchComboBox.setSelectedItem(selectedTable);
 //			        disableAssocButton.setEnabled(true);
 					repaintClosureView();
 					Table table = getDataModel().getTableByDisplayName(selectedTable);
@@ -441,20 +483,23 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			cellInfo.row = 0;
 			this.cellInfo.put(displayName, cellInfo);
 		}
+		
 		int distance = 0;
+		final int OMEGA = Integer.MAX_VALUE / 2;
+		boolean isolated = false;
+		
 		final Color BG1 = new Color(255, 255, 255);
 		final Color BG2 = new Color(230, 255, 255);
-		final Color BG3 = new Color(255, 255, 210);
+		final Color BG3 = new Color(255, 255, 240);
 		final Color BG4 = new Color(220, 220, 220);
-		final Color BG5 = new Color(255, 245, 240);
+		final Color BG5 = new Color(255, 240, 240);
 		bgColor.clear();
 		
-		boolean invLineRendered = false;
-		boolean invLineRest = false;
+		TreeSet<String> nonIsolated = new TreeSet<String>();
 		
 		while (!currentLine.isEmpty()) {
 			// add current line to table model
-			if (invLineRendered && !invLineRest) {
+			if (distance == OMEGA || isolated) {
 				Object[] lineAsObjects = new Object[MAX_TABLES_PER_LINE + 1];
 				Arrays.fill(lineAsObjects, "");
 				data.add(lineAsObjects);
@@ -465,12 +510,14 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			Object[] lineAsObjects = new Object[MAX_TABLES_PER_LINE + 1];
 			Arrays.fill(lineAsObjects, "");
 			int col = 0;
-			lineAsObjects[col++] = invLineRest? "" : invLineRendered? "infinite" : distance > 0? ("" + distance) : "";
-			Color color = invLineRendered? (invLineRest? BG5 : BG3) : distance % 2 == 0? BG1 : BG2;
+			lineAsObjects[col++] = isolated? "isolated" : distance > OMEGA? "" : distance == OMEGA ? "infinite" : distance > 0? ("" + distance) : "";
+			Color color = distance >= OMEGA? (distance % 2 == 0? BG5 : BG3) : distance % 2 == 0? BG1 : BG2;
 			for (String t: currentLine) {
-				CellInfo cellInfo = invLineRendered? new CellInfo() : this.cellInfo.get(t);
+				CellInfo cellInfo = this.cellInfo.get(t);
 				if (col <= MAX_TABLES_PER_LINE) {
-					cellInfo.column = col;
+					if (cellInfo != null) {
+						cellInfo.column = col;
+					}
 					lineAsObjects[col++] = t;					
 				} else {
 					data.add(lineAsObjects);
@@ -478,10 +525,14 @@ public abstract class ClosureView extends javax.swing.JDialog {
 					lineAsObjects = new Object[MAX_TABLES_PER_LINE + 1];
 					Arrays.fill(lineAsObjects, "");
 					col = 1;
-					cellInfo.column = col;
+					if (cellInfo != null) {
+						cellInfo.column = col;
+					}
 					lineAsObjects[col++] = t;
 				}
-				cellInfo.row = data.size();
+				if (cellInfo != null) {
+					cellInfo.row = data.size();
+				}
 			}
 			if (col > 1) {
 				data.add(lineAsObjects);
@@ -490,47 +541,59 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			
 			// get next line
 			List<String> nextLine = new ArrayList<String>();
-			if (!invLineRendered) {
-				for (String t: currentLine) {
-					Table table = getDataModel().getTableByDisplayName(t);
-					if (table != null) {
-						CellInfo cellInfoT = this.cellInfo.get(t);
-						for (Association association: table.associations) {
-							String displayName = getDataModel().getDisplayName(association.destination);
-							if (!visited.contains(displayName) && !association.isIgnored()) {
-								nextLine.add(displayName);
-								visited.add(displayName);
-								CellInfo cellInfo = new CellInfo();
-								cellInfo.pathToRoot.addAll(cellInfoT.pathToRoot);
-								cellInfo.pathToRoot.add(t);
-								this.cellInfo.put(displayName, cellInfo);
-							}
+			for (String t: currentLine) {
+				Table table = getDataModel().getTableByDisplayName(t);
+				if (table != null) {
+					CellInfo cellInfoT = this.cellInfo.get(t);
+					for (Association association: table.associations) {
+						String displayName = getDataModel().getDisplayName(association.destination);
+						if (!visited.contains(displayName) && !association.isIgnored()) {
+							nextLine.add(displayName);
+							visited.add(displayName);
+							CellInfo cellInfo = new CellInfo();
+							cellInfo.pathToRoot.addAll(cellInfoT.pathToRoot);
+							cellInfo.pathToRoot.add(t);
+							this.cellInfo.put(displayName, cellInfo);
 						}
 					}
 				}
 			}
-			
+
+			++distance;
+
 			if (nextLine.isEmpty()) {
-				if (!invLineRendered) {
-					Set<String> preVisited = new TreeSet<String>(visited);
-					for (Table table: getDataModel().getTables()) {
-						String displayName = getDataModel().getDisplayName(table);
-						if (!visited.contains(displayName)) {
-							boolean connected = false;
-							for (Association a: table.associations) {
-								if (preVisited.contains(getDataModel().getDisplayName(a.destination))) {
-									connected = true;
-									break;
-								}
+				if (distance < OMEGA) {
+					distance = OMEGA;
+				}
+				Set<String> preVisited = new TreeSet<String>(visited);
+				for (Table table: getDataModel().getTables()) {
+					String displayName = getDataModel().getDisplayName(table);
+					if (!visited.contains(displayName)) {
+						CellInfo cellInfoT = null;
+						String destName = null;
+						for (Association a: table.associations) {
+							destName = getDataModel().getDisplayName(a.destination);
+							if (preVisited.contains(destName)) {
+								cellInfoT = this.cellInfo.get(destName);
+								break;
 							}
-							if (connected) {
-								nextLine.add(displayName);
-								visited.add(displayName);
-							}
+						}
+						if (cellInfoT != null) {
+							nextLine.add(displayName);
+							visited.add(displayName);
+							CellInfo cellInfo = new CellInfo();
+							cellInfo.ignored = true;
+							cellInfo.pathToRoot.addAll(cellInfoT.pathToRoot);
+							cellInfo.pathToRoot.add(destName);
+							this.cellInfo.put(displayName, cellInfo);
 						}
 					}
 				}
 				if (nextLine.isEmpty()) {
+					if (!isolated) {
+						isolated = true;
+						nonIsolated = new TreeSet<String>(visited);
+					}
 					for (Table table: getDataModel().getTables()) {
 						String displayName = getDataModel().getDisplayName(table);
 						if (!visited.contains(displayName)) {
@@ -538,13 +601,10 @@ public abstract class ClosureView extends javax.swing.JDialog {
 							visited.add(displayName);
 						}
 					}
-					invLineRest = invLineRendered;
 				}
-				invLineRendered = true;
 			}
 			
 			currentLine = nextLine;
-			++distance;
 		}
 		
 		Object[][] dataArray = (Object[][]) data.toArray(new Object[data.size()][]);
@@ -578,6 +638,12 @@ public abstract class ClosureView extends javax.swing.JDialog {
         }
 		closureTable.setIntercellSpacing(new Dimension(0, 0));
 //    	disableAssocButton.setEnabled(false);
+		
+		Vector<String> vector = new Vector<String>();
+		vector.add("");
+		vector.addAll(nonIsolated);
+		searchComboBox.setModel(new DefaultComboBoxModel<String>(vector));
+		searchComboBox.setSelectedItem("");
 	}
 
 	private Table getSelectedTable() {
@@ -935,6 +1001,8 @@ public abstract class ClosureView extends javax.swing.JDialog {
         tablePanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         closureTable = new javax.swing.JTable();
+        jLabel1 = new javax.swing.JLabel();
+        searchComboBox = new net.sf.jailer.ui.JComboBox();
         associationPane = new javax.swing.JPanel();
         associationPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -987,14 +1055,31 @@ public abstract class ClosureView extends javax.swing.JDialog {
         jScrollPane1.setViewportView(closureTable);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 20;
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 30;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 2);
         tablePanel.add(jScrollPane1, gridBagConstraints);
+
+        jLabel1.setText("  Search ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        tablePanel.add(jLabel1, gridBagConstraints);
+
+        searchComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        searchComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                searchComboBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        tablePanel.add(searchComboBox, gridBagConstraints);
 
         tablePane.add(tablePanel);
 
@@ -1124,6 +1209,16 @@ public abstract class ClosureView extends javax.swing.JDialog {
         initTabbedPane();
     }//GEN-LAST:event_tabbedPaneStateChanged
 
+    private void searchComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchComboBoxActionPerformed
+    	Object toFind = searchComboBox.getSelectedItem();
+    	if (toFind != null && !toFind.equals(selectedTable)) {
+    		CellInfo cellInfo = this.cellInfo.get(toFind);
+    		if (cellInfo != null) {
+    			selectTableCell(cellInfo.column, cellInfo.row);
+    		}
+    	}
+    }//GEN-LAST:event_searchComboBoxActionPerformed
+
 	private void initTabbedPane() {
 		if (tabbedPane.getSelectedIndex() == 2) {
 			tabAssTabPanel.removeAll();
@@ -1152,6 +1247,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
     private javax.swing.JPanel associationPanel;
     private javax.swing.JTable closureTable;
     public javax.swing.JPanel contentPanel;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -1160,6 +1256,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
+    private net.sf.jailer.ui.JComboBox searchComboBox;
     private javax.swing.JCheckBox showOnlyEnabledCheckBox;
     private javax.swing.JPanel tabAssAssPanel;
     private javax.swing.JPanel tabAssPanel;
