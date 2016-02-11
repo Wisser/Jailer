@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2012 the original author or authors.
+ * Copyright 2007 - 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,6 +30,7 @@ import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
@@ -68,7 +69,6 @@ import javax.swing.JTable;
 import javax.swing.JTree;
 import javax.swing.ListSelectionModel;
 import javax.swing.ScrollPaneConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
@@ -262,6 +262,18 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         boolean saveNeedsSave = needsSave;
 		initComponents();
 
+		ItemListener aListener = new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent arg0) {
+				Object o1 = rootTable.getSelectedItem();
+				Object o2 = subjectTable.getSelectedItem();
+				resetFocus.setEnabled(!(o1 == null && o2 == null || o1 != null && o1.equals(o2)));
+			}
+		};
+				
+		rootTable.addItemListener(aListener);
+		subjectTable.addItemListener(aListener);
+		
 		closureBorderView = new ClosureBorderDialog(this.extractionModelFrame, true) {
 			private static final long serialVersionUID = -7426280043553389753L;
 			@Override
