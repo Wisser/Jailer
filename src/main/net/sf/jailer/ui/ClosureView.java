@@ -189,6 +189,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
                 	final Table table = getDataModel().getTableByDisplayName((String) value);
                 	if (table != null) {
 						JMenuItem restrictAll = new JMenuItem("Disable Associations");
+						restrictAll.setToolTipText("disables every non-dependent association with this table");
 						restrictAll.addActionListener(new ActionListener () {
 							public void actionPerformed(ActionEvent e) {
 								ClosureView.this.extractionModelEditor.ignoreAll(table);
@@ -203,6 +204,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 							}
 						});
 						removeRestrictions.setEnabled(ClosureView.this.extractionModelEditor.isRemovalOfAllRestrictionsApplicable(table));
+						removeRestrictions.setToolTipText("removes all restrictions on all associations with this table");
 						
 						final JPopupMenu popup = new JPopupMenu();
 						popup.add(restrictAll);
@@ -214,7 +216,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 						}
 						
 						ClosureView.this.extractionModelEditor.graphView.createPopupMenu(table, false);
-						popup.show(e.getComponent(), cellRect.x, cellRect.y + cellRect.height);
+						popup.show(e.getComponent(), cellRect.x, cellRect.y + cellRect.height + 4);
                 	}
                 }
 			}
@@ -251,7 +253,15 @@ public abstract class ClosureView extends javax.swing.JDialog {
 				if (render instanceof JLabel) {
 					((JLabel) render).setForeground(Color.BLACK);
 					((JLabel) render).setFont(normal);
-					((JLabel) render).setToolTipText(((JLabel) render).getText());
+					String text = ((JLabel) render).getText();
+					if (!"".equals(text)) {
+						((JLabel) render).setToolTipText(text);
+					} else {
+						((JLabel) render).setToolTipText(null);
+					}
+					if (row == 0) {
+						((JLabel) render).setFont(bold);
+					}
 					if (cellInfo != null && selectedTable != null) {
 						if (selectedTable.equals(value) || cellInfo.pathToRoot.contains(value)) {
 							((JLabel) render).setFont(bold);
@@ -281,7 +291,8 @@ public abstract class ClosureView extends javax.swing.JDialog {
 				return render;
 			}
 		});
-		closureTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+//		closureTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		closureTable.setRowSelectionAllowed(false);
 		rootTable.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
             	Table table = getDataModel().getTableByDisplayName((String) ClosureView.this.rootTable.getSelectedItem());
@@ -419,7 +430,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		
 		List<Object[]> data = new ArrayList<Object[]>();
 		
-		Set<String> visited = new HashSet<String>();
+		Set<String> visited = new TreeSet<String>();
 		List<String> currentLine = new ArrayList<String>();
 		if (selectedTable != null) {
 			String displayName = getDataModel().getDisplayName(selectedTable);
@@ -433,25 +444,29 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		int distance = 0;
 		final Color BG1 = new Color(255, 255, 255);
 		final Color BG2 = new Color(230, 255, 255);
-		final Color BG3 = new Color(220, 220, 220);
+		final Color BG3 = new Color(255, 255, 210);
+		final Color BG4 = new Color(220, 220, 220);
+		final Color BG5 = new Color(255, 245, 240);
 		bgColor.clear();
 		
 		boolean invLineRendered = false;
+		boolean invLineRest = false;
 		
 		while (!currentLine.isEmpty()) {
 			// add current line to table model
-			if (invLineRendered) {
+			if (invLineRendered && !invLineRest) {
 				Object[] lineAsObjects = new Object[MAX_TABLES_PER_LINE + 1];
 				Arrays.fill(lineAsObjects, "");
 				data.add(lineAsObjects);
-				bgColor.add(BG3);
+				bgColor.add(BG4);
 			}
 			
 			Collections.sort(currentLine);
 			Object[] lineAsObjects = new Object[MAX_TABLES_PER_LINE + 1];
 			Arrays.fill(lineAsObjects, "");
 			int col = 0;
-			lineAsObjects[col++] = invLineRendered? "infinite" : distance > 0? ("" + distance) : "";
+			lineAsObjects[col++] = invLineRest? "" : invLineRendered? "infinite" : distance > 0? ("" + distance) : "";
+			Color color = invLineRendered? (invLineRest? BG5 : BG3) : distance % 2 == 0? BG1 : BG2;
 			for (String t: currentLine) {
 				CellInfo cellInfo = invLineRendered? new CellInfo() : this.cellInfo.get(t);
 				if (col <= MAX_TABLES_PER_LINE) {
@@ -459,7 +474,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 					lineAsObjects[col++] = t;					
 				} else {
 					data.add(lineAsObjects);
-					bgColor.add(distance % 2 == 0? BG1 : BG2);
+					bgColor.add(color);
 					lineAsObjects = new Object[MAX_TABLES_PER_LINE + 1];
 					Arrays.fill(lineAsObjects, "");
 					col = 1;
@@ -470,36 +485,60 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			}
 			if (col > 1) {
 				data.add(lineAsObjects);
-				bgColor.add(distance % 2 != 0? BG1 : BG2);
+				bgColor.add(color);
 			}
 			
 			// get next line
 			List<String> nextLine = new ArrayList<String>();
-			for (String t: currentLine) {
-				Table table = getDataModel().getTableByDisplayName(t);
-				if (table != null) {
-					CellInfo cellInfoT = this.cellInfo.get(t);
-					for (Association association: table.associations) {
-						String displayName = getDataModel().getDisplayName(association.destination);
-						if (!visited.contains(displayName) && !association.isIgnored()) {
-							nextLine.add(displayName);
-							visited.add(displayName);
-							CellInfo cellInfo = new CellInfo();
-							cellInfo.pathToRoot.addAll(cellInfoT.pathToRoot);
-							cellInfo.pathToRoot.add(t);
-							this.cellInfo.put(displayName, cellInfo);
+			if (!invLineRendered) {
+				for (String t: currentLine) {
+					Table table = getDataModel().getTableByDisplayName(t);
+					if (table != null) {
+						CellInfo cellInfoT = this.cellInfo.get(t);
+						for (Association association: table.associations) {
+							String displayName = getDataModel().getDisplayName(association.destination);
+							if (!visited.contains(displayName) && !association.isIgnored()) {
+								nextLine.add(displayName);
+								visited.add(displayName);
+								CellInfo cellInfo = new CellInfo();
+								cellInfo.pathToRoot.addAll(cellInfoT.pathToRoot);
+								cellInfo.pathToRoot.add(t);
+								this.cellInfo.put(displayName, cellInfo);
+							}
 						}
 					}
 				}
 			}
 			
-			if (nextLine.isEmpty() && !invLineRendered) {
-				for (Table table: getDataModel().getTables()) {
-					String displayName = getDataModel().getDisplayName(table);
-					if (!visited.contains(displayName)) {
-						nextLine.add(displayName);
-						visited.add(displayName);
+			if (nextLine.isEmpty()) {
+				if (!invLineRendered) {
+					Set<String> preVisited = new TreeSet<String>(visited);
+					for (Table table: getDataModel().getTables()) {
+						String displayName = getDataModel().getDisplayName(table);
+						if (!visited.contains(displayName)) {
+							boolean connected = false;
+							for (Association a: table.associations) {
+								if (preVisited.contains(getDataModel().getDisplayName(a.destination))) {
+									connected = true;
+									break;
+								}
+							}
+							if (connected) {
+								nextLine.add(displayName);
+								visited.add(displayName);
+							}
+						}
 					}
+				}
+				if (nextLine.isEmpty()) {
+					for (Table table: getDataModel().getTables()) {
+						String displayName = getDataModel().getDisplayName(table);
+						if (!visited.contains(displayName)) {
+							nextLine.add(displayName);
+							visited.add(displayName);
+						}
+					}
+					invLineRest = invLineRendered;
 				}
 				invLineRendered = true;
 			}
