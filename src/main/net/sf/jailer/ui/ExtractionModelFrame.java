@@ -168,6 +168,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				return extractionModelEditor.dataModel.getParameters(extractionModelEditor.condition.getText());
 			}
 		});
+        ++numInstances;
     }
     
     /**
@@ -1369,6 +1370,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	    } else {
 	    	dispose();
 	    }
+    	if (numInstances == 1) {
+    		System.exit(0);
+    	}
     }
 
     private void fileMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileMenuActionPerformed
@@ -1799,5 +1803,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
 	private static final long serialVersionUID = -2252377308370736756L;
+	private static volatile int numInstances = 0;
 
 }
