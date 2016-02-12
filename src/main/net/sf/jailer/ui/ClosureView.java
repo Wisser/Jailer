@@ -99,7 +99,17 @@ public abstract class ClosureView extends javax.swing.JDialog {
 	private class CellInfo {
 		public int row, column;
 		boolean ignored = false;
-		List<String> pathToRoot = new ArrayList<String>();
+		Set<CellInfo> parents = new HashSet<CellInfo>(4);
+		boolean selected;
+		void select() {
+			if (!selected) {
+				selected = true;
+				for (CellInfo parent: parents) {
+					parent.select();
+				}
+			}
+		}
+		Table table;
 	};
 
 	/**
@@ -136,63 +146,39 @@ public abstract class ClosureView extends javax.swing.JDialog {
 				Graphics2D g2d = (Graphics2D) graphics;
 				CellInfo selectionInfo = cellInfo.get(selectedTable);
 				if (selectionInfo == null) return;
-				List<Integer> x = new ArrayList<Integer>();
-				List<Integer> y = new ArrayList<Integer>();
-				List<Boolean> ignored = new ArrayList<Boolean>();
 				
-				int pos = 0;
-				for (String t: selectionInfo.pathToRoot) {
-					CellInfo posInfo = cellInfo.get(t);
-					Rectangle r = closureTable.getCellRect(posInfo.row, posInfo.column, false);
-					x.add((int) r.getCenterX());
-					y.add((int) r.getCenterY());
-					ignored.add(posInfo.ignored);
-					++pos;
-				}
-				CellInfo posInfo = selectionInfo;
-				Rectangle r = closureTable.getCellRect(posInfo.row, posInfo.column, false);
-				x.add((int) r.getCenterX());
-				y.add((int) r.getCenterY());
-				ignored.add(posInfo.ignored);
-				++pos;
-    	    	
-				for (boolean drawIgnored: new boolean[] { true, false }) {
-					int start = 1;
-					while (start < x.size()) {
-						int end = start + 1;
-						while (end < x.size()) {
-							if (((boolean) ignored.get(start)) ^ ((boolean) ignored.get(end))) {
-								break;
-							} else {
-								++end;
-							}
-						}
-						if (start < end && !(((boolean) ignored.get(start)) ^ drawIgnored)) {
-							int size = end - start + 1;
-							int[] xArr = new int[size];
-			    	    	for (int i = 0; i < size; ++i) {
-			    	    		xArr[i] = x.get(start - 1 + i);
-			    	    	}
-			    	    	int[] yArr = new int[size];
-			    	    	for (int i = 0; i < size; ++i) {
-			    	    		yArr[i] = y.get(start -1 + i);
-			    	    	}
+				paint(g2d, selectionInfo, new HashSet<CellInfo>());
+			}
 			
-			    	    	Color color = new Color(0, 80, 255, 60);
-			    	    	g2d.setColor(color);
-			    	    	g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			private void paint(Graphics2D g2d, CellInfo selectionInfo, Set<CellInfo> painted) {
+				if (painted.contains(selectionInfo)) {
+					return;
+				}
+				painted.add(selectionInfo);
+				for (CellInfo parent: selectionInfo.parents) {
+					int[] x = new int[2];
+					int[] y = new int[2];
+					Rectangle r = closureTable.getCellRect(parent.row, parent.column, false);
+					x[0] = ((int) r.getCenterX());
+					y[0] = ((int) r.getCenterY());
+					CellInfo posInfo = selectionInfo;
+					r = closureTable.getCellRect(posInfo.row, posInfo.column, false);
+					x[1] = ((int) r.getCenterX());
+					y[1] = ((int) r.getCenterY());
+	    	    	Color color = new Color(0, 0, 245, 60);
+	    	    	g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-			    	    	if (drawIgnored) {
-			    	    		BasicStroke stroke = new BasicStroke(3);
-			    	    		g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
-			    					1.0f));
-			    	    	} else {
-			    	    		g2d.setStroke(new BasicStroke(5));
-			    	    	}
-			        	    g2d.drawPolyline(xArr, yArr, size);
-						}
-						start = end;
-					}
+	    	    	if (selectionInfo.ignored) {
+	    	    		BasicStroke stroke = new BasicStroke(3);
+	    	    		g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
+	    					1.0f));
+	    	    		color = new Color(0, 0, 0, 60);
+	    	    	} else {
+	    	    		g2d.setStroke(new BasicStroke(3));
+	    	    	}
+	    	    	g2d.setColor(color);
+	        	    g2d.drawPolyline(x, y, 2);
+	        	    paint(g2d, parent, painted);
 				}
 			}
         };
@@ -280,16 +266,14 @@ public abstract class ClosureView extends javax.swing.JDialog {
 					Object value, boolean isSelected, boolean hasFocus,
 					int row, int column) {
 				isSelected = selectedTable != null && selectedTable.equals(value);
-				if (value == null || column < 1 || "".equals(value)) {
-					hasFocus = false;
-				}
+				hasFocus = false;
 				Component render = defaultTableCellRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				if (render instanceof JLabel && !isSelected) {
 					if (row < bgColor.size()) {
 						((JLabel) render).setBackground(bgColor.get(row));
 					}
 				}
-				CellInfo cellInfo = ClosureView.this.cellInfo.get(selectedTable);
+				CellInfo cellInfo = ClosureView.this.cellInfo.get(value);
 				if (render instanceof JLabel) {
 					((JLabel) render).setForeground(Color.BLACK);
 					((JLabel) render).setFont(normal);
@@ -303,7 +287,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 						((JLabel) render).setFont(bold);
 					}
 					if (cellInfo != null && selectedTable != null) {
-						if (selectedTable.equals(value) || cellInfo.pathToRoot.contains(value)) {
+						if (selectedTable.equals(value) || cellInfo.selected) {
 							((JLabel) render).setFont(bold);
 							((JLabel) render).setBackground(new Color(255, 230, 200));
 						}
@@ -350,39 +334,40 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		if (col >= 1 && row >= 0) {
 			String displayName = (String) closureTable.getModel().getValueAt(row, col);
 			closureTable.getSelectionModel().clearSelection();
+			for (CellInfo c: cellInfo.values()) {
+				c.selected = false;
+			}
 			if (displayName != null && !"".equals(displayName)) {
-//				if (selectedTable == null || !selectedTable.equals(displayName)) {
-					selectedTable = displayName;
-					searchComboBox.setSelectedItem(selectedTable);
-//			        disableAssocButton.setEnabled(true);
-					repaintClosureView();
-					Table table = getDataModel().getTableByDisplayName(selectedTable);
-					if (table != null) {
-						CellInfo selectionInfo = cellInfo.get(selectedTable);
-						if (selectionInfo != null) {
-							Association association = null;
-							if (selectionInfo.pathToRoot != null && selectionInfo.pathToRoot.size() > 0) {
-								Table pre = getDataModel().getTableByDisplayName(selectionInfo.pathToRoot.get(selectionInfo.pathToRoot.size() - 1));
-								if (pre != null) {
-									for (Association a: pre.associations) {
-										if (!a.isIgnored()) {
-											if (a.destination.equals(table)) {
-												association = a;
-												break;
-											}
+				selectedTable = displayName;
+				searchComboBox.setSelectedItem(selectedTable);
+				repaintClosureView();
+				Table table = getDataModel().getTableByDisplayName(selectedTable);
+				if (table != null) {
+					CellInfo selectionInfo = cellInfo.get(selectedTable);
+					selectionInfo.select();
+					if (selectionInfo != null) {
+						Association association = null;
+						for (CellInfo parent: selectionInfo.parents) {
+							Table pre = parent.table;
+							if (pre != null) {
+								for (Association a: pre.associations) {
+									if (!a.isIgnored()) {
+										if (a.destination.equals(table)) {
+											association = a;
+											break;
 										}
 									}
 								}
 							}
-							if (association != null && ClosureView.this.extractionModelEditor.select(association)) {
-								return;
-							}
 						}
-						if (!ClosureView.this.extractionModelEditor.select(table)) {
-							ClosureView.this.extractionModelEditor.setRootSelection(table);
+						if (association != null && ClosureView.this.extractionModelEditor.select(association)) {
+							return;
 						}
 					}
-//				}
+					if (!ClosureView.this.extractionModelEditor.select(table)) {
+						ClosureView.this.extractionModelEditor.setRootSelection(table);
+					}
+				}
 			}
 		}
 	}
@@ -547,13 +532,19 @@ public abstract class ClosureView extends javax.swing.JDialog {
 					CellInfo cellInfoT = this.cellInfo.get(t);
 					for (Association association: table.associations) {
 						String displayName = getDataModel().getDisplayName(association.destination);
-						if (!visited.contains(displayName) && !association.isIgnored()) {
-							nextLine.add(displayName);
-							visited.add(displayName);
-							CellInfo cellInfo = new CellInfo();
-							cellInfo.pathToRoot.addAll(cellInfoT.pathToRoot);
-							cellInfo.pathToRoot.add(t);
-							this.cellInfo.put(displayName, cellInfo);
+						if (!association.isIgnored()) {
+							if (!visited.contains(displayName)) {
+								nextLine.add(displayName);
+								visited.add(displayName);
+								CellInfo cellInfo = new CellInfo();
+								cellInfo.parents.add(cellInfoT);
+								cellInfo.table = table;
+								this.cellInfo.put(displayName, cellInfo);
+							} else {
+								if (nextLine.contains(displayName)) {
+									this.cellInfo.get(displayName).parents.add(cellInfoT);
+								}
+							}
 						}
 					}
 				}
@@ -575,17 +566,17 @@ public abstract class ClosureView extends javax.swing.JDialog {
 							destName = getDataModel().getDisplayName(a.destination);
 							if (preVisited.contains(destName)) {
 								cellInfoT = this.cellInfo.get(destName);
-								break;
+								CellInfo cellInfo = this.cellInfo.get(displayName);
+								if (cellInfo == null) {
+									cellInfo = new CellInfo();
+									nextLine.add(displayName);
+									visited.add(displayName);
+								}
+								cellInfo.ignored = true;
+								cellInfo.parents.add(cellInfoT);
+								cellInfo.table = table;
+								this.cellInfo.put(displayName, cellInfo);
 							}
-						}
-						if (cellInfoT != null) {
-							nextLine.add(displayName);
-							visited.add(displayName);
-							CellInfo cellInfo = new CellInfo();
-							cellInfo.ignored = true;
-							cellInfo.pathToRoot.addAll(cellInfoT.pathToRoot);
-							cellInfo.pathToRoot.add(destName);
-							this.cellInfo.put(displayName, cellInfo);
 						}
 					}
 				}
@@ -605,6 +596,13 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			}
 			
 			currentLine = nextLine;
+		}
+		
+		if (selectedTable != null) {
+			CellInfo cInfo = cellInfo.get(this.selectedTable);
+			if (cInfo != null) {
+				cInfo.select();
+			}
 		}
 		
 		Object[][] dataArray = (Object[][]) data.toArray(new Object[data.size()][]);
