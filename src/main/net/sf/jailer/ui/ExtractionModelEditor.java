@@ -302,7 +302,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				jSplitPane2.setDividerLocation(jSplitPane2.getDividerLocation() + 1);
 			}
 		};
-		
+
 		closureView.addTabComponent("Closure Border", closureBorderView.getContentPane());
 		closureBorderView.dispose();
 		
