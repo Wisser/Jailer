@@ -64,6 +64,7 @@ import javax.swing.table.TableColumn;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -76,7 +77,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 	/**
 	 * Maximum number of tables in a closure-table's line.
 	 */
-	private final static int MAX_TABLES_PER_LINE = 6;
+	private final static int MAX_TABLES_PER_LINE = 8;
 	
 	/**
 	 * The extraction model editor.
@@ -116,7 +117,8 @@ public abstract class ClosureView extends javax.swing.JDialog {
 	 * Holds infos about a cell in the closure-table.
 	 */
 	private Map<String, CellInfo> cellInfo = new HashMap<String, CellInfo>();
-
+	private Set<Pair<String, String>> dependencies = new HashSet<Pair<String,String>>();
+	
 	private final JComboBox rootTable;
 	
     /** Creates new form FindDialog 
@@ -147,38 +149,46 @@ public abstract class ClosureView extends javax.swing.JDialog {
 				CellInfo selectionInfo = cellInfo.get(selectedTable);
 				if (selectionInfo == null) return;
 				
-				paint(g2d, selectionInfo, new HashSet<CellInfo>());
+				paint(g2d, selectionInfo, false, new HashSet<CellInfo>());
+				paint(g2d, selectionInfo, true, new HashSet<CellInfo>());
 			}
 			
-			private void paint(Graphics2D g2d, CellInfo selectionInfo, Set<CellInfo> painted) {
+			private void paint(Graphics2D g2d, CellInfo selectionInfo, boolean drawDependencies, Set<CellInfo> painted) {
 				if (painted.contains(selectionInfo)) {
 					return;
 				}
 				painted.add(selectionInfo);
 				for (CellInfo parent: selectionInfo.parents) {
-					int[] x = new int[2];
-					int[] y = new int[2];
-					Rectangle r = closureTable.getCellRect(parent.row, parent.column, false);
-					x[0] = ((int) r.getCenterX());
-					y[0] = ((int) r.getCenterY());
-					CellInfo posInfo = selectionInfo;
-					r = closureTable.getCellRect(posInfo.row, posInfo.column, false);
-					x[1] = ((int) r.getCenterX());
-					y[1] = ((int) r.getCenterY());
-	    	    	Color color = new Color(0, 0, 245, 60);
-	    	    	g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-
-	    	    	if (selectionInfo.ignored) {
-	    	    		BasicStroke stroke = new BasicStroke(3);
-	    	    		g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
-	    					1.0f));
-	    	    		color = new Color(0, 0, 0, 60);
-	    	    	} else {
-	    	    		g2d.setStroke(new BasicStroke(3));
-	    	    	}
-	    	    	g2d.setColor(color);
-	        	    g2d.drawPolyline(x, y, 2);
-	        	    paint(g2d, parent, painted);
+					boolean isDependency = dependencies.contains(new Pair<String, String>(
+							getDataModel().getDisplayName(parent.table), getDataModel().getDisplayName(selectionInfo.table)));
+					if (isDependency == drawDependencies) {
+						int[] x = new int[2];
+						int[] y = new int[2];
+						Rectangle r = closureTable.getCellRect(parent.row, parent.column, false);
+						x[0] = ((int) r.getCenterX());
+						y[0] = ((int) r.getCenterY());
+						CellInfo posInfo = selectionInfo;
+						r = closureTable.getCellRect(posInfo.row, posInfo.column, false);
+						x[1] = ((int) r.getCenterX());
+						y[1] = ((int) r.getCenterY());
+		    	    	Color color = new Color(0, 0, 245, 60);
+		    	    	g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+	
+		    	    	if (selectionInfo.ignored) {
+		    	    		BasicStroke stroke = new BasicStroke(3);
+		    	    		g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
+		    					1.0f));
+		    	    		color = new Color(0, 0, 0, 60);
+		    	    	} else {
+		    	    		g2d.setStroke(new BasicStroke(3));
+		    	    	}
+		    	    	if (isDependency) {
+		    	    		color = new Color(245, 0, 0, 60);
+		    	    	}
+		    	    	g2d.setColor(color);
+		        	    g2d.drawPolyline(x, y, 2);
+					}
+	        	    paint(g2d, parent, drawDependencies, painted);
 				}
 			}
         };
@@ -445,6 +455,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
      */
     private void refreshTableModel() {
     	cellInfo.clear();
+    	dependencies.clear();
     	Table selectedTable = getSelectedTable();
 		refreshAssociationView(selectedTable);
 		
@@ -466,6 +477,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			CellInfo cellInfo = new CellInfo();
 			cellInfo.column = 1;
 			cellInfo.row = 0;
+			cellInfo.table = selectedTable;
 			this.cellInfo.put(displayName, cellInfo);
 		}
 		
@@ -538,11 +550,17 @@ public abstract class ClosureView extends javax.swing.JDialog {
 								visited.add(displayName);
 								CellInfo cellInfo = new CellInfo();
 								cellInfo.parents.add(cellInfoT);
-								cellInfo.table = table;
+								cellInfo.table = association.destination;
+								if (association.isInsertDestinationBeforeSource()) {
+									dependencies.add(new Pair<String, String>(t, displayName));
+								}
 								this.cellInfo.put(displayName, cellInfo);
 							} else {
 								if (nextLine.contains(displayName)) {
 									this.cellInfo.get(displayName).parents.add(cellInfoT);
+									if (association.isInsertDestinationBeforeSource()) {
+										dependencies.add(new Pair<String, String>(t, displayName));
+									}
 								}
 							}
 						}
@@ -569,11 +587,15 @@ public abstract class ClosureView extends javax.swing.JDialog {
 								CellInfo cellInfo = this.cellInfo.get(displayName);
 								if (cellInfo == null) {
 									cellInfo = new CellInfo();
+									cellInfo.table = table;
 									nextLine.add(displayName);
 									visited.add(displayName);
 								}
 								cellInfo.ignored = true;
 								cellInfo.parents.add(cellInfoT);
+								if (a.isInsertDestinationBeforeSource()) {
+									dependencies.add(new Pair<String, String>(displayName, destName));
+								}
 								cellInfo.table = table;
 								this.cellInfo.put(displayName, cellInfo);
 							}
