@@ -75,9 +75,9 @@ import net.sf.jailer.util.SqlUtil;
 public abstract class ClosureView extends javax.swing.JDialog {
 
 	/**
-	 * Maximum number of tables in a closure-table's line.
+	 * Number of tables in a closure-table's line.
 	 */
-	private final static int MAX_TABLES_PER_LINE = 8;
+	private int tablesPerLine = 8;
 	
 	/**
 	 * The extraction model editor.
@@ -129,6 +129,18 @@ public abstract class ClosureView extends javax.swing.JDialog {
     	this.rootTable = rootTable;
         initComponents();
         
+        columnsComboBox.setModel(new DefaultComboBoxModel<Integer>(new Integer[] { 
+        		4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
+        }));
+        columnsComboBox.setSelectedItem(new Integer(tablesPerLine));
+        columnsComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+            	if (evt.getItem() instanceof Integer) {
+            		tablesPerLine = (Integer) evt.getItem();
+            		refresh();
+            	}
+            }
+        });
         showOnlyEnabledCheckBox.setMnemonic(KeyEvent.VK_S);
 //        disableAssocButton.setMnemonic(KeyEvent.VK_D);
 //        disableAssocButton.setEnabled(false);
@@ -459,7 +471,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
     	Table selectedTable = getSelectedTable();
 		refreshAssociationView(selectedTable);
 		
-		Object[] columns = new Object[MAX_TABLES_PER_LINE + 1];
+		Object[] columns = new Object[tablesPerLine + 1];
 		for (int i = 0; i < columns.length; ++i) {
 			columns[i] = "";
 		}
@@ -497,21 +509,21 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		while (!currentLine.isEmpty()) {
 			// add current line to table model
 			if (distance == OMEGA || isolated) {
-				Object[] lineAsObjects = new Object[MAX_TABLES_PER_LINE + 1];
+				Object[] lineAsObjects = new Object[tablesPerLine + 1];
 				Arrays.fill(lineAsObjects, "");
 				data.add(lineAsObjects);
 				bgColor.add(BG4);
 			}
 			
 			Collections.sort(currentLine);
-			Object[] lineAsObjects = new Object[MAX_TABLES_PER_LINE + 1];
+			Object[] lineAsObjects = new Object[tablesPerLine + 1];
 			Arrays.fill(lineAsObjects, "");
 			int col = 0;
 			lineAsObjects[col++] = isolated? "isolated" : distance > OMEGA? "" : distance == OMEGA ? "infinite" : distance > 0? ("" + distance) : "";
 			Color color = distance >= OMEGA? (distance % 2 == 0? BG5 : BG3) : distance % 2 == 0? BG1 : BG2;
 			for (String t: currentLine) {
 				CellInfo cellInfo = this.cellInfo.get(t);
-				if (col <= MAX_TABLES_PER_LINE) {
+				if (col <= tablesPerLine) {
 					if (cellInfo != null) {
 						cellInfo.column = col;
 					}
@@ -519,7 +531,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 				} else {
 					data.add(lineAsObjects);
 					bgColor.add(color);
-					lineAsObjects = new Object[MAX_TABLES_PER_LINE + 1];
+					lineAsObjects = new Object[tablesPerLine + 1];
 					Arrays.fill(lineAsObjects, "");
 					col = 1;
 					if (cellInfo != null) {
@@ -1022,7 +1034,9 @@ public abstract class ClosureView extends javax.swing.JDialog {
         jScrollPane1 = new javax.swing.JScrollPane();
         closureTable = new javax.swing.JTable();
         jLabel1 = new javax.swing.JLabel();
-        searchComboBox = new net.sf.jailer.ui.JComboBox();
+        searchComboBox = new javax.swing.JComboBox();
+        jLabel7 = new javax.swing.JLabel();
+        columnsComboBox = new javax.swing.JComboBox();
         associationPane = new javax.swing.JPanel();
         associationPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -1100,6 +1114,25 @@ public abstract class ClosureView extends javax.swing.JDialog {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
         tablePanel.add(searchComboBox, gridBagConstraints);
+
+        jLabel7.setText("Columns ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        tablePanel.add(jLabel7, gridBagConstraints);
+
+        columnsComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        columnsComboBox.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                columnsComboBoxItemStateChanged(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 2;
+        tablePanel.add(columnsComboBox, gridBagConstraints);
 
         tablePane.add(tablePanel);
 
@@ -1239,6 +1272,9 @@ public abstract class ClosureView extends javax.swing.JDialog {
     	}
     }//GEN-LAST:event_searchComboBoxActionPerformed
 
+    private void columnsComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_columnsComboBoxItemStateChanged
+    }//GEN-LAST:event_columnsComboBoxItemStateChanged
+
 	private void initTabbedPane() {
 		if (tabbedPane.getSelectedIndex() == 2) {
 			tabAssTabPanel.removeAll();
@@ -1266,6 +1302,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
     private javax.swing.JPanel associationPane;
     private javax.swing.JPanel associationPanel;
     private javax.swing.JTable closureTable;
+    private javax.swing.JComboBox columnsComboBox;
     public javax.swing.JPanel contentPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -1273,10 +1310,11 @@ public abstract class ClosureView extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
-    private net.sf.jailer.ui.JComboBox searchComboBox;
+    private javax.swing.JComboBox searchComboBox;
     private javax.swing.JCheckBox showOnlyEnabledCheckBox;
     private javax.swing.JPanel tabAssAssPanel;
     private javax.swing.JPanel tabAssPanel;

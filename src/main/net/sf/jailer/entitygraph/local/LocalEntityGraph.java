@@ -164,7 +164,7 @@ public class LocalEntityGraph extends EntityGraph {
 	/**
 	 * Copy constructor.
 	 */
-	public LocalEntityGraph(int graphID, DataModel dataModel,
+	private LocalEntityGraph(int graphID, DataModel dataModel,
 			Session remoteSession, Session localSession, String databaseFolder,
 			InlineViewStyle localInlineViewStyle,
 			InlineViewStyle remoteInlineViewStyle, Set<String> upkColumnNames,
@@ -187,7 +187,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param remoteSession
 	 * @throws Exception 
 	 */
-	public LocalEntityGraph(int graphID, Session remoteSession) throws Exception {
+	private LocalEntityGraph(int graphID, Session remoteSession) throws Exception {
 		super(graphID, new DataModel(new PrimaryKeyFactory() {
 			@Override
 			public PrimaryKey createPrimaryKey(List<Column> columns) {
@@ -412,10 +412,28 @@ public class LocalEntityGraph extends EntityGraph {
      * @return row-count
      */
     public long addEntities(Table table, String condition, int today, long limit) throws SQLException {
-        return addEntities(table, "T", condition, today);
+        checkPseudoColumns(table, condition);
+    	return addEntities(table, "T", condition, today);
     }
     
     /**
+	 * The pseudo-columns $DISTANCE and $IS_SUBJECT are currently not supported
+	 * if the "working table scope" "local database" is used. It works with
+	 * "global tables" or "temporary tables".
+	 */
+    private void checkPseudoColumns(Table table, String condition) {
+    	if (condition != null) {
+        	if (!condition.equals(SqlUtil.resolvePseudoColumns(condition, "A", "B", 0, 0))) {
+        		throw new IllegalArgumentException(
+        				"Unsupported use of pseudo-columns in condition:\n\"" + condition + "\"\n(Table " + table.getName() + ")\n\n" +
+        				"the pseudo-columns $DISTANCE and $IS_SUBJECT are currently not supported " +
+        				"if the \"working table scope\" \"local database\" is used. It works with " +
+        				"\"global tables\" or \"temporary tables\".");
+        	}
+        }
+	}
+
+	/**
      * Resolves an association. Retrieves and adds all entities 
      * associated with an entity born yesterday in the graph 
      * and adds the dependencies.
@@ -428,6 +446,7 @@ public class LocalEntityGraph extends EntityGraph {
      */
     public long resolveAssociation(final Table table, Association association, final int today) throws SQLException {
         final String jc = association.getJoinCondition();
+        checkPseudoColumns(table, jc);
         if (jc != null) {
             final String destAlias;
 			final String sourceAlias;
@@ -580,6 +599,7 @@ public class LocalEntityGraph extends EntityGraph {
      * @param dependencyId id of dependency
      */
     public void addDependencies(final Table from, final String fromAlias, final Table to, final String toAlias, final String condition, final int aggregationId, final int dependencyId, boolean isAssociationReversed) throws SQLException {
+        checkPseudoColumns(from, condition);
     	String upkColumnList = upkColumnList(from, "E1", null);
 		String select = 
     			"Select " + upkColumnList + " From " + SQLDialect.dmlTableReference(ENTITY, localSession) + " E1 " +

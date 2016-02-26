@@ -30,7 +30,7 @@ public class ParameterHandler {
 	/**
 	 * Valid parameter identifier characters.
 	 */
-	public static final String VALID_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789-öäüÖÄÜß?#";
+	public static final String VALID_CHARS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789-\u00F6\u00E4\u00FC\u00D6\u00C4\u00DC\u00DF?#";
 
 	/**
 	 * Collects all parameters in a given string.

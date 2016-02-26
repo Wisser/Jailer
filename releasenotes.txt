@@ -1,3 +1,6 @@
+5.2.1
+  - minor improvements.
+
 5.2
   - Added "Closure View" and "Closure Border View" tools.
 
