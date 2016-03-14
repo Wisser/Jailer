@@ -18,6 +18,7 @@ package net.sf.jailer.ui;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Toolkit;
@@ -784,4 +785,13 @@ public class UIUtil {
 		}
 	}
 
+	public static void checkTermination() {
+		for (Window w: Frame.getWindows()) {
+			if (w.isShowing()) {
+				return;
+			}
+		}
+		System.exit(0);
+	}
+	
 }

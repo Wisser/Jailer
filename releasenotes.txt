@@ -1,3 +1,6 @@
+5.3
+  - The Data Browser now offers a "Data Export" feature.
+
 5.2.1
   - minor improvements.
 
@@ -5,7 +8,7 @@
   - Added "Closure View" and "Closure Border View" tools.
 
 5.1
-  - Better UI and Improved navigation.
+  - Better UI and improved navigation.
 
 5.0.2
   - Viewing contents of CLOB and XML column types 

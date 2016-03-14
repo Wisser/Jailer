@@ -29,6 +29,7 @@ import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -133,7 +134,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * Allowed row limits.
 	 */
-	private static final Integer[] ROW_LIMITS = new Integer[] { 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 70000, 100000 };
+	private static final Integer[] ROW_LIMITS = new Integer[] { 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 70000, 100000 };
 
 	/**
 	 * Concurrently loads rows.
@@ -755,7 +756,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 		limitBox.setModel(new DefaultComboBoxModel(ROW_LIMITS));
-		limitBox.setSelectedIndex(association == null? 0 : 1);
+		limitBox.setSelectedItem(association == null? 100 : 200);
 		if (limit != null) {
 			limitBox.setSelectedItem(limit);
 		}
@@ -1133,33 +1134,24 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 		
 		popup.add(new JSeparator());
-		
-		JMenuItem snw = new JMenuItem("Show in New Window");
-		popup.add(snw);
-		snw.addActionListener(new ActionListener() {
+		JMenuItem exportData = new JMenuItem("Export Data");
+		popup.add(exportData);
+		exportData.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				showInNewWindow();
+				openExtractionModelEditor(true);
 			}
 		});
-		JMenuItem al = new JMenuItem("Append Layout...");
-		popup.add(al);
-		al.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				appendLayout();
-			}
-		});
-		popup.add(new JSeparator());
+
 		JMenuItem extractionModel = new JMenuItem("Create Extraction Model");
 		popup.add(extractionModel);
 		extractionModel.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				openExtractionModelEditor();
+				openExtractionModelEditor(false);
 			}
 		});
-		
+
 		popup.add(new JSeparator());
 		
 		if (!forNavTree) {
@@ -1214,6 +1206,25 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		delete.setEnabled(rows.size() > 0);
 		
 		popup.add(new JSeparator());
+		
+		JMenuItem snw = new JMenuItem("Show in New Window");
+		popup.add(snw);
+		snw.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				showInNewWindow();
+			}
+		});
+		JMenuItem al = new JMenuItem("Append Layout...");
+		popup.add(al);
+		al.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				appendLayout();
+			}
+		});
+		
+		popup.add(new JSeparator());
 		JMenuItem m = new JMenuItem("Hide from View");
 		popup.add(m);
 		m.addActionListener(new ActionListener() {
@@ -1239,7 +1250,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return popup;
 	}
 
-	void openExtractionModelEditor() {
+	void openExtractionModelEditor(boolean doExport) {
 		Component parent = SwingUtilities.getWindowAncestor(this);
 		if (parent == null) {
 			parent = this;
@@ -1274,8 +1285,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 //				}
 				
 				final SbEDialog sbEDialog = new SbEDialog(SwingUtilities.getWindowAncestor(this),
-						"Create Extraction Model for Subject \"" + dataModel.getDisplayName(stable) + "\".", (parents.isEmpty()? "" : ("\n\n" + parents.size() + " disregarded parent tables.")));
+						(doExport? "Export rows and related rows from \"" : "Create Extraction Model for Subject \"") + dataModel.getDisplayName(stable) + "\".", (parents.isEmpty()? "" : ("\n\n" + parents.size() + " disregarded parent tables.")));
 				sbEDialog.regardButton.setVisible(!parents.isEmpty());
+				sbEDialog.dispose();
 				DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
 					@Override
 					public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded, boolean leaf, int row,
@@ -1338,9 +1350,41 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 //			}
 			
 			subjectCondition = root.needsAnchor? root.anchorWhereClause : root.whereClause;
+			if (doExport && (getParentBrowser() != null || isLimitExceeded)) {
+				subjectCondition = root.whereClause;
+				StringBuilder sb = new StringBuilder();
+				boolean f = true;
+				for (Row row: rows) {
+					if (f) {
+						f = false;
+					} else {
+						sb.append(" or \n");
+					}
+					sb.append("(" + row.rowId + ")");
+				}
+
+				if (subjectCondition != null && subjectCondition.trim().length() > 0) {
+					subjectCondition = "(" + subjectCondition + ")\nand\n(" + sb + ")";
+				} else {
+					subjectCondition = sb.toString();
+				}
+			}
 			if (subjectCondition == null) {
 				subjectCondition = "";
 			}
+//			if (doExport && isLimitExceeded && rows != null && !rows.isEmpty()) {
+//				StringBuilder sb = new StringBuilder();
+//				boolean f = true;
+//				for (Row row: rows) {
+//					if (f) {
+//						f = false;
+//					} else {
+//						sb.append(" or ");
+//					}
+//					sb.append("(" + row.rowId + ")");
+//				}
+//				subjectCondition = sb.toString();
+//			}
 			subjectCondition = SqlUtil.replaceAliases(subjectCondition, "T", "T");
 			
 			for (int i = 1; ; ++i) {
@@ -1357,14 +1401,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			collectPositions(positions);
 			dataModel.save(file, stable, subjectCondition, ScriptFormat.SQL, restrictionDefinitions, positions);
 
-			if (DataBrowserContext.isStandAlone()) {
+			if (DataBrowserContext.isStandAlone() && !doExport) {
 				parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
         		JOptionPane.showMessageDialog(parent, "Jailer Extraction Model created:\n'" + file+ "'\n\nJailer Database Subsetter Tool can be found at http://jailer.sourceforge.net", "Jailer Extraction Model", JOptionPane.INFORMATION_MESSAGE);
 			} else {
-				ExtractionModelFrame extractionModelFrame = ExtractionModelFrame.createFrame(file, false);
+				ExtractionModelFrame extractionModelFrame = ExtractionModelFrame.createFrame(file, false, !doExport);
 				extractionModelFrame.setDbConnectionDialogClone(getDbConnectionDialog());
-				extractionModelFrame.markDirty();
-				extractionModelFrame.expandAll();
+				if (doExport) {
+					extractionModelFrame.openExportDialog(false);
+					extractionModelFrame.dispose();
+				} else {
+					extractionModelFrame.markDirty();
+					extractionModelFrame.expandAll();
+				}
 				newFile.delete();
 			}
 		} catch (Throwable e) {
@@ -1374,7 +1423,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
 	}
-	
+
 	private DefaultMutableTreeNode addChildNodes(BrowserContentPane browserContentPane, Collection<Association> restrictedDependencies, int[] count) {
 		DefaultMutableTreeNode node = new DefaultMutableTreeNode(dataModel.getDisplayName(browserContentPane.table));
 		count[0]++;

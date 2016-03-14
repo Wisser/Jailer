@@ -31,9 +31,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.beans.PropertyVetoException;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
@@ -95,6 +93,7 @@ import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.DataModelManagerDialog;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
+import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
@@ -273,6 +272,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			@Override
 			protected void updateMenu(boolean hasTableBrowser, boolean hasIFrame) {
 				storeSessionItem.setEnabled(hasIFrame);
+				exportDataMenuItem.setEnabled(hasTableBrowser);
 				createExtractionModelMenuItem.setEnabled(hasTableBrowser);
 				updateIFramesBar();
 				super.updateMenu(hasTableBrowser, hasIFrame);
@@ -330,6 +330,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			@Override
 			public void windowClosed(WindowEvent e) {
 				desktop.stop();
+				UIUtil.checkTermination();
 			}
 
 			@Override
@@ -634,6 +635,9 @@ public class DataBrowser extends javax.swing.JFrame {
         analyseMenuItem = new javax.swing.JMenuItem();
         dataModelEditorjMenuItem = new javax.swing.JMenuItem();
         jMenu2 = new javax.swing.JMenu();
+        exportDataMenuItem = new javax.swing.JMenuItem();
+        dataImport = new javax.swing.JMenuItem();
+        jSeparator8 = new javax.swing.JPopupMenu.Separator();
         createExtractionModelMenuItem = new javax.swing.JMenuItem();
         menuWindow = new javax.swing.JMenu();
         layoutMenuItem = new javax.swing.JMenuItem();
@@ -659,7 +663,7 @@ public class DataBrowser extends javax.swing.JFrame {
         legende1.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         legende1.setLayout(new java.awt.GridBagLayout());
 
-        modelName.setFont(new java.awt.Font("Dialog", 0, 12));
+        modelName.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         modelName.setText("Data Model \"Demo\"");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -668,7 +672,7 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 12);
         legende1.add(modelName, gridBagConstraints);
 
-        modelPath.setFont(new java.awt.Font("Dialog", 0, 12));
+        modelPath.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         modelPath.setForeground(java.awt.Color.gray);
         modelPath.setText("/home/jailer/datamodel/");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -690,22 +694,22 @@ public class DataBrowser extends javax.swing.JFrame {
         legende.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         legende.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
 
-        dependsOn.setFont(new java.awt.Font("Dialog", 0, 12));
+        dependsOn.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         dependsOn.setForeground(new java.awt.Color(170, 0, 0));
         dependsOn.setText(" depends on");
         legende.add(dependsOn);
 
-        hasDependent.setFont(new java.awt.Font("Dialog", 0, 12));
+        hasDependent.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         hasDependent.setForeground(new java.awt.Color(0, 112, 0));
         hasDependent.setText("  has dependent");
         legende.add(hasDependent);
 
-        associatedWith.setFont(new java.awt.Font("Dialog", 0, 12));
+        associatedWith.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         associatedWith.setForeground(new java.awt.Color(0, 100, 255));
         associatedWith.setText("  associated with");
         legende.add(associatedWith);
 
-        ignored.setFont(new java.awt.Font("Dialog", 0, 12));
+        ignored.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         ignored.setForeground(new java.awt.Color(153, 153, 153));
         ignored.setText("  disabled ");
         legende.add(ignored);
@@ -720,7 +724,7 @@ public class DataBrowser extends javax.swing.JFrame {
         schemaNamePanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         schemaNamePanel.setLayout(new java.awt.GridBagLayout());
 
-        schemaName.setFont(new java.awt.Font("Dialog", 0, 12));
+        schemaName.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         schemaName.setText("Schema");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -743,7 +747,7 @@ public class DataBrowser extends javax.swing.JFrame {
         legende2.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         legende2.setLayout(new java.awt.GridBagLayout());
 
-        connectivityState.setFont(new java.awt.Font("Dialog", 0, 12));
+        connectivityState.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         connectivityState.setText("offline");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -782,7 +786,6 @@ public class DataBrowser extends javax.swing.JFrame {
         jSplitPane2.setContinuousLayout(true);
         jSplitPane2.setOneTouchExpandable(true);
 
-        jPanel4.setBorder(null);
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
         navigationTree.addMouseListener(new java.awt.event.MouseAdapter() {
@@ -810,7 +813,6 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jSplitPane2.setLeftComponent(jPanel4);
 
-        borderBrowserTitledPanel.setBorder(null);
         borderBrowserTitledPanel.setLayout(new java.awt.GridBagLayout());
 
         titleLabel.setText(" ");
@@ -976,6 +978,23 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jMenu2.setText("Tools");
 
+        exportDataMenuItem.setText("Export Data");
+        exportDataMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportDataMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu2.add(exportDataMenuItem);
+
+        dataImport.setLabel("Import SQL Data");
+        dataImport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dataImportActionPerformed(evt);
+            }
+        });
+        jMenu2.add(dataImport);
+        jMenu2.add(jSeparator8);
+
         createExtractionModelMenuItem.setText("Create Extraction Model");
         createExtractionModelMenuItem.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1092,6 +1111,35 @@ public class DataBrowser extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
+    private void exportDataMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportDataMenuItemActionPerformed
+		desktop.createExtractionModel(true);
+    }//GEN-LAST:event_exportDataMenuItemActionPerformed
+
+    private void dataImportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataImportActionPerformed
+        try {
+            String sqlFile = UIUtil.choseFile(null, ".", "Data Import", ".sql", this, false, true);
+            if (sqlFile != null) {
+                List<String> args = new ArrayList<String>();
+                args.add("import");
+                args.add(sqlFile);
+                dbConnectionDialog.addDbArgs(args);
+                UIUtil.runJailer(this, args, false, true, false, false, null, dbConnectionDialog.getPassword(), null, null, false, true, false);
+				if (desktop != null) {
+					desktop.updateMenu();
+					for (RowBrowser rb : desktop.getBrowsers()) {
+						rb.browserContentPane.session = session;
+						rb.browserContentPane.rows.clear();
+					}
+					for (RowBrowser rb : desktop.getRootBrowsers(false)) {
+						rb.browserContentPane.reloadRows();
+					}
+				}
+            }
+        } catch (Exception e) {
+            UIUtil.showException(this, "Error", e);
+        }
+    }//GEN-LAST:event_dataImportActionPerformed
+
 	private void newWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_newWindowMenuItemActionPerformed
 		try {
 			openNewDataBrowser(datamodel.get(), dbConnectionDialog, false);
@@ -1146,7 +1194,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	}// GEN-LAST:event_jMenuItem4ActionPerformed
 
 	private void createExtractionModelMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_createExtractionModelMenuItemActionPerformed
-		desktop.createExtractionModel();
+		desktop.createExtractionModel(false);
 	}// GEN-LAST:event_createExtractionModelMenuItemActionPerformed
 
 	private void storeSessionItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_storeSessionItemActionPerformed
@@ -1507,8 +1555,10 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem cloaseAllMenuItem;
     public javax.swing.JLabel connectivityState;
     private javax.swing.JMenuItem createExtractionModelMenuItem;
+    private javax.swing.JMenuItem dataImport;
     private javax.swing.JMenuItem dataModelEditorjMenuItem;
     private javax.swing.JLabel dependsOn;
+    private javax.swing.JMenuItem exportDataMenuItem;
     private javax.swing.JLabel hasDependent;
     private javax.swing.JMenuItem helpForum;
     private javax.swing.JMenu helpMenu;
@@ -1536,6 +1586,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator5;
     private javax.swing.JPopupMenu.Separator jSeparator6;
     private javax.swing.JPopupMenu.Separator jSeparator7;
+    private javax.swing.JPopupMenu.Separator jSeparator8;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JRadioButtonMenuItem largeLayoutRadioButtonMenuItem;
