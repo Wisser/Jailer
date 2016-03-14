@@ -168,7 +168,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				return extractionModelEditor.dataModel.getParameters(extractionModelEditor.condition.getText());
 			}
 		});
-        ++numInstances;
     }
     
     /**
@@ -1006,8 +1005,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_updateDataModelActionPerformed
 
 	void dataExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataExportActionPerformed
+		openExportDialog(true);
+	}//GEN-LAST:event_dataExportActionPerformed
+	
+	public void openExportDialog(boolean checkRI) {//GEN-FIRST:event_dataExportActionPerformed
     	try {
-    		if (extractionModelEditor.dataModel != null && !ScriptFormat.XML.equals(extractionModelEditor.scriptFormat)) {
+    		if (checkRI && extractionModelEditor.dataModel != null && !ScriptFormat.XML.equals(extractionModelEditor.scriptFormat)) {
     			Association restrictedDependency = findRestrictedDependency(extractionModelEditor.dataModel);
     			if (restrictedDependency != null) {
     				switch (JOptionPane.showOptionDialog(this, 
@@ -1037,7 +1040,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        	dbConnectionDialog.addDbArgs(args);
 			        	Session.closeTemporaryTableSession();
 			        	Session session = new Session(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword());
-			        	ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), session, args, dbConnectionDialog.getPassword());
+			        	ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), session, args, dbConnectionDialog.getPassword(), checkRI);
 			        	session.shutDown();
 			        	Session.closeTemporaryTableSession();
 			        	if (exportDialog.isOk()) {
@@ -1078,7 +1081,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     			UIUtil.showException(this, "Error", e);
     		}
         }
-    }//GEN-LAST:event_dataExportActionPerformed
+    }
 
 	/**
 	 * Finds restricted dependency.
@@ -1369,10 +1372,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	    	}
 	    } else {
 	    	dispose();
+			UIUtil.checkTermination();
 	    }
-    	if (numInstances == 1) {
-    		System.exit(0);
-    	}
     }
 
     private void fileMenuActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fileMenuActionPerformed
@@ -1640,14 +1641,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	            	final String finalFile = file;
 	            	if (file != null && new File(file).exists()) {
 	            		DataModelManager.setCurrentModelSubfolder(ExtractionModel.loadDatamodelFolder(file));
-	            		createFrame(finalFile, true);
+	            		createFrame(finalFile, true, true);
 	            	} else {
 		            	DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(Jailer.APPLICATION_NAME + " " + Jailer.VERSION + " - Database Subsetting Tool") {
 							@Override
 							protected void onSelect() {
 				            	ExtractionModelFrame extractionModelFrame = null;
 				            	try {
-				            		extractionModelFrame = createFrame(finalFile, true);
+				            		extractionModelFrame = createFrame(finalFile, true, true);
 				            		final ExtractionModelFrame finalExtractionModelFrame = extractionModelFrame;
 					            	SwingUtilities.invokeLater(new Runnable() {
 										@Override
@@ -1698,7 +1699,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		}
 	}
     	
-    public static ExtractionModelFrame createFrame(String file, boolean maximize) {
+    public static ExtractionModelFrame createFrame(String file, boolean maximize, boolean visible) {
 		boolean isHorizonal = false;
 		try {
 			File setting = new File(ORIENTATIONSETTING);
@@ -1719,7 +1720,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		}
 		extractionModelFrame.setLocation(40, 40);
 		extractionModelFrame.setSize(1100, 640);
-		extractionModelFrame.setVisible(true);
+		extractionModelFrame.setVisible(visible);
 		if (maximize) {
 			extractionModelFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		}
@@ -1803,6 +1804,5 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     // End of variables declaration//GEN-END:variables
 
 	private static final long serialVersionUID = -2252377308370736756L;
-	private static volatile int numInstances = 0;
 
 }

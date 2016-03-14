@@ -1,3 +1,6 @@
+2.3
+ - New "Data Export" feature
+
 2.2.7
  - Viewing contents of CLOB and XML column types 
 

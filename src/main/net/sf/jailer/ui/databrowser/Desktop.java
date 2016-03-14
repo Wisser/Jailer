@@ -2233,7 +2233,7 @@ public abstract class Desktop extends JDesktopPane {
 	/**
 	 * Lets user chose a table browser and creates an extraction model for it.
 	 */
-	public void createExtractionModel() {
+	public void createExtractionModel(boolean doExport) {
 		Set<String> titles = new TreeSet<String>();
 		Map<String, RowBrowser> rowBrowserByTitle = new HashMap<String, Desktop.RowBrowser>();
 		for (RowBrowser rb : tableBrowsers) {
@@ -2245,7 +2245,7 @@ public abstract class Desktop extends JDesktopPane {
 		String s = (String) JOptionPane.showInputDialog(this.parentFrame, "Select subject table", "Subject", JOptionPane.QUESTION_MESSAGE, null,
 				titles.toArray(), null);
 		if (s != null) {
-			rowBrowserByTitle.get(s).browserContentPane.openExtractionModelEditor();
+			rowBrowserByTitle.get(s).browserContentPane.openExtractionModelEditor(doExport);
 		}
 	}
 

@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
@@ -22,6 +23,7 @@ import java.util.List;
 
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -323,6 +325,7 @@ public class ConditionEditor extends javax.swing.JDialog {
 		}
 		ok = false;
 		editorPane.setText(condition);
+		editorPane.setCaretPosition(0);
 		if (parameterSelector != null) {
 			parameterSelector.updateParameters();
 		}

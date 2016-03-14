@@ -17,39 +17,13 @@ Features
 Installation
 ============
 
-Unpack the file dbeauty_n.n.n.zip. You will get the following files:
+Unzip the file "dbeauty_<N>.zip".
 
-$unzip dbeauty_1.0.zip
-$cd dbeauty
-$ll
--rw-r--r--  1 wisser users    5090 2011-09-14 10:53 build.xml
-drwxr-xr-x  2 wisser users    4096 2011-09-14 10:53 datamodel
--rw-r--r--  1 wisser users     500 2011-09-14 10:53 dbeauty.bat
--rwxr-xr-x  1 wisser users   43008 2011-09-14 10:53 dbeauty.exe
--rw-r--r--  1 wisser users     119 2011-09-14 10:53 DBeauty.html
--rwxr-xr-x  1 wisser users     444 2011-09-14 10:53 dbeauty.sh
--rwxr-xr-x  1 wisser users    2784 2011-09-14 10:53 driverlist.csv
-drwxr-xr-x  4 wisser users    4096 2011-09-14 10:53 epilog
-drwxr-xr-x  2 wisser users    4096 2011-09-14 10:53 extractionmodel
--rw-r--r--  1 wisser users 1009332 2011-09-14 10:54 jailer.jar
--rw-r--r--  1 wisser users   12448 2011-09-14 10:53 jailer.xml
-drwxr-xr-x  2 wisser users    4096 2011-09-14 10:53 lib
--rw-r--r--  1 wisser users    1573 2011-09-14 10:53 license-prefuse.txt
--rw-r--r--  1 wisser users   10172 2011-09-14 10:53 license.txt
-drwxr-xr-x  4 wisser users    4096 2011-09-14 10:53 prolog
--rw-r--r--  1 wisser users    2339 2011-09-14 10:53 README
--rw-r--r--  1 wisser users      25 2011-09-14 10:53 releasenotes.txt
-drwxr-xr-x  2 wisser users    4096 2011-09-14 10:53 render
-drwxr-xr-x 11 wisser users    4096 2011-09-14 10:53 script
-drwxr-xr-x  4 wisser users    4096 2011-09-14 10:53 src
-
-
-On windows platform execute dbeauty.exe, or use dbeauty.bat
-On Unix/Linux platform execute the script dbeauty.sh
-
+On windows platform execute "dbeauty.exe", or use "dbeauty.bat"
+On Unix/Linux platform execute the script "dbeauty.sh"
 
 
 Home:    http://dbeauty.sourceforge.net/
-Forum:   https://sourceforge.net/apps/phpbb/dbeauty/
+Forum:   https://sourceforge.net/p/dbeauty/discussion/
 Support: rwisser@users.sourceforge.net
 
