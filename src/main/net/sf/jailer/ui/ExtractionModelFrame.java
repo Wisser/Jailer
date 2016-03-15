@@ -1005,10 +1005,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_updateDataModelActionPerformed
 
 	void dataExportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataExportActionPerformed
-		openExportDialog(true);
+		openExportDialog(true, null);
 	}//GEN-LAST:event_dataExportActionPerformed
 	
-	public void openExportDialog(boolean checkRI) {//GEN-FIRST:event_dataExportActionPerformed
+	public void openExportDialog(boolean checkRI, Runnable onDataModelUpdate) {
     	try {
     		if (checkRI && extractionModelEditor.dataModel != null && !ScriptFormat.XML.equals(extractionModelEditor.scriptFormat)) {
     			Association restrictedDependency = findRestrictedDependency(extractionModelEditor.dataModel);
@@ -1076,6 +1076,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         	if (e instanceof DataModel.NoPrimaryKeyException) {
     			if (JOptionPane.showOptionDialog(this, e.getMessage(), "No Primary Key", JOptionPane.YES_NO_OPTION, JOptionPane.ERROR_MESSAGE, null, new Object[] { "Edit Table", "Cancel" }, null) == 0) {
     				openDataModelEditor(((NoPrimaryKeyException) e).table);
+    				if (onDataModelUpdate != null) {
+    					onDataModelUpdate.run();
+    				}
     			}
     		} else {
     			UIUtil.showException(this, "Error", e);

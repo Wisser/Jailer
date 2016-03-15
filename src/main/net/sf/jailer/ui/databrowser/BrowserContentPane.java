@@ -29,7 +29,6 @@ import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -679,6 +678,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				openEditorLabel.setIcon(conditionEditorIcon);
 			}
 		});
+		relatedRowsLabel.setIcon(dropDownIcon);
 		relatedRowsPanel.addMouseListener(new java.awt.event.MouseAdapter() {
 			private JPopupMenu popup;
 			private boolean in = false;
@@ -756,7 +756,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 		limitBox.setModel(new DefaultComboBoxModel(ROW_LIMITS));
-		limitBox.setSelectedItem(association == null? 100 : 200);
+		limitBox.setSelectedItem(association == null? 200 : 500);
 		if (limit != null) {
 			limitBox.setSelectedItem(limit);
 		}
@@ -1286,6 +1286,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				
 				final SbEDialog sbEDialog = new SbEDialog(SwingUtilities.getWindowAncestor(this),
 						(doExport? "Export rows and related rows from \"" : "Create Extraction Model for Subject \"") + dataModel.getDisplayName(stable) + "\".", (parents.isEmpty()? "" : ("\n\n" + parents.size() + " disregarded parent tables.")));
+				if (doExport) {
+					sbEDialog.setTitle("Export Data");
+				}
 				sbEDialog.regardButton.setVisible(!parents.isEmpty());
 				sbEDialog.dispose();
 				DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
@@ -1408,7 +1411,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				ExtractionModelFrame extractionModelFrame = ExtractionModelFrame.createFrame(file, false, !doExport);
 				extractionModelFrame.setDbConnectionDialogClone(getDbConnectionDialog());
 				if (doExport) {
-					extractionModelFrame.openExportDialog(false);
+					extractionModelFrame.openExportDialog(false, new Runnable() {
+						@Override
+						public void run() {
+							try {
+								reloadDataModel();
+							} catch (Exception e) {
+								throw new RuntimeException(e);
+							}
+						}
+					});
 					extractionModelFrame.dispose();
 				} else {
 					extractionModelFrame.markDirty();
@@ -1660,7 +1672,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			d.pack();
 			d.setLocation(x - 50, y - 100);
 			d.setSize(700, Math.max(d.getHeight() + 20, 400));
-			d.setLocation(getOwner().getX() + (getOwner().getWidth() - d.getWidth()) / 2, getOwner().getY() + (getOwner().getHeight() - d.getHeight()) / 2);
+			d.setLocation(getOwner().getX() + (getOwner().getWidth() - d.getWidth()) / 2, Math.max(0, getOwner().getY() + (getOwner().getHeight() - d.getHeight()) / 2));
 			UIUtil.fit(d);
 		} catch (Throwable e) {
 			UIUtil.showException(this, "Error", e);
@@ -3225,6 +3237,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract void showInNewWindow();
 	protected abstract void appendLayout();
 	protected abstract void adjustClosure(BrowserContentPane tabu);
+	protected abstract void reloadDataModel() throws Exception;
 	
 	public interface RunnableWithPriority extends Runnable {
 		int getPriority();

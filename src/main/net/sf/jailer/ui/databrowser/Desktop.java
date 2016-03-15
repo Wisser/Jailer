@@ -490,6 +490,11 @@ public abstract class Desktop extends JDesktopPane {
 				association, parentFrame, currentClosure, currentClosureRowIDs, limit, selectDistinct, reload) {
 
 			@Override
+			protected void reloadDataModel() throws Exception {
+				Desktop.this.reloadDataModel(schemaMapping);
+			}
+			
+			@Override
 			protected QueryBuilderDialog getQueryBuilderDialog() {
 				return queryBuilderDialog;
 			}
