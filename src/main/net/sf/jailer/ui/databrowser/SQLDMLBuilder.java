@@ -166,7 +166,7 @@ public class SQLDMLBuilder {
 		List<Row> result = new ArrayList<Row>();
 		Set<String> ids = new HashSet<String>();
 		for (Row row: rows) {
-			if (!ids.contains(row.rowId)) {
+			if (row.rowId.length() == 0 || !ids.contains(row.rowId)) {
 				ids.add(row.rowId);
 				result.add(row);
 			}

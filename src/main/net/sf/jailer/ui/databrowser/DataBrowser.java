@@ -1119,21 +1119,24 @@ public class DataBrowser extends javax.swing.JFrame {
         try {
             String sqlFile = UIUtil.choseFile(null, ".", "Data Import", ".sql", this, false, true);
             if (sqlFile != null) {
-                List<String> args = new ArrayList<String>();
-                args.add("import");
-                args.add(sqlFile);
-                dbConnectionDialog.addDbArgs(args);
-                UIUtil.runJailer(this, args, false, true, false, false, null, dbConnectionDialog.getPassword(), null, null, false, true, false);
-				if (desktop != null) {
-					desktop.updateMenu();
-					for (RowBrowser rb : desktop.getBrowsers()) {
-						rb.browserContentPane.session = session;
-						rb.browserContentPane.rows.clear();
+            	DbConnectionDialog dcd = new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName());
+            	if (dcd.connect("Data Import")) {
+	                List<String> args = new ArrayList<String>();
+	                args.add("import");
+	                args.add(sqlFile);
+	                dcd.addDbArgs(args);
+	                UIUtil.runJailer(this, args, false, true, false, false, null, dcd.getPassword(), null, null, false, true, false);
+					if (desktop != null) {
+						desktop.updateMenu();
+						for (RowBrowser rb : desktop.getBrowsers()) {
+							rb.browserContentPane.session = session;
+							rb.browserContentPane.rows.clear();
+						}
+						for (RowBrowser rb : desktop.getRootBrowsers(false)) {
+							rb.browserContentPane.reloadRows();
+						}
 					}
-					for (RowBrowser rb : desktop.getRootBrowsers(false)) {
-						rb.browserContentPane.reloadRows();
-					}
-				}
+	            }
             }
         } catch (Exception e) {
             UIUtil.showException(this, "Error", e);
