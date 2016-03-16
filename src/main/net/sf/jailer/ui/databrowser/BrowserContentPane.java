@@ -659,15 +659,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		openEditorLabel.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				String cond = andConditionEditor.edit(getAndConditionText(), "Table", "A", table, null, null, null, false);
-				if (cond != null) {
-					if (!getAndConditionText().equals(ConditionEditor.toSingleLine(cond))) {
-						setAndCondition(cond, true);
-						loadButton.grabFocus();
-						reloadRows();
+				loadButton.grabFocus();
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						String cond = andConditionEditor.edit(getAndConditionText(), "Table", "A", table, null, null, null, false);
+						if (cond != null) {
+							if (!getAndConditionText().equals(ConditionEditor.toSingleLine(cond))) {
+								setAndCondition(cond, true);
+								loadButton.grabFocus();
+								reloadRows();
+							}
+						}
+						openEditorLabel.setIcon(conditionEditorSelectedIcon);
 					}
-				}
-				openEditorLabel.setIcon(conditionEditorSelectedIcon);
+				});
 			}
 
 			public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -685,23 +691,29 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-//				if (rows.size() == 1) {
-//					popup = createPopupMenu(rows.get(0), 0, 0, 0);
-//				} else {
-					popup = createPopupMenu(null, -1, 0, 0, false);
-//				}
-				setCurrentRowSelection(-2);
-				popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
+				loadButton.grabFocus();
+				SwingUtilities.invokeLater(new Runnable() {
 					@Override
-					public void propertyChange(PropertyChangeEvent evt) {
-						if (Boolean.FALSE.equals(evt.getNewValue())) {
-							popup = null;
-							updateBorder();
-							setCurrentRowSelection(-1);
-						}
+					public void run() {
+		//				if (rows.size() == 1) {
+		//					popup = createPopupMenu(rows.get(0), 0, 0, 0);
+		//				} else {
+							popup = createPopupMenu(null, -1, 0, 0, false);
+		//				}
+						setCurrentRowSelection(-2);
+						popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
+							@Override
+							public void propertyChange(PropertyChangeEvent evt) {
+								if (Boolean.FALSE.equals(evt.getNewValue())) {
+									popup = null;
+									updateBorder();
+									setCurrentRowSelection(-1);
+								}
+							}
+						});
+						popup.show(relatedRowsPanel, 0, relatedRowsPanel.getHeight());
 					}
 				});
-				popup.show(relatedRowsPanel, 0, relatedRowsPanel.getHeight());
 			}
 
 			public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -725,19 +737,25 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 			@Override
 			public void mousePressed(MouseEvent e) {
-				popup = createSqlPopupMenu(BrowserContentPane.this.parentRow, 0, 300, 300, false);
-				setCurrentRowSelection(-2);
-				popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
+				loadButton.grabFocus();
+				SwingUtilities.invokeLater(new Runnable() {
 					@Override
-					public void propertyChange(PropertyChangeEvent evt) {
-						if (Boolean.FALSE.equals(evt.getNewValue())) {
-							popup = null;
-							updateBorder();
-							setCurrentRowSelection(-1);
-						}
+					public void run() {
+						popup = createSqlPopupMenu(BrowserContentPane.this.parentRow, 0, 300, 300, false);
+						setCurrentRowSelection(-2);
+						popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
+							@Override
+							public void propertyChange(PropertyChangeEvent evt) {
+								if (Boolean.FALSE.equals(evt.getNewValue())) {
+									popup = null;
+									updateBorder();
+									setCurrentRowSelection(-1);
+								}
+							}
+						});
+						popup.show(sqlPanel, 0, sqlPanel.getHeight());
 					}
 				});
-				popup.show(sqlPanel, 0, sqlPanel.getHeight());
 			}
 
 			public void mouseEntered(java.awt.event.MouseEvent evt) {

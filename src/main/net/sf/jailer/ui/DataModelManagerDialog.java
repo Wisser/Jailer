@@ -18,6 +18,9 @@ package net.sf.jailer.ui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Point;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -148,7 +151,27 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 						refresh();
 					}
 				});
-
+		dataModelsTable.addMouseListener(new MouseAdapter() {
+			@Override
+		    public void mousePressed(MouseEvent me) {
+		        JTable table =(JTable) me.getSource();
+		        Point p = me.getPoint();
+		        int row = table.rowAtPoint(p);
+		        if (me.getClickCount() >= 2) {
+		        	table.getSelectionModel().setSelectionInterval(row, row);
+		        	if (row >= 0) {
+						currentModel = modelList.get(row);
+					} else {
+						currentModel = null;
+					}
+		        	refresh();
+		        	if (currentModel != null) {
+		        		okButtonActionPerformed(null);
+		        	}
+		        }
+		    }
+		});
+		
 		currentModel = restore();
 		
 		if (currentModel != null) {
