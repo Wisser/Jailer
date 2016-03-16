@@ -17,8 +17,12 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Point;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -195,7 +199,22 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 						refresh();
 					}
 				});
-
+		connectionsTable.addMouseListener(new MouseAdapter() {
+			@Override
+		    public void mousePressed(MouseEvent me) {
+		        JTable table =(JTable) me.getSource();
+		        Point p = me.getPoint();
+		        int row = table.rowAtPoint(p);
+		        if (me.getClickCount() >= 2) {
+		        	connectionsTable.getSelectionModel().setSelectionInterval(row, row);
+		        	refresh();
+		        	if (jButton1.isEnabled()) {
+		        		connect();
+		        	}
+		        }
+		    }
+		});
+		
 		if (currentConnection != null) {
 			i = connectionList.indexOf(currentConnection);
 			if (i >= 0) {
@@ -779,23 +798,26 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		return new DbConnectionDetailsEditor(parent, jdbcHelpURL, forNew).edit(ci);
 	}
 
-	private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
-		// FIRST
-		// :
-		// event_jButton1ActionPerformed
+	private void connect() {
 		if (currentConnection == null) {
 			return;
 		}
 
-//		store();
-
 		isConnected = false;
 
-		if (testConnection(this, currentConnection)) {
-			isConnected = true;
-			setVisible(false);
+		try {
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			if (testConnection(this, currentConnection)) {
+				isConnected = true;
+				setVisible(false);
+			}
+		} finally {
+			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
-
+	}
+	
+	private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+		connect();
 	}// GEN-LAST:event_jButton1ActionPerformed
 
 	public static boolean testConnection(Component parent, ConnectionInfo ci) {
