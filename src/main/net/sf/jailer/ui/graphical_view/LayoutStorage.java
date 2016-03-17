@@ -233,27 +233,30 @@ public class LayoutStorage {
 	 * @param rootTable
 	 */
 	private static void readGlobalLayout(String rootTable) {
-		if (!tablePositions.containsKey(rootTable)) {
-			if (!globalTablePositions.containsKey(rootTable)) {
-				File file = getGlobalStorageFile(rootTable);
-				Map<String, double[]> layout = null;
-				if (file != null) {
-					try {
-						restore(file.getAbsolutePath(), false);
-						if (tablePositions.get(rootTable) != null) {
-							layout = new HashMap<String, double[]>(tablePositions.get(rootTable));
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-				globalTablePositions.put(rootTable, layout);
-			}
-			Map<String, double[]> layout = globalTablePositions.get(rootTable);
-			if (layout != null) {
-				tablePositions.put(rootTable, new HashMap<String, double[]>(globalTablePositions.get(rootTable)));
-			}
-		}
+		
+		// disabled in 5.3
+		
+//		if (!tablePositions.containsKey(rootTable)) {
+//			if (!globalTablePositions.containsKey(rootTable)) {
+//				File file = getGlobalStorageFile(rootTable);
+//				Map<String, double[]> layout = null;
+//				if (file != null) {
+//					try {
+//						restore(file.getAbsolutePath(), false);
+//						if (tablePositions.get(rootTable) != null) {
+//							layout = new HashMap<String, double[]>(tablePositions.get(rootTable));
+//						}
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					}
+//				}
+//				globalTablePositions.put(rootTable, layout);
+//			}
+//			Map<String, double[]> layout = globalTablePositions.get(rootTable);
+//			if (layout != null) {
+//				tablePositions.put(rootTable, new HashMap<String, double[]>(globalTablePositions.get(rootTable)));
+//			}
+//		}
 	}
 
 	/**
