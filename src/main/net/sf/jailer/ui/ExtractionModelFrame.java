@@ -27,8 +27,10 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.URI;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -1008,6 +1010,23 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		openExportDialog(true, null);
 	}//GEN-LAST:event_dataExportActionPerformed
 	
+	private String createTempFileName() {
+		String file;
+		String ts = new SimpleDateFormat("HH-mm-ss-SSS").format(new Date());
+		File newFile;
+		for (int i = 1; ; ++i) {
+			file = "tmp";
+			newFile = CommandLineParser.getInstance().newFile(file);
+			newFile.mkdirs();
+			file += File.separator + "em" + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".csv";
+			newFile = CommandLineParser.getInstance().newFile(file);
+			if (!newFile.exists()) {
+				break;
+			}
+		}
+		return file;
+	}
+	
 	public void openExportDialog(boolean checkRI, Runnable onDataModelUpdate) {
     	try {
     		if (checkRI && extractionModelEditor.dataModel != null && !ScriptFormat.XML.equals(extractionModelEditor.scriptFormat)) {
@@ -1031,12 +1050,21 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     		if (extractionModelEditor.dataModel != null) {
     			extractionModelEditor.dataModel.checkForPrimaryKey(extractionModelEditor.subject, false);
     		}
-    		if (saveIfNeeded("Export data", false)) {
-    			if (extractionModelEditor.extractionModelFile != null || extractionModelEditor.save(true, "Export data")) {
+    		
+    		String tmpFileName = null;
+    		if (extractionModelEditor.extractionModelFile == null) {
+    			tmpFileName = createTempFileName();
+    			if (!extractionModelEditor.save(tmpFileName)) {
+    				tmpFileName = null;
+    			}
+    		}
+    		
+    		if (tmpFileName != null || saveIfNeeded("Export data", false)) {
+    			if (tmpFileName != null || (extractionModelEditor.extractionModelFile != null || extractionModelEditor.save(true, "Export data"))) {
 		        	if (connectToDBIfNeeded("Export data")) {
 			        	List<String> args = new ArrayList<String>();
 			        	args.add("export");
-			        	args.add(extractionModelEditor.extractionModelFile);
+			        	args.add(tmpFileName != null? tmpFileName : extractionModelEditor.extractionModelFile);
 			        	dbConnectionDialog.addDbArgs(args);
 			        	Session.closeTemporaryTableSession();
 			        	Session session = new Session(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword());

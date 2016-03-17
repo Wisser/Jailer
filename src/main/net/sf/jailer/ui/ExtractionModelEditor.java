@@ -2247,18 +2247,25 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 			extractionModelFile = newFile;
 		}
+		String file = extractionModelFile;
+		graphView.storeLayout();
+		if (save(file)) {
+			needsSave = false;
+			extractionModelFrame.updateTitle(needsSave);
+			return true;
+		}
+		return false;
+	}
+
+	public boolean save(String fileName) {
 		try {
-			graphView.storeLayout();
-			
 			Table stable = dataModel.getTableByDisplayName((String) subjectTable.getSelectedItem());
 			if (stable == null) {
 				return true;
 			}
-			dataModel.save(extractionModelFile, stable, ConditionEditor.toMultiLine(condition.getText()), scriptFormat, currentRestrictionDefinitions, null);
-			needsSave = false;
-			extractionModelFrame.updateTitle(needsSave);
+			dataModel.save(fileName , stable, ConditionEditor.toMultiLine(condition.getText()), scriptFormat, currentRestrictionDefinitions, null);
 		} catch (Exception e) {
-			UIUtil.showException(this, "Could not save " + new File(extractionModelFile).getName(), e);
+			UIUtil.showException(this, "Could not save " + new File(fileName).getName(), e);
 			return false;
 		}
 		return true;
