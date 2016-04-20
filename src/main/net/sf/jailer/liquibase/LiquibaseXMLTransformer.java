@@ -136,8 +136,15 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		AttributesImpl attrcolumn = new AttributesImpl();
 		String columnname = getMetaData(singleRow).getColumnName(columncount);
 		Integer columnType = getMetaData(singleRow).getColumnType(columncount);
+		Integer precision = getMetaData(singleRow).getPrecision(columncount);
+		
 		singleRow.getObject(columncount);
-				
+	
+		// special handling for sql server
+		if (columnType == Types.VARCHAR && precision.equals(Integer.MAX_VALUE)) {
+			columnType = Types.CLOB;
+		}
+		
 		if (!singleRow.wasNull()){
 		
 			switch(columnType){
@@ -173,6 +180,7 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 				break;
 				
 			case Types.BLOB:
+			case Types.VARBINARY:
 				count = entityGraph.incLobCount();
 				Blob blob = singleRow.getBlob(columncount);
 				int lengthb = (int) blob.length();
