@@ -1,3 +1,7 @@
+5.3.1
+  - "Data Export" dialog now have a "Cancel" button.
+  - An NPE occurred if the data model is empty.
+
 5.3
   - The Data Browser now offers a "Data Export" feature.
 

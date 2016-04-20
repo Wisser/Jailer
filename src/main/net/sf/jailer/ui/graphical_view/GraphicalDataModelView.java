@@ -593,41 +593,43 @@ public class GraphicalDataModelView extends JPanel {
         layout.setVisualization(visualization);
         animate.add(layout);
         layout.run();
-        final Map<String, double[]> posMap = LayoutStorage.getPositions(root.getName());
-    	Action a = new Action() {
-        	boolean done = false;
-			@Override
-			public void run(double frac) {
-				if (!done) {
-					synchronized (visualization) {
-						if (root != null && !initiallyVisibleTables.isEmpty()) {
-					        Iterator items = visualization.items(BooleanLiteral.TRUE);
-					        for (int m_visibleCount=0; items.hasNext(); ++m_visibleCount ) {
-					            VisualItem item = (VisualItem)items.next();
-					            if (item.canGetString("label") ) {
-					            	String tableName;
-			                		tableName = item.getString("label");
-					            	double[] pos = posMap.get(tableName);
-					            	if (pos != null) {
-					            		item.setX(pos[0]);
-					            		item.setY(pos[1]);
-					            		item.setEndX(pos[0]);
-					            		item.setEndY(pos[1]);
-					            		item.setFixed(pos[2] == 1.0);
-					            	}
+        if (root != null) {
+	        final Map<String, double[]> posMap = LayoutStorage.getPositions(root.getName());
+	    	Action a = new Action() {
+	        	boolean done = false;
+				@Override
+				public void run(double frac) {
+					if (!done) {
+						synchronized (visualization) {
+							if (root != null && !initiallyVisibleTables.isEmpty()) {
+						        Iterator items = visualization.items(BooleanLiteral.TRUE);
+						        for (int m_visibleCount=0; items.hasNext(); ++m_visibleCount ) {
+						            VisualItem item = (VisualItem)items.next();
+						            if (item.canGetString("label") ) {
+						            	String tableName;
+				                		tableName = item.getString("label");
+						            	double[] pos = posMap.get(tableName);
+						            	if (pos != null) {
+						            		item.setX(pos[0]);
+						            		item.setY(pos[1]);
+						            		item.setEndX(pos[0]);
+						            		item.setEndY(pos[1]);
+						            		item.setFixed(pos[2] == 1.0);
+						            	}
+						            }
 					            }
-				            }
+					        }
 				        }
-			        }
-					layout.reset();
-					visualization.invalidateAll();
-					done = true;
-					layoutHasBeenSet = true;
+						layout.reset();
+						visualization.invalidateAll();
+						done = true;
+						layoutHasBeenSet = true;
+					}
 				}
-			}
-        };
-        a.alwaysRunAfter(layout);
-		animate.add(a);
+	        };
+	        a.alwaysRunAfter(layout);
+			animate.add(a);
+        }
 		animate.add(new Action() {
 			// force redraw, work-around for a strange repaint bug
 			long startTime = System.currentTimeMillis();

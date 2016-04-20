@@ -40,6 +40,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CsvFile;
+import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
 import org.apache.log4j.Logger;
@@ -165,11 +166,13 @@ public class ModelBuilder {
         });
 
         Map<Table, List<Column>> columnPerTable = new HashMap<Table, List<Column>>();
+
+        Quoting quoting = new Quoting(session.getMetaData());
         
         StringBuilder columnsDefinition = new StringBuilder();
         CsvFile excludeTablesCSV = getExcludeTablesCSV();
 		for (Table table: allTables) {
-        	if (!isJailerTable(table) &&
+        	if (!isJailerTable(table, quoting) &&
         	    !excludeTablesCSV.contains(new String[] { table.getName()}) && 
         		!excludeTablesCSV.contains(new String[] { table.getName().toUpperCase() })) {
         		// if (!table.primaryKey.getColumns().isEmpty()) {
@@ -192,7 +195,7 @@ public class ModelBuilder {
         resetColumnsFile(columnsDefinition.toString());
         
         for (Table table: sortedTables) {
-        	if (!isJailerTable(table) &&
+        	if (!isJailerTable(table, quoting) &&
         		!excludeTablesCSV.contains(new String[] { table.getName()}) && 
         	    !excludeTablesCSV.contains(new String[] { table.getName().toUpperCase() })) {
                 if (table.primaryKey.getColumns().isEmpty()) {
@@ -353,10 +356,11 @@ public class ModelBuilder {
      * Checks if table is one of Jailers working tables.
      * 
      * @param table the table to check
+     * @param quoting 
      * @return <code>true</code> if table is one of Jailers working tables
      */
-    private static boolean isJailerTable(Table table) {
-    	String tName = table.getUnqualifiedName().toUpperCase();
+    private static boolean isJailerTable(Table table, Quoting quoting) {
+    	String tName = quoting.unquote(table.getUnqualifiedName()).toUpperCase();
 		return SqlUtil.JAILER_TABLES.contains(tName)
     	    || (tName.endsWith("_T") && SqlUtil.JAILER_TABLES.contains(tName.substring(0, tName.length() - 2)));
     }
