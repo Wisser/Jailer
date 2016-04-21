@@ -356,7 +356,7 @@ public class Jailer {
 		        }
 				JobManager.Job job = new JobManager.Job() {
 					public void run() throws Exception {
-						runstats(entityGraph.getSession(), false);
+						runstats(false);
 						if (association.getJoinCondition() != null) {
 							_log.info("resolving " + datamodel.getDisplayName(table) + " -> " + association.toString(0, true) + "...");
 						}
@@ -594,7 +594,7 @@ public class Jailer {
 		_log.info("cyclic dependencies for: " + asString(dependentTables));
 		if (!CommandLineParser.getInstance().noSorting) {
 			addDependencies(dependentTables, false);
-			runstats(session, true);
+			runstats(true);
 			removeSingleRowCycles(progress, session);
 		} else {
 			_log.warn("skipping topological sorting");
@@ -784,7 +784,7 @@ public class Jailer {
 		// then write entities of tables having cyclic-dependencies
 		_log.info("create hierarchy for: " + asString(progress));
 		addDependencies(progress, true);
-		runstats(session, true);
+		runstats(true);
 		removeSingleRowCycles(progress, session);
 
 		List<Table> lexSortedTables = new ArrayList<Table>(progress);
@@ -997,17 +997,20 @@ public class Jailer {
 	/**
 	 * Runs script for updating the DB-statistics.
 	 */
-	private synchronized void runstats(Session session, boolean force) throws Exception {
-		if (force || lastRunstats == 0 || (lastRunstats * 2 <= entityGraph.getTotalRowcount() && entityGraph.getTotalRowcount() > 1000)) {
-			lastRunstats = entityGraph.getTotalRowcount();
-
-			StatisticRenovator statisticRenovator = Configuration.forDbms(session).getStatisticRenovator();
-			if (statisticRenovator != null) {
-				_log.info("gather statistics after " + lastRunstats + " inserted rows...");
-				try {
-					statisticRenovator.renew(session);
-				} catch (Throwable t) {
-					_log.warn("unable to update table statistics: " + t.getMessage());
+	private synchronized void runstats(boolean force) throws Exception {
+		if (entityGraph != null) {
+			Session session = entityGraph.getSession();
+			if (force || lastRunstats == 0 || (lastRunstats * 2 <= entityGraph.getTotalRowcount() && entityGraph.getTotalRowcount() > 1000)) {
+				lastRunstats = entityGraph.getTotalRowcount();
+	
+				StatisticRenovator statisticRenovator = Configuration.forDbms(session).getStatisticRenovator();
+				if (statisticRenovator != null) {
+					_log.info("gather statistics after " + lastRunstats + " inserted rows...");
+					try {
+						statisticRenovator.renew(session);
+					} catch (Throwable t) {
+						_log.warn("unable to update table statistics: " + t.getMessage());
+					}
 				}
 			}
 		}
@@ -1276,7 +1279,7 @@ public class Jailer {
 		
 		try {
 			jailer.readInitialDataTables(CommandLineParser.getInstance().getSourceSchemaMapping(), extractionModel.subject);
-			jailer.runstats(session, false);
+			jailer.runstats(false);
 			ProgressListenerRegistry.getProgressListener().newStage("collecting rows", false, false);
 			Set<Table> progress = jailer.exportInitialData(extractionModel.subject);
 			entityGraph.setBirthdayOfSubject(entityGraph.getAge());
