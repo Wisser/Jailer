@@ -42,6 +42,8 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.zip.GZIPOutputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
@@ -104,7 +106,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "5.3.1";
+	public static final String VERSION = "5.3.2";
 	
 	/**
 	 * The Jailer application name.
@@ -538,8 +540,14 @@ public class Jailer {
 		_log.info("writing file '" + sqlScriptFile + "'...");
 
 		OutputStream outputStream = new FileOutputStream(sqlScriptFile);
-		if (sqlScriptFile.toLowerCase().endsWith(".zip") || sqlScriptFile.toLowerCase().endsWith(".gz")) {
-			outputStream = new GZIPOutputStream(outputStream);
+		if (sqlScriptFile.toLowerCase().endsWith(".zip")) {
+			outputStream = new ZipOutputStream(outputStream);
+			String zipFileName = new File(sqlScriptFile).getName();
+			((ZipOutputStream)outputStream).putNextEntry(new ZipEntry(zipFileName.substring(0, zipFileName.length() - 4)));
+		} else {
+			if (sqlScriptFile.toLowerCase().endsWith(".gz")) {
+				outputStream = new GZIPOutputStream(outputStream);
+			}
 		}
 		TransformerHandler transformerHandler = null;
 		OutputStreamWriter result = null;
@@ -777,8 +785,14 @@ public class Jailer {
 		_log.info("writing file '" + xmlFile + "'...");
 
 		OutputStream outputStream = new FileOutputStream(xmlFile);
-		if (xmlFile.toLowerCase().endsWith(".zip") || xmlFile.toLowerCase().endsWith(".gz")) {
-			outputStream = new GZIPOutputStream(outputStream);
+		if (xmlFile.toLowerCase().endsWith(".zip")) {
+			outputStream = new ZipOutputStream(outputStream);
+			String zipFileName = new File(xmlFile).getName();
+			((ZipOutputStream)outputStream).putNextEntry(new ZipEntry(zipFileName.substring(0, zipFileName.length() - 4)));
+		} else {
+			if (xmlFile.toLowerCase().endsWith(".gz")) {
+				outputStream = new GZIPOutputStream(outputStream);
+			}
 		}
 
 		// then write entities of tables having cyclic-dependencies

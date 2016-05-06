@@ -1,3 +1,6 @@
+2.3.1
+ - Files with ".sql.zip" suffix are no longer created GZIP files but ZIP files.
+
 2.3
  - New "Data Export" feature
 
