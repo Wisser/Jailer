@@ -28,6 +28,7 @@ import java.io.Writer;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
 import java.util.zip.GZIPInputStream;
+import java.util.zip.ZipInputStream;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.database.Session;
@@ -109,8 +110,12 @@ public class SqlScriptExecutor {
 		
 		if (uTF8 != null) {
 			// retrieve encoding
-			if (scriptFileName.toLowerCase().endsWith(".gz") || scriptFileName.toLowerCase().endsWith(".zip")) {
+			if (scriptFileName.toLowerCase().endsWith(".gz")) {
 				bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), uTF8), 1);
+	    	} else if (scriptFileName.toLowerCase().endsWith(".zip")) {
+	    		ZipInputStream zis = new ZipInputStream(new FileInputStream(scriptFileName));
+	    		zis.getNextEntry();
+	    		bufferedReader = new BufferedReader(new InputStreamReader(zis, uTF8), 1);
 	    	} else {
 	    		bufferedReader = new BufferedReader(new InputStreamReader(inputStream, uTF8), 1);
 	    	}
@@ -122,8 +127,12 @@ public class SqlScriptExecutor {
 		}
 		
 		inputStream = new FileInputStream(file);
-		if (scriptFileName.toLowerCase().endsWith(".gz") || scriptFileName.toLowerCase().endsWith(".zip")) {
+		if (scriptFileName.toLowerCase().endsWith(".gz")) {
 			bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), encoding));
+    	} else if (scriptFileName.toLowerCase().endsWith(".zip")){
+    		ZipInputStream zis = new ZipInputStream(new FileInputStream(scriptFileName));
+    		zis.getNextEntry();
+    		bufferedReader = new BufferedReader(new InputStreamReader(zis, encoding));
     	} else {
     		fileSize = file.length();
     		bufferedReader = new BufferedReader(new InputStreamReader(inputStream, encoding));

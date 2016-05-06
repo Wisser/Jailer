@@ -1,3 +1,6 @@
+5.3.2
+  - Files with ".sql.zip" suffix are no longer created GZIP files but ZIP files.
+
 5.3.1
   - "Data Export" dialog now have a "Cancel" button.
   - An NPE occurred if the data model is empty.

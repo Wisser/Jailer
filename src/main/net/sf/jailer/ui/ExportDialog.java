@@ -1152,7 +1152,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jPanel2.add(jButton1, gridBagConstraints);
 
         jLabel2.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
-        jLabel2.setText(" *  add '.zip' suffix for compressed files"); // NOI18N
+        jLabel2.setText(" *  add '.zip' or '.gz' suffix for compressed files"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
