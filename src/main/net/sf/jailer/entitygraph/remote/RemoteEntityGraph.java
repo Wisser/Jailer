@@ -226,12 +226,11 @@ public class RemoteEntityGraph extends EntityGraph {
      * @param table the table 
      * @param condition the condition in SQL that the entities must fulfill
      * @param today the birthday of the new entities
-     * @param limit a limit of the number of rows to be exported or <code>0</code>
      * 
      * @return row-count
      */
-    public long addEntities(Table table, String condition, int today, long limit) throws SQLException {
-        return addEntities(table, "T", condition, null, null, null, null, false, today, limit, 0, true);
+    public long addEntities(Table table, String condition, int today) throws SQLException {
+        return addEntities(table, "T", condition, null, null, null, null, false, today, 0, true);
     }
     
     /**
@@ -266,7 +265,7 @@ public class RemoteEntityGraph extends EntityGraph {
                     }
                 }
             }
-            return addEntities(association.destination, destAlias, "E.r_entitygraph=" + graphID + " and E.birthday = " + (today - 1) + " and E.type='" + table.getName() + "' and " + pkEqualsEntityID(table, sourceAlias, "E"), table, sourceAlias, association.source, jc, true, today, 0, associationExplanationID, association.reversed);
+            return addEntities(association.destination, destAlias, "E.r_entitygraph=" + graphID + " and E.birthday = " + (today - 1) + " and E.type='" + table.getName() + "' and " + pkEqualsEntityID(table, sourceAlias, "E"), table, sourceAlias, association.source, jc, true, today, associationExplanationID, association.reversed);
         }
         return -1;
     }
@@ -281,20 +280,16 @@ public class RemoteEntityGraph extends EntityGraph {
      * @param joinCondition optional condition to join with <code>joinedTable</code>
      * @param joinWithEntity whether to join with entity-table too
      * @param today the birthday of the new entities
-     * @param limit a limit of the number of rows to be exported or <code>0</code>
      * 
      * @return row-count
      */
-    private long addEntities(Table table, String alias, String condition, Table joinedTable, String joinedTableAlias, Table source, String joinCondition, boolean joinWithEntity, int today, long limit, int associationExplanationID, boolean isInverseAssociation) throws SQLException {
-        if (maxTotalRowcount > 0 && limit == 0) {
-            limit = Math.max(maxTotalRowcount - totalRowcount + 1, 1);
-        }
+    private long addEntities(Table table, String alias, String condition, Table joinedTable, String joinedTableAlias, Table source, String joinCondition, boolean joinWithEntity, int today, int associationExplanationID, boolean isInverseAssociation) throws SQLException {
         if (joinCondition != null) {
         	joinCondition = SqlUtil.resolvePseudoColumns(joinCondition, isInverseAssociation? null : "E", isInverseAssociation? "E" : null, today, birthdayOfSubject);
         }
         String select;
         if (Configuration.forDbms(session).isAvoidLeftJoin()) {
-        	// bug fix for [ jailer-Bugs-3294893 ] Outer Join for selecting dependant entries and Oracle 10
+        	// bug fix for [ jailer-Bugs-3294893 ] "Outer Join for selecting dependant entries and Oracle 10"
         	// mixing left joins and theta-style joins causes problems on oracle DBMS
         	select =
                 "Select " + (joinedTable != null? "distinct " : "") + "" + graphID + " as GRAPH_ID, " + pkList(table, alias) + ", " + today + " AS BIRTHDAY, '" + table.getName() + "' AS TYPE" +
@@ -310,9 +305,7 @@ public class RemoteEntityGraph extends EntityGraph {
     				" AND NOT EXISTS (select * from " + SQLDialect.dmlTableReference(ENTITY, session)
     				+ " DuplicateExists where r_entitygraph=" + graphID + " " + "AND DuplicateExists.type='"
     				+ table.getName()
-    				+ "' and " + pkEqualsEntityID(table, alias, "DuplicateExists") + ")"
-    				+
-                (limit > 0? " fetch first " + limit + " rows only" : "");
+    				+ "' and " + pkEqualsEntityID(table, alias, "DuplicateExists") + ")";
 
         } else {
         	select =
@@ -324,8 +317,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	            (joinedTable != null? ", " + joinedTable.getName() + " " + joinedTableAlias + " ": "") +
 	            (joinWithEntity? ", " + SQLDialect.dmlTableReference(ENTITY, session) + " E" : "") +
 	            " Where (" + condition + ") and Duplicate.type is null" +
-	            (joinedTable != null? " and (" + joinCondition + ")" : "") +
-	            (limit > 0? " fetch first " + limit + " rows only" : "");
+	            (joinedTable != null? " and (" + joinCondition + ")" : "");
         }
         
         if (source != null && explain) {

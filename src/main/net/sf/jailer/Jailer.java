@@ -106,7 +106,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "5.3.2";
+	public static final String VERSION = "5.3.3";
 	
 	/**
 	 * The Jailer application name.
@@ -169,22 +169,6 @@ public class Jailer {
 	}
 
 	/**
-	 * Exports rows from table.
-	 * 
-	 * @param table
-	 *            the table
-	 * @param condition
-	 *            the condition (in SQL) the exported rows must fulfill
-	 * @param progressOfYesterday
-	 *            set of tables to account for resolvation
-	 * 
-	 * @return set of tables from which entities are added
-	 */
-	public Set<Table> export(Table table, String condition, Collection<Table> progressOfYesterday) throws Exception {
-		return export(table, condition, progressOfYesterday, 0);
-	}
-
-	/**
 	 * Appends a line to the comment-header of the export script.
 	 * 
 	 * @param comment
@@ -201,22 +185,21 @@ public class Jailer {
 	 *            the table
 	 * @param condition
 	 *            the condition (in SQL) the exported rows must fulfill
-	 * @param limit
-	 *            a limit of the number of rows to be exported
+
 	 * @param progressOfYesterday
 	 *            set of tables to account for resolvation
 	 * 
 	 * @return set of tables from which entities are added
 	 */
-	public Set<Table> export(Table table, String condition, Collection<Table> progressOfYesterday, long limit) throws Exception {
+	public Set<Table> export(Table table, String condition, Collection<Table> progressOfYesterday) throws Exception {
 		_log.info("exporting " + datamodel.getDisplayName(table) + " Where " + condition.replace('\n', ' ').replace('\r', ' '));
 		int today = entityGraph.getAge();
 		entityGraph.setAge(today + 1);
 		Map<Table, Collection<Association>> progress = new HashMap<Table, Collection<Association>>();
-		ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(1, table);
-		ProgressListenerRegistry.getProgressListener().collectionJobStarted(1, table);
-		long rc = entityGraph.addEntities(table, condition, today, limit);
-		ProgressListenerRegistry.getProgressListener().collected(1, table, rc);
+		ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today, table);
+		ProgressListenerRegistry.getProgressListener().collectionJobStarted(today, table);
+		long rc = entityGraph.addEntities(table, condition, today);
+		ProgressListenerRegistry.getProgressListener().collected(today, table, rc);
 		if (rc > 0) {
 			progress.put(table, new ArrayList<Association>());
 		}
@@ -273,26 +256,17 @@ public class Jailer {
 	 * @param subject
 	 *            the subject of the extraction-model
 	 */
-	private Set<Table> exportInitialData(Table subject) throws Exception {
+	private Set<Table> exportInitialData() throws Exception {
 		Set<Table> idTables = initialDataTables;
-		Set<Table> tables = new HashSet<Table>();
 		for (Table table : idTables) {
-			/* if (subject.closure(true).contains(table)) */ {
-				// since 3.4.10 initial-data tables always will be exported
-				tables.add(table);
-				_log.info("exporting all " + datamodel.getDisplayName(table));
-
-				int today = entityGraph.getAge();
-				ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(1, table);
-				ProgressListenerRegistry.getProgressListener().collectionJobStarted(1, table);
-				long rc = entityGraph.addEntities(table, "1=1", today, 0);
-				ProgressListenerRegistry.getProgressListener().collected(1, table, rc);
-				entityGraph.setAge(today + 1);
-//			} else {
-//				_log.info(datamodel.getDisplayName(table) + " not in closure(" + datamodel.getDisplayName(subject) + ")");
-			}
+			_log.info("exporting all " + datamodel.getDisplayName(table));
+			int today = entityGraph.getAge();
+			ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today, table);
+			ProgressListenerRegistry.getProgressListener().collectionJobStarted(today, table);
+			long rc = entityGraph.addEntities(table, "1=1", today);
+			ProgressListenerRegistry.getProgressListener().collected(today, table, rc);
 		}
-		return tables;
+		return idTables;
 	}
 
 	/**
@@ -1295,9 +1269,9 @@ public class Jailer {
 			jailer.readInitialDataTables(CommandLineParser.getInstance().getSourceSchemaMapping(), extractionModel.subject);
 			jailer.runstats(false);
 			ProgressListenerRegistry.getProgressListener().newStage("collecting rows", false, false);
-			Set<Table> progress = jailer.exportInitialData(extractionModel.subject);
+			Set<Table> progress = jailer.exportInitialData();
 			entityGraph.setBirthdayOfSubject(entityGraph.getAge());
-			progress.addAll(jailer.export(extractionModel.subject, extractionModel.condition, progress, extractionModel.limit));
+			progress.addAll(jailer.export(extractionModel.subject, extractionModel.condition, progress));
 			totalProgress.addAll(progress);
 			subjects.add(extractionModel.subject);
 	

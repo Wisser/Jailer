@@ -139,11 +139,10 @@ public abstract class EntityGraph {
      * @param table the table 
      * @param condition the condition in SQL that the entities must fulfill
      * @param today the birthday of the new entities
-     * @param limit a limit of the number of rows to be exported or <code>0</code>
      * 
      * @return row-count
      */
-    public abstract long addEntities(Table table, String condition, int today, long limit) throws SQLException;
+    public abstract long addEntities(Table table, String condition, int today) throws SQLException;
     
     /**
      * Resolves an association. Retrieves and adds all entities 
