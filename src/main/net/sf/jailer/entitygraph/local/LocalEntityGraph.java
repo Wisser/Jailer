@@ -407,11 +407,10 @@ public class LocalEntityGraph extends EntityGraph {
      * @param table the table 
      * @param condition the condition in SQL that the entities must fulfill
      * @param today the birthday of the new entities
-     * @param limit a limit of the number of rows to be exported or <code>0</code>
      * 
      * @return row-count
      */
-    public long addEntities(Table table, String condition, int today, long limit) throws SQLException {
+    public long addEntities(Table table, String condition, int today) throws SQLException {
         checkPseudoColumns(table, condition);
     	return addEntities(table, "T", condition, today);
     }
@@ -542,7 +541,6 @@ public class LocalEntityGraph extends EntityGraph {
      * @param joinCondition optional condition to join with <code>joinedTable</code>
      * @param joinWithEntity whether to join with entity-table too
      * @param today the birthday of the new entities
-     * @param limit a limit of the number of rows to be exported or <code>0</code>
      * 
      * @return row-count
      */

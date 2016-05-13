@@ -31,6 +31,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.regex.Matcher;
 
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.DBMS;
@@ -156,14 +157,10 @@ public class SqlUtil {
     	String aIsSubject = entityAAlias == null? "(" + (today - birthdayOfSubject) + " = 0)" : ("(" + entityAAlias + "." + birthdayColumnName + " - " + birthdayOfSubject + " = 0)");
     	String bIsSubject = entityBAlias == null? "(" + (today - birthdayOfSubject) + " = 0)" : ("(" + entityBAlias + "." + birthdayColumnName + " - " + birthdayOfSubject + " = 0)");
 
-    	condition = condition.replaceAll("(A|a) *\\. *\\$distance", aBirthday);
-    	condition = condition.replaceAll("(A|a) *\\. *\\$DISTANCE", aBirthday);
-		condition = condition.replaceAll("(B|b) *\\. *\\$distance", bBirthday);
-    	condition = condition.replaceAll("(B|b) *\\. *\\$DISTANCE", bBirthday);
-		condition = condition.replaceAll("(A|a) *\\. *\\$IS_SUBJECT", aIsSubject);
-    	condition = condition.replaceAll("(A|a) *\\. *\\$is_subject", aIsSubject);
-		condition = condition.replaceAll("(B|b) *\\. *\\$IS_SUBJECT", bIsSubject);
-    	condition = condition.replaceAll("(B|b) *\\. *\\$is_subject", bIsSubject);
+    	condition = condition.replaceAll("(?i:a\\s*\\.\\s*\\$distance)", Matcher.quoteReplacement(aBirthday));
+		condition = condition.replaceAll("(?i:b\\s*\\.\\s*\\$distance)", Matcher.quoteReplacement(bBirthday));
+    	condition = condition.replaceAll("(?i:a\\s*\\.\\s*\\$is_subject)", Matcher.quoteReplacement(aIsSubject));
+    	condition = condition.replaceAll("(?i:b\\s*\\.\\s*\\$is_subject)", Matcher.quoteReplacement(bIsSubject));
     	return condition;
     }
    
