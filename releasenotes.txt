@@ -1,5 +1,6 @@
-5.3.3
+5.4
   - Fixed an issue with exporting dependencies of Initial Tables. (thanks to Teddy Widom, https://sourceforge.net/p/jailer/discussion/700499/thread/60e83aef/)
+  - -scope "LOCAL_DATABASE" now supports the pseudo-columns $DISTANCE and $IS_SUBJECT.
 
 5.3.2
   - Files with ".sql.zip" suffix are no longer created GZIP files but ZIP files.

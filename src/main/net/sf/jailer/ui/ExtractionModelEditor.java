@@ -1618,6 +1618,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			restrictionEditor.restriction.setText(restrictionCondition == null? "" : ConditionEditor.toSingleLine(restrictionCondition));
 			restrictionEditor.ignore.getModel().setSelected(association.isIgnored());
 			restrictionEditor.restriction.setEditable(editable && !association.isIgnored());
+			restrictionEditor.restriction.setEnabled(editable && !association.isIgnored());
+			restrictionEditor.openRestrictionConditionEditor.setVisible(editable && !association.isIgnored());
 			restrictionEditor.ignore.setEnabled(editable);
 			// restrictionEditor.apply.setEnabled(editable);
 			String joinCondition = association.getUnrestrictedJoinCondition();

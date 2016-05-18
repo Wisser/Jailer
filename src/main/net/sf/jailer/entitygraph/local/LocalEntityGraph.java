@@ -411,7 +411,7 @@ public class LocalEntityGraph extends EntityGraph {
      * @return row-count
      */
     public long addEntities(Table table, String condition, int today) throws SQLException {
-        checkPseudoColumns(table, condition);
+        // checkPseudoColumns(table, condition);
     	return addEntities(table, "T", condition, today);
     }
     
@@ -425,8 +425,8 @@ public class LocalEntityGraph extends EntityGraph {
         	if (!condition.equals(SqlUtil.resolvePseudoColumns(condition, "A", "B", 0, 0))) {
         		throw new IllegalArgumentException(
         				"Unsupported use of pseudo-columns in condition:\n\"" + condition + "\"\n(Table " + table.getName() + ")\n\n" +
-        				"the pseudo-columns $DISTANCE and $IS_SUBJECT are currently not supported " +
-        				"if the \"working table scope\" \"local database\" is used. It works with " +
+        				"When generating delete-scripts, the pseudo-columns $DISTANCE and $IS_SUBJECT are currently not supported " +
+        				"if the \"working table scope\" is \"local database\". It works with " +
         				"\"global tables\" or \"temporary tables\".");
         	}
         }
@@ -444,9 +444,9 @@ public class LocalEntityGraph extends EntityGraph {
      * @return row-count or -1, if association is ignored
      */
     public long resolveAssociation(final Table table, Association association, final int today) throws SQLException {
-        final String jc = association.getJoinCondition();
-        checkPseudoColumns(table, jc);
-        if (jc != null) {
+        if (association.getJoinCondition() != null) {
+        	final String jc = SqlUtil.resolvePseudoColumns(association.getJoinCondition(), today, birthdayOfSubject, association.reversed);
+            
             final String destAlias;
 			final String sourceAlias;
             if (association.reversed) {
@@ -999,6 +999,7 @@ public class LocalEntityGraph extends EntityGraph {
      */
     public long removeAssociatedDestinations(final Association association, final boolean deletedEntitiesAreMarked) throws SQLException {
         final String jc = association.getJoinCondition();
+        checkPseudoColumns(association.source, jc);
         if (jc != null) {
             final String destAlias;
 			final String sourceAlias;

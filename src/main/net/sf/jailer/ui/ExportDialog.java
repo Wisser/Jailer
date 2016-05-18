@@ -366,9 +366,6 @@ public class ExportDialog extends javax.swing.JDialog {
 		    	}
 		    	
 		    	if (!ok) {
-//		    		if (DDLCreator.isPresent(session)) {
-//		    			ok = true;
-//		    		} else {
 	    			try {
 	    				DDLCreator.createDDL(dataModel, session, TemporaryTableScope.GLOBAL);
 			    		ok = true;
@@ -393,6 +390,10 @@ public class ExportDialog extends javax.swing.JDialog {
 	    		SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
 			    		synchronized (ExportDialog.this) {
+			    			if (scopeSession.isSelected() && scopeGlobal.isEnabled()) {
+			    				scopeSession.setSelected(false);
+			    				scopeGlobal.setSelected(true);
+			    			}
 			    			jButton1.setEnabled(true);
 			    	    	setCursor(Cursor.getDefaultCursor());
 			    	    	updateCLIArea();
@@ -920,7 +921,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jPanel8.add(scopeLocal, gridBagConstraints);
 
         jLabel1.setForeground(new java.awt.Color(128, 128, 128));
-        jLabel1.setText("  (fastest)");
+        jLabel1.setText("  (best for single-thread performance)");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 58;
@@ -929,7 +930,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jPanel8.add(jLabel1, gridBagConstraints);
 
         jLabel26.setForeground(new java.awt.Color(128, 128, 128));
-        jLabel26.setText("  (fast)");
+        jLabel26.setText("  (best for multi-thread performance)");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 56;
@@ -938,7 +939,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jPanel8.add(jLabel26, gridBagConstraints);
 
         jLabel27.setForeground(new java.awt.Color(128, 128, 128));
-        jLabel27.setText("  (slow)");
+        jLabel27.setText("  (no write-access needed)");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 55;
@@ -1152,7 +1153,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jPanel2.add(jButton1, gridBagConstraints);
 
         jLabel2.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
-        jLabel2.setText(" *  add '.zip' or '.gz' suffix for compressed files"); // NOI18N
+        jLabel2.setText(" *  add '.zip' or '.gz' extension for compressed files"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;

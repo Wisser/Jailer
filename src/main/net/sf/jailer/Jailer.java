@@ -106,7 +106,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "5.3.3";
+	public static final String VERSION = "5.4";
 	
 	/**
 	 * The Jailer application name.
@@ -410,7 +410,7 @@ public class Jailer {
 							});
 						}
 					} else {
-						final String jc = association.getJoinCondition();
+						final String jc = association.getUnrestrictedJoinCondition();
 						if (jc != null && association.isInsertDestinationBeforeSource()) {
 							jobs.add(new JobManager.Job() {
 								public void run() throws Exception {
