@@ -140,7 +140,7 @@ public class SqlUtil {
     public static String resolvePseudoColumns(String condition, String entityAAlias, String entityBAlias, int today, int birthdayOfSubject) {
     	return resolvePseudoColumns(condition, entityAAlias, entityBAlias, today, birthdayOfSubject, "birthday");
     }
-    
+
     /**
      * Resolves the pseudo-columns in a restriction condition.
      * 
@@ -156,6 +156,29 @@ public class SqlUtil {
     	String bBirthday = entityBAlias == null? "" + (today - birthdayOfSubject) : ("(" + entityBAlias + "." + birthdayColumnName + " - " + birthdayOfSubject + ")");
     	String aIsSubject = entityAAlias == null? "(" + (today - birthdayOfSubject) + " = 0)" : ("(" + entityAAlias + "." + birthdayColumnName + " - " + birthdayOfSubject + " = 0)");
     	String bIsSubject = entityBAlias == null? "(" + (today - birthdayOfSubject) + " = 0)" : ("(" + entityBAlias + "." + birthdayColumnName + " - " + birthdayOfSubject + " = 0)");
+
+    	condition = condition.replaceAll("(?i:a\\s*\\.\\s*\\$distance)", Matcher.quoteReplacement(aBirthday));
+		condition = condition.replaceAll("(?i:b\\s*\\.\\s*\\$distance)", Matcher.quoteReplacement(bBirthday));
+    	condition = condition.replaceAll("(?i:a\\s*\\.\\s*\\$is_subject)", Matcher.quoteReplacement(aIsSubject));
+    	condition = condition.replaceAll("(?i:b\\s*\\.\\s*\\$is_subject)", Matcher.quoteReplacement(bIsSubject));
+    	return condition;
+    }
+
+    /**
+     * Resolves the pseudo-columns in a restriction condition.
+     * 
+     * @param condition the condition
+     * @param birthdayOfSubject birthday of subject
+     * @param today today
+     * @param reversed 
+     */
+    public static String resolvePseudoColumns(String condition, int today, int birthdayOfSubject, boolean reversed) {
+    	int da = reversed? 0 : 1;
+    	int db = reversed? 1 : 0;
+    	String aBirthday = "" + (today - birthdayOfSubject - da);
+    	String bBirthday = "" + (today - birthdayOfSubject - db);
+    	String aIsSubject = "(" + (today - birthdayOfSubject - da) + " = 0)";
+    	String bIsSubject = "(" + (today - birthdayOfSubject - db) + " = 0)";
 
     	condition = condition.replaceAll("(?i:a\\s*\\.\\s*\\$distance)", Matcher.quoteReplacement(aBirthday));
 		condition = condition.replaceAll("(?i:b\\s*\\.\\s*\\$distance)", Matcher.quoteReplacement(bBirthday));

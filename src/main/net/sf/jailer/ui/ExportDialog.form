@@ -464,7 +464,7 @@
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                           <Color blue="80" green="80" red="80" type="rgb"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="  (fastest)"/>
+                        <Property name="text" type="java.lang.String" value="  (best for single-thread performance)"/>
                       </Properties>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -477,7 +477,7 @@
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                           <Color blue="80" green="80" red="80" type="rgb"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="  (fast)"/>
+                        <Property name="text" type="java.lang.String" value="  (best for multi-thread performance)"/>
                       </Properties>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
@@ -490,7 +490,7 @@
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                           <Color blue="80" green="80" red="80" type="rgb"/>
                         </Property>
-                        <Property name="text" type="java.lang.String" value="  (slow)"/>
+                        <Property name="text" type="java.lang.String" value="  (no write-access needed)"/>
                       </Properties>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">

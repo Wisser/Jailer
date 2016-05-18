@@ -283,7 +283,6 @@ public class RestrictionEditor extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void ignoreActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_ignoreActionPerformed
-        // TODO add your handling code here:
     }//GEN-LAST:event_ignoreActionPerformed
 
     private String getConditionToolTip() {
