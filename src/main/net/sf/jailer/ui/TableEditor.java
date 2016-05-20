@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2012 the original author or authors.
+ * Copyright 2007 - 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -67,12 +67,7 @@ public class TableEditor extends javax.swing.JDialog {
      * Maps table names to display names.
      */
     private final Map<String, String> displayNames;
-    
-    /**
-     * List of tables to export entirely if in closure of subject.
-     */
-    private List<String> initialDataTablesList = new ArrayList<String>();
- 
+
     private boolean needsSave;
     
     /** 
@@ -83,12 +78,11 @@ public class TableEditor extends javax.swing.JDialog {
      * @param excludeFromDeletionList list of tables to be excluded from deletion
      * @param initialDataTablesList list of tables to export entirely if in closure of subject
      */
-    public TableEditor(java.awt.Dialog parent, Map<String, String> displayNames, Collection<Line> tables, List<Line> associations, List<String> excludeFromDeletionList, List<String> initialDataTablesList) {
+    public TableEditor(java.awt.Dialog parent, Map<String, String> displayNames, Collection<Line> tables, List<Line> associations, List<String> excludeFromDeletionList) {
     	super(parent, true);
         this.tables = tables;
         this.associations = associations;
         this.excludeFromDeletionList = excludeFromDeletionList;
-        this.initialDataTablesList = initialDataTablesList;
         this.displayNames = displayNames;
         initComponents();
         primaryKey.addActionListener(new ActionListener() {
@@ -217,7 +211,6 @@ public class TableEditor extends javax.swing.JDialog {
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         excludeFromDeletion = new javax.swing.JCheckBox();
-        exportAllRows = new javax.swing.JCheckBox();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         columnsTable = new javax.swing.JTable();
@@ -289,7 +282,7 @@ public class TableEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jPanel1.add(jButton1, gridBagConstraints);
 
-        jLabel3.setFont(new java.awt.Font("Dialog", 0, 12));
+        jLabel3.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         jLabel3.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -348,16 +341,6 @@ public class TableEditor extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         getContentPane().add(excludeFromDeletion, gridBagConstraints);
-
-        exportAllRows.setText(" always export all rows (initial-data)");
-        exportAllRows.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 18;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
-        getContentPane().add(exportAllRows, gridBagConstraints);
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
@@ -749,15 +732,12 @@ public class TableEditor extends javax.swing.JDialog {
 
 		boolean origExcludeSet = excludeFromDeletionList.contains(origName);
 		excludeFromDeletion.setSelected(origExcludeSet);
-		boolean origExportAllSet = initialDataTablesList.contains(origName);
-		exportAllRows.setSelected(origExportAllSet);
 
 		columnsTable.setModel(columnsTableModel());
 		updateEnableState();
 		
 		setVisible(true);
 		boolean excludeSet = excludeFromDeletion.isSelected();
-		boolean exportAllSet = exportAllRows.isSelected();
 
 		if (isOk && 
 			    !(
@@ -765,8 +745,7 @@ public class TableEditor extends javax.swing.JDialog {
 			    		&& origName.equals(nameField.getText()) 
 						&& !needsSave
 						&& origUpsert == upsertCheckbox.isSelected()
-						&& origExcludeSet == excludeSet
-						&& origExportAllSet == exportAllSet)) {
+						&& origExcludeSet == excludeSet)) {
 			columnLines.remove(currentColumnLine.cells.get(0));
 			currentColumnLine.cells.set(0, nameField.getText().trim());
 			columnLines.put(currentColumnLine.cells.get(0), currentColumnLine);
@@ -799,15 +778,11 @@ public class TableEditor extends javax.swing.JDialog {
 			}
 			
 			excludeFromDeletionList.remove(origName);
-			initialDataTablesList.remove(origName);
 			
 			if (excludeSet) {
 				excludeFromDeletionList.add(nameField.getText().trim());
 			}
-			if (exportAllSet) {
-				initialDataTablesList.add(nameField.getText().trim());
-			}
-			
+
 			return true;
 		} else {
 			currentTableLine.cells.clear();
@@ -877,7 +852,6 @@ public class TableEditor extends javax.swing.JDialog {
     private javax.swing.JTextField displayName;
     private javax.swing.JButton downButton;
     private javax.swing.JCheckBox excludeFromDeletion;
-    private javax.swing.JCheckBox exportAllRows;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;

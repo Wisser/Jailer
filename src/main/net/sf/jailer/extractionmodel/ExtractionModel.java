@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2012 the original author or authors.
+ * Copyright 2007 - 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,9 +15,13 @@
  */
 package net.sf.jailer.extractionmodel;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.datamodel.AggregationSchema;
@@ -49,6 +53,60 @@ public class ExtractionModel {
      * The table to read from.
      */
     public final Table subject;
+    
+    /**
+     * Additional Subject.
+     */
+    public static class AdditionalSubject {
+		public final Table subject;
+    	public final String condition;
+    	public AdditionalSubject(Table subject, String condition) {
+    		this.subject = subject;
+    		this.condition = condition;
+    	}
+    	/**
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result
+					+ ((condition == null) ? 0 : condition.hashCode());
+			result = prime * result
+					+ ((subject == null) ? 0 : subject.hashCode());
+			return result;
+		}
+		/**
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			AdditionalSubject other = (AdditionalSubject) obj;
+			if (condition == null) {
+				if (other.condition != null)
+					return false;
+			} else if (!condition.equals(other.condition))
+				return false;
+			if (subject == null) {
+				if (other.subject != null)
+					return false;
+			} else if (!subject.equals(other.subject))
+				return false;
+			return true;
+		}
+    }
+
+    /**
+	 * Additional Subjects.
+     */
+    public List<AdditionalSubject> additionalSubjects = new ArrayList<AdditionalSubject>();
     
     /**
      * The SQL-condition.
@@ -122,7 +180,7 @@ public class ExtractionModel {
         this.condition = condition;
         this.limit = limit;
         this.dataModel = dataModel;
-        
+
         // read xml mapping
         List<CsvFile.Line> xmlMapping = new CsvFile(CommandLineParser.getInstance().newFile(fileName), "xml-mapping").getLines();
         for (CsvFile.Line xmLine: xmlMapping) {
@@ -209,8 +267,68 @@ public class ExtractionModel {
 			dataModel.getXmlSettings().timestampPattern = cells.get(1);
 			dataModel.getXmlSettings().rootTag = cells.get(2);
         }
+
+        // read version
+        int[] version = null;
+        List<CsvFile.Line> versionBlock = new CsvFile(CommandLineParser.getInstance().newFile(fileName), "version").getLines();
+        if (!versionBlock.isEmpty()) {
+        	String vCell = versionBlock.get(0).cells.get(0);
+        	String[] versionLine = vCell.split("[^0-9]+");
+        	version = new int[Math.max(4, versionLine.length)];
+        	int p = 0;
+        	for (String number: versionLine) {
+        		if (number.length() > 0) {
+        			try {
+        				version[p++] = Integer.parseInt(number);
+        			} catch (NumberFormatException e) {
+        				// version is unknown
+        				version = null;
+        				break;
+        			}
+        		}
+        	}
+        }
+        
+        // read additional subjects
+        List<CsvFile.Line> additionalSubsLines = new CsvFile(CommandLineParser.getInstance().newFile(fileName), "additional subjects").getLines();
+        for (CsvFile.Line line: additionalSubsLines) {
+        	Table additSubject = dataModel.getTable(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0)));
+            if (additSubject != null) {
+            	additionalSubjects.add(new AdditionalSubject(additSubject, line.cells.get(1)));
+            }
+        }
+        
+        if (version != null) {
+        	if (version[0] < 5 || version[0] == 5 && version[1] < 4) {
+        		// convert pre 5.4 "initial data" tables into additional subjects
+        		for (Table table: readInitialDataTables(sourceSchemaMapping, dataModel)) {
+        			additionalSubjects.add(new AdditionalSubject(table, ""));
+        		}
+        	}
+        }
+
     }
-    
+
+	/**
+	 * <b>
+	 * Initial-data-tables are no longer supported! This method is used to convert old (pre 5.4) extraction-models.
+	 * </b>
+	 * 
+	 * Reads the initial-data-tables list. An initial-data-table is a table
+	 * which will be exported completely if it is in closure from subject.
+	 * 
+	 * @return the initial-data-tables list
+	 */
+	private Set<Table> readInitialDataTables(Map<String, String> sourceSchemaMapping, DataModel datamodel) throws Exception {
+		File file = CommandLineParser.getInstance().newFile(DataModel.getDatamodelFolder() + File.separator + "initial_data_tables.csv");
+		if (file.exists()) {
+			Set<Table> idTables = SqlUtil.readTableList(new CsvFile(file), datamodel, sourceSchemaMapping);
+			return idTables;
+		} else {
+			return new HashSet<Table>();
+		}
+	}
+
     public static String loadDatamodelFolder(String fileName) throws Exception {
         List<CsvFile.Line> dmf = new CsvFile(CommandLineParser.getInstance().newFile(fileName), "datamodelfolder").getLines();
         if (dmf.size() > 0) {

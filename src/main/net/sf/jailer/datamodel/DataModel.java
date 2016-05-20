@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2012 the original author or authors.
+ * Copyright 2007 - 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,8 @@ import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.extractionmodel.ExtractionModel;
+import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.RestrictionDefinition;
@@ -139,13 +141,6 @@ public class DataModel {
      */
 	public static String getAssociationsFile() {
 		return getDatamodelFolder() + File.separator + "association.csv";
-	}
-	
-	/**
-	 * List of tables to be exported completely if in closure from subject.
-	 */
-	public static String getInitialDataTablesFile() {
-		return getDatamodelFolder() + File.separator + "initial_data_tables.csv";
 	}
 	
 	/**
@@ -746,10 +741,15 @@ public class DataModel {
      * @param subjectCondition the subject condition
      * @return all parameters which occur in subject condition, association restrictions or XML templates
      */
-    public SortedSet<String> getParameters(String subjectCondition) {
+    public SortedSet<String> getParameters(String subjectCondition, List<ExtractionModel.AdditionalSubject> additionalSubjects) {
     	SortedSet<String> parameters = new TreeSet<String>();
     	
     	ParameterHandler.collectParameter(subjectCondition, parameters);
+    	if (additionalSubjects != null) {
+    		for (AdditionalSubject as: additionalSubjects) {
+    			ParameterHandler.collectParameter(as.condition, parameters);
+    		}
+    	}
     	for (Association a: namedAssociations.values()) {
     		String r = a.getRestrictionCondition();
     		if (r != null) {
@@ -792,8 +792,9 @@ public class DataModel {
 	 * @param subjectCondition 
 	 * @param scriptFormat
 	 * @param positions table positions or <code>null</code>
+	 * @param additionalSubjects 
 	 */
-	public void save(String file, Table stable, String subjectCondition, ScriptFormat scriptFormat, List<RestrictionDefinition> restrictionDefinitions, Map<String, Map<String, double[]>> positions) throws FileNotFoundException {
+	public void save(String file, Table stable, String subjectCondition, ScriptFormat scriptFormat, List<RestrictionDefinition> restrictionDefinitions, Map<String, Map<String, double[]>> positions, List<AdditionalSubject> additionalSubjects) throws FileNotFoundException {
 		File extractionModel = new File(file);
 		PrintWriter out = new PrintWriter(extractionModel);
 		out.println("# subject; condition;  limit; restrictions");
@@ -805,6 +806,11 @@ public class DataModel {
 		String currentModelSubfolder = DataModelManager.getCurrentModelSubfolder();
 		if (currentModelSubfolder != null) {
 			out.println(currentModelSubfolder);
+		}
+		out.println();
+		out.println(CsvFile.BLOCK_INDICATOR + "additional subjects");
+		for (AdditionalSubject as: additionalSubjects) {
+			out.println(CsvFile.encodeCell("" + as.subject.getName()) + "; " + CsvFile.encodeCell(as.condition) + ";");
 		}
 		out.println();
 		out.println(CsvFile.BLOCK_INDICATOR + "export modus");

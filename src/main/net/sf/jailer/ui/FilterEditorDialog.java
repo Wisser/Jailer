@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2012 the original author or authors.
+ * Copyright 2007 - 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.awt.Component;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.IdentityHashMap;
@@ -292,6 +293,10 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
 		        final JLabel theLabel = label;
 		        label.addMouseListener(new java.awt.event.MouseAdapter() {
+		        	@Override
+					public void mouseReleased(MouseEvent e) {
+						mouseClicked(e);
+					}
 					public void mouseClicked(java.awt.event.MouseEvent evt) {
 						conditionEditor.setTitle(columnName.trim());
 						String cond = conditionEditor.edit(textField.getText(), "Table", "T", table, null, null, null, false);

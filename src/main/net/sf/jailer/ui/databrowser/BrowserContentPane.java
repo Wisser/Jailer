@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2012 the original author or authors.
+ * Copyright 2007 - 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -105,6 +105,7 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.DbConnectionDialog;
@@ -657,6 +658,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		openEditorLabel.setIcon(conditionEditorIcon);
 		openEditorLabel.setText(null);
 		openEditorLabel.addMouseListener(new java.awt.event.MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				mouseClicked(e);
+			}
 			@Override
 			public void mouseClicked(MouseEvent e) {
 				loadButton.grabFocus();
@@ -1420,7 +1425,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			Map<String, Map<String, double[]>> positions = new TreeMap<String, Map<String,double[]>>();
 			collectPositions(positions);
-			dataModel.save(file, stable, subjectCondition, ScriptFormat.SQL, restrictionDefinitions, positions);
+			dataModel.save(file, stable, subjectCondition, ScriptFormat.SQL, restrictionDefinitions, positions, new ArrayList<ExtractionModel.AdditionalSubject>());
 
 			if (DataBrowserContext.isStandAlone() && !doExport) {
 				parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));

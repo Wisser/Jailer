@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2012 the original author or authors.
+ * Copyright 2007 - 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.MouseEvent;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -48,6 +49,7 @@ import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CsvFile;
 
@@ -111,12 +113,14 @@ public class ExportDialog extends javax.swing.JDialog {
 	private ParameterEditor parameterEditor;
 	private final List<String> initialArgs;
 	private final String password;
+	private final String subjectCondition;
 	
     /** Creates new form DbConnectionDialog 
      * @param showCmd 
      * @param args */
-    public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final net.sf.jailer.datamodel.Table subject, String subjectCondition, Session session, List<String> initialArgs, String password, boolean showCmd) {
+    public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final Table subject, String subjectCondition, List<AdditionalSubject> additionalSubjects, Session session, List<String> initialArgs, String password, boolean showCmd) {
         super(parent, true);
+        this.subjectCondition = subjectCondition;
         this.dataModel = dataModel;
         this.subject = subject;
         this.initialArgs = new ArrayList<String>(initialArgs);
@@ -135,7 +139,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        parameterPanel.add(parameterEditor.createPane(dataModel.getParameters(subjectCondition)), gridBagConstraints);
+        parameterPanel.add(parameterEditor.createPane(dataModel.getParameters(subjectCondition, additionalSubjects)), gridBagConstraints);
         
         setModal(true);
         setLocation(100, 150);
@@ -183,6 +187,26 @@ public class ExportDialog extends javax.swing.JDialog {
         }
         if (rowsPerThread.getText().length() == 0) {
         	rowsPerThread.setText("50");
+        }
+        
+        if (additionalSubjects.isEmpty()) {
+        	additSubsLabel.setVisible(false);
+        	additSubsLabelTitel.setVisible(false);
+        } else {
+        	StringBuilder sb = new StringBuilder();
+        	for (AdditionalSubject as: additionalSubjects) {
+        		if (sb.length() > 0) {
+        			sb.append(", ");
+        		}
+        		sb.append(as.subject.getName());
+        	}
+        	final int MAX = 60;
+        	if (sb.length() > MAX) {
+        		additSubsLabel.setToolTipText(sb.toString());
+        		additSubsLabel.setText(sb.toString().substring(0, MAX) + "...");
+        	} else {
+        		additSubsLabel.setText(sb.toString());
+        	}
         }
         
         subjectTable.setText(subject.getName());
@@ -266,6 +290,10 @@ public class ExportDialog extends javax.swing.JDialog {
 		openWhereEditor.setIcon(conditionEditorIcon);
 		openWhereEditor.setText(null);
 		openWhereEditor.addMouseListener(new java.awt.event.MouseAdapter() {
+			@Override
+			public void mouseReleased(MouseEvent e) {
+				mouseClicked(e);
+			}
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
 				String cond = subjectConditionEditor.edit(where.getText(), "Subject", "T", subject, null, null, null, false);
 				if (cond != null) {
@@ -589,11 +617,8 @@ public class ExportDialog extends javax.swing.JDialog {
         jLabel6 = new javax.swing.JLabel();
         insert = new javax.swing.JTextField();
         delete = new javax.swing.JTextField();
-        jPanel3 = new javax.swing.JPanel();
         threads = new javax.swing.JTextField();
-        jLabel10 = new javax.swing.JLabel();
         rowsPerThread = new javax.swing.JTextField();
-        jLabel17 = new javax.swing.JLabel();
         upsertCheckbox = new javax.swing.JCheckBox();
         explain = new javax.swing.JCheckBox();
         placeholder = new javax.swing.JLabel();
@@ -629,6 +654,8 @@ public class ExportDialog extends javax.swing.JDialog {
         sortedCheckBox = new javax.swing.JCheckBox();
         unicode = new javax.swing.JCheckBox();
         openWhereEditor = new javax.swing.JLabel();
+        additSubsLabel = new javax.swing.JLabel();
+        additSubsLabelTitel = new javax.swing.JLabel();
         jPanel7 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -721,7 +748,7 @@ public class ExportDialog extends javax.swing.JDialog {
         exportLabel.setText(" Into*"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 20;
+        gridBagConstraints.gridy = 30;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(exportLabel, gridBagConstraints);
 
@@ -743,11 +770,10 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 50;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
         jPanel1.add(jLabel6, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 20;
+        gridBagConstraints.gridy = 30;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 1, 0);
@@ -760,44 +786,24 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 1, 0);
         jPanel1.add(delete, gridBagConstraints);
 
-        jPanel3.setLayout(new java.awt.GridBagLayout());
-
         threads.setMinimumSize(new java.awt.Dimension(44, 19));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel3.add(threads, gridBagConstraints);
-
-        jLabel10.setText("  "); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.weightx = 1.0;
-        jPanel3.add(jLabel10, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(1, 0, 0, 0);
-        jPanel3.add(rowsPerThread, gridBagConstraints);
-
-        jLabel17.setText("           "); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 3;
-        jPanel3.add(jLabel17, gridBagConstraints);
-
+        threads.addFocusListener(new java.awt.event.FocusAdapter() {
+            public void focusLost(java.awt.event.FocusEvent evt) {
+                threadsFocusLost(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 50;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.gridheight = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        jPanel1.add(jPanel3, gridBagConstraints);
+        gridBagConstraints.ipadx = 30;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel1.add(threads, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 51;
+        gridBagConstraints.ipadx = 30;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel1.add(rowsPerThread, gridBagConstraints);
 
         upsertCheckbox.setText("upsert-statements (overwrite) for all rows"); // NOI18N
         upsertCheckbox.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
@@ -828,7 +834,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jLabel4.setText(" "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 20;
+        gridBagConstraints.gridy = 30;
         jPanel1.add(jLabel4, gridBagConstraints);
 
         jLabel8.setText(" Working table scope"); // NOI18N
@@ -836,6 +842,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 55;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         jPanel1.add(jLabel8, gridBagConstraints);
 
         jLabel7.setText(" Export from"); // NOI18N
@@ -843,7 +850,6 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 15;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(jLabel7, gridBagConstraints);
 
         jLabel11.setText(" Where"); // NOI18N
@@ -851,7 +857,6 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 18;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(jLabel11, gridBagConstraints);
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
@@ -881,7 +886,6 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 51;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(14, 0, 0, 0);
         jPanel1.add(jLabel16, gridBagConstraints);
 
         jPanel8.setLayout(new java.awt.GridBagLayout());
@@ -951,6 +955,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 55;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         jPanel1.add(jPanel8, gridBagConstraints);
 
         jLabel9.setText("           "); // NOI18N
@@ -967,7 +972,7 @@ public class ExportDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 20;
+        gridBagConstraints.gridy = 30;
         gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
         jPanel1.add(selectInsertFile, gridBagConstraints);
 
@@ -986,15 +991,15 @@ public class ExportDialog extends javax.swing.JDialog {
         jLabel21.setText(" With"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 19;
+        gridBagConstraints.gridy = 24;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 2, 0);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel1.add(jLabel21, gridBagConstraints);
 
         parameterPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 19;
+        gridBagConstraints.gridy = 24;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
@@ -1113,6 +1118,20 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 18;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         jPanel1.add(openWhereEditor, gridBagConstraints);
+
+        additSubsLabel.setText(" "); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel1.add(additSubsLabel, gridBagConstraints);
+
+        additSubsLabelTitel.setText(" Additional Subjects"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel1.add(additSubsLabelTitel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1248,6 +1267,20 @@ public class ExportDialog extends javax.swing.JDialog {
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         dispose();
     }//GEN-LAST:event_cancelButtonActionPerformed
+
+    private void threadsFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_threadsFocusLost
+    	String text = threads.getText().trim();
+    	if (text.length() > 0) {
+    		try {
+    			int n = Integer.parseInt(text);
+    			if (n > 100) {
+    				threads.setText("100");
+    			}
+    		} catch (NumberFormatException e) {
+    			threads.setText("");
+    		}
+    	}
+    }//GEN-LAST:event_threadsFocusLost
     
     public boolean isOk() {
 		return isOk;
@@ -1282,7 +1315,7 @@ public class ExportDialog extends javax.swing.JDialog {
     	}
     	try {
     		int nt = Integer.parseInt(threads.getText().trim());
-    		if (nt > 0 && nt <= 100) {
+    		if (nt > 0) {
     			args.add("-threads");
     			args.add("" + nt);
     		}
@@ -1297,8 +1330,10 @@ public class ExportDialog extends javax.swing.JDialog {
     	} catch (Exception e) {
     	}
     	
-    	args.add("-where");
-    	args.add(ConditionEditor.toMultiLine(where.getText()).replace('\n', ' ').replace('\r', ' '));
+    	if (!where.getText().equals(subjectCondition)) {
+	    	args.add("-where");
+	    	args.add(ConditionEditor.toMultiLine(where.getText()).replace('\n', ' ').replace('\r', ' '));
+    	}
 
     	args.add("-format");
     	args.add(scriptFormat.toString());
@@ -1405,6 +1440,8 @@ public class ExportDialog extends javax.swing.JDialog {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel additSubsLabel;
+    private javax.swing.JLabel additSubsLabelTitel;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton cancelButton;
     private javax.swing.JTextArea cliArea;
@@ -1416,14 +1453,12 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JTextField insert;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
-    private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
@@ -1444,7 +1479,6 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
