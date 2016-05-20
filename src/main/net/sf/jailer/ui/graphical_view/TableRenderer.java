@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2012 the original author or authors.
+ * Copyright 2007 - 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -916,12 +916,6 @@ public class TableRenderer extends AbstractShapeRenderer {
      */
     private List<String> excludeFromDeletion = new ArrayList<String>();
     
-    /**
-     * List of tables to export entirely if in closure of subject.
-     */
-    private List<String> initialDataTables = new ArrayList<String>();
-    
-
 	/**
 	 * Constructor.
 	 * 
@@ -933,7 +927,6 @@ public class TableRenderer extends AbstractShapeRenderer {
 		this.graphicalDataModelView = graphicalDataModelView;
 		try {
 			UIUtil.loadTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile());
-			UIUtil.loadTableList(initialDataTables, DataModel.getInitialDataTablesFile());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -958,14 +951,11 @@ public class TableRenderer extends AbstractShapeRenderer {
 			if (!graphicalDataModelView.expandedTables.contains(table)) {
 				img[i++] = getCollapsedImage(table);
 			}
-			if (table.equals(graphicalDataModelView.modelEditor.getSubject())) {
+			if (table.equals(graphicalDataModelView.modelEditor.getSubject()) || graphicalDataModelView.modelEditor.isAdditionalSubject(table)) {
 				img[i++] = subjectImage;
 			}
 			if (excludeFromDeletion.contains(table.getName())) {
 				img[i++] = excludeFromDeletionImage;
-			}
-			if (initialDataTables.contains(table.getName())) {
-				img[i++] = allRowsImage;
 			}
 			if (table.getUpsert()) {
 				img[i++] = upsertImage;
@@ -1016,9 +1006,6 @@ public class TableRenderer extends AbstractShapeRenderer {
 
 		if (excludeFromDeletion.contains(table.getName())) {
 			tt += "Excluded from Deletion. ";
-		}
-		if (initialDataTables.contains(table.getName())) {
-			tt += "Export all Rows. ";
 		}
 		if (table.getUpsert()) {
 			tt += "Upsert Rows/Merge. ";
@@ -1152,7 +1139,6 @@ public class TableRenderer extends AbstractShapeRenderer {
 
 	// images
 	private Image excludeFromDeletionImage = null;
-	private Image allRowsImage = null;
 	private Image collapsedImage = null;
 	private Image collapsedRedImage = null;
 	private Image upsertImage = null;
@@ -1164,11 +1150,6 @@ public class TableRenderer extends AbstractShapeRenderer {
 		// load images
 		try {
 			excludeFromDeletionImage = new ImageIcon(getClass().getResource(dir + "/database-lock.png")).getImage();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		try {
-			allRowsImage = new ImageIcon(getClass().getResource(dir + "/all-rows.png")).getImage();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

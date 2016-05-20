@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2012 the original author or authors.
+ * Copyright 2007 - 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -99,11 +99,6 @@ public class DataModelEditor extends javax.swing.JDialog {
     private List<String> excludeFromDeletion = new ArrayList<String>();
     
     /**
-     * List of tables to export entirely if in closure of subject.
-     */
-    private List<String> initialDataTables = new ArrayList<String>();
-    
-    /**
      * <code>true</code> iff model is modified.
      */
     private boolean needsSave = false;
@@ -154,7 +149,6 @@ public class DataModelEditor extends javax.swing.JDialog {
         	initiallyDirty = true;
         } else {
 	        UIUtil.loadTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile());
-	        UIUtil.loadTableList(initialDataTables, DataModel.getInitialDataTablesFile());
         }
         int newTables = 0;
         int newAssociations = 0;
@@ -368,7 +362,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 				public void windowOpened(WindowEvent e) {
 					for (Line l: tables) {
 						if (toEdit.getName().equals(l.cells.get(0))) {
-							if (new TableEditor(DataModelEditor.this, displayNames, tables, associations, excludeFromDeletion, initialDataTables).edit(l, columns)) {
+							if (new TableEditor(DataModelEditor.this, displayNames, tables, associations, excludeFromDeletion).edit(l, columns)) {
 					    		markDirty();
 					    		repaint();
 					    	}
@@ -701,7 +695,7 @@ public class DataModelEditor extends javax.swing.JDialog {
     		cells.add("");
     	}
 		CsvFile.Line line = new CsvFile.Line("?", cells);
-    	if (new TableEditor(this, displayNames, tables, associations, excludeFromDeletion, initialDataTables).edit(line, columns)) {
+    	if (new TableEditor(this, displayNames, tables, associations, excludeFromDeletion).edit(line, columns)) {
     		tables.add(0, line);
     		tablesList.setModel(createTablesListModel());
     		markDirty();
@@ -718,7 +712,7 @@ public class DataModelEditor extends javax.swing.JDialog {
     		}
     	}
     	if (line != null) {
-	    	if (new TableEditor(this, displayNames, tables, associations, excludeFromDeletion, initialDataTables).edit(line, columns)) {
+	    	if (new TableEditor(this, displayNames, tables, associations, excludeFromDeletion).edit(line, columns)) {
 	    		markDirty();
 	    		repaint();
 	    	}
@@ -766,7 +760,6 @@ public class DataModelEditor extends javax.swing.JDialog {
 	    		displayNames.remove(k);
 	    	}
 	    	excludeFromDeletion.removeAll(namesOfTablesToDelete);
-	    	initialDataTables.removeAll(namesOfTablesToDelete);
 	    	tablesList.setModel(createTablesListModel());
 	    	associations.removeAll(assToDelete);
 	    	associationsList.setModel(createAssociationsListModel());
@@ -837,7 +830,6 @@ public class DataModelEditor extends javax.swing.JDialog {
 		    	save(associations, DataModel.getAssociationsFile(), "# Table A; Table B; First-insert; Cardinality; Join-condition; Name; Author");
 		    	save(new ArrayList<Line>(columns.values()), DataModel.getColumnsFile(), "# Table; Columns");
 	    		saveTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile());
-	    		saveTableList(initialDataTables, DataModel.getInitialDataTablesFile());
 	    		saveTableList(Arrays.asList(Jailer.VERSION), DataModel.getVersionFile());
 	    		saveDisplayNames();
 	    		saveName();

@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2012 the original author or authors.
+ * Copyright 2007 - 2016 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -167,7 +167,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         filterEditorDialog = new FilterEditorDialog(this, new ParameterSelector.ParametersGetter() {
 			@Override
 			public Set<String> getParameters() {
-				return extractionModelEditor.dataModel.getParameters(extractionModelEditor.condition.getText());
+				return extractionModelEditor.dataModel.getParameters(extractionModelEditor.condition.getText(), extractionModelEditor.extractionModel.additionalSubjects);
 			}
 		});
     }
@@ -1068,7 +1068,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        	dbConnectionDialog.addDbArgs(args);
 			        	Session.closeTemporaryTableSession();
 			        	Session session = new Session(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword());
-			        	ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), session, args, dbConnectionDialog.getPassword(), checkRI);
+			        	ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getPassword(), checkRI);
 			        	session.shutDown();
 			        	Session.closeTemporaryTableSession();
 			        	if (exportDialog.isOk()) {
