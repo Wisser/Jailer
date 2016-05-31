@@ -202,24 +202,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					if (e != null) {
 						updateMode("error");
 						unhide();
-						if (!asking) {
-							try {
-								if (table.getName() != null && !table.exists(session, JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchemaName()))) {
-									asking = true;
-									String schemaMappingOption = "Schema Mapping";
-									switch (JOptionPane.showOptionDialog(BrowserContentPane.this, "Table \"" + table.getName() + "\" not found!", "Unknown table", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Cancel", schemaMappingOption, "Analyze Database" }, "Cancel")) {
-									case 1: openSchemaMappingDialog(); break;
-									case 2: openSchemaAnalyzer(); break;
-									}
-									asking = false;
-								} else {
-									UIUtil.showException(BrowserContentPane.this, "Error", e);
-								}
-							} catch (Exception e1) {
-								asking = false;
-								UIUtil.showException(BrowserContentPane.this, "Error", e);
-							}
-						}
+						UIUtil.showException(BrowserContentPane.this, "Error", e);
 					} else {
 						Set<String> prevIDs = new TreeSet<String>();
 						int prevSize = 0;
@@ -290,8 +273,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 	}
 	
-	private static boolean asking = false;
-
 	private Runnable reloadAction;
 	
 	public void setOnReloadAction(Runnable runnable) {
