@@ -106,7 +106,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "5.4";
+	public static final String VERSION = "5.4.1";
 	
 	/**
 	 * The Jailer application name.
@@ -1123,12 +1123,27 @@ public class Jailer {
 						EntityGraph.maxTotalRowcount = clp.maxNumberOfEntities;
 						_log.info("max-rowcount=" + EntityGraph.maxTotalRowcount);
 					}
+					
 					if (clp.exportScriptFileName == null) {
 						System.out.println("missing '-e' option");
 						CommandLineParser.printUsage();
 					} else {
 						export(clp.arguments.get(1), clp.exportScriptFileName, clp.deleteScriptFileName, clp.arguments.get(2), clp.arguments.get(3),
 								clp.arguments.get(4), clp.arguments.get(5), clp.explain, clp.numberOfThreads, clp.getScriptFormat());
+					}
+				}
+			} else if ("delete".equalsIgnoreCase(command)) {
+				if (clp.arguments.size() != 6) {
+					CommandLineParser.printUsage();
+				} else {
+					if (clp.deleteScriptFileName == null) {
+						System.out.println("missing '-d' option");
+						CommandLineParser.printUsage();
+					} else {
+						// note we are passing null for script format and the export script name, as we are using the export tool
+						// to generate the delete script only.
+						export(clp.arguments.get(1), /* clp.exportScriptFileName*/ null, clp.deleteScriptFileName, clp.arguments.get(2), clp.arguments.get(3),
+									clp.arguments.get(4), clp.arguments.get(5), clp.explain, clp.numberOfThreads, /*scriptFormat*/ null);
 					}
 				}
 			} else if ("find-association".equalsIgnoreCase(command)) {
@@ -1196,8 +1211,11 @@ public class Jailer {
 	 */
 	private static void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, String driverClassName, String dbUrl,
 			String dbUser, String dbPassword, boolean explain, int threads, ScriptFormat scriptFormat) throws Exception {
-		_log.info("exporting '" + extractionModelFileName + "' to '" + scriptFile + "'");
-
+		
+		if (scriptFile != null) {
+			_log.info("exporting '" + extractionModelFileName + "' to '" + scriptFile + "'");
+		}
+		
 		Session session = new Session(driverClassName, dbUrl, dbUser, dbPassword, CommandLineParser.getInstance().getTemporaryTableScope(), false);
 		if (CommandLineParser.getInstance().getTemporaryTableScope() == TemporaryTableScope.SESSION_LOCAL
 		 || CommandLineParser.getInstance().getTemporaryTableScope() == TemporaryTableScope.TRANSACTION_LOCAL) {
@@ -1288,16 +1306,18 @@ public class Jailer {
 				exportedEntities = entityGraph.copy(EntityGraph.createUniqueGraphID(), session);
 			}
 
-			ProgressListenerRegistry.getProgressListener().newStage("exporting rows", false, false);
-
-			jailer.setEntityGraph(entityGraph);
-			if (ScriptFormat.XML.equals(scriptFormat)) {
-				jailer.writeEntitiesAsXml(scriptFile, totalProgress, subjects, session);
-			} else {
-				jailer.writeEntities(scriptFile, ScriptType.INSERT, totalProgress, session);
+			if (scriptFile != null) {
+				ProgressListenerRegistry.getProgressListener().newStage("exporting rows", false, false);
+				
+				jailer.setEntityGraph(entityGraph);
+				if (ScriptFormat.XML.equals(scriptFormat)) {
+					jailer.writeEntitiesAsXml(scriptFile, totalProgress, subjects, session);
+				} else {
+					jailer.writeEntities(scriptFile, ScriptType.INSERT, totalProgress, session);
+				}
 			}
 			entityGraph.delete();
-	
+			
 			if (deleteScriptFileName != null) {
 				ProgressListenerRegistry.getProgressListener().newStage("deletion-check", false, false);
 				jailer.setEntityGraph(exportedEntities);

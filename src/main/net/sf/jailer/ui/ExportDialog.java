@@ -1224,7 +1224,7 @@ public class ExportDialog extends javax.swing.JDialog {
         }
     	theSettings.save("default");
         
-        if (insert.getText().trim().length() == 0) {
+        if (insert.getText().trim().length() == 0 && delete.getText().trim().length() == 0) {
         	exportLabel.setForeground(Color.RED);
         } else {
         	isOk = true;
@@ -1294,8 +1294,13 @@ public class ExportDialog extends javax.swing.JDialog {
     public void fillCLIArgs(List<String> args) {
     	boolean withDelete = false;
     	
-    	args.add("-e");
-    	args.add(insert.getText());
+    	if (insert.getText().trim().length() > 0) {
+    		args.add(0, "export");
+        	args.add("-e");
+        	args.add(insert.getText());
+    	} else {
+    		args.add(0, "delete");
+    	}
     	if (delete.getText().trim().length() > 0) {
     		withDelete = true;
     		args.add("-d");
