@@ -1,3 +1,6 @@
+5.4.1
+  - add ability to just generate the delete script, skip export (thanks to Jason Pell)
+
 5.4
   - Fixed an issue with exporting dependencies of Initial Tables. (thanks to Teddy Widom, https://sourceforge.net/p/jailer/discussion/700499/thread/60e83aef/)
   - -scope "LOCAL_DATABASE" now supports the pseudo-columns $DISTANCE and $IS_SUBJECT.

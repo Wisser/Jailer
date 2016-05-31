@@ -1063,7 +1063,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     			if (tmpFileName != null || (extractionModelEditor.extractionModelFile != null || extractionModelEditor.save(true, "Export data"))) {
 		        	if (connectToDBIfNeeded("Export data")) {
 			        	List<String> args = new ArrayList<String>();
-			        	args.add("export");
 			        	args.add(tmpFileName != null? tmpFileName : extractionModelEditor.extractionModelFile);
 			        	dbConnectionDialog.addDbArgs(args);
 			        	Session.closeTemporaryTableSession();
