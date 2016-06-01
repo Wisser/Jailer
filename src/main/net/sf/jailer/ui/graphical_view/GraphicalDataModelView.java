@@ -756,17 +756,6 @@ public class GraphicalDataModelView extends JPanel {
 				modelEditor.extractionModelFrame.openDataBrowser(table, "");
 			}
 		});
-		JMenuItem showReachability = new JMenuItem("Show Reachability");
-		showReachability.addActionListener(new ActionListener () {
-			public void actionPerformed(ActionEvent e) {
-				GraphicalDataModelView.this.modelEditor.captureLayout();
-				try {
-					modelEditor.showReachability(table);
-				} finally {
-					GraphicalDataModelView.this.modelEditor.checkLayoutStack();
-				}
-			}
-		});
 		JMenuItem zoomToFit = new JMenuItem("Zoom To Fit");
 		zoomToFit.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
@@ -866,7 +855,6 @@ public class GraphicalDataModelView extends JPanel {
 		}
 		popup.add(dataBrowser);
 //		popup.add(findTable);
-		popup.add(showReachability);
 //		popup.add(select);
 		popup.add(new JSeparator());
 		popup.add(restrictAll);
