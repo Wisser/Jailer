@@ -243,11 +243,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         jMenuItem3 = new javax.swing.JMenuItem();
         jMenuItem4 = new javax.swing.JMenuItem();
         refresh = new javax.swing.JMenuItem();
-        showReachability = new javax.swing.JMenuItem();
         zoomToFit = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JSeparator();
-        closureMenuItem = new javax.swing.JMenuItem();
-        jSeparator9 = new javax.swing.JSeparator();
         showIgnored = new javax.swing.JCheckBoxMenuItem();
         showTableDetails = new javax.swing.JCheckBoxMenuItem();
         jSeparator11 = new javax.swing.JSeparator();
@@ -474,14 +471,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         viewMenu.add(refresh);
 
-        showReachability.setText("Show reachability of selected table");
-        showReachability.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                showReachabilityActionPerformed(evt);
-            }
-        });
-        viewMenu.add(showReachability);
-
         zoomToFit.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Z, java.awt.event.InputEvent.CTRL_MASK));
         zoomToFit.setText("Zoom to fit");
         zoomToFit.setVerifyInputWhenFocusTarget(false);
@@ -492,16 +481,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         });
         viewMenu.add(zoomToFit);
         viewMenu.add(jSeparator4);
-
-        closureMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_G, java.awt.event.InputEvent.CTRL_MASK));
-        closureMenuItem.setText("Open closure browser");
-        closureMenuItem.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                closureMenuItemActionPerformed(evt);
-            }
-        });
-        viewMenu.add(closureMenuItem);
-        viewMenu.add(jSeparator9);
 
         showIgnored.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_H, java.awt.event.InputEvent.CTRL_MASK));
         showIgnored.setText("Show disabled associations");
@@ -765,10 +744,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 //    		findDialog.setVisible(true);
 //    	}
     }//GEN-LAST:event_formWindowGainedFocus
-
-    private void closureMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closureMenuItemActionPerformed
-    	openClosureView(extractionModelEditor.root);
-    }//GEN-LAST:event_closureMenuItemActionPerformed
 
     private void queryBuilderActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_queryBuilderActionPerformed
     	extractionModelEditor.graphView.openQueryBuilder(extractionModelEditor.root, true);
@@ -1514,12 +1489,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     	jMenuBar2.grabFocus();
     }//GEN-LAST:event_horizontalLayoutMenuItemActionPerformed
 
-    private void showReachabilityActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showReachabilityActionPerformed
-        if (extractionModelEditor.currentAssociation != null) {
-        	extractionModelEditor.showReachability(extractionModelEditor.currentAssociation.destination);
-        }
-    }//GEN-LAST:event_showReachabilityActionPerformed
-
     private void cycleViewActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cycleViewActionPerformed
 		cycleViewDialog.refresh();
 //		cycleViewDialog.setVisible(true);
@@ -1765,7 +1734,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JMenuItem closureMenuItem;
     private javax.swing.JMenuItem collapseAll;
     private javax.swing.JCheckBoxMenuItem connectDb;
     private javax.swing.JMenuItem cycleView;
@@ -1801,7 +1769,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JSeparator jSeparator5;
     private javax.swing.JSeparator jSeparator7;
     private javax.swing.JSeparator jSeparator8;
-    private javax.swing.JSeparator jSeparator9;
     private javax.swing.JMenuItem load;
     private javax.swing.JMenuItem newModel;
     private javax.swing.JMenuItem openDataBrowserItem;
@@ -1814,7 +1781,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private javax.swing.JMenuItem save;
     private javax.swing.JMenuItem saveAs;
     private javax.swing.JCheckBoxMenuItem showIgnored;
-    private javax.swing.JMenuItem showReachability;
     private javax.swing.JCheckBoxMenuItem showTableDetails;
     private javax.swing.JRadioButtonMenuItem steptime0;
     private javax.swing.JRadioButtonMenuItem steptime10;

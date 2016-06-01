@@ -2388,24 +2388,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	}
 
 	/**
-	 * Shows reachability of a given table.
-	 */
-	public void showReachability(Table table) {
-		try {
-	    	LayoutStorage.enabled = false;
-        	refresh(false, true, false, true);
-	        resetGraphEditor(true, false, true, false);
-        } finally {
-	    	LayoutStorage.enabled = true;
-        }
-        graphView.expandAll(false, table);
-		expandPathsToVisibleTables();
-        if (graphView.isTableVisible(table)) {
-        	graphView.selectTable(table);
-        }
-	}
-
-	/**
 	 * Expands all associations with visible tables in associations tree.
 	 */
 	public void expandAllVisibleTables() {
