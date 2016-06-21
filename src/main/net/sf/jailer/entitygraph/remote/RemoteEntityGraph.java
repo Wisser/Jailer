@@ -679,10 +679,10 @@ public class RemoteEntityGraph extends EntityGraph {
             String remove = "Insert into " + SQLDialect.dmlTableReference(ENTITY_SET_ELEMENT, session) + "(set_id, type, " + universalPrimaryKey.columnList(null) + ") " +
                 "Select distinct " + setId + ", EB.type, " + universalPrimaryKey.columnList("EB.") + " from " + SQLDialect.dmlTableReference(ENTITY, session) + " EB " +
                 "join " + association.destination.getName() + " " + destAlias + " on "+ pkEqualsEntityID(association.destination, destAlias, "EB") + " " +
-                ", " + association.source.getName() + " " + sourceAlias + " " +
+                "join " + association.source.getName() + " " + sourceAlias + " " +
+                "on (" + jc + ") " +
                 (deletedEntitiesAreMarked? "join " : "left join ") + SQLDialect.dmlTableReference(ENTITY, session) + " EA on EA.r_entitygraph=" + graphID + " and EA.type='" + association.source.getName() + "' and " + pkEqualsEntityID(association.source, sourceAlias, "EA") + " " +
                 "Where EB.r_entitygraph=" + graphID + " and EB.type='" + association.destination.getName() + "' " +
-                "and (" + jc + ") " +
                 "and " + (deletedEntitiesAreMarked? "EA.birthday=-1 and EB.birthday>=0" : "EA.type is null");
             long rc = session.executeUpdate(remove);
             if (rc > 0) {
