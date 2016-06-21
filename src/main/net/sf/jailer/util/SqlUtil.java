@@ -136,9 +136,10 @@ public class SqlUtil {
      * @param entityBAlias alias for entity table joined with B
      * @param birthdayOfSubject birthday of subject
      * @param today today
+     * @param inDeleteMode 
      */
-    public static String resolvePseudoColumns(String condition, String entityAAlias, String entityBAlias, int today, int birthdayOfSubject) {
-    	return resolvePseudoColumns(condition, entityAAlias, entityBAlias, today, birthdayOfSubject, "birthday");
+    public static String resolvePseudoColumns(String condition, String entityAAlias, String entityBAlias, int today, int birthdayOfSubject, boolean inDeleteMode) {
+    	return resolvePseudoColumns(condition, entityAAlias, entityBAlias, today, birthdayOfSubject, "birthday", inDeleteMode);
     }
 
     /**
@@ -150,8 +151,9 @@ public class SqlUtil {
      * @param birthdayOfSubject birthday of subject
      * @param today today
      * @param birthdayColumnName name of the column which holds the birthday of an entity ('birthday' or 'orig_birthday')
+     * @param inDeleteMode 
      */
-    public static String resolvePseudoColumns(String condition, String entityAAlias, String entityBAlias, int today, int birthdayOfSubject, String birthdayColumnName) {
+    public static String resolvePseudoColumns(String condition, String entityAAlias, String entityBAlias, int today, int birthdayOfSubject, String birthdayColumnName, boolean inDeleteMode) {
     	String aBirthday = entityAAlias == null? "" + (today - birthdayOfSubject) : ("(" + entityAAlias + "." + birthdayColumnName + " - " + birthdayOfSubject + ")");
     	String bBirthday = entityBAlias == null? "" + (today - birthdayOfSubject) : ("(" + entityBAlias + "." + birthdayColumnName + " - " + birthdayOfSubject + ")");
     	String aIsSubject = entityAAlias == null? "(" + (today - birthdayOfSubject) + " = 0)" : ("(" + entityAAlias + "." + birthdayColumnName + " - " + birthdayOfSubject + " = 0)");
@@ -161,6 +163,9 @@ public class SqlUtil {
 		condition = condition.replaceAll("(?i:b\\s*\\.\\s*\\$distance)", Matcher.quoteReplacement(bBirthday));
     	condition = condition.replaceAll("(?i:a\\s*\\.\\s*\\$is_subject)", Matcher.quoteReplacement(aIsSubject));
     	condition = condition.replaceAll("(?i:b\\s*\\.\\s*\\$is_subject)", Matcher.quoteReplacement(bIsSubject));
+    	
+    	condition = condition.replaceAll("(?i:\\$in_delete_mode)", Matcher.quoteReplacement(inDeleteMode? "(1=1)" : "(1=0)"));
+    	
     	return condition;
     }
 
@@ -171,8 +176,9 @@ public class SqlUtil {
      * @param birthdayOfSubject birthday of subject
      * @param today today
      * @param reversed 
+     * @param inDeleteMode 
      */
-    public static String resolvePseudoColumns(String condition, int today, int birthdayOfSubject, boolean reversed) {
+    public static String resolvePseudoColumns(String condition, int today, int birthdayOfSubject, boolean reversed, boolean inDeleteMode) {
     	int da = reversed? 0 : 1;
     	int db = reversed? 1 : 0;
     	String aBirthday = "" + (today - birthdayOfSubject - da);
@@ -184,6 +190,9 @@ public class SqlUtil {
 		condition = condition.replaceAll("(?i:b\\s*\\.\\s*\\$distance)", Matcher.quoteReplacement(bBirthday));
     	condition = condition.replaceAll("(?i:a\\s*\\.\\s*\\$is_subject)", Matcher.quoteReplacement(aIsSubject));
     	condition = condition.replaceAll("(?i:b\\s*\\.\\s*\\$is_subject)", Matcher.quoteReplacement(bIsSubject));
+
+    	condition = condition.replaceAll("(?i:$in_delete_mode)", Matcher.quoteReplacement(inDeleteMode? "(1=1)" : "(1=0)"));
+    	
     	return condition;
     }
    
