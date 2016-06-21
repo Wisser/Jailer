@@ -101,6 +101,8 @@ public class ConditionEditor extends javax.swing.JDialog {
 			columns.add("");
 			columns.add(alias + ".$IS_SUBJECT");
 			columns.add(alias + ".$DISTANCE");
+			columns.add("$IN_DELETE_MODE");
+			columns.add("NOT $IN_DELETE_MODE");
 		}
 		
 		for (final String c: columns) {

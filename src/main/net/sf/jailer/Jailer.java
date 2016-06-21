@@ -1404,7 +1404,8 @@ public class Jailer {
 		appendCommentHeader("");
 		appendCommentHeader("Tabu-tables: " + PrintUtil.tableSetAsString(tabuTables, "--                 "));
 		_log.info("Tabu-tables: " + PrintUtil.tableSetAsString(tabuTables, null));
-
+		entityGraph.setDeleteMode(true);
+		
 		final Map<Table, Long> removedEntities = new HashMap<Table, Long>();
 
 		// do not check tables in first step having exactly one 1:1 or 1:n

@@ -70,6 +70,8 @@ public abstract class EntityGraph {
     
     public final DataModel dataModel;
     
+    protected boolean inDeleteMode = false;
+    
     /**
      * The unique ID of the graph.
      */
@@ -394,5 +396,9 @@ public abstract class EntityGraph {
     }
 
 	public abstract Session getTargetSession();
-    
+
+    public void setDeleteMode(boolean deleteMode) {
+    	inDeleteMode = deleteMode;
+    }
+
 }
