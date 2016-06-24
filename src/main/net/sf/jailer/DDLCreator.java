@@ -96,7 +96,7 @@ public class DDLCreator {
 		String universalPrimaryKey = dataModel.getUniversalPrimaryKey().toSQL(null, contraint, typeReplacement);
 		Map<String, String> arguments = new HashMap<String, String>();
 		arguments.put("upk", universalPrimaryKey);
-		arguments.put("upk-hash", "" + (universalPrimaryKey.hashCode()));
+		arguments.put("upk-hash", "" + ((universalPrimaryKey + Configuration.forDbms(session).getTableProperties()).hashCode()));
 		arguments.put("pre", dataModel.getUniversalPrimaryKey().toSQL("PRE_", contraint, typeReplacement));
 		arguments.put("from", dataModel.getUniversalPrimaryKey().toSQL("FROM_", contraint, typeReplacement));
 		arguments.put("to", dataModel.getUniversalPrimaryKey().toSQL("TO_", contraint, typeReplacement));
@@ -127,7 +127,7 @@ public class DDLCreator {
 			arguments.put("table-suffix", "");
 			arguments.put("drop-table", "DROP TABLE ");
 			arguments.put("create-table", "CREATE TABLE ");
-			arguments.put("create-table-suffix", "");
+			arguments.put("create-table-suffix", Configuration.forDbms(session).getTableProperties());
 			arguments.put("create-index", "CREATE INDEX ");
 			arguments.put("create-index-suffix", "");
 			arguments.put("index-table-prefix", "");
@@ -194,7 +194,7 @@ public class DDLCreator {
 								public void readCurrentRow(ResultSet resultSet) throws SQLException {
 									String contraint = session.dbms == DBMS.SYBASE ? " NULL" : "";
 									String universalPrimaryKey = datamodel.getUniversalPrimaryKey().toSQL(null, contraint, typeReplacement);
-									uptodate[0] = resultSet.getString(1).equals("" + universalPrimaryKey.hashCode());
+									uptodate[0] = resultSet.getString(1).equals("" + (universalPrimaryKey + Configuration.forDbms(session).getTableProperties()).hashCode());
 								}
 
 								public void close() {

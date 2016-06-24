@@ -78,7 +78,9 @@ public class Configuration {
     private String sqlLimitSuffix;
     
     private Integer varcharLengthLimit = null;
-    
+
+	private String tableProperties = "";
+
 	/**
      * Maps characters to escape sequences according to {@link #stringLiteralEscapeSequences}.
      */
@@ -507,4 +509,18 @@ public class Configuration {
 		this.ncharPrefix = ncharPrefix;
 	}
 
+	/**
+	 * @return the tableProperties
+	 */
+	public String getTableProperties() {
+		return tableProperties;
+	}
+
+	/**
+	 * @param tableProperties the tableProperties to set
+	 */
+	public void setTableProperties(String tableProperties) {
+		this.tableProperties = tableProperties;
+	}
+	
 }
