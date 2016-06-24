@@ -523,6 +523,9 @@ public class ProgressTable extends JTable {
 			row = newRow;
 		} else {
 			int cd = 50000;
+			if (row.size() > 0) {
+				cd = cd * 50 / row.size();
+			}
 			int maxParentRow = 1;
 			if (parentRow != null) {
 				for (CellInfo i: parentRow) {
