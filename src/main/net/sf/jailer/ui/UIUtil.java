@@ -559,8 +559,16 @@ public class UIUtil {
 			args.add(CommandLineParser.getInstance().workingFolder);
 		}
 		final StringBuffer arglist = new StringBuffer();
-		for (String arg : args) {
-			if (arg != null && arg.equals(password) && password.length() > 0) {
+		int pwi = -1;
+		for (int i = args.size() - 1; i >=0; --i) {
+			if (args.get(i) != null && args.get(i).equals(password) && password.length() > 0) {
+				pwi = i;
+				break;
+			}
+		}
+		for (int i = 0; i < args.size(); ++i) {
+			String arg = args.get(i);
+			if (i == pwi) {
 				arglist.append(" \"<password>\"");
 			} else {
 				if ("".equals(arg) || arg.contains(" ") || arg.contains("<")

@@ -23,7 +23,7 @@ import java.util.Map;
 
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.StatementBuilder;
-import net.sf.jailer.util.SqlUtil;
+import net.sf.jailer.util.CellContentConverter;
 
 /**
  * Reads {@link ResultSet}s and builds inline-views according to the content.
@@ -53,7 +53,8 @@ public abstract class InlineViewBuilder implements Session.ResultSetReader {
 	protected Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
 
 	protected final Session session;
-
+	protected CellContentConverter cellContentConverter;
+	
 	protected final String[] columnNames;
 	
 	/**
@@ -87,6 +88,7 @@ public abstract class InlineViewBuilder implements Session.ResultSetReader {
 	public void readCurrentRow(ResultSet resultSet) throws SQLException {
 		if (resultSetMetaData == null) {
 			resultSetMetaData = resultSet.getMetaData();
+			cellContentConverter = new CellContentConverter(resultSetMetaData, session);
 		}
 
 		String values[] = new String[resultSetMetaData.getColumnCount()];
@@ -109,7 +111,7 @@ public abstract class InlineViewBuilder implements Session.ResultSetReader {
 	}
 
 	protected String sqlValue(ResultSet resultSet, int i) throws SQLException {
-		return SqlUtil.toSql(SqlUtil.getObject(resultSet, resultSetMetaData, i, typeCache), session);
+		return cellContentConverter.toSql(cellContentConverter.getObject(resultSet, i));
 	}
 
 	@Override

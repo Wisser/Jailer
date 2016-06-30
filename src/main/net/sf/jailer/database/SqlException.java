@@ -29,7 +29,7 @@ public class SqlException extends SQLException {
 	
 	public SqlException(String message, String sqlStatement, Throwable t) {
 		super(message, t);
-		this.message = t.getMessage();
+		this.message = t == null? message : t.getMessage();
 		this.sqlStatement = sqlStatement;
 	}
 

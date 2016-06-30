@@ -113,6 +113,37 @@ public class Configuration {
 	public String timestampPattern = null;
 	public String dbms = "Unknown";
 	public SQLDialect sqlDialect = new SQLDialect();
+	public String rowidName = null;
+	
+	/**
+	 * @return the rowidName
+	 */
+	public String getRowidName() {
+		return rowidName;
+	}
+
+	/**
+	 * @param rowidName the rowidName to set
+	 */
+	public void setRowidName(String rowidName) {
+		this.rowidName = rowidName != null && rowidName.trim().length() == 0? null : rowidName;
+	}
+
+	/**
+	 * @return the rowidType
+	 */
+	public String getRowidType() {
+		return rowidType;
+	}
+
+	/**
+	 * @param rowidType the rowidType to set
+	 */
+	public void setRowidType(String rowidType) {
+		this.rowidType = rowidType;
+	}
+
+	public String rowidType = null;
 	
 	/**
 	 * @return the dbms

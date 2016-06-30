@@ -189,6 +189,11 @@ public class ExportDialog extends javax.swing.JDialog {
         	rowsPerThread.setText("50");
         }
         
+    	useRowIds.setSelected(true);
+        if (Configuration.forDbms(session).getRowidName() == null) {
+        	useRowIds.setVisible(false);
+        }
+        
         if (additionalSubjects.isEmpty()) {
         	additSubsLabel.setVisible(false);
         	additSubsLabelTitel.setVisible(false);
@@ -656,6 +661,7 @@ public class ExportDialog extends javax.swing.JDialog {
         openWhereEditor = new javax.swing.JLabel();
         additSubsLabel = new javax.swing.JLabel();
         additSubsLabelTitel = new javax.swing.JLabel();
+        useRowIds = new javax.swing.JCheckBox();
         jPanel7 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -765,7 +771,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 45;
         jPanel1.add(jLabel5, gridBagConstraints);
 
-        jLabel6.setText(" Threads "); // NOI18N
+        jLabel6.setText(" Parallel threads "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 50;
@@ -1053,7 +1059,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 3;
         commandLinePanel.add(jLabel25, gridBagConstraints);
 
-        copyButton.setText("Copy"); // NOI18N
+        copyButton.setText("Copy to Clipboard"); // NOI18N
         copyButton.setToolTipText("Copy to Clipboard"); // NOI18N
         copyButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1061,10 +1067,10 @@ public class ExportDialog extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         commandLinePanel.add(copyButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1132,6 +1138,20 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 20;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(additSubsLabelTitel, gridBagConstraints);
+
+        useRowIds.setText("use \"ROWID\" column"); // NOI18N
+        useRowIds.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        useRowIds.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                useRowIdsActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 56;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(8, 0, 4, 0);
+        jPanel1.add(useRowIds, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1281,6 +1301,10 @@ public class ExportDialog extends javax.swing.JDialog {
     		}
     	}
     }//GEN-LAST:event_threadsFocusLost
+
+    private void useRowIdsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useRowIdsActionPerformed
+        updateCLIArea();
+    }//GEN-LAST:event_useRowIdsActionPerformed
     
     public boolean isOk() {
 		return isOk;
@@ -1317,6 +1341,9 @@ public class ExportDialog extends javax.swing.JDialog {
     	}
     	if (!sortedCheckBox.isSelected()) {
     		args.add("-no-sorting");
+    	}
+    	if (!useRowIds.isSelected()) {
+    		args.add("-no-rowid");
     	}
     	try {
     		int nt = Integer.parseInt(threads.getText().trim());
@@ -1431,6 +1458,10 @@ public class ExportDialog extends javax.swing.JDialog {
 		return relevantSchemas;
 	}
 
+	public boolean isUseRowId() {
+		return useRowIds.isSelected();
+	}
+
     public TemporaryTableScope getTemporaryTableScope() {
     	if (scopeLocal.isSelected()) {
     		return TemporaryTableScope.LOCAL_DATABASE;
@@ -1507,6 +1538,7 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JTextField threads;
     public javax.swing.JCheckBox unicode;
     private javax.swing.JCheckBox upsertCheckbox;
+    public javax.swing.JCheckBox useRowIds;
     private javax.swing.JTextField where;
     // End of variables declaration//GEN-END:variables
     
@@ -1535,4 +1567,5 @@ public class ExportDialog extends javax.swing.JDialog {
 	}
 
 	private static final long serialVersionUID = 952553009821662964L;
+
 }

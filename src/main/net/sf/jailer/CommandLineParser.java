@@ -118,10 +118,10 @@ public class CommandLineParser {
         System.out.println("    -where subject condition. Optional, overrides condition in extraction-model");
         System.out.println("    -t prevents deletion of entities from 'tabu'-tables");
         System.out.println();
-        System.out.println("  jailer create-ddl");
+        System.out.println("  jailer create-ddl [-no-rowid]");
         System.out.println("    creates the DDL for the working-tables and prints it to stdout");
         System.out.println();
-        System.out.println("  jailer create-ddl <jdbc-driver-class> <db-URL> <db-user> <db-password>");
+        System.out.println("  jailer create-ddl <jdbc-driver-class> <db-URL> <db-user> <db-password> [-no-rowid]");
         System.out.println("    creates the DDL for the working-tables and executes it");
         System.out.println();
         System.out.println("  jailer build-model [-schema <schema>] <jdbc-driver-class> <db-URL> <db-user> <db-password>");
@@ -297,6 +297,9 @@ public class CommandLineParser {
 	@Option(name="-transactional", usage="if set, import rows transactional")
     public boolean transactional = false;
 	
+	@Option(name="-no-rowid", usage="if set, primary keys will determine row identity, else rowid-column determines identity")
+    public boolean noRowid = false;
+
 	@Argument
     public List<String> arguments = new ArrayList<String>();
 

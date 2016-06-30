@@ -11,6 +11,7 @@ import net.sf.jailer.Configuration;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
+import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.SqlUtil;
 
@@ -23,13 +24,15 @@ public class RowCounter {
 	private final Association association;
 	private final Session session;
 	private final List<Row> theRows;
+	private final RowIdSupport rowIdSupport;
 	private final int TIMEOUT = 6;
 	
-	public RowCounter(Table table, Association association, List<Row> theRows, Session session) {
+	public RowCounter(Table table, Association association, List<Row> theRows, Session session, RowIdSupport rowIdSupport) {
 		this.table = table;
 		this.association = association;
 		this.theRows = theRows;
 		this.session = session;
+		this.rowIdSupport = rowIdSupport;
 	}
 	
 	/**
@@ -47,7 +50,7 @@ public class RowCounter {
 		Map<String, Row> rowSet = new HashMap<String, Row>();
 		long maxTime = System.currentTimeMillis() + 1000 * TIMEOUT;
 		
-		if (association != null && association.source.primaryKey.getColumns().isEmpty()) {
+		if (association != null && rowIdSupport.getPrimaryKey(association.source).getColumns().isEmpty()) {
 			try {
 				loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 1, maxTime);
 			} catch (SQLException e) {
@@ -200,16 +203,8 @@ public class RowCounter {
 				++i;
 				f = false;
 			}
-			f = true;
-			f = true;
-			String orderBy = "";
-			for (Column pk : association.destination.primaryKey.getColumns()) {
-				orderBy += (f ? "" : ", ") + "B." + pk.name;
-				f = false;
-			}
 			if (useOLAPLimitation) {
 				sql += ", row_number() over(";
-				// sql += "order by " + orderBy;
 				sql += "order by -1";
 				sql += ") as " + ROWNUMBERALIAS + "";
 			}
@@ -226,7 +221,6 @@ public class RowCounter {
 				}
 			}
 	
-			boolean whereExists = false;
 			if (parentRows != null && !parentRows.isEmpty()) {
 				if (parentRows.size() == 1) {
 					sql += " Where (" + parentRows.get(0).rowId + ")";
@@ -243,11 +237,8 @@ public class RowCounter {
 					sb.append(")");
 					sql += sb.toString();
 				}
-				whereExists = true;
 			}
-//			if (andCond.trim().length() > 0) {
-//				sql += (whereExists ? " and" : " Where") + " (" + ConditionEditor.toMultiLine(andCond) + ")";
-//			}
+
 			olapPrefix += " From (";
 			if (useOLAPLimitation) {
 				sql = olapPrefix + sql + olapSuffix;

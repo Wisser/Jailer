@@ -41,6 +41,7 @@ import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.Base64;
+import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlScriptExecutor;
 import net.sf.jailer.util.SqlUtil;
@@ -137,11 +138,6 @@ public class DMLTransformer extends AbstractResultSetReader {
      * Current session;
      */
     private final Session session;
-    
-    /**
-     * Maps clear text SQL-types to {@link java.sql.Types}.
-     */
-    private Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
 
     /**
      * SQL Dialect.
@@ -217,11 +213,12 @@ public class DMLTransformer extends AbstractResultSetReader {
             StringBuffer valueList = new StringBuffer("");
             StringBuffer namedValues = new StringBuffer("");
             boolean f = true;
-            for (int i = 1; i <= columnCount; ++i) {
+            CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session);
+			for (int i = 1; i <= columnCount; ++i) {
                 if (columnLabel[i] == null) {
                 	continue;
                 }
-            	Object content = SqlUtil.getObject(resultSet, getMetaData(resultSet), i, typeCache);
+            	Object content = cellContentConverter.getObject(resultSet, i);
                 if (resultSet.wasNull()) {
                     content = null;
                 }
@@ -230,7 +227,7 @@ public class DMLTransformer extends AbstractResultSetReader {
                 	valueList.append(", ");
                 }
                 f = false;
-                String cVal = SqlUtil.toSql(content, session);
+                String cVal = cellContentConverter.toSql(content);
             	if (content != null && emptyLobValue[i] != null) {
             		cVal = emptyLobValue[i];
             	}
@@ -238,6 +235,11 @@ public class DMLTransformer extends AbstractResultSetReader {
                 namedValues.append(cVal + " " + columnLabel[i]);
             }
             if (table.getUpsert() || upsertOnly) {
+                if (table.primaryKey.getColumns().isEmpty()) {
+                	throw new RuntimeException("Unable to merge/upsert into table \"" + table.getName() + "\".\n" +
+                			"No primary key.");
+                }
+
                 Map<String, String> val = new HashMap<String, String>();
                 StringBuffer valuesWONull = new StringBuffer("");
                 StringBuffer columnsWONull = new StringBuffer("");
@@ -246,11 +248,11 @@ public class DMLTransformer extends AbstractResultSetReader {
                     if (columnLabel[i] == null) {
                     	continue;
                     }
-                    Object content = SqlUtil.getObject(resultSet, getMetaData(resultSet), i, typeCache);
+                    Object content = cellContentConverter.getObject(resultSet, i);
                     if (resultSet.wasNull()) {
                         content = null;
                     }
-                    String cVal = SqlUtil.toSql(content, session);
+                    String cVal = cellContentConverter.toSql(content);
                     if (SqlUtil.dbms == DBMS.POSTGRESQL && (content instanceof Date || content instanceof Timestamp)) {
                     	// explicit cast needed
                     	cVal = "timestamp " + cVal;
@@ -484,6 +486,7 @@ public class DMLTransformer extends AbstractResultSetReader {
      */
     private void exportLobs(Table table, ResultSet resultSet) throws IOException, SQLException {
     	synchronized (scriptFileWriter) {
+            CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session);
 	    	for (int i = 0; i < lobColumnIndexes.size(); ++i) {
 				Object lob = resultSet.getObject(lobColumnIndexes.get(i));
 				Map<String, String> val = new HashMap<String, String>();
@@ -491,11 +494,11 @@ public class DMLTransformer extends AbstractResultSetReader {
 	                if (columnLabel[j] == null) {
 	                	continue;
 	                }
-	                Object content = SqlUtil.getObject(resultSet, getMetaData(resultSet), j, typeCache);
+					Object content = cellContentConverter.getObject(resultSet, j);
 	                if (resultSet.wasNull()) {
 	                    content = null;
 	                }
-	                String cVal = SqlUtil.toSql(content, session);
+	                String cVal = cellContentConverter.toSql(content);
 	                val.put(columnLabel[j], cVal);
 	            }
 				boolean f = true;

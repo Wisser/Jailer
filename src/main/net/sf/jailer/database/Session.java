@@ -39,6 +39,7 @@ import java.util.List;
 import java.util.Properties;
 
 import net.sf.jailer.util.CancellationHandler;
+import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.SqlUtil;
 
 import org.apache.log4j.Logger;
@@ -110,6 +111,10 @@ public class Session {
     
     	private ResultSet owner;
     	private ResultSetMetaData metaData;
+
+    	private ResultSet cccOwner;
+    	private Session cccSession;
+    	private CellContentConverter cellContentConverter;
     	
     	/**
     	 * Gets and cache meta data of a result set.
@@ -127,11 +132,29 @@ public class Session {
     		return metaData;
     	}
     	
-        /**
+    	/**
+    	 * Gets and cache CellContentConverter for the result set.
+    	 * 
+    	 * @param resultSet
+    	 * @return meta data of resultSet
+    	 * @throws SQLException 
+    	 */
+    	protected CellContentConverter getCellContentConverter(ResultSet resultSet, Session session) throws SQLException {
+    		if (cccOwner == resultSet && cccSession == session) {
+    			return cellContentConverter;
+    		}
+    		cccOwner = resultSet;
+    		cccSession = session;
+    		cellContentConverter = new CellContentConverter(getMetaData(resultSet), session);
+    		return cellContentConverter;
+    	}
+
+    	/**
          * Does nothing.
          */
         public void close() {
         }
+        
     }
     
     /**

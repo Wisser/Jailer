@@ -1,3 +1,6 @@
+2.5
+  - Support for ROWID pseudo-column in Oracle.
+
 2.4.1
   - Improved responsiveness when SQL exception occurs.
 
@@ -5,16 +8,16 @@
   - Fixed an issue with exporting dependencies of Initial Tables. (thanks to Teddy Widom, https://sourceforge.net/p/jailer/discussion/700499/thread/60e83aef/)
 
 2.3.1
- - Files with ".sql.zip" suffix are no longer created GZIP files but ZIP files.
+  - Files with ".sql.zip" suffix are no longer created GZIP files but ZIP files.
 
 2.3
- - New "Data Export" feature
+  - New "Data Export" feature
 
 2.2.7
- - Viewing contents of CLOB and XML column types 
+  - Viewing contents of CLOB and XML column types 
 
 2.2.6
- - Unicode support.
+  - Unicode support.
 
 2.2.5
   - added support for ARRAY type.

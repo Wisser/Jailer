@@ -195,8 +195,6 @@ public abstract class Desktop extends JDesktopPane {
 
 		try {
 			this.session = session;
-			// trigger sql dialect guessing
-			datamodel.get().getUniversalPrimaryKey(session);
 			setAutoscrolls(true);
 			manager = new MDIDesktopManager(this);
 			setDesktopManager(manager);

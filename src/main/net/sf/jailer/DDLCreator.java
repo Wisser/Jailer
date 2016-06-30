@@ -32,6 +32,7 @@ import net.sf.jailer.database.TemporaryTableManager;
 import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.SqlScriptExecutor;
 import net.sf.jailer.util.SqlUtil;
@@ -71,35 +72,43 @@ public class DDLCreator {
 	 * Creates the DDL for the working-tables.
 	 */
 	public static boolean createDDL(DataModel datamodel, Session session, TemporaryTableScope temporaryTableScope) throws Exception {
-		try {
-			return createDDL(datamodel, session, temporaryTableScope, 0);
-		} catch (SQLException e) {
-		}
-		// reconnect and retry with another index type
-		session.reconnect();
-		try {
-			return createDDL(datamodel, session, temporaryTableScope, 1);
-		} catch (SQLException e) {
-		}
-		// reconnect and retry with another index type
-		session.reconnect();
-		return createDDL(datamodel, session, temporaryTableScope, 2);
+		RowIdSupport rowIdSupport = new RowIdSupport(datamodel, Configuration.forDbms(session));
+		return createDDL(datamodel, session, temporaryTableScope, rowIdSupport);
 	}
 
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	private static boolean createDDL(DataModel dataModel, Session session, TemporaryTableScope temporaryTableScope, int indexType) throws Exception {
+	public static boolean createDDL(DataModel datamodel, Session session, TemporaryTableScope temporaryTableScope, RowIdSupport rowIdSupport) throws Exception {
+		try {
+			return createDDL(datamodel, session, temporaryTableScope, 0, rowIdSupport);
+		} catch (SQLException e) {
+		}
+		// reconnect and retry with another index type
+		session.reconnect();
+		try {
+			return createDDL(datamodel, session, temporaryTableScope, 1, rowIdSupport);
+		} catch (SQLException e) {
+		}
+		// reconnect and retry with another index type
+		session.reconnect();
+		return createDDL(datamodel, session, temporaryTableScope, 2, rowIdSupport);
+	}
+
+	/**
+	 * Creates the DDL for the working-tables.
+	 */
+	private static boolean createDDL(DataModel dataModel, Session session, TemporaryTableScope temporaryTableScope, int indexType, RowIdSupport rowIdSupport) throws Exception {
 		String template = "script" + File.separator + "ddl-template.sql";
 		String contraint = session != null && (session.dbms == DBMS.SYBASE || session.dbms == DBMS.MySQL) ? " NULL" : "";
 		Map<String, String> typeReplacement = Configuration.forDbms(session).getTypeReplacement();
-		String universalPrimaryKey = dataModel.getUniversalPrimaryKey().toSQL(null, contraint, typeReplacement);
+		String universalPrimaryKey = rowIdSupport.getUniversalPrimaryKey().toSQL(null, contraint, typeReplacement);
 		Map<String, String> arguments = new HashMap<String, String>();
 		arguments.put("upk", universalPrimaryKey);
 		arguments.put("upk-hash", "" + ((universalPrimaryKey + Configuration.forDbms(session).getTableProperties()).hashCode()));
-		arguments.put("pre", dataModel.getUniversalPrimaryKey().toSQL("PRE_", contraint, typeReplacement));
-		arguments.put("from", dataModel.getUniversalPrimaryKey().toSQL("FROM_", contraint, typeReplacement));
-		arguments.put("to", dataModel.getUniversalPrimaryKey().toSQL("TO_", contraint, typeReplacement));
+		arguments.put("pre", rowIdSupport.getUniversalPrimaryKey().toSQL("PRE_", contraint, typeReplacement));
+		arguments.put("from", rowIdSupport.getUniversalPrimaryKey().toSQL("FROM_", contraint, typeReplacement));
+		arguments.put("to", rowIdSupport.getUniversalPrimaryKey().toSQL("TO_", contraint, typeReplacement));
 		arguments.put("version", Jailer.VERSION);
 		arguments.put("constraint", contraint);
 
@@ -136,15 +145,15 @@ public class DDLCreator {
 		Map<String, List<String>> listArguments = new HashMap<String, List<String>>();
 		if (indexType == 0) {
 			// full index
-			listArguments.put("column-list", Collections.singletonList(", " + dataModel.getUniversalPrimaryKey().columnList(null)));
-			listArguments.put("column-list-from", Collections.singletonList(", " + dataModel.getUniversalPrimaryKey().columnList("FROM_")));
-			listArguments.put("column-list-to", Collections.singletonList(", " + dataModel.getUniversalPrimaryKey().columnList("TO_")));
+			listArguments.put("column-list", Collections.singletonList(", " + rowIdSupport.getUniversalPrimaryKey().columnList(null)));
+			listArguments.put("column-list-from", Collections.singletonList(", " + rowIdSupport.getUniversalPrimaryKey().columnList("FROM_")));
+			listArguments.put("column-list-to", Collections.singletonList(", " + rowIdSupport.getUniversalPrimaryKey().columnList("TO_")));
 		} else if (indexType == 1) {
 			// single column indexes
 			List<String> cl = new ArrayList<String>();
 			List<String> clFrom = new ArrayList<String>();
 			List<String> clTo = new ArrayList<String>();
-			for (Column c : dataModel.getUniversalPrimaryKey().getColumns()) {
+			for (Column c : rowIdSupport.getUniversalPrimaryKey().getColumns()) {
 				cl.add(", " + c.name);
 				clFrom.add(", FROM_" + c.name);
 				clTo.add(", FROM_" + c.name);
@@ -178,49 +187,65 @@ public class DDLCreator {
 
 	/**
 	 * Checks whether working-tables schema is up-to-date.
+	 * @param useRowId 
 	 * 
 	 * @return <code>true</code> if working-tables schema is up-to-date
 	 */
-	public static boolean isUptodate(String driverClass, String dbUrl, String user, String password) {
+	public static boolean isUptodate(String driverClass, String dbUrl, String user, String password, boolean useRowId) {
 		try {
 			if (driverClass != null) {
 				final Session session = new Session(driverClass, dbUrl, user, password);
 				try {
-					final boolean[] uptodate = new boolean[] { false };
-					final DataModel datamodel = new DataModel();
-					final Map<String, String> typeReplacement = Configuration.forDbms(session).getTypeReplacement();
-					session.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE_ + " where jversion='" + Jailer.VERSION + "' and jkey='upk'",
-							new Session.ResultSetReader() {
-								public void readCurrentRow(ResultSet resultSet) throws SQLException {
-									String contraint = session.dbms == DBMS.SYBASE ? " NULL" : "";
-									String universalPrimaryKey = datamodel.getUniversalPrimaryKey().toSQL(null, contraint, typeReplacement);
-									uptodate[0] = resultSet.getString(1).equals("" + (universalPrimaryKey + Configuration.forDbms(session).getTableProperties()).hashCode());
-								}
-
-								public void close() {
-								}
-							});
-					// look for jailer tables
-					for (String table : SqlUtil.JAILER_MH_TABLES) {
-						session.executeQuery("Select * from " + table + " Where 1=0", new Session.ResultSetReader() {
-							public void readCurrentRow(ResultSet resultSet) throws SQLException {
-							}
-							public void close() {
-							}
-						});
-					}
-					return uptodate[0];
-				} catch (Exception e) {
-					return false;
+					return isUptodate(session, useRowId);
 				} finally {
 					session.shutDown();
 				}
 			}
 		} catch (Exception e) {
+		}
+		return false;
+	}
+	
+	/**
+	 * Checks whether working-tables schema is up-to-date.
+	 * @param useRowId 
+	 * 
+	 * @return <code>true</code> if working-tables schema is up-to-date
+	 */
+	public static boolean isUptodate(final Session session, boolean useRowId) {
+		try {
+			try {
+				final boolean[] uptodate = new boolean[] { false };
+				final DataModel datamodel = new DataModel();
+				final Map<String, String> typeReplacement = Configuration.forDbms(session).getTypeReplacement();
+				final RowIdSupport rowIdSupport = new RowIdSupport(datamodel, Configuration.forDbms(session), useRowId);
+				session.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE_ + " where jversion='" + Jailer.VERSION + "' and jkey='upk'",
+						new Session.ResultSetReader() {
+							public void readCurrentRow(ResultSet resultSet) throws SQLException {
+								String contraint = session.dbms == DBMS.SYBASE ? " NULL" : "";
+								String universalPrimaryKey = rowIdSupport.getUniversalPrimaryKey().toSQL(null, contraint, typeReplacement);
+								uptodate[0] = resultSet.getString(1).equals("" + (universalPrimaryKey + Configuration.forDbms(session).getTableProperties()).hashCode());
+							}
+
+							public void close() {
+							}
+						});
+				// look for jailer tables
+				for (String table : SqlUtil.JAILER_MH_TABLES) {
+					session.executeQuery("Select * from " + table + " Where 1=0", new Session.ResultSetReader() {
+						public void readCurrentRow(ResultSet resultSet) throws SQLException {
+						}
+						public void close() {
+						}
+					});
+				}
+				return uptodate[0];
+			} catch (Exception e) {
+				return false;
+			}
+		} catch (Exception e) {
 			return false;
 		}
-
-		return false;
 	}
 
 

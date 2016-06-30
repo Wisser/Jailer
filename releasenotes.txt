@@ -1,7 +1,10 @@
+5.5
+  - Support for ROWID pseudo-column in Oracle.
+
 5.4.2
-- bug fix for [ jailer-Bugs-3294893 ] Outer Join for selecting dependant entries and Oracle 10
-  mixing left joins and theta-style joins caused problems on oracle DBMS
-- new pseudo-column: "$IN_DELETE_MODE"
+  - bug fix for [ jailer-Bugs-3294893 ] Outer Join for selecting dependant entries and Oracle 10
+    mixing left joins and theta-style joins caused problems on oracle DBMS
+  - new pseudo-column: "$IN_DELETE_MODE"
 
 5.4.1
   - add ability to just generate the delete script, skip export (thanks to Jason Pell)

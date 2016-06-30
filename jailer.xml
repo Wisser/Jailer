@@ -102,6 +102,10 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<property name="urlPattern" value="jdbc:informix.*" />
 
 			<property name="dbms" value="Informix"/>
+			
+			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
+			<property name="tableProperties" value="" />
+			
 			<property name="sqlDialect">
 				<bean class="net.sf.jailer.database.SQLDialect">
 					<property name="supportsMultiRowInserts" value="true"/>
@@ -153,6 +157,10 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<property name="urlPattern" value="jdbc:db2.*" />
 
 			<property name="dbms" value="IBM DB2"/>
+			
+			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
+			<property name="tableProperties" value="NOT LOGGED INITIALLY" />
+			
 			<property name="sqlDialect">
 				<bean class="net.sf.jailer.database.SQLDialect">
 					<property name="supportsMultiRowInserts" value="true"/>
@@ -208,6 +216,10 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<property name="upsertMode" value="MERGE"/>
 				</bean>
 			</property>
+			
+			<property name="rowidName" value="ROWID"/>
+			<property name="rowidType" value="ROWID"/>
+			
 			<property name="avoidLeftJoin" value="true" />
 			<property name="statisticRenovator">
 				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
@@ -225,6 +237,10 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<property name="emptyBLOBValue" value="empty_blob()" />
 			<property name="binaryPattern" value="hextoraw('%s')" />
 			<property name="useToTimestampFunction" value="true" />
+			
+			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
+			<property name="tableProperties" value="NOLOGGING" />
+			
 			<property name="sessionTemporaryTableManager">
 				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
 					<property name="dmlTableReferencePrefix" value="" />
@@ -243,6 +259,10 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<property name="urlPattern" value="jdbc:postgres.*" />
 
 			<property name="dbms" value="PostgreSQL"/>
+			
+			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
+			<property name="tableProperties" value="" />
+			
 			<property name="sqlDialect">
 				<bean class="net.sf.jailer.database.SQLDialect">
 					<property name="supportsMultiRowInserts" value="true"/>
@@ -289,6 +309,10 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<property name="urlPattern" value="jdbc:cloudscape.*" />
 
 			<property name="dbms" value="Cloudscape"/>
+			
+			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
+			<property name="tableProperties" value="" />
+			
 			<property name="sqlDialect">
 				<bean class="net.sf.jailer.database.SQLDialect">
 					<property name="supportsMultiRowInserts" value="false"/>
@@ -309,6 +333,10 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<property name="urlPattern" value="jdbc:firebirdsql.*" />
 
 			<property name="dbms" value="Firebird"/>
+			
+			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
+			<property name="tableProperties" value="" />
+			
 			<property name="sqlDialect">
 				<bean class="net.sf.jailer.database.SQLDialect">
 					<property name="supportsMultiRowInserts" value="false"/>
@@ -335,6 +363,10 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 				value="jdbc:sqlserver.*|jdbc:inetdae.*|jdbc:JTurbo.*|jdbc:weblogic:mssqlserver.*|jdbc:jtds:sqlserver.*" />
 
 			<property name="dbms" value="Microsoft SQL Server"/>
+			
+			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
+			<property name="tableProperties" value="" />
+			
 			<property name="sqlDialect">
 				<bean class="net.sf.jailer.database.SQLDialect">
 					<property name="supportsMultiRowInserts" value="true"/>
@@ -389,6 +421,10 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<property name="urlPattern" value="jdbc:mysql.*" />
 
 			<property name="dbms" value="MySQL"/>
+			
+			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
+			<property name="tableProperties" value="" />
+			
 			<property name="sqlDialect">
 				<bean class="net.sf.jailer.database.SQLDialect">
 					<property name="supportsMultiRowInserts" value="true"/>
@@ -437,6 +473,10 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<property name="urlPattern" value="jdbc:derby.*" />
 
 			<property name="dbms" value="Derby"/>
+			
+			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
+			<property name="tableProperties" value="" />
+			
 			<property name="sqlDialect">
 				<bean class="net.sf.jailer.database.SQLDialect">
 					<property name="supportsMultiRowInserts" value="false"/>
@@ -477,6 +517,10 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<constructor-arg value="script/sybase/update_statistics.sql" />
 				</bean>
 			</property>
+			
+			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
+			<property name="tableProperties" value="" />
+			
 			<property name="identityInserts" value="true"/>
 			<property name="binaryPattern" value="0x%s" />
 			<property name="sessionTemporaryTableManager">
@@ -505,6 +549,10 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<property name="upsertMode" value="FROM_JL_DUAL"/>
 				</bean>
 			</property>
+			
+			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
+			<property name="tableProperties" value="" />
+			
 			<property name="sqlLimitSuffix" value="LIMIT %s" />
 			<property name="typeReplacement">
 				<map>
@@ -530,6 +578,10 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<property name="urlPattern" value="jdbc:hsqldb.*" />
 
 			<property name="dbms" value="HSQL"/>
+			
+			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
+			<property name="tableProperties" value="NOLOGGING" />
+			
 			<property name="sqlDialect">
 				<bean class="net.sf.jailer.database.SQLDialect">
 					<property name="supportsMultiRowInserts" value="false"/>
@@ -554,6 +606,10 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<property name="upsertMode" value="FROM_DUAL"/>
 				</bean>
 			</property>
+			
+			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
+			<property name="tableProperties" value="" />
+            
             <property name="sqlLimitSuffix" value="LIMIT %s" />
 			<property name="typeReplacement">
 				<map>
