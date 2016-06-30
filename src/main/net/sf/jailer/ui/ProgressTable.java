@@ -705,11 +705,6 @@ public class ProgressTable extends JTable {
 	}
 
 	/**
-	 * Original column width.
-	 */
-	private int[] originalWidth;
-	
-	/**
 	 * Adjusts with of table columns.
 	 */
 	public void adjustColumnWidth() {
@@ -717,14 +712,7 @@ public class ProgressTable extends JTable {
 			return;
 		}
 		DefaultTableColumnModel colModel = (DefaultTableColumnModel) getColumnModel();
-		if (originalWidth == null) {
-			originalWidth = new int[colModel.getColumnCount()];
-			for (int vColIndex = 0; vColIndex < colModel.getColumnCount(); ++vColIndex) {
-				TableColumn col = colModel.getColumn(vColIndex);
-				originalWidth[vColIndex] = col.getMaxWidth();
-			}
-		}
-		for (int vColIndex = 0; vColIndex < colModel.getColumnCount(); ++vColIndex) {
+		for (int vColIndex = 1; vColIndex < colModel.getColumnCount(); ++vColIndex) {
 			TableColumn col = colModel.getColumn(vColIndex);
 			boolean isEmpty = true;
 			for (int r = 0; r < getRowCount(); r++) {
@@ -732,13 +720,16 @@ public class ProgressTable extends JTable {
 				Component comp = renderer.getTableCellRendererComponent(this, getValueAt(r, vColIndex), false, false, r, vColIndex);
 				if (comp != cellPanel || tableRender.getText().trim().length() > 0) {
 					isEmpty = false;
+					break;
 				}
 			}
+			int w;
 			if (isEmpty) {
-				col.setMaxWidth(1);
+				w = 1;
 			} else {
-				col.setMaxWidth(originalWidth[vColIndex]);
+				w = 10000;
 			}
+			col.setMaxWidth(w);
 		}
 	}
 

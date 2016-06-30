@@ -31,6 +31,7 @@ import javax.swing.table.TableModel;
 
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 
 /**
@@ -44,14 +45,16 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private final Table table;
 	private final List<Row> rows;
 	private final RowSorter<? extends TableModel> rowSorter;
+	private final RowIdSupport rowIdSupport;
 	
     /** Creates new form DetailsView 
      * @param rowSorter 
     */
-    public DetailsView(List<Row> rows, int size, DataModel dataModel, Table table, int rowIndex, RowSorter<? extends TableModel> rowSorter, boolean showSpinner) {
+    public DetailsView(List<Row> rows, int size, DataModel dataModel, Table table, int rowIndex, RowSorter<? extends TableModel> rowSorter, boolean showSpinner, RowIdSupport rowIdSupport) {
         this.table = table;
     	this.rows = rows;
     	this.rowSorter = rowSorter;
+    	this.rowIdSupport = rowIdSupport;
         initComponents();
         if (rowSorter != null) {
         	rowIndex = rowSorter.convertRowIndexToView(rowIndex);
@@ -89,8 +92,9 @@ public abstract class DetailsView extends javax.swing.JPanel {
     	jPanel1.removeAll();
     	int i = 0;
     	java.awt.GridBagConstraints gridBagConstraints;
-    	while (i < table.getColumns().size()) {
-    		Column c = table.getColumns().get(i);
+    	List<Column> columns = rowIdSupport.getColumns(table);
+		while (i < columns.size()) {
+    		Column c = columns.get(i);
     		JLabel l = new JLabel();
     		l.setText(" " + c.name + "  ");
     		l.setFont(nonbold);
@@ -129,7 +133,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	            l.setBackground(i % 2 == 0? BG1 : BG2);
 	            f.setOpaque(true);
 	            l.setOpaque(true);
-	            if (table.primaryKey != null && table.primaryKey.getColumns().contains(c)) {
+	            if (rowIdSupport.getPrimaryKey(table) != null && rowIdSupport.getPrimaryKey(table).getColumns().contains(c)) {
 	            	l.setForeground(FG1);
 	            } else {
 	            	l.setForeground(Color.BLUE);

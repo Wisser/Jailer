@@ -40,9 +40,11 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
+import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.progress.ProgressListenerRegistry;
+import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.ClasspathUtil;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.SqlUtil;
@@ -88,9 +90,9 @@ public class LocalEntityGraph extends EntityGraph {
 		private final boolean allUPK;
 		
 		protected String sqlValue(ResultSet resultSet, int i) throws SQLException {
-			Object value = SqlUtil.getObject(resultSet, resultSetMetaData, i, typeCache);
+			Object value = cellContentConverter.getObject(resultSet, i);
 			if (!allUPK && !isUPKColumn(columnNames[i - 1])) {
-				value = SqlUtil.toSql(value, session);
+				value = cellContentConverter.toSql(value);
 			} else if (value instanceof String && isNUPKColumn(columnNames[i - 1])) {
 				String prefix = Configuration.forDbms(remoteSession).getNcharPrefix();
 				if (prefix != null) {
@@ -115,9 +117,9 @@ public class LocalEntityGraph extends EntityGraph {
 		private final boolean allUPK;
 		
 		protected String sqlValue(ResultSet resultSet, int i) throws SQLException {
-			String value = SqlUtil.toSql(SqlUtil.getObject(resultSet, resultSetMetaData, i, typeCache), session);
+			String value = cellContentConverter.toSql(cellContentConverter.getObject(resultSet, i));
 			if (allUPK || isUPKColumn(columnNames[i - 1])) {
-				value = SqlUtil.toSql(value, session);
+				value = cellContentConverter.toSql(value);
 			}
 			return value;
 		}
@@ -161,6 +163,8 @@ public class LocalEntityGraph extends EntityGraph {
 		return localConfiguration;
 	}
 	
+	private final RowIdSupport rowIdSupport;
+	
 	/**
 	 * Copy constructor.
 	 */
@@ -168,7 +172,8 @@ public class LocalEntityGraph extends EntityGraph {
 			Session remoteSession, Session localSession, String databaseFolder,
 			InlineViewStyle localInlineViewStyle,
 			InlineViewStyle remoteInlineViewStyle, Set<String> upkColumnNames,
-			PrimaryKey universalPrimaryKey, int birthdayOfSubject, Set<String> fieldProcTables) {
+			PrimaryKey universalPrimaryKey, int birthdayOfSubject, Set<String> fieldProcTables,
+			RowIdSupport rowIdSupport) {
 		super(graphID, dataModel);
 		this.remoteSession = remoteSession;
 		this.localSession = localSession;
@@ -179,6 +184,7 @@ public class LocalEntityGraph extends EntityGraph {
 		this.universalPrimaryKey = universalPrimaryKey;
 		this.birthdayOfSubject = birthdayOfSubject;
 		this.fieldProcTables.addAll(fieldProcTables);
+		this.rowIdSupport = rowIdSupport;
 	}
 
 	/**
@@ -203,12 +209,12 @@ public class LocalEntityGraph extends EntityGraph {
 			}
 		}, CommandLineParser.getInstance().getSourceSchemaMapping()));
 		this.remoteSession = remoteSession;
-		
+		this.rowIdSupport = new RowIdSupport(getDatamodel(), Configuration.forDbms(remoteSession), getConfiguration().localPKType);
 		this.localSession = createLocalSession(getConfiguration().driver, getConfiguration().urlPattern, getConfiguration().lib);
-		this.universalPrimaryKey = getDatamodel().getUniversalPrimaryKey();
+		this.universalPrimaryKey = rowIdSupport.getUniversalPrimaryKey();
 		this.localInlineViewStyle = InlineViewStyle.forSession(localSession);
 		this.remoteInlineViewStyle = InlineViewStyle.forSession(remoteSession);
-		DDLCreator.createDDL(getDatamodel(), localSession, TemporaryTableScope.GLOBAL);
+		DDLCreator.createDDL(getDatamodel(), localSession, TemporaryTableScope.GLOBAL, rowIdSupport);
      
 		File fieldProcTablesFile = new File("field-proc-tables.csv");
         if (fieldProcTablesFile.exists()) {
@@ -289,7 +295,7 @@ public class LocalEntityGraph extends EntityGraph {
         	entityGraph.localSession.executeUpdate("Insert into " + SQLDialect.dmlTableReference(ENTITY_GRAPH, entityGraph.localSession) + "(id, age) values (" + graphID + ", 1)");
         } catch (SQLException e) {
             throw new RuntimeException("Can't find working tables! " +
-                    "Run 'bin/jailer.sh create-ddl' " +
+                    "Run 'jailer.sh create-ddl' " +
                     "and execute the DDL-script first!", e);
         }
         return entityGraph;
@@ -304,7 +310,7 @@ public class LocalEntityGraph extends EntityGraph {
      * @throws Exception 
      */
     public EntityGraph copy(int newGraphID, Session globalSession) throws Exception {
-        LocalEntityGraph entityGraph = new LocalEntityGraph(newGraphID, dataModel, remoteSession, localSession, databaseFolder, localInlineViewStyle, remoteInlineViewStyle, upkColumnNames, universalPrimaryKey, birthdayOfSubject, fieldProcTables);
+        LocalEntityGraph entityGraph = new LocalEntityGraph(newGraphID, dataModel, remoteSession, localSession, databaseFolder, localInlineViewStyle, remoteInlineViewStyle, upkColumnNames, universalPrimaryKey, birthdayOfSubject, fieldProcTables, rowIdSupport);
         entityGraph.setBirthdayOfSubject(birthdayOfSubject);
         localSession.executeUpdate(
                 "Insert into " + SQLDialect.dmlTableReference(ENTITY, localSession) + "(r_entitygraph, " + universalPrimaryKey.columnList(null) + ", birthday, orig_birthday, type) " +
@@ -689,7 +695,7 @@ public class LocalEntityGraph extends EntityGraph {
     }
 
 	private Map<Column, Column> upkMatch(Table table) {
-		return universalPrimaryKey.match(getDatamodel().getTable(table.getName()).primaryKey);
+		return universalPrimaryKey.match(rowIdSupport.getPrimaryKey(getDatamodel().getTable(table.getName())));
 	}
 
     /**
@@ -752,7 +758,7 @@ public class LocalEntityGraph extends EntityGraph {
 			protected void process(String inlineView) throws SQLException {
 				String orderBy = "";
 		        if (orderByPK) {
-		        	orderBy = " order by " + table.primaryKey.columnList("T.");
+		        	orderBy = " order by " + rowIdSupport.getPrimaryKey(table).columnList("T.");
 		        }
 		        
 		    	long rc = remoteSession.executeQuery(
@@ -795,18 +801,18 @@ public class LocalEntityGraph extends EntityGraph {
 			protected void process(String inlineView) throws SQLException {
 				String orderBy = "";
 		        if (orderByPK) {
-		        	orderBy = " order by " + table.primaryKey.columnList("T.");
+		        	orderBy = " order by " + rowIdSupport.getPrimaryKey(table).columnList("T.");
 		        }
 		        
 		    	StringBuffer sb = new StringBuffer();
 		    	StringBuffer selectOPK = new StringBuffer();
-		    	for (int i = 0; i < table.primaryKey.getColumns().size(); ++i) {
+		    	for (int i = 0; i < rowIdSupport.getPrimaryKey(table).getColumns().size(); ++i) {
 		    		if (i > 0) {
 		    			sb.append(", ");
 		    			selectOPK.append(", ");
 		    		}
 		    		sb.append(originalPKAliasPrefix + i);
-		    		selectOPK.append("T." + table.primaryKey.getColumns().get(i).name + " AS " + originalPKAliasPrefix + i);
+		    		selectOPK.append("T." + rowIdSupport.getPrimaryKey(table).getColumns().get(i).name + " AS " + originalPKAliasPrefix + i);
 		    	}
 
 		    	String sqlQuery = "Select " + selectionSchema + " From (" +
@@ -870,7 +876,7 @@ public class LocalEntityGraph extends EntityGraph {
 	    		long rc;
 	    		if (orderByPK) {
 	    			String sqlQueryWithOrderBy = sqlQuery +
-	    				" order by " + table.primaryKey.columnList("T.");
+	    				" order by " + rowIdSupport.getPrimaryKey(table).columnList("T.");
 	    			rc = remoteSession.executeQuery(sqlQueryWithOrderBy, reader, sqlQuery, null, 0);
 	    		} else {
 	    			rc = remoteSession.executeQuery(sqlQuery, reader);
@@ -1118,8 +1124,9 @@ public class LocalEntityGraph extends EntityGraph {
      * @param selectionSchema the selection schema
      */
     public void readDependentEntities(final Table table, final Association association, final ResultSet resultSet, ResultSetMetaData resultSetMetaData, final ResultSetReader reader, final Map<String, Integer> theTypeCache, final String selectionSchema, final String originalPKAliasPrefix) throws SQLException {
+    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, localSession);
     	String select = "Select " + upkColumnList(table, "TO_") + " from " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + " D" +
-	    		 " Where " + pkEqualsEntityID(association.source, resultSet, resultSetMetaData, "D", "FROM_", theTypeCache, localSession) +
+	    		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", cellContentConverter) +
 	    		 " and D.to_type='" + table.getName() + "'" +
 	    	     " and D.from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
 	    	     " and D.r_entitygraph=" + graphID;
@@ -1130,11 +1137,11 @@ public class LocalEntityGraph extends EntityGraph {
 		    	String select;
 		    	if (originalPKAliasPrefix != null) {
 		        	StringBuffer selectOPK = new StringBuffer();
-		        	for (int i = 0; i < table.primaryKey.getColumns().size(); ++i) {
+		        	for (int i = 0; i < rowIdSupport.getPrimaryKey(table).getColumns().size(); ++i) {
 		        		if (i > 0) {
 		        			selectOPK.append(", ");
 		        		}
-		        		selectOPK.append("T." + table.primaryKey.getColumns().get(i).name + " AS " + originalPKAliasPrefix + i);
+		        		selectOPK.append("T." + rowIdSupport.getPrimaryKey(table).getColumns().get(i).name + " AS " + originalPKAliasPrefix + i);
 		        	}
 		    		select = 
 		    			"Select " + selectionSchema + " from (" +  
@@ -1159,14 +1166,15 @@ public class LocalEntityGraph extends EntityGraph {
      */
     public void markDependentEntitiesAsTraversed(Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, Map<String, Integer> typeCache) throws SQLException {
     	String update;
+    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, localSession);
     	if (localSession.dbms == DBMS.SYBASE) {
     		update = "Update " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + " set traversed=1" +
-    		 " Where " + pkEqualsEntityID(association.source, resultSet, resultSetMetaData, SQLDialect.dmlTableReference(DEPENDENCY, localSession), "FROM_", typeCache, localSession) +
+    		 " Where " + pkEqualsEntityID(association.source, resultSet, SQLDialect.dmlTableReference(DEPENDENCY, localSession), "FROM_", cellContentConverter) +
     		 " and " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + ".from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
     		 " and " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + ".r_entitygraph=" + graphID;
     	} else {
     		update = "Update " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + " D set traversed=1" +
-    		 " Where " + pkEqualsEntityID(association.source, resultSet, resultSetMetaData, "D", "FROM_", typeCache, localSession) +
+    		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", cellContentConverter) +
     	     " and D.from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
     	     " and D.r_entitygraph=" + graphID;
     	}
@@ -1213,13 +1221,13 @@ public class LocalEntityGraph extends EntityGraph {
 	}
 
 	/**
-     * Gets a SQL comparition expression for comparing rows with given entity.
+     * Gets a SQL comparison expression for comparing rows with given entity.
      * 
      * @param table the table
      * @param resultSet
-     * @return a SQL comparition expression for comparing rows of <code>table</code> with current row of resultSet
+     * @return a SQL comparison expression for comparing rows of <code>table</code> with current row of resultSet
      */
-    private String pkEqualsEntityID(Table table, ResultSet resultSet, ResultSetMetaData resultSetMetaData, String alias, String columnPrefix, Map<String, Integer> typeCache, Session localSession) throws SQLException {
+    private String pkEqualsEntityID(Table table, ResultSet resultSet, String alias, String columnPrefix, CellContentConverter cellContentConverter) throws SQLException {
     	Map<Column, Column> match = upkMatch(table);
         StringBuffer sb = new StringBuffer();
         for (Column column: universalPrimaryKey.getColumns()) {
@@ -1230,13 +1238,13 @@ public class LocalEntityGraph extends EntityGraph {
             Column tableColumn = match.get(column);
             if (tableColumn != null) {
             	int i = 0;
-            	for (Column c: table.primaryKey.getColumns()) {
+            	for (Column c: rowIdSupport.getPrimaryKey(table).getColumns()) {
             		if (c.name.equals(tableColumn.name)) {
             			break;
             		}
             		++i;
             	}
-                sb.append("=" + SqlUtil.toSql(SqlUtil.toSql(SqlUtil.getObject(resultSet, resultSetMetaData, "PK" + i /* tableColumn.name*/, typeCache), localSession), localSession));
+                sb.append("=" + cellContentConverter.toSql(cellContentConverter.toSql(cellContentConverter.getObject(resultSet, "PK" + i))));
             } else {
                 sb.append(" is null");
             }

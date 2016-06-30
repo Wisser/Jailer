@@ -134,7 +134,7 @@ public class Table extends ModelElement implements Comparable<Table> {
      * 
      * @return list of table columns
      */
-    public List<Column>getColumns() {
+    public List<Column> getColumns() {
     	if (columns == null) {
     		return Collections.emptyList();
     	}

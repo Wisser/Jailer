@@ -59,7 +59,8 @@ public class UIProgressListener implements ProgressListener {
 	 */
 	private int today = -1, lastUpdated = -1;
 	private boolean lastRowIsUptodate = false;
-
+	private boolean readjustColumnWidth = false;
+	
 	/**
 	 * To stop the thread.
 	 */
@@ -110,38 +111,49 @@ public class UIProgressListener implements ProgressListener {
 					}
 					final boolean fUpdate = update;
 					if (timeForUpdate) {
-						SwingUtilities.invokeLater(new Runnable() {
-							@Override
-							public void run() {
-								if (fUpdate) {
-									addOrUpdateRows();
-								}
-								synchronized (UIProgressListener.this) {
-									progressTable.setTotalNumberOfCollectedRows(collectedRows);
-									progressPanel.collectedRowsLabel.setText("" + collectedRows);
-									progressPanel.exportedRowsLabel.setText("" + exportedRows);
-									progressPanel.stepLabel.setText(currentStep);
-									if (isErrorStage) {
-										progressPanel.stepLabel.setForeground(Color.RED);
-									}
-									if (!rowsPerTableIsUptodate) {
-										progressPanel.updateRowsPerTable(rowsPerTable);
-										rowsPerTableIsUptodate = true;
-									}
-									long t = System.currentTimeMillis();
-									if (!stopClock) {
-										long et = (t - startTime)/1000;
-										long sec = et % 60;
-										long min = (et / 60) % 60;
-										long h = et / 3600;
-										progressPanel.elapsedTimeLabel.setText((h<10? "0" : "") + h + ":" + (min<10? "0" : "") + min + ":" + (sec<10? "0" : "") + sec);
-									}
-									nextUpdateTS[0] = t + 200;
-								}
-							}
-						});
+						updateRowTable(progressTable, progressPanel, startTime,
+								nextUpdateTS, fUpdate);
 					}
 				}
+				synchronized (UIProgressListener.this) {
+					lastRowIsUptodate = false;
+				}
+				updateRowTable(progressTable, progressPanel, startTime, new long[] { 0 }, true);
+			}
+
+			private void updateRowTable(final ProgressTable progressTable,
+					final ProgressPanel progressPanel, final long startTime,
+					final long[] nextUpdateTS, final boolean fUpdate) {
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						if (fUpdate) {
+							addOrUpdateRows();
+						}
+						synchronized (UIProgressListener.this) {
+							progressTable.setTotalNumberOfCollectedRows(collectedRows);
+							progressPanel.collectedRowsLabel.setText("" + collectedRows);
+							progressPanel.exportedRowsLabel.setText("" + exportedRows);
+							progressPanel.stepLabel.setText(currentStep);
+							if (isErrorStage) {
+								progressPanel.stepLabel.setForeground(Color.RED);
+							}
+							if (!rowsPerTableIsUptodate) {
+								progressPanel.updateRowsPerTable(rowsPerTable);
+								rowsPerTableIsUptodate = true;
+							}
+							long t = System.currentTimeMillis();
+							if (!stopClock) {
+								long et = (t - startTime)/1000;
+								long sec = et % 60;
+								long min = (et / 60) % 60;
+								long h = et / 3600;
+								progressPanel.elapsedTimeLabel.setText((h<10? "0" : "") + h + ":" + (min<10? "0" : "") + min + ":" + (sec<10? "0" : "") + sec);
+							}
+							nextUpdateTS[0] = t + 500;
+						}
+					}
+				});
 			}
 		}).start();
 	}
@@ -205,9 +217,14 @@ public class UIProgressListener implements ProgressListener {
 		}
 		if (day == lastUpdated) {
 			progressTable.replaceLastRow(theRow, day);
+			if (readjustColumnWidth) {
+				readjustColumnWidth = false;
+				progressTable.adjustColumnWidth();
+			}
 		} else {
 			progressTable.addRow(theRow, day);
 			progressTable.adjustColumnWidth();
+			readjustColumnWidth = false;
 		}
 	}
 
@@ -253,6 +270,9 @@ public class UIProgressListener implements ProgressListener {
 					}
 				}
 			}
+			if (rc <= 0) {
+				readjustColumnWidth = true;
+			}
 			lastRowIsUptodate = false;
 		}
 	}
@@ -273,6 +293,7 @@ public class UIProgressListener implements ProgressListener {
 		}
 		collections.get(today).put(modelElement, null);
 		lastRowIsUptodate = false;
+		readjustColumnWidth = true;
 	}
 
 	/**
@@ -328,6 +349,18 @@ public class UIProgressListener implements ProgressListener {
 		this.stopClock = isFinalStage;
 		this.lastRowIsUptodate = false;
 		this.cleanupLastLine = true;
+		if (isFinalStage || isErrorStage) {
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					synchronized (UIProgressListener.class) {
+						lastRowIsUptodate = false;
+						readjustColumnWidth = true;
+					}
+					addOrUpdateRows();
+				}
+			});
+		}
 	}
 
 }

@@ -918,6 +918,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jPanel7.setLayout(new java.awt.BorderLayout());
 
         condition.setText("jTextField1");
+        condition.setToolTipText("SQL expression. Keep empty if you want to export all rows.");
         jPanel7.add(condition, java.awt.BorderLayout.CENTER);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1946,7 +1947,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     }//GEN-LAST:event_resetFocusActionPerformed
 
     private void additionalSubjectsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_additionalSubjectsButtonActionPerformed
-        AdditionalSubjectsDialog additionalSubjectsDialog = new AdditionalSubjectsDialog(extractionModelFrame, extractionModel, condition.getText());
+        AdditionalSubjectsDialog additionalSubjectsDialog = new AdditionalSubjectsDialog(extractionModelFrame, extractionModel, subject, condition.getText());
         if (additionalSubjectsDialog.edit()) {
         	needsSave = true;
         	updateAdditionalSubjectsButton();

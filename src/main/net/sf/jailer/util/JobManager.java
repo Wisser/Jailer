@@ -109,14 +109,16 @@ public class JobManager {
      */
     public JobManager(int threads) {
         runnersList = new ArrayList<JobRunner>(threads);
-        for (int i = 0; i < threads; ++i) {
-            JobRunner jobRunner = new JobRunner();
-            runnersList.add(jobRunner);
-            String threadName = "job-runner " + (i + 1);
-            _log.debug("starting " + threadName);
-            Thread thread = new Thread(jobRunner, threadName);
-            thread.setDaemon(true);
-            thread.start();
+        if (threads > 1) {
+	        for (int i = 0; i < threads; ++i) {
+	            JobRunner jobRunner = new JobRunner();
+	            runnersList.add(jobRunner);
+	            String threadName = "job-runner " + (i + 1);
+	            _log.debug("starting " + threadName);
+	            Thread thread = new Thread(jobRunner, threadName);
+	            thread.setDaemon(true);
+	            thread.start();
+	        }
         }
     }
 
@@ -129,7 +131,7 @@ public class JobManager {
     public void executeJobs(Collection<Job> jobs) throws Exception {
         int jobCount = jobs.size();
         _log.info("starting " + jobCount + " jobs");
-        if (runnersList.size() == 1) {
+        if (runnersList.isEmpty()) {
         	for (Job job: jobs) {
         		job.run();
         	}

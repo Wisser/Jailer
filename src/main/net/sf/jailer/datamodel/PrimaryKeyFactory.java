@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Set;
 
 import net.sf.jailer.Configuration;
-import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 
 /**

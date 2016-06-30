@@ -29,6 +29,7 @@ import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
@@ -54,11 +55,6 @@ public class DeletionTransformer extends AbstractResultSetReader {
      * For building compact delete-statements.
      */
     private StatementBuilder deleteStatementBuilder;
-    
-    /**
-     * Maps clear text SQL-types to {@link java.sql.Types}.
-     */
-    private Map<String, Integer> typeCache = new HashMap<String, Integer>();
 
     /**
      * Current session;
@@ -83,6 +79,11 @@ public class DeletionTransformer extends AbstractResultSetReader {
         deleteStatementBuilder = new StatementBuilder(maxBodySize);
         this.quoting = new Quoting(metaData);
         this.session = session;
+        
+        if (table.primaryKey.getColumns().isEmpty()) {
+        	throw new RuntimeException("Unable to delete from table \"" + table.getName() + "\".\n" +
+        			"No primary key.");
+        }
     }
     
     /**
@@ -94,13 +95,14 @@ public class DeletionTransformer extends AbstractResultSetReader {
         try {
         	final SQLDialect currentDialect = Configuration.forDbms(session).getSqlDialect();
             
-        	if (SqlUtil.dbms == DBMS.SYBASE || (currentDialect != null && !currentDialect.supportsInClauseForDeletes)) {
+        	CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session);
+			if (SqlUtil.dbms == DBMS.SYBASE || (currentDialect != null && !currentDialect.supportsInClauseForDeletes)) {
         		String deleteHead = "Delete from " + qualifiedTableName(table) + " Where (";
                 boolean firstTime = true;
                 String item = "";
                 for (Column pkColumn: table.primaryKey.getColumns()) {
                 	item += (firstTime? "" : " and ") + pkColumn.name + "="
-                    		+ SqlUtil.toSql(SqlUtil.getObject(resultSet, getMetaData(resultSet), quoting.unquote(pkColumn.name), typeCache), session);
+                    		+ cellContentConverter.toSql(cellContentConverter.getObject(resultSet, quoting.unquote(pkColumn.name)));
                     firstTime = false;
                 }
                 if (!deleteStatementBuilder.isAppendable(deleteHead, item)) {
@@ -112,14 +114,14 @@ public class DeletionTransformer extends AbstractResultSetReader {
 	            String item;
 	            if (table.primaryKey.getColumns().size() == 1) {
 	                deleteHead = "Delete from " + qualifiedTableName(table) + " Where " + table.primaryKey.getColumns().get(0).name + " in (";
-	                item = SqlUtil.toSql(SqlUtil.getObject(resultSet, getMetaData(resultSet), quoting.unquote(table.primaryKey.getColumns().get(0).name), typeCache), session);
+	                item = cellContentConverter.toSql(cellContentConverter.getObject(resultSet, quoting.unquote(table.primaryKey.getColumns().get(0).name)));
 	            } else {
 	                deleteHead = "Delete from " + qualifiedTableName(table) + " Where (";
 	                item = "(";
 	                boolean firstTime = true;
 	                for (Column pkColumn: table.primaryKey.getColumns()) {
 	                    deleteHead += (firstTime? "" : ", ") + pkColumn.name;
-	                    item += (firstTime? "" : ", ") + SqlUtil.toSql(SqlUtil.getObject(resultSet, getMetaData(resultSet), quoting.unquote(pkColumn.name), typeCache), session);
+	                    item += (firstTime? "" : ", ") + cellContentConverter.toSql(cellContentConverter.getObject(resultSet, quoting.unquote(pkColumn.name)));
 	                    firstTime = false;
 	                }
 	                item += ")";
@@ -175,7 +177,6 @@ public class DeletionTransformer extends AbstractResultSetReader {
     public void close() {
         try {
             writeToScriptFile(deleteStatementBuilder.build());
-            typeCache = new HashMap<String, Integer>();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -40,6 +40,7 @@ import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.Base64;
+import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.SqlUtil;
 
 import org.xml.sax.SAXException;
@@ -172,6 +173,11 @@ public class XmlRowWriter {
 		private int nr = 0;
 		
 		/**
+		 * {@link CellContentConverter}.
+		 */
+		protected final CellContentConverter cellContentConverter;
+        
+		/**
 		 * Constructor.
 		 * 
 		 * @param resultSet to read rows from
@@ -182,7 +188,8 @@ public class XmlRowWriter {
 			this.table = table;
 			this.association = association;
 			this.session = session;
-		}
+			this.cellContentConverter =  new CellContentConverter(resultSetMetaData, session);
+	    }
 
 		/**
 		 * Gets text to write out. If it starts with "SQL:", write out next column value.
@@ -222,7 +229,7 @@ public class XmlRowWriter {
 							return "";
 						}
 					} else {
-						Object o = SqlUtil.getObject(resultSet, resultSetMetaData, columnName, typeCache);
+						Object o = cellContentConverter.getObject(resultSet, columnName);
 						if (returnNull && (o == null || resultSet.wasNull())) {
 							return null;
 						}

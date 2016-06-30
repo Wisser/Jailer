@@ -29,16 +29,18 @@ import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerConfigurationException;
 
+import net.sf.jailer.Configuration;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
+import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
+import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.SqlScriptExecutor;
-import net.sf.jailer.util.SqlUtil;
 
 import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
@@ -107,6 +109,11 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	private Map<Table, Map<String, Association>> associationCache = new HashMap<Table, Map<String,Association>>();
 
 	/**
+     * {@link RowIdSupport}.
+     */
+    private final RowIdSupport rowIdSupport;
+    
+	/**
 	 * Constructor.
 	 * 
 	 * @param out to write the xml into
@@ -125,6 +132,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 		this.totalProgress = totalProgress;
 		this.cyclicAggregatedTables = cyclicAggregatedTables;
 		this.session = session;
+        this.rowIdSupport = new RowIdSupport(entityGraph.getDatamodel(), Configuration.forDbms(session));
 	}
 
 	/**
@@ -132,7 +140,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	 */
 	public void readCurrentRow(ResultSet resultSet) throws SQLException {
 		try {
-			writeEntity(table, null, resultSet, new ArrayList<String>());
+			writeEntity(table, null, resultSet, new ArrayList<String>(), getCellContentConverter(resultSet, session));
 		} catch (SAXException e) {
 			throw new RuntimeException(e);
 		} catch (ParserConfigurationException e) {
@@ -150,18 +158,17 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	 * @param resultSet current row contains entity to write out
 	 * @param ancestors ancestors of entity to write out
 	 */
-	private void writeEntity(final Table table, Association association, final ResultSet resultSet, final List<String> ancestors)
+	private void writeEntity(final Table table, Association association, final ResultSet resultSet, final List<String> ancestors, final CellContentConverter cellContentConverter)
 			throws SQLException, SAXException, ParserConfigurationException, IOException {
 		StringBuilder sb = new StringBuilder(table.getName() + "(");
 		boolean f = true;
 		int i = 0;
-		for (@SuppressWarnings("unused") Column pk : table.primaryKey.getColumns()) {
+		for (@SuppressWarnings("unused") Column pk : rowIdSupport.getPrimaryKey(table).getColumns()) {
 			if (!f) {
 				sb.append(", ");
 			}
 			f = false;
-			sb.append(SqlUtil.toSql(SqlUtil.getObject(resultSet, getMetaData(resultSet), "PK" + i++,
-					getTypeCache(table)), session));
+			sb.append(cellContentConverter.toSql(cellContentConverter.getObject(resultSet, "PK" + i++)));
 		}
 		sb.append(")");
 		String primaryKey = sb.toString();
@@ -194,7 +201,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 							ResultSetReader reader = new ResultSetReader() {
 								public void readCurrentRow(ResultSet resultSet) throws SQLException {
 									try {
-										writeEntity(sa.destination, sa, resultSet, ancestors);
+										writeEntity(sa.destination, sa, resultSet, ancestors, getCellContentConverter(resultSet, session));
 									} catch (SAXException e) {
 										throw new RuntimeException(e);
 									} catch (ParserConfigurationException e) {
@@ -335,7 +342,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 		
 		final StringBuilder sb = new StringBuilder();
 		int i = 0;
-		for (Column pk: table.primaryKey.getColumns()) {
+		for (Column pk: rowIdSupport.getPrimaryKey(table).getColumns()) {
 			if (sb.length() > 0) {
 				sb.append(", ");
 			}

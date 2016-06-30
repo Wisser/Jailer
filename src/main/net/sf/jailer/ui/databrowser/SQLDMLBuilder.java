@@ -23,6 +23,7 @@ import java.util.Set;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.SqlUtil;
 
 
@@ -62,9 +63,10 @@ public class SQLDMLBuilder {
 		String sql = "Update " + table.getName() + " " + LF + "Set ";
 		boolean f = true;
 		int i = 0;
+		CellContentConverter cellContentConverter = new CellContentConverter(null, session);
 		for (Column column : table.getColumns()) {
 			String name = column.name;
-			String value = getSQLLiteral(row.values[i++], session);
+			String value = getSQLLiteral(row.values[i++], cellContentConverter);
 			if (value == null) {
 				continue;
 			}
@@ -112,9 +114,10 @@ public class SQLDMLBuilder {
 		String values = "";
 		boolean f = true;
 		int i = 0;
+		CellContentConverter cellContentConverter = new CellContentConverter(null, session);
 		for (Column column : table.getColumns()) {
 			String name = column.name;
-			String value = getSQLLiteral(row.values[i++], session);
+			String value = getSQLLiteral(row.values[i++], cellContentConverter);
 			if (value == null) {
 				continue;
 			}
@@ -178,14 +181,14 @@ public class SQLDMLBuilder {
 	 * Gets SQL literal for a given object. Returns <code>null</code> if the object cannot be converted into a SQL literal (LOBs).
 	 * 
 	 * @param value the value
-	 * @param session current DB session
+	 * @param cellContentConverter
 	 * @return SQL literal or <code>null</code>
 	 */
-	private static String getSQLLiteral(Object value, Session session) {
+	private static String getSQLLiteral(Object value, CellContentConverter cellContentConverter) {
 		if (value instanceof LobValue) {
 			return null;
 		}
-		return SqlUtil.toSql(value, session);
+		return cellContentConverter.toSql(value);
 	}
 	
 	private static final String LF = System.getProperty("line.separator", "\n");

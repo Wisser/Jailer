@@ -518,7 +518,7 @@ public class DataModel {
      * @param session for null value guessing
      * @return the universal primary key
      */
-    public PrimaryKey getUniversalPrimaryKey(Session session) {
+    PrimaryKey getUniversalPrimaryKey(Session session) {
         return primaryKeyFactory.getUniversalPrimaryKey(session);
     }
 
@@ -527,7 +527,7 @@ public class DataModel {
      * 
      * @return the universal primary key
      */
-    public PrimaryKey getUniversalPrimaryKey() {
+    PrimaryKey getUniversalPrimaryKey() {
         return getUniversalPrimaryKey(null);
     }
 

@@ -34,9 +34,11 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKey;
+import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.progress.ProgressListenerRegistry;
+import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.SqlUtil;
 
@@ -63,6 +65,11 @@ public class RemoteEntityGraph extends EntityGraph {
     private int birthdayOfSubject = 0;
     
     /**
+     * {@link RowIdSupport}.
+     */
+    private final RowIdSupport rowIdSupport;
+    
+    /**
      * Constructor.
      * 
      * @param graphID the unique ID of the graph
@@ -73,6 +80,7 @@ public class RemoteEntityGraph extends EntityGraph {
     	super(graphID, dataModel);
         this.session = session;
         this.universalPrimaryKey = universalPrimaryKey;
+        this.rowIdSupport = new RowIdSupport(dataModel, Configuration.forDbms(session));
         
         File fieldProcTablesFile = new File("field-proc-tables.csv");
         if (fieldProcTablesFile.exists()) {
@@ -322,7 +330,7 @@ public class RemoteEntityGraph extends EntityGraph {
         
         if (source != null && explain) {
             String max = "";
-            Map<Column, Column> match = universalPrimaryKey.match(source.primaryKey);
+            Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(source));
             for (Column column: universalPrimaryKey.getColumns()) {
             	if (match.get(column) != null) {
 	                if (max.length() > 0) {
@@ -389,7 +397,7 @@ public class RemoteEntityGraph extends EntityGraph {
      */
     public void markIndependentEntities(Table table) throws SQLException {
         StringBuffer fromEqualsPK = new StringBuffer();
-        Map<Column, Column> match = universalPrimaryKey.match(table.primaryKey);
+        Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(table));
         for (Column column: universalPrimaryKey.getColumns()) {
             if (fromEqualsPK.length() > 0) {
                 fromEqualsPK.append(" and ");
@@ -414,7 +422,7 @@ public class RemoteEntityGraph extends EntityGraph {
      */
     public void markRoots(Table table) throws SQLException {
         StringBuffer toEqualsPK = new StringBuffer();
-        Map<Column, Column> match = universalPrimaryKey.match(table.primaryKey);
+        Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(table));
         for (Column column: universalPrimaryKey.getColumns()) {
             if (toEqualsPK.length() > 0) {
                 toEqualsPK.append(" and ");
@@ -454,7 +462,7 @@ public class RemoteEntityGraph extends EntityGraph {
     public void readMarkedEntities(Table table, Session.ResultSetReader reader, String selectionSchema, boolean orderByPK) throws SQLException {
         String orderBy = "";
         if (orderByPK) {
-        	orderBy = " order by " + table.primaryKey.columnList("T.");
+        	orderBy = " order by " + rowIdSupport.getPrimaryKey(table).columnList("T.");
         }
     	long rc = session.executeQuery(
                 "Select " + selectionSchema + " From " + SQLDialect.dmlTableReference(ENTITY, session) + " E join " + table.getName() + " T on " +
@@ -480,13 +488,13 @@ public class RemoteEntityGraph extends EntityGraph {
     	String orderBy = "";
     	StringBuffer sb = new StringBuffer();
     	StringBuffer selectOPK = new StringBuffer();
-    	for (int i = 0; i < table.primaryKey.getColumns().size(); ++i) {
+    	for (int i = 0; i < rowIdSupport.getPrimaryKey(table).getColumns().size(); ++i) {
     		if (i > 0) {
     			sb.append(", ");
     			selectOPK.append(", ");
     		}
     		sb.append(originalPKAliasPrefix + i);
-    		selectOPK.append("T." + table.primaryKey.getColumns().get(i).name + " AS " + originalPKAliasPrefix + i);
+    		selectOPK.append("T." + rowIdSupport.getPrimaryKey(table).getColumns().get(i).name + " AS " + originalPKAliasPrefix + i);
     	}
     	orderBy = "order by " + sb;
     	String sqlQuery = "Select " + selectionSchema + " From (" +
@@ -538,7 +546,7 @@ public class RemoteEntityGraph extends EntityGraph {
 		long rc;
 		if (orderByPK) {
 			String sqlQueryWithOrderBy = sqlQuery +
-				(orderByPK? " order by " + table.primaryKey.columnList("T.") : "");
+				(orderByPK? " order by " + rowIdSupport.getPrimaryKey(table).columnList("T.") : "");
 			rc = session.executeQuery(sqlQueryWithOrderBy, reader, sqlQuery, null, 0);
 		} else {
 			rc = session.executeQuery(sqlQuery, reader);
@@ -587,7 +595,7 @@ public class RemoteEntityGraph extends EntityGraph {
     public void deleteIndependentEntities(Table table) throws SQLException {
         StringBuffer fromEqualsPK = new StringBuffer();
         StringBuffer toEqualsPK = new StringBuffer();
-        Map<Column, Column> match = universalPrimaryKey.match(table.primaryKey);
+        Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(table));
         for (Column column: universalPrimaryKey.getColumns()) {
             if (fromEqualsPK.length() > 0) {
                 fromEqualsPK.append(" and ");
@@ -686,7 +694,7 @@ public class RemoteEntityGraph extends EntityGraph {
                 "and " + (deletedEntitiesAreMarked? "EA.birthday=-1 and EB.birthday>=0" : "EA.type is null");
             long rc = session.executeUpdate(remove);
             if (rc > 0) {
-            	Map<Column, Column> match = universalPrimaryKey.match(association.destination.primaryKey);
+            	Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(association.destination));
                 StringBuffer sEqualsE = new StringBuffer();
             	StringBuffer sEqualsEWoAlias = new StringBuffer();
                 for (Column column: universalPrimaryKey.getColumns()) {
@@ -741,25 +749,26 @@ public class RemoteEntityGraph extends EntityGraph {
      */
     public void readDependentEntities(Table table, Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, ResultSetReader reader, Map<String, Integer> typeCache, String selectionSchema, String originalPKAliasPrefix) throws SQLException {
     	String select;
+    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, session);
     	if (originalPKAliasPrefix != null) {
         	StringBuffer selectOPK = new StringBuffer();
-        	for (int i = 0; i < table.primaryKey.getColumns().size(); ++i) {
+        	for (int i = 0; i < rowIdSupport.getPrimaryKey(table).getColumns().size(); ++i) {
         		if (i > 0) {
         			selectOPK.append(", ");
         		}
-        		selectOPK.append("T." + table.primaryKey.getColumns().get(i).name + " AS " + originalPKAliasPrefix + i);
+        		selectOPK.append("T." + rowIdSupport.getPrimaryKey(table).getColumns().get(i).name + " AS " + originalPKAliasPrefix + i);
         	}
     		select = 
     			"Select " + selectionSchema + " from (" +  
     			"Select " + selectOPK + ", " + filteredSelectionClause(table) + " from " + table.getName() + " T join " + SQLDialect.dmlTableReference(DEPENDENCY, session) + " D on " +
 	    		 pkEqualsEntityID(table, "T", "D", "TO_") + " and D.to_type='" + table.getName() + "'" +
-	    		 " Where " + pkEqualsEntityID(association.source, resultSet, resultSetMetaData, "D", "FROM_", typeCache, session) +
+	    		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", cellContentConverter) +
 	    	     " and D.from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
 	    	     " and D.r_entitygraph=" + graphID + ") T";
     	} else {
 	    	select = "Select " + selectionSchema + " from " + table.getName() + " T join " + SQLDialect.dmlTableReference(DEPENDENCY, session) + " D on " +
 	    		 pkEqualsEntityID(table, "T", "D", "TO_") + " and D.to_type='" + table.getName() + "'" +
-	    		 " Where " + pkEqualsEntityID(association.source, resultSet, resultSetMetaData, "D", "FROM_", typeCache, session) +
+	    		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", cellContentConverter) +
 	    	     " and D.from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
 	    	     " and D.r_entitygraph=" + graphID;
     	}
@@ -776,14 +785,15 @@ public class RemoteEntityGraph extends EntityGraph {
      */
     public void markDependentEntitiesAsTraversed(Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, Map<String, Integer> typeCache) throws SQLException {
     	String update;
+    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, session);
     	if (session.dbms == DBMS.SYBASE) {
     		update = "Update " + SQLDialect.dmlTableReference(DEPENDENCY, session) + " set traversed=1" +
-    		 " Where " + pkEqualsEntityID(association.source, resultSet, resultSetMetaData, SQLDialect.dmlTableReference(DEPENDENCY, session), "FROM_", typeCache, session) +
+    		 " Where " + pkEqualsEntityID(association.source, resultSet, SQLDialect.dmlTableReference(DEPENDENCY, session), "FROM_", cellContentConverter) +
     		 " and " + SQLDialect.dmlTableReference(DEPENDENCY, session) + ".from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
     		 " and " + SQLDialect.dmlTableReference(DEPENDENCY, session) + ".r_entitygraph=" + graphID;
     	} else {
     		update = "Update " + SQLDialect.dmlTableReference(DEPENDENCY, session) + " D set traversed=1" +
-    		 " Where " + pkEqualsEntityID(association.source, resultSet, resultSetMetaData, "D", "FROM_", typeCache, session) +
+    		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", cellContentConverter) +
     	     " and D.from_type='" + association.source.getName() + "' and assoc=" + association.getId() +
     	     " and D.r_entitygraph=" + graphID;
     	}
@@ -810,7 +820,7 @@ public class RemoteEntityGraph extends EntityGraph {
      * @param table the table
      */
 	public void removeReflexiveDependencies(Table table) throws SQLException {
-		Map<Column, Column> match = universalPrimaryKey.match(table.primaryKey);
+		Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(table));
         StringBuffer sb = new StringBuffer();
         for (Column column: universalPrimaryKey.getColumns()) {
             Column tableColumn = match.get(column);
@@ -830,14 +840,14 @@ public class RemoteEntityGraph extends EntityGraph {
 	}
 
 	/**
-     * Gets a SQL comparition expression for comparing rows with given entity.
+     * Gets a SQL comparison expression for comparing rows with given entity.
      * 
      * @param table the table
      * @param resultSet
-     * @return a SQL comparition expression for comparing rows of <code>table</code> with current row of resultSet
+     * @return a SQL comparison expression for comparing rows of <code>table</code> with current row of resultSet
      */
-    private String pkEqualsEntityID(Table table, ResultSet resultSet, ResultSetMetaData resultSetMetaData, String alias, String columnPrefix, Map<String, Integer> typeCache, Session session) throws SQLException {
-    	Map<Column, Column> match = universalPrimaryKey.match(table.primaryKey);
+    private String pkEqualsEntityID(Table table, ResultSet resultSet, String alias, String columnPrefix, CellContentConverter cellContentConverter) throws SQLException {
+    	Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(table));
         StringBuffer sb = new StringBuffer();
         for (Column column: universalPrimaryKey.getColumns()) {
             if (sb.length() > 0) {
@@ -847,13 +857,13 @@ public class RemoteEntityGraph extends EntityGraph {
             Column tableColumn = match.get(column);
             if (tableColumn != null) {
             	int i = 0;
-            	for (Column c: table.primaryKey.getColumns()) {
+            	for (Column c: rowIdSupport.getPrimaryKey(table).getColumns()) {
             		if (c.name.equals(tableColumn.name)) {
             			break;
             		}
             		++i;
             	}
-                sb.append("=" + SqlUtil.toSql(SqlUtil.getObject(resultSet, resultSetMetaData, "PK" + i /* tableColumn.name*/, typeCache), session));
+                sb.append("=" + cellContentConverter.toSql(cellContentConverter.getObject(resultSet, "PK" + i)));
             } else {
                 sb.append(" is null");
             }
@@ -880,7 +890,7 @@ public class RemoteEntityGraph extends EntityGraph {
      * @return a SQL comparition expression for comparing rows of <code>table</code> with entities
      */
     private String pkEqualsEntityID(Table table, String tableAlias, String entityAlias, String columnPrefix) {
-        Map<Column, Column> match = universalPrimaryKey.match(table.primaryKey);
+        Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(table));
         StringBuffer sb = new StringBuffer();
         for (Column column: universalPrimaryKey.getColumns()) {
             if (sb.length() > 0) {
@@ -920,7 +930,7 @@ public class RemoteEntityGraph extends EntityGraph {
      * @param columnAliasPrefix optional prefix for column names
      */
     private String pkList(Table table, String tableAlias, String columnAliasPrefix) {
-        Map<Column, Column> match = universalPrimaryKey.match(table.primaryKey);
+        Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(table));
         StringBuffer sb = new StringBuffer();
         for (Column column: universalPrimaryKey.getColumns()) {
             Column tableColumn = match.get(column);
@@ -942,7 +952,7 @@ public class RemoteEntityGraph extends EntityGraph {
      * @param columnAliasPrefix optional prefix for column names
      */
     private String upkColumnList(Table table, String columnAliasPrefix) {
-        Map<Column, Column> match = universalPrimaryKey.match(table.primaryKey);
+        Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(table));
         StringBuffer sb = new StringBuffer();
         for (Column column: universalPrimaryKey.getColumns()) {
             Column tableColumn = match.get(column);

@@ -60,6 +60,7 @@ import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.ParameterHandler;
+import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.dbunit.FlatXMLTransformer;
 import net.sf.jailer.domainmodel.DomainModel;
@@ -106,7 +107,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "5.4.2";
+	public static final String VERSION = "5.5";
 	
 	/**
 	 * The Jailer application name.
@@ -188,10 +189,11 @@ public class Jailer {
 
 	 * @param progressOfYesterday
 	 *            set of tables to account for resolvation
+	 * @param completedTables 
 	 * 
 	 * @return set of tables from which entities are added
 	 */
-	public Set<Table> export(Table table, String condition, Collection<Table> progressOfYesterday, boolean skipRoot) throws Exception {
+	public Set<Table> export(Table table, String condition, Collection<Table> progressOfYesterday, boolean skipRoot, Set<Table> completedTables) throws Exception {
 		_log.info("exporting " + datamodel.getDisplayName(table) + " Where " + condition.replace('\n', ' ').replace('\r', ' '));
 		int today = entityGraph.getAge();
 		entityGraph.setAge(today + 1);
@@ -217,7 +219,7 @@ public class Jailer {
 			_log.info("day " + today + ", progress: " + asString(progress.keySet()));
 			++today;
 			entityGraph.setAge(today + 1);
-			progress = resolveAssociations(today, progress);
+			progress = resolveAssociations(today, progress, completedTables);
 		}
 
 		_log.info("exported " + datamodel.getDisplayName(table) + " Where " + condition.replace('\n', ' ').replace('\r', ' '));
@@ -257,7 +259,7 @@ public class Jailer {
 	 * 
 	 * @param extractionModel the extraction model
 	 */
-	private Set<Table> exportSubjects(ExtractionModel extractionModel) throws Exception {
+	private Set<Table> exportSubjects(ExtractionModel extractionModel, Set<Table> completedTables) throws Exception {
 		List<AdditionalSubject> allSubjects = new ArrayList<ExtractionModel.AdditionalSubject>();
 		for (AdditionalSubject as: extractionModel.additionalSubjects) {
 			allSubjects.add(new AdditionalSubject(as.subject, ParameterHandler.assignParameterValues(as.condition, CommandLineParser.getInstance().getParameters())));
@@ -280,19 +282,32 @@ public class Jailer {
 				conditionPerTable.put(as.subject, cond);
 			}
 		}
-		Set<Table> progress = new HashSet<Table>();
+		final Set<Table> progress = Collections.synchronizedSet(new HashSet<Table>());
+		List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 		for (Map.Entry<Table, String> e: conditionPerTable.entrySet()) {
-			Table table = e.getKey();
-			_log.info("exporting all " + datamodel.getDisplayName(table));
-			int today = entityGraph.getAge();
-			ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today, table);
-			ProgressListenerRegistry.getProgressListener().collectionJobStarted(today, table);
-			long rc = entityGraph.addEntities(table, e.getValue().trim().length() > 0? e.getValue() : "1=1", today);
-			if (rc > 0) {
-				progress.add(table);
+			final Table table = e.getKey();
+			final String condition = e.getValue().trim();
+			if (condition.length() > 0) {
+				_log.info("exporting " + datamodel.getDisplayName(table) + " Where " + condition);
+			} else {
+				completedTables.add(table);
+				_log.info("exporting all " + datamodel.getDisplayName(table));
 			}
-			ProgressListenerRegistry.getProgressListener().collected(today, table, rc);
+			jobs.add(new JobManager.Job() {
+				@Override
+				public void run() throws Exception {
+					int today = entityGraph.getAge();
+					ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today, table);
+					ProgressListenerRegistry.getProgressListener().collectionJobStarted(today, table);
+					long rc = entityGraph.addEntities(table, condition.length() > 0? condition : "1=1", today);
+					if (rc > 0) {
+						progress.add(table);
+					}
+					ProgressListenerRegistry.getProgressListener().collected(today, table, rc);
+				}
+			});
 		}
+		jobManager.executeJobs(jobs);
 		return progress;
 	}
 
@@ -303,11 +318,12 @@ public class Jailer {
 	 *            birthday of newly created entities
 	 * @param progressOfYesterday
 	 *            set of tables to account for resolvation
+	 * @param completedTables 
 	 * 
 	 * @return map from tables from which entities are added to all associations
 	 *         which lead to the entities
 	 */
-	private Map<Table, Collection<Association>> resolveAssociations(final int today, Map<Table, Collection<Association>> progressOfYesterday) throws Exception {
+	private Map<Table, Collection<Association>> resolveAssociations(final int today, Map<Table, Collection<Association>> progressOfYesterday, Set<Table> completedTables) throws Exception {
 		final Map<Table, Collection<Association>> progress = new HashMap<Table, Collection<Association>>();
 
 		// resolve associations with same dest-type sequentially
@@ -323,6 +339,11 @@ public class Jailer {
 					}
 				}
 
+				if (completedTables.contains(association.destination)) {
+					_log.info("skip association " + datamodel.getDisplayName(table) + " -> " + datamodel.getDisplayName(association.destination) + ". All rows exported.");
+					continue;
+				}
+				
 				String jc = association.getJoinCondition();
 		        if (jc != null) {
 		        	ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today, association);
@@ -1220,6 +1241,10 @@ public class Jailer {
 		if (CommandLineParser.getInstance().getTemporaryTableScope() == TemporaryTableScope.SESSION_LOCAL
 		 || CommandLineParser.getInstance().getTemporaryTableScope() == TemporaryTableScope.TRANSACTION_LOCAL) {
 			DDLCreator.createDDL(session, CommandLineParser.getInstance().getTemporaryTableScope());
+		} else if (CommandLineParser.getInstance().getTemporaryTableScope() == TemporaryTableScope.GLOBAL) {
+			if (!DDLCreator.isUptodate(session, !CommandLineParser.getInstance().noRowid)) {
+				throw new IllegalStateException("Jailer working tables do not exist or are not up to date. Use 'jailer create-ddl' to create them.");
+			}
 		}
 
 		ExtractionModel extractionModel = new ExtractionModel(extractionModelFileName, CommandLineParser.getInstance().getSourceSchemaMapping(), CommandLineParser.getInstance().getParameters());
@@ -1230,7 +1255,8 @@ public class Jailer {
 		if (CommandLineParser.getInstance().getTemporaryTableScope() == TemporaryTableScope.LOCAL_DATABASE) {
 			entityGraph = LocalEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session);
 		} else {
-			entityGraph = RemoteEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, extractionModel.dataModel.getUniversalPrimaryKey(session));
+			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, Configuration.forDbms(session));
+			entityGraph = RemoteEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session));
 		}
 
 		entityGraph.setExplain(explain);
@@ -1267,7 +1293,9 @@ public class Jailer {
 		jailer.appendCommentHeader("Database User:     " + dbUser);
 		jailer.appendCommentHeader("");
 
-		extractionModel.dataModel.checkForPrimaryKey(extractionModel.subject, deleteScriptFileName != null);
+		if (Configuration.forDbms(session).getRowidName() == null) {
+			extractionModel.dataModel.checkForPrimaryKey(extractionModel.subject, deleteScriptFileName != null);
+		}
 
 		extractionModel.condition = ParameterHandler.assignParameterValues(extractionModel.condition, CommandLineParser.getInstance().getParameters());
 		
@@ -1288,9 +1316,10 @@ public class Jailer {
 		try {
 			jailer.runstats(false);
 			ProgressListenerRegistry.getProgressListener().newStage("collecting rows", false, false);
-			Set<Table> progress = jailer.exportSubjects(extractionModel);
+			Set<Table> completedTables = new HashSet<Table>();
+			Set<Table> progress = jailer.exportSubjects(extractionModel, completedTables);
 			entityGraph.setBirthdayOfSubject(entityGraph.getAge());
-			progress.addAll(jailer.export(extractionModel.subject, extractionModel.condition, progress, true));
+			progress.addAll(jailer.export(extractionModel.subject, extractionModel.condition, progress, true, completedTables));
 			totalProgress.addAll(progress);
 			subjects.add(extractionModel.subject);
 	

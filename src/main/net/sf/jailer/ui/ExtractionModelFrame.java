@@ -47,6 +47,7 @@ import javax.swing.UIManager.LookAndFeelInfo;
 
 import jsyntaxpane.DefaultSyntaxKit;
 import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.Configuration;
 import net.sf.jailer.DDLCreator;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.ScriptFormat;
@@ -914,7 +915,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 */
 	private void openDataModelEditor(Table toEdit) {
 		try {
-    		if (saveIfNeeded("edit data model", true)) {
+    		if (saveIfNeeded("edit data model", true, false)) {
     			String modelname = extractionModelEditor.dataModel == null? DataModel.DEFAULT_NAME : extractionModelEditor.dataModel.getName();
        			DataModelEditor dataModelEditor = new DataModelEditor(this, false, false, toEdit, null, null, modelname, null);
        			dataModelEditor.setVisible(true);
@@ -932,7 +933,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
  
     private void updateDataModelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateDataModelActionPerformed
     	try {
-    		if (saveIfNeeded("Analyze Database", true)) {
+    		if (saveIfNeeded("Analyze Database", true, false)) {
 	        	if (connectToDBIfNeeded("Analyze Database")) {
 		        	List<String> args = new ArrayList<String>();
 		        	args.add("build-model");
@@ -1022,9 +1023,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     			askForDataModel(this);
     			return;
     		}
-    		if (extractionModelEditor.dataModel != null) {
-    			extractionModelEditor.dataModel.checkForPrimaryKey(extractionModelEditor.subject, false);
-    		}
     		
     		String tmpFileName = null;
     		if (extractionModelEditor.extractionModelFile == null) {
@@ -1034,7 +1032,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     			}
     		}
     		
-    		if (tmpFileName != null || saveIfNeeded("Export data", false)) {
+    		if (tmpFileName != null || saveIfNeeded("Export data", false, true)) {
     			if (tmpFileName != null || (extractionModelEditor.extractionModelFile != null || extractionModelEditor.save(true, "Export data"))) {
 		        	if (connectToDBIfNeeded("Export data")) {
 			        	List<String> args = new ArrayList<String>();
@@ -1042,6 +1040,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        	dbConnectionDialog.addDbArgs(args);
 			        	Session.closeTemporaryTableSession();
 			        	Session session = new Session(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword());
+			    		if (extractionModelEditor.dataModel != null && Configuration.forDbms(session).getRowidName() == null) {
+			    			extractionModelEditor.dataModel.checkForPrimaryKey(extractionModelEditor.subject, false);
+			    		}
 			        	ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getPassword(), checkRI);
 			        	session.shutDown();
 			        	Session.closeTemporaryTableSession();
@@ -1050,13 +1051,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				        	List<String> ddlArgs = new ArrayList<String>();
 				        	ddlArgs.add("create-ddl");
 				        	dbConnectionDialog.addDbArgs(ddlArgs);
+				        	if (!exportDialog.isUseRowId()) {
+				        		ddlArgs.add("-no-rowid");
+				        	}
 				        	DMLTransformer.numberOfExportedLOBs = 0;
 				        	String tableInConflict = DDLCreator.getTableInConflict(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4));
 				        	if (tableInConflict != null && exportDialog.getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL)) {
 				        		JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);
 				        	}
 				        	else {
-				        		if (!exportDialog.getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL) || DDLCreator.isUptodate(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4)) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
+				        		if (!exportDialog.getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL) || DDLCreator.isUptodate(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), exportDialog.isUseRowId()) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
 				        			"Automatic creation of working-tables failed!\n" +
 			        				"Please execute the Jailer-DDL manually (jailer_ddl.sql)\n\n" +
 			        				"Continue Data Export?", dbConnectionDialog.getPassword(), null, null, false, false, true)) {
@@ -1213,7 +1217,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     }//GEN-LAST:event_jMenuItem1ActionPerformed
 
     private void loadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadActionPerformed
-    	if (saveIfNeeded("loading", true)) {
+    	if (saveIfNeeded("loading", true, true)) {
     		String modelFile = UIUtil.choseFile(null, "extractionmodel", "Load Extraction Model", ".csv", this, true, true);
     		if (modelFile != null) {
 	    		load(modelFile);
@@ -1255,7 +1259,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private void newModelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newModelActionPerformed
     	try {
     		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-    		if (saveIfNeeded("creating new model", true)) {
+    		if (saveIfNeeded("creating new model", true, true)) {
 	    		extractionModelEditor.extractionModelFrame = null;
 	    		editorPanel.remove(extractionModelEditor);
 				extractionModelEditor = null;
@@ -1346,17 +1350,17 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      * 
      * @return <code>false</code> if user cancels saving
      */
-    private boolean saveIfNeeded(String cause, boolean ask) {
+    private boolean saveIfNeeded(String cause, boolean ask, boolean withNoOption) {
     	if (!extractionModelEditor.needsSave) {
     		return true;
     	}
     	if (ask) {
-	    	int option = JOptionPane.showConfirmDialog(this, "Save changes before " + cause + "?", "", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE);
+	    	int option = JOptionPane.showConfirmDialog(this, "Save changes before " + cause + "?", "", withNoOption? JOptionPane.YES_NO_CANCEL_OPTION : JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
 	    	if (option == JOptionPane.CANCEL_OPTION) {
 	    		return false;
 	    	}
 	    	if (option == JOptionPane.NO_OPTION) {
-	    		return true;
+	    		return withNoOption;
 	    	}
     	}
     	return extractionModelEditor.save(false, cause);

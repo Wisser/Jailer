@@ -99,14 +99,15 @@ import net.sf.jailer.Configuration;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
+import net.sf.jailer.database.SqlException;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKey;
+import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.ExtractionModel;
-import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.ExtractionModelFrame;
@@ -119,6 +120,7 @@ import net.sf.jailer.ui.scrollmenu.JScrollC2Menu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
+import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.SqlUtil;
 
@@ -205,10 +207,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						UIUtil.showException(BrowserContentPane.this, "Error", e);
 					} else {
 						Set<String> prevIDs = new TreeSet<String>();
-						int prevSize = 0;
 						long prevHash = 0;
 						if (BrowserContentPane.this.rows != null) {
-							prevSize = BrowserContentPane.this.rows.size();
 							for (Row r: BrowserContentPane.this.rows) {
 								prevIDs.add(r.rowId);
 								try {
@@ -297,7 +297,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * The data model.
 	 */
-	DataModel dataModel;
+	private final DataModel dataModel;
+	
+	/**
+	 * {@link RowIdSupport} for data model.
+	 */
+	private final RowIdSupport rowIdSupport;
 
 	/**
 	 * {@link Association} with parent row, or <code>null</code>.
@@ -401,12 +406,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		this.table = table;
 		this.session = session;
 		this.dataModel = dataModel;
+		this.rowIdSupport = new RowIdSupport(dataModel, Configuration.forDbms(session));
 		this.parentRow = parentRow;
 		this.parentRows = parentRows;
 		this.association = association;
 		this.currentClosure = currentClosure;
 		this.currentClosureRowIDs = currentClosureRowIDs;
 
+		rowIdSupport.setUseRowIdsOnlyForTablesWithoutPK(true);
+		
 		suppressReload = true;
 		
 		if (table == null) {
@@ -1030,7 +1038,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), true);
-					d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter(), true) {
+					d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter(), true, rowIdSupport) {
 						@Override
 						protected void onRowChanged(int row) {
 							setCurrentRowSelection(row);
@@ -1822,7 +1830,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						if (cachedCount != null && cachedCount.b > System.currentTimeMillis()) {
 							rowCount = cachedCount.a;
 						} else {
-							RowCounter rc = new RowCounter(table, association, r, session);
+							RowCounter rc = new RowCounter(table, association, r, session, rowIdSupport);
 							try {
 								rowCount = rc.countRows(getAndConditionText(), context, MAX_RC + 1, false);
 							} catch (SQLException e) {
@@ -1939,7 +1947,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		noNonDistinctRows = 0;
 		noDistinctRows = 0;
 		
-		if (association != null && association.source.primaryKey.getColumns().isEmpty()) {
+		if (association != null && rowIdSupport.getPrimaryKey(association.source).getColumns().isEmpty()) {
 			loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 1);
 		} else {
 			try {
@@ -2127,7 +2135,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			boolean f = true;
 			if (selectParentPK) {
 				int i = 0;
-				for (Column column : association.source.primaryKey.getColumns()) {
+				for (Column column: rowIdSupport.getPrimaryKey(association.source).getColumns()) {
 					String name = column.name;
 					sql += (!f ? ", " : "") + "B." + name + " AS B" + i;
 					olapPrefix += (!f ? ", " : "") + "S.B" + i;
@@ -2136,7 +2144,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 			int i = 0;
-			for (Column column : table.getColumns()) {
+			for (Column column : rowIdSupport.getColumns(table)) {
 				String name = column.name;
 				sql += (!f ? ", " : "") + "A." + name + " AS A" + i;
 				olapPrefix += (!f ? ", " : "") + "S.A" + i;
@@ -2148,7 +2156,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			String olapOrderBy = "";
 			if (selectParentPK) {
 				int j = 0;
-				for (Column pk : association.source.primaryKey.getColumns()) {
+				for (Column pk: rowIdSupport.getPrimaryKey(association.source).getColumns()) {
 					parentPkColumnNames.add(pk.name);
 					orderBy += (f ? "" : ", ") + "B." + pk.name;
 					olapOrderBy += (f ? "" : ", ") + "S.B" + j;
@@ -2157,7 +2165,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 			int j = 0;
-			for (Column pk : table.primaryKey.getColumns()) {
+			for (Column pk: rowIdSupport.getPrimaryKey(table).getColumns()) {
 				pkColumnNames.add(pk.name);
 				orderBy += (f ? "" : ", ") + "A." + pk.name;
 				olapOrderBy += (f ? "" : ", ") + "S.A" + j;
@@ -2186,6 +2194,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	
 			boolean whereExists = false;
 			if (parentRows != null && !parentRows.isEmpty()) {
+				if (association != null && parentRows.get(0).rowId.length() == 0) {
+					throw new SqlException("Missing primary key for table: \"" + association.source.getName() + "\"   ", null, null);
+				}
 				if (parentRows.size() == 1) {
 					sql += " Where (" + parentRows.get(0).rowId + ")";
 				} else {
@@ -2236,8 +2247,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					int i = 1, vi = 0;
 					String parentRowId = "";
 					if (selectParentPK) {
-						Object v[] = new Object[association.source.primaryKey.getColumns().size()];
-						for (Column column : association.source.primaryKey.getColumns()) {
+						Object v[] = new Object[rowIdSupport.getPrimaryKey(association.source).getColumns().size()];
+						for (Column column : rowIdSupport.getPrimaryKey(association.source).getColumns()) {
 							parentRowId = readRowFromResultSet(parentPkColumnNames, resultSet, i, vi, parentRowId, v, column, null);
 							++i;
 							++vi;
@@ -2250,17 +2261,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					
 					Map<String, String> pkColumn = new HashMap<String, String>();
 					
-					Object v[] = new Object[table.getColumns().size()];
+					Object v[] = new Object[rowIdSupport.getColumns(table).size()];
 					vi = 0;
-					for (Column column : table.getColumns()) {
+					for (Column column : rowIdSupport.getColumns(table)) {
 						readRowFromResultSet(pkColumnNames, resultSet, i, vi, "", v, column, pkColumn);
 						++i;
 						++vi;
 					}
 					
 					String rowId = "";
-					if (table.primaryKey != null) {
-						for (Column column : table.primaryKey.getColumns()) {
+					if (rowIdSupport.getPrimaryKey(table) != null) {
+						for (Column column : rowIdSupport.getPrimaryKey(table).getColumns()) {
 							if (rowId.length() > 0) {
 								rowId += " and ";
 							}
@@ -2362,14 +2373,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							}
 						}
 					} else {
-						Object o = SqlUtil.getObject(resultSet, getMetaData(resultSet), i, typeCache);
+						CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session);
+						Object o = cellContentConverter.getObject(resultSet, i);
 						boolean isPK = false;
 						if (pkColumnNames.isEmpty()) {
 							isPK = type != Types.BLOB && type != Types.CLOB && type != Types.DATALINK && type != Types.JAVA_OBJECT && type != Types.NCLOB
 									&& type != Types.NULL && type != Types.OTHER && type != Types.REF && type != Types.SQLXML && type != Types.STRUCT;
 						}
 						if (pkColumnNames.contains(column.name) || isPK) {
-							String cVal = SqlUtil.toSql(o, session);
+							String cVal = cellContentConverter.toSql(o);
 							String pkValue = "B." + column.name + ("null".equalsIgnoreCase(cVal)? " is null" : ("=" + cVal));
 							if (pkColumn != null) {
 								pkColumn.put(column.name, pkValue);
@@ -2420,15 +2432,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 */
 	private void updateTableModel(int limit, boolean limitExceeded) {
 		pkColumns.clear();
-		String[] columnNames = new String[table.getColumns().size()];
+		List<Column> columns = rowIdSupport.getColumns(table);
+		String[] columnNames = new String[columns.size()];
 		final Set<String> pkColumnNames = new HashSet<String>();
-		if (table.primaryKey != null) {
-			for (Column pk : table.primaryKey.getColumns()) {
+		if (rowIdSupport.getPrimaryKey(table) != null) {
+			for (Column pk : rowIdSupport.getPrimaryKey(table).getColumns()) {
 				pkColumnNames.add(pk.name);
 			}
 		}
 		for (int i = 0; i < columnNames.length; ++i) {
-			columnNames[i] = table.getColumns().get(i).name;
+			columnNames[i] = columns.get(i).name;
 			if (pkColumnNames.contains(columnNames[i])) {
 				pkColumns.add(i);
 			}
@@ -2445,8 +2458,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			};
 			for (Row row : rows) {
-				Object[] rowData = new Object[table.getColumns().size()];
-				for (int i = 0; i < table.getColumns().size(); ++i) {
+				Object[] rowData = new Object[columns.size()];
+				for (int i = 0; i < columns.size(); ++i) {
 					rowData[i] = row.values[i];
 					if (rowData[i] == null) {
 						rowData[i] = NULL;
@@ -2487,7 +2500,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			rowsTable.setRowSorter(sorter);
 		} else {
-			singleRowDetailsView = new DetailsView(Collections.singletonList(rows.get(0)), 1, dataModel, BrowserContentPane.this.table, 0, null, false) {
+			singleRowDetailsView = new DetailsView(Collections.singletonList(rows.get(0)), 1, dataModel, BrowserContentPane.this.table, 0, null, false, rowIdSupport) {
 				@Override
 				protected void onRowChanged(int row) {
 				}
@@ -3259,7 +3272,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
     private void openDetails(final int x, final int y) {
 		JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), true);
-		d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, 0, rowsTable.getRowSorter(), true) {
+		d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, 0, rowsTable.getRowSorter(), true, rowIdSupport) {
 			@Override
 			protected void onRowChanged(int row) {
 				setCurrentRowSelection(row);

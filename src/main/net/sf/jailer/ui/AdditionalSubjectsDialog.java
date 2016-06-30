@@ -24,6 +24,7 @@ import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.Vector;
@@ -51,15 +52,18 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 	private final List<ExtractionModel.AdditionalSubject> subjects;
 	private final java.awt.Frame parent;
 	private final String subjectCond;
+	private final Table subject;
+	private Set<Table> remaining = new HashSet<Table>();
 	
 	/**
      * Creates new form AdditionalSubjectsDialog
      */
-    public AdditionalSubjectsDialog(java.awt.Frame parent, ExtractionModel extractionModel, String subjectCond) {
+    public AdditionalSubjectsDialog(java.awt.Frame parent, ExtractionModel extractionModel, Table subject, String subjectCond) {
         super(parent, true);
         this.parent = parent;
         this.extractionModel = extractionModel;
         this.subjectCond = subjectCond;
+        this.subject = subject;
         subjects = new ArrayList<ExtractionModel.AdditionalSubject>(this.extractionModel.additionalSubjects);
         initComponents();
         initSubjectsPanel();
@@ -118,8 +122,16 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
         gridBagConstraints.weighty = 1.0;
         subjectsPanel.add(jLabel, gridBagConstraints);
         
+        remaining.clear();
+        remaining.addAll(extractionModel.dataModel.getTables());
+        if (subject != null) {
+        	remaining.remove(subject);
+        }
+        
 		for (int i = 0; i < subjects.size(); ++i) {
 			final int finalI = i;
+			
+			remaining.remove(subjects.get(i).subject);
 			
 			JComboBox jComboBox = new JComboBox();
 			jComboBox.setMaximumRowCount(18);
@@ -231,6 +243,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 
 			JTextField jTextField = new JTextField();
 			conditionFields.add(jTextField);
+			jTextField.setToolTipText("SQL expression. Keep empty if you want to export all rows.");
 			jTextField.setText(subjects.get(i).condition);
 	        gridBagConstraints = new java.awt.GridBagConstraints();
 	        gridBagConstraints.gridx = 5;
@@ -266,6 +279,8 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 			}
 		});
 		jScrollPane1.setViewportView(jPanel1);
+		
+		addAllButton.setEnabled(!remaining.isEmpty());
 	}
 
     /**
@@ -281,6 +296,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
         jPanel3 = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        addAllButton = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jPanel1 = new javax.swing.JPanel();
         subjectsPanel = new javax.swing.JPanel();
@@ -298,6 +314,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
@@ -310,8 +327,20 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
         jPanel3.add(cancelButton, gridBagConstraints);
+
+        addAllButton.setText("Add all tables");
+        addAllButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addAllButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
+        jPanel3.add(addAllButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -365,7 +394,21 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
     	dispose();
     }//GEN-LAST:event_okButtonActionPerformed
 
+    private void addAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAllButtonActionPerformed
+    	readConditions();
+		
+		List<Table> tables = new ArrayList<Table>(remaining);
+		Collections.sort(tables);
+		
+		for (Table table: tables) {
+			subjects.add(new AdditionalSubject(table, ""));
+    	}
+    	
+		initSubjectsPanel();
+    }//GEN-LAST:event_addAllButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton addAllButton;
     private javax.swing.JButton cancelButton;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;

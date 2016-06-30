@@ -100,7 +100,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 Table fkTable = dataModel.getTable(toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(6)), quoting.quote(resultSet.getString(7))));
                 String fkColumn = quoting.quote(resultSet.getString(8));
                 String foreignKey = resultSet.getString(12);
-                String fkName = fkTable + "." + foreignKey;
+                String fkName = fkTable.getName() + "." + foreignKey;
                 if (foreignKey != null && fkMap.containsKey(fkName)) {
                 	fkMap.get(fkName).appendCondition("A." + fkColumn + "=B." + pkColumn);
                 } else {
