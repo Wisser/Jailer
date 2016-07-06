@@ -1,56 +1,34 @@
-cd
-cd jailergit/
-cd trunk/
-svn up
-sh admin/release.sh jailer_$1
-sh admin/release-dbeauty.sh dbeauty_$2
-cd
-cd tmp
-rm -r _$1
-mkdir _$1
-cd _$1
-unzip ../jailer_$1.zip 
-cd jailer/
-head releasenotes.txt 
+rm -rf ~/tmp/jailer
+rm -rf ~/tmp/$1
+rm -rf ~/tmp/$1.co
+mkdir ~/tmp/jailer
+mkdir ~/tmp/$1
+mkdir ~/tmp/$1.co
+cd ~/tmp/$1.co
+svn checkout --username=rwisser https://svn.code.sf.net/p/jailer/code/trunk
+cd ..
+mv $1.co/trunk/* jailer
+cd jailer
+sed "s/new javax.swing.JComboBox()/new net.sf.jailer.ui.JComboBox()/g" src/main/net/sf/jailer/ui/*.java --in-place
+sed "s/new javax.swing.JComboBox()/new net.sf.jailer.ui.JComboBox()/g" src/main/net/sf/jailer/ui/databrowser/*.java --in-place
+cp doc/web/home.htm doc/web/index.html
+rm -rf doc/htdocs
+find -iname ".svn" -exec rm -rf '{}' \;
+find -iname ".cvs*" -exec rm -rf '{}' \;
+ant package
+chmod a+x *.sh
+rm -rf admin
+rm -rf doc
+rm -rf out
+rm -rf beta
+rm svn-commit.tmp
+mv datamodel.def datamodel
+rm -rf datamodel.scr
+ls jailer.jar
+
+rm -rf README-dbeauty releasenotes-dbeauty.txt
 
 cd ..
-cd ..
-rm -r _$2
-mkdir _$2
-cd _$2
-cd dbeauty
-unzip ../dbeauty_$2.zip 
-
-echo
-echo Jailer Releasenotes
-echo
-
-cd
-cd tmp
-cd _$1
-cd jailer/
-head releasenotes.txt
-
-echo
-echo DBeauty Releasenotes
-echo
-
-cd
-cd tmp
-cd _$2
-cd dbeauty
-head releasenotes.txt
-
-cd
-cd tmp
-cd _$1
-cd jailer/
-sh jailerGUI.sh &
-
-cd
-cd tmp
-cd _$2
-cd dbeauty/
-sh dbeauty.sh &
-
+rm $1.zip
+zip -r $1.zip jailer 
 
