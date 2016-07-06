@@ -1,3 +1,4 @@
+cd
 cd jailergit/
 cd trunk/
 svn up
