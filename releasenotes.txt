@@ -1,3 +1,6 @@
+5.5.1
+  - Fixed NPE in data browser.
+
 5.5
   - Support for ROWID pseudo-column in Oracle.
 
