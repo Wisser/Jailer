@@ -98,8 +98,10 @@ public class RowIdSupport {
 	 * @return the primary key of the table
 	 */
 	public PrimaryKey getPrimaryKey(Table table) {
-		if (useRowIds && (!useRowIdsOnlyForTablesWithoutPK || table.primaryKey.getColumns().isEmpty())) {
-			return tablePK;
+		if (table.primaryKey != null) {
+			if (useRowIds && (!useRowIdsOnlyForTablesWithoutPK || table.primaryKey.getColumns().isEmpty())) {
+				return tablePK;
+			}
 		}
 		return table.primaryKey;
 	}
@@ -145,10 +147,12 @@ public class RowIdSupport {
 	 */
 	public List<Column> getColumns(Table table) {
 		List<Column> columns = table.getColumns();
-		if (useRowIds && (!useRowIdsOnlyForTablesWithoutPK || table.primaryKey.getColumns().isEmpty())) {
-			columns = new ArrayList<Column>(columns);
-			columns.addAll(tablePK.getColumns());
-			return columns;
+		if (table.primaryKey != null) {
+			if (useRowIds && (!useRowIdsOnlyForTablesWithoutPK || table.primaryKey.getColumns().isEmpty())) {
+				columns = new ArrayList<Column>(columns);
+				columns.addAll(tablePK.getColumns());
+				return columns;
+			}
 		}
 		return columns;
 	}
