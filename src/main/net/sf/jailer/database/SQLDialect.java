@@ -15,8 +15,11 @@
  */
 package net.sf.jailer.database;
 
+import java.sql.SQLException;
+
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
+import net.sf.jailer.util.Quoting;
 
 /**
  * Description of the DBMS's SQL dialect.
@@ -116,8 +119,10 @@ public class SQLDialect {
      * @param tableName the working table
      * @param session holds connection to DBMS
      * @return table reference for the working table
+	 * @throws SQLException 
      */
-    public static String dmlTableReference(String tableName, Session session) {
+    public static String dmlTableReference(String tableName, Session session) throws SQLException {
+    	String tableRef;
     	TemporaryTableManager tableManager = null;
     	TemporaryTableScope temporaryTableScope = CommandLineParser.getInstance().getTemporaryTableScope();
 		if (temporaryTableScope == TemporaryTableScope.SESSION_LOCAL) {
@@ -127,9 +132,17 @@ public class SQLDialect {
 			tableManager = Configuration.forDbms(session).transactionTemporaryTableManager;
 		}
 		if (tableManager != null) {
-			return tableManager.getDmlTableReference(tableName);
+			tableRef = tableManager.getDmlTableReference(tableName);
+		} else {
+			tableRef = tableName;
 		}
-		return tableName;
+		if (temporaryTableScope != TemporaryTableScope.LOCAL_DATABASE) {
+			String schema = CommandLineParser.getInstance().workingTableSchema;
+			if (schema != null) {
+				tableRef = new Quoting(session.getMetaData()).quote(schema) + "." + tableRef;
+			}
+		}
+		return tableRef;
     }
 
 	/**

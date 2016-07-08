@@ -1,3 +1,6 @@
+2.5.2
+  - Added ability to specify the schema for the working tables.
+
 2.5.1
   - Fixed NPE in data browser.
 

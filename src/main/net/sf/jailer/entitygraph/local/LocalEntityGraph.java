@@ -214,7 +214,7 @@ public class LocalEntityGraph extends EntityGraph {
 		this.universalPrimaryKey = rowIdSupport.getUniversalPrimaryKey();
 		this.localInlineViewStyle = InlineViewStyle.forSession(localSession);
 		this.remoteInlineViewStyle = InlineViewStyle.forSession(remoteSession);
-		DDLCreator.createDDL(getDatamodel(), localSession, TemporaryTableScope.GLOBAL, rowIdSupport);
+		DDLCreator.createDDL(getDatamodel(), localSession, TemporaryTableScope.GLOBAL, rowIdSupport, null);
      
 		File fieldProcTablesFile = new File("field-proc-tables.csv");
         if (fieldProcTablesFile.exists()) {

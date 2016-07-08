@@ -276,6 +276,9 @@ public class CommandLineParser {
     @Option(name="-scope",usage="scope of working tables, GLOBAL, SESSION_LOCAL or LOCAL_DATABASE")
     public String scope = null;
 
+	@Option(name="-working-table-schema", usage="schema in which the working tables will be created")
+    public String workingTableSchema = null;
+
 	@Option(name="-datamodel", usage="folder holding the data model. Defaults to './datamodel'")
     public String datamodelFolder = "datamodel";
 
@@ -299,7 +302,7 @@ public class CommandLineParser {
 	
 	@Option(name="-no-rowid", usage="if set, primary keys will determine row identity, else rowid-column determines identity")
     public boolean noRowid = false;
-
+	
 	@Argument
     public List<String> arguments = new ArrayList<String>();
 

@@ -32,6 +32,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
@@ -50,6 +52,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
+import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CsvFile;
 
@@ -316,6 +319,9 @@ public class ExportDialog extends javax.swing.JDialog {
             	openWhereEditor.setIcon(conditionEditorIcon);
            }
         });
+
+		initWorkingTableSchemaBox(session);
+        
         updateCLIArea();
         
         pack();
@@ -335,14 +341,25 @@ public class ExportDialog extends javax.swing.JDialog {
         if (isOk) {
         	previousInitialSubjectCondition = subjectCondition;
         	previousSubjectCondition = where.getText();
+        	lastWorkingTableSchema = getWorkingTableSchema();
         }
 	}
 
-    private void updateCLIArea() {
+    private static String lastWorkingTableSchema = null;
+    
+    @SuppressWarnings("unchecked")
+	private void initWorkingTableSchemaBox(Session session) {
+		List<String> schemas = new ArrayList<String>();
+		schemas.add("");
+    	schemas.addAll(JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchemaName()));
+    	schemas.remove(JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchemaName()));
+		ComboBoxModel<String> aModel = new DefaultComboBoxModel<String>(schemas.toArray(new String[0]));
+		workingTableSchemaComboBox.setModel(aModel);
+		workingTableSchemaComboBox.setSelectedItem(lastWorkingTableSchema != null && schemas.contains(lastWorkingTableSchema)? lastWorkingTableSchema : "");
+	}
+
+	private void updateCLIArea() {
     	explain.setEnabled(!scopeLocal.isSelected());
-    	if (scopeLocal.isSelected()) {
-    		explain.setSelected(false);
-    	}
 
     	List<String> args = new ArrayList<String>(initialArgs);
     	fillCLIArgs(args);
@@ -356,7 +373,9 @@ public class ExportDialog extends javax.swing.JDialog {
     }
     
     private Thread initScopeButtonThread;
-    
+	private boolean sessionLocalIsAvailable = false;
+	private boolean globalIsAvailable = false;
+
     private void initScopeButtons(final Session session) {
     	synchronized (this) {
 	    	scopeGlobal.setSelected(false);
@@ -365,6 +384,9 @@ public class ExportDialog extends javax.swing.JDialog {
 	    	scopeSession.setEnabled(false);
 	    	scopeLocal.setSelected(true);
 	    	jButton1.setEnabled(false);
+
+	    	globalIsAvailable = false;
+	    	sessionLocalIsAvailable = false;
 	    	
 	    	setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 	    	updateCLIArea();
@@ -379,7 +401,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		    	if (configuration.sessionTemporaryTableManager != null) {
 					try {
 						session.reconnect();
-						DDLCreator.createDDL(dataModel, session, TemporaryTableScope.SESSION_LOCAL);
+						DDLCreator.createDDL(dataModel, session, TemporaryTableScope.SESSION_LOCAL, null);
 			    		SwingUtilities.invokeLater(new Runnable() {
 							public void run() {
 					    		synchronized (ExportDialog.this) {
@@ -389,6 +411,8 @@ public class ExportDialog extends javax.swing.JDialog {
 					    			scopeGlobal.setSelected(false);
 						    		scopeSession.setSelected(true);
 						    		updateCLIArea();
+						    		sessionLocalIsAvailable = true;
+						    		globalIsAvailable = true;
 						        }
 							}
 			    		});
@@ -400,7 +424,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		    	
 		    	if (!ok) {
 	    			try {
-	    				DDLCreator.createDDL(dataModel, session, TemporaryTableScope.GLOBAL);
+	    				DDLCreator.createDDL(dataModel, session, TemporaryTableScope.GLOBAL, null);
 			    		ok = true;
 					} catch (Exception e) {
 						// ignore
@@ -414,6 +438,7 @@ public class ExportDialog extends javax.swing.JDialog {
 						    		scopeSession.setSelected(false);
 					    			scopeGlobal.setSelected(true);
 						    		updateCLIArea();
+						    		globalIsAvailable = true;
 						        }
 							}
 			    		});
@@ -662,6 +687,8 @@ public class ExportDialog extends javax.swing.JDialog {
         additSubsLabel = new javax.swing.JLabel();
         additSubsLabelTitel = new javax.swing.JLabel();
         useRowIds = new javax.swing.JCheckBox();
+        jLabel10 = new javax.swing.JLabel();
+        workingTableSchemaComboBox = new javax.swing.JComboBox();
         jPanel7 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -924,6 +951,11 @@ public class ExportDialog extends javax.swing.JDialog {
 
         buttonGroup1.add(scopeLocal);
         scopeLocal.setText("local database");
+        scopeLocal.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                scopeLocalActionPerformed(evt);
+            }
+        });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 55;
@@ -1148,10 +1180,31 @@ public class ExportDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 56;
+        gridBagConstraints.gridy = 57;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 4, 0);
         jPanel1.add(useRowIds, gridBagConstraints);
+
+        jLabel10.setText(" Working table schema"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 56;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel1.add(jLabel10, gridBagConstraints);
+
+        workingTableSchemaComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        workingTableSchemaComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                workingTableSchemaComboBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 56;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel1.add(workingTableSchemaComboBox, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1305,6 +1358,20 @@ public class ExportDialog extends javax.swing.JDialog {
     private void useRowIdsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_useRowIdsActionPerformed
         updateCLIArea();
     }//GEN-LAST:event_useRowIdsActionPerformed
+
+    private void workingTableSchemaComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_workingTableSchemaComboBoxActionPerformed
+    	if ("".equals(workingTableSchemaComboBox.getSelectedItem())) {
+    		scopeGlobal.setEnabled(globalIsAvailable);
+    		scopeSession.setEnabled(sessionLocalIsAvailable);
+    	} else {
+    		scopeGlobal.setEnabled(true);
+    		scopeSession.setEnabled(true);
+    	}
+        updateCLIArea();
+    }//GEN-LAST:event_workingTableSchemaComboBoxActionPerformed
+
+    private void scopeLocalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeLocalActionPerformed
+    }//GEN-LAST:event_scopeLocalActionPerformed
     
     public boolean isOk() {
 		return isOk;
@@ -1436,6 +1503,12 @@ public class ExportDialog extends javax.swing.JDialog {
 		}
 		args.add("-scope");
 		args.add(getTemporaryTableScope().toString());
+
+		String schema = (String) workingTableSchemaComboBox.getSelectedItem();
+		if (schema != null && schema.length() > 0) {
+			args.add("-working-table-schema");
+			args.add(schema);
+		}
     }
 
 	private Set<String> getRelevantSchemas(boolean withDelete) {
@@ -1460,6 +1533,14 @@ public class ExportDialog extends javax.swing.JDialog {
 
 	public boolean isUseRowId() {
 		return useRowIds.isSelected();
+	}
+	
+	public String getWorkingTableSchema() {
+		String schema = (String) workingTableSchemaComboBox.getSelectedItem();
+		if (schema.length() > 0) {
+			return schema;
+		}
+		return null;
 	}
 
     public TemporaryTableScope getTemporaryTableScope() {
@@ -1489,6 +1570,7 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JTextField insert;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
     private javax.swing.JLabel jLabel13;
@@ -1540,6 +1622,7 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JCheckBox upsertCheckbox;
     public javax.swing.JCheckBox useRowIds;
     private javax.swing.JTextField where;
+    private javax.swing.JComboBox workingTableSchemaComboBox;
     // End of variables declaration//GEN-END:variables
     
     private Icon loadIcon;

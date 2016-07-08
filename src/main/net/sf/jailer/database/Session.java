@@ -758,13 +758,21 @@ public class Session {
     }
     
     /**
+     * Cached Database Meta Data.
+     */
+    private DatabaseMetaData metaData = null;
+    
+    /**
      * Gets DB meta data.
      * 
      * @return DB meta data
      */
     public DatabaseMetaData getMetaData() throws SQLException {
         Connection connection = connectionFactory.getConnection();
-        return connection.getMetaData();
+        if (metaData == null) {
+        	metaData = connection.getMetaData();
+        }
+		return metaData;
     }
 
     /**
