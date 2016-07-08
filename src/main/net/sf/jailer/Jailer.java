@@ -107,7 +107,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "5.5.1";
+	public static final String VERSION = "5.5.2";
 	
 	/**
 	 * The Jailer application name.
@@ -1176,9 +1176,9 @@ public class Jailer {
 			} else if ("create-ddl".equalsIgnoreCase(command)) {
 				if (clp.arguments.size() == 5) {
 					return DDLCreator.createDDL(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4), clp
-							.getTemporaryTableScope());
+							.getTemporaryTableScope(), clp.workingTableSchema);
 				}
-				return DDLCreator.createDDL(null, null, null, null, clp.getTemporaryTableScope());
+				return DDLCreator.createDDL(null, null, null, null, clp.getTemporaryTableScope(), clp.workingTableSchema);
 			} else if ("build-model".equalsIgnoreCase(command)) {
 				if (clp.arguments.size() != 5) {
 					CommandLineParser.printUsage();
@@ -1240,9 +1240,9 @@ public class Jailer {
 		Session session = new Session(driverClassName, dbUrl, dbUser, dbPassword, CommandLineParser.getInstance().getTemporaryTableScope(), false);
 		if (CommandLineParser.getInstance().getTemporaryTableScope() == TemporaryTableScope.SESSION_LOCAL
 		 || CommandLineParser.getInstance().getTemporaryTableScope() == TemporaryTableScope.TRANSACTION_LOCAL) {
-			DDLCreator.createDDL(session, CommandLineParser.getInstance().getTemporaryTableScope());
+			DDLCreator.createDDL(session, CommandLineParser.getInstance().getTemporaryTableScope(), CommandLineParser.getInstance().workingTableSchema);
 		} else if (CommandLineParser.getInstance().getTemporaryTableScope() == TemporaryTableScope.GLOBAL) {
-			if (!DDLCreator.isUptodate(session, !CommandLineParser.getInstance().noRowid)) {
+			if (!DDLCreator.isUptodate(session, !CommandLineParser.getInstance().noRowid, CommandLineParser.getInstance().workingTableSchema)) {
 				throw new IllegalStateException("Jailer working tables do not exist or are not up to date. Use 'jailer create-ddl' to create them.");
 			}
 		}

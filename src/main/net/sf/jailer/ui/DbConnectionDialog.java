@@ -121,6 +121,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}
 	
 	private final InfoBar infoBar;
+	private final String currentModelSubfolder = DataModelManager.getCurrentModelSubfolder();
 	
 	/** Creates new form DbConnectionDialog */
 	public DbConnectionDialog(java.awt.Frame parent, DbConnectionDialog other, String applicationName) {
@@ -963,7 +964,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
 	private boolean isAssignedToDataModel(int row) {
 		String rowFN = connectionList.get(row).dataModelFolder;
-		String fn = DataModelManager.getCurrentModelSubfolder();
+		String fn = currentModelSubfolder;
 		return fn == null && rowFN == null || (fn != null && fn.equals(rowFN));
 	}
 

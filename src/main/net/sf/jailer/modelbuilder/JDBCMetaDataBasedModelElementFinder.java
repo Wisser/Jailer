@@ -377,7 +377,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
      * @param session the statement executor for executing SQL-statements
      * @param userName schema with this name may be empty
      */ 
-    public static List<String> getSchemas(Session session, String userName) throws Exception {
+    public static List<String> getSchemas(Session session, String userName) {
     	List<String> schemas = new ArrayList<String>();
 		try {
 			DatabaseMetaData metaData = session.getMetaData();
@@ -398,6 +398,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				schemas.add(userName);
 			}
 		}
+		Collections.sort(schemas);
 		return schemas;
     }
 
@@ -407,7 +408,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
      * @param session the statement executor for executing SQL-statements
      * @param userName schema with this name may be empty
      */ 
-    public static String getDefaultSchema(Session session, String userName) throws Exception {
+    public static String getDefaultSchema(Session session, String userName) {
     	List<String> schemas = new ArrayList<String>();
 		try {
 			DatabaseMetaData metaData = session.getMetaData();
@@ -425,13 +426,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				if ((isPostgreSQL || isH2Sql) && "public".equalsIgnoreCase(schema)) {
 					return schema;
 				}
-				if (!schema.equalsIgnoreCase(userName.trim())) {
-					rs = metaData.getTables(null, schema, "%", new String[] { "TABLE" });
-					if (!rs.next()) {
-						i.remove();
-					}
-					rs.close();
-				} else {
+				if (schema.equalsIgnoreCase(userName.trim())) {
 					userSchema = schema;
 				}
 			}

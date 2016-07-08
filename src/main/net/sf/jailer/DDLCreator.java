@@ -34,6 +34,7 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.util.PrintUtil;
+import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlScriptExecutor;
 import net.sf.jailer.util.SqlUtil;
 
@@ -47,13 +48,13 @@ public class DDLCreator {
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	public static boolean createDDL(String driverClass, String dbUrl, String user, String password, TemporaryTableScope temporaryTableScope) throws Exception {
+	public static boolean createDDL(String driverClass, String dbUrl, String user, String password, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws Exception {
 		Session session = null;
 		if (driverClass != null) {
 			session = new Session(driverClass, dbUrl, user, password);
 		}
 		try {
-			return createDDL(new DataModel(), session, temporaryTableScope);
+			return createDDL(new DataModel(), session, temporaryTableScope, workingTableSchema);
 		} finally {
 			if (session != null) {
 				try { session.shutDown(); } catch (Exception e) { /* ignore */ }
@@ -64,41 +65,41 @@ public class DDLCreator {
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	public static void createDDL(Session localSession, TemporaryTableScope temporaryTableScope) throws Exception {
-		createDDL(new DataModel(), localSession, temporaryTableScope);
+	public static void createDDL(Session localSession, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws Exception {
+		createDDL(new DataModel(), localSession, temporaryTableScope, workingTableSchema);
 	}
 
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	public static boolean createDDL(DataModel datamodel, Session session, TemporaryTableScope temporaryTableScope) throws Exception {
+	public static boolean createDDL(DataModel datamodel, Session session, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws Exception {
 		RowIdSupport rowIdSupport = new RowIdSupport(datamodel, Configuration.forDbms(session));
-		return createDDL(datamodel, session, temporaryTableScope, rowIdSupport);
+		return createDDL(datamodel, session, temporaryTableScope, rowIdSupport, workingTableSchema);
 	}
 
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	public static boolean createDDL(DataModel datamodel, Session session, TemporaryTableScope temporaryTableScope, RowIdSupport rowIdSupport) throws Exception {
+	public static boolean createDDL(DataModel datamodel, Session session, TemporaryTableScope temporaryTableScope, RowIdSupport rowIdSupport, String workingTableSchema) throws Exception {
 		try {
-			return createDDL(datamodel, session, temporaryTableScope, 0, rowIdSupport);
+			return createDDL(datamodel, session, temporaryTableScope, 0, rowIdSupport, workingTableSchema);
 		} catch (SQLException e) {
 		}
 		// reconnect and retry with another index type
 		session.reconnect();
 		try {
-			return createDDL(datamodel, session, temporaryTableScope, 1, rowIdSupport);
+			return createDDL(datamodel, session, temporaryTableScope, 1, rowIdSupport, workingTableSchema);
 		} catch (SQLException e) {
 		}
 		// reconnect and retry with another index type
 		session.reconnect();
-		return createDDL(datamodel, session, temporaryTableScope, 2, rowIdSupport);
+		return createDDL(datamodel, session, temporaryTableScope, 2, rowIdSupport, workingTableSchema);
 	}
-
+		
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	private static boolean createDDL(DataModel dataModel, Session session, TemporaryTableScope temporaryTableScope, int indexType, RowIdSupport rowIdSupport) throws Exception {
+	private static boolean createDDL(DataModel dataModel, Session session, TemporaryTableScope temporaryTableScope, int indexType, RowIdSupport rowIdSupport, String workingTableSchema) throws Exception {
 		String template = "script" + File.separator + "ddl-template.sql";
 		String contraint = session != null && (session.dbms == DBMS.SYBASE || session.dbms == DBMS.MySQL) ? " NULL" : "";
 		Map<String, String> typeReplacement = Configuration.forDbms(session).getTypeReplacement();
@@ -120,10 +121,9 @@ public class DDLCreator {
 			tableManager = Configuration.forDbms(session).transactionTemporaryTableManager;
 		}
 		String tableName = SQLDialect.CONFIG_TABLE_;
-		if (tableManager != null) {
-			tableName = tableManager.getDmlTableReference(tableName);
-		}
+		tableName = SQLDialect.dmlTableReference(tableName, session);
 		arguments.put("config-dml-reference", tableName);
+		arguments.put("schema", workingTableSchema != null? new Quoting(session.getMetaData()).quote(workingTableSchema) + "." : "");
 		if (tableManager != null) {
 			arguments.put("table-suffix", "_T");
 			arguments.put("drop-table", tableManager.getDropTablePrefix());
@@ -188,15 +188,16 @@ public class DDLCreator {
 	/**
 	 * Checks whether working-tables schema is up-to-date.
 	 * @param useRowId 
+	 * @param workingTableSchema 
 	 * 
 	 * @return <code>true</code> if working-tables schema is up-to-date
 	 */
-	public static boolean isUptodate(String driverClass, String dbUrl, String user, String password, boolean useRowId) {
+	public static boolean isUptodate(String driverClass, String dbUrl, String user, String password, boolean useRowId, String workingTableSchema) {
 		try {
 			if (driverClass != null) {
 				final Session session = new Session(driverClass, dbUrl, user, password);
 				try {
-					return isUptodate(session, useRowId);
+					return isUptodate(session, useRowId, workingTableSchema);
 				} finally {
 					session.shutDown();
 				}
@@ -209,17 +210,21 @@ public class DDLCreator {
 	/**
 	 * Checks whether working-tables schema is up-to-date.
 	 * @param useRowId 
+	 * @param workingTableSchema 
 	 * 
 	 * @return <code>true</code> if working-tables schema is up-to-date
 	 */
-	public static boolean isUptodate(final Session session, boolean useRowId) {
+	public static boolean isUptodate(final Session session, boolean useRowId, String workingTableSchema) {
 		try {
 			try {
 				final boolean[] uptodate = new boolean[] { false };
 				final DataModel datamodel = new DataModel();
 				final Map<String, String> typeReplacement = Configuration.forDbms(session).getTypeReplacement();
 				final RowIdSupport rowIdSupport = new RowIdSupport(datamodel, Configuration.forDbms(session), useRowId);
-				session.executeQuery("Select jvalue from " + SQLDialect.CONFIG_TABLE_ + " where jversion='" + Jailer.VERSION + "' and jkey='upk'",
+				
+				final String schema = workingTableSchema == null ? "" : new Quoting(session.getMetaData()).quote(workingTableSchema) + ".";
+				
+				session.executeQuery("Select jvalue from " + schema + SQLDialect.CONFIG_TABLE_ + " where jversion='" + Jailer.VERSION + "' and jkey='upk'",
 						new Session.ResultSetReader() {
 							public void readCurrentRow(ResultSet resultSet) throws SQLException {
 								String contraint = session.dbms == DBMS.SYBASE ? " NULL" : "";
@@ -232,7 +237,7 @@ public class DDLCreator {
 						});
 				// look for jailer tables
 				for (String table : SqlUtil.JAILER_MH_TABLES) {
-					session.executeQuery("Select * from " + table + " Where 1=0", new Session.ResultSetReader() {
+					session.executeQuery("Select * from " + schema + table + " Where 1=0", new Session.ResultSetReader() {
 						public void readCurrentRow(ResultSet resultSet) throws SQLException {
 						}
 						public void close() {

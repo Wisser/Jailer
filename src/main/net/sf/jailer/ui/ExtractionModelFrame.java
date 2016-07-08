@@ -1054,16 +1054,20 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				        	if (!exportDialog.isUseRowId()) {
 				        		ddlArgs.add("-no-rowid");
 				        	}
+				        	if (exportDialog.getWorkingTableSchema() != null) {
+				        		ddlArgs.add("-working-table-schema");
+				        		ddlArgs.add(exportDialog.getWorkingTableSchema());
+				        	}
 				        	DMLTransformer.numberOfExportedLOBs = 0;
 				        	String tableInConflict = DDLCreator.getTableInConflict(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4));
 				        	if (tableInConflict != null && exportDialog.getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL)) {
 				        		JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);
 				        	}
 				        	else {
-				        		if (!exportDialog.getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL) || DDLCreator.isUptodate(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), exportDialog.isUseRowId()) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
+				        		if (!exportDialog.getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL) || DDLCreator.isUptodate(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), exportDialog.isUseRowId(), exportDialog.getWorkingTableSchema()) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
 				        			"Automatic creation of working-tables failed!\n" +
 			        				"Please execute the Jailer-DDL manually (jailer_ddl.sql)\n\n" +
-			        				"Continue Data Export?", dbConnectionDialog.getPassword(), null, null, false, false, true)) {
+			        				"Continue Data Export?", dbConnectionDialog.getPassword(), null, null, true, false, true)) {
 					        		ProgressTable progressTable = new ProgressTable();
 					        		ProgressPanel progressPanel = new ProgressPanel(progressTable);
 					        		UIProgressListener progressListener = new UIProgressListener(progressTable, progressPanel, extractionModelEditor.dataModel);
