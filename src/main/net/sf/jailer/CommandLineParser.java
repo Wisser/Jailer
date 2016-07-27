@@ -207,7 +207,7 @@ public class CommandLineParser {
     @Option(name="-UTF8",usage="use UTF-8 encoding")
     public boolean uTF8 = false;
     
-    @Option(name="-format",usage="export file format: SQL, XML, DBUNIT_FLAT_XML or LIQUIBASE_XML")
+    @Option(name="-format",usage="export file format: SQL, XML, DBUNIT_FLAT_XML, INTRA_DATABASE or LIQUIBASE_XML")
     public String format = "SQL";
     
     @Option(name="-xml",usage="export entities into XML file (deprecated, use -format XML instead)")
@@ -240,7 +240,7 @@ public class CommandLineParser {
     @Option(name="-e",usage="name of the export-script file (compressed if it ends with '.zip' or '.gz')", metaVar="export-script")
     public String exportScriptFileName = null;
 
-    @Option(name="-schema",usage="schema to reduce JDBC-Introspection to", metaVar="export-script")
+    @Option(name="-schema",usage="schema to reduce JDBC-Introspection to", metaVar="schema")
     public String schema = null;
 
     @Option(name="-qualifyNames",usage="add schema prefix to table names after DB-introspection", metaVar="export-script")

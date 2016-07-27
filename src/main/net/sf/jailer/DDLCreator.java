@@ -101,7 +101,7 @@ public class DDLCreator {
 	 */
 	private static boolean createDDL(DataModel dataModel, Session session, TemporaryTableScope temporaryTableScope, int indexType, RowIdSupport rowIdSupport, String workingTableSchema) throws Exception {
 		String template = "script" + File.separator + "ddl-template.sql";
-		String contraint = session != null && (session.dbms == DBMS.SYBASE || session.dbms == DBMS.MySQL) ? " NULL" : "";
+		String contraint = pkColumnConstraint(session);
 		Map<String, String> typeReplacement = Configuration.forDbms(session).getTypeReplacement();
 		String universalPrimaryKey = rowIdSupport.getUniversalPrimaryKey().toSQL(null, contraint, typeReplacement);
 		Map<String, String> arguments = new HashMap<String, String>();
@@ -185,6 +185,10 @@ public class DDLCreator {
 		return true;
 	}
 
+	private static String pkColumnConstraint(Session session) {
+		return session != null && (session.dbms == DBMS.SYBASE || session.dbms == DBMS.MySQL) ? " NULL" : "";
+	}
+
 	/**
 	 * Checks whether working-tables schema is up-to-date.
 	 * @param useRowId 
@@ -227,9 +231,10 @@ public class DDLCreator {
 				session.executeQuery("Select jvalue from " + schema + SQLDialect.CONFIG_TABLE_ + " where jversion='" + Jailer.VERSION + "' and jkey='upk'",
 						new Session.ResultSetReader() {
 							public void readCurrentRow(ResultSet resultSet) throws SQLException {
-								String contraint = session.dbms == DBMS.SYBASE ? " NULL" : "";
+								String contraint = pkColumnConstraint(session);
 								String universalPrimaryKey = rowIdSupport.getUniversalPrimaryKey().toSQL(null, contraint, typeReplacement);
-								uptodate[0] = resultSet.getString(1).equals("" + (universalPrimaryKey + Configuration.forDbms(session).getTableProperties()).hashCode());
+								String h = "" + (universalPrimaryKey + Configuration.forDbms(session).getTableProperties()).hashCode();
+								uptodate[0] = resultSet.getString(1).equals(h);
 							}
 
 							public void close() {

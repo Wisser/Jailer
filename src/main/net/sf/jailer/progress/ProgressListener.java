@@ -17,6 +17,7 @@ package net.sf.jailer.progress;
 
 import net.sf.jailer.datamodel.ModelElement;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.util.CancellationException;
 
 /**
  * Listener interface for monitoring progress.
@@ -64,5 +65,12 @@ public interface ProgressListener {
 	 * @param stage the stage
 	 */
 	void newStage(String stage, boolean isErrorStage, boolean isFinalStage);
+
+	/**
+	 * Export is ready. This might be cancelled.
+	 * 
+	 * @throws CancellationException
+	 */
+	void prepareExport() throws CancellationException;
 	
 }
