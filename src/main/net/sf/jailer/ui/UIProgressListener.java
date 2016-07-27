@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
 
 import net.sf.jailer.datamodel.Association;
@@ -31,6 +32,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.ModelElement;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.progress.ProgressListener;
+import net.sf.jailer.util.CancellationException;
 
 /**
  * Keeps progress indicators up to date.
@@ -80,16 +82,18 @@ public class UIProgressListener implements ProgressListener {
 
 	private Map<Table, Integer> inProgress = new HashMap<Table, Integer>();
 	private boolean cleanupLastLine = false;
-
+	private final boolean confirm;
+	
 	/**
 	 * Constructor.
 	 * 
 	 * @param progressTable
 	 *            table showing collected rows
 	 */
-	public UIProgressListener(final ProgressTable progressTable, final ProgressPanel progressPanel, DataModel dataModel) {
+	public UIProgressListener(final ProgressTable progressTable, final ProgressPanel progressPanel, DataModel dataModel, final boolean confirm) {
 		this.progressTable = progressTable;
 		this.dataModel = dataModel;
+		this.confirm = confirm;
 		new Thread(new Runnable() {
 
 			@Override
@@ -360,6 +364,51 @@ public class UIProgressListener implements ProgressListener {
 					addOrUpdateRows();
 				}
 			});
+		}
+	}
+
+	private boolean confirmInsert() {
+		return JOptionPane.showConfirmDialog(SwingUtilities.getRoot(progressTable), "Insert " + collectedRows + " collected rows into the target schema?", "Export collected rows", JOptionPane.YES_NO_OPTION)
+				== JOptionPane.YES_OPTION;
+	}
+	
+	/**
+	 * Export is ready. This might be cancelled.
+	 * 
+	 * @throws CancellationException
+	 */
+	@Override
+	public void prepareExport() throws CancellationException {
+		if (confirm) {
+			if (SwingUtilities.isEventDispatchThread()) {
+				if (!confirmInsert()) {
+					throw new CancellationException();
+				}
+			}
+			final boolean confirmed[] = new boolean[1];
+			synchronized (confirmed) {
+				confirmed[0] = false;
+			}
+			try {
+				SwingUtilities.invokeAndWait(new Runnable() {
+					@Override
+					public void run() {
+						if (confirmInsert()) {
+							synchronized (confirmed) {
+								confirmed[0] = true;
+							}
+						}
+					}
+				});
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+	
+			synchronized (confirmed) {
+				if (!confirmed[0]) {
+					throw new CancellationException();
+				}
+			}
 		}
 	}
 

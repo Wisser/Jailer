@@ -28,6 +28,11 @@ public enum ScriptFormat {
 	SQL("SQL", "SQL Export", ".sql"),
 
 	/**
+	 * Intra database export.
+	 */
+	INTRA_DATABASE("Schema in same database", "Intra Database Export - Receipt File", ".txt"),
+
+	/**
 	 * Template based XML.
 	 */
 	XML("XML", "XML Export", ".xml"),
