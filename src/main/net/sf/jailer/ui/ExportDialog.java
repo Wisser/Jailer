@@ -443,72 +443,82 @@ public class ExportDialog extends javax.swing.JDialog {
     	
     	CancellationHandler.reset(null);
 		
-    	initScopeButtonThread = new Thread(new Runnable() {
-			public void run() {
-		    	Configuration configuration = Configuration.forDbms(session);
-		    	boolean ok = false;
-		    	if (configuration.sessionTemporaryTableManager != null) {
-					try {
-						session.reconnect();
-						DDLCreator.createDDL(dataModel, session, TemporaryTableScope.SESSION_LOCAL, null);
-			    		SwingUtilities.invokeLater(new Runnable() {
-							public void run() {
-					    		synchronized (ExportDialog.this) {
-					    			scopeSession.setEnabled(true);
-					    			scopeGlobal.setEnabled(true);
-					    			scopeLocal.setSelected(false);
-					    			scopeGlobal.setSelected(false);
-						    		scopeSession.setSelected(true);
-						    		updateCLIArea();
-						    		sessionLocalIsAvailable = true;
-						    		globalIsAvailable = true;
-						        }
-							}
-			    		});
-			    		ok = true;
-					} catch (Exception e) {
-						// ignore
-					}
-		    	}
-		    	
-		    	if (!ok) {
-	    			try {
-	    				DDLCreator.createDDL(dataModel, session, TemporaryTableScope.GLOBAL, null);
-			    		ok = true;
-					} catch (Exception e) {
-						// ignore
-					}
-		    		if (ok) {
-		    			SwingUtilities.invokeLater(new Runnable() {
-							public void run() {
-					    		synchronized (ExportDialog.this) {
-					    			scopeGlobal.setEnabled(true);
-					    			scopeLocal.setSelected(false);
-						    		scopeSession.setSelected(false);
-					    			scopeGlobal.setSelected(true);
-						    		updateCLIArea();
-						    		globalIsAvailable = true;
-						        }
-							}
-			    		});
-		    		}
-		    	}
-		    	
-	    		SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-			    		synchronized (ExportDialog.this) {
-			    			if (scopeSession.isSelected() && scopeGlobal.isEnabled()) {
-			    				scopeSession.setSelected(false);
-			    				scopeGlobal.setSelected(true);
-			    			}
-			    			jButton1.setEnabled(true);
-			    	    	setCursor(Cursor.getDefaultCursor());
-			    	    	updateCLIArea();
+    	synchronized (this) {
+	    	initScopeButtonThread = new Thread(new Runnable() {
+				public void run() {
+			    	Configuration configuration;
+			    	synchronized (ExportDialog.this) {
+			    		configuration = Configuration.forDbms(session);
+			    	}
+			    	boolean ok = false;
+			    	if (configuration.sessionTemporaryTableManager != null) {
+						try {
+							session.reconnect();
+							DDLCreator.createDDL(dataModel, session, TemporaryTableScope.SESSION_LOCAL, null);
+				    		SwingUtilities.invokeLater(new Runnable() {
+								public void run() {
+						    		synchronized (ExportDialog.this) {
+						    			scopeSession.setEnabled(true);
+						    			scopeGlobal.setEnabled(true);
+						    			scopeLocal.setSelected(false);
+						    			scopeGlobal.setSelected(false);
+							    		scopeSession.setSelected(true);
+							    		updateCLIArea();
+							    		sessionLocalIsAvailable = true;
+							    		globalIsAvailable = true;
+							        }
+								}
+				    		});
+				    		ok = true;
+						} catch (Exception e) {
+							// ignore
+						}
+			    	}
+			    	
+			    	if (!ok) {
+		    			try {
+		    				if (scriptFormat != ScriptFormat.INTRA_DATABASE) {
+		    					DDLCreator.createDDL(dataModel, session, TemporaryTableScope.GLOBAL, null);
+		    				}
+				    		ok = true;
+						} catch (Exception e) {
+							// ignore
+						}
+			    		if (ok) {
+			    			SwingUtilities.invokeLater(new Runnable() {
+								public void run() {
+						    		synchronized (ExportDialog.this) {
+						    			if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
+						    				scopeLocal.setEnabled(false);
+						    			}
+						    			scopeGlobal.setEnabled(true);
+						    			scopeLocal.setSelected(false);
+							    		scopeSession.setSelected(false);
+						    			scopeGlobal.setSelected(true);
+							    		updateCLIArea();
+							    		globalIsAvailable = true;
+							        }
+								}
+				    		});
 			    		}
-					}
-	    		});
-			}
-    	});
+			    	}
+			    	
+		    		SwingUtilities.invokeLater(new Runnable() {
+						public void run() {
+				    		synchronized (ExportDialog.this) {
+				    			if (scopeSession.isSelected() && scopeGlobal.isEnabled()) {
+				    				scopeSession.setSelected(false);
+				    				scopeGlobal.setSelected(true);
+				    			}
+				    			jButton1.setEnabled(true);
+				    	    	setCursor(Cursor.getDefaultCursor());
+				    	    	updateCLIArea();
+				    		}
+						}
+		    		});
+				}
+	    	});
+    	}
     	initScopeButtonThread.start();
     	new Thread(new Runnable() {
 			public void run() {

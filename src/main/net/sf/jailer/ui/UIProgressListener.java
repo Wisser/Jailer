@@ -83,6 +83,7 @@ public class UIProgressListener implements ProgressListener {
 	private Map<Table, Integer> inProgress = new HashMap<Table, Integer>();
 	private boolean cleanupLastLine = false;
 	private final boolean confirm;
+	private long timeDelay = 0;
 	
 	/**
 	 * Constructor.
@@ -148,7 +149,7 @@ public class UIProgressListener implements ProgressListener {
 							}
 							long t = System.currentTimeMillis();
 							if (!stopClock) {
-								long et = (t - startTime)/1000;
+								long et = (t - startTime - timeDelay)/1000;
 								long sec = et % 60;
 								long min = (et / 60) % 60;
 								long h = et / 3600;
@@ -380,33 +381,46 @@ public class UIProgressListener implements ProgressListener {
 	@Override
 	public void prepareExport() throws CancellationException {
 		if (confirm) {
-			if (SwingUtilities.isEventDispatchThread()) {
-				if (!confirmInsert()) {
-					throw new CancellationException();
-				}
+			boolean prevStopClock;
+			synchronized (this) {
+				prevStopClock = stopClock;
+				stopClock = true;
 			}
-			final boolean confirmed[] = new boolean[1];
-			synchronized (confirmed) {
-				confirmed[0] = false;
-			}
+			long startTime = System.currentTimeMillis();
 			try {
-				SwingUtilities.invokeAndWait(new Runnable() {
-					@Override
-					public void run() {
-						if (confirmInsert()) {
-							synchronized (confirmed) {
-								confirmed[0] = true;
+				if (SwingUtilities.isEventDispatchThread()) {
+					if (!confirmInsert()) {
+						throw new CancellationException();
+					}
+				}
+				final boolean confirmed[] = new boolean[1];
+				synchronized (confirmed) {
+					confirmed[0] = false;
+				}
+				try {
+					SwingUtilities.invokeAndWait(new Runnable() {
+						@Override
+						public void run() {
+							if (confirmInsert()) {
+								synchronized (confirmed) {
+									confirmed[0] = true;
+								}
 							}
 						}
+					});
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
+		
+				synchronized (confirmed) {
+					if (!confirmed[0]) {
+						throw new CancellationException();
 					}
-				});
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-	
-			synchronized (confirmed) {
-				if (!confirmed[0]) {
-					throw new CancellationException();
+				}
+			} finally {
+				synchronized (this) {
+					timeDelay += System.currentTimeMillis() - startTime;
+					stopClock = prevStopClock;
 				}
 			}
 		}
