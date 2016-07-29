@@ -24,7 +24,9 @@ import java.text.SimpleDateFormat;
 import javax.xml.transform.sax.TransformerHandler;
 
 import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.TransformerFactory;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
+import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 
@@ -60,7 +62,54 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 	 */
 	private final SimpleDateFormat timestampPattern;
 	
-	public LiquibaseXMLTransformer(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData, 
+    /**
+     * Factory.
+     */
+    public static class Factory implements TransformerFactory {
+    	
+		private final TransformerHandler transformerHandler;
+		private final EntityGraph entityGraph;
+		private final String scriptFile;
+		private final DatabaseMetaData metaData;
+		private final String datePattern;
+		private final String timePattern;
+		private final String timestampPattern;
+
+		/**
+    	 * Constructor.
+    	 * 
+    	 * @param table
+    	 *            the table to read from
+    	 * @param transformerHandler
+    	 *            to write the XML into
+    	 * @param metaData
+    	 *            database meta data
+    	 */
+    	public Factory(TransformerHandler transformerHandler, DatabaseMetaData metaData, 
+    			EntityGraph entityGraph, String scriptFile, String datePattern, String timePattern, String timestampPattern) {
+    		this.transformerHandler = transformerHandler;
+    		this.entityGraph = entityGraph;
+    		this.scriptFile = scriptFile;
+    		this.metaData = metaData;
+    		this.datePattern = datePattern;
+    		this.timePattern = timePattern;
+    		this.timestampPattern = timestampPattern;
+    	}
+    	
+    	/**
+		 * Creates transformer (as {@link ResultSetReader} which 
+		 * transforms rows of a given table into an external representation.
+		 * 
+		 * @param table the table
+		 * @return a transformer
+		 */
+		@Override
+		public ResultSetReader create(Table table) throws SQLException {
+			return new LiquibaseXMLTransformer(table, transformerHandler, metaData, entityGraph, scriptFile, datePattern, timePattern, timestampPattern);
+		}
+    }
+
+	private LiquibaseXMLTransformer(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData, 
 			EntityGraph entityGraph, String scriptFile, String datePattern, String timePattern, String timestampPattern) throws SQLException {
 		this.transformerHandler = transformerHandler;
 		this.entityGraph = entityGraph;

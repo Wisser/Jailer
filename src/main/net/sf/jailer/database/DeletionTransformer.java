@@ -20,11 +20,10 @@ import java.io.OutputStreamWriter;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Map;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
+import net.sf.jailer.TransformerFactory;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
@@ -67,13 +66,50 @@ public class DeletionTransformer extends AbstractResultSetReader {
     private final Quoting quoting;
 
     /**
+     * Factory.
+     */
+    public static class Factory implements TransformerFactory {
+    	
+	    private final int maxBodySize;
+		private final OutputStreamWriter scriptFileWriter;
+		private final DatabaseMetaData metaData;
+		private final Session session;
+
+		/**
+	     * Constructor.
+	     * 
+	     * @param table the table to read from
+	     * @param scriptFileWriter the file to write to
+	     * @param maxBodySize maximum length of SQL values list (for generated deletes)
+	     */
+		public Factory(OutputStreamWriter scriptFileWriter, int maxBodySize, DatabaseMetaData metaData, Session session) {
+	        this.maxBodySize = maxBodySize;
+	        this.scriptFileWriter = scriptFileWriter;
+	        this.metaData = metaData;
+	        this.session = session;
+    	}
+
+		/**
+		 * Creates transformer (as {@link ResultSetReader} which 
+		 * transforms rows of a given table into an external representation.
+		 * 
+		 * @param table the table
+		 * @return a transformer
+		 */
+		@Override
+		public ResultSetReader create(Table table) throws SQLException {
+			return new DeletionTransformer(table, scriptFileWriter, maxBodySize, metaData, session);
+		}
+    };
+
+    /**
      * Constructor.
      * 
      * @param table the table to read from
      * @param scriptFileWriter the file to write to
      * @param maxBodySize maximum length of SQL values list (for generated deletes)
      */
-    public DeletionTransformer(Table table, OutputStreamWriter scriptFileWriter, int maxBodySize, DatabaseMetaData metaData, Session session) throws SQLException {
+    private DeletionTransformer(Table table, OutputStreamWriter scriptFileWriter, int maxBodySize, DatabaseMetaData metaData, Session session) throws SQLException {
         this.table = table;
         this.scriptFileWriter = scriptFileWriter;
         deleteStatementBuilder = new StatementBuilder(maxBodySize);

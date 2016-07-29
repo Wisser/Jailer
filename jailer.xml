@@ -42,8 +42,10 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<property name="localNPKType" value="NVARCHAR" />
 		<property name="localPKLength" value="10000" />
 		<property name="databasesFolder" value="local" />
-		<property name="urlPattern" value="jdbc:h2:%s;MODE=DB2" />
+		<property name="urlPattern" value="jdbc:h2:%s" />
 		<property name="driver" value="org.h2.Driver" />
+		<property name="user" value="" />
+		<property name="password" value="" />
 		<property name="lib" value="lib/h2-1.3.160.jar" />
 
 		<!-- for SQLite -->
@@ -54,6 +56,8 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<property name="databasesFolder" value="local" />
 		<property name="urlPattern" value="jdbc:sqlite:%s" />
 		<property name="driver" value="org.sqlite.JDBC" />
+		<property name="user" value="" />
+		<property name="password" value="" />
 		<property name="lib" value="lib/sqlite-jdbc-3.8.11.2.jar" />
 		-->
 	</bean>
@@ -425,6 +429,12 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
 			<property name="tableProperties" value="" />
 			
+			<property name="jdbcProperties">
+				<map>
+					<entry key="noDatetimeStringSync" value="true"/>
+        		</map>
+			</property>
+			
 			<property name="sqlDialect">
 				<bean class="net.sf.jailer.database.SQLDialect">
 					<property name="supportsMultiRowInserts" value="true"/>
@@ -597,6 +607,12 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
         <bean class="net.sf.jailer.Configuration">
             <property name="urlPattern" value="jdbc:h2.*" />
 
+			<property name="jdbcProperties">
+				<map>
+					<entry key="MODE" value="DB2"/>
+        		</map>
+			</property>
+			
 			<property name="dbms" value="H2"/>
 			<property name="sqlDialect">
 				<bean class="net.sf.jailer.database.SQLDialect">

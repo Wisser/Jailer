@@ -1071,7 +1071,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 					        		ProgressTable progressTable = new ProgressTable();
 					        		ProgressPanel progressPanel = new ProgressPanel(progressTable);
 					        		boolean confirm = exportDialog.scriptFormat == ScriptFormat.INTRA_DATABASE && exportDialog.getConfirmExport();
-									UIProgressListener progressListener = new UIProgressListener(progressTable, progressPanel, extractionModelEditor.dataModel, confirm);
+									UIProgressListener progressListener = new UIProgressListener(progressTable, progressPanel, extractionModelEditor.dataModel, confirm, exportDialog.getTargetSchemaSet());
 					        		try {
 					        			UIUtil.runJailer(this, args, true, true, exportDialog.explain.isSelected(), false /* !exportDialog.explain.isSelected() */, null, dbConnectionDialog.getPassword(), progressListener, progressPanel, true, true, false);
 					        		} finally {

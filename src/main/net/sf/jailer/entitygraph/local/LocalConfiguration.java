@@ -30,95 +30,146 @@ public class LocalConfiguration {
 	 * Name of the folder containing the local database's folders.
 	 */
 	public String databasesFolder = "local";
-	public String urlPattern = "jdbc:h2:%s;MODE=DB2";
-	
+	public String urlPattern = "jdbc:h2:%s";
+
+	public String user = "";
+	public String password = "";
+
 	public String driver = "org.h2.Driver";
 	public String lib = "lib/h2-1.3.160.jar";
-	
-	
+
 	/**
 	 * @return the localPKType
 	 */
 	public String getLocalPKType() {
 		return localPKType;
 	}
+
 	/**
-	 * @param localPKType the localPKType to set
+	 * @param localPKType
+	 *            the localPKType to set
 	 */
 	public void setLocalPKType(String localPKType) {
 		this.localPKType = localPKType;
 	}
+
 	/**
 	 * @return the localPKLength
 	 */
 	public int getLocalPKLength() {
 		return localPKLength;
 	}
+
 	/**
-	 * @param localPKLength the localPKLength to set
+	 * @param localPKLength
+	 *            the localPKLength to set
 	 */
 	public void setLocalPKLength(int localPKLength) {
 		this.localPKLength = localPKLength;
 	}
+
 	/**
 	 * @return the databasesFolder
 	 */
 	public String getDatabasesFolder() {
 		return databasesFolder;
 	}
+
 	/**
-	 * @param databasesFolder the databasesFolder to set
+	 * @param databasesFolder
+	 *            the databasesFolder to set
 	 */
 	public void setDatabasesFolder(String databasesFolder) {
 		this.databasesFolder = databasesFolder;
 	}
+
 	/**
 	 * @return the urlPattern
 	 */
 	public String getUrlPattern() {
 		return urlPattern;
 	}
+
 	/**
-	 * @param urlPattern the urlPattern to set
+	 * @param urlPattern
+	 *            the urlPattern to set
 	 */
 	public void setUrlPattern(String urlPattern) {
 		this.urlPattern = urlPattern;
 	}
+
 	/**
 	 * @return the driver
 	 */
 	public String getDriver() {
 		return driver;
 	}
+
 	/**
-	 * @param driver the driver to set
+	 * @param driver
+	 *            the driver to set
 	 */
 	public void setDriver(String driver) {
 		this.driver = driver;
 	}
+
 	/**
 	 * @return the lib
 	 */
 	public String getLib() {
 		return lib;
 	}
+
 	/**
-	 * @param lib the lib to set
+	 * @param lib
+	 *            the lib to set
 	 */
 	public void setLib(String lib) {
 		this.lib = lib;
 	}
-	
+
 	/**
 	 * @return the localNPKType
 	 */
 	public String getLocalNPKType() {
 		return localNPKType;
 	}
+
 	/**
-	 * @param localNPKType the localNPKType to set
+	 * @param localNPKType
+	 *            the localNPKType to set
 	 */
 	public void setLocalNPKType(String localNPKType) {
 		this.localNPKType = localNPKType;
+	}
+
+	/**
+	 * @return the user
+	 */
+	public String getUser() {
+		return user;
+	}
+
+	/**
+	 * @param user
+	 *            the user to set
+	 */
+	public void setUser(String user) {
+		this.user = user;
+	}
+
+	/**
+	 * @return the password
+	 */
+	public String getPassword() {
+		return password;
+	}
+
+	/**
+	 * @param password
+	 *            the password to set
+	 */
+	public void setPassword(String password) {
+		this.password = password;
 	}
 }

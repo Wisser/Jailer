@@ -36,6 +36,7 @@ import java.util.Map;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
+import net.sf.jailer.TransformerFactory;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
@@ -145,6 +146,45 @@ public class DMLTransformer extends AbstractResultSetReader {
 	private final SQLDialect currentDialect;
 
     /**
+     * Factory.
+     */
+    public static class Factory implements TransformerFactory {
+    	
+    	private final int maxBodySize;
+		private final boolean upsertOnly;
+		private final OutputStreamWriter scriptFileWriter;
+		private final DatabaseMetaData metaData;
+		private final Session session;
+
+	    /**
+	     * Constructor.
+	     * 
+	     * @param scriptFileWriter the file to write to
+	     * @param maxBodySize maximum length of SQL values list (for generated inserts)
+	     * @param upsertOnly use 'upsert' statements for all entities
+	     */
+		public Factory(OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, DatabaseMetaData metaData, Session session) {
+	        this.maxBodySize = maxBodySize;
+	        this.upsertOnly = upsertOnly;
+	        this.scriptFileWriter = scriptFileWriter;
+	        this.metaData = metaData;
+	        this.session = session;
+    	}
+
+		/**
+		 * Creates transformer (as {@link ResultSetReader} which 
+		 * transforms rows of a given table into an external representation.
+		 * 
+		 * @param table the table
+		 * @return a transformer
+		 */
+		@Override
+		public ResultSetReader create(Table table) throws SQLException {
+			return new DMLTransformer(table, scriptFileWriter, upsertOnly, maxBodySize, metaData, session);
+		}
+    };
+
+    /**
      * Constructor.
      * 
      * @param table the table to read from
@@ -152,7 +192,7 @@ public class DMLTransformer extends AbstractResultSetReader {
      * @param maxBodySize maximum length of SQL values list (for generated inserts)
      * @param upsertOnly use 'upsert' statements for all entities
      */
-    public DMLTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, DatabaseMetaData metaData, Session session) throws SQLException {
+    private DMLTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, DatabaseMetaData metaData, Session session) throws SQLException {
         this.maxBodySize = maxBodySize;
         this.upsertOnly = upsertOnly;
         this.table = table;

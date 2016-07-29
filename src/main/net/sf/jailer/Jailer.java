@@ -51,7 +51,6 @@ import javax.xml.transform.stream.StreamResult;
 import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.database.DeletionTransformer;
 import net.sf.jailer.database.Session;
-import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.database.StatisticRenovator;
 import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.datamodel.AggregationSchema;
@@ -66,6 +65,7 @@ import net.sf.jailer.dbunit.FlatXMLTransformer;
 import net.sf.jailer.domainmodel.DomainModel;
 import net.sf.jailer.enhancer.ScriptEnhancer;
 import net.sf.jailer.entitygraph.EntityGraph;
+import net.sf.jailer.entitygraph.intradatabase.IntraDatabaseEntityGraph;
 import net.sf.jailer.entitygraph.local.LocalEntityGraph;
 import net.sf.jailer.entitygraph.remote.RemoteEntityGraph;
 import net.sf.jailer.extractionmodel.ExtractionModel;
@@ -107,7 +107,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "5.5.3";
+	public static final String VERSION = "5.5.4";
 	
 	/**
 	 * The Jailer application name.
@@ -235,21 +235,19 @@ public class Jailer {
 			}
 			firstLine = false;
 		}
-//		if (CommandLineParser.getInstance().getScriptFormat() != ScriptFormat.XML) {
-			appendCommentHeader("");
-			boolean isFiltered = false;
-			for (Table t : new TreeSet<Table>(totalProgress)) {
-				for (Column c : t.getColumns()) {
-					if (c.getFilterExpression() != null) {
-						if (!isFiltered) {
-							isFiltered = true;
-							appendCommentHeader("Used Filters:");
-						}
-						appendCommentHeader("    " + t.getUnqualifiedName() + "." + c.name + " := " + c.getFilterExpression());
+		appendCommentHeader("");
+		boolean isFiltered = false;
+		for (Table t : new TreeSet<Table>(totalProgress)) {
+			for (Column c : t.getColumns()) {
+				if (c.getFilterExpression() != null) {
+					if (!isFiltered) {
+						isFiltered = true;
+						appendCommentHeader("Used Filters:");
 					}
+					appendCommentHeader("    " + t.getUnqualifiedName() + "." + c.name + " := " + c.getFilterExpression());
 				}
 			}
-//		}
+		}
 
 		return totalProgress;
 	}
@@ -465,27 +463,19 @@ public class Jailer {
 	/**
 	 * Writes entities into extract-SQL-script.
 	 * 
-	 * @param sqlScriptFile
-	 *            the name of the sql-script to write the data to
-	 * @param transformerHandler
-	 *            SAX transformer handler for generating XML. <code>null</code>
-	 *            if script format is not XML.
 	 * @param table
 	 *            write entities from this table only
-	 * @param result
-	 *            a writer for the extract-script
 	 * @param orderByPK
 	 *            if <code>true</code>, result will be ordered by primary keys
 	 */
-	private void writeEntities(OutputStreamWriter result, TransformerHandler transformerHandler, ScriptType scriptType, Table table, boolean orderByPK, String filepath)
+	private void writeEntities(Table table, boolean orderByPK)
 			throws Exception {
-		ResultSetReader reader = createResultSetReader(result, transformerHandler, scriptType, table, filepath);
-		entityGraph.readEntities(table, reader, orderByPK);
+		entityGraph.readEntities(table, orderByPK);
 		entityGraph.deleteEntities(table);
 	}
 
 	/**
-	 * Creates result set reader for processing the rows to be exported.
+	 * Creates a factory for transformers for processing the rows to be exported.
 	 * 
 	 * @param outputWriter
 	 *            writer into export file
@@ -494,28 +484,28 @@ public class Jailer {
 	 *            if script format is not XML.
 	 * @param scriptType
 	 *            the script type
-	 * @param table
-	 *            the table to read rows from
 	 * 
 	 * @return result set reader for processing the rows to be exported
 	 */
-	private ResultSetReader createResultSetReader(OutputStreamWriter outputWriter, TransformerHandler transformerHandler, ScriptType scriptType, Table table, String filepath)
-			throws SQLException {
+	private TransformerFactory createTransformerFactory(OutputStreamWriter outputWriter, TransformerHandler transformerHandler, ScriptType scriptType, String filepath) throws SQLException
+			{
 		Session targetSession = entityGraph.getTargetSession();
 		if (scriptType == ScriptType.INSERT) {
-			if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
-				return new FlatXMLTransformer(table, transformerHandler, targetSession.getMetaData(), targetSession.dbms);
-			}else if(ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat())){
-				return new LiquibaseXMLTransformer(table,transformerHandler,targetSession.getMetaData(), entityGraph, filepath,
+			if (ScriptFormat.INTRA_DATABASE.equals(CommandLineParser.getInstance().getScriptFormat())) {
+				return null;
+			} if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+				return new FlatXMLTransformer.Factory(transformerHandler, targetSession.getMetaData(), targetSession.dbms);
+			} else if (ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+				return new LiquibaseXMLTransformer.Factory(transformerHandler,targetSession.getMetaData(), entityGraph, filepath,
 						CommandLineParser.getInstance().xmlDatePattern,
 						CommandLineParser.getInstance().xmlTimePattern,
 						CommandLineParser.getInstance().xmlTimeStampPattern);
 			} else {
-				return new DMLTransformer(table, outputWriter, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities,
+				return new DMLTransformer.Factory(outputWriter, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities,
 						targetSession.getMetaData(), targetSession);
 			}
 		} else {
-			return new DeletionTransformer(table, outputWriter, CommandLineParser.getInstance().numberOfEntities, targetSession.getMetaData(),
+			return new DeletionTransformer.Factory(outputWriter, CommandLineParser.getInstance().numberOfEntities, targetSession.getMetaData(),
 					targetSession);
 		}
 	}
@@ -581,11 +571,12 @@ public class Jailer {
 				enhancer.addComments(result, scriptType, session, entityGraph, progress);
 			}
 			// result.append(System.getProperty("line.separator"));
-			// result.append(System.getProperty("line.separator"));
 			for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
 				enhancer.addProlog(result, scriptType, session, entityGraph, progress);
 			}
 		}
+
+		entityGraph.setTransformerFactory(createTransformerFactory(result, transformerHandler, scriptType, sqlScriptFile));
 
 		// first write entities of independent tables
 		final Set<Table> dependentTables = writeEntitiesOfIndependentTables(result, transformerHandler, scriptType, progress, sqlScriptFile);
@@ -600,8 +591,6 @@ public class Jailer {
 			_log.warn("skipping topological sorting");
 		}
 
-		final TransformerHandler fTransformerHandler = transformerHandler;
-		final OutputStreamWriter fResult = result;
 		long rest;
 
 		if (scriptType == ScriptType.INSERT && (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())||ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat()))) {
@@ -634,8 +623,7 @@ public class Jailer {
 						entityGraph.markIndependentEntities(independentTable);
 						// don't use jobManager, export rows sequentially, don't
 						// mix rows of different tables in a dataset!
-						ResultSetReader reader = createResultSetReader(fResult, fTransformerHandler, scriptType, independentTable, sqlScriptFile);
-						entityGraph.readMarkedEntities(independentTable, reader, true);
+						entityGraph.readMarkedEntities(independentTable, true);
 						entityGraph.deleteIndependentEntities(independentTable);
 						long newRest = entityGraph.getSize();
 						if (rest == newRest) {
@@ -657,8 +645,7 @@ public class Jailer {
 				for (final Table table : dependentTables) {
 					jobs.add(new JobManager.Job() {
 						public void run() throws Exception {
-							ResultSetReader reader = createResultSetReader(fResult, fTransformerHandler, scriptType, table, sqlScriptFile);
-							entityGraph.readMarkedEntities(table, reader, false);
+							entityGraph.readMarkedEntities(table, false);
 						}
 					});
 				}
@@ -942,11 +929,11 @@ public class Jailer {
 				if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat()) || ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
 					// export rows sequentially, don't mix rows of different
 					// tables in a dataset!
-					writeEntities(result, transformerHandler, scriptType, independentTable, true, filepath);
+					writeEntities(independentTable, true);
 				} else {
 					jobs.add(new JobManager.Job() {
 						public void run() throws Exception {
-							writeEntities(result, transformerHandler, scriptType, independentTable, false, filepath);
+							writeEntities(independentTable, false);
 						}
 					});
 				}
@@ -1254,6 +1241,9 @@ public class Jailer {
 		EntityGraph entityGraph;
 		if (CommandLineParser.getInstance().getTemporaryTableScope() == TemporaryTableScope.LOCAL_DATABASE) {
 			entityGraph = LocalEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session);
+		} else if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
+			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, Configuration.forDbms(session));
+			entityGraph = IntraDatabaseEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session));
 		} else {
 			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, Configuration.forDbms(session));
 			entityGraph = RemoteEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session));

@@ -474,7 +474,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		DefaultComboBoxModel formatComboBoxModel = new DefaultComboBoxModel(ScriptFormat.values());
 		
 		// TODO: INTRA_DATABASE not yet supported
-//		formatComboBoxModel.removeElement(ScriptFormat.INTRA_DATABASE);
+		formatComboBoxModel.removeElement(ScriptFormat.INTRA_DATABASE);
 		
 		exportFormat.setModel(formatComboBoxModel);
 		exportFormat.setRenderer(new DefaultListCellRenderer() {

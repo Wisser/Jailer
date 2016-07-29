@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
@@ -424,6 +425,8 @@ public class ExportDialog extends javax.swing.JDialog {
     private Thread initScopeButtonThread;
 	private boolean sessionLocalIsAvailable = false;
 	private boolean globalIsAvailable = false;
+
+	private Set<String> targetSchemaSet = new TreeSet<String>();
 
     private void initScopeButtons(final Session session) {
     	synchronized (this) {
@@ -1282,7 +1285,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel1.add(workingTableSchemaComboBox, gridBagConstraints);
 
-        confirmInsert.setText("confirm insertion into target schema"); // NOI18N
+        confirmInsert.setText("ask for permission to insert into target schema"); // NOI18N
         confirmInsert.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         confirmInsert.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1390,7 +1393,7 @@ public class ExportDialog extends javax.swing.JDialog {
     	theSettings.save(settingsContext);
         
     	boolean err = false;
-        if (insert.getText().trim().length() == 0 && delete.getText().trim().length() == 0) {
+        if (insert.getText().trim().length() == 0 && (!delete.isVisible() || delete.getText().trim().length() == 0)) {
         	exportLabel.setForeground(Color.RED);
         	err = true;
         }
@@ -1496,7 +1499,7 @@ public class ExportDialog extends javax.swing.JDialog {
     	} else {
     		args.add(0, "delete");
     	}
-    	if (delete.getText().trim().length() > 0) {
+    	if (delete.isVisible() && delete.getText().trim().length() > 0) {
     		withDelete = true;
     		args.add("-d");
     		args.add(delete.getText().trim());
@@ -1550,9 +1553,11 @@ public class ExportDialog extends javax.swing.JDialog {
     		args.add(dataModel.getXmlSettings().timestampPattern);
     	}
     	
+    	targetSchemaSet.clear();
     	StringBuilder schemaMapping = new StringBuilder();
     	for (String schema: schemaMappingFields.keySet()) {
     		String to = schemaMappingFields.get(schema).getText().trim();
+    		targetSchemaSet.add(to);
     		if (to.equals(DEFAULT_SCHEMA)) {
     			to = "";
     		}
@@ -1633,6 +1638,10 @@ public class ExportDialog extends javax.swing.JDialog {
     		relevantSchemas.add(table.getOriginalSchema(""));
 		}
 		return relevantSchemas;
+	}
+
+	public Set<String> getTargetSchemaSet() {
+		return targetSchemaSet;
 	}
 
 	public boolean getConfirmExport() {

@@ -22,6 +22,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.TreeMap;
 
 import javax.swing.JOptionPane;
@@ -84,17 +85,20 @@ public class UIProgressListener implements ProgressListener {
 	private boolean cleanupLastLine = false;
 	private final boolean confirm;
 	private long timeDelay = 0;
+	private final Set<String> targetSchemaSet;
 	
 	/**
 	 * Constructor.
 	 * 
 	 * @param progressTable
 	 *            table showing collected rows
+	 * @param targetSchemaSet 
 	 */
-	public UIProgressListener(final ProgressTable progressTable, final ProgressPanel progressPanel, DataModel dataModel, final boolean confirm) {
+	public UIProgressListener(final ProgressTable progressTable, final ProgressPanel progressPanel, DataModel dataModel, final boolean confirm, Set<String> targetSchemaSet) {
 		this.progressTable = progressTable;
 		this.dataModel = dataModel;
 		this.confirm = confirm;
+		this.targetSchemaSet = targetSchemaSet;
 		new Thread(new Runnable() {
 
 			@Override
@@ -369,7 +373,23 @@ public class UIProgressListener implements ProgressListener {
 	}
 
 	private boolean confirmInsert() {
-		return JOptionPane.showConfirmDialog(SwingUtilities.getRoot(progressTable), "Insert " + collectedRows + " collected rows into the target schema?", "Export collected rows", JOptionPane.YES_NO_OPTION)
+		StringBuilder sb = new StringBuilder();
+		int linelength = 0;
+		for (String targetSchema: targetSchemaSet) {
+			if (sb.length() > 0) {
+				sb.append(", ");
+				if (linelength > 40) {
+					sb.append("\n");
+					linelength = 0;
+				}
+			}
+			sb.append(targetSchema);
+			linelength += targetSchema.length() + 3;
+		}
+		return JOptionPane.showConfirmDialog(SwingUtilities.getRoot(progressTable), 
+				"Insert " + collectedRows + " collected rows into the target schema?\n\n" +
+						"Target: " + sb,
+				"Export collected rows", JOptionPane.YES_NO_OPTION)
 				== JOptionPane.YES_OPTION;
 	}
 	

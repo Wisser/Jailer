@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.jailer.TransformerFactory;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.ResultSetReader;
@@ -191,20 +192,10 @@ public abstract class EntityGraph {
     /**
      * Reads all entities of a given table which are marked as independent or as roots.
      * 
-     * @param reader for reading the result-set
      * @param table the table
      * @param orderByPK if <code>true</code>, result will be ordered by primary keys
      */
-    public abstract void readMarkedEntities(Table table, Session.ResultSetReader reader, boolean orderByPK) throws SQLException;
-    
-    /**
-     * Reads all entities of a given table which are marked as independent or as roots.
-     * 
-     * @param reader for reading the result-set
-     * @param table the table
-     * @param orderByPK if <code>true</code>, result will be ordered by primary keys
-     */
-    public abstract void readMarkedEntities(Table table, Session.ResultSetReader reader, String selectionSchema, boolean orderByPK) throws SQLException;
+    public abstract void readMarkedEntities(Table table, boolean orderByPK) throws SQLException;
     
     /**
      * Reads all entities of a given table which are marked as independent or as roots.
@@ -225,11 +216,10 @@ public abstract class EntityGraph {
     /**
      * Reads all entities of a given table.
      * 
-     * @param reader for reading the result-set
      * @param table the table
      * @param orderByPK if <code>true</code>, result will be ordered by primary keys
      */
-    public abstract void readEntities(Table table, Session.ResultSetReader reader, boolean orderByPK) throws SQLException;
+    public abstract void readEntities(Table table, boolean orderByPK) throws SQLException;
     
     /**
      * Deletes all entities which are marked as independent.
@@ -400,5 +390,28 @@ public abstract class EntityGraph {
     public void setDeleteMode(boolean deleteMode) {
     	inDeleteMode = deleteMode;
     }
+
+    /**
+     * The {@link TransformerFactory}.
+     */
+    private TransformerFactory transformerFactory;
+    
+    /**
+     * Sets the {@link TransformerFactory}.
+     * 
+     * @param transformerFactory the factory
+     */
+	public void setTransformerFactory(TransformerFactory transformerFactory) {
+		this.transformerFactory = transformerFactory;
+	}
+
+    /**
+     * Gets the {@link TransformerFactory}.
+     * 
+     * @return the factory
+     */
+	public TransformerFactory getTransformerFactory() {
+		return transformerFactory;
+	}
 
 }
