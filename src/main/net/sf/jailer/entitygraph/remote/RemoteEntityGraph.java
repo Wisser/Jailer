@@ -57,17 +57,17 @@ public class RemoteEntityGraph extends EntityGraph {
 	/**
      * The universal primary key.
      */
-    private final PrimaryKey universalPrimaryKey;
+    protected final PrimaryKey universalPrimaryKey;
     
     /**
      * Birthday of subject rows.
      */
-    private int birthdayOfSubject = 0;
+    protected int birthdayOfSubject = 0;
     
     /**
      * {@link RowIdSupport}.
      */
-    private final RowIdSupport rowIdSupport;
+    protected final RowIdSupport rowIdSupport;
     
     /**
      * Constructor.
@@ -76,7 +76,7 @@ public class RemoteEntityGraph extends EntityGraph {
      * @param session for executing SQL-Statements
      * @param universalPrimaryKey the universal primary key
      */
-    private RemoteEntityGraph(DataModel dataModel, int graphID, Session session, PrimaryKey universalPrimaryKey) {
+    protected RemoteEntityGraph(DataModel dataModel, int graphID, Session session, PrimaryKey universalPrimaryKey) {
     	super(graphID, dataModel);
         this.session = session;
         this.universalPrimaryKey = universalPrimaryKey;
@@ -114,6 +114,17 @@ public class RemoteEntityGraph extends EntityGraph {
      */
     public static RemoteEntityGraph create(DataModel dataModel, int graphID, Session session, PrimaryKey universalPrimaryKey) {
         RemoteEntityGraph entityGraph = new RemoteEntityGraph(dataModel, graphID, session, universalPrimaryKey);
+        init(graphID, session);
+        return entityGraph;
+    }
+
+    /**
+     * Initializes a new entity-graph.
+     * 
+     * @param graphID the unique ID of the graph
+     * @param session for executing SQL-Statements
+     */
+    protected static void init(int graphID, Session session) {
         try {
             session.executeUpdate("Insert into " + SQLDialect.dmlTableReference(ENTITY_GRAPH, session) + "(id, age) values (" + graphID + ", 1)");
         } catch (SQLException e) {
@@ -121,7 +132,6 @@ public class RemoteEntityGraph extends EntityGraph {
                     "Run 'bin/jailer.sh create-ddl' " +
                     "and execute the DDL-script first!", e);
         }
-        return entityGraph;
     }
 
     /**
@@ -165,15 +175,6 @@ public class RemoteEntityGraph extends EntityGraph {
         return entityGraph;
     }
 
-    /**
-     * Creates a unique ID for a new graph.
-     * 
-     * @return a unique ID
-     */
-    public static int createUniqueGraphID() {
-        return Math.abs((int) System.currentTimeMillis());
-    }
-    
     /**
      * Gets the age of the graph.
      * 
@@ -444,11 +445,11 @@ public class RemoteEntityGraph extends EntityGraph {
     /**
      * Reads all entities of a given table which are marked as independent or as roots.
      * 
-     * @param reader for reading the result-set
      * @param table the table
      * @param orderByPK if <code>true</code>, result will be ordered by primary keys
      */
-    public void readMarkedEntities(Table table, Session.ResultSetReader reader, boolean orderByPK) throws SQLException {
+    public void readMarkedEntities(Table table, boolean orderByPK) throws SQLException {
+    	Session.ResultSetReader reader = getTransformerFactory().create(table);
     	readMarkedEntities(table, reader, filteredSelectionClause(table), orderByPK);
     }
     
@@ -459,7 +460,7 @@ public class RemoteEntityGraph extends EntityGraph {
      * @param table the table
      * @param orderByPK if <code>true</code>, result will be ordered by primary keys
      */
-    public void readMarkedEntities(Table table, Session.ResultSetReader reader, String selectionSchema, boolean orderByPK) throws SQLException {
+    private void readMarkedEntities(Table table, Session.ResultSetReader reader, String selectionSchema, boolean orderByPK) throws SQLException {
         String orderBy = "";
         if (orderByPK) {
         	orderBy = " order by " + rowIdSupport.getPrimaryKey(table).columnList("T.");
@@ -535,12 +536,12 @@ public class RemoteEntityGraph extends EntityGraph {
     /**
      * Reads all entities of a given table.
      * 
-     * @param reader for reading the result-set
      * @param table the table
      * @param orderByPK if <code>true</code>, result will be ordered by primary keys
      */
-    public void readEntities(Table table, Session.ResultSetReader reader, boolean orderByPK) throws SQLException {
-        String sqlQuery = "Select " + filteredSelectionClause(table) + " From " + SQLDialect.dmlTableReference(ENTITY, session) + " E join " + table.getName() + " T on " +
+    public void readEntities(Table table, boolean orderByPK) throws SQLException {
+    	Session.ResultSetReader reader = getTransformerFactory().create(table);
+    	String sqlQuery = "Select " + filteredSelectionClause(table) + " From " + SQLDialect.dmlTableReference(ENTITY, session) + " E join " + table.getName() + " T on " +
 			pkEqualsEntityID(table, "T", "E") +
 			" Where E.birthday>=0 and E.r_entitygraph=" + graphID + " and E.type='" + table.getName() + "'";
 		long rc;
@@ -561,7 +562,7 @@ public class RemoteEntityGraph extends EntityGraph {
      * @param table the table to read rows from
      * @return select clause
      */
-    private String filteredSelectionClause(Table table) {
+    protected String filteredSelectionClause(Table table) {
     	StringBuilder sb = new StringBuilder();
     	boolean first = true;
     	
@@ -877,17 +878,17 @@ public class RemoteEntityGraph extends EntityGraph {
      * @param table the table
      * @return a SQL comparition expression for comparing rows of <code>table</code> with entities
      */
-    private String pkEqualsEntityID(Table table, String tableAlias, String entityAlias) {
+    protected String pkEqualsEntityID(Table table, String tableAlias, String entityAlias) {
     	return pkEqualsEntityID(table, tableAlias, entityAlias, "");
     }
 
     private final Set<String> fieldProcTables = new HashSet<String>();
     
     /**
-     * Gets a SQL comparition expression for comparing rows with entities.
+     * Gets a SQL comparison expression for comparing rows with entities.
      * 
      * @param table the table
-     * @return a SQL comparition expression for comparing rows of <code>table</code> with entities
+     * @return a SQL comparison expression for comparing rows of <code>table</code> with entities
      */
     private String pkEqualsEntityID(Table table, String tableAlias, String entityAlias, String columnPrefix) {
         Map<Column, Column> match = universalPrimaryKey.match(rowIdSupport.getPrimaryKey(table));
@@ -980,12 +981,6 @@ public class RemoteEntityGraph extends EntityGraph {
      * Total row-count.
      */
     private long totalRowcount = 0;
-    
-    /**
-     * Maximum number of total row-count (or 0).
-     * For tests.
-     */
-    public static long maxTotalRowcount = 0;
     
     /**
      * Gets total row-count.

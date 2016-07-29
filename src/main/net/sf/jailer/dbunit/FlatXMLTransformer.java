@@ -28,8 +28,10 @@ import javax.xml.transform.sax.TransformerHandler;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
+import net.sf.jailer.TransformerFactory;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
+import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.Base64;
 
@@ -73,6 +75,44 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 
 	private final DBMS dbms;
 
+    /**
+     * Factory.
+     */
+    public static class Factory implements TransformerFactory {
+    	
+    	private final TransformerHandler transformerHandler;
+		private final DatabaseMetaData metaData;
+		private final DBMS dbms;
+
+		/**
+    	 * Constructor.
+    	 * 
+    	 * @param table
+    	 *            the table to read from
+    	 * @param transformerHandler
+    	 *            to write the XML into
+    	 * @param metaData
+    	 *            database meta data
+    	 */
+    	public Factory(TransformerHandler transformerHandler, DatabaseMetaData metaData, DBMS dbms) {
+    		this.transformerHandler = transformerHandler;
+    		this.metaData = metaData;
+    		this.dbms = dbms;
+    	}
+    	
+    	/**
+		 * Creates transformer (as {@link ResultSetReader} which 
+		 * transforms rows of a given table into an external representation.
+		 * 
+		 * @param table the table
+		 * @return a transformer
+		 */
+		@Override
+		public ResultSetReader create(Table table) throws SQLException {
+			return new FlatXMLTransformer(table, transformerHandler, metaData, dbms);
+		}
+    }
+
 	/**
 	 * Constructor.
 	 * 
@@ -83,7 +123,7 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 	 * @param metaData
 	 *            database meta data
 	 */
-	public FlatXMLTransformer(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData, DBMS dbms) throws SQLException {
+	private FlatXMLTransformer(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData, DBMS dbms) throws SQLException {
 		this.transformerHandler = transformerHandler;
 		this.rowElementName = qualifiedTableName(table);
 		this.dbms = dbms;

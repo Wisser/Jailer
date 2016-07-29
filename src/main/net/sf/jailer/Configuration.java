@@ -182,8 +182,13 @@ public class Configuration {
 	 * Manages transaction local temporary tables.
 	 */
 	public TemporaryTableManager transactionTemporaryTableManager = null;
-	
-    /**
+
+	/**
+	 * Optional JDBC properties.
+	 */
+	private Map<String, String> jdbcProperties = null;
+
+	/**
      * Default configuration for unknown DBMS.
      */
 	private static final Configuration defaultConfiguration = new Configuration();
@@ -552,6 +557,24 @@ public class Configuration {
 	 */
 	public void setTableProperties(String tableProperties) {
 		this.tableProperties = tableProperties;
+	}
+	
+    /**
+     * Gets the JDBC properties.
+     * 
+	 * @return the jdbcProperties
+	 */
+	public Map<String, String> getJdbcProperties() {
+		return jdbcProperties;
+	}
+
+	/**
+	 * Sets the JDBC properties.
+	 * 
+     * @param jdbcProperties the jdbcProperties to set
+	 */
+	public void setJdbcProperties(Map<String, String> jdbcProperties) {
+		this.jdbcProperties = jdbcProperties;
 	}
 	
 }

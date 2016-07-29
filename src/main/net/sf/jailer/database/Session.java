@@ -36,8 +36,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
+import net.sf.jailer.Configuration;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.SqlUtil;
@@ -299,7 +301,8 @@ public class Session {
                 
                 if (con == null) {
                 	try {
-                		if (dbUrl.startsWith("jdbc:mysql:")) {
+                		Map<String, String> jdbcProperties = Configuration.forDbms(Session.this).getJdbcProperties();
+                		if (jdbcProperties != null) {
 	                		try {
 	                			 java.util.Properties info = new java.util.Properties();
 	                			 if (user != null) {
@@ -308,7 +311,9 @@ public class Session {
 	                			 if (password != null) {
 	                				 info.put("password", password);
 	                			 }
-	                			 info.put("noDatetimeStringSync", "true");
+	                			 for (Map.Entry<String, String> entry: jdbcProperties.entrySet()) {
+	                				 info.put(entry.getKey(), entry.getValue());
+	                			 }
 	                			 con = DriverManager.getConnection(dbUrl, info);
 	                		} catch (SQLException e2) {
 	                			// ignore

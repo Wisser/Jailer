@@ -210,7 +210,7 @@ public class LocalEntityGraph extends EntityGraph {
 		}, CommandLineParser.getInstance().getSourceSchemaMapping()));
 		this.remoteSession = remoteSession;
 		this.rowIdSupport = new RowIdSupport(getDatamodel(), Configuration.forDbms(remoteSession), getConfiguration().localPKType);
-		this.localSession = createLocalSession(getConfiguration().driver, getConfiguration().urlPattern, getConfiguration().lib);
+		this.localSession = createLocalSession(getConfiguration().driver, getConfiguration().urlPattern, getConfiguration().user, getConfiguration().password, getConfiguration().lib);
 		this.universalPrimaryKey = rowIdSupport.getUniversalPrimaryKey();
 		this.localInlineViewStyle = InlineViewStyle.forSession(localSession);
 		this.remoteInlineViewStyle = InlineViewStyle.forSession(remoteSession);
@@ -236,7 +236,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @return the localSession
 	 * @throws Exception 
 	 */
-	private Session createLocalSession(String driverClassName, String urlPattern, String jarfile) throws Exception {
+	private Session createLocalSession(String driverClassName, String urlPattern, String user, String password, String jarfile) throws Exception {
 		databaseFolder = getConfiguration().databasesFolder + File.separator + UUID.randomUUID().toString();
 		CommandLineParser.getInstance().newFile(databaseFolder).mkdirs();
 		ClassLoader oldCL = Session.classLoaderForJdbcDriver;
@@ -344,15 +344,6 @@ public class LocalEntityGraph extends EntityGraph {
         return entityGraph;
     }
 
-    /**
-     * Creates a unique ID for a new graph.
-     * 
-     * @return a unique ID
-     */
-    public static int createUniqueGraphID() {
-        return Math.abs((int) System.currentTimeMillis());
-    }
-    
     /**
      * Gets the age of the graph.
      * 
@@ -725,11 +716,11 @@ public class LocalEntityGraph extends EntityGraph {
     /**
      * Reads all entities of a given table which are marked as independent or as roots.
      * 
-     * @param reader for reading the result-set
      * @param table the table
      * @param orderByPK if <code>true</code>, result will be ordered by primary keys
      */
-    public void readMarkedEntities(Table table, Session.ResultSetReader reader, boolean orderByPK) throws SQLException {
+    public void readMarkedEntities(Table table, boolean orderByPK) throws SQLException {
+    	Session.ResultSetReader reader = getTransformerFactory().create(table);
     	readMarkedEntities(table, reader, filteredSelectionClause(table), orderByPK);
     }
     
@@ -740,7 +731,7 @@ public class LocalEntityGraph extends EntityGraph {
      * @param table the table
      * @param orderByPK if <code>true</code>, result will be ordered by primary keys
      */
-    public void readMarkedEntities(final Table table, final Session.ResultSetReader reader, final String selectionSchema, final boolean orderByPK) throws SQLException {
+    private void readMarkedEntities(final Table table, final Session.ResultSetReader reader, final String selectionSchema, final boolean orderByPK) throws SQLException {
         String orderBy = "";
         String upkColumnList = upkColumnList(table, null, "");
 		if (orderByPK) {
@@ -858,7 +849,8 @@ public class LocalEntityGraph extends EntityGraph {
      * @param table the table
      * @param orderByPK if <code>true</code>, result will be ordered by primary keys
      */
-    public void readEntities(final Table table, final Session.ResultSetReader reader, final boolean orderByPK) throws SQLException {
+    public void readEntities(final Table table, final boolean orderByPK) throws SQLException {
+    	final Session.ResultSetReader reader = getTransformerFactory().create(table);
     	String upkColumnList = upkColumnList(table, "E", null);
 		String select = 
     			"Select " + upkColumnList + " From " + SQLDialect.dmlTableReference(ENTITY, localSession) + " E " +
@@ -1369,13 +1361,7 @@ public class LocalEntityGraph extends EntityGraph {
      * Total row-count.
      */
     private long totalRowcount = 0;
-    
-    /**
-     * Maximum number of total row-count (or 0).
-     * For tests.
-     */
-    public static long maxTotalRowcount = 0;
-    
+
     /**
      * Gets total row-count.
      * 
