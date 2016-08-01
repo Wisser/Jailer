@@ -127,7 +127,7 @@ public class ExportDialog extends javax.swing.JDialog {
 
 	private String[] schemaComboboxModel;
 
-	private static boolean lastConfirmInsert = true;
+	private static boolean lastConfirmInsert = false;
 	
     /** Creates new form DbConnectionDialog 
      * @param showCmd 
@@ -562,6 +562,11 @@ public class ExportDialog extends javax.swing.JDialog {
     	Collections.sort(sortedSchemaList);
     	Set<String> relevantSchemas = getRelevantSchemas(true);
     	
+    	boolean simplified = sortedSchemaList.size() == 1;
+    	if (simplified) {
+    		schemaMappingPanel.setVisible(false);
+    	}
+    	
     	int y = 0;
     	for (String schema: sortedSchemaList) {
     		boolean add = relevantSchemas.contains(schema.equals(DEFAULT_SCHEMA)? "" : schema);
@@ -572,7 +577,15 @@ public class ExportDialog extends javax.swing.JDialog {
             gridBagConstraints.gridy = y;
             gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
             if (add) {
-            	schemaMappingPanel.add(a, gridBagConstraints);
+            	if (simplified) {
+            		a.setText(" Target schema ");
+                    gridBagConstraints.gridx = 0;
+                    gridBagConstraints.gridy = 80;
+                    gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+            		jPanel1.add(a, gridBagConstraints);
+            	} else {
+            		schemaMappingPanel.add(a, gridBagConstraints);
+            	}
     		}
     		JComboBox cb = new JComboBox();
     		JComponent ccb = cb;
@@ -609,7 +622,15 @@ public class ExportDialog extends javax.swing.JDialog {
             gridBagConstraints.gridy = y;
             gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
             if (add) {
-            	schemaMappingPanel.add(ccb, gridBagConstraints);
+            	if (simplified) {
+            		gridBagConstraints.gridx = 1;
+                    gridBagConstraints.gridy = 80;
+                    gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+                    gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+                    jPanel1.add(ccb, gridBagConstraints);
+            	} else {
+            		schemaMappingPanel.add(ccb, gridBagConstraints);
+            	}
             }
     		if (add) {
     			y++;
@@ -636,6 +657,11 @@ public class ExportDialog extends javax.swing.JDialog {
     	Collections.sort(sortedSchemaList);
     	Set<String> relevantSchemas = getRelevantSchemas(true);
     	
+    	boolean simplified = sortedSchemaList.size() == 1;
+    	if (simplified) {
+    		sourceSchemaMappingPanel.setVisible(false);
+    	}
+    	
     	int y = 0;
     	for (String schema: sortedSchemaList) {
     		boolean add = relevantSchemas.contains(schema.equals(DEFAULT_SCHEMA)? "" : schema);
@@ -644,7 +670,19 @@ public class ExportDialog extends javax.swing.JDialog {
             gridBagConstraints.gridx = 2;
             gridBagConstraints.gridy = y;
             if (add) {
-            	sourceSchemaMappingPanel.add(b, gridBagConstraints);
+            	if (simplified) {
+            		b.setText(" Source schema ");
+                    gridBagConstraints.gridx = 0;
+                    gridBagConstraints.gridy = 82;
+                    gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+            		jPanel1.add(b, gridBagConstraints);
+            		gridBagConstraints = new java.awt.GridBagConstraints();
+                    gridBagConstraints.gridx = 0;
+                    gridBagConstraints.gridy = 83;
+                    jPanel1.add(new JLabel(" "), gridBagConstraints);
+            	} else {
+            		sourceSchemaMappingPanel.add(b, gridBagConstraints);
+            	}
             }
             JComboBox cb = new JComboBox();
     		JComponent ccb = cb;
@@ -680,7 +718,15 @@ public class ExportDialog extends javax.swing.JDialog {
             gridBagConstraints.gridy = y;
             gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
             if (add) {
-            	sourceSchemaMappingPanel.add(ccb, gridBagConstraints);
+            	if (simplified) {
+            		gridBagConstraints.gridx = 1;
+                    gridBagConstraints.gridy = 82;
+                    gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+                    gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+                    jPanel1.add(ccb, gridBagConstraints);
+            	} else {
+            		sourceSchemaMappingPanel.add(ccb, gridBagConstraints);
+            	}
             }
     		JLabel a = new JLabel(schema);
     		a.setFont(new java.awt.Font("Dialog", 0, 12));
@@ -993,7 +1039,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(jPanel4, gridBagConstraints);
 
-        jLabel16.setText(" Rows per statement"); // NOI18N
+        jLabel16.setText(" Rows per statement "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 51;
@@ -1264,7 +1310,7 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 4, 0);
         jPanel1.add(useRowIds, gridBagConstraints);
 
-        jLabel10.setText(" Working table schema"); // NOI18N
+        jLabel10.setText(" Working table schema "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 56;
