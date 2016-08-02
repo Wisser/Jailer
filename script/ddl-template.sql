@@ -77,4 +77,4 @@ ${create-table}${schema}JAILER_TMP${table-suffix}
     c2 INTEGER
 ) ${create-table-suffix};
 
-INSERT INTO ${config-dml-reference}(jversion, jkey, jvalue) values('${version}', 'upk', '${upk-hash}');
+INSERT INTO ${config-dml-reference}${table-suffix}(jversion, jkey, jvalue) values('${version}', 'upk', '${upk-hash}');
