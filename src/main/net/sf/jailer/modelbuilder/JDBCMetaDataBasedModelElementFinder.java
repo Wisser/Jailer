@@ -381,9 +381,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     	List<String> schemas = new ArrayList<String>();
 		try {
 			DatabaseMetaData metaData = session.getMetaData();
-			ResultSet rs = metaData.getSchemas();
+			ResultSet rs = session.dbms == DBMS.MySQL? metaData.getCatalogs() : metaData.getSchemas();
 			while (rs.next()) {
-				String schema = rs.getString("TABLE_SCHEM").trim();
+				String schema = rs.getString(session.dbms == DBMS.MySQL? "TABLE_CAT" : "TABLE_SCHEM").trim();
 				if (schema != null) {
 					if (session.dbms == DBMS.POSTGRESQL && schema.startsWith("pg_toast_temp")) {
 						continue;
