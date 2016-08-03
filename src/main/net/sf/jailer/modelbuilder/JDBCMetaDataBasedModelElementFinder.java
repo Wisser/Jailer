@@ -88,30 +88,32 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         for (Table table: dataModel.getTables()) {
             _log.info("find associations with " + table.getName());
         	try {
-        		resultSet = metaData.getImportedKeys(null, quoting.unquote(table.getOriginalSchema(quoting.quote(defaultSchema))), quoting.unquote(table.getUnqualifiedName()));
+        		resultSet = getImportedKeys(session, metaData, quoting.unquote(table.getOriginalSchema(quoting.quote(defaultSchema))), quoting.unquote(table.getUnqualifiedName()));
         	} catch (Exception e) {
         		_log.info("failed. " + e.getMessage());
             	continue;
         	}
             Map<String, Association> fkMap = new HashMap<String, Association>();
             while (resultSet.next()) {
-                Table pkTable = dataModel.getTable(toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(2)), quoting.quote(resultSet.getString(3))));
+                Table pkTable = dataModel.getTable(toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(session.dbms == DBMS.MySQL? 1 : 2)), quoting.quote(resultSet.getString(3))));
                 String pkColumn = quoting.quote(resultSet.getString(4));
                 Table fkTable = dataModel.getTable(toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(6)), quoting.quote(resultSet.getString(7))));
                 String fkColumn = quoting.quote(resultSet.getString(8));
                 String foreignKey = resultSet.getString(12);
-                String fkName = fkTable.getName() + "." + foreignKey;
-                if (foreignKey != null && fkMap.containsKey(fkName)) {
-                	fkMap.get(fkName).appendCondition("A." + fkColumn + "=B." + pkColumn);
-                } else {
-	                if (pkTable != null && fkTable != null) {
-	                    Association association = new Association(fkTable, pkTable, false, true, "A." + fkColumn + "=B." + pkColumn, dataModel, false, Cardinality.MANY_TO_ONE);
-	                    association.setAuthor(metaData.getDriverName());
-	                    associations.add(association);
-	                    fkMap.put(fkName, association);
-	                    if (foreignKey != null) {
-	                    	namingSuggestion.put(association, new String[] { foreignKey, fkTable.getUnqualifiedName() + "." + foreignKey });
-	                    }
+                if (fkTable != null) {
+	                String fkName = fkTable.getName() + "." + foreignKey;
+	                if (foreignKey != null && fkMap.containsKey(fkName)) {
+	                	fkMap.get(fkName).appendCondition("A." + fkColumn + "=B." + pkColumn);
+	                } else {
+		                if (pkTable != null && fkTable != null) {
+		                    Association association = new Association(fkTable, pkTable, false, true, "A." + fkColumn + "=B." + pkColumn, dataModel, false, Cardinality.MANY_TO_ONE);
+		                    association.setAuthor(metaData.getDriverName());
+		                    associations.add(association);
+		                    fkMap.put(fkName, association);
+		                    if (foreignKey != null) {
+		                    	namingSuggestion.put(association, new String[] { foreignKey, fkTable.getUnqualifiedName() + "." + foreignKey });
+		                    }
+		                }
 	                }
                 }
             }
@@ -121,7 +123,14 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         return associations;
     }
 
-    /**
+    private ResultSet getImportedKeys(Session session, DatabaseMetaData metaData, String schema, String table) throws SQLException {
+		if (session.dbms == DBMS.MySQL) {
+	    	return metaData.getImportedKeys(schema, null, table);
+		}
+    	return metaData.getImportedKeys(null, schema, table);
+	}
+
+	/**
      * Gets qualified table name.
      * 
      * @param defaultSchema default schema
@@ -148,7 +157,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         DatabaseMetaData metaData = session.getMetaData();
         Quoting quoting = new Quoting(metaData);
         ResultSet resultSet;
-        resultSet = metaData.getTables(null, session.getIntrospectionSchema(), "%", new String[] { "TABLE" });
+        resultSet = getTables(session, metaData, session.getIntrospectionSchema(), "%", new String[] { "TABLE" });
         List<String> tableNames = new ArrayList<String>();
         while (resultSet.next()) {
             String tableName = resultSet.getString(3);
@@ -156,7 +165,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 if (isValidName(tableName)) {
                 	tableName = quoting.quote(tableName);
                 	if (CommandLineParser.getInstance().qualifyNames) {
-                		String schemaName = resultSet.getString(2);
+                		String schemaName = resultSet.getString(session.dbms == DBMS.MySQL? 1 : 2);
                 		if (schemaName != null) {
                 			schemaName = quoting.quote(schemaName.trim());
                 			if (schemaName.length() > 0) {
@@ -176,7 +185,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         Map<String, Map<Integer, Column>> pkColumns = new HashMap<String, Map<Integer, Column>>();
         for (String tableName: tableNames) {
         	Table tmp = new Table(tableName, null, false);
-            resultSet = metaData.getPrimaryKeys(null, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()));
+            resultSet = getPrimaryKeys(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()));
             Map<Integer, Column> pk = pkColumns.get(tableName);
             if (pk == null) {
                 pk = new HashMap<Integer, Column>();
@@ -208,7 +217,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         for (String tableName: tableNames) {
         	Table tmp = new Table(tableName, null, false);
         	_log.info("getting columns for " + quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))) + "." + quoting.unquote(tmp.getUnqualifiedName()));
-        	resultSet = metaData.getColumns(null, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), "%");
+        	resultSet = getColumns(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), "%");
         	_log.info("done");
         	Map<Integer, Column> pk = pkColumns.get(tableName);
             while (resultSet.next()) {
@@ -268,12 +277,26 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         return tables;
     }
 
-    /**
+    private ResultSet getPrimaryKeys(Session session, DatabaseMetaData metaData, String schema, String table) throws SQLException {
+    	if (session.dbms == DBMS.MySQL) {
+        	return metaData.getPrimaryKeys(schema, null, table);
+    	}
+    	return metaData.getPrimaryKeys(null, schema, table);
+	}
+
+	private ResultSet getTables(Session session, DatabaseMetaData metaData, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
+    	if (session.dbms == DBMS.MySQL) {
+    		 return metaData.getTables(schemaPattern, null, tableNamePattern, types);
+    	}
+    	return metaData.getTables(null, schemaPattern, tableNamePattern, types);
+	}
+
+	/**
      * Find a key of a table based on an unique index on non-nullable columns.
      */
     private boolean findUniqueIndexBasedKey(DatabaseMetaData metaData, Quoting quoting, Session session, Table tmp, Map<Integer, Column> pk) {
     	try {
-    		ResultSet resultSet = metaData.getColumns(null, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), "%");
+    		ResultSet resultSet = getColumns(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), "%");
         	
     		List<String> nonNullColumns = new ArrayList<String>();
     		boolean hasNullable = false;
@@ -311,7 +334,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     			return false;
     		}
     		
-    		resultSet = metaData.getIndexInfo(null, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), true, true);
+    		resultSet = getIndexInfo(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), true, true);
 	        Map<String, List<String>> indexes = new TreeMap<String, List<String>>();
 	        while (resultSet.next()) {
 	        	String indexName = resultSet.getString(6);
@@ -361,6 +384,20 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     	}
 	}
     
+	private ResultSet getIndexInfo(Session session, DatabaseMetaData metaData, String schema, String table, boolean unique, boolean approximate) throws SQLException {
+		if (session.dbms == DBMS.MySQL) {
+			return metaData.getIndexInfo(schema, null, table, unique, approximate);
+		}
+		return metaData.getIndexInfo(null, schema, table, unique, approximate);
+	}
+
+	private ResultSet getColumns(Session session, DatabaseMetaData metaData, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
+		if (session.dbms == DBMS.MySQL) {
+			return metaData.getColumns(schemaPattern, null, tableNamePattern, columnNamePattern);
+		}
+		return metaData.getColumns(null, schemaPattern, tableNamePattern, columnNamePattern);
+	}
+
 	/**
      * Checks syntactical correctness of names.
      * 
@@ -409,15 +446,32 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
      * @param userName schema with this name may be empty
      */ 
     public static String getDefaultSchema(Session session, String userName) {
+    	if (session.dbms == DBMS.MySQL) {
+    		try {
+    			final String[] database = new String[1];
+    			session.executeQuery("Select DATABASE()", new Session.AbstractResultSetReader() {
+					@Override
+					public void readCurrentRow(ResultSet resultSet) throws SQLException {
+						database[0] = resultSet.getString(1);
+					}
+				});
+        		if (database[0] != null) {
+        			return database[0];
+        		}
+    		} catch (SQLException e) {
+    			e.printStackTrace();
+    			// ignore
+    		}
+    	}
     	List<String> schemas = new ArrayList<String>();
 		try {
 			DatabaseMetaData metaData = session.getMetaData();
 			String dbName = metaData.getDatabaseProductName();
 			boolean isPostgreSQL = dbName != null && dbName.toLowerCase().contains("PostgreSQL".toLowerCase());
 			boolean isH2Sql = dbName != null && dbName.toLowerCase().startsWith("H2".toLowerCase());
-			ResultSet rs = metaData.getSchemas();
+			ResultSet rs = session.dbms == DBMS.MySQL? metaData.getCatalogs() : metaData.getSchemas();
 			while (rs.next()) {
-				schemas.add(rs.getString("TABLE_SCHEM"));
+				schemas.add(rs.getString(session.dbms == DBMS.MySQL? "TABLE_CAT" : "TABLE_SCHEM"));
 			}
 			rs.close();
 			String userSchema = null;
@@ -462,7 +516,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     		_log.info("default schema is '" + defaultSchema + "'");
     	}
     	_log.info("getting columns for " + table.getOriginalSchema(defaultSchema) + "." + quoting.unquote(table.getUnqualifiedName()));
-    	ResultSet resultSet = metaData.getColumns(null, quoting.unquote(table.getOriginalSchema(defaultSchema)), quoting.unquote(table.getUnqualifiedName()), "%");
+    	ResultSet resultSet = getColumns(session, metaData, quoting.unquote(table.getOriginalSchema(defaultSchema)), quoting.unquote(table.getUnqualifiedName()), "%");
     	_log.info("done");
     	while (resultSet.next()) {
             String colName = quoting.quote(resultSet.getString(4));
