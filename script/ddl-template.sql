@@ -12,7 +12,7 @@ ${create-table}${schema}JAILER_CONFIG${table-suffix}
    jvalue          VARCHAR(200)
 ) ${create-table-suffix};
 
-INSERT INTO ${config-dml-reference}(jversion, jkey, jvalue) values('${version}', 'magic', '837065098274756382534403654245288');
+INSERT INTO ${config-dml-reference}${table-suffix}(jversion, jkey, jvalue) values('${version}', 'magic', '837065098274756382534403654245288');
 
 ${create-table}${schema}JAILER_GRAPH${table-suffix}
 (
