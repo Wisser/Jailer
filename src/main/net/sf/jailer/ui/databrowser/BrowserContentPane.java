@@ -45,6 +45,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.sql.Blob;
 import java.sql.Clob;
+import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLXML;
@@ -108,6 +109,7 @@ import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.ExtractionModel;
+import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.ExtractionModelFrame;
@@ -122,6 +124,7 @@ import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.Pair;
+import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -1919,12 +1922,80 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 *            row number limit
 	 */
 	private void reloadRows(String andCond, final List<Row> rows, Object context, int limit, boolean selectDistinct) throws SQLException {
+		try {
+			session.setSilent(true);
+			reloadRows(andCond, rows, context, limit, selectDistinct, null);
+		} catch (SQLException e) {
+			Session._log.warn("failed, try another strategy");
+		} finally {
+			session.setSilent(false);
+		}
+		Set<String> existingColumnsLowerCase = null;
+		if (!(table instanceof SqlStatementTable)) {
+			existingColumnsLowerCase = findColumnsLowerCase(table, session);
+		}
+		reloadRows(andCond, rows, context, limit, selectDistinct, existingColumnsLowerCase);
+	}
+	
+    /**
+     * Finds the columns of a given {@link Table}.
+     *
+     * @param table the table
+     * @param session the statement executor for executing SQL-statements
+     */
+    private Set<String> findColumnsLowerCase(Table table, Session session) {
+    	try {
+	    	Set<String> columns = new HashSet<String>();
+	    	DatabaseMetaData metaData = session.getMetaData();
+	    	Quoting quoting = new Quoting(metaData);
+	    	String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.dbUser);
+	    	String schema = quoting.unquote(table.getOriginalSchema(defaultSchema));
+			String tableName = quoting.unquote(table.getUnqualifiedName());
+			ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, metaData, schema, tableName, "%");
+	    	while (resultSet.next()) {
+	            String colName = quoting.quote(resultSet.getString(4)).toLowerCase();
+	            columns.add(colName);
+	        }
+	        resultSet.close();
+	        if (columns.isEmpty()) {
+	        	if (session.getMetaData().storesUpperCaseIdentifiers()) {
+	        		schema = schema.toUpperCase();
+	        		tableName = tableName.toUpperCase();
+	        	} else {
+	        		schema = schema.toLowerCase();
+	        		tableName = tableName.toLowerCase();
+	        	}
+				resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, metaData, schema, tableName, "%");
+		    	while (resultSet.next()) {
+		            String colName = quoting.quote(resultSet.getString(4)).toLowerCase();
+		            columns.add(colName);
+		        }
+	        }
+	        if (columns.isEmpty()) {
+	        	return null;
+	        }
+	        return columns;
+    	} catch (Exception e) {
+    		return null;
+    	}
+    }
 
+	/**
+	 * Reload rows from {@link #table}.
+	 * 
+	 * @param rows
+	 *            to put the rows into
+	 * @param context
+	 *            cancellation context
+	 * @param limit
+	 *            row number limit
+	 */
+	private void reloadRows(String andCond, final List<Row> rows, Object context, int limit, boolean selectDistinct, Set<String> existingColumnsLowerCase) throws SQLException {
 		if (table instanceof SqlStatementTable) {
 			try {
 				session.setSilent(true);
 				Map<String, List<Row>> rowsMap = new HashMap<String, List<Row>>();
-				reloadRows(andCond, null, rowsMap, context, limit, false, null, false);
+				reloadRows(andCond, null, rowsMap, context, limit, false, null, existingColumnsLowerCase);
 				if (rowsMap.get("") != null) {
 					rows.addAll(rowsMap.get(""));
 				}
@@ -1948,39 +2019,39 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		noDistinctRows = 0;
 		
 		if (association != null && rowIdSupport.getPrimaryKey(association.source).getColumns().isEmpty()) {
-			loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 1);
+			loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 1, existingColumnsLowerCase);
 		} else {
 			try {
-				loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 510);
+				loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 510, existingColumnsLowerCase);
 				return;
 			} catch (SQLException e) {
 				Session._log.warn("failed, try another blocking-size");
 			}
 			try {
-				loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 300);
+				loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 300, existingColumnsLowerCase);
 				return;
 			} catch (SQLException e) {
 				Session._log.warn("failed, try another blocking-size");
 			}
 			try {
-				loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 100);
+				loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 100, existingColumnsLowerCase);
 				return;
 			} catch (SQLException e) {
 				Session._log.warn("failed, try another blocking-size");
 			}
 			try {
-				loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 40);
+				loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 40, existingColumnsLowerCase);
 				return;
 			} catch (SQLException e) {
 				Session._log.warn("failed, try another blocking-size");
 			}
 		}
 		
-		loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 1);
+		loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 1, existingColumnsLowerCase);
 	}
 
 	private void loadRowBlocks(String andCond, final List<Row> rows, Object context, int limit, boolean selectDistinct, List<Row> pRows,
-			Map<String, Row> rowSet, int NUM_PARENTS) throws SQLException {
+			Map<String, Row> rowSet, int NUM_PARENTS, Set<String> existingColumnsLowerCase) throws SQLException {
 		List<List<Row>> parentBlocks = new ArrayList<List<Row>>();
 		List<Row> currentBlock = new ArrayList<Row>();
 		Set<String> regPRows = new HashSet<String>();
@@ -2005,7 +2076,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (Configuration.forDbms(session).getSqlLimitSuffix() != null) {
 				try {
 					session.setSilent(true);
-					reloadRows(andCond, pRowBlock, newBlockRows, context, limit, false, Configuration.forDbms(session).getSqlLimitSuffix(), selectDistinct);
+					reloadRows(andCond, pRowBlock, newBlockRows, context, limit, false, Configuration.forDbms(session).getSqlLimitSuffix(), existingColumnsLowerCase);
 					loaded = true;
 				} catch (SQLException e) {
 					Session._log.warn("failed, try another limit-strategy");
@@ -2016,7 +2087,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (!loaded) {
 				try {
 					session.setSilent(true);
-					reloadRows(andCond, pRowBlock, newBlockRows, context, limit, true, null, selectDistinct);
+					reloadRows(andCond, pRowBlock, newBlockRows, context, limit, true, null, existingColumnsLowerCase);
 					loaded = true;
 				} catch (SQLException e) {
 					Session._log.warn("failed, try another limit-strategy");
@@ -2024,7 +2095,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					session.setSilent(false);
 				}
 				if (!loaded) {
-					reloadRows(andCond, pRowBlock, newBlockRows, context, limit, false, null, selectDistinct);
+					reloadRows(andCond, pRowBlock, newBlockRows, context, limit, false, null, existingColumnsLowerCase);
 				}
 			}
 			if (pRowBlock == null) {
@@ -2087,22 +2158,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 *            to put the rows into
 	 * @param context
 	 *            cancellation context
-	 * @param selectDistinct 
 	 * @param rowCache 
 	 * @param allPRows 
 	 */
 	private void reloadRows(String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, Object context, int limit, boolean useOLAPLimitation,
-			String sqlLimitSuffix, boolean selectDistinct) throws SQLException {
-		try {
-			reloadRows0(andCond, parentRows, rows, context, parentRows == null? limit : Math.max(5000, limit), useOLAPLimitation, sqlLimitSuffix, selectDistinct);
-		} catch (SQLException e) {
-			if (selectDistinct) {
-				// try without "distinct"
-				reloadRows0(andCond, parentRows, rows, context, limit, useOLAPLimitation, sqlLimitSuffix, false);
-			} else {
-				throw e;
-			}
-		}
+			String sqlLimitSuffix, Set<String> existingColumnsLowerCase) throws SQLException {
+		reloadRows0(andCond, parentRows, rows, context, parentRows == null? limit : Math.max(5000, limit), useOLAPLimitation, sqlLimitSuffix, existingColumnsLowerCase);
 	}
 
 	/**
@@ -2112,11 +2173,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 *            to put the rows into
 	 * @param context
 	 *            cancellation context
-	 * @param selectDistinct 
 	 */
 	private void reloadRows0(String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, Object context, int limit, boolean useOLAPLimitation,
-			String sqlLimitSuffix, boolean selectDistinct) throws SQLException {
-		String sql = "Select "; // + (selectDistinct? "distinct " : "");
+			String sqlLimitSuffix, Set<String> existingColumnsLowerCase) throws SQLException {
+		String sql = "Select ";
 		final Set<String> pkColumnNames = new HashSet<String>();
 		final Set<String> parentPkColumnNames = new HashSet<String>();
 		final boolean selectParentPK = association != null && parentRows != null && parentRows.size() > 1;
@@ -2144,9 +2204,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 			int i = 0;
+			
 			for (Column column : rowIdSupport.getColumns(table)) {
 				String name = column.name;
-				sql += (!f ? ", " : "") + "A." + name + " AS A" + i;
+				if (existingColumnsLowerCase != null && !existingColumnsLowerCase.contains(name.toLowerCase())) {
+					sql += (!f ? ", " : "") + "'?' AS A" + i;
+				} else {
+					sql += (!f ? ", " : "") + "A." + name + " AS A" + i;
+				}
 				olapPrefix += (!f ? ", " : "") + "S.A" + i;
 				++i;
 				f = false;

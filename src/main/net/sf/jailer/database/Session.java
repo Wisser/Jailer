@@ -627,6 +627,12 @@ public class Session {
         	CancellationHandler.checkForCancellation(null);
 	    	if (!silent) {
 	    		_log.error("Error executing statement", e);
+	    	} else {
+	    		String message = e.getMessage();
+	    		if (e instanceof SqlException) {
+	    			message = e.getCause().getMessage();
+	    		}
+				_log.info("\"" + message + "\"");
 	    	}
 	    	throw e;
 	    }

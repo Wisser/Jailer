@@ -165,6 +165,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		}
         
         scriptFormat = theScriptFormat;
+        toLabel.setText(scriptFormat.getDisplayName());
         
         setModal(true);
         setLocation(100, 150);
@@ -814,6 +815,8 @@ public class ExportDialog extends javax.swing.JDialog {
         jLabel10 = new javax.swing.JLabel();
         workingTableSchemaComboBox = new javax.swing.JComboBox();
         confirmInsert = new javax.swing.JCheckBox();
+        jLabel17 = new javax.swing.JLabel();
+        toLabel = new javax.swing.JLabel();
         jPanel7 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -1345,6 +1348,22 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 4, 0);
         jPanel1.add(confirmInsert, gridBagConstraints);
 
+        jLabel17.setText(" To"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 19;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        jPanel1.add(jLabel17, gridBagConstraints);
+
+        toLabel.setText(" To"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 19;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        jPanel1.add(toLabel, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -1741,6 +1760,7 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
@@ -1782,6 +1802,7 @@ public class ExportDialog extends javax.swing.JDialog {
     public javax.swing.JPanel sourceSchemaMappingPanel;
     private javax.swing.JLabel subjectTable;
     private javax.swing.JTextField threads;
+    private javax.swing.JLabel toLabel;
     public javax.swing.JCheckBox unicode;
     private javax.swing.JCheckBox upsertCheckbox;
     public javax.swing.JCheckBox useRowIds;

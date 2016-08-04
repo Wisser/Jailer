@@ -563,6 +563,17 @@ public class RemoteEntityGraph extends EntityGraph {
      * @return select clause
      */
     protected String filteredSelectionClause(Table table) {
+    	return filteredSelectionClause(table, null);
+    }
+    
+    /**
+     * Gets select clause for reading rows of given type
+     * with respect of the column filters.
+     * 
+     * @param table the table to read rows from
+     * @return select clause
+     */
+    protected String filteredSelectionClause(Table table, String columnPrefix) {
     	StringBuilder sb = new StringBuilder();
     	boolean first = true;
     	
@@ -583,7 +594,7 @@ public class RemoteEntityGraph extends EntityGraph {
     		} else {
     			sb.append("T." + c.name);
     		}
-    		sb.append(" as " + c.name);
+    		sb.append(" as " + (columnPrefix == null? "" : columnPrefix) + c.name);
     		first = false;
     	}
     	
