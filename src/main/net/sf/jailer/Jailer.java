@@ -1216,8 +1216,9 @@ public class Jailer {
 
 	/**
 	 * Exports entities.
+	 * @param <as>
 	 */
-	private static void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, String driverClassName, String dbUrl,
+	private static <as> void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, String driverClassName, String dbUrl,
 			String dbUser, String dbPassword, boolean explain, int threads, ScriptFormat scriptFormat) throws Exception {
 		
 		if (scriptFile != null) {
@@ -1284,6 +1285,11 @@ public class Jailer {
 		jailer.appendCommentHeader("");
 
 		if (Configuration.forDbms(session).getRowidName() == null) {
+			if (extractionModel.additionalSubjects != null) {
+				for (AdditionalSubject as: extractionModel.additionalSubjects) {
+					extractionModel.dataModel.checkForPrimaryKey(as.subject, deleteScriptFileName != null);
+				}
+			}
 			extractionModel.dataModel.checkForPrimaryKey(extractionModel.subject, deleteScriptFileName != null);
 		}
 

@@ -391,7 +391,10 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		return metaData.getIndexInfo(null, schema, table, unique, approximate);
 	}
 
-	private ResultSet getColumns(Session session, DatabaseMetaData metaData, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
+	/**
+	 * Calls {@link DatabaseMetaData#getColumns(String, String, String, String)}. Uses schemaPattern as catalogPattern on MySQL.
+	 */
+	public static ResultSet getColumns(Session session, DatabaseMetaData metaData, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
 		if (session.dbms == DBMS.MySQL) {
 			return metaData.getColumns(schemaPattern, null, tableNamePattern, columnNamePattern);
 		}

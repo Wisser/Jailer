@@ -59,6 +59,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.DataModel.NoPrimaryKeyException;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.ExtractionModel;
+import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.ui.databrowser.DataBrowser;
@@ -1004,7 +1005,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	}
 	
 	public void openExportDialog(boolean checkRI, Runnable onDataModelUpdate) {
-    	try {
+		String tmpFileName = null;
+		try {
     		if (checkRI && extractionModelEditor.dataModel != null && !ScriptFormat.XML.equals(extractionModelEditor.scriptFormat)) {
     			Association restrictedDependency = findRestrictedDependency(extractionModelEditor.dataModel);
     			if (restrictedDependency != null) {
@@ -1024,7 +1026,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     			return;
     		}
     		
-    		String tmpFileName = null;
     		if (extractionModelEditor.extractionModelFile == null) {
     			tmpFileName = createTempFileName();
     			if (!extractionModelEditor.save(tmpFileName)) {
@@ -1041,6 +1042,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        	Session.closeTemporaryTableSession();
 			        	Session session = new Session(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword());
 			    		if (extractionModelEditor.dataModel != null && Configuration.forDbms(session).getRowidName() == null) {
+			    			if (extractionModelEditor.extractionModel != null) {
+			    				if (extractionModelEditor.extractionModel.additionalSubjects != null) {
+			    					for (AdditionalSubject as: extractionModelEditor.extractionModel.additionalSubjects) {
+			    						extractionModelEditor.extractionModel.dataModel.checkForPrimaryKey(as.subject, false);
+			    					}
+			    				}
+			    			}
 			    			extractionModelEditor.dataModel.checkForPrimaryKey(extractionModelEditor.subject, false);
 			    		}
 			        	ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getPassword(), checkRI);
@@ -1095,6 +1103,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     		} else {
     			UIUtil.showException(this, "Error", e);
     		}
+        } finally {
+        	if (tmpFileName != null) {
+        		new File(tmpFileName).delete();
+        	}
         }
     }
 
