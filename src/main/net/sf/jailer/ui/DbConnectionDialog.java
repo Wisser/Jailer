@@ -315,8 +315,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			editButton.setEnabled(currentConnection != null);
 			deleteButton.setEnabled(currentConnection != null);
 			copy.setEnabled(currentConnection != null);
-			upButton.setEnabled(currentConnection != null && selectedRow > 0);
-			downButton.setEnabled(currentConnection != null && selectedRow < connectionList.size() - 1);
 			jButton1.setEnabled(currentConnection != null && selectedRow >= 0 && selectedRow < connectionList.size() && isAssignedToDataModel(selectedRow));
 		} finally {
 			inRefresh = false;
@@ -439,6 +437,19 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		if (connectionList.size() == 1) {
 			currentConnection = connectionList.get(0);
 		}
+		Collections.sort(connectionList, new Comparator<ConnectionInfo>() {
+			@Override
+			public int compare(ConnectionInfo o1, ConnectionInfo o2) {
+				if (currentModelSubfolder != null) {
+					boolean c1 = currentModelSubfolder.equals(o1.dataModelFolder);
+					boolean c2 = currentModelSubfolder.equals(o2.dataModelFolder);
+					
+					if (c1 && !c2) return -1;
+					if (!c1 && c2) return 1;
+				}
+				return o1.alias.compareTo(o2.alias);
+			}
+		});
 	}
 
 	/**
@@ -460,8 +471,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         editButton = new javax.swing.JButton();
         copy = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
-        upButton = new javax.swing.JButton();
-        downButton = new javax.swing.JButton();
         infoBarLabel = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -566,32 +575,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
         jPanel3.add(deleteButton, gridBagConstraints);
 
-        upButton.setText(" Up ");
-        upButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                upButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 40;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(8, 4, 2, 0);
-        jPanel3.add(upButton, gridBagConstraints);
-
-        downButton.setText(" Down ");
-        downButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                downButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 50;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        jPanel3.add(downButton, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 20;
@@ -642,32 +625,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
-
-    private void upButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_upButtonActionPerformed
-        if (currentConnection != null) {
-        	int i = connectionList.indexOf(currentConnection);
-        	if (i > 0) {
-        		connectionList.set(i, connectionList.get(i - 1));
-        		connectionList.set(i - 1, currentConnection);
-        		connectionsTable.getSelectionModel().setSelectionInterval(i - 1, i - 1);
-        		refresh();
-        		store();
-        	}
-        }
-    }//GEN-LAST:event_upButtonActionPerformed
-
-    private void downButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downButtonActionPerformed
-        if (currentConnection != null) {
-        	int i = connectionList.indexOf(currentConnection);
-        	if (i < connectionList.size() - 1) {
-        		connectionList.set(i, connectionList.get(i + 1));
-        		connectionList.set(i + 1, currentConnection);
-        		connectionsTable.getSelectionModel().setSelectionInterval(i + 1, i + 1);
-        		refresh();
-        		store();
-        	}
-        }
-    }//GEN-LAST:event_downButtonActionPerformed
 
     private void copyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copyActionPerformed
     	if (currentConnection != null) {
@@ -764,8 +721,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     			}
     			if (!found) {
     				ci.alias = newAlias;
-    				connectionList.add(ci);
-    				int i = connectionList.size() - 1;
+    				connectionList.add(0, ci);
+    				int i = 0;
         			connectionsTable.getSelectionModel().setSelectionInterval(i, i);
         			refresh();
             		store();
@@ -817,7 +774,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 	}
 	
-	private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+	private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {                                         
 		connect();
 	}// GEN-LAST:event_jButton1ActionPerformed
 
@@ -944,7 +901,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     private javax.swing.JTable connectionsTable;
     private javax.swing.JButton copy;
     private javax.swing.JButton deleteButton;
-    private javax.swing.JButton downButton;
     private javax.swing.JButton editButton;
     private javax.swing.JLabel infoBarLabel;
     private javax.swing.JButton jButton1;
@@ -955,7 +911,6 @@ public class DbConnectionDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JButton newButton;
-    private javax.swing.JButton upButton;
     // End of variables declaration//GEN-END:variables
 
 	public String getPassword() {

@@ -617,7 +617,7 @@ public class UIUtil {
 			String sql = ((SqlException) t).sqlStatement;
 			new SqlErrorDialog(parent == null ? null
 					: SwingUtilities.getWindowAncestor(parent), lineWrap(
-					message, 120).toString(), lineWrap(sql, 140).toString());
+					message, 120).toString(), lineWrap(sql, 120).toString());
 			return;
 		}
 		StringBuilder msg = lineWrap(t.getMessage(), 80);
