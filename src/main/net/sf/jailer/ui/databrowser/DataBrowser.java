@@ -93,7 +93,6 @@ import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.DataModelManagerDialog;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
-import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;

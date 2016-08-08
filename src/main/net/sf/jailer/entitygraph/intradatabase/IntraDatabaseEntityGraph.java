@@ -19,7 +19,9 @@ import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
@@ -37,6 +39,7 @@ import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.progress.ProgressListenerRegistry;
 import net.sf.jailer.util.Quoting;
 
+
 /**
  * Specialized {@link RemoteEntityGraph} for exporting data into a different
  * schema within the same database.
@@ -46,7 +49,7 @@ import net.sf.jailer.util.Quoting;
 public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	
 	private boolean upsertOnly;
-
+	
 	/**
 	 * Constructor.
 	 * 
@@ -69,47 +72,72 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			upsertStrategies.add(new MergeUS(true));
 			upsertStrategies.add(new UpsertMYSQLUS());
 			upsertStrategies.add(new UpsertPGUS());
+			upsertStrategies.add(new UpsertStandardUS());
 		}
-		
-		
-		// TODO
-		
-		System.out.println("Test");
-		
-		long t = System.currentTimeMillis();
-		Quoting quoting = null;
 		try {
 			quoting = new Quoting(session.getMetaData());
-		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
 		}
-		String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.dbUser);
-		
-		for (Table table: dataModel.getTables()) {
-			try {
-				ResultSet resultSet = getPrimaryKeys(session, session.getMetaData(), quoting.unquote(table.getOriginalSchema(quoting.quote(defaultSchema))), quoting.unquote(table.getUnqualifiedName()));
-				boolean b = resultSet.next();
-				resultSet.close();
-				System.out.println(table.getName() + " " + b);
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-        		
-		System.out.println(System.currentTimeMillis() - t);
-		
-		throw new RuntimeException();
-		
 	}
+
+	private String defaultSchema = null;
+	private Quoting quoting = null;
+	private Map<Table, Boolean> hasPKPerTable = new HashMap<Table, Boolean>();
+
+	private synchronized boolean hasPrimarykey(Session session, Table table) {
+		try {
+			Boolean hasPrimarykey = hasPKPerTable.get(table);
+			if (hasPrimarykey != null) {
+				return hasPrimarykey;
+			}
+			
+			if (defaultSchema == null) {
+				defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.dbUser);
+			}
 	
-	 private ResultSet getPrimaryKeys(Session session, DatabaseMetaData metaData, String schema, String table) throws SQLException {
-	    	if (session.dbms == DBMS.MySQL) {
-	        	return metaData.getPrimaryKeys(schema, null, table);
-	    	}
-	    	return metaData.getPrimaryKeys(null, schema.toUpperCase(), table.toUpperCase());
+			String schema = table.getOriginalSchema("");
+			String mappedSchema = CommandLineParser.getInstance()
+					.getSchemaMapping().get(schema);
+			if (mappedSchema != null) {
+				schema = mappedSchema;
+			}
+			if (schema.length() == 0) {
+				schema = defaultSchema;
+			}
+			
+			schema = quoting.unquote(schema);
+			String tableName = quoting.unquote(table.getUnqualifiedName());
+			ResultSet resultSet = getPrimaryKeys(session, session.getMetaData(), schema, tableName);
+			hasPrimarykey = resultSet.next();
+			resultSet.close();
+			if (!hasPrimarykey) {
+				if (session.getMetaData().storesUpperCaseIdentifiers()) {
+	        		schema = schema.toUpperCase();
+	        		tableName = tableName.toUpperCase();
+	        	} else {
+	        		schema = schema.toLowerCase();
+	        		tableName = tableName.toLowerCase();
+	        	}
+				resultSet = getPrimaryKeys(session, session.getMetaData(), schema, tableName);
+				hasPrimarykey = resultSet.next();
+				resultSet.close();
+			}
+			hasPKPerTable.put(table, hasPrimarykey);
+			return hasPrimarykey;
+		} catch (SQLException e) {
+			return true;
 		}
+	}
+
+	private ResultSet getPrimaryKeys(Session session,
+			DatabaseMetaData metaData, String schema, String table)
+			throws SQLException {
+		if (session.dbms == DBMS.MySQL) {
+			return metaData.getPrimaryKeys(schema, null, table);
+		}
+		return metaData.getPrimaryKeys(null, schema, table);
+	}
 
 	/**
 	 * Creates a new entity-graph.
@@ -121,6 +149,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 * @param universalPrimaryKey
 	 *            the universal primary key
 	 * @return the newly created entity-graph
+	 * @throws SQLException 
 	 */
 	public static IntraDatabaseEntityGraph create(DataModel dataModel,
 			int graphID, Session session, PrimaryKey universalPrimaryKey) {
@@ -204,22 +233,15 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 */
 	public void readMarkedEntities(Table table, boolean orderByPK)
 			throws SQLException {
-		String selectionSchema = filteredSelectionClause(table, COLUMN_PREFIX);
-		String sql = "Select " + selectionSchema + " From "
+		String selectionSchema = filteredSelectionClause(table, COLUMN_PREFIX, quoting);
+		readEntitiesByQuery(table, "Select " + selectionSchema + " From "
 				+ SQLDialect.dmlTableReference(ENTITY, session) + " E join "
 				+ table.getName() + " T on "
 				+ pkEqualsEntityID(table, "T", "E")
-				+ " Where E.birthday=0 and E.r_entitygraph=" + graphID
-				+ " and E.type='" + table.getName() + "'";
-		long rc;
-		if (table.getUpsert() || upsertOnly) {
-			rc = upsertRows(table, sql, true);
-		} else {
-			rc = insertRows(table, sql);
-		}
-		ProgressListenerRegistry.getProgressListener().exported(table, rc);
+				+ " Where (E.birthday=0 and E.r_entitygraph=" + graphID
+				+ " and E.type='" + table.getName() + "')");
 	}
-
+	
 	/**
 	 * Reads all entities of a given table.
 	 * 
@@ -230,17 +252,48 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 */
 	public void readEntities(Table table, boolean orderByPK)
 			throws SQLException {
-		String sql = "Select " + filteredSelectionClause(table, COLUMN_PREFIX) + " From "
+		readEntitiesByQuery(table, "Select " + filteredSelectionClause(table, COLUMN_PREFIX, quoting) + " From "
 				+ SQLDialect.dmlTableReference(ENTITY, session) + " E join "
 				+ table.getName() + " T on "
 				+ pkEqualsEntityID(table, "T", "E")
-				+ " Where E.birthday>=0 and E.r_entitygraph=" + graphID
-				+ " and E.type='" + table.getName() + "'";
+				+ " Where (E.birthday>=0 and E.r_entitygraph=" + graphID
+				+ " and E.type='" + table.getName() + "')");
+	}
+
+	/**
+	 * Reads all entities of a given table.
+	 * 
+	 * @param table
+	 *            the table
+	 * @param sql retrieves the entities
+	 */
+	private void readEntitiesByQuery(Table table, String sql) throws SQLException {
+		boolean tableHasIdentityColumn = false;
+        if (Configuration.forDbms(session).isIdentityInserts()) {
+        	for (Column c: table.getColumns()) {
+        		if (c.isIdentityColumn) {
+        			tableHasIdentityColumn = true;
+        			break;
+        		}
+        	}
+        }
 		long rc;
-		if (table.getUpsert() || upsertOnly) {
-			rc = upsertRows(table, sql, true);
+		if (tableHasIdentityColumn) {
+			synchronized (session.getConnection()) {
+				session.executeUpdate("SET IDENTITY_INSERT " + qualifiedTableName(table) + " ON");
+				if (table.getUpsert() || upsertOnly) {
+					rc = upsertRows(table, sql, true);
+				} else {
+					rc = insertRows(table, sql);
+				}
+				session.executeUpdate("SET IDENTITY_INSERT " + qualifiedTableName(table) + " OFF");
+			}
 		} else {
-			rc = insertRows(table, sql);
+			if (table.getUpsert() || upsertOnly) {
+				rc = upsertRows(table, sql, true);
+			} else {
+				rc = insertRows(table, sql);
+			}
 		}
 		ProgressListenerRegistry.getProgressListener().exported(table, rc);
 	}
@@ -286,13 +339,24 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		String labelCSL = insertClause(table, null, null);
 		sb.append("Insert into " + qualifiedTableName(table) + "(" + labelCSL
 				+ ") " + sqlSelect);
+		
+		if (!table.primaryKey.getColumns().isEmpty() && !hasPrimarykey(session, table)) {
+			// dont insert if PK constraint is not enforced
+			return upsertRows(table, sqlSelect, true);
+		}
+		
 		boolean silent = session.getSilent();
 		session.setSilent(true);
 		try {
 			return session.executeUpdate(sb.toString());
 		} catch (SQLException e) {
-			// try upsert
-			return upsertRows(table, sqlSelect, true);
+			try {
+				// try upsert
+				return upsertRows(table, sqlSelect, true);
+			} catch (SQLException e2) {
+				// throw original exception
+				throw e;
+			}
 		} finally {
 			session.setSilent(silent);
 		}
@@ -356,99 +420,6 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		}
 		
 		return rc;
-		
-		// TODO
-
-//		String labelCSL = insertClause(table, null);
-//
-//		SQLDialect currentDialect = Configuration.forDbms(session)
-//				.getSqlDialect();
-//		StatementBuilder upsertInsertStatementBuilder = new StatementBuilder(1);
-//
-//		String insertHead = "Insert into " + qualifiedTableName(table) + "("
-//				+ labelCSL + ") ";
-//		StringBuffer whereForTerminator = new StringBuffer("");
-//
-//		// assemble 'where'
-//		boolean f = true;
-//		for (Column pk : table.primaryKey.getColumns()) {
-//			if (!f) {
-//				whereForTerminator.append(" and ");
-//			}
-//			f = false;
-//			whereForTerminator.append("T." + pk.name + "=Q." + pk.name);
-//		}
-//
-//		if (currentDialect.upsertMode == UPSERT_MODE.MERGE) {
-//			// MERGE INTO JL_TMP T USING (SELECT 1 c1, 2 c2 from dual) incoming
-//			// ON (T.c1 = incoming.c1)
-//			// WHEN MATCHED THEN UPDATE SET T.c2 = incoming.c2
-//			// WHEN NOT MATCHED THEN INSERT (T.c1, T.c2) VALUES (incoming.c1,
-//			// incoming.c2)
-//			insertHead = "MERGE INTO " + qualifiedTableName(table)
-//					+ " T USING(";
-//			StringBuffer terminator = new StringBuffer(") Q ON("
-//					+ whereForTerminator + ") ");
-//
-//			StringBuffer sets = new StringBuffer();
-//			StringBuffer tSchema = new StringBuffer();
-//			StringBuffer iSchema = new StringBuffer();
-//			for (Column column : table.getColumns()) {
-//				if (!isPrimaryKeyColumn(table, column.name)) {
-//					if (sets.length() > 0) {
-//						sets.append(", ");
-//					}
-//					sets.append("T." + column.name + "=Q." + column.name);
-//				}
-//				if (tSchema.length() > 0) {
-//					tSchema.append(", ");
-//				}
-//				tSchema.append("T." + column.name);
-//				if (iSchema.length() > 0) {
-//					iSchema.append(", ");
-//				}
-//				iSchema.append("Q." + column.name);
-//			}
-//			if (sets.length() > 0) {
-//				terminator.append("WHEN MATCHED THEN UPDATE SET " + sets + " ");
-//			}
-//			terminator.append("WHEN NOT MATCHED THEN INSERT (" + tSchema
-//					+ ") VALUES(" + iSchema + ")\n");
-//
-//			upsertInsertStatementBuilder.append(insertHead, sqlSelect, "",
-//					terminator.toString());
-//
-//			String sql = upsertInsertStatementBuilder.build();
-//			return session.executeUpdate(sql);
-//		} else {
-//
-//			
-//			insertHead += "Select " + insertClause(table, "Q") + " From (";
-//			StringBuffer terminator = new StringBuffer(") as Q(" + labelCSL
-//					+ ") Where not exists (Select * from "
-//					+ qualifiedTableName(table) + " T " + "Where ");
-//			terminator.append(whereForTerminator + ");\n");
-//
-//			upsertInsertStatementBuilder.append(insertHead, sqlSelect, "",
-//					terminator.toString());
-//
-//			StringBuffer insert = new StringBuffer("");
-//			insert.append("Update " + qualifiedTableName(table) + " set ");
-//
-//			String sql = upsertInsertStatementBuilder.build();
-//
-//			// Update Oracle + DB2 + H2:
-//			// update EMPLOYEE E set (name, hiredate) = (select D.name,
-//			// D.location from EMPLOYEE T inner join DEPARTMENT D on T.deptno =
-//			// D.deptno where T.empno=E.empno)
-//
-//					// MySql
-//			// update EMPLOYEE E inner join DEPARTMENT D on E.deptno = D.deptno
-//			// set E.name=D.name, E.job=D.location
-//
-//		
-//			return 0;
-//		}
 	}
 
 	/**
@@ -473,10 +444,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			if (tableAlias != null) {
 				sb.append(tableAlias + ".");
 			}
-			if (columnPrefix != null) {
-				sb.append(columnPrefix);
-			}
-			sb.append(c.name);
+			sb.append(prefixColumnName(columnPrefix, quoting, c));
 			first = false;
 		}
 
@@ -497,7 +465,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 				whereForTerminator.append(" and ");
 			}
 			f = false;
-			whereForTerminator.append("T." + pk.name + "=Q." + COLUMN_PREFIX + pk.name);
+			whereForTerminator.append("T." + pk.name + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, pk));
 		}
 
 		insertHead += "Select " + insertClause(table, "Q", COLUMN_PREFIX) + " From (";
@@ -542,14 +510,9 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 					whereForTerminator.append(" and ");
 				}
 				f = false;
-				whereForTerminator.append("T." + pk.name + "=Q." + COLUMN_PREFIX + pk.name);
+				whereForTerminator.append("T." + pk.name + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, pk));
 			}
 
-			// MERGE INTO JL_TMP T USING (SELECT 1 c1, 2 c2 from dual) incoming
-			// ON (T.c1 = incoming.c1)
-			// WHEN MATCHED THEN UPDATE SET T.c2 = incoming.c2
-			// WHEN NOT MATCHED THEN INSERT (T.c1, T.c2) VALUES (incoming.c1,
-			// incoming.c2)
 			insertHead = "MERGE INTO " + qualifiedTableName(table)
 					+ " T USING(";
 			StringBuffer terminator = new StringBuffer(") Q ON("
@@ -563,7 +526,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 					if (sets.length() > 0) {
 						sets.append(", ");
 					}
-					sets.append("T." + column.name + "=Q." + COLUMN_PREFIX + column.name);
+					sets.append("T." + column.name + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, column));
 				}
 				if (tSchema.length() > 0) {
 					tSchema.append(", ");
@@ -572,7 +535,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 				if (iSchema.length() > 0) {
 					iSchema.append(", ");
 				}
-				iSchema.append("Q." + COLUMN_PREFIX + column.name);
+				iSchema.append("Q." + prefixColumnName(COLUMN_PREFIX, quoting, column));
 			}
 			if (sets.length() > 0) {
 				terminator.append("WHEN MATCHED THEN UPDATE SET " + sets + " ");
@@ -599,13 +562,18 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 					if (sets.length() > 0) {
 						sets.append(", ");
 					}
-					sets.append(column.name + "=Q." + COLUMN_PREFIX + column.name);
+					sets.append(column.name + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, column));
 				} else {
 					if (where.length() > 0) {
 						where.append(" and ");
 					}
 					where.append("S." + column.name + "=T." + column.name);
 				}
+			}
+			
+			if (sets.length() == 0) {
+				// nothing to do
+				return 0;
 			}
 			
 			String sql = "Update " + qualifiedTableName(table) + " S set " + sets + " from (" + sqlSelect + " and (" + where + ")) Q ";
@@ -626,16 +594,67 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 					if (sets.length() > 0) {
 						sets.append(", ");
 					}
-					sets.append("S." + column.name + "=Q." + COLUMN_PREFIX + column.name);
+					sets.append("S." + column.name + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, column));
 				} else {
 					if (where.length() > 0) {
 						where.append(" and ");
 					}
-					where.append("S." + column.name + "=Q." + COLUMN_PREFIX + column.name);
+					where.append("S." + column.name + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, column));
+				}
+			}
+
+			if (sets.length() == 0) {
+				// nothing to do
+				return 0;
+			}
+
+			String sql = "Update (" + sqlSelect + ") Q join " + qualifiedTableName(table) + " S on " + where + " set " + sets;
+			
+			long rc = session.executeUpdate(sql);
+			return rc + insertWhereNotExists(table, sqlSelect);
+		}
+	};
+
+	private class UpsertStandardUS implements UpsertStrategy {
+		@Override
+		public long upsert(Table table, String sqlSelect)
+				throws SQLException {
+			
+			StringBuffer nonPKList = new StringBuffer();
+			StringBuffer nonPKListQ = new StringBuffer();
+			StringBuffer where = new StringBuffer();
+			StringBuffer whereT = new StringBuffer();
+			for (Column column : table.getColumns()) {
+				if (!isPrimaryKeyColumn(table, column.name)) {
+					if (nonPKList.length() > 0) {
+						nonPKList.append(", ");
+					}
+					nonPKList.append(column.name);
+					if (nonPKListQ.length() > 0) {
+						nonPKListQ.append(", ");
+					}
+					nonPKListQ.append("Q." + prefixColumnName(COLUMN_PREFIX, quoting, column));
+				} else {
+					if (where.length() > 0) {
+						where.append(" and ");
+					}
+					where.append("S." + column.name + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, column));
+					if (whereT.length() > 0) {
+						whereT.append(" and ");
+					}
+					whereT.append("S." + column.name + "=T." + column.name);
 				}
 			}
 			
-			String sql = "Update (" + sqlSelect + ") Q join " + qualifiedTableName(table) + " S on " + where + " set " + sets;
+			if (nonPKList.length() == 0) {
+				// nothing to do
+				return 0;
+			}
+			
+			String sql = 
+					"Update " + qualifiedTableName(table) + " S set (" + nonPKList + ")" +
+					" = (Select " + nonPKListQ + " From (" + sqlSelect + ") Q Where " + where + ") " +
+					"Where exists (" + sqlSelect + " and (" + whereT + "))";
 			
 			long rc = session.executeUpdate(sql);
 			return rc + insertWhereNotExists(table, sqlSelect);

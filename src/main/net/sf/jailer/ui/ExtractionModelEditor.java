@@ -19,6 +19,7 @@ import java.awt.BasicStroke;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -1952,7 +1953,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     }//GEN-LAST:event_resetFocusActionPerformed
 
     private void additionalSubjectsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_additionalSubjectsButtonActionPerformed
-        AdditionalSubjectsDialog additionalSubjectsDialog = new AdditionalSubjectsDialog(extractionModelFrame, extractionModel, subject, condition.getText());
+    	AdditionalSubjectsDialog additionalSubjectsDialog;
+    	try {
+        	setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        	additionalSubjectsDialog = new AdditionalSubjectsDialog(extractionModelFrame, extractionModel, subject, condition.getText());
+        } finally {
+        	setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
         if (additionalSubjectsDialog.edit()) {
         	needsSave = true;
         	updateAdditionalSubjectsButton();

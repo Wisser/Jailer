@@ -911,4 +911,13 @@ public class Session {
 		return cliArguments;
 	}
 
+	/**
+	 * Gets the connection for the current thread.
+	 * 
+	 * @return the connection for the current thread
+	 */
+	public Connection getConnection() throws SQLException {
+		return connectionFactory.getConnection();
+	}
+	
 }

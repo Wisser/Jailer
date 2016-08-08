@@ -367,7 +367,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private static final String ROWNUMBERALIAS = "RN";
 
 	protected static final String NULL = "null";
-
+	protected static final String UNKNOWN = "- unknown column -";
+		
 	protected static final int MAXLOBLENGTH = 2000;
 
 	/**
@@ -559,7 +560,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 					((JLabel) render).setForeground(pkColumns.contains(rowsTable.convertColumnIndexToModel(column)) ? FG1 : Color.BLACK);
 					boolean isNull = false;
-					if (((JLabel) render).getText() == NULL) {
+					if (((JLabel) render).getText() == NULL || ((JLabel) render).getText() == UNKNOWN) {
 						((JLabel) render).setForeground(Color.gray);
 						((JLabel) render).setFont(italic);
 						isNull = true;
@@ -1953,7 +1954,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			String tableName = quoting.unquote(table.getUnqualifiedName());
 			ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, metaData, schema, tableName, "%");
 	    	while (resultSet.next()) {
-	            String colName = quoting.quote(resultSet.getString(4)).toLowerCase();
+	            String colName = resultSet.getString(4).toLowerCase();
 	            columns.add(colName);
 	        }
 	        resultSet.close();
@@ -1967,7 +1968,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	        	}
 				resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, metaData, schema, tableName, "%");
 		    	while (resultSet.next()) {
-		            String colName = quoting.quote(resultSet.getString(4)).toLowerCase();
+		            String colName = resultSet.getString(4).toLowerCase();
 		            columns.add(colName);
 		        }
 	        }
@@ -2180,6 +2181,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		final Set<String> pkColumnNames = new HashSet<String>();
 		final Set<String> parentPkColumnNames = new HashSet<String>();
 		final boolean selectParentPK = association != null && parentRows != null && parentRows.size() > 1;
+		final Set<Integer> unknownColumnIndexes = new HashSet<Integer>();
 		
 		if (table instanceof SqlStatementTable) {
 			sql = andCond;
@@ -2192,6 +2194,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (sqlLimitSuffix != null && limitSuffixInSelectClause) {
 				sql += (sqlLimitSuffix.replace("%s", Integer.toString(limit))) + " ";
 			}
+			int colI = 1;
 			boolean f = true;
 			if (selectParentPK) {
 				int i = 0;
@@ -2200,20 +2203,24 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					sql += (!f ? ", " : "") + "B." + name + " AS B" + i;
 					olapPrefix += (!f ? ", " : "") + "S.B" + i;
 					++i;
+					++colI;
 					f = false;
 				}
 			}
 			int i = 0;
 			
 			for (Column column : rowIdSupport.getColumns(table)) {
+				Quoting quoting = new Quoting(session.getMetaData());
 				String name = column.name;
-				if (existingColumnsLowerCase != null && !existingColumnsLowerCase.contains(name.toLowerCase())) {
+				if (existingColumnsLowerCase != null && !existingColumnsLowerCase.contains(quoting.unquote(name).toLowerCase())) {
 					sql += (!f ? ", " : "") + "'?' AS A" + i;
+					unknownColumnIndexes.add(colI);
 				} else {
 					sql += (!f ? ", " : "") + "A." + name + " AS A" + i;
 				}
 				olapPrefix += (!f ? ", " : "") + "S.A" + i;
 				++i;
+				++colI;
 				f = false;
 			}
 			f = true;
@@ -2305,7 +2312,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				public void readCurrentRow(ResultSet resultSet) throws SQLException {
 					if ((table instanceof SqlStatementTable) && rows.isEmpty()) {
 						for (int ci = 1; ci <= getMetaData(resultSet).getColumnCount(); ++ci) {
-							table.getColumns().add(new Column(getMetaData(resultSet).getColumnName(ci), getMetaData(resultSet).getColumnTypeName(ci), -1, -1));
+							table.getColumns().add(new Column(getMetaData(resultSet).getColumnLabel(ci), getMetaData(resultSet).getColumnTypeName(ci), -1, -1));
 						}
 					}
 					
@@ -2314,7 +2321,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					if (selectParentPK) {
 						Object v[] = new Object[rowIdSupport.getPrimaryKey(association.source).getColumns().size()];
 						for (Column column : rowIdSupport.getPrimaryKey(association.source).getColumns()) {
-							parentRowId = readRowFromResultSet(parentPkColumnNames, resultSet, i, vi, parentRowId, v, column, null);
+							parentRowId = readRowFromResultSet(parentPkColumnNames, resultSet, i, vi, parentRowId, v, column, null, unknownColumnIndexes);
 							++i;
 							++vi;
 						}
@@ -2329,7 +2336,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					Object v[] = new Object[rowIdSupport.getColumns(table).size()];
 					vi = 0;
 					for (Column column : rowIdSupport.getColumns(table)) {
-						readRowFromResultSet(pkColumnNames, resultSet, i, vi, "", v, column, pkColumn);
+						readRowFromResultSet(pkColumnNames, resultSet, i, vi, "", v, column, pkColumn, unknownColumnIndexes);
 						++i;
 						++vi;
 					}
@@ -2380,84 +2387,92 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			        return sb.toString();
 				}
 
-				private String readRowFromResultSet(final Set<String> pkColumnNames, ResultSet resultSet, int i, int vi, String rowId, Object[] v, Column column, Map<String, String> pkColumn)
+				private String readRowFromResultSet(final Set<String> pkColumnNames, ResultSet resultSet, int i, int vi, String rowId, Object[] v, Column column, Map<String, String> pkColumn, Set<Integer> unknownColumnIndexes)
 						throws SQLException {
 					Object value = "";
-					int type = SqlUtil.getColumnType(resultSet, getMetaData(resultSet), i, typeCache);
-					if (type == Types.BLOB || type == Types.CLOB || type == Types.SQLXML) {
-						Object object = resultSet.getObject(i);
-						if (object == null || resultSet.wasNull()) {
-							value = null;
-						}
-						if (object instanceof Blob) {
-							try {
-								final long length = ((Blob) object).length();
-								value = new LobValue() {
-									public String toString() {
-										return "<Blob> " + length + " bytes";
-									}
-								};
-							} catch (Exception e) {
-								value = new LobValue() {
-									public String toString() {
-										return "<Blob>";
-									}
-								};
+					if (unknownColumnIndexes.contains(i)) {
+						value = new UnknownValue() {
+							public String toString() {
+								return "?";
 							}
-						}
-						if (object instanceof Clob) {
-							try {
-								final String content = readClob((Clob) object);
-								value = new LobValue() {
-									public String toString() {
-										return content;
-									}
-								};
-							} catch (Exception e) {
-								value = new LobValue() {
-									public String toString() {
-										return "<Clob>";
-									}
-								};e.printStackTrace();
-							}
-						}
-						if (object instanceof SQLXML) {
-							try {
-								final String content = readSQLXML((SQLXML) object);
-								value = new LobValue() {
-									public String toString() {
-										return content;
-									}
-								};
-							} catch (Exception e) {
-								value = new LobValue() {
-									public String toString() {
-										return "<XML>";
-									}
-								};e.printStackTrace();
-							}
-						}
+						};
 					} else {
-						CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session);
-						Object o = cellContentConverter.getObject(resultSet, i);
-						boolean isPK = false;
-						if (pkColumnNames.isEmpty()) {
-							isPK = type != Types.BLOB && type != Types.CLOB && type != Types.DATALINK && type != Types.JAVA_OBJECT && type != Types.NCLOB
-									&& type != Types.NULL && type != Types.OTHER && type != Types.REF && type != Types.SQLXML && type != Types.STRUCT;
-						}
-						if (pkColumnNames.contains(column.name) || isPK) {
-							String cVal = cellContentConverter.toSql(o);
-							String pkValue = "B." + column.name + ("null".equalsIgnoreCase(cVal)? " is null" : ("=" + cVal));
-							if (pkColumn != null) {
-								pkColumn.put(column.name, pkValue);
+						int type = SqlUtil.getColumnType(resultSet, getMetaData(resultSet), i, typeCache);
+						if (type == Types.BLOB || type == Types.CLOB || type == Types.SQLXML) {
+							Object object = resultSet.getObject(i);
+							if (object == null || resultSet.wasNull()) {
+								value = null;
 							}
-							rowId += (rowId.length() == 0 ? "" : " and ") + pkValue;
-						}
-						if (o == null || resultSet.wasNull()) {
-							value = null;
-						}
-						if (o != null) {
-							value = o;
+							if (object instanceof Blob) {
+								try {
+									final long length = ((Blob) object).length();
+									value = new LobValue() {
+										public String toString() {
+											return "<Blob> " + length + " bytes";
+										}
+									};
+								} catch (Exception e) {
+									value = new LobValue() {
+										public String toString() {
+											return "<Blob>";
+										}
+									};
+								}
+							}
+							if (object instanceof Clob) {
+								try {
+									final String content = readClob((Clob) object);
+									value = new LobValue() {
+										public String toString() {
+											return content;
+										}
+									};
+								} catch (Exception e) {
+									value = new LobValue() {
+										public String toString() {
+											return "<Clob>";
+										}
+									};e.printStackTrace();
+								}
+							}
+							if (object instanceof SQLXML) {
+								try {
+									final String content = readSQLXML((SQLXML) object);
+									value = new LobValue() {
+										public String toString() {
+											return content;
+										}
+									};
+								} catch (Exception e) {
+									value = new LobValue() {
+										public String toString() {
+											return "<XML>";
+										}
+									};e.printStackTrace();
+								}
+							}
+						} else {
+							CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session);
+							Object o = cellContentConverter.getObject(resultSet, i);
+							boolean isPK = false;
+							if (pkColumnNames.isEmpty()) {
+								isPK = type != Types.BLOB && type != Types.CLOB && type != Types.DATALINK && type != Types.JAVA_OBJECT && type != Types.NCLOB
+										&& type != Types.NULL && type != Types.OTHER && type != Types.REF && type != Types.SQLXML && type != Types.STRUCT;
+							}
+							if (pkColumnNames.contains(column.name) || isPK) {
+								String cVal = cellContentConverter.toSql(o);
+								String pkValue = "B." + column.name + ("null".equalsIgnoreCase(cVal)? " is null" : ("=" + cVal));
+								if (pkColumn != null) {
+									pkColumn.put(column.name, pkValue);
+								}
+								rowId += (rowId.length() == 0 ? "" : " and ") + pkValue;
+							}
+							if (o == null || resultSet.wasNull()) {
+								value = null;
+							}
+							if (o != null) {
+								value = o;
+							}
 						}
 					}
 					v[vi] = value;
@@ -2528,6 +2543,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					rowData[i] = row.values[i];
 					if (rowData[i] == null) {
 						rowData[i] = NULL;
+					} else if (rowData[i] instanceof UnknownValue) {
+						rowData[i] = UNKNOWN;
 					}
 				}
 				dtm.addRow(rowData);

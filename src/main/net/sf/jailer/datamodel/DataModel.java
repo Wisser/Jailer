@@ -715,23 +715,27 @@ public class DataModel {
      * @param subject the subject
      * @throws NoPrimaryKeyException if a table has no primary key
      */
-    public void checkForPrimaryKey(Table subject, boolean forDeletion) throws NoPrimaryKeyException {
-    	Set<Table> toCheck = new HashSet<Table>(subject.closure(true));
-    	if (forDeletion) {
-    		Set<Table> border = new HashSet<Table>();
-    		for (Table table: toCheck) {
-    			for (Association a: table.associations) {
-    				if (!a.reversalAssociation.isIgnored()) {
-    					border.add(a.destination);
-    				}
-    			}
-    		}
-    		toCheck.addAll(border);
-    	}
-    	for (Table table: toCheck) {
-    		if (table.primaryKey.getColumns().isEmpty()) {
-    			throw new NoPrimaryKeyException(table);
-    		}
+    public void checkForPrimaryKey(Set<Table> subjects, boolean forDeletion) throws NoPrimaryKeyException {
+    	Set<Table> checked = new HashSet<Table>();
+    	for (Table subject: subjects) {
+	    	Set<Table> toCheck = new HashSet<Table>(subject.closure(checked, true));
+	    	if (forDeletion) {
+	    		Set<Table> border = new HashSet<Table>();
+	    		for (Table table: toCheck) {
+	    			for (Association a: table.associations) {
+	    				if (!a.reversalAssociation.isIgnored()) {
+	    					border.add(a.destination);
+	    				}
+	    			}
+	    		}
+	    		toCheck.addAll(border);
+	    	}
+	    	for (Table table: toCheck) {
+	    		if (table.primaryKey.getColumns().isEmpty()) {
+	    			throw new NoPrimaryKeyException(table);
+	    		}
+	    	}
+	    	checked.addAll(toCheck);
     	}
     }
 
