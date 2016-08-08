@@ -31,6 +31,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -1041,16 +1042,25 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        	dbConnectionDialog.addDbArgs(args);
 			        	Session.closeTemporaryTableSession();
 			        	Session session = new Session(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword());
-			    		if (extractionModelEditor.dataModel != null && Configuration.forDbms(session).getRowidName() == null) {
+
+			        	// TODO
+			        	long t = System.currentTimeMillis();
+			        	
+			        	if (extractionModelEditor.dataModel != null && Configuration.forDbms(session).getRowidName() == null) {
+			        		Set<Table> toCheck = new HashSet<Table>();
 			    			if (extractionModelEditor.extractionModel != null) {
 			    				if (extractionModelEditor.extractionModel.additionalSubjects != null) {
 			    					for (AdditionalSubject as: extractionModelEditor.extractionModel.additionalSubjects) {
-			    						extractionModelEditor.extractionModel.dataModel.checkForPrimaryKey(as.subject, false);
+			    						toCheck.add(as.subject);
 			    					}
 			    				}
 			    			}
-			    			extractionModelEditor.dataModel.checkForPrimaryKey(extractionModelEditor.subject, false);
+    						toCheck.add(extractionModelEditor.subject);
+			    			extractionModelEditor.dataModel.checkForPrimaryKey(toCheck, false);
 			    		}
+
+			        	System.out.println(t - System.currentTimeMillis());
+
 			        	ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getPassword(), checkRI);
 			        	session.shutDown();
 			        	Session.closeTemporaryTableSession();

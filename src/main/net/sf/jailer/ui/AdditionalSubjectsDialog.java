@@ -15,9 +15,11 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.Cursor;
 import java.awt.GridBagConstraints;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseEvent;
@@ -395,16 +397,21 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_okButtonActionPerformed
 
     private void addAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAllButtonActionPerformed
-    	readConditions();
-		
-		List<Table> tables = new ArrayList<Table>(remaining);
-		Collections.sort(tables);
-		
-		for (Table table: tables) {
-			subjects.add(new AdditionalSubject(table, ""));
-    	}
+    	try {
+    		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+    		readConditions();
     	
-		initSubjectsPanel();
+			List<Table> tables = new ArrayList<Table>(remaining);
+			Collections.sort(tables);
+			
+			for (Table table: tables) {
+				subjects.add(new AdditionalSubject(table, ""));
+	    	}
+	    	
+			initSubjectsPanel();
+		} finally {
+			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		}
     }//GEN-LAST:event_addAllButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

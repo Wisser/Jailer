@@ -299,7 +299,7 @@ public class SqlUtil {
 			try {
 				type = Types.OTHER;
 				for (int i = resultSetMetaData.getColumnCount(); i > 0; --i) {
-					if (columnName.equalsIgnoreCase(resultSetMetaData.getColumnName(i))) {
+					if (columnName.equalsIgnoreCase(resultSetMetaData.getColumnLabel(i))) {
 						type = resultSetMetaData.getColumnType(i);
 						break;
 					}

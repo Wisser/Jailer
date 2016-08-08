@@ -56,6 +56,7 @@ public class CellContentConverter {
 	
 	private final ResultSetMetaData resultSetMetaData;
 	private final Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
+	private final Map<String, Integer> typeCacheByName = new HashMap<String, Integer>();
 	private final Map<String, Integer> columnIndex = new HashMap<String, Integer>();
 	private final Session session;
 	private final Configuration configuration;
@@ -332,12 +333,16 @@ public class CellContentConverter {
 		Integer index = columnIndex.get(columnName);
 		if (index == null) {
 			for (int i = resultSetMetaData.getColumnCount(); i > 0; --i) {
-				if (columnName.equalsIgnoreCase(resultSetMetaData.getColumnName(i))) {
+				if (columnName.equalsIgnoreCase(resultSetMetaData.getColumnLabel(i))) {
 					index = i;
 					break;
 				}
 			}
 			columnIndex.put(columnName, index);
+		}
+		if (index == null) {
+			// this should never happen
+			return resultSet.getObject(columnName);
 		}
 		return getObject(resultSet, index);
 	}

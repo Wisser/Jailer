@@ -107,7 +107,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "5.5.6";
+	public static final String VERSION = "5.5.7";
 	
 	/**
 	 * The Jailer application name.
@@ -1285,12 +1285,14 @@ public class Jailer {
 		jailer.appendCommentHeader("");
 
 		if (Configuration.forDbms(session).getRowidName() == null) {
+    		Set<Table> toCheck = new HashSet<Table>();
 			if (extractionModel.additionalSubjects != null) {
 				for (AdditionalSubject as: extractionModel.additionalSubjects) {
-					extractionModel.dataModel.checkForPrimaryKey(as.subject, deleteScriptFileName != null);
+					toCheck.add(as.subject);
 				}
 			}
-			extractionModel.dataModel.checkForPrimaryKey(extractionModel.subject, deleteScriptFileName != null);
+			toCheck.add(extractionModel.subject);
+			extractionModel.dataModel.checkForPrimaryKey(toCheck, deleteScriptFileName != null);
 		}
 
 		extractionModel.condition = ParameterHandler.assignParameterValues(extractionModel.condition, CommandLineParser.getInstance().getParameters());

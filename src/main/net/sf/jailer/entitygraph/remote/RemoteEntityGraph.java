@@ -40,6 +40,7 @@ import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.progress.ProgressListenerRegistry;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.CsvFile;
+import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -563,7 +564,7 @@ public class RemoteEntityGraph extends EntityGraph {
      * @return select clause
      */
     protected String filteredSelectionClause(Table table) {
-    	return filteredSelectionClause(table, null);
+    	return filteredSelectionClause(table, null, null);
     }
     
     /**
@@ -571,9 +572,11 @@ public class RemoteEntityGraph extends EntityGraph {
      * with respect of the column filters.
      * 
      * @param table the table to read rows from
+     * @param columnPrefix optional prefix for aliases
+     * @param quoting for unquoting of column names if columnPrefix is given
      * @return select clause
      */
-    protected String filteredSelectionClause(Table table, String columnPrefix) {
+    protected String filteredSelectionClause(Table table, String columnPrefix, Quoting quoting) {
     	StringBuilder sb = new StringBuilder();
     	boolean first = true;
     	
@@ -594,11 +597,24 @@ public class RemoteEntityGraph extends EntityGraph {
     		} else {
     			sb.append("T." + c.name);
     		}
-    		sb.append(" as " + (columnPrefix == null? "" : columnPrefix) + c.name);
+    		sb.append(" as " + prefixColumnName(columnPrefix, quoting, c));
     		first = false;
     	}
     	
 		return sb.toString();
+	}
+
+    /**
+     * Adds a prefix to a column name. Respects quoting.
+     */
+	protected String prefixColumnName(String prefix, Quoting quoting, Column column) {
+		if (prefix == null) return column.name;
+		String name = quoting.unquote(column.name);
+		if (name.equals(column.name)) {
+			return prefix + name;
+		} else {
+			return quoting.quote(prefix + name);
+		}
 	}
 
 	/**
