@@ -1,3 +1,6 @@
+2.6.0
+  - Improved error handling
+
 2.5.5
   - Fixed an issue with exporting XML data from MySQL databases (thanks to qasbah raja)
 
