@@ -813,7 +813,7 @@ public class ExportDialog extends javax.swing.JDialog {
         additSubsLabelTitel = new javax.swing.JLabel();
         useRowIds = new javax.swing.JCheckBox();
         jLabel10 = new javax.swing.JLabel();
-        workingTableSchemaComboBox = new javax.swing.JComboBox();
+        workingTableSchemaComboBox = new net.sf.jailer.ui.JComboBox();
         confirmInsert = new javax.swing.JCheckBox();
         jLabel17 = new javax.swing.JLabel();
         toLabel = new javax.swing.JLabel();
@@ -1807,7 +1807,7 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JCheckBox upsertCheckbox;
     public javax.swing.JCheckBox useRowIds;
     private javax.swing.JTextField where;
-    private javax.swing.JComboBox workingTableSchemaComboBox;
+    private net.sf.jailer.ui.JComboBox workingTableSchemaComboBox;
     // End of variables declaration//GEN-END:variables
     
     private Icon loadIcon;

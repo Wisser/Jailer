@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui.databrowser;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -24,6 +25,7 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CellContentConverter;
+import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
 
@@ -60,12 +62,18 @@ public class SQLDMLBuilder {
 	 * @return update statement for row
 	 */
 	public static String buildUpdate(Table table, Row row, boolean withComments, Session session) {
+		Quoting quoting;
+		try {
+			quoting = new Quoting(session);
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
 		String sql = "Update " + table.getName() + " " + LF + "Set ";
 		boolean f = true;
 		int i = 0;
 		CellContentConverter cellContentConverter = new CellContentConverter(null, session);
 		for (Column column : table.getColumns()) {
-			String name = column.name;
+			String name = quoting.quote(column.name);
 			String value = getSQLLiteral(row.values[i++], cellContentConverter);
 			if (value == null) {
 				continue;
@@ -110,13 +118,19 @@ public class SQLDMLBuilder {
 	 * @return update statement for row
 	 */
 	public static String buildInsert(Table table, Row row, boolean withComments, Session session) {
+		Quoting quoting;
+		try {
+			quoting = new Quoting(session);
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
 		String sql = "Insert into " + table.getName() + " (" + LF + "    ";
 		String values = "";
 		boolean f = true;
 		int i = 0;
 		CellContentConverter cellContentConverter = new CellContentConverter(null, session);
 		for (Column column : table.getColumns()) {
-			String name = column.name;
+			String name = quoting.quote(column.name);
 			String value = getSQLLiteral(row.values[i++], cellContentConverter);
 			if (value == null) {
 				continue;

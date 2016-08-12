@@ -146,7 +146,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 */
 	final class LoadJob implements RunnableWithPriority {
 		private List<Row> rows = Collections.synchronizedList(new ArrayList<Row>());
-		private Exception exception;
+		private Throwable exception;
 		private boolean isCanceled;
 		private final int limit;
 		private final String andCond;
@@ -187,12 +187,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				Session._log.info("cancelled");
 				CancellationHandler.reset(this);
 				return;
+			} catch (Throwable e) {
+				synchronized (rows) {
+					exception = e;
+				}
 			}
 			CancellationHandler.reset(this);
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					Exception e;
+					Throwable e;
 					int l;
 					boolean limitExceeded = false;
 					synchronized (rows) {
@@ -1446,7 +1450,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		} catch (Throwable e) {
 			parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-			UIUtil.showException(this, "Error", e);
+			UIUtil.showException(this, "Error", e, session);
 		} finally {
 			parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
@@ -1948,7 +1952,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     	try {
 	    	Set<String> columns = new HashSet<String>();
 	    	DatabaseMetaData metaData = session.getMetaData();
-	    	Quoting quoting = new Quoting(metaData);
+	    	Quoting quoting = new Quoting(session);
 	    	String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.dbUser);
 	    	String schema = quoting.unquote(table.getOriginalSchema(defaultSchema));
 			String tableName = quoting.unquote(table.getUnqualifiedName());
@@ -2178,6 +2182,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private void reloadRows0(String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, Object context, int limit, boolean useOLAPLimitation,
 			String sqlLimitSuffix, Set<String> existingColumnsLowerCase) throws SQLException {
 		String sql = "Select ";
+		final Quoting quoting = new Quoting(session);
 		final Set<String> pkColumnNames = new HashSet<String>();
 		final Set<String> parentPkColumnNames = new HashSet<String>();
 		final boolean selectParentPK = association != null && parentRows != null && parentRows.size() > 1;
@@ -2199,7 +2204,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (selectParentPK) {
 				int i = 0;
 				for (Column column: rowIdSupport.getPrimaryKey(association.source).getColumns()) {
-					String name = column.name;
+					String name = quoting.quote(column.name);
 					sql += (!f ? ", " : "") + "B." + name + " AS B" + i;
 					olapPrefix += (!f ? ", " : "") + "S.B" + i;
 					++i;
@@ -2210,8 +2215,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			int i = 0;
 			
 			for (Column column : rowIdSupport.getColumns(table)) {
-				Quoting quoting = new Quoting(session.getMetaData());
-				String name = column.name;
+				String name = quoting.quote(column.name);
 				if (existingColumnsLowerCase != null && !existingColumnsLowerCase.contains(quoting.unquote(name).toLowerCase())) {
 					sql += (!f ? ", " : "") + "'?' AS A" + i;
 					unknownColumnIndexes.add(colI);
@@ -2229,8 +2233,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (selectParentPK) {
 				int j = 0;
 				for (Column pk: rowIdSupport.getPrimaryKey(association.source).getColumns()) {
-					parentPkColumnNames.add(pk.name);
-					orderBy += (f ? "" : ", ") + "B." + pk.name;
+					parentPkColumnNames.add(quoting.quote(pk.name));
+					orderBy += (f ? "" : ", ") + "B." + quoting.quote(pk.name);
 					olapOrderBy += (f ? "" : ", ") + "S.B" + j;
 					++j;
 					f = false;
@@ -2238,8 +2242,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			int j = 0;
 			for (Column pk: rowIdSupport.getPrimaryKey(table).getColumns()) {
-				pkColumnNames.add(pk.name);
-				orderBy += (f ? "" : ", ") + "A." + pk.name;
+				pkColumnNames.add(quoting.quote(pk.name));
+				orderBy += (f ? "" : ", ") + "A." + quoting.quote(pk.name);
 				olapOrderBy += (f ? "" : ", ") + "S.A" + j;
 				++j;
 				f = false;
@@ -2302,6 +2306,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				sql += " " + (sqlLimitSuffix.replace("%s", Integer.toString(limit)));
 			}
 		}
+		
 		if (sql.length() > 0) {
 			session.executeQuery(sql, new AbstractResultSetReader() {
 	
@@ -2347,7 +2352,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							if (rowId.length() > 0) {
 								rowId += " and ";
 							}
-							rowId += pkColumn.get(column.name);
+							rowId += pkColumn.get(quoting.quote(column.name));
 						}
 					} else {
 						rowId = Integer.toString(++rowNr);
@@ -2459,7 +2464,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								isPK = type != Types.BLOB && type != Types.CLOB && type != Types.DATALINK && type != Types.JAVA_OBJECT && type != Types.NCLOB
 										&& type != Types.NULL && type != Types.OTHER && type != Types.REF && type != Types.SQLXML && type != Types.STRUCT;
 							}
-							if (pkColumnNames.contains(column.name) || isPK) {
+							if (pkColumnNames.contains(quoting.quote(column.name)) || isPK) {
 								String cVal = cellContentConverter.toSql(o);
 								String pkValue = "B." + column.name + ("null".equalsIgnoreCase(cVal)? " is null" : ("=" + cVal));
 								if (pkColumn != null) {
@@ -2672,7 +2677,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         where = new javax.swing.JLabel();
         jPanel7 = new javax.swing.JPanel();
         loadButton = new javax.swing.JButton();
-        andCondition = new javax.swing.JComboBox();
+        andCondition = new net.sf.jailer.ui.JComboBox();
         onPanel = new javax.swing.JPanel();
         on = new javax.swing.JLabel();
         joinPanel = new javax.swing.JPanel();
@@ -2706,7 +2711,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         fetchLabel = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
-        limitBox = new javax.swing.JComboBox();
+        limitBox = new net.sf.jailer.ui.JComboBox();
         relatedRowsPanel = new javax.swing.JPanel();
         relatedRowsLabel = new javax.swing.JLabel();
         jPanel9 = new javax.swing.JPanel();
@@ -3134,7 +3139,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    javax.swing.JComboBox andCondition;
+    net.sf.jailer.ui.JComboBox andCondition;
     private javax.swing.JLabel andLabel;
     private javax.swing.JButton cancelLoadButton;
     private javax.swing.JPanel cardPanel;
@@ -3164,7 +3169,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel9;
     private javax.swing.JLabel join;
     private javax.swing.JPanel joinPanel;
-    javax.swing.JComboBox limitBox;
+    net.sf.jailer.ui.JComboBox limitBox;
     private javax.swing.JButton loadButton;
     private javax.swing.JLabel on;
     private javax.swing.JPanel onPanel;

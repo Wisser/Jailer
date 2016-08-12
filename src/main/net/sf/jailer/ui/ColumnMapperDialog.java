@@ -51,7 +51,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
         		 try {
         			 if (table != null) {
 	        			 table = dataModel.getTableByDisplayName((String) tableCombobox.getSelectedItem());
-	        			 mappingField.setText(XmlUtil.build(table.getXmlTemplateAsDocument()));
+	        			 mappingField.setText(XmlUtil.build(table.getXmlTemplateAsDocument(null)));
         			 }
         		 } catch (Exception ex) {
     				UIUtil.showException(ColumnMapperDialog.this.parent, "Error", ex);
@@ -85,13 +85,13 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
                     Math.max(0, parent.getY() + parent.getHeight() / 2 - h / 2));
         invalidate();
         try {
-			mappingField.setText(XmlUtil.build(table.getXmlTemplateAsDocument()));
+			mappingField.setText(XmlUtil.build(table.getXmlTemplateAsDocument(null)));
 		} catch (Exception e) {
 			try {
 				// try again with default template,
 				// there was a bug in Jailer 3.0 which causes corruption of XML templates
 				// on windows platform
-				mappingField.setText(XmlUtil.build(table.getDefaultXmlTemplate()));
+				mappingField.setText(XmlUtil.build(table.getDefaultXmlTemplate(null)));
 			} catch (Exception e2) {
 				UIUtil.showException(parent, "Error", e);
 				return false;
@@ -226,7 +226,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 
     private void resetButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetButtonActionPerformed
 		try {
-			Document doc = table.getDefaultXmlTemplate();
+			Document doc = table.getDefaultXmlTemplate(null);
 			mappingField.setText(XmlUtil.build(doc));
 		} catch (Exception e) {
 			UIUtil.showException(parent, "Syntax Error", e);
@@ -272,7 +272,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
     private javax.swing.JButton okButton;
     private javax.swing.JPanel paramPanel;
     private javax.swing.JButton resetButton;
-    private javax.swing.JComboBox tableCombobox;
+    private net.sf.jailer.ui.JComboBox tableCombobox;
     // End of variables declaration//GEN-END:variables
     
     private static final long serialVersionUID = -5437578641818236294L;

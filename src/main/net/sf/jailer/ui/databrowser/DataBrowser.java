@@ -297,7 +297,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				try {
 					return DataBrowser.openNewDataBrowser(DataBrowser.this.datamodel.get(), dbConnectionDialog, false);
 				} catch (Exception e) {
-					UIUtil.showException(this, "Error", e);
+					UIUtil.showException(this, "Error", e, session);
 					return null;
 				}
 			}
@@ -1136,7 +1136,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	            }
             }
         } catch (Exception e) {
-            UIUtil.showException(this, "Error", e);
+            UIUtil.showException(this, "Error", e, session);
         }
     }//GEN-LAST:event_dataImportActionPerformed
 
@@ -1144,7 +1144,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		try {
 			openNewDataBrowser(datamodel.get(), dbConnectionDialog, false);
 		} catch (Exception e) {
-			UIUtil.showException(this, "Error", e);
+			UIUtil.showException(this, "Error", e, session);
 		}
 	}// GEN-LAST:event_newWindowMenuItemActionPerformed
 
@@ -1154,7 +1154,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				try {
 					setConnection(dbConnectionDialog);
 				} catch (Exception e) {
-					UIUtil.showException(this, "Error", e);
+					UIUtil.showException(this, "Error", e, session);
 				}
 			}
 		}
@@ -1189,7 +1189,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/doc/data-browsing.html"));
 			}
 		} catch (Exception e) {
-			UIUtil.showException(this, "Error", e);
+			UIUtil.showException(this, "Error", e, session);
 		}
 	}// GEN-LAST:event_jMenuItem4ActionPerformed
 
@@ -1313,7 +1313,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				BrowserLauncher.openURL(new URI("https://sourceforge.net/forum/?group_id=197260"));
 			}
 		} catch (Exception e) {
-			UIUtil.showException(this, "Error", e);
+			UIUtil.showException(this, "Error", e, session);
 		}
 	}// GEN-LAST:event_helpForumActionPerformed
 
@@ -1490,7 +1490,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			updateStatusBar();
 			askForDataModel();
 		} catch (Exception e) {
-			UIUtil.showException(this, "Error", e);
+			UIUtil.showException(this, "Error", e, session);
 		}
 	}
 
@@ -1540,7 +1540,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				askForDataModel();
 			}
 		} catch (Exception e) {
-			UIUtil.showException(this, "Error", e);
+			UIUtil.showException(this, "Error", e, session);
 		} finally {
 			ModelBuilder.assocFilter = null;
 		}
@@ -1668,7 +1668,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				}
 			}
 		} catch (Exception e) {
-			UIUtil.showException(this, "Error", e);
+			UIUtil.showException(this, "Error", e, session);
 		}
 	}
 

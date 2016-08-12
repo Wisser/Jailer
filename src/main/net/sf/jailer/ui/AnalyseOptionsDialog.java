@@ -362,7 +362,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
     private javax.swing.JButton okButton;
     private javax.swing.JCheckBox removeCurrentAssociationsCheckBox;
     private javax.swing.JCheckBox removeCurrentTablesCheckBox;
-    private javax.swing.JComboBox schemaComboBox;
+    private net.sf.jailer.ui.JComboBox schemaComboBox;
     private javax.swing.JLabel schemaLabel;
     // End of variables declaration//GEN-END:variables
 

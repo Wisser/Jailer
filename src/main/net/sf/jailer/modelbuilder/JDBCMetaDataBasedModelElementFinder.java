@@ -81,7 +81,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     public Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestion, Session session) throws Exception {
         Collection<Association> associations = new ArrayList<Association>();
         DatabaseMetaData metaData = session.getMetaData();
-    	Quoting quoting = new Quoting(metaData);
+    	Quoting quoting = new Quoting(session, true);
     	ResultSet resultSet;
         String defaultSchema = getDefaultSchema(session, session.dbUser);
          
@@ -155,7 +155,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         
         Set<Table> tables = new HashSet<Table>();
         DatabaseMetaData metaData = session.getMetaData();
-        Quoting quoting = new Quoting(metaData);
+        Quoting quoting = new Quoting(session, true);
         ResultSet resultSet;
         resultSet = getTables(session, metaData, session.getIntrospectionSchema(), "%", new String[] { "TABLE" });
         List<String> tableNames = new ArrayList<String>();
@@ -511,7 +511,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     public List<Column> findColumns(Table table, Session session) throws Exception {
     	List<Column> columns = new ArrayList<Column>();
     	DatabaseMetaData metaData = session.getMetaData();
-    	Quoting quoting = new Quoting(metaData);
+    	Quoting quoting = new Quoting(session, true);
     	if (forDefaultSchema != session) {
     		forDefaultSchema = session;
     		_log.info("getting default schema...");

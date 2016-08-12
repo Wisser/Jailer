@@ -107,7 +107,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "5.5.7";
+	public static final String VERSION = "5.6.0";
 	
 	/**
 	 * The Jailer application name.
@@ -501,12 +501,10 @@ public class Jailer {
 						CommandLineParser.getInstance().xmlTimePattern,
 						CommandLineParser.getInstance().xmlTimeStampPattern);
 			} else {
-				return new DMLTransformer.Factory(outputWriter, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities,
-						targetSession.getMetaData(), targetSession);
+				return new DMLTransformer.Factory(outputWriter, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities, targetSession);
 			}
 		} else {
-			return new DeletionTransformer.Factory(outputWriter, CommandLineParser.getInstance().numberOfEntities, targetSession.getMetaData(),
-					targetSession);
+			return new DeletionTransformer.Factory(outputWriter, CommandLineParser.getInstance().numberOfEntities, targetSession);
 		}
 	}
 
@@ -842,10 +840,10 @@ public class Jailer {
 				CommandLineParser.getInstance().xmlRootTag, CommandLineParser.getInstance().xmlDatePattern,
 				CommandLineParser.getInstance().xmlTimeStampPattern, entityGraph.getTargetSession(), charset);
 
-		for (Table table : sortedTables) {
+		for (Table table: sortedTables) {
 			entityGraph.markRoots(table);
 		}
-		for (Table table : sortedTables) {
+		for (Table table: sortedTables) {
 			_log.info("exporting table " + datamodel.getDisplayName(table));
 			reader.setTable(table);
 			entityGraph.readMarkedEntities(table, reader, reader.getTableMapping(table).selectionSchema, reader.getTableMapping(table).originalPKAliasPrefix, true);
@@ -894,10 +892,10 @@ public class Jailer {
 	 *            tables to check
 	 */
 	private void checkCompletenessOfXmlExport(Set<Table> cyclicAggregatedTables) throws SQLException {
-		for (Table table : cyclicAggregatedTables) {
+		for (Table table: cyclicAggregatedTables) {
 			entityGraph.readNonTraversedDependencies(table, new Session.ResultSetReader() {
 				public void readCurrentRow(ResultSet resultSet) throws SQLException {
-					String message = "Can't export all rows from table '" + resultSet.getString("TO_TYPE") + "' due to cyclic aggregation";
+					String message = "Can't export all rows from table '" + datamodel.getTableByOrdinal(resultSet.getInt("TO_TYPE")) + "' due to cyclic aggregation";
 					throw new RuntimeException(message);
 				}
 
@@ -1323,7 +1321,7 @@ public class Jailer {
 	
 			if (explain) {
 				ProgressListenerRegistry.getProgressListener().newStage("generating explain-log", false, false);
-				ExplainTool.explain(entityGraph, new HashSet<Table>(), session);
+				ExplainTool.explain(entityGraph, session);
 			}
 	
 			totalProgress = jailer.datamodel.normalize(totalProgress);

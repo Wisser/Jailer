@@ -919,7 +919,7 @@ public abstract class AssociationListUI extends javax.swing.JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton doItButton;
-    private javax.swing.JComboBox groupByComboBox;
+    private net.sf.jailer.ui.JComboBox groupByComboBox;
     private javax.swing.JButton hideButton;
     private javax.swing.JLabel infoLabel;
     private javax.swing.JLabel jLabel1;

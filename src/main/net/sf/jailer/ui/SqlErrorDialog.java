@@ -30,9 +30,12 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 
   private static final long serialVersionUID = -6737420167295938488L;
 	/** Creates new form SqlErrorDialog */
-    public SqlErrorDialog(Window parent, String message, String sql) {
+    public SqlErrorDialog(Window parent, String message, String sql, boolean sqlError) {
         super(parent, ModalityType.APPLICATION_MODAL);
         initComponents();
+        if (!sqlError) {
+        	setTitle("Internal Error");
+        }
         int y = 1;
         for (String line: message.trim().split("\n")) {
         	JLabel label = new JLabel(line);
@@ -45,7 +48,9 @@ public class SqlErrorDialog extends javax.swing.JDialog {
             gridBagConstraints.weighty = 0;
             messagePanel.add(label, gridBagConstraints);
         }
-        sqlEditorPane.setContentType("text/sql");
+        if (sqlError) {
+        	sqlEditorPane.setContentType("text/sql");
+        }
         sqlEditorPane.setText(sql.trim());
         sqlEditorPane.setCaretPosition(0);
         try {
@@ -56,7 +61,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
         	// ignore
         }
         pack();
-        setSize(Math.min(getWidth(), 1000), Math.min(getHeight() + 32, 600));
+        setSize(Math.max(700, Math.min(getWidth(), 1000)), Math.min(getHeight() + 32, 600));
         if (parent == null) {
         	setLocation(200, 100);
         } else {
@@ -82,12 +87,12 @@ public class SqlErrorDialog extends javax.swing.JDialog {
         messagePanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
+        copyButton = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("SQL Statement failed");
         getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        jPanel1.setBorder(null);
         jPanel1.setLayout(new java.awt.BorderLayout());
 
         sqlEditorPane.setEditable(false);
@@ -145,6 +150,19 @@ public class SqlErrorDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         getContentPane().add(jButton1, gridBagConstraints);
 
+        copyButton.setText(" Copy to Clipboard ");
+        copyButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                copyButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        getContentPane().add(copyButton, gridBagConstraints);
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
@@ -152,7 +170,13 @@ public class SqlErrorDialog extends javax.swing.JDialog {
         setVisible(false);
     }//GEN-LAST:event_jButton1ActionPerformed
 
+    private void copyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copyButtonActionPerformed
+    	sqlEditorPane.selectAll();
+    	sqlEditorPane.copy();
+    }//GEN-LAST:event_copyButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton copyButton;
     private javax.swing.JLabel errorLabel;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;

@@ -428,6 +428,7 @@ public class DataModel {
 	            }
 	        }
 	        initDisplayNames();
+	        initTableOrdinals();
 	        
 	        // model name
 	        File nameFile = CommandLineParser.getInstance().newFile(getModelNameFile());
@@ -452,7 +453,19 @@ public class DataModel {
     	}
     }
 
+    private final List<Table> tableList = new ArrayList<Table>();
+    
     /**
+     * Initializes table ordinals.
+     */
+    private void initTableOrdinals() {
+    	for (Table table: getSortedTables()) {
+    		table.ordinal = tableList.size();
+    		tableList.add(table);
+    	}
+	}
+
+	/**
      * Initializes display names.
      */
     private void initDisplayNames() throws Exception {
@@ -609,12 +622,8 @@ public class DataModel {
      * Stringifies the data model.
      */
     public String toString() {
-        List<Table> sortedTables = new ArrayList<Table>(getTables());
-        Collections.sort(sortedTables, new Comparator<Table>() {
-            public int compare(Table o1, Table o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
+        List<Table> sortedTables;
+        sortedTables = getSortedTables();
         StringBuffer str = new StringBuffer();
         if (restrictionModel != null) {
             str.append("restricted by: " + restrictionModel + "\n");
@@ -628,6 +637,17 @@ public class DataModel {
         }
         return str.toString();
     }
+
+	private List<Table> getSortedTables() {
+		List<Table> sortedTables;
+		sortedTables = new ArrayList<Table>(getTables());
+        Collections.sort(sortedTables, new Comparator<Table>() {
+            public int compare(Table o1, Table o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+		return sortedTables;
+	}
 
     /**
      * Printing-mode.
@@ -913,6 +933,16 @@ public class DataModel {
 				}
 			}
 		}
+	}
+
+	/**
+	 * Gets table by {@link Table#getOrdinal()}.
+	 * 
+	 * @param ordinal the ordinal
+	 * @return the table
+	 */
+	public Table getTableByOrdinal(int ordinal) {
+		return tableList.get(ordinal);
 	}
 
 }

@@ -779,15 +779,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jPanel8 = new javax.swing.JPanel();
         jLabel7 = new javax.swing.JLabel();
         openSubjectConditionEditor = new javax.swing.JLabel();
-        subjectTable = new javax.swing.JComboBox();
+        subjectTable = new net.sf.jailer.ui.JComboBox();
         jPanel10 = new javax.swing.JPanel();
-        exportFormat = new javax.swing.JComboBox();
+        exportFormat = new net.sf.jailer.ui.JComboBox();
         exportButton = new javax.swing.JButton();
         openXmlSettings = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jPanel13 = new javax.swing.JPanel();
         jPanel6 = new javax.swing.JPanel();
-        rootTable = new javax.swing.JComboBox();
+        rootTable = new net.sf.jailer.ui.JComboBox();
         jPanel9 = new javax.swing.JPanel();
         resetFocus = new javax.swing.JButton();
         jPanel14 = new javax.swing.JPanel();
@@ -798,7 +798,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        aggregationCombobox = new javax.swing.JComboBox();
+        aggregationCombobox = new net.sf.jailer.ui.JComboBox();
         tagField = new javax.swing.JTextField();
         jPanel5 = new javax.swing.JPanel();
         xmlTagApply = new javax.swing.JButton();
@@ -2678,14 +2678,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton additionalSubjectsButton;
-    private javax.swing.JComboBox aggregationCombobox;
+    private net.sf.jailer.ui.JComboBox aggregationCombobox;
     private javax.swing.JLabel associatedWith;
     javax.swing.JTextField condition;
     public javax.swing.JLabel connectivityState;
     private javax.swing.JLabel dependsOn;
     private javax.swing.JPanel editorPanel;
     public javax.swing.JButton exportButton;
-    private javax.swing.JComboBox exportFormat;
+    private net.sf.jailer.ui.JComboBox exportFormat;
     private javax.swing.JPanel graphContainer;
     private javax.swing.JLabel hasDependent;
     private javax.swing.JLabel ignored;
@@ -2730,8 +2730,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JButton openXmlSettings;
     private javax.swing.JButton resetFocus;
     private javax.swing.JTable restrictionsTable;
-    private javax.swing.JComboBox rootTable;
-    private javax.swing.JComboBox subjectTable;
+    private net.sf.jailer.ui.JComboBox rootTable;
+    private net.sf.jailer.ui.JComboBox subjectTable;
     private javax.swing.JTextField tagField;
     private javax.swing.JPanel toolBarPanel;
     private javax.swing.JPanel toolPanel;

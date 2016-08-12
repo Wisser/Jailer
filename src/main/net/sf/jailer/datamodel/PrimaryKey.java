@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.jailer.Configuration;
+import net.sf.jailer.util.Quoting;
 
 /**
  * Primary-key of a {@link Table}.
@@ -127,6 +128,15 @@ public class PrimaryKey {
      * @param columnPrefix an optional prefix for each PK-column
      */
     public String columnList(String prefix) {
+        return columnList(prefix, null);
+    }
+    
+    /**
+     * Creates a comma-separated list of column names.
+     * 
+     * @param columnPrefix an optional prefix for each PK-column
+     */
+    public String columnList(String prefix, Quoting quoting) {
         String list = "";
         for (Column column: getColumns()) {
             if (list.length() > 0) {
@@ -135,12 +145,11 @@ public class PrimaryKey {
             if (prefix != null) {
                 list += prefix;
             }
-            list += column.name;
+            list += quoting != null? quoting.quote(column.name) : column.name;
         }
         return list;
     }
     
-
     /**
      * Returns the primary key in SQL syntax.
      * 

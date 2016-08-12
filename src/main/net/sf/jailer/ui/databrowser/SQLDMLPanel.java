@@ -247,7 +247,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
                 out.print(sqlTextArea.getText());
                 out.close();
             } catch (Exception e) {
-                UIUtil.showException(this, "Error saving query", e);
+                UIUtil.showException(this, "Error saving query", e, session);
             }
         }
 }//GEN-LAST:event_saveButtonActionPerformed
@@ -327,7 +327,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 	    		out.println(sqlTextArea.getText());
 	    		out.close();
     		} catch (Exception e) {
-    			UIUtil.showException(this, "Error", e);
+    			UIUtil.showException(this, "Error", e, session);
     			return;
     		}
     		List<String> args = new ArrayList<String>();

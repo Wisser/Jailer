@@ -40,6 +40,7 @@ import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.util.CellContentConverter;
+import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlScriptExecutor;
 
 import org.apache.log4j.Logger;
@@ -112,6 +113,8 @@ public class XmlExportTransformer extends AbstractResultSetReader {
      * {@link RowIdSupport}.
      */
     private final RowIdSupport rowIdSupport;
+
+	private final Quoting quoting;
     
 	/**
 	 * Constructor.
@@ -123,15 +126,17 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	 * @param rootTag root tag name
 	 * @param datePattern pattern for dates
 	 * @param timestampPattern pattern for time-stamps
+	 * @throws SQLException 
 	 */
 	public XmlExportTransformer(OutputStream out, String commentHeader,
 			EntityGraph entityGraph, Set<Table> totalProgress, Set<Table> cyclicAggregatedTables,
-			String rootTag, String datePattern, String timestampPattern, Session session, Charset charset) throws TransformerConfigurationException, SAXException {
+			String rootTag, String datePattern, String timestampPattern, Session session, Charset charset) throws TransformerConfigurationException, SAXException, SQLException {
 		this.xmlRowWriter = new XmlRowWriter(out, commentHeader, rootTag, datePattern, timestampPattern, charset);
 		this.entityGraph = entityGraph;
 		this.totalProgress = totalProgress;
 		this.cyclicAggregatedTables = cyclicAggregatedTables;
 		this.session = session;
+		this.quoting = new Quoting(session);
         this.rowIdSupport = new RowIdSupport(entityGraph.getDatamodel(), Configuration.forDbms(session));
 	}
 
@@ -331,13 +336,13 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 		}
 		
 		try {
-			tableMapping.template = table.getXmlTemplateAsDocument();
+			tableMapping.template = table.getXmlTemplateAsDocument(quoting);
 		} catch (Exception e) {
 			// try again with default template,
 			// there was a bug in Jailer 3.0 which causes corruption of XML templates
 			// in windows platform
 			_log.warn("can't parse XML template for table " + table.getName() + ", using defaults", e);
-			tableMapping.template = table.getDefaultXmlTemplate();
+			tableMapping.template = table.getDefaultXmlTemplate(quoting);
 		}
 		
 		final StringBuilder sb = new StringBuilder();
@@ -350,7 +355,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 				sb.append("T." + tableMapping.originalPKAliasPrefix + i + " AS PK" + i);
 				++i;
 			} else {
-				sb.append("T." + pk.name + " AS PK" + i++);
+				sb.append("T." + quoting.quote(pk.name) + " AS PK" + i++);
 			}
 		}
 		XmlUtil.visitDocumentNodes(tableMapping.template, new NodeVisitor() {

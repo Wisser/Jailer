@@ -178,8 +178,8 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        datePattern = new javax.swing.JComboBox();
-        timestampPattern = new javax.swing.JComboBox();
+        datePattern = new net.sf.jailer.ui.JComboBox();
+        timestampPattern = new net.sf.jailer.ui.JComboBox();
         rootTag = new javax.swing.JTextField();
         dateExample = new javax.swing.JLabel();
         timestampExample = new javax.swing.JLabel();
@@ -374,7 +374,7 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
     private javax.swing.JButton Ok;
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel dateExample;
-    private javax.swing.JComboBox datePattern;
+    private net.sf.jailer.ui.JComboBox datePattern;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -383,7 +383,7 @@ public class XmlSettingsDialog extends javax.swing.JDialog {
     private javax.swing.JCheckBox noRootTag;
     private javax.swing.JTextField rootTag;
     private javax.swing.JLabel timestampExample;
-    private javax.swing.JComboBox timestampPattern;
+    private net.sf.jailer.ui.JComboBox timestampPattern;
     // End of variables declaration//GEN-END:variables
     
     private static final long serialVersionUID = -2752715206964965549L;

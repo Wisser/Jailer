@@ -145,7 +145,7 @@ public class QueryBuilderPathSelector extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JButton okButton;
-    private javax.swing.JComboBox toComboBox;
+    private net.sf.jailer.ui.JComboBox toComboBox;
     // End of variables declaration//GEN-END:variables
     
     private static class ToElement {

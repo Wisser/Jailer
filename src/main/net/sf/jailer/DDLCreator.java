@@ -123,7 +123,7 @@ public class DDLCreator {
 		String tableName = SQLDialect.CONFIG_TABLE_;
 		tableName = SQLDialect.dmlTableReference(tableName, session);
 		arguments.put("config-dml-reference", tableName);
-		arguments.put("schema", workingTableSchema != null? new Quoting(session.getMetaData()).quote(workingTableSchema) + "." : "");
+		arguments.put("schema", workingTableSchema != null? new Quoting(session, true).quote(workingTableSchema) + "." : "");
 		if (tableManager != null) {
 			arguments.put("table-suffix", "_T");
 			arguments.put("drop-table", tableManager.getDropTablePrefix());
@@ -226,7 +226,7 @@ public class DDLCreator {
 				final Map<String, String> typeReplacement = Configuration.forDbms(session).getTypeReplacement();
 				final RowIdSupport rowIdSupport = new RowIdSupport(datamodel, Configuration.forDbms(session), useRowId);
 				
-				final String schema = workingTableSchema == null ? "" : new Quoting(session.getMetaData()).quote(workingTableSchema) + ".";
+				final String schema = workingTableSchema == null ? "" : new Quoting(session, true).quote(workingTableSchema) + ".";
 				
 				session.executeQuery("Select jvalue from " + schema + SQLDialect.CONFIG_TABLE_ + " where jversion='" + Jailer.VERSION + "' and jkey='upk'",
 						new Session.ResultSetReader() {
