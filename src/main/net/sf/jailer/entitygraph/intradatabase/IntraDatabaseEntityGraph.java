@@ -59,9 +59,10 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 *            for executing SQL-Statements
 	 * @param universalPrimaryKey
 	 *            the universal primary key
+	 * @throws SQLException 
 	 */
 	private IntraDatabaseEntityGraph(DataModel dataModel, int graphID,
-			Session session, PrimaryKey universalPrimaryKey) {
+			Session session, PrimaryKey universalPrimaryKey) throws SQLException {
 		super(dataModel, graphID, session, universalPrimaryKey);
 		upsertOnly = CommandLineParser.getInstance().upsertOnly;
 		synchronized (this) {
@@ -74,11 +75,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			upsertStrategies.add(new UpsertPGUS());
 			upsertStrategies.add(new UpsertStandardUS());
 		}
-		try {
-			quoting = new Quoting(session.getMetaData());
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
+		quoting = new Quoting(session);
 	}
 
 	private String defaultSchema = null;
@@ -149,10 +146,9 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 * @param universalPrimaryKey
 	 *            the universal primary key
 	 * @return the newly created entity-graph
-	 * @throws SQLException 
 	 */
 	public static IntraDatabaseEntityGraph create(DataModel dataModel,
-			int graphID, Session session, PrimaryKey universalPrimaryKey) {
+			int graphID, Session session, PrimaryKey universalPrimaryKey) throws SQLException {
 		IntraDatabaseEntityGraph entityGraph = new IntraDatabaseEntityGraph(
 				dataModel, graphID, session, universalPrimaryKey);
 		init(graphID, session);
@@ -236,10 +232,10 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		String selectionSchema = filteredSelectionClause(table, COLUMN_PREFIX, quoting);
 		readEntitiesByQuery(table, "Select " + selectionSchema + " From "
 				+ SQLDialect.dmlTableReference(ENTITY, session) + " E join "
-				+ table.getName() + " T on "
+				+ quoting.quote(table.getName()) + " T on "
 				+ pkEqualsEntityID(table, "T", "E")
 				+ " Where (E.birthday=0 and E.r_entitygraph=" + graphID
-				+ " and E.type='" + table.getName() + "')");
+				+ " and E.type=" + typeName(table) + ")");
 	}
 	
 	/**
@@ -254,10 +250,10 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			throws SQLException {
 		readEntitiesByQuery(table, "Select " + filteredSelectionClause(table, COLUMN_PREFIX, quoting) + " From "
 				+ SQLDialect.dmlTableReference(ENTITY, session) + " E join "
-				+ table.getName() + " T on "
+				+ quoting.quote(table.getName()) + " T on "
 				+ pkEqualsEntityID(table, "T", "E")
 				+ " Where (E.birthday>=0 and E.r_entitygraph=" + graphID
-				+ " and E.type='" + table.getName() + "')");
+				+ " and E.type=" + typeName(table) + ")");
 	}
 
 	/**
@@ -313,9 +309,9 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			schema = mappedSchema;
 		}
 		if (schema.length() == 0) {
-			return t.getUnqualifiedName();
+			return quoting.quote(t.getUnqualifiedName());
 		}
-		return schema + "." + t.getUnqualifiedName();
+		return quoting.quote(schema) + "." + quoting.quote(t.getUnqualifiedName());
 	}
 
 	/**
@@ -465,7 +461,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 				whereForTerminator.append(" and ");
 			}
 			f = false;
-			whereForTerminator.append("T." + pk.name + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, pk));
+			whereForTerminator.append("T." + quoting.quote(pk.name) + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, pk));
 		}
 
 		insertHead += "Select " + insertClause(table, "Q", COLUMN_PREFIX) + " From (";
@@ -510,7 +506,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 					whereForTerminator.append(" and ");
 				}
 				f = false;
-				whereForTerminator.append("T." + pk.name + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, pk));
+				whereForTerminator.append("T." + quoting.quote(pk.name) + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, pk));
 			}
 
 			insertHead = "MERGE INTO " + qualifiedTableName(table)
@@ -526,12 +522,12 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 					if (sets.length() > 0) {
 						sets.append(", ");
 					}
-					sets.append("T." + column.name + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, column));
+					sets.append("T." + quoting.quote(column.name) + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, column));
 				}
 				if (tSchema.length() > 0) {
 					tSchema.append(", ");
 				}
-				tSchema.append(column.name);
+				tSchema.append(quoting.quote(column.name));
 				if (iSchema.length() > 0) {
 					iSchema.append(", ");
 				}
@@ -562,12 +558,12 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 					if (sets.length() > 0) {
 						sets.append(", ");
 					}
-					sets.append(column.name + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, column));
+					sets.append(quoting.quote(column.name) + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, column));
 				} else {
 					if (where.length() > 0) {
 						where.append(" and ");
 					}
-					where.append("S." + column.name + "=T." + column.name);
+					where.append("S." + quoting.quote(column.name) + "=T." + quoting.quote(column.name));
 				}
 			}
 			
@@ -594,12 +590,12 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 					if (sets.length() > 0) {
 						sets.append(", ");
 					}
-					sets.append("S." + column.name + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, column));
+					sets.append("S." + quoting.quote(column.name) + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, column));
 				} else {
 					if (where.length() > 0) {
 						where.append(" and ");
 					}
-					where.append("S." + column.name + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, column));
+					where.append("S." + quoting.quote(column.name) + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, column));
 				}
 			}
 
@@ -629,7 +625,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 					if (nonPKList.length() > 0) {
 						nonPKList.append(", ");
 					}
-					nonPKList.append(column.name);
+					nonPKList.append(quoting.quote(column.name));
 					if (nonPKListQ.length() > 0) {
 						nonPKListQ.append(", ");
 					}
@@ -638,11 +634,11 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 					if (where.length() > 0) {
 						where.append(" and ");
 					}
-					where.append("S." + column.name + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, column));
+					where.append("S." + quoting.quote(column.name) + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, column));
 					if (whereT.length() > 0) {
 						whereT.append(" and ");
 					}
-					whereT.append("S." + column.name + "=T." + column.name);
+					whereT.append("S." + quoting.quote(column.name) + "=T." + quoting.quote(column.name));
 				}
 			}
 			

@@ -1043,9 +1043,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        	Session.closeTemporaryTableSession();
 			        	Session session = new Session(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword());
 
-			        	// TODO
-			        	long t = System.currentTimeMillis();
-			        	
 			        	if (extractionModelEditor.dataModel != null && Configuration.forDbms(session).getRowidName() == null) {
 			        		Set<Table> toCheck = new HashSet<Table>();
 			    			if (extractionModelEditor.extractionModel != null) {
@@ -1058,8 +1055,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     						toCheck.add(extractionModelEditor.subject);
 			    			extractionModelEditor.dataModel.checkForPrimaryKey(toCheck, false);
 			    		}
-
-			        	System.out.println(t - System.currentTimeMillis());
 
 			        	ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getPassword(), checkRI);
 			        	session.shutDown();
@@ -1594,9 +1589,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      * @param args the command line arguments
      */
     public static void main(final String args[]) {
-    	
-//		UIUtil.showMaxMemory();
-    	
+
     	// check working folder
         String configFileName = "jailer.xml";
         File configFile = new File(configFileName);
@@ -1651,17 +1644,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             		x.printStackTrace();
     			}
             	
-//    			JFrame dummy = new JFrame();
-//    			dummy.setIconImage(new ImageIcon(ExtractionModelFrame.class.getResource("/net/sf/jailer/resource/jailer.png")).getImage());
-//    	    	switch (JOptionPane.showOptionDialog(dummy, "Choose Module", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null,
-//            			new Object[] { "Data Browser", "Database Subsetter" }, null)) {
-//            	case 0: 
-//            		DataBrowser.main(args);
-//            		return;
-//            	case 1: break;
-//            	default: System.exit(0);
-//            	}
-            	
             	String file = null;
                 try {
 	            	if (CommandLineParser.getInstance().arguments != null) {
@@ -1688,6 +1670,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 												askForDataModel(finalExtractionModelFrame);
 											} catch (Exception e) {
 												UIUtil.showException(finalExtractionModelFrame, "Error", e);
+											}
+											StartupWizzardDialog suw = new StartupWizzardDialog(finalExtractionModelFrame);
+											if (suw.loadModel) {
+												finalExtractionModelFrame.loadActionPerformed(null);
+											}
+											if (suw.newModelWithRestrictions) {
+												finalExtractionModelFrame.extractionModelEditor.ignoreAll(null);
 											}
 										}
 									});

@@ -72,7 +72,6 @@ public class DeletionTransformer extends AbstractResultSetReader {
     	
 	    private final int maxBodySize;
 		private final OutputStreamWriter scriptFileWriter;
-		private final DatabaseMetaData metaData;
 		private final Session session;
 
 		/**
@@ -82,10 +81,9 @@ public class DeletionTransformer extends AbstractResultSetReader {
 	     * @param scriptFileWriter the file to write to
 	     * @param maxBodySize maximum length of SQL values list (for generated deletes)
 	     */
-		public Factory(OutputStreamWriter scriptFileWriter, int maxBodySize, DatabaseMetaData metaData, Session session) {
+		public Factory(OutputStreamWriter scriptFileWriter, int maxBodySize, Session session) {
 	        this.maxBodySize = maxBodySize;
 	        this.scriptFileWriter = scriptFileWriter;
-	        this.metaData = metaData;
 	        this.session = session;
     	}
 
@@ -98,7 +96,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
 		 */
 		@Override
 		public ResultSetReader create(Table table) throws SQLException {
-			return new DeletionTransformer(table, scriptFileWriter, maxBodySize, metaData, session);
+			return new DeletionTransformer(table, scriptFileWriter, maxBodySize, session);
 		}
     };
 
@@ -109,11 +107,11 @@ public class DeletionTransformer extends AbstractResultSetReader {
      * @param scriptFileWriter the file to write to
      * @param maxBodySize maximum length of SQL values list (for generated deletes)
      */
-    private DeletionTransformer(Table table, OutputStreamWriter scriptFileWriter, int maxBodySize, DatabaseMetaData metaData, Session session) throws SQLException {
+    private DeletionTransformer(Table table, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session) throws SQLException {
         this.table = table;
         this.scriptFileWriter = scriptFileWriter;
         deleteStatementBuilder = new StatementBuilder(maxBodySize);
-        this.quoting = new Quoting(metaData);
+        this.quoting = new Quoting(session);
         this.session = session;
         
         if (table.primaryKey.getColumns().isEmpty()) {
@@ -137,7 +135,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
                 boolean firstTime = true;
                 String item = "";
                 for (Column pkColumn: table.primaryKey.getColumns()) {
-                	item += (firstTime? "" : " and ") + pkColumn.name + "="
+                	item += (firstTime? "" : " and ") + quoting.quote(pkColumn.name) + "="
                     		+ cellContentConverter.toSql(cellContentConverter.getObject(resultSet, quoting.unquote(pkColumn.name)));
                     firstTime = false;
                 }
@@ -149,14 +147,14 @@ public class DeletionTransformer extends AbstractResultSetReader {
 	            String deleteHead;
 	            String item;
 	            if (table.primaryKey.getColumns().size() == 1) {
-	                deleteHead = "Delete from " + qualifiedTableName(table) + " Where " + table.primaryKey.getColumns().get(0).name + " in (";
+	                deleteHead = "Delete from " + qualifiedTableName(table) + " Where " + quoting.quote(table.primaryKey.getColumns().get(0).name) + " in (";
 	                item = cellContentConverter.toSql(cellContentConverter.getObject(resultSet, quoting.unquote(table.primaryKey.getColumns().get(0).name)));
 	            } else {
 	                deleteHead = "Delete from " + qualifiedTableName(table) + " Where (";
 	                item = "(";
 	                boolean firstTime = true;
 	                for (Column pkColumn: table.primaryKey.getColumns()) {
-	                    deleteHead += (firstTime? "" : ", ") + pkColumn.name;
+	                    deleteHead += (firstTime? "" : ", ") + quoting.quote(pkColumn.name);
 	                    item += (firstTime? "" : ", ") + cellContentConverter.toSql(cellContentConverter.getObject(resultSet, quoting.unquote(pkColumn.name)));
 	                    firstTime = false;
 	                }
@@ -189,9 +187,9 @@ public class DeletionTransformer extends AbstractResultSetReader {
     		schema = mappedSchema;
     	}
     	if (schema.length() == 0) {
-    		return t.getUnqualifiedName();
+    		return quoting.quote(t.getUnqualifiedName());
     	}
-		return schema + "." + t.getUnqualifiedName();
+		return quoting.quote(schema) + "." + quoting.quote(t.getUnqualifiedName());
 	}
 
     /**

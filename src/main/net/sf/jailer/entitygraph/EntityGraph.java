@@ -328,7 +328,7 @@ public abstract class EntityGraph {
      * @return a unique ID
      */
     public static int createUniqueGraphID() {
-        return Math.abs((int) System.currentTimeMillis());
+        return Math.abs((int) System.currentTimeMillis()) % 65536;
     }
     
     private int lobCount = 0;
@@ -359,12 +359,9 @@ public abstract class EntityGraph {
         final Set<Table> remaining = new HashSet<Table>(tables);
         session.executeQuery("Select type, count(*) From " + SQLDialect.dmlTableReference(ENTITY, session) + " Where r_entitygraph=" + graphID + " and birthday>=0 group by type", new Session.AbstractResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
-                String type = resultSet.getString(1);
-                Table table = dataModel.getTable(type);
-                if (table != null) {
-                	type = dataModel.getDisplayName(table);
-                	remaining.remove(table);
-                }
+                Table table = dataModel.getTableByOrdinal(resultSet.getInt(1));
+                String type = dataModel.getDisplayName(table);
+                remaining.remove(table);
                 long count = resultSet.getLong(2);
                 total[0] += count;
                 while (type.length() < 30) {
@@ -391,6 +388,10 @@ public abstract class EntityGraph {
     	inDeleteMode = deleteMode;
     }
 
+    protected int typeName(Table table) {
+    	return table.getOrdinal();
+    }
+    
     /**
      * The {@link TransformerFactory}.
      */

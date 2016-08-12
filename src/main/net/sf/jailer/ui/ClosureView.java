@@ -49,7 +49,7 @@ import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
+import net.sf.jailer.ui.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -1034,9 +1034,9 @@ public abstract class ClosureView extends javax.swing.JDialog {
         jScrollPane1 = new javax.swing.JScrollPane();
         closureTable = new javax.swing.JTable();
         jLabel1 = new javax.swing.JLabel();
-        searchComboBox = new javax.swing.JComboBox();
+        searchComboBox = new net.sf.jailer.ui.JComboBox();
         jLabel7 = new javax.swing.JLabel();
-        columnsComboBox = new javax.swing.JComboBox();
+        columnsComboBox = new net.sf.jailer.ui.JComboBox();
         associationPane = new javax.swing.JPanel();
         associationPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
@@ -1302,7 +1302,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
     private javax.swing.JPanel associationPane;
     private javax.swing.JPanel associationPanel;
     private javax.swing.JTable closureTable;
-    private javax.swing.JComboBox columnsComboBox;
+    private net.sf.jailer.ui.JComboBox columnsComboBox;
     public javax.swing.JPanel contentPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -1314,7 +1314,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
-    private javax.swing.JComboBox searchComboBox;
+    private net.sf.jailer.ui.JComboBox searchComboBox;
     private javax.swing.JCheckBox showOnlyEnabledCheckBox;
     private javax.swing.JPanel tabAssAssPanel;
     private javax.swing.JPanel tabAssPanel;

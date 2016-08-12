@@ -420,8 +420,8 @@ public class AssociationEditor extends javax.swing.JDialog {
 	}
     
     // Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables
-    private javax.swing.JComboBox cardinality;
-    private javax.swing.JComboBox destination;
+    private net.sf.jailer.ui.JComboBox cardinality;
+    private net.sf.jailer.ui.JComboBox destination;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
@@ -438,8 +438,8 @@ public class AssociationEditor extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JTextField joinCondition;
     private javax.swing.JTextField nameField;
-    private javax.swing.JComboBox source;
-    private javax.swing.JComboBox type;
+    private net.sf.jailer.ui.JComboBox source;
+    private net.sf.jailer.ui.JComboBox type;
     // Ende der Variablendeklaration//GEN-END:variables
     
     private static final long serialVersionUID = 603961628104674406L;

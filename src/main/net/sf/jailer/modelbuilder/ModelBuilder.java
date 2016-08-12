@@ -167,7 +167,7 @@ public class ModelBuilder {
 
         Map<Table, List<Column>> columnPerTable = new HashMap<Table, List<Column>>();
 
-        Quoting quoting = new Quoting(session.getMetaData());
+        Quoting quoting = new Quoting(session);
         
         StringBuilder columnsDefinition = new StringBuilder();
         CsvFile excludeTablesCSV = getExcludeTablesCSV();

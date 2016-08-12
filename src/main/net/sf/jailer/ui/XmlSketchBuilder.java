@@ -53,7 +53,7 @@ public class XmlSketchBuilder {
 		if (table == null) {
 			return "";
 		}
-		Document sketch = table.getXmlTemplateAsDocument();
+		Document sketch = table.getXmlTemplateAsDocument(null);
 		if (sketch.getChildNodes().getLength() > 0 && sketch.getChildNodes().item(0) instanceof Element) {
 			insertAssociationSketch((Element) sketch.getChildNodes().item(0), table, sketch, depth);
 		}
@@ -113,7 +113,7 @@ public class XmlSketchBuilder {
 			}
 			return new Node[] { e1 };
 		} else if (association.getAggregationSchema() == AggregationSchema.FLAT) {
-			Document sketch = association.destination.getXmlTemplateAsDocument();
+			Document sketch = association.destination.getXmlTemplateAsDocument(null);
 			List<Node> nodes = new ArrayList<Node>();
 			if (sketch.getChildNodes().getLength() > 0 && sketch.getChildNodes().item(0) instanceof Element) {
 				insertAssociationSketch((Element) sketch.getChildNodes().item(0), association.destination, sketch, depth + 1);

@@ -21,10 +21,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
@@ -35,6 +33,7 @@ import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.util.CellContentConverter;
+import net.sf.jailer.util.Quoting;
 
 import org.apache.log4j.Logger;
 
@@ -57,23 +56,18 @@ public class ExplainTool {
      * 
      * @param graph
      *            the entity-graph to explain
-     * @param tablesToIgnore
-     *            don't list path to entities of this tables
      * @param session
      *            for executing SQL-statements
      */
-    public static void explain(final EntityGraph graph, final Set<Table> tablesToIgnore, final Session session) throws Exception {
+    public static void explain(final EntityGraph graph, final Session session) throws Exception {
         _log.info("generating explain.log...");
-    	final Set<String> namesOfTablesToIgnore = new HashSet<String>();
-        for (Table table: tablesToIgnore) {
-            namesOfTablesToIgnore.add(table.getName());
-        }
+        final Quoting quoting = new Quoting(session);
         StringBuffer succEqualsE = new StringBuffer();
         for (Column column: graph.getUniversalPrimaryKey().getColumns()) {
             if (succEqualsE.length() > 0) {
                 succEqualsE.append(" and ");
             }
-            succEqualsE.append("Succ.PRE_" + column.name + "=E." + column.name);
+            succEqualsE.append("Succ.PRE_" + quoting.quote(column.name) + "=E." + quoting.quote(column.name));
         }
         final FileWriter writer = new FileWriter("explain.log");
         final RowIdSupport rowIdSupport = new RowIdSupport(graph.getDatamodel(), Configuration.forDbms(session));
@@ -81,20 +75,23 @@ public class ExplainTool {
             " and not exists (Select * from " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, session) + " Succ Where Succ.r_entitygraph=" + graph.graphID + " and Succ.PRE_TYPE=E.type and " + succEqualsE + ")";
         session.executeQuery(selectLeafs, new Session.AbstractResultSetReader() {
         	public void readCurrentRow(ResultSet resultSet) throws SQLException {
-                String type = resultSet.getString(1);
+        		int o = resultSet.getInt(1);
+        		String type = null;
+                if (!resultSet.wasNull()) {
+                	Table tableByTypeName = graph.getDatamodel().getTableByOrdinal(o);
+                	type = tableByTypeName.getName();
+                }
                 List<String> keys = new ArrayList<String>();
                 int i = 2;
                 CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session);
 				for (@SuppressWarnings("unused") Column column: graph.getUniversalPrimaryKey().getColumns()) {
                     keys.add(cellContentConverter.toSql(cellContentConverter.getObject(resultSet, i++)));
                 }
-                if (!namesOfTablesToIgnore.contains(type)) {
-                    try {
-                        writer.append(path(graph, session, type, keys, graph.getDatamodel(), rowIdSupport));
-                        writer.append(".\n");
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
+                try {
+                    writer.append(path(graph, session, type, keys, graph.getDatamodel(), rowIdSupport, quoting));
+                    writer.append(".\n");
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
             }
         });
@@ -124,7 +121,7 @@ public class ExplainTool {
      * @param rowIdSupport 
      * @throws SQLException 
      */
-    private static String path(final EntityGraph graph, final Session session, String type, List<String> keys, DataModel datamodel, RowIdSupport rowIdSupport) throws SQLException {
+    private static String path(final EntityGraph graph, final Session session, String type, List<String> keys, DataModel datamodel, RowIdSupport rowIdSupport, Quoting quoting) throws SQLException {
         String where = "";
         int i = 0;
         for (Column column: graph.getUniversalPrimaryKey().getColumns()) {
@@ -132,16 +129,20 @@ public class ExplainTool {
                 where += " and ";
             }
             String value = keys.get(i++);
-			where += column.name + (value == null || value.equals("null")? " is null" : ("=" + value));
+			where += quoting.quote(column.name) + (value == null || value.equals("null")? " is null" : ("=" + value));
         }
         String selectPredecessor = "Select PRE_TYPE, association, " + graph.getUniversalPrimaryKey().columnList("PRE_") + " From " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, session) + " E Where E.r_entitygraph=" + graph.graphID +
-            " and type='" + type + "' and " + where;
+            " and type=" + datamodel.getTable(type).getOrdinal() + " and " + where;
         final String preType[] = new String[1];
         final List<String> preKeys = new ArrayList<String>();
         final Integer associationID[] = new Integer[1];
         session.executeQuery(selectPredecessor, new Session.AbstractResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
-                preType[0] = resultSet.getString(1);
+            	int o = resultSet.getInt(1);
+                if (!resultSet.wasNull()) {
+                	Table tableByTypeName = graph.getDatamodel().getTableByOrdinal(o);
+                	preType[0] = tableByTypeName.getName();
+                }
                 associationID[0] = resultSet.getInt(2);
                 int i = 3;
                 CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session);
@@ -150,17 +151,18 @@ public class ExplainTool {
                 }
             }
         });
-        String thePath = entityAsString(type, keys, datamodel, rowIdSupport);
+        String thePath = entityAsString(type, keys, datamodel, rowIdSupport, session);
         if (preType[0] != null) {
-            thePath = path(graph, session, preType[0], preKeys, datamodel, rowIdSupport) + " --" + associationID[0] + "--> " + thePath;
+            thePath = path(graph, session, preType[0], preKeys, datamodel, rowIdSupport, quoting) + " --" + associationID[0] + "--> " + thePath;
         }
         return thePath;
     }
 
     /**
      * Stringifies an entity.
+     * @param session 
      */
-    private static String entityAsString(String type, List<String> keys, DataModel datamodel, RowIdSupport rowIdSupport) {
+    private static String entityAsString(String type, List<String> keys, DataModel datamodel, RowIdSupport rowIdSupport, Session session) {
         StringBuffer sb = new StringBuffer(type + "(");
         int i = 0, ki = 0;
         Map<Column, Column> match = rowIdSupport.getUniversalPrimaryKey().match(rowIdSupport.getPrimaryKey(datamodel.getTable(type)));

@@ -514,7 +514,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JButton okButton;
-    private javax.swing.JComboBox tableBox;
+    private net.sf.jailer.ui.JComboBox tableBox;
     // End of variables declaration//GEN-END:variables
     
     private Icon conditionEditorIcon;

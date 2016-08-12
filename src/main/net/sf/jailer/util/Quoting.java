@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.jailer.database.Session;
+
 /**
  * Quotes and un-quotes SQL identifier in a DBMS specific way.
  * 
@@ -57,13 +59,26 @@ public class Quoting {
 	 */
 	private Set<String> keyWords = new HashSet<String>(); 
 
+	private final boolean force;
+
 	/**
 	 * Constructor.
 	 * 
-	 * @param metaData
-	 *            from jdbc driver
+	 * @param session the database session
 	 */
-	public Quoting(DatabaseMetaData metaData) throws SQLException {
+	public Quoting(Session session) throws SQLException {
+		this(session, false);
+	}
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param session the database session
+	 * @param force if <code>true</code>, quote unquoted identifiers
+	 */
+	public Quoting(Session session, boolean force) throws SQLException {
+		this.force = force;
+		DatabaseMetaData metaData = session.getMetaData();
 		String quoteString = metaData.getIdentifierQuoteString();
 		if (quoteString != null
 				&& (quoteString.equals(" ") || quoteString.equals(""))) {
@@ -82,7 +97,14 @@ public class Quoting {
 		}
 		quote = quoteString;
 		unquotedIdentifierInUpperCase = metaData.storesUpperCaseIdentifiers();
-		unquotedIdentifierInMixedCase = metaData.storesMixedCaseIdentifiers();
+		
+		if (session.dbUrl.toLowerCase().startsWith("jdbc:jtds:")) {
+			// workaround for JTDS-bug
+			unquotedIdentifierInMixedCase = true;
+		} else {
+			unquotedIdentifierInMixedCase = metaData.storesMixedCaseIdentifiers();
+		}
+		
 		String k = metaData.getSQLKeywords();
 		if (k != null) {
 			keyWords = keyWordsMap.get(k);
@@ -154,6 +176,10 @@ public class Quoting {
 		if (identifier != null) {
 			identifier = identifier.trim();
 		}
+		if (!force && !isQuoted(identifier)) {
+			return identifier;
+		}
+		identifier = unquote(identifier);
 		if (quote != null && identifier != null && identifier.length() > 0) {
 			if (!keyWords.contains(identifier.toUpperCase())) {
 				String lower = "abcdefghijklmnopqrstuvwxyz_0123456789";
@@ -192,14 +218,33 @@ public class Quoting {
 	}
 
 	/**
+	 * Checks if an identifier is quoted.
+	 * 
+	 * @param identifier the identifier
+	 * @return <code>true</code> if identifier is quoted
+	 */
+	public boolean isQuoted(String identifier) {
+		if (identifier != null && identifier.length() > 1) {
+			String q = identifier.substring(0, 1);
+			if (identifier.endsWith(q)) {
+				char c = q.charAt(0);
+				if (q.equals(quote) || c == '"' || c == '\'' || c == '\u00B4' || c == '`') {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	/**
 	 * Remove quotes from identifier.
 	 * 
 	 * @param identifier the identifier
 	 * @return identifier without quotes
 	 */
 	public String unquote(String identifier) {
-		if (quote != null && identifier != null && identifier.startsWith(quote) && identifier.endsWith(quote)) {
-			return identifier.substring(quote.length(), identifier.length() - quote.length());
+		if (isQuoted(identifier)) {
+			return identifier.substring(1, identifier.length() - 1);
 		}
 		return identifier;
 	}

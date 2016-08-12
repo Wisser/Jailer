@@ -39,6 +39,8 @@ import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -59,6 +61,7 @@ import javax.swing.WindowConstants;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Jailer;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.database.SqlException;
 import net.sf.jailer.progress.ProgressListener;
 import net.sf.jailer.ui.scrollmenu.JScrollC2PopupMenu;
@@ -389,7 +392,7 @@ public class UIUtil {
 					out.close();
 				}
 			} catch (Exception e) {
-				UIUtil.showException(null, "Error", e);
+				UIUtil.showException(null, "Error", e, arglist);
 			}
 			final boolean[] result = new boolean[] { false };
 			final Throwable[] exp = new Throwable[1];
@@ -502,7 +505,7 @@ public class UIUtil {
 											&& exp[0] != null
 											&& !(exp[0] instanceof CancellationException)) {
 										UIUtil.showException(outputView.dialog,
-												"Error", exp[0]);
+												"Error", exp[0], arglist);
 										exceptionShown[0] = true;
 									}
 									if (result[0] && progressPanel != null) {
@@ -539,7 +542,7 @@ public class UIUtil {
 					shown = exceptionShown[0];
 				}
 				if (!shown) {
-					UIUtil.showException(null, "Error", t);
+					UIUtil.showException(null, "Error", t, arglist);
 				}
 			}
 			return false;
@@ -605,6 +608,22 @@ public class UIUtil {
 	 *            the exception
 	 */
 	public static void showException(Component parent, String title, Throwable t) {
+		showException(parent, title, t, null);
+	}
+
+	/**
+	 * Shows an exception.
+	 * 
+	 * @param parent
+	 *            parent component of option pane
+	 * @param title
+	 *            title of option pane
+	 * @param context
+	 *            optional context object. String or Session is supported.
+	 * @param t
+	 *            the exception
+	 */
+	public static void showException(Component parent, String title, Throwable t, Object context) {
 		t.printStackTrace();
 		if (!(t instanceof ClassNotFoundException)) {
 			while (t.getCause() != null && t != t.getCause()
@@ -617,12 +636,31 @@ public class UIUtil {
 			String sql = ((SqlException) t).sqlStatement;
 			new SqlErrorDialog(parent == null ? null
 					: SwingUtilities.getWindowAncestor(parent), lineWrap(
-					message, 120).toString(), lineWrap(sql, 120).toString());
+					message, 120).toString(), lineWrap(sql, 120).toString(), true);
 			return;
 		}
-		StringBuilder msg = lineWrap(t.getMessage(), 80);
-		JOptionPane.showMessageDialog(parent, msg.toString().trim(), title
-				+ " - " + t.getClass().getName(), JOptionPane.ERROR_MESSAGE);
+		String message = t.getMessage();
+		if (message == null || "".equals(message.trim())) {
+			message = t.getClass().getName();
+		}
+		StringBuilder msg = lineWrap(message, 80);
+		
+		String contextDesc = "";
+		if (context != null) {
+			if (context instanceof Session) {
+				Session session = (Session) context;
+				contextDesc = session.dbUrl + " (" + session.dbms + ")";
+			} else {
+				contextDesc = lineWrap(context.toString(), 80).toString();
+			}
+		}
+		StringWriter sw = new StringWriter();
+		PrintWriter pw = new PrintWriter(sw);
+		t.printStackTrace(pw);
+		contextDesc += "\n" + Jailer.APPLICATION_NAME + " " + Jailer.VERSION + "\n\n" + sw.toString();
+
+		new SqlErrorDialog(parent == null ? null
+				: SwingUtilities.getWindowAncestor(parent), msg.toString(), contextDesc, false);
 	}
 
 	private static StringBuilder lineWrap(String message, int maxwidth) {

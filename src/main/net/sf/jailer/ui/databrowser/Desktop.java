@@ -232,7 +232,7 @@ public abstract class Desktop extends JDesktopPane {
 			updateUIThread.setDaemon(true);
 			updateUIThread.start();
 		} catch (Exception e) {
-			UIUtil.showException(null, "Error", e);
+			UIUtil.showException(null, "Error", e, session);
 		}
 		desktops.add(this);
 		updateMenu();
@@ -2142,7 +2142,7 @@ public abstract class Desktop extends JDesktopPane {
 			File file = new File(filename);
 			file.delete();
 		} catch (Throwable e) {
-			UIUtil.showException(this, "Error", e);
+			UIUtil.showException(this, "Error", e, session);
 		}
 		
 		
@@ -2229,7 +2229,7 @@ public abstract class Desktop extends JDesktopPane {
 				reloadRoots();
 			}
 		} catch (Exception e) {
-			UIUtil.showException(this, "Error", e);
+			UIUtil.showException(this, "Error", e, session);
 		}
 	}
 
@@ -2312,7 +2312,7 @@ public abstract class Desktop extends JDesktopPane {
 				try {
 					storeSession(sFile);
 				} catch (Throwable e) {
-					UIUtil.showException(this, "Error", e);
+					UIUtil.showException(this, "Error", e, session);
 				}
 				currentSessionFileName = sFile;
 			}
@@ -2398,7 +2398,7 @@ public abstract class Desktop extends JDesktopPane {
 					currentSessionFileName = sFile;
 				}
 			} catch (Throwable e) {
-				UIUtil.showException(this, "Error", e);
+				UIUtil.showException(this, "Error", e, session);
 			}
 		}
 	}

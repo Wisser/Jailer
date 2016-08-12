@@ -153,7 +153,6 @@ public class DMLTransformer extends AbstractResultSetReader {
     	private final int maxBodySize;
 		private final boolean upsertOnly;
 		private final OutputStreamWriter scriptFileWriter;
-		private final DatabaseMetaData metaData;
 		private final Session session;
 
 	    /**
@@ -163,11 +162,10 @@ public class DMLTransformer extends AbstractResultSetReader {
 	     * @param maxBodySize maximum length of SQL values list (for generated inserts)
 	     * @param upsertOnly use 'upsert' statements for all entities
 	     */
-		public Factory(OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, DatabaseMetaData metaData, Session session) {
+		public Factory(OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, Session session) {
 	        this.maxBodySize = maxBodySize;
 	        this.upsertOnly = upsertOnly;
 	        this.scriptFileWriter = scriptFileWriter;
-	        this.metaData = metaData;
 	        this.session = session;
     	}
 
@@ -180,7 +178,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 		 */
 		@Override
 		public ResultSetReader create(Table table) throws SQLException {
-			return new DMLTransformer(table, scriptFileWriter, upsertOnly, maxBodySize, metaData, session);
+			return new DMLTransformer(table, scriptFileWriter, upsertOnly, maxBodySize, session);
 		}
     };
 
@@ -192,14 +190,14 @@ public class DMLTransformer extends AbstractResultSetReader {
      * @param maxBodySize maximum length of SQL values list (for generated inserts)
      * @param upsertOnly use 'upsert' statements for all entities
      */
-    private DMLTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, DatabaseMetaData metaData, Session session) throws SQLException {
+    private DMLTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, Session session) throws SQLException {
         this.maxBodySize = maxBodySize;
         this.upsertOnly = upsertOnly;
         this.table = table;
         this.scriptFileWriter = scriptFileWriter;
         this.currentDialect = Configuration.forDbms(session).getSqlDialect();
         this.insertStatementBuilder = new StatementBuilder(currentDialect.supportsMultiRowInserts || session.dbms == DBMS.ORACLE || session.dbms == DBMS.SQLITE? maxBodySize : 1);
-        this.quoting = new Quoting(metaData);
+        this.quoting = new Quoting(session);
         this.session = session;
         tableHasIdentityColumn = false;
         if (Configuration.forDbms(session).isIdentityInserts()) {
@@ -333,17 +331,18 @@ public class DMLTransformer extends AbstractResultSetReader {
                         whereWOAlias.append(" and ");
                     }
                     f = false;
-                    whereForTerminator.append("T." + pk.name + "=Q." + pk.name);
+                    whereForTerminator.append("T." + quoting.quote(pk.name) + "=Q." + quoting.quote(pk.name));
                     String value;
-                    if (val.containsKey(pk.name)) {
-                    	value = val.get(pk.name);
-                    } else if (val.containsKey(pk.name.toLowerCase())) {
-                    	value = val.get(pk.name.toLowerCase());
+                    String name = quoting.unquote(pk.name);
+                    if (val.containsKey(name)) {
+                    	value = val.get(name);
+                    } else if (val.containsKey(name.toLowerCase())) {
+                    	value = val.get(name.toLowerCase());
                     } else {
-                    	value = val.get(pk.name.toUpperCase());
+                    	value = val.get(name.toUpperCase());
                     }
-                    where.append("T." + pk.name + "=" + value);
-                    whereWOAlias.append(pk.name + "=" + value);
+                    where.append("T." + quoting.quote(pk.name) + "=" + value);
+                    whereWOAlias.append(quoting.quote(pk.name) + "=" + value);
                 }
 
                 if (currentDialect.upsertMode == UPSERT_MODE.MERGE && !tableHasLobs) {
@@ -499,9 +498,9 @@ public class DMLTransformer extends AbstractResultSetReader {
     		schema = mappedSchema;
     	}
     	if (schema.length() == 0) {
-    		return t.getUnqualifiedName();
+    		return quoting.quote(t.getUnqualifiedName());
     	}
-		return schema + "." + t.getUnqualifiedName();
+		return quoting.quote(schema) + "." + quoting.quote(t.getUnqualifiedName());
 	}
 
 	/**
@@ -548,7 +547,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 	                    where.append(" and ");
 	                }
 	                f = false;
-	                where.append(pk.name + "=" + val.get(pk.name));
+	                where.append(quoting.quote(pk.name) + "=" + val.get(pk.name));
 	            }
 	            if (lob instanceof SQLXML) {
 	            	++numberOfExportedLOBs;

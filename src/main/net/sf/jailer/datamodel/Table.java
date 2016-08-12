@@ -16,9 +16,6 @@
 package net.sf.jailer.datamodel;
 
 import java.io.IOException;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -30,7 +27,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import net.sf.jailer.database.Session;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 import net.sf.jailer.xml.NodeVisitor;
@@ -88,6 +84,11 @@ public class Table extends ModelElement implements Comparable<Table> {
      * The original table-name. Differs from name if a source-schema-mapping has been applied to the name.
      */
     private String originalName;
+
+    /**
+     * Unique number of this table.
+     */
+	int ordinal;
     
     /**
      * Constructor.
@@ -312,24 +313,24 @@ public class Table extends ModelElement implements Comparable<Table> {
     /**
      * Gets template for XML exports as DOM.
      */
-    public Document getXmlTemplateAsDocument() throws ParserConfigurationException, SAXException, IOException {
-    	return getXmlTemplateAsDocument(xmlTemplate);
+    public Document getXmlTemplateAsDocument(Quoting quoting) throws ParserConfigurationException, SAXException, IOException {
+    	return getXmlTemplateAsDocument(xmlTemplate, quoting);
     }
 
     /**
      * Gets default template for XML exports as DOM.
      */
-    public Document getDefaultXmlTemplate() throws ParserConfigurationException, SAXException, IOException {
-    	return getXmlTemplateAsDocument(null);
+    public Document getDefaultXmlTemplate(Quoting quoting) throws ParserConfigurationException, SAXException, IOException {
+    	return getXmlTemplateAsDocument(quoting);
     }
 
     /**
      * Gets template for XML exports as DOM.
      */
-    private Document getXmlTemplateAsDocument(String xmlTemplate) throws ParserConfigurationException, SAXException, IOException {
+    private Document getXmlTemplateAsDocument(String xmlTemplate, Quoting quoting) throws ParserConfigurationException, SAXException, IOException {
     	Document template;
     	if (xmlTemplate == null) {
-    		template = createInitialXmlTemplate();
+    		template = createInitialXmlTemplate(quoting);
     	} else {
     		template = XmlUtil.parse(xmlTemplate);
     	}
@@ -402,7 +403,7 @@ public class Table extends ModelElement implements Comparable<Table> {
     /**
      * Creates initial XML mapping template.
      */
-	private Document createInitialXmlTemplate() throws ParserConfigurationException {
+	private Document createInitialXmlTemplate(Quoting quoting) throws ParserConfigurationException {
 		DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
 		factory.setNamespaceAware(true);
 		DocumentBuilder builder = factory.newDocumentBuilder();
@@ -428,10 +429,11 @@ public class Table extends ModelElement implements Comparable<Table> {
 				}
 			}
 			Element columnElement = template.createElement(XmlUtil.asElementName(column.name.toLowerCase()));
+			String quotedName = quoting != null? quoting.quote(column.name) : column.name;
 			if (!isPK) {
-				columnElement.setAttribute(XmlUtil.NS_PREFIX + ":if-not-null", XmlUtil.SQL_PREFIX + "T." + column.name);
+				columnElement.setAttribute(XmlUtil.NS_PREFIX + ":if-not-null", XmlUtil.SQL_PREFIX + "T." + quotedName);
 			}
-			columnElement.setTextContent(XmlUtil.SQL_PREFIX + "T." + column.name);
+			columnElement.setTextContent(XmlUtil.SQL_PREFIX + "T." + quotedName);
 			root.appendChild(columnElement);
 		}
 		
@@ -520,47 +522,12 @@ public class Table extends ModelElement implements Comparable<Table> {
 	}
 
 	/**
-	 * Tests whether the table exists.
+	 * Gets unique number of this table to be used as type discriminator in JAILER_ENTITY table.
 	 * 
-	 * @param session to access the database
-	 * @param defaultSchema schema to search in if table is unqualified
-	 * @return <code>true</code> if table exists
+	 * @return unique number
 	 */
-	public boolean exists(Session session, String defaultSchema) throws SQLException {
-		DatabaseMetaData metaData = session.getMetaData();
-		Quoting quoting = new Quoting(metaData);
-		String schema = quoting.unquote(getSchema(defaultSchema));
-		String tableName = quoting.unquote(getUnqualifiedName());
-		if (exists(metaData, schema, tableName)) {
-			return true;
-		}
-		String schemaToLower = schema.equals(getSchema(defaultSchema))? (schema.toLowerCase()) : schema;
-		String tableNameToLower = tableName.equals(getUnqualifiedName())? (tableName.toLowerCase()) : tableName;
-		if (exists(metaData, schemaToLower, tableNameToLower)) {
-			return true;
-		}
-		String schemaToUpper = schema.equals(getSchema(defaultSchema))? (schema.toUpperCase()) : schema;
-		String tableNameToUpper = tableName.equals(getUnqualifiedName())? (tableName.toUpperCase()) : tableName;
-		if (exists(metaData, schemaToUpper, tableNameToUpper)) {
-			return true;
-		}
-		return false;
-	}
- 
-	/**
-	 * Tests whether the table exists.
-	 * 
-	 * @param metaData JDBC meta data
-	 * @param schema schema
-	 * @param tableName table name
-	 * @return <code>true</code> if table exists
-	 */
-	private boolean exists(DatabaseMetaData metaData, String schema,
-			String tableName) throws SQLException {
-		ResultSet rs = metaData.getTables(null, schema, tableName, new String[] { "TABLE" });
-		boolean exists = rs.next();
-		rs.close();
-		return exists;
+	public int getOrdinal() {
+		return ordinal;
 	}
 
 }

@@ -56,7 +56,6 @@ public class CellContentConverter {
 	
 	private final ResultSetMetaData resultSetMetaData;
 	private final Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
-	private final Map<String, Integer> typeCacheByName = new HashMap<String, Integer>();
 	private final Map<String, Integer> columnIndex = new HashMap<String, Integer>();
 	private final Session session;
 	private final Configuration configuration;
