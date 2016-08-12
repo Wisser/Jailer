@@ -28,10 +28,10 @@ ${create-table}${schema}JAILER_ENTITY${table-suffix}
 
    ${upk},
    birthday        INTEGER NOT NULL,
-   type            VARCHAR(120) NOT NULL,
+   type            INTEGER NOT NULL,
 
    ${pre},
-   PRE_TYPE        VARCHAR(120)${constraint},
+   PRE_TYPE        INTEGER${constraint},
    orig_birthday   INTEGER${constraint},
    association     INTEGER${constraint}
 
@@ -45,7 +45,7 @@ ${end}
 ${create-table}${schema}JAILER_SET${table-suffix}
 (
    set_id          INTEGER NOT NULL,
-   type            VARCHAR(120) NOT NULL,
+   type            INTEGER NOT NULL,
    ${upk}
 ) ${create-table-suffix};
 
@@ -58,8 +58,8 @@ ${create-table}${schema}JAILER_DEPENDENCY${table-suffix}
    assoc           INTEGER NOT NULL,
    depend_id       INTEGER NOT NULL,
    traversed       INTEGER${constraint},
-   from_type       VARCHAR(120) NOT NULL,
-   to_type         VARCHAR(120) NOT NULL,
+   from_type       INTEGER NOT NULL,
+   to_type         INTEGER NOT NULL,
    ${from},
    ${to}   
 
