@@ -1677,6 +1677,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 											}
 											if (suw.newModelWithRestrictions) {
 												finalExtractionModelFrame.extractionModelEditor.ignoreAll(null);
+												finalExtractionModelFrame.extractionModelEditor.needsSave = false;
+												finalExtractionModelFrame.extractionModelEditor.extractionModelFrame.updateTitle(false);
 											}
 										}
 									});

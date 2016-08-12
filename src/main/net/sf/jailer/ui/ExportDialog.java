@@ -171,7 +171,6 @@ public class ExportDialog extends javax.swing.JDialog {
         setLocation(100, 150);
         Map<String, JComponent> fields = new HashMap<String, JComponent>();
         fields.put("insert" + scriptFormat.name(), insert);
-        fields.put("delete", delete);
         fields.put("threads", threads);
         fields.put("rowsPerThread", rowsPerThread);
         fields.put("unicode", unicode);
