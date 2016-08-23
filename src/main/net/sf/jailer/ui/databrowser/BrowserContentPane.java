@@ -1930,6 +1930,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		try {
 			session.setSilent(true);
 			reloadRows(andCond, rows, context, limit, selectDistinct, null);
+			return;
 		} catch (SQLException e) {
 			Session._log.warn("failed, try another strategy");
 		} finally {
@@ -2171,6 +2172,24 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		reloadRows0(andCond, parentRows, rows, context, parentRows == null? limit : Math.max(5000, limit), useOLAPLimitation, sqlLimitSuffix, existingColumnsLowerCase);
 	}
 
+    /**
+     * Gets qualified table name.
+     * 
+     * @param t the table
+     * @return qualified name of t
+     */
+    private String qualifiedTableName(Table t, Quoting quoting) {
+    	String schema = t.getOriginalSchema("");
+    	String mappedSchema = CommandLineParser.getInstance().getSourceSchemaMapping().get(schema);
+    	if (mappedSchema != null) {
+    		schema = mappedSchema;
+    	}
+    	if (schema.length() == 0) {
+    		return quoting.quote(t.getUnqualifiedName());
+    	}
+		return quoting.quote(schema) + "." + quoting.quote(t.getUnqualifiedName());
+	}
+
 	/**
 	 * Reload rows from {@link #table}.
 	 * 
@@ -2257,9 +2276,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			sql += " From ";
 			if (association != null) {
-				sql += association.source.getName() + " B join ";
+				sql += qualifiedTableName(association.source, quoting) + " B join ";
 			}
-			sql += table.getName() + " A";
+			sql += qualifiedTableName(table, quoting) + " A";
 			if (association != null) {
 				if (association.reversed) {
 					sql += " on " + association.getUnrestrictedJoinCondition();
@@ -2352,7 +2371,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							if (rowId.length() > 0) {
 								rowId += " and ";
 							}
-							rowId += pkColumn.get(quoting.quote(column.name));
+							rowId += pkColumn.get(column.name);
 						}
 					} else {
 						rowId = Integer.toString(++rowNr);
@@ -2466,7 +2485,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							}
 							if (pkColumnNames.contains(quoting.quote(column.name)) || isPK) {
 								String cVal = cellContentConverter.toSql(o);
-								String pkValue = "B." + column.name + ("null".equalsIgnoreCase(cVal)? " is null" : ("=" + cVal));
+								String pkValue = "B." + quoting.quote(column.name) + ("null".equalsIgnoreCase(cVal)? " is null" : ("=" + cVal));
 								if (pkColumn != null) {
 									pkColumn.put(column.name, pkValue);
 								}

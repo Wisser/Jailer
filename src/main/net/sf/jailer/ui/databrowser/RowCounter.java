@@ -7,12 +7,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -183,6 +185,7 @@ public class RowCounter {
 	 */
 	public long countRows(String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, Object context, int limit, boolean useOLAPLimitation,
 			String sqlLimitSuffix, boolean selectDistinct, long maxTime) throws SQLException {
+		final Quoting quoting = new Quoting(session);
 		String sql = "Select "; // + (selectDistinct? "distinct " : "");
 		
 		{
@@ -193,16 +196,19 @@ public class RowCounter {
 			if (sqlLimitSuffix != null && limitSuffixInSelectClause) {
 				sql += (sqlLimitSuffix.replace("%s", Integer.toString(limit))) + " ";
 			}
-			boolean f = true;
-			int i = 0;
+//			boolean f = true;
+//			int i = 0;
 			
-			for (Column column : association.destination.getColumns()) {
-				String name = column.name;
-				sql += (!f ? ", " : "") + "A." + name + " AS A" + i;
-				olapPrefix += (!f ? ", " : "") + "S.A" + i;
-				++i;
-				f = false;
-			}
+//			for (Column column : association.destination.getColumns()) {
+//				String name = column.name;
+//				sql += (!f ? ", " : "") + "A." + quoting.quote(name) + " AS A" + i;
+//				olapPrefix += (!f ? ", " : "") + "S.A" + i;
+//				++i;
+//				f = false;
+//			}
+			
+			sql += "1";
+			
 			if (useOLAPLimitation) {
 				sql += ", row_number() over(";
 				sql += "order by -1";
@@ -210,9 +216,9 @@ public class RowCounter {
 			}
 			sql += " From ";
 			if (association != null) {
-				sql += association.destination.getName() + " A join ";
+				sql += qualifiedTableName(association.destination, quoting) + " A join ";
 			}
-			sql += table.getName() + " B";
+			sql += qualifiedTableName(table, quoting) + " B";
 			if (association != null) {
 				if (association.reversed) {
 					sql += " on " + association.getUnrestrictedJoinCondition();
@@ -265,6 +271,24 @@ public class RowCounter {
 			}, null, context, 0, timeout);
 		}
 		return rc[0];
+	}
+
+    /**
+     * Gets qualified table name.
+     * 
+     * @param t the table
+     * @return qualified name of t
+     */
+    private String qualifiedTableName(Table t, Quoting quoting) {
+    	String schema = t.getOriginalSchema("");
+    	String mappedSchema = CommandLineParser.getInstance().getSourceSchemaMapping().get(schema);
+    	if (mappedSchema != null) {
+    		schema = mappedSchema;
+    	}
+    	if (schema.length() == 0) {
+    		return quoting.quote(t.getUnqualifiedName());
+    	}
+		return quoting.quote(schema) + "." + quoting.quote(t.getUnqualifiedName());
 	}
 
 }

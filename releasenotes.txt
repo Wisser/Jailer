@@ -1,3 +1,6 @@
+5.6.1
+  - Minor bug fixes.
+
 5.6.0
   - Improved error handling.
   - Improved performance.
