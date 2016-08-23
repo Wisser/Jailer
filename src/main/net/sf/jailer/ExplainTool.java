@@ -67,7 +67,7 @@ public class ExplainTool {
             if (succEqualsE.length() > 0) {
                 succEqualsE.append(" and ");
             }
-            succEqualsE.append("Succ.PRE_" + quoting.quote(column.name) + "=E." + quoting.quote(column.name));
+            succEqualsE.append("Succ.PRE_" + column.name + "=E." + column.name);
         }
         final FileWriter writer = new FileWriter("explain.log");
         final RowIdSupport rowIdSupport = new RowIdSupport(graph.getDatamodel(), Configuration.forDbms(session));
