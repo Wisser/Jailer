@@ -330,6 +330,13 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		return false;
 	}
 
+	/**
+	 * Inserts rows into a table. Falls back to {@link #upsertRows(Table, String, boolean)} on error.
+	 * 
+	 * @param table the table
+	 * @param sqlSelect the rows to insert
+	 * @return row count
+	 */
 	private long insertRows(Table table, String sqlSelect) throws SQLException {
 		StringBuilder sb = new StringBuilder();
 		String labelCSL = insertClause(table, null, null);
@@ -358,6 +365,14 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		}
 	}
 
+	/**
+	 * Upserts rows of a table. Tries all {@link UpsertStrategy}s until it find one that works.
+	 * 
+	 * @param table the table
+	 * @param sqlSelect the rows to be upserted
+	 * @param retry if <code>true</code>, try all {@link UpsertStrategy}s
+	 * @return row count
+	 */
 	private long upsertRows(Table table, String sqlSelect, boolean retry) throws SQLException {
 		if (table.primaryKey.getColumns().isEmpty()) {
 			throw new RuntimeException("Unable to merge/upsert into table \""
@@ -477,11 +492,17 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		return session.executeUpdate(sql);
 	}
 
+	/**
+	 * A strategy to upsert (merge) rows.
+	 */
 	private interface UpsertStrategy {
 		long upsert(Table table, String sqlSelect)
 				throws SQLException;
 	}
 
+	/**
+	 * Uses "MERGE INTO" statements to upsert rows.
+	 */
 	private class MergeUS implements UpsertStrategy {
 		private final boolean withSemicolon;
 
@@ -547,6 +568,9 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		}
 	};
 
+	/**
+	 * Uses "INSERT" statements followed by "UPDATE" statements. (Postgres dialect);
+	 */
 	private class UpsertPGUS implements UpsertStrategy {
 		@Override
 		public long upsert(Table table, String sqlSelect)
@@ -579,6 +603,9 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		}
 	};
 
+	/**
+	 * Uses "INSERT" statements followed by "UPDATE" statements. (MySQL dialect);
+	 */
 	private class UpsertMYSQLUS implements UpsertStrategy {
 		@Override
 		public long upsert(Table table, String sqlSelect)
@@ -611,6 +638,9 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		}
 	};
 
+	/**
+	 * Uses "INSERT" statements followed by "UPDATE" statements. (Standard SQL);
+	 */
 	private class UpsertStandardUS implements UpsertStrategy {
 		@Override
 		public long upsert(Table table, String sqlSelect)

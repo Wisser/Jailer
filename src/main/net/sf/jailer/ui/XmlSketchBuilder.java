@@ -57,7 +57,7 @@ public class XmlSketchBuilder {
 		if (sketch.getChildNodes().getLength() > 0 && sketch.getChildNodes().item(0) instanceof Element) {
 			insertAssociationSketch((Element) sketch.getChildNodes().item(0), table, sketch, depth);
 		}
-		return XmlUtil.build(sketch);
+		return XmlUtil.buildOmitDeclaration(sketch);
 	}
 	
 	private static void insertAssociationSketch(Element element, Table table, Document doc, int depth) throws DOMException, ParserConfigurationException, SAXException, IOException {
