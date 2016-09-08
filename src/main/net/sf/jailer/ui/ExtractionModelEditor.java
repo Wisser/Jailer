@@ -58,6 +58,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
@@ -474,9 +475,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		
 		DefaultComboBoxModel formatComboBoxModel = new DefaultComboBoxModel(ScriptFormat.values());
 		
-		// TODO: INTRA_DATABASE not yet supported
-		formatComboBoxModel.removeElement(ScriptFormat.INTRA_DATABASE);
-		
 		exportFormat.setModel(formatComboBoxModel);
 		exportFormat.setRenderer(new DefaultListCellRenderer() {
 			@Override
@@ -492,8 +490,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     	
 		openXmlSettings.setVisible(ScriptFormat.XML.equals(scriptFormat));
 		onExportModusChanged(null);
-        xmlSketch.setContentType("text/xml");
-		setOrientation(horizontalLayout);
+        setOrientation(horizontalLayout);
 		connectivityState.setText(connectionState);
 		connectivityState.setToolTipText(connectionStateToolTip);
 		
@@ -779,15 +776,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jPanel8 = new javax.swing.JPanel();
         jLabel7 = new javax.swing.JLabel();
         openSubjectConditionEditor = new javax.swing.JLabel();
-        subjectTable = new net.sf.jailer.ui.JComboBox();
+        subjectTable = new JComboBox();
         jPanel10 = new javax.swing.JPanel();
-        exportFormat = new net.sf.jailer.ui.JComboBox();
+        exportFormat = new JComboBox();
         exportButton = new javax.swing.JButton();
         openXmlSettings = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jPanel13 = new javax.swing.JPanel();
         jPanel6 = new javax.swing.JPanel();
-        rootTable = new net.sf.jailer.ui.JComboBox();
+        rootTable = new JComboBox();
         jPanel9 = new javax.swing.JPanel();
         resetFocus = new javax.swing.JButton();
         jPanel14 = new javax.swing.JPanel();
@@ -798,13 +795,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        aggregationCombobox = new net.sf.jailer.ui.JComboBox();
+        aggregationCombobox = new JComboBox();
         tagField = new javax.swing.JTextField();
         jPanel5 = new javax.swing.JPanel();
         xmlTagApply = new javax.swing.JButton();
         mapColumns = new javax.swing.JButton();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        xmlSketch = new javax.swing.JEditorPane();
+        sketchTabbedPane = new javax.swing.JTabbedPane();
         jPanel11 = new javax.swing.JPanel();
         legende1 = new javax.swing.JPanel();
         modelName = new javax.swing.JLabel();
@@ -1128,6 +1124,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 4);
         xmlMappingPanel.add(tagField, gridBagConstraints);
 
+        jPanel5.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 0));
+
         xmlTagApply.setText("apply");
         xmlTagApply.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -1149,11 +1147,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.gridy = 8;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         xmlMappingPanel.add(jPanel5, gridBagConstraints);
-
-        xmlSketch.setEditable(false);
-        jScrollPane2.setViewportView(xmlSketch);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 11;
@@ -1161,8 +1156,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 20, 0, 4);
-        xmlMappingPanel.add(jScrollPane2, gridBagConstraints);
+        xmlMappingPanel.add(sketchTabbedPane, gridBagConstraints);
 
         editorPanel.add(xmlMappingPanel);
 
@@ -1853,11 +1847,44 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 */
 	private void updateSketch() {
 		try {
-			xmlSketch.setText(XmlSketchBuilder.buildSketch(currentAssociation == null? null : currentAssociation.source, 0));
-			xmlSketch.setCaretPosition(0);
+			sketchTabbedPane.removeAll();
+
+			if (currentAssociation != null) {
+				addSketchTab(currentAssociation.source);
+				if (currentAssociation.source != currentAssociation.destination) {
+					addSketchTab(currentAssociation.destination);
+				}
+				sketchTabbedPane.setSelectedIndex(0);
+			} else {
+				if (root != null) {
+					addSketchTab(root);
+				}
+			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	/**
+	 * Adds a tab to the sketch-tabbedpane for a given table. 
+	 * 
+	 * @param table the table
+	 */
+	private void addSketchTab(Table table) throws Exception {
+		JScrollPane tab = new JScrollPane();
+		JEditorPane xmlSketch = new JEditorPane();
+		
+		xmlSketch.setEditable(false);
+		tab.setViewportView(xmlSketch);
+		xmlSketch.setContentType("text/xml");
+
+		String tabName = null;
+		String sketch = "";
+		tabName = dataModel.getDisplayName(table);
+		sketch = XmlSketchBuilder.buildSketch(table, 1);
+		xmlSketch.setText(sketch);
+		xmlSketch.setCaretPosition(0);
+		sketchTabbedPane.addTab(tabName, tab);
 	}
 	
 	/**
@@ -2678,14 +2705,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton additionalSubjectsButton;
-    private net.sf.jailer.ui.JComboBox aggregationCombobox;
+    private JComboBox aggregationCombobox;
     private javax.swing.JLabel associatedWith;
     javax.swing.JTextField condition;
     public javax.swing.JLabel connectivityState;
     private javax.swing.JLabel dependsOn;
     private javax.swing.JPanel editorPanel;
     public javax.swing.JButton exportButton;
-    private net.sf.jailer.ui.JComboBox exportFormat;
+    private JComboBox exportFormat;
     private javax.swing.JPanel graphContainer;
     private javax.swing.JLabel hasDependent;
     private javax.swing.JLabel ignored;
@@ -2713,7 +2740,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel8;
     private javax.swing.JPanel jPanel9;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JScrollPane jScrollPane4;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
@@ -2730,14 +2756,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JButton openXmlSettings;
     private javax.swing.JButton resetFocus;
     private javax.swing.JTable restrictionsTable;
-    private net.sf.jailer.ui.JComboBox rootTable;
-    private net.sf.jailer.ui.JComboBox subjectTable;
+    private JComboBox rootTable;
+    private javax.swing.JTabbedPane sketchTabbedPane;
+    private JComboBox subjectTable;
     private javax.swing.JTextField tagField;
     private javax.swing.JPanel toolBarPanel;
     private javax.swing.JPanel toolPanel;
     private javax.swing.JTree tree;
     private javax.swing.JPanel xmlMappingPanel;
-    private javax.swing.JEditorPane xmlSketch;
     private javax.swing.JButton xmlTagApply;
     // End of variables declaration//GEN-END:variables
     

@@ -108,9 +108,38 @@ public class XmlUtil {
     private static Transformer transformer;
 
     /**
+	 * Identity transformer for building XML strings without XML declaration.
+	 */
+    private static Transformer transformerWODecl;
+    
+    /**
+  	 * Generates a XML string from DOM without XML declaration.
+  	 * 
+  	 * @param xmlDocument the DOM 
+  	 * @return XML string
+  	 */
+  	public static String buildOmitDeclaration(Document xmlDocument) throws TransformerException {
+		if (transformerWODecl == null) {
+			TransformerFactory xformFactory = TransformerFactory.newInstance();
+			try {
+				xformFactory.setAttribute("indent-number", new Integer(4));
+			} catch (IllegalArgumentException e) {
+				// ignore
+			}
+			transformerWODecl = xformFactory.newTransformer();
+			transformerWODecl.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformerWODecl.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+		}
+		StringWriter out = new StringWriter();
+		transformerWODecl.transform(new DOMSource(xmlDocument), new StreamResult(out));
+		return out.getBuffer().toString();
+	}
+  	
+    /**
 	 * Generates a XML string from DOM.
 	 * 
 	 * @param xmlDocument the DOM
+     * @param omitXMLDeclaration 
 	 * @return XML string
 	 */
 	public static String build(Document xmlDocument) throws TransformerException {
@@ -122,7 +151,7 @@ public class XmlUtil {
 				// ignore
 			}
 			transformer = xformFactory.newTransformer();
-		    transformer.setOutputProperty(OutputKeys.INDENT,"yes");
+		    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 		}
 		StringWriter out = new StringWriter();
         transformer.transform(new DOMSource(xmlDocument), new StreamResult(out));
