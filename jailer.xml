@@ -264,6 +264,8 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 
 			<property name="dbms" value="PostgreSQL"/>
 			
+			<property name="supportsSchemasInIndexDefinitions" value="false"/>
+			
 			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
 			<property name="tableProperties" value="" />
 			
@@ -367,6 +369,8 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 				value="jdbc:sqlserver.*|jdbc:inetdae.*|jdbc:JTurbo.*|jdbc:weblogic:mssqlserver.*|jdbc:jtds:sqlserver.*" />
 
 			<property name="dbms" value="Microsoft SQL Server"/>
+			
+			<property name="supportsSchemasInIndexDefinitions" value="false"/>
 			
 			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
 			<property name="tableProperties" value="" />

@@ -121,9 +121,10 @@ public class DDLCreator {
 			tableManager = Configuration.forDbms(session).transactionTemporaryTableManager;
 		}
 		String tableName = SQLDialect.CONFIG_TABLE_;
-		tableName = SQLDialect.dmlTableReference(tableName, session);
 		arguments.put("config-dml-reference", tableName);
-		arguments.put("schema", workingTableSchema != null? new Quoting(session, true).quote(workingTableSchema) + "." : "");
+		String schema = workingTableSchema != null? new Quoting(session, true).quote(workingTableSchema) + "." : "";
+		arguments.put("schema", schema);
+		arguments.put("index-schema", supportsSchemasInIndexDefinitions(session)? schema : "");
 		if (tableManager != null) {
 			arguments.put("table-suffix", "_T");
 			arguments.put("drop-table", tableManager.getDropTablePrefix());
@@ -183,6 +184,18 @@ public class DDLCreator {
 		System.out.println(ddl);
 
 		return true;
+	}
+
+	private static boolean supportsSchemasInIndexDefinitions(Session session) {
+		Boolean result = Configuration.forDbms(session).getSupportsSchemasInIndexDefinitions();
+		if (result == null) {
+			try {
+				result = session.getMetaData().supportsSchemasInDataManipulation();
+			} catch (SQLException e) {
+				return false;
+			}
+		}
+		return result;
 	}
 
 	private static String pkColumnConstraint(Session session) {

@@ -114,7 +114,23 @@ public class Configuration {
 	public String dbms = "Unknown";
 	public SQLDialect sqlDialect = new SQLDialect();
 	public String rowidName = null;
+	public Boolean supportsSchemasInIndexDefinitions = null;
 	
+	/**
+	 * @return the supportsSchemasInIndexDefinitions
+	 */
+	public Boolean getSupportsSchemasInIndexDefinitions() {
+		return supportsSchemasInIndexDefinitions;
+	}
+
+	/**
+	 * @param supportsSchemasInIndexDefinitions the supportsSchemasInIndexDefinitions to set
+	 */
+	public void setSupportsSchemasInIndexDefinitions(
+			Boolean supportsSchemasInIndexDefinitions) {
+		this.supportsSchemasInIndexDefinitions = supportsSchemasInIndexDefinitions;
+	}
+
 	/**
 	 * @return the rowidName
 	 */

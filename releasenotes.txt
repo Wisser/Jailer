@@ -1,3 +1,8 @@
+6.0.1
+  - Bug fixes for "Error exporting from postgresql with global tables with a working table schema"
+    and "Error exporting from postgresql with temporary tables"
+    See https://sourceforge.net/p/jailer/discussion/700499/thread/a7f0af2c/
+
 6.0
   - New "Export To" mode allows to export rows directly into a different schema in the same database. 
 
