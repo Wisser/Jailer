@@ -1,3 +1,6 @@
+6.0.2
+  - Fixed an incompatibility with Java 9.
+
 6.0.1
   - Bug fixes for "Error exporting from postgresql with global tables with a working table schema"
     and "Error exporting from postgresql with temporary tables"
