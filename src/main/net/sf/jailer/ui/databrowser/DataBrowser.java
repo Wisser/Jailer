@@ -1439,9 +1439,9 @@ public class DataBrowser extends javax.swing.JFrame {
 		boolean silent = dbConnectionDialog != null;
 		DataBrowser dataBrowser = new DataBrowser(datamodel, null, "", null, false);
 		dataBrowser.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		if (maximize) {
-			dataBrowser.setExtendedState(JFrame.MAXIMIZED_BOTH);
-		}
+//		if (maximize) {
+//			dataBrowser.setExtendedState(JFrame.MAXIMIZED_BOTH);
+//		}
 		dataBrowser.setVisible(true);
 		if (dbConnectionDialog == null) {
 			dbConnectionDialog = new DbConnectionDialog(dataBrowser, DataBrowserContext.getAppName(), null);

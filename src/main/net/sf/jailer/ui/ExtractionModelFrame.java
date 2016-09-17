@@ -1743,9 +1743,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		extractionModelFrame.setLocation(40, 40);
 		extractionModelFrame.setSize(1100, 640);
 		extractionModelFrame.setVisible(visible);
-		if (maximize) {
-			extractionModelFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-		}
+//		if (maximize) {
+//			extractionModelFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
+//		}
 		return extractionModelFrame;
 	}
 
