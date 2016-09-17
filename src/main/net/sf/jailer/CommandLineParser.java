@@ -52,7 +52,11 @@ public class CommandLineParser {
      * @return the singleton
      */
     public static CommandLineParser getInstance() {
-        return commandLineParser.get();
+        CommandLineParser clp = commandLineParser.get();
+        if (clp == null) {
+        	clp = mainCommandLineParser;
+        }
+        return clp;
     }
     
     /**
@@ -64,6 +68,9 @@ public class CommandLineParser {
     public static boolean parse(String[] args, boolean silent) throws Exception {
     	CommandLineParser p = new CommandLineParser();
         commandLineParser.set(p);
+        if (mainCommandLineParser == null) {
+        	mainCommandLineParser = p;
+        }
         p.cmdLineParser = null;
         try {
         	p.cmdLineParser = new CmdLineParser(p);
@@ -404,5 +411,7 @@ public class CommandLineParser {
      * The parser.
      */
     private CmdLineParser cmdLineParser;
+    
+    private static CommandLineParser mainCommandLineParser;
 
 }

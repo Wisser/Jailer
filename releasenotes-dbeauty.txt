@@ -1,3 +1,6 @@
+2.7.2
+  - Fixed an incompatibility with Java 9.
+
 2.6.1
   - Minor bug fixes.
 
