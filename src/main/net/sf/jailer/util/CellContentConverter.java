@@ -84,21 +84,23 @@ public class CellContentConverter {
         }
 
         if (content instanceof java.sql.Date) {
+        	String suffix = SqlUtil.dbms == DBMS.POSTGRESQL? "::date" : "";
         	if (configuration.useToTimestampFunction) {
         		String format;
         		synchronized(defaultDateFormat) {
 	        		format = defaultDateFormat.format((Date) content);
 	       		}
-				return "to_date('" + format + "', 'YYYY-MM-DD')";
+				return "to_date('" + format + "', 'YYYY-MM-DD')" + suffix;
         	}
         	if (configuration.dateFormat != null) {
         		synchronized(configuration.dateFormat) {
-        			return "'" + configuration.dateFormat.format((Date) content) + "'";
+        			return "'" + configuration.dateFormat.format((Date) content) + "'" + suffix;
         		}
         	}
-            return "'" + content + "'";
+            return "'" + content + "'" + suffix;
         }
         if (content instanceof java.sql.Timestamp) {
+        	String suffix = SqlUtil.dbms == DBMS.POSTGRESQL? "::timestamp" : "";
         	if (configuration.useToTimestampFunction) {
         		String format;
         		String nanoFormat;
@@ -108,7 +110,7 @@ public class CellContentConverter {
 	        		nanoFormat = "FF" + (nanoString.length() - 1);
 	    			format += nanoString;
         		}
-				return "to_timestamp('" + format + "', 'YYYY-MM-DD HH24.MI.SS." + nanoFormat + "')";
+				return "to_timestamp('" + format + "', 'YYYY-MM-DD HH24.MI.SS." + nanoFormat + "')" + suffix;
         	} else if (configuration.timestampFormat != null) {
         		String format;
         		synchronized(configuration.timestampFormat) {
@@ -120,9 +122,9 @@ public class CellContentConverter {
 				content = format;
         	}
         	if (configuration.timestampPattern != null) {
-        		return configuration.timestampPattern.replace("%s", "'" + content + "'");
+        		return configuration.timestampPattern.replace("%s", "'" + content + "'") + suffix;
         	}
-            return "'" + content + "'";
+            return "'" + content + "'" + suffix;
         }
         if (content instanceof NCharWrapper) {
         	String prefix = Configuration.forDbms(session).getNcharPrefix();
