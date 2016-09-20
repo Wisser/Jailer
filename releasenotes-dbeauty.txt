@@ -1,3 +1,7 @@
+2.7.3
+  - Fixed an error extracting from a postgresql table with a date primary key and a local database.
+    See https://sourceforge.net/p/jailer/discussion/700499/thread/6ffaf110/
+
 2.7.2
   - Fixed an incompatibility with Java 9.
 

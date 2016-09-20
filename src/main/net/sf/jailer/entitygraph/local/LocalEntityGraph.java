@@ -102,6 +102,12 @@ public class LocalEntityGraph extends EntityGraph {
 			}
 			return (String) value;
 		}
+
+		@Override
+		protected CellContentConverter createCellContentConverter() {
+			return new CellContentConverter(resultSetMetaData, localSession);
+		}
+		
 	}
 
 	private abstract class LocalInlineViewBuilder extends InlineViewBuilder {
@@ -124,6 +130,12 @@ public class LocalEntityGraph extends EntityGraph {
 			}
 			return value;
 		}
+
+		@Override
+		protected CellContentConverter createCellContentConverter() {
+			return new CellContentConverter(resultSetMetaData, remoteSession);
+		}
+
 	}
 
 	private Set<String> upkColumnNames = null;

@@ -88,7 +88,7 @@ public abstract class InlineViewBuilder implements Session.ResultSetReader {
 	public void readCurrentRow(ResultSet resultSet) throws SQLException {
 		if (resultSetMetaData == null) {
 			resultSetMetaData = resultSet.getMetaData();
-			cellContentConverter = new CellContentConverter(resultSetMetaData, session);
+			cellContentConverter = createCellContentConverter();
 		}
 
 		String values[] = new String[resultSetMetaData.getColumnCount()];
@@ -110,6 +110,8 @@ public abstract class InlineViewBuilder implements Session.ResultSetReader {
 				style.terminator(resultSet, resultSetMetaData, name, columnNames));
 	}
 
+	protected abstract CellContentConverter createCellContentConverter();
+	
 	protected String sqlValue(ResultSet resultSet, int i) throws SQLException {
 		return cellContentConverter.toSql(cellContentConverter.getObject(resultSet, i));
 	}
