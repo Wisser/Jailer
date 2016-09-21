@@ -16,26 +16,16 @@
 package net.sf.jailer.ui;
 
 import java.awt.Color;
-import java.awt.Component;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.JComponent;
 import javax.swing.JOptionPane;
-import javax.swing.JTable;
-import javax.swing.ListSelectionModel;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.event.ListSelectionEvent;
-import javax.swing.event.ListSelectionListener;
-import javax.swing.table.DefaultTableCellRenderer;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableCellRenderer;
-import javax.swing.table.TableModel;
 
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.util.CsvFile;
@@ -70,6 +60,126 @@ public class TableEditor extends javax.swing.JDialog {
 
     private boolean needsSave;
     
+    private static class ColumnModel {
+    	Column column;
+    	boolean isPk;
+    }
+    
+    @SuppressWarnings("serial")
+	private class ColumnListEditor extends ListEditor<ColumnModel> {
+
+		public ColumnListEditor() {
+			super(new String[] { "Name", "Type"}, "Column");
+		}
+
+		@Override
+		protected String getDisplayName(ColumnModel element) {
+			return element.column.name;
+		}
+
+		@Override
+		protected ColumnModel copy(ColumnModel element) {
+			ColumnModel c = new ColumnModel();
+			c.column = element.column;
+			c.isPk = element.isPk;
+			return c;
+		}
+
+		@Override
+		protected ColumnModel createNew() {
+			return new ColumnModel();
+		}
+
+		@Override
+		protected JComponent createDetailsView(ColumnModel element) {
+			if (element.column != null) {
+				columnName.setText(element.column.name);
+				columnType.setText(element.column.type);
+				columnLength.setText(element.column.length > 0? Integer.toString(element.column.length) : "");
+				columnPrec.setText(element.column.precision >= 0? Integer.toString(element.column.precision) : "");
+				columnIsIdentity.setSelected(element.column.isIdentityColumn);
+			} else {
+				columnName.setText("");
+				columnType.setText("");
+				columnLength.setText("");
+				columnPrec.setText("");
+				columnIsIdentity.setSelected(false);
+			}
+			primaryKey1.setSelected(element.isPk);
+			return columnDetailsPanel;
+		}
+
+		@Override
+		protected void updateFromDetailsView(ColumnModel element,
+				JComponent detailsView,
+				List<ColumnModel> model,
+				StringBuilder errorMessage) {
+			String name = columnName.getText().trim();
+			if (name.equals("")) {
+				errorMessage.append("Name missing.");
+				return;
+			}
+			String type = columnType.getText().trim();
+			if (type.equals("")) {
+				errorMessage.append("Type missing.");
+				return;
+			}
+			if (element.column != null && !element.column.name.equals(name)) {
+				for (ColumnModel m: model) {
+					if (m.column.name.equals(name)) {
+						errorMessage.append("Name already exists.");
+						return;
+					}
+				}
+			}
+			int length = 0;
+			if (columnLength.getText().trim().length() > 0) {
+				try {
+					length = Integer.parseInt(columnLength.getText().trim());
+				} catch (NumberFormatException e) {
+					errorMessage.append("Length is not valid.");
+					return;
+				}
+			}
+			int prec = -1;
+			if (columnPrec.getText().trim().length() > 0) {
+				try {
+					prec = Integer.parseInt(columnPrec.getText().trim());
+				} catch (NumberFormatException e) {
+					errorMessage.append("Precision is not valid.");
+					return;
+				}
+			}
+			Column c = new Column(name, type, length, prec);
+			c.isIdentityColumn = columnIsIdentity.isSelected();
+			element.column = c;
+			element.isPk = primaryKey1.isSelected();
+		}
+
+		@Override
+		protected Object[] toColumnList(ColumnModel element, int index) {
+			String type = toSql(element.column);
+			int i = type.indexOf(" ");
+			if (i > 0) {
+				type = type.substring(i).trim();
+			}
+			return new String[] { element.column.name, type };
+		}
+
+		@Override
+		protected Color getForegroundColor(ColumnModel element, int column) {
+			if (element.isPk && column == 0) {
+				return Color.RED;
+			}
+			return null;
+		}
+
+		protected Dimension detailsViewMinSize() {
+	    	return new Dimension(300, 0);
+	    }
+
+    };
+    
     /** 
      * Creates new form TableEditor
      * 
@@ -85,77 +195,10 @@ public class TableEditor extends javax.swing.JDialog {
         this.excludeFromDeletionList = excludeFromDeletionList;
         this.displayNames = displayNames;
         initComponents();
-        primaryKey.addActionListener(new ActionListener() {
-        	@Override
-			public void actionPerformed(ActionEvent e) {
-        		int s = columnsTable.getSelectedRow();
-        		updateButtonActionPerformed(e);
-        		if (s >= 0) {
-        			columnsTable.getSelectionModel().addSelectionInterval(s, s);
-        		}
-        	}
-        });
-        columnsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        final Color BG1 = new Color(255, 255, 255);
-		final Color BG2 = new Color(230, 255, 255);
-		TableCellRenderer renderer = new DefaultTableCellRenderer() {
-			@Override
-			public Component getTableCellRendererComponent(JTable table,
-					Object value, boolean isSelected, boolean hasFocus,
-					int row, int column) {
-				Component render = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-				if (!isSelected) {
-					render.setBackground(row % 2 == 0? BG1 : BG2);
-				}
-				Column col = Column.parse(currentColumnLine.cells.get(1 + row));
-				render.setForeground(Color.BLACK);
-				for (Column pk: getCurrentPrimaryKeys()) {
-					if (pk.name.equals(col.name)) {
-						render.setForeground(Color.RED);
-						break;
-					}
-				}
-				return render;
-			}
-			private static final long serialVersionUID = 2081014492388534455L;
-        };
-        columnsTable.setDefaultRenderer(Object.class, renderer);
-        columnsTable.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-			public void valueChanged(ListSelectionEvent e) {
-				if (columnsTable.getSelectedRow() < 0) {
-					column.setText("");
-					primaryKey.setSelected(false);
-				} else {
-					String selectedColumn = currentColumnLine.cells.get(1 + columnsTable.getSelectedRow());
-					column.setText(selectedColumn);
-					Column selCol = Column.parse(selectedColumn);
-					primaryKey.setSelected(false);
-					for (Column pk: getCurrentPrimaryKeys()) {
-						if (pk.name.equals(selCol.name)) {
-							primaryKey.setSelected(true);
-							break;
-						}
-					}
-				}
-				updateEnableState();
-			}
-        });
         setSize(600, 600);
         setLocation(parent.getLocation().x + parent.getSize().width/2 - getPreferredSize().width/2,
     			parent.getLocation().y + parent.getSize().height/2 - getPreferredSize().height/2);
         
-        column.getDocument().addDocumentListener(new DocumentListener() {
-			public void changedUpdate(DocumentEvent e) {
-				updateEnableState();
-			}
-			public void insertUpdate(DocumentEvent e) {
-				updateEnableState();
-			}
-			public void removeUpdate(DocumentEvent e) {
-				updateEnableState();
-			}
-        });
-
         UIUtil.initPeer();
     }
     
@@ -175,22 +218,6 @@ public class TableEditor extends javax.swing.JDialog {
 		return pk;
 	}
 	
-	/**
-     * Gets list of current columns.
-     * 
-     * @return list of current columns
-     */
-	private List<Column> getCurrentColumns() {
-		List<Column> columns = new ArrayList<Column>();
-		for (int i = 1; i < currentColumnLine.length; ++i) {
-			if (currentColumnLine.cells.get(i).length() == 0) {
-				break;
-			}
-			columns.add(Column.parse(currentColumnLine.cells.get(i)));
-		}
-		return columns;
-	}
-
 	/** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -200,6 +227,17 @@ public class TableEditor extends javax.swing.JDialog {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        columnDetailsPanel = new javax.swing.JPanel();
+        primaryKey1 = new javax.swing.JCheckBox();
+        columnName = new javax.swing.JTextField();
+        jLabel8 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        columnType = new javax.swing.JTextField();
+        columnLength = new javax.swing.JTextField();
+        columnPrec = new javax.swing.JTextField();
+        columnIsIdentity = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         nameField = new javax.swing.JTextField();
@@ -212,19 +250,175 @@ public class TableEditor extends javax.swing.JDialog {
         jLabel6 = new javax.swing.JLabel();
         excludeFromDeletion = new javax.swing.JCheckBox();
         jPanel2 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        columnsTable = new javax.swing.JTable();
-        upButton = new javax.swing.JButton();
-        downButton = new javax.swing.JButton();
-        jPanel3 = new javax.swing.JPanel();
-        column = new javax.swing.JTextField();
-        addButton = new javax.swing.JButton();
-        updateButton = new javax.swing.JButton();
-        deleteButton = new javax.swing.JButton();
-        primaryKey = new javax.swing.JCheckBox();
+        slotPanel = new javax.swing.JPanel();
         jLabel4 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
         displayName = new javax.swing.JTextField();
+
+        columnDetailsPanel.setLayout(new java.awt.GridBagLayout());
+
+        primaryKey1.setText(" primary key");
+        primaryKey1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 0);
+        columnDetailsPanel.add(primaryKey1, gridBagConstraints);
+
+        columnName.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                columnNameActionPerformed(evt);
+            }
+        });
+        columnName.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+            }
+            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
+                columnNameInputMethodTextChanged(evt);
+            }
+        });
+        columnName.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                columnNameKeyReleased(evt);
+            }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                columnNameKeyTyped(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 0);
+        columnDetailsPanel.add(columnName, gridBagConstraints);
+
+        jLabel8.setText("Name  ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        columnDetailsPanel.add(jLabel8, gridBagConstraints);
+
+        jLabel9.setText("Type  ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        columnDetailsPanel.add(jLabel9, gridBagConstraints);
+
+        jLabel10.setText("Length  ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        columnDetailsPanel.add(jLabel10, gridBagConstraints);
+
+        jLabel11.setText("Precision  ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        columnDetailsPanel.add(jLabel11, gridBagConstraints);
+
+        columnType.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                columnTypeActionPerformed(evt);
+            }
+        });
+        columnType.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+            }
+            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
+                columnTypeInputMethodTextChanged(evt);
+            }
+        });
+        columnType.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                columnTypeKeyReleased(evt);
+            }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                columnTypeKeyTyped(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 0);
+        columnDetailsPanel.add(columnType, gridBagConstraints);
+
+        columnLength.setColumns(4);
+        columnLength.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                columnLengthActionPerformed(evt);
+            }
+        });
+        columnLength.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+            }
+            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
+                columnLengthInputMethodTextChanged(evt);
+            }
+        });
+        columnLength.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                columnLengthKeyReleased(evt);
+            }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                columnLengthKeyTyped(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 7;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 0);
+        columnDetailsPanel.add(columnLength, gridBagConstraints);
+
+        columnPrec.setColumns(4);
+        columnPrec.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                columnPrecActionPerformed(evt);
+            }
+        });
+        columnPrec.addInputMethodListener(new java.awt.event.InputMethodListener() {
+            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
+            }
+            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
+                columnPrecInputMethodTextChanged(evt);
+            }
+        });
+        columnPrec.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyReleased(java.awt.event.KeyEvent evt) {
+                columnPrecKeyReleased(evt);
+            }
+            public void keyTyped(java.awt.event.KeyEvent evt) {
+                columnPrecKeyTyped(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 0);
+        columnDetailsPanel.add(columnPrec, gridBagConstraints);
+
+        columnIsIdentity.setText(" identity column (MS SQL)");
+        columnIsIdentity.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 4, 0);
+        columnDetailsPanel.add(columnIsIdentity, gridBagConstraints);
+        columnIsIdentity.getAccessibleContext().setAccessibleName("");
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Table");
@@ -344,142 +538,15 @@ public class TableEditor extends javax.swing.JDialog {
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        columnsTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Titel 1", "Titel 2", "Titel 3", "Titel 4"
-            }
-        ));
-        jScrollPane1.setViewportView(columnsTable);
-
+        slotPanel.setLayout(new java.awt.GridBagLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridheight = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        jPanel2.add(jScrollPane1, gridBagConstraints);
-
-        upButton.setText("Up");
-        upButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                upButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(4, 2, 0, 0);
-        jPanel2.add(upButton, gridBagConstraints);
-
-        downButton.setText("Down");
-        downButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                downButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
-        jPanel2.add(downButton, gridBagConstraints);
-
-        jPanel3.setLayout(new java.awt.GridBagLayout());
-
-        column.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                columnActionPerformed(evt);
-            }
-        });
-        column.addInputMethodListener(new java.awt.event.InputMethodListener() {
-            public void caretPositionChanged(java.awt.event.InputMethodEvent evt) {
-            }
-            public void inputMethodTextChanged(java.awt.event.InputMethodEvent evt) {
-                columnInputMethodTextChanged(evt);
-            }
-        });
-        column.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyReleased(java.awt.event.KeyEvent evt) {
-                columnKeyReleased(evt);
-            }
-            public void keyTyped(java.awt.event.KeyEvent evt) {
-                columnKeyTyped(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 22, 0, 0);
-        jPanel3.add(column, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
-        jPanel2.add(jPanel3, gridBagConstraints);
-
-        addButton.setText("Add");
-        addButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
-        jPanel2.add(addButton, gridBagConstraints);
-
-        updateButton.setText("Update");
-        updateButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                updateButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
-        jPanel2.add(updateButton, gridBagConstraints);
-
-        deleteButton.setText("Delete");
-        deleteButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                deleteButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
-        jPanel2.add(deleteButton, gridBagConstraints);
-
-        primaryKey.setText(" primary key");
-        primaryKey.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 22, 0, 0);
-        jPanel2.add(primaryKey, gridBagConstraints);
+        jPanel2.add(slotPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -514,141 +581,9 @@ public class TableEditor extends javax.swing.JDialog {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
-    	try {
-    		Column column = Column.parse(this.column.getText());
-    		for (int i = 1; i < currentColumnLine.length; ++i) {
-    			if (Column.parse(currentColumnLine.cells.get(i)).name.equals(column.name)) {
-    				currentColumnLine.cells.remove(i);
-    				--currentColumnLine.length;
-    				break;
-    			}
-    		}
-    		for (int i = 2; i < currentTableLine.length; ++i) {
-    			if (currentTableLine.cells.get(i).length() == 0) {
-    				break;
-    			}
-    			if (Column.parse(currentTableLine.cells.get(i)).name.equals(column.name)) {
-    				currentTableLine.cells.remove(i);
-    				--currentTableLine.length;
-    				break;
-    			}
-    		}
-    		columnsTable.setModel(columnsTableModel());
-    		updateEnableState();
-    		needsSave = true;
-    	} catch (Exception e) {
-    		// ignore
-    	}
-    }//GEN-LAST:event_deleteButtonActionPerformed
-
-    private void updateButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_updateButtonActionPerformed
-    	try {
-    		Column column = Column.parse(this.column.getText());
-    		for (int i = 1; i < currentColumnLine.length; ++i) {
-    			if (Column.parse(currentColumnLine.cells.get(i)).name.equals(column.name)) {
-    				currentColumnLine.cells.set(i, column.toSQL(null) + (column.isIdentityColumn? " identity" : ""));
-    				break;
-    			}
-    		}
-    		boolean found = false;
-    		for (int i = 2; i < currentTableLine.length; ++i) {
-    			if (currentTableLine.cells.get(i).length() == 0) {
-    				break;
-    			}
-    			if (Column.parse(currentTableLine.cells.get(i)).name.equals(column.name)) {
-    				found = true;
-    				if (primaryKey.isSelected()) {
-    					currentTableLine.cells.set(i, column.toSQL(null) + (column.isIdentityColumn? " identity" : ""));
-    				} else {
-    					currentTableLine.cells.remove(i);
-    					currentTableLine.length--;
-    				}
-    				break;
-    			}
-    		}
-    		if (!found && primaryKey.isSelected()) {
-    			currentTableLine.cells.add(currentTableLine.length - 2, column.toSQL(null) + (column.isIdentityColumn? " identity" : ""));
-        		currentTableLine.length++;
-    		}
-    		columnsTable.setModel(columnsTableModel());
-    		updateEnableState();
-    		needsSave = true;
-    	} catch (Exception e) {
-    		// ignore
-    	}
-    }//GEN-LAST:event_updateButtonActionPerformed
-
-    private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
-    	for (int i = 0; ; ++i) {
-	    	Column column = null;
-	    	if (i == 0) {
-		    	try {
-		    		column = Column.parse(this.column.getText());
-		    	} catch (Exception e) {
-		    		// ignore
-		    	}
-	    	}
-	    	if (column == null) {
-	    		column = new Column("new" + (i > 0? i : ""), "varchar", 100, -1);
-	    	}
-			String newColumn = column.toSQL(null) + (column.isIdentityColumn? " identity" : "");
-			if (currentColumnLine.cells.contains(newColumn)) {
-				continue;
-			}
-			currentColumnLine.cells.add(currentColumnLine.length, newColumn);
-			currentColumnLine.length++;
-			if (primaryKey.isSelected()) {
-	    		currentTableLine.cells.add(currentTableLine.length - 2, newColumn);
-	    		currentTableLine.length++;
-			}
-			columnsTable.setModel(columnsTableModel());
-			updateEnableState();
-			needsSave = true;
-			break;
-    	}
-    }//GEN-LAST:event_addButtonActionPerformed
-
-    private void downButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_downButtonActionPerformed
-    	int i = columnsTable.getSelectedRow();
-    	if (i >= 0 && i < currentColumnLine.length - 2) {
-    		swapColumns(i, i + 1);
-    	}
-    }//GEN-LAST:event_downButtonActionPerformed
-
-    private void upButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_upButtonActionPerformed
-    	int i = columnsTable.getSelectedRow();
-    	if (i > 0) {
-    		swapColumns(i, i - 1);
-    	}
-    }//GEN-LAST:event_upButtonActionPerformed
-
-    /**
-     * Swaps two columns in current column line.
-     * 
-     * @param i index of column a
-     * @param j index of column b
-     */
-    private void swapColumns(int i, int j) {
-		String h = currentColumnLine.cells.get(i + 1);
-		currentColumnLine.cells.set(i + 1, currentColumnLine.cells.get(j + 1));
-		currentColumnLine.cells.set(j + 1, h);
-		columnsTable.setModel(columnsTableModel());
-		columnsTable.getSelectionModel().setSelectionInterval(j, j);
-		needsSave = true;
+	private String toSql(Column column) {
+		return column.toSQL(null) + (column.isIdentityColumn? " identity" : "");
 	}
-
-	private void columnKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_columnKeyReleased
-    }//GEN-LAST:event_columnKeyReleased
-
-    private void columnInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_columnInputMethodTextChanged
-    }//GEN-LAST:event_columnInputMethodTextChanged
-
-    private void columnKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_columnKeyTyped
-    }//GEN-LAST:event_columnKeyTyped
-
-    private void columnActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_columnActionPerformed
-    }//GEN-LAST:event_columnActionPerformed
 
     private void excludeFromDeletionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_excludeFromDeletionActionPerformed
     }//GEN-LAST:event_excludeFromDeletionActionPerformed
@@ -657,8 +592,6 @@ public class TableEditor extends javax.swing.JDialog {
     	String msg = null;
     	if (nameField.getText().trim().length() == 0) {
     		msg = "No table name";
-    	} else if (getCurrentPrimaryKeys().isEmpty()) {
-    		msg = "Primary key missing";
     	} else {
     		for (Line l: tables) {
     			if (l != currentTableLine && l.cells.get(0).equals(nameField.getText().trim())) {
@@ -689,6 +622,70 @@ public class TableEditor extends javax.swing.JDialog {
     private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         setVisible(false);
     }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void columnNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_columnNameActionPerformed
+        
+    }//GEN-LAST:event_columnNameActionPerformed
+
+    private void columnNameInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_columnNameInputMethodTextChanged
+        
+    }//GEN-LAST:event_columnNameInputMethodTextChanged
+
+    private void columnNameKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_columnNameKeyReleased
+        
+    }//GEN-LAST:event_columnNameKeyReleased
+
+    private void columnNameKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_columnNameKeyTyped
+        
+    }//GEN-LAST:event_columnNameKeyTyped
+
+    private void columnTypeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_columnTypeActionPerformed
+        
+    }//GEN-LAST:event_columnTypeActionPerformed
+
+    private void columnTypeInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_columnTypeInputMethodTextChanged
+        
+    }//GEN-LAST:event_columnTypeInputMethodTextChanged
+
+    private void columnTypeKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_columnTypeKeyReleased
+        
+    }//GEN-LAST:event_columnTypeKeyReleased
+
+    private void columnTypeKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_columnTypeKeyTyped
+        
+    }//GEN-LAST:event_columnTypeKeyTyped
+
+    private void columnLengthActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_columnLengthActionPerformed
+        
+    }//GEN-LAST:event_columnLengthActionPerformed
+
+    private void columnLengthInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_columnLengthInputMethodTextChanged
+        
+    }//GEN-LAST:event_columnLengthInputMethodTextChanged
+
+    private void columnLengthKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_columnLengthKeyReleased
+        
+    }//GEN-LAST:event_columnLengthKeyReleased
+
+    private void columnLengthKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_columnLengthKeyTyped
+        
+    }//GEN-LAST:event_columnLengthKeyTyped
+
+    private void columnPrecActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_columnPrecActionPerformed
+        
+    }//GEN-LAST:event_columnPrecActionPerformed
+
+    private void columnPrecInputMethodTextChanged(java.awt.event.InputMethodEvent evt) {//GEN-FIRST:event_columnPrecInputMethodTextChanged
+        
+    }//GEN-LAST:event_columnPrecInputMethodTextChanged
+
+    private void columnPrecKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_columnPrecKeyReleased
+        
+    }//GEN-LAST:event_columnPrecKeyReleased
+
+    private void columnPrecKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_columnPrecKeyTyped
+        
+    }//GEN-LAST:event_columnPrecKeyTyped
     
     private boolean isOk;
     private Line currentTableLine;
@@ -733,12 +730,60 @@ public class TableEditor extends javax.swing.JDialog {
 		boolean origExcludeSet = excludeFromDeletionList.contains(origName);
 		excludeFromDeletion.setSelected(origExcludeSet);
 
-		columnsTable.setModel(columnsTableModel());
-		updateEnableState();
+		ColumnListEditor columnListEditor = new ColumnListEditor();
+		slotPanel.removeAll();
+		GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+		slotPanel.add(columnListEditor, gridBagConstraints);
+		List<ColumnModel> columnModel = new ArrayList<ColumnModel>();
+		for (int i = 1; i < currentColumnLine.length; ++i) {
+			ColumnModel cm = new ColumnModel();
+			cm.column = Column.parse(currentColumnLine.cells.get(i));
+			for (Column pk: getCurrentPrimaryKeys()) {
+				if (pk.name.equals(cm.column.name)) {
+					cm.isPk = true;
+					break;
+				}
+			}
+			columnModel.add(cm);
+		}
+		columnListEditor.setModel(columnModel);
 		
 		setVisible(true);
 		boolean excludeSet = excludeFromDeletion.isSelected();
 
+		if (columnListEditor.needsSave()) {
+			needsSave = true;
+		}
+		
+		if (isOk) {
+			List<String> line = new ArrayList<String>();
+			List<String> tLine = new ArrayList<String>();
+			line.add("");
+			tLine.add("");
+			tLine.add("");
+			for (ColumnModel cm: columnModel) {
+				line.add(toSql(cm.column));
+				if (cm.isPk) {
+					tLine.add(toSql(cm.column));
+				}
+			}
+			currentColumnLine.cells.clear();
+			currentColumnLine.cells.addAll(line);
+			currentColumnLine.length = line.size();
+			tableLine.cells.clear();
+			tableLine.cells.addAll(tLine);
+			tableLine.length = tLine.size();
+			for (int i = 0; i < 10; ++i) {
+				currentColumnLine.cells.add("");
+				tableLine.cells.add("");
+			}
+		}
+		
 		if (isOk && 
 			    !(
 			    		origDisplayName.equals(displayName.getText()) 
@@ -795,80 +840,33 @@ public class TableEditor extends javax.swing.JDialog {
 		return false;
 	}
 
-	/**
-	 * Updates enable-state of each button.
-	 */
-	private void updateEnableState() {
-		Column current;
-		try {
-			current = Column.parse(column.getText());
-		} catch (Exception e) {
-			current = null;
-		}
-		boolean currentExists = false;
-		if (current != null) {
-			for (Column c: getCurrentColumns()) {
-				if (c.name.equals(current.name)) {
-					currentExists = true;
-					break;
-				}
-			}
-		}
-		addButton.setEnabled(true); // current != null && !currentExists);
-		updateButton.setEnabled(current != null && currentExists);
-		deleteButton.setEnabled(current != null && currentExists);
-		upButton.setEnabled(columnsTable.getSelectedRow() > 0);
-		downButton.setEnabled(columnsTable.getSelectedRow() >= 0 && columnsTable.getSelectedRow() < currentColumnLine.length - 2);
-	}
-
-	/**
-	 * Creates the model for the columns table.
-	 * 
-	 * @return the model for the columns table
-	 */
-    private TableModel columnsTableModel() {
-    	DefaultTableModel model = new DefaultTableModel() {
-			public boolean isCellEditable(int row, int column) {
-				return false;
-			}
-			private static final long serialVersionUID = -5655810990374489020L;
-    	};
-    	model.addColumn("Name");
-    	model.addColumn("Type");
-    	model.addColumn("Scale");
-    	model.addColumn("Precision");
-    	for (int i = 1; i < currentColumnLine.length; ++i) {
-    		Column column = Column.parse(currentColumnLine.cells.get(i));
-        	model.addRow(new Object[] { column.name, column.type, column.length > 0? column.length : "", column.precision >= 0? column.precision : ""});
-    	}
-    	return model;
-	}
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addButton;
-    private javax.swing.JTextField column;
-    private javax.swing.JTable columnsTable;
-    private javax.swing.JButton deleteButton;
+    private javax.swing.JPanel columnDetailsPanel;
+    private javax.swing.JCheckBox columnIsIdentity;
+    private javax.swing.JTextField columnLength;
+    private javax.swing.JTextField columnName;
+    private javax.swing.JTextField columnPrec;
+    private javax.swing.JTextField columnType;
     private javax.swing.JTextField displayName;
-    private javax.swing.JButton downButton;
     private javax.swing.JCheckBox excludeFromDeletion;
     private javax.swing.JButton jButton1;
     private javax.swing.JButton jButton2;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTextField nameField;
-    private javax.swing.JCheckBox primaryKey;
-    private javax.swing.JButton upButton;
-    private javax.swing.JButton updateButton;
+    private javax.swing.JCheckBox primaryKey1;
+    private javax.swing.JPanel slotPanel;
     private javax.swing.JCheckBox upsertCheckbox;
     // End of variables declaration//GEN-END:variables
     

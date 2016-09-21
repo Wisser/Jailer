@@ -40,6 +40,7 @@ import javax.swing.ListCellRenderer;
 
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.Filter;
 import net.sf.jailer.datamodel.Table;
 
 /**
@@ -83,7 +84,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 					if (table != null) {
 						int n = 0;
 						for (Column c: table.getColumns()) {
-							if (c.getFilterExpression() != null) {
+							if (c.getFilter() != null && !c.getFilter().isDerived()) {
 								++n;
 							}
 						}
@@ -196,140 +197,232 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		int y = 0;
 		java.awt.GridBagConstraints gridBagConstraints;
 		filterTextfieldsPerColumn.clear();
+		boolean hasDerived = false;
 		
-		for (final Table table: tables) {	
-			for (Column c: table.getColumns()) {
-				String filter = c.getFilterExpression();
-
-				if (filter == null && selectedTable == null) {
-					continue;
-				}
-
-				javax.swing.JLabel label = new javax.swing.JLabel();
-				if (selectedTable != null) {
-					label.setText(" T.");
+		for (boolean derived: new boolean[] { false, true}) {
+			for (final Table table: tables) {	
+				for (Column c: table.getColumns()) {
+					String toolTip = derived && c.getFilter() != null && c.getFilter().isDerived()? c.getFilter().getDerivedFrom() : null;
+					String derivedFilter = c.getFilter() != null && c.getFilter().isDerived()? c.getFilterExpression() : null;
+					if (derivedFilter != null) {
+						hasDerived = true;
+					}
+					if (toolTip != null) {
+						toolTip = "derived from " + toolTip;
+					}
+					String filter;
+					if (derived) {
+						filter = derivedFilter;
+							
+						if (filter == null) {
+							continue;
+						}
+					} else {
+						filter = c.getFilter() != null && !c.getFilter().isDerived()? c.getFilterExpression() : null;
+		
+						if (filter == null && selectedTable == null) {
+							continue;
+						}
+						
+						if (filter != null && c.getFilter().getAppliedTo() != null) {
+							List<String> aTo = c.getFilter().getAppliedTo();
+							StringBuilder sb = new StringBuilder("Also applied to " + aTo.size() + " columns: ");
+							boolean f = true;
+							for (String s: aTo) {
+								if (!f) {
+									sb.append(", ");
+								}
+								sb.append(s);
+								f = false;
+								if (sb.length() > 100) {
+									sb.append("...");
+									break;
+								}
+							}
+							toolTip = sb.toString();
+						}
+					}
+					
+					javax.swing.JLabel label = new javax.swing.JLabel();
+					if (selectedTable != null) {
+						label.setText(" T.");
+				        label.setFont(nonBoldFont);
+				        label.setForeground(Color.gray);
+				        gridBagConstraints = new java.awt.GridBagConstraints();
+				        gridBagConstraints.gridx = 0;
+				        gridBagConstraints.gridy = y;
+				        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+				        gridBagConstraints.weightx = 0.0;
+				        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+				        filterPane.add(label, gridBagConstraints);
+				        if (toolTip != null) {
+				        	label.setToolTipText(toolTip);
+				        }
+					}
+			        
+					javax.swing.JPanel columnPanel = new JPanel();
+					columnPanel.setLayout(new java.awt.BorderLayout());
+	
+					label = new javax.swing.JLabel();
+					final String columnName = (selectedTable == null? " " + table.getUnqualifiedName() + "." : "") + c.name;
+					label.setText(columnName);
+			        label.setFont(filter == null || selectedTable == null? nonBoldFont : boldFont);
+					
+			        boolean isPK = false;
+			        for (Column pk: table.primaryKey.getColumns()) {
+			        	if (pk.equals(c)) {
+			        		isPK = true;
+			        		break;
+			        	}
+			        }
+			        
+			        if (isPK) {
+			        	label.setForeground(Color.RED);
+			        }
+			        if (!derived && c.getFilter() != null && c.getFilter().isDerived()) {
+			        	label.setForeground(Color.BLUE);
+			        }
+			        columnPanel.add(label, java.awt.BorderLayout.WEST);
+			        if (toolTip != null) {
+			        	label.setToolTipText(toolTip);
+			        }
+					label = new javax.swing.JLabel();
+					label.setText(" " + (c.toSQL(null).substring(c.name.length())) + " ");
+					label.setForeground(Color.GRAY);
+			        label.setFont(filter == null || selectedTable == null? nonBoldFont : boldFont);
+					columnPanel.add(label, java.awt.BorderLayout.EAST);
+			        if (toolTip != null) {
+			        	label.setToolTipText(toolTip);
+			        }
+					
+					gridBagConstraints = new java.awt.GridBagConstraints();
+			        gridBagConstraints.gridx = 1;
+			        gridBagConstraints.gridy = y;
+			        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+			        gridBagConstraints.weightx = 0.0;
+			        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+			        filterPane.add(columnPanel, gridBagConstraints);
+			        
+					label = new javax.swing.JLabel();
+					label.setText(" :=  ");
 			        label.setFont(nonBoldFont);
-			        label.setForeground(Color.gray);
-			        gridBagConstraints = new java.awt.GridBagConstraints();
-			        gridBagConstraints.gridx = 0;
+					gridBagConstraints = new java.awt.GridBagConstraints();
+			        gridBagConstraints.gridx = 2;
 			        gridBagConstraints.gridy = y;
 			        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 			        gridBagConstraints.weightx = 0.0;
 			        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 			        filterPane.add(label, gridBagConstraints);
-				}
-		        
-				javax.swing.JPanel columnPanel = new JPanel();
-				columnPanel.setLayout(new java.awt.BorderLayout());
-
-				label = new javax.swing.JLabel();
-				final String columnName = (selectedTable == null? " " + table.getUnqualifiedName() + "." : "") + c.name;
-				label.setText(columnName);
-		        label.setFont(filter == null || selectedTable == null? nonBoldFont : boldFont);
-				
-		        boolean isPK = false;
-		        for (Column pk: table.primaryKey.getColumns()) {
-		        	if (pk.equals(c)) {
-		        		isPK = true;
-		        		break;
-		        	}
-		        }
-		        
-		        if (isPK) {
-		        	label.setForeground(Color.RED);
-		        }
-		        columnPanel.add(label, java.awt.BorderLayout.WEST);
-				label = new javax.swing.JLabel();
-				label.setText(" " + (c.toSQL(null).substring(c.name.length())) + " ");
-				label.setForeground(Color.GRAY);
-		        label.setFont(filter == null || selectedTable == null? nonBoldFont : boldFont);
-				columnPanel.add(label, java.awt.BorderLayout.EAST);
-				
-				gridBagConstraints = new java.awt.GridBagConstraints();
-		        gridBagConstraints.gridx = 1;
-		        gridBagConstraints.gridy = y;
-		        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-		        gridBagConstraints.weightx = 0.0;
-		        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		        filterPane.add(columnPanel, gridBagConstraints);
-		        
-				label = new javax.swing.JLabel();
-				label.setText(" :=  ");
-		        label.setFont(nonBoldFont);
-				gridBagConstraints = new java.awt.GridBagConstraints();
-		        gridBagConstraints.gridx = 2;
-		        gridBagConstraints.gridy = y;
-		        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-		        gridBagConstraints.weightx = 0.0;
-		        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		        filterPane.add(label, gridBagConstraints);
-		        
-		        final javax.swing.JTextField textField = new javax.swing.JTextField();
-		        textField.setText(filter == null? "" : ConditionEditor.toSingleLine(filter));
-		        filterTextfieldsPerColumn.put(c, textField);
-		        
-		        label = new javax.swing.JLabel();
-				label.setText(null);
-		        
-				label.setIcon(conditionEditorIcon);
-				
-		        gridBagConstraints = new java.awt.GridBagConstraints();
-		        gridBagConstraints.gridx = 3;
-		        gridBagConstraints.gridy = y;
-		        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-		        gridBagConstraints.weightx = 0.0;
-		        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		        gridBagConstraints.insets = new Insets(1, 0, 0, 2);
-		        filterPane.add(label, gridBagConstraints);
-		        
-		        gridBagConstraints = new java.awt.GridBagConstraints();
-		        gridBagConstraints.gridx = 4;
-		        gridBagConstraints.gridy = y;
-		        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
-		        gridBagConstraints.weightx = 1.0;
-		        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		        gridBagConstraints.insets = new Insets(1, 0, 0, 0);
-		        filterPane.add(textField, gridBagConstraints);
-
-		        final JLabel theLabel = label;
-		        label.addMouseListener(new java.awt.event.MouseAdapter() {
-		        	@Override
-					public void mouseReleased(MouseEvent e) {
-						mouseClicked(e);
-					}
-					public void mouseClicked(java.awt.event.MouseEvent evt) {
-						conditionEditor.setTitle(columnName.trim());
-						String cond = conditionEditor.edit(textField.getText(), "Table", "T", table, null, null, null, false);
-						if (cond != null) {
-							if (!textField.getText().equals(ConditionEditor.toSingleLine(cond))) {
-								textField.setText(ConditionEditor.toSingleLine(cond));
-							}
-							theLabel.setIcon(conditionEditorIcon);
-						}
-					}
+			        if (toolTip != null) {
+			        	label.setToolTipText(toolTip);
+			        }
+			        
+			        final javax.swing.JTextField textField = new javax.swing.JTextField();
+			        textField.setText(filter == null? "" : ConditionEditor.toSingleLine(filter));
+			        if (!derived) {
+			        	filterTextfieldsPerColumn.put(c, textField);
+			        } else {
+			        	textField.setEditable(false);
+			        	textField.setEnabled(false);
+			        }
+			        if (toolTip != null) {
+			        	textField.setToolTipText(toolTip);
+			        }
+			        
+			        label = new javax.swing.JLabel();
+					label.setText(null);
+			        
+					label.setIcon(conditionEditorIcon);
 					
-					public void mouseEntered(java.awt.event.MouseEvent evt) {
-						theLabel.setIcon(conditionEditorSelectedIcon);
-		            }
-		            public void mouseExited(java.awt.event.MouseEvent evt) {
-		            	theLabel.setIcon(conditionEditorIcon);
-		           }
-		        });
-
-		        ++y;
+			        gridBagConstraints = new java.awt.GridBagConstraints();
+			        gridBagConstraints.gridx = 3;
+			        gridBagConstraints.gridy = y;
+			        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+			        gridBagConstraints.weightx = 0.0;
+			        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+			        gridBagConstraints.insets = new Insets(1, 0, 0, 2);
+			        filterPane.add(label, gridBagConstraints);
+			        
+			        gridBagConstraints = new java.awt.GridBagConstraints();
+			        gridBagConstraints.gridx = 4;
+			        gridBagConstraints.gridy = y;
+			        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+			        gridBagConstraints.weightx = 1.0;
+			        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+			        gridBagConstraints.insets = new Insets(1, 0, 0, 0);
+			        filterPane.add(textField, gridBagConstraints);
+	
+			        final JLabel theLabel = label;
+			        label.addMouseListener(new java.awt.event.MouseAdapter() {
+			        	@Override
+						public void mouseReleased(MouseEvent e) {
+							mouseClicked(e);
+						}
+						public void mouseClicked(java.awt.event.MouseEvent evt) {
+							conditionEditor.setTitle(columnName.trim());
+							String cond = conditionEditor.edit(textField.getText(), "Table", "T", table, null, null, null, false);
+							if (cond != null) {
+								if (!textField.getText().equals(ConditionEditor.toSingleLine(cond))) {
+									textField.setText(ConditionEditor.toSingleLine(cond));
+								}
+								theLabel.setIcon(conditionEditorIcon);
+							}
+						}
+						
+						public void mouseEntered(java.awt.event.MouseEvent evt) {
+							theLabel.setIcon(conditionEditorSelectedIcon);
+			            }
+			            public void mouseExited(java.awt.event.MouseEvent evt) {
+			            	theLabel.setIcon(conditionEditorIcon);
+			           }
+			        });
+	
+			        ++y;
+				}
 			}
+			javax.swing.JLabel label = new javax.swing.JLabel();
+			label.setText(y == 0? " no filter defined" : " ");
+			label.setFont(nonBoldFont);
+			
+			gridBagConstraints = new java.awt.GridBagConstraints();
+	        gridBagConstraints.gridx = 0;
+	        gridBagConstraints.gridy = y++;
+	        gridBagConstraints.weighty = 0;
+	        gridBagConstraints.insets = new Insets(0, 0, 8, 0);
+	        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+	        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+	        filterPane.add(label, gridBagConstraints);
+	        
+	        if (!derived && hasDerived) {
+		        label = new javax.swing.JLabel();
+				label.setText("Derived filters");
+				label.setFont(boldFont);
+				label.setBackground(label.getBackground().darker());
+				
+				gridBagConstraints = new java.awt.GridBagConstraints();
+		        gridBagConstraints.gridx = 0;
+		        gridBagConstraints.gridy = y++;
+		        gridBagConstraints.weighty = 0;
+		        gridBagConstraints.gridwidth = 10;
+		        gridBagConstraints.insets = new Insets(0, 0, 4, 0);
+		        gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+		        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+		        filterPane.add(label, gridBagConstraints);
+	        }
 		}
-		javax.swing.JLabel label = new javax.swing.JLabel();
-		label.setText(y == 0? " no filter defined" : " ");
+		
+        JLabel label = new javax.swing.JLabel();
+		label.setText(" ");
 		label.setFont(nonBoldFont);
 		
 		gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = y;
-        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.gridy = y++;
+        gridBagConstraints.weighty = 1;
         gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         filterPane.add(label, gridBagConstraints);
+        
 		validate();
 		repaint();
 	}
@@ -343,8 +436,9 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 			if (newFilter.length() == 0) {
 				newFilter = null;
 			}
-			c.setFilterExpression(newFilter);
+			c.setFilter(newFilter == null? null : new Filter(newFilter, false, null));
 		}
+		getDataModel().deriveFilters();
 		getDataModel().version++;
 		parent.extractionModelEditor.refresh(false, false, true, true);
 		parent.extractionModelEditor.markDirty();
@@ -359,11 +453,12 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 			if (newFilter.length() == 0) {
 				newFilter = null;
 			}
-			if (c.getFilterExpression() == null && newFilter != null) {
+			String filterExpression = c.getFilter() != null && !c.getFilter().isDerived()? c.getFilterExpression() : null;
+			if (filterExpression == null && newFilter != null) {
 				return true;
 			}
-			if (c.getFilterExpression() != null) {
-				if (!c.getFilterExpression().equals(newFilter)) {
+			if (filterExpression != null) {
+				if (!filterExpression.equals(newFilter)) {
 					return true;
 				}
 			}
@@ -492,7 +587,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
     	if (tableBox.getSelectedItem() instanceof String) {
     		Table table = getDataModel().getTableByDisplayName((String) tableBox.getSelectedItem());
 			if (needsSave()) {
-				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Keep filter changes?", "", JOptionPane.YES_NO_OPTION)) {
+				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Store changes?", "", JOptionPane.YES_NO_OPTION)) {
 					storeFilterExpressions();
 				}
 			}
@@ -500,7 +595,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 			refreshFilterPane();
     	}
     }//GEN-LAST:event_tableBoxItemStateChanged
- 
+
     private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
         setVisible(false);
     }//GEN-LAST:event_cancelButtonActionPerformed

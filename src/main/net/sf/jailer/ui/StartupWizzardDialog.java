@@ -45,6 +45,9 @@ public class StartupWizzardDialog extends javax.swing.JDialog {
         KeyListener keyListener = new KeyListener() {
 			@Override
 			public void keyTyped(KeyEvent e) {
+				if (e.getKeyChar() == KeyEvent.VK_ESCAPE) {
+					newModelButtonActionPerformed(null);
+				}
 				if (e.getKeyChar() == '\n') {
 					if (e.getComponent() == newModelButton) {
 						newModelButtonActionPerformed(null);
