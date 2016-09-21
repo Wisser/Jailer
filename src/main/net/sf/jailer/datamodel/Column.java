@@ -57,7 +57,7 @@ public class Column {
     /**
      * SQL Expression for server-side column data filtering.
      */
-    private String filterExpression = null;
+    private Filter filter = null;
     
     /**
      * Constructor.
@@ -81,17 +81,27 @@ public class Column {
      *         or <code>null</code>, if no filter is defined for this column
      */
     public String getFilterExpression() {
-    	return filterExpression;
+    	return filter == null? null : filter.getExpression();
     }
 
     /**
-     * Sets SQL expression for server-side column data filtering.
+     * Gets filter for server-side column data filtering.
+     * 
+     * @return filter for server-side column data filtering
+     *        or <code>null</code>, if no filter is defined for this column
+     */
+    public Filter getFilter() {
+    	return filter;
+    }
+    
+    /**
+     * Sets filter for server-side column data filtering.
      * 
      * @param filterExpression SQL expression for server-side column data filtering
      *        or <code>null</code>, if no filter is defined for this column
      */
-    public void setFilterExpression(String filterExpression) {
-    	this.filterExpression = filterExpression;
+    public void setFilter(Filter filter) {
+    	this.filter = filter;
     }
     
 

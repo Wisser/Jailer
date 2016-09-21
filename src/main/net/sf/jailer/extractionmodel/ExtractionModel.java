@@ -28,6 +28,7 @@ import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.Filter;
 import net.sf.jailer.datamodel.ParameterHandler;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
@@ -134,6 +135,7 @@ public class ExtractionModel {
         condition = "";
         dataModel.setRestrictionModel(new RestrictionModel(dataModel));
         limit = -1;
+        dataModel.deriveFilters();
     }
 
     /**
@@ -253,7 +255,7 @@ public class ExtractionModel {
 				if (col == null) {
 					_log.warn("unknown table" + name + "." + column);
 				} else {
-					col.setFilterExpression(ParameterHandler.assignParameterValues(filter, parameters));
+					col.setFilter(new Filter(ParameterHandler.assignParameterValues(filter, parameters), false, null));
 				}
 			}
         }
@@ -306,7 +308,7 @@ public class ExtractionModel {
         		}
         	}
         }
-
+        dataModel.deriveFilters();
     }
 
 	/**

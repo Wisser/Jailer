@@ -945,4 +945,53 @@ public class DataModel {
 		return tableList.get(ordinal);
 	}
 
+    /**
+     * Removes all derived filters and renews them.
+     */
+    public void deriveFilters() {
+		for (Table table: getTables()) {
+			for (Column column: table.getColumns()) {
+				Filter filter = column.getFilter();
+				if (filter != null && filter.isDerived()) {
+					column.setFilter(null);
+				}
+			}
+		}
+		Set<String> pkNames = new HashSet<String>();
+		for (Table table: getTables()) {
+			pkNames.clear();
+			for (Column column: table.primaryKey.getColumns()) {
+				pkNames.add(column.name);
+			}
+			for (Column column: table.getColumns()) {
+				if (pkNames.contains(column.name)) {
+					Filter filter = column.getFilter();
+					if (filter != null && !filter.isDerived()) {
+						List<String> aTo = new ArrayList<String>();
+						deriveFilter(table, column, filter, "Filter on " + table.getName() + "." + column.name, aTo);
+						if (!aTo.isEmpty()) {
+							Collections.sort(aTo);
+							filter.setAppliedTo(aTo);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	private void deriveFilter(Table table, Column column, Filter filter, String desc, List<String> aTo) {
+		for (Association association: table.associations) {
+			if (association.isInsertSourceBeforeDestination()) {
+				Map<Column, Column> sToDMap = association.createSourceToDestinationKeyMapping();
+				Column destColumn = sToDMap.get(column);
+				if (destColumn != null && destColumn.getFilter() == null) {
+					destColumn.setFilter(new Filter(filter.getExpression(), true, desc));
+					aTo.add(association.destination.getName() + "." + destColumn.name);
+					deriveFilter(association.destination, destColumn, filter, desc, aTo);
+				}
+			}
+		}
+			
+	}
+
 }

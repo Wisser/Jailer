@@ -56,7 +56,7 @@ public class CsvFile {
          */
         public Line(String location, List<String> cells) {
             this.location = location;
-            this.cells = cells;
+            this.cells = new ArrayList<String>(cells);
             int num = 0;
             int l = 0;
             for (String s : cells) {
@@ -64,6 +64,9 @@ public class CsvFile {
             	if (s != null && s.trim().length() > 0) {
             		l = num;
             	}
+            }
+            for (int i = 0; i < 10; ++i) {
+            	this.cells.add("");
             }
             this.length = l;
         }
