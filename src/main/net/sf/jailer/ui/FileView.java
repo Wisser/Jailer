@@ -27,7 +27,7 @@ import javax.swing.JTextArea;
 import net.sf.jailer.util.PrintUtil;
 
 /**
- * Renders a text files.
+ * Renders text files.
  * 
  * @author Ralf Wisser
  */

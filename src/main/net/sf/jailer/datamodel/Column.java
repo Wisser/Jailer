@@ -76,12 +76,13 @@ public class Column {
 
     /**
      * Gets SQL expression for server-side column data filtering.
+     * {@link Filter#OLD_VALUE_PROP} is replaced by column name.
      * 
      * @return SQL expression for server-side column data filtering
      *         or <code>null</code>, if no filter is defined for this column
      */
     public String getFilterExpression() {
-    	return filter == null? null : filter.getExpression();
+    	return filter == null? null : filter.getExpression().replaceAll(Filter.OLD_VALUE_PROP_RE, Matcher.quoteReplacement("T." + name));
     }
 
     /**
