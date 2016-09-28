@@ -184,7 +184,7 @@ public class TableRenderer extends AbstractShapeRenderer {
         		}
         		StringBuilder sb = new StringBuilder(tableName + " \n-\n");
         		for (Column c: table.getColumns()) {
-        			if (c.getFilterExpression() != null) {
+        			if (c.getFilter() != null) {
         				sb.append("!");
         			}
         			for (Column pk: table.primaryKey.getColumns()) {
@@ -963,7 +963,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 			if (model.version != dmVersionOfFilteredTables) {
 				for (Table t: model.getTables()) {
 					for (Column column: t.getColumns()) {
-						if (column.getFilterExpression() != null) {
+						if (column.getFilter() != null) {
 							filteredTables.add(t);
 							break;
 						}

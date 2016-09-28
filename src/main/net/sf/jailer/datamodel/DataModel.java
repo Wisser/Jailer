@@ -928,8 +928,8 @@ public class DataModel {
 		out.println(CsvFile.BLOCK_INDICATOR + "filters");
 		for (Table table: getTables()) {
 			for (Column c: table.getColumns()) {
-				if (c.getFilterExpression() != null) {
-					out.println(CsvFile.encodeCell(table.getName()) + ";" + CsvFile.encodeCell(c.name) + ";" + CsvFile.encodeCell(c.getFilterExpression()));
+				if (c.getFilter() != null && !c.getFilter().isDerived()) {
+					out.println(CsvFile.encodeCell(table.getName()) + ";" + CsvFile.encodeCell(c.name) + ";" + CsvFile.encodeCell(c.getFilter().getExpression()));
 				}
 			}
 		}

@@ -46,6 +46,10 @@ public class Filter {
 	 */
 	private List<String> appliedTo;
 	
+	public static String OLD_VALUE_PROP = "${old-value}";
+	public static String OLD_VALUE_PROP_PURE = "old-value";
+	public static String OLD_VALUE_PROP_RE = "\\$\\{old-value\\}";
+	
 	/**
 	 * Constructor.
 	 * 
