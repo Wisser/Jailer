@@ -330,6 +330,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 			        
 			        final javax.swing.JTextField textField = new javax.swing.JTextField();
 			        final String initialExpr = filter == null? (c.getFilter() == null? Filter.OLD_VALUE_PROP : ConditionEditor.toSingleLine(c.getFilter().getExpression())) : ConditionEditor.toSingleLine(filter);
+			        final boolean hasFilter = c.getFilter() != null;
 			        final boolean hasDerivedFilter = c.getFilter() != null && c.getFilter().isDerived();
 					textField.getDocument().addDocumentListener(new DocumentListener() {
 						
@@ -349,7 +350,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 						}
 
 						private void refresh() {
-							if (!hasDerivedFilter && textField.getText().trim().equals(Filter.OLD_VALUE_PROP)) {
+							if (!hasFilter && textField.getText().trim().equals(Filter.OLD_VALUE_PROP)) {
 								textField.setForeground(Color.gray);
 							} else if (hasDerivedFilter && textField.getText().trim().equals(initialExpr.trim())) {
 								textField.setForeground(Color.blue);
@@ -474,7 +475,10 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		for (Column c: filterTextfieldsPerColumn.keySet()) {
 			String newFilter = ConditionEditor.toMultiLine(filterTextfieldsPerColumn.get(c).getText()).trim();
 			boolean hasDerivedFilter = c.getFilter() != null && c.getFilter().isDerived();
-			if (newFilter.length() == 0 || !hasDerivedFilter && newFilter.trim().equals(Filter.OLD_VALUE_PROP)
+			if (hasDerivedFilter && newFilter.length() == 0) {
+				newFilter = Filter.OLD_VALUE_PROP;
+			}
+			if (newFilter.length() == 0 || c.getFilter() == null && newFilter.trim().equals(Filter.OLD_VALUE_PROP)
 					|| hasDerivedFilter && newFilter.trim().equals(c.getFilter().getExpression())) {
 				newFilter = null;
 			}
@@ -493,7 +497,10 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		for (Column c: filterTextfieldsPerColumn.keySet()) {
 			String newFilter = ConditionEditor.toMultiLine(filterTextfieldsPerColumn.get(c).getText()).trim();
 			boolean hasDerivedFilter = c.getFilter() != null && c.getFilter().isDerived();
-			if (newFilter.length() == 0 || !hasDerivedFilter && newFilter.trim().equals(Filter.OLD_VALUE_PROP)
+			if (hasDerivedFilter && newFilter.length() == 0) {
+				newFilter = Filter.OLD_VALUE_PROP;
+			}
+			if (newFilter.length() == 0 || c.getFilter() == null && newFilter.trim().equals(Filter.OLD_VALUE_PROP)
 					|| hasDerivedFilter && newFilter.trim().equals(c.getFilter().getExpression())) {
 				newFilter = null;
 			}
