@@ -37,9 +37,9 @@ public class Filter {
 	final private boolean derived;
 	
 	/**
-	 * Description of source.
+	 * The source.
 	 */
-	final private String derivedFrom;
+	final private FilterSource filterSource;
 	
 	/**
 	 * Description of destinations.
@@ -56,10 +56,10 @@ public class Filter {
 	 * @param expression filter expression (in SQL)
 	 * @param derived derived from parent primary key column?
 	 */
-	public Filter(String expression, boolean derived, String derivedFrom) {
+	public Filter(String expression, boolean derived, FilterSource filterSource) {
 		this.expression = expression;
 		this.derived = derived;
-		this.derivedFrom = derivedFrom;
+		this.filterSource = filterSource;
 	}
 	
 	/**
@@ -81,10 +81,10 @@ public class Filter {
 	}
 
 	/**
-	 * @return description of source
+	 * @return source
 	 */
-	public String getDerivedFrom() {
-		return derivedFrom;
+	public FilterSource getFilterSource() {
+		return filterSource;
 	}
 
 	/**

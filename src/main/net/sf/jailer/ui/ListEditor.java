@@ -29,6 +29,7 @@ import java.util.List;
 
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
@@ -82,26 +83,35 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 	/**
      * Creates new form ListEditor
      */
-    public ListEditor(String[] columnNames, String elementTypeDisplayName) {
+    public ListEditor(String[] columnNames, String elementTypeDisplayName, boolean readonly) {
     	this.columnNames = columnNames;
     	this.elementTypeDisplayName = elementTypeDisplayName;
     	
         initComponents();
         
-        columnsTable.addMouseListener(new MouseAdapter() {
-			@Override
-		    public void mousePressed(MouseEvent me) {
-		        JTable table =(JTable) me.getSource();
-		        Point p = me.getPoint();
-		        int row = table.rowAtPoint(p);
-		        if (me.getClickCount() >= 2) {
-		        	columnsTable.getSelectionModel().setSelectionInterval(row, row);
-		        	updateButtonActionPerformed(null);
-		        }
-		    }
-		});
-		
-        columnsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        if (!readonly) {
+	        columnsTable.addMouseListener(new MouseAdapter() {
+				@Override
+			    public void mousePressed(MouseEvent me) {
+			        JTable table =(JTable) me.getSource();
+			        Point p = me.getPoint();
+			        int row = table.rowAtPoint(p);
+			        if (me.getClickCount() >= 2) {
+			        	columnsTable.getSelectionModel().setSelectionInterval(row, row);
+			        	updateButtonActionPerformed(null);
+			        }
+			    }
+			});
+        	columnsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        } else {
+        	columnsTable.setAutoCreateRowSorter(true);
+        	columnsTable.setEnabled(false);
+        	upButton.setVisible(false);
+        	downButton.setVisible(false);
+        	addButton.setVisible(false);
+        	updateButton.setVisible(false);
+        	deleteButton.setVisible(false);
+        }
         final Color BG1 = new Color(255, 255, 255);
 		final Color BG2 = new Color(230, 255, 255);
 		TableCellRenderer renderer = new DefaultTableCellRenderer() {
@@ -112,6 +122,9 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 				Component render = super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 				if (!isSelected) {
 					render.setBackground(row % 2 == 0? BG1 : BG2);
+				}
+				if (render instanceof JLabel) {
+					((JLabel) render).setToolTipText(value != null? value.toString() : null);
 				}
 				if (row >= 0 && row < model.size()) {
 					Color color = getForegroundColor(model.get(row), column);
@@ -293,6 +306,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
         gridBagConstraints.gridheight = 22;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
         jPanel2.add(jScrollPane1, gridBagConstraints);
 
         upButton.setText("Up");

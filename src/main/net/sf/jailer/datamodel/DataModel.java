@@ -638,7 +638,12 @@ public class DataModel {
         return str.toString();
     }
 
-	private List<Table> getSortedTables() {
+    /**
+     * Gets list of tables sorted by name.
+     * 
+     * @return list of tables sorted by name
+     */
+	public List<Table> getSortedTables() {
 		List<Table> sortedTables;
 		sortedTables = new ArrayList<Table>(getTables());
         Collections.sort(sortedTables, new Comparator<Table>() {
@@ -968,7 +973,7 @@ public class DataModel {
 					Filter filter = column.getFilter();
 					if (filter != null && !filter.isDerived()) {
 						List<String> aTo = new ArrayList<String>();
-						deriveFilter(table, column, filter, "Filter on " + table.getName() + "." + column.name, aTo);
+						deriveFilter(table, column, filter, new PKColumnFilterSource(table, column), aTo);
 						if (!aTo.isEmpty()) {
 							Collections.sort(aTo);
 							filter.setAppliedTo(aTo);
@@ -979,15 +984,15 @@ public class DataModel {
 		}
 	}
 
-	private void deriveFilter(Table table, Column column, Filter filter, String desc, List<String> aTo) {
+	private void deriveFilter(Table table, Column column, Filter filter, FilterSource filterSource, List<String> aTo) {
 		for (Association association: table.associations) {
 			if (association.isInsertSourceBeforeDestination()) {
 				Map<Column, Column> sToDMap = association.createSourceToDestinationKeyMapping();
 				Column destColumn = sToDMap.get(column);
 				if (destColumn != null && destColumn.getFilter() == null) {
-					destColumn.setFilter(new Filter(filter.getExpression(), true, desc));
+					destColumn.setFilter(new Filter(filter.getExpression(), true, filterSource));
 					aTo.add(association.destination.getName() + "." + destColumn.name);
-					deriveFilter(association.destination, destColumn, filter, desc, aTo);
+					deriveFilter(association.destination, destColumn, filter, filterSource, aTo);
 				}
 			}
 		}
