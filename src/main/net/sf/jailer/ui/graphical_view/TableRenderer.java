@@ -961,6 +961,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 				img[i++] = upsertImage;
 			}
 			if (model.version != dmVersionOfFilteredTables) {
+				filteredTables.clear();
 				for (Table t: model.getTables()) {
 					for (Column column: t.getColumns()) {
 						if (column.getFilter() != null) {

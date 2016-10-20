@@ -38,6 +38,8 @@ import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.datamodel.filter_template.Clause;
+import net.sf.jailer.datamodel.filter_template.FilterTemplate;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
@@ -454,6 +456,7 @@ public class DataModel {
     }
 
     private final List<Table> tableList = new ArrayList<Table>();
+	private final List<FilterTemplate> filterTemplates = new ArrayList<FilterTemplate>();
     
     /**
      * Initializes table ordinals.
@@ -863,6 +866,7 @@ public class DataModel {
 			}
 		}
 		saveFilters(out);
+		saveFilterTemplates(out);
 		out.println();
 		if (positions == null) {
 			LayoutStorage.store(out);
@@ -940,6 +944,29 @@ public class DataModel {
 		}
 	}
 
+
+	/**
+	 * Saves filter templates.
+	 * 
+	 * @param out to save filters into
+	 */
+	private void saveFilterTemplates(PrintWriter out) {
+		out.println();
+		out.println(CsvFile.BLOCK_INDICATOR + "filter templates");
+		for (FilterTemplate template: getFilterTemplates()) {
+			out.println("T;"
+					+ CsvFile.encodeCell(template.getName()) + ";"
+					+ CsvFile.encodeCell(template.getExpression()) + ";"
+					+ CsvFile.encodeCell(template.isEnabled()? "enabled" : "disabled") + ";");
+			for (Clause clause: template.getClauses()) {
+				out.println("C;"
+						+ CsvFile.encodeCell(clause.getSubject().name()) + ";"
+						+ CsvFile.encodeCell(clause.getPredicate().name()) + ";"
+						+ CsvFile.encodeCell(clause.getObject()) + ";");
+			}
+		}
+	}
+
 	/**
 	 * Gets table by {@link Table#getOrdinal()}.
 	 * 
@@ -948,6 +975,15 @@ public class DataModel {
 	 */
 	public Table getTableByOrdinal(int ordinal) {
 		return tableList.get(ordinal);
+	}
+
+	/**
+	 * Gets the {@link FilterTemplate}s ordered by priority.
+	 * 
+	 * @return template list
+	 */
+	public List<FilterTemplate> getFilterTemplates() {
+		return filterTemplates;
 	}
 
     /**
@@ -977,6 +1013,26 @@ public class DataModel {
 						if (!aTo.isEmpty()) {
 							Collections.sort(aTo);
 							filter.setAppliedTo(aTo);
+						}
+					}
+				}
+			}
+		}
+		
+		// apply templates
+		for (FilterTemplate template: getFilterTemplates()) {
+			if (template.isEnabled()) {
+				for (Table table: getTables()) {
+					for (Column column: table.getColumns()) {
+						if (column.getFilter() == null && template.matches(table, column)) {
+							Filter filter = new Filter(template.getExpression(), true, template);
+							column.setFilter(filter);
+							List<String> aTo = new ArrayList<String>();
+							deriveFilter(table, column, filter, new PKColumnFilterSource(table, column), aTo);
+							if (!aTo.isEmpty()) {
+								Collections.sort(aTo);
+								filter.setAppliedTo(aTo);
+							}
 						}
 					}
 				}

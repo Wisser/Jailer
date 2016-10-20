@@ -31,6 +31,10 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Filter;
 import net.sf.jailer.datamodel.ParameterHandler;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.datamodel.filter_template.Clause;
+import net.sf.jailer.datamodel.filter_template.Clause.Predicate;
+import net.sf.jailer.datamodel.filter_template.Clause.Subject;
+import net.sf.jailer.datamodel.filter_template.FilterTemplate;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.SqlUtil;
@@ -258,6 +262,28 @@ public class ExtractionModel {
 					col.setFilter(new Filter(ParameterHandler.assignParameterValues(filter, parameters), false, null));
 				}
 			}
+        }
+        
+        // read filter templates
+        List<CsvFile.Line> templatesFile = new CsvFile(CommandLineParser.getInstance().newFile(fileName), "filter templates").getLines();
+        int lineNr = 0;
+        FilterTemplate template = null;
+        while (lineNr < templatesFile.size()) {
+        	CsvFile.Line xmLine = templatesFile.get(lineNr);
+        	if (xmLine.cells.get(0).equals("T")) {
+	        	template = new FilterTemplate();
+	        	template.setName(xmLine.cells.get(1));
+	        	template.setExpression(xmLine.cells.get(2));
+	        	template.setEnabled("enabled".equals(xmLine.cells.get(3)));
+	        	dataModel.getFilterTemplates().add(template);
+        	} else if (xmLine.cells.get(0).equals("C") && template != null) {
+        		Clause clause = new Clause();
+        		clause.setSubject(Enum.valueOf(Subject.class, xmLine.cells.get(1)));
+        		clause.setPredicate(Enum.valueOf(Predicate.class, xmLine.cells.get(2)));
+        		clause.setObject(xmLine.cells.get(3));
+        		template.getClauses().add(clause);
+        	}
+        	++lineNr;
         }
         
         // read xml settings
