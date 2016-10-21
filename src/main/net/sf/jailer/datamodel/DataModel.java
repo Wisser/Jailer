@@ -986,10 +986,13 @@ public class DataModel {
 		return filterTemplates;
 	}
 
+	private Map<Association, Map<Column, Column>> sToDMaps = new HashMap<Association, Map<Column,Column>>();
+	
     /**
      * Removes all derived filters and renews them.
      */
     public void deriveFilters() {
+    	sToDMaps.clear();
 		for (Table table: getTables()) {
 			for (Column column: table.getColumns()) {
 				Filter filter = column.getFilter();
@@ -1009,7 +1012,7 @@ public class DataModel {
 					Filter filter = column.getFilter();
 					if (filter != null && !filter.isDerived()) {
 						List<String> aTo = new ArrayList<String>();
-						deriveFilter(table, column, filter, new PKColumnFilterSource(table, column), aTo);
+						deriveFilter(table, column, filter, new PKColumnFilterSource(table, column), aTo, null);
 						if (!aTo.isEmpty()) {
 							Collections.sort(aTo);
 							filter.setAppliedTo(aTo);
@@ -1028,7 +1031,7 @@ public class DataModel {
 							Filter filter = new Filter(template.getExpression(), true, template);
 							column.setFilter(filter);
 							List<String> aTo = new ArrayList<String>();
-							deriveFilter(table, column, filter, new PKColumnFilterSource(table, column), aTo);
+							deriveFilter(table, column, filter, new PKColumnFilterSource(table, column), aTo, template);
 							if (!aTo.isEmpty()) {
 								Collections.sort(aTo);
 								filter.setAppliedTo(aTo);
@@ -1038,21 +1041,25 @@ public class DataModel {
 				}
 			}
 		}
+		sToDMaps.clear();
 	}
 
-	private void deriveFilter(Table table, Column column, Filter filter, FilterSource filterSource, List<String> aTo) {
+	private void deriveFilter(Table table, Column column, Filter filter, FilterSource filterSource, List<String> aTo, FilterSource overwriteForSource) {
 		for (Association association: table.associations) {
 			if (association.isInsertSourceBeforeDestination()) {
-				Map<Column, Column> sToDMap = association.createSourceToDestinationKeyMapping();
+				Map<Column, Column> sToDMap = sToDMaps.get(association);
+				if (sToDMap == null) {
+					sToDMap = association.createSourceToDestinationKeyMapping();
+					sToDMaps.put(association, sToDMap);
+				}
 				Column destColumn = sToDMap.get(column);
-				if (destColumn != null && destColumn.getFilter() == null) {
+				if (destColumn != null && (destColumn.getFilter() == null || overwriteForSource != null && destColumn.getFilter().getFilterSource() == overwriteForSource)) {
 					destColumn.setFilter(new Filter(filter.getExpression(), true, filterSource));
 					aTo.add(association.destination.getName() + "." + destColumn.name);
-					deriveFilter(association.destination, destColumn, filter, filterSource, aTo);
+					deriveFilter(association.destination, destColumn, filter, filterSource, aTo, overwriteForSource);
 				}
 			}
 		}
-			
 	}
 
 }

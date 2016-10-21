@@ -144,7 +144,6 @@ public class StartupWizzardDialog extends javax.swing.JDialog {
         messagePanel.add(newModelWRjButton, gridBagConstraints);
 
         loadButton.setText("Load Model");
-        loadButton.setToolTipText("");
         loadButton.setMargin(new java.awt.Insets(6, 14, 6, 14));
         loadButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {

@@ -24,6 +24,7 @@ import java.awt.Insets;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -57,6 +58,7 @@ import net.sf.jailer.datamodel.filter_template.Clause;
 import net.sf.jailer.datamodel.filter_template.Clause.Predicate;
 import net.sf.jailer.datamodel.filter_template.Clause.Subject;
 import net.sf.jailer.datamodel.filter_template.FilterTemplate;
+import net.sf.jailer.util.Quoting;
 
 /**
  * Column filter editor.
@@ -132,6 +134,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				JComponent detailsView, List<Clause> model,
 				StringBuilder errorMessage) {
 			Predicate selectedPredicate = (Predicate) clauseDetailsPredicateComboBox.getSelectedItem();
+			Subject selectedSubject = (Subject) clauseDetailsSubjectComboBox.getSelectedItem();
 			String obj = "";
 			if (clauseDetailsObjectTextField.getSelectedItem() instanceof String) {
 				obj = ((String) clauseDetailsObjectTextField.getSelectedItem()).trim();
@@ -139,13 +142,18 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 			if (selectedPredicate.needsObject) {
 				if (obj.trim().length() == 0) {
 					errorMessage.append("Object missing");
+				} else {
+					String validationMessage = selectedPredicate.validateObject(obj);
+					if (validationMessage != null) {
+						errorMessage.append(validationMessage);
+					}
 				}
 				element.setObject(obj);
 			} else {
 				element.setObject("");
 			}
 			element.setPredicate(selectedPredicate);
-			element.setSubject((Subject) clauseDetailsSubjectComboBox.getSelectedItem());
+			element.setSubject(selectedSubject);
 		}
 
 		@Override
@@ -158,6 +166,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 			return null;
 		}
 		
+		@Override
 		protected Dimension detailsViewMinSize() {
 	    	return new Dimension(400, 1);
 	    }
@@ -287,22 +296,25 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 			parent.extractionModelEditor.refresh(false, false, true, true);
 			parent.extractionModelEditor.markDirty();
 		}
+
+		@Override
+		protected Dimension detailsViewMaxSize() {
+	    	return new Dimension(400, 400);
+	    }
     };
     
     @SuppressWarnings("serial")
 	private class DerivedFilterList extends ListEditor<FilterModel> {
-    	private final Table rootTable;
-    	private final FilterTemplate rootTemplate;
+		private final Table rootTable;
     	
-		public DerivedFilterList(Table rootTable, FilterTemplate rootTemplate) {
-			super(new String[] { "Column", "Expression", "Derived from"}, "Filter", false, true, true);
+		public DerivedFilterList(Table rootTable) {
+			super(new String[] { "Column", "Type", "Expression", "Derived from"}, "Filter", false, true, true);
 			this.rootTable = rootTable;
-			this.rootTemplate = rootTemplate;
 		}
 
 		@Override
 		protected String getDisplayName(FilterModel element) {
-			return getDataModel().getDisplayName(element.table) + "." + element.column.name;
+			return Quoting.unquotedTableName(element.table).toLowerCase() + "." + Quoting.staticUnquote(element.column.name).toLowerCase();
 		}
 
 		@Override
@@ -338,17 +350,32 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				source = ((PKColumnFilterSource) fs).column.name;
 			}
 			return new String[] {
-					getDataModel().getDisplayName(element.table) + "."
-							+ element.column.name,
+					getDisplayName(element),
+					element.column.type.toLowerCase(),
 					element.column.getFilter().getExpression(),
-					source  };
+					source
+					};
 		}
 
 		@Override
 		protected Color getForegroundColor(FilterModel element, int column) {
 			return element.isPk? Color.red : 
-				element.column.getFilter() != null && element.column.getFilter().isDerived() && element.column.getFilter().getFilterSource() != rootTemplate?
+				element.column.getFilter() != null && element.column.getFilter().isDerived()?
 						Color.blue : null;
+		}
+
+		/**
+		 * @see net.sf.jailer.ui.ListEditor#setModel(java.util.List)
+		 */
+		@Override
+		public void setModel(List<FilterModel> model) {
+			Collections.sort(model, new Comparator<FilterModel>() {
+				@Override
+				public int compare(FilterModel o1, FilterModel o2) {
+					return Quoting.unquotedTableName(o1.table).compareTo(Quoting.unquotedTableName(o2.table));
+				}
+			});
+			super.setModel(model);
 		}
 
     };
@@ -377,13 +404,17 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 					Table table = getDataModel().getTableByDisplayName((String) value);
 					if (table != null) {
 						int n = 0;
+						int ng = 0;
 						for (Column c: table.getColumns()) {
-							if (c.getFilter() != null && !c.getFilter().isDerived()) {
+							if (c.getFilter() != null) {
 								++n;
+								if (!c.getFilter().isDerived()) {
+									++ng;
+								}
 							}
 						}
 						if (n > 0) {
-							value = value + " (" + n + ")";
+							value = value + " (" + n + (n != ng? "/" + ng : "") + ")";
 						}
 					}
 				}
@@ -421,17 +452,6 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		helpComponents.put(Predicate.NOT_LIKE, clausePredHelpLike);
 		helpComponents.put(Predicate.MATCHES, clausePredHelpRE);
 		helpComponents.put(Predicate.NOT_MATCHES, clausePredHelpRE);
-		
-		Set<String> tableNames = new TreeSet<String>();
-		Set<String> columnNames = new TreeSet<String>();
-		for (Table table: getDataModel().getTables()) {
-			tableNames.add(table.getName());
-			for (Column column: table.getColumns()) {
-				columnNames.add(column.name);
-			}
-		}
-		objectsModel.put(Subject.COLUMN_NAME, columnNames.toArray(new String[0]));
-		objectsModel.put(Subject.TABLE_NAME, tableNames.toArray(new String[0]));
     }
 
     /**
@@ -471,6 +491,22 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         templatesPane.add(templateList, gridBagConstraints);
         
 		refresh(table);
+		jTabbedPane1.setSelectedIndex(0);
+		
+		Set<String> tableNames = new TreeSet<String>();
+		Set<String> columnNames = new TreeSet<String>();
+		Set<String> typeNames = new TreeSet<String>();
+		for (Table tab: getDataModel().getTables()) {
+			tableNames.add(Quoting.unquotedTableName(tab).toLowerCase());
+			for (Column column: tab.getColumns()) {
+				columnNames.add(Quoting.staticUnquote(column.name).toLowerCase());
+				typeNames.add(column.type.toLowerCase());
+			}
+		}
+		objectsModel.put(Subject.COLUMN_NAME, columnNames.toArray(new String[0]));
+		objectsModel.put(Subject.TABLE_NAME, tableNames.toArray(new String[0]));
+		objectsModel.put(Subject.TYPE, typeNames.toArray(new String[0]));
+
 		setVisible(true);
 	}
 	
@@ -811,40 +847,42 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	}
 
 	private DerivedFilterList createDerivedFilterList(FilterTemplate template) {
-		DerivedFilterList derivedFilterList = new DerivedFilterList(null, template);
+		DerivedFilterList derivedFilterList = new DerivedFilterList(null);
         List<FilterModel> derivedFilters = new ArrayList<FilterModel>();
-        for (final Table table: getDataModel().getSortedTables()) {	
-			for (Column c: table.getColumns()) {
-				if (c.getFilter() != null) {
-					FilterSource filterSource = c.getFilter().getFilterSource();
-					if (filterSource instanceof PKColumnFilterSource) {
-						Filter source = ((PKColumnFilterSource) filterSource).column.getFilter();
-						if (source != null) {
-							filterSource = source.getFilterSource();
-						}
-					}
-					if (c.getFilter().isDerived() && filterSource == template) {
-						FilterModel m = new FilterModel();
-						m.table = table;
-						m.column = c;
-						for (Column pk : table.primaryKey.getColumns()) {
-							if (c.equals(pk)) {
-								m.isPk = true;
-								break;
+        if (template != null) {
+	        for (final Table table: getDataModel().getSortedTables()) {	
+				for (Column c: table.getColumns()) {
+					if (c.getFilter() != null) {
+						FilterSource filterSource = c.getFilter().getFilterSource();
+						if (filterSource instanceof PKColumnFilterSource) {
+							Filter source = ((PKColumnFilterSource) filterSource).column.getFilter();
+							if (source != null) {
+								filterSource = source.getFilterSource();
 							}
 						}
-						m.isFk = filterSource != null && filterSource instanceof PKColumnFilterSource;
-						derivedFilters.add(m);
+						if (c.getFilter().isDerived() && filterSource == template) {
+							FilterModel m = new FilterModel();
+							m.table = table;
+							m.column = c;
+							for (Column pk : table.primaryKey.getColumns()) {
+								if (c.equals(pk)) {
+									m.isPk = true;
+									break;
+								}
+							}
+							m.isFk = filterSource != null && filterSource instanceof PKColumnFilterSource;
+							derivedFilters.add(m);
+						}
 					}
 				}
-			}
+	        }
         }
 		derivedFilterList.setModel(derivedFilters);
 		return derivedFilterList;
 	}
 
 	private DerivedFilterList createDerivedFilterList(Table root) {
-		DerivedFilterList derivedFilterList = new DerivedFilterList(root, null);
+		DerivedFilterList derivedFilterList = new DerivedFilterList(root);
         List<FilterModel> derivedFilters = new ArrayList<FilterModel>();
         for (final Table table: getDataModel().getSortedTables()) {	
 			for (Column c: table.getColumns()) {

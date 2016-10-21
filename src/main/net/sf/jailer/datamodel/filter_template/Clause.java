@@ -18,9 +18,11 @@ package net.sf.jailer.datamodel.filter_template;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.util.Quoting;
 
 
 /**
@@ -48,13 +50,19 @@ public class Clause {
 		COLUMN_NAME("Column name", String.class) {
 			@Override
 			public Object getSubject(Table table, Column column) {
-				return column.name;
+				return Quoting.staticUnquote(column.name);
 			}
 		},
 		TABLE_NAME("Table name", String.class) {
 			@Override
 			public Object getSubject(Table table, Column column) {
-				return table.getName();
+				return Quoting.unquotedTableName(table);
+			}
+		},
+		TYPE("Type", String.class) {
+			@Override
+			public Object getSubject(Table table, Column column) {
+				return column.type;
 			}
 		};
 		
@@ -80,50 +88,50 @@ public class Clause {
 		EQUALS("=", String.class, true) {
 			@Override
 			protected boolean eval(Object subject, String object) {
-				return object.equals(subject);
+				return object.equalsIgnoreCase((String) subject);
 			}
 		},
 		NOT_EQUALS("<>", String.class, true) {
 			@Override
 			protected boolean eval(Object subject, String object) {
-				return !object.equals(subject);
+				return !object.equalsIgnoreCase((String) subject);
 			}
 		},
 		
 		STARTS_WITH("starts with", String.class, true) {
 			@Override
 			protected boolean eval(Object subject, String object) {
-				return subject.toString().startsWith(object);
+				return subject.toString().toLowerCase().startsWith(object.toLowerCase());
 			}
 		},
 		NOT_STARTS_WITH("not starts with", String.class, true) {
 			@Override
 			protected boolean eval(Object subject, String object) {
-				return !subject.toString().startsWith(object);
+				return !subject.toString().toLowerCase().startsWith(object.toLowerCase());
 			}
 		},
 		ENDS_WITH("ends with", String.class, true) {
 			@Override
 			protected boolean eval(Object subject, String object) {
-				return subject.toString().endsWith(object);
+				return subject.toString().toLowerCase().endsWith(object.toLowerCase());
 			}
 		},
 		NOT_ENDS_WITH("not ends with", String.class, true) {
 			@Override
 			protected boolean eval(Object subject, String object) {
-				return !subject.toString().endsWith(object);
+				return !subject.toString().toLowerCase().endsWith(object.toLowerCase());
 			}
 		},
 		CONTAINS("contains", String.class, true) {
 			@Override
 			protected boolean eval(Object subject, String object) {
-				return subject.toString().contains(object);
+				return subject.toString().toLowerCase().contains(object.toLowerCase());
 			}
 		},
 		NOT_CONTAINS("not contains", String.class, true) {
 			@Override
 			protected boolean eval(Object subject, String object) {
-				return !subject.toString().contains(object);
+				return !subject.toString().toLowerCase().contains(object.toLowerCase());
 			}
 		},
 		
@@ -132,11 +140,17 @@ public class Clause {
 			protected boolean eval(Object subject, String object) {
 				return matches((String) subject, object);
 			}
+			public String validateObject(String object) {
+				return validateRE(object);
+			}
 		},
 		NOT_MATCHES("not matches", String.class, true) {
 			@Override
 			protected boolean eval(Object subject, String object) {
 				return !matches((String) subject, object);
+			}
+			public String validateObject(String object) {
+				return validateRE(object);
 			}
 		},
 		
@@ -177,22 +191,44 @@ public class Clause {
 		}
 		
 		protected boolean like(String subject, String pattern) {
-			return matches(subject, 
-					"\\Q" + (pattern.replace("_", "\\E.\\Q").replace("%", "\\E.*\\Q")) + "\\E");
+			return matches(subject, Pattern.quote(pattern).replace("_", "\\E.\\Q").replace("%", "\\E.*\\Q"));
 		}
 
 		private static Map<String, Pattern> compiledPattern = new HashMap<String, Pattern>();
 		
 		protected synchronized boolean matches(String subject, String pattern) {
-			Pattern pat = compiledPattern.get(pattern);
-			if (pat == null) {
-				pat = Pattern.compile(pattern);
-				compiledPattern.put(pattern, pat);
+			try {
+				Pattern pat = compiledPattern.get(pattern);
+				if (pat == null) {
+					pat = Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+					compiledPattern.put(pattern, pat);
+				}
+				return pat.matcher(subject).matches();
+			} catch (Exception e) {
+				return false;
 			}
-			return pat.matcher(subject).matches();
+		}
+
+		protected String validateRE(String pattern) {
+			try {
+				Pattern.compile(pattern, Pattern.CASE_INSENSITIVE);
+				return null;
+			} catch (PatternSyntaxException e) {
+				return "Invalid regular expression:\n" + e.getMessage();
+			}
 		}
 
 		protected abstract boolean eval(Object subject, String object);
+		
+		/**
+		 * Validates an object.
+		 * 
+		 * @param object the object
+		 * @return <code>null</code> if object is valid, otherwise a clear-text description of the problem
+		 */
+		public String validateObject(String object) {
+			return null;
+		}
 
 		public String toString() {
 			return description;

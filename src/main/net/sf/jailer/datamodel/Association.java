@@ -440,16 +440,37 @@ public class Association extends ModelElement {
     	return dataModel;
     }
 
+    private String origJoinConditionForSourceToDestinationKeyMapping = null;
+    private Map<Column, Column> sourceToDestinationKeyMapping = null;
+    
     /**
      * Maps source-columns to destination-columns, if this represents an equi-join.
      * Otherwise it returns an empty map.
      * 
      * @return map from source-columns to destination-columns, if this represents an equi-join
      */
-	public Map<Column, Column> createSourceToDestinationKeyMapping() {
-		String[] equations = getUnrestrictedJoinCondition().trim().replaceAll("\\(|\\)", "").split(" *(a|A)(n|N)(d|D) *");
-		Map<Column, Column> mapping = new HashMap<Column, Column>();
-		for (String equation: equations) {
+	public Map<Column, Column> createSourceToDestinationKeyMapping2() {
+		
+		
+		// TODO
+		if (sourceToDestinationKeyMapping != null) {
+			return new HashMap<Column, Column>(sourceToDestinationKeyMapping);
+		}
+
+		sourceToDestinationKeyMapping = createSourceToDestinationKeyMapping2();
+		return sourceToDestinationKeyMapping;
+	}
+	
+		/**
+	     * Maps source-columns to destination-columns, if this represents an equi-join.
+	     * Otherwise it returns an empty map.
+	     * 
+	     * @return map from source-columns to destination-columns, if this represents an equi-join
+	     */
+		public Map<Column, Column> createSourceToDestinationKeyMapping() {
+			String[] equations = getUnrestrictedJoinCondition().trim().replaceAll("\\(|\\)", "").split(" *(a|A)(n|N)(d|D) *");
+			Map<Column, Column> mapping = new HashMap<Column, Column>();
+			for (String equation: equations) {
 			String hs[] = equation.split(" *= *");
 			if (hs.length != 2) {
 				return Collections.emptyMap();
