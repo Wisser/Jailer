@@ -165,6 +165,9 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
     protected Dimension detailsViewMinSize() {
     	return null;
     }
+    protected Dimension detailsViewMaxSize() {
+		return null;
+	}
     abstract protected void updateFromDetailsView(T element, JComponent detailsView, List<T> model, StringBuilder errorMessage);
 
 	private void updateEnableState() {
@@ -194,7 +197,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
     	}
     	int i = 0;
     	for (T element: this.model) {
-    		model.addRow(toColumnList(element, i++));
+    		model.addRow(toColumnList(element, i++).clone());
     	}
     	return model;
 	}
@@ -209,7 +212,7 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 
 			for (int line = 0; line < columnsTable.getRowCount(); ++line) {
 				comp = columnsTable.getCellRenderer(line, i).getTableCellRendererComponent(columnsTable, dtm.getValueAt(line, i), false, false, line, i);
-				width = Math.max(width, comp.getPreferredSize().width + 16);
+				width = Math.max(width, Math.min(comp.getPreferredSize().width + 16, 100));
 				if (line > 2000) {
 					break;
 				}
@@ -508,6 +511,10 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 		if (m != null) {
 			dialog.setSize(Math.max(dialog.getWidth(), m.width), Math.max(dialog.getHeight(), m.height));
 		}
+		m = detailsViewMaxSize();
+		if (m != null) {
+			dialog.setSize(Math.min(dialog.getWidth(), m.width), Math.min(dialog.getHeight(), m.height));
+		}
 		if (owner!= null) {
 			dialog.setLocation(
 					owner.getLocation().x + owner.getWidth() /2 - dialog.getWidth() /2,
@@ -591,6 +598,5 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
     private javax.swing.JButton upButton;
     private javax.swing.JButton updateButton;
     // End of variables declaration//GEN-END:variables
-
 
 }

@@ -23,7 +23,9 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.datamodel.Table;
 
 /**
  * Quotes and un-quotes SQL identifier in a DBMS specific way.
@@ -224,16 +226,7 @@ public class Quoting {
 	 * @return <code>true</code> if identifier is quoted
 	 */
 	public boolean isQuoted(String identifier) {
-		if (identifier != null && identifier.length() > 1) {
-			String q = identifier.substring(0, 1);
-			if (identifier.endsWith(q)) {
-				char c = q.charAt(0);
-				if (q.equals(quote) || c == '"' || c == '\'' || c == '\u00B4' || c == '`') {
-					return true;
-				}
-			}
-		}
-		return false;
+		return isQuoted(identifier, quote);
 	}
 
 	/**
@@ -247,6 +240,60 @@ public class Quoting {
 			return identifier.substring(1, identifier.length() - 1);
 		}
 		return identifier;
+	}
+	
+
+	/**
+	 * Remove quotes from identifier.
+	 * 
+	 * @param identifier the identifier
+	 * @return identifier without quotes
+	 */
+	public static String staticUnquote(String identifier) {
+		if (isQuoted(identifier, "\"")) {
+			return identifier.substring(1, identifier.length() - 1);
+		}
+		return identifier;
+	}
+
+
+	/**
+	 * Gets unquoted qualified table name.
+	 * 
+	 * @param t
+	 *            the table
+	 * @return unquoted qualified name of t
+	 */
+	public static String unquotedTableName(Table t) {
+		String schema = t.getOriginalSchema("");
+		String mappedSchema = CommandLineParser.getInstance()
+				.getSchemaMapping().get(schema);
+		if (mappedSchema != null) {
+			schema = mappedSchema;
+		}
+		if (schema.length() == 0) {
+			return staticUnquote(t.getUnqualifiedName());
+		}
+		return staticUnquote(schema) + "." + staticUnquote(t.getUnqualifiedName());
+	}
+
+	/**
+	 * Checks if an identifier is quoted.
+	 * 
+	 * @param identifier the identifier
+	 * @return <code>true</code> if identifier is quoted
+	 */
+	private static boolean isQuoted(String identifier, String qu) {
+		if (identifier != null && identifier.length() > 1) {
+			String q = identifier.substring(0, 1);
+			if (identifier.endsWith(q)) {
+				char c = q.charAt(0);
+				if (q.equals(qu) || c == '"' || c == '\'' || c == '\u00B4' || c == '`') {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 }
