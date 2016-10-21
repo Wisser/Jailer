@@ -471,7 +471,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	public void open(Table table) {
 		filterTextfieldsPerColumn.clear();
 		if (!isInitialized) {
-	        int w = 900, h = 400;
+	        int w = 1100, h = 400;
 	        setSize(w, h);
 	        setLocation(Math.max(0, parent.getX() + parent.getWidth() / 2 - w / 2),
 	                    Math.max(0, parent.getY() + parent.getHeight() / 2 - h / 2));
