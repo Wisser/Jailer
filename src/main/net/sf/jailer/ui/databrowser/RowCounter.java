@@ -9,6 +9,7 @@ import java.util.Map;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
+import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
@@ -62,29 +63,40 @@ public class RowCounter {
 				throw e;
 			}
 		} else {
-			try {
-				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 258, maxTime);
-			} catch (SQLException e) {
-				if (System.currentTimeMillis() >= maxTime) {
-					return -1;
+			if (session.dbms == DBMS.DB2 && table.primaryKey.getColumns().size() > 1) {
+				try {
+					return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 8, maxTime);
+				} catch (SQLException e) {
+					if (System.currentTimeMillis() >= maxTime) {
+						return -1;
+					}
+					Session._log.warn("failed, try another blocking-size");
 				}
-				Session._log.warn("failed, try another blocking-size");
-			}
-			try {
-				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 100, maxTime);
-			} catch (SQLException e) {
-				if (System.currentTimeMillis() >= maxTime) {
-					return -1;
+			} else {
+				try {
+					return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 258, maxTime);
+				} catch (SQLException e) {
+					if (System.currentTimeMillis() >= maxTime) {
+						return -1;
+					}
+					Session._log.warn("failed, try another blocking-size");
 				}
-				Session._log.warn("failed, try another blocking-size");
-			}
-			try {
-				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 40, maxTime);
-			} catch (SQLException e) {
-				if (System.currentTimeMillis() >= maxTime) {
-					return -1;
+				try {
+					return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 100, maxTime);
+				} catch (SQLException e) {
+					if (System.currentTimeMillis() >= maxTime) {
+						return -1;
+					}
+					Session._log.warn("failed, try another blocking-size");
 				}
-				Session._log.warn("failed, try another blocking-size");
+				try {
+					return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 40, maxTime);
+				} catch (SQLException e) {
+					if (System.currentTimeMillis() >= maxTime) {
+						return -1;
+					}
+					Session._log.warn("failed, try another blocking-size");
+				}
 			}
 		}
 		

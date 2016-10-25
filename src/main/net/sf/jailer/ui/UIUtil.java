@@ -658,7 +658,7 @@ public class UIUtil {
 		PrintWriter pw = new PrintWriter(sw);
 		t.printStackTrace(pw);
 		contextDesc += "\nHelp Desk: https://sourceforge.net/forum/?group_id=197260";
-		contextDesc += "\nMail: https://sourceforge.net/forum/?group_id=197260\n";
+		contextDesc += "\nMail: rwisser@users.sourceforge.net\n";
 		contextDesc += "\n" + Jailer.APPLICATION_NAME + " " + Jailer.VERSION + "\n\n" + sw.toString();
 
 		new SqlErrorDialog(parent == null ? null
