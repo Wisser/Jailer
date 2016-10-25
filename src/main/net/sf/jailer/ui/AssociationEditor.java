@@ -336,9 +336,9 @@ public class AssociationEditor extends javax.swing.JDialog {
 				if ("".equals(value)) {
 					value = "associates";
 				} else if ("A".equals(value)) {
-					value = "has dependent";
+					value = "has dependent (has child)";
 				} else if ("B".equals(value)) {
-					value = "depends on";
+					value = "depends on (has parent)";
 				}
 			return super.getListCellRendererComponent(list, value, index, isSelected,
 						cellHasFocus);

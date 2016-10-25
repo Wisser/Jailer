@@ -318,10 +318,10 @@ public class DataModelEditor extends javax.swing.JDialog {
 				CsvFile.Line line = (CsvFile.Line) value;
 				String type = "associates";
 				if ("B".equalsIgnoreCase(line.cells.get(2))) {
-					type = "depends on";
+					type = "depends on (has parent)";
 				}
 				if ("A".equalsIgnoreCase(line.cells.get(2))) {
-					type = "has dependent";
+					type = "has dependent (has child)";
 				}
 				String name = "";
 				if (line.cells.get(5).length() > 0) {

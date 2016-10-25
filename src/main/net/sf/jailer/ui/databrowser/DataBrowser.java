@@ -693,12 +693,12 @@ public class DataBrowser extends javax.swing.JFrame {
 
         dependsOn.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         dependsOn.setForeground(new java.awt.Color(170, 0, 0));
-        dependsOn.setText(" depends on");
+        dependsOn.setText(" depends on (has parent) ");
         legende.add(dependsOn);
 
         hasDependent.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
         hasDependent.setForeground(new java.awt.Color(0, 112, 0));
-        hasDependent.setText("  has dependent");
+        hasDependent.setText("  has dependent (has child) ");
         legende.add(hasDependent);
 
         associatedWith.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
