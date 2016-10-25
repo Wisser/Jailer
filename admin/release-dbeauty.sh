@@ -16,7 +16,7 @@ find -iname ".cvs*" -exec rm -rf '{}' \;
 ant package
 chmod a+x *.sh
 rm -rf admin
-rm -rf doc
+rm -rf docs
 rm -rf out
 rm -rf beta
 rm svn-commit.tmp
