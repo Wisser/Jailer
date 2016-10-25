@@ -1,3 +1,7 @@
+6.1.1
+  - Fixed an issue with creating a new model after deleting a model with the same name (thanks to Dave).
+  - Fixed a performance issue within the Data Browser.
+
 6.1
   - The new feature "Filter Templates" allows you to define rules for assigning filters to columns.
     (Edit -> Filter editor... -> Templates)
