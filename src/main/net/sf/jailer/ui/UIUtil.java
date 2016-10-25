@@ -596,6 +596,8 @@ public class UIUtil {
 		}
 		return arglist;
 	}
+	
+	public static Object EXCEPTION_CONTEXT_USER_ERROR = new Object();
 
 	/**
 	 * Shows an exception.
@@ -636,7 +638,7 @@ public class UIUtil {
 			String sql = ((SqlException) t).sqlStatement;
 			new SqlErrorDialog(parent == null ? null
 					: SwingUtilities.getWindowAncestor(parent), lineWrap(
-					message, 120).toString(), lineWrap(sql, 120).toString(), true);
+					message, 120).toString(), lineWrap(sql, 120).toString(), true, null);
 			return;
 		}
 		String message = t.getMessage();
@@ -650,19 +652,21 @@ public class UIUtil {
 			if (context instanceof Session) {
 				Session session = (Session) context;
 				contextDesc = session.dbUrl + " (" + session.dbms + ")";
-			} else {
+			} else if (context != EXCEPTION_CONTEXT_USER_ERROR) {
 				contextDesc = lineWrap(context.toString(), 80).toString();
 			}
 		}
 		StringWriter sw = new StringWriter();
 		PrintWriter pw = new PrintWriter(sw);
 		t.printStackTrace(pw);
-		contextDesc += "\nHelp Desk: https://sourceforge.net/forum/?group_id=197260";
-		contextDesc += "\nMail: rwisser@users.sourceforge.net\n";
-		contextDesc += "\n" + Jailer.APPLICATION_NAME + " " + Jailer.VERSION + "\n\n" + sw.toString();
-
+		if (context != EXCEPTION_CONTEXT_USER_ERROR) {
+			contextDesc += "\nHelp Desk: https://sourceforge.net/forum/?group_id=197260";
+			contextDesc += "\nMail: rwisser@users.sourceforge.net\n";
+			contextDesc += "\n" + Jailer.APPLICATION_NAME + " " + Jailer.VERSION + "\n\n" + sw.toString();
+		}
+		
 		new SqlErrorDialog(parent == null ? null
-				: SwingUtilities.getWindowAncestor(parent), msg.toString(), contextDesc, false);
+				: SwingUtilities.getWindowAncestor(parent), msg.toString(), contextDesc, false, title);
 	}
 
 	private static StringBuilder lineWrap(String message, int maxwidth) {

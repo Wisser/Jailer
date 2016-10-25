@@ -30,11 +30,15 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 
   private static final long serialVersionUID = -6737420167295938488L;
 	/** Creates new form SqlErrorDialog */
-    public SqlErrorDialog(Window parent, String message, String sql, boolean sqlError) {
+    public SqlErrorDialog(Window parent, String message, String sql, boolean sqlError, String title) {
         super(parent, ModalityType.APPLICATION_MODAL);
         initComponents();
         if (!sqlError) {
-        	setTitle("Internal Error");
+        	if (title != null) {
+        		setTitle(title);
+        	} else {
+        		setTitle("Internal Error");
+        	}
         }
         int y = 1;
         for (String line: message.trim().split("\n")) {
