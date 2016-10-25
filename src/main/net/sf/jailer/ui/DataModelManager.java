@@ -77,7 +77,13 @@ public class DataModelManager {
 		} catch (Exception e) {
 			// ignore
 		}
-		return nameFile.delete();
+		if (!nameFile.delete()) {
+			return false;
+		}
+		if (modelFolder != null) {
+			nameFile.getParentFile().renameTo(new File(getBaseFolder() + File.separator + modelFolder + ".bak"));
+		}
+		return true;
 	}
 
 	/**
