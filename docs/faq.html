@@ -269,22 +269,11 @@ database?
 </tr>
 <tr>
 <td style="vertical-align: top;">A</td>
-<td>It's not possible to avoid the creation of
-that tables, but it's possible to have them in an own schema.<br>
+<td>Set the working-table scope to "local database" ("Data Export"
+dialog) to avoid the creation of
+that tables in your database. The tables will then be created in a local database (H2).
 <br>
-The JAILER_* tables will always be created within the database user's
-default schema. If you don't want to have them in the schema of user <span style="font-style: italic;">A</span>, then
-create a new database user <span style="font-style: italic;">B</span>,
-connect as <span style="font-style: italic;">B</span>
-and enter <span style="font-style: italic;">A</span>'s
-schema as the schema to read rows from in the data export
-dialog.&nbsp;The meta tables will be
-created in&nbsp;<span style="font-style: italic;">B</span>'s&nbsp;schema
-and the data will be exported from <span style="font-style: italic;">A</span>'s
-schema.<br>
-<br>
-For DB2, Oracle, PostgreSQL,
-Sybase and MS SQL Server, it is also possible to create the tables as
+For DB2, Oracle and PostgreSQL, it is also possible to create the tables as
 temporary tables.<br>
 &nbsp;</td>
 </tr>
@@ -300,8 +289,9 @@ keys. Exporting data is not possible, if a table without a primary key
 is associated with the subject table. In this case, you should define
 a&nbsp;key of the table in the tool's data model&nbsp;(not in
 the database!) manually, using the data model editor. Note that a key
-must be unique and known (i.e. not NULL).<br>
-<br>
+must be unique and known (i.e. not NULL).<br><br>
+(On Oracle, however, <i>rowid</i>-pseudo columns can be used instead of primary keys)
+<br>&nbsp;
 </td>
 </tr>
 <tr>
