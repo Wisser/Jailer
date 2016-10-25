@@ -666,7 +666,7 @@ public class UIUtil {
 		}
 		
 		new SqlErrorDialog(parent == null ? null
-				: SwingUtilities.getWindowAncestor(parent), msg.toString(), contextDesc, false, title);
+				: SwingUtilities.getWindowAncestor(parent), msg.toString(), contextDesc, false, context == EXCEPTION_CONTEXT_USER_ERROR? title : null);
 	}
 
 	private static StringBuilder lineWrap(String message, int maxwidth) {

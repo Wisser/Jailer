@@ -158,6 +158,9 @@ public class DataModelManager {
 	public static void createNewModel(String newName, String folderName) throws IOException {
 		setCurrentModelSubfolder(null);
 		File modelFolder = CommandLineParser.getInstance().newFile(getBaseFolder() + File.separator + folderName);
+		if (modelFolder.exists()) {
+			throw new IOException("Folder \"" + modelFolder.getAbsolutePath() + "\" already exists");
+		}
 		if (!modelFolder.mkdir()) {
 			throw new IOException("Unable to create folder \"" + modelFolder.getAbsolutePath() + "\"");
 		}

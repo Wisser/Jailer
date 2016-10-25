@@ -238,7 +238,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 			Document doc = XmlUtil.parse(mappingField.getText());
 			mappingField.setText(XmlUtil.build(doc));
 		} catch (Exception e) {
-			UIUtil.showException(parent, "Syntax Error", e);
+			UIUtil.showException(parent, "Syntax Error", e, UIUtil.EXCEPTION_CONTEXT_USER_ERROR);
 		}
     }//GEN-LAST:event_formatButtonActionPerformed
 
@@ -255,7 +255,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 			ok = true;
 			setVisible(false);
 		} catch (Exception e) {
-			UIUtil.showException(parent, "Syntax Error", e);
+			UIUtil.showException(parent, "Syntax Error", e, UIUtil.EXCEPTION_CONTEXT_USER_ERROR);
 		}
     }//GEN-LAST:event_okButtonActionPerformed
     
