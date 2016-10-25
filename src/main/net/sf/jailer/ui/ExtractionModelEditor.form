@@ -740,7 +740,7 @@
                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="0" green="0" red="aa" type="rgb"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value=" depends on"/>
+                <Property name="text" type="java.lang.String" value=" depends on (has parent) "/>
               </Properties>
             </Component>
             <Component class="javax.swing.JLabel" name="hasDependent">
@@ -751,7 +751,7 @@
                 <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                   <Color blue="0" green="70" red="0" type="rgb"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="   has dependent"/>
+                <Property name="text" type="java.lang.String" value="   has dependent (has child) "/>
               </Properties>
             </Component>
             <Component class="javax.swing.JLabel" name="associatedWith">
