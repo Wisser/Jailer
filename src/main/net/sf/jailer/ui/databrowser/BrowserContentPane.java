@@ -1676,7 +1676,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			                out.print(sqlString);
 			                out.close();
 			            } catch (Throwable e) {
-			                UIUtil.showException(this, "Error saving script", e);
+			                UIUtil.showException(this, "Error saving script", e, UIUtil.EXCEPTION_CONTEXT_USER_ERROR);
 			            }
 			        }
 				}

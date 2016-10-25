@@ -541,7 +541,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     	    	refresh();
     	    	store();
     		} catch (Exception e) {
-    			UIUtil.showException(this, "Error", e);
+    			UIUtil.showException(this, "Error", e, UIUtil.EXCEPTION_CONTEXT_USER_ERROR);
     		}
     	}
     }//GEN-LAST:event_newButtonActionPerformed
