@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.sf.jailer.entitygraph.local;
+package net.sf.jailer.database;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -21,8 +21,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.sf.jailer.database.Session;
-import net.sf.jailer.database.StatementBuilder;
 import net.sf.jailer.util.CellContentConverter;
 
 /**
@@ -96,18 +94,18 @@ public abstract class InlineViewBuilder implements Session.ResultSetReader {
 			values[i - 1] = sqlValue(resultSet, i);
 		}
 		
-		String head = style.head(resultSet, resultSetMetaData, values, columnNames);
+		String head = style.head(columnNames);
 		
 		if (!statementBuilder.isAppendable(head)) {
 			process(statementBuilder.build());
 		}
 
-		String item = style.item(resultSet, resultSetMetaData, values, columnNames, statementBuilder.size());
+		String item = style.item(values, columnNames, statementBuilder.size());
 		statementBuilder.append(
 				head,
 				item,
-				style.separator(resultSet, resultSetMetaData),
-				style.terminator(resultSet, resultSetMetaData, name, columnNames));
+				style.separator(),
+				style.terminator(name, columnNames));
 	}
 
 	protected abstract CellContentConverter createCellContentConverter();

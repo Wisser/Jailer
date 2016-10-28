@@ -28,9 +28,10 @@ public class Row {
 	 * @param rowId unique ID, also serves as SQL predicate which identifies this row
 	 * @param v column values
 	 */
-	public Row(String rowId, Object[] v) {
+	public Row(String rowId, String[] primaryKey, Object[] v) {
 		this.rowId = rowId;
 		this.values = v;
+		this.primaryKey = primaryKey;
 	}
 	
 	/**
@@ -56,6 +57,11 @@ public class Row {
 	 * Column values.
 	 */
 	public final Object[] values;
+	
+	/**
+	 * Primary key values.
+	 */
+	public final String[] primaryKey;
 	
 	/**
 	 * <code>true</code> if this row is the last one of a block.

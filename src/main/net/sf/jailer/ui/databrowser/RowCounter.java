@@ -10,6 +10,7 @@ import java.util.Map;
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.DBMS;
+import net.sf.jailer.database.InlineViewStyle;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
@@ -55,7 +56,7 @@ public class RowCounter {
 		
 		if (association != null && rowIdSupport.getPrimaryKey(association.source).getColumns().isEmpty()) {
 			try {
-				loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 1, maxTime);
+				loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 1, maxTime, null);
 			} catch (SQLException e) {
 				if (System.currentTimeMillis() >= maxTime) {
 					return -1;
@@ -63,45 +64,47 @@ public class RowCounter {
 				throw e;
 			}
 		} else {
-			if (session.dbms == DBMS.DB2 && table.primaryKey.getColumns().size() > 1) {
+			if (BrowserContentPane.useInlineViewForResolvingAssociation(session)) {
 				try {
-					return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 8, maxTime);
-				} catch (SQLException e) {
-					if (System.currentTimeMillis() >= maxTime) {
-						return -1;
+					InlineViewStyle inlineViewStyle = session.getInlineViewStyle();
+					if (inlineViewStyle != null) {
+						return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 258, maxTime, inlineViewStyle);
 					}
-					Session._log.warn("failed, try another blocking-size");
-				}
-			} else {
-				try {
-					return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 258, maxTime);
-				} catch (SQLException e) {
-					if (System.currentTimeMillis() >= maxTime) {
-						return -1;
-					}
-					Session._log.warn("failed, try another blocking-size");
-				}
-				try {
-					return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 100, maxTime);
-				} catch (SQLException e) {
-					if (System.currentTimeMillis() >= maxTime) {
-						return -1;
-					}
-					Session._log.warn("failed, try another blocking-size");
-				}
-				try {
-					return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 40, maxTime);
-				} catch (SQLException e) {
+				} catch (Exception e) {
 					if (System.currentTimeMillis() >= maxTime) {
 						return -1;
 					}
 					Session._log.warn("failed, try another blocking-size");
 				}
 			}
+			try {
+				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 258, maxTime, null);
+			} catch (SQLException e) {
+				if (System.currentTimeMillis() >= maxTime) {
+					return -1;
+				}
+				Session._log.warn("failed, try another blocking-size");
+			}
+			try {
+				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 100, maxTime, null);
+			} catch (SQLException e) {
+				if (System.currentTimeMillis() >= maxTime) {
+					return -1;
+				}
+				Session._log.warn("failed, try another blocking-size");
+			}
+			try {
+				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 40, maxTime, null);
+			} catch (SQLException e) {
+				if (System.currentTimeMillis() >= maxTime) {
+					return -1;
+				}
+				Session._log.warn("failed, try another blocking-size");
+			}
 		}
 		
 		try {
-			return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 1, maxTime);
+			return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 1, maxTime, null);
 		} catch (SQLException e) {
 			if (System.currentTimeMillis() >= maxTime) {
 				return -1;
@@ -111,7 +114,7 @@ public class RowCounter {
 	}
 
 	private long loadRowBlocks(String andCond, Object context, int limit, boolean selectDistinct, List<Row> pRows,
-			Map<String, Row> rowSet, int NUM_PARENTS, long maxTime) throws SQLException {
+			Map<String, Row> rowSet, int NUM_PARENTS, long maxTime, InlineViewStyle inlineViewStyle) throws SQLException {
 		List<List<Row>> parentBlocks = new ArrayList<List<Row>>();
 		List<Row> currentBlock = new ArrayList<Row>();
 		parentBlocks.add(currentBlock);
@@ -143,7 +146,7 @@ public class RowCounter {
 			if (Configuration.forDbms(session).getSqlLimitSuffix() != null) {
 				try {
 					session.setSilent(true);
-					brc += countRows(andCond, pRowBlock, newBlockRows, context, limit, false, Configuration.forDbms(session).getSqlLimitSuffix(), selectDistinct, maxTime);
+					brc += countRows(andCond, pRowBlock, newBlockRows, context, limit, false, Configuration.forDbms(session).getSqlLimitSuffix(), selectDistinct, maxTime, inlineViewStyle);
 					loaded = true;
 				} catch (SQLException e) {
 					if (System.currentTimeMillis() >= maxTime) {
@@ -157,7 +160,7 @@ public class RowCounter {
 			if (!loaded) {
 				try {
 					session.setSilent(true);
-					brc += countRows(andCond, pRowBlock, newBlockRows, context, limit, true, null, selectDistinct, maxTime);
+					brc += countRows(andCond, pRowBlock, newBlockRows, context, limit, true, null, selectDistinct, maxTime, inlineViewStyle);
 					loaded = true;
 				} catch (SQLException e) {
 					if (System.currentTimeMillis() >= maxTime) {
@@ -168,7 +171,12 @@ public class RowCounter {
 					session.setSilent(false);
 				}
 				if (!loaded) {
-					brc += countRows(andCond, pRowBlock, newBlockRows, context, limit, false, null, selectDistinct, maxTime);
+					try {
+						session.setSilent(true);
+						brc += countRows(andCond, pRowBlock, newBlockRows, context, limit, false, null, selectDistinct, maxTime, inlineViewStyle);
+					} finally {
+						session.setSilent(false);
+					}
 				}
 			}
 			rc += brc;
@@ -194,14 +202,15 @@ public class RowCounter {
 	 * @param context
 	 *            cancellation context
 	 * @param selectDistinct 
+	 * @param inlineViewStyle 
 	 */
 	public long countRows(String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, Object context, int limit, boolean useOLAPLimitation,
-			String sqlLimitSuffix, boolean selectDistinct, long maxTime) throws SQLException {
+			String sqlLimitSuffix, boolean selectDistinct, long maxTime, InlineViewStyle inlineViewStyle) throws SQLException {
 		final Quoting quoting = new Quoting(session);
 		String sql = "Select "; // + (selectDistinct? "distinct " : "");
 		
 		{
-			String olapPrefix = "Select ";
+			String olapPrefix = "Select 1";
 			String olapSuffix = ") S Where S." + ROWNUMBERALIAS + " <= " + limit;
 			boolean limitSuffixInSelectClause = sqlLimitSuffix != null &&
 					(sqlLimitSuffix.toLowerCase().startsWith("top ") || sqlLimitSuffix.toLowerCase().startsWith("first "));
@@ -219,7 +228,19 @@ public class RowCounter {
 //				f = false;
 //			}
 			
-			sql += "1";
+			if (association != null) {
+				sql += "distinct ";
+				boolean f = true;
+				for (Column pkColumn: rowIdSupport.getPrimaryKey(association.destination).getColumns()) {
+					if (!f) {
+						sql += ", ";
+					}
+					sql += "A." + pkColumn.name;
+					f = false;
+				}
+			} else {
+				sql += "1";
+			}
 			
 			if (useOLAPLimitation) {
 				sql += ", row_number() over(";
@@ -244,15 +265,44 @@ public class RowCounter {
 					sql += " Where (" + parentRows.get(0).rowId + ")";
 				} else {
 					StringBuilder sb = new StringBuilder();
-					for (Row parentRow: parentRows) {
-						if (sb.length() == 0) {
-							sb.append(" Where ((");
-						} else {
-							sb.append(" or (");
+					if (inlineViewStyle != null) {
+						sb.append(" join ");
+						List<String> columnNames = new ArrayList<String>();
+						for (Column pkColumn: rowIdSupport.getPrimaryKey(table).getColumns()) {
+							columnNames.add(pkColumn.name);
 						}
-						sb.append(parentRow.rowId).append(")");
+						String[] columnNamesAsArray = columnNames.toArray(new String[columnNames.size()]);
+						sb.append(inlineViewStyle.head(columnNamesAsArray));
+						int rowNumber = 0;
+						for (Row parentRow: parentRows) {
+							if (rowNumber > 0) {
+								sb.append(inlineViewStyle.separator());
+							}
+							sb.append(inlineViewStyle.item(parentRow.primaryKey, columnNamesAsArray, rowNumber));
+							++rowNumber;
+						}
+						sb.append(inlineViewStyle.terminator("C", columnNamesAsArray));
+						sb.append(" on (");
+						boolean f2 = true;
+						for (String pkColumnName: columnNames) {
+							if (!f2) {
+								sb.append(" and ");
+							}
+							sb.append("B." + pkColumnName + " = " + "C." + pkColumnName);
+							f2 = false;
+						}
+						sb.append(")");
+					} else {
+						for (Row parentRow: parentRows) {
+							if (sb.length() == 0) {
+								sb.append(" Where ((");
+							} else {
+								sb.append(" or (");
+							}
+							sb.append(parentRow.rowId).append(")");
+						}
+						sb.append(")");
 					}
-					sb.append(")");
 					sql += sb.toString();
 				}
 			}

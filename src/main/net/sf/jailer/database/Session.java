@@ -920,4 +920,24 @@ public class Session {
 		return connectionFactory.getConnection();
 	}
 	
+	private InlineViewStyle inlineViewStyle;
+	private boolean noInlineViewStyleFound = false;
+	
+	/**
+	 * Returns a suitable {@link InlineViewStyle} for this session.
+	 * 
+	 * @return a suitable {@link InlineViewStyle} for this session or <code>null</code>, if no style is found
+	 */
+	public synchronized InlineViewStyle getInlineViewStyle() {
+		if (inlineViewStyle == null && !noInlineViewStyleFound) {
+			try {
+				inlineViewStyle = InlineViewStyle.forSession(this);
+			} catch (Exception e) {
+				// no suitable style found
+				noInlineViewStyleFound = true;
+			}
+		}
+		return inlineViewStyle;
+	}
+	
 }

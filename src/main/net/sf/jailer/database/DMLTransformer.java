@@ -22,7 +22,6 @@ import java.io.OutputStreamWriter;
 import java.io.Reader;
 import java.sql.Blob;
 import java.sql.Clob;
-import java.sql.DatabaseMetaData;
 import java.sql.Date;
 import java.sql.ResultSet;
 import java.sql.SQLException;
