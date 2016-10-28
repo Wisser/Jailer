@@ -13,27 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.sf.jailer.entitygraph.local;
+package net.sf.jailer.database;
 
 import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 
-import net.sf.jailer.database.Session;
 
 /**
  * Styles of inline-views for different DBMS'es.
  */
-enum InlineViewStyle {
+public enum InlineViewStyle {
 
 	 DB2("(values (1, '2', 3), (4, '5', 6)) %s(A, B, C)") {
 			@Override
-			String head(ResultSet resultSet, ResultSetMetaData resultSetMetaData, String[] values, String[] columnNames) throws SQLException {
+			public String head(String[] columnNames) throws SQLException {
 				return "(values ";
 			}
 
 			@Override
-			String item(ResultSet resultSet, ResultSetMetaData resultSetMetaData, String[] values, String[] columnNames, int rowNumber) throws SQLException {
+			public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
 				StringBuilder sb = new StringBuilder("(");
 				for (int i = 1; i <= columnNames.length; ++i) {
 					if (i > 1) {
@@ -46,14 +44,12 @@ enum InlineViewStyle {
 			}
 
 			@Override
-			String separator(ResultSet resultSet,
-					ResultSetMetaData resultSetMetaData) throws SQLException {
+			public String separator() throws SQLException {
 				return ", ";
 			}
 
 			@Override
-			String terminator(ResultSet resultSet,
-					ResultSetMetaData resultSetMetaData, String name, String[] columnNames) throws SQLException {
+			public String terminator(String name, String[] columnNames) throws SQLException {
 				StringBuilder sb = new StringBuilder(") " + name + "(");
 				for (int i = 1; i <= columnNames.length; ++i) {
 					if (i > 1) {
@@ -69,12 +65,12 @@ enum InlineViewStyle {
 	 MySQL("(Select 1 A, '2' B, 3 C Union all " +
 	        "Select 4, '5', 6) %s") {
 			@Override
-			String head(ResultSet resultSet, ResultSetMetaData resultSetMetaData, String[] values, String[] columnNames) throws SQLException {
+			public String head(String[] columnNames) throws SQLException {
 				return "(Select ";
 			}
 
 			@Override
-			String item(ResultSet resultSet, ResultSetMetaData resultSetMetaData, String[] values, String[] columnNames, int rowNumber) throws SQLException {
+			public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
 				StringBuilder sb = new StringBuilder();
 				for (int i = 1; i <= columnNames.length; ++i) {
 					if (i > 1) {
@@ -89,14 +85,12 @@ enum InlineViewStyle {
 			}
 
 			@Override
-			String separator(ResultSet resultSet,
-					ResultSetMetaData resultSetMetaData) throws SQLException {
+			public String separator() throws SQLException {
 				return " Union all Select ";
 			}
 
 			@Override
-			String terminator(ResultSet resultSet,
-					ResultSetMetaData resultSetMetaData, String name, String[] columnNames) throws SQLException {
+			public String terminator(String name, String[] columnNames) throws SQLException {
 				return ") " + name;
 			}
 		},
@@ -104,12 +98,12 @@ enum InlineViewStyle {
 	Oracle("(Select 1 A, '2' B, 3 C from dual Union all "
 		  + "Select 4, '5', 6 from dual) %s") {
 		@Override
-		String head(ResultSet resultSet, ResultSetMetaData resultSetMetaData, String[] values, String[] columnNames) throws SQLException {
+		public String head(String[] columnNames) throws SQLException {
 			return "(Select ";
 		}
 
 		@Override
-		String item(ResultSet resultSet, ResultSetMetaData resultSetMetaData, String[] values, String[] columnNames, int rowNumber) throws SQLException {
+		public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
 			StringBuilder sb = new StringBuilder();
 			for (int i = 1; i <= columnNames.length; ++i) {
 				if (i > 1) {
@@ -124,14 +118,12 @@ enum InlineViewStyle {
 		}
 
 		@Override
-		String separator(ResultSet resultSet,
-				ResultSetMetaData resultSetMetaData) throws SQLException {
+		public String separator() throws SQLException {
 			return " from dual Union all Select ";
 		}
 
 		@Override
-		String terminator(ResultSet resultSet,
-				ResultSetMetaData resultSetMetaData, String name, String[] columnNames) throws SQLException {
+		public String terminator(String name, String[] columnNames) throws SQLException {
 			StringBuilder sb = new StringBuilder(" from dual) " + name);
 			return sb.toString();
 		}
@@ -174,16 +166,12 @@ enum InlineViewStyle {
 				+ session.dbUrl);
 	}
 
-	abstract String head(ResultSet resultSet,
-			ResultSetMetaData resultSetMetaData, String[] values, String[] columnNames) throws SQLException;
+	public abstract String head(String[] columnNames) throws SQLException;
 
-	abstract String item(ResultSet resultSet,
-			ResultSetMetaData resultSetMetaData, String[] values, String[] columnNames, int rowNumber) throws SQLException;
+	public abstract String item(String[] values, String[] columnNames, int rowNumber) throws SQLException;
 
-	abstract String separator(ResultSet resultSet,
-			ResultSetMetaData resultSetMetaData) throws SQLException;
+	public abstract String separator() throws SQLException;
 
-	abstract String terminator(ResultSet resultSet,
-			ResultSetMetaData resultSetMetaData, String name, String[] columnNames) throws SQLException;
+	public abstract String terminator(String name, String[] columnNames) throws SQLException;
 
 }

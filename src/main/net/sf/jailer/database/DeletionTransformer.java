@@ -17,7 +17,6 @@ package net.sf.jailer.database;
 
 import java.io.IOException;
 import java.io.OutputStreamWriter;
-import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 

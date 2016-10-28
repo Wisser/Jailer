@@ -235,7 +235,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
                 	final Table table = getDataModel().getTableByDisplayName((String) value);
                 	if (table != null) {
 						JMenuItem restrictAll = new JMenuItem("Disable Associations");
-						restrictAll.setToolTipText("disables every non-dependent association with this table");
+						restrictAll.setToolTipText("disables every non-dependent (child) association with this table");
 						restrictAll.addActionListener(new ActionListener () {
 							public void actionPerformed(ActionEvent e) {
 								ClosureView.this.extractionModelEditor.ignoreAll(table);

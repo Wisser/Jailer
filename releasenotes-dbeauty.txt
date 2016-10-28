@@ -1,3 +1,6 @@
+2.7.5
+  - Improved performance.
+
 2.7.4
   - Fixed a performance issue.
 

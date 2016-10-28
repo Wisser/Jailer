@@ -98,6 +98,8 @@ import javax.swing.tree.DefaultTreeModel;
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.ScriptFormat;
+import net.sf.jailer.database.DBMS;
+import net.sf.jailer.database.InlineViewStyle;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.SqlException;
@@ -2001,7 +2003,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			try {
 				session.setSilent(true);
 				Map<String, List<Row>> rowsMap = new HashMap<String, List<Row>>();
-				reloadRows(andCond, null, rowsMap, context, limit, false, null, existingColumnsLowerCase);
+				reloadRows(null, andCond, null, rowsMap, context, limit, false, null, existingColumnsLowerCase);
 				if (rowsMap.get("") != null) {
 					rows.addAll(rowsMap.get(""));
 				}
@@ -2025,38 +2027,53 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		noDistinctRows = 0;
 		
 		if (association != null && rowIdSupport.getPrimaryKey(association.source).getColumns().isEmpty()) {
-			loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 1, existingColumnsLowerCase);
+			loadRowBlocks(null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 1, existingColumnsLowerCase);
 		} else {
+			if (useInlineViewForResolvingAssociation(session)) {
+				try {
+					InlineViewStyle inlineViewStyle = session.getInlineViewStyle();
+					if (inlineViewStyle != null) {
+						loadRowBlocks(inlineViewStyle, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 510, existingColumnsLowerCase);
+						return;
+					}
+				} catch (Exception e) {
+					Session._log.warn("failed, try another blocking-size");
+				}
+			}
 			try {
-				loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 510, existingColumnsLowerCase);
+				loadRowBlocks(null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 510, existingColumnsLowerCase);
 				return;
 			} catch (SQLException e) {
 				Session._log.warn("failed, try another blocking-size");
 			}
 			try {
-				loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 300, existingColumnsLowerCase);
+				loadRowBlocks(null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 300, existingColumnsLowerCase);
 				return;
 			} catch (SQLException e) {
 				Session._log.warn("failed, try another blocking-size");
 			}
 			try {
-				loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 100, existingColumnsLowerCase);
+				loadRowBlocks(null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 100, existingColumnsLowerCase);
 				return;
 			} catch (SQLException e) {
 				Session._log.warn("failed, try another blocking-size");
 			}
 			try {
-				loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 40, existingColumnsLowerCase);
+				loadRowBlocks(null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 40, existingColumnsLowerCase);
 				return;
 			} catch (SQLException e) {
 				Session._log.warn("failed, try another blocking-size");
 			}
 		}
 		
-		loadRowBlocks(andCond, rows, context, limit, selectDistinct, pRows, rowSet, 1, existingColumnsLowerCase);
+		loadRowBlocks(null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 1, existingColumnsLowerCase);
 	}
 
-	private void loadRowBlocks(String andCond, final List<Row> rows, Object context, int limit, boolean selectDistinct, List<Row> pRows,
+	static boolean useInlineViewForResolvingAssociation(Session session) {
+		return session.dbms != DBMS.ORACLE && session.getInlineViewStyle() == InlineViewStyle.DB2;
+	}
+
+	private void loadRowBlocks(InlineViewStyle inlineViewStyle, String andCond, final List<Row> rows, Object context, int limit, boolean selectDistinct, List<Row> pRows,
 			Map<String, Row> rowSet, int NUM_PARENTS, Set<String> existingColumnsLowerCase) throws SQLException {
 		List<List<Row>> parentBlocks = new ArrayList<List<Row>>();
 		List<Row> currentBlock = new ArrayList<Row>();
@@ -2082,7 +2099,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (Configuration.forDbms(session).getSqlLimitSuffix() != null) {
 				try {
 					session.setSilent(true);
-					reloadRows(andCond, pRowBlock, newBlockRows, context, limit, false, Configuration.forDbms(session).getSqlLimitSuffix(), existingColumnsLowerCase);
+					reloadRows(inlineViewStyle, andCond, pRowBlock, newBlockRows, context, limit, false, Configuration.forDbms(session).getSqlLimitSuffix(), existingColumnsLowerCase);
 					loaded = true;
 				} catch (SQLException e) {
 					Session._log.warn("failed, try another limit-strategy");
@@ -2093,7 +2110,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (!loaded) {
 				try {
 					session.setSilent(true);
-					reloadRows(andCond, pRowBlock, newBlockRows, context, limit, true, null, existingColumnsLowerCase);
+					reloadRows(inlineViewStyle, andCond, pRowBlock, newBlockRows, context, limit, true, null, existingColumnsLowerCase);
 					loaded = true;
 				} catch (SQLException e) {
 					Session._log.warn("failed, try another limit-strategy");
@@ -2101,7 +2118,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					session.setSilent(false);
 				}
 				if (!loaded) {
-					reloadRows(andCond, pRowBlock, newBlockRows, context, limit, false, null, existingColumnsLowerCase);
+					reloadRows(inlineViewStyle, andCond, pRowBlock, newBlockRows, context, limit, false, null, existingColumnsLowerCase);
 				}
 			}
 			if (pRowBlock == null) {
@@ -2167,9 +2184,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param rowCache 
 	 * @param allPRows 
 	 */
-	private void reloadRows(String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, Object context, int limit, boolean useOLAPLimitation,
+	private void reloadRows(InlineViewStyle inlineViewStyle, String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, Object context, int limit, boolean useOLAPLimitation,
 			String sqlLimitSuffix, Set<String> existingColumnsLowerCase) throws SQLException {
-		reloadRows0(andCond, parentRows, rows, context, parentRows == null? limit : Math.max(5000, limit), useOLAPLimitation, sqlLimitSuffix, existingColumnsLowerCase);
+		reloadRows0(inlineViewStyle, andCond, parentRows, rows, context, parentRows == null? limit : Math.max(5000, limit), useOLAPLimitation, sqlLimitSuffix, existingColumnsLowerCase);
 	}
 
     /**
@@ -2198,7 +2215,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param context
 	 *            cancellation context
 	 */
-	private void reloadRows0(String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, Object context, int limit, boolean useOLAPLimitation,
+	private void reloadRows0(InlineViewStyle inlineViewStyle, String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, Object context, int limit, boolean useOLAPLimitation,
 			String sqlLimitSuffix, Set<String> existingColumnsLowerCase) throws SQLException {
 		String sql = "Select ";
 		final Quoting quoting = new Quoting(session);
@@ -2296,15 +2313,44 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					sql += " Where (" + parentRows.get(0).rowId + ")";
 				} else {
 					StringBuilder sb = new StringBuilder();
-					for (Row parentRow: parentRows) {
-						if (sb.length() == 0) {
-							sb.append(" Where ((");
-						} else {
-							sb.append(" or (");
+					if (inlineViewStyle != null) {
+						sb.append(" join ");
+						List<String> columnNames = new ArrayList<String>();
+						for (Column pkColumn: rowIdSupport.getPrimaryKey(table).getColumns()) {
+							columnNames.add(pkColumn.name);
 						}
-						sb.append(parentRow.rowId).append(")");
+						String[] columnNamesAsArray = columnNames.toArray(new String[columnNames.size()]);
+						sb.append(inlineViewStyle.head(columnNamesAsArray));
+						int rowNumber = 0;
+						for (Row parentRow: parentRows) {
+							if (rowNumber > 0) {
+								sb.append(inlineViewStyle.separator());
+							}
+							sb.append(inlineViewStyle.item(parentRow.primaryKey, columnNamesAsArray, rowNumber));
+							++rowNumber;
+						}
+						sb.append(inlineViewStyle.terminator("C", columnNamesAsArray));
+						sb.append(" on (");
+						boolean f2 = true;
+						for (String pkColumnName: columnNames) {
+							if (!f2) {
+								sb.append(" and ");
+							}
+							sb.append("B." + pkColumnName + " = " + "C." + pkColumnName);
+							f2 = false;
+						}
+						sb.append(")");
+					} else {
+						for (Row parentRow: parentRows) {
+							if (sb.length() == 0) {
+								sb.append(" Where ((");
+							} else {
+								sb.append(" or (");
+							}
+							sb.append(parentRow.rowId).append(")");
+						}
+						sb.append(")");
 					}
-					sb.append(")");
 					sql += sb.toString();
 				}
 				whereExists = true;
@@ -2327,6 +2373,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		
 		if (sql.length() > 0) {
+			final Map<Integer, Integer> pkPosToColumnPos = new HashMap<Integer, Integer>();
+			if (!(table instanceof SqlStatementTable)) {
+				List<Column> pks = rowIdSupport.getPrimaryKey(table).getColumns();
+				List<Column> columns = rowIdSupport.getColumns(table);
+				for (int i = 0; i < columns.size(); ++i) {
+					Column column = columns.get(i);
+					for (int j = 0; j < pks.size(); ++j) {
+						if (column.name.equals(pks.get(j).name)) {
+							pkPosToColumnPos.put(j, i);
+							break;
+						}
+					}
+				}
+			}
 			session.executeQuery(sql, new AbstractResultSetReader() {
 	
 				Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
@@ -2344,8 +2404,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					String parentRowId = "";
 					if (selectParentPK) {
 						Object v[] = new Object[rowIdSupport.getPrimaryKey(association.source).getColumns().size()];
-						for (Column column : rowIdSupport.getPrimaryKey(association.source).getColumns()) {
-							parentRowId = readRowFromResultSet(parentPkColumnNames, resultSet, i, vi, parentRowId, v, column, null, unknownColumnIndexes);
+						for (Column column: rowIdSupport.getPrimaryKey(association.source).getColumns()) {
+							parentRowId = readRowFromResultSet(parentPkColumnNames, resultSet, i, vi, parentRowId, v, column, null, null, unknownColumnIndexes);
 							++i;
 							++vi;
 						}
@@ -2356,33 +2416,43 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 					
 					Map<String, String> pkColumn = new HashMap<String, String>();
+					Map<String, String> pkColumnValue = new HashMap<String, String>();
 					
 					Object v[] = new Object[rowIdSupport.getColumns(table).size()];
 					vi = 0;
-					for (Column column : rowIdSupport.getColumns(table)) {
-						readRowFromResultSet(pkColumnNames, resultSet, i, vi, "", v, column, pkColumn, unknownColumnIndexes);
+					for (Column column: rowIdSupport.getColumns(table)) {
+						readRowFromResultSet(pkColumnNames, resultSet, i, vi, "", v, column, pkColumn, pkColumnValue, unknownColumnIndexes);
 						++i;
 						++vi;
 					}
 					
 					String rowId = "";
-					if (rowIdSupport.getPrimaryKey(table) != null) {
-						for (Column column : rowIdSupport.getPrimaryKey(table).getColumns()) {
+					String[] primaryKey = null;
+					PrimaryKey primaryKeys = rowIdSupport.getPrimaryKey(table);
+					if (primaryKeys != null) {
+						int pkPos = 0;
+						primaryKey = new String[primaryKeys.getColumns().size()];
+						for (Column column : primaryKeys.getColumns()) {
 							if (rowId.length() > 0) {
 								rowId += " and ";
 							}
 							rowId += pkColumn.get(column.name);
+							Integer colPos = pkPosToColumnPos.get(pkPos);
+							if (colPos != null) {
+								primaryKey[pkPos] = pkColumnValue.get(column.name);
+							}
+							++pkPos;
 						}
 					} else {
 						rowId = Integer.toString(++rowNr);
 					}
-					
+
 					List<Row> cRows = rows.get(parentRowId);
 					if (cRows == null) {
 						cRows = new ArrayList<Row>();
 						rows.put(parentRowId, cRows);
 					}
-					cRows.add(new Row(rowId, v));
+					cRows.add(new Row(rowId, primaryKey, v));
 				}
 
 				private String readClob(Clob clob) throws SQLException, IOException {
@@ -2411,7 +2481,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			        return sb.toString();
 				}
 
-				private String readRowFromResultSet(final Set<String> pkColumnNames, ResultSet resultSet, int i, int vi, String rowId, Object[] v, Column column, Map<String, String> pkColumn, Set<Integer> unknownColumnIndexes)
+				private String readRowFromResultSet(final Set<String> pkColumnNames, ResultSet resultSet, int i, int vi, String rowId, Object[] v, Column column, Map<String, String> pkColumn, Map<String, String> pkColumnValue, Set<Integer> unknownColumnIndexes)
 						throws SQLException {
 					Object value = "";
 					if (unknownColumnIndexes.contains(i)) {
@@ -2488,6 +2558,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								String pkValue = "B." + quoting.quote(column.name) + ("null".equalsIgnoreCase(cVal)? " is null" : ("=" + cVal));
 								if (pkColumn != null) {
 									pkColumn.put(column.name, pkValue);
+								}
+								if (pkColumnValue != null) {
+									pkColumnValue.put(column.name, cVal);
 								}
 								rowId += (rowId.length() == 0 ? "" : " and ") + pkValue;
 							}
@@ -3300,7 +3373,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @return new row of table
 	 */
 	private Row createNewRow(Row parentrow, Table table) {
-		Row row = new Row(null, new Object[table.getColumns().size()]);
+		Row row = new Row(null, null, new Object[table.getColumns().size()]);
 		if (parentrow != null && association != null) {
 			Map<Column, Column> sToDMap = association.createSourceToDestinationKeyMapping();
 			for (Map.Entry<Column, Column> e: sToDMap.entrySet()) {
