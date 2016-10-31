@@ -63,8 +63,33 @@ public class ExtractionModel {
      * Additional Subject.
      */
     public static class AdditionalSubject {
-		public final Table subject;
-    	public final String condition;
+		private Table subject;
+		private String condition;
+
+		/**
+		 * @return the subject
+		 */
+		public Table getSubject() {
+			return subject;
+		}
+		/**
+		 * @param subject the subject to set
+		 */
+		public void setSubject(Table subject) {
+			this.subject = subject;
+		}
+		/**
+		 * @return the condition
+		 */
+		public String getCondition() {
+			return condition;
+		}
+		/**
+		 * @param condition the condition to set
+		 */
+		public void setCondition(String condition) {
+			this.condition = condition;
+		}
     	public AdditionalSubject(Table subject, String condition) {
     		this.subject = subject;
     		this.condition = condition;

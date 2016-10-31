@@ -245,7 +245,7 @@ public class ExportDialog extends javax.swing.JDialog {
         		if (sb.length() > 0) {
         			sb.append(", ");
         		}
-        		sb.append(as.subject.getName());
+        		sb.append(as.getSubject().getName());
         	}
         	final int MAX = 60;
         	if (sb.length() > MAX) {

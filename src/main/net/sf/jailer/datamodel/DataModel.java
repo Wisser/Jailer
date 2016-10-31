@@ -779,7 +779,7 @@ public class DataModel {
     	ParameterHandler.collectParameter(subjectCondition, parameters);
     	if (additionalSubjects != null) {
     		for (AdditionalSubject as: additionalSubjects) {
-    			ParameterHandler.collectParameter(as.condition, parameters);
+    			ParameterHandler.collectParameter(as.getCondition(), parameters);
     		}
     	}
     	for (Association a: namedAssociations.values()) {
@@ -842,7 +842,7 @@ public class DataModel {
 		out.println();
 		out.println(CsvFile.BLOCK_INDICATOR + "additional subjects");
 		for (AdditionalSubject as: additionalSubjects) {
-			out.println(CsvFile.encodeCell("" + as.subject.getName()) + "; " + CsvFile.encodeCell(as.condition) + ";");
+			out.println(CsvFile.encodeCell("" + as.getSubject().getName()) + "; " + CsvFile.encodeCell(as.getCondition()) + ";");
 		}
 		out.println();
 		out.println(CsvFile.BLOCK_INDICATOR + "export modus");

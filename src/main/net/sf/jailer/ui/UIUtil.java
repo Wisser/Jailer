@@ -731,6 +731,7 @@ public class UIUtil {
 			if (hd > 0) {
 				d.setSize(d.getWidth(), Math.max(d.getHeight() - hd, 150));
 			}
+			d.setLocation(Math.max(0, d.getX()), Math.max(0, d.getY()));
 		} catch (Throwable t) {
 			// ignore
 		}

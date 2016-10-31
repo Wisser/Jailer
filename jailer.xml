@@ -205,6 +205,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<property name="dropTablePrefix" value="DROP TABLE SESSION." />
 				</bean>
 			</property>
+			<property name="useInlineViewsInDataBrowser" value="false" />
 		</bean>
 
 		<!-- for Oracle -->
@@ -643,6 +644,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                     <entry key="\r" value="' || char(13) || '"/>
                </map>
             </property>
+            <property name="useInlineViewsInDataBrowser" value="false" />
         </bean>
 	</util:list>
 	
