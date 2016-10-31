@@ -1934,7 +1934,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			reloadRows(andCond, rows, context, limit, selectDistinct, null);
 			return;
 		} catch (SQLException e) {
-			Session._log.warn("failed, try another strategy");
+			Session._log.warn("failed, try another strategy (" +  e.getMessage() + ")");
 		} finally {
 			session.setSilent(false);
 		}
@@ -2037,32 +2037,32 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						return;
 					}
 				} catch (Exception e) {
-					Session._log.warn("failed, try another blocking-size");
+					Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 				}
 			}
 			try {
 				loadRowBlocks(null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 510, existingColumnsLowerCase);
 				return;
 			} catch (SQLException e) {
-				Session._log.warn("failed, try another blocking-size");
+				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 			}
 			try {
 				loadRowBlocks(null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 300, existingColumnsLowerCase);
 				return;
 			} catch (SQLException e) {
-				Session._log.warn("failed, try another blocking-size");
+				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 			}
 			try {
 				loadRowBlocks(null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 100, existingColumnsLowerCase);
 				return;
 			} catch (SQLException e) {
-				Session._log.warn("failed, try another blocking-size");
+				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 			}
 			try {
 				loadRowBlocks(null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 40, existingColumnsLowerCase);
 				return;
 			} catch (SQLException e) {
-				Session._log.warn("failed, try another blocking-size");
+				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 			}
 		}
 		
@@ -2070,7 +2070,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	static boolean useInlineViewForResolvingAssociation(Session session) {
-		return session.dbms != DBMS.ORACLE && session.getInlineViewStyle() == InlineViewStyle.DB2;
+		return Configuration.forDbms(session).isUseInlineViewsInDataBrowser();
 	}
 
 	private void loadRowBlocks(InlineViewStyle inlineViewStyle, String andCond, final List<Row> rows, Object context, int limit, boolean selectDistinct, List<Row> pRows,
@@ -2102,7 +2102,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					reloadRows(inlineViewStyle, andCond, pRowBlock, newBlockRows, context, limit, false, Configuration.forDbms(session).getSqlLimitSuffix(), existingColumnsLowerCase);
 					loaded = true;
 				} catch (SQLException e) {
-					Session._log.warn("failed, try another limit-strategy");
+					Session._log.warn("failed, try another limit-strategy (" +  e.getMessage() + ")");
 				} finally {
 					session.setSilent(false);
 				}
@@ -2113,12 +2113,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					reloadRows(inlineViewStyle, andCond, pRowBlock, newBlockRows, context, limit, true, null, existingColumnsLowerCase);
 					loaded = true;
 				} catch (SQLException e) {
-					Session._log.warn("failed, try another limit-strategy");
+					Session._log.warn("failed, try another limit-strategy (" +  e.getMessage() + ")");
 				} finally {
 					session.setSilent(false);
 				}
 				if (!loaded) {
-					reloadRows(inlineViewStyle, andCond, pRowBlock, newBlockRows, context, limit, false, null, existingColumnsLowerCase);
+					try {
+						session.setSilent(true);
+						reloadRows(inlineViewStyle, andCond, pRowBlock, newBlockRows, context, limit, false, null, existingColumnsLowerCase);
+					} finally {
+						session.setSilent(false);
+					}
 				}
 			}
 			if (pRowBlock == null) {
@@ -2313,10 +2318,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					sql += " Where (" + parentRows.get(0).rowId + ")";
 				} else {
 					StringBuilder sb = new StringBuilder();
-					if (inlineViewStyle != null) {
+					if (inlineViewStyle != null && association != null) {
 						sb.append(" join ");
 						List<String> columnNames = new ArrayList<String>();
-						for (Column pkColumn: rowIdSupport.getPrimaryKey(table).getColumns()) {
+						for (Column pkColumn: rowIdSupport.getPrimaryKey(association.source).getColumns()) {
 							columnNames.add(pkColumn.name);
 						}
 						String[] columnNamesAsArray = columnNames.toArray(new String[columnNames.size()]);

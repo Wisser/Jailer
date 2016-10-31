@@ -1048,7 +1048,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			    			if (extractionModelEditor.extractionModel != null) {
 			    				if (extractionModelEditor.extractionModel.additionalSubjects != null) {
 			    					for (AdditionalSubject as: extractionModelEditor.extractionModel.additionalSubjects) {
-			    						toCheck.add(as.subject);
+			    						toCheck.add(as.getSubject());
 			    					}
 			    				}
 			    			}

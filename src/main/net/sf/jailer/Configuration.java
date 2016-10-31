@@ -115,7 +115,22 @@ public class Configuration {
 	public SQLDialect sqlDialect = new SQLDialect();
 	public String rowidName = null;
 	public Boolean supportsSchemasInIndexDefinitions = null;
+	public boolean useInlineViewsInDataBrowser = true;
 	
+	/**
+	 * @return the useInlineViewsInDataBrowser
+	 */
+	public boolean isUseInlineViewsInDataBrowser() {
+		return useInlineViewsInDataBrowser;
+	}
+
+	/**
+	 * @param useInlineViewsInDataBrowser the useInlineViewsInDataBrowser to set
+	 */
+	public void setUseInlineViewsInDataBrowser(boolean useInlineViewsInDataBrowser) {
+		this.useInlineViewsInDataBrowser = useInlineViewsInDataBrowser;
+	}
+
 	/**
 	 * @return the supportsSchemasInIndexDefinitions
 	 */

@@ -9,7 +9,6 @@ import java.util.Map;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
-import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.InlineViewStyle;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
@@ -74,7 +73,7 @@ public class RowCounter {
 					if (System.currentTimeMillis() >= maxTime) {
 						return -1;
 					}
-					Session._log.warn("failed, try another blocking-size");
+					Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 				}
 			}
 			try {
@@ -83,7 +82,7 @@ public class RowCounter {
 				if (System.currentTimeMillis() >= maxTime) {
 					return -1;
 				}
-				Session._log.warn("failed, try another blocking-size");
+				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 			}
 			try {
 				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 100, maxTime, null);
@@ -91,7 +90,7 @@ public class RowCounter {
 				if (System.currentTimeMillis() >= maxTime) {
 					return -1;
 				}
-				Session._log.warn("failed, try another blocking-size");
+				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 			}
 			try {
 				return loadRowBlocks(andCond, context, limit, selectDistinct, pRows, rowSet, 40, maxTime, null);
@@ -99,7 +98,7 @@ public class RowCounter {
 				if (System.currentTimeMillis() >= maxTime) {
 					return -1;
 				}
-				Session._log.warn("failed, try another blocking-size");
+				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 			}
 		}
 		
@@ -152,7 +151,7 @@ public class RowCounter {
 					if (System.currentTimeMillis() >= maxTime) {
 						return -1;
 					}
-					Session._log.warn("failed, try another limit-strategy");
+					Session._log.warn("failed, try another limit-strategy (" +  e.getMessage() + ")");
 				} finally {
 					session.setSilent(false);
 				}
@@ -166,7 +165,7 @@ public class RowCounter {
 					if (System.currentTimeMillis() >= maxTime) {
 						return -1;
 					}
-					Session._log.warn("failed, try another limit-strategy");
+					Session._log.warn("failed, try another limit-strategy (" +  e.getMessage() + ")");
 				} finally {
 					session.setSilent(false);
 				}
@@ -208,6 +207,9 @@ public class RowCounter {
 			String sqlLimitSuffix, boolean selectDistinct, long maxTime, InlineViewStyle inlineViewStyle) throws SQLException {
 		final Quoting quoting = new Quoting(session);
 		String sql = "Select "; // + (selectDistinct? "distinct " : "");
+		if (association != null) {
+			sql += "distinct ";
+		}
 		
 		{
 			String olapPrefix = "Select 1";
@@ -229,7 +231,6 @@ public class RowCounter {
 //			}
 			
 			if (association != null) {
-				sql += "distinct ";
 				boolean f = true;
 				for (Column pkColumn: rowIdSupport.getPrimaryKey(association.destination).getColumns()) {
 					if (!f) {

@@ -583,6 +583,11 @@ public abstract class ListEditor<T> extends javax.swing.JPanel {
 		return needsSave;
 	}
 
+	public void hideUpAndDownButton() {
+		upButton.setVisible(false);
+		downButton.setVisible(false);
+	}
+	
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addButton;
     private javax.swing.JButton cancelButton;

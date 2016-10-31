@@ -2696,7 +2696,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 */
 	public boolean isAdditionalSubject(Table table) {
 		for (AdditionalSubject as: extractionModel.additionalSubjects) {
-			if (as.subject.equals(table)) {
+			if (as.getSubject().equals(table)) {
 				return true;
 			}
 		}

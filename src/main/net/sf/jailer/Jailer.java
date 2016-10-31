@@ -260,15 +260,15 @@ public class Jailer {
 	private Set<Table> exportSubjects(ExtractionModel extractionModel, Set<Table> completedTables) throws Exception {
 		List<AdditionalSubject> allSubjects = new ArrayList<ExtractionModel.AdditionalSubject>();
 		for (AdditionalSubject as: extractionModel.additionalSubjects) {
-			allSubjects.add(new AdditionalSubject(as.subject, ParameterHandler.assignParameterValues(as.condition, CommandLineParser.getInstance().getParameters())));
+			allSubjects.add(new AdditionalSubject(as.getSubject(), ParameterHandler.assignParameterValues(as.getCondition(), CommandLineParser.getInstance().getParameters())));
 		}
 		allSubjects.add(new AdditionalSubject(extractionModel.subject, extractionModel.condition.equals("1=1")? "" : extractionModel.condition));
 		Map<Table, String> conditionPerTable = new HashMap<Table, String>();
 		for (AdditionalSubject as: allSubjects) {
-			String cond = conditionPerTable.get(as.subject);
+			String cond = conditionPerTable.get(as.getSubject());
 			if (cond == null || cond.trim().length() > 0) {
-				if (as.condition.trim().length() > 0) {
-					String newCond = "(" + as.condition + ")";
+				if (as.getCondition().trim().length() > 0) {
+					String newCond = "(" + as.getCondition() + ")";
 					if (cond == null) {
 						cond = newCond;
 					} else {
@@ -277,7 +277,7 @@ public class Jailer {
 				} else {
 					cond = "";
 				}
-				conditionPerTable.put(as.subject, cond);
+				conditionPerTable.put(as.getSubject(), cond);
 			}
 		}
 		final Set<Table> progress = Collections.synchronizedSet(new HashSet<Table>());
@@ -1270,8 +1270,8 @@ public class Jailer {
 				: "all rows from " + extractionModel.subject.getName();
 		jailer.appendCommentHeader("Extraction Model:  " + condition + " (" + extractionModelFileName + ")");
 		for (AdditionalSubject as: extractionModel.additionalSubjects) {
-			condition = (as.condition != null && as.condition.trim().length() > 0) ? as.subject.getName() + " where " + as.condition
-					: "all rows from " + as.subject.getName();
+			condition = (as.getCondition() != null && as.getCondition().trim().length() > 0) ? as.getSubject().getName() + " where " + as.getCondition()
+					: "all rows from " + as.getSubject().getName();
 			jailer.appendCommentHeader("                   Union " + condition);
 		}
 		if (CommandLineParser.getInstance().noSorting) {
@@ -1286,7 +1286,7 @@ public class Jailer {
     		Set<Table> toCheck = new HashSet<Table>();
 			if (extractionModel.additionalSubjects != null) {
 				for (AdditionalSubject as: extractionModel.additionalSubjects) {
-					toCheck.add(as.subject);
+					toCheck.add(as.getSubject());
 				}
 			}
 			toCheck.add(extractionModel.subject);
