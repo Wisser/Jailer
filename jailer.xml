@@ -205,7 +205,6 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<property name="dropTablePrefix" value="DROP TABLE SESSION." />
 				</bean>
 			</property>
-			<property name="useInlineViewsInDataBrowser" value="false" />
 		</bean>
 
 		<!-- for Oracle -->
@@ -257,6 +256,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<property name="dropTablePrefix" value="DROP TABLE " />
 				</bean>
 			</property>
+			<property name="useInlineViewsInDataBrowser" value="false" />
 		</bean>
 		
 		<!-- for PostgreSQL -->
