@@ -112,7 +112,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 
 		@Override
 		protected Object[] toColumnList(AdditionalSubject element, int index) {
-			return new String[] { getDisplayName(element), "Where " + element.getCondition() };
+			return new String[] { getDisplayName(element), element.getCondition().length() > 0? ("Where " + element.getCondition()) : "all rows" };
 		}
 
 		@Override
