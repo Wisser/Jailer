@@ -1,3 +1,6 @@
+6.1.3
+  - fixed an incompatibility with PostgreSQL JDBC Driver 9.1. 
+
 6.1.2
   - Improved performance of the Data Browser.
 

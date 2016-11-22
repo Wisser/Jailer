@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.util;
 
+import java.lang.reflect.Method;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -59,6 +60,7 @@ public class CellContentConverter {
 	private final Map<String, Integer> columnIndex = new HashMap<String, Integer>();
 	private final Session session;
 	private final Configuration configuration;
+	private Method pgObjectGetType;
 	
 	/**
 	 * Constructor.
@@ -152,9 +154,19 @@ public class CellContentConverter {
         	return "'" + content + "'";
         }
         if (SqlUtil.dbms == DBMS.POSTGRESQL) {
-        	if (content.getClass().getName().endsWith(".PGobject")) {
-        		// PostgreSQL bit values
-        		return "B'" + content + "'";
+        	if (content.getClass().getSimpleName().equals("PGobject")) {
+    			try {
+    				if (pgObjectGetType == null) {
+						pgObjectGetType = content.getClass().getMethod("getType");
+	        		}
+	        		if ("varbit".equalsIgnoreCase((String) pgObjectGetType.invoke(content))) {
+		        		// PostgreSQL bit values
+		        		return "B'" + content + "'";
+	        		}
+	        	    return "'" + Configuration.forDbms(session).convertToStringLiteral(content.toString()) + "'";
+				} catch (Exception e) {
+					throw new RuntimeException(e);
+				}
         	}
         }
         if (content instanceof UUID) {
