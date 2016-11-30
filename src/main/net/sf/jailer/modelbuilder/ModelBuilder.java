@@ -183,7 +183,7 @@ public class ModelBuilder {
 	            			columnPerTable.put(table, columns);
 	            			columnsDefinition.append(CsvFile.encodeCell(table.getName()) + "; ");
 	            			for (Column c: columns) {
-	            				columnsDefinition.append(CsvFile.encodeCell(c.toSQL(null) + (c.isIdentityColumn? " identity" : "")) + "; ");
+	            				columnsDefinition.append(CsvFile.encodeCell(c.toSQL(null) + (c.isIdentityColumn? " identity" : "") + (c.isVirtual? " virtual" : "")) + "; ");
 	            			}
 	            			columnsDefinition.append("\n");
 	            			break;

@@ -205,6 +205,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<property name="dropTablePrefix" value="DROP TABLE SESSION." />
 				</bean>
 			</property>
+			<property name="virtualColumnsQuery" value="SELECT TABNAME, COLNAME from syscat.columns WHERE TABSCHEMA='${SCHEMA}' AND GENERATED='A'" />
 		</bean>
 
 		<!-- for Oracle -->
@@ -257,6 +258,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 				</bean>
 			</property>
 			<property name="useInlineViewsInDataBrowser" value="false" />
+			<property name="virtualColumnsQuery" value="SELECT TABLE_NAME, COLUMN_NAME FROM ALL_TAB_COLS WHERE OWNER = '${SCHEMA}' AND VIRTUAL_COLUMN = 'YES'" />
 		</bean>
 		
 		<!-- for PostgreSQL -->
@@ -422,7 +424,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 				</bean>
 			</property>
 			-->
-			
+			<property name="virtualColumnsQuery" value="SELECT sysobjects.name AS TableName, syscolumns.name AS ColumnName FROM syscolumns JOIN sysobjects ON syscolumns.id = sysobjects.id AND sysobjects.xtype = 'U' WHERE syscolumns.iscomputed = 1" />
 		</bean>
 		
 		<!-- for MySQL -->
@@ -481,6 +483,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<constructor-arg value="script/mysql/update_statistics.sql" />
 				</bean>
 			</property>
+			<property name="virtualColumnsQuery" value="SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '${SCHEMA}' AND EXTRA LIKE '%VIRTUAL%'" />
 		</bean>
 		
 		<!-- for Derby -->
@@ -645,6 +648,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                </map>
             </property>
             <property name="useInlineViewsInDataBrowser" value="false" />
+            <property name="virtualColumnsQuery" value="SELECT TABLE_NAME, COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='${SCHEMA}' AND IS_COMPUTED" />
         </bean>
 	</util:list>
 	

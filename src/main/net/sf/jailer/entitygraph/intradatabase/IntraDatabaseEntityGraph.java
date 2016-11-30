@@ -446,7 +446,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		boolean first = true;
 
 		for (Column c : table.getColumns()) {
-			if (Configuration.forDbms(session).exportBlocks.contains(c.type)) {
+			if (c.isVirtualOrBlocked(session)) {
 				continue;
 			}
 			if (!first) {
