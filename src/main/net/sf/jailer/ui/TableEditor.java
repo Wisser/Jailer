@@ -98,12 +98,14 @@ public class TableEditor extends javax.swing.JDialog {
 				columnLength.setText(element.column.length > 0? Integer.toString(element.column.length) : "");
 				columnPrec.setText(element.column.precision >= 0? Integer.toString(element.column.precision) : "");
 				columnIsIdentity.setSelected(element.column.isIdentityColumn);
+				columnIsVirtual.setSelected(element.column.isVirtual);
 			} else {
 				columnName.setText("");
 				columnType.setText("");
 				columnLength.setText("");
 				columnPrec.setText("");
 				columnIsIdentity.setSelected(false);
+				columnIsVirtual.setSelected(false);
 			}
 			primaryKey1.setSelected(element.isPk);
 			return columnDetailsPanel;
@@ -152,6 +154,7 @@ public class TableEditor extends javax.swing.JDialog {
 			}
 			Column c = new Column(name, type, length, prec);
 			c.isIdentityColumn = columnIsIdentity.isSelected();
+			c.isVirtual = columnIsVirtual.isSelected();
 			element.column = c;
 			element.isPk = primaryKey1.isSelected();
 		}
@@ -238,6 +241,7 @@ public class TableEditor extends javax.swing.JDialog {
         columnLength = new javax.swing.JTextField();
         columnPrec = new javax.swing.JTextField();
         columnIsIdentity = new javax.swing.JCheckBox();
+        columnIsVirtual = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         nameField = new javax.swing.JTextField();
@@ -305,14 +309,14 @@ public class TableEditor extends javax.swing.JDialog {
         jLabel9.setText("Type  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         columnDetailsPanel.add(jLabel9, gridBagConstraints);
 
         jLabel10.setText("Length  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         columnDetailsPanel.add(jLabel10, gridBagConstraints);
 
@@ -345,7 +349,7 @@ public class TableEditor extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 7;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 0);
@@ -374,7 +378,7 @@ public class TableEditor extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridy = 8;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 0);
@@ -416,9 +420,19 @@ public class TableEditor extends javax.swing.JDialog {
         gridBagConstraints.gridy = 5;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(1, 0, 4, 0);
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 0);
         columnDetailsPanel.add(columnIsIdentity, gridBagConstraints);
         columnIsIdentity.getAccessibleContext().setAccessibleName("");
+
+        columnIsVirtual.setText(" virtual");
+        columnIsVirtual.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 4, 0);
+        columnDetailsPanel.add(columnIsVirtual, gridBagConstraints);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Table");
@@ -582,7 +596,7 @@ public class TableEditor extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
 	private String toSql(Column column) {
-		return column.toSQL(null) + (column.isIdentityColumn? " identity" : "");
+		return column.toSQL(null) + (column.isIdentityColumn? " identity" : "") + (column.isVirtual? " virtual" : "");
 	}
 
     private void excludeFromDeletionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_excludeFromDeletionActionPerformed
@@ -843,6 +857,7 @@ public class TableEditor extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel columnDetailsPanel;
     private javax.swing.JCheckBox columnIsIdentity;
+    private javax.swing.JCheckBox columnIsVirtual;
     private javax.swing.JTextField columnLength;
     private javax.swing.JTextField columnName;
     private javax.swing.JTextField columnPrec;

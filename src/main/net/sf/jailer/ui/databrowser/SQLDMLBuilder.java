@@ -73,6 +73,9 @@ public class SQLDMLBuilder {
 		int i = 0;
 		CellContentConverter cellContentConverter = new CellContentConverter(null, session);
 		for (Column column : table.getColumns()) {
+			if (column.isVirtualOrBlocked(session)) {
+				continue;
+			}
 			String name = quoting.quote(column.name);
 			String value = getSQLLiteral(row.values[i++], cellContentConverter);
 			if (value == null) {
@@ -130,6 +133,9 @@ public class SQLDMLBuilder {
 		int i = 0;
 		CellContentConverter cellContentConverter = new CellContentConverter(null, session);
 		for (Column column : table.getColumns()) {
+			if (column.isVirtualOrBlocked(session)) {
+				continue;
+			}
 			String name = quoting.quote(column.name);
 			String value = getSQLLiteral(row.values[i++], cellContentConverter);
 			if (value == null) {

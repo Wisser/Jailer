@@ -92,7 +92,7 @@ public class Configuration {
 	/**
      * Set of type names for which no data must be exported.
      */
-    public Set<String> exportBlocks = new HashSet<String>();
+    private Set<String> exportBlocks = new HashSet<String>();
     
     /**
      * <code>true</code> if DBMS supports identity-type (MS-SQL)
@@ -116,7 +116,23 @@ public class Configuration {
 	public String rowidName = null;
 	public Boolean supportsSchemasInIndexDefinitions = null;
 	public boolean useInlineViewsInDataBrowser = true;
+	public String virtualColumnsQuery = null;
 	
+	
+	/**
+	 * @return the virtualColumnsQuery
+	 */
+	public String getVirtualColumnsQuery() {
+		return virtualColumnsQuery;
+	}
+
+	/**
+	 * @param virtualColumnsQuery the virtualColumnsQuery to set
+	 */
+	public void setVirtualColumnsQuery(String virtualColumnsQuery) {
+		this.virtualColumnsQuery = virtualColumnsQuery;
+	}
+
 	/**
 	 * @return the useInlineViewsInDataBrowser
 	 */
@@ -321,6 +337,10 @@ public class Configuration {
         return defaultConfiguration;
 	}
 
+	public Set<String> getExportBlocks() {
+		return exportBlocks;
+	}
+	
 	public void setExportBlocks(Set<String> exportBlocks) {
 		this.exportBlocks = exportBlocks;
 	}

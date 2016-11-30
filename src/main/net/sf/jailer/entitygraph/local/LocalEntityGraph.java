@@ -907,7 +907,7 @@ public class LocalEntityGraph extends EntityGraph {
     	boolean first = true;
     	
     	for (Column c: table.getColumns()) {
-    		if (Configuration.forDbms(localSession).exportBlocks.contains(c.type)) {
+    		if (c.isVirtualOrBlocked(localSession)) {
     			continue;
     		}
     		if (!first) {

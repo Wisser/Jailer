@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import net.sf.jailer.Configuration;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -48,11 +50,16 @@ public class Column {
      * The precision (for DECIMAL, NUMBER ...) or <code>-1</code> if precision is not variable.
      */
     public final int precision;
-    
+
     /**
      * <code>true</code> if column is identity column.
      */
     public boolean isIdentityColumn = false;
+
+    /**
+     * <code>true</code> if column is virtual.
+     */
+    public boolean isVirtual = false;
     
     /**
      * SQL Expression for server-side column data filtering.
@@ -124,11 +131,21 @@ public class Column {
     	if (!normalizedcolumnDeclaration.equals(columnDeclaration)) {
     		columnDeclaration = normalizedcolumnDeclaration + " identity";
     	}
+    	normalizedcolumnDeclaration = columnDeclaration.replaceFirst("(\\(\\))? +[vV][iI][rR][tT][uU][aA][lL]", "");
+    	if (!normalizedcolumnDeclaration.equals(columnDeclaration)) {
+    		columnDeclaration = normalizedcolumnDeclaration + " virtual";
+    	}
     	
     	boolean isIdent = false;
     	if (columnDeclaration.toLowerCase().endsWith(" identity")) {
     		isIdent = true;
     		columnDeclaration = columnDeclaration.substring(0, columnDeclaration.length() - 9).trim();
+    	}
+
+    	boolean isVirtual = false;
+    	if (columnDeclaration.toLowerCase().endsWith(" virtual")) {
+    		isVirtual = true;
+    		columnDeclaration = columnDeclaration.substring(0, columnDeclaration.length() - 8).trim();
     	}
     	
     	Character quote = null;
@@ -182,6 +199,7 @@ public class Column {
 	    }
 	    Column column = new Column(name, type, size, precision);
 	    column.isIdentityColumn = isIdent;
+	    column.isVirtual = isVirtual;
 	    return column;
     }
     
@@ -234,5 +252,15 @@ public class Column {
     public String toString() {
         return toSQL(null);
     }
+
+    /**
+     * Returns <code>true</code> iff this column cannot be updated.
+     * 
+     * @param session the session
+     * @return <code>true</code> iff this column cannot be updated
+     */
+	public boolean isVirtualOrBlocked(Session session) {
+		return isVirtual || Configuration.forDbms(session).getExportBlocks().contains(type);
+	}
 
 }

@@ -35,6 +35,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -938,6 +939,30 @@ public class Session {
 			}
 		}
 		return inlineViewStyle;
+	}
+	
+	private Map<String, Object> sessionProperty = Collections.synchronizedMap(new HashMap<String, Object>());
+	
+	/**
+	 * Sets a session property.
+	 * 
+	 * @param owner the class that owns the property
+	 * @param name name of the property
+	 * @param property value of the property
+	 */
+	public void setSessionProperty(Class<?> owner, String name, Object property) {
+		sessionProperty.put(owner.getName() + "." + name, property);
+	}
+	
+	/**
+	 * Gets a session property.
+	 * 
+	 * @param owner the class that owns the property
+	 * @param name name of the property
+	 * @return value of the property
+	 */
+	public Object getSessionProperty(Class<?> owner, String name) {
+		return sessionProperty.get(owner.getName() + "." + name);
 	}
 	
 }

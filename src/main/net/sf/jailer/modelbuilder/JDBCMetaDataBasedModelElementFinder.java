@@ -42,6 +42,7 @@ import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CancellationHandler;
+import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
@@ -518,8 +519,10 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     		defaultSchema = getDefaultSchema(session, session.dbUser);
     		_log.info("default schema is '" + defaultSchema + "'");
     	}
-    	_log.info("getting columns for " + table.getOriginalSchema(defaultSchema) + "." + quoting.unquote(table.getUnqualifiedName()));
-    	ResultSet resultSet = getColumns(session, metaData, quoting.unquote(table.getOriginalSchema(defaultSchema)), quoting.unquote(table.getUnqualifiedName()), "%");
+    	String schemaName = quoting.unquote(table.getOriginalSchema(defaultSchema));
+    	String tableName = quoting.unquote(table.getUnqualifiedName());
+		_log.info("getting columns for " + table.getOriginalSchema(defaultSchema) + "." + tableName);
+		ResultSet resultSet = getColumns(session, metaData, schemaName, tableName, "%");
     	_log.info("done");
     	while (resultSet.next()) {
             String colName = quoting.quote(resultSet.getString(4));
@@ -565,7 +568,48 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
             	precision = -1;
             }
             _log.debug("column info: '" + colName + "' '" + sqlType + "' " + type + " '" + resultSet.getString(6) + "'");
-            columns.add(new Column(colName, sqlType, filterLength(length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), precision));
+            Column column = new Column(colName, sqlType, filterLength(length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), precision);
+			Boolean isVirtual = null;
+            if (!Boolean.FALSE.equals(session.getSessionProperty(getClass(), "JDBC4Supported"))) {
+	            try {
+		            String virtual = resultSet.getString(24);
+		            if (virtual != null) {
+		            	isVirtual = "YES".equalsIgnoreCase(virtual);
+		            }
+				} catch (Exception e) {
+					session.setSessionProperty(getClass(), "JDBC4Supported", false);
+				}
+			}
+            if (isVirtual == null) {
+            	@SuppressWarnings("unchecked")
+				Set<Pair<String, String>> virtualColumns = (Set<Pair<String, String>>) session.getSessionProperty(getClass(), "virtualColumns" + schemaName);
+            	if (virtualColumns == null) {
+            		virtualColumns = new HashSet<Pair<String,String>>();
+            		String virtualColumnsQuery = Configuration.forDbms(session).virtualColumnsQuery;
+            		if (virtualColumnsQuery != null) {
+            			try {
+            				session.setSilent(true);
+            				final Set<Pair<String, String>> finalVirtualColumns = virtualColumns; 
+            				session.executeQuery(virtualColumnsQuery.replace("${SCHEMA}", schemaName), new Session.AbstractResultSetReader() {
+								@Override
+								public void readCurrentRow(ResultSet resultSet) throws SQLException {
+									finalVirtualColumns.add(new Pair<String, String>(resultSet.getString(1), resultSet.getString(2)));
+								}
+							});
+            			} catch (Exception e) {
+            				// ignore
+            			} finally {
+            				session.setSilent(false);
+            			}
+            		}
+            		session.setSessionProperty(getClass(), "virtualColumns" + schemaName, virtualColumns);
+            	}
+        		isVirtual = virtualColumns.contains(new Pair<String, String>(tableName, resultSet.getString(4)));
+            }
+            if (isVirtual != null) {
+            	column.isVirtual = isVirtual;
+            }
+            columns.add(column);
         }
         resultSet.close();
         _log.info("found columns for table " + table.getName());
