@@ -97,7 +97,7 @@ public class LocalEntityGraph extends EntityGraph {
 				value = cellContentConverter.toSql(value);
 			} else if (value instanceof String && isNUPKColumn(columnNames[i - 1])) {
 				String prefix = Configuration.forDbms(remoteSession).getNcharPrefix();
-				if (prefix != null) {
+				if (prefix != null && value != null && !value.toString().startsWith(prefix)) {
 					value = prefix + value;
 				}
 			}
