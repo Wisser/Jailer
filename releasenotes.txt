@@ -1,4 +1,6 @@
 6.2
+  - Added possibility to specify the target DBMS for a generated SQL script.
+    This allows to export data and import it into a different DBMS.
   - Support for virtual columns.
 
 6.1.3

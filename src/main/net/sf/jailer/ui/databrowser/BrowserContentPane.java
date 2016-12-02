@@ -2551,7 +2551,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								}
 							}
 						} else {
-							CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session);
+							CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, Configuration.forDbms(session));
 							Object o = cellContentConverter.getObject(resultSet, i);
 							boolean isPK = false;
 							if (pkColumnNames.isEmpty()) {

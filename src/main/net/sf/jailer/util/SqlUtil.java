@@ -262,8 +262,6 @@ public class SqlUtil {
     	JAILER_MH_TABLES.add(SQLDialect.CONFIG_TABLE_);
     }
 	
-	public static DBMS dbms;
-	
     /**
      * Gets type of column from result-set.
      * 

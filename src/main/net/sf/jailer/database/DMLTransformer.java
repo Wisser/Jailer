@@ -140,6 +140,11 @@ public class DMLTransformer extends AbstractResultSetReader {
     private final Session session;
 
     /**
+     * Configuration of the target DBMS.
+     */
+    private final Configuration targetDBMSConfiguration;
+
+    /**
      * SQL Dialect.
      */
 	private final SQLDialect currentDialect;
@@ -153,6 +158,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 		private final boolean upsertOnly;
 		private final OutputStreamWriter scriptFileWriter;
 		private final Session session;
+	    private final Configuration targetDBMSConfiguration;
 
 	    /**
 	     * Constructor.
@@ -161,11 +167,12 @@ public class DMLTransformer extends AbstractResultSetReader {
 	     * @param maxBodySize maximum length of SQL values list (for generated inserts)
 	     * @param upsertOnly use 'upsert' statements for all entities
 	     */
-		public Factory(OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, Session session) {
+		public Factory(OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, Session session, Configuration targetDBMSConfiguration) {
 	        this.maxBodySize = maxBodySize;
 	        this.upsertOnly = upsertOnly;
 	        this.scriptFileWriter = scriptFileWriter;
 	        this.session = session;
+	        this.targetDBMSConfiguration = targetDBMSConfiguration;
     	}
 
 		/**
@@ -177,7 +184,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 		 */
 		@Override
 		public ResultSetReader create(Table table) throws SQLException {
-			return new DMLTransformer(table, scriptFileWriter, upsertOnly, maxBodySize, session);
+			return new DMLTransformer(table, scriptFileWriter, upsertOnly, maxBodySize, session, targetDBMSConfiguration);
 		}
     };
 
@@ -188,18 +195,21 @@ public class DMLTransformer extends AbstractResultSetReader {
      * @param scriptFileWriter the file to write to
      * @param maxBodySize maximum length of SQL values list (for generated inserts)
      * @param upsertOnly use 'upsert' statements for all entities
+     * @param session the session
+     * @param targetDBMSConfiguration configuration of the target DBMS
      */
-    private DMLTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, Session session) throws SQLException {
+    private DMLTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, Session session, Configuration targetDBMSConfiguration) throws SQLException {
+        this.targetDBMSConfiguration = targetDBMSConfiguration;
         this.maxBodySize = maxBodySize;
         this.upsertOnly = upsertOnly;
         this.table = table;
         this.scriptFileWriter = scriptFileWriter;
-        this.currentDialect = Configuration.forDbms(session).getSqlDialect();
-        this.insertStatementBuilder = new StatementBuilder(currentDialect.supportsMultiRowInserts || session.dbms == DBMS.ORACLE || session.dbms == DBMS.SQLITE? maxBodySize : 1);
+        this.currentDialect = targetDBMSConfiguration.getSqlDialect();
+        this.insertStatementBuilder = new StatementBuilder(currentDialect.supportsMultiRowInserts || targetDBMSConfiguration.dbms == DBMS.ORACLE || targetDBMSConfiguration.dbms == DBMS.SQLITE? maxBodySize : 1);
         this.quoting = new Quoting(session);
         this.session = session;
         tableHasIdentityColumn = false;
-        if (Configuration.forDbms(session).isIdentityInserts()) {
+        if (targetDBMSConfiguration.isIdentityInserts()) {
         	for (Column c: table.getColumns()) {
         		if (c.isIdentityColumn) {
         			tableHasIdentityColumn = true;
@@ -225,14 +235,14 @@ public class DMLTransformer extends AbstractResultSetReader {
                 String mdColumnLabel = quoting.quote(getMetaData(resultSet).getColumnLabel(i));
                 int mdColumnType = getMetaData(resultSet).getColumnType(i);
                 
-                if ((mdColumnType == Types.BLOB || mdColumnType == Types.CLOB || mdColumnType == Types.SQLXML) && session.dbms != DBMS.SQLITE) {
+                if ((mdColumnType == Types.BLOB || mdColumnType == Types.CLOB || mdColumnType == Types.SQLXML) && targetDBMSConfiguration.dbms != DBMS.SQLITE) {
                 	tableHasLobs = true;
                 	lobColumnIndexes.add(i);
                 	lobColumns.add(mdColumnLabel);
                 	if (mdColumnType == Types.SQLXML) {
                 		emptyLobValue[i] = null;
                 	} else {
-                		Configuration c = Configuration.forDbms(session);
+                		Configuration c = targetDBMSConfiguration;
                 		emptyLobValue[i] = (mdColumnType == Types.BLOB)? c.emptyBLOBValue : c.emptyCLOBValue;
                 	}
                     if (emptyLobValue[i] == null) {
@@ -250,7 +260,7 @@ public class DMLTransformer extends AbstractResultSetReader {
             StringBuffer valueList = new StringBuffer("");
             StringBuffer namedValues = new StringBuffer("");
             boolean f = true;
-            CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session);
+            CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, targetDBMSConfiguration);
 			for (int i = 1; i <= columnCount; ++i) {
                 if (columnLabel[i] == null) {
                 	continue;
@@ -290,11 +300,11 @@ public class DMLTransformer extends AbstractResultSetReader {
                         content = null;
                     }
                     String cVal = cellContentConverter.toSql(content);
-                    if (SqlUtil.dbms == DBMS.POSTGRESQL && (content instanceof Date || content instanceof Timestamp)) {
+                    if (targetDBMSConfiguration.dbms == DBMS.POSTGRESQL && (content instanceof Date || content instanceof Timestamp)) {
                     	// explicit cast needed
                     	cVal = "timestamp " + cVal;
                     }
-                    if (SqlUtil.dbms == DBMS.POSTGRESQL) {
+                    if (targetDBMSConfiguration.dbms == DBMS.POSTGRESQL) {
                     	// explicit cast needed
                     	int mdColumnType = getMetaData(resultSet).getColumnType(i);
                     	if (mdColumnType == Types.TIME) {
@@ -454,14 +464,14 @@ public class DMLTransformer extends AbstractResultSetReader {
 	                }
                 }
             } else {
-            	if (session.dbms == DBMS.ORACLE && maxBodySize > 1) {
+            	if (targetDBMSConfiguration.dbms == DBMS.ORACLE && maxBodySize > 1) {
             		String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
 	                String item = "\n Select " + valueList + " From DUAL";
 	                if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
 	                    writeToScriptFile(insertStatementBuilder.build(), true);
 	                }
 	                insertStatementBuilder.append(insertSchema, item, " Union all ", ";\n");
-            	} else if (session.dbms == DBMS.SQLITE && maxBodySize > 1) {
+            	} else if (targetDBMSConfiguration.dbms == DBMS.SQLITE && maxBodySize > 1) {
             		String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
 	                String item = "\n Select " + valueList + " ";
 	                if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
@@ -524,7 +534,7 @@ public class DMLTransformer extends AbstractResultSetReader {
      */
     private void exportLobs(Table table, ResultSet resultSet) throws IOException, SQLException {
     	synchronized (scriptFileWriter) {
-            CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session);
+            CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, targetDBMSConfiguration);
 	    	for (int i = 0; i < lobColumnIndexes.size(); ++i) {
 				Object lob = resultSet.getObject(lobColumnIndexes.get(i));
 				Map<String, String> val = new HashMap<String, String>();
@@ -684,7 +694,7 @@ public class DMLTransformer extends AbstractResultSetReader {
         			identityInsertTable = table;
         		}
         	}
-        	if (wrap && SqlUtil.dbms == DBMS.ORACLE) {
+        	if (wrap && targetDBMSConfiguration.dbms == DBMS.ORACLE) {
        			scriptFileWriter.write(SqlUtil.splitDMLStatement(content, 2400));
         	} else {
         		scriptFileWriter.write(content);

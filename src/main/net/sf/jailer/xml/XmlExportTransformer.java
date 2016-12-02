@@ -145,7 +145,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	 */
 	public void readCurrentRow(ResultSet resultSet) throws SQLException {
 		try {
-			writeEntity(table, null, resultSet, new ArrayList<String>(), getCellContentConverter(resultSet, session));
+			writeEntity(table, null, resultSet, new ArrayList<String>(), getCellContentConverter(resultSet, session, Configuration.forDbms(session)));
 		} catch (SAXException e) {
 			throw new RuntimeException(e);
 		} catch (ParserConfigurationException e) {
@@ -206,7 +206,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 							ResultSetReader reader = new ResultSetReader() {
 								public void readCurrentRow(ResultSet resultSet) throws SQLException {
 									try {
-										writeEntity(sa.destination, sa, resultSet, ancestors, getCellContentConverter(resultSet, session));
+										writeEntity(sa.destination, sa, resultSet, ancestors, getCellContentConverter(resultSet, session, Configuration.forDbms(session)));
 									} catch (SAXException e) {
 										throw new RuntimeException(e);
 									} catch (ParserConfigurationException e) {

@@ -21,13 +21,26 @@ package net.sf.jailer.database;
  * @author Ralf Wisser
  */
 public enum DBMS {
-	ORACLE,
-	DB2,
-	MySQL,
-	POSTGRESQL,
-	SYBASE,
-	SQLITE,
-	HSQL,
+	UNKNOWN(" "),
+
+	ORACLE("Oracle"),
+	MSSQL("MS SQL Server"),
+	DB2("IBM DB2"),
+	MySQL("MySQL"),
+	POSTGRESQL("PostgreSQL"),
+	SQLITE("SQLite"),
+	HSQL("HSQLDB"),
+	H2("H2"),
+	SYBASE("Sybase"),
+	INFORMIX("Informix"),
+	CLOADSCAPE("Cloudscape"),
+	FIREBIRD("Firebird"),
+	DERBY("Derby");
 	
-	UNKNOWN, 
+	public final String displayName;
+	
+	DBMS(String displayName) {
+		this.displayName = displayName;
+	}
+	
 }

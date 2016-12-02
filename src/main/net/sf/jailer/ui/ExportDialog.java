@@ -16,6 +16,7 @@
 package net.sf.jailer.ui;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
@@ -34,10 +35,12 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
@@ -47,6 +50,7 @@ import javax.swing.event.DocumentListener;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.DDLCreator;
 import net.sf.jailer.ScriptFormat;
+import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.datamodel.Association;
@@ -124,6 +128,7 @@ public class ExportDialog extends javax.swing.JDialog {
 	private final String password;
 	private final String subjectCondition;
 	private final String settingsContext;
+	private final DBMS sourceDBMS;
 
 	private String[] schemaComboboxModel;
 
@@ -140,6 +145,7 @@ public class ExportDialog extends javax.swing.JDialog {
         this.initialArgs = new ArrayList<String>(initialArgs);
         this.password = password;
         this.settingsContext = session.dbUrl;
+        this.sourceDBMS = Configuration.forDbms(session).dbms;
         initComponents();
 
         if (!showCmd) {
@@ -359,6 +365,8 @@ public class ExportDialog extends javax.swing.JDialog {
            }
         });
 
+		initTargetDBMS(session);
+		
 		updateCLIArea();
         
         pack();
@@ -382,7 +390,36 @@ public class ExportDialog extends javax.swing.JDialog {
         }
 	}
 
-    private static String lastWorkingTableSchema = null;
+    @SuppressWarnings({ "unchecked", "serial" })
+	private void initTargetDBMS(Session session) {
+    	if (scriptFormat == ScriptFormat.SQL) {
+    		targetDBMSComboBox.setModel(new DefaultComboBoxModel<DBMS>(DBMS.values()));
+    		targetDBMSComboBox.setRenderer(new DefaultListCellRenderer() {
+    			@SuppressWarnings("rawtypes")
+				@Override
+                public Component getListCellRendererComponent(JList list,
+                        Object value, int index, boolean isSelected,
+                        boolean cellHasFocus) {
+                    return super.getListCellRendererComponent(list,
+                            value instanceof DBMS? ((DBMS) value).displayName : value, index, isSelected,
+                            cellHasFocus);
+                }
+    		});
+    		targetDBMSComboBox.setSelectedItem(sourceDBMS);
+	    	targetDBMSComboBox.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent arg0) {
+			        updateCLIArea();				
+				}
+	    	});
+	    	targetDBMSComboBox.setMaximumRowCount(20);
+    	} else {
+    		targetDBMSLabel.setVisible(false);
+    		targetDBMSComboBox.setVisible(false);
+    	}
+	}
+
+	private static String lastWorkingTableSchema = null;
     
     @SuppressWarnings("unchecked")
 	private void initWorkingTableSchemaBox(Session session) {
@@ -812,10 +849,12 @@ public class ExportDialog extends javax.swing.JDialog {
         additSubsLabelTitel = new javax.swing.JLabel();
         useRowIds = new javax.swing.JCheckBox();
         jLabel10 = new javax.swing.JLabel();
-        workingTableSchemaComboBox = new net.sf.jailer.ui.JComboBox();
+        workingTableSchemaComboBox = new javax.swing.JComboBox();
         confirmInsert = new javax.swing.JCheckBox();
         jLabel17 = new javax.swing.JLabel();
         toLabel = new javax.swing.JLabel();
+        targetDBMSComboBox = new javax.swing.JComboBox();
+        targetDBMSLabel = new javax.swing.JLabel();
         jPanel7 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -1363,6 +1402,22 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(toLabel, gridBagConstraints);
 
+        targetDBMSComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 41;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        jPanel1.add(targetDBMSComboBox, gridBagConstraints);
+
+        targetDBMSLabel.setText(" Target DBMS"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 41;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
+        jPanel1.add(targetDBMSLabel, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -1583,6 +1638,16 @@ public class ExportDialog extends javax.swing.JDialog {
     	if (!useRowIds.isSelected()) {
     		args.add("-no-rowid");
     	}
+    	if (scriptFormat == ScriptFormat.SQL) {
+    		Object selectedItem = targetDBMSComboBox.getSelectedItem();
+    		if (selectedItem instanceof DBMS) {
+				DBMS targetDBMS = (DBMS) selectedItem;
+	    		if (targetDBMS != null && targetDBMS != DBMS.UNKNOWN && targetDBMS != sourceDBMS) {
+	    			args.add("-target-dbms");
+	    			args.add(targetDBMS.name());
+	    		}
+    		}
+    	}
     	try {
     		int nt = Integer.parseInt(threads.getText().trim());
     		if (nt > 0) {
@@ -1800,13 +1865,15 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JCheckBox sortedCheckBox;
     public javax.swing.JPanel sourceSchemaMappingPanel;
     private javax.swing.JLabel subjectTable;
+    private javax.swing.JComboBox targetDBMSComboBox;
+    private javax.swing.JLabel targetDBMSLabel;
     private javax.swing.JTextField threads;
     private javax.swing.JLabel toLabel;
     public javax.swing.JCheckBox unicode;
     private javax.swing.JCheckBox upsertCheckbox;
     public javax.swing.JCheckBox useRowIds;
     private javax.swing.JTextField where;
-    private net.sf.jailer.ui.JComboBox workingTableSchemaComboBox;
+    private javax.swing.JComboBox workingTableSchemaComboBox;
     // End of variables declaration//GEN-END:variables
     
     private Icon loadIcon;

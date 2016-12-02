@@ -1375,6 +1375,10 @@ public class DataBrowser extends javax.swing.JFrame {
 			UIUtil.showException(null, "Illegal arguments", e);
 		}
 		try {
+			System.setProperty("db2.jcc.charsetDecoderEncoder", "3");
+		} catch (Exception e) {
+		}
+		try {
 			// create initial data-model files
 			File file = new File(DataModel.getDatamodelFolder());
 			if (!file.exists()) {
