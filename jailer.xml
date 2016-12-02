@@ -105,7 +105,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:informix.*" />
 
-			<property name="dbms" value="Informix"/>
+			<property name="dbms" value="INFORMIX"/>
 			
 			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
 			<property name="tableProperties" value="" />
@@ -160,7 +160,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:db2.*" />
 
-			<property name="dbms" value="IBM DB2"/>
+			<property name="dbms" value="DB2"/>
 			
 			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
 			<property name="tableProperties" value="NOT LOGGED INITIALLY" />
@@ -212,7 +212,8 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:oracle.*" />
 
-			<property name="dbms" value="Oracle"/>
+			<property name="dbms" value="ORACLE"/>
+			
 			<property name="sqlDialect">
 				<bean class="net.sf.jailer.database.SQLDialect">
 					<property name="supportsMultiRowInserts" value="false"/>
@@ -265,7 +266,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:postgres.*" />
 
-			<property name="dbms" value="PostgreSQL"/>
+			<property name="dbms" value="POSTGRESQL"/>
 			
 			<property name="supportsSchemasInIndexDefinitions" value="false"/>
 			
@@ -317,7 +318,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:cloudscape.*" />
 
-			<property name="dbms" value="Cloudscape"/>
+			<property name="dbms" value="CLOADSCAPE"/>
 			
 			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
 			<property name="tableProperties" value="" />
@@ -341,7 +342,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:firebirdsql.*" />
 
-			<property name="dbms" value="Firebird"/>
+			<property name="dbms" value="FIREBIRD"/>
 			
 			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
 			<property name="tableProperties" value="" />
@@ -371,7 +372,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<property name="urlPattern"
 				value="jdbc:sqlserver.*|jdbc:inetdae.*|jdbc:JTurbo.*|jdbc:weblogic:mssqlserver.*|jdbc:jtds:sqlserver.*" />
 
-			<property name="dbms" value="Microsoft SQL Server"/>
+			<property name="dbms" value="MSSQL"/>
 			
 			<property name="supportsSchemasInIndexDefinitions" value="false"/>
 			
@@ -490,7 +491,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:derby.*" />
 
-			<property name="dbms" value="Derby"/>
+			<property name="dbms" value="DERBY"/>
 			
 			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
 			<property name="tableProperties" value="" />
@@ -514,7 +515,8 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:sybase.*|jdbc:jtds:sybase.*" />
 
-			<property name="dbms" value="Sybase"/>
+			<property name="dbms" value="SYBASE"/>
+			
 			<property name="sqlDialect">
 				<bean class="net.sf.jailer.database.SQLDialect">
 					<property name="supportsMultiRowInserts" value="true"/>
@@ -558,7 +560,8 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:sqlite.*" />
 			
-			<property name="dbms" value="SQLite"/>
+			<property name="dbms" value="SQLITE"/>
+			
 			<property name="sqlDialect">
 				<bean class="net.sf.jailer.database.SQLDialect">
 					<property name="supportsMultiRowInserts" value="false"/>
@@ -622,6 +625,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			</property>
 			
 			<property name="dbms" value="H2"/>
+			
 			<property name="sqlDialect">
 				<bean class="net.sf.jailer.database.SQLDialect">
 					<property name="supportsMultiRowInserts" value="true"/>

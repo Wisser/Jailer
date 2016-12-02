@@ -58,7 +58,12 @@ public class DeletionTransformer extends AbstractResultSetReader {
      * Current session;
      */
     private final Session session;
-    
+
+    /**
+     * Configuration of the target DBMS.
+     */
+    private final Configuration targetDBMSConfiguration;
+
     /**
      * For quoting of column names.
      */
@@ -72,6 +77,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
 	    private final int maxBodySize;
 		private final OutputStreamWriter scriptFileWriter;
 		private final Session session;
+		private final Configuration targetDBMSConfiguration;
 
 		/**
 	     * Constructor.
@@ -79,11 +85,13 @@ public class DeletionTransformer extends AbstractResultSetReader {
 	     * @param table the table to read from
 	     * @param scriptFileWriter the file to write to
 	     * @param maxBodySize maximum length of SQL values list (for generated deletes)
+	     * @param targetDBMSConfiguration configuration of the target DBMS
 	     */
-		public Factory(OutputStreamWriter scriptFileWriter, int maxBodySize, Session session) {
+		public Factory(OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, Configuration targetDBMSConfiguration) {
 	        this.maxBodySize = maxBodySize;
 	        this.scriptFileWriter = scriptFileWriter;
 	        this.session = session;
+	        this.targetDBMSConfiguration = targetDBMSConfiguration;
     	}
 
 		/**
@@ -95,7 +103,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
 		 */
 		@Override
 		public ResultSetReader create(Table table) throws SQLException {
-			return new DeletionTransformer(table, scriptFileWriter, maxBodySize, session);
+			return new DeletionTransformer(table, scriptFileWriter, maxBodySize, session, targetDBMSConfiguration);
 		}
     };
 
@@ -105,13 +113,16 @@ public class DeletionTransformer extends AbstractResultSetReader {
      * @param table the table to read from
      * @param scriptFileWriter the file to write to
      * @param maxBodySize maximum length of SQL values list (for generated deletes)
+     * @param session the session
+     * @param targetDBMSConfiguration configuration of the target DBMS
      */
-    private DeletionTransformer(Table table, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session) throws SQLException {
+    private DeletionTransformer(Table table, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, Configuration targetDBMSConfiguration) throws SQLException {
         this.table = table;
         this.scriptFileWriter = scriptFileWriter;
         deleteStatementBuilder = new StatementBuilder(maxBodySize);
         this.quoting = new Quoting(session);
         this.session = session;
+        this.targetDBMSConfiguration = targetDBMSConfiguration;
         
         if (table.primaryKey.getColumns().isEmpty()) {
         	throw new RuntimeException("Unable to delete from table \"" + table.getName() + "\".\n" +
@@ -126,10 +137,10 @@ public class DeletionTransformer extends AbstractResultSetReader {
      */
     public void readCurrentRow(ResultSet resultSet) throws SQLException {
         try {
-        	final SQLDialect currentDialect = Configuration.forDbms(session).getSqlDialect();
+        	final SQLDialect currentDialect = targetDBMSConfiguration.getSqlDialect();
             
-        	CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session);
-			if (SqlUtil.dbms == DBMS.SYBASE || (currentDialect != null && !currentDialect.supportsInClauseForDeletes)) {
+        	CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, targetDBMSConfiguration);
+			if (targetDBMSConfiguration.dbms == DBMS.SYBASE || (currentDialect != null && !currentDialect.supportsInClauseForDeletes)) {
         		String deleteHead = "Delete from " + qualifiedTableName(table) + " Where (";
                 boolean firstTime = true;
                 String item = "";
@@ -196,7 +207,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
      */
     private void writeToScriptFile(String content) throws IOException {
         synchronized (scriptFileWriter) {
-        	if (SqlUtil.dbms == DBMS.ORACLE) {
+        	if (targetDBMSConfiguration.dbms == DBMS.ORACLE) {
        			scriptFileWriter.write(SqlUtil.splitDMLStatement(content, 2400));
         	} else {
         		scriptFileWriter.write(content);

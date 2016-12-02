@@ -348,10 +348,10 @@ public class RemoteEntityGraph extends EntityGraph {
         }
         
         String insert = "Insert into " + SQLDialect.dmlTableReference(ENTITY, session) + " (r_entitygraph, " + upkColumnList(table, null) + ", birthday, type" + (source == null || !explain? "" : ", association, PRE_TYPE, " + upkColumnList(source, "PRE_"))  + ") " + select;
-        if (SqlUtil.dbms == DBMS.SYBASE) session.execute("set forceplan on ");
+        if (session.dbms == DBMS.SYBASE) session.execute("set forceplan on ");
         long rc = session.executeUpdate(insert);
         totalRowcount += rc;
-        if (SqlUtil.dbms == DBMS.SYBASE) session.execute("set forceplan off ");
+        if (session.dbms == DBMS.SYBASE) session.execute("set forceplan off ");
         return rc;
     }
 
@@ -776,7 +776,7 @@ public class RemoteEntityGraph extends EntityGraph {
      */
     public void readDependentEntities(Table table, Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, ResultSetReader reader, Map<String, Integer> typeCache, String selectionSchema, String originalPKAliasPrefix) throws SQLException {
     	String select;
-    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, session);
+    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, session, Configuration.forDbms(session));
     	if (originalPKAliasPrefix != null) {
         	StringBuffer selectOPK = new StringBuffer();
         	List<Column> pkColumns = rowIdSupport.getPrimaryKey(table).getColumns();
@@ -813,7 +813,7 @@ public class RemoteEntityGraph extends EntityGraph {
      */
     public void markDependentEntitiesAsTraversed(Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, Map<String, Integer> typeCache) throws SQLException {
     	String update;
-    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, session);
+    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, session, Configuration.forDbms(session));
     	if (session.dbms == DBMS.SYBASE) {
     		update = "Update " + SQLDialect.dmlTableReference(DEPENDENCY, session) + " set traversed=1" +
     		 " Where " + pkEqualsEntityID(association.source, resultSet, SQLDialect.dmlTableReference(DEPENDENCY, session), "FROM_", cellContentConverter) +

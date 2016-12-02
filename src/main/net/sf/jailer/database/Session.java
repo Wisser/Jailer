@@ -43,7 +43,6 @@ import java.util.Properties;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
-import net.sf.jailer.util.SqlUtil;
 
 import org.apache.log4j.Logger;
 
@@ -142,13 +141,13 @@ public class Session {
     	 * @return meta data of resultSet
     	 * @throws SQLException 
     	 */
-    	protected CellContentConverter getCellContentConverter(ResultSet resultSet, Session session) throws SQLException {
+    	protected CellContentConverter getCellContentConverter(ResultSet resultSet, Session session, Configuration targetDBMSConfiguration) throws SQLException {
     		if (cccOwner == resultSet && cccSession == session) {
     			return cellContentConverter;
     		}
     		cccOwner = resultSet;
     		cccSession = session;
-    		cellContentConverter = new CellContentConverter(getMetaData(resultSet), session);
+    		cellContentConverter = new CellContentConverter(getMetaData(resultSet), session, targetDBMSConfiguration);
     		return cellContentConverter;
     	}
 
@@ -374,12 +373,8 @@ public class Session {
         };
         // fail fast
         Connection connection = connectionFactory.getConnection();
-        dbms = logDriverInfo(connection);
-        
-        // TODO: remove this ugly hack
-        if (!local) {
-        	SqlUtil.dbms = dbms;
-        }
+        dbms = Configuration.forDbms(this).getDbms();
+        logDriverInfo(connection);
     }
 
     /**
@@ -431,29 +426,16 @@ public class Session {
      * @param connection connection to DB
      * @return the DBMS
      */
-    private DBMS logDriverInfo(Connection connection) {
-    	DBMS dbms = DBMS.UNKNOWN;
+    private void logDriverInfo(Connection connection) {
 		try {
 			DatabaseMetaData meta = connection.getMetaData();
 			_log.info("driver name:    " + meta.getDriverName());
 			_log.info("driver version: " + meta.getDriverVersion());
-			String productName = meta.getDatabaseProductName();
-			if (productName != null) {
-				if (productName.toUpperCase().contains("ORACLE")) dbms = DBMS.ORACLE;
-				if (productName.toUpperCase().contains("DB2")) dbms = DBMS.DB2;
-				if (productName.toUpperCase().contains("POSTGRES")) dbms = DBMS.POSTGRESQL;
-				if (productName.toUpperCase().contains("MYSQL")) dbms = DBMS.MySQL;
-				if (productName.toUpperCase().contains("SQLITE")) dbms = DBMS.SQLITE;
-				if (productName.toUpperCase().contains("ADAPTIVE SERVER")) dbms = DBMS.SYBASE;
-				if (productName.toUpperCase().contains("HSQL")) dbms = DBMS.HSQL;
-				if (productName.toUpperCase().equals("ASE")) dbms = DBMS.SYBASE;
-			}
-			_log.info("DB name:        " + productName + " (" + dbms + ")");
+			_log.info("DB name:        " + meta.getDatabaseProductName() + " (" + dbms + ")");
 			_log.info("DB version:     " + meta.getDatabaseProductVersion());
 		} catch (Exception e) {
 			// ignore exceptions
 		}
-		return dbms;
 	}
 
 	/**

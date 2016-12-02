@@ -217,6 +217,9 @@ public class CommandLineParser {
     @Option(name="-format",usage="export file format: SQL, XML, DBUNIT_FLAT_XML, INTRA_DATABASE or LIQUIBASE_XML")
     public String format = "SQL";
     
+    @Option(name="-target-dbms", usage="target-DBMS: ORACLE, MSSQL, DB2, MySQL, POSTGRESQL, SYBASE, SQLITE, HSQL or H2", metaVar="<DBMS>")
+    public String targetDBMS = null;
+    
     @Option(name="-xml",usage="export entities into XML file (deprecated, use -format XML instead)")
     public boolean _asXml = false;
     

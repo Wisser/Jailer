@@ -83,7 +83,7 @@ public class ExplainTool {
                 }
                 List<String> keys = new ArrayList<String>();
                 int i = 2;
-                CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session);
+                CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, Configuration.forDbms(session));
 				for (@SuppressWarnings("unused") Column column: graph.getUniversalPrimaryKey().getColumns()) {
                     keys.add(cellContentConverter.toSql(cellContentConverter.getObject(resultSet, i++)));
                 }
@@ -145,7 +145,7 @@ public class ExplainTool {
                 }
                 associationID[0] = resultSet.getInt(2);
                 int i = 3;
-                CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session);
+                CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, Configuration.forDbms(session));
 				for (@SuppressWarnings("unused") Column column: graph.getUniversalPrimaryKey().getColumns()) {
                     preKeys.add(cellContentConverter.toSql(cellContentConverter.getObject(resultSet, i++)));
                 }

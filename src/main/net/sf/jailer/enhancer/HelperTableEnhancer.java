@@ -55,22 +55,22 @@ public class HelperTableEnhancer implements ScriptEnhancer {
 	}
 	
 	public void addComments(Writer script, ScriptType scriptType,
-			Session session, EntityGraph entityGraph,
+			Session session, Configuration targetDBMSConfiguration, EntityGraph entityGraph,
 			Set<Table> progress) throws IOException, SQLException {
 	}
 
 	public void addEpilog(Writer script, ScriptType scriptType,
-			Session session, EntityGraph entityGraph,
+			Session session, Configuration targetDBMSConfiguration, EntityGraph entityGraph,
 			Set<Table> progress) throws IOException, SQLException {
-		if (dualNeeded(progress, Configuration.forDbms(session).getSqlDialect())) {
+		if (dualNeeded(progress, targetDBMSConfiguration.getSqlDialect())) {
 			script.append("DROP TABLE " + SQLDialect.DUAL_TABLE + ";\n");
 		}
 	}
 
 	public void addProlog(Writer script, ScriptType scriptType,
-			Session session, EntityGraph entityGraph,
+			Session session, Configuration targetDBMSConfiguration, EntityGraph entityGraph,
 			Set<Table> progress) throws IOException, SQLException {
-		if (dualNeeded(progress, Configuration.forDbms(session).getSqlDialect())) {
+		if (dualNeeded(progress, targetDBMSConfiguration.getSqlDialect())) {
 			script.append("CREATE TABLE " + SQLDialect.DUAL_TABLE + "(D INTEGER);\n");
 			script.append("INSERT INTO " + SQLDialect.DUAL_TABLE + "(D) VALUES(1);\n");
 		}

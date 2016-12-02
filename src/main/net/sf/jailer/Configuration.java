@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.StatisticRenovator;
@@ -111,14 +112,27 @@ public class Configuration {
 	public String binaryPattern = "x'%s'";
 	public boolean avoidLeftJoin = false;
 	public String timestampPattern = null;
-	public String dbms = "Unknown";
 	public SQLDialect sqlDialect = new SQLDialect();
 	public String rowidName = null;
 	public Boolean supportsSchemasInIndexDefinitions = null;
 	public boolean useInlineViewsInDataBrowser = true;
 	public String virtualColumnsQuery = null;
+	public DBMS dbms = DBMS.UNKNOWN;
 	
-	
+	/**
+	 * @return the dbms
+	 */
+	public DBMS getDbms() {
+		return dbms;
+	}
+
+	/**
+	 * @param dbmsEnum the dbmsEnum to set
+	 */
+	public void setDbms(DBMS dbms) {
+		this.dbms = dbms;
+	}
+
 	/**
 	 * @return the virtualColumnsQuery
 	 */
@@ -192,20 +206,6 @@ public class Configuration {
 
 	public String rowidType = null;
 	
-	/**
-	 * @return the dbms
-	 */
-	public String getDbms() {
-		return dbms;
-	}
-
-	/**
-	 * @param dbms the dbms to set
-	 */
-	public void setDbms(String dbms) {
-		this.dbms = dbms;
-	}
-
 	/**
 	 * @return the sqlDialect
 	 */
@@ -309,7 +309,12 @@ public class Configuration {
      * Holds configurations.
      */
     private static Map<String, Configuration> perUrl = new HashMap<String, Configuration>();
-
+    
+    /**
+     * Holds configurations.
+     */
+    private static Map<DBMS, Configuration> perDBMS = new HashMap<DBMS, Configuration>();
+    
     /**
      * Gets DBMS specific configuration.
      * 
@@ -334,6 +339,30 @@ public class Configuration {
             }
         }
         perUrl.put(session.dbUrl, defaultConfiguration);
+        return defaultConfiguration;
+	}
+
+    /**
+     * Gets DBMS specific configuration.
+     * 
+     * @param dbms the DBMS
+     * @return configuration for the DBMS
+     */
+	@SuppressWarnings("unchecked")
+	public static synchronized Configuration forDbms(DBMS dbms) {
+		if (perDBMS.containsKey(dbms)) {
+			return perDBMS.get(dbms);
+		}
+        if (getContext().containsBean("dbms-configuration")) {
+            List<Configuration> cs = (List<Configuration>) getContext().getBean("dbms-configuration");  
+            for (Configuration c: cs) {
+            	if (c.dbms == dbms) {
+            		perDBMS.put(dbms, c);
+	                return c;
+            	}
+            }
+        }
+        perDBMS.put(dbms, defaultConfiguration);
         return defaultConfiguration;
 	}
 

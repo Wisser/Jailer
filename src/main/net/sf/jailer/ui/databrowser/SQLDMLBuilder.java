@@ -21,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import net.sf.jailer.Configuration;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
@@ -71,7 +72,7 @@ public class SQLDMLBuilder {
 		String sql = "Update " + table.getName() + " " + LF + "Set ";
 		boolean f = true;
 		int i = 0;
-		CellContentConverter cellContentConverter = new CellContentConverter(null, session);
+		CellContentConverter cellContentConverter = new CellContentConverter(null, session, Configuration.forDbms(session));
 		for (Column column : table.getColumns()) {
 			if (column.isVirtualOrBlocked(session)) {
 				continue;
@@ -131,7 +132,7 @@ public class SQLDMLBuilder {
 		String values = "";
 		boolean f = true;
 		int i = 0;
-		CellContentConverter cellContentConverter = new CellContentConverter(null, session);
+		CellContentConverter cellContentConverter = new CellContentConverter(null, session, Configuration.forDbms(session));
 		for (Column column : table.getColumns()) {
 			if (column.isVirtualOrBlocked(session)) {
 				continue;

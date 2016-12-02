@@ -48,6 +48,7 @@ import java.util.zip.ZipOutputStream;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
+import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.database.DeletionTransformer;
 import net.sf.jailer.database.Session;
@@ -475,6 +476,24 @@ public class Jailer {
 	}
 
 	/**
+	 * Retrieves the configuration of the target DBMS.
+	 * 
+	 * @param session the session
+	 * @return configuration of the target DBMS
+	 */
+	private Configuration targetDBMSConfiguration(Session session) {
+		String targetDBMS = CommandLineParser.getInstance().targetDBMS;
+		if (targetDBMS == null) {
+			return Configuration.forDbms(session);
+		}
+		try {
+			return Configuration.forDbms(DBMS.valueOf(targetDBMS));
+		} catch (IllegalArgumentException e) {
+			return Configuration.forDbms(session);
+		}
+	}
+
+	/**
 	 * Creates a factory for transformers for processing the rows to be exported.
 	 * 
 	 * @param outputWriter
@@ -501,10 +520,10 @@ public class Jailer {
 						CommandLineParser.getInstance().xmlTimePattern,
 						CommandLineParser.getInstance().xmlTimeStampPattern);
 			} else {
-				return new DMLTransformer.Factory(outputWriter, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities, targetSession);
+				return new DMLTransformer.Factory(outputWriter, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities, targetSession, targetDBMSConfiguration(targetSession));
 			}
 		} else {
-			return new DeletionTransformer.Factory(outputWriter, CommandLineParser.getInstance().numberOfEntities, targetSession);
+			return new DeletionTransformer.Factory(outputWriter, CommandLineParser.getInstance().numberOfEntities, targetSession, targetDBMSConfiguration(targetSession));
 		}
 	}
 
@@ -566,11 +585,11 @@ public class Jailer {
 			result.append(commentHeader);
 			// result.append(System.getProperty("line.separator"));
 			for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
-				enhancer.addComments(result, scriptType, session, entityGraph, progress);
+				enhancer.addComments(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress);
 			}
 			// result.append(System.getProperty("line.separator"));
 			for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
-				enhancer.addProlog(result, scriptType, session, entityGraph, progress);
+				enhancer.addProlog(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress);
 			}
 		}
 
@@ -662,7 +681,7 @@ public class Jailer {
 		if (result != null) {
 			// write epilogs
 			for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
-				enhancer.addEpilog(result, scriptType, session, entityGraph, progress);
+				enhancer.addEpilog(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress);
 			}
 			result.close();
 		}
@@ -1027,6 +1046,10 @@ public class Jailer {
 		    }
 		});
 		try {
+			System.setProperty("db2.jcc.charsetDecoderEncoder", "3");
+		} catch (Exception e) {
+		}
+		try {
 			jailerMain(args, new StringBuffer());
 		} catch (Exception e) {
 			// Exception has already been logged
@@ -1214,9 +1237,8 @@ public class Jailer {
 
 	/**
 	 * Exports entities.
-	 * @param <as>
 	 */
-	private static <as> void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, String driverClassName, String dbUrl,
+	private static void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, String driverClassName, String dbUrl,
 			String dbUser, String dbPassword, boolean explain, int threads, ScriptFormat scriptFormat) throws Exception {
 		
 		if (scriptFile != null) {
@@ -1277,7 +1299,8 @@ public class Jailer {
 		if (CommandLineParser.getInstance().noSorting) {
 			jailer.appendCommentHeader("                   unsorted");
 		}
-		jailer.appendCommentHeader("Database:          " + Configuration.forDbms(session).dbms);
+		jailer.appendCommentHeader("Source DBMS:       " + Configuration.forDbms(session).dbms.displayName);
+		jailer.appendCommentHeader("Target DBMS:       " + jailer.targetDBMSConfiguration(session).dbms.displayName);
 		jailer.appendCommentHeader("Database URL:      " + dbUrl);
 		jailer.appendCommentHeader("Database User:     " + dbUser);
 		jailer.appendCommentHeader("");

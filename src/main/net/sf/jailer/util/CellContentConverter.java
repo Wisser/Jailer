@@ -60,6 +60,7 @@ public class CellContentConverter {
 	private final Map<String, Integer> columnIndex = new HashMap<String, Integer>();
 	private final Session session;
 	private final Configuration configuration;
+	private final Configuration targetConfiguration;
 	private Method pgObjectGetType;
 	
 	/**
@@ -67,11 +68,13 @@ public class CellContentConverter {
 	 * 
 	 * @param resultSetMetaData meta data of the result set to read from
 	 * @param session database session
+     * @param targetDBMSConfiguration configuration of the target DBMS
 	 */
-	public CellContentConverter(ResultSetMetaData resultSetMetaData, Session session) {
+	public CellContentConverter(ResultSetMetaData resultSetMetaData, Session session, Configuration targetConfiguration) {
 		this.resultSetMetaData = resultSetMetaData;
 		this.session = session;
-		this.configuration = Configuration.forDbms(session);
+		this.targetConfiguration = targetConfiguration;
+		this.configuration = Configuration.forDbms(this.session);
 	}
 
     /**
@@ -86,60 +89,60 @@ public class CellContentConverter {
         }
 
         if (content instanceof java.sql.Date) {
-        	String suffix = SqlUtil.dbms == DBMS.POSTGRESQL? "::date" : "";
-        	if (configuration.useToTimestampFunction) {
+        	String suffix = targetConfiguration.dbms == DBMS.POSTGRESQL? "::date" : "";
+        	if (targetConfiguration.useToTimestampFunction) {
         		String format;
         		synchronized(defaultDateFormat) {
 	        		format = defaultDateFormat.format((Date) content);
 	       		}
 				return "to_date('" + format + "', 'YYYY-MM-DD')" + suffix;
         	}
-        	if (configuration.dateFormat != null) {
-        		synchronized(configuration.dateFormat) {
-        			return "'" + configuration.dateFormat.format((Date) content) + "'" + suffix;
+        	if (targetConfiguration.dateFormat != null) {
+        		synchronized(targetConfiguration.dateFormat) {
+        			return "'" + targetConfiguration.dateFormat.format((Date) content) + "'" + suffix;
         		}
         	}
             return "'" + content + "'" + suffix;
         }
         if (content instanceof java.sql.Timestamp) {
-        	String suffix = SqlUtil.dbms == DBMS.POSTGRESQL? "::timestamp" : "";
-        	if (configuration.useToTimestampFunction) {
+        	String suffix = targetConfiguration.dbms == DBMS.POSTGRESQL? "::timestamp" : "";
+        	if (targetConfiguration.useToTimestampFunction) {
         		String format;
         		String nanoFormat;
         		synchronized(defaultTimestampFormat) {
 	        		format = defaultTimestampFormat.format((Date) content);
-	        		String nanoString = getNanoString((Timestamp) content, configuration.appendNanosToTimestamp, configuration.nanoSep);
+	        		String nanoString = getNanoString((Timestamp) content, targetConfiguration.appendNanosToTimestamp, targetConfiguration.nanoSep);
 	        		nanoFormat = "FF" + (nanoString.length() - 1);
 	    			format += nanoString;
         		}
 				return "to_timestamp('" + format + "', 'YYYY-MM-DD HH24.MI.SS." + nanoFormat + "')" + suffix;
-        	} else if (configuration.timestampFormat != null) {
+        	} else if (targetConfiguration.timestampFormat != null) {
         		String format;
-        		synchronized(configuration.timestampFormat) {
-	        		format = configuration.timestampFormat.format((Date) content);
-	        		if (configuration.appendMillisToTimestamp) {
-	        			format += getNanoString((Timestamp) content, configuration.appendNanosToTimestamp, configuration.nanoSep);
+        		synchronized(targetConfiguration.timestampFormat) {
+	        		format = targetConfiguration.timestampFormat.format((Date) content);
+	        		if (targetConfiguration.appendMillisToTimestamp) {
+	        			format += getNanoString((Timestamp) content, targetConfiguration.appendNanosToTimestamp, targetConfiguration.nanoSep);
 	        		}
         		}
 				content = format;
         	}
-        	if (configuration.timestampPattern != null) {
-        		return configuration.timestampPattern.replace("%s", "'" + content + "'") + suffix;
+        	if (targetConfiguration.timestampPattern != null) {
+        		return targetConfiguration.timestampPattern.replace("%s", "'" + content + "'") + suffix;
         	}
             return "'" + content + "'" + suffix;
         }
         if (content instanceof NCharWrapper) {
-        	String prefix = Configuration.forDbms(session).getNcharPrefix();
+        	String prefix = targetConfiguration.getNcharPrefix();
         	if (prefix == null) {
         		prefix = "";
         	}
-			return prefix + "'" + Configuration.forDbms(session).convertToStringLiteral(content.toString()) + "'";
+			return prefix + "'" + targetConfiguration.convertToStringLiteral(content.toString()) + "'";
         }
         if (content instanceof String) {
-            return "'" + Configuration.forDbms(session).convertToStringLiteral((String) content) + "'";
+            return "'" + targetConfiguration.convertToStringLiteral((String) content) + "'";
         }
         if (content instanceof HStoreWrapper) {
-            return "'" + Configuration.forDbms(session).convertToStringLiteral(content.toString()) + "'::hstore";
+            return "'" + targetConfiguration.convertToStringLiteral(content.toString()) + "'::hstore";
         }
         if (content instanceof byte[]) {
         	byte[] data = (byte[]) content;
@@ -148,34 +151,32 @@ public class CellContentConverter {
         		hex.append(hexChar[(b >> 4) & 15]);
         		hex.append(hexChar[b & 15]);
         	}
-        	return configuration.binaryPattern.replace("%s", hex);
+        	return targetConfiguration.binaryPattern.replace("%s", hex);
         }
         if (content instanceof Time) {
         	return "'" + content + "'";
         }
-        if (SqlUtil.dbms == DBMS.POSTGRESQL) {
-        	if (content.getClass().getSimpleName().equals("PGobject")) {
-    			try {
-    				if (pgObjectGetType == null) {
-						pgObjectGetType = content.getClass().getMethod("getType");
-	        		}
-	        		if ("varbit".equalsIgnoreCase((String) pgObjectGetType.invoke(content))) {
-		        		// PostgreSQL bit values
-		        		return "B'" + content + "'";
-	        		}
-	        	    return "'" + Configuration.forDbms(session).convertToStringLiteral(content.toString()) + "'";
-				} catch (Exception e) {
-					throw new RuntimeException(e);
-				}
-        	}
-        }
+    	if (content.getClass().getSimpleName().equals("PGobject")) {
+			try {
+				if (pgObjectGetType == null) {
+					pgObjectGetType = content.getClass().getMethod("getType");
+        		}
+        		if ("varbit".equalsIgnoreCase((String) pgObjectGetType.invoke(content))) {
+	        		// PostgreSQL bit values
+	        		return "B'" + content + "'";
+        		}
+        	    return "'" + targetConfiguration.convertToStringLiteral(content.toString()) + "'";
+			} catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+    	}
         if (content instanceof UUID) {
-        	if (SqlUtil.dbms == DBMS.POSTGRESQL) {
+        	if (targetConfiguration.dbms == DBMS.POSTGRESQL) {
         		return "'" + content + "'::uuid";
         	}
         	return "'" + content + "'";
         }
-        if (Configuration.forDbms(session).isIdentityInserts()) {
+        if (targetConfiguration.isIdentityInserts()) {
         	// Boolean mapping for MSSQL/Sybase
         	if (content instanceof Boolean) {
         		content = Boolean.TRUE.equals(content)? "1" : "0";
@@ -250,12 +251,12 @@ public class CellContentConverter {
 		if (type == null) {
 			try {
 				type = resultSetMetaData.getColumnType(i);
-				if (SqlUtil.dbms == DBMS.ORACLE) {
+				if (configuration.dbms == DBMS.ORACLE) {
 					if (type == Types.DATE) {
 						type = Types.TIMESTAMP;
 					}
 				 }
-				 if (SqlUtil.dbms == DBMS.POSTGRESQL) {
+				 if (configuration.dbms == DBMS.POSTGRESQL) {
 	                String typeName = resultSetMetaData.getColumnTypeName(i);
 	                if ("hstore".equalsIgnoreCase(typeName)) {
 	                    type = TYPE_HSTORE;
@@ -293,7 +294,7 @@ public class CellContentConverter {
 				return resultSet.getTimestamp(i);
 			}
 			if (type == Types.DATE) {
-				if (SqlUtil.dbms == DBMS.MySQL) {
+				if (configuration.dbms == DBMS.MySQL) {
 					// YEAR
 					String typeName = resultSetMetaData.getColumnTypeName(i);
 					if (typeName != null && typeName.toUpperCase().equals("YEAR")) {
@@ -316,7 +317,7 @@ public class CellContentConverter {
 				object = new NCharWrapper((String) object);
 			}
 		}
-		if (SqlUtil.dbms == DBMS.POSTGRESQL) {
+		if (configuration.dbms == DBMS.POSTGRESQL) {
 			if (type == TYPE_HSTORE) {
 				return new HStoreWrapper(resultSet.getString(i));
             } else if (object instanceof Boolean) {
