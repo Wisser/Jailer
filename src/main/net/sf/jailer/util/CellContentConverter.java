@@ -15,7 +15,12 @@
  */
 package net.sf.jailer.util;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.Reader;
 import java.lang.reflect.Method;
+import java.sql.Blob;
+import java.sql.Clob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -359,6 +364,60 @@ public class CellContentConverter {
 			return resultSet.getObject(columnName);
 		}
 		return getObject(resultSet, index);
+	}
+
+	/**
+	 * Gets SQL expression for a C/BLOB for small LOBS.
+	 * 
+	 * @param resultSet the result set
+	 * @param i index of LOB column
+	 * @return SQL expression for a C/BLOB for small LOBS
+	 */
+	public String getSmallLob(ResultSet resultSet, int i) throws SQLException, IOException {
+		try {
+			Object lob = resultSet.getObject(i);
+			
+			if (lob instanceof Clob) {
+				Clob clob = (Clob) lob;
+				if (targetConfiguration.getToClob() == null || clob.length() > targetConfiguration.embeddedLobSizeLimit) {
+					return null;
+				}
+				Reader in = clob.getCharacterStream();
+				int c;
+				StringBuilder line = new StringBuilder();
+				while ((c = in.read()) != -1) {
+					line.append((char) c);
+				}
+				in.close();
+				if (line.length() == 0 && targetConfiguration.emptyCLOBValue != null) {
+					return targetConfiguration.emptyCLOBValue;
+				}
+				return targetConfiguration.getToClob().replace("%s",targetConfiguration.convertToStringLiteral(line.toString()));
+			}
+	        if (lob instanceof Blob) {
+				Blob blob = (Blob) lob;
+				if (targetConfiguration.getToBlob() == null || 2 * blob.length() > targetConfiguration.embeddedLobSizeLimit) {
+					return null;
+				}
+	
+				InputStream in = blob.getBinaryStream();
+				int b;
+				StringBuilder hex = new StringBuilder();
+	        	while ((b = in.read()) != -1) {
+	        		hex.append(hexChar[(b >> 4) & 15]);
+	        		hex.append(hexChar[b & 15]);
+	        	}
+				in.close();
+				if (hex.length() == 0 && targetConfiguration.emptyBLOBValue != null) {
+					return targetConfiguration.emptyBLOBValue;
+				}
+				return targetConfiguration.getToBlob().replace("%s", targetConfiguration.convertToStringLiteral(hex.toString()));
+			}
+		} catch (SQLException e) {
+			return null;
+		}
+		
+		return null;
 	}
 
 }

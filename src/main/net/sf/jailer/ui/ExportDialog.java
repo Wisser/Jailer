@@ -147,6 +147,8 @@ public class ExportDialog extends javax.swing.JDialog {
         this.settingsContext = session.dbUrl;
         this.sourceDBMS = Configuration.forDbms(session).dbms;
         initComponents();
+        
+        CancellationHandler.reset(null);
 
         if (!showCmd) {
         	commandLinePanel.setVisible(false);
@@ -1577,8 +1579,8 @@ public class ExportDialog extends javax.swing.JDialog {
     	if (text.length() > 0) {
     		try {
     			int n = Integer.parseInt(text);
-    			if (n > 100) {
-    				threads.setText("100");
+    			if (n > 10000) {
+    				threads.setText("10000");
     			}
     		} catch (NumberFormatException e) {
     			threads.setText("");

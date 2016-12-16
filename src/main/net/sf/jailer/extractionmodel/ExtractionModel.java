@@ -17,6 +17,7 @@ package net.sf.jailer.extractionmodel;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -37,6 +38,7 @@ import net.sf.jailer.datamodel.filter_template.Clause.Subject;
 import net.sf.jailer.datamodel.filter_template.FilterTemplate;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.CsvFile;
+import net.sf.jailer.util.CsvFile.Line;
 import net.sf.jailer.util.SqlUtil;
 
 import org.apache.log4j.Logger;
@@ -360,7 +362,24 @@ public class ExtractionModel {
         	}
         }
         dataModel.deriveFilters();
+        disableUnknownChildren(new CsvFile(CommandLineParser.getInstance().newFile(fileName), "known").getLines());
     }
+
+	private void disableUnknownChildren(List<Line> lines) {
+		Set<String> known = new HashSet<String>();
+		for (Line line: lines) {
+			known.add(line.cells.get(0));
+		}
+		if (known.isEmpty()) {
+			return;
+		}
+		for (Association a: dataModel.namedAssociations.values()) {
+			String name = a.reversed? a.reversalAssociation.getName() : a.getName();
+			if (!known.contains(name) && a.isInsertSourceBeforeDestination()) {
+				dataModel.getRestrictionModel().addRestriction(a.source, a, "false", "SYSTEM", true, new HashMap<String, String>());
+			}
+		}
+	}
 
 	/**
 	 * <b>

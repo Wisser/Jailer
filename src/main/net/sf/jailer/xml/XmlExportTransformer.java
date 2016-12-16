@@ -92,7 +92,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	/**
      * The logger.
      */
-    private static final Logger _log = Logger.getLogger(SqlScriptExecutor.class);
+    private static final Logger _log = Logger.getLogger(XmlExportTransformer.class);
 
     /**
 	 * Maps clear text SQL-types to {@link java.sql.Types}.

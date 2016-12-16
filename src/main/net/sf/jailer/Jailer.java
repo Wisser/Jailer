@@ -666,6 +666,9 @@ public class Jailer {
 						}
 					});
 				}
+				if (result != null && !jobs.isEmpty()) {
+					result.append("-- sync" + System.getProperty("line.separator"));
+				}
 				jobManager.executeJobs(jobs);
 				for (final Table table : dependentTables) {
 					entityGraph.deleteIndependentEntities(table);
@@ -680,6 +683,8 @@ public class Jailer {
 
 		if (result != null) {
 			// write epilogs
+			result.append("-- epilog");
+			result.append(System.getProperty("line.separator"));
 			for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
 				enhancer.addEpilog(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress);
 			}
@@ -956,6 +961,9 @@ public class Jailer {
 				}
 			}
 			if (!jobs.isEmpty()) {
+				if (result != null) {
+					result.append("-- sync" + System.getProperty("line.separator"));
+				}
 				jobManager.executeJobs(jobs);
 			}
 			tables.removeAll(independentTables);
@@ -1133,7 +1141,7 @@ public class Jailer {
 					Session session = new Session(clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4),
 							clp.arguments.get(5), null, clp.transactional);
 					try {
-						SqlScriptExecutor.executeScript(clp.arguments.get(1), session, clp.transactional);
+						new SqlScriptExecutor(session, clp.numberOfThreads).executeScript(clp.arguments.get(1), clp.transactional);
 					} finally {
 						try {
 							session.shutDown();
