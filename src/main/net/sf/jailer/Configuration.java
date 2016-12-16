@@ -109,6 +109,9 @@ public class Configuration {
 	public DateFormat timestampFormat = null;
 	public String emptyCLOBValue = null;
 	public String emptyBLOBValue = null;
+	public String toBlob;
+	public String toClob;
+	public int embeddedLobSizeLimit = 3980;
 	public String binaryPattern = "x'%s'";
 	public boolean avoidLeftJoin = false;
 	public String timestampPattern = null;
@@ -159,6 +162,20 @@ public class Configuration {
 	 */
 	public void setUseInlineViewsInDataBrowser(boolean useInlineViewsInDataBrowser) {
 		this.useInlineViewsInDataBrowser = useInlineViewsInDataBrowser;
+	}
+
+	/**
+	 * @return the embeddedLobSizeLimit
+	 */
+	public int getEmbeddedLobSizeLimit() {
+		return embeddedLobSizeLimit;
+	}
+
+	/**
+	 * @param embeddedLobSizeLimit the embeddedLobSizeLimit to set
+	 */
+	public void setEmbeddedLobSizeLimit(int embeddedLobSizeLimit) {
+		this.embeddedLobSizeLimit = embeddedLobSizeLimit;
 	}
 
 	/**
@@ -443,6 +460,34 @@ public class Configuration {
     }
 
     /**
+	 * @return the toBlob
+	 */
+	public String getToBlob() {
+		return toBlob;
+	}
+
+	/**
+	 * @param toBlob the toBlob to set
+	 */
+	public void setToBlob(String toBlob) {
+		this.toBlob = toBlob;
+	}
+
+	/**
+	 * @return the toClob
+	 */
+	public String getToClob() {
+		return toClob;
+	}
+
+	/**
+	 * @param toClob the toClob to set
+	 */
+	public void setToClob(String toClob) {
+		this.toClob = toClob;
+	}
+
+	/**
      * Gets replacement map for column types used for DDL generation.
      */
     public Map<String, String> getTypeReplacement() {

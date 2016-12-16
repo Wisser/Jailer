@@ -142,4 +142,11 @@ public class StatementBuilder {
 		return body.size();
 	}
     
+    /**
+     * Gets the maximal size of a body-list.
+     */
+    public int getMaxBodySize() {
+    	return maxBodySize;
+    }
+    
 }

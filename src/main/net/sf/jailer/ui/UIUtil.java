@@ -561,6 +561,11 @@ public class UIUtil {
 			args.add("-working-folder");
 			args.add(CommandLineParser.getInstance().workingFolder);
 		}
+		return createPlainCLIArguments(password, args);
+	}
+
+	public static StringBuffer createPlainCLIArguments(String password,
+			List<String> args) {
 		final StringBuffer arglist = new StringBuffer();
 		int pwi = -1;
 		for (int i = args.size() - 1; i >=0; --i) {

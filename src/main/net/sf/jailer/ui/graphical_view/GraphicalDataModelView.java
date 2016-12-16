@@ -17,6 +17,7 @@ package net.sf.jailer.ui.graphical_view;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.Point;
 import java.awt.Shape;
@@ -38,6 +39,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.swing.ButtonGroup;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -684,12 +686,14 @@ public class GraphicalDataModelView extends JPanel {
 			navigateTo = new JScrollMenu("Show Associated Table");
 			List<Association> aList = new ArrayList<Association>();
 			Set<Table> includedTables = new HashSet<Table>();
+			Set<Association> visualizable = new HashSet<Association>();
 			for (Association a: table.associations) {
-				if (isVisualizable(a)) {
-					if (!includedTables.contains(a.destination)) {
-						aList.add(a);
-						includedTables.add(a.destination);
+				if (!includedTables.contains(a.destination)) {
+					if (isVisualizable(a)) {
+						visualizable.add(a);
 					}
+					aList.add(a);
+					includedTables.add(a.destination);
 				}
 			}
 			Collections.sort(aList, new Comparator<Association>() {
@@ -703,9 +707,17 @@ public class GraphicalDataModelView extends JPanel {
 			JMenu currentMenu = navigateTo;
 //			int numItems = 0;
 //			final int MAX_ITEMS = 30;
+			Font italic = null;
 			for (final Association a: aList) {
 				String miText = a.getDataModel().getDisplayName(a.destination);
 				JMenuItem mi = new JMenuItem();
+				if (!visualizable.contains(a)) {
+					if (italic == null) {
+						Font font = new JLabel().getFont();
+						italic = new Font(font.getName(), font.getStyle() | Font.ITALIC, font.getSize());
+					}
+					mi.setFont(italic);
+				}
 				final int MAX_LENGTH = 50;
 				if (miText.length() < MAX_LENGTH) {
 					mi.setText(miText);

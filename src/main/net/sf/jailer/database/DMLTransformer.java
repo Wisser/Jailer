@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
@@ -78,7 +79,8 @@ public class DMLTransformer extends AbstractResultSetReader {
      * Lob columns.
      */
     private List<String> lobColumns = null;
-
+    private boolean[] isLobColumn;
+    
     /**
      * Literals for empty lob values.
      */
@@ -148,7 +150,7 @@ public class DMLTransformer extends AbstractResultSetReader {
      * SQL Dialect.
      */
 	private final SQLDialect currentDialect;
-
+	
     /**
      * Factory.
      */
@@ -227,6 +229,7 @@ public class DMLTransformer extends AbstractResultSetReader {
             columnCount = getMetaData(resultSet).getColumnCount();
             columnLabel = new String[columnCount + 1];
             lobColumns = new ArrayList<String>();
+            isLobColumn = new boolean[columnCount + 1];
             emptyLobValue = new String[columnCount + 1];
             lobColumnIndexes = new ArrayList<Integer>();
             labelCSL = "";
@@ -237,6 +240,7 @@ public class DMLTransformer extends AbstractResultSetReader {
                 
                 if ((mdColumnType == Types.BLOB || mdColumnType == Types.CLOB || mdColumnType == Types.SQLXML) && targetDBMSConfiguration.dbms != DBMS.SQLITE) {
                 	tableHasLobs = true;
+                	isLobColumn[i] = true;
                 	lobColumnIndexes.add(i);
                 	lobColumns.add(mdColumnLabel);
                 	if (mdColumnType == Types.SQLXML) {
@@ -260,22 +264,34 @@ public class DMLTransformer extends AbstractResultSetReader {
             StringBuffer valueList = new StringBuffer("");
             StringBuffer namedValues = new StringBuffer("");
             boolean f = true;
+            Map<Integer, String> smallLobsPerIndex = new HashMap<Integer, String>();
             CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, targetDBMSConfiguration);
 			for (int i = 1; i <= columnCount; ++i) {
-                if (columnLabel[i] == null) {
-                	continue;
+				Object content = null;
+				if (columnLabel[i] == null) {
+					continue;
+				}
+				boolean isSmallLob = false;
+				if (isLobColumn[i]) {
+					content = cellContentConverter.getSmallLob(resultSet, i);
+                	if (content != null) {
+                		isSmallLob = true;
+                		smallLobsPerIndex.put(i, (String) content);
+                	}
                 }
-            	Object content = cellContentConverter.getObject(resultSet, i);
-                if (resultSet.wasNull()) {
-                    content = null;
-                }
+				if (content == null) {
+	            	content = cellContentConverter.getObject(resultSet, i);
+	                if (resultSet.wasNull()) {
+	                    content = null;
+	                }
+				}
                 if (!f) {
                 	namedValues.append(", ");
                 	valueList.append(", ");
                 }
                 f = false;
-                String cVal = cellContentConverter.toSql(content);
-            	if (content != null && emptyLobValue[i] != null) {
+                String cVal = isSmallLob? (String) content : cellContentConverter.toSql(content);
+            	if (!isSmallLob && content != null && emptyLobValue[i] != null) {
             		cVal = emptyLobValue[i];
             	}
             	valueList.append(cVal);
@@ -312,7 +328,10 @@ public class DMLTransformer extends AbstractResultSetReader {
                     	}
                     }
                 	if (content != null && emptyLobValue[i] != null) {
-                		cVal = emptyLobValue[i];
+                		cVal = smallLobsPerIndex.get(i);
+                		if (cVal == null) {
+                			cVal = emptyLobValue[i];
+                		}
                 	}
                 	val.put(columnLabel[i], cVal);
                     if (content != null) {
@@ -431,7 +450,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 	                
 	                StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
 	                if (sb == null) {
-	                    sb = new StatementBuilder(1);
+	                    sb = new StatementBuilder(1 /* insertStatementBuilder.getMaxBodySize() */);
 	                    upsertInsertStatementBuilder.put(insertHead, sb);
 	                }
 	            
@@ -488,7 +507,7 @@ public class DMLTransformer extends AbstractResultSetReader {
             	}
             }
             
-            exportLobs(table, resultSet);
+            exportLobs(table, resultSet, smallLobsPerIndex.keySet());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -532,10 +551,13 @@ public class DMLTransformer extends AbstractResultSetReader {
      * 
      * @param resultSet export current row
      */
-    private void exportLobs(Table table, ResultSet resultSet) throws IOException, SQLException {
+    private void exportLobs(Table table, ResultSet resultSet, Set<Integer> smallLobsIndexes) throws IOException, SQLException {
     	synchronized (scriptFileWriter) {
             CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, targetDBMSConfiguration);
 	    	for (int i = 0; i < lobColumnIndexes.size(); ++i) {
+	    		if (smallLobsIndexes.contains(lobColumnIndexes.get(i))) {
+	    			continue;
+	    		}
 				Object lob = resultSet.getObject(lobColumnIndexes.get(i));
 				Map<String, String> val = new HashMap<String, String>();
 				for (int j = 1; j <= columnCount; ++j) {

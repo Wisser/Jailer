@@ -873,6 +873,15 @@ public class DataModel {
 		} else {
 			LayoutStorage.store(out, positions);
 		}
+		
+		out.println();
+		out.println(CsvFile.BLOCK_INDICATOR + "known");
+		for (Association a: namedAssociations.values()) {
+			if (!a.reversed) {
+				out.println(CsvFile.encodeCell(a.getName()));
+			}
+		}
+		
 		out.println();
 		out.println(CsvFile.BLOCK_INDICATOR + "version");
 		out.println(Jailer.VERSION);

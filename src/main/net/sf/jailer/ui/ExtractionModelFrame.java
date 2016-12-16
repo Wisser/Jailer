@@ -810,8 +810,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     				args.add("import");
     				args.add(sqlFile);
     				dbConnectionDialog.addDbArgs(args);
-    				disconnect();
-    				UIUtil.runJailer(this, args, false, true, false, false, null, dbConnectionDialog.getPassword(), null, null, false, true, false);
+    				ImportDialog importDialog = new ImportDialog(this, sqlFile, args, dbConnectionDialog.getPassword(), true);
+					if (importDialog.isOk) {
+	    				disconnect();
+	    				importDialog.fillCLIArgs(args);
+	    				UIUtil.runJailer(this, args, false, true, false, false, null, dbConnectionDialog.getPassword(), null, null, false, true, false);
+    				}
     			}
     		}
     	} catch (Exception e) {

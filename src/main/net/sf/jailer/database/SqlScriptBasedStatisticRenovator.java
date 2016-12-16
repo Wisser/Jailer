@@ -65,7 +65,7 @@ public class SqlScriptBasedStatisticRenovator implements StatisticRenovator {
 		out.close();
 		boolean silent = session.getSilent();
 		session.setSilent(true);
-        SqlScriptExecutor.executeScript(fileName, session);
+        new SqlScriptExecutor(session, 1).executeScript(fileName);
 		session.setSilent(silent);
     }
 

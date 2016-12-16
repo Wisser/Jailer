@@ -39,6 +39,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Random;
 
 import net.sf.jailer.Configuration;
 import net.sf.jailer.util.CancellationHandler;
@@ -62,7 +63,7 @@ public class Session {
     /**
      * Holds all connections.
      */
-    private final Collection<Connection> connections = Collections.synchronizedCollection(new ArrayList<Connection>());
+    private final List<Connection> connections = Collections.synchronizedList(new ArrayList<Connection>());
     
     /**
      * The session in which temporary tables lives, if any.
@@ -296,6 +297,7 @@ public class Session {
         }
         connectionFactory = new ConnectionFactory() {
         	private Connection defaultConnection = null;
+        	private Random random = new Random();
             public Connection getConnection() throws SQLException {
                 Connection con = local? connection.get() : temporaryTableSession == null? connection.get() : temporaryTableSession;
                 
@@ -322,13 +324,19 @@ public class Session {
                 		if (con == null) {
                 			con = DriverManager.getConnection(dbUrl, user, password);
                 		}
-                		defaultConnection = con;
+                		synchronized (this) {
+                    		defaultConnection = con;
+						}
                 	} catch (SQLException e) {
-                		if (defaultConnection != null) {
-                			// fall back to default connection
-                			con = defaultConnection;
-                		} else {
-                			throw e;
+                		synchronized (this) {
+	                		if (connections != null && connections.size() > 1) {
+	                			con = connections.get(random.nextInt(connections.size()));
+	                		} else if (defaultConnection != null) {
+	                			// fall back to default connection
+	                			con = defaultConnection;
+	                		} else {
+	                			throw e;
+	                		}
                 		}
                 	}
                     boolean ac = scope == null || scope != TemporaryTableScope.TRANSACTION_LOCAL;
@@ -741,6 +749,7 @@ public class Session {
 	        rc = statement.executeUpdate(sql);
 	        statement.close();
 	        CancellationHandler.end(statement, null);
+            _log.info("" + rc + " row(s)");
 	    } catch (SQLException e) {
         	CancellationHandler.checkForCancellation(null);
 	    	if (!silent) {
