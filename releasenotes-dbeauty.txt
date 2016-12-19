@@ -1,3 +1,6 @@
+2.8
+  - Data browser tables are now sortable.
+
 2.7.5
   - Improved performance.
 

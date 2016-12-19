@@ -68,4 +68,23 @@ public class Row {
 	 */
 	private boolean isBlockEnd = false;
 	
+	/**
+	 * The block number.
+	 */
+	private int blockNr = 0;
+
+	/**
+	 * @return the blockNr
+	 */
+	public int getBlockNr() {
+		return blockNr;
+	}
+
+	/**
+	 * @param blockNr the blockNr to set
+	 */
+	public void setBlockNr(int blockNr) {
+		this.blockNr = blockNr;
+	}
+	
 }

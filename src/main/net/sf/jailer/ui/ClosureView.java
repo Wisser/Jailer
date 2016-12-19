@@ -43,15 +43,17 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.Vector;
 
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
-import net.sf.jailer.ui.JComboBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
@@ -64,6 +66,8 @@ import javax.swing.table.TableColumn;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.scrollmenu.JScrollMenu;
+import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.SqlUtil;
 
@@ -219,7 +223,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
                 	if (value == null || !(value instanceof String)) return;
                 	Table table = getDataModel().getTableByDisplayName((String) value);
                 	if (table != null) {
-						JPopupMenu popup = ClosureView.this.extractionModelEditor.graphView.createPopupMenu(table, false);
+						JPopupMenu popup = ClosureView.this.extractionModelEditor.graphView.createPopupMenu(table, true);
 						popup.show(e.getComponent(), e.getX(), e.getY());
                 	}
                 }
@@ -234,7 +238,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
                 	if (value == null || !(value instanceof String)) return;
                 	final Table table = getDataModel().getTableByDisplayName((String) value);
                 	if (table != null) {
-						JMenuItem restrictAll = new JMenuItem("Disable Associations");
+						JMenuItem restrictAll = new JMenuItem("Disable all associations");
 						restrictAll.setToolTipText("disables every non-dependent (child) association with this table");
 						restrictAll.addActionListener(new ActionListener () {
 							public void actionPerformed(ActionEvent e) {
@@ -243,7 +247,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 						});
 						restrictAll.setEnabled(ClosureView.this.extractionModelEditor.isIgnoreAllApplicable(table));
 						
-						JMenuItem removeRestrictions = new JMenuItem("Remove Restrictions");
+						JMenuItem removeRestrictions = new JMenuItem("Remove all restrictions");
 						removeRestrictions.addActionListener(new ActionListener () {
 							public void actionPerformed(ActionEvent e) {
 								ClosureView.this.extractionModelEditor.removeAllRestrictions(table);
@@ -251,11 +255,67 @@ public abstract class ClosureView extends javax.swing.JDialog {
 						});
 						removeRestrictions.setEnabled(ClosureView.this.extractionModelEditor.isRemovalOfAllRestrictionsApplicable(table));
 						removeRestrictions.setToolTipText("removes all restrictions on all associations with this table");
+
+						JMenu restrict = new JScrollMenu("Disable association...");
+						restrict.setToolTipText("disables an association with this table");
 						
-						final JPopupMenu popup = new JPopupMenu();
+						JMenu remove = new JScrollMenu("Remove restrictions on...");
+						remove.setToolTipText("removes all restrictions on an association with this table");
+						
+						List<Association> aLDisable = new ArrayList<Association>();
+						List<Association> aLEnable = new ArrayList<Association>();
+						for (Association association: table.associations) {
+							if (!association.isInsertDestinationBeforeSource()) {
+								aLDisable.add(association);
+							}
+							aLEnable.add(association);
+						}
+						
+						Map<String, Association> namedAssoc;
+						namedAssoc = sortedNamed(aLDisable);
+						boolean enab;
+						enab = false;
+						for (Map.Entry<String, Association> entry: namedAssoc.entrySet()) {
+							JMenuItem menuItem = new JMenuItem(entry.getKey());
+							final Association association = entry.getValue();
+							if (association.isIgnored()) {
+								menuItem.setEnabled(false);
+							}
+							enab = true;
+							menuItem.addActionListener(new ActionListener() {
+								@Override
+								public void actionPerformed(ActionEvent arg0) {
+									ClosureView.this.extractionModelEditor.ignorAssociation(association);
+								}
+							});
+							restrict.getPopupMenu().add(menuItem);
+						}
+						restrict.setEnabled(enab);
+						namedAssoc = sortedNamed(aLEnable);
+						enab = false;
+						for (Map.Entry<String, Association> entry: namedAssoc.entrySet()) {
+							JMenuItem menuItem = new JMenuItem(entry.getKey());
+							remove.getPopupMenu().add(menuItem);
+							final Association association = entry.getValue();
+							if (!association.isRestricted()) {
+								menuItem.setEnabled(false);
+							}
+							enab = true;
+							menuItem.addActionListener(new ActionListener() {
+								@Override
+								public void actionPerformed(ActionEvent arg0) {
+									ClosureView.this.extractionModelEditor.removeRestriction(association);
+								}
+							});
+						}
+						remove.setEnabled(enab);
+						
+						final JPopupMenu popup = new JScrollPopupMenu();
 						popup.add(restrictAll);
-						popup.add(new JSeparator());
 						popup.add(removeRestrictions);
+						popup.add(new JSeparator());
+						popup.add(restrict);
+						popup.add(remove);
 						
 						if (cellInfo.containsKey(value)) {
 							selectTableCell(column, row);
@@ -351,6 +411,22 @@ public abstract class ClosureView extends javax.swing.JDialog {
         setSize(500, 500);
         setAlwaysOnTop(true);
     }
+
+	protected SortedMap<String, Association> sortedNamed(List<Association> aList) {
+		SortedMap<String, Association> result = new TreeMap<String, Association>();
+		
+		for (Association a: aList) {
+			boolean isDup = false;
+			for (Association a2: aList) {
+				if (a2 != a && a2.destination.equals(a.destination)) {
+					isDup = true;
+					break;
+				}
+			}
+			result.put(getDataModel().getDisplayName(a.destination) + (isDup? " (" + a.getName() + ")" : ""), a);
+		}
+		return result;
+	}
 
 	private void selectTableCell(int col, int row) {
 		if (col >= 1 && row >= 0) {
