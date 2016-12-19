@@ -1,3 +1,8 @@
+6.3
+  - Data browser tables are now sortable.
+  - Multithreaded import.
+  - GUI improvements.
+
 6.2
   - Added possibility to specify the target DBMS for a generated SQL script.
     This allows to export data and import it into a different DBMS.

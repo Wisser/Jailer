@@ -2524,7 +2524,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		closureBorderView.refresh();
 		extractionModelFrame.restrictedDependenciesView.refresh();
 	}
-
+	 
 	/**
 	 * Checks if {@link #ignoreAll(Table)} is applicable.
 	 */
@@ -2544,7 +2544,43 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 		return false;
 	}
-	
+
+	/**
+	 * Add restriction.
+	 */
+	public void ignorAssociation(Association association) {
+		dataModel.getRestrictionModel().addRestriction(association.source, association, "false", "GUI", true, new HashMap<String, String>());
+		if (!needsSave) {
+			needsSave = true;
+			extractionModelFrame.updateTitle(needsSave);
+		}
+		tree.repaint();
+		restrictionsTable.setModel(restrictionTableModel());
+		initRestrictionEditor(currentAssociation, currentNode);
+		graphView.resetExpandedState();
+		closureView.refresh();
+		closureBorderView.refresh();
+		extractionModelFrame.restrictedDependenciesView.refresh();
+	}
+
+	/**
+	 * Removes restrictions.
+	 */
+	public void removeRestriction(Association association) {
+		dataModel.getRestrictionModel().addRestriction(association.source, association, "", "GUI", true, new HashMap<String, String>());
+		if (!needsSave) {
+			needsSave = true;
+			extractionModelFrame.updateTitle(needsSave);
+		}
+		tree.repaint();
+		restrictionsTable.setModel(restrictionTableModel());
+		initRestrictionEditor(currentAssociation, currentNode);
+		graphView.resetExpandedState();
+		closureView.refresh();
+		closureBorderView.refresh();
+		extractionModelFrame.restrictedDependenciesView.refresh();
+	}
+
 	/**
 	 * Zooms graphical view to fit.
 	 */

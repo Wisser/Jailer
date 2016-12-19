@@ -66,6 +66,7 @@ import java.util.TreeSet;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultRowSorter;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
@@ -81,6 +82,8 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.RowSorter;
+import javax.swing.RowSorter.SortKey;
+import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
@@ -98,7 +101,6 @@ import javax.swing.tree.DefaultTreeModel;
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.ScriptFormat;
-import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.InlineViewStyle;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
@@ -495,12 +497,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				super.paint(graphics);
 				if (!(graphics instanceof Graphics2D))
 					return;
-				RowSorter<? extends TableModel> rowSorter = rowsTable.getRowSorter();
-				for (int i = 0; i < rowsTable.getRowCount(); ++i) {
-					if (rowSorter.convertRowIndexToView(i) != i) {
-						return;
-					}
-				}
+//				RowSorter<? extends TableModel> rowSorter = rowsTable.getRowSorter();
+//				for (int i = 0; i < rowsTable.getRowCount(); ++i) {
+//					if (rowSorter.convertRowIndexToView(i) != i) {
+//						return;
+//					}
+//				}
 				int maxI = Math.min(rowsTable.getRowCount(), rows.size());
 
 				for (int i = 0; i < maxI; ++i) {
@@ -2130,6 +2132,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				pRowBlock = new ArrayList<Row>();
 				pRowBlock.add(null);
 			}
+			int blockNr = 0;
 			for (Row pRow: pRowBlock) {
 				boolean dupParent = false;
 				if (pRow != null) {
@@ -2146,6 +2149,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (parentRows != null) {
 					if (!newRows.isEmpty()) {
 						newRows.get(newRows.size() - 1).setBlockEnd(true);
+						++blockNr;
+						for (Row r: newRows) {
+							r.setBlockNr(blockNr);
+						}
 					}
 					for (Row row : newRows) {
 						Row exRow = rowSet.get(row.rowId);
@@ -2605,6 +2612,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return null;
 	}
 	
+	private static class TableModeltem {
+		public int blockNr;
+		Object value;
+		public String toString() {
+			return String.valueOf(value);
+		}
+	}
+	
 	/**
 	 * Updates the model of the {@link #rowsTable}.
 	 * 
@@ -2648,6 +2663,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					} else if (rowData[i] instanceof UnknownValue) {
 						rowData[i] = UNKNOWN;
 					}
+					TableModeltem item = new TableModeltem();
+					item.blockNr = row.getBlockNr();
+					item.value = rowData[i];
+					rowData[i] = item;
 				}
 				dtm.addRow(rowData);
 				if (++rn >= limit) {
@@ -2657,31 +2676,54 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			rowsTable.setModel(dtm);
 			rowsTable.setRowHeight(initialRowHeight);
 
-			TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(dtm);
-			for (int i = 0; i < columnNames.length; ++i) {
-				sorter.setComparator(i, new Comparator<Object>() {
-					@SuppressWarnings("unchecked")
-					@Override
-					public int compare(Object o1, Object o2) {
-						if (o1 == null && o2 == null) {
-							return 0;
-						}
-						if (o1 == null) {
-							return -1;
-						}
-						if (o2 == null) {
-							return 1;
-						}
-						if (o1.getClass().equals(o2.getClass())) {
-							if (o1 instanceof Comparable<?>) {
-								return ((Comparable<Object>) o1).compareTo(o2);
+			TableRowSorter<TableModel> sorter = new TableRowSorter<TableModel>(dtm) {
+				@Override
+				protected boolean useToString(int column) {
+					return false;
+				}
+
+				@Override
+				public Comparator<?> getComparator(int n) {
+					List<? extends SortKey> sortKeys = super.getSortKeys();
+					final boolean desc = sortKeys.size() > 0 && sortKeys.get(0).getSortOrder() == SortOrder.DESCENDING;
+					
+					return new Comparator<Object>() {
+						@SuppressWarnings("unchecked")
+						@Override
+						public int compare(Object o1, Object o2) {
+							if (o1 instanceof TableModeltem && o2 instanceof TableModeltem) {
+								int b1 = ((TableModeltem) o1).blockNr;
+								int b2 = ((TableModeltem) o2).blockNr;
+								if (b1 != b2) {
+									return (b1 - b2) * (desc? -1 : 1);
+								}
 							}
-							return 0;
+							if (o1 instanceof TableModeltem) {
+								o1 = ((TableModeltem) o1).value;
+							}
+							if (o2 instanceof TableModeltem) {
+								o2 = ((TableModeltem) o2).value;
+							}
+							if (o1 == null && o2 == null) {
+								return 0;
+							}
+							if (o1 == null) {
+								return -1;
+							}
+							if (o2 == null) {
+								return 1;
+							}
+							if (o1.getClass().equals(o2.getClass())) {
+								if (o1 instanceof Comparable<?>) {
+									return ((Comparable<Object>) o1).compareTo(o2);
+								}
+								return 0;
+							}
+							return o1.getClass().getName().compareTo(o2.getClass().getName());
 						}
-						return o1.getClass().getName().compareTo(o2.getClass().getName());
-					}
-				});
-			}
+					};
+				}
+			};
 			rowsTable.setRowSorter(sorter);
 		} else {
 			singleRowDetailsView = new DetailsView(Collections.singletonList(rows.get(0)), 1, dataModel, BrowserContentPane.this.table, 0, null, false, rowIdSupport) {
