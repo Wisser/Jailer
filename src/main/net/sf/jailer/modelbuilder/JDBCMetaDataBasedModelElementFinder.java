@@ -402,7 +402,17 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		try {
 			return metaData.getColumns(null, schemaPattern, tableNamePattern, columnNamePattern);
 		} catch (Exception e) {
-			throw new RuntimeException("Error in getColumns(): schemaPattern=" + schemaPattern + ", tableNamePattern=" + tableNamePattern + ", columnNamePattern=" + columnNamePattern, e);
+			String catalogs = "";
+			try {
+				ResultSet r = metaData.getCatalogs();
+				while (r.next()) {
+					catalogs += r.getString(1) + "  ";
+				}
+				r.close();
+			} catch (Exception e2) {
+				catalogs += "?";
+			}
+			throw new RuntimeException("Error in getColumns(): catalogs= " + catalogs + ", schemaPattern=" + schemaPattern + ", tableNamePattern=" + tableNamePattern + ", columnNamePattern=" + columnNamePattern, e);
 		}
 	}
 
