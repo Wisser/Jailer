@@ -399,7 +399,11 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		if (session.dbms == DBMS.MySQL) {
 			return metaData.getColumns(schemaPattern, null, tableNamePattern, columnNamePattern);
 		}
-		return metaData.getColumns(null, schemaPattern, tableNamePattern, columnNamePattern);
+		try {
+			return metaData.getColumns(null, schemaPattern, tableNamePattern, columnNamePattern);
+		} catch (Exception e) {
+			throw new RuntimeException("Error in getColumns(): schemaPattern=" + schemaPattern + ", tableNamePattern=" + tableNamePattern + ", columnNamePattern=" + columnNamePattern);
+		}
 	}
 
 	/**
