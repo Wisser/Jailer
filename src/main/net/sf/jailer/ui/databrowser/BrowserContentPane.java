@@ -66,7 +66,6 @@ import java.util.TreeSet;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import javax.swing.DefaultComboBoxModel;
-import javax.swing.DefaultRowSorter;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JDialog;
@@ -82,7 +81,6 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.RowSorter;
-import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.event.PopupMenuEvent;
@@ -2612,9 +2610,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return null;
 	}
 	
-	private static class TableModeltem {
+	public static class TableModelItem {
 		public int blockNr;
-		Object value;
+		public Object value;
 		public String toString() {
 			return String.valueOf(value);
 		}
@@ -2648,6 +2646,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		singleRowDetailsView = null;
 		int rn = 0;
 		if (rows.size() != 1) {
+			Map<String, Integer> columnNameMap = new HashMap<String, Integer>();
+			for (int i = 0; i < columns.size(); ++i) {
+				columnNameMap.put(columnNames[i], i);
+			}
 			dtm = new DefaultTableModel(columnNames, 0) {
 				@Override
 				public boolean isCellEditable(int row, int column) {
@@ -2663,7 +2665,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					} else if (rowData[i] instanceof UnknownValue) {
 						rowData[i] = UNKNOWN;
 					}
-					TableModeltem item = new TableModeltem();
+				}
+				if (tableContentViewFilter != null) {
+					tableContentViewFilter.filter(rowData, columnNameMap);
+				}
+				for (int i = 0; i < columns.size(); ++i) {
+					TableModelItem item = new TableModelItem();
 					item.blockNr = row.getBlockNr();
 					item.value = rowData[i];
 					rowData[i] = item;
@@ -2691,18 +2698,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						@SuppressWarnings("unchecked")
 						@Override
 						public int compare(Object o1, Object o2) {
-							if (o1 instanceof TableModeltem && o2 instanceof TableModeltem) {
-								int b1 = ((TableModeltem) o1).blockNr;
-								int b2 = ((TableModeltem) o2).blockNr;
+							if (o1 instanceof TableModelItem && o2 instanceof TableModelItem) {
+								int b1 = ((TableModelItem) o1).blockNr;
+								int b2 = ((TableModelItem) o2).blockNr;
 								if (b1 != b2) {
 									return (b1 - b2) * (desc? -1 : 1);
 								}
 							}
-							if (o1 instanceof TableModeltem) {
-								o1 = ((TableModeltem) o1).value;
+							if (o1 instanceof TableModelItem) {
+								o1 = ((TableModelItem) o1).value;
 							}
-							if (o2 instanceof TableModeltem) {
-								o2 = ((TableModeltem) o2).value;
+							if (o2 instanceof TableModelItem) {
+								o2 = ((TableModelItem) o2).value;
 							}
 							if (o1 == null && o2 == null) {
 								return 0;
@@ -3528,6 +3535,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		reloadRows();
 	}
 
+	private static TableContentViewFilter tableContentViewFilter = TableContentViewFilter.create();
+	
 	private Icon dropDownIcon;
     {
 		String dir = "/net/sf/jailer/resource";
