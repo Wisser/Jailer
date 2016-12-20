@@ -2656,6 +2656,29 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					return false;
 				}
 			};
+			
+			boolean stripHour[] = new boolean[columns.size()];
+			final String HOUR = " 00:00:00.0";
+			for (int i = 0; i < columns.size(); ++i) {
+				stripHour[i] = true;
+				for (Row row : rows) {
+					Object value = row.values[i];
+					if (value == null) {
+						continue;
+					}
+					if (!(value instanceof java.sql.Date) && !(value instanceof java.sql.Timestamp)) {
+						stripHour[i] = false;
+						break;
+					}
+					String asString = value.toString();
+					if (asString.endsWith(HOUR)) {
+						continue;
+					}
+					stripHour[i] = false;
+					break;
+				}
+			}
+			
 			for (Row row : rows) {
 				Object[] rowData = new Object[columns.size()];
 				for (int i = 0; i < columns.size(); ++i) {
@@ -2664,6 +2687,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						rowData[i] = NULL;
 					} else if (rowData[i] instanceof UnknownValue) {
 						rowData[i] = UNKNOWN;
+					}
+					if (stripHour[i] && (rowData[i] instanceof java.sql.Date || rowData[i] instanceof java.sql.Timestamp)) {
+						String asString = rowData[i].toString();
+						rowData[i] = asString.substring(0, asString.length() - HOUR.length());
 					}
 				}
 				if (tableContentViewFilter != null) {

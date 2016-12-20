@@ -340,7 +340,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 						SqlScriptExecutor.getLastStatementCount().b + " rows affected");
 				statusLabel.setForeground(new Color(0, 100, 0));
 				afterExecution.run();
-				JOptionPane.showMessageDialog(this, "Successfully executed " + SqlScriptExecutor.getLastStatementCount().a + " statements.\n" + SqlScriptExecutor.getLastStatementCount().b + " rows affected.", "SQL/DML", JOptionPane.INFORMATION_MESSAGE);
+				// JOptionPane.showMessageDialog(this, "Successfully executed " + SqlScriptExecutor.getLastStatementCount().a + " statements.\n" + SqlScriptExecutor.getLastStatementCount().b + " rows affected.", "SQL/DML", JOptionPane.INFORMATION_MESSAGE);
 		 
 			} else {
 				statusLabel.setText("Error, rolled back");
