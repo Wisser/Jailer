@@ -59,6 +59,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
+import jsyntaxpane.DefaultSyntaxKit;
+
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.database.Session;
@@ -840,6 +842,16 @@ public class UIUtil {
 			}
 		}
 		System.exit(0);
+	}
+
+	public static void initSyntaxKit() {
+		try {
+			if (Integer.parseInt(System.getProperty("java.version", "1.7.0").split("\\.")[1]) < 9) {
+				DefaultSyntaxKit.initKit();
+			}
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
 	}
 	
 }

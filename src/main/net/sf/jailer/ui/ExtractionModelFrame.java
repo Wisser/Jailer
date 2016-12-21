@@ -46,7 +46,6 @@ import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
-import jsyntaxpane.DefaultSyntaxKit;
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.DDLCreator;
@@ -1642,11 +1641,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     		    	customizeNimbus();
     			} catch (Exception x) {
     			}
-            	try {
-        	    	DefaultSyntaxKit.initKit();
-            	} catch (Throwable x) {
-            		x.printStackTrace();
-    			}
+            	UIUtil.initSyntaxKit();
             	
             	String file = null;
                 try {
