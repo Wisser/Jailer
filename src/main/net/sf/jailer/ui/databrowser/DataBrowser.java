@@ -74,7 +74,6 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
-import jsyntaxpane.DefaultSyntaxKit;
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.database.Session;
@@ -1388,11 +1387,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 		java.awt.EventQueue.invokeLater(new Runnable() {
 			public void run() {
-				try {
-					DefaultSyntaxKit.initKit();
-				} catch (Throwable e) {
-					e.printStackTrace();
-				}
+				UIUtil.initSyntaxKit();
 				try {
 					CommandLineParser.parse(args, true);
 					try {
