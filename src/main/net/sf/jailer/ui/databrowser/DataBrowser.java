@@ -502,6 +502,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		if (dbConnectionDialog != null) {
 			ConnectionInfo connection = dbConnectionDialog.currentConnection;
 			if (connection != null) {
+				desktop.openSchemaMappingDialog(true);
 				createSession(dbConnectionDialog);
 				desktop.session = session;
 				updateStatusBar();

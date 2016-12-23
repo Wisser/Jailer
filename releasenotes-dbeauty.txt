@@ -1,4 +1,7 @@
 2.8.1
+  - Data Browser has been improved.
+
+2.8.1
   - Fixed an incompatibility with Java 9.
   
 2.8

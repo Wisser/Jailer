@@ -343,11 +343,7 @@ public class RowCounter {
      * @return qualified name of t
      */
     private String qualifiedTableName(Table t, Quoting quoting) {
-    	String schema = t.getOriginalSchema("");
-    	String mappedSchema = CommandLineParser.getInstance().getSourceSchemaMapping().get(schema);
-    	if (mappedSchema != null) {
-    		schema = mappedSchema;
-    	}
+    	String schema = t.getSchema("");
     	if (schema.length() == 0) {
     		return quoting.quote(t.getUnqualifiedName());
     	}
