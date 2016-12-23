@@ -2220,14 +2220,15 @@ public abstract class Desktop extends JDesktopPane {
 				SchemaMappingDialog schemaMappingDialog = new SchemaMappingDialog(parentFrame, datamodel.get(), dbConnectionDialog, session, mapping);
 				mapping = schemaMappingDialog.getMapping();
 			}
-			if (mapping != null) {
-				SchemaMappingDialog.store(mapping, dbConnectionDialog);
-				schemaMapping.clear();
-				schemaMapping.putAll(mapping);
-				parentFrame.updateStatusBar();
-				reloadDataModel(mapping, !silent);
-				reloadRoots();
+			if (mapping == null) {
+				mapping = new HashMap<String, String>();
 			}
+			SchemaMappingDialog.store(mapping, dbConnectionDialog);
+			schemaMapping.clear();
+			schemaMapping.putAll(mapping);
+			parentFrame.updateStatusBar();
+			reloadDataModel(mapping, !silent);
+			reloadRoots();
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e, session);
 		}
