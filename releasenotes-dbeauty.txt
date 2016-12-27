@@ -1,5 +1,6 @@
 2.8.1
   - Data Browser has been improved.
+  - Bug fix for "Column name not exported with double quotes" https://sourceforge.net/p/jailer/discussion/700499/thread/a3635560/
 
 2.8.1
   - Fixed an incompatibility with Java 9.

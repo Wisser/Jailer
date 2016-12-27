@@ -26,40 +26,40 @@ import net.sf.jailer.util.SqlUtil;
 public class PseudoColumnsTestCase extends TestCase {
 
 	public void testPseudoColumn() throws Exception {
-		assertEquals("(T1.birthday - 1)=(T2.birthday - 1)", SqlUtil.resolvePseudoColumns("A.$distance=B.$distance", "T1", "T2", 2, 1));
-		assertEquals("(T1.birthday - 1)=(T2.birthday - 1)", SqlUtil.resolvePseudoColumns("A . $distance=B . $distance", "T1", "T2", 2, 1));
-		assertEquals("(T1.birthday - 1)=(T2.birthday - 1)", SqlUtil.resolvePseudoColumns("A.$DISTANCE=B.$DISTANCE", "T1", "T2", 2, 1));
-		assertEquals("(T1.birthday - 1)=(T2.birthday - 1)", SqlUtil.resolvePseudoColumns("A . $DISTANCE=B . $DISTANCE", "T1", "T2", 2, 1));
-		assertEquals("(T1.birthday - 1)=B", SqlUtil.resolvePseudoColumns("A.$DISTANCE=B", "T1", "T2", 2, 1));
-		assertEquals("(T1.birthday - 1)=(T2.birthday - 1)", SqlUtil.resolvePseudoColumns("a.$distance=b.$distance", "T1", "T2", 2, 1));
-		assertEquals("(T1.birthday - 1)=(T2.birthday - 1)", SqlUtil.resolvePseudoColumns("a . $distance=b . $distance", "T1", "T2", 2, 1));
-		assertEquals("(T1.birthday - 1)=(T2.birthday - 1)", SqlUtil.resolvePseudoColumns("a.$DISTANCE=b.$DISTANCE", "T1", "T2", 2, 1));
-		assertEquals("(T1.birthday - 1)=(T2.birthday - 1)", SqlUtil.resolvePseudoColumns("a . $DISTANCE=b . $DISTANCE", "T1", "T2", 2, 1));
-		assertEquals("(T1.birthday - 1)=b", SqlUtil.resolvePseudoColumns("a.$DISTANCE=b", "T1", "T2", 2, 1));
+		assertEquals("(T1.birthday - 1)=(T2.birthday - 1)", SqlUtil.resolvePseudoColumns("A.$distance=B.$distance", "T1", "T2", 2, 1, false));
+		assertEquals("(T1.birthday - 1)=(T2.birthday - 1)", SqlUtil.resolvePseudoColumns("A . $distance=B . $distance", "T1", "T2", 2, 1, false));
+		assertEquals("(T1.birthday - 1)=(T2.birthday - 1)", SqlUtil.resolvePseudoColumns("A.$DISTANCE=B.$DISTANCE", "T1", "T2", 2, 1, false));
+		assertEquals("(T1.birthday - 1)=(T2.birthday - 1)", SqlUtil.resolvePseudoColumns("A . $DISTANCE=B . $DISTANCE", "T1", "T2", 2, 1, false));
+		assertEquals("(T1.birthday - 1)=B", SqlUtil.resolvePseudoColumns("A.$DISTANCE=B", "T1", "T2", 2, 1, false));
+		assertEquals("(T1.birthday - 1)=(T2.birthday - 1)", SqlUtil.resolvePseudoColumns("a.$distance=b.$distance", "T1", "T2", 2, 1, false));
+		assertEquals("(T1.birthday - 1)=(T2.birthday - 1)", SqlUtil.resolvePseudoColumns("a . $distance=b . $distance", "T1", "T2", 2, 1, false));
+		assertEquals("(T1.birthday - 1)=(T2.birthday - 1)", SqlUtil.resolvePseudoColumns("a.$DISTANCE=b.$DISTANCE", "T1", "T2", 2, 1, false));
+		assertEquals("(T1.birthday - 1)=(T2.birthday - 1)", SqlUtil.resolvePseudoColumns("a . $DISTANCE=b . $DISTANCE", "T1", "T2", 2, 1, false));
+		assertEquals("(T1.birthday - 1)=b", SqlUtil.resolvePseudoColumns("a.$DISTANCE=b", "T1", "T2", 2, 1, false));
 
-		assertEquals("(T1.birthday - 1 = 0) and (T2.birthday - 1 = 0)", SqlUtil.resolvePseudoColumns("A.$is_subject and B.$is_subject", "T1", "T2", 2, 1));
-		assertEquals("(T1.birthday - 1 = 0) and (T2.birthday - 1 = 0)", SqlUtil.resolvePseudoColumns("A . $is_subject and B . $is_subject", "T1", "T2", 2, 1));
-		assertEquals("(T1.birthday - 1 = 0) and (T2.birthday - 1 = 0)", SqlUtil.resolvePseudoColumns("A.$IS_SUBJECT and B.$IS_SUBJECT", "T1", "T2", 2, 1));
-		assertEquals("(T1.birthday - 1 = 0) and (T2.birthday - 1 = 0)", SqlUtil.resolvePseudoColumns("A . $IS_SUBJECT and B . $IS_SUBJECT", "T1", "T2", 2, 1));
-		assertEquals("(T1.birthday - 1 = 0) and B", SqlUtil.resolvePseudoColumns("A.$IS_SUBJECT and B", "T1", "T2", 2, 1));
-		assertEquals("(T1.birthday - 1 = 0) and (T2.birthday - 1 = 0)", SqlUtil.resolvePseudoColumns("a.$is_subject and b.$is_subject", "T1", "T2", 2, 1));
-		assertEquals("(T1.birthday - 1 = 0) and (T2.birthday - 1 = 0)", SqlUtil.resolvePseudoColumns("a . $is_subject and b . $is_subject", "T1", "T2", 2, 1));
-		assertEquals("(T1.birthday - 1 = 0) and (T2.birthday - 1 = 0)", SqlUtil.resolvePseudoColumns("a.$IS_SUBJECT and b.$IS_SUBJECT", "T1", "T2", 2, 1));
-		assertEquals("(T1.birthday - 1 = 0) and (T2.birthday - 1 = 0)", SqlUtil.resolvePseudoColumns("a . $IS_SUBJECT and b . $IS_SUBJECT", "T1", "T2", 2, 1));
-		assertEquals("(T1.birthday - 1 = 0) and b", SqlUtil.resolvePseudoColumns("a.$IS_SUBJECT and b", "T1", "T2", 2, 1));
+		assertEquals("(T1.birthday - 1 = 0) and (T2.birthday - 1 = 0)", SqlUtil.resolvePseudoColumns("A.$is_subject and B.$is_subject", "T1", "T2", 2, 1, false));
+		assertEquals("(T1.birthday - 1 = 0) and (T2.birthday - 1 = 0)", SqlUtil.resolvePseudoColumns("A . $is_subject and B . $is_subject", "T1", "T2", 2, 1, false));
+		assertEquals("(T1.birthday - 1 = 0) and (T2.birthday - 1 = 0)", SqlUtil.resolvePseudoColumns("A.$IS_SUBJECT and B.$IS_SUBJECT", "T1", "T2", 2, 1, false));
+		assertEquals("(T1.birthday - 1 = 0) and (T2.birthday - 1 = 0)", SqlUtil.resolvePseudoColumns("A . $IS_SUBJECT and B . $IS_SUBJECT", "T1", "T2", 2, 1, false));
+		assertEquals("(T1.birthday - 1 = 0) and B", SqlUtil.resolvePseudoColumns("A.$IS_SUBJECT and B", "T1", "T2", 2, 1, false));
+		assertEquals("(T1.birthday - 1 = 0) and (T2.birthday - 1 = 0)", SqlUtil.resolvePseudoColumns("a.$is_subject and b.$is_subject", "T1", "T2", 2, 1, false));
+		assertEquals("(T1.birthday - 1 = 0) and (T2.birthday - 1 = 0)", SqlUtil.resolvePseudoColumns("a . $is_subject and b . $is_subject", "T1", "T2", 2, 1, false));
+		assertEquals("(T1.birthday - 1 = 0) and (T2.birthday - 1 = 0)", SqlUtil.resolvePseudoColumns("a.$IS_SUBJECT and b.$IS_SUBJECT", "T1", "T2", 2, 1, false));
+		assertEquals("(T1.birthday - 1 = 0) and (T2.birthday - 1 = 0)", SqlUtil.resolvePseudoColumns("a . $IS_SUBJECT and b . $IS_SUBJECT", "T1", "T2", 2, 1, false));
+		assertEquals("(T1.birthday - 1 = 0) and b", SqlUtil.resolvePseudoColumns("a.$IS_SUBJECT and b", "T1", "T2", 2, 1, false));
 
-		assertEquals("(1 = 0)", SqlUtil.resolvePseudoColumns("b . $IS_SUBJECT", "T1", null, 2, 1));
+		assertEquals("(1 = 0)", SqlUtil.resolvePseudoColumns("b . $IS_SUBJECT", "T1", null, 2, 1, false));
 		
-		assertEquals("(T1.birthday - 1)=2", SqlUtil.resolvePseudoColumns("A.$distance=B.$distance", "T1", null, 3, 1));
-		assertEquals("(T1.birthday - 1)=2", SqlUtil.resolvePseudoColumns("A . $distance=B . $distance", "T1", null, 3, 1));
-		assertEquals("(T1.birthday - 1)=2", SqlUtil.resolvePseudoColumns("A.$DISTANCE=B.$DISTANCE", "T1", null, 3, 1));
-		assertEquals("(T1.birthday - 1)=2", SqlUtil.resolvePseudoColumns("A . $DISTANCE=B . $DISTANCE", "T1", null, 3, 1));
-		assertEquals("(T1.birthday - 1)=B", SqlUtil.resolvePseudoColumns("A.$DISTANCE=B", "T1", null, 3, 1));
-		assertEquals("(T1.birthday - 1)=2", SqlUtil.resolvePseudoColumns("a.$distance=b.$distance", "T1", null, 3, 1));
-		assertEquals("(T1.birthday - 1)=2", SqlUtil.resolvePseudoColumns("a . $distance=b . $distance", "T1", null, 3, 1));
-		assertEquals("(T1.birthday - 1)=2", SqlUtil.resolvePseudoColumns("a.$DISTANCE=b.$DISTANCE", "T1", null, 3, 1));
-		assertEquals("(T1.birthday - 1)=2", SqlUtil.resolvePseudoColumns("a . $DISTANCE=b . $DISTANCE", "T1", null, 3, 1));
-		assertEquals("(T1.birthday - 1)=b", SqlUtil.resolvePseudoColumns("a.$DISTANCE=b", "T1", null, 3, 1));
+		assertEquals("(T1.birthday - 1)=2", SqlUtil.resolvePseudoColumns("A.$distance=B.$distance", "T1", null, 3, 1, false));
+		assertEquals("(T1.birthday - 1)=2", SqlUtil.resolvePseudoColumns("A . $distance=B . $distance", "T1", null, 3, 1, false));
+		assertEquals("(T1.birthday - 1)=2", SqlUtil.resolvePseudoColumns("A.$DISTANCE=B.$DISTANCE", "T1", null, 3, 1, false));
+		assertEquals("(T1.birthday - 1)=2", SqlUtil.resolvePseudoColumns("A . $DISTANCE=B . $DISTANCE", "T1", null, 3, 1, false));
+		assertEquals("(T1.birthday - 1)=B", SqlUtil.resolvePseudoColumns("A.$DISTANCE=B", "T1", null, 3, 1, false));
+		assertEquals("(T1.birthday - 1)=2", SqlUtil.resolvePseudoColumns("a.$distance=b.$distance", "T1", null, 3, 1, false));
+		assertEquals("(T1.birthday - 1)=2", SqlUtil.resolvePseudoColumns("a . $distance=b . $distance", "T1", null, 3, 1, false));
+		assertEquals("(T1.birthday - 1)=2", SqlUtil.resolvePseudoColumns("a.$DISTANCE=b.$DISTANCE", "T1", null, 3, 1, false));
+		assertEquals("(T1.birthday - 1)=2", SqlUtil.resolvePseudoColumns("a . $DISTANCE=b . $DISTANCE", "T1", null, 3, 1, false));
+		assertEquals("(T1.birthday - 1)=b", SqlUtil.resolvePseudoColumns("a.$DISTANCE=b", "T1", null, 3, 1, false));
 	}
 	
 }

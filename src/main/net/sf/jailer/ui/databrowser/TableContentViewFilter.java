@@ -85,12 +85,27 @@ public class TableContentViewFilter {
 			bindings.put("object", object);
 			bindings.put("name", name);
 			bindings.put("df", df);
-			script.eval(bindings);
+			// script.eval(bindings);
+			Integer i;
+			i = name.get("angelegt");
+			if (i != null) {
+			  object[i.intValue()] = df.format(new java.util.Date(parseInt(object[i.intValue()].toString())));
+			}
+
+			i = name.get("geaendert");
+			if (i != null) {
+			  object[i.intValue()] = df.format(new java.util.Date(parseInt(object[i.intValue()].toString())));
+			}
+
+
 		} catch (Exception e) {
-			e.printStackTrace();
 			
 		}
 		return object;
+	}
+
+	private long parseInt(String string) {
+		return Long.parseLong(string);
 	}
 
 }

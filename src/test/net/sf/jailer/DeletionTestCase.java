@@ -78,7 +78,7 @@ public class DeletionTestCase extends DbmsAwareTestCase {
 		
 		if (doDeletion(datamodelDir, new File(testDir, "extractionmodel.csv"), result, insertResult, scope)) {
 			Session statementExecutor = new Session(connectionArguments.get(0), connectionArguments.get(1), connectionArguments.get(2), connectionArguments.get(3));
-			SqlScriptExecutor.executeScript(result.getCanonicalPath(), statementExecutor);
+			new SqlScriptExecutor(statementExecutor, 1).executeScript(result.getCanonicalPath());
 			statementExecutor.shutDown();
 			
 			File actualState = new File(resultDir, "remaining-state.xml");
