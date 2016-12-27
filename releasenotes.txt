@@ -1,5 +1,6 @@
 6.3.2
   - Data Browser has been improved.
+  - Bug fix for "Column name not exported with double quotes" https://sourceforge.net/p/jailer/discussion/700499/thread/a3635560/
 
 6.3.1
   - Fixed an incompatibility with Java 9.
