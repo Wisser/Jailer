@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2016 the original author or authors.
+ * Copyright 2007 - 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,10 @@ import java.util.Set;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerConfigurationException;
 
+import org.apache.log4j.Logger;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
@@ -41,11 +45,6 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.Quoting;
-import net.sf.jailer.util.SqlScriptExecutor;
-
-import org.apache.log4j.Logger;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
 /**
  * A {@link ResultSetReader} that writes the read rows into an XML file.
