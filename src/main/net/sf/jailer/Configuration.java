@@ -120,6 +120,7 @@ public class Configuration {
 	public Boolean supportsSchemasInIndexDefinitions = null;
 	public boolean useInlineViewsInDataBrowser = true;
 	public String virtualColumnsQuery = null;
+	public String identifierQuoteString = "\"";
 	public DBMS dbms = DBMS.UNKNOWN;
 	
 	/**
@@ -700,6 +701,20 @@ public class Configuration {
 	 */
 	public void setJdbcProperties(Map<String, String> jdbcProperties) {
 		this.jdbcProperties = jdbcProperties;
+	}
+
+	/**
+	 * @return the identifierQuoteString
+	 */
+	public String getIdentifierQuoteString() {
+		return identifierQuoteString;
+	}
+
+	/**
+	 * @param identifierQuoteString the identifierQuoteString to set
+	 */
+	public void setIdentifierQuoteString(String identifierQuoteString) {
+		this.identifierQuoteString = identifierQuoteString;
 	}
 	
 }

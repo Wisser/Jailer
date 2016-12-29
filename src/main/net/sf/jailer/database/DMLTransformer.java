@@ -209,6 +209,11 @@ public class DMLTransformer extends AbstractResultSetReader {
         this.currentDialect = targetDBMSConfiguration.getSqlDialect();
         this.insertStatementBuilder = new StatementBuilder(currentDialect.supportsMultiRowInserts || targetDBMSConfiguration.dbms == DBMS.ORACLE || targetDBMSConfiguration.dbms == DBMS.SQLITE? maxBodySize : 1);
         this.quoting = new Quoting(session);
+        if (targetDBMSConfiguration != null && targetDBMSConfiguration != Configuration.forDbms(session)) {
+        	if (targetDBMSConfiguration.getIdentifierQuoteString() != null) {
+        		this.quoting.setIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
+        	}
+        }
         this.session = session;
         tableHasIdentityColumn = false;
         if (targetDBMSConfiguration.isIdentityInserts()) {
