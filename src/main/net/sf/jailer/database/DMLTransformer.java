@@ -364,7 +364,7 @@ public class DMLTransformer extends AbstractResultSetReader {
                         whereWOAlias.append(" and ");
                     }
                     f = false;
-                    whereForTerminator.append("T." + quoting.quote(pk.name) + "=Q." + quoting.quote(pk.name));
+                    whereForTerminator.append("T." + quoting.requote(pk.name) + "=Q." + quoting.requote(pk.name));
                     String value;
                     String name = quoting.unquote(pk.name);
                     if (val.containsKey(name)) {
@@ -374,8 +374,8 @@ public class DMLTransformer extends AbstractResultSetReader {
                     } else {
                     	value = val.get(name.toUpperCase());
                     }
-                    where.append("T." + quoting.quote(pk.name) + "=" + value);
-                    whereWOAlias.append(quoting.quote(pk.name) + "=" + value);
+                    where.append("T." + quoting.requote(pk.name) + "=" + value);
+                    whereWOAlias.append(quoting.requote(pk.name) + "=" + value);
                 }
 
                 if (currentDialect.upsertMode == UPSERT_MODE.MERGE && !tableHasLobs) {
@@ -531,9 +531,9 @@ public class DMLTransformer extends AbstractResultSetReader {
     		schema = mappedSchema;
     	}
     	if (schema.length() == 0) {
-    		return quoting.quote(t.getUnqualifiedName());
+    		return quoting.requote(t.getUnqualifiedName());
     	}
-		return quoting.quote(schema) + "." + quoting.quote(t.getUnqualifiedName());
+		return quoting.quote(schema) + "." + quoting.requote(t.getUnqualifiedName());
 	}
 
 	/**
@@ -583,7 +583,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 	                    where.append(" and ");
 	                }
 	                f = false;
-	                where.append(quoting.quote(pk.name) + "=" + val.get(pk.name));
+	                where.append(quoting.requote(pk.name) + "=" + val.get(pk.name));
 	            }
 	            if (lob instanceof SQLXML) {
 	            	++numberOfExportedLOBs;

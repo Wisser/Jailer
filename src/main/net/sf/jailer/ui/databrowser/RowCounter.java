@@ -345,9 +345,9 @@ public class RowCounter {
     private String qualifiedTableName(Table t, Quoting quoting) {
     	String schema = t.getSchema("");
     	if (schema.length() == 0) {
-    		return quoting.quote(t.getUnqualifiedName());
+    		return quoting.requote(t.getUnqualifiedName());
     	}
-		return quoting.quote(schema) + "." + quoting.quote(t.getUnqualifiedName());
+		return quoting.requote(schema) + "." + quoting.requote(t.getUnqualifiedName());
 	}
 
 }

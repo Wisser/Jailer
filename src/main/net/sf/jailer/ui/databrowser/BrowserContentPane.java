@@ -2208,9 +2208,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private String qualifiedTableName(Table t, Quoting quoting) {
     	String schema = t.getSchema("");
     	if (schema.length() == 0) {
-    		return quoting.quote(t.getUnqualifiedName());
+    		return quoting.requote(t.getUnqualifiedName());
     	}
-		return quoting.quote(schema) + "." + quoting.quote(t.getUnqualifiedName());
+		return quoting.requote(schema) + "." + quoting.requote(t.getUnqualifiedName());
 	}
 
 	/**
@@ -2246,7 +2246,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (selectParentPK) {
 				int i = 0;
 				for (Column column: rowIdSupport.getPrimaryKey(association.source).getColumns()) {
-					String name = quoting.quote(column.name);
+					String name = quoting.requote(column.name);
 					sql += (!f ? ", " : "") + "B." + name + " AS B" + i;
 					olapPrefix += (!f ? ", " : "") + "S.B" + i;
 					++i;
@@ -2257,7 +2257,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			int i = 0;
 			
 			for (Column column : rowIdSupport.getColumns(table)) {
-				String name = quoting.quote(column.name);
+				String name = quoting.requote(column.name);
 				if (existingColumnsLowerCase != null && !existingColumnsLowerCase.contains(quoting.unquote(name).toLowerCase())) {
 					sql += (!f ? ", " : "") + "'?' AS A" + i;
 					unknownColumnIndexes.add(colI);
@@ -2275,8 +2275,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (selectParentPK) {
 				int j = 0;
 				for (Column pk: rowIdSupport.getPrimaryKey(association.source).getColumns()) {
-					parentPkColumnNames.add(quoting.quote(pk.name));
-					orderBy += (f ? "" : ", ") + "B." + quoting.quote(pk.name);
+					parentPkColumnNames.add(quoting.requote(pk.name));
+					orderBy += (f ? "" : ", ") + "B." + quoting.requote(pk.name);
 					olapOrderBy += (f ? "" : ", ") + "S.B" + j;
 					++j;
 					f = false;
@@ -2284,8 +2284,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			int j = 0;
 			for (Column pk: rowIdSupport.getPrimaryKey(table).getColumns()) {
-				pkColumnNames.add(quoting.quote(pk.name));
-				orderBy += (f ? "" : ", ") + "A." + quoting.quote(pk.name);
+				pkColumnNames.add(quoting.requote(pk.name));
+				orderBy += (f ? "" : ", ") + "A." + quoting.requote(pk.name);
 				olapOrderBy += (f ? "" : ", ") + "S.A" + j;
 				++j;
 				f = false;
@@ -2559,9 +2559,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								isPK = type != Types.BLOB && type != Types.CLOB && type != Types.DATALINK && type != Types.JAVA_OBJECT && type != Types.NCLOB
 										&& type != Types.NULL && type != Types.OTHER && type != Types.REF && type != Types.SQLXML && type != Types.STRUCT;
 							}
-							if (pkColumnNames.contains(quoting.quote(column.name)) || isPK) {
+							if (pkColumnNames.contains(quoting.requote(column.name)) || isPK) {
 								String cVal = cellContentConverter.toSql(o);
-								String pkValue = "B." + quoting.quote(column.name) + ("null".equalsIgnoreCase(cVal)? " is null" : ("=" + cVal));
+								String pkValue = "B." + quoting.requote(column.name) + ("null".equalsIgnoreCase(cVal)? " is null" : ("=" + cVal));
 								if (pkColumn != null) {
 									pkColumn.put(column.name, pkValue);
 								}

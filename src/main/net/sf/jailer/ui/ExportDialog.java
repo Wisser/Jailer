@@ -524,7 +524,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		    				}
 				    		ok = true;
 						} catch (Exception e) {
-							// ignore
+							e.printStackTrace();
 						}
 			    		if (ok) {
 			    			SwingUtilities.invokeLater(new Runnable() {

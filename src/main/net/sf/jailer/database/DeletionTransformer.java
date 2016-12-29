@@ -150,7 +150,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
                 boolean firstTime = true;
                 String item = "";
                 for (Column pkColumn: table.primaryKey.getColumns()) {
-                	item += (firstTime? "" : " and ") + quoting.quote(pkColumn.name) + "="
+                	item += (firstTime? "" : " and ") + quoting.requote(pkColumn.name) + "="
                     		+ cellContentConverter.toSql(cellContentConverter.getObject(resultSet, quoting.unquote(pkColumn.name)));
                     firstTime = false;
                 }
@@ -162,14 +162,14 @@ public class DeletionTransformer extends AbstractResultSetReader {
 	            String deleteHead;
 	            String item;
 	            if (table.primaryKey.getColumns().size() == 1) {
-	                deleteHead = "Delete from " + qualifiedTableName(table) + " Where " + quoting.quote(table.primaryKey.getColumns().get(0).name) + " in (";
+	                deleteHead = "Delete from " + qualifiedTableName(table) + " Where " + quoting.requote(table.primaryKey.getColumns().get(0).name) + " in (";
 	                item = cellContentConverter.toSql(cellContentConverter.getObject(resultSet, quoting.unquote(table.primaryKey.getColumns().get(0).name)));
 	            } else {
 	                deleteHead = "Delete from " + qualifiedTableName(table) + " Where (";
 	                item = "(";
 	                boolean firstTime = true;
 	                for (Column pkColumn: table.primaryKey.getColumns()) {
-	                    deleteHead += (firstTime? "" : ", ") + quoting.quote(pkColumn.name);
+	                    deleteHead += (firstTime? "" : ", ") + quoting.requote(pkColumn.name);
 	                    item += (firstTime? "" : ", ") + cellContentConverter.toSql(cellContentConverter.getObject(resultSet, quoting.unquote(pkColumn.name)));
 	                    firstTime = false;
 	                }
@@ -202,9 +202,9 @@ public class DeletionTransformer extends AbstractResultSetReader {
     		schema = mappedSchema;
     	}
     	if (schema.length() == 0) {
-    		return quoting.quote(t.getUnqualifiedName());
+    		return quoting.requote(t.getUnqualifiedName());
     	}
-		return quoting.quote(schema) + "." + quoting.quote(t.getUnqualifiedName());
+		return quoting.quote(schema) + "." + quoting.requote(t.getUnqualifiedName());
 	}
 
     /**

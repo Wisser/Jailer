@@ -145,7 +145,7 @@ public class PrimaryKey {
             if (prefix != null) {
                 list += prefix;
             }
-            list += quoting != null? quoting.quote(column.name) : column.name;
+            list += quoting != null? quoting.requote(column.name) : column.name;
         }
         return list;
     }

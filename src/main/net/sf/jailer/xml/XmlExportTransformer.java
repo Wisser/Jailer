@@ -354,7 +354,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 				sb.append("T." + tableMapping.originalPKAliasPrefix + i + " AS PK" + i);
 				++i;
 			} else {
-				sb.append("T." + quoting.quote(pk.name) + " AS PK" + i++);
+				sb.append("T." + quoting.requote(pk.name) + " AS PK" + i++);
 			}
 		}
 		XmlUtil.visitDocumentNodes(tableMapping.template, new NodeVisitor() {
