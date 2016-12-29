@@ -178,9 +178,9 @@ public class Quoting {
 		if (identifier != null) {
 			identifier = identifier.trim();
 		}
-		if (!force && !isQuoted(identifier) && !keyWords.contains(identifier.toUpperCase())) {
-			return identifier;
-		}
+//		if (!force && !isQuoted(identifier) && !keyWords.contains(identifier.toUpperCase())) {
+//			return identifier;
+//		}
 		identifier = unquote(identifier);
 		if (quote != null && identifier != null && identifier.length() > 0) {
 			if (!keyWords.contains(identifier.toUpperCase())) {
@@ -256,7 +256,23 @@ public class Quoting {
 		return identifier;
 	}
 
-
+	/**
+	 * Quotes an identifier only if it is already quoted (potentially with a different quoting-string).
+	 * 
+	 * @param identifier
+	 *            the identifier
+	 * @return quoted identifier
+	 */
+	public String requote(String identifier) {
+		if (identifier != null) {
+			identifier = identifier.trim();
+			if (isQuoted(identifier)) {
+				return quote + unquote(identifier) + quote;
+			}
+		}
+		return identifier;
+	}
+	
 	/**
 	 * Gets unquoted qualified table name.
 	 * 

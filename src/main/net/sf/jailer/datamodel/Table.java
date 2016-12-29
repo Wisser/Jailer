@@ -429,7 +429,7 @@ public class Table extends ModelElement implements Comparable<Table> {
 				}
 			}
 			Element columnElement = template.createElement(XmlUtil.asElementName(column.name.toLowerCase()));
-			String quotedName = quoting != null? quoting.quote(column.name) : column.name;
+			String quotedName = quoting != null? quoting.requote(column.name) : column.name;
 			if (!isPK) {
 				columnElement.setAttribute(XmlUtil.NS_PREFIX + ":if-not-null", XmlUtil.SQL_PREFIX + "T." + quotedName);
 			}

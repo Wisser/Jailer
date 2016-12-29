@@ -323,6 +323,9 @@ public class SqlScriptExecutor {
 	            CancellationHandler.checkForCancellation(null);
 	            synchronized (this) {
 	            	if (exception != null) {
+	            		if (exception.getCause() instanceof SQLException) {
+	            			throw (SQLException) exception.getCause();
+	            		}
 	            		throw exception;
 	            	}
 	            }
@@ -336,12 +339,20 @@ public class SqlScriptExecutor {
 		    	lastRowCount = r;
 			}
 	    	return r;
+    	} catch (Exception e) {
+    		if (e.getCause() instanceof SQLException) {
+    			throw (SQLException) e.getCause();
+    		}
+    		throw e;
     	} finally {
     		if (executor != null) {
     			executor.shutdown();
     		}
             synchronized (this) {
             	if (exception != null) {
+            		if (exception.getCause() instanceof SQLException) {
+            			throw (SQLException) exception.getCause();
+            		}
             		throw exception;
             	}
             }

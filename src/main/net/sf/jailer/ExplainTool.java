@@ -129,7 +129,7 @@ public class ExplainTool {
                 where += " and ";
             }
             String value = keys.get(i++);
-			where += quoting.quote(column.name) + (value == null || value.equals("null")? " is null" : ("=" + value));
+			where += quoting.requote(column.name) + (value == null || value.equals("null")? " is null" : ("=" + value));
         }
         String selectPredecessor = "Select PRE_TYPE, association, " + graph.getUniversalPrimaryKey().columnList("PRE_") + " From " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, session) + " E Where E.r_entitygraph=" + graph.graphID +
             " and type=" + datamodel.getTable(type).getOrdinal() + " and " + where;

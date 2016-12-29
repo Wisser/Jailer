@@ -77,7 +77,7 @@ public class SQLDMLBuilder {
 			if (column.isVirtualOrBlocked(session)) {
 				continue;
 			}
-			String name = quoting.quote(column.name);
+			String name = quoting.requote(column.name);
 			String value = getSQLLiteral(row.values[i++], cellContentConverter);
 			if (value == null) {
 				continue;
@@ -137,7 +137,7 @@ public class SQLDMLBuilder {
 			if (column.isVirtualOrBlocked(session)) {
 				continue;
 			}
-			String name = quoting.quote(column.name);
+			String name = quoting.requote(column.name);
 			String value = getSQLLiteral(row.values[i++], cellContentConverter);
 			if (value == null) {
 				continue;

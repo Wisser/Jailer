@@ -502,8 +502,8 @@ public class LocalEntityGraph extends EntityGraph {
 				protected void process(String inlineView) throws SQLException {
 					String select =
 						    "Select distinct " + pkList(destination, destAlias) +
-						    " From " + inlineView + " join " + quoting.quote(source.getName()) + " " + sourceAlias + " on " + pkEqualsEntityID(source, sourceAlias, "E", "", false) +
-						    " join " + quoting.quote(destination.getName()) + " " + destAlias + " on (" + jc + ")";
+						    " From " + inlineView + " join " + quoting.requote(source.getName()) + " " + sourceAlias + " on " + pkEqualsEntityID(source, sourceAlias, "E", "", false) +
+						    " join " + quoting.requote(destination.getName()) + " " + destAlias + " on (" + jc + ")";
 					
 					remoteSession.executeQuery(select, new LocalInlineViewBuilder(destAlias, upkColumnList(destination, null)) {
 						@Override
@@ -560,7 +560,7 @@ public class LocalEntityGraph extends EntityGraph {
     private long addEntities(final Table table, final String alias, String condition, final int today) throws SQLException {
     	String select =
             "Select " + pkList(table, alias) +
-            " From " + quoting.quote(table.getName()) + " " + alias + " Where (" + condition + ")";
+            " From " + quoting.requote(table.getName()) + " " + alias + " Where (" + condition + ")";
         
         final long[] rc = new long[1];
         
@@ -624,7 +624,7 @@ public class LocalEntityGraph extends EntityGraph {
 				String select = 
 		    			"Select " + upkColumnList + ", " + pkList(to, toAlias) +
 		    			" From " + inlineView + ", " +
-		    			 quoting.quote(from.getName()) + " " + fromAlias + ", " + quoting.quote(to.getName()) + " " + toAlias +
+		    			 quoting.requote(from.getName()) + " " + fromAlias + ", " + quoting.requote(to.getName()) + " " + toAlias +
 		    			" Where (" + condition + ")" +
 		    			" and " + pkEqualsEntityID(from, fromAlias, "E1", "", false);
 				
@@ -769,7 +769,7 @@ public class LocalEntityGraph extends EntityGraph {
 		        }
 		        
 		    	long rc = remoteSession.executeQuery(
-		                "Select " + selectionSchema + " From " + inlineView + " join " + quoting.quote(table.getName()) + " T on " +
+		                "Select " + selectionSchema + " From " + inlineView + " join " + quoting.requote(table.getName()) + " T on " +
 		                pkEqualsEntityID(table, "T", "E", "", false) +
 		                orderBy,
 		                reader);
@@ -820,11 +820,11 @@ public class LocalEntityGraph extends EntityGraph {
 		    			selectOPK.append(", ");
 		    		}
 		    		sb.append(originalPKAliasPrefix + i);
-		    		selectOPK.append("T." + quoting.quote(pkColumns.get(i).name) + " AS " + originalPKAliasPrefix + i);
+		    		selectOPK.append("T." + quoting.requote(pkColumns.get(i).name) + " AS " + originalPKAliasPrefix + i);
 		    	}
 
 		    	String sqlQuery = "Select " + selectionSchema + " From (" +
-		                "Select " + selectOPK + ", " + filteredSelectionClause(table) + " From " + inlineView + " join " + quoting.quote(table.getName()) + " T on " +
+		                "Select " + selectOPK + ", " + filteredSelectionClause(table) + " From " + inlineView + " join " + quoting.requote(table.getName()) + " T on " +
 		                pkEqualsEntityID(table, "T", "E", "", false) +
 		                ") T ";
 		    	
@@ -880,7 +880,7 @@ public class LocalEntityGraph extends EntityGraph {
 			
 			@Override
 			protected void process(String inlineView) throws SQLException {
-		        String sqlQuery = "Select " + filteredSelectionClause(table) + " From " + inlineView + " join " + quoting.quote(table.getName()) + " T on " +
+		        String sqlQuery = "Select " + filteredSelectionClause(table) + " From " + inlineView + " join " + quoting.requote(table.getName()) + " T on " +
 		    			pkEqualsEntityID(table, "T", "E", "", false);
 	    		long rc;
 	    		if (orderByPK) {
@@ -921,9 +921,9 @@ public class LocalEntityGraph extends EntityGraph {
 					sb.append(filterExpression);
 				}
     		} else {
-    			sb.append("T." + quoting.quote(c.name));
+    			sb.append("T." + quoting.requote(c.name));
     		}
-    		sb.append(" as " + quoting.quote(c.name));
+    		sb.append(" as " + quoting.requote(c.name));
     		first = false;
     	}
     	
@@ -1041,8 +1041,8 @@ public class LocalEntityGraph extends EntityGraph {
 				
 					String selectSource =
 							"Select distinct " + upkColumnList(association.destination, "EB", "") + ", " + pkList(association.source, sourceAlias, "") + " from " + inlineView + " " +
-									"join " + quoting.quote(association.destination.getName()) + " " + destAlias + " on "+ pkEqualsEntityID(association.destination, destAlias, "EB", "", false) + " " +
-									"join " + quoting.quote(association.source.getName()) + " " + sourceAlias + " " + " on " + jc;
+									"join " + quoting.requote(association.destination.getName()) + " " + destAlias + " on "+ pkEqualsEntityID(association.destination, destAlias, "EB", "", false) + " " +
+									"join " + quoting.requote(association.source.getName()) + " " + sourceAlias + " " + " on " + jc;
 
 					remoteSession.executeQuery(selectSource, new LocalInlineViewBuilder("EBA", upkColumnList(association.destination, null, "EB") + ", " + upkColumnList(association.source, "A"), true) {
 						
@@ -1151,14 +1151,14 @@ public class LocalEntityGraph extends EntityGraph {
 		        		if (i > 0) {
 		        			selectOPK.append(", ");
 		        		}
-		        		selectOPK.append("T." + quoting.quote(pkColumns.get(i).name) + " AS " + originalPKAliasPrefix + i);
+		        		selectOPK.append("T." + quoting.requote(pkColumns.get(i).name) + " AS " + originalPKAliasPrefix + i);
 		        	}
 		    		select = 
 		    			"Select " + selectionSchema + " from (" +  
-		    			"Select " + selectOPK + ", " + filteredSelectionClause(table) + " from " + quoting.quote(table.getName()) + " T join " + inlineView + " on " +
+		    			"Select " + selectOPK + ", " + filteredSelectionClause(table) + " from " + quoting.requote(table.getName()) + " T join " + inlineView + " on " +
 			    		 pkEqualsEntityID(table, "T", "D", "TO_", false) + ") T";
 		    	} else {
-			    	select = "Select " + selectionSchema + " from " + quoting.quote(table.getName()) + " T join " + inlineView + " on " +
+			    	select = "Select " + selectionSchema + " from " + quoting.requote(table.getName()) + " T join " + inlineView + " on " +
 			    		 pkEqualsEntityID(table, "T", "D", "TO_", false) + "";
 		    	}
 		    	long rc = remoteSession.executeQuery(select, reader);
@@ -1282,9 +1282,9 @@ public class LocalEntityGraph extends EntityGraph {
                 sb.append(entityAlias + "." + columnPrefix + column.name);
 	            if (tableColumn != null) {
 	            	if (fieldProcTables.contains(table.getUnqualifiedName().toLowerCase())) {
-	            		sb.append(" = " + tableColumn.type + "(" + tableAlias + "." + quoting.quote(tableColumn.name) + ")");
+	            		sb.append(" = " + tableColumn.type + "(" + tableAlias + "." + quoting.requote(tableColumn.name) + ")");
 	            	} else {
-	            		sb.append("=" + tableAlias + "." + quoting.quote(tableColumn.name));
+	            		sb.append("=" + tableAlias + "." + quoting.requote(tableColumn.name));
 	            	}
 	            } else {
 	                sb.append(" is null");
@@ -1324,7 +1324,7 @@ public class LocalEntityGraph extends EntityGraph {
                 if (tableAlias != null) {
                 	sb.append(tableAlias + ".");
                 }
-                sb.append(quoting.quote(tableColumn.name));
+                sb.append(quoting.requote(tableColumn.name));
                 sb.append(" AS " + (columnAliasPrefix == null? "" : columnAliasPrefix) + column.name);
            }
         }
