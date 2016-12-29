@@ -1,4 +1,7 @@
-2.8.1
+2.8.3
+  - Get IdentifierQuoteString from config if target DBMS differs from source DBMS.
+
+2.8.2
   - Data Browser has been improved.
   - Bug fix for "Column name not exported with double quotes" https://sourceforge.net/p/jailer/discussion/700499/thread/a3635560/
 

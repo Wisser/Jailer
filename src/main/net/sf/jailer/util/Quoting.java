@@ -61,12 +61,25 @@ public class Quoting {
 	 */
 	private Set<String> keyWords = new HashSet<String>(); 
 
+	private final boolean force;
+	
 	/**
 	 * Constructor.
 	 * 
 	 * @param session the database session
 	 */
 	public Quoting(Session session) throws SQLException {
+		this(session, false);
+	}
+
+	/**
+	 * Constructor.
+	 * 
+	 * @param session the database session
+	 * @param force if <code>true</code>, quote unquoted identifiers
+	 */
+	public Quoting(Session session, boolean force) throws SQLException {
+		this.force = force;
 		DatabaseMetaData metaData = session.getMetaData();
 		String quoteString = metaData.getIdentifierQuoteString();
 		if (quoteString != null
@@ -164,6 +177,9 @@ public class Quoting {
 	public String quote(String identifier) {
 		if (identifier != null) {
 			identifier = identifier.trim();
+		}
+		if (!force && !isQuoted(identifier) && !keyWords.contains(identifier.toUpperCase())) {
+			return identifier;
 		}
 		identifier = unquote(identifier);
 		if (quote != null && identifier != null && identifier.length() > 0) {
@@ -280,4 +296,12 @@ public class Quoting {
 		return false;
 	}
 
+	/**
+	 * Sets the identifierQuoteString
+	 * 
+	 * @param identifierQuoteString
+	 */
+	public void setIdentifierQuoteString(String identifierQuoteString) {
+		quote = identifierQuoteString;
+	}
 }

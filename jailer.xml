@@ -499,6 +499,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 				</bean>
 			</property>
 			<property name="virtualColumnsQuery" value="SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '${SCHEMA}' AND EXTRA LIKE '%VIRTUAL%'" />
+			<property name="identifierQuoteString" value="`" />
 		</bean>
 		
 		<!-- for Derby -->
