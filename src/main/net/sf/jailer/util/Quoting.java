@@ -61,25 +61,12 @@ public class Quoting {
 	 */
 	private Set<String> keyWords = new HashSet<String>(); 
 
-	private final boolean force;
-	
 	/**
 	 * Constructor.
 	 * 
 	 * @param session the database session
 	 */
 	public Quoting(Session session) throws SQLException {
-		this(session, false);
-	}
-
-	/**
-	 * Constructor.
-	 * 
-	 * @param session the database session
-	 * @param force if <code>true</code>, quote unquoted identifiers
-	 */
-	public Quoting(Session session, boolean force) throws SQLException {
-		this.force = force;
 		DatabaseMetaData metaData = session.getMetaData();
 		String quoteString = metaData.getIdentifierQuoteString();
 		if (quoteString != null
