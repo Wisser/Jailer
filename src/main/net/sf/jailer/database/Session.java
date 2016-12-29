@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 - 2016 the original author or authors.
+ * Copyright 2007 - 2017 the original author or authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,7 +33,6 @@ import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -41,11 +40,11 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Random;
 
+import org.apache.log4j.Logger;
+
 import net.sf.jailer.Configuration;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
-
-import org.apache.log4j.Logger;
 
 /**
  * Manages database sessions on a 'per thread' basis.
@@ -299,7 +298,8 @@ public class Session {
         	private Connection defaultConnection = null;
         	private Random random = new Random();
             public Connection getConnection() throws SQLException {
-                Connection con = local? connection.get() : temporaryTableSession == null? connection.get() : temporaryTableSession;
+                @SuppressWarnings("resource")
+				Connection con = local? connection.get() : temporaryTableSession == null? connection.get() : temporaryTableSession;
                 
                 if (con == null) {
                 	try {
