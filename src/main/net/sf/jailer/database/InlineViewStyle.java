@@ -127,7 +127,75 @@ public enum InlineViewStyle {
 			StringBuilder sb = new StringBuilder(" from dual) " + name);
 			return sb.toString();
 		}
-	};
+	},
+	
+	INFORMIX1("(Select 1 A, '2' B, 3 C from sysmaster:\"informix\".sysdual Union all "
+			  + "Select 4, '5', 6 from sysmaster:\"informix\".sysdual) %s") {
+			@Override
+			public String head(String[] columnNames) throws SQLException {
+				return "(Select ";
+			}
+
+			@Override
+			public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
+				StringBuilder sb = new StringBuilder();
+				for (int i = 1; i <= columnNames.length; ++i) {
+					if (i > 1) {
+						sb.append(", ");
+					}
+					sb.append(values[i - 1]);
+					if (rowNumber == 0) {
+						sb.append(" " + columnNames[i - 1]);
+					}
+				}
+				return sb.toString();
+			}
+
+			@Override
+			public String separator() throws SQLException {
+				return " from sysmaster:\"informix\".sysdual Union all Select ";
+			}
+
+			@Override
+			public String terminator(String name, String[] columnNames) throws SQLException {
+				StringBuilder sb = new StringBuilder(" from sysmaster:\"informix\".sysdual) " + name);
+				return sb.toString();
+			}
+		},
+	
+	INFORMIX2("(Select 1 A, '2' B, 3 C from table(set{1}) Union all "
+			  + "Select 4, '5', 6 from table(set{1})) %s") {
+			@Override
+			public String head(String[] columnNames) throws SQLException {
+				return "(Select ";
+			}
+
+			@Override
+			public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
+				StringBuilder sb = new StringBuilder();
+				for (int i = 1; i <= columnNames.length; ++i) {
+					if (i > 1) {
+						sb.append(", ");
+					}
+					sb.append(values[i - 1]);
+					if (rowNumber == 0) {
+						sb.append(" " + columnNames[i - 1]);
+					}
+				}
+				return sb.toString();
+			}
+
+			@Override
+			public String separator() throws SQLException {
+				return " from table(set{1}) Union all Select ";
+			}
+
+			@Override
+			public String terminator(String name, String[] columnNames) throws SQLException {
+				StringBuilder sb = new StringBuilder(" from table(set{1})) " + name);
+				return sb.toString();
+			}
+		};
 
 	public final String example;
 
