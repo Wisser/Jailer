@@ -18,85 +18,82 @@ package net.sf.jailer.database;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-
 /**
  * Styles of inline-views for different DBMS'es.
  */
 public enum InlineViewStyle {
 
-	 DB2("(values (1, '2', 3), (4, '5', 6)) %s(A, B, C)") {
-			@Override
-			public String head(String[] columnNames) throws SQLException {
-				return "(values ";
-			}
+	DB2("(values (1, '2', 3), (4, '5', 6)) %s(A, B, C)") {
+		@Override
+		public String head(String[] columnNames) throws SQLException {
+			return "(values ";
+		}
 
-			@Override
-			public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
-				StringBuilder sb = new StringBuilder("(");
-				for (int i = 1; i <= columnNames.length; ++i) {
-					if (i > 1) {
-						sb.append(", ");
-					}
-					sb.append(values[i - 1]);
+		@Override
+		public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
+			StringBuilder sb = new StringBuilder("(");
+			for (int i = 1; i <= columnNames.length; ++i) {
+				if (i > 1) {
+					sb.append(", ");
 				}
-				sb.append(")");
-				return sb.toString();
+				sb.append(values[i - 1]);
 			}
+			sb.append(")");
+			return sb.toString();
+		}
 
-			@Override
-			public String separator() throws SQLException {
-				return ", ";
-			}
+		@Override
+		public String separator() throws SQLException {
+			return ", ";
+		}
 
-			@Override
-			public String terminator(String name, String[] columnNames) throws SQLException {
-				StringBuilder sb = new StringBuilder(") " + name + "(");
-				for (int i = 1; i <= columnNames.length; ++i) {
-					if (i > 1) {
-						sb.append(", ");
-					}
-					sb.append(columnNames[i - 1]);
+		@Override
+		public String terminator(String name, String[] columnNames) throws SQLException {
+			StringBuilder sb = new StringBuilder(") " + name + "(");
+			for (int i = 1; i <= columnNames.length; ++i) {
+				if (i > 1) {
+					sb.append(", ");
 				}
-				sb.append(")");
-				return sb.toString();
+				sb.append(columnNames[i - 1]);
 			}
-		},
-	
-	 MySQL("(Select 1 A, '2' B, 3 C Union all " +
-	        "Select 4, '5', 6) %s") {
-			@Override
-			public String head(String[] columnNames) throws SQLException {
-				return "(Select ";
-			}
+			sb.append(")");
+			return sb.toString();
+		}
+	},
 
-			@Override
-			public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
-				StringBuilder sb = new StringBuilder();
-				for (int i = 1; i <= columnNames.length; ++i) {
-					if (i > 1) {
-						sb.append(", ");
-					}
-					sb.append(values[i - 1]);
-					if (rowNumber == 0) {
-						sb.append(" " + columnNames[i - 1]);
-					}
+	MySQL("(Select 1 A, '2' B, 3 C Union all " + "Select 4, '5', 6) %s") {
+		@Override
+		public String head(String[] columnNames) throws SQLException {
+			return "(Select ";
+		}
+
+		@Override
+		public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
+			StringBuilder sb = new StringBuilder();
+			for (int i = 1; i <= columnNames.length; ++i) {
+				if (i > 1) {
+					sb.append(", ");
 				}
-				return sb.toString();
+				sb.append(values[i - 1]);
+				if (rowNumber == 0) {
+					sb.append(" " + columnNames[i - 1]);
+				}
 			}
+			return sb.toString();
+		}
 
-			@Override
-			public String separator() throws SQLException {
-				return " Union all Select ";
-			}
+		@Override
+		public String separator() throws SQLException {
+			return " Union all Select ";
+		}
 
-			@Override
-			public String terminator(String name, String[] columnNames) throws SQLException {
-				return ") " + name;
-			}
-		},
-	
-	Oracle("(Select 1 A, '2' B, 3 C from dual Union all "
-		  + "Select 4, '5', 6 from dual) %s") {
+		@Override
+		public String terminator(String name, String[] columnNames) throws SQLException {
+			return ") " + name;
+		}
+	},
+
+	Oracle("(Select 1 A, '2' B, 3 C from dual Union all " + "Select 4, '5', 6 from dual) %s") {
 		@Override
 		public String head(String[] columnNames) throws SQLException {
 			return "(Select ";
@@ -128,74 +125,73 @@ public enum InlineViewStyle {
 			return sb.toString();
 		}
 	},
-	
+
 	INFORMIX1("(Select 1 A, '2' B, 3 C from sysmaster:\"informix\".sysdual Union all "
-			  + "Select 4, '5', 6 from sysmaster:\"informix\".sysdual) %s") {
-			@Override
-			public String head(String[] columnNames) throws SQLException {
-				return "(Select ";
-			}
+			+ "Select 4, '5', 6 from sysmaster:\"informix\".sysdual) %s") {
+		@Override
+		public String head(String[] columnNames) throws SQLException {
+			return "(Select ";
+		}
 
-			@Override
-			public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
-				StringBuilder sb = new StringBuilder();
-				for (int i = 1; i <= columnNames.length; ++i) {
-					if (i > 1) {
-						sb.append(", ");
-					}
-					sb.append(values[i - 1]);
-					if (rowNumber == 0) {
-						sb.append(" " + columnNames[i - 1]);
-					}
+		@Override
+		public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
+			StringBuilder sb = new StringBuilder();
+			for (int i = 1; i <= columnNames.length; ++i) {
+				if (i > 1) {
+					sb.append(", ");
 				}
-				return sb.toString();
-			}
-
-			@Override
-			public String separator() throws SQLException {
-				return " from sysmaster:\"informix\".sysdual Union all Select ";
-			}
-
-			@Override
-			public String terminator(String name, String[] columnNames) throws SQLException {
-				StringBuilder sb = new StringBuilder(" from sysmaster:\"informix\".sysdual) " + name);
-				return sb.toString();
-			}
-		},
-	
-	INFORMIX2("(Select 1 A, '2' B, 3 C from table(set{1}) Union all "
-			  + "Select 4, '5', 6 from table(set{1})) %s") {
-			@Override
-			public String head(String[] columnNames) throws SQLException {
-				return "(Select ";
-			}
-
-			@Override
-			public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
-				StringBuilder sb = new StringBuilder();
-				for (int i = 1; i <= columnNames.length; ++i) {
-					if (i > 1) {
-						sb.append(", ");
-					}
-					sb.append(values[i - 1]);
-					if (rowNumber == 0) {
-						sb.append(" " + columnNames[i - 1]);
-					}
+				sb.append(values[i - 1]);
+				if (rowNumber == 0) {
+					sb.append(" " + columnNames[i - 1]);
 				}
-				return sb.toString();
 			}
+			return sb.toString();
+		}
 
-			@Override
-			public String separator() throws SQLException {
-				return " from table(set{1}) Union all Select ";
-			}
+		@Override
+		public String separator() throws SQLException {
+			return " from sysmaster:\"informix\".sysdual Union all Select ";
+		}
 
-			@Override
-			public String terminator(String name, String[] columnNames) throws SQLException {
-				StringBuilder sb = new StringBuilder(" from table(set{1})) " + name);
-				return sb.toString();
+		@Override
+		public String terminator(String name, String[] columnNames) throws SQLException {
+			StringBuilder sb = new StringBuilder(" from sysmaster:\"informix\".sysdual) " + name);
+			return sb.toString();
+		}
+	},
+
+	INFORMIX2("(Select 1 A, '2' B, 3 C from table(set{1}) Union all " + "Select 4, '5', 6 from table(set{1})) %s") {
+		@Override
+		public String head(String[] columnNames) throws SQLException {
+			return "(Select ";
+		}
+
+		@Override
+		public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
+			StringBuilder sb = new StringBuilder();
+			for (int i = 1; i <= columnNames.length; ++i) {
+				if (i > 1) {
+					sb.append(", ");
+				}
+				sb.append(values[i - 1]);
+				if (rowNumber == 0) {
+					sb.append(" " + columnNames[i - 1]);
+				}
 			}
-		};
+			return sb.toString();
+		}
+
+		@Override
+		public String separator() throws SQLException {
+			return " from table(set{1}) Union all Select ";
+		}
+
+		@Override
+		public String terminator(String name, String[] columnNames) throws SQLException {
+			StringBuilder sb = new StringBuilder(" from table(set{1})) " + name);
+			return sb.toString();
+		}
+	};
 
 	public final String example;
 
@@ -211,13 +207,10 @@ public enum InlineViewStyle {
 			boolean wasSilent = session.getSilent();
 			try {
 				session.setSilent(true);
-				session.executeQuery(
-						"Select * from "
-								+ style.example.replace("%s", "Entity"),
+				session.executeQuery("Select * from " + style.example.replace("%s", "Entity"),
 						new Session.AbstractResultSetReader() {
 							@Override
-							public void readCurrentRow(ResultSet resultSet)
-									throws SQLException {
+							public void readCurrentRow(ResultSet resultSet) throws SQLException {
 								resultSet.getInt("A");
 								resultSet.getInt("B");
 								resultSet.getInt("C");
@@ -230,8 +223,7 @@ public enum InlineViewStyle {
 				session.setSilent(wasSilent);
 			}
 		}
-		throw new RuntimeException("No suitable Inline-View Style known for "
-				+ session.dbUrl);
+		throw new RuntimeException("No suitable Inline-View Style known for " + session.dbUrl);
 	}
 
 	public abstract String head(String[] columnNames) throws SQLException;

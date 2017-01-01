@@ -1,3 +1,6 @@
+6.3.4
+  - Added inline view style for Informix.
+
 6.3.3
   - Get IdentifierQuoteString from config if target DBMS differs from source DBMS.
 
