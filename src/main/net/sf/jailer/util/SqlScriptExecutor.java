@@ -343,7 +343,10 @@ public class SqlScriptExecutor {
     		if (e.getCause() instanceof SQLException) {
     			throw (SQLException) e.getCause();
     		}
-    		throw e;
+    		if (e instanceof RuntimeException) {
+    			throw (RuntimeException) e;
+    		}
+    		throw new RuntimeException(e);
     	} finally {
     		if (executor != null) {
     			executor.shutdown();
