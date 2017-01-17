@@ -1,3 +1,6 @@
+2.8.5
+  - Performance improvement.
+
 2.8.4
   - Added inline view style for Informix.
 

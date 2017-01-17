@@ -1059,7 +1059,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			    			extractionModelEditor.dataModel.checkForPrimaryKey(toCheck, false);
 			    		}
 
-			        	ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getPassword(), checkRI);
+			        	ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog);
 			        	session.shutDown();
 			        	Session.closeTemporaryTableSession();
 			        	if (exportDialog.isOk()) {

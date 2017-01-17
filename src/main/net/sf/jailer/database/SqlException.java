@@ -26,6 +26,7 @@ public class SqlException extends SQLException {
 
 	public final String message;
 	public final String sqlStatement;
+	private boolean insufficientPrivileges = false;
 	
 	public SqlException(String message, String sqlStatement, Throwable t) {
 		super(message, t);
@@ -34,5 +35,13 @@ public class SqlException extends SQLException {
 	}
 
 	private static final long serialVersionUID = 766715312577675914L;
+
+	public boolean getInsufficientPrivileges() {
+		return insufficientPrivileges;
+	}
+
+	public void setInsufficientPrivileges(boolean value) {
+		insufficientPrivileges = value;
+	}
 
 }

@@ -108,7 +108,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "6.3.4";
+	public static final String VERSION = "6.3.5";
 	
 	/**
 	 * The Jailer application name.
@@ -406,14 +406,19 @@ public class Jailer {
 	 */
 	public void addDependencies(Set<Table> progress, boolean treatAggregationAsDependency) throws Exception {
 		List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
+		Set<Association> done = new HashSet<Association>();
 		for (final Table table : progress) {
 			for (final Association association : table.associations) {
+				if (done.contains(association.reversalAssociation)) {
+					continue;
+				}
 				if (progress.contains(association.destination)) {
 					final int aggregationId = treatAggregationAsDependency ? association.getId() : 0;
 					final int dependencyId = association.getId();
 					if (treatAggregationAsDependency) {
 						if (association.getAggregationSchema() != AggregationSchema.NONE) {
 							final String jc = association.getUnrestrictedJoinCondition();
+							done.add(association);
 							jobs.add(new JobManager.Job() {
 								public void run() throws Exception {
 									_log.info("find aggregation for " + datamodel.getDisplayName(table) + " -> "
@@ -429,6 +434,7 @@ public class Jailer {
 					} else {
 						final String jc = association.getUnrestrictedJoinCondition();
 						if (jc != null && association.isInsertDestinationBeforeSource()) {
+							done.add(association);
 							jobs.add(new JobManager.Job() {
 								public void run() throws Exception {
 									_log.info("find dependencies " + datamodel.getDisplayName(table) + " -> "
@@ -442,6 +448,7 @@ public class Jailer {
 							});
 						}
 						if (jc != null && association.isInsertSourceBeforeDestination()) {
+							done.add(association);
 							jobs.add(new JobManager.Job() {
 								public void run() throws Exception {
 									_log.info("find dependencies " + datamodel.getDisplayName(association.destination) + " -> "
@@ -595,92 +602,111 @@ public class Jailer {
 
 		entityGraph.setTransformerFactory(createTransformerFactory(result, transformerHandler, scriptType, sqlScriptFile));
 
-		// first write entities of independent tables
-		final Set<Table> dependentTables = writeEntitiesOfIndependentTables(result, transformerHandler, scriptType, progress, sqlScriptFile);
-
-		// then write entities of tables having cyclic-dependencies
-		_log.info("cyclic dependencies for: " + asString(dependentTables));
-		if (!CommandLineParser.getInstance().noSorting) {
-			addDependencies(dependentTables, false);
-			runstats(true);
-			removeSingleRowCycles(progress, session);
-		} else {
-			_log.warn("skipping topological sorting");
-		}
-
-		long rest;
-
-		if (scriptType == ScriptType.INSERT && (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())||ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat()))) {
-			Set<Table> remaining = new HashSet<Table>(dependentTables);
-
-			// topologically sort remaining tables while ignoring reflexive
-			// dependencies
-			// and dependencies for which no edge exists in entity graph
-			Set<Association> relevantAssociations = new HashSet<Association>(datamodel.namedAssociations.values());
-			Set<Integer> existingEdges = entityGraph.getDistinctDependencyIDs();
-			for (Iterator<Association> i = relevantAssociations.iterator(); i.hasNext();) {
-				Association association = i.next();
-				if (association.source.equals(association.destination)) {
-					i.remove();
-				} else if (!existingEdges.contains(association.getId())) {
-					if (association.isInsertDestinationBeforeSource()) {
-						_log.info("irrelevant dependency: " + datamodel.getDisplayName(association.source) + " -> "
-								+ datamodel.getDisplayName(association.destination));
-					}
-					i.remove();
-				}
+		long rest = 0;
+		Set<Table> dependentTables = null;
+		Set<Table> currentProgress = progress;
+		
+		while (!currentProgress.isEmpty()) {
+			// first write entities of independent tables
+			dependentTables = writeEntitiesOfIndependentTables(result, transformerHandler, scriptType, currentProgress, sqlScriptFile);
+			Set<Table> prevProgress = currentProgress;
+			currentProgress = new HashSet<Table>();
+			
+			// then write entities of tables having cyclic-dependencies
+			Set<Table> descendants = getDescentants(dependentTables);
+			if (!descendants.isEmpty()) {
+				dependentTables.removeAll(descendants);
+				currentProgress = descendants;
+				_log.info("cyclic dependency descendants: " + asString(descendants));
 			}
-			Set<Table> independentTables = datamodel.getIndependentTables(remaining, relevantAssociations);
-			rest = entityGraph.getSize();
-			while (!independentTables.isEmpty()) {
-				_log.info("independent tables: " + asString(independentTables));
-				for (final Table independentTable : independentTables) {
-					rest = entityGraph.getSize();
-					for (;;) {
-						entityGraph.markIndependentEntities(independentTable);
-						// don't use jobManager, export rows sequentially, don't
-						// mix rows of different tables in a dataset!
-						entityGraph.readMarkedEntities(independentTable, true);
-						entityGraph.deleteIndependentEntities(independentTable);
-						long newRest = entityGraph.getSize();
-						if (rest == newRest) {
-							break;
+			if (!dependentTables.isEmpty()) {
+				_log.info("cyclic dependencies for: " + asString(dependentTables));
+			}
+			if (!CommandLineParser.getInstance().noSorting) {
+				addDependencies(dependentTables, false);
+				runstats(true);
+				removeSingleRowCycles(prevProgress, session);
+			} else {
+				_log.warn("skipping topological sorting");
+			}
+	
+			rest = 0;
+	
+			if (scriptType == ScriptType.INSERT && (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())||ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat()))) {
+				Set<Table> remaining = new HashSet<Table>(dependentTables);
+	
+				// topologically sort remaining tables while ignoring reflexive
+				// dependencies
+				// and dependencies for which no edge exists in entity graph
+				Set<Association> relevantAssociations = new HashSet<Association>(datamodel.namedAssociations.values());
+				Set<Integer> existingEdges = entityGraph.getDistinctDependencyIDs();
+				for (Iterator<Association> i = relevantAssociations.iterator(); i.hasNext();) {
+					Association association = i.next();
+					if (association.source.equals(association.destination)) {
+						i.remove();
+					} else if (!existingEdges.contains(association.getId())) {
+						if (association.isInsertDestinationBeforeSource()) {
+							_log.info("irrelevant dependency: " + datamodel.getDisplayName(association.source) + " -> "
+									+ datamodel.getDisplayName(association.destination));
 						}
-						rest = newRest;
+						i.remove();
 					}
 				}
-				remaining.removeAll(independentTables);
-				independentTables = datamodel.getIndependentTables(remaining, relevantAssociations);
-			}
-		} else {
-			rest = entityGraph.getSize();
-			for (;;) {
-				for (final Table table : dependentTables) {
-					entityGraph.markIndependentEntities(table);
-				}
-				List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
-				for (final Table table : dependentTables) {
-					jobs.add(new JobManager.Job() {
-						public void run() throws Exception {
-							entityGraph.readMarkedEntities(table, false);
+				Set<Table> independentTables = datamodel.getIndependentTables(remaining, relevantAssociations);
+				rest = entityGraph.getSize(dependentTables);
+				while (!independentTables.isEmpty()) {
+					_log.info("independent tables: " + asString(independentTables));
+					for (final Table independentTable : independentTables) {
+						rest = entityGraph.getSize(dependentTables);
+						for (;;) {
+							entityGraph.markIndependentEntities(independentTable);
+							// don't use jobManager, export rows sequentially, don't
+							// mix rows of different tables in a dataset!
+							entityGraph.readMarkedEntities(independentTable, true);
+							entityGraph.deleteIndependentEntities(independentTable);
+							long newRest = entityGraph.getSize(dependentTables);
+							if (rest == newRest) {
+								break;
+							}
+							rest = newRest;
 						}
-					});
+					}
+					remaining.removeAll(independentTables);
+					independentTables = datamodel.getIndependentTables(remaining, relevantAssociations);
 				}
-				if (result != null && !jobs.isEmpty()) {
-					result.append("-- sync" + System.getProperty("line.separator"));
+			} else {
+				rest = entityGraph.getSize(dependentTables);
+				for (;;) {
+					for (final Table table : dependentTables) {
+						entityGraph.markIndependentEntities(table);
+					}
+					List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
+					for (final Table table : dependentTables) {
+						jobs.add(new JobManager.Job() {
+							public void run() throws Exception {
+								entityGraph.readMarkedEntities(table, false);
+							}
+						});
+					}
+					if (result != null && !jobs.isEmpty()) {
+						result.append("-- sync" + System.getProperty("line.separator"));
+					}
+					jobManager.executeJobs(jobs);
+					for (final Table table : dependentTables) {
+						entityGraph.deleteIndependentEntities(table);
+					}
+					long newRest = entityGraph.getSize(dependentTables);
+					if (rest == newRest) {
+						break;
+					}
+					rest = newRest;
 				}
-				jobManager.executeJobs(jobs);
-				for (final Table table : dependentTables) {
-					entityGraph.deleteIndependentEntities(table);
-				}
-				long newRest = entityGraph.getSize();
-				if (rest == newRest) {
-					break;
-				}
-				rest = newRest;
+			}
+			if (rest > 0) {
+				break;
 			}
 		}
-
+		
 		if (result != null) {
 			// write epilogs
 			result.append("-- epilog");
@@ -751,6 +777,42 @@ public class Jailer {
 		_log.info("file '" + sqlScriptFile + "' written.");
 	}
 	
+	/**
+	 * Gets set of all tables, which are no parents (recursiv).
+	 * 
+	 * @param tables all tables
+	 * @return subset of tables
+	 */
+	private Set<Table> getDescentants(Set<Table> tables) {
+		Set<Table> result = new HashSet<Table>();
+
+		for (;;) {
+			Set<Table> des = new HashSet<Table>();
+			for (Table table: tables) {
+				if (!result.contains(table)) {
+					boolean isParent = false;
+					for (Association a: table.associations) {
+						if (a.isInsertSourceBeforeDestination()) {
+							if (tables.contains(a.destination) && !result.contains(a.destination)) {
+								isParent = true;
+								break;
+							}
+						}
+					}
+					if (!isParent) {
+						des.add(table);
+					}
+				}
+			}
+			result.addAll(des);
+			if (des.isEmpty()) {
+				break;
+			}
+		}
+		
+		return result;
+	}
+
 	/**
 	 * Removes all single-row cycles from dependency table.
 	 * 

@@ -51,6 +51,9 @@ public class SqlErrorDialog extends javax.swing.JDialog {
             gridBagConstraints.weightx = 1.0;
             gridBagConstraints.weighty = 0;
             messagePanel.add(label, gridBagConstraints);
+            if (y > 8) {
+            	break;
+            }
         }
         if (sqlError) {
         	sqlEditorPane.setContentType("text/sql");

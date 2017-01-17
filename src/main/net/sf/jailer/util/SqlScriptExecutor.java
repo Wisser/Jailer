@@ -40,6 +40,7 @@ import java.util.zip.ZipInputStream;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.database.SqlException;
 
 import org.apache.log4j.Logger;
 
@@ -308,6 +309,9 @@ public class SqlScriptExecutor {
 			                	if (!stmt.trim().toLowerCase().startsWith("drop")) {
 			                    	// fix for bug [2946477]
 			                		if (!stmt.trim().toUpperCase().contains("DROP TABLE JAILER_DUAL")) {
+			                			if (e instanceof SqlException) {
+			                				((SqlException) e).setInsufficientPrivileges(count.get() == 0);
+			                			}
 			                    		throw new RuntimeException(e);
 			                    	}
 			                	}

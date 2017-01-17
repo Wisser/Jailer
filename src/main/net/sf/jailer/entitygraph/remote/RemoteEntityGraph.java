@@ -223,7 +223,28 @@ public class RemoteEntityGraph extends EntityGraph {
         return size[0];
     }
     
+
     /**
+     * Gets the number of entities form given tables in the graph.
+     * 
+     * @return the number of entities in the graph
+     */
+	public long getSize(final Set<Table> tables) throws SQLException {
+        final long[] total = new long[1];
+        total[0] = 0;
+        session.executeQuery("Select type, count(*) From " + SQLDialect.dmlTableReference(ENTITY, session) + " Where r_entitygraph=" + graphID + " and birthday>=0 group by type", new Session.AbstractResultSetReader() {
+            public void readCurrentRow(ResultSet resultSet) throws SQLException {
+                Table table = dataModel.getTableByOrdinal(resultSet.getInt(1));
+                if (tables.contains(table)) {
+                	long count = resultSet.getLong(2);
+                	total[0] += count;
+                }
+            }
+        });
+        return total[0];
+	}
+
+	/**
      * Deletes the graph.
      */
     public void delete() throws SQLException {
