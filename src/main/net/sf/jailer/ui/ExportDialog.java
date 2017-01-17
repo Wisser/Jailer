@@ -17,7 +17,6 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.Component;
-import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Point;
@@ -43,7 +42,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -52,6 +50,7 @@ import net.sf.jailer.DDLCreator;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.database.SqlException;
 import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
@@ -129,6 +128,7 @@ public class ExportDialog extends javax.swing.JDialog {
 	private final String subjectCondition;
 	private final String settingsContext;
 	private final DBMS sourceDBMS;
+	private final DbConnectionDialog dbConnectionDialog;
 
 	private String[] schemaComboboxModel;
 
@@ -137,7 +137,7 @@ public class ExportDialog extends javax.swing.JDialog {
     /** Creates new form DbConnectionDialog 
      * @param showCmd 
      * @param args */
-    public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final Table subject, String subjectCondition, List<AdditionalSubject> additionalSubjects, Session session, List<String> initialArgs, String password, boolean showCmd) {
+    public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final Table subject, String subjectCondition, List<AdditionalSubject> additionalSubjects, Session session, List<String> initialArgs, String password, boolean showCmd, DbConnectionDialog dbConnectionDialog) {
         super(parent, true);
         this.subjectCondition = subjectCondition;
         this.dataModel = dataModel;
@@ -146,6 +146,7 @@ public class ExportDialog extends javax.swing.JDialog {
         this.password = password;
         this.settingsContext = session.dbUrl;
         this.sourceDBMS = Configuration.forDbms(session).dbms;
+        this.dbConnectionDialog = dbConnectionDialog;
         initComponents();
         
         CancellationHandler.reset(null);
@@ -468,118 +469,16 @@ public class ExportDialog extends javax.swing.JDialog {
 	private Set<String> targetSchemaSet = new TreeSet<String>();
 
     private void initScopeButtons(final Session session) {
-    	synchronized (this) {
-	    	scopeGlobal.setSelected(false);
-	    	scopeGlobal.setEnabled(false);
-	    	scopeSession.setSelected(false);
-	    	scopeSession.setEnabled(false);
-	    	scopeLocal.setSelected(true);
-	    	jButton1.setEnabled(false);
+    	globalIsAvailable = true;
+    	Configuration configuration = Configuration.forDbms(session);
+    	sessionLocalIsAvailable = configuration.sessionTemporaryTableManager != null;
 
-	    	globalIsAvailable = false;
-	    	sessionLocalIsAvailable = false;
-	    	
-	    	setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-	    	updateCLIArea();
-		}
-    	
-    	CancellationHandler.reset(null);
-		
-    	synchronized (this) {
-	    	initScopeButtonThread = new Thread(new Runnable() {
-				public void run() {
-			    	Configuration configuration;
-			    	synchronized (ExportDialog.this) {
-			    		configuration = Configuration.forDbms(session);
-			    	}
-			    	boolean ok = false;
-			    	if (configuration.sessionTemporaryTableManager != null) {
-						try {
-							session.reconnect();
-							DDLCreator.createDDL(dataModel, session, TemporaryTableScope.SESSION_LOCAL, null);
-				    		SwingUtilities.invokeLater(new Runnable() {
-								public void run() {
-						    		synchronized (ExportDialog.this) {
-						    			scopeSession.setEnabled(true);
-						    			scopeGlobal.setEnabled(true);
-						    			scopeLocal.setSelected(false);
-						    			scopeGlobal.setSelected(false);
-							    		scopeSession.setSelected(true);
-							    		updateCLIArea();
-							    		sessionLocalIsAvailable = true;
-							    		globalIsAvailable = true;
-							        }
-								}
-				    		});
-				    		ok = true;
-						} catch (Exception e) {
-							// ignore
-						}
-			    	}
-			    	
-			    	if (!ok) {
-		    			try {
-		    				if (scriptFormat != ScriptFormat.INTRA_DATABASE) {
-		    					DDLCreator.createDDL(dataModel, session, TemporaryTableScope.GLOBAL, null);
-		    				}
-				    		ok = true;
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-			    		if (ok) {
-			    			SwingUtilities.invokeLater(new Runnable() {
-								public void run() {
-						    		synchronized (ExportDialog.this) {
-						    			if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
-						    				scopeLocal.setEnabled(false);
-						    			}
-						    			scopeGlobal.setEnabled(true);
-						    			scopeLocal.setSelected(false);
-							    		scopeSession.setSelected(false);
-						    			scopeGlobal.setSelected(true);
-							    		updateCLIArea();
-							    		globalIsAvailable = true;
-							        }
-								}
-				    		});
-			    		}
-			    	}
-			    	
-		    		SwingUtilities.invokeLater(new Runnable() {
-						public void run() {
-				    		synchronized (ExportDialog.this) {
-				    			if (scopeSession.isSelected() && scopeGlobal.isEnabled()) {
-				    				scopeSession.setSelected(false);
-				    				scopeGlobal.setSelected(true);
-				    			}
-				    			jButton1.setEnabled(true);
-				    	    	setCursor(Cursor.getDefaultCursor());
-				    	    	updateCLIArea();
-				    		}
-						}
-		    		});
-				}
-	    	});
-    	}
-    	initScopeButtonThread.start();
-    	new Thread(new Runnable() {
-			public void run() {
-				try {
-					Thread.sleep(4000);
-				} catch (InterruptedException e) {
-					// ignore
-				}
-	    		SwingUtilities.invokeLater(new Runnable() {
-					public void run() {
-			    		synchronized (ExportDialog.this) {
-			    			jButton1.setEnabled(true);
-			    	    	setCursor(Cursor.getDefaultCursor());
-			    	    	updateCLIArea();
-			    		}
-					}
-	    		});
-			}
-    	}).start();
+    	scopeGlobal.setEnabled(true);
+    	scopeSession.setEnabled(sessionLocalIsAvailable);
+    	jButton1.setEnabled(true);
+    	scopeGlobal.setSelected(true);
+
+    	updateCLIArea();
 	}
 
 	/**
@@ -1531,14 +1430,63 @@ public class ExportDialog extends javax.swing.JDialog {
     	}
         if (err) {
         	JOptionPane.showMessageDialog(this, "Unfilled mandatory fields", "Error", JOptionPane.ERROR_MESSAGE);
-        } else {
+        } else if (createWorkingTables()) {
         	isOk = true;
         	lastConfirmInsert = confirmInsert.isSelected();
         	setVisible(false);
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    private void scopeGlobalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeGlobalActionPerformed
+    private boolean createWorkingTables() {
+    	List<String> ddlArgs = new ArrayList<String>();
+    	ddlArgs.add("create-ddl");
+    	dbConnectionDialog.addDbArgs(ddlArgs);
+    	if (!isUseRowId()) {
+    		ddlArgs.add("-no-rowid");
+    	}
+    	if (getWorkingTableSchema() != null) {
+    		ddlArgs.add("-working-table-schema");
+    		ddlArgs.add(getWorkingTableSchema());
+    	}
+    	String tableInConflict = DDLCreator.getTableInConflict(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4));
+    	if (tableInConflict != null && getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL)) {
+    		JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);
+    	}
+    	else {
+    		if (!getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL) || DDLCreator.isUptodate(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), isUseRowId(), getWorkingTableSchema())) {
+    			return true;
+    		} else {
+    			try {
+	    			return UIUtil.runJailer(this, ddlArgs, false,
+						false, false, true,
+						null, dbConnectionDialog.getPassword(), null,
+						null, false, false, true, false, true);
+    			} catch (Exception e) {
+    				Throwable cause = e;
+    				while (cause != null && !(cause instanceof SqlException) && cause.getCause() != null && cause.getCause() != cause) {
+    					cause = cause.getCause();
+    				}
+    				if (cause instanceof SqlException) {
+    					String hint = 
+    							"Possible solutions:\n" +
+    							"  - choose working table scope \"local database\"\n" +
+    							"  - choose another working table schema\n" +
+		        				"  - execute the Jailer-DDL manually (jailer_ddl.sql)\n";
+    					SqlException sqlEx = (SqlException) cause;
+    					if (sqlEx.getInsufficientPrivileges()) {
+    						JOptionPane.showMessageDialog(this, "Insufficient privileges to create working-tables!\n" + hint, "Insufficient privileges", JOptionPane.ERROR_MESSAGE);
+    					} else {
+    						UIUtil.showException(this, "Error", new SqlException("Automatic creation of working-tables failed!\n" + hint + "\n\nCause: " + sqlEx.message + "", sqlEx.sqlStatement, null));
+    					}
+    				}
+    				return false;
+    			}
+    		}
+    	}
+    	return false;
+	}
+
+	private void scopeGlobalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeGlobalActionPerformed
     }//GEN-LAST:event_scopeGlobalActionPerformed
 
     private void selectInsertFileMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_selectInsertFileMouseClicked

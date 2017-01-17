@@ -203,6 +203,7 @@ public enum InlineViewStyle {
 	 * Gets a style for a session.
 	 */
 	public static InlineViewStyle forSession(Session session) {
+		StringBuilder messages = new StringBuilder();
 		for (InlineViewStyle style : InlineViewStyle.values()) {
 			boolean wasSilent = session.getSilent();
 			try {
@@ -218,12 +219,14 @@ public enum InlineViewStyle {
 						});
 				return style;
 			} catch (SQLException e) {
+				String message = e.getMessage();
+				messages.append("   " + style + ": \"" + message + "\"\n\n");
 				// try next style
 			} finally {
 				session.setSilent(wasSilent);
 			}
 		}
-		throw new RuntimeException("No suitable Inline-View Style known for " + session.dbUrl);
+		throw new RuntimeException("No suitable Inline-View Style known for " + session.dbUrl + "\n\n" + messages);
 	}
 
 	public abstract String head(String[] columnNames) throws SQLException;

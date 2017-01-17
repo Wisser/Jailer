@@ -285,7 +285,7 @@ public class UIUtil {
 		return runJailer(ownerOfConsole, cliArgs, showLogfileButton,
 				printCommandLine, showExplainLogButton, closeOutputWindow,
 				continueOnErrorQuestion, password, progressListener,
-				progressPanel, showExeptions, fullSize, false, returnFalseOnError);
+				progressPanel, showExeptions, fullSize, false, returnFalseOnError, false);
 	}
 
 	/**
@@ -316,7 +316,7 @@ public class UIUtil {
 			String password, final ProgressListener progressListener,
 			final ProgressPanel progressPanel, final boolean showExeptions,
 			boolean fullSize, final boolean closeOutputWindowOnError,
-			boolean returnFalseOnError) {
+			boolean returnFalseOnError, boolean throwException) {
 		JDialog dialog = new JDialog(ownerOfConsole);
 		List<String> args = new ArrayList<String>(cliArgs);
 		final StringBuffer arglist = createCLIArgumentString(password, args);
@@ -542,6 +542,9 @@ public class UIUtil {
 				boolean shown = false;
 				synchronized (UIUtil.class) {
 					shown = exceptionShown[0];
+				}
+				if (throwException) {
+					throw new RuntimeException(t);
 				}
 				if (!shown) {
 					UIUtil.showException(null, "Error", t, arglist);

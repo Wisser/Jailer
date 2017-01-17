@@ -130,7 +130,28 @@ public abstract class EntityGraph {
      * @return the number of entities in the graph
      */
     public abstract long getSize() throws SQLException;
-    
+
+    /**
+     * Gets the number of entities form given tables in the graph.
+     * 
+     * @return the number of entities in the graph
+     * @throws SQLException 
+     */
+	public long getSize(final Set<Table> tables) throws SQLException {
+        final long[] total = new long[1];
+        total[0] = 0;
+        getSession().executeQuery("Select type, count(*) From " + SQLDialect.dmlTableReference(ENTITY, getSession()) + " Where r_entitygraph=" + graphID + " and birthday>=0 group by type", new Session.AbstractResultSetReader() {
+            public void readCurrentRow(ResultSet resultSet) throws SQLException {
+                Table table = dataModel.getTableByOrdinal(resultSet.getInt(1));
+                if (tables.contains(table)) {
+                	long count = resultSet.getLong(2);
+                	total[0] += count;
+                }
+            }
+        });
+        return total[0];
+	}
+
     /**
      * Deletes the graph.
      */
