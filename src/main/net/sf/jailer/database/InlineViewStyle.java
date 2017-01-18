@@ -225,6 +225,76 @@ public enum InlineViewStyle {
 			StringBuilder sb = new StringBuilder(" from sysibm.sysdummy1) " + name);
 			return sb.toString();
 		}
+	},
+	DB2_3("(values (1, '2', 3), (4, '5', 6)) AS %s(A, B, C)") {
+		@Override
+		public String head(String[] columnNames) throws SQLException {
+			return "(values ";
+		}
+
+		@Override
+		public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
+			StringBuilder sb = new StringBuilder("(");
+			for (int i = 1; i <= columnNames.length; ++i) {
+				if (i > 1) {
+					sb.append(", ");
+				}
+				sb.append(values[i - 1]);
+			}
+			sb.append(")");
+			return sb.toString();
+		}
+
+		@Override
+		public String separator() throws SQLException {
+			return ", ";
+		}
+
+		@Override
+		public String terminator(String name, String[] columnNames) throws SQLException {
+			StringBuilder sb = new StringBuilder(") AS " + name + "(");
+			for (int i = 1; i <= columnNames.length; ++i) {
+				if (i > 1) {
+					sb.append(", ");
+				}
+				sb.append(columnNames[i - 1]);
+			}
+			sb.append(")");
+			return sb.toString();
+		}
+	},
+	DB2_4("(Select 1 as A, '2' as B, 3 as C from sysibm.sysdummy1 Union all " + 
+	       "Select 4, '5', 6 from sysibm.sysdummy1) %s") {
+		@Override
+		public String head(String[] columnNames) throws SQLException {
+			return "(Select ";
+		}
+
+		@Override
+		public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
+			StringBuilder sb = new StringBuilder();
+			for (int i = 1; i <= columnNames.length; ++i) {
+				if (i > 1) {
+					sb.append(", ");
+				}
+				sb.append(values[i - 1]);
+				if (rowNumber == 0) {
+					sb.append(" as " + columnNames[i - 1]);
+				}
+			}
+			return sb.toString();
+		}
+
+		@Override
+		public String separator() throws SQLException {
+			return " from sysibm.sysdummy1 Union all Select ";
+		}
+
+		@Override
+		public String terminator(String name, String[] columnNames) throws SQLException {
+			StringBuilder sb = new StringBuilder(" from sysibm.sysdummy1) " + name);
+			return sb.toString();
+		}
 	};
 
 	public final String example;
@@ -242,7 +312,7 @@ public enum InlineViewStyle {
 			boolean wasSilent = session.getSilent();
 			try {
 				session.setSilent(true);
-				session.executeQuery("Select * from " + style.example.replace("%s", "Entity"),
+				session.executeQuery("Select A, B, C from " + style.example.replace("%s", "Entity"),
 						new Session.AbstractResultSetReader() {
 							@Override
 							public void readCurrentRow(ResultSet resultSet) throws SQLException {
