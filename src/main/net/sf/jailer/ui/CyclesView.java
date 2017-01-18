@@ -336,7 +336,15 @@ public class CyclesView extends javax.swing.JDialog {
     private synchronized void refreshTableModel(Collection<CycleFinder.Path> cycles) {
     	cellInfo.clear();
 		
-    	numLabel.setText(" " + cycles.size() + " Cycles");
+    	Set<Table> tables = new HashSet<Table>();
+    	for (CycleFinder.Path p: cycles) {
+    		List<Table> currentLineT = new ArrayList<Table>();
+			p.fillPath(currentLineT);
+			for (Table t: currentLineT) {
+				tables.add(t);
+			}
+    	}
+    	numLabel.setText(" " + cycles.size() + " Cycles, " + tables.size() + " distinct tables");
     	
 		Object[] columns = new Object[MAX_TABLES_PER_LINE + 1];
 		for (int i = 0; i < columns.length; ++i) {
