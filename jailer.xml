@@ -156,9 +156,10 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 	        </property>
 		</bean>
 		
-		<!-- for IBM DB2 -->
+		<!-- for IBM DB2 LUW -->
 		<bean class="net.sf.jailer.Configuration">
 			<property name="urlPattern" value="jdbc:db2.*" />
+			<property name="testQuery" value="Select A, B, C from (values (1, '2', 3), (4, '5', 6)) E(A, B, C)" />
 
 			<property name="dbms" value="DB2"/>
 			
@@ -171,6 +172,61 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 					<property name="needsValuesKeywordForDeletes" value="true"/>
 					<property name="supportsInClauseForDeletes" value="true"/>
 					<property name="upsertMode" value="DB2"/>
+				</bean>
+			</property>
+			<property name="typeReplacement">
+				<map>
+					<entry key="graphic" value="varchar"/>
+					<entry key="GRAPHIC" value="VARCHAR"/>
+				</map>
+			</property>
+            <property name="stringLiteralEscapeSequences">
+                <map>
+                    <entry key="'" value="''"/>
+                    <entry key="\n" value="' || chr(10) || '"/>
+                    <entry key="\r" value="' || chr(13) || '"/>
+               </map>
+            </property>
+			<property name="sqlLimitSuffix" value="fetch first %s rows only" />
+			<property name="statisticRenovator">
+				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
+					<constructor-arg value="script/db2/update_statistics.sql" />
+				</bean>
+			</property>
+			<property name="emptyCLOBValue" value="clob('')" />
+			<property name="emptyBLOBValue" value="blob('')" />
+			<property name="toBlob" value="blob('%s')" />
+			<property name="toClob" value="clob('%s')" />
+			<property name="embeddedLobSizeLimit" value="32000" />
+			<property name="sessionTemporaryTableManager">
+				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
+					<property name="dmlTableReferencePrefix" value="SESSION." />
+					<property name="createTablePrefix" value="DECLARE GLOBAL TEMPORARY TABLE " />
+					<property name="createTableSuffix" value="ON COMMIT PRESERVE ROWS NOT LOGGED" />
+					<property name="createIndexPrefix" value="CREATE INDEX SESSION." />
+					<property name="createIndexSuffix" value="" />
+					<property name="indexTablePrefix" value="SESSION." />
+					<property name="dropTablePrefix" value="DROP TABLE SESSION." />
+				</bean>
+			</property>
+			<property name="virtualColumnsQuery" value="SELECT TABNAME, COLNAME from syscat.columns WHERE TABSCHEMA='${SCHEMA}' AND GENERATED='A'" />
+		</bean>
+
+		<!-- for IBM DB2 z/OS -->
+		<bean class="net.sf.jailer.Configuration">
+			<property name="urlPattern" value="jdbc:db2.*" />
+
+			<property name="dbms" value="DB2_ZOS"/>
+			
+			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
+			<property name="tableProperties" value="NOT LOGGED INITIALLY" />
+			
+			<property name="sqlDialect">
+				<bean class="net.sf.jailer.database.SQLDialect">
+					<property name="supportsMultiRowInserts" value="true"/>
+					<property name="needsValuesKeywordForDeletes" value="true"/>
+					<property name="supportsInClauseForDeletes" value="false"/>
+					<property name="upsertMode" value="FROM_SYSDUMMY1"/>
 				</bean>
 			</property>
 			<property name="typeReplacement">

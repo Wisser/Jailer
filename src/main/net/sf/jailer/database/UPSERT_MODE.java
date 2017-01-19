@@ -22,6 +22,7 @@ public enum UPSERT_MODE {
 	DB2("Select * From (values (1, 2), (3, 4)) as Q(c1, c2) Where not exists (Select * from $ T Where T.c1=Q.c1)"), 
 	FROM_DUAL("Select 1, 2 From dual where not exists(Select * from $ T where T.c1=1)"),
 	FROM_JL_DUAL("Select 1, 2 From $ where not exists(Select * from $ T where T.c1=1)"),
+	FROM_SYSDUMMY1("Select 1, 2 From sysibm.sysdummy1 where not exists(Select * from $ T where T.c1=1)"),
 	MERGE("MERGE INTO $ T " +
                           "USING (SELECT 1 c1, 2 c2 from dual) incoming " +
                           "ON (T.c1 = incoming.c1) " +

@@ -15,6 +15,8 @@
  */
 package net.sf.jailer;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
@@ -57,6 +59,11 @@ public class Configuration {
      * DB-URL pattern of DBMS for which this holds the configuration.
      */
 	private String urlPattern;
+	
+	/**
+     * Test-query for the DBMS for which this holds the configuration.
+     */
+	private String testQuery;
 	
 	/**
      * The {@link StatisticRenovator}.
@@ -351,8 +358,25 @@ public class Configuration {
             List<Configuration> cs = (List<Configuration>) getContext().getBean("dbms-configuration");  
             for (Configuration c: cs) {
             	if (Pattern.matches(c.urlPattern, session.dbUrl)) {
-            		perUrl.put(session.dbUrl, c);
-	                return c;
+            		boolean ok = true;
+            		if (c.getTestQuery() != null) {
+            			boolean wasSilent = session.getSilent();
+            			session.setSilent(true);
+            			try {
+							session.executeQuery(c.getTestQuery(), new Session.AbstractResultSetReader() {
+								@Override
+								public void readCurrentRow(ResultSet resultSet) throws SQLException {
+								}
+							});
+						} catch (SQLException e) {
+							ok = false;
+						}
+            			session.setSilent(wasSilent);
+            		}
+            		if (ok) {
+            			perUrl.put(session.dbUrl, c);
+            			return c;
+            		}
             	}
             }
         }
@@ -361,6 +385,28 @@ public class Configuration {
 	}
 
     /**
+     * Gets DBMS specific configuration.
+     * 
+     * @param dbUrl URL
+     * @return configuration for the DBMS with given URL
+     */
+	@SuppressWarnings("unchecked")
+	public static Configuration forDbms(String dbUrl) {
+		if (dbUrl == null) {
+			return defaultConfiguration;
+		}
+        if (getContext().containsBean("dbms-configuration")) {
+            List<Configuration> cs = (List<Configuration>) getContext().getBean("dbms-configuration");  
+            for (Configuration c: cs) {
+            	if (Pattern.matches(c.urlPattern, dbUrl)) {
+        			return c;
+        		}
+            }
+        }
+        return defaultConfiguration;
+	}
+	
+	/**
      * Gets DBMS specific configuration.
      * 
      * @param dbms the DBMS
@@ -717,4 +763,12 @@ public class Configuration {
 		this.identifierQuoteString = identifierQuoteString;
 	}
 	
+	public String getTestQuery() {
+		return testQuery;
+	}
+
+	public void setTestQuery(String testQuery) {
+		this.testQuery = testQuery;
+	}
+
 }

@@ -25,7 +25,8 @@ public enum DBMS {
 
 	ORACLE("Oracle"),
 	MSSQL("MS SQL Server"),
-	DB2("IBM DB2"),
+	DB2("DB2 LUW"),
+	DB2_ZOS("DB2 z/OS"),
 	MySQL("MySQL"),
 	POSTGRESQL("PostgreSQL"),
 	SQLITE("SQLite"),

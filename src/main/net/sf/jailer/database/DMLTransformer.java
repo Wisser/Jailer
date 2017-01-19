@@ -448,7 +448,7 @@ public class DMLTransformer extends AbstractResultSetReader {
                 	String item = "Select " + valuesWONull + " From " + 
                 		(currentDialect.upsertMode == UPSERT_MODE.FROM_DUAL || 
                 		 currentDialect.upsertMode == UPSERT_MODE.MERGE? // oracle table with lobs
-                				 "dual" : SQLDialect.DUAL_TABLE);
+                				 "dual" : currentDialect.upsertMode == UPSERT_MODE.FROM_SYSDUMMY1? "sysibm.sysdummy1" : SQLDialect.DUAL_TABLE);
                 	StringBuffer terminator = new StringBuffer(" Where not exists (Select * from " + qualifiedTableName(table) + " T "
 	                        + "Where ");
 	                terminator.append(where + ");\n");
@@ -488,7 +488,14 @@ public class DMLTransformer extends AbstractResultSetReader {
 	                }
                 }
             } else {
-            	if (targetDBMSConfiguration.dbms == DBMS.ORACLE && maxBodySize > 1) {
+            	if (targetDBMSConfiguration.dbms == DBMS.DB2_ZOS && maxBodySize > 1) {
+            		String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
+	                String item = "\n Select " + valueList + " From sysibm.sysdummy1";
+	                if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
+	                    writeToScriptFile(insertStatementBuilder.build(), true);
+	                }
+	                insertStatementBuilder.append(insertSchema, item, " Union all ", ";\n");
+            	} else if (targetDBMSConfiguration.dbms == DBMS.ORACLE && maxBodySize > 1) {
             		String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
 	                String item = "\n Select " + valueList + " From DUAL";
 	                if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
