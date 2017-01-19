@@ -1,5 +1,6 @@
 2.8.5
   - Performance improvement.
+  - Added inline view style for DB2 z/OS.
 
 2.8.4
   - Added inline view style for Informix.
