@@ -303,7 +303,7 @@ public class Session {
                 
                 if (con == null) {
                 	try {
-                		Map<String, String> jdbcProperties = Configuration.forDbms(Session.this).getJdbcProperties();
+                		Map<String, String> jdbcProperties = Configuration.forDbms(Session.this.dbUrl).getJdbcProperties();
                 		if (jdbcProperties != null) {
 	                		try {
 	                			 java.util.Properties info = new java.util.Properties();

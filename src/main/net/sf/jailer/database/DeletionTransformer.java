@@ -158,7 +158,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
 	                writeToScriptFile(deleteStatementBuilder.build());
 	            }
 	            deleteStatementBuilder.append(deleteHead, item, ") or (", ");\n");
-              	} else {
+			} else {
 	            String deleteHead;
 	            String item;
 	            if (table.primaryKey.getColumns().size() == 1) {
