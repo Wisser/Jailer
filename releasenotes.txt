@@ -1,6 +1,7 @@
-6.3.5
+6.4
   - Performance improvement.
   - Added inline view style for DB2 z/OS.
+  - Added support for DB2 z/OS.
 
 6.3.4
   - Added inline view style for Informix.
