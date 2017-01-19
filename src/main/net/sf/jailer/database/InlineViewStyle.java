@@ -60,7 +60,6 @@ public enum InlineViewStyle {
 			return sb.toString();
 		}
 	},
-
 	MySQL("(Select 1 A, '2' B, 3 C Union all " + "Select 4, '5', 6) %s") {
 		@Override
 		public String head(String[] columnNames) throws SQLException {
@@ -92,7 +91,6 @@ public enum InlineViewStyle {
 			return ") " + name;
 		}
 	},
-
 	Oracle("(Select 1 A, '2' B, 3 C from dual Union all " + "Select 4, '5', 6 from dual) %s") {
 		@Override
 		public String head(String[] columnNames) throws SQLException {
@@ -193,8 +191,8 @@ public enum InlineViewStyle {
 			return sb.toString();
 		}
 	},
-	DB2_2("(Select 1 A, '2' B, 3 C from sysibm.sysdummy1 Union all " + 
-	       "Select 4, '5', 6 from sysibm.sysdummy1) %s") {
+	DB2_ZOS("(Select 1, '2', 3 from sysibm.sysdummy1 Union all " + 
+	       "Select 4, '5', 6 from sysibm.sysdummy1) %s(A, B, C)") {
 		@Override
 		public String head(String[] columnNames) throws SQLException {
 			return "(Select ";
@@ -208,9 +206,6 @@ public enum InlineViewStyle {
 					sb.append(", ");
 				}
 				sb.append(values[i - 1]);
-				if (rowNumber == 0) {
-					sb.append(" " + columnNames[i - 1]);
-				}
 			}
 			return sb.toString();
 		}
@@ -222,37 +217,7 @@ public enum InlineViewStyle {
 
 		@Override
 		public String terminator(String name, String[] columnNames) throws SQLException {
-			StringBuilder sb = new StringBuilder(" from sysibm.sysdummy1) " + name);
-			return sb.toString();
-		}
-	},
-	DB2_3("(values (1, '2', 3), (4, '5', 6)) AS %s(A, B, C)") {
-		@Override
-		public String head(String[] columnNames) throws SQLException {
-			return "(values ";
-		}
-
-		@Override
-		public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
-			StringBuilder sb = new StringBuilder("(");
-			for (int i = 1; i <= columnNames.length; ++i) {
-				if (i > 1) {
-					sb.append(", ");
-				}
-				sb.append(values[i - 1]);
-			}
-			sb.append(")");
-			return sb.toString();
-		}
-
-		@Override
-		public String separator() throws SQLException {
-			return ", ";
-		}
-
-		@Override
-		public String terminator(String name, String[] columnNames) throws SQLException {
-			StringBuilder sb = new StringBuilder(") AS " + name + "(");
+			StringBuilder sb = new StringBuilder(" from sysibm.sysdummy1) " + name + "(");
 			for (int i = 1; i <= columnNames.length; ++i) {
 				if (i > 1) {
 					sb.append(", ");
@@ -260,39 +225,6 @@ public enum InlineViewStyle {
 				sb.append(columnNames[i - 1]);
 			}
 			sb.append(")");
-			return sb.toString();
-		}
-	},
-	DB2_4("(Select 1 as A, '2' as B, 3 as C from sysibm.sysdummy1 Union all " + 
-	       "Select 4, '5', 6 from sysibm.sysdummy1) %s") {
-		@Override
-		public String head(String[] columnNames) throws SQLException {
-			return "(Select ";
-		}
-
-		@Override
-		public String item(String[] values, String[] columnNames, int rowNumber) throws SQLException {
-			StringBuilder sb = new StringBuilder();
-			for (int i = 1; i <= columnNames.length; ++i) {
-				if (i > 1) {
-					sb.append(", ");
-				}
-				sb.append(values[i - 1]);
-				if (rowNumber == 0) {
-					sb.append(" as " + columnNames[i - 1]);
-				}
-			}
-			return sb.toString();
-		}
-
-		@Override
-		public String separator() throws SQLException {
-			return " from sysibm.sysdummy1 Union all Select ";
-		}
-
-		@Override
-		public String terminator(String name, String[] columnNames) throws SQLException {
-			StringBuilder sb = new StringBuilder(" from sysibm.sysdummy1) " + name);
 			return sb.toString();
 		}
 	};
