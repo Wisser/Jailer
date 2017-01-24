@@ -1519,6 +1519,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				if (!isDefaultSchema[0]) {
 					args.add("-qualifyNames");
 				}
+        		analyseOptionsDialog.appendAnalyseCLIOptions(args);
 				ModelBuilder.assocFilter = analyseOptionsDialog.getAssociationLineFilter();
 				if (DataBrowserContext.isStandAlone()) {
 					UIUtil.disableWarnings = true;

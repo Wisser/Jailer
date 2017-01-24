@@ -147,7 +147,7 @@ public class Quoting {
 					"TRAILING", "TRANSACTION", "TRANSLATE", "TRANSLATION", "TRIM",
 					"TRUE", "UNDO", "UNION", "UNIQUE", "UNKNOWN", "UNTIL",
 					"UPDATE", "UPPER", "USAGE", "USER", "USING", "VALUE", "VALUES",
-					"VARCHAR", "VARYING", "VIEW", "WHEN", "WHENEVER", "WHERE",
+					"VARCHAR", "VARYING", "VIEW", "VIRTUAL", "WHEN", "WHENEVER", "WHERE",
 					"WHILE", "WITH", "WORK", "WRITE", "YEAR", "ZONE" }));
 				keyWordsMap.put(k, keyWords);
 			}

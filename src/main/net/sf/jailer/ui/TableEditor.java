@@ -99,6 +99,7 @@ public class TableEditor extends javax.swing.JDialog {
 				columnPrec.setText(element.column.precision >= 0? Integer.toString(element.column.precision) : "");
 				columnIsIdentity.setSelected(element.column.isIdentityColumn);
 				columnIsVirtual.setSelected(element.column.isVirtual);
+				columnIsNullable.setSelected(element.column.isNullable);
 			} else {
 				columnName.setText("");
 				columnType.setText("");
@@ -106,6 +107,7 @@ public class TableEditor extends javax.swing.JDialog {
 				columnPrec.setText("");
 				columnIsIdentity.setSelected(false);
 				columnIsVirtual.setSelected(false);
+				columnIsNullable.setSelected(false);
 			}
 			primaryKey1.setSelected(element.isPk);
 			return columnDetailsPanel;
@@ -155,6 +157,7 @@ public class TableEditor extends javax.swing.JDialog {
 			Column c = new Column(name, type, length, prec);
 			c.isIdentityColumn = columnIsIdentity.isSelected();
 			c.isVirtual = columnIsVirtual.isSelected();
+			c.isNullable = columnIsNullable.isSelected();
 			element.column = c;
 			element.isPk = primaryKey1.isSelected();
 		}
@@ -242,6 +245,7 @@ public class TableEditor extends javax.swing.JDialog {
         columnPrec = new javax.swing.JTextField();
         columnIsIdentity = new javax.swing.JCheckBox();
         columnIsVirtual = new javax.swing.JCheckBox();
+        columnIsNullable = new javax.swing.JCheckBox();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         nameField = new javax.swing.JTextField();
@@ -265,7 +269,7 @@ public class TableEditor extends javax.swing.JDialog {
         primaryKey1.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridy = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 0);
@@ -417,7 +421,7 @@ public class TableEditor extends javax.swing.JDialog {
         columnIsIdentity.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridy = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 0);
@@ -428,11 +432,21 @@ public class TableEditor extends javax.swing.JDialog {
         columnIsVirtual.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 1, 0);
+        columnDetailsPanel.add(columnIsVirtual, gridBagConstraints);
+
+        columnIsNullable.setText(" nullable");
+        columnIsNullable.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(1, 0, 4, 0);
-        columnDetailsPanel.add(columnIsVirtual, gridBagConstraints);
+        columnDetailsPanel.add(columnIsNullable, gridBagConstraints);
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Table");
@@ -596,7 +610,7 @@ public class TableEditor extends javax.swing.JDialog {
     }// </editor-fold>//GEN-END:initComponents
 
 	private String toSql(Column column) {
-		return column.toSQL(null) + (column.isIdentityColumn? " identity" : "") + (column.isVirtual? " virtual" : "");
+		return column.toSQL(null) + (column.isIdentityColumn? " identity" : "") + (column.isVirtual? " virtual" : "") + (column.isNullable? " null" : "");
 	}
 
     private void excludeFromDeletionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_excludeFromDeletionActionPerformed
@@ -857,6 +871,7 @@ public class TableEditor extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel columnDetailsPanel;
     private javax.swing.JCheckBox columnIsIdentity;
+    private javax.swing.JCheckBox columnIsNullable;
     private javax.swing.JCheckBox columnIsVirtual;
     private javax.swing.JTextField columnLength;
     private javax.swing.JTextField columnName;

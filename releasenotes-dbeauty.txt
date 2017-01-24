@@ -1,3 +1,6 @@
+2.9.2
+  - Added support for Views and Synonyms. (https://sourceforge.net/p/jailer/feature-requests/36/)
+   
 2.9
   - Performance improvement.
   - Added inline view style for DB2 z/OS.

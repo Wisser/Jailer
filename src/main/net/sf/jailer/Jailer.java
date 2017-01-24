@@ -108,7 +108,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "6.4";
+	public static final String VERSION = "6.4.1";
 	
 	/**
 	 * The Jailer application name.
@@ -675,31 +675,9 @@ public class Jailer {
 					independentTables = datamodel.getIndependentTables(remaining, relevantAssociations);
 				}
 			} else {
-				rest = entityGraph.getSize(dependentTables);
-				for (;;) {
-					for (final Table table : dependentTables) {
-						entityGraph.markIndependentEntities(table);
-					}
-					List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
-					for (final Table table : dependentTables) {
-						jobs.add(new JobManager.Job() {
-							public void run() throws Exception {
-								entityGraph.readMarkedEntities(table, false);
-							}
-						});
-					}
-					if (result != null && !jobs.isEmpty()) {
-						result.append("-- sync" + System.getProperty("line.separator"));
-					}
-					jobManager.executeJobs(jobs);
-					for (final Table table : dependentTables) {
-						entityGraph.deleteIndependentEntities(table);
-					}
-					long newRest = entityGraph.getSize(dependentTables);
-					if (rest == newRest) {
-						break;
-					}
-					rest = newRest;
+				rest = writeIndependentEntities(result, dependentTables, entityGraph);
+				if (rest > 0) {
+					// TODO
 				}
 			}
 			if (rest > 0) {
@@ -775,6 +753,51 @@ public class Jailer {
 			throw new RuntimeException(msg);
 		}
 		_log.info("file '" + sqlScriptFile + "' written.");
+	}
+
+	/**
+	 * Iteratively mark and write out independent entities from a given {@link EntityGraph}
+	 * until no independent entity remains.
+	 * 
+	 * @param result writer to output file
+	 * @param dependentTables tables to consider
+	 * @param theEntityGraph the entity graph
+	 * @return number of remaining entities
+	 */
+	private long writeIndependentEntities(OutputStreamWriter result, Set<Table> dependentTables, final EntityGraph theEntityGraph)
+			throws SQLException, IOException, Exception {
+		long rest;
+		rest = theEntityGraph.getSize(dependentTables);
+		for (;;) {
+			for (final Table table : dependentTables) {
+				theEntityGraph.markIndependentEntities(table);
+			}
+			List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
+			for (final Table table : dependentTables) {
+				jobs.add(new JobManager.Job() {
+					public void run() throws Exception {
+						theEntityGraph.readMarkedEntities(table, false);
+					}
+				});
+			}
+			if (result != null && !jobs.isEmpty()) {
+				result.append("-- sync" + System.getProperty("line.separator"));
+			}
+			jobManager.executeJobs(jobs);
+			for (final Table table : dependentTables) {
+				theEntityGraph.deleteIndependentEntities(table);
+			}
+			long newRest = theEntityGraph.getSize(dependentTables);
+			if (newRest == 0) {
+				rest = 0;
+				break;
+			}
+			if (rest == newRest) {
+				break;
+			}
+			rest = newRest;
+		}
+		return rest;
 	}
 	
 	/**

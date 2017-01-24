@@ -253,9 +253,18 @@ public class CommandLineParser {
     @Option(name="-schema",usage="schema to reduce JDBC-Introspection to", metaVar="schema")
     public String schema = null;
 
-    @Option(name="-qualifyNames",usage="add schema prefix to table names after DB-introspection", metaVar="export-script")
+    @Option(name="-qualifyNames",usage="add schema prefix to table names after analysing the DB", metaVar="export-script")
     public boolean qualifyNames = false;
-
+    
+    @Option(name="-analyse-alias",usage="look for aliases while analysing the DB")
+    public boolean analyseAlias = false;
+    
+    @Option(name="-analyse-synonym",usage="look for synonyms while analysing the DB")
+    public boolean analyseSynonym = false;
+    
+    @Option(name="-analyse-view",usage="look for views while analysing the DB")
+    public boolean analyseView = false;
+    
     @Option(name="-d",usage="name of the delete-script file (compressed if it ends with '.zip' or '.gz')", metaVar="delete-script")
     public String deleteScriptFileName = null;
 
