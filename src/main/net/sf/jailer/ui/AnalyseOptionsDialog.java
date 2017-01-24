@@ -174,6 +174,18 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 	public String getSelectedSchema() {
 		return selectedSchema;
 	}
+	
+	public void appendAnalyseCLIOptions(List<String> args) {
+		if (analyseAlias.isSelected()) {
+			args.add("-analyse-alias");
+		}
+		if (analyseSynonyms.isSelected()) {
+			args.add("-analyse-synonym");
+		}
+		if (analyseViews.isSelected()) {
+			args.add("-analyse-view");
+		}
+	}
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -195,7 +207,12 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
         schemaLabel = new javax.swing.JLabel();
-        schemaComboBox = new net.sf.jailer.ui.JComboBox();
+        schemaComboBox = new javax.swing.JComboBox();
+        jPanel3 = new javax.swing.JPanel();
+        analyseAlias = new javax.swing.JCheckBox();
+        analyseSynonyms = new javax.swing.JCheckBox();
+        jLabel2 = new javax.swing.JLabel();
+        analyseViews = new javax.swing.JCheckBox();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Analyze Database");
@@ -274,6 +291,7 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(8, 0, 8, 0);
         getContentPane().add(jPanel2, gridBagConstraints);
 
@@ -325,6 +343,68 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         getContentPane().add(schemaComboBox, gridBagConstraints);
 
+        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED), "Analyse tables and ..."));
+        jPanel3.setLayout(new java.awt.GridBagLayout());
+
+        analyseAlias.setText("Aliases");
+        analyseAlias.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                analyseAliasActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 8);
+        jPanel3.add(analyseAlias, gridBagConstraints);
+
+        analyseSynonyms.setText("Synonyms");
+        analyseSynonyms.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                analyseSynonymsActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 8);
+        jPanel3.add(analyseSynonyms, gridBagConstraints);
+
+        jLabel2.setText("   ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        jPanel3.add(jLabel2, gridBagConstraints);
+
+        analyseViews.setText("Views");
+        analyseViews.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                analyseViewsActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 0, 8);
+        jPanel3.add(analyseViews, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 8, 0);
+        getContentPane().add(jPanel3, gridBagConstraints);
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
@@ -352,17 +432,34 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         setVisible(false);
     }//GEN-LAST:event_cancelButtonActionPerformed
 
+    private void analyseAliasActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analyseAliasActionPerformed
+       
+    }//GEN-LAST:event_analyseAliasActionPerformed
+
+    private void analyseViewsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analyseViewsActionPerformed
+       
+    }//GEN-LAST:event_analyseViewsActionPerformed
+
+    private void analyseSynonymsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_analyseSynonymsActionPerformed
+       
+    }//GEN-LAST:event_analyseSynonymsActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JCheckBox analyseAlias;
+    private javax.swing.JCheckBox analyseSynonyms;
+    private javax.swing.JCheckBox analyseViews;
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JCheckBox keepManAssociationsCheckBox;
     private javax.swing.JCheckBox keepManTablesCheckBox;
     private javax.swing.JButton okButton;
     private javax.swing.JCheckBox removeCurrentAssociationsCheckBox;
     private javax.swing.JCheckBox removeCurrentTablesCheckBox;
-    private net.sf.jailer.ui.JComboBox schemaComboBox;
+    private javax.swing.JComboBox schemaComboBox;
     private javax.swing.JLabel schemaLabel;
     // End of variables declaration//GEN-END:variables
 

@@ -62,6 +62,11 @@ public class Column {
     public boolean isVirtual = false;
     
     /**
+     * <code>true</code> if column is nullable.
+     */
+    public boolean isNullable = false;
+    
+    /**
      * SQL Expression for server-side column data filtering.
      */
     private Filter filter = null;
@@ -135,11 +140,15 @@ public class Column {
     	if (!normalizedcolumnDeclaration.equals(columnDeclaration)) {
     		columnDeclaration = normalizedcolumnDeclaration + " virtual";
     	}
+    	normalizedcolumnDeclaration = columnDeclaration.replaceFirst("(\\(\\))? +[nN][uU][lL][lL]", "");
+    	if (!normalizedcolumnDeclaration.equals(columnDeclaration)) {
+    		columnDeclaration = normalizedcolumnDeclaration + " null";
+    	}
     	
-    	boolean isIdent = false;
-    	if (columnDeclaration.toLowerCase().endsWith(" identity")) {
-    		isIdent = true;
-    		columnDeclaration = columnDeclaration.substring(0, columnDeclaration.length() - 9).trim();
+    	boolean isNullable = false;
+    	if (columnDeclaration.toLowerCase().endsWith(" null")) {
+    		isNullable = true;
+    		columnDeclaration = columnDeclaration.substring(0, columnDeclaration.length() - 5).trim();
     	}
 
     	boolean isVirtual = false;
@@ -148,6 +157,12 @@ public class Column {
     		columnDeclaration = columnDeclaration.substring(0, columnDeclaration.length() - 8).trim();
     	}
     	
+    	boolean isIdent = false;
+    	if (columnDeclaration.toLowerCase().endsWith(" identity")) {
+    		isIdent = true;
+    		columnDeclaration = columnDeclaration.substring(0, columnDeclaration.length() - 9).trim();
+    	}
+
     	Character quote = null;
     	if (columnDeclaration.length() > 0 && SqlUtil.LETTERS_AND_DIGITS.indexOf(columnDeclaration.charAt(0)) < 0) {
     		quote = columnDeclaration.charAt(0);
@@ -198,6 +213,7 @@ public class Column {
 	    	name = name.replace('\n', ' ');
 	    }
 	    Column column = new Column(name, type, size, precision);
+	    column.isNullable = isNullable;
 	    column.isIdentityColumn = isIdent;
 	    column.isVirtual = isVirtual;
 	    return column;

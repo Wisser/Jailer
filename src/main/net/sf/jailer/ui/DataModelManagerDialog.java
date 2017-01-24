@@ -598,6 +598,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	        		if (!isDefaultSchema[0]) {
 	        			args.add("-qualifyNames");
 	        		}
+	        		analyseOptionsDialog.appendAnalyseCLIOptions(args);
 					ModelBuilder.assocFilter = analyseOptionsDialog.getAssociationLineFilter();
 					if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword(), null, null, false, true, false)) {
 		        		ModelBuilder.assocFilter = null;

@@ -158,11 +158,12 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         DatabaseMetaData metaData = session.getMetaData();
         Quoting quoting = new Quoting(session);
         ResultSet resultSet;
-        resultSet = getTables(session, metaData, session.getIntrospectionSchema(), "%", new String[] { "TABLE" });
+        List<String> types = getTypes();
+		resultSet = getTables(session, metaData, session.getIntrospectionSchema(), "%", types.toArray(new String[0]));
         List<String> tableNames = new ArrayList<String>();
         while (resultSet.next()) {
             String tableName = resultSet.getString(3);
-            if ("TABLE".equalsIgnoreCase(resultSet.getString(4))) {
+            if (resultSet.getString(4) != null && types.contains(resultSet.getString(4).toUpperCase())) {
                 if (isValidName(tableName)) {
                 	tableName = quoting.quote(tableName);
                 	if (CommandLineParser.getInstance().qualifyNames) {
@@ -277,6 +278,21 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 
         return tables;
     }
+
+	private List<String> getTypes() {
+		ArrayList<String> result = new ArrayList<String>();
+		result.add("TABLE");
+		if (CommandLineParser.getInstance().analyseAlias) {
+			result.add("ALIAS");
+		}
+		if (CommandLineParser.getInstance().analyseSynonym) {
+			result.add("SYNONYM");
+		}
+		if (CommandLineParser.getInstance().analyseView) {
+			result.add("VIEW");
+		}
+		return result;
+	}
 
     private ResultSet getPrimaryKeys(Session session, DatabaseMetaData metaData, String schema, String table) throws SQLException {
     	if (session.dbms == DBMS.MySQL) {
@@ -583,6 +599,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
             }
             _log.debug("column info: '" + colName + "' '" + sqlType + "' " + type + " '" + resultSet.getString(6) + "'");
             Column column = new Column(colName, sqlType, filterLength(length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), precision);
+			column.isNullable = resultSet.getInt(11) == DatabaseMetaData.columnNullable;
 			Boolean isVirtual = null;
             if (!Boolean.FALSE.equals(session.getSessionProperty(getClass(), "JDBC4Supported"))) {
 	            try {
