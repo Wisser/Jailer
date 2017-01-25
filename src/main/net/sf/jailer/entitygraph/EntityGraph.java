@@ -26,7 +26,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.jailer.Configuration;
 import net.sf.jailer.TransformerFactory;
+import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.ResultSetReader;
@@ -34,6 +36,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.util.CellContentConverter;
 
 /**
  * Persistent graph of entities. 
@@ -403,7 +406,19 @@ public abstract class EntityGraph {
         return statistic;
     }
 
-	public abstract Session getTargetSession();
+    /**
+     * Removes all dependencies for a given association. 
+     * 
+     * @param association the asociation
+     */
+    public void removeDependencies(Association association) throws SQLException {
+    	String delete;
+		delete = "Delete from " + SQLDialect.dmlTableReference(DEPENDENCY, getSession()) +
+		 " Where depend_id=" + association.getId() + " and r_entitygraph=" + graphID;
+    	getSession().executeUpdate(delete);
+    }
+    
+    public abstract Session getTargetSession();
 
     public void setDeleteMode(boolean deleteMode) {
     	inDeleteMode = deleteMode;
