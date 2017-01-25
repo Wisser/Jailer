@@ -48,6 +48,10 @@ import java.util.zip.ZipOutputStream;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.log4j.Logger;
+import org.apache.log4j.PropertyConfigurator;
+import org.xml.sax.helpers.AttributesImpl;
+
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.database.DeletionTransformer;
@@ -59,6 +63,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.Filter;
 import net.sf.jailer.datamodel.ParameterHandler;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
@@ -87,10 +92,6 @@ import net.sf.jailer.util.SqlScriptExecutor;
 import net.sf.jailer.util.SqlUtil;
 import net.sf.jailer.xml.XmlExportTransformer;
 import net.sf.jailer.xml.XmlUtil;
-
-import org.apache.log4j.Logger;
-import org.apache.log4j.PropertyConfigurator;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * Tool for database subsetting, schema browsing, and rendering. It exports
@@ -447,20 +448,20 @@ public class Jailer {
 								}
 							});
 						}
-						if (jc != null && association.isInsertSourceBeforeDestination()) {
-							done.add(association);
-							jobs.add(new JobManager.Job() {
-								public void run() throws Exception {
-									_log.info("find dependencies " + datamodel.getDisplayName(association.destination) + " -> "
-											+ datamodel.getDisplayName(table) + " on " + jc);
-									String fromAlias, toAlias;
-									fromAlias = association.reversed ? "B" : "A";
-									toAlias = association.reversed ? "A" : "B";
-									entityGraph.addDependencies(association.destination, toAlias, table, fromAlias, jc, aggregationId, dependencyId,
-											association.reversed);
-								}
-							});
-						}
+//						if (jc != null && association.isInsertSourceBeforeDestination()) {
+//							done.add(association);
+//							jobs.add(new JobManager.Job() {
+//								public void run() throws Exception {
+//									_log.info("find dependencies " + datamodel.getDisplayName(association.destination) + " -> "
+//											+ datamodel.getDisplayName(table) + " on " + jc);
+//									String fromAlias, toAlias;
+//									fromAlias = association.reversed ? "B" : "A";
+//									toAlias = association.reversed ? "A" : "B";
+//									entityGraph.addDependencies(association.destination, toAlias, table, fromAlias, jc, aggregationId, dependencyId,
+//											association.reversed);
+//								}
+//							});
+//						}
 					}
 				}
 			}
@@ -676,9 +677,48 @@ public class Jailer {
 				}
 			} else {
 				rest = writeIndependentEntities(result, dependentTables, entityGraph);
-				if (rest > 0) {
-					// TODO
-				}
+				result.append("-- sync" + System.getProperty("line.separator"));
+//				if (rest > 0) {
+//					EntityGraph egCopy = entityGraph.copy(EntityGraph.createUniqueGraphID(), entityGraph.getSession());
+//					egCopy.setTransformerFactory(entityGraph.getTransformerFactory());
+//					
+//					_log.info(rest + " entities in cycle. Involved tables: " + PrintUtil.tableSetAsString(dependentTables));
+//					Map<Table, Set<Column>> nullableForeignKeys = findAndRemoveNullableForeignKeys(dependentTables, entityGraph, scriptType != ScriptType.DELETE);
+//					_log.info("nullable foreign keys: " + nullableForeignKeys.values());
+//					
+//					if (scriptType != ScriptType.DELETE) {
+//						List<Runnable> resetFilters = new ArrayList<Runnable>();
+//						for (Map.Entry<Table, Set<Column>> entry: nullableForeignKeys.entrySet()) {
+//							for (final Column column: entry.getValue()) {
+//								final Filter filter = column.getFilter();
+//								resetFilters.add(new Runnable() {
+//									@Override
+//									public void run() {
+//										column.setFilter(filter);
+//									}
+//								});
+//								column.setFilter(new Filter("null", false, null));
+//							}
+//						}
+//						rest = writeIndependentEntities(result, dependentTables, entityGraph);
+//						
+//						for (Runnable runnable: resetFilters) {
+//							runnable.run();
+//						}
+//						
+//						result.append("-- sync" + System.getProperty("line.separator"));
+//						for (Map.Entry<Table, Set<Column>> entry: nullableForeignKeys.entrySet()) {
+//							egCopy.readEntities(entry.getKey(), false);
+//						}
+//						
+//					} else {
+//						
+//						// TODO	
+//					}
+//					
+//					egCopy.delete();
+//					result.append("-- sync" + System.getProperty("line.separator"));
+//				}
 			}
 			if (rest > 0) {
 				break;
@@ -753,6 +793,37 @@ public class Jailer {
 			throw new RuntimeException(msg);
 		}
 		_log.info("file '" + sqlScriptFile + "' written.");
+	}
+
+	private Map<Table, Set<Column>> findAndRemoveNullableForeignKeys(Set<Table> tables, EntityGraph theEntityGraph, boolean fkIsInSource) throws SQLException {
+		Map<Table, Set<Column>> result = new HashMap<Table, Set<Column>>();
+		
+		for (Table table: tables) {
+			for (Association association: table.associations) {
+				if (association.isInsertDestinationBeforeSource()) {
+					Map<Column, Column> mapping = association.createSourceToDestinationKeyMapping();
+					if (!mapping.isEmpty()) {
+						boolean nullable = true;
+						Collection<Column> fk = fkIsInSource? mapping.keySet() : mapping.values();
+						for (Column c: fk) {
+							if (!c.isNullable) {
+								nullable = false;
+								break;
+							}
+						}
+						if (nullable) {
+							if (!result.containsKey(table)) {
+								result.put(table, new HashSet<Column>());
+							}
+							result.get(table).addAll(fk);
+							theEntityGraph.removeDependencies(association);
+						}
+					}
+				}
+			}
+		}
+		
+		return result;
 	}
 
 	/**
