@@ -15,6 +15,10 @@
  */
 package net.sf.jailer.entitygraph.intradatabase;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -22,6 +26,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
@@ -29,6 +35,7 @@ import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.StatementBuilder;
+import net.sf.jailer.database.UpdateTransformer;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKey;
@@ -38,6 +45,7 @@ import net.sf.jailer.entitygraph.remote.RemoteEntityGraph;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.progress.ProgressListenerRegistry;
 import net.sf.jailer.util.Quoting;
+import net.sf.jailer.util.SqlScriptExecutor;
 
 
 /**
@@ -257,6 +265,44 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	}
 
 	/**
+	 * Updates columns of a table.
+	 * 
+	 * @param table the table
+	 * @param columns the columns;
+	 */
+	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, Configuration targetConfiguration) throws SQLException {
+		File tmp = createTempFile();
+		OutputStreamWriter tmpFileWriter;
+		try {
+			tmpFileWriter = new FileWriter(tmp);
+			Session.ResultSetReader reader = new UpdateTransformer(table, columns, tmpFileWriter, CommandLineParser.getInstance().numberOfEntities, getSession(), Configuration.forDbms(getSession()));
+			readEntities(table, false, reader);
+			tmpFileWriter.close();
+			new SqlScriptExecutor(getSession(), 1).executeScript(tmp.getPath());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+    	tmp.delete();
+	}
+	
+	private File createTempFile() {
+		String file;
+		String ts = UUID.randomUUID().toString();
+		File newFile;
+		for (int i = 1; ; ++i) {
+			file = "tmp";
+			newFile = CommandLineParser.getInstance().newFile(file);
+			newFile.mkdirs();
+			file += File.separator + "up" + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".sql";
+			newFile = CommandLineParser.getInstance().newFile(file);
+			if (!newFile.exists()) {
+				break;
+			}
+		}
+		return new File(file);
+	}
+	
+	/**
 	 * Reads all entities of a given table.
 	 * 
 	 * @param table
@@ -421,7 +467,11 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 					synchronized (this) {
 						upsertStrategy = null;
 					}
-					return upsertRows(table, sqlSelect, false);
+					try {
+						return upsertRows(table, sqlSelect, false);
+					} catch (SQLException e2) {
+						throw e;
+					}
 				} finally {
 					session.setSilent(silent);
 				}

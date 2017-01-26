@@ -366,7 +366,7 @@ public class DMLTransformer extends AbstractResultSetReader {
                     f = false;
                     whereForTerminator.append("T." + quoting.requote(pk.name) + "=Q." + quoting.requote(pk.name));
                     String value;
-                    String name = quoting.unquote(pk.name);
+                    String name = quoting.quote(pk.name);
                     if (val.containsKey(name)) {
                     	value = val.get(name);
                     } else if (val.containsKey(name.toLowerCase())) {

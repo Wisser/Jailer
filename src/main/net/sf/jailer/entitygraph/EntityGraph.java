@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.entitygraph;
 
+import java.io.OutputStreamWriter;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -28,15 +29,14 @@ import java.util.Set;
 
 import net.sf.jailer.Configuration;
 import net.sf.jailer.TransformerFactory;
-import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.util.CellContentConverter;
 
 /**
  * Persistent graph of entities. 
@@ -244,7 +244,15 @@ public abstract class EntityGraph {
      * @param orderByPK if <code>true</code>, result will be ordered by primary keys
      */
     public abstract void readEntities(Table table, boolean orderByPK) throws SQLException;
-    
+
+	/**
+	 * Updates columns of a table.
+	 * 
+	 * @param table the table
+	 * @param columns the columns;
+	 */
+	public abstract void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, Configuration targetConfiguration) throws SQLException;
+
     /**
      * Deletes all entities which are marked as independent.
      */

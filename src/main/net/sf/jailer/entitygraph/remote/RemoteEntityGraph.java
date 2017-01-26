@@ -16,6 +16,7 @@
 package net.sf.jailer.entitygraph.remote;
 
 import java.io.File;
+import java.io.OutputStreamWriter;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -24,11 +25,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.ResultSetReader;
+import net.sf.jailer.database.UpdateTransformer;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
@@ -566,6 +569,17 @@ public class RemoteEntityGraph extends EntityGraph {
      */
     public void readEntities(Table table, boolean orderByPK) throws SQLException {
     	Session.ResultSetReader reader = getTransformerFactory().create(table);
+    	long rc = readEntities(table, orderByPK, reader);
+    	ProgressListenerRegistry.getProgressListener().exported(table, rc);
+    }
+
+    /**
+     * Reads all entities of a given table.
+     * 
+     * @param table the table
+     * @param orderByPK if <code>true</code>, result will be ordered by primary keys
+     */
+    protected long readEntities(Table table, boolean orderByPK, Session.ResultSetReader reader) throws SQLException {
     	String sqlQuery = "Select " + filteredSelectionClause(table) + " From " + SQLDialect.dmlTableReference(ENTITY, session) + " E join " + quoting.requote(table.getName()) + " T on " +
 			pkEqualsEntityID(table, "T", "E") +
 			" Where E.birthday>=0 and E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) + "";
@@ -577,9 +591,20 @@ public class RemoteEntityGraph extends EntityGraph {
 		} else {
 			rc = session.executeQuery(sqlQuery, reader);
 		}
-        ProgressListenerRegistry.getProgressListener().exported(table, rc);
+        return rc;
     }
-    
+
+	/**
+	 * Updates columns of a table.
+	 * 
+	 * @param table the table
+	 * @param columns the columns;
+	 */
+	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, Configuration targetConfiguration) throws SQLException {
+		Session.ResultSetReader reader = new UpdateTransformer(table, columns, scriptFileWriter, CommandLineParser.getInstance().numberOfEntities, getTargetSession(), targetConfiguration);
+    	readEntities(table, false, reader);
+	}
+
     /**
      * Gets select clause for reading rows of given type
      * with respect of the column filters.
