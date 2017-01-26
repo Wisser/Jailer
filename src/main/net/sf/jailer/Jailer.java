@@ -109,7 +109,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "6.4.1";
+	public static final String VERSION = "6.5";
 	
 	/**
 	 * The Jailer application name.
@@ -677,48 +677,62 @@ public class Jailer {
 				}
 			} else {
 				rest = writeIndependentEntities(result, dependentTables, entityGraph);
-				result.append("-- sync" + System.getProperty("line.separator"));
-//				if (rest > 0) {
-//					EntityGraph egCopy = entityGraph.copy(EntityGraph.createUniqueGraphID(), entityGraph.getSession());
-//					egCopy.setTransformerFactory(entityGraph.getTransformerFactory());
-//					
-//					_log.info(rest + " entities in cycle. Involved tables: " + PrintUtil.tableSetAsString(dependentTables));
-//					Map<Table, Set<Column>> nullableForeignKeys = findAndRemoveNullableForeignKeys(dependentTables, entityGraph, scriptType != ScriptType.DELETE);
-//					_log.info("nullable foreign keys: " + nullableForeignKeys.values());
-//					
-//					if (scriptType != ScriptType.DELETE) {
-//						List<Runnable> resetFilters = new ArrayList<Runnable>();
-//						for (Map.Entry<Table, Set<Column>> entry: nullableForeignKeys.entrySet()) {
-//							for (final Column column: entry.getValue()) {
-//								final Filter filter = column.getFilter();
-//								resetFilters.add(new Runnable() {
-//									@Override
-//									public void run() {
-//										column.setFilter(filter);
-//									}
-//								});
-//								column.setFilter(new Filter("null", false, null));
-//							}
-//						}
-//						rest = writeIndependentEntities(result, dependentTables, entityGraph);
-//						
-//						for (Runnable runnable: resetFilters) {
-//							runnable.run();
-//						}
-//						
-//						result.append("-- sync" + System.getProperty("line.separator"));
-//						for (Map.Entry<Table, Set<Column>> entry: nullableForeignKeys.entrySet()) {
-//							egCopy.readEntities(entry.getKey(), false);
-//						}
-//						
-//					} else {
-//						
-//						// TODO	
-//					}
-//					
-//					egCopy.delete();
-//					result.append("-- sync" + System.getProperty("line.separator"));
-//				}
+				appendSync(result);
+				if (rest > 0) {
+					EntityGraph egCopy = entityGraph.copy(EntityGraph.createUniqueGraphID(), entityGraph.getSession());
+					
+					_log.info(rest + " entities in cycle. Involved tables: " + PrintUtil.tableSetAsString(dependentTables));
+					Map<Table, Set<Column>> nullableForeignKeys = findAndRemoveNullableForeignKeys(dependentTables, entityGraph, scriptType != ScriptType.DELETE);
+					_log.info("nullable foreign keys: " + nullableForeignKeys.values());
+
+					ScriptFormat scriptFormat = CommandLineParser.getInstance().getScriptFormat();
+					
+					List<Runnable> resetFilters = new ArrayList<Runnable>();
+					for (Map.Entry<Table, Set<Column>> entry: nullableForeignKeys.entrySet()) {
+						for (final Column column: entry.getValue()) {
+							final Filter filter = column.getFilter();
+							resetFilters.add(new Runnable() {
+								@Override
+								public void run() {
+									column.setFilter(filter);
+								}
+							});
+							String nullExpression = "null";
+							if (session.dbms == DBMS.POSTGRESQL && scriptFormat == ScriptFormat.INTRA_DATABASE) {
+								nullExpression += "::" + column.type;
+							}
+							column.setFilter(new Filter(nullExpression, false, null));
+						}
+					}
+
+					if (scriptType != ScriptType.DELETE) {
+						rest = writeIndependentEntities(result, dependentTables, entityGraph);
+						
+						for (Runnable runnable: resetFilters) {
+							runnable.run();
+						}
+						
+						appendSync(result);
+						for (Map.Entry<Table, Set<Column>> entry: nullableForeignKeys.entrySet()) {
+							egCopy.updateEntities(entry.getKey(), entry.getValue(), result, targetDBMSConfiguration(entityGraph.getTargetSession()));
+						}
+						
+					} else {
+						for (Map.Entry<Table, Set<Column>> entry: nullableForeignKeys.entrySet()) {
+							egCopy.updateEntities(entry.getKey(), entry.getValue(), result, targetDBMSConfiguration(entityGraph.getTargetSession()));
+						}
+
+						for (Runnable runnable: resetFilters) {
+							runnable.run();
+						}
+						
+						appendSync(result);
+						rest = writeIndependentEntities(result, dependentTables, entityGraph);
+					}
+					
+					egCopy.delete();
+					appendSync(result);
+				}
 			}
 			if (rest > 0) {
 				break;
@@ -727,10 +741,12 @@ public class Jailer {
 		
 		if (result != null) {
 			// write epilogs
-			result.append("-- epilog");
-			result.append(System.getProperty("line.separator"));
-			for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
-				enhancer.addEpilog(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress);
+			if (CommandLineParser.getInstance().getScriptFormat() != ScriptFormat.INTRA_DATABASE) {
+				result.append("-- epilog");
+				result.append(System.getProperty("line.separator"));
+				for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
+					enhancer.addEpilog(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress);
+				}
 			}
 			result.close();
 		}
@@ -800,6 +816,9 @@ public class Jailer {
 		
 		for (Table table: tables) {
 			for (Association association: table.associations) {
+				if (!tables.contains(association.source) || !tables.contains(association.destination)) {
+					continue;
+				}
 				if (association.isInsertDestinationBeforeSource()) {
 					Map<Column, Column> mapping = association.createSourceToDestinationKeyMapping();
 					if (!mapping.isEmpty()) {
@@ -812,10 +831,11 @@ public class Jailer {
 							}
 						}
 						if (nullable) {
-							if (!result.containsKey(table)) {
-								result.put(table, new HashSet<Column>());
+							Table source = fkIsInSource? association.source : association.destination;
+							if (!result.containsKey(source)) {
+								result.put(source, new HashSet<Column>());
 							}
-							result.get(table).addAll(fk);
+							result.get(source).addAll(fk);
 							theEntityGraph.removeDependencies(association);
 						}
 					}
@@ -852,7 +872,7 @@ public class Jailer {
 				});
 			}
 			if (result != null && !jobs.isEmpty()) {
-				result.append("-- sync" + System.getProperty("line.separator"));
+				appendSync(result);
 			}
 			jobManager.executeJobs(jobs);
 			for (final Table table : dependentTables) {
@@ -1118,7 +1138,7 @@ public class Jailer {
 			}
 			if (!jobs.isEmpty()) {
 				if (result != null) {
-					result.append("-- sync" + System.getProperty("line.separator"));
+					appendSync(result);
 				}
 				jobManager.executeJobs(jobs);
 			}
@@ -1128,7 +1148,13 @@ public class Jailer {
 
 		return tables;
 	}
-
+	
+	private void appendSync(OutputStreamWriter result) throws IOException {
+		if (CommandLineParser.getInstance().getScriptFormat() != ScriptFormat.INTRA_DATABASE) {
+			result.append("-- sync" + System.getProperty("line.separator"));
+		}
+	}
+	
 	/**
 	 * Prevents multiple shutdowns.
 	 */
@@ -1424,11 +1450,11 @@ public class Jailer {
 		_log.info(Configuration.forDbms(session).getSqlDialect());
 		
 		EntityGraph entityGraph;
-		if (CommandLineParser.getInstance().getTemporaryTableScope() == TemporaryTableScope.LOCAL_DATABASE) {
-			entityGraph = LocalEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session);
-		} else if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
+		if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
 			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, Configuration.forDbms(session));
 			entityGraph = IntraDatabaseEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session));
+		} else if (CommandLineParser.getInstance().getTemporaryTableScope() == TemporaryTableScope.LOCAL_DATABASE) {
+			entityGraph = LocalEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session);
 		} else {
 			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, Configuration.forDbms(session));
 			entityGraph = RemoteEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session));

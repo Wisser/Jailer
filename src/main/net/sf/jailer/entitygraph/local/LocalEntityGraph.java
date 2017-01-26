@@ -16,6 +16,7 @@
 package net.sf.jailer.entitygraph.local;
 
 import java.io.File;
+import java.io.OutputStreamWriter;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -36,6 +37,7 @@ import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.database.TemporaryTableScope;
+import net.sf.jailer.database.UpdateTransformer;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
@@ -862,12 +864,22 @@ public class LocalEntityGraph extends EntityGraph {
     /**
      * Reads all entities of a given table.
      * 
-     * @param reader for reading the result-set
      * @param table the table
      * @param orderByPK if <code>true</code>, result will be ordered by primary keys
      */
-    public void readEntities(final Table table, final boolean orderByPK) throws SQLException {
-    	final Session.ResultSetReader reader = getTransformerFactory().create(table);
+    public void readEntities(Table table, boolean orderByPK) throws SQLException {
+    	Session.ResultSetReader reader = getTransformerFactory().create(table);
+    	long rc = readEntities(table, orderByPK, reader);
+    	ProgressListenerRegistry.getProgressListener().exported(table, rc);
+    }
+
+    /**
+     * Reads all entities of a given table.
+     * 
+     * @param table the table
+     * @param orderByPK if <code>true</code>, result will be ordered by primary keys
+     */
+    private long readEntities(final Table table, final boolean orderByPK, final Session.ResultSetReader reader) throws SQLException {
     	String upkColumnList = upkColumnList(table, "E", null);
 		String select = 
     			"Select " + upkColumnList + " From " + SQLDialect.dmlTableReference(ENTITY, localSession) + " E " +
@@ -875,26 +887,37 @@ public class LocalEntityGraph extends EntityGraph {
 		if (orderByPK) {
 			select += " order by " + upkColumnList;
 		}
-
+		final long[] rc = new long[1];
+		
 		localSession.executeQuery(select, new RemoteInlineViewBuilder("E", upkColumnList(table, null, null)) {
 			
 			@Override
 			protected void process(String inlineView) throws SQLException {
 		        String sqlQuery = "Select " + filteredSelectionClause(table) + " From " + inlineView + " join " + quoting.requote(table.getName()) + " T on " +
 		    			pkEqualsEntityID(table, "T", "E", "", false);
-	    		long rc;
 	    		if (orderByPK) {
 	    			String sqlQueryWithOrderBy = sqlQuery +
 	    				" order by " + rowIdSupport.getPrimaryKey(table).columnList("T.", quoting);
-	    			rc = remoteSession.executeQuery(sqlQueryWithOrderBy, reader, sqlQuery, null, 0);
+	    			rc[0] = remoteSession.executeQuery(sqlQueryWithOrderBy, reader, sqlQuery, null, 0);
 	    		} else {
-	    			rc = remoteSession.executeQuery(sqlQuery, reader);
+	    			rc[0] = remoteSession.executeQuery(sqlQuery, reader);
 	    		}
-	            ProgressListenerRegistry.getProgressListener().exported(table, rc);
 			}
 		});
+		return rc[0];
     }
-    
+
+	/**
+	 * Updates columns of a table.
+	 * 
+	 * @param table the table
+	 * @param columns the columns;
+	 */
+	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, Configuration targetConfiguration) throws SQLException {
+		Session.ResultSetReader reader = new UpdateTransformer(table, columns, scriptFileWriter, CommandLineParser.getInstance().numberOfEntities, getTargetSession(), targetConfiguration);
+    	readEntities(table, false, reader);
+	}
+
     /**
      * Gets select clause for reading rows of given type
      * with respect of the column filters.
