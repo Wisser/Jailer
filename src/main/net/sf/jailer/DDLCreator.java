@@ -320,6 +320,7 @@ public class DDLCreator {
 						}
 					});
 					if (uptodate[0]) {
+						session.shutDown();
 						return null;
 					}
 				} catch (Exception e) {

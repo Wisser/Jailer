@@ -713,14 +713,10 @@ public class Jailer {
 						}
 						
 						appendSync(result);
-						for (Map.Entry<Table, Set<Column>> entry: nullableForeignKeys.entrySet()) {
-							egCopy.updateEntities(entry.getKey(), entry.getValue(), result, targetDBMSConfiguration(entityGraph.getTargetSession()));
-						}
+						updateNullableForeignKeys(result, egCopy, nullableForeignKeys);
 						
 					} else {
-						for (Map.Entry<Table, Set<Column>> entry: nullableForeignKeys.entrySet()) {
-							egCopy.updateEntities(entry.getKey(), entry.getValue(), result, targetDBMSConfiguration(entityGraph.getTargetSession()));
-						}
+						updateNullableForeignKeys(result, egCopy, nullableForeignKeys);
 
 						for (Runnable runnable: resetFilters) {
 							runnable.run();
@@ -809,6 +805,20 @@ public class Jailer {
 			throw new RuntimeException(msg);
 		}
 		_log.info("file '" + sqlScriptFile + "' written.");
+	}
+
+	private void updateNullableForeignKeys(final OutputStreamWriter result, final EntityGraph eg,
+			Map<Table, Set<Column>> nullableForeignKeys) throws Exception {
+		List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
+		for (final Map.Entry<Table, Set<Column>> entry: nullableForeignKeys.entrySet()) {
+			jobs.add(new JobManager.Job() {
+				@Override
+				public void run() throws Exception {
+					eg.updateEntities(entry.getKey(), entry.getValue(), result, targetDBMSConfiguration(entityGraph.getTargetSession()));
+				}
+			});
+		}
+		jobManager.executeJobs(jobs);
 	}
 
 	private Map<Table, Set<Column>> findAndRemoveNullableForeignKeys(Set<Table> tables, EntityGraph theEntityGraph, boolean fkIsInSource) throws SQLException {
