@@ -199,7 +199,7 @@ public class DDLCreator {
 	}
 
 	private static String pkColumnConstraint(Session session) {
-		return session != null && (session.dbms == DBMS.SYBASE || session.dbms == DBMS.MySQL) ? " NULL" : "";
+		return session != null && (session.dbms == DBMS.SYBASE || session.dbms == DBMS.MySQL || session.dbms == DBMS.MSSQL) ? " NULL" : "";
 	}
 
 	/**
