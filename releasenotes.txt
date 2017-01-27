@@ -1,5 +1,5 @@
 6.5
-  - Referential cycles can now be processed.
+  - Referential cycles can now be exported by deferring the insert of nullable foreign keys.
 
 6.4.1
   - Added support for Views and Synonyms. (https://sourceforge.net/p/jailer/feature-requests/36/)
