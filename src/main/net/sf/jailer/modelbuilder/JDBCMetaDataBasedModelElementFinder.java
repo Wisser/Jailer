@@ -98,7 +98,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
             while (resultSet.next()) {
                 Table pkTable = dataModel.getTable(toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(session.dbms == DBMS.MySQL? 1 : 2)), quoting.quote(resultSet.getString(3))));
                 String pkColumn = quoting.quote(resultSet.getString(4));
-                Table fkTable = dataModel.getTable(toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(6)), quoting.quote(resultSet.getString(7))));
+                Table fkTable = dataModel.getTable(toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(session.dbms == DBMS.MySQL? 5 : 6)), quoting.quote(resultSet.getString(7))));
                 String fkColumn = quoting.quote(resultSet.getString(8));
                 String foreignKey = resultSet.getString(12);
                 if (fkTable != null) {
