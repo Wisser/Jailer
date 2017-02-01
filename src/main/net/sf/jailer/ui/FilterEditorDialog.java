@@ -1350,6 +1350,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.ipadx = 40;
         gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 2);
         jPanel5.add(tableBox, gridBagConstraints);
 

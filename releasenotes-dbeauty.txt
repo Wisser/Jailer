@@ -1,3 +1,7 @@
+2.11
+  - Added support for User-Defined Types.
+  - Minor bug fixes.
+
 2.10
   - Referential cycles can now be exported by deferring the insert of nullable foreign keys.
 

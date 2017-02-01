@@ -1,0 +1,79 @@
+/*
+ * Copyright 2007 - 2017 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+package net.sf.jailer.database;
+
+import java.io.File;
+import java.sql.SQLException;
+import java.util.UUID;
+
+import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.util.ClasspathUtil;
+
+
+/**
+ * Provides a local database (H2).
+ * 
+ * @author Ralf Wisser
+ */
+public class LocalDatabase {
+	
+	/**
+	 * The session for the local database.
+	 */
+	private final Session session;
+
+	/**
+	 * Name of the folder containing the local database.
+	 */
+	private String databaseFolder;
+	
+	/**
+	 * Creates a local database.
+	 */
+	public LocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile, String folder) throws Exception {
+		this.databaseFolder = folder + File.separator + UUID.randomUUID().toString();
+		CommandLineParser.getInstance().newFile(databaseFolder).mkdirs();
+		ClassLoader oldCL = Session.classLoaderForJdbcDriver;
+		Session.setClassLoaderForJdbcDriver(ClasspathUtil.addJarToClasspath(jarfile, null));
+		session = new Session(driverClassName, urlPattern.replace("%s", databaseFolder + File.separator + "local"), "", "", null, false, true);
+		Session.setClassLoaderForJdbcDriver(oldCL);
+	}
+	
+	/**
+	 * Shut local database down. Remove all database files.
+	 */
+	public void shutDown() throws SQLException {
+		session.shutDown();
+		File localFolder = CommandLineParser.getInstance().newFile(databaseFolder);
+		File[] listFiles = localFolder.listFiles();
+		if (listFiles != null) {
+			for (File file: listFiles) {
+				file.delete();
+			}
+		}
+		localFolder.delete();
+	}
+
+	/**
+	 * Gets the {@link Session} for the local database.
+	 * 
+	 * @return the session for the local database
+	 */
+	public Session getSession() {
+		return session;
+	}
+
+}

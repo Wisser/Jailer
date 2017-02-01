@@ -1,3 +1,7 @@
+6.5.1
+  - Added support for User-Defined Types.
+  - Minor bug fixes.
+
 6.5
   - Referential cycles can now be exported by deferring the insert of nullable foreign keys.
 

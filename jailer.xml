@@ -491,6 +491,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			</property>
 			-->
 			<property name="virtualColumnsQuery" value="SELECT sysobjects.name AS TableName, syscolumns.name AS ColumnName FROM syscolumns JOIN sysobjects ON syscolumns.id = sysobjects.id AND sysobjects.xtype = 'U' WHERE syscolumns.iscomputed = 1" />
+			<property name="userDefinedColumnsQuery" value="SELECT distinct DOMAIN_NAME from INFORMATION_SCHEMA.COLUMNS WHERE DOMAIN_NAME is not null" />
 		</bean>
 		
 		<!-- for MySQL -->

@@ -127,6 +127,7 @@ public class Configuration {
 	public Boolean supportsSchemasInIndexDefinitions = null;
 	public boolean useInlineViewsInDataBrowser = true;
 	public String virtualColumnsQuery = null;
+	public String userDefinedColumnsQuery = null;
 	public String identifierQuoteString = "\"";
 	public DBMS dbms = DBMS.UNKNOWN;
 	
@@ -769,6 +770,14 @@ public class Configuration {
 
 	public void setTestQuery(String testQuery) {
 		this.testQuery = testQuery;
+	}
+
+	public String getUserDefinedColumnsQuery() {
+		return userDefinedColumnsQuery;
+	}
+
+	public void setUserDefinedColumnsQuery(String userDefinedColumnsQuery) {
+		this.userDefinedColumnsQuery = userDefinedColumnsQuery;
 	}
 
 }
