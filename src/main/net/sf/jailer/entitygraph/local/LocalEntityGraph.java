@@ -25,7 +25,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
@@ -33,6 +32,7 @@ import net.sf.jailer.DDLCreator;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.InlineViewBuilder;
 import net.sf.jailer.database.InlineViewStyle;
+import net.sf.jailer.database.LocalDatabase;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.ResultSetReader;
@@ -48,7 +48,6 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.progress.ProgressListenerRegistry;
 import net.sf.jailer.util.CellContentConverter;
-import net.sf.jailer.util.ClasspathUtil;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
@@ -72,9 +71,9 @@ public class LocalEntityGraph extends EntityGraph {
 	private final Session localSession;
 
 	/**
-	 * Name of the folder containing the local database.
+	 * Local database.
 	 */
-	private String databaseFolder;
+	private final LocalDatabase localDatabase;
 
 	private InlineViewStyle localInlineViewStyle;
 
@@ -186,7 +185,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * Copy constructor.
 	 */
 	private LocalEntityGraph(int graphID, DataModel dataModel,
-			Session remoteSession, Session localSession, String databaseFolder,
+			Session remoteSession, Session localSession, LocalDatabase localDatabase,
 			InlineViewStyle localInlineViewStyle,
 			InlineViewStyle remoteInlineViewStyle, Set<String> upkColumnNames,
 			PrimaryKey universalPrimaryKey, int birthdayOfSubject, Set<String> fieldProcTables,
@@ -194,7 +193,7 @@ public class LocalEntityGraph extends EntityGraph {
 		super(graphID, dataModel);
 		this.remoteSession = remoteSession;
 		this.localSession = localSession;
-		this.databaseFolder = databaseFolder;
+		this.localDatabase = localDatabase;
 		this.localInlineViewStyle = localInlineViewStyle;
 		this.remoteInlineViewStyle = remoteInlineViewStyle;
 		this.upkColumnNames = upkColumnNames;
@@ -229,7 +228,8 @@ public class LocalEntityGraph extends EntityGraph {
 		this.remoteSession = remoteSession;
 		this.quoting = new Quoting(remoteSession);
 		this.rowIdSupport = new RowIdSupport(getDatamodel(), Configuration.forDbms(remoteSession), getConfiguration().localPKType);
-		this.localSession = createLocalSession(getConfiguration().driver, getConfiguration().urlPattern, getConfiguration().user, getConfiguration().password, getConfiguration().lib);
+		this.localDatabase = createLocalDatabase(getConfiguration().driver, getConfiguration().urlPattern, getConfiguration().user, getConfiguration().password, getConfiguration().lib);
+		this.localSession = this.localDatabase.getSession();
 		this.universalPrimaryKey = rowIdSupport.getUniversalPrimaryKey();
 		this.localInlineViewStyle = InlineViewStyle.forSession(localSession);
 		this.remoteInlineViewStyle = InlineViewStyle.forSession(remoteSession);
@@ -255,29 +255,16 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @return the localSession
 	 * @throws Exception 
 	 */
-	private Session createLocalSession(String driverClassName, String urlPattern, String user, String password, String jarfile) throws Exception {
-		databaseFolder = getConfiguration().databasesFolder + File.separator + UUID.randomUUID().toString();
-		CommandLineParser.getInstance().newFile(databaseFolder).mkdirs();
-		ClassLoader oldCL = Session.classLoaderForJdbcDriver;
-		Session.setClassLoaderForJdbcDriver(ClasspathUtil.addJarToClasspath(jarfile, null));
-		Session localSession = new Session(driverClassName, urlPattern.replace("%s", databaseFolder + File.separator + "local"), "", "", null, false, true);
-		Session.setClassLoaderForJdbcDriver(oldCL);
-		return localSession;
+	private LocalDatabase createLocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile) throws Exception {
+		String databaseFolder = getConfiguration().databasesFolder;
+		return new LocalDatabase(driverClassName, urlPattern, user, password, jarfile, databaseFolder);
 	}
 
 	/**
 	 * Closes the graph. Deletes the local database.
 	 */
 	public void close() throws SQLException {
-		localSession.shutDown();
-		File localFolder = CommandLineParser.getInstance().newFile(databaseFolder);
-		File[] listFiles = localFolder.listFiles();
-		if (listFiles != null) {
-			for (File file: listFiles) {
-				file.delete();
-			}
-		}
-		localFolder.delete();
+		localDatabase.shutDown();
 	}
 
 	/**
@@ -329,7 +316,7 @@ public class LocalEntityGraph extends EntityGraph {
      * @throws Exception 
      */
     public EntityGraph copy(int newGraphID, Session globalSession) throws Exception {
-        LocalEntityGraph entityGraph = new LocalEntityGraph(newGraphID, dataModel, remoteSession, localSession, databaseFolder, localInlineViewStyle, remoteInlineViewStyle, upkColumnNames, universalPrimaryKey, birthdayOfSubject, fieldProcTables, rowIdSupport);
+        LocalEntityGraph entityGraph = new LocalEntityGraph(newGraphID, dataModel, remoteSession, localSession, localDatabase, localInlineViewStyle, remoteInlineViewStyle, upkColumnNames, universalPrimaryKey, birthdayOfSubject, fieldProcTables, rowIdSupport);
         entityGraph.setBirthdayOfSubject(birthdayOfSubject);
         localSession.executeUpdate(
                 "Insert into " + SQLDialect.dmlTableReference(ENTITY, localSession) + "(r_entitygraph, " + universalPrimaryKey.columnList(null) + ", birthday, orig_birthday, type) " +
@@ -898,9 +885,9 @@ public class LocalEntityGraph extends EntityGraph {
 	    		if (orderByPK) {
 	    			String sqlQueryWithOrderBy = sqlQuery +
 	    				" order by " + rowIdSupport.getPrimaryKey(table).columnList("T.", quoting);
-	    			rc[0] = remoteSession.executeQuery(sqlQueryWithOrderBy, reader, sqlQuery, null, 0);
+	    			rc[0] += remoteSession.executeQuery(sqlQueryWithOrderBy, reader, sqlQuery, null, 0);
 	    		} else {
-	    			rc[0] = remoteSession.executeQuery(sqlQuery, reader);
+	    			rc[0] += remoteSession.executeQuery(sqlQuery, reader);
 	    		}
 			}
 		});

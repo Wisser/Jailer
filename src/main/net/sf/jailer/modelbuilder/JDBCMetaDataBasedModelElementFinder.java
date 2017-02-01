@@ -30,10 +30,14 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import org.apache.log4j.Logger;
+
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.database.Session.ResultSetReader;
+import net.sf.jailer.database.SqlException;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
 import net.sf.jailer.datamodel.Column;
@@ -45,8 +49,6 @@ import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
-
-import org.apache.log4j.Logger;
 
 /**
  * Finds associations and tables by analyzing the JDBC meta data.
@@ -69,6 +71,42 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     	typesWithLength.add("NVARCHAR");
     	typesWithLength.add("NCHAR");
     	typesWithLength.add("RAW");
+    }
+
+    /**
+     * Set of the names of user defined types.
+     */
+    private Set<String> userDefinedTypes = null;
+    
+    /**
+     * Get of the names of user defined types.
+     * 
+     * @param session to retrieve the UDT names
+     * @return names of user defined types
+     */
+    private Set<String> getUserDefinedTypes(Session session) {
+    	if (userDefinedTypes == null) {
+    		userDefinedTypes = new HashSet<String>();
+    		String query = Configuration.forDbms(session).getUserDefinedColumnsQuery();
+    		if (query != null) {
+    			try {
+    				session.executeQuery(query, new ResultSetReader() {
+						
+						@Override
+						public void readCurrentRow(ResultSet resultSet) throws SQLException {
+							userDefinedTypes.add(resultSet.getString(1));
+						}
+						
+						@Override
+						public void close() throws SQLException {
+						}
+					});
+    			} catch (SQLException e) {
+    				// ignore
+    			}
+    		}
+    	}
+    	return userDefinedTypes;
     }
     
     /**
@@ -246,7 +284,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                     	precision = -1;
                     }
                 }
-                if (type == Types.DISTINCT) {
+                if (type == Types.DISTINCT || getUserDefinedTypes(session).contains(sqlType)) {
                 	length = 0;
                 	precision = -1;
                 }
@@ -593,7 +631,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
                 	precision = -1;
                 }
             }
-            if (type == Types.DISTINCT) {
+            if (type == Types.DISTINCT || getUserDefinedTypes(session).contains(sqlType)) {
             	length = 0;
             	precision = -1;
             }
