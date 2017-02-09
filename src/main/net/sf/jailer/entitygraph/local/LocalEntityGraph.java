@@ -121,14 +121,17 @@ public class LocalEntityGraph extends EntityGraph {
 		public LocalInlineViewBuilder(String name, String columnList, boolean allUPK) {
 			super(localInlineViewStyle, name, localSession, columnList.split(", *"));
 			this.allUPK = allUPK;
+			this.localDBMSConfiguration = Configuration.forDbms(localSession);
 		}
 		
 		private final boolean allUPK;
+		private final Configuration localDBMSConfiguration;
 		
 		protected String sqlValue(ResultSet resultSet, int i) throws SQLException {
 			String value = cellContentConverter.toSql(cellContentConverter.getObject(resultSet, i));
 			if (allUPK || isUPKColumn(columnNames[i - 1])) {
-				value = cellContentConverter.toSql(value);
+				// value = cellContentConverter.toSql(value);
+				value = "'" + localDBMSConfiguration.convertToStringLiteral(value) + "'";
 			}
 			return value;
 		}
