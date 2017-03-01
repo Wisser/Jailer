@@ -74,14 +74,14 @@ public class SQLDMLBuilder {
 		int i = 0;
 		CellContentConverter cellContentConverter = new CellContentConverter(null, session, Configuration.forDbms(session));
 		for (Column column : table.getColumns()) {
-			if (column.isVirtualOrBlocked(session)) {
-				continue;
-			}
-			String name = quoting.requote(column.name);
 			String value = getSQLLiteral(row.values[i++], cellContentConverter);
 			if (value == null) {
 				continue;
 			}
+			if (column.isVirtualOrBlocked(session)) {
+				continue;
+			}
+			String name = quoting.requote(column.name);
 			sql += (f? "" : ", " + LF + "    ") + name + " = " + value + comment(withComments, column, false);
 			f = false;
 		}
@@ -134,14 +134,14 @@ public class SQLDMLBuilder {
 		int i = 0;
 		CellContentConverter cellContentConverter = new CellContentConverter(null, session, Configuration.forDbms(session));
 		for (Column column : table.getColumns()) {
-			if (column.isVirtualOrBlocked(session)) {
-				continue;
-			}
-			String name = quoting.requote(column.name);
 			String value = getSQLLiteral(row.values[i++], cellContentConverter);
 			if (value == null) {
 				continue;
 			}
+			if (column.isVirtualOrBlocked(session)) {
+				continue;
+			}
+			String name = quoting.requote(column.name);
 			sql += (f? "" : ", " + LF + "    ") + name + comment(withComments, column, false);
 			values += (f? "" : ", " + LF + "    ") + value + comment(withComments, column, true);
 			f = false;

@@ -1,3 +1,7 @@
+6.5.2
+  - Fix for "DML->Update script template is broken for tables with timestamp columns"
+    https://sourceforge.net/p/dbeauty/tickets/8/
+
 6.5.1
   - Added support for User-Defined Types.
   - Minor bug fixes.
