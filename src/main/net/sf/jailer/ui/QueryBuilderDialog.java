@@ -338,7 +338,6 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 	}// GEN-LAST:event_clipboardSingleLineButtonActionPerformed
 
 	private void sqlEditButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_sqlEditButtonActionPerformed
-		// TODO add your handling code here:
 	}// GEN-LAST:event_sqlEditButtonActionPerformed
 
 	private Font font = new JLabel("normal").getFont();

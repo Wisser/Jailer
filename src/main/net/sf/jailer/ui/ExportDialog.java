@@ -399,8 +399,12 @@ public class ExportDialog extends javax.swing.JDialog {
         	previousInitialSubjectCondition = subjectCondition;
         	previousSubjectCondition = where.getText();
         	lastWorkingTableSchema = getWorkingTableSchema();
-        	Object selectedItem = iFMTableSchemaComboBox.getSelectedItem();
-			lastIFMTableSchema = selectedItem == null? null : selectedItem.toString();
+        	try {
+    			JTextField c = (JTextField) iFMTableSchemaComboBox.getEditor().getEditorComponent();
+    			lastIFMTableSchema = c.getText().trim();
+        	} catch (ClassCastException e) {
+        		// ignore
+        	}
         }
 	}
 

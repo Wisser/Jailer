@@ -99,7 +99,7 @@ public class Column {
     	}
     	String expr = filter.getExpression().replaceAll(Filter.OLD_VALUE_PROP_RE, Matcher.quoteReplacement("T." + name)).trim();
     	if (expr.startsWith(Filter.LITERAL_PREFIX)) {
-    		expr = expr.substring(Filter.LITERAL_PREFIX.length());
+    		expr = expr.substring(Filter.LITERAL_PREFIX.length()).trim();
     	}
     	return expr;
     }

@@ -89,6 +89,7 @@ import net.sf.jailer.util.ClasspathUtil;
 import net.sf.jailer.util.CycleFinder;
 import net.sf.jailer.util.JobManager;
 import net.sf.jailer.util.PrintUtil;
+import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlScriptExecutor;
 import net.sf.jailer.util.SqlUtil;
 import net.sf.jailer.xml.XmlExportTransformer;
@@ -247,7 +248,12 @@ public class Jailer {
 						isFiltered = true;
 						appendCommentHeader("Used Filters:");
 					}
-					appendCommentHeader("    " + t.getUnqualifiedName() + "." + c.name + " := " + c.getFilterExpression());
+					String prefix = "";
+					if (c.getFilter().getExpression().trim().startsWith(Filter.LITERAL_PREFIX)) {
+			    		prefix = Filter.LITERAL_PREFIX + " ";
+			    	}
+					String suffix = c.getFilter().isApplyAtExport()? "" : " (applied at import phase)";
+					appendCommentHeader("    " + t.getUnqualifiedName() + "." + c.name + " := " + prefix + c.getFilterExpression() + suffix);
 				}
 			}
 		}
@@ -604,7 +610,14 @@ public class Jailer {
 			if (entityGraph instanceof LocalEntityGraph) {
 				localSession = ((LocalEntityGraph) entityGraph).getSession();
 			}
-			importFilterManager = new ImportFilterManager(localSession, result, progress) {
+			Configuration sourceConfig = Configuration.forDbms(session);
+			Configuration targetConfig = targetDBMSConfiguration(entityGraph.getTargetSession());
+			Quoting targetQuoting;
+			targetQuoting = new Quoting(session);
+			if (sourceConfig != targetConfig) {
+				targetQuoting.setIdentifierQuoteString(targetConfig.getIdentifierQuoteString());
+			}
+			importFilterManager = new ImportFilterManager(localSession, result, progress, targetQuoting) {
 				@Override
 				protected void sync(OutputStreamWriter result) throws IOException {
 					appendSync(result);
@@ -620,7 +633,7 @@ public class Jailer {
 		}
 		
 		Session targetSession = entityGraph.getTargetSession();
-		entityGraph.fillAndWriteMappingTables(jobManager, result, CommandLineParser.getInstance().numberOfEntities, targetSession, targetDBMSConfiguration(targetSession), targetDBMSConfiguration(session));
+		entityGraph.fillAndWriteMappingTables(jobManager, result, CommandLineParser.getInstance().numberOfEntities, targetSession, targetDBMSConfiguration(targetSession), Configuration.forDbms(session));
 
 		
 		long rest = 0;

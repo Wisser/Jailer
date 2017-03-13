@@ -88,20 +88,20 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 	private IdentityHashMap<Column, ColumnToMappingTable> columnMapping = new IdentityHashMap<Column, ColumnToMappingTable>();
 	private Set<String> mappingTables = new TreeSet<String>();
 	private Set<ColumnToMappingTable> columnToMappingTableSet = new HashSet<ColumnToMappingTable>();
-	private String mappingTablesSchema;
-	private String quotedMappingTablesSchema = "";
+	private final String quotedMappingTablesSchema;
 	
 	/**
 	 * Constructor.
 	 * 
 	 * @param result to write results into
+	 * @param targetQuoting 
 	 */
-	public ImportFilterManager(Session localSession, OutputStreamWriter result, Set<Table> progress) throws Exception {
+	public ImportFilterManager(Session localSession, OutputStreamWriter result, Set<Table> progress, Quoting targetQuoting) throws Exception {
 		this.totalProgress = progress;
-		this.mappingTablesSchema = CommandLineParser.getInstance().importFilterMappingTableSchema.trim();
-		if (this.mappingTablesSchema != null && this.mappingTablesSchema.length() == 0) {
-			this.mappingTablesSchema = null;
-		}
+		
+		String mappingTablesSchema = CommandLineParser.getInstance().importFilterMappingTableSchema.trim();
+		quotedMappingTablesSchema = mappingTablesSchema.length() > 0? targetQuoting.quote(mappingTablesSchema) + "." : "";
+
 		if (localSession != null) {
 			this.localSession = localSession;
 		} else {
@@ -155,10 +155,8 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		List<ColumnToMappingTable> mapColumnsLocal = new ArrayList<ColumnToMappingTable>();
 		int mapTableIndex = 0;
 		LocalConfiguration localConfiguration = (LocalConfiguration) Configuration.localEntityGraphConfiguration;
-
-		Quoting quoting = getQuoting(configuration);
-		String schema = mappingTablesSchema != null? quoting.quote(mappingTablesSchema) + "." : "";
-		quotedMappingTablesSchema = schema;
+		
+		String schema = quotedMappingTablesSchema;
 		
 		int maxColumnsPerMappingTable = Configuration.getColumnsPerIFMTable();
 
@@ -197,21 +195,6 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		localDDL.close();
 		new SqlScriptExecutor(localSession, 1).executeScript(tmpFile.getAbsolutePath());
 		tmpFile.delete();
-	}
-
-	/**
-	 * @param configuration
-	 * @return
-	 * @throws SQLException
-	 */
-	private Quoting getQuoting(Configuration configuration) throws SQLException {
-		Quoting quoting = new Quoting(localSession);
-		if (configuration != null && configuration != Configuration.forDbms(localSession)) {
-        	if (configuration.getIdentifierQuoteString() != null) {
-        		quoting.setIdentifierQuoteString(configuration.getIdentifierQuoteString());
-        	}
-        }
-		return quoting;
 	}
 
 	private String createDDL(String schema, List<ColumnToMappingTable> mapColumns, Configuration configuration, boolean withComment) throws FileNotFoundException, IOException {
@@ -263,7 +246,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 	/**
 	 * Creates the DROP-statements for the mapping tables.
 	 */
-	public void dropMappingTables(OutputStreamWriter result, Configuration configuration) throws IOException, SQLException {
+	public void dropMappingTables(OutputStreamWriter result) throws IOException, SQLException {
 		if (mappingTables.isEmpty()) {
 			return;
 		}
@@ -271,7 +254,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		String template = "script" + File.separator + "imp-filter-map-drop.sql";
 		Map<String, String> arguments = new HashMap<String, String>();
 
-		String schema = mappingTablesSchema != null? getQuoting(configuration).quote(mappingTablesSchema) + "." : "";
+		String schema = quotedMappingTablesSchema;
 		arguments.put("schema", schema);
 		arguments.put("table-suffix", "");
 		arguments.put("drop-table", "DROP TABLE ");
@@ -355,8 +338,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 			});
 		}
 
-		Quoting quoting = getQuoting(targetDBMSConfiguration);
-		final String schema = mappingTablesSchema != null? quoting.quote(mappingTablesSchema) + "." : ""; 
+		final String schema = quotedMappingTablesSchema;
 
 		for (final ColumnToMappingTable mapping: columnToMappingTableSet) {
 			writeOutJobs.add(new Job() {
