@@ -897,6 +897,46 @@ public class LocalEntityGraph extends EntityGraph {
 		return rc[0];
     }
 
+    /**
+     * Reads some columns of all entities of a given table without using filters.
+     * 
+     * @param table the table
+     * @param columns the columns
+     * @param reader to read
+     */
+    public long readUnfilteredEntityColumns(final Table table, final List<Column> columns, final Session.ResultSetReader reader) throws SQLException {
+    	String upkColumnList = upkColumnList(table, "E", null);
+		String select = 
+    			"Select distinct " + upkColumnList + " From " + SQLDialect.dmlTableReference(ENTITY, localSession) + " E " +
+    			" Where E.birthday>=0 and E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) + "";
+		
+    	StringBuilder sb = new StringBuilder();
+    	boolean first = true;
+    	
+    	for (Column c: columns) {
+    		if (!first) {
+    			sb.append(", ");
+    		}
+			sb.append("T." + quoting.requote(c.name));
+    		sb.append(" as " + quoting.requote(c.name));
+    		first = false;
+    	}
+    	
+    	final String columnList = sb.toString();
+    	final long[] rc = new long[1];
+		
+		localSession.executeQuery(select, new RemoteInlineViewBuilder("E", upkColumnList(table, null, null)) {
+			
+			@Override
+			protected void process(String inlineView) throws SQLException {
+		        String sqlQuery = "Select distinct " + columnList + " From " + inlineView + " join " + quoting.requote(table.getName()) + " T on " +
+		    			pkEqualsEntityID(table, "T", "E", "", false);
+    			rc[0] += remoteSession.executeQuery(sqlQuery, reader);
+			}
+		});
+		return rc[0];
+    }
+
 	/**
 	 * Updates columns of a table.
 	 * 
@@ -904,7 +944,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param columns the columns;
 	 */
 	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, Configuration targetConfiguration) throws SQLException {
-		Session.ResultSetReader reader = new UpdateTransformer(table, columns, scriptFileWriter, CommandLineParser.getInstance().numberOfEntities, getTargetSession(), targetConfiguration);
+		Session.ResultSetReader reader = new UpdateTransformer(table, columns, scriptFileWriter, CommandLineParser.getInstance().numberOfEntities, getTargetSession(), targetConfiguration, importFilterManager);
     	readEntities(table, false, reader);
 	}
 
@@ -919,14 +959,14 @@ public class LocalEntityGraph extends EntityGraph {
     	StringBuilder sb = new StringBuilder();
     	boolean first = true;
     	
-    	for (Column c: table.getColumns()) {
-    		if (c.isVirtualOrBlocked(localSession)) {
-    			continue;
-    		}
+    	for (Column c: table.getSelectionClause(localSession)) {
     		if (!first) {
     			sb.append(", ");
     		}
-    		String filterExpression = c.getFilterExpression();
+    		String filterExpression = null;
+    		if (c.getFilter() != null && c.getFilter().isApplyAtExport()) {
+    			filterExpression = c.getFilterExpression();
+    		}
 			if (filterExpression != null) {
 				if (filterExpression.trim().toLowerCase().startsWith("select")) {
 					sb.append("(" + filterExpression + ")");

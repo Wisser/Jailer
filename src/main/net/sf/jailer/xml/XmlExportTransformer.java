@@ -312,7 +312,11 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 		
 		boolean isFiltered = false;
 		for (Column c: table.getColumns()) {
-			if (c.getFilterExpression() != null) {
+    		String filterExpression = null;
+    		if (c.getFilter() != null && c.getFilter().isApplyAtExport()) {
+    			filterExpression = c.getFilterExpression();
+    		}
+			if (filterExpression != null) {
 				isFiltered = true;
 				break;
 			}

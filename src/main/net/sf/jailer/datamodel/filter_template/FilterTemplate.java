@@ -41,6 +41,11 @@ public class FilterTemplate implements FilterSource {
 	private boolean enabled = true;
 	
 	/**
+	 * <code>true</code> if filter is applied at export instead of import.
+	 */
+	private boolean applyAtExport = true;
+	
+	/**
 	 * Clauses.
 	 */
 	private final List<Clause> clauses;
@@ -50,6 +55,29 @@ public class FilterTemplate implements FilterSource {
 	 */
 	private String expression = Filter.OLD_VALUE_PROP;
 	
+	/**
+	 * Optional type of filter expression. Determines the type of the import-filter-mapping-table columns.
+	 */
+	private String type;
+	
+	/**
+	 * Gets optional type of filter expression. Determines the type of the import-filter-mapping-table columns.
+	 * 
+	 * @return the type
+	 */
+	public String getType() {
+		return type;
+	}
+
+	/**
+	 * Sets optional type of filter expression. Determines the type of the import-filter-mapping-table columns.
+	 * 
+	 * @param type the type to set
+	 */
+	public void setType(String type) {
+		this.type = type;
+	}
+
 	/**
 	 * Constructor.
 	 */
@@ -64,6 +92,8 @@ public class FilterTemplate implements FilterSource {
 		this.expression = other.expression;
 		this.name = other.name;
 		this.enabled = other.enabled;
+		this.applyAtExport = other.applyAtExport;
+		this.type = other.type;
 		this.clauses = new ArrayList<Clause>();
 		for (Clause clause: other.clauses) {
 			this.clauses.add(new Clause(clause));
@@ -88,6 +118,24 @@ public class FilterTemplate implements FilterSource {
 		this.expression = expression;
 	}
 
+	/**
+	 * Sets if filter is applied at export instead of import.
+	 *
+	 * @param b the value
+	 */
+	public void setApplyAtExport(boolean b) {
+		applyAtExport = b;
+	}
+
+	/**
+	 * Gets if filter is applied at export instead of import.
+	 *
+	 * @return the value
+	 */
+	public boolean isApplyAtExport() {
+		return applyAtExport;
+	}
+	
 	/**
 	 * Gets clear text description of what the source is.
 	 * 

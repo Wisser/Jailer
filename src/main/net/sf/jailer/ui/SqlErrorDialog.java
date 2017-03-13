@@ -51,7 +51,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
             gridBagConstraints.weightx = 1.0;
             gridBagConstraints.weighty = 0;
             messagePanel.add(label, gridBagConstraints);
-            if (y > 8) {
+            if (y > 50) {
             	break;
             }
         }
@@ -91,10 +91,11 @@ public class SqlErrorDialog extends javax.swing.JDialog {
         jScrollPane1 = new javax.swing.JScrollPane();
         sqlEditorPane = new javax.swing.JEditorPane();
         errorLabel = new javax.swing.JLabel();
-        messagePanel = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
         copyButton = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        messagePanel = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("SQL Statement failed");
@@ -124,26 +125,6 @@ public class SqlErrorDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 12, 0, 12);
         getContentPane().add(errorLabel, gridBagConstraints);
 
-        messagePanel.setLayout(new java.awt.GridBagLayout());
-
-        jLabel1.setText("  ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 100;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        messagePanel.add(jLabel1, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
-        getContentPane().add(messagePanel, gridBagConstraints);
-
         jButton1.setText("  OK  ");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -170,6 +151,28 @@ public class SqlErrorDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         getContentPane().add(copyButton, gridBagConstraints);
 
+        messagePanel.setLayout(new java.awt.GridBagLayout());
+
+        jLabel1.setText("  ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 100;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        messagePanel.add(jLabel1, gridBagConstraints);
+
+        jScrollPane2.setViewportView(messagePanel);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.ipadx = 1;
+        gridBagConstraints.weighty = 0.5;
+        getContentPane().add(jScrollPane2, gridBagConstraints);
+
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
@@ -189,6 +192,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JPanel messagePanel;
     private javax.swing.JEditorPane sqlEditorPane;
     // End of variables declaration//GEN-END:variables

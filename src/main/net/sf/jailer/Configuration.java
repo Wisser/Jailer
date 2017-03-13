@@ -278,6 +278,8 @@ public class Configuration {
 	 */
 	private static String nullColumnPlaceholder = null;
 
+	private static int columnsPerIFMTable = 8;
+
 	/**
 	 * Gets replacement for null in DBUnit datasets.
 	 * 
@@ -310,6 +312,7 @@ public class Configuration {
      * The configuration.
      */
     private static AbstractXmlApplicationContext theApplicationContext = null;
+
     @SuppressWarnings("unchecked")
 	private static synchronized AbstractXmlApplicationContext getContext() {
     	if (theApplicationContext == null) {
@@ -327,6 +330,9 @@ public class Configuration {
 	        if (theApplicationContext.containsBean("local-entity-graph")) {
 		        localEntityGraphConfiguration = theApplicationContext.getBean("local-entity-graph");
 	        }
+	        if (theApplicationContext.containsBean("columns-per-import-filter-mapping-table")) {
+	        	columnsPerIFMTable = (Integer) theApplicationContext.getBean("columns-per-import-filter-mapping-table");
+	        }
     	}
     	return theApplicationContext;
     }
@@ -340,8 +346,8 @@ public class Configuration {
      * Holds configurations.
      */
     private static Map<DBMS, Configuration> perDBMS = new HashMap<DBMS, Configuration>();
-    
-    /**
+
+	/**
      * Gets DBMS specific configuration.
      * 
      * @param session connected to the DBMS
@@ -778,6 +784,26 @@ public class Configuration {
 
 	public void setUserDefinedColumnsQuery(String userDefinedColumnsQuery) {
 		this.userDefinedColumnsQuery = userDefinedColumnsQuery;
+	}
+
+	public String nullableContraint = null;
+    
+    /**
+	 * @return the nullableContraint
+	 */
+	public String getNullableContraint() {
+		return nullableContraint;
+	}
+
+	/**
+	 * @param nullableContraint the nullableContraint to set
+	 */
+	public void setNullableContraint(String nullableContraint) {
+		this.nullableContraint = nullableContraint;
+	}
+
+	public static int getColumnsPerIFMTable() {
+		return columnsPerIFMTable;
 	}
 
 }

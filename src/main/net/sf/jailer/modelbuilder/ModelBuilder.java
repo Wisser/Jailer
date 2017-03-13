@@ -39,6 +39,7 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.importfilter.ImportFilterManager;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
@@ -362,6 +363,7 @@ public class ModelBuilder {
     private static boolean isJailerTable(Table table, Quoting quoting) {
     	String tName = quoting.unquote(table.getUnqualifiedName()).toUpperCase();
 		return SqlUtil.JAILER_TABLES.contains(tName)
+			|| tName.startsWith(ImportFilterManager.MAPPINGTABLE_NAME_PREFIX)
     	    || (tName.endsWith("_T") && SqlUtil.JAILER_TABLES.contains(tName.substring(0, tName.length() - 2)));
     }
     

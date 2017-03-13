@@ -76,6 +76,7 @@ import net.sf.jailer.entitygraph.local.LocalEntityGraph;
 import net.sf.jailer.entitygraph.remote.RemoteEntityGraph;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
+import net.sf.jailer.importfilter.ImportFilterManager;
 import net.sf.jailer.liquibase.LiquibaseXMLTransformer;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.progress.ProgressListener;
@@ -109,7 +110,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "6.5.2";
+	public static final String VERSION = "6.6.0";
 	
 	/**
 	 * The Jailer application name.
@@ -514,8 +515,7 @@ public class Jailer {
 	 * 
 	 * @return result set reader for processing the rows to be exported
 	 */
-	private TransformerFactory createTransformerFactory(OutputStreamWriter outputWriter, TransformerHandler transformerHandler, ScriptType scriptType, String filepath) throws SQLException
-			{
+	private TransformerFactory createTransformerFactory(OutputStreamWriter outputWriter, TransformerHandler transformerHandler, ScriptType scriptType, String filepath) throws SQLException	{
 		Session targetSession = entityGraph.getTargetSession();
 		if (scriptType == ScriptType.INSERT) {
 			if (ScriptFormat.INTRA_DATABASE.equals(CommandLineParser.getInstance().getScriptFormat())) {
@@ -557,6 +557,7 @@ public class Jailer {
 			}
 		}
 		TransformerHandler transformerHandler = null;
+		ImportFilterManager importFilterManager = null;
 		OutputStreamWriter result = null;
 		Charset charset = Charset.defaultCharset();
 		if (CommandLineParser.getInstance().uTF8) {
@@ -599,10 +600,29 @@ public class Jailer {
 			for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
 				enhancer.addProlog(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress);
 			}
+			Session localSession = null;
+			if (entityGraph instanceof LocalEntityGraph) {
+				localSession = ((LocalEntityGraph) entityGraph).getSession();
+			}
+			importFilterManager = new ImportFilterManager(localSession, result, progress) {
+				@Override
+				protected void sync(OutputStreamWriter result) throws IOException {
+					appendSync(result);
+				}
+			};
+
+			entityGraph.setImportFilterManager(importFilterManager);
 		}
 
 		entityGraph.setTransformerFactory(createTransformerFactory(result, transformerHandler, scriptType, sqlScriptFile));
+		if (importFilterManager != null && entityGraph.getTransformerFactory() instanceof DMLTransformer.Factory) {
+			((DMLTransformer.Factory) entityGraph.getTransformerFactory()).setImportFilterTransformer(importFilterManager);
+		}
+		
+		Session targetSession = entityGraph.getTargetSession();
+		entityGraph.fillAndWriteMappingTables(jobManager, result, CommandLineParser.getInstance().numberOfEntities, targetSession, targetDBMSConfiguration(targetSession), targetDBMSConfiguration(session));
 
+		
 		long rest = 0;
 		Set<Table> dependentTables = null;
 		Set<Table> currentProgress = progress;
@@ -680,6 +700,7 @@ public class Jailer {
 				appendSync(result);
 				if (rest > 0) {
 					EntityGraph egCopy = entityGraph.copy(EntityGraph.createUniqueGraphID(), entityGraph.getSession());
+					egCopy.setImportFilterManager(entityGraph.getImportFilterManager());
 					
 					_log.info(rest + " entities in cycle. Involved tables: " + PrintUtil.tableSetAsString(dependentTables));
 					Map<Table, Set<Column>> nullableForeignKeys = findAndRemoveNullableForeignKeys(dependentTables, entityGraph, scriptType != ScriptType.DELETE);
@@ -701,7 +722,7 @@ public class Jailer {
 							if (session.dbms == DBMS.POSTGRESQL && scriptFormat == ScriptFormat.INTRA_DATABASE) {
 								nullExpression += "::" + column.type;
 							}
-							column.setFilter(new Filter(nullExpression, false, null));
+							column.setFilter(new Filter(nullExpression, null, false, null));
 						}
 					}
 
@@ -735,9 +756,14 @@ public class Jailer {
 			}
 		}
 		
+		if (importFilterManager != null) {
+			importFilterManager.shutDown();
+		}
+			
 		if (result != null) {
-			// write epilogs
+			entityGraph.dropMappingTables(result, targetDBMSConfiguration(targetSession));
 			if (CommandLineParser.getInstance().getScriptFormat() != ScriptFormat.INTRA_DATABASE) {
+				// write epilogs
 				result.append("-- epilog");
 				result.append(System.getProperty("line.separator"));
 				for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
@@ -1654,7 +1680,8 @@ public class Jailer {
 		appendCommentHeader("Tabu-tables: " + PrintUtil.tableSetAsString(tabuTables, "--                 "));
 		_log.info("Tabu-tables: " + PrintUtil.tableSetAsString(tabuTables, null));
 		entityGraph.setDeleteMode(true);
-		
+		removeFilters(datamodel);
+
 		final Map<Table, Long> removedEntities = new HashMap<Table, Long>();
 
 		// do not check tables in first step having exactly one 1:1 or 1:n
@@ -1755,6 +1782,17 @@ public class Jailer {
 			firstLine = false;
 		}
 		appendCommentHeader("");
+	}
+
+	/**
+	 * Removes filters on every column.
+	 */
+	private void removeFilters(DataModel theDatamodel) {
+		for (Table table: theDatamodel.getTables()) {
+			for (Column column: table.getColumns()) {
+				column.setFilter(null);
+			}
+		}
 	}
 
 	/**

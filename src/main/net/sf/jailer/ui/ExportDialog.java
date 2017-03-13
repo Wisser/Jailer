@@ -53,6 +53,7 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.database.SqlException;
 import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
@@ -121,6 +122,7 @@ public class ExportDialog extends javax.swing.JDialog {
 	 * The subject table.
 	 */
 	private final Table subject;
+	private final List<AdditionalSubject> additionalSubjects;
 	
 	private ParameterEditor parameterEditor;
 	private final List<String> initialArgs;
@@ -147,6 +149,7 @@ public class ExportDialog extends javax.swing.JDialog {
         this.settingsContext = session.dbUrl;
         this.sourceDBMS = Configuration.forDbms(session).dbms;
         this.dbConnectionDialog = dbConnectionDialog;
+        this.additionalSubjects = additionalSubjects;
         initComponents();
         
         CancellationHandler.reset(null);
@@ -156,6 +159,7 @@ public class ExportDialog extends javax.swing.JDialog {
         }
         
         initWorkingTableSchemaBox(session);
+        initIFMTableSchemaBox(session);
         
         parameterEditor = new ParameterEditor(parent);
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -395,6 +399,8 @@ public class ExportDialog extends javax.swing.JDialog {
         	previousInitialSubjectCondition = subjectCondition;
         	previousSubjectCondition = where.getText();
         	lastWorkingTableSchema = getWorkingTableSchema();
+        	Object selectedItem = iFMTableSchemaComboBox.getSelectedItem();
+			lastIFMTableSchema = selectedItem == null? null : selectedItem.toString();
         }
 	}
 
@@ -427,8 +433,65 @@ public class ExportDialog extends javax.swing.JDialog {
     	}
 	}
 
-	private static String lastWorkingTableSchema = null;
-    
+    private static String lastWorkingTableSchema = null;
+    private static String lastIFMTableSchema = null;
+	
+	@SuppressWarnings("unchecked")
+	private void initIFMTableSchemaBox(Session session) {
+		boolean hasImportFilter = false;
+		for (Table table: dataModel.getTables()) {
+			for (Column column: table.getColumns()) {
+				if (column.getFilter() != null && !column.getFilter().isApplyAtExport()) {
+					hasImportFilter  = true;
+					break;
+				}
+			}
+			if (hasImportFilter) {
+				break;
+			}
+		}
+		if (!hasImportFilter) {
+			iFMTPanel.setVisible(false);
+			iFMTableSchemaComboBox.setVisible(false);
+			return;
+		}
+		List<String> schemas = new ArrayList<String>();
+		schemas.add(DEFAULT_SCHEMA);
+    	schemas.addAll(JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchemaName()));
+    	schemas.remove(JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchemaName()));
+    	if (lastIFMTableSchema != null && !schemas.contains(lastIFMTableSchema != null)) {
+    		schemas.add(lastIFMTableSchema);
+    	}
+		String[] ifmComboboxModel = schemas.toArray(new String[0]);
+		iFMTableSchemaComboBox.setModel(new DefaultComboBoxModel(ifmComboboxModel));
+		iFMTableSchemaComboBox.setSelectedItem(lastIFMTableSchema != null && schemas.contains(lastIFMTableSchema)? lastIFMTableSchema : DEFAULT_SCHEMA);
+		iFMTableSchemaComboBox.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				updateCLIArea();				
+			}
+		});
+		try {
+			JTextField c = (JTextField) iFMTableSchemaComboBox.getEditor().getEditorComponent();
+			c.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					updateCLIArea();
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					updateCLIArea();
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					updateCLIArea();
+				}
+			});
+		} catch (ClassCastException e) {
+			// ignore
+		}
+	}
+	
     @SuppressWarnings("unchecked")
 	private void initWorkingTableSchemaBox(Session session) {
 		List<String> schemas = new ArrayList<String>();
@@ -761,6 +824,10 @@ public class ExportDialog extends javax.swing.JDialog {
         toLabel = new javax.swing.JLabel();
         targetDBMSComboBox = new javax.swing.JComboBox();
         targetDBMSLabel = new javax.swing.JLabel();
+        iFMTableSchemaComboBox = new javax.swing.JComboBox();
+        iFMTPanel = new javax.swing.JPanel();
+        jLabel29 = new javax.swing.JLabel();
+        jLabel30 = new javax.swing.JLabel();
         jPanel7 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -945,7 +1012,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jLabel8.setText(" Working table scope"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 55;
+        gridBagConstraints.gridy = 53;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         jPanel1.add(jLabel8, gridBagConstraints);
@@ -1063,7 +1130,7 @@ public class ExportDialog extends javax.swing.JDialog {
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 55;
+        gridBagConstraints.gridy = 53;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         jPanel1.add(jPanel8, gridBagConstraints);
@@ -1260,7 +1327,7 @@ public class ExportDialog extends javax.swing.JDialog {
         jLabel10.setText(" Working table schema "); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 56;
+        gridBagConstraints.gridy = 54;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel1.add(jLabel10, gridBagConstraints);
@@ -1273,7 +1340,7 @@ public class ExportDialog extends javax.swing.JDialog {
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 56;
+        gridBagConstraints.gridy = 54;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel1.add(workingTableSchemaComboBox, gridBagConstraints);
@@ -1323,6 +1390,44 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel1.add(targetDBMSLabel, gridBagConstraints);
+
+        iFMTableSchemaComboBox.setEditable(true);
+        iFMTableSchemaComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        iFMTableSchemaComboBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                iFMTableSchemaComboBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 56;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel1.add(iFMTableSchemaComboBox, gridBagConstraints);
+
+        iFMTPanel.setLayout(new java.awt.GridBagLayout());
+
+        jLabel29.setText(" Import filter-"); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        iFMTPanel.add(jLabel29, gridBagConstraints);
+
+        jLabel30.setText(" mapping table schema "); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        iFMTPanel.add(jLabel30, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 56;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        jPanel1.add(iFMTPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1553,6 +1658,9 @@ public class ExportDialog extends javax.swing.JDialog {
 
     private void confirmInsertActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_confirmInsertActionPerformed
     }//GEN-LAST:event_confirmInsertActionPerformed
+
+    private void iFMTableSchemaComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_iFMTableSchemaComboBoxActionPerformed
+    }//GEN-LAST:event_iFMTableSchemaComboBoxActionPerformed
     
     public boolean isOk() {
 		return isOk;
@@ -1702,10 +1810,22 @@ public class ExportDialog extends javax.swing.JDialog {
 			args.add("-working-table-schema");
 			args.add(schema);
 		}
+		
+		try {
+			JTextField c = (JTextField) iFMTableSchemaComboBox.getEditor().getEditorComponent();
+			String ifmItem = c.getText().trim();
+			if (ifmItem != null && !"".equals(ifmItem) && !DEFAULT_SCHEMA.equals(ifmItem)) {
+				args.add("-import-filter-mapping-table-schema");
+				args.add(ifmItem.toString());
+			}
+		} catch (ClassCastException e) {
+			// ignore
+		}
     }
 
 	private Set<String> getRelevantSchemas(boolean withDelete) {
-		Set<Table> closure = subject.closure(true);
+		Set<Table> closure = closureOfSubjects();
+		
 		if (withDelete) {
 			Set<Table> border = new HashSet<Table>();
     		for (Table table: closure) {
@@ -1722,6 +1842,24 @@ public class ExportDialog extends javax.swing.JDialog {
     		relevantSchemas.add(table.getOriginalSchema(""));
 		}
 		return relevantSchemas;
+	}
+
+	private Set<Table> closureOfSubjects() {
+		Set<Table> subjects = new HashSet<Table>();
+		subjects.add(subject);
+		if (additionalSubjects != null) {
+			for (AdditionalSubject as: additionalSubjects) {
+				subjects.add(as.getSubject());
+			}
+		}
+		
+		Set<Table> closure = new HashSet<Table>();
+		
+		for (Table subject: subjects) {
+	    	Set<Table> toCheck = new HashSet<Table>(subject.closure(closure, true));
+	    	closure.addAll(toCheck);
+	    }
+		return closure;
 	}
 
 	public Set<String> getTargetSchemaSet() {
@@ -1769,6 +1907,8 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JTextField delete;
     public javax.swing.JCheckBox explain;
     private javax.swing.JLabel exportLabel;
+    private javax.swing.JPanel iFMTPanel;
+    private javax.swing.JComboBox iFMTableSchemaComboBox;
     private javax.swing.JTextField insert;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
@@ -1791,7 +1931,9 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
     private javax.swing.JLabel jLabel27;
+    private javax.swing.JLabel jLabel29;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel30;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;

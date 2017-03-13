@@ -256,6 +256,7 @@ public class SqlScriptExecutor {
     			new ThreadPoolExecutor(threads, threads, 0, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>()), threads + 3) : null; 
     	try {
     		final Pattern IDENTITY_INSERT = Pattern.compile(".*SET\\s+IDENTITY_INSERT.*", Pattern.CASE_INSENSITIVE);
+    		boolean tryMode = false;
     		
 	        while ((line = lineReader.readLine()) != null) {
 	        	bytesRead.addAndGet(line.length() + 1);
@@ -264,25 +265,32 @@ public class SqlScriptExecutor {
 	            	continue;
 	            }
 	            if (line.startsWith("--")) {
-	            	if (line.startsWith(UNFINISHED_MULTILINE_COMMENT)) {
-	            		String cmd = line.substring(UNFINISHED_MULTILINE_COMMENT.length());
-	            		if (cmd.startsWith("XML")) {
-	            			importSQLXML(cmd.substring(3).trim(), lineReader);
-	            		}
-	            		if (cmd.startsWith("CLOB")) {
-	            			importCLob(cmd.substring(4).trim(), lineReader);
-	            		}
-	            		if (cmd.startsWith("BLOB")) {
-	            			importBLob(cmd.substring(4).trim(), lineReader);
-	            		}
-	            	} else if (line.substring(2).trim().equals("sync")) {
-	            		inSync = true;
-	            		sync();
-	            	} else if (line.substring(2).trim().equals("epilog")) {
-	            		inSync = false;
-	            		sync();
+	            	final String TRY = "try:";
+					String uncommentedLine = line.substring(2).trim();
+					if (uncommentedLine.startsWith(TRY)) {
+	            		line = uncommentedLine.substring(TRY.length()).trim();
+	            		tryMode = true;
+	            	} else {
+		            	if (line.startsWith(UNFINISHED_MULTILINE_COMMENT)) {
+		            		String cmd = line.substring(UNFINISHED_MULTILINE_COMMENT.length());
+		            		if (cmd.startsWith("XML")) {
+		            			importSQLXML(cmd.substring(3).trim(), lineReader);
+		            		}
+		            		if (cmd.startsWith("CLOB")) {
+		            			importCLob(cmd.substring(4).trim(), lineReader);
+		            		}
+		            		if (cmd.startsWith("BLOB")) {
+		            			importBLob(cmd.substring(4).trim(), lineReader);
+		            		}
+		            	} else if (uncommentedLine.equals("sync")) {
+		            		inSync = true;
+		            		sync();
+		            	} else if (uncommentedLine.equals("epilog")) {
+		            		inSync = false;
+		            		sync();
+		            	}
+		                continue;
 	            	}
-	                continue;
 	            }
 	            if (line.endsWith(";")) {
 	            	currentStatement.append(line.substring(0, line.length() - 1));
@@ -294,10 +302,11 @@ public class SqlScriptExecutor {
 	            		}
 	            	}
 	            	final String stmt = currentStatement.toString();
+	            	final boolean finalTryMode = tryMode;
 	            	execute(new Runnable() {
 	            		public void run() {
 			            	boolean silent = session.getSilent();
-			            	session.setSilent(silent || stmt.trim().toLowerCase().startsWith("drop"));
+			            	session.setSilent(silent || finalTryMode || stmt.trim().toLowerCase().startsWith("drop"));
 			            	try {
 			                	if (stmt.trim().length() > 0) {
 			                		totalRowCount.addAndGet(session.execute(stmt));
@@ -306,7 +315,7 @@ public class SqlScriptExecutor {
 			                	}
 			                } catch (SQLException e) {
 			                	// drop may fail
-			                	if (!stmt.trim().toLowerCase().startsWith("drop")) {
+			                	if (!finalTryMode && !stmt.trim().toLowerCase().startsWith("drop")) {
 			                    	// fix for bug [2946477]
 			                		if (!stmt.trim().toUpperCase().contains("DROP TABLE JAILER_DUAL")) {
 			                			if (e instanceof SqlException) {
@@ -321,6 +330,7 @@ public class SqlScriptExecutor {
 	            	}, inSync);
 	                currentStatement.setLength(0);
 	                logProgress.run();
+	                tryMode = false;
 	            } else {
 	                currentStatement.append(line + " ");
 	            }
@@ -445,7 +455,6 @@ public class SqlScriptExecutor {
 		Writer out = new FileWriter(lobFile);
 		long length = 0;
 		while ((line = lineReader.readLine()) != null) {
-		    // line = line.trim();
 			if (line.startsWith(UNFINISHED_MULTILINE_COMMENT)) {
 				String content = line.substring(UNFINISHED_MULTILINE_COMMENT.length());
 				int l = content.length();

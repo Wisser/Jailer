@@ -947,7 +947,9 @@ public class DataModel {
 		for (Table table: getTables()) {
 			for (Column c: table.getColumns()) {
 				if (c.getFilter() != null && !c.getFilter().isDerived()) {
-					out.println(CsvFile.encodeCell(table.getName()) + ";" + CsvFile.encodeCell(c.name) + ";" + CsvFile.encodeCell(c.getFilter().getExpression()));
+					out.println(CsvFile.encodeCell(table.getName()) + ";" + CsvFile.encodeCell(c.name) + ";" + CsvFile.encodeCell(c.getFilter().getExpression())
+					+ ";" + CsvFile.encodeCell(c.getFilter().isApplyAtExport()? "Export" : "Import")
+					+ ";" + CsvFile.encodeCell(c.getFilter().getType() == null? "" : c.getFilter().getType()));
 				}
 			}
 		}
@@ -966,7 +968,9 @@ public class DataModel {
 			out.println("T;"
 					+ CsvFile.encodeCell(template.getName()) + ";"
 					+ CsvFile.encodeCell(template.getExpression()) + ";"
-					+ CsvFile.encodeCell(template.isEnabled()? "enabled" : "disabled") + ";");
+					+ CsvFile.encodeCell(template.isEnabled()? "enabled" : "disabled") + ";"
+					+ CsvFile.encodeCell(template.isApplyAtExport()? "Export" : "Import") + ";"
+					+ CsvFile.encodeCell(template.getType() == null? "" : template.getType()) + ";");
 			for (Clause clause: template.getClauses()) {
 				out.println("C;"
 						+ CsvFile.encodeCell(clause.getSubject().name()) + ";"
@@ -1037,7 +1041,8 @@ public class DataModel {
 				for (Table table: getTables()) {
 					for (Column column: table.getColumns()) {
 						if (column.getFilter() == null && template.matches(table, column)) {
-							Filter filter = new Filter(template.getExpression(), true, template);
+							Filter filter = new Filter(template.getExpression(), template.getType(), true, template);
+							filter.setApplyAtExport(template.isApplyAtExport());
 							column.setFilter(filter);
 							List<String> aTo = new ArrayList<String>();
 							deriveFilter(table, column, filter, new PKColumnFilterSource(table, column), aTo, template);
@@ -1063,7 +1068,9 @@ public class DataModel {
 				}
 				Column destColumn = sToDMap.get(column);
 				if (destColumn != null && (destColumn.getFilter() == null || overwriteForSource != null && destColumn.getFilter().getFilterSource() == overwriteForSource)) {
-					destColumn.setFilter(new Filter(filter.getExpression(), true, filterSource));
+					Filter newFilter = new Filter(filter.getExpression(), filter.getType(), true, filterSource);
+					newFilter.setApplyAtExport(filter.isApplyAtExport());
+					destColumn.setFilter(newFilter);
 					aTo.add(association.destination.getName() + "." + destColumn.name);
 					deriveFilter(association.destination, destColumn, filter, filterSource, aTo, overwriteForSource);
 				}

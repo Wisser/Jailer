@@ -37,6 +37,8 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.importfilter.ImportFilterManager;
+import net.sf.jailer.util.JobManager;
 
 /**
  * Persistent graph of entities. 
@@ -254,6 +256,15 @@ public abstract class EntityGraph {
 	public abstract void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, Configuration targetConfiguration) throws SQLException;
 
     /**
+     * Reads some columns of all entities of a given table without using filters.
+     * 
+     * @param table the table
+     * @param columns the columns
+     * @param reader to read
+     */
+    public abstract long readUnfilteredEntityColumns(final Table table, final List<Column> columns, final Session.ResultSetReader reader) throws SQLException;
+
+    /**
      * Deletes all entities which are marked as independent.
      */
     public abstract void deleteIndependentEntities(Table table) throws SQLException;
@@ -440,6 +451,11 @@ public abstract class EntityGraph {
      * The {@link TransformerFactory}.
      */
     private TransformerFactory transformerFactory;
+
+    /**
+     * The {@link ImportFilterManager}.
+     */
+	protected ImportFilterManager importFilterManager;
     
     /**
      * Sets the {@link TransformerFactory}.
@@ -457,6 +473,44 @@ public abstract class EntityGraph {
      */
 	public TransformerFactory getTransformerFactory() {
 		return transformerFactory;
+	}
+
+	/**
+	 * Sets the {@link ImportFilterManager}
+	 * 
+	 * @param importFilterManager the {@link ImportFilterManager}
+	 */
+	public void setImportFilterManager(ImportFilterManager importFilterManager) {
+		this.importFilterManager = importFilterManager;
+	}
+	
+	/**
+	 * Gets the {@link ImportFilterManager}
+	 * 
+	 * @return the {@link ImportFilterManager}
+	 */
+	public ImportFilterManager getImportFilterManager() {
+		return importFilterManager;
+	}
+	
+	/**
+	 * Insert the values of columns with non-derived-import-filters into the local database.
+	 */
+	public void fillAndWriteMappingTables(JobManager jobManager, final OutputStreamWriter dmlResultWriter,
+			int numberOfEntities, final Session targetSession, final Configuration targetDBMSConfiguration, Configuration dbmsConfiguration) throws Exception {
+		if (importFilterManager != null) {
+			importFilterManager.createMappingTables(dbmsConfiguration, dmlResultWriter);
+			importFilterManager.fillAndWriteMappingTables(this, jobManager, dmlResultWriter, numberOfEntities, targetSession, targetDBMSConfiguration);
+		}
+	}
+	
+	/**
+	 * Creates the DROP-statements for the mapping tables.
+	 */
+	public void dropMappingTables(OutputStreamWriter result, Configuration targetDBMSConfiguration) throws Exception {
+		if (importFilterManager != null) {
+			importFilterManager.dropMappingTables(result, targetDBMSConfiguration);
+		}
 	}
 
 }

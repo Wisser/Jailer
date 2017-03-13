@@ -40,6 +40,7 @@ import net.sf.jailer.TransformerFactory;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
+import net.sf.jailer.datamodel.Filter;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.Base64;
 import net.sf.jailer.util.CellContentConverter;
@@ -129,7 +130,7 @@ public class DMLTransformer extends AbstractResultSetReader {
     /**
      * For quoting of column names.
      */
-    private final Quoting quoting;
+    protected final Quoting quoting;
     
     /**
      * If table has identity column (MSSQL/Sybase)
@@ -150,6 +151,11 @@ public class DMLTransformer extends AbstractResultSetReader {
      * SQL Dialect.
      */
 	private final SQLDialect currentDialect;
+
+	/**
+	 * Transforms {@link Filter} into SQL-expressions.
+	 */
+	private final ImportFilterTransformer importFilterTransformer;
 	
     /**
      * Factory.
@@ -161,6 +167,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 		private final OutputStreamWriter scriptFileWriter;
 		private final Session session;
 	    private final Configuration targetDBMSConfiguration;
+		private ImportFilterTransformer importFilterTransformer;
 
 	    /**
 	     * Constructor.
@@ -186,11 +193,21 @@ public class DMLTransformer extends AbstractResultSetReader {
 		 */
 		@Override
 		public ResultSetReader create(Table table) throws SQLException {
-			return new DMLTransformer(table, scriptFileWriter, upsertOnly, maxBodySize, session, targetDBMSConfiguration);
+			return new DMLTransformer(table, scriptFileWriter, upsertOnly, maxBodySize, session, targetDBMSConfiguration, importFilterTransformer);
 		}
+		
+		/**
+		 * Sets the {@link ImportFilterTransformer}.
+		 */
+		public void setImportFilterTransformer(ImportFilterTransformer importFilterManager) {
+			this.importFilterTransformer = importFilterManager;
+		}
+
     };
 
-    /**
+	private final List<Column> selectionClause;
+	
+	/**
      * Constructor.
      * 
      * @param table the table to read from
@@ -199,8 +216,9 @@ public class DMLTransformer extends AbstractResultSetReader {
      * @param upsertOnly use 'upsert' statements for all entities
      * @param session the session
      * @param targetDBMSConfiguration configuration of the target DBMS
+	 * @param importFilterTransformer2 
      */
-    private DMLTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, Session session, Configuration targetDBMSConfiguration) throws SQLException {
+    protected DMLTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, Session session, Configuration targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer) throws SQLException {
         this.targetDBMSConfiguration = targetDBMSConfiguration;
         this.maxBodySize = maxBodySize;
         this.upsertOnly = upsertOnly;
@@ -208,13 +226,15 @@ public class DMLTransformer extends AbstractResultSetReader {
         this.scriptFileWriter = scriptFileWriter;
         this.currentDialect = targetDBMSConfiguration.getSqlDialect();
         this.insertStatementBuilder = new StatementBuilder(currentDialect.supportsMultiRowInserts || targetDBMSConfiguration.dbms == DBMS.ORACLE || targetDBMSConfiguration.dbms == DBMS.SQLITE? maxBodySize : 1);
-        this.quoting = new Quoting(session);
+        this.quoting = createQuoting(session);
+        this.importFilterTransformer = importFilterTransformer;
         if (targetDBMSConfiguration != null && targetDBMSConfiguration != Configuration.forDbms(session)) {
         	if (targetDBMSConfiguration.getIdentifierQuoteString() != null) {
         		this.quoting.setIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
         	}
         }
         this.session = session;
+        this.selectionClause = table.getSelectionClause(session);
         tableHasIdentityColumn = false;
         if (targetDBMSConfiguration.isIdentityInserts()) {
         	for (Column c: table.getColumns()) {
@@ -225,6 +245,10 @@ public class DMLTransformer extends AbstractResultSetReader {
         	}
         }
     }
+
+	protected Quoting createQuoting(Session session) throws SQLException {
+		return new Quoting(session);
+	}
     
     /**
      * Reads result-set and writes into export-script.
@@ -295,8 +319,9 @@ public class DMLTransformer extends AbstractResultSetReader {
                 	valueList.append(", ");
                 }
                 f = false;
-                String cVal = isSmallLob? (String) content : cellContentConverter.toSql(content);
-            	if (!isSmallLob && content != null && emptyLobValue[i] != null) {
+                String cVal = isSmallLob? (String) content : 
+                	 convertToSql(cellContentConverter, resultSet, i, content);
+                if (!isSmallLob && content != null && emptyLobValue[i] != null) {
             		cVal = emptyLobValue[i];
             	}
             	valueList.append(cVal);
@@ -320,7 +345,7 @@ public class DMLTransformer extends AbstractResultSetReader {
                     if (resultSet.wasNull()) {
                         content = null;
                     }
-                    String cVal = cellContentConverter.toSql(content);
+                    String cVal = convertToSql(cellContentConverter, resultSet, i, content);
                     if (targetDBMSConfiguration.dbms == DBMS.POSTGRESQL && (content instanceof Date || content instanceof Timestamp)) {
                     	// explicit cast needed
                     	cVal = "timestamp " + cVal;
@@ -526,12 +551,39 @@ public class DMLTransformer extends AbstractResultSetReader {
     }
 
     /**
+     * Converts cell content to SQL literals.
+     * 
+     * @param cellContentConverter converter
+     * @param resultSet points to current row
+     * @param i current result set index
+     * @param content cell content
+     * @return SQL literal
+     */
+    protected String convertToSql(CellContentConverter cellContentConverter, ResultSet resultSet, int i, Object content) throws SQLException {
+    	String cVal = cellContentConverter.toSql(content);
+    	Column column = selectionClause.get(i - 1);
+		Filter filter = column.getFilter();
+		
+    	if (filter != null && importFilterTransformer != null) {
+    		if (!filter.isApplyAtExport()) {
+    			return importFilterTransformer.transform(column, cVal);
+    		}
+    	}
+    	
+		if (content != null && filter != null && filter.getExpression().trim().startsWith(Filter.LITERAL_PREFIX)) {
+			return content.toString();
+		}
+
+		return cVal;
+	}
+
+	/**
      * Gets qualified table name.
      * 
      * @param t the table
      * @return qualified name of t
      */
-    private String qualifiedTableName(Table t) {
+    protected String qualifiedTableName(Table t) {
     	String schema = t.getOriginalSchema("");
     	String mappedSchema = CommandLineParser.getInstance().getSchemaMapping().get(schema);
     	if (mappedSchema != null) {

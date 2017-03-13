@@ -286,7 +286,14 @@ public class ExtractionModel {
 				if (col == null) {
 					_log.warn("unknown table" + name + "." + column);
 				} else {
-					col.setFilter(new Filter(ParameterHandler.assignParameterValues(filter, parameters), false, null));
+					String type = xmLine.cells.get(4);
+					if (type.trim().length() == 0) {
+						type = null;
+					}
+					Filter theFilter = new Filter(ParameterHandler.assignParameterValues(filter, parameters), type, false, null);
+					theFilter.setApplyAtExport(!"Import".equalsIgnoreCase(xmLine.cells.get(3)));
+		        	
+					col.setFilter(theFilter);
 				}
 			}
         }
@@ -302,6 +309,12 @@ public class ExtractionModel {
 	        	template.setName(xmLine.cells.get(1));
 	        	template.setExpression(xmLine.cells.get(2));
 	        	template.setEnabled("enabled".equals(xmLine.cells.get(3)));
+	        	template.setApplyAtExport(!"Import".equalsIgnoreCase(xmLine.cells.get(4)));
+	        	String type = xmLine.cells.get(5);
+				if (type.trim().length() == 0) {
+					type = null;
+				}
+				template.setType(type);
 	        	dataModel.getFilterTemplates().add(template);
         	} else if (xmLine.cells.get(0).equals("C") && template != null) {
         		Clause clause = new Clause();
