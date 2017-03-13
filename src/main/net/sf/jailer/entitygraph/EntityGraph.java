@@ -509,7 +509,7 @@ public abstract class EntityGraph {
 	 */
 	public void dropMappingTables(OutputStreamWriter result, Configuration targetDBMSConfiguration) throws Exception {
 		if (importFilterManager != null) {
-			importFilterManager.dropMappingTables(result, targetDBMSConfiguration);
+			importFilterManager.dropMappingTables(result);
 		}
 	}
 

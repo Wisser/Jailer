@@ -776,7 +776,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			File tmp = PrintUtil.createTempFile();
 			OutputStreamWriter tmpFileWriter;
 			tmpFileWriter = new FileWriter(tmp);
-			importFilterManager.dropMappingTables(tmpFileWriter, targetDBMSConfiguration);
+			importFilterManager.dropMappingTables(tmpFileWriter);
 			tmpFileWriter.close();
 			new SqlScriptExecutor(getSession(), CommandLineParser.getInstance().numberOfThreads).executeScript(tmp.getPath());
 	    	tmp.delete();
