@@ -322,6 +322,10 @@ public class CommandLineParser {
 	@Option(name="-no-rowid", usage="if set, primary keys will determine row identity, else rowid-column determines identity")
     public boolean noRowid = false;
 	
+	@Option(name="-import-filter-mapping-table-schema", usage="schema in which the import-filter mapping tables will be created")
+    public String importFilterMappingTableSchema = "";
+	
+	
 	@Argument
     public List<String> arguments = new ArrayList<String>();
 

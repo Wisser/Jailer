@@ -1,0 +1,24 @@
+A filter is an assignment of a SQL expression to a table column, the
+column values will be replaced by the result of the expression when the
+export file is written. <br>
+&nbsp;<br>
+For example: <br>
+&nbsp;<br>
+In order to substitute the values of the column PERSON.SSN with the
+constant value '123', define the filter: <span style="font-style: italic;"><br>
+PERSON.SSN := '123' </span><br>
+&nbsp;<br>
+The filter <br>
+<span style="font-style: italic;">PERSON.SSN
+:= substr(SSN, 1, length(SSN) - 3) || '***' </span><br>
+replaces the last 3 characters of the SSN with '***' <br>
+&nbsp;<br>
+The filter: <br>
+<span style="font-style: italic;">PERSON.SSN
+:= (SELECT SSN FROM TEST_SSN ORDER BY RAND() </span><br style="font-style: italic;">
+<span style="font-style: italic;">&nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
+&nbsp; &nbsp;FETCH FIRST 1 ROWS ONLY) </span><br style="font-style: italic;">
+would replace the SSN with a randomly chosen SSN from a table holding
+test SSNs (in IBM's DB2) 

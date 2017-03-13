@@ -62,6 +62,10 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 		-->
 	</bean>
 
+	<bean name="columns-per-import-filter-mapping-table" class="java.lang.Integer">
+		<constructor-arg value="8" />
+	</bean>
+
 	<!--
 		Script-enhancer adds application specific extensions to generated
 		SQL-scripts
@@ -437,6 +441,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<property name="dbms" value="MSSQL"/>
 			
 			<property name="supportsSchemasInIndexDefinitions" value="false"/>
+			<property name="nullableContraint" value="NULL" />
 			
 			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
 			<property name="tableProperties" value="" />
@@ -499,6 +504,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<property name="urlPattern" value="jdbc:mysql.*" />
 
 			<property name="dbms" value="MySQL"/>
+			<property name="nullableContraint" value="NULL" />
 			
 			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
 			<property name="tableProperties" value="" />
@@ -588,6 +594,7 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			<property name="urlPattern" value="jdbc:sybase.*|jdbc:jtds:sybase.*" />
 
 			<property name="dbms" value="SYBASE"/>
+			<property name="nullableContraint" value="NULL" />
 			
 			<property name="sqlDialect">
 				<bean class="net.sf.jailer.database.SQLDialect">

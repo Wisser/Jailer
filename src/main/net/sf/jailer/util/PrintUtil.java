@@ -16,6 +16,7 @@
 package net.sf.jailer.util;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -26,6 +27,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.datamodel.Table;
@@ -113,7 +117,7 @@ public class PrintUtil {
         }
         
         for (Map.Entry<String, String> e: arguments.entrySet()) {
-        	sb = sb.replaceAll("\\$\\{" + e.getKey() + "\\}", e.getValue()); 
+        	sb = sb.replaceAll(Pattern.quote("${" + e.getKey() + "}"), Matcher.quoteReplacement(e.getValue())); 
         }
         
         for (;;) {
@@ -129,7 +133,7 @@ public class PrintUtil {
          		String cContent = "";
          		int index = 1;
 	        	for (String var: listArguments.get(woPre.substring(0, i))) {
-	        		cContent += content.replaceAll("\\$i", "" + (index++)).replaceAll("\\$", var);
+	        		cContent += content.replaceAll("\\$i", "" + (index++)).replaceAll("\\$", Matcher.quoteReplacement(var));
         		}
         		sb = pre + cContent + suf;
         	} else {
@@ -173,5 +177,22 @@ public class PrintUtil {
         reader.close();
         return sb.toString();
     }
+
+	public static File createTempFile() {
+		String file;
+		String ts = UUID.randomUUID().toString();
+		File newFile;
+		for (int i = 1; ; ++i) {
+			file = "tmp";
+			newFile = CommandLineParser.getInstance().newFile(file);
+			newFile.mkdirs();
+			file += File.separator + "up" + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".sql";
+			newFile = CommandLineParser.getInstance().newFile(file);
+			if (!newFile.exists()) {
+				break;
+			}
+		}
+		return new File(file);
+	}
 
 }

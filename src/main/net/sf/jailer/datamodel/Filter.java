@@ -42,6 +42,39 @@ public class Filter {
 	final private FilterSource filterSource;
 	
 	/**
+	 * <code>true</code> if filter is applied at export instead of import.
+	 */
+	private boolean applyAtExport = true;
+	
+	/**
+	 * Optional type of filter expression. Determines the type of the import-filter-mapping-table columns.
+	 */
+	private String type;
+	
+	/**
+	 * Prefix for "literal" filter expressions.
+	 */
+	public static final String LITERAL_PREFIX = "literal:";
+
+	/**
+	 * Gets optional type of filter expression. Determines the type of the import-filter-mapping-table columns.
+	 * 
+	 * @return the type
+	 */
+	public String getType() {
+		return type;
+	}
+
+	/**
+	 * Sets optional type of filter expression. Determines the type of the import-filter-mapping-table columns.
+	 * 
+	 * @param type the type to set
+	 */
+	public void setType(String type) {
+		this.type = type;
+	}
+
+	/**
 	 * Description of destinations.
 	 */
 	private List<String> appliedTo;
@@ -56,8 +89,9 @@ public class Filter {
 	 * @param expression filter expression (in SQL)
 	 * @param derived derived from parent primary key column?
 	 */
-	public Filter(String expression, boolean derived, FilterSource filterSource) {
+	public Filter(String expression, String type, boolean derived, FilterSource filterSource) {
 		this.expression = expression;
+		this.type = type;
 		this.derived = derived;
 		this.filterSource = filterSource;
 	}
@@ -99,6 +133,24 @@ public class Filter {
 	 */
 	public void setAppliedTo(List<String> appliedTo) {
 		this.appliedTo = appliedTo;
+	}
+
+	/**
+	 * Sets if filter is applied at export instead of import.
+	 *
+	 * @param b the value
+	 */
+	public void setApplyAtExport(boolean b) {
+		applyAtExport = b;
+	}
+
+	/**
+	 * Gets if filter is applied at export instead of import.
+	 *
+	 * @return the value
+	 */
+	public boolean isApplyAtExport() {
+		return applyAtExport;
 	}
 
 }

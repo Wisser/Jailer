@@ -143,6 +143,7 @@ public class ConditionEditor extends javax.swing.JDialog {
         table2label = new javax.swing.JLabel();
         table2name = new javax.swing.JLabel();
         table2dropDown = new javax.swing.JLabel();
+        addOnPanel = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
@@ -173,7 +174,7 @@ public class ConditionEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 3, 0);
         jPanel2.add(table1label, gridBagConstraints);
 
-        table1name.setFont(new java.awt.Font("DejaVu Sans", 0, 12));
+        table1name.setFont(new java.awt.Font("DejaVu Sans", 0, 12)); // NOI18N
         table1name.setText("jLabel1");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
@@ -182,7 +183,7 @@ public class ConditionEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 3, 0);
         jPanel2.add(table1name, gridBagConstraints);
 
-        table1dropDown.setFont(new java.awt.Font("DejaVu Sans", 0, 12));
+        table1dropDown.setFont(new java.awt.Font("DejaVu Sans", 0, 12)); // NOI18N
         table1dropDown.setText("jLabel1");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -206,7 +207,7 @@ public class ConditionEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel2.add(table2label, gridBagConstraints);
 
-        table2name.setFont(new java.awt.Font("DejaVu Sans", 0, 12));
+        table2name.setFont(new java.awt.Font("DejaVu Sans", 0, 12)); // NOI18N
         table2name.setText("jLabel2");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
@@ -215,7 +216,7 @@ public class ConditionEditor extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel2.add(table2name, gridBagConstraints);
 
-        table2dropDown.setFont(new java.awt.Font("DejaVu Sans", 0, 12));
+        table2dropDown.setFont(new java.awt.Font("DejaVu Sans", 0, 12)); // NOI18N
         table2dropDown.setText("jLabel2");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -223,6 +224,12 @@ public class ConditionEditor extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         jPanel2.add(table2dropDown, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 12;
+        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        jPanel2.add(addOnPanel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
@@ -381,8 +388,9 @@ public class ConditionEditor extends javax.swing.JDialog {
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    public javax.swing.JPanel addOnPanel;
     private javax.swing.JButton cancelButton;
-    private javax.swing.JEditorPane editorPane;
+    public javax.swing.JEditorPane editorPane;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -390,9 +398,9 @@ public class ConditionEditor extends javax.swing.JDialog {
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JButton okButton;
     private javax.swing.JPanel paramsPanel;
-    private javax.swing.JLabel table1dropDown;
-    private javax.swing.JLabel table1label;
-    private javax.swing.JLabel table1name;
+    protected javax.swing.JLabel table1dropDown;
+    protected javax.swing.JLabel table1label;
+    protected javax.swing.JLabel table1name;
     private javax.swing.JLabel table2dropDown;
     private javax.swing.JLabel table2label;
     private javax.swing.JLabel table2name;

@@ -153,8 +153,9 @@ public class Session {
 
     	/**
          * Does nothing.
+    	 * @throws SQLException 
          */
-        public void close() {
+        public void close() throws SQLException {
         }
         
     }

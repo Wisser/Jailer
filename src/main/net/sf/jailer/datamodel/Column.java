@@ -94,7 +94,14 @@ public class Column {
      *         or <code>null</code>, if no filter is defined for this column
      */
     public String getFilterExpression() {
-    	return filter == null? null : filter.getExpression().replaceAll(Filter.OLD_VALUE_PROP_RE, Matcher.quoteReplacement("T." + name));
+    	if (filter == null) {
+    		return null;
+    	}
+    	String expr = filter.getExpression().replaceAll(Filter.OLD_VALUE_PROP_RE, Matcher.quoteReplacement("T." + name)).trim();
+    	if (expr.startsWith(Filter.LITERAL_PREFIX)) {
+    		expr = expr.substring(Filter.LITERAL_PREFIX.length());
+    	}
+    	return expr;
     }
 
     /**

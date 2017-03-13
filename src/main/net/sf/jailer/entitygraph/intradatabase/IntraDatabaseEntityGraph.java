@@ -27,23 +27,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.database.SqlException;
 import net.sf.jailer.database.StatementBuilder;
 import net.sf.jailer.database.UpdateTransformer;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.Filter;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.entitygraph.remote.RemoteEntityGraph;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.progress.ProgressListenerRegistry;
+import net.sf.jailer.util.JobManager;
+import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlScriptExecutor;
 
@@ -237,7 +240,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 */
 	public void readMarkedEntities(Table table, boolean orderByPK)
 			throws SQLException {
-		String selectionSchema = filteredSelectionClause(table, COLUMN_PREFIX, quoting);
+		String selectionSchema = filteredSelectionClause(table, COLUMN_PREFIX, quoting, true);
 		readEntitiesByQuery(table, "Select " + selectionSchema + " From "
 				+ SQLDialect.dmlTableReference(ENTITY, session) + " E join "
 				+ quoting.requote(table.getName()) + " T on "
@@ -256,7 +259,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 */
 	public void readEntities(Table table, boolean orderByPK)
 			throws SQLException {
-		readEntitiesByQuery(table, "Select " + filteredSelectionClause(table, COLUMN_PREFIX, quoting) + " From "
+		readEntitiesByQuery(table, "Select " + filteredSelectionClause(table, COLUMN_PREFIX, quoting, true) + " From "
 				+ SQLDialect.dmlTableReference(ENTITY, session) + " E join "
 				+ quoting.requote(table.getName()) + " T on "
 				+ pkEqualsEntityID(table, "T", "E")
@@ -271,35 +274,18 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 * @param columns the columns;
 	 */
 	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, Configuration targetConfiguration) throws SQLException {
-		File tmp = createTempFile();
+		File tmp = PrintUtil.createTempFile();
 		OutputStreamWriter tmpFileWriter;
 		try {
 			tmpFileWriter = new FileWriter(tmp);
-			Session.ResultSetReader reader = new UpdateTransformer(table, columns, tmpFileWriter, CommandLineParser.getInstance().numberOfEntities, getSession(), Configuration.forDbms(getSession()));
+			UpdateTransformer reader = new UpdateTransformer(table, columns, tmpFileWriter, CommandLineParser.getInstance().numberOfEntities, getSession(), Configuration.forDbms(getSession()), importFilterManager);
 			readEntities(table, false, reader);
 			tmpFileWriter.close();
-			new SqlScriptExecutor(getSession(), 1).executeScript(tmp.getPath());
+			new SqlScriptExecutor(getSession(), CommandLineParser.getInstance().numberOfThreads).executeScript(tmp.getPath());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
     	tmp.delete();
-	}
-	
-	private File createTempFile() {
-		String file;
-		String ts = UUID.randomUUID().toString();
-		File newFile;
-		for (int i = 1; ; ++i) {
-			file = "tmp";
-			newFile = CommandLineParser.getInstance().newFile(file);
-			newFile.mkdirs();
-			file += File.separator + "up" + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".sql";
-			newFile = CommandLineParser.getInstance().newFile(file);
-			if (!newFile.exists()) {
-				break;
-			}
-		}
-		return new File(file);
 	}
 	
 	/**
@@ -427,6 +413,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 
 		UpsertStrategy us;
 		boolean done = false;
+		StringBuilder sqlErrorMessages = new StringBuilder();
 		long rc = 0;
 		synchronized (this) {
 			us = upsertStrategy;
@@ -444,6 +431,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 					done = true;
 					break;
 				} catch (SQLException e) {
+					sqlErrorMessages.append("\n" + e.getMessage());
 					// try another strategy
 				} finally {
 					session.setSilent(silent);
@@ -470,7 +458,10 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 					try {
 						return upsertRows(table, sqlSelect, false);
 					} catch (SQLException e2) {
-						throw e;
+						if (e instanceof SqlException) {
+							throw new SqlException(e.getMessage() + sqlErrorMessages, ((SqlException) e).sqlStatement, null);
+						}
+						throw new SQLException(e.getMessage() + sqlErrorMessages, e);
 					}
 				} finally {
 					session.setSilent(silent);
@@ -577,7 +568,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 					whereForTerminator.append(" and ");
 				}
 				f = false;
-				whereForTerminator.append("T." + quoting.requote(pk.name) + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, pk));
+				whereForTerminator.append(applyImportFilter("T." + quoting.requote(pk.name), pk) + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, pk));
 			}
 
 			insertHead = "MERGE INTO " + qualifiedTableName(table)
@@ -637,7 +628,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 					if (where.length() > 0) {
 						where.append(" and ");
 					}
-					where.append("S." + quoting.requote(column.name) + "=T." + quoting.requote(column.name));
+					where.append("S." + quoting.requote(column.name) + "=" + applyImportFilter("T." + quoting.requote(column.name), column));
 				}
 			}
 			
@@ -672,7 +663,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 					if (where.length() > 0) {
 						where.append(" and ");
 					}
-					where.append("S." + quoting.requote(column.name) + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, column));
+					where.append(applyImportFilter("S." + quoting.requote(column.name), column) + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, column));
 				}
 			}
 
@@ -714,11 +705,11 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 					if (where.length() > 0) {
 						where.append(" and ");
 					}
-					where.append("S." + quoting.requote(column.name) + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, column));
+					where.append(applyImportFilter("S." + quoting.requote(column.name), column) + "=Q." + prefixColumnName(COLUMN_PREFIX, quoting, column));
 					if (whereT.length() > 0) {
 						whereT.append(" and ");
 					}
-					whereT.append("S." + quoting.requote(column.name) + "=T." + quoting.requote(column.name));
+					whereT.append(applyImportFilter("S." + quoting.requote(column.name), column) + "=T." + quoting.requote(column.name));
 				}
 			}
 			
@@ -739,5 +730,57 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 
 	private UpsertStrategy upsertStrategy;
 	private List<UpsertStrategy> upsertStrategies;
+
+
+	/**
+	 * Insert the values of columns with non-derived-import-filters into the local database.
+	 */
+	@Override
+	public void fillAndWriteMappingTables(JobManager jobManager, final OutputStreamWriter receiptWriter,
+			int numberOfEntities, final Session targetSession, final Configuration targetDBMSConfiguration, Configuration dbmsConfiguration) throws Exception {
+		if (importFilterManager != null) {
+			File tmp = PrintUtil.createTempFile();
+			OutputStreamWriter tmpFileWriter;
+			tmpFileWriter = new FileWriter(tmp);
+			importFilterManager.createMappingTables(dbmsConfiguration, tmpFileWriter);
+			tmpFileWriter.close();
+			new SqlScriptExecutor(getSession(), CommandLineParser.getInstance().numberOfThreads).executeScript(tmp.getPath());
+	    	tmp.delete();
+
+			tmp = PrintUtil.createTempFile();
+			tmpFileWriter = new FileWriter(tmp);
+			tmpFileWriter.write("-- sync\n");
+			importFilterManager.fillAndWriteMappingTables(this, jobManager, tmpFileWriter, numberOfEntities, targetSession, targetDBMSConfiguration);
+			tmpFileWriter.close();
+			new SqlScriptExecutor(getSession(), CommandLineParser.getInstance().numberOfThreads).executeScript(tmp.getPath());
+	    	tmp.delete();
+		}
+	}
+	
+	private String applyImportFilter(String oldValue, Column column) {
+		Filter filter = column.getFilter();
+		if (filter != null && importFilterManager != null) {
+    		if (!filter.isApplyAtExport()) {
+    			return importFilterManager.transform(column, oldValue);
+    		}
+		}
+		return oldValue;
+	}
+
+	/**
+	 * Creates the DROP-statements for the mapping tables.
+	 */
+	@Override
+	public void dropMappingTables(OutputStreamWriter result, Configuration targetDBMSConfiguration) throws Exception {
+		if (importFilterManager != null) {
+			File tmp = PrintUtil.createTempFile();
+			OutputStreamWriter tmpFileWriter;
+			tmpFileWriter = new FileWriter(tmp);
+			importFilterManager.dropMappingTables(tmpFileWriter, targetDBMSConfiguration);
+			tmpFileWriter.close();
+			new SqlScriptExecutor(getSession(), CommandLineParser.getInstance().numberOfThreads).executeScript(tmp.getPath());
+	    	tmp.delete();
+		}
+	}
 
 }

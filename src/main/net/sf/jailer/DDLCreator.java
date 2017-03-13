@@ -25,7 +25,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.TemporaryTableManager;
@@ -199,7 +198,11 @@ public class DDLCreator {
 	}
 
 	private static String pkColumnConstraint(Session session) {
-		return session != null && (session.dbms == DBMS.SYBASE || session.dbms == DBMS.MySQL || session.dbms == DBMS.MSSQL) ? " NULL" : "";
+		String nullableContraint = Configuration.forDbms(session).getNullableContraint();
+		if (nullableContraint != null) {
+			return " " + nullableContraint;
+		}
+		return "";
 	}
 
 	/**

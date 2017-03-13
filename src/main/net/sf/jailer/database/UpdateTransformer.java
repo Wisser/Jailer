@@ -25,6 +25,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -33,6 +34,7 @@ import net.sf.jailer.Configuration;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
+import net.sf.jailer.datamodel.Filter;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.Quoting;
@@ -106,6 +108,11 @@ public class UpdateTransformer extends AbstractResultSetReader {
      */
 	private final SQLDialect currentDialect;
 	
+	/**
+	 * Transforms {@link Filter} into SQL-expressions.
+	 */
+	private final ImportFilterTransformer importFilterTransformer;
+	
     /**
      * Constructor.
      * 
@@ -115,7 +122,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
      * @param session the session
      * @param targetDBMSConfiguration configuration of the target DBMS
      */
-    public UpdateTransformer(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, Configuration targetDBMSConfiguration) throws SQLException {
+    public UpdateTransformer(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, Configuration targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer) throws SQLException {
         this.targetDBMSConfiguration = targetDBMSConfiguration;
         this.maxBodySize = maxBodySize;
         this.table = table;
@@ -123,13 +130,44 @@ public class UpdateTransformer extends AbstractResultSetReader {
         this.scriptFileWriter = scriptFileWriter;
         this.currentDialect = targetDBMSConfiguration.getSqlDialect();
         this.quoting = new Quoting(session);
+        this.importFilterTransformer = importFilterTransformer;
         if (targetDBMSConfiguration != null && targetDBMSConfiguration != Configuration.forDbms(session)) {
         	if (targetDBMSConfiguration.getIdentifierQuoteString() != null) {
         		this.quoting.setIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
         	}
         }
         this.session = session;
+        selectionClause = table.getSelectionClause(session);
     }
+
+    private final List<Column> selectionClause;
+
+    /**
+     * Converts cell content to SQL literals.
+     * 
+     * @param cellContentConverter converter
+     * @param resultSet points to current row
+     * @param i current result set index
+     * @param content cell content
+     * @return SQL literal
+     */
+    protected String convertToSql(CellContentConverter cellContentConverter, ResultSet resultSet, int i, Object content) throws SQLException {
+    	String cVal = cellContentConverter.toSql(content);
+    	Column column = selectionClause.get(i - 1);
+		Filter filter = column.getFilter();
+		
+    	if (filter != null && importFilterTransformer != null) {
+    		if (!filter.isApplyAtExport()) {
+    			return importFilterTransformer.transform(column, cVal);
+    		}
+    	}
+    	
+		if (content != null && filter != null && filter.getExpression().trim().startsWith(Filter.LITERAL_PREFIX)) {
+			return content.toString();
+		}
+
+		return cVal;
+	}
 
     private Set<String> columnNamesLower = new HashSet<String>();
     
@@ -175,7 +213,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
                 	valueList.append(", ");
                 }
                 f = false;
-                String cVal = cellContentConverter.toSql(content);
+                String cVal = convertToSql(cellContentConverter, resultSet, i, content);
             	valueList.append(cVal);
                 namedValues.append(cVal + " " + columnLabel[i]);
             }
@@ -197,7 +235,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
                 if (resultSet.wasNull()) {
                     content = null;
                 }
-                String cVal = cellContentConverter.toSql(content);
+                String cVal = convertToSql(cellContentConverter, resultSet, i, content);
                 if (targetDBMSConfiguration.dbms == DBMS.POSTGRESQL && (content instanceof Date || content instanceof Timestamp)) {
                 	// explicit cast needed
                 	cVal = "timestamp " + cVal;

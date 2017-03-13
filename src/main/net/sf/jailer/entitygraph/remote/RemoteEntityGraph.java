@@ -477,7 +477,7 @@ public class RemoteEntityGraph extends EntityGraph {
      */
     public void readMarkedEntities(Table table, boolean orderByPK) throws SQLException {
     	Session.ResultSetReader reader = getTransformerFactory().create(table);
-    	readMarkedEntities(table, reader, filteredSelectionClause(table), orderByPK);
+    	readMarkedEntities(table, reader, filteredSelectionClause(table, false), orderByPK);
     }
     
     /**
@@ -527,7 +527,7 @@ public class RemoteEntityGraph extends EntityGraph {
     	}
     	orderBy = "order by " + sb;
     	String sqlQuery = "Select " + selectionSchema + " From (" +
-		                "Select " + selectOPK + ", " + filteredSelectionClause(table) + " From " + SQLDialect.dmlTableReference(ENTITY, session) + " E join " + quoting.requote(table.getName()) + " T on " +
+		                "Select " + selectOPK + ", " + filteredSelectionClause(table, false) + " From " + SQLDialect.dmlTableReference(ENTITY, session) + " E join " + quoting.requote(table.getName()) + " T on " +
 		                pkEqualsEntityID(table, "T", "E") +
 		                " Where E.birthday=0 and E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) + "" +
 		                ") T ";
@@ -574,13 +574,40 @@ public class RemoteEntityGraph extends EntityGraph {
     }
 
     /**
+     * Reads some columns of all entities of a given table without using filters.
+     * 
+     * @param table the table
+     * @param columns the columns
+     * @param reader to read
+     */
+    public long readUnfilteredEntityColumns(final Table table, final List<Column> columns, final Session.ResultSetReader reader) throws SQLException {
+    	StringBuilder sb = new StringBuilder();
+    	boolean first = true;
+    	
+    	for (Column c: columns) {
+    		if (!first) {
+    			sb.append(", ");
+    		}
+			sb.append("T." + quoting.requote(c.name));
+    		sb.append(" as " + quoting.requote(c.name));
+    		first = false;
+    	}
+    	final String columnList = sb.toString();
+    	
+    	String sqlQuery = "Select " + columnList + " From " + SQLDialect.dmlTableReference(ENTITY, session) + " E join " + quoting.requote(table.getName()) + " T on " +
+    			pkEqualsEntityID(table, "T", "E") +
+    			" Where E.birthday>=0 and E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) + "";
+		return session.executeQuery(sqlQuery, reader);
+    }
+
+    /**
      * Reads all entities of a given table.
      * 
      * @param table the table
      * @param orderByPK if <code>true</code>, result will be ordered by primary keys
      */
     protected long readEntities(Table table, boolean orderByPK, Session.ResultSetReader reader) throws SQLException {
-    	String sqlQuery = "Select " + filteredSelectionClause(table) + " From " + SQLDialect.dmlTableReference(ENTITY, session) + " E join " + quoting.requote(table.getName()) + " T on " +
+    	String sqlQuery = "Select " + filteredSelectionClause(table, false) + " From " + SQLDialect.dmlTableReference(ENTITY, session) + " E join " + quoting.requote(table.getName()) + " T on " +
 			pkEqualsEntityID(table, "T", "E") +
 			" Where E.birthday>=0 and E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) + "";
 		long rc;
@@ -601,7 +628,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param columns the columns;
 	 */
 	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, Configuration targetConfiguration) throws SQLException {
-		Session.ResultSetReader reader = new UpdateTransformer(table, columns, scriptFileWriter, CommandLineParser.getInstance().numberOfEntities, getTargetSession(), targetConfiguration);
+		Session.ResultSetReader reader = new UpdateTransformer(table, columns, scriptFileWriter, CommandLineParser.getInstance().numberOfEntities, getTargetSession(), targetConfiguration, importFilterManager);
     	readEntities(table, false, reader);
 	}
 
@@ -612,8 +639,8 @@ public class RemoteEntityGraph extends EntityGraph {
      * @param table the table to read rows from
      * @return select clause
      */
-    protected String filteredSelectionClause(Table table) {
-    	return filteredSelectionClause(table, null, quoting);
+    protected String filteredSelectionClause(Table table, boolean appylImportFilter) {
+    	return filteredSelectionClause(table, null, quoting, appylImportFilter);
     }
     
     /**
@@ -625,18 +652,22 @@ public class RemoteEntityGraph extends EntityGraph {
      * @param quoting for unquoting of column names if columnPrefix is given
      * @return select clause
      */
-    protected String filteredSelectionClause(Table table, String columnPrefix, Quoting quoting) {
+    protected String filteredSelectionClause(Table table, String columnPrefix, Quoting quoting, boolean appylImportFilter) {
     	StringBuilder sb = new StringBuilder();
     	boolean first = true;
     	
-    	for (Column c: table.getColumns()) {
-    		if (c.isVirtualOrBlocked(session)) {
-    			continue;
-    		}
+    	for (Column c: table.getSelectionClause(session)) {
     		if (!first) {
     			sb.append(", ");
     		}
-    		String filterExpression = c.getFilterExpression();
+    		String filterExpression = null;
+    		if (c.getFilter() != null) {
+    			if (c.getFilter().isApplyAtExport()) {
+    				filterExpression = c.getFilterExpression();
+    			} else if (appylImportFilter && importFilterManager != null) {
+    				filterExpression = importFilterManager.transform(c, "T." + quoting.requote(c.name));
+    			}
+    		}
 			if (filterExpression != null) {
 				if (filterExpression.trim().toLowerCase().startsWith("select")) {
 					sb.append("(" + filterExpression + ")");
@@ -834,7 +865,7 @@ public class RemoteEntityGraph extends EntityGraph {
         	}
     		select = 
     			"Select " + selectionSchema + " from (" +  
-    			"Select " + selectOPK + ", " + filteredSelectionClause(table) + " from " + quoting.requote(table.getName()) + " T join " + SQLDialect.dmlTableReference(DEPENDENCY, session) + " D on " +
+    			"Select " + selectOPK + ", " + filteredSelectionClause(table, false) + " from " + quoting.requote(table.getName()) + " T join " + SQLDialect.dmlTableReference(DEPENDENCY, session) + " D on " +
 	    		 pkEqualsEntityID(table, "T", "D", "TO_") + " and D.to_type=" + typeName(table) + "" +
 	    		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", cellContentConverter) +
 	    	     " and D.from_type=" + typeName(association.source) + " and assoc=" + association.getId() +

@@ -27,6 +27,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import net.sf.jailer.database.Session;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 import net.sf.jailer.xml.NodeVisitor;
@@ -528,6 +529,22 @@ public class Table extends ModelElement implements Comparable<Table> {
 	 */
 	public int getOrdinal() {
 		return ordinal;
+	}
+
+	/**
+	 * Gets all non-virtual columns of the table in the order in which they are selected.
+	 * 
+	 * @param session current session
+	 * @return all non-virtual columns of the table in the order in which they are selected
+	 */
+	public List<Column> getSelectionClause(Session session) {
+		ArrayList<Column> result = new ArrayList<Column>();
+		for (Column column: getColumns()) {
+			if (!column.isVirtualOrBlocked(session)) {
+				result.add(column);
+			}
+		}
+		return result;
 	}
 
 }
