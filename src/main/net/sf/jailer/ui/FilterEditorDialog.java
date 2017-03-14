@@ -39,6 +39,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.Vector;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
@@ -1778,19 +1780,29 @@ public class FilterEditorDialog extends javax.swing.JDialog {
     JEditorPane helpEditorPane = new JEditorPane();
     {
     	helpEditorPane.setContentType("text/html"); // NOI18N
+    	
    		InputStream is = getClass().getResourceAsStream("/net/sf/jailer/resource/helpfilters.html");
    		if (is != null) {
    			BufferedReader in = new BufferedReader(new InputStreamReader(is));
-   			StringBuilder sb = new StringBuilder();
+   			StringBuffer sb = new StringBuffer();
    			int c;
    			try {
 				while ((c = in.read()) != -1) {
 					sb.append((char) c);
 				}
 				is.close();
+				
+				Matcher m = Pattern.compile("(<img\\s+src\\s*=\\s*\")(.*)(\")").matcher(sb.toString());
+				sb.setLength(0);
+				while (m.find()) {
+					m.appendReplacement(sb, "");
+					sb.append(m.group(1)).append(getClass().getResource("/net/sf/jailer/resource/" + m.group(2))).append(m.group(3));
+				}
+				m.appendTail(sb);
+				
 				helpEditorPane.setText(sb.toString());
 				helpEditorPane.setEditable(false);
-			} catch (IOException e) {
+			} catch (Exception e) {
 				e.printStackTrace();
 			}
    		}

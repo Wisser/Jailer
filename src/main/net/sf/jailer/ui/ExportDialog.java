@@ -24,6 +24,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -60,6 +61,7 @@ import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CsvFile;
+import net.sf.jailer.util.Quoting;
 
 /**
  * Data Export Dialog.
@@ -463,6 +465,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		schemas.add(DEFAULT_SCHEMA);
     	schemas.addAll(JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchemaName()));
     	schemas.remove(JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchemaName()));
+    	quoteSchemas(schemas, session);
     	if (lastIFMTableSchema != null && !schemas.contains(lastIFMTableSchema != null)) {
     		schemas.add(lastIFMTableSchema);
     	}
@@ -502,6 +505,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		schemas.add(DEFAULT_SCHEMA);
     	schemas.addAll(JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchemaName()));
     	schemas.remove(JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchemaName()));
+    	quoteSchemas(schemas, session);
 		schemaComboboxModel = schemas.toArray(new String[0]);
 		workingTableSchemaComboBox.setModel(new DefaultComboBoxModel(schemaComboboxModel));
 		workingTableSchemaComboBox.setSelectedItem(lastWorkingTableSchema != null && schemas.contains(lastWorkingTableSchema)? lastWorkingTableSchema : DEFAULT_SCHEMA);
@@ -519,6 +523,26 @@ public class ExportDialog extends javax.swing.JDialog {
 			}
 		});
 	}
+
+    private void quoteSchemas(List<String> schemas, Session session) {
+    	List<String> result = new ArrayList<String>();
+    	Quoting quoting;
+		try {
+			quoting = new Quoting(session);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return;
+		}
+    	for (String schema: schemas) {
+    		if (DEFAULT_SCHEMA.equals(schema)) {
+    			result.add(schema);
+    		} else {
+    			result.add(quoting.quote(schema));
+    		}
+    	}
+    	schemas.clear();
+    	schemas.addAll(result);
+    }
 
 	private void updateCLIArea() {
     	explain.setEnabled(!scopeLocal.isSelected());

@@ -121,7 +121,7 @@ public class DDLCreator {
 		}
 		String tableName = SQLDialect.CONFIG_TABLE_;
 		arguments.put("config-dml-reference", tableName);
-		String schema = workingTableSchema != null? new Quoting(session).quote(workingTableSchema) + "." : "";
+		String schema = workingTableSchema != null? new Quoting(session).requote(workingTableSchema) + "." : "";
 		arguments.put("schema", schema);
 		arguments.put("index-schema", supportsSchemasInIndexDefinitions(session)? schema : "");
 		if (tableManager != null) {
@@ -242,7 +242,7 @@ public class DDLCreator {
 				final Map<String, String> typeReplacement = Configuration.forDbms(session).getTypeReplacement();
 				final RowIdSupport rowIdSupport = new RowIdSupport(datamodel, Configuration.forDbms(session), useRowId);
 				
-				final String schema = workingTableSchema == null ? "" : new Quoting(session).quote(workingTableSchema) + ".";
+				final String schema = workingTableSchema == null ? "" : new Quoting(session).requote(workingTableSchema) + ".";
 				
 				session.executeQuery("Select jvalue from " + schema + SQLDialect.CONFIG_TABLE_ + " where jversion='" + Jailer.VERSION + "' and jkey='upk'",
 						new Session.ResultSetReader() {

@@ -165,9 +165,6 @@ public class Quoting {
 		if (identifier != null) {
 			identifier = identifier.trim();
 		}
-//		if (!force && !isQuoted(identifier) && !keyWords.contains(identifier.toUpperCase())) {
-//			return identifier;
-//		}
 		identifier = unquote(identifier);
 		if (quote != null && identifier != null && identifier.length() > 0) {
 			if (!keyWords.contains(identifier.toUpperCase())) {

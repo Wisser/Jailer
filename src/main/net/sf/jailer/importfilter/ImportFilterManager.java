@@ -100,7 +100,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		this.totalProgress = progress;
 		
 		String mappingTablesSchema = CommandLineParser.getInstance().importFilterMappingTableSchema.trim();
-		quotedMappingTablesSchema = mappingTablesSchema.length() > 0? targetQuoting.quote(mappingTablesSchema) + "." : "";
+		quotedMappingTablesSchema = mappingTablesSchema.length() > 0? targetQuoting.requote(mappingTablesSchema) + "." : "";
 
 		if (localSession != null) {
 			this.localSession = localSession;
