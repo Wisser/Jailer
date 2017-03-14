@@ -12,13 +12,14 @@ Features
       and imports the data into your development and test environment.
     * Improves database performance by removing and archiving obsolete data without violating integrity.
     * Generates hierarchically structured XML, topologically sorted SQL-DML and DbUnit datasets.
+	* Data Browsing. Navigate bidirectionally through the database by following foreign-key-based or user-defined relationships.
     * Open Source. Entirely written in Java. Platform independent. DBMS agnostic.
 
 News
 
     * 2017-03-30 	Improved filter management. Support for import-filters and literal-filters.
     * 2017-01-27 	Referential cycles can now be exported by deferring the insert of nullable foreign keys.
-    * 2016-21-10 	Filter Templates allows you to define rules for assigning filters to columns. Filters on primary key columns will automatically be propagated to the corresponding foreign key columns.
+    * 2016-21-10 	Filter Templates allows you to define rules for assigning filters to columns.Filters on primary key columns will automatically be propagated to the corresponding foreign key columns.
     * 2015-12-04 	Support for oracle's ROWID pseudo-column.
     * 2016-09-08 	New "Export To" mode allows to export rows directly into a different schema in the same database.
     * 2015-12-04 	Support for oracle's ROWID pseudo-column.
