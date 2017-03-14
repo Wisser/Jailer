@@ -139,7 +139,7 @@ public class SQLDialect {
 		if (temporaryTableScope != TemporaryTableScope.LOCAL_DATABASE) {
 			String schema = CommandLineParser.getInstance().workingTableSchema;
 			if (schema != null) {
-				tableRef = new Quoting(session).quote(schema) + "." + tableRef;
+				tableRef = new Quoting(session).requote(schema) + "." + tableRef;
 			}
 		}
 		return tableRef;

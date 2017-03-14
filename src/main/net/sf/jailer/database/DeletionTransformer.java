@@ -204,7 +204,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
     	if (schema.length() == 0) {
     		return quoting.requote(t.getUnqualifiedName());
     	}
-		return quoting.quote(schema) + "." + quoting.requote(t.getUnqualifiedName());
+		return quoting.requote(schema) + "." + quoting.requote(t.getUnqualifiedName());
 	}
 
     /**
