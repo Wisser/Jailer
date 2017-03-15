@@ -204,9 +204,9 @@ data by <a href="filters.html" target="_self">defining filters</a> (via "<span s
 menu "<span style="font-style: italic;">Filter editor...</span>",
 or table's context menu)<br>
 <br>
-A filter is an assignment of a SQL expression to a table column, the
+A filter is an assignment of a SQL expression to a table column. The
 column values will be replaced by the result of the expression when the
-export file is written. <br>
+export file is written.<br>
 &nbsp;<br>
 For example: <br>
 &nbsp;<br>
@@ -216,8 +216,9 @@ PERSON.SSN := '123' </span><br>
 &nbsp;<br>
 The filter <br>
 <span style="font-style: italic;">PERSON.SSN
-:= substr(SSN, 1, length(SSN) - 3) || '***' </span><br>
+:= substr(${old-value}, 1, length(${old-value}) - 3) || '***' </span><br>
 replaces the last 3 characters of the SSN with '***' <br>
+${old-value} is a synonym for the filtered column.<br>
 &nbsp;<br>
 The filter: <br>
 <span style="font-style: italic;">PERSON.SSN
@@ -227,7 +228,7 @@ The filter: <br>
 &nbsp; &nbsp; &nbsp; &nbsp; &nbsp; &nbsp;
 &nbsp; &nbsp;FETCH FIRST 1 ROWS ONLY) </span><br style="font-style: italic;">
 would replace the SSN with a randomly chosen SSN from a table holding
-test SSNs (in IBM's DB2) <br>
+test SSNs (IBM DB2) <br>
 &nbsp;<br>
 </td>
 </tr>

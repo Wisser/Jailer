@@ -1,5 +1,6 @@
 6.6.0
   - Improved filter management. Support for import-filters and literal-filters.
+    http://jailer.sourceforge.net/filters.html
 
 6.5.2
   - Fix for "DML->Update script template is broken for tables with timestamp columns"
