@@ -1781,7 +1781,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
     {
     	helpEditorPane.setContentType("text/html"); // NOI18N
     	
-   		InputStream is = getClass().getResourceAsStream("/net/sf/jailer/resource/helpfilters.html");
+   		InputStream is = getClass().getResourceAsStream("/net/sf/jailer/resource/filters.html");
    		if (is != null) {
    			BufferedReader in = new BufferedReader(new InputStreamReader(is));
    			StringBuffer sb = new StringBuffer();
