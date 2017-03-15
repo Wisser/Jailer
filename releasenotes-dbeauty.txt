@@ -1,3 +1,7 @@
+3.0
+  - Improved filter management.
+  - Internal refactorings.
+
 2.12
   - Fix for "DML->Update script template is broken for tables with timestamp columns"
     https://sourceforge.net/p/dbeauty/tickets/8/
