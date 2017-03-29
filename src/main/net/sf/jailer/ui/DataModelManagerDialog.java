@@ -575,7 +575,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 							"New connections will be assigned to the datamodel \"" + modelDetails.get(currentModel).a + "\"."));
 	        if (dbConnectionDialog.connect("Analyze Database")) {
 	        	List<String> args = new ArrayList<String>();
-	        	args.add("build-model");
+	        	args.add("build-model-wo-merge");
 	        	dbConnectionDialog.addDbArgs(args);
 	        	
 	        	DataModel dataModel = new DataModel();

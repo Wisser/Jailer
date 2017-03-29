@@ -1,3 +1,6 @@
+3.1
+  - Minor bug fixes.
+
 3.0
   - Improved filter management.
   - Internal refactorings.

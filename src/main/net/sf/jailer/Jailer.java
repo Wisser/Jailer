@@ -111,7 +111,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "6.6.0";
+	public static final String VERSION = "6.6.1";
 	
 	/**
 	 * The Jailer application name.
@@ -1426,12 +1426,19 @@ public class Jailer {
 							.getTemporaryTableScope(), clp.workingTableSchema);
 				}
 				return DDLCreator.createDDL(null, null, null, null, clp.getTemporaryTableScope(), clp.workingTableSchema);
-			} else if ("build-model".equalsIgnoreCase(command)) {
+			} else if ("build-model-wo-merge".equalsIgnoreCase(command)) {
 				if (clp.arguments.size() != 5) {
 					CommandLineParser.printUsage();
 				} else {
 					_log.info("Building data model.");
 					ModelBuilder.build(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4), clp.schema, warnings);
+				}
+			} else if ("build-model".equalsIgnoreCase(command)) {
+				if (clp.arguments.size() != 5) {
+					CommandLineParser.printUsage();
+				} else {
+					_log.info("Building data model.");
+					ModelBuilder.buildAndMerge(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4), clp.schema, warnings);
 				}
 			} else {
 				CommandLineParser.printUsage();

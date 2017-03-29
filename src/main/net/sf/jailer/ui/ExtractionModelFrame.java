@@ -941,7 +941,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     		if (saveIfNeeded("Analyze Database", true, false)) {
 	        	if (connectToDBIfNeeded("Analyze Database")) {
 		        	List<String> args = new ArrayList<String>();
-		        	args.add("build-model");
+		        	args.add("build-model-wo-merge");
 		        	dbConnectionDialog.addDbArgs(args);
 		        	
 		        	AnalyseOptionsDialog analyseOptionsDialog = new AnalyseOptionsDialog(this, extractionModelEditor.dataModel);
