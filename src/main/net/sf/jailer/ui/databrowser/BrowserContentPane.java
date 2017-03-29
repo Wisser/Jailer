@@ -352,6 +352,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private Set<Integer> pkColumns = new HashSet<Integer>();
 
 	/**
+	 * Indexes of foreign key columns.
+	 */
+	private Set<Integer> fkColumns = new HashSet<Integer>();
+
+	/**
 	 * DB session.
 	 */
 	Session session;
@@ -537,6 +542,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final Color BG2 = new Color(230, 255, 255);
 			final Color BG3 = new Color(190, 195, 255);
 			final Color FG1 = new Color(155, 0, 0);
+			final Color FG2 = new Color(0, 0, 255);
 			final Font font = new JLabel().getFont();
 			final Font nonbold = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
 			final Font bold = new Font(nonbold.getName(), nonbold.getStyle() | Font.BOLD, nonbold.getSize());
@@ -564,7 +570,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							((JLabel) render).setBackground((row % 2 == 0) ? BG1 : BG2);
 						}
 					}
-					((JLabel) render).setForeground(pkColumns.contains(rowsTable.convertColumnIndexToModel(column)) ? FG1 : Color.BLACK);
+					((JLabel) render).setForeground(
+							pkColumns.contains(rowsTable.convertColumnIndexToModel(column)) ? FG1 : 
+								fkColumns.contains(rowsTable.convertColumnIndexToModel(column)) ? FG2 : 
+										Color.BLACK);
 					boolean isNull = false;
 					if (((JLabel) render).getText() == NULL || ((JLabel) render).getText() == UNKNOWN) {
 						((JLabel) render).setForeground(Color.gray);
@@ -2635,6 +2644,27 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			columnNames[i] = columns.get(i).name;
 			if (pkColumnNames.contains(columnNames[i])) {
 				pkColumns.add(i);
+			}
+		}
+		
+		fkColumns.clear();
+		final Set<String> fkColumnNames = new HashSet<String>();
+		for (Association a: table.associations) {
+			if (a.isInsertDestinationBeforeSource()) {
+				Map<Column, Column> m = a.createSourceToDestinationKeyMapping();
+				for (Column fkColumn: m.keySet()) {
+					fkColumnNames.add(fkColumn.name);
+				}
+			}
+		}
+		if (rowIdSupport.getPrimaryKey(table) != null) {
+			for (Column pk : rowIdSupport.getPrimaryKey(table).getColumns()) {
+				pkColumnNames.add(pk.name);
+			}
+		}
+		for (int i = 0; i < columnNames.length; ++i) {
+			if (fkColumnNames.contains(columnNames[i])) {
+				fkColumns.add(i);
 			}
 		}
 

@@ -1497,7 +1497,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	private void updateDataModel() {
 		try {
 			List<String> args = new ArrayList<String>();
-			args.add("build-model");
+			args.add("build-model-wo-merge");
 			dbConnectionDialog.addDbArgs(args);
 
 			AnalyseOptionsDialog analyseOptionsDialog = new AnalyseOptionsDialog(this, datamodel == null ? null : datamodel.get());

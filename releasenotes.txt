@@ -1,3 +1,7 @@
+6.6.1
+  - Added option for analyzing data model via CLI.
+  - Minor bug fixes.
+
 6.6.0
   - Improved filter management. Support for import-filters and literal-filters.
     http://jailer.sourceforge.net/filters.html
