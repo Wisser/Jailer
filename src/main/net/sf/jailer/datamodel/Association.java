@@ -479,15 +479,15 @@ public class Association extends ModelElement {
 	 */
 	public Map<Column, Column> createSourceToDestinationKeyMapping() {
 		String[] equations = getUnrestrictedJoinCondition().trim().replaceAll("\\(|\\)", " ")
-				.split(" *\\b(a|A)(n|N)(d|D)\\b *");
+				.split("\\s*\\b(a|A)(n|N)(d|D)\\b\\s*");
 		Map<Column, Column> mapping = new HashMap<Column, Column>();
 		for (String equation: equations) {
-			String hs[] = equation.split(" *= *");
+			String hs[] = equation.split("\\s*=\\s*");
 			if (hs.length != 2) {
 				return Collections.emptyMap();
 			}
-			String lhs[] = hs[0].split(" *\\. *");
-			String rhs[] = hs[1].split(" *\\. *");
+			String lhs[] = hs[0].split("\\s*\\.\\s*");
+			String rhs[] = hs[1].split("\\s*\\.\\s*");
 			if (lhs.length != 2 || rhs.length != 2 || lhs[0].length() != 1 || rhs[0].length() != 1) {
 				return Collections.emptyMap();
 			}
