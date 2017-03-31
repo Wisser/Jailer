@@ -202,6 +202,9 @@ public class UpdateTransformer extends AbstractResultSetReader {
 				if (columnLabel[i] == null) {
 					continue;
 				}
+            	if (!isPrimaryKeyColumn(columnLabel[i]) && !columnNamesLower.contains(columnLabel[i].toLowerCase())) {
+            		continue;
+            	}
 				if (content == null) {
 	            	content = cellContentConverter.getObject(resultSet, i);
 	                if (resultSet.wasNull()) {
@@ -231,6 +234,9 @@ public class UpdateTransformer extends AbstractResultSetReader {
                 if (columnLabel[i] == null) {
                 	continue;
                 }
+            	if (!columnNamesLower.contains(columnLabel[i].toLowerCase())) {
+            		continue;
+            	}
                 Object content = cellContentConverter.getObject(resultSet, i);
                 if (resultSet.wasNull()) {
                     content = null;
@@ -301,10 +307,12 @@ public class UpdateTransformer extends AbstractResultSetReader {
                     	continue;
                     }
                     if  (!isPrimaryKeyColumn(columnLabel[i])) {
-	                    if (sets.length() > 0) {
-	                    	sets.append(", ");
-	                    }
-	                    sets.append("T." + columnLabel[i] + "=Q." + columnLabel[i]);
+                    	if (columnNamesLower.contains(columnLabel[i].toLowerCase())) {
+		                    if (sets.length() > 0) {
+		                    	sets.append(", ");
+		                    }
+		                    sets.append("T." + columnLabel[i] + "=Q." + columnLabel[i]);
+                    	}
                     }
                     if (tSchema.length() > 0) {
                     	tSchema.append(", ");
