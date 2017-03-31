@@ -234,9 +234,6 @@ public class UpdateTransformer extends AbstractResultSetReader {
                 if (columnLabel[i] == null) {
                 	continue;
                 }
-            	if (!columnNamesLower.contains(columnLabel[i].toLowerCase())) {
-            		continue;
-            	}
                 Object content = cellContentConverter.getObject(resultSet, i);
                 if (resultSet.wasNull()) {
                     content = null;
