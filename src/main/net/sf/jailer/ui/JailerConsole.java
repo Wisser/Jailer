@@ -51,7 +51,7 @@ public class JailerConsole {
      * @param progressPanel progress panel, optional
      */
 	public JailerConsole(Window owner, JDialog dialog, boolean showLogfileButton, boolean showExplainLogButton, ProgressPanel progressPanel, boolean fullSize) {
-		this.dialog = dialog == null? new JDialog(owner) : dialog;
+		this.dialog = dialog;
         this.progressPanel = progressPanel;
         this.fullSize = fullSize;
         initialize();

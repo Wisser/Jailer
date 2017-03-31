@@ -1143,7 +1143,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				if (type.length() == 0 || type.equals((c.toSQL(null).substring(c.name.length())).trim())) {
 					type = null;
 				}
-				if (c.getFilter().getType() != type) {
+				if (c.getFilter().getType() != null) {
 					if (type == null) {
 						return true;
 					} else {

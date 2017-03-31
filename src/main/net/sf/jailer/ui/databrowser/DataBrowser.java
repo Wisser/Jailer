@@ -1769,7 +1769,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		jPanel1.revalidate();
 	}
 
-	private static class BrowserAssociationModel extends DefaultAssociationModel {
+	private static final class BrowserAssociationModel extends DefaultAssociationModel {
 		private final RowBrowser rowBrowser;
 
 		public BrowserAssociationModel(RowBrowser rowBrowser, Association association) {

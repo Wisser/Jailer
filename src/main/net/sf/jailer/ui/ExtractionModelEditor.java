@@ -289,7 +289,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 			@Override
 			protected void removeRestrictions(Collection<Association> associations) {
-				removeRestrictions(associations);
+				ExtractionModelEditor.this.removeRestrictions(associations);
 			}
 			@Override
 			protected void onSelect(Association association) {
