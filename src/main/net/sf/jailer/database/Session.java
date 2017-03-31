@@ -567,7 +567,7 @@ public class Session {
     /**
      * Lock for prevention of livelocks.
      */
-    private static final Object DB_LOCK = "DB_LOCK";
+    private static final Object DB_LOCK = new String("DB_LOCK");
     
     /**
      * Executes a SQL-Update (INSERT, DELETE or UPDATE).

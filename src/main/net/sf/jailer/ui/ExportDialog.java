@@ -466,7 +466,7 @@ public class ExportDialog extends javax.swing.JDialog {
     	schemas.addAll(JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchemaName()));
     	schemas.remove(JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchemaName()));
     	quoteSchemas(schemas, session);
-    	if (lastIFMTableSchema != null && !schemas.contains(lastIFMTableSchema != null)) {
+    	if (lastIFMTableSchema != null && !schemas.contains(lastIFMTableSchema)) {
     		schemas.add(lastIFMTableSchema);
     	}
 		String[] ifmComboboxModel = schemas.toArray(new String[0]);

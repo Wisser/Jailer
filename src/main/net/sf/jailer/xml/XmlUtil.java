@@ -118,7 +118,7 @@ public class XmlUtil {
   	 * @param xmlDocument the DOM 
   	 * @return XML string
   	 */
-  	public static String buildOmitDeclaration(Document xmlDocument) throws TransformerException {
+  	public static synchronized String buildOmitDeclaration(Document xmlDocument) throws TransformerException {
 		if (transformerWODecl == null) {
 			TransformerFactory xformFactory = TransformerFactory.newInstance();
 			try {
@@ -142,7 +142,7 @@ public class XmlUtil {
      * @param omitXMLDeclaration 
 	 * @return XML string
 	 */
-	public static String build(Document xmlDocument) throws TransformerException {
+	public static synchronized String build(Document xmlDocument) throws TransformerException {
 		if (transformer == null) {
 			TransformerFactory xformFactory = TransformerFactory.newInstance();
 			try {

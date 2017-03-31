@@ -108,7 +108,7 @@ public class ImportDialog extends javax.swing.JDialog {
 		updateCLIArea();
 
 		pack();
-		setSize(Math.max(Math.min(getSize().width, 400), 480), getSize().height);
+		setSize(480, getSize().height);
 		placeholder1.setVisible(false);
 		UIUtil.initPeer();
 		UIUtil.fit(this);

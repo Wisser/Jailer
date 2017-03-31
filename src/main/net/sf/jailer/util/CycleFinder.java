@@ -72,6 +72,10 @@ public class CycleFinder {
 			return p1.equals(p2);
 		}
 		
+		public int hashCode() {
+			return 1;
+		}
+		
 		public void fillPath(List<Table> path) {
 			if (left == null) {
 				path.add(from);
