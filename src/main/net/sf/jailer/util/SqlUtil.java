@@ -221,7 +221,7 @@ public class SqlUtil {
 		if (schemaMapping == null) {
 			return tableName;
 		}
-		Table t = new Table(tableName, null, false);
+		Table t = new Table(tableName, null, false, false);
 		String schema = t.getOriginalSchema("");
     	String mappedSchema = schemaMapping.get(schema);
     	if (mappedSchema != null) {

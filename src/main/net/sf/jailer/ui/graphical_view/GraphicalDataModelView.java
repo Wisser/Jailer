@@ -936,6 +936,61 @@ public class GraphicalDataModelView extends JPanel {
 			insert.setSelected(true);
 		}
 		
+		JMenu excludeMenu = new JMenu("Exclude from Deletion");
+		popup.add(excludeMenu);
+		JRadioButtonMenuItem yes = new JRadioButtonMenuItem("Yes");
+		yes.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				if (!Boolean.TRUE.equals(table.excludeFromDeletion)) {
+					table.excludeFromDeletion = true;
+					visualization.invalidateAll();
+					display.invalidate();
+					modelEditor.markDirty();
+				}
+			}
+		});
+		excludeMenu.add(yes);
+		JRadioButtonMenuItem no = new JRadioButtonMenuItem("No");
+		excludeMenu.add(no);
+		no.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				if (!Boolean.FALSE.equals(table.excludeFromDeletion)) {
+					table.excludeFromDeletion = false;
+					visualization.invalidateAll();
+					display.invalidate();
+					modelEditor.markDirty();
+				}
+			}
+		});
+		deflt = new JRadioButtonMenuItem("Data model default (" + ((table.defaultExcludeFromDeletion? "Yes" : "No") + ")"));
+		excludeMenu.add(deflt);
+		deflt.addActionListener(new ActionListener () {
+			public void actionPerformed(ActionEvent e) {
+				if (table.excludeFromDeletion != null) {
+					table.excludeFromDeletion = null;
+					visualization.invalidateAll();
+					display.invalidate();
+					modelEditor.markDirty();
+				}
+			}
+		});
+		bt = new ButtonGroup();
+		bt.add(yes);
+		bt.add(no);
+		bt.add(deflt);
+		
+		if (table.excludeFromDeletion == null) {
+			deflt.setSelected(true);
+		}
+		
+		if (Boolean.TRUE.equals(table.excludeFromDeletion)) {
+			yes.setSelected(true);
+		}
+		
+		if (Boolean.FALSE.equals(table.excludeFromDeletion)) {
+			no.setSelected(true);
+		}
+		
 		return popup;
 	}
 

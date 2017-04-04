@@ -258,7 +258,7 @@ public class ModelBuilder {
                 			}
                 		}
                 		if (newPk.size() == old.primaryKey.getColumns().size()) {
-                			table = new Table(old.getName(), new PrimaryKeyFactory().createPrimaryKey(newPk), false);
+                			table = new Table(old.getName(), new PrimaryKeyFactory().createPrimaryKey(newPk), false, false);
                 			table.setAuthor(old.getAuthor());
                 		}
                 	}

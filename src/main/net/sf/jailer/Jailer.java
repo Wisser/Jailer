@@ -38,6 +38,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.TreeSet;
@@ -111,7 +112,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "6.6.2";
+	public static final String VERSION = "6.6.3";
 	
 	/**
 	 * The Jailer application name.
@@ -1616,8 +1617,7 @@ public class Jailer {
 			if (deleteScriptFileName != null) {
 				ProgressListenerRegistry.getProgressListener().newStage("deletion-check", false, false);
 				jailer.setEntityGraph(exportedEntities);
-				jailer.deleteEntities(subjects, totalProgress, session, CommandLineParser.getInstance().getTabuTables(jailer.datamodel,
-						CommandLineParser.getInstance().getSourceSchemaMapping()));
+				jailer.deleteEntities(subjects, totalProgress, session);
 				ProgressListenerRegistry.getProgressListener().newStage("writing delete-script", false, false);
 				jailer.datamodel.transpose();
 				jailer.writeEntities(deleteScriptFileName, ScriptType.DELETE, totalProgress, session);
@@ -1692,10 +1692,14 @@ public class Jailer {
 	 *            set of tables from which there are entities in E
 	 * @param statementExecutor
 	 *            for executing SQL-statements
-	 * @param tabuTables
-	 *            never deletes entities of one of this tables
 	 */
-	private void deleteEntities(Set<Table> subjects, Set<Table> allTables, Session session, Set<Table> tabuTables) throws Exception {
+	private void deleteEntities(Set<Table> subjects, Set<Table> allTables, Session session) throws Exception {
+		Set<Table> tabuTables = new HashSet<Table>();
+		for (Table table: allTables) {
+			if (table.isExcludedFromDeletion()) {
+				tabuTables.add(table);
+			}
+		}
 		appendCommentHeader("");
 		appendCommentHeader("Tabu-tables: " + PrintUtil.tableSetAsString(tabuTables, "--                 "));
 		_log.info("Tabu-tables: " + PrintUtil.tableSetAsString(tabuTables, null));
@@ -1708,10 +1712,10 @@ public class Jailer {
 		// association
 		// from another table
 		Set<Table> dontCheckInitially = new HashSet<Table>();
-		for (Table table : allTables) {
+		for (Table table: allTables) {
 			int n = 0;
 			boolean check = false;
-			for (Association a : table.associations) {
+			for (Association a: table.associations) {
 				if (!a.reversalAssociation.isIgnored()) {
 					if (tabuTables.contains(a.destination)) {
 						check = true;
@@ -1788,7 +1792,18 @@ public class Jailer {
 		boolean firstLine = true;
 		for (String line : entityGraph.getStatistics(datamodel, removedEntities.keySet())) {
 			if (!firstLine) {
-				Long re = removedEntities.get(datamodel.getTable(line.split(" ")[0]));
+				String tableName = line.split(" ")[0];
+				Long re = removedEntities.get(datamodel.getTable(tableName));
+				
+				if (re == null) {
+					for (Entry<Table, Long> e: removedEntities.entrySet()) {
+						if (Quoting.staticUnquote(e.getKey().getName()).equals(tableName)) {
+							re = e.getValue();
+							break;
+						}
+					}
+				}
+				
 				if (re != null && re != 0L) {
 					line += " (-" + re + ")";
 				}

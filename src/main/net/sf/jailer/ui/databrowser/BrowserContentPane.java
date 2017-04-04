@@ -389,7 +389,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	
 	static class SqlStatementTable extends Table {
 		public SqlStatementTable(String name, PrimaryKey primaryKey, boolean defaultUpsert) {
-			super(name, primaryKey, defaultUpsert);
+			super(name, primaryKey, defaultUpsert, false);
 		}
 	}
 

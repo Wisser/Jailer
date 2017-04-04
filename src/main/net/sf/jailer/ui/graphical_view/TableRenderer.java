@@ -912,11 +912,6 @@ public class TableRenderer extends AbstractShapeRenderer {
 	private final GraphicalDataModelView graphicalDataModelView;
 
 	/**
-     * List of tables to be excluded from deletion.
-     */
-    private List<String> excludeFromDeletion = new ArrayList<String>();
-    
-	/**
 	 * Constructor.
 	 * 
 	 * @param model
@@ -925,11 +920,6 @@ public class TableRenderer extends AbstractShapeRenderer {
 	public TableRenderer(DataModel model, GraphicalDataModelView graphicalDataModelView) {
 		this.model = model;
 		this.graphicalDataModelView = graphicalDataModelView;
-		try {
-			UIUtil.loadTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 	}
 
 	private Set<Table> filteredTables = new HashSet<Table>();
@@ -954,7 +944,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 			if (table.equals(graphicalDataModelView.modelEditor.getSubject()) || graphicalDataModelView.modelEditor.isAdditionalSubject(table)) {
 				img[i++] = subjectImage;
 			}
-			if (excludeFromDeletion.contains(table.getName())) {
+			if (table.isExcludedFromDeletion()) {
 				img[i++] = excludeFromDeletionImage;
 			}
 			if (table.getUpsert()) {
@@ -1005,7 +995,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 	public String getToolTip(Table table) {
 		String tt = "";
 
-		if (excludeFromDeletion.contains(table.getName())) {
+		if (table.isExcludedFromDeletion()) {
 			tt += "Excluded from Deletion. ";
 		}
 		if (table.getUpsert()) {

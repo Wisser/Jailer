@@ -224,7 +224,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         resultSet.close();
         Map<String, Map<Integer, Column>> pkColumns = new HashMap<String, Map<Integer, Column>>();
         for (String tableName: tableNames) {
-        	Table tmp = new Table(tableName, null, false);
+        	Table tmp = new Table(tableName, null, false, false);
             resultSet = getPrimaryKeys(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()));
             Map<Integer, Column> pk = pkColumns.get(tableName);
             if (pk == null) {
@@ -255,7 +255,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
             CancellationHandler.checkForCancellation(null);
         }
         for (String tableName: tableNames) {
-        	Table tmp = new Table(tableName, null, false);
+        	Table tmp = new Table(tableName, null, false, false);
         	_log.info("getting columns for " + quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))) + "." + quoting.unquote(tmp.getUnqualifiedName()));
         	resultSet = getColumns(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), "%");
         	_log.info("done");
@@ -308,7 +308,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				}
             }
             PrimaryKey primaryKey = primaryKeyFactory.createPrimaryKey(columns);
-            Table table = new Table(tableName, primaryKey, false);
+            Table table = new Table(tableName, primaryKey, false, false);
             table.setAuthor(metaData.getDriverName());
             tables.add(table);
             CancellationHandler.checkForCancellation(null);
