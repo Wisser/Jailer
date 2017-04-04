@@ -17,7 +17,9 @@ package net.sf.jailer.ui;
 
 import java.awt.Component;
 import java.awt.Container;
+import java.awt.Dialog;
 import java.awt.Dimension;
+import java.awt.FileDialog;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -34,6 +36,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -52,15 +55,15 @@ import java.util.regex.Pattern;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JFileChooser;
 import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.SwingUtilities;
 import javax.swing.WindowConstants;
 
-import jsyntaxpane.DefaultSyntaxKit;
+import org.apache.log4j.Logger;
 
+import jsyntaxpane.DefaultSyntaxKit;
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.database.Session;
@@ -70,8 +73,6 @@ import net.sf.jailer.ui.scrollmenu.JScrollC2PopupMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
-
-import org.apache.log4j.Logger;
 
 /**
  * Some utility methods.
@@ -119,39 +120,30 @@ public class UIUtil {
 		if (newStartDir != null) {
 			startDir = newStartDir;
 		}
-		JFileChooser fileChooser = new JFileChooser(startDir);
-		javax.swing.filechooser.FileFilter filter = new javax.swing.filechooser.FileFilter() {
-			public boolean accept(File pathname) {
-				return pathname.isDirectory()
-						|| pathname.getName().toLowerCase().endsWith(extension)
-						|| pathname.getName().toLowerCase()
-								.endsWith(extension + ".gz")
-						|| pathname.getName().toLowerCase()
-								.endsWith(extension + ".zip");
-			}
-
-			public String getDescription() {
-				if (extension.endsWith(".sql") || extension.endsWith(".xml")) {
-					if (allowZip) {
-						return "*" + extension + " *" + extension + ".zip" + " *" + extension + ".gz";
-					}
-				}
-				return "*" + extension;
-			}
-		};
-		fileChooser.setFileFilter(filter);
-		fileChooser.setDialogTitle(description);
-		if (selectedFile != null) {
-			fileChooser.setSelectedFile(selectedFile);
+		
+		parent = SwingUtilities.getWindowAncestor(parent);
+		FileDialog fileChooser;
+		if (parent instanceof Dialog) {
+			fileChooser = new FileDialog((Dialog) parent);
+		} else if (parent instanceof Frame) {
+			fileChooser = new FileDialog((Frame) parent);
+		} else {
+			fileChooser = new FileDialog(new Frame());
 		}
-		fileChooser.setDialogType(forLoad ? JFileChooser.OPEN_DIALOG
-				: JFileChooser.SAVE_DIALOG);
-		int returnVal = forLoad ? fileChooser.showOpenDialog(parent)
-				: fileChooser.showSaveDialog(parent);
-		if (returnVal == JFileChooser.APPROVE_OPTION) {
-			String fn = "";
+
+		fileChooser.setDirectory(startDir);
+		fileChooser.setTitle(description);
+		if (selectedFile != null) {
+			fileChooser.setFile(selectedFile.getName());
+		}
+		// fileChooser.setFile("*." + extension + ";*." + extension + ".gz;");
+		fileChooser.setMode(forLoad ? FileDialog.LOAD : FileDialog.SAVE);
+		fileChooser.setVisible(true);
+		String fn = fileChooser.getFile();
+		if (fn != null) {
+			File selFile = new File(fn);
 			try {
-				File f = fileChooser.getSelectedFile();
+				File f = selFile;
 				String work = new File(".").getCanonicalPath();
 				if (f.getCanonicalPath().startsWith(work)) {
 					fn = f.getName();
@@ -169,15 +161,14 @@ public class UIUtil {
 					fn += extension;
 				}
 				try {
-					storeCurrentDir(extension, fileChooser.getSelectedFile()
-							.getParent());
+					storeCurrentDir(extension, selFile.getParent());
 				} catch (Exception e) {
 					// ignore
 				}
 				return fn;
 			} catch (IOException e1) {
 				try {
-					fn = fileChooser.getSelectedFile().getCanonicalPath();
+					fn = selFile.getCanonicalPath();
 					if (addExtension
 							&& !(fn.endsWith(extension) || (allowZip 
 									&& (fn.endsWith(extension + ".zip") || fn.endsWith(extension + ".gz"))))) {
