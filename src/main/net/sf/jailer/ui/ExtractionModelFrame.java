@@ -1245,7 +1245,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
     private void loadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadActionPerformed
     	if (saveIfNeeded("loading", true, true)) {
-    		String modelFile = UIUtil.choseFile(null, "extractionmodel", "Load Extraction Model", ".csv", this, true, true);
+    		String modelFile = UIUtil.choseFile(null, "extractionmodel", "Load Extraction Model", ".csv", this, true, true, false);
     		if (modelFile != null) {
 	    		load(modelFile);
     		}
