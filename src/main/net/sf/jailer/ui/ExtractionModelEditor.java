@@ -2325,7 +2325,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					startDir = "extractionmodel";
 				}
 			}
-			String newFile = UIUtil.choseFile(extractionModelFile == null? null : new File(extractionModelFile), startDir, (reason == null? "" : (reason + " - ")) + "Save Extraction Model", ".csv", this, true, false);
+			String newFile = UIUtil.choseFile(extractionModelFile == null? null : new File(extractionModelFile), startDir, (reason == null? "" : (reason + " - ")) + "Save Extraction Model", ".csv", this, true, false, false);
 			if (newFile == null) {
 				return false;
 			}

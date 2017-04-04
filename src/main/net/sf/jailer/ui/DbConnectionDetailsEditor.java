@@ -76,7 +76,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         setLocation(120, 170);
         load1.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                String fn = UIUtil.choseFile(null, ".", "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true);
+                String fn = UIUtil.choseFile(null, ".", "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
                 if (fn != null) {
                     jar1.setText(fn);
                 }
@@ -84,7 +84,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         });
         load2.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
-                String fn = UIUtil.choseFile(null, ".", "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true);
+                String fn = UIUtil.choseFile(null, ".", "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
                 if (fn != null) {
                     jar2.setText(fn);
                 }
