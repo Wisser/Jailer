@@ -135,8 +135,9 @@ public class UIUtil {
 		fileChooser.setTitle(description);
 		if (selectedFile != null) {
 			fileChooser.setFile(selectedFile.getName());
+		} else if (extension != null && extension.length() > 0) {
+			fileChooser.setFile("*" + extension + (allowZip? ";*" + extension + ".zip;" + extension + ".gz;" : ""));
 		}
-		// fileChooser.setFile("*." + extension + ";*." + extension + ".gz;");
 		fileChooser.setMode(forLoad ? FileDialog.LOAD : FileDialog.SAVE);
 		fileChooser.setVisible(true);
 		String fn = fileChooser.getFile();
