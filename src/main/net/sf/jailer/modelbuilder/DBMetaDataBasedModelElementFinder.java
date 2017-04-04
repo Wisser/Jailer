@@ -171,7 +171,7 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
             for (Integer i: keySeqs) {
                 pk.add(pkColumns.get(tableName).get(i));
             }
-            Table table = new Table(tableName, primaryKeyFactory.createPrimaryKey(pk), false);
+            Table table = new Table(tableName, primaryKeyFactory.createPrimaryKey(pk), false, false);
             table.setAuthor(selectTablesScript);
             tables.add(table);
         }

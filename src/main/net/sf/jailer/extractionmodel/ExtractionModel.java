@@ -245,7 +245,21 @@ public class ExtractionModel {
             	table.upsert = Boolean.parseBoolean(tag);
             }
         }
-
+        
+        // read "exclude from deletion"
+        List<CsvFile.Line> excludes = new CsvFile(CommandLineParser.getInstance().newFile(fileName), "exclude from deletion").getLines();
+        for (CsvFile.Line excludesLine: excludes) {
+            location = subjectLine.location;
+			String name = excludesLine.cells.get(0);
+			String tag = excludesLine.cells.get(1);
+            Table table = dataModel.getTable(name);
+            if (table == null) {
+            	_log.warn("unknown table '" + name + "'");
+            } else {
+            	table.excludeFromDeletion = Boolean.parseBoolean(tag);
+            }
+        }
+        
         // read export modus
         List<CsvFile.Line> exportModusFile = new CsvFile(CommandLineParser.getInstance().newFile(fileName), "export modus").getLines();
         Iterator<CsvFile.Line> i = exportModusFile.iterator();

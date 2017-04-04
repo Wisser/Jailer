@@ -45,6 +45,7 @@ import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.RestrictionDefinition;
+import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.graphical_view.LayoutStorage;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.LineFilter;
@@ -321,6 +322,9 @@ public class DataModel {
     public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, PrimaryKeyFactory primaryKeyFactory) throws Exception {
     	this.primaryKeyFactory = primaryKeyFactory;
     	try {
+			List<String> excludeFromDeletion = new ArrayList<String>();
+			UIUtil.loadTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile());
+
 	    	// tables
 	    	File nTablesFile = CommandLineParser.getInstance().newFile(getTablesFile());
 			CsvFile tablesFile = new CsvFile(nTablesFile);
@@ -341,7 +345,7 @@ public class DataModel {
 	                }
 	            }
 	            String mappedSchemaTableName = SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0));
-				Table table = new Table(mappedSchemaTableName, primaryKeyFactory.createPrimaryKey(pk), defaultUpsert);
+				Table table = new Table(mappedSchemaTableName, primaryKeyFactory.createPrimaryKey(pk), defaultUpsert, excludeFromDeletion.contains(mappedSchemaTableName));
 				table.setAuthor(line.cells.get(j + 1));
 				table.setOriginalName(line.cells.get(0));
 				if (tables.containsKey(mappedSchemaTableName)) {
@@ -863,6 +867,12 @@ public class DataModel {
 		for (Table table: getTables()) {
 			if (table.upsert != null) {
 				out.println(CsvFile.encodeCell(table.getName()) + "; " + CsvFile.encodeCell(table.upsert.toString()));
+			}
+		}
+		out.println(CsvFile.BLOCK_INDICATOR + "exclude from deletion");
+		for (Table table: getTables()) {
+			if (table.excludeFromDeletion != null) {
+				out.println(CsvFile.encodeCell(table.getName()) + "; " + CsvFile.encodeCell(table.excludeFromDeletion.toString()));
 			}
 		}
 		saveFilters(out);

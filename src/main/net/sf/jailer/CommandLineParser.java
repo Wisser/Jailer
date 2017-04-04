@@ -100,7 +100,6 @@ public class CommandLineParser {
         System.out.println("  jailer print-datamodel [options] {<restriction-model>}*");
         System.out.println("    prints restricted data-model");
         System.out.println("    -c with closures ");
-        System.out.println("    -t excludes 'tabu'-tables from component-analysis");
         System.out.println();
         System.out.println("  jailer render-datamodel [options] {<restriction-model>}* ");
         System.out.println("    generates a HTML render of the restricted data-model into directory 'render'");

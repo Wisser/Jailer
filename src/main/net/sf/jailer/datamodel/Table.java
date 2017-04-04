@@ -77,6 +77,16 @@ public class Table extends ModelElement implements Comparable<Table> {
     public final boolean defaultUpsert;
     
     /**
+     * Exclude from Deletion?
+     */
+	public Boolean excludeFromDeletion;
+    
+	/**
+     * Data Model default for Exclude from Deletion.
+     */
+	public final boolean defaultExcludeFromDeletion;
+    
+    /**
      * Template for XML exports.
      */
     private String xmlTemplate = null;
@@ -90,7 +100,7 @@ public class Table extends ModelElement implements Comparable<Table> {
      * Unique number of this table.
      */
 	int ordinal;
-    
+
     /**
      * Constructor.
      * 
@@ -98,10 +108,11 @@ public class Table extends ModelElement implements Comparable<Table> {
      * @param primaryKey the names of the primary-key columns
      * @param defaultUpsert data model default for export mode
      */
-    public Table(String name, PrimaryKey primaryKey, boolean defaultUpsert) {
+    public Table(String name, PrimaryKey primaryKey, boolean defaultUpsert, boolean defaultExcludeFromDeletion) {
         this.name = name;
         this.primaryKey = primaryKey;
         this.defaultUpsert = defaultUpsert;
+        this.defaultExcludeFromDeletion = defaultExcludeFromDeletion;
     }
 
     /**
@@ -545,6 +556,10 @@ public class Table extends ModelElement implements Comparable<Table> {
 			}
 		}
 		return result;
+	}
+
+	public boolean isExcludedFromDeletion() {
+		return excludeFromDeletion == null? defaultExcludeFromDeletion : excludeFromDeletion;
 	}
 
 }

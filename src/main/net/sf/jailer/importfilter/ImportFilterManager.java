@@ -344,7 +344,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 			writeOutJobs.add(new Job() {
 				@Override
 				public void run() throws Exception {
-					Table mappingTable = new Table(schema + mapping.mappingTableName, null, false);
+					Table mappingTable = new Table(schema + mapping.mappingTableName, null, false, false);
 					Column newValueColumn = new Column(mapping.newValueColumnName, mapping.type, 0, -1);
 					Column oldValueColumn = new Column(mapping.oldValueColumnName, mapping.type, 0, -1);
 					mappingTable.setColumns(Arrays.asList(oldValueColumn, newValueColumn));
