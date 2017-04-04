@@ -305,7 +305,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
 	private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_saveButtonActionPerformed
 		String fn = UIUtil.choseFile(null, ".", "Save SQL Query", "", this,
-				false, false);
+				false, false, false);
 		if (fn != null) {
 			try {
 				PrintWriter out = new PrintWriter(new FileWriter(fn));
