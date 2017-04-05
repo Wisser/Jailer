@@ -1,3 +1,6 @@
+6.6.4
+  - Improved File Dialog.
+
 6.6.3
   - Added popup menu for changing the "exclude from deletion" attribute of a table.
 

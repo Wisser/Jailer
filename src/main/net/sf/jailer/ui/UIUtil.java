@@ -141,7 +141,7 @@ public class UIUtil {
 		fileChooser.setVisible(true);
 		String fn = fileChooser.getFile();
 		if (fn != null) {
-			File selFile = new File(fn);
+			File selFile = new File(fileChooser.getDirectory(), fn);
 			try {
 				File f = selFile;
 				String work = new File(".").getCanonicalPath();

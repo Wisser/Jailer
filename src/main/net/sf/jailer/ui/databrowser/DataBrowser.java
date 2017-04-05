@@ -91,6 +91,7 @@ import net.sf.jailer.ui.DataModelEditor;
 import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.DataModelManagerDialog;
 import net.sf.jailer.ui.DbConnectionDialog;
+import net.sf.jailer.ui.ImportDialog;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
@@ -1122,15 +1123,18 @@ public class DataBrowser extends javax.swing.JFrame {
 	                args.add("import");
 	                args.add(sqlFile);
 	                dcd.addDbArgs(args);
-	                UIUtil.runJailer(this, args, false, true, false, false, null, dcd.getPassword(), null, null, false, true, false);
-					if (desktop != null) {
-						desktop.updateMenu();
-						for (RowBrowser rb : desktop.getBrowsers()) {
-							rb.browserContentPane.session = session;
-							rb.browserContentPane.rows.clear();
-						}
-						for (RowBrowser rb : desktop.getRootBrowsers(false)) {
-							rb.browserContentPane.reloadRows();
+	                ImportDialog importDialog = new ImportDialog(this, sqlFile, args, dbConnectionDialog.getPassword(), true);
+					if (importDialog.isOk) {
+		                UIUtil.runJailer(this, args, false, true, false, false, null, dcd.getPassword(), null, null, false, true, false);
+						if (desktop != null) {
+							desktop.updateMenu();
+							for (RowBrowser rb : desktop.getBrowsers()) {
+								rb.browserContentPane.session = session;
+								rb.browserContentPane.rows.clear();
+							}
+							for (RowBrowser rb : desktop.getRootBrowsers(false)) {
+								rb.browserContentPane.reloadRows();
+							}
 						}
 					}
 	            }
