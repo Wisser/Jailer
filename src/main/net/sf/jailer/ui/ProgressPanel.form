@@ -159,7 +159,7 @@
                     <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                       <Color blue="e6" green="e6" red="e6" type="rgb"/>
                     </Property>
-                    <Property name="text" type="java.lang.String" value="                                     "/>
+                    <Property name="text" type="java.lang.String" value="                                                     "/>
                   </Properties>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">
