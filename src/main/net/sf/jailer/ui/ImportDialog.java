@@ -36,11 +36,6 @@ import net.sf.jailer.util.CancellationHandler;
  */
 public class ImportDialog extends javax.swing.JDialog {
 
-	/**
-	 * true iff ok-button was clicked.
-	 */
-	boolean isOk = false;
-
 	private final List<String> initialArgs;
 	private final String password;
 
@@ -441,6 +436,11 @@ public class ImportDialog extends javax.swing.JDialog {
 		}
 		return null;
 	}
+
+	/**
+	 * true iff ok-button was clicked.
+	 */
+	public boolean isOk = false;
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
