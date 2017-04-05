@@ -61,9 +61,12 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.modelbuilder.ModelBuilder;
+import net.sf.jailer.progress.ProgressListener;
 import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.graphical_view.LayoutStorage;
+import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
+import net.sf.jailer.ui.progress.SingleStageProgressListener;
 
 /**
  * Main frame of Extraction-Model-Editor.
@@ -1086,10 +1089,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        				"Please execute the Jailer-DDL manually (jailer_ddl.sql)\n" +
 			        				"or try another \"Working table schema\"\n\n" +
 			        				"Continue Data Export?", dbConnectionDialog.getPassword(), null, null, true, false, true)) {
-					        		ProgressTable progressTable = new ProgressTable();
-					        		ProgressPanel progressPanel = new ProgressPanel(progressTable);
+				        			ProgressTable progressTable = new ProgressTable();
+				        			ProgressTable progressTableForDelete = new ProgressTable();
+					        		ProgressPanel progressPanel = new ProgressPanel(progressTable, progressTableForDelete, exportDialog.hasDeleteScript());
 					        		boolean confirm = exportDialog.scriptFormat == ScriptFormat.INTRA_DATABASE && exportDialog.getConfirmExport();
-									UIProgressListener progressListener = new UIProgressListener(progressTable, progressPanel, extractionModelEditor.dataModel, confirm, exportDialog.getTargetSchemaSet());
+									ExportAndDeleteStageProgressListener progressListener = new ExportAndDeleteStageProgressListener(progressTable, progressTableForDelete, progressPanel, extractionModelEditor.dataModel, confirm, exportDialog.getTargetSchemaSet());
 					        		try {
 					        			UIUtil.runJailer(this, args, true, true, exportDialog.explain.isSelected(), false /* !exportDialog.explain.isSelected() */, null, dbConnectionDialog.getPassword(), progressListener, progressPanel, true, true, false);
 					        		} finally {

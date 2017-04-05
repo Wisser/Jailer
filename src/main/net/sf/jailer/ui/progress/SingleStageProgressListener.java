@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.sf.jailer.ui;
+package net.sf.jailer.ui.progress;
 
 import java.awt.Color;
 import java.util.ArrayList;
@@ -33,14 +33,16 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.ModelElement;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.progress.ProgressListener;
+import net.sf.jailer.ui.ProgressPanel;
+import net.sf.jailer.ui.ProgressTable;
 import net.sf.jailer.util.CancellationException;
 
 /**
- * Keeps progress indicators up to date.
+ * Keeps progress indicators up to date for a single {@link ProgressTable}.
  * 
  * @author Ralf Wisser
  */
-public class UIProgressListener implements ProgressListener {
+public class SingleStageProgressListener implements ProgressListener {
 
 	/**
 	 * Table showing collected rows.
@@ -76,7 +78,7 @@ public class UIProgressListener implements ProgressListener {
 	private long collectedRows = 0;
 	private String currentStep = "";
 	private boolean isErrorStage = false;
-	private boolean stopClock = false;
+	private boolean stopClock;
 	private boolean rowsPerTableIsUptodate = false;
 
 	private final DataModel dataModel;
@@ -86,6 +88,7 @@ public class UIProgressListener implements ProgressListener {
 	private final boolean confirm;
 	private long timeDelay = 0;
 	private final Set<String> targetSchemaSet;
+	private final boolean forExportStage;
 	
 	/**
 	 * Constructor.
@@ -94,11 +97,13 @@ public class UIProgressListener implements ProgressListener {
 	 *            table showing collected rows
 	 * @param targetSchemaSet 
 	 */
-	public UIProgressListener(final ProgressTable progressTable, final ProgressPanel progressPanel, DataModel dataModel, final boolean confirm, Set<String> targetSchemaSet) {
+	public SingleStageProgressListener(final ProgressTable progressTable, final ProgressPanel progressPanel, DataModel dataModel, final boolean confirm, Set<String> targetSchemaSet, boolean forExportStage) {
 		this.progressTable = progressTable;
 		this.dataModel = dataModel;
 		this.confirm = confirm;
 		this.targetSchemaSet = targetSchemaSet;
+		this.forExportStage = forExportStage;
+		this.stopClock = !forExportStage;
 		new Thread(new Runnable() {
 
 			@Override
@@ -112,7 +117,7 @@ public class UIProgressListener implements ProgressListener {
 						e.printStackTrace();
 					}
 					boolean update = false, timeForUpdate = true;
-					synchronized (UIProgressListener.this) {
+					synchronized (SingleStageProgressListener.this) {
 						update = today >= 0 && (lastUpdated != today || !lastRowIsUptodate);
 						if (nextUpdateTS[0] != 0 && System.currentTimeMillis() < nextUpdateTS[0]) {
 							timeForUpdate = false;
@@ -124,7 +129,7 @@ public class UIProgressListener implements ProgressListener {
 								nextUpdateTS, fUpdate);
 					}
 				}
-				synchronized (UIProgressListener.this) {
+				synchronized (SingleStageProgressListener.this) {
 					lastRowIsUptodate = false;
 				}
 				updateRowTable(progressTable, progressPanel, startTime, new long[] { 0 }, true);
@@ -139,27 +144,35 @@ public class UIProgressListener implements ProgressListener {
 						if (fUpdate) {
 							addOrUpdateRows();
 						}
-						synchronized (UIProgressListener.this) {
-							progressTable.setTotalNumberOfCollectedRows(collectedRows);
-							progressPanel.collectedRowsLabel.setText("" + collectedRows);
-							progressPanel.exportedRowsLabel.setText("" + exportedRows);
-							progressPanel.stepLabel.setText(currentStep);
-							if (isErrorStage) {
-								progressPanel.stepLabel.setForeground(Color.RED);
-							}
+						synchronized (SingleStageProgressListener.this) {
 							if (!rowsPerTableIsUptodate) {
-								progressPanel.updateRowsPerTable(rowsPerTable);
+								if (SingleStageProgressListener.this.forExportStage) {
+									progressPanel.updateRowsPerTable(rowsPerTable);
+								} else {
+									progressPanel.updateRowsReductionPerTable(rowsPerTable);
+								}
 								rowsPerTableIsUptodate = true;
 							}
-							long t = System.currentTimeMillis();
-							if (!stopClock) {
-								long et = (t - startTime - timeDelay)/1000;
-								long sec = et % 60;
-								long min = (et / 60) % 60;
-								long h = et / 3600;
-								progressPanel.elapsedTimeLabel.setText((h<10? "0" : "") + h + ":" + (min<10? "0" : "") + min + ":" + (sec<10? "0" : "") + sec);
+							if (SingleStageProgressListener.this.forExportStage) {
+								progressTable.setTotalNumberOfCollectedRows(collectedRows);
+								progressPanel.collectedRowsLabel.setText("" + collectedRows);
+								progressPanel.exportedRowsLabel.setText("" + exportedRows);
+								progressPanel.stepLabel.setText(currentStep);
+								if (isErrorStage) {
+									progressPanel.stepLabel.setForeground(Color.RED);
+								}
+								long t = System.currentTimeMillis();
+								if (!stopClock) {
+									long et = (t - startTime - timeDelay)/1000;
+									long sec = et % 60;
+									long min = (et / 60) % 60;
+									long h = et / 3600;
+									progressPanel.elapsedTimeLabel.setText((h<10? "0" : "") + h + ":" + (min<10? "0" : "") + min + ":" + (sec<10? "0" : "") + sec);
+								}
+								nextUpdateTS[0] = t + 500;
+							} else {
+								progressPanel.deletedRowsLabel.setText("" + exportedRows);
 							}
-							nextUpdateTS[0] = t + 500;
 						}
 					}
 				});
@@ -362,7 +375,7 @@ public class UIProgressListener implements ProgressListener {
 			SwingUtilities.invokeLater(new Runnable() {
 				@Override
 				public void run() {
-					synchronized (UIProgressListener.class) {
+					synchronized (SingleStageProgressListener.class) {
 						lastRowIsUptodate = false;
 						readjustColumnWidth = true;
 					}

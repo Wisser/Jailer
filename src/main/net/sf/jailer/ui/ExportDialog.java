@@ -1923,6 +1923,10 @@ public class ExportDialog extends javax.swing.JDialog {
     	return TemporaryTableScope.GLOBAL;
     }
 
+    public boolean hasDeleteScript() {
+    	return delete.isVisible() && delete.getText().trim().length() > 0;
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel additSubsLabel;
     private javax.swing.JLabel additSubsLabelTitel;

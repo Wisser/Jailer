@@ -165,7 +165,7 @@ public class ProgressTable extends JTable {
 						fontIsSet = true;
 					}
 					if (cellInfo.numberOfRows < 0) {
-						numberRender.setText("?");
+						numberRender.setText(" ");
 						tableRender.setForeground(cellInfo.inProgress? INPROGRESS_FG : SELECTED_FG);
 						numberRender.setForeground(cellInfo.inProgress? INPROGRESS_FG : SELECTED_FG);
 					} else if (cellInfo.numberOfRows == 0) {
