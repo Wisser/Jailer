@@ -73,7 +73,7 @@ public class ProgressPanel extends javax.swing.JPanel {
     	for (Entry<String, Long> e: rowsReductionPerTable.entrySet()) {
     		JLabel label = reductionLabels.get(e.getKey());
     		if (label != null) {
-    			label.setText("-" + e.getValue() + " ");
+    			label.setText(" (-" + e.getValue() + ") ");
     		}
     	}
     }
@@ -327,7 +327,7 @@ public class ProgressPanel extends javax.swing.JPanel {
         jPanel2.add(jPanel5, gridBagConstraints);
 
         jLabel1.setForeground(new java.awt.Color(230, 230, 230));
-        jLabel1.setText("                                     ");
+        jLabel1.setText("                                                     ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 11;
