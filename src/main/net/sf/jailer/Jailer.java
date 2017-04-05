@@ -112,7 +112,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "6.6.4";
+	public static final String VERSION = "6.7";
 	
 	/**
 	 * The Jailer application name.
@@ -1615,7 +1615,8 @@ public class Jailer {
 			entityGraph.delete();
 			
 			if (deleteScriptFileName != null) {
-				ProgressListenerRegistry.getProgressListener().newStage("deletion-check", false, false);
+				ProgressListenerRegistry.getProgressListener().newStage("delete", false, false);
+				ProgressListenerRegistry.getProgressListener().newStage("delete-reduction", false, false);
 				jailer.setEntityGraph(exportedEntities);
 				jailer.deleteEntities(subjects, totalProgress, session);
 				ProgressListenerRegistry.getProgressListener().newStage("writing delete-script", false, false);
@@ -1732,9 +1733,19 @@ public class Jailer {
 			}
 		}
 
+		int today = 1;
+		ProgressListenerRegistry.getProgressListener().prepareExport();
+
+		// remove tabu entities
+		for (Table tabuTable: tabuTables) {
+			ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today, tabuTable);
+		}
+				
 		// remove tabu entities
 		for (Table tabuTable : tabuTables) {
+			ProgressListenerRegistry.getProgressListener().collectionJobStarted(today, tabuTable);
 			long rc = entityGraph.deleteEntities(tabuTable);
+			ProgressListenerRegistry.getProgressListener().collected(today, tabuTable, rc);
 			_log.info("excluded " + rc + " entities from " + datamodel.getDisplayName(tabuTable) + " (tabu)");
 			allTables.remove(tabuTable);
 		}
@@ -1747,8 +1758,11 @@ public class Jailer {
 		tablesToCheck.removeAll(dontCheckInitially);
 
 		boolean firstStep = true;
+		final Set<Table> roots = new HashSet<Table>();
+		final Map<Association, Long> rootAssocs = new HashMap<Association, Long>();
 		// remove associated entities
 		while (!tablesToCheck.isEmpty()) {
+			++today;
 			_log.info("tables to check: " + PrintUtil.tableSetAsString(tablesToCheck, null));
 			List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 			final Set<Table> tablesToCheckNextTime = new HashSet<Table>();
@@ -1763,9 +1777,22 @@ public class Jailer {
 							continue;
 						}
 						final boolean isFirstStep = firstStep;
+						final int finalToday = today;
+						if (!isFirstStep) {
+							ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today, a.reversalAssociation);
+						}
 						jobs.add(new JobManager.Job() {
 							public void run() throws Exception {
+								if (!isFirstStep) {
+									ProgressListenerRegistry.getProgressListener().collectionJobStarted(finalToday, a.reversalAssociation);
+								}
 								long rc = entityGraph.removeAssociatedDestinations(a.reversalAssociation, !isFirstStep);
+								if (!isFirstStep) {
+									ProgressListenerRegistry.getProgressListener().collected(finalToday, a.reversalAssociation, rc);
+								} else if (rc > 0) {
+									roots.add(a.destination);
+									rootAssocs.put(a, rc);
+								}
 								if (rc > 0) {
 									synchronized (removedEntities) {
 										Long oldRc = removedEntities.get(table);
@@ -1782,6 +1809,19 @@ public class Jailer {
 				}
 			}
 			jobManager.executeJobs(jobs);
+			if (firstStep) {
+				for (Table table: roots) {
+					if (!tabuTables.contains(table)) {
+						ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today - 1, table);
+					}
+				}
+				for (Entry<Association, Long> e: rootAssocs.entrySet()) {
+					ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today, e.getKey().reversalAssociation);
+					ProgressListenerRegistry.getProgressListener().collectionJobStarted(today, e.getKey().reversalAssociation);
+					ProgressListenerRegistry.getProgressListener().collected(today, e.getKey().reversalAssociation, e.getValue());
+									
+				}
+			}
 			tablesToCheck = tablesToCheckNextTime;
 			tablesToCheck.retainAll(allTables);
 			firstStep = false;
