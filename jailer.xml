@@ -198,9 +198,11 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 				</bean>
 			</property>
 			<property name="emptyCLOBValue" value="clob('')" />
+			<property name="emptyNCLOBValue" value="nclob('')" />
 			<property name="emptyBLOBValue" value="blob('')" />
 			<property name="toBlob" value="blob('%s')" />
 			<property name="toClob" value="clob('%s')" />
+			<property name="toNClob" value="nclob('%s')" />
 			<property name="embeddedLobSizeLimit" value="32000" />
 			<property name="sessionTemporaryTableManager">
 				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
@@ -253,9 +255,11 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 				</bean>
 			</property>
 			<property name="emptyCLOBValue" value="clob('')" />
+			<property name="emptyNCLOBValue" value="nclob('')" />
 			<property name="emptyBLOBValue" value="blob('')" />
 			<property name="toBlob" value="blob('%s')" />
 			<property name="toClob" value="clob('%s')" />
+			<property name="toNClob" value="nclob('%s')" />
 			<property name="embeddedLobSizeLimit" value="32000" />
 			<property name="sessionTemporaryTableManager">
 				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
@@ -303,9 +307,11 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
                </map>
             </property>
 			<property name="emptyCLOBValue" value="empty_clob()" />
+			<property name="emptyNCLOBValue" value="empty_clob()" />
 			<property name="emptyBLOBValue" value="empty_blob()" />
 			<property name="toBlob" value="to_blob(hextoraw('%s'))" />
 			<property name="toClob" value="to_clob('%s')" />
+			<property name="toNClob" value="to_nclob('%s')" />
 			<property name="embeddedLobSizeLimit" value="3980" />
 			<property name="binaryPattern" value="hextoraw('%s')" />
 			<property name="useToTimestampFunction" value="true" />
@@ -455,9 +461,11 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 				</bean>
 			</property>
 			<property name="emptyCLOBValue" value="''" />
+			<property name="emptyNCLOBValue" value="N''" />
 			<property name="emptyBLOBValue" value="0x" />
 			<property name="toBlob" value="0x%s" />
 			<property name="toClob" value="'%s'" />
+			<property name="toNClob" value="N'%s'" />
 			<property name="embeddedLobSizeLimit" value="32000" />
 			<property name="stringLiteralEscapeSequences">
                 <map>
@@ -524,9 +532,11 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 				</bean>
 			</property>
 			<property name="emptyCLOBValue" value="''" />
+			<property name="emptyNCLOBValue" value="''" />
 			<property name="emptyBLOBValue" value="BINARY ''" />
 			<property name="toBlob" value="0x%s" />
 			<property name="toClob" value="'%s'" />
+			<property name="toNClob" value="'%s'" />
 			<property name="embeddedLobSizeLimit" value="32000" />
 			<property name="stringLiteralEscapeSequences">
 				<map>

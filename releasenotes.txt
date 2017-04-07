@@ -1,3 +1,7 @@
+6.7.2
+  - Added support for NCLOB data type.
+  - Improved graph layout optimisation in progress panel.
+
 6.7
   - Visualisation of progress of delete-reduction.
   - Improved File Dialog.

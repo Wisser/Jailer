@@ -115,9 +115,11 @@ public class Configuration {
 	public boolean useToTimestampFunction = false;
 	public DateFormat timestampFormat = null;
 	public String emptyCLOBValue = null;
+	public String emptyNCLOBValue = null;
 	public String emptyBLOBValue = null;
 	public String toBlob;
 	public String toClob;
+	public String toNClob;
 	public int embeddedLobSizeLimit = 3980;
 	public String binaryPattern = "x'%s'";
 	public boolean avoidLeftJoin = false;
@@ -804,6 +806,34 @@ public class Configuration {
 
 	public static int getColumnsPerIFMTable() {
 		return columnsPerIFMTable;
+	}
+
+	/**
+	 * @return the emptyNCLOBValue
+	 */
+	public String getEmptyNCLOBValue() {
+		return emptyNCLOBValue;
+	}
+
+	/**
+	 * @param emptyNCLOBValue the emptyNCLOBValue to set
+	 */
+	public void setEmptyNCLOBValue(String emptyNCLOBValue) {
+		this.emptyNCLOBValue = emptyNCLOBValue;
+	}
+
+	/**
+	 * @return the toNClob
+	 */
+	public String getToNClob() {
+		return toNClob;
+	}
+
+	/**
+	 * @param toNClob the toNClob to set
+	 */
+	public void setToNClob(String toNClob) {
+		this.toNClob = toNClob;
 	}
 
 }

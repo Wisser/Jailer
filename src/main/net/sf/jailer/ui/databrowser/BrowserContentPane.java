@@ -2507,7 +2507,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						};
 					} else {
 						int type = SqlUtil.getColumnType(resultSet, getMetaData(resultSet), i, typeCache);
-						if (type == Types.BLOB || type == Types.CLOB || type == Types.SQLXML) {
+						if (type == Types.BLOB || type == Types.CLOB || type == Types.NCLOB || type == Types.SQLXML) {
 							Object object = resultSet.getObject(i);
 							if (object == null || resultSet.wasNull()) {
 								value = null;

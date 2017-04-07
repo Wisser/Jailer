@@ -210,7 +210,7 @@ public class XmlRowWriter {
 						typeCachesForStringKey.put(table, typeCache);
 					}
 					type = SqlUtil.getColumnType(resultSet, resultSetMetaData, columnName, typeCache);
-					if ((type == Types.BLOB || type == Types.CLOB) && session.dbms != DBMS.SQLITE) {
+					if ((type == Types.BLOB || type == Types.CLOB|| type == Types.NCLOB) && session.dbms != DBMS.SQLITE) {
 						Object object = resultSet.getObject(columnName);
 						if (returnNull && (object == null || resultSet.wasNull())) {
 							return null;

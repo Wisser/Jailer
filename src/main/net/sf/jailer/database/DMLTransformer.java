@@ -267,7 +267,7 @@ public class DMLTransformer extends AbstractResultSetReader {
                 String mdColumnLabel = quoting.quote(getMetaData(resultSet).getColumnLabel(i));
                 int mdColumnType = getMetaData(resultSet).getColumnType(i);
                 
-                if ((mdColumnType == Types.BLOB || mdColumnType == Types.CLOB || mdColumnType == Types.SQLXML) && targetDBMSConfiguration.dbms != DBMS.SQLITE) {
+                if ((mdColumnType == Types.BLOB || mdColumnType == Types.CLOB || mdColumnType == Types.NCLOB || mdColumnType == Types.SQLXML) && targetDBMSConfiguration.dbms != DBMS.SQLITE) {
                 	tableHasLobs = true;
                 	isLobColumn[i] = true;
                 	lobColumnIndexes.add(i);
@@ -276,7 +276,7 @@ public class DMLTransformer extends AbstractResultSetReader {
                 		emptyLobValue[i] = null;
                 	} else {
                 		Configuration c = targetDBMSConfiguration;
-                		emptyLobValue[i] = (mdColumnType == Types.BLOB)? c.emptyBLOBValue : c.emptyCLOBValue;
+                		emptyLobValue[i] = mdColumnType == Types.BLOB? c.emptyBLOBValue : mdColumnType == Types.CLOB? c.emptyCLOBValue : c.emptyNCLOBValue;
                 	}
                     if (emptyLobValue[i] == null) {
                     	continue;
