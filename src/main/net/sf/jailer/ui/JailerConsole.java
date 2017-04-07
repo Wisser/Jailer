@@ -224,7 +224,7 @@ public class JailerConsole {
         	gridBagConstraints29.anchor = GridBagConstraints.EAST;
             gridBagConstraints29.gridx = 5;
             gridBagConstraints29.gridy = 1;
-            gridBagConstraints29.weightx = 1.0;
+            gridBagConstraints29.weightx = 0.0;
             gridBagConstraints29.insets = new Insets(0, 4, 2, 2);
             GridBagConstraints gridBagConstraints28 = new GridBagConstraints();
             gridBagConstraints28.anchor = GridBagConstraints.WEST;
@@ -246,7 +246,7 @@ public class JailerConsole {
             gridBagConstraints.weightx = 1.0;
             gridBagConstraints.weighty = 1.0;
             gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridwidth = 5;
+            gridBagConstraints.gridwidth = 6;
             jPanel = new JPanel();
             jPanel.setLayout(new GridBagLayout());
             jPanel.add(getJScrollPane(), gridBagConstraints);
