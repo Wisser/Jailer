@@ -26,10 +26,14 @@ import java.awt.event.ActionListener;
 
 import javax.swing.JButton;
 import javax.swing.JDialog;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
+
+import net.sf.jailer.progress.ProgressListenerRegistry;
+import net.sf.jailer.util.CancellationHandler;
 
 /**
  * Jailer console window.
@@ -90,8 +94,8 @@ public class JailerConsole {
             gridBagConstraints.weightx = 1.0;
             gridBagConstraints.weighty = 1.0;
             gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridwidth = 5;
-            gridBagConstraints.insets = new Insets(0, 0, 4, 0);
+            gridBagConstraints.gridwidth = 6;
+            gridBagConstraints.insets = new Insets(0, 0, 0, 0);
         	jPanel.add(contentPane, gridBagConstraints);
         } 
         if (fullSize) {
@@ -133,6 +137,33 @@ public class JailerConsole {
             }
         });
 		UIUtil.fit(this.dialog);
+
+		getCancelButton().addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				if (hasFinished) {
+					dialog.setVisible(false);
+					return;
+				}
+				if (JOptionPane.showConfirmDialog(dialog,
+						"Cancel operation?", "Cancellation",
+						JOptionPane.YES_NO_OPTION,
+						JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+					if (!hasFinished) {
+						hasCancelled = true;
+						new Thread(new Runnable() {
+							@Override
+							public void run() {
+								CancellationHandler.cancel(null);
+							}
+						}).start();
+						dialog.setTitle("Jailer Console - cancelled");
+						ProgressListenerRegistry.getProgressListener().newStage("cancelled", true, true);
+						getCancelButton().setEnabled(false);
+					}
+				}
+			}
+		});
     }
 
     /**
@@ -176,7 +207,10 @@ public class JailerConsole {
     public void finish(boolean ok) {
     	getLoadSqlLog().setEnabled(true);
     	getLoadExplainLog().setEnabled(true);
+    	getCancelButton().setText("Close");
+    	getCancelButton().setEnabled(true);
     	dialog.setTitle("Jailer Console - " + (ok? "finished" : "failed!"));
+    	hasFinished = true;
     }
     
     /**
@@ -186,15 +220,21 @@ public class JailerConsole {
      */
     private JPanel getJPanel() {
         if (jPanel == null) {
+        	GridBagConstraints gridBagConstraints29 = new GridBagConstraints();
+        	gridBagConstraints29.anchor = GridBagConstraints.EAST;
+            gridBagConstraints29.gridx = 5;
+            gridBagConstraints29.gridy = 1;
+            gridBagConstraints29.weightx = 1.0;
+            gridBagConstraints29.insets = new Insets(0, 4, 2, 2);
             GridBagConstraints gridBagConstraints28 = new GridBagConstraints();
             gridBagConstraints28.anchor = GridBagConstraints.WEST;
             gridBagConstraints28.gridx = 4;
             gridBagConstraints28.gridy = 1;
-            gridBagConstraints28.insets = new Insets(0, 4, 0, 0);
+            gridBagConstraints28.insets = new Insets(0, 4, 2, 0);
             GridBagConstraints gridBagConstraints2 = new GridBagConstraints();
             gridBagConstraints2.gridx = 3;
             gridBagConstraints2.gridy = 1;
-            gridBagConstraints2.insets = new Insets(0, 4, 0, 0);
+            gridBagConstraints2.insets = new Insets(0, 4, 2, 0);
             GridBagConstraints gridBagConstraints1 = new GridBagConstraints();
             gridBagConstraints1.gridx = 1;
             gridBagConstraints1.weightx = 1.0;
@@ -213,6 +253,7 @@ public class JailerConsole {
             jPanel.add(getLoadExportLog(), gridBagConstraints1);
             jPanel.add(getLoadSqlLog(), gridBagConstraints2);
             jPanel.add(getLoadExplainLog(), gridBagConstraints28);
+            jPanel.add(getCancelButton(), gridBagConstraints29);
         }
         return jPanel;
     }
@@ -269,11 +310,27 @@ public class JailerConsole {
         return loadExplainLog;
     }
     
+    /**
+     * This method initializes loadExplainLog	
+     * 	
+     * @return javax.swing.JButton	
+     */
+    private JButton getCancelButton() {
+        if (cancelButton == null) {
+        	cancelButton = new JButton();
+        	cancelButton.setText("Cancel");
+        }
+        return cancelButton;
+    }
+    
     private JTextArea jTextArea = null;
     private JPanel jPanel = null;
     private JScrollPane jScrollPane = null;
     private JButton loadExportLog = null;
     private JButton loadSqlLog = null;
     private JButton loadExplainLog = null;
+    private JButton cancelButton = null;
+    public boolean hasCancelled = false;
+    boolean hasFinished = false;
 
 }  //  @jve:decl-index=0:visual-constraint="10,10"

@@ -410,19 +410,21 @@ public class UIUtil {
 								"Cancel operation?", "Cancellation",
 								JOptionPane.YES_NO_OPTION,
 								JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-							new Thread(new Runnable() {
-								@Override
-								public void run() {
-									CancellationHandler.cancel(null);
+							if (!outputView.hasFinished) {
+								new Thread(new Runnable() {
+									@Override
+									public void run() {
+										CancellationHandler.cancel(null);
+									}
+								}).start();
+								outputView.dialog
+										.setTitle("Jailer Console - cancelling...");
+								if (progressListener != null) {
+									progressListener.newStage("cancelling", true,
+											true);
 								}
-							}).start();
-							outputView.dialog
-									.setTitle("Jailer Console - cancelling...");
-							if (progressListener != null) {
-								progressListener.newStage("cancelling", true,
-										true);
+								cancelled = true;
 							}
-							cancelled = true;
 						}
 					}
 				}
@@ -472,6 +474,7 @@ public class UIUtil {
 										.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 								if (progressListener != null) {
 									progressListener.newStage(
+											outputView.hasCancelled? "cancelled" :
 											exp[0] == null ? "finished"
 													: "failed", exp[0] != null,
 											true);
@@ -481,7 +484,9 @@ public class UIUtil {
 										|| (closeOutputWindow && result[0]
 												&& exp[0] == null && warnings
 												.length() == 0)) {
-									outputView.dialog.setVisible(false);
+									if (!outputView.hasCancelled) {
+										outputView.dialog.setVisible(false);
+									}
 								} else {
 									outputView.finish(result[0]
 											&& exp[0] == null);
