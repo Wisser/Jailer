@@ -19,10 +19,10 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.nio.charset.Charset;
 import java.sql.SQLException;
@@ -38,11 +38,11 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.ZipInputStream;
 
+import org.apache.log4j.Logger;
+
 import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.SqlException;
-
-import org.apache.log4j.Logger;
 
 /**
  * Reads in and executes SQL-scripts.
@@ -452,7 +452,7 @@ public class SqlScriptExecutor {
 		final String where = clobLocator.substring(c2 + 1).trim();
 		String line;
 		final File lobFile = CommandLineParser.getInstance().newFile("lob." + System.currentTimeMillis());
-		Writer out = new FileWriter(lobFile);
+		Writer out = new OutputStreamWriter(new FileOutputStream(lobFile), "UTF-8");
 		long length = 0;
 		while ((line = lineReader.readLine()) != null) {
 			if (line.startsWith(UNFINISHED_MULTILINE_COMMENT)) {
@@ -506,7 +506,7 @@ public class SqlScriptExecutor {
 		final String where = xmlLocator.substring(c2 + 1).trim();
 		String line;
 		final File lobFile = CommandLineParser.getInstance().newFile("lob." + System.currentTimeMillis());
-		Writer out = new FileWriter(lobFile);
+		Writer out = new OutputStreamWriter(new FileOutputStream(lobFile), "UTF-8");
 		long length = 0;
 		while ((line = lineReader.readLine()) != null) {
 		    // line = line.trim();

@@ -679,7 +679,7 @@ public class Session {
         try {
 	        statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
 	        CancellationHandler.begin(statement, null);
-	        InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile));
+	        InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile), "UTF-8");
 			statement.setCharacterStream(1, inputStreamReader, (int) length);
 	        statement.execute();
 	        statement.close();
@@ -701,7 +701,7 @@ public class Session {
         try {
 	        statement = connectionFactory.getConnection().prepareStatement(sqlUpdate);
 	        CancellationHandler.begin(statement, null);
-	        InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile));
+	        InputStreamReader inputStreamReader = new InputStreamReader(new FileInputStream(lobFile), "UTF-8");
 			statement.setCharacterStream(1, inputStreamReader, (int) length);
 	        statement.execute();
 	        statement.close();

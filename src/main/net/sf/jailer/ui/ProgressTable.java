@@ -46,6 +46,8 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import org.apache.log4j.Logger;
+
 /**
  * Table showing collection progress.
  * 
@@ -522,7 +524,7 @@ public class ProgressTable extends JTable {
 			}
 			row = newRow;
 		} else {
-			int cd = 50000;
+			int cd = 120000;
 			if (row.size() > 0) {
 				cd = cd * 50 / row.size();
 			}
@@ -537,6 +539,9 @@ public class ProgressTable extends JTable {
 			List<CellInfo> bestRow;
 			double fitness = fitness(row, maxParentRow);
 			bestRow = new ArrayList<CellInfo>(row);
+			
+			long startTime = System.currentTimeMillis();
+			
 			do {
 				for (int a = row.size() - 1; a >= 0; --a) {
 					for (int b = a - 1; b >= 0; --b) {
@@ -555,6 +560,12 @@ public class ProgressTable extends JTable {
 						if (cd < 0) {
 							break;
 						}
+						if (cd % 100 == 0) {
+							if (System.currentTimeMillis() - startTime > 500) {
+								cd = -1;
+								break;
+							}
+						}
 					}
 					if (cd < 0) {
 						break;
@@ -564,7 +575,7 @@ public class ProgressTable extends JTable {
 					row = bestRow;
 				}
 			} while (bestRow != null && cd > 0);
-	
+			
 			lastBestRow = new ArrayList<CellInfo>(row);
 		}
 

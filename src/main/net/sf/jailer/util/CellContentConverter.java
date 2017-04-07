@@ -21,6 +21,7 @@ import java.io.Reader;
 import java.lang.reflect.Method;
 import java.sql.Blob;
 import java.sql.Clob;
+import java.sql.NClob;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
@@ -379,7 +380,13 @@ public class CellContentConverter {
 			
 			if (lob instanceof Clob) {
 				Clob clob = (Clob) lob;
-				if (targetConfiguration.getToClob() == null || clob.length() > targetConfiguration.embeddedLobSizeLimit) {
+				String toClob;
+				if (lob instanceof NClob) {
+					toClob = targetConfiguration.getToNClob();
+				} else {
+					toClob = targetConfiguration.getToClob();
+				}
+				if (toClob == null || clob.length() > targetConfiguration.embeddedLobSizeLimit) {
 					return null;
 				}
 				Reader in = clob.getCharacterStream();
@@ -389,10 +396,16 @@ public class CellContentConverter {
 					line.append((char) c);
 				}
 				in.close();
-				if (line.length() == 0 && targetConfiguration.emptyCLOBValue != null) {
-					return targetConfiguration.emptyCLOBValue;
+				if (lob instanceof NClob) {
+					if (line.length() == 0 && targetConfiguration.emptyNCLOBValue != null) {
+						return targetConfiguration.emptyNCLOBValue;
+					}
+				} else {
+					if (line.length() == 0 && targetConfiguration.emptyCLOBValue != null) {
+						return targetConfiguration.emptyCLOBValue;
+					}
 				}
-				return targetConfiguration.getToClob().replace("%s",targetConfiguration.convertToStringLiteral(line.toString()));
+				return toClob.replace("%s",targetConfiguration.convertToStringLiteral(line.toString()));
 			}
 	        if (lob instanceof Blob) {
 				Blob blob = (Blob) lob;
