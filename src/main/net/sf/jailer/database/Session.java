@@ -366,14 +366,16 @@ public class Session {
                 	} else {
                         connection.set(con);
                         boolean addCon = true;
-                        for (Connection c: connections) {
-                        	if (c == con) {
-                        		addCon = false;
-                        		break;
-                        	}
-                        }
-                        if (addCon) {
-                        	connections.add(con);
+                        synchronized (connections) {
+	                        for (Connection c: connections) {
+	                        	if (c == con) {
+	                        		addCon = false;
+	                        		break;
+	                        	}
+	                        }
+	                        if (addCon) {
+	                        	connections.add(con);
+	                        }
                         }
                 	}
                 }
