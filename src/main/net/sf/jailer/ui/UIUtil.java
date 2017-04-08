@@ -135,7 +135,9 @@ public class UIUtil {
 		if (selectedFile != null) {
 			fileChooser.setFile(selectedFile.getName());
 		} else if (extension != null && extension.length() > 0) {
-			fileChooser.setFile("*" + extension + (allowZip? ";*" + extension + ".zip;" + extension + ".gz;" : ""));
+			if (System.getProperty("os.name", "").toLowerCase().startsWith("windows")) {
+				fileChooser.setFile("*" + extension + (allowZip? ";*" + extension + ".zip;" + extension + ".gz;" : ""));
+			}
 		}
 		fileChooser.setMode(forLoad ? FileDialog.LOAD : FileDialog.SAVE);
 		fileChooser.setVisible(true);

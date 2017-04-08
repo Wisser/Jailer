@@ -245,7 +245,7 @@ public class ExportDialog extends javax.swing.JDialog {
     	}
     	
         if (threads.getText().length() == 0) {
-        	threads.setText("16");
+        	threads.setText("8");
         }
         if (rowsPerThread.getText().length() == 0) {
         	rowsPerThread.setText("50");
@@ -1635,7 +1635,7 @@ public class ExportDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_selectInsertFileMouseClicked
 
     private void selectDeleteFileMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_selectDeleteFileMouseClicked
-    	String fn = UIUtil.choseFile(null, ".", "SQL Delete Script", ".sql", ExportDialog.this, true, true);
+    	String fn = UIUtil.choseFile(null, ".", "SQL Delete Script", ".sql", ExportDialog.this, true, false);
         if (fn != null) {
             delete.setText(fn);
         }
