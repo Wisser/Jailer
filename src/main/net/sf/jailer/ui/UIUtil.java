@@ -36,6 +36,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
@@ -139,6 +140,17 @@ public class UIUtil {
 				fileChooser.setFile("*" + extension + (allowZip? ";*" + extension + ".zip;" + extension + ".gz;" : ""));
 			}
 		}
+		FilenameFilter filter = new FilenameFilter() {
+			@Override
+			public boolean accept(File dir, String name) {
+				return name.toLowerCase().endsWith(extension)
+						|| allowZip && name.toLowerCase()
+								.endsWith(extension + ".gz")
+						|| allowZip && name.toLowerCase()
+								.endsWith(extension + ".zip");
+			}
+		};
+		fileChooser.setFilenameFilter(filter);
 		fileChooser.setMode(forLoad ? FileDialog.LOAD : FileDialog.SAVE);
 		fileChooser.setVisible(true);
 		String fn = fileChooser.getFile();
