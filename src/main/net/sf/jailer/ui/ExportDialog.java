@@ -245,7 +245,7 @@ public class ExportDialog extends javax.swing.JDialog {
     	}
     	
         if (threads.getText().length() == 0) {
-        	threads.setText("10");
+        	threads.setText("16");
         }
         if (rowsPerThread.getText().length() == 0) {
         	rowsPerThread.setText("50");
