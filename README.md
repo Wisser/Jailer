@@ -9,10 +9,10 @@ DbUnit datasets, hierarchically structured XML, and topologically sorted SQL-DML
 ## Features
 
  - Exports consistent and referentially intact row-sets from your productive database
-      and imports the data into your development and test environment.
+   and imports the data into your development and test environment.
  - Improves database performance by removing and archiving obsolete data without violating integrity.
  - Generates hierarchically structured XML, topologically sorted SQL-DML and DbUnit datasets.
-	 - Data Browsing. Navigate bidirectionally through the database by following foreign-key-based or user-defined relationships.
+ - Data Browsing. Navigate bidirectionally through the database by following foreign-key-based or user-defined relationships.
  - Open Source. Entirely written in Java. Platform independent. DBMS agnostic.
 
 ## News
