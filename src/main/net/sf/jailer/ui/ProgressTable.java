@@ -46,8 +46,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import org.apache.log4j.Logger;
-
 /**
  * Table showing collection progress.
  * 
