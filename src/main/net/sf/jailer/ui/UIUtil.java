@@ -44,7 +44,6 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -363,24 +362,18 @@ public class UIUtil {
 						synchronized (buffer) {
 							ready[0] = false;
 						}
-						try {
-							SwingUtilities.invokeAndWait(new Runnable() {
-								public void run() {
-									synchronized (buffer) {
-										if (buffer.length() > 0) {
-											outputView.appendText(buffer
-													.toString());
-											buffer.setLength(0);
-										}
+						SwingUtilities.invokeLater(new Runnable() {
+							public void run() {
+								synchronized (buffer) {
+									if (buffer.length() > 0) {
+										outputView.appendText(buffer
+												.toString());
+										buffer.setLength(0);
 									}
-									ready[0] = true;
 								}
-							});
-						} catch (InterruptedException e) {
-							e.printStackTrace();
-						} catch (InvocationTargetException e) {
-							e.printStackTrace();
-						}
+								ready[0] = true;
+							}
+						});
 					}
 				}
 			}

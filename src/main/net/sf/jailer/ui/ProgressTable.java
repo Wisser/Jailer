@@ -522,7 +522,24 @@ public class ProgressTable extends JTable {
 			}
 			row = newRow;
 		} else {
+			int numUnknown = 0;
+			int all = 0;
+			for (CellInfo ci: row) {
+				if (ci != null) {
+					++all;
+					if (ci.numberOfRows < 0) {
+						++numUnknown;
+					}
+				}
+			}
+			
 			int cd = 120000;
+			int reducedTimeQuot = 1;
+			if (numUnknown > 0.7 * all) {
+				reducedTimeQuot = 10;
+				cd /= reducedTimeQuot;
+			}
+			
 			if (row.size() > 0) {
 				cd = cd * 50 / row.size();
 			}
@@ -559,7 +576,7 @@ public class ProgressTable extends JTable {
 							break;
 						}
 						if (cd % 100 == 0) {
-							if (System.currentTimeMillis() - startTime > 500) {
+							if (System.currentTimeMillis() - startTime > (500 / reducedTimeQuot)) {
 								cd = -1;
 								break;
 							}
@@ -573,7 +590,7 @@ public class ProgressTable extends JTable {
 					row = bestRow;
 				}
 			} while (bestRow != null && cd > 0);
-			
+		
 			lastBestRow = new ArrayList<CellInfo>(row);
 		}
 
@@ -720,6 +737,7 @@ public class ProgressTable extends JTable {
 		if (getRowCount() == 0) {
 			return;
 		}
+		
 		DefaultTableColumnModel colModel = (DefaultTableColumnModel) getColumnModel();
 		for (int vColIndex = 1; vColIndex < colModel.getColumnCount(); ++vColIndex) {
 			TableColumn col = colModel.getColumn(vColIndex);
