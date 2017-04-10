@@ -1367,9 +1367,6 @@ public class DataBrowser extends javax.swing.JFrame {
 		// turn off logging for prefuse library
 		try {
 			Logger.getLogger("prefuse").setLevel(Level.OFF);
-
-			// trigger log4j initialization
-			new Jailer(1);
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
@@ -2065,17 +2062,5 @@ public class DataBrowser extends javax.swing.JFrame {
 //	public static void disableWheelScrollingWithCntrl(Component component) {
 //		componentsWithDisabledWheelScrollingWithCntrl.put(component, (Void) null);
 //	}
-
-	// initialize log4j
-	static {
-		InputStream in = Jailer.class.getResourceAsStream("/net/sf/jailer/resource/log4j.properties");
-		Properties p = new Properties();
-		try {
-			p.load(in);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		PropertyConfigurator.configure(p);
-	}
 
 }

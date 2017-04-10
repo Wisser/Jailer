@@ -61,12 +61,10 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.modelbuilder.ModelBuilder;
-import net.sf.jailer.progress.ProgressListener;
 import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.graphical_view.LayoutStorage;
 import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
-import net.sf.jailer.ui.progress.SingleStageProgressListener;
 
 /**
  * Main frame of Extraction-Model-Editor.
@@ -1609,9 +1607,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         // turn off logging for prefuse library
     	try {
 			Logger.getLogger("prefuse").setLevel(Level.OFF);
-			
-			// trigger log4j initialization
-			new Jailer(1);
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}

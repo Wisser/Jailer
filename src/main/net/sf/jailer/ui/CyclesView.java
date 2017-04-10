@@ -178,7 +178,7 @@ public class CyclesView extends javax.swing.JDialog {
 					hasFocus = false;
 				}
 				Component render = defaultTableCellRenderer.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
-				if (render instanceof JLabel && !isSelected) {
+				if (render instanceof JLabel && !isSelected && row < bgColor.size()) {
 					((JLabel) render).setBackground(bgColor.get(row));
 				}
 				if (render instanceof JLabel) {
