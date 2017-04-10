@@ -185,7 +185,7 @@ public class JailerConsole {
      * @param output the text
      */
     public void appendText(String output) {
-    	final int MAXLENGTH = 100000;
+    	final int MAXLENGTH = 50000;
         StringBuffer newText = new StringBuffer(getJTextPane().getText() + output);
         if (newText.length() > MAXLENGTH) {
         	int fll = newText.indexOf("\n");
