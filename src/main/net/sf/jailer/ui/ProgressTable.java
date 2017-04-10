@@ -536,7 +536,7 @@ public class ProgressTable extends JTable {
 			int cd = 120000;
 			int reducedTimeQuot = 1;
 			if (numUnknown > 0.7 * all) {
-				reducedTimeQuot = 10;
+				reducedTimeQuot = 2;
 				cd /= reducedTimeQuot;
 			}
 			
