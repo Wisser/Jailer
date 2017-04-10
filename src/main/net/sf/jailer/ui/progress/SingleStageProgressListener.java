@@ -183,14 +183,24 @@ public class SingleStageProgressListener implements ProgressListener {
 	/**
 	 * Adds or updates a row of the progress table.
 	 */
-	private synchronized void addOrUpdateRows() {
-		for (int day = lastUpdated + (lastRowIsUptodate ? 1 : 0); day <= today; ++day) {
-			if (day >= 0) {
-				addOrUpdateRow(day);
+	private void addOrUpdateRows() {
+		Runnable r = null;
+		synchronized (this) {
+			for (int day = lastUpdated + (lastRowIsUptodate ? 1 : 0); day <= today; ++day) {
+				if (day >= 0) {
+					r = addOrUpdateRow(day);
+					if (r != null && day < today) {
+						r.run();
+						r = null;
+					}
+				}
 			}
+			lastUpdated = today;
+			lastRowIsUptodate = true;
 		}
-		lastUpdated = today;
-		lastRowIsUptodate = true;
+		if (r != null) {
+			r.run();
+		}
 	}
 
 	/**
@@ -198,8 +208,9 @@ public class SingleStageProgressListener implements ProgressListener {
 	 * 
 	 * @param day
 	 *            the day
+	 * @return 
 	 */
-	private void addOrUpdateRow(int day) {
+	private Runnable addOrUpdateRow(final int day) {
 		Map<Table, ProgressTable.CellInfo> row = new HashMap<Table, ProgressTable.CellInfo>();
 		for (Map.Entry<ModelElement, Long> e : collections.get(day).entrySet()) {
 			ProgressTable.CellInfo cell = row.get(getDestination(e.getKey()));
@@ -226,7 +237,7 @@ public class SingleStageProgressListener implements ProgressListener {
 				}
 			}
 		}
-		List<ProgressTable.CellInfo> theRow = new ArrayList<ProgressTable.CellInfo>(row.values());
+		final List<ProgressTable.CellInfo> theRow = new ArrayList<ProgressTable.CellInfo>(row.values());
 		if (day < today || cleanupLastLine ) {
 			if (day > 1) {
 				for (Iterator<ProgressTable.CellInfo> i = theRow.iterator(); i.hasNext();) {
@@ -244,10 +255,16 @@ public class SingleStageProgressListener implements ProgressListener {
 				progressTable.adjustColumnWidth();
 			}
 		} else {
-			progressTable.addRow(theRow, day);
-			progressTable.adjustColumnWidth();
-			readjustColumnWidth = false;
+			return new Runnable() {
+				@Override
+				public void run() {
+					progressTable.addRow(theRow, day);
+					progressTable.adjustColumnWidth();
+					readjustColumnWidth = false;
+				}
+			};
 		}
+		return null;
 	}
 
 	private Table getDestination(ModelElement key) {
@@ -292,9 +309,9 @@ public class SingleStageProgressListener implements ProgressListener {
 					}
 				}
 			}
-			if (rc <= 0) {
-				readjustColumnWidth = true;
-			}
+//			if (rc <= 0) {
+//				readjustColumnWidth = true;
+//			}
 			lastRowIsUptodate = false;
 		}
 	}
