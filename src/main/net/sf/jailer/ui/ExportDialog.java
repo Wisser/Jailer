@@ -1839,15 +1839,17 @@ public class ExportDialog extends javax.swing.JDialog {
 			args.add(schema);
 		}
 		
-		try {
-			JTextField c = (JTextField) iFMTableSchemaComboBox.getEditor().getEditorComponent();
-			String ifmItem = c.getText().trim();
-			if (ifmItem != null && !"".equals(ifmItem) && !DEFAULT_SCHEMA.equals(ifmItem)) {
-				args.add("-import-filter-mapping-table-schema");
-				args.add(ifmItem.toString());
+		if (iFMTableSchemaComboBox.isVisible()) {
+			try {
+				JTextField c = (JTextField) iFMTableSchemaComboBox.getEditor().getEditorComponent();
+				String ifmItem = c.getText().trim();
+				if (ifmItem != null && !"".equals(ifmItem) && !DEFAULT_SCHEMA.equals(ifmItem)) {
+					args.add("-import-filter-mapping-table-schema");
+					args.add(ifmItem.toString());
+				}
+			} catch (ClassCastException e) {
+				// ignore
 			}
-		} catch (ClassCastException e) {
-			// ignore
 		}
     }
 
