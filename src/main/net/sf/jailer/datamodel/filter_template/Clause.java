@@ -56,7 +56,11 @@ public class Clause {
 		TABLE_NAME("Table name", String.class) {
 			@Override
 			public Object getSubject(Table table, Column column) {
-				return Quoting.unquotedTableName(table);
+				String schema = table.getOriginalSchema("");
+				if (schema.length() == 0) {
+					return Quoting.staticUnquote(table.getUnqualifiedName());
+				}
+				return Quoting.staticUnquote(schema) + "." + Quoting.staticUnquote(table.getUnqualifiedName());
 			}
 		},
 		TYPE("Type", String.class) {
