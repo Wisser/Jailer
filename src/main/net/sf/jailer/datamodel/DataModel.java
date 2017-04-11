@@ -44,7 +44,6 @@ import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.ui.DataModelManager;
-import net.sf.jailer.ui.RestrictionDefinition;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.graphical_view.LayoutStorage;
 import net.sf.jailer.util.CsvFile;
