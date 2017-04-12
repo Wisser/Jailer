@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.jailer.database.Session;
+import net.sf.jailer.ui.CommandLineInstance;
 import net.sf.jailer.util.SqlScriptExecutor;
 
 import org.dbunit.dataset.IDataSet;
@@ -93,7 +94,7 @@ public class ExportTestCase extends DbmsAwareTestCase {
 		if (format.equals("SQL")) {
 			DatabaseOperation.DELETE_ALL.execute(getConnection(), getDataSet());
 			Session statementExecutor = new Session(connectionArguments.get(0), connectionArguments.get(1), connectionArguments.get(2), connectionArguments.get(3));
-			new SqlScriptExecutor(statementExecutor, 1).executeScript(result.getCanonicalPath());
+			new SqlScriptExecutor(statementExecutor, 1, CommandLineInstance.getInstance()).executeScript(result.getCanonicalPath());
 			statementExecutor.shutDown();
 			assertDatabaseState(expectedResult.getCanonicalPath());
 		}
