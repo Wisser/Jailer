@@ -46,7 +46,7 @@ import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
-import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.DDLCreator;
 import net.sf.jailer.Jailer;
@@ -107,7 +107,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 * File in which orientation is stored.
 	 */
 	private static final String ORIENTATIONSETTING = ".orientation.ui";
-
+	
+	/**
+	 * The command line arguments.
+	 */
+	private final CommandLine commandLine = CommandLineInstance.getInstance();
+	
     /**
      *  Creates new form ExtractionModelFrame.
      *  
@@ -853,7 +858,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			updateMenuItems();
     		DataBrowser dataBrowser;
 			try {
-				dataBrowser = new DataBrowser(extractionModelEditor.dataModel, root, condition, dbConnectionDialog, true);
+				dataBrowser = new DataBrowser(extractionModelEditor.dataModel, root, condition, dbConnectionDialog, true, commandLine);
 				dataBrowser.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 				dataBrowser.setVisible(true);
 			} catch (Exception e) {
@@ -999,10 +1004,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		File newFile;
 		for (int i = 1; ; ++i) {
 			file = "tmp";
-			newFile = CommandLineParser.getInstance().newFile(file);
+			newFile = commandLine.newFile(file);
 			newFile.mkdirs();
 			file += File.separator + "em" + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".csv";
-			newFile = CommandLineParser.getInstance().newFile(file);
+			newFile = commandLine.newFile(file);
 			if (!newFile.exists()) {
 				break;
 			}
@@ -1077,12 +1082,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				        		ddlArgs.add(exportDialog.getWorkingTableSchema());
 				        	}
 				        	DMLTransformer.numberOfExportedLOBs = 0;
-				        	String tableInConflict = DDLCreator.getTableInConflict(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4));
+				        	DDLCreator ddlCreator = new DDLCreator(commandLine);
+							String tableInConflict = ddlCreator.getTableInConflict(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4));
 				        	if (tableInConflict != null && exportDialog.getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL)) {
 				        		JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);
 				        	}
 				        	else {
-				        		if (!exportDialog.getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL) || DDLCreator.isUptodate(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), exportDialog.isUseRowId(), exportDialog.getWorkingTableSchema()) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
+				        		if (!exportDialog.getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL) || ddlCreator.isUptodate(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), exportDialog.isUseRowId(), exportDialog.getWorkingTableSchema()) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
 				        			"Automatic creation of working-tables failed!\n" +
 			        				"Please execute the Jailer-DDL manually (jailer_ddl.sql)\n" +
 			        				"or try another \"Working table schema\"\n\n" +
@@ -1261,7 +1267,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      */
 	private void load(String modelFile) {
 		try {
-			String dmf = ExtractionModel.loadDatamodelFolder(modelFile);
+			String dmf = ExtractionModel.loadDatamodelFolder(modelFile, commandLine);
 			if (dmf == null && DataModelManager.getCurrentModelSubfolder() != null
 				||
 				dmf != null && !dmf.equals(DataModelManager.getCurrentModelSubfolder())) {
@@ -1611,13 +1617,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			e1.printStackTrace();
 		}
 		try {
-			CommandLineParser.parse(args, true);
+			CommandLineInstance.init(args);
+			Configuration.setConfigurationFolder(CommandLineInstance.getInstance().getWorkingfolder());
 		} catch (Exception e) {
 			UIUtil.showException(null, "Illegal arguments", e);
+			return;
 		}
     	try {
     		// create initial data-model files
-    		File file = new File(DataModel.getDatamodelFolder());
+    		File file = new File(DataModel.getDatamodelFolder(CommandLineInstance.getInstance()));
     		if (!file.exists()) {
     			file.mkdir();
     		}
@@ -1645,14 +1653,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
             	
             	String file = null;
                 try {
-	            	if (CommandLineParser.getInstance().arguments != null) {
-	            		if (CommandLineParser.getInstance().arguments.size() > 0) {
-	            			file = CommandLineParser.getInstance().arguments.get(0);
+                	CommandLine commandLine = CommandLineInstance.getInstance();
+	            	if (commandLine.arguments != null) {
+	            		if (commandLine.arguments.size() > 0) {
+	            			file = commandLine.arguments.get(0);
 	            		}	
 	            	}
 	            	final String finalFile = file;
 	            	if (file != null && new File(file).exists()) {
-	            		DataModelManager.setCurrentModelSubfolder(ExtractionModel.loadDatamodelFolder(file));
+	            		DataModelManager.setCurrentModelSubfolder(ExtractionModel.loadDatamodelFolder(file, commandLine));
 	            		createFrame(finalFile, true, true);
 	            	} else {
 		            	DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(Jailer.APPLICATION_NAME + " " + Jailer.VERSION + " - Database Subsetting Tool") {
@@ -1704,7 +1713,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         		case 0: extractionModelFrame.updateDataModelActionPerformed(null); break;
                	case 1: extractionModelFrame.openDataModelEditorActionPerformed(null); break;
         	}
-        } else if (!new File(DataModel.getColumnsFile()).exists()) {
+        } else if (!new File(DataModel.getColumnsFile(CommandLineInstance.getInstance())).exists()) {
            	switch (JOptionPane.showOptionDialog(extractionModelFrame, "No column definition found.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor" }, null)) {
         		case 0: extractionModelFrame.updateDataModelActionPerformed(null); break;
                	case 1: extractionModelFrame.openDataModelEditorActionPerformed(null); break;

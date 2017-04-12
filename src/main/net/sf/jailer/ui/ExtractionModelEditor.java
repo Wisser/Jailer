@@ -88,7 +88,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
@@ -217,6 +217,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 */
 	private ConditionEditor restrictionConditionEditor;
 	
+	/**
+	 * The command line arguments.
+	 */
+	private final CommandLine commandLine = CommandLineInstance.getInstance();
+	
 	/** 
 	 * Creates new form ModelTree.
 	 *  
@@ -237,7 +242,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		};
 		columnMapperDialog = new ColumnMapperDialog(extractionModelFrame, parametersGetter);
 		try {
-			dataModel = new DataModel();
+			dataModel = new DataModel(commandLine);
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error in Data Model", e);
 			return;
@@ -245,11 +250,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		try {
 			if (extractionModelFile == null || !new File(extractionModelFile).exists()) {
 				needsSave = extractionModelFile != null;
-				dataModel = new DataModel();
-				extractionModel = new ExtractionModel(dataModel);
+				dataModel = new DataModel(commandLine);
+				extractionModel = new ExtractionModel(dataModel, commandLine);
 				LayoutStorage.removeAll();
 			} else {
-				extractionModel = new ExtractionModel(extractionModelFile, new HashMap<String, String>(), new HashMap<String, String>());
+				extractionModel = new ExtractionModel(extractionModelFile, new HashMap<String, String>(), new HashMap<String, String>(), commandLine);
 				LayoutStorage.restore(extractionModelFile);
 			}
 			subject = extractionModel.subject;
@@ -503,9 +508,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		modelName.setText(modelname);
 		modelName.setToolTipText(modelname + lastMod);
 		
-		String modelpath = CommandLineParser.getInstance().getDataModelFolder();
+		String modelpath = commandLine.getDataModelFolder();
 		try {
-			modelpath = CommandLineParser.getInstance().newFile(modelpath).getAbsolutePath();
+			modelpath = commandLine.newFile(modelpath).getAbsolutePath();
 		} catch (Throwable t) {
 			// use default modelpath
 		}

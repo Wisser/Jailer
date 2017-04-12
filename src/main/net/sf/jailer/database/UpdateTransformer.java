@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
@@ -113,6 +113,11 @@ public class UpdateTransformer extends AbstractResultSetReader {
 	 */
 	private final ImportFilterTransformer importFilterTransformer;
 	
+	/**
+	 * The command line arguments.
+	 */
+	private final CommandLine commandLine;
+	
     /**
      * Constructor.
      * 
@@ -122,8 +127,9 @@ public class UpdateTransformer extends AbstractResultSetReader {
      * @param session the session
      * @param targetDBMSConfiguration configuration of the target DBMS
      */
-    public UpdateTransformer(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, Configuration targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer) throws SQLException {
-        this.targetDBMSConfiguration = targetDBMSConfiguration;
+    public UpdateTransformer(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, Configuration targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer, CommandLine commandLine) throws SQLException {
+    	this.commandLine = commandLine;
+    	this.targetDBMSConfiguration = targetDBMSConfiguration;
         this.maxBodySize = maxBodySize;
         this.table = table;
         this.columns = columns;
@@ -375,7 +381,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
      */
     private String qualifiedTableName(Table t) {
     	String schema = t.getOriginalSchema("");
-    	String mappedSchema = CommandLineParser.getInstance().getSchemaMapping().get(schema);
+    	String mappedSchema = commandLine.getSchemaMapping().get(schema);
     	if (mappedSchema != null) {
     		schema = mappedSchema;
     	}

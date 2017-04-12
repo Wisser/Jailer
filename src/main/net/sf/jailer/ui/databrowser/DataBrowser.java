@@ -32,8 +32,6 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.beans.PropertyVetoException;
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.URI;
 import java.util.ArrayList;
@@ -42,7 +40,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,8 +71,8 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
-import net.sf.jailer.CommandLineParser;
-import net.sf.jailer.Jailer;
+import net.sf.jailer.CommandLine;
+import net.sf.jailer.Configuration;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
@@ -87,17 +84,16 @@ import net.sf.jailer.ui.AssociationListUI;
 import net.sf.jailer.ui.AssociationListUI.AssociationModel;
 import net.sf.jailer.ui.AssociationListUI.DefaultAssociationModel;
 import net.sf.jailer.ui.BrowserLauncher;
+import net.sf.jailer.ui.CommandLineInstance;
 import net.sf.jailer.ui.DataModelEditor;
 import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.DataModelManagerDialog;
 import net.sf.jailer.ui.DbConnectionDialog;
-import net.sf.jailer.ui.ImportDialog;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
+import net.sf.jailer.ui.ImportDialog;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
-
-import org.apache.log4j.PropertyConfigurator;
 
 /**
  * Data Browser Frame.
@@ -138,6 +134,11 @@ public class DataBrowser extends javax.swing.JFrame {
 	private final AssociationListUI borderBrowser;
 
 	/**
+	 * The command line arguments.
+	 */
+	private final CommandLine commandLine;
+	
+	/**
 	 * Constructor.
 	 * 
 	 * @param datamodel
@@ -149,7 +150,8 @@ public class DataBrowser extends javax.swing.JFrame {
 	 * @param dbConnectionDialog
 	 *            DB-connection dialog
 	 */
-	public DataBrowser(DataModel datamodel, Table root, String condition, DbConnectionDialog dbConnectionDialog, boolean embedded) throws Exception {
+	public DataBrowser(DataModel datamodel, Table root, String condition, DbConnectionDialog dbConnectionDialog, boolean embedded, final CommandLine commandLine) throws Exception {
+        this.commandLine = commandLine;
 		this.datamodel = new Reference<DataModel>(datamodel);
 		this.dbConnectionDialog = dbConnectionDialog != null ? new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName()) : null;
 		this.borderBrowser = new AssociationListUI("Resolve", "Resolve selected Associations", true) {
@@ -295,7 +297,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			@Override
 			protected DataBrowser openNewDataBrowser() {
 				try {
-					return DataBrowser.openNewDataBrowser(DataBrowser.this.datamodel.get(), dbConnectionDialog, false);
+					return DataBrowser.openNewDataBrowser(DataBrowser.this.datamodel.get(), dbConnectionDialog, false, commandLine);
 				} catch (Exception e) {
 					UIUtil.showException(this, "Error", e, session);
 					return null;
@@ -540,9 +542,9 @@ public class DataBrowser extends javax.swing.JFrame {
 		modelName.setText(modelname);
 		modelName.setToolTipText(modelname + lastMod);
 
-		String modelpath = CommandLineParser.getInstance().getDataModelFolder();
+		String modelpath = commandLine.getDataModelFolder();
 		try {
-			modelpath = CommandLineParser.getInstance().newFile(modelpath).getAbsolutePath();
+			modelpath = commandLine.newFile(modelpath).getAbsolutePath();
 		} catch (Throwable t) {
 			// use default modelpath
 		}
@@ -1146,7 +1148,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private void newWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_newWindowMenuItemActionPerformed
 		try {
-			openNewDataBrowser(datamodel.get(), dbConnectionDialog, false);
+			openNewDataBrowser(datamodel.get(), dbConnectionDialog, false, commandLine);
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e, session);
 		}
@@ -1371,17 +1373,20 @@ public class DataBrowser extends javax.swing.JFrame {
 			e1.printStackTrace();
 		}
 		try {
-			CommandLineParser.parse(args, true);
+			CommandLineInstance.init(args);
 		} catch (Exception e) {
 			UIUtil.showException(null, "Illegal arguments", e);
+			return;
 		}
+		final CommandLine commandLine = CommandLineInstance.getInstance();
+		Configuration.setConfigurationFolder(commandLine.getWorkingfolder());
 		try {
 			System.setProperty("db2.jcc.charsetDecoderEncoder", "3");
 		} catch (Exception e) {
 		}
 		try {
 			// create initial data-model files
-			File file = new File(DataModel.getDatamodelFolder());
+			File file = new File(DataModel.getDatamodelFolder(CommandLineInstance.getInstance()));
 			if (!file.exists()) {
 				file.mkdir();
 			}
@@ -1391,7 +1396,6 @@ public class DataBrowser extends javax.swing.JFrame {
 			public void run() {
 				UIUtil.initSyntaxKit();
 				try {
-					CommandLineParser.parse(args, true);
 					try {
 						// L&F can no longer be changed
 //						File plafSetting = new File(PLAFSETTING);
@@ -1416,8 +1420,8 @@ public class DataBrowser extends javax.swing.JFrame {
 						protected void onSelect() {
 							try {
 								final DataModel datamodel;
-								datamodel = new DataModel();
-								openNewDataBrowser(datamodel, null, true);
+								datamodel = new DataModel(CommandLineInstance.getInstance());
+								openNewDataBrowser(datamodel, null, true, commandLine);
 							} catch (Exception e) {
 								UIUtil.showException(null, "Error", e);
 							}
@@ -1436,9 +1440,9 @@ public class DataBrowser extends javax.swing.JFrame {
 		});
 	}
 
-	private static DataBrowser openNewDataBrowser(DataModel datamodel, DbConnectionDialog dbConnectionDialog, boolean maximize) throws Exception {
+	private static DataBrowser openNewDataBrowser(DataModel datamodel, DbConnectionDialog dbConnectionDialog, boolean maximize, CommandLine commandLine) throws Exception {
 		boolean silent = dbConnectionDialog != null;
-		DataBrowser dataBrowser = new DataBrowser(datamodel, null, "", null, false);
+		DataBrowser dataBrowser = new DataBrowser(datamodel, null, "", null, false, commandLine);
 		dataBrowser.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 //		if (maximize) {
 //			dataBrowser.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -1658,7 +1662,7 @@ public class DataBrowser extends javax.swing.JFrame {
 					openDataModelEditor();
 					break;
 				}
-			} else if (!new File(DataModel.getColumnsFile()).exists()) {
+			} else if (!new File(DataModel.getColumnsFile(CommandLineInstance.getInstance())).exists()) {
 				switch (JOptionPane.showOptionDialog(this, "No column definition found.", DataBrowserContext.getAppName(true), JOptionPane.YES_NO_OPTION,
 						JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor" }, null)) {
 				case 0:

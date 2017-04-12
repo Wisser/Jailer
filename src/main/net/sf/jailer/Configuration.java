@@ -15,6 +15,7 @@
  */
 package net.sf.jailer;
 
+import java.io.File;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.text.DateFormat;
@@ -315,12 +316,22 @@ public class Configuration {
      */
     private static AbstractXmlApplicationContext theApplicationContext = null;
 
-    @SuppressWarnings("unchecked")
 	private static synchronized AbstractXmlApplicationContext getContext() {
+		loadConfigurationFile();
+    	return theApplicationContext;
+    }
+    
+	/**
+	 * Loads the configuration file.
+	 * 
+	 * @param commandLine the command line arguments
+	 */
+    @SuppressWarnings("unchecked")
+	private static synchronized void loadConfigurationFile() {
     	if (theApplicationContext == null) {
     		String configFile = "jailer.xml";
-    		if (CommandLineParser.getInstance().getWorkingfolder() != null) {
-    			configFile = "file:" + CommandLineParser.getInstance().newFile(configFile).getAbsolutePath();
+    		if (getConfigurationFolder() != null) {
+    			configFile = "file:" + new File(getConfigurationFolder(), configFile).getAbsolutePath();
     		}
 	    	theApplicationContext = new FileSystemXmlApplicationContext(configFile);
 	    	doMinimizeUPK = Boolean.TRUE.equals(theApplicationContext.getBean("minimize-UPK"));
@@ -336,10 +347,25 @@ public class Configuration {
 	        	columnsPerIFMTable = (Integer) theApplicationContext.getBean("columns-per-import-filter-mapping-table");
 	        }
     	}
-    	return theApplicationContext;
     }
-
+    
+    private static File configurationFolder = new File(".");
+    
     /**
+	 * @return the configurationFolder
+	 */
+	public static File getConfigurationFolder() {
+		return configurationFolder;
+	}
+
+	/**
+	 * @param configurationFolder the configurationFolder to set
+	 */
+	public static void setConfigurationFolder(File configurationFolder) {
+		Configuration.configurationFolder = configurationFolder;
+	}
+
+	/**
      * Holds configurations.
      */
     private static Map<String, Configuration> perUrl = new HashMap<String, Configuration>();

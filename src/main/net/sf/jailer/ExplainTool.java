@@ -59,7 +59,7 @@ public class ExplainTool {
      * @param session
      *            for executing SQL-statements
      */
-    public static void explain(final EntityGraph graph, final Session session) throws Exception {
+    public static void explain(final EntityGraph graph, final Session session, final CommandLine commandLine) throws Exception {
         _log.info("generating explain.log...");
         final Quoting quoting = new Quoting(session);
         StringBuffer succEqualsE = new StringBuffer();
@@ -70,9 +70,9 @@ public class ExplainTool {
             succEqualsE.append("Succ.PRE_" + column.name + "=E." + column.name);
         }
         final FileWriter writer = new FileWriter("explain.log");
-        final RowIdSupport rowIdSupport = new RowIdSupport(graph.getDatamodel(), Configuration.forDbms(session));
-        String selectLeafs = "Select type, " + graph.getUniversalPrimaryKey().columnList(null) + " From " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, session) + " E Where E.r_entitygraph=" + graph.graphID +
-            " and not exists (Select * from " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, session) + " Succ Where Succ.r_entitygraph=" + graph.graphID + " and Succ.PRE_TYPE=E.type and " + succEqualsE + ")";
+        final RowIdSupport rowIdSupport = new RowIdSupport(graph.getDatamodel(), Configuration.forDbms(session), commandLine);
+        String selectLeafs = "Select type, " + graph.getUniversalPrimaryKey().columnList(null) + " From " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, session, commandLine) + " E Where E.r_entitygraph=" + graph.graphID +
+            " and not exists (Select * from " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, session, commandLine) + " Succ Where Succ.r_entitygraph=" + graph.graphID + " and Succ.PRE_TYPE=E.type and " + succEqualsE + ")";
         session.executeQuery(selectLeafs, new Session.AbstractResultSetReader() {
         	public void readCurrentRow(ResultSet resultSet) throws SQLException {
         		int o = resultSet.getInt(1);
@@ -88,7 +88,7 @@ public class ExplainTool {
                     keys.add(cellContentConverter.toSql(cellContentConverter.getObject(resultSet, i++)));
                 }
                 try {
-                    writer.append(path(graph, session, type, keys, graph.getDatamodel(), rowIdSupport, quoting));
+                    writer.append(path(graph, session, type, keys, graph.getDatamodel(), rowIdSupport, quoting, commandLine));
                     writer.append(".\n");
                 } catch (IOException e) {
                     throw new RuntimeException(e);
@@ -121,7 +121,7 @@ public class ExplainTool {
      * @param rowIdSupport 
      * @throws SQLException 
      */
-    private static String path(final EntityGraph graph, final Session session, String type, List<String> keys, DataModel datamodel, RowIdSupport rowIdSupport, Quoting quoting) throws SQLException {
+    private static String path(final EntityGraph graph, final Session session, String type, List<String> keys, DataModel datamodel, RowIdSupport rowIdSupport, Quoting quoting, CommandLine commandLine) throws SQLException {
         String where = "";
         int i = 0;
         for (Column column: graph.getUniversalPrimaryKey().getColumns()) {
@@ -131,7 +131,7 @@ public class ExplainTool {
             String value = keys.get(i++);
 			where += quoting.requote(column.name) + (value == null || value.equals("null")? " is null" : ("=" + value));
         }
-        String selectPredecessor = "Select PRE_TYPE, association, " + graph.getUniversalPrimaryKey().columnList("PRE_") + " From " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, session) + " E Where E.r_entitygraph=" + graph.graphID +
+        String selectPredecessor = "Select PRE_TYPE, association, " + graph.getUniversalPrimaryKey().columnList("PRE_") + " From " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, session, commandLine) + " E Where E.r_entitygraph=" + graph.graphID +
             " and type=" + datamodel.getTable(type).getOrdinal() + " and " + where;
         final String preType[] = new String[1];
         final List<String> preKeys = new ArrayList<String>();
@@ -153,7 +153,7 @@ public class ExplainTool {
         });
         String thePath = entityAsString(type, keys, datamodel, rowIdSupport, session);
         if (preType[0] != null) {
-            thePath = path(graph, session, preType[0], preKeys, datamodel, rowIdSupport, quoting) + " --" + associationID[0] + "--> " + thePath;
+            thePath = path(graph, session, preType[0], preKeys, datamodel, rowIdSupport, quoting, commandLine) + " --" + associationID[0] + "--> " + thePath;
         }
         return thePath;
     }

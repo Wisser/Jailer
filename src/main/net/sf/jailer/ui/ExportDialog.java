@@ -1586,12 +1586,13 @@ public class ExportDialog extends javax.swing.JDialog {
     		ddlArgs.add("-working-table-schema");
     		ddlArgs.add(getWorkingTableSchema());
     	}
-    	String tableInConflict = DDLCreator.getTableInConflict(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4));
+    	DDLCreator ddlCreator = new DDLCreator(CommandLineInstance.getInstance());
+		String tableInConflict = ddlCreator.getTableInConflict(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4));
     	if (tableInConflict != null && getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL)) {
     		JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);
     	}
     	else {
-    		if (!getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL) || DDLCreator.isUptodate(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), isUseRowId(), getWorkingTableSchema())) {
+    		if (!getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL) || ddlCreator.isUptodate(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), isUseRowId(), getWorkingTableSchema())) {
     			return true;
     		} else {
     			try {
@@ -1825,10 +1826,10 @@ public class ExportDialog extends javax.swing.JDialog {
 			args.add(sourceSchemaMapping.toString());
 		}
 
-		File excludeFromDeletion = new File(DataModel.getExcludeFromDeletionFile());
+		File excludeFromDeletion = new File(DataModel.getExcludeFromDeletionFile(CommandLineInstance.getInstance()));
 		if (excludeFromDeletion.exists()) {
 			args.add("-t");
-			args.add(DataModel.getExcludeFromDeletionFile());
+			args.add(DataModel.getExcludeFromDeletionFile(CommandLineInstance.getInstance()));
 		}
 		args.add("-scope");
 		args.add(getTemporaryTableScope().toString());

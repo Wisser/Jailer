@@ -31,7 +31,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import net.sf.jailer.CommandLineParser;
+import org.apache.log4j.Logger;
+
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
@@ -41,12 +43,11 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.importfilter.ImportFilterManager;
+import net.sf.jailer.ui.CommandLineInstance;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
-
-import org.apache.log4j.Logger;
 
 /**
  * Automatically builds a data-model using a list of {@link ModelElementFinder}.
@@ -76,30 +77,30 @@ public class ModelBuilder {
     /**
      * Name of CSV file for generated table definitions.
      */
-    public static String getModelBuilderTablesFilename() {
-    	return DataModel.getDatamodelFolder() + File.separator + "model-builder-table.csv";
+    public static String getModelBuilderTablesFilename(CommandLine commandLine) {
+    	return DataModel.getDatamodelFolder(commandLine) + File.separator + "model-builder-table.csv";
     }
     
     /**
      * Name of CSV file for generated column definitions.
      */
-    public static String getModelBuilderColumnsFilename() {
-    	return DataModel.getDatamodelFolder() + File.separator + "model-builder-column.csv";
+    public static String getModelBuilderColumnsFilename(CommandLine commandLine) {
+    	return DataModel.getDatamodelFolder(commandLine) + File.separator + "model-builder-column.csv";
     }
     
     /**
      * Name of CSV file for generated association definitions.
      */
-    public static String getModelBuilderAssociationsFilename() {
-    	return DataModel.getDatamodelFolder() + File.separator + "model-builder-association.csv";
+    public static String getModelBuilderAssociationsFilename(CommandLine commandLine) {
+    	return DataModel.getDatamodelFolder(commandLine) + File.separator + "model-builder-association.csv";
     }
 
     /**
      * The exclude-tables file.
      */
-    private static CsvFile getExcludeTablesCSV() {
+    private static CsvFile getExcludeTablesCSV(CommandLine commandLine) {
     	try {
-            File exTFile = CommandLineParser.getInstance().newFile(DataModel.getDatamodelFolder() + File.separator + "exclude-tables.csv");
+            File exTFile = commandLine.newFile(DataModel.getDatamodelFolder(commandLine) + File.separator + "exclude-tables.csv");
             if (!exTFile.exists()) {
             	exTFile.createNewFile();
             }
@@ -112,9 +113,9 @@ public class ModelBuilder {
     /**
      * The exclude-associations file.
      */
-    private static CsvFile getExcludeAssociationsCSV() {
+    private static CsvFile getExcludeAssociationsCSV(CommandLine commandLine) {
         try {
-            File exAFile = CommandLineParser.getInstance().newFile(DataModel.getDatamodelFolder() + File.separator + "exclude-associations.csv");
+            File exAFile = commandLine.newFile(DataModel.getDatamodelFolder(commandLine) + File.separator + "exclude-associations.csv");
             if (!exAFile.exists()) {
             	exAFile.createNewFile();
             }
@@ -134,12 +135,12 @@ public class ModelBuilder {
      * @param string 
      * @param warnings string-buffer to print warnings into, may be <code>null</code>
      */
-    public static void buildAndMerge(String driverClassName, String dbUrl, String dbUser, String dbPassword, String schema, StringBuffer warnings) throws Exception {
-    	build(driverClassName, dbUrl, dbUser, dbPassword, schema, warnings);
-    	merge(getModelBuilderTablesFilename(), DataModel.getTablesFile(), 0, TABLE_HEADER);
-    	merge(getModelBuilderAssociationsFilename(), DataModel.getAssociationsFile(), 5, ASSOC_HEADER);
-    	merge(getModelBuilderColumnsFilename(), DataModel.getColumnsFile(), 0, COLUMN_HEADER);
-    	cleanUp();
+    public static void buildAndMerge(String driverClassName, String dbUrl, String dbUser, String dbPassword, String schema, StringBuffer warnings, CommandLine commandLine) throws Exception {
+    	build(driverClassName, dbUrl, dbUser, dbPassword, schema, warnings, commandLine);
+    	merge(getModelBuilderTablesFilename(commandLine), DataModel.getTablesFile(commandLine), 0, TABLE_HEADER);
+    	merge(getModelBuilderAssociationsFilename(commandLine), DataModel.getAssociationsFile(commandLine), 5, ASSOC_HEADER);
+    	merge(getModelBuilderColumnsFilename(commandLine), DataModel.getColumnsFile(commandLine), 0, COLUMN_HEADER);
+    	cleanUp(commandLine);
     }
     
     private static void merge(String sourceFile, String destFile, int keyColumn, String header) throws Exception {
@@ -177,19 +178,19 @@ public class ModelBuilder {
      * @param string 
      * @param warnings string-buffer to print warnings into, may be <code>null</code>
      */
-    public static void build(String driverClassName, String dbUrl, String dbUser, String dbPassword, String schema, StringBuffer warnings) throws Exception {
+    public static void build(String driverClassName, String dbUrl, String dbUser, String dbPassword, String schema, StringBuffer warnings, CommandLine commandLine) throws Exception {
     	session = new Session(driverClassName, dbUrl, dbUser, dbPassword);
     	session.setIntrospectionSchema(schema);
 
-        resetFiles();
+        resetFiles(commandLine);
 
-        DataModel dataModel = new DataModel();
+        DataModel dataModel = new DataModel(commandLine);
         Collection<Table> tables = new ArrayList<Table>();
         
         List<ModelElementFinder> modelElementFinder = Configuration.getModelElementFinder();
         for (ModelElementFinder finder: modelElementFinder) {
             _log.info("find tables with " + finder);
-            tables.addAll(finder.findTables(session));
+            tables.addAll(finder.findTables(session, commandLine));
         }
         
         Collection<Table> allTables = new ArrayList<Table>(tables);
@@ -216,7 +217,7 @@ public class ModelBuilder {
         Quoting quoting = new Quoting(session);
         
         StringBuilder columnsDefinition = new StringBuilder();
-        CsvFile excludeTablesCSV = getExcludeTablesCSV();
+        CsvFile excludeTablesCSV = getExcludeTablesCSV(commandLine);
 		for (Table table: allTables) {
         	if (!isJailerTable(table, quoting) &&
         	    !excludeTablesCSV.contains(new String[] { table.getName()}) && 
@@ -224,7 +225,7 @@ public class ModelBuilder {
         		// if (!table.primaryKey.getColumns().isEmpty()) {
 	        		for (ModelElementFinder finder: modelElementFinder) {
 			            _log.info("find colums with " + finder);
-	            		List<Column> columns = finder.findColumns(table, session);
+	            		List<Column> columns = finder.findColumns(table, session, commandLine);
 	            		if (!columns.isEmpty()) {
 	            			columnPerTable.put(table, columns);
 	            			columnsDefinition.append(CsvFile.encodeCell(table.getName()) + "; ");
@@ -238,7 +239,7 @@ public class ModelBuilder {
         		// }
             }
         }
-        resetColumnsFile(columnsDefinition.toString());
+        resetColumnsFile(columnsDefinition.toString(), commandLine);
         
         for (Table table: sortedTables) {
         	if (!isJailerTable(table, quoting) &&
@@ -279,20 +280,20 @@ public class ModelBuilder {
             }
         }
         
-        resetTableFile(tableDefinitions);
+        resetTableFile(tableDefinitions, commandLine);
 
         // re-read data model with new tables
-        dataModel = new DataModel(getModelBuilderTablesFilename(), getModelBuilderAssociationsFilename(), new HashMap<String, String>(), assocFilter);
+        dataModel = new DataModel(getModelBuilderTablesFilename(commandLine), getModelBuilderAssociationsFilename(commandLine), new HashMap<String, String>(), assocFilter, commandLine);
 
         Collection<Association> associations = new ArrayList<Association>();
         Map<Association, String[]> namingSuggestion = new HashMap<Association, String[]>();
         for (ModelElementFinder finder: modelElementFinder) {
             _log.info("find associations with " + finder);
-            associations.addAll(finder.findAssociations(dataModel, namingSuggestion, session));
+            associations.addAll(finder.findAssociations(dataModel, namingSuggestion, session, commandLine));
         }
 
         Collection<Association> associationsToWrite = new ArrayList<Association>();
-        CsvFile excludeAssociationsCSV = getExcludeAssociationsCSV();
+        CsvFile excludeAssociationsCSV = getExcludeAssociationsCSV(commandLine);
 		for (Association association: associations) {
             if (!excludeAssociationsCSV.contains(new String[] { 
                     association.source.getName(),
@@ -355,14 +356,14 @@ public class ModelBuilder {
                                      "; " + CsvFile.encodeCell(name) + "; " + CsvFile.encodeCell(association.getAuthor()) + ";\n";
         }
         
-        resetAssociationFile(associationDefinition);
+        resetAssociationFile(associationDefinition, commandLine);
     }
 
     private static String ASSOC_HEADER = "# generated by Jailer\n\n" +
     		"# Table A; Table B;  first-insert; cardinality (opt); join-condition; name; author\n";
     
-    private static void resetAssociationFile(String associationDefinition) throws IOException {
-        writeFile(getModelBuilderAssociationsFilename(), 
+    private static void resetAssociationFile(String associationDefinition, CommandLine commandLine) throws IOException {
+        writeFile(getModelBuilderAssociationsFilename(commandLine), 
                 ASSOC_HEADER +
                 associationDefinition);
     }
@@ -370,8 +371,8 @@ public class ModelBuilder {
     private static String TABLE_HEADER = "# generated by Jailer\n\n" +
             "# Name; upsert; primary key; ; author\n";
     
-    private static void resetTableFile(String tableDefinitions) throws IOException {
-        writeFile(getModelBuilderTablesFilename(), 
+    private static void resetTableFile(String tableDefinitions, CommandLine commandLine) throws IOException {
+        writeFile(getModelBuilderTablesFilename(commandLine), 
                 TABLE_HEADER +
                 tableDefinitions);
     }
@@ -379,8 +380,8 @@ public class ModelBuilder {
     private static String COLUMN_HEADER = "# generated by Jailer\n\n" +
     		"# Table; columns\n";
     
-    private static void resetColumnsFile(String columnsDefinitions) throws IOException {
-        writeFile(getModelBuilderColumnsFilename(), 
+    private static void resetColumnsFile(String columnsDefinitions, CommandLine commandLine) throws IOException {
+        writeFile(getModelBuilderColumnsFilename(commandLine), 
                 COLUMN_HEADER +
                 columnsDefinitions);
     }
@@ -463,26 +464,26 @@ public class ModelBuilder {
     /**
      * Resets 'model-builder-*.csv' files.
      */
-    public static void resetFiles() throws IOException {
-        resetTableFile("");
-        resetAssociationFile("");
+    public static void resetFiles(CommandLine commandLine) throws IOException {
+        resetTableFile("", commandLine);
+        resetAssociationFile("", commandLine);
     }
 
     /**
      * Removes temporary files.
      */
-    public static void cleanUp() {
-    	File f = new File(getModelBuilderTablesFilename());
+    public static void cleanUp(CommandLine commandLine) {
+    	File f = new File(getModelBuilderTablesFilename(commandLine));
     	if (f.exists()) {
     		f.delete();
     		_log.info("File '" + f.getAbsolutePath() + "' removed");
     	}
-    	f = new File(getModelBuilderAssociationsFilename());
+    	f = new File(getModelBuilderAssociationsFilename(commandLine));
     	if (f.exists()) {
     		f.delete();
     		_log.info("File '" + f.getAbsolutePath() + "' removed");
     	}
-    	f = new File(getModelBuilderColumnsFilename());
+    	f = new File(getModelBuilderColumnsFilename(commandLine));
     	if (f.exists()) {
     		f.delete();
     		_log.info("File '" + f.getAbsolutePath() + "' removed");

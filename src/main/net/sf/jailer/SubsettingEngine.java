@@ -93,11 +93,11 @@ public class SubsettingEngine {
 	/**
 	 * Constructor.
 	 * 
-	 * @param threads
-	 *            number of threads
+	 * @param commandLine the command line arguments
 	 */
-	public SubsettingEngine(int threads) throws Exception {
-		jobManager = new JobManager(threads);
+	public SubsettingEngine(CommandLine commandLine) throws Exception {
+		this.commandLine = commandLine;
+		jobManager = new JobManager(commandLine.numberOfThreads);
 	}
 
 	/**
@@ -109,7 +109,12 @@ public class SubsettingEngine {
 	 * The entity-graph to be used for finding the transitive closure.
 	 */
 	private EntityGraph entityGraph;
-
+	
+	/**
+	 * The command line arguments.
+	 */
+	private final CommandLine commandLine;
+	
 	/**
 	 * The job-manager to be used for concurrent execution of jobs.
 	 */
@@ -241,7 +246,7 @@ public class SubsettingEngine {
 	private Set<Table> exportSubjects(ExtractionModel extractionModel, Set<Table> completedTables) throws Exception {
 		List<AdditionalSubject> allSubjects = new ArrayList<ExtractionModel.AdditionalSubject>();
 		for (AdditionalSubject as: extractionModel.additionalSubjects) {
-			allSubjects.add(new AdditionalSubject(as.getSubject(), ParameterHandler.assignParameterValues(as.getCondition(), CommandLineParser.getInstance().getParameters())));
+			allSubjects.add(new AdditionalSubject(as.getSubject(), ParameterHandler.assignParameterValues(as.getCondition(), commandLine.getParameters())));
 		}
 		allSubjects.add(new AdditionalSubject(extractionModel.subject, extractionModel.condition.equals("1=1")? "" : extractionModel.condition));
 		Map<Table, String> conditionPerTable = new HashMap<Table, String>();
@@ -469,7 +474,7 @@ public class SubsettingEngine {
 	 * @return configuration of the target DBMS
 	 */
 	private Configuration targetDBMSConfiguration(Session session) {
-		String targetDBMS = CommandLineParser.getInstance().targetDBMS;
+		String targetDBMS = commandLine.targetDBMS;
 		if (targetDBMS == null) {
 			return Configuration.forDbms(session);
 		}
@@ -496,20 +501,20 @@ public class SubsettingEngine {
 	private TransformerFactory createTransformerFactory(OutputStreamWriter outputWriter, TransformerHandler transformerHandler, ScriptType scriptType, String filepath) throws SQLException	{
 		Session targetSession = entityGraph.getTargetSession();
 		if (scriptType == ScriptType.INSERT) {
-			if (ScriptFormat.INTRA_DATABASE.equals(CommandLineParser.getInstance().getScriptFormat())) {
+			if (ScriptFormat.INTRA_DATABASE.equals(commandLine.getScriptFormat())) {
 				return null;
-			} if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
-				return new FlatXMLTransformer.Factory(transformerHandler, targetSession.getMetaData(), targetSession.dbms);
-			} else if (ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+			} if (ScriptFormat.DBUNIT_FLAT_XML.equals(commandLine.getScriptFormat())) {
+				return new FlatXMLTransformer.Factory(transformerHandler, targetSession.getMetaData(), targetSession.dbms, commandLine);
+			} else if (ScriptFormat.LIQUIBASE_XML.equals(commandLine.getScriptFormat())) {
 				return new LiquibaseXMLTransformer.Factory(transformerHandler,targetSession.getMetaData(), entityGraph, filepath,
-						CommandLineParser.getInstance().xmlDatePattern,
-						CommandLineParser.getInstance().xmlTimePattern,
-						CommandLineParser.getInstance().xmlTimeStampPattern);
+						commandLine.xmlDatePattern,
+						commandLine.xmlTimePattern,
+						commandLine.xmlTimeStampPattern, commandLine);
 			} else {
-				return new DMLTransformer.Factory(outputWriter, CommandLineParser.getInstance().upsertOnly, CommandLineParser.getInstance().numberOfEntities, targetSession, targetDBMSConfiguration(targetSession));
+				return new DMLTransformer.Factory(outputWriter, commandLine.upsertOnly, commandLine.numberOfEntities, targetSession, targetDBMSConfiguration(targetSession), commandLine);
 			}
 		} else {
-			return new DeletionTransformer.Factory(outputWriter, CommandLineParser.getInstance().numberOfEntities, targetSession, targetDBMSConfiguration(targetSession));
+			return new DeletionTransformer.Factory(outputWriter, commandLine.numberOfEntities, targetSession, targetDBMSConfiguration(targetSession), commandLine);
 		}
 	}
 
@@ -538,13 +543,13 @@ public class SubsettingEngine {
 		ImportFilterManager importFilterManager = null;
 		OutputStreamWriter result = null;
 		Charset charset = Charset.defaultCharset();
-		if (CommandLineParser.getInstance().uTF8) {
+		if (commandLine.uTF8) {
 			charset = Charset.forName("UTF8");
 		}
-		if (scriptType == ScriptType.INSERT && ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+		if (scriptType == ScriptType.INSERT && ScriptFormat.DBUNIT_FLAT_XML.equals(commandLine.getScriptFormat())) {
 			StreamResult streamResult = new StreamResult(new OutputStreamWriter(outputStream, charset));
 			transformerHandler = XmlUtil.createTransformerHandler(commentHeader.toString(), "dataset", streamResult, charset);
-		} else if(scriptType == ScriptType.INSERT && ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat())){
+		} else if(scriptType == ScriptType.INSERT && ScriptFormat.LIQUIBASE_XML.equals(commandLine.getScriptFormat())){
 			StreamResult streamResult = new StreamResult(
 					new OutputStreamWriter(outputStream,
 							charset));
@@ -564,7 +569,7 @@ public class SubsettingEngine {
 			
 			transformerHandler.startElement("", "", "changeSet", attrchangeset);
 		} else {
-			if (CommandLineParser.getInstance().uTF8) {
+			if (commandLine.uTF8) {
 				result = new OutputStreamWriter(outputStream, charset);
 			} else {
 				result = new OutputStreamWriter(outputStream);
@@ -572,11 +577,11 @@ public class SubsettingEngine {
 			result.append(commentHeader);
 			// result.append(System.getProperty("line.separator"));
 			for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
-				enhancer.addComments(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress);
+				enhancer.addComments(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress, commandLine);
 			}
 			// result.append(System.getProperty("line.separator"));
 			for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
-				enhancer.addProlog(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress);
+				enhancer.addProlog(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress, commandLine);
 			}
 			Session localSession = null;
 			if (entityGraph instanceof LocalEntityGraph) {
@@ -589,7 +594,7 @@ public class SubsettingEngine {
 			if (sourceConfig != targetConfig) {
 				targetQuoting.setIdentifierQuoteString(targetConfig.getIdentifierQuoteString());
 			}
-			importFilterManager = new ImportFilterManager(localSession, result, progress, targetQuoting) {
+			importFilterManager = new ImportFilterManager(localSession, result, progress, targetQuoting, commandLine) {
 				@Override
 				protected void sync(OutputStreamWriter result) throws IOException {
 					appendSync(result);
@@ -605,7 +610,7 @@ public class SubsettingEngine {
 		}
 		
 		Session targetSession = entityGraph.getTargetSession();
-		entityGraph.fillAndWriteMappingTables(jobManager, result, CommandLineParser.getInstance().numberOfEntities, targetSession, targetDBMSConfiguration(targetSession), Configuration.forDbms(session));
+		entityGraph.fillAndWriteMappingTables(jobManager, result, commandLine.numberOfEntities, targetSession, targetDBMSConfiguration(targetSession), Configuration.forDbms(session));
 
 		
 		long rest = 0;
@@ -628,7 +633,7 @@ public class SubsettingEngine {
 			if (!dependentTables.isEmpty()) {
 				_log.info("cyclic dependencies for: " + asString(dependentTables));
 			}
-			if (!CommandLineParser.getInstance().noSorting) {
+			if (!commandLine.noSorting) {
 				addDependencies(dependentTables, false);
 				runstats(true);
 				removeSingleRowCycles(prevProgress, session);
@@ -638,7 +643,7 @@ public class SubsettingEngine {
 	
 			rest = 0;
 	
-			if (scriptType == ScriptType.INSERT && (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())||ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat()))) {
+			if (scriptType == ScriptType.INSERT && (ScriptFormat.DBUNIT_FLAT_XML.equals(commandLine.getScriptFormat())||ScriptFormat.LIQUIBASE_XML.equals(commandLine.getScriptFormat()))) {
 				Set<Table> remaining = new HashSet<Table>(dependentTables);
 	
 				// topologically sort remaining tables while ignoring reflexive
@@ -687,11 +692,11 @@ public class SubsettingEngine {
 					EntityGraph egCopy = entityGraph.copy(EntityGraph.createUniqueGraphID(), entityGraph.getSession());
 					egCopy.setImportFilterManager(entityGraph.getImportFilterManager());
 					
-					_log.info(rest + " entities in cycle. Involved tables: " + PrintUtil.tableSetAsString(dependentTables));
+					_log.info(rest + " entities in cycle. Involved tables: " + new PrintUtil(commandLine).tableSetAsString(dependentTables));
 					Map<Table, Set<Column>> nullableForeignKeys = findAndRemoveNullableForeignKeys(dependentTables, entityGraph, scriptType != ScriptType.DELETE);
 					_log.info("nullable foreign keys: " + nullableForeignKeys.values());
 
-					ScriptFormat scriptFormat = CommandLineParser.getInstance().getScriptFormat();
+					ScriptFormat scriptFormat = commandLine.getScriptFormat();
 					
 					List<Runnable> resetFilters = new ArrayList<Runnable>();
 					for (Map.Entry<Table, Set<Column>> entry: nullableForeignKeys.entrySet()) {
@@ -747,12 +752,12 @@ public class SubsettingEngine {
 			
 		if (result != null) {
 			entityGraph.dropMappingTables(result, targetDBMSConfiguration(targetSession));
-			if (CommandLineParser.getInstance().getScriptFormat() != ScriptFormat.INTRA_DATABASE) {
+			if (commandLine.getScriptFormat() != ScriptFormat.INTRA_DATABASE) {
 				// write epilogs
 				result.append("-- epilog");
 				result.append(System.getProperty("line.separator"));
 				for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
-					enhancer.addEpilog(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress);
+					enhancer.addEpilog(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress, commandLine);
 				}
 			}
 			result.close();
@@ -761,12 +766,12 @@ public class SubsettingEngine {
 		if (transformerHandler != null) {
 			String content = "\n";
 			transformerHandler.characters(content.toCharArray(), 0, content.length());
-			if (ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+			if (ScriptFormat.LIQUIBASE_XML.equals(commandLine.getScriptFormat())) {
 
 				transformerHandler.endElement("","", "changeSet");
 				transformerHandler.endElement("","", "databaseChangeLog");
 				
-			} else if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+			} else if (ScriptFormat.DBUNIT_FLAT_XML.equals(commandLine.getScriptFormat())) {
 				transformerHandler.endElement("", "", "dataset");			
 			}
 			transformerHandler.endDocument();
@@ -1045,21 +1050,21 @@ public class SubsettingEngine {
 			lexSortedTables.removeAll(sortedTables);
 		}
 		if (!lexSortedTables.isEmpty()) {
-			_log.warn("remaining tables after sorting: " + PrintUtil.tableSetAsString(new HashSet<Table>(lexSortedTables)));
+			_log.warn("remaining tables after sorting: " + new PrintUtil(commandLine).tableSetAsString(new HashSet<Table>(lexSortedTables)));
 			sortedTables.addAll(lexSortedTables);
 		}
 		
 		Set<Table> cyclicAggregatedTables = getCyclicAggregatedTables(progress);
-		_log.info("cyclic aggregated tables: " + PrintUtil.tableSetAsString(cyclicAggregatedTables));
+		_log.info("cyclic aggregated tables: " + new PrintUtil(commandLine).tableSetAsString(cyclicAggregatedTables));
 
 		Charset charset = Charset.defaultCharset();
-		if (CommandLineParser.getInstance().uTF8) {
+		if (commandLine.uTF8) {
 			charset = Charset.forName("UTF8");
 		}
 		
 		XmlExportTransformer reader = new XmlExportTransformer(outputStream, commentHeader.toString(), entityGraph, progress, cyclicAggregatedTables,
-				CommandLineParser.getInstance().xmlRootTag, CommandLineParser.getInstance().xmlDatePattern,
-				CommandLineParser.getInstance().xmlTimeStampPattern, entityGraph.getTargetSession(), charset);
+				commandLine.xmlRootTag, commandLine.xmlDatePattern,
+				commandLine.xmlTimeStampPattern, entityGraph.getTargetSession(), charset, commandLine);
 
 		for (Table table: sortedTables) {
 			entityGraph.markRoots(table);
@@ -1145,7 +1150,7 @@ public class SubsettingEngine {
 			_log.info("independent tables: " + asString(independentTables));
 			List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 			for (final Table independentTable : independentTables) {
-				if (ScriptFormat.DBUNIT_FLAT_XML.equals(CommandLineParser.getInstance().getScriptFormat()) || ScriptFormat.LIQUIBASE_XML.equals(CommandLineParser.getInstance().getScriptFormat())) {
+				if (ScriptFormat.DBUNIT_FLAT_XML.equals(commandLine.getScriptFormat()) || ScriptFormat.LIQUIBASE_XML.equals(commandLine.getScriptFormat())) {
 					// export rows sequentially, don't mix rows of different
 					// tables in a dataset!
 					writeEntities(independentTable, true);
@@ -1171,7 +1176,7 @@ public class SubsettingEngine {
 	}
 	
 	private void appendSync(OutputStreamWriter result) throws IOException {
-		if (CommandLineParser.getInstance().getScriptFormat() != ScriptFormat.INTRA_DATABASE) {
+		if (commandLine.getScriptFormat() != ScriptFormat.INTRA_DATABASE) {
 			result.append("-- sync" + System.getProperty("line.separator"));
 		}
 	}
@@ -1228,7 +1233,7 @@ public class SubsettingEngine {
 				if (statisticRenovator != null) {
 					_log.info("gather statistics after " + lastRunstats + " inserted rows...");
 					try {
-						statisticRenovator.renew(session);
+						statisticRenovator.renew(session, commandLine);
 					} catch (Throwable t) {
 						_log.warn("unable to update table statistics: " + t.getMessage());
 					}
@@ -1247,35 +1252,36 @@ public class SubsettingEngine {
 			_log.info("exporting '" + extractionModelFileName + "' to '" + scriptFile + "'");
 		}
 		
-		Session session = new Session(driverClassName, dbUrl, dbUser, dbPassword, CommandLineParser.getInstance().getTemporaryTableScope(), false);
-		if (CommandLineParser.getInstance().getTemporaryTableScope() == TemporaryTableScope.SESSION_LOCAL
-		 || CommandLineParser.getInstance().getTemporaryTableScope() == TemporaryTableScope.TRANSACTION_LOCAL) {
-			DDLCreator.createDDL(session, CommandLineParser.getInstance().getTemporaryTableScope(), CommandLineParser.getInstance().workingTableSchema);
-		} else if (CommandLineParser.getInstance().getTemporaryTableScope() == TemporaryTableScope.GLOBAL) {
-			if (!DDLCreator.isUptodate(session, !CommandLineParser.getInstance().noRowid, CommandLineParser.getInstance().workingTableSchema)) {
+		Session session = new Session(driverClassName, dbUrl, dbUser, dbPassword, commandLine.getTemporaryTableScope(), false);
+		DDLCreator ddlCreator = new DDLCreator(commandLine);
+		if (commandLine.getTemporaryTableScope() == TemporaryTableScope.SESSION_LOCAL
+		 || commandLine.getTemporaryTableScope() == TemporaryTableScope.TRANSACTION_LOCAL) {
+			ddlCreator.createDDL(session, commandLine.getTemporaryTableScope(), commandLine.workingTableSchema);
+		} else if (commandLine.getTemporaryTableScope() == TemporaryTableScope.GLOBAL) {
+			if (!ddlCreator.isUptodate(session, !commandLine.noRowid, commandLine.workingTableSchema)) {
 				throw new IllegalStateException("Jailer working tables do not exist or are not up to date. Use 'jailer create-ddl' to create them.");
 			}
 		}
 
-		ExtractionModel extractionModel = new ExtractionModel(extractionModelFileName, CommandLineParser.getInstance().getSourceSchemaMapping(), CommandLineParser.getInstance().getParameters());
+		ExtractionModel extractionModel = new ExtractionModel(extractionModelFileName, commandLine.getSourceSchemaMapping(), commandLine.getParameters(), commandLine);
 
 		_log.info(Configuration.forDbms(session).getSqlDialect());
 		
 		EntityGraph entityGraph;
 		if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
-			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, Configuration.forDbms(session));
-			entityGraph = IntraDatabaseEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session));
-		} else if (CommandLineParser.getInstance().getTemporaryTableScope() == TemporaryTableScope.LOCAL_DATABASE) {
-			entityGraph = LocalEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session);
+			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, Configuration.forDbms(session), commandLine);
+			entityGraph = IntraDatabaseEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session), commandLine);
+		} else if (commandLine.getTemporaryTableScope() == TemporaryTableScope.LOCAL_DATABASE) {
+			entityGraph = LocalEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, commandLine);
 		} else {
-			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, Configuration.forDbms(session));
-			entityGraph = RemoteEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session));
+			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, Configuration.forDbms(session), commandLine);
+			entityGraph = RemoteEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session), commandLine);
 		}
 
 		entityGraph.setExplain(explain);
 
 		Charset charset = Charset.defaultCharset();
-		if (CommandLineParser.getInstance().uTF8) {
+		if (commandLine.uTF8) {
 			charset = Charset.forName("UTF8");
 			appendCommentHeader("encoding " + charset.name());
 			appendCommentHeader("");
@@ -1284,8 +1290,8 @@ public class SubsettingEngine {
 		Set<Table> totalProgress = new HashSet<Table>();
 		Set<Table> subjects = new HashSet<Table>();
 
-		if (CommandLineParser.getInstance().where != null && CommandLineParser.getInstance().where.trim().length() > 0) {
-			extractionModel.condition = CommandLineParser.getInstance().where;
+		if (commandLine.where != null && commandLine.where.trim().length() > 0) {
+			extractionModel.condition = commandLine.where;
 		}
 
 		appendCommentHeader("");
@@ -1297,7 +1303,7 @@ public class SubsettingEngine {
 					: "all rows from " + as.getSubject().getName();
 			appendCommentHeader("                   Union " + condition);
 		}
-		if (CommandLineParser.getInstance().noSorting) {
+		if (commandLine.noSorting) {
 			appendCommentHeader("                   unsorted");
 		}
 		appendCommentHeader("Source DBMS:       " + Configuration.forDbms(session).dbms.displayName);
@@ -1317,11 +1323,11 @@ public class SubsettingEngine {
 			extractionModel.dataModel.checkForPrimaryKey(toCheck, deleteScriptFileName != null);
 		}
 
-		extractionModel.condition = ParameterHandler.assignParameterValues(extractionModel.condition, CommandLineParser.getInstance().getParameters());
+		extractionModel.condition = ParameterHandler.assignParameterValues(extractionModel.condition, commandLine.getParameters());
 		
-		if (!CommandLineParser.getInstance().getParameters().isEmpty()) {
+		if (!commandLine.getParameters().isEmpty()) {
 			String suffix = "Parameters:        ";
-			for (Map.Entry<String, String> e: CommandLineParser.getInstance().getParameters().entrySet()) {
+			for (Map.Entry<String, String> e: commandLine.getParameters().entrySet()) {
 				appendCommentHeader(suffix + e.getKey() + " = " + e.getValue());
 				suffix = "                   ";
 			}
@@ -1345,7 +1351,7 @@ public class SubsettingEngine {
 	
 			if (explain) {
 				ProgressListenerRegistry.getProgressListener().newStage("generating explain-log", false, false);
-				ExplainTool.explain(entityGraph, session);
+				ExplainTool.explain(entityGraph, session, commandLine);
 			}
 	
 			totalProgress = datamodel.normalize(totalProgress);
@@ -1456,8 +1462,8 @@ public class SubsettingEngine {
 			}
 		}
 		appendCommentHeader("");
-		appendCommentHeader("Tabu-tables: " + PrintUtil.tableSetAsString(tabuTables, "--                 "));
-		_log.info("Tabu-tables: " + PrintUtil.tableSetAsString(tabuTables, null));
+		appendCommentHeader("Tabu-tables: " + new PrintUtil(commandLine).tableSetAsString(tabuTables, "--                 "));
+		_log.info("Tabu-tables: " + new PrintUtil(commandLine).tableSetAsString(tabuTables, null));
 		entityGraph.setDeleteMode(true);
 		removeFilters(datamodel);
 
@@ -1508,7 +1514,7 @@ public class SubsettingEngine {
 		Set<Table> emptyTables = new HashSet<Table>();
 
 		Set<Table> tablesToCheck = new HashSet<Table>(allTables);
-		_log.info("don't check initially: " + PrintUtil.tableSetAsString(dontCheckInitially, null));
+		_log.info("don't check initially: " + new PrintUtil(commandLine).tableSetAsString(dontCheckInitially, null));
 		tablesToCheck.removeAll(dontCheckInitially);
 
 		boolean firstStep = true;
@@ -1517,7 +1523,7 @@ public class SubsettingEngine {
 		// remove associated entities
 		while (!tablesToCheck.isEmpty()) {
 			++today;
-			_log.info("tables to check: " + PrintUtil.tableSetAsString(tablesToCheck, null));
+			_log.info("tables to check: " + new PrintUtil(commandLine).tableSetAsString(tablesToCheck, null));
 			List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 			final Set<Table> tablesToCheckNextTime = new HashSet<Table>();
 			for (final Table table : tablesToCheck) {

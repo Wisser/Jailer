@@ -17,7 +17,6 @@ package net.sf.jailer.ui.databrowser;
 
 import java.io.File;
 
-import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.Jailer;
 
 /**
@@ -45,7 +44,7 @@ public class DataBrowserContext {
 	public static synchronized boolean isStandAlone() {
 		if (standAlone == null) {
 			try {
-				File samf = CommandLineParser.getInstance().newFile(".standalone");
+				File samf = new File(".standalone");
 				standAlone = samf.exists();
 			} catch (Throwable e) {
 				standAlone = false;

@@ -46,7 +46,6 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
-import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.util.Pair;
@@ -91,9 +90,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				"Select a data model to work with.");
 		UIUtil.replace(infoBarLabel, infoBar);
 		
-		String modelpath = CommandLineParser.getInstance().getDataModelFolder();
+		String modelpath = CommandLineInstance.getInstance().getDataModelFolder();
 		try {
-			modelpath = CommandLineParser.getInstance().newFile(modelpath).getAbsolutePath();
+			modelpath = CommandLineInstance.getInstance().newFile(modelpath).getAbsolutePath();
 		} catch (Throwable t) {
 			// use default modelpath
 		}
@@ -578,7 +577,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	        	args.add("build-model-wo-merge");
 	        	dbConnectionDialog.addDbArgs(args);
 	        	
-	        	DataModel dataModel = new DataModel();
+	        	DataModel dataModel = new DataModel(CommandLineInstance.getInstance());
 				AnalyseOptionsDialog analyseOptionsDialog = new AnalyseOptionsDialog(this, dataModel);
 	        	boolean[] isDefaultSchema = new boolean[1];
 	        	String[] defaultSchema = new String[1];

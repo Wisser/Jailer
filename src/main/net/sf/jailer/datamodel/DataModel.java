@@ -34,7 +34,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.database.Session;
@@ -93,7 +93,12 @@ public class DataModel {
      */
     public long version = 0;
 
-    /**
+	/**
+	 * The command line arguments.
+	 */
+	private final CommandLine commandLine;
+	
+	/**
      * Default model name.
      */
 	public static final String DEFAULT_NAME = "New Model";
@@ -106,57 +111,57 @@ public class DataModel {
     /**
      * Gets name of data model folder.
      */
-    public static String getDatamodelFolder() {
-    	return CommandLineParser.getInstance().getDataModelFolder();
+    public static String getDatamodelFolder(CommandLine commandLine) {
+    	return commandLine.getDataModelFolder();
     }
 
     /**
      * Gets name of file containing the table definitions.
      */
-    public static String getTablesFile() {
-    	return getDatamodelFolder() + File.separator + TABLE_CSV_FILE;
+    public static String getTablesFile(CommandLine commandLine) {
+    	return getDatamodelFolder(commandLine) + File.separator + TABLE_CSV_FILE;
     }
 
     /**
      * Gets name of file containing the model name
      */
-    public static String getModelNameFile() {
-    	return getDatamodelFolder() + File.separator + MODELNAME_CSV_FILE;
+    public static String getModelNameFile(CommandLine commandLine) {
+    	return getDatamodelFolder(commandLine) + File.separator + MODELNAME_CSV_FILE;
     }
 
     /**
      * Gets name of file containing the display names.
      */
-    public static String getDisplayNamesFile() {
-    	return getDatamodelFolder() + File.separator + "displayname.csv";
+    public static String getDisplayNamesFile(CommandLine commandLine) {
+    	return getDatamodelFolder(commandLine) + File.separator + "displayname.csv";
     }
 
     /**
      * Gets name of file containing the column definitions.
      */
-    public static String getColumnsFile() {
-    	return getDatamodelFolder() + File.separator + "column.csv";
+    public static String getColumnsFile(CommandLine commandLine) {
+    	return getDatamodelFolder(commandLine) + File.separator + "column.csv";
     }
 
     /**
      * Gets name of file containing the association definitions.
      */
-	public static String getAssociationsFile() {
-		return getDatamodelFolder() + File.separator + "association.csv";
+	public static String getAssociationsFile(CommandLine commandLine) {
+		return getDatamodelFolder(commandLine) + File.separator + "association.csv";
 	}
 	
 	/**
 	 * List of tables to be excluded from deletion.
 	 */
-	public static String getExcludeFromDeletionFile() {
-		return getDatamodelFolder() + File.separator + "exclude-from-deletion.csv";
+	public static String getExcludeFromDeletionFile(CommandLine commandLine) {
+		return getDatamodelFolder(commandLine) + File.separator + "exclude-from-deletion.csv";
 	}
 	
 	/**
      * Name of file containing the version number.
      */
-    public static String getVersionFile() {
-    	return getDatamodelFolder() + File.separator + "version.csv";
+    public static String getVersionFile(CommandLine commandLine) {
+    	return getDatamodelFolder(commandLine) + File.separator + "version.csv";
    	}
 
     /**
@@ -258,35 +263,24 @@ public class DataModel {
      * Reads in <code>table.csv</code> and <code>association.csv</code>
      * and builds the relational data model.
      */
-    public DataModel(PrimaryKeyFactory primaryKeyFactory, Map<String, String> sourceSchemaMapping) throws Exception {
-        this(null, null, sourceSchemaMapping, null, primaryKeyFactory);
+    public DataModel(PrimaryKeyFactory primaryKeyFactory, Map<String, String> sourceSchemaMapping, CommandLine commandLine) throws Exception {
+        this(null, null, sourceSchemaMapping, null, primaryKeyFactory, commandLine);
     }
 
     /**
      * Reads in <code>table.csv</code> and <code>association.csv</code>
      * and builds the relational data model.
      */
-    public DataModel() throws Exception {
-        this(null, null, new PrimaryKeyFactory());
+    public DataModel(CommandLine commandLine) throws Exception {
+        this(null, null, new PrimaryKeyFactory(), commandLine);
     }
 
     /**
      * Reads in <code>table.csv</code> and <code>association.csv</code>
      * and builds the relational data model.
      */
-    public DataModel(Map<String, String> sourceSchemaMapping) throws Exception {
-        this(null, null, sourceSchemaMapping, null, new PrimaryKeyFactory());
-    }
-
-    /**
-     * Reads in <code>table.csv</code> and <code>association.csv</code>
-     * and builds the relational data model.
-     * 
-     * @param additionalTablesFile table file to read too
-     * @param additionalAssociationsFile association file to read too
-     */
-    public DataModel(String additionalTablesFile, String additionalAssociationsFile, PrimaryKeyFactory primaryKeyFactory) throws Exception {
-    	this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, primaryKeyFactory);
+    public DataModel(Map<String, String> sourceSchemaMapping, CommandLine commandLine) throws Exception {
+        this(null, null, sourceSchemaMapping, null, new PrimaryKeyFactory(), commandLine);
     }
 
     /**
@@ -296,8 +290,8 @@ public class DataModel {
      * @param additionalTablesFile table file to read too
      * @param additionalAssociationsFile association file to read too
      */
-    public DataModel(String additionalTablesFile, String additionalAssociationsFile) throws Exception {
-    	this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, new PrimaryKeyFactory());
+    public DataModel(String additionalTablesFile, String additionalAssociationsFile, PrimaryKeyFactory primaryKeyFactory, CommandLine commandLine) throws Exception {
+    	this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, primaryKeyFactory, commandLine);
     }
 
     /**
@@ -307,8 +301,19 @@ public class DataModel {
      * @param additionalTablesFile table file to read too
      * @param additionalAssociationsFile association file to read too
      */
-    public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter) throws Exception {
-    	this(additionalTablesFile, additionalAssociationsFile, sourceSchemaMapping, assocFilter, new PrimaryKeyFactory());
+    public DataModel(String additionalTablesFile, String additionalAssociationsFile, CommandLine commandLine) throws Exception {
+    	this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, new PrimaryKeyFactory(), commandLine);
+    }
+
+    /**
+     * Reads in <code>table.csv</code> and <code>association.csv</code>
+     * and builds the relational data model.
+     * 
+     * @param additionalTablesFile table file to read too
+     * @param additionalAssociationsFile association file to read too
+     */
+    public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, CommandLine commandLine) throws Exception {
+    	this(additionalTablesFile, additionalAssociationsFile, sourceSchemaMapping, assocFilter, new PrimaryKeyFactory(), commandLine);
     }
     
     /**
@@ -318,18 +323,19 @@ public class DataModel {
      * @param additionalTablesFile table file to read too
      * @param additionalAssociationsFile association file to read too
      */
-    public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, PrimaryKeyFactory primaryKeyFactory) throws Exception {
+    public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, PrimaryKeyFactory primaryKeyFactory, CommandLine commandLine) throws Exception {
+    	this.commandLine = commandLine;
     	this.primaryKeyFactory = primaryKeyFactory;
     	try {
 			List<String> excludeFromDeletion = new ArrayList<String>();
-			UIUtil.loadTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile());
+			UIUtil.loadTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile(commandLine));
 
 	    	// tables
-	    	File nTablesFile = CommandLineParser.getInstance().newFile(getTablesFile());
+	    	File nTablesFile = commandLine.newFile(getTablesFile(commandLine));
 			CsvFile tablesFile = new CsvFile(nTablesFile);
 	        List<CsvFile.Line> tableList = new ArrayList<CsvFile.Line>(tablesFile.getLines());
 	        if (additionalTablesFile != null) {
-	            tableList.addAll(new CsvFile(CommandLineParser.getInstance().newFile(additionalTablesFile)).getLines());
+	            tableList.addAll(new CsvFile(commandLine.newFile(additionalTablesFile)).getLines());
 	        }
 	        for (CsvFile.Line line: tableList) {
 	            boolean defaultUpsert = "Y".equalsIgnoreCase(line.cells.get(1));
@@ -356,7 +362,7 @@ public class DataModel {
 	        }
 	        
 	        // columns
-	        File file = CommandLineParser.getInstance().newFile(getColumnsFile());
+	        File file = commandLine.newFile(getColumnsFile(commandLine));
 	        if (file.exists()) {
 		    	CsvFile columnsFile = new CsvFile(file);
 		        List<CsvFile.Line> columnsList = new ArrayList<CsvFile.Line>(columnsFile.getLines());
@@ -378,9 +384,9 @@ public class DataModel {
 	        }
 	        
 	        // associations
-	        List<CsvFile.Line> associationList = new ArrayList<CsvFile.Line>(new CsvFile(CommandLineParser.getInstance().newFile(getAssociationsFile()), assocFilter).getLines());
+	        List<CsvFile.Line> associationList = new ArrayList<CsvFile.Line>(new CsvFile(commandLine.newFile(getAssociationsFile(commandLine)), assocFilter).getLines());
 	        if (additionalAssociationsFile != null) {
-	            associationList.addAll(new CsvFile(CommandLineParser.getInstance().newFile(additionalAssociationsFile)).getLines());
+	            associationList.addAll(new CsvFile(commandLine.newFile(additionalAssociationsFile)).getLines());
 	        }
 	        for (CsvFile.Line line: associationList) {
 	            String location = line.location;
@@ -436,7 +442,7 @@ public class DataModel {
 	        initTableOrdinals();
 	        
 	        // model name
-	        File nameFile = CommandLineParser.getInstance().newFile(getModelNameFile());
+	        File nameFile = commandLine.newFile(getModelNameFile(commandLine));
 	        name = DEFAULT_NAME;
 	    	lastModified = null;
 	        try {
@@ -453,7 +459,7 @@ public class DataModel {
 	        	// keep defaults
 	        }
     	} catch (Exception e) {
-    		_log.error("failed to load data-model " + getDatamodelFolder() + File.separator, e);
+    		_log.error("failed to load data-model " + getDatamodelFolder(commandLine) + File.separator, e);
     		throw e;
     	}
     }
@@ -510,7 +516,7 @@ public class DataModel {
     	}
     	
     	Map<String, String> userDefinedDisplayNames = new TreeMap<String, String>();
-        File dnFile = CommandLineParser.getInstance().newFile(DataModel.getDisplayNamesFile());
+        File dnFile = commandLine.newFile(DataModel.getDisplayNamesFile(commandLine));
         if (dnFile.exists()) {
         	for (CsvFile.Line dnl: new CsvFile(dnFile).getLines()) {
         		userDefinedDisplayNames.put(dnl.cells.get(0), dnl.cells.get(1));
@@ -638,7 +644,7 @@ public class DataModel {
             str.append(table);
             if (printClosures) {
                 str.append("  closure =");
-                str.append(PrintUtil.tableSetAsString(table.closure(true)) + "\n\n");
+                str.append(new PrintUtil(commandLine).tableSetAsString(table.closure(true)) + "\n\n");
             }
         }
         return str.toString();

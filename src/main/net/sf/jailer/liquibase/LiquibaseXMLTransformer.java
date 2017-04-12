@@ -23,15 +23,15 @@ import java.text.SimpleDateFormat;
 
 import javax.xml.transform.sax.TransformerHandler;
 
-import net.sf.jailer.CommandLineParser;
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.TransformerFactory;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
-
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 	
@@ -62,6 +62,11 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 	 */
 	private final SimpleDateFormat timestampPattern;
 	
+	/**
+	 * The command line arguments.
+	 */
+	private final CommandLine commandLine;
+	
     /**
      * Factory.
      */
@@ -74,7 +79,12 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		private final String datePattern;
 		private final String timePattern;
 		private final String timestampPattern;
-
+		
+		/**
+		 * The command line arguments.
+		 */
+		private final CommandLine commandLine;
+		
 		/**
     	 * Constructor.
     	 * 
@@ -86,7 +96,8 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
     	 *            database meta data
     	 */
     	public Factory(TransformerHandler transformerHandler, DatabaseMetaData metaData, 
-    			EntityGraph entityGraph, String scriptFile, String datePattern, String timePattern, String timestampPattern) {
+    			EntityGraph entityGraph, String scriptFile, String datePattern, String timePattern, String timestampPattern, CommandLine commandLine) {
+    		this.commandLine = commandLine;
     		this.transformerHandler = transformerHandler;
     		this.entityGraph = entityGraph;
     		this.scriptFile = scriptFile;
@@ -105,12 +116,13 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		 */
 		@Override
 		public ResultSetReader create(Table table) throws SQLException {
-			return new LiquibaseXMLTransformer(table, transformerHandler, metaData, entityGraph, scriptFile, datePattern, timePattern, timestampPattern);
+			return new LiquibaseXMLTransformer(table, transformerHandler, metaData, entityGraph, scriptFile, datePattern, timePattern, timestampPattern, commandLine);
 		}
     }
 
 	private LiquibaseXMLTransformer(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData, 
-			EntityGraph entityGraph, String scriptFile, String datePattern, String timePattern, String timestampPattern) throws SQLException {
+			EntityGraph entityGraph, String scriptFile, String datePattern, String timePattern, String timestampPattern, CommandLine commandLine) throws SQLException {
+		this.commandLine = commandLine;
 		this.transformerHandler = transformerHandler;
 		this.entityGraph = entityGraph;
 		this.rowElementName = qualifiedTableName(table);
@@ -124,7 +136,7 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 	private String qualifiedTableName(Table t) {
     	
     	String schema = t.getOriginalSchema("");
-    	String mappedSchema = CommandLineParser.getInstance().getSchemaMapping().get(schema);
+    	String mappedSchema = commandLine.getSchemaMapping().get(schema);
     	if (mappedSchema != null) {
     		schema = mappedSchema;
     	}
