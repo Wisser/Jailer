@@ -89,7 +89,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
      * 
      * @param dataModel the data-model
      */
-    public void render(DataModel dataModel, CommandLine commandLine) {
+    public void render(DataModel dataModel, CommandLine commandLine, List<String> restrictionFiles) {
     	this.commandLine = commandLine;
         try {
             List<Table> tableList = new ArrayList<Table>(dataModel.getTables());
@@ -128,11 +128,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
             }
             
             String restrictions = "none";
-            List<String> restrictionModels = commandLine.arguments;
-            restrictionModels = restrictionModels.subList(0, restrictionModels.size());
-            if (!restrictionModels.isEmpty()) {
-                restrictionModels = restrictionModels.subList(1, restrictionModels.size());
-            }
+            List<String> restrictionModels = restrictionFiles;
             if (!restrictionModels.isEmpty()) {
                 restrictions = restrictionModels.toString();
                 restrictions = restrictions.substring(1, restrictions.length() - 1);
