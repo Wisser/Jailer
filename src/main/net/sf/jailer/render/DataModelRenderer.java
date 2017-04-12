@@ -15,6 +15,8 @@
  */
 package net.sf.jailer.render;
 
+import java.util.List;
+
 import net.sf.jailer.CommandLine;
 import net.sf.jailer.datamodel.DataModel;
 
@@ -30,6 +32,6 @@ public interface DataModelRenderer {
      * 
      * @param dataModel the data-model
      */
-    void render(DataModel dataModel, CommandLine commandLine);
+    void render(DataModel dataModel, CommandLine commandLine, List<String> restrictionFiles);
 
 }
