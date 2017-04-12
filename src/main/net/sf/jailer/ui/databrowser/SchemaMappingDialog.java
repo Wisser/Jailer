@@ -30,10 +30,10 @@ import java.util.TreeSet;
 
 import javax.swing.JLabel;
 
-import net.sf.jailer.CommandLineParser;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.CommandLineInstance;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.JComboBox;
 
@@ -61,7 +61,7 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
         		windowAncestor.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
         	}
         	SortedSet<String> modelSchemas = new TreeSet<String>();
-	        for (Table table: new DataModel().getTables()) {
+	        for (Table table: new DataModel(CommandLineInstance.getInstance()).getTables()) {
 	        	modelSchemas.add(table.getSchema(DEFAULT));
 	        }
 	        SortedSet<String> dbSchemas = new TreeSet<String>(connectionDialog.getDBSchemas(new String[1]));
@@ -241,7 +241,7 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
      */
     private static Map<String, Map<String, String>> restore() {
     	try {
-    		File file = CommandLineParser.getInstance().newFile(MAPPINGS_FILE);
+    		File file = CommandLineInstance.getInstance().newFile(MAPPINGS_FILE);
     		ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
     		@SuppressWarnings("unchecked")
 			Map<String, Map<String, String>> mappings = (Map<String, Map<String, String>>) in.readObject();
@@ -278,7 +278,7 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
     public static void store(Map<String, String> mapping, DbConnectionDialog connectionDialog) {
     	try {
     		Map<String, Map<String, String>> mappings = restore();
-    		File file = CommandLineParser.getInstance().newFile(MAPPINGS_FILE);
+    		File file = CommandLineInstance.getInstance().newFile(MAPPINGS_FILE);
     		file.delete();
     		mappings.put(connectionDialog.currentConnection.user + "@" + connectionDialog.currentConnection.url, mapping);
     		ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));

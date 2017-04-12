@@ -21,6 +21,8 @@ import java.io.InputStreamReader;
 
 import org.apache.log4j.Logger;
 
+import net.sf.jailer.CommandLine;
+
 /**
  * Renews the DB table statistics for the working-tables
  * by executing a shell-script.
@@ -54,7 +56,7 @@ public class ShellScriptBasedStatisticRenovator implements StatisticRenovator {
      * 
      * @param session for execution of SQL-statements
      */
-    public void renew(Session session) throws Exception {
+    public void renew(Session session, CommandLine commandLine) throws Exception {
         String theScriptInvocation = getScriptInvocation(session);
         _log.info("executing: " + theScriptInvocation);
         Process process = Runtime.getRuntime().exec(theScriptInvocation);

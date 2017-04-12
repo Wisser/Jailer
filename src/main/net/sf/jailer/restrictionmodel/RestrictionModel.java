@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.ParameterHandler;
@@ -62,13 +62,19 @@ public class RestrictionModel {
      * The logger.
      */
     private static final Logger _log = Logger.getLogger(RestrictionModel.class);
- 
+	
+    /**
+	 * The command line arguments.
+	 */
+	private final CommandLine commandLine;
+	
     /**
      * Constructor.
      * 
      * @param dataModel the data-model
      */
-    public RestrictionModel(DataModel dataModel) {
+    public RestrictionModel(DataModel dataModel, CommandLine commandLine) {
+    	this.commandLine = commandLine;
         this.dataModel = dataModel;
     }
 
@@ -134,19 +140,19 @@ public class RestrictionModel {
         File file;
         boolean embedded = false;
         if (EMBEDDED.equals(fileName)) {
-        	file = CommandLineParser.getInstance().newFile(extractionModelFileName);
+        	file = commandLine.newFile(extractionModelFileName);
         	embedded = true;
         } else {
-        	file = CommandLineParser.getInstance().newFile(fileName);
+        	file = commandLine.newFile(fileName);
         }
         if (!file.exists()) {
         	try {
-        		file = new File(CommandLineParser.getInstance().newFile(extractionModelFileName).getParent(), fileName);
+        		file = new File(commandLine.newFile(extractionModelFileName).getParent(), fileName);
         	} catch (Exception e) {
         	}
         }
         if (!file.exists()) {
-            file = CommandLineParser.getInstance().newFile("restrictionmodel" + File.separator + fileName);
+            file = commandLine.newFile("restrictionmodel" + File.separator + fileName);
         }
         List<CsvFile.Line> lines = new CsvFile(file).getLines();
         int nr = 0;

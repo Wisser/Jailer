@@ -33,6 +33,7 @@ import org.apache.log4j.Logger;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
@@ -129,14 +130,14 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	 */
 	public XmlExportTransformer(OutputStream out, String commentHeader,
 			EntityGraph entityGraph, Set<Table> totalProgress, Set<Table> cyclicAggregatedTables,
-			String rootTag, String datePattern, String timestampPattern, Session session, Charset charset) throws TransformerConfigurationException, SAXException, SQLException {
+			String rootTag, String datePattern, String timestampPattern, Session session, Charset charset, CommandLine commandLine) throws TransformerConfigurationException, SAXException, SQLException {
 		this.xmlRowWriter = new XmlRowWriter(out, commentHeader, rootTag, datePattern, timestampPattern, charset);
 		this.entityGraph = entityGraph;
 		this.totalProgress = totalProgress;
 		this.cyclicAggregatedTables = cyclicAggregatedTables;
 		this.session = session;
 		this.quoting = new Quoting(session);
-        this.rowIdSupport = new RowIdSupport(entityGraph.getDatamodel(), Configuration.forDbms(session));
+        this.rowIdSupport = new RowIdSupport(entityGraph.getDatamodel(), Configuration.forDbms(session), commandLine);
 	}
 
 	/**

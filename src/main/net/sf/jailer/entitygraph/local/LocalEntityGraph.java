@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.DDLCreator;
 import net.sf.jailer.database.DBMS;
@@ -192,8 +192,8 @@ public class LocalEntityGraph extends EntityGraph {
 			InlineViewStyle localInlineViewStyle,
 			InlineViewStyle remoteInlineViewStyle, Set<String> upkColumnNames,
 			PrimaryKey universalPrimaryKey, int birthdayOfSubject, Set<String> fieldProcTables,
-			RowIdSupport rowIdSupport) throws SQLException {
-		super(graphID, dataModel);
+			RowIdSupport rowIdSupport, CommandLine commandLine) throws SQLException {
+		super(graphID, dataModel, commandLine);
 		this.remoteSession = remoteSession;
 		this.localSession = localSession;
 		this.localDatabase = localDatabase;
@@ -213,7 +213,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param remoteSession
 	 * @throws Exception 
 	 */
-	private LocalEntityGraph(int graphID, Session remoteSession) throws Exception {
+	private LocalEntityGraph(int graphID, Session remoteSession, CommandLine commandLine) throws Exception {
 		super(graphID, new DataModel(new PrimaryKeyFactory() {
 			@Override
 			public PrimaryKey createPrimaryKey(List<Column> columns) {
@@ -227,16 +227,16 @@ public class LocalEntityGraph extends EntityGraph {
 				}
 				return super.createPrimaryKey(localPK);
 			}
-		}, CommandLineParser.getInstance().getSourceSchemaMapping()));
+		}, commandLine.getSourceSchemaMapping(), commandLine), commandLine);
 		this.remoteSession = remoteSession;
 		this.quoting = new Quoting(remoteSession);
-		this.rowIdSupport = new RowIdSupport(getDatamodel(), Configuration.forDbms(remoteSession), getConfiguration().localPKType);
+		this.rowIdSupport = new RowIdSupport(getDatamodel(), Configuration.forDbms(remoteSession), getConfiguration().localPKType, commandLine);
 		this.localDatabase = createLocalDatabase(getConfiguration().driver, getConfiguration().urlPattern, getConfiguration().user, getConfiguration().password, getConfiguration().lib);
 		this.localSession = this.localDatabase.getSession();
 		this.universalPrimaryKey = rowIdSupport.getUniversalPrimaryKey();
 		this.localInlineViewStyle = InlineViewStyle.forSession(localSession);
 		this.remoteInlineViewStyle = InlineViewStyle.forSession(remoteSession);
-		DDLCreator.createDDL(getDatamodel(), localSession, TemporaryTableScope.GLOBAL, rowIdSupport, null);
+		new DDLCreator(commandLine).createDDL(getDatamodel(), localSession, TemporaryTableScope.GLOBAL, rowIdSupport, null);
      
 		File fieldProcTablesFile = new File("field-proc-tables.csv");
         if (fieldProcTablesFile.exists()) {
@@ -260,7 +260,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 */
 	private LocalDatabase createLocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile) throws Exception {
 		String databaseFolder = getConfiguration().databasesFolder;
-		return new LocalDatabase(driverClassName, urlPattern, user, password, jarfile, databaseFolder);
+		return new LocalDatabase(driverClassName, urlPattern, user, password, jarfile, databaseFolder, commandLine);
 	}
 
 	/**
@@ -298,10 +298,10 @@ public class LocalEntityGraph extends EntityGraph {
      * @return the newly created entity-graph
      * @throws Exception 
      */
-    public static LocalEntityGraph create(DataModel dataModel, int graphID, Session remoteSession) throws Exception {
-    	LocalEntityGraph entityGraph = new LocalEntityGraph(graphID, remoteSession);
+    public static LocalEntityGraph create(DataModel dataModel, int graphID, Session remoteSession, CommandLine commandLine) throws Exception {
+    	LocalEntityGraph entityGraph = new LocalEntityGraph(graphID, remoteSession, commandLine);
         try {
-        	entityGraph.localSession.executeUpdate("Insert into " + SQLDialect.dmlTableReference(ENTITY_GRAPH, entityGraph.localSession) + "(id, age) values (" + graphID + ", 1)");
+        	entityGraph.localSession.executeUpdate("Insert into " + SQLDialect.dmlTableReference(ENTITY_GRAPH, entityGraph.localSession, commandLine) + "(id, age) values (" + graphID + ", 1)");
         } catch (SQLException e) {
             throw new RuntimeException("Can't find working tables! " +
                     "Run 'jailer.sh create-ddl' " +
@@ -319,11 +319,11 @@ public class LocalEntityGraph extends EntityGraph {
      * @throws Exception 
      */
     public EntityGraph copy(int newGraphID, Session globalSession) throws Exception {
-        LocalEntityGraph entityGraph = new LocalEntityGraph(newGraphID, dataModel, remoteSession, localSession, localDatabase, localInlineViewStyle, remoteInlineViewStyle, upkColumnNames, universalPrimaryKey, birthdayOfSubject, fieldProcTables, rowIdSupport);
+        LocalEntityGraph entityGraph = new LocalEntityGraph(newGraphID, dataModel, remoteSession, localSession, localDatabase, localInlineViewStyle, remoteInlineViewStyle, upkColumnNames, universalPrimaryKey, birthdayOfSubject, fieldProcTables, rowIdSupport, commandLine);
         entityGraph.setBirthdayOfSubject(birthdayOfSubject);
         localSession.executeUpdate(
-                "Insert into " + SQLDialect.dmlTableReference(ENTITY, localSession) + "(r_entitygraph, " + universalPrimaryKey.columnList(null) + ", birthday, orig_birthday, type) " +
-                    "Select " + newGraphID + ", " + universalPrimaryKey.columnList(null) + ", birthday, birthday, type From " + SQLDialect.dmlTableReference(ENTITY, localSession) + " Where r_entitygraph=" + graphID + "");
+                "Insert into " + dmlTableReference(ENTITY, localSession) + "(r_entitygraph, " + universalPrimaryKey.columnList(null) + ", birthday, orig_birthday, type) " +
+                    "Select " + newGraphID + ", " + universalPrimaryKey.columnList(null) + ", birthday, birthday, type From " + dmlTableReference(ENTITY, localSession) + " Where r_entitygraph=" + graphID + "");
         return entityGraph;
     }
 
@@ -337,10 +337,10 @@ public class LocalEntityGraph extends EntityGraph {
      * @throws Exception 
      */
     public EntityGraph find(int graphID, Session localSession, PrimaryKey universalPrimaryKey) throws Exception {
-        LocalEntityGraph entityGraph = new LocalEntityGraph(graphID, localSession);
+        LocalEntityGraph entityGraph = new LocalEntityGraph(graphID, localSession, commandLine);
         final boolean[] found = new boolean[1];
         found[0] = false;
-        localSession.executeQuery("Select * From " + SQLDialect.dmlTableReference(ENTITY_GRAPH, localSession) + "Where id=" + graphID + "", new Session.ResultSetReader() {
+        localSession.executeQuery("Select * From " + dmlTableReference(ENTITY_GRAPH, localSession) + "Where id=" + graphID + "", new Session.ResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 found[0] = true;
             }
@@ -361,7 +361,7 @@ public class LocalEntityGraph extends EntityGraph {
     public int getAge() throws SQLException {
         final int[] age = new int[1];
         age[0] = -1;
-        localSession.executeQuery("Select age From " + SQLDialect.dmlTableReference(ENTITY_GRAPH, localSession) + " Where id=" + graphID + "", new Session.ResultSetReader() {
+        localSession.executeQuery("Select age From " + dmlTableReference(ENTITY_GRAPH, localSession) + " Where id=" + graphID + "", new Session.ResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 age[0] = resultSet.getInt(1);
             }
@@ -377,7 +377,7 @@ public class LocalEntityGraph extends EntityGraph {
      * @param age the age of the graph
      */
     public void setAge(int age) throws SQLException {
-        localSession.executeUpdate("Update " + SQLDialect.dmlTableReference(ENTITY_GRAPH, localSession) + " Set age=" + age + " Where id=" + graphID + "");
+        localSession.executeUpdate("Update " + dmlTableReference(ENTITY_GRAPH, localSession) + " Set age=" + age + " Where id=" + graphID + "");
     }
     
     /**
@@ -388,7 +388,7 @@ public class LocalEntityGraph extends EntityGraph {
     public long getSize() throws SQLException {
         final int[] size = new int[1];
         size[0] = -1;
-        localSession.executeQuery("Select count(*) From " + SQLDialect.dmlTableReference(ENTITY, localSession) + " Where r_entitygraph=" + graphID + " and birthday >= 0", new Session.ResultSetReader() {
+        localSession.executeQuery("Select count(*) From " + dmlTableReference(ENTITY, localSession) + " Where r_entitygraph=" + graphID + " and birthday >= 0", new Session.ResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 size[0] = resultSet.getInt(1);
             }
@@ -402,9 +402,9 @@ public class LocalEntityGraph extends EntityGraph {
      * Deletes the graph.
      */
     public void delete() throws SQLException {
-        localSession.executeUpdate("Delete from " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + " Where r_entitygraph=" + graphID + "");
-        localSession.executeUpdate("Delete from " + SQLDialect.dmlTableReference(ENTITY, localSession) + " Where r_entitygraph=" + graphID + "");
-        localSession.executeUpdate("Delete from " + SQLDialect.dmlTableReference(ENTITY_GRAPH, localSession) + " Where id=" + graphID + "");
+        localSession.executeUpdate("Delete from " + dmlTableReference(DEPENDENCY, localSession) + " Where r_entitygraph=" + graphID + "");
+        localSession.executeUpdate("Delete from " + dmlTableReference(ENTITY, localSession) + " Where r_entitygraph=" + graphID + "");
+        localSession.executeUpdate("Delete from " + dmlTableReference(ENTITY_GRAPH, localSession) + " Where id=" + graphID + "");
     }
 
     /**
@@ -484,7 +484,7 @@ public class LocalEntityGraph extends EntityGraph {
 			
 			select =
 		      "Select " + upkColumnList(source, "E", null) +
-		      " From " + SQLDialect.dmlTableReference(ENTITY, localSession) + " E" +
+		      " From " + dmlTableReference(ENTITY, localSession) + " E" +
 		      " Where " + condition;
 			
 			final long[] rc = new long[1];
@@ -519,11 +519,11 @@ public class LocalEntityGraph extends EntityGraph {
 							String select = "Select " + graphID + " as GRAPH_ID, " + upkColumnList(destination, destAlias, null) + ", " + today + " AS BIRTHDAY, " + typeName(destination) + " AS TYPE" +
 					        (source == null || !explain? "" : ", " + associationExplanationID + " AS ASSOCIATION, " + typeName(source) + " AS SOURCE_TYPE, " + upkColumnList(source, "PRE_")) +
 					        " From " + inlineView + 
-					        " left join " + SQLDialect.dmlTableReference(ENTITY, localSession) + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type=" + typeName(destination) + " and " +
+					        " left join " + dmlTableReference(ENTITY, localSession) + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type=" + typeName(destination) + " and " +
 					        entityJoinCondition + 
 					        " Where Duplicate.type is null";
 							
-					        String insert = "Insert into " + SQLDialect.dmlTableReference(ENTITY, localSession) + " (r_entitygraph, " + upkColumnList(destination, null) + ", birthday, type" + (source == null || !explain? "" : ", association, PRE_TYPE, " + upkColumnList(source, "PRE_"))  + ") " + select;
+					        String insert = "Insert into " + dmlTableReference(ENTITY, localSession) + " (r_entitygraph, " + upkColumnList(destination, null) + ", birthday, type" + (source == null || !explain? "" : ", association, PRE_TYPE, " + upkColumnList(source, "PRE_"))  + ") " + select;
 					        rc[0] += localSession.executeUpdate(insert);
 					        totalRowcount += rc[0];
 						}
@@ -577,11 +577,11 @@ public class LocalEntityGraph extends EntityGraph {
 				String entityJoinCondition = sb.toString();
 				String select = "Select " + graphID + " as GRAPH_ID, " + upkColumnList(table, alias, null) + ", " + today + " AS BIRTHDAY, " + typeName(table) + " AS TYPE" +
 	            " From " + inlineView + 
-	            " left join " + SQLDialect.dmlTableReference(ENTITY, localSession) + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type=" + typeName(table) + " and " +
+	            " left join " + dmlTableReference(ENTITY, localSession) + " Duplicate on Duplicate.r_entitygraph=" + graphID + " and Duplicate.type=" + typeName(table) + " and " +
                 entityJoinCondition + 
                 " Where Duplicate.type is null";
 				
-		        String insert = "Insert into " + SQLDialect.dmlTableReference(ENTITY, localSession) + " (r_entitygraph, " + upkColumnList(table, null) + ", birthday, type) " + select;
+		        String insert = "Insert into " + dmlTableReference(ENTITY, localSession) + " (r_entitygraph, " + upkColumnList(table, null) + ", birthday, type) " + select;
 		        rc[0] += localSession.executeUpdate(insert);
 		        totalRowcount += rc[0];
 			}
@@ -605,7 +605,7 @@ public class LocalEntityGraph extends EntityGraph {
         checkPseudoColumns(from, condition);
     	String upkColumnList = upkColumnList(from, "E1", null);
 		String select = 
-    			"Select " + upkColumnList + " From " + SQLDialect.dmlTableReference(ENTITY, localSession) + " E1 " +
+    			"Select " + upkColumnList + " From " + dmlTableReference(ENTITY, localSession) + " E1 " +
     			" Where E1.r_entitygraph=" + graphID + 
     			" and E1.type=" + typeName(from) + "";
 
@@ -637,9 +637,9 @@ public class LocalEntityGraph extends EntityGraph {
 					        }
 						}
 						String pkEqualsEntityID = sb.toString();
-						String insert = "Insert into " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + "(r_entitygraph, assoc, depend_id, from_type, to_type, " + upkColumnList(from, "FROM_") + ", " + upkColumnList(to, "TO_") + ") " +
+						String insert = "Insert into " + dmlTableReference(DEPENDENCY, localSession) + "(r_entitygraph, assoc, depend_id, from_type, to_type, " + upkColumnList(from, "FROM_") + ", " + upkColumnList(to, "TO_") + ") " +
 				                "Select " + graphID + ", " + aggregationId  + ", " + dependencyId + ", " + typeName(from) + ", " + typeName(to) + ", " + upkColumnList(from, "E1E2", "E1") + ", " + upkColumnList(to, "E1E2", "E2") +
-				                " From " + inlineView + ", " + SQLDialect.dmlTableReference(ENTITY, localSession) + " E2" +
+				                " From " + inlineView + ", " + dmlTableReference(ENTITY, localSession) + " E2" +
 				                " Where E2.r_entitygraph=" + graphID + "" +
 				                " and E2.type=" + typeName(to) + "" +
 				                " and " + pkEqualsEntityID;
@@ -655,7 +655,7 @@ public class LocalEntityGraph extends EntityGraph {
      * Gets distinct association-ids of all edged.
      */
     public Set<Integer> getDistinctDependencyIDs() throws SQLException {
-        String select = "Select distinct depend_id from " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + " Where r_entitygraph=" + graphID;
+        String select = "Select distinct depend_id from " + dmlTableReference(DEPENDENCY, localSession) + " Where r_entitygraph=" + graphID;
         final Set<Integer> ids = new HashSet<Integer>();
         localSession.executeQuery(select, new Session.ResultSetReader() {
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
@@ -679,17 +679,17 @@ public class LocalEntityGraph extends EntityGraph {
                 fromEqualsPK.append(" and ");
             }
         	if (match.get(column) != null) {
-	            fromEqualsPK.append("D.FROM_" + column.name + "=" + SQLDialect.dmlTableReference(ENTITY, localSession) + "." + column.name);
+	            fromEqualsPK.append("D.FROM_" + column.name + "=" + dmlTableReference(ENTITY, localSession) + "." + column.name);
         	} else {
-        		fromEqualsPK.append("D.FROM_" + column.name + " is null and " + SQLDialect.dmlTableReference(ENTITY, localSession) + "." + column.name + " is null");
+        		fromEqualsPK.append("D.FROM_" + column.name + " is null and " + dmlTableReference(ENTITY, localSession) + "." + column.name + " is null");
         	}
         }
         localSession.executeUpdate(
-                "Update " + SQLDialect.dmlTableReference(ENTITY, localSession) + " set birthday=0 " +
+                "Update " + dmlTableReference(ENTITY, localSession) + " set birthday=0 " +
                 "Where r_entitygraph=" + graphID + " and birthday>0 and " +
                 	   (table != null? "type=" + typeName(table) + " and " : "") +
-                       "not exists (Select * from " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + " D " +
-                           "Where D.r_entitygraph=" + graphID + " and D.assoc=0 and D.from_type=" + SQLDialect.dmlTableReference(ENTITY, localSession) + ".type and " +
+                       "not exists (Select * from " + dmlTableReference(DEPENDENCY, localSession) + " D " +
+                           "Where D.r_entitygraph=" + graphID + " and D.assoc=0 and D.from_type=" + dmlTableReference(ENTITY, localSession) + ".type and " +
                                  fromEqualsPK + ")");
     }
 
@@ -708,16 +708,16 @@ public class LocalEntityGraph extends EntityGraph {
                 toEqualsPK.append(" and ");
             }
             if (match.containsKey(column)) {
-            	toEqualsPK.append("D.TO_" + column.name + "=" + SQLDialect.dmlTableReference(ENTITY, localSession) + "." + column.name);
+            	toEqualsPK.append("D.TO_" + column.name + "=" + dmlTableReference(ENTITY, localSession) + "." + column.name);
             } else {
-            	toEqualsPK.append("D.TO_" + column.name + " is null and " + SQLDialect.dmlTableReference(ENTITY, localSession) + "." + column.name + " is null");
+            	toEqualsPK.append("D.TO_" + column.name + " is null and " + dmlTableReference(ENTITY, localSession) + "." + column.name + " is null");
             }
         }
         localSession.executeUpdate(
-                "Update " + SQLDialect.dmlTableReference(ENTITY, localSession) + " set birthday=0 " +
+                "Update " + dmlTableReference(ENTITY, localSession) + " set birthday=0 " +
                 "Where r_entitygraph=" + graphID + " and birthday>0 and type=" + typeName(table) + " and " +
-                       "not exists (Select * from " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + " D " +
-                           "Where D.r_entitygraph=" +graphID + " and D.to_type=" + SQLDialect.dmlTableReference(ENTITY, localSession) + ".type and " +
+                       "not exists (Select * from " + dmlTableReference(DEPENDENCY, localSession) + " D " +
+                           "Where D.r_entitygraph=" +graphID + " and D.to_type=" + dmlTableReference(ENTITY, localSession) + ".type and " +
                                  toEqualsPK + ")");
     }
 
@@ -747,7 +747,7 @@ public class LocalEntityGraph extends EntityGraph {
         }
         
         String select = 
-        		"Select " + upkColumnList + " From " + SQLDialect.dmlTableReference(ENTITY, localSession) + " E" +
+        		"Select " + upkColumnList + " From " + dmlTableReference(ENTITY, localSession) + " E" +
         		" Where E.birthday=0 and E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) + "" +
                 orderBy;
         
@@ -790,7 +790,7 @@ public class LocalEntityGraph extends EntityGraph {
         }
         
         String select = 
-        		"Select " + upkColumnList + " From " + SQLDialect.dmlTableReference(ENTITY, localSession) + " E" +
+        		"Select " + upkColumnList + " From " + dmlTableReference(ENTITY, localSession) + " E" +
         		" Where E.birthday=0 and E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) + "" +
                 orderBy;
         
@@ -841,10 +841,10 @@ public class LocalEntityGraph extends EntityGraph {
             }
             e1EqualsE2.append("E1." + column.name + "=E2." + column.name);
         }
-        localSession.executeUpdate("Update " + SQLDialect.dmlTableReference(ENTITY, localSession) + " E1 " +
+        localSession.executeUpdate("Update " + dmlTableReference(ENTITY, localSession) + " E1 " +
                 "set E1.r_entitygraph=" + graphID + " " +
                 "Where E1.r_entitygraph=" + graph.graphID + " " +
-                "and not exists(Select * from " + SQLDialect.dmlTableReference(ENTITY, localSession) + " E2 Where " +
+                "and not exists(Select * from " + dmlTableReference(ENTITY, localSession) + " E2 Where " +
                 "E2.r_entitygraph=" + graphID + " and " +
                 e1EqualsE2 +
                 ")");
@@ -872,7 +872,7 @@ public class LocalEntityGraph extends EntityGraph {
     private long readEntities(final Table table, final boolean orderByPK, final Session.ResultSetReader reader) throws SQLException {
     	String upkColumnList = upkColumnList(table, "E", null);
 		String select = 
-    			"Select " + upkColumnList + " From " + SQLDialect.dmlTableReference(ENTITY, localSession) + " E " +
+    			"Select " + upkColumnList + " From " + dmlTableReference(ENTITY, localSession) + " E " +
     			" Where E.birthday>=0 and E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) + "";
 		if (orderByPK) {
 			select += " order by " + upkColumnList;
@@ -907,7 +907,7 @@ public class LocalEntityGraph extends EntityGraph {
     public long readUnfilteredEntityColumns(final Table table, final List<Column> columns, final Session.ResultSetReader reader) throws SQLException {
     	String upkColumnList = upkColumnList(table, "E", null);
 		String select = 
-    			"Select distinct " + upkColumnList + " From " + SQLDialect.dmlTableReference(ENTITY, localSession) + " E " +
+    			"Select distinct " + upkColumnList + " From " + dmlTableReference(ENTITY, localSession) + " E " +
     			" Where E.birthday>=0 and E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) + "";
 		
     	StringBuilder sb = new StringBuilder();
@@ -944,7 +944,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param columns the columns;
 	 */
 	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, Configuration targetConfiguration) throws SQLException {
-		Session.ResultSetReader reader = new UpdateTransformer(table, columns, scriptFileWriter, CommandLineParser.getInstance().numberOfEntities, getTargetSession(), targetConfiguration, importFilterManager);
+		Session.ResultSetReader reader = new UpdateTransformer(table, columns, scriptFileWriter, commandLine.numberOfEntities, getTargetSession(), targetConfiguration, importFilterManager, commandLine);
     	readEntities(table, false, reader);
 	}
 
@@ -995,35 +995,35 @@ public class LocalEntityGraph extends EntityGraph {
                 fromEqualsPK.append(" and ");
             }
             if (match.containsKey(column)) {
-            	fromEqualsPK.append(SQLDialect.dmlTableReference(DEPENDENCY, localSession) + ".FROM_" + column.name + "=" + column.name);
+            	fromEqualsPK.append(dmlTableReference(DEPENDENCY, localSession) + ".FROM_" + column.name + "=" + column.name);
             } else {
-            	fromEqualsPK.append(SQLDialect.dmlTableReference(DEPENDENCY, localSession) + ".FROM_" + column.name + " is null and " + column.name + " is null");
+            	fromEqualsPK.append(dmlTableReference(DEPENDENCY, localSession) + ".FROM_" + column.name + " is null and " + column.name + " is null");
             }
             if (toEqualsPK.length() > 0) {
                 toEqualsPK.append(" and ");
             }
             if (match.containsKey(column)) {
-            	toEqualsPK.append(SQLDialect.dmlTableReference(DEPENDENCY, localSession) + ".TO_" + column.name + "=" + column.name);
+            	toEqualsPK.append(dmlTableReference(DEPENDENCY, localSession) + ".TO_" + column.name + "=" + column.name);
             } else {
-            	toEqualsPK.append(SQLDialect.dmlTableReference(DEPENDENCY, localSession) + ".TO_" + column.name + " is null and " + column.name + " is null");
+            	toEqualsPK.append(dmlTableReference(DEPENDENCY, localSession) + ".TO_" + column.name + " is null and " + column.name + " is null");
             }
         }
         localSession.executeUpdate(
-                "Delete From " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + " " +
-                "Where " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + ".r_entitygraph=" + graphID + " and assoc=0 and from_type=" + typeName(table) + " and " + 
-                      "exists (Select * from " + SQLDialect.dmlTableReference(ENTITY, localSession) + " E Where " + 
+                "Delete From " + dmlTableReference(DEPENDENCY, localSession) + " " +
+                "Where " + dmlTableReference(DEPENDENCY, localSession) + ".r_entitygraph=" + graphID + " and assoc=0 and from_type=" + typeName(table) + " and " + 
+                      "exists (Select * from " + dmlTableReference(ENTITY, localSession) + " E Where " + 
                           "E.r_entitygraph=" + graphID + " and " +
-                          fromEqualsPK + " and " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + ".from_type=E.type and " +
+                          fromEqualsPK + " and " + dmlTableReference(DEPENDENCY, localSession) + ".from_type=E.type and " +
                           "E.birthday=0)");
         localSession.executeUpdate(
-                "Delete From " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + " " +
-                "Where " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + ".r_entitygraph=" + graphID + " and assoc=0 and to_type=" + typeName(table) + " and " +
-                      "exists (Select * from " + SQLDialect.dmlTableReference(ENTITY, localSession) + " E Where " + 
+                "Delete From " + dmlTableReference(DEPENDENCY, localSession) + " " +
+                "Where " + dmlTableReference(DEPENDENCY, localSession) + ".r_entitygraph=" + graphID + " and assoc=0 and to_type=" + typeName(table) + " and " +
+                      "exists (Select * from " + dmlTableReference(ENTITY, localSession) + " E Where " + 
                           "E.r_entitygraph=" + graphID + " and " +
-                          toEqualsPK + " and " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + ".to_type=E.type and " +
+                          toEqualsPK + " and " + dmlTableReference(DEPENDENCY, localSession) + ".to_type=E.type and " +
                           "E.birthday=0)");
         localSession.executeUpdate(
-                "Delete From " + SQLDialect.dmlTableReference(ENTITY, localSession) + " " +
+                "Delete From " + dmlTableReference(ENTITY, localSession) + " " +
                 "Where r_entitygraph=" + graphID + " and type=" + typeName(table) + " and " +
                        "birthday=0");
     }
@@ -1033,7 +1033,7 @@ public class LocalEntityGraph extends EntityGraph {
      */
     public long deleteEntities(Table table) throws SQLException {
         return localSession.executeUpdate(
-                "Delete From " + SQLDialect.dmlTableReference(ENTITY, localSession) + " " +
+                "Delete From " + dmlTableReference(ENTITY, localSession) + " " +
                 "Where r_entitygraph=" + graphID + " and " +
                        "type=" + typeName(table));
     }
@@ -1047,7 +1047,7 @@ public class LocalEntityGraph extends EntityGraph {
     public long countEntities(Table table) throws SQLException {
         final long[] count = new long[1];
         localSession.executeQuery(
-                "Select count(*) from " + SQLDialect.dmlTableReference(ENTITY, localSession) + " E " +
+                "Select count(*) from " + dmlTableReference(ENTITY, localSession) + " E " +
                 "Where E.birthday>=0 and E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) + "",
                 new Session.AbstractResultSetReader() {
                     public void readCurrentRow(ResultSet resultSet) throws SQLException {
@@ -1083,7 +1083,7 @@ public class LocalEntityGraph extends EntityGraph {
             final long[] rc = new long[1];
             
             String selectEB = 
-            		"Select " + upkColumnList(association.destination, "EB", "") + " from " + SQLDialect.dmlTableReference(ENTITY, localSession) + " EB " +
+            		"Select " + upkColumnList(association.destination, "EB", "") + " from " + dmlTableReference(ENTITY, localSession) + " EB " +
             		"Where " + (deletedEntitiesAreMarked? "EB.birthday>=0 and " : "") +
             		"EB.r_entitygraph=" + graphID + " and EB.type=" + typeName(association.destination) + " ";
         
@@ -1116,12 +1116,12 @@ public class LocalEntityGraph extends EntityGraph {
 							
 							String selectEB =
 									"Select distinct " + setId + ", " + typeName(association.destination) + ", " + upkColumnList(association.destination, "EBA", "EB") + 
-									" from " + inlineView + (deletedEntitiesAreMarked? " join " : " left join ") + SQLDialect.dmlTableReference(ENTITY, localSession) + " EA" + 
+									" from " + inlineView + (deletedEntitiesAreMarked? " join " : " left join ") + dmlTableReference(ENTITY, localSession) + " EA" + 
 									" on EA.r_entitygraph=" + graphID + " and EA.type=" + typeName(association.source) + "" +
 									" and " + eBAEqualsEA +
 					                " Where " + (deletedEntitiesAreMarked? "EA.birthday=-1" : "EA.type is null");
 									
-				            String remove = "Insert into " + SQLDialect.dmlTableReference(ENTITY_SET_ELEMENT, localSession) + 
+				            String remove = "Insert into " + dmlTableReference(ENTITY_SET_ELEMENT, localSession) + 
 				            		"(set_id, type, " + upkColumnList(association.destination, null, "") + ") " +
 				            		selectEB;
 				            
@@ -1140,14 +1140,14 @@ public class LocalEntityGraph extends EntityGraph {
 				                    }
 				                	if (match.containsKey(column)) {
 					                    sEqualsE.append("S." + column.name + "=E." + column.name);
-					                    sEqualsEWoAlias.append("S." + column.name + "=" + SQLDialect.dmlTableReference(ENTITY, localSession) + "." + column.name);
+					                    sEqualsEWoAlias.append("S." + column.name + "=" + dmlTableReference(ENTITY, localSession) + "." + column.name);
 				                	} else {
 					                    sEqualsE.append("S." + column.name + " is null and E." + column.name + " is null");
-					                    sEqualsEWoAlias.append("S." + column.name + " is null and " + SQLDialect.dmlTableReference(ENTITY, localSession) + "." + column.name + " is null");
+					                    sEqualsEWoAlias.append("S." + column.name + " is null and " + dmlTableReference(ENTITY, localSession) + "." + column.name + " is null");
 				                	}
 				                }
-				                remove = "Update " + SQLDialect.dmlTableReference(ENTITY, localSession) + " E set E.birthday=-1 Where E.r_entitygraph=" + graphID + " and E.type=" + typeName(association.destination) + " " +
-				                          "and exists (Select * from " + SQLDialect.dmlTableReference(ENTITY_SET_ELEMENT, localSession) + " S where S.set_id=" + setId + " and E.type=S.type and " + sEqualsE + ") " +
+				                remove = "Update " + dmlTableReference(ENTITY, localSession) + " E set E.birthday=-1 Where E.r_entitygraph=" + graphID + " and E.type=" + typeName(association.destination) + " " +
+				                          "and exists (Select * from " + dmlTableReference(ENTITY_SET_ELEMENT, localSession) + " S where S.set_id=" + setId + " and E.type=S.type and " + sEqualsE + ") " +
 				                          "and E.birthday<>-1";
 				                boolean silent = localSession.getSilent();
 				                try {
@@ -1157,14 +1157,14 @@ public class LocalEntityGraph extends EntityGraph {
 				                } catch (SQLException e) {
 				                	// postgreSQL
 				                	Session._log.debug("failed, retry without alias (" + e.getMessage() + ")");
-				                	remove = "Update " + SQLDialect.dmlTableReference(ENTITY, localSession) + " set birthday=-1 Where " + SQLDialect.dmlTableReference(ENTITY, localSession) + ".r_entitygraph=" + graphID + " and " + SQLDialect.dmlTableReference(ENTITY, localSession) + ".type=" + typeName(association.destination) + " " +
-				                    "and exists (Select * from " + SQLDialect.dmlTableReference(ENTITY_SET_ELEMENT, localSession) + " S where S.set_id=" + setId + " and " + SQLDialect.dmlTableReference(ENTITY, localSession) + ".type=S.type and " + sEqualsEWoAlias + ") " +
-				                	"and " + SQLDialect.dmlTableReference(ENTITY, localSession) + ".birthday<>-1";
+				                	remove = "Update " + dmlTableReference(ENTITY, localSession) + " set birthday=-1 Where " + dmlTableReference(ENTITY, localSession) + ".r_entitygraph=" + graphID + " and " + dmlTableReference(ENTITY, localSession) + ".type=" + typeName(association.destination) + " " +
+				                    "and exists (Select * from " + dmlTableReference(ENTITY_SET_ELEMENT, localSession) + " S where S.set_id=" + setId + " and " + dmlTableReference(ENTITY, localSession) + ".type=S.type and " + sEqualsEWoAlias + ") " +
+				                	"and " + dmlTableReference(ENTITY, localSession) + ".birthday<>-1";
 				                	rc[0] += localSession.executeUpdate(remove);
 				                } finally {
 				                	localSession.setSilent(silent);
 				                }
-				                localSession.executeUpdate("Delete from " + SQLDialect.dmlTableReference(ENTITY_SET_ELEMENT, localSession) + " where set_id=" + setId + "");
+				                localSession.executeUpdate("Delete from " + dmlTableReference(ENTITY_SET_ELEMENT, localSession) + " where set_id=" + setId + "");
 				            }
 				        }
 					});
@@ -1187,7 +1187,7 @@ public class LocalEntityGraph extends EntityGraph {
      */
     public void readDependentEntities(final Table table, final Association association, final ResultSet resultSet, ResultSetMetaData resultSetMetaData, final ResultSetReader reader, final Map<String, Integer> theTypeCache, final String selectionSchema, final String originalPKAliasPrefix) throws SQLException {
     	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, localSession, Configuration.forDbms(localSession));
-    	String select = "Select " + upkColumnList(table, "TO_") + " from " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + " D" +
+    	String select = "Select " + upkColumnList(table, "TO_") + " from " + dmlTableReference(DEPENDENCY, localSession) + " D" +
 	    		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", cellContentConverter) +
 	    		 " and D.to_type=" + typeName(table) + "" +
 	    	     " and D.from_type=" + typeName(association.source) + " and assoc=" + association.getId() +
@@ -1231,12 +1231,12 @@ public class LocalEntityGraph extends EntityGraph {
     	String update;
     	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, localSession, Configuration.forDbms(localSession));
     	if (localSession.dbms == DBMS.SYBASE) {
-    		update = "Update " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + " set traversed=1" +
-    		 " Where " + pkEqualsEntityID(association.source, resultSet, SQLDialect.dmlTableReference(DEPENDENCY, localSession), "FROM_", cellContentConverter) +
-    		 " and " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + ".from_type=" + typeName(association.source) + " and assoc=" + association.getId() +
-    		 " and " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + ".r_entitygraph=" + graphID;
+    		update = "Update " + dmlTableReference(DEPENDENCY, localSession) + " set traversed=1" +
+    		 " Where " + pkEqualsEntityID(association.source, resultSet, dmlTableReference(DEPENDENCY, localSession), "FROM_", cellContentConverter) +
+    		 " and " + dmlTableReference(DEPENDENCY, localSession) + ".from_type=" + typeName(association.source) + " and assoc=" + association.getId() +
+    		 " and " + dmlTableReference(DEPENDENCY, localSession) + ".r_entitygraph=" + graphID;
     	} else {
-    		update = "Update " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + " D set traversed=1" +
+    		update = "Update " + dmlTableReference(DEPENDENCY, localSession) + " D set traversed=1" +
     		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", cellContentConverter) +
     	     " and D.from_type=" + typeName(association.source) + " and assoc=" + association.getId() +
     	     " and D.r_entitygraph=" + graphID;
@@ -1251,7 +1251,7 @@ public class LocalEntityGraph extends EntityGraph {
      * @param reader reads the entities
      */
     public void readNonTraversedDependencies(Table table, ResultSetReader reader) throws SQLException {
-    	String select = "Select * from " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) + " D " +
+    	String select = "Select * from " + dmlTableReference(DEPENDENCY, localSession) + " D " +
     		 " Where (traversed is null or traversed <> 1)" +
     	     " and D.from_type=" + typeName(table) + "" +
     	     " and D.r_entitygraph=" + graphID;
@@ -1275,7 +1275,7 @@ public class LocalEntityGraph extends EntityGraph {
 	            sb.append("FROM_" + column.name + " = TO_" + column.name);
             }
         }
-        String delete = "Delete from " + SQLDialect.dmlTableReference(DEPENDENCY, localSession) +
+        String delete = "Delete from " + dmlTableReference(DEPENDENCY, localSession) +
 			" Where " + sb +
 			" and from_type=" + typeName(table) + "" +
 			" and to_type=" + typeName(table) + "" +

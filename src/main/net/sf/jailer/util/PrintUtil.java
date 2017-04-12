@@ -31,7 +31,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.datamodel.Table;
 
 /**
@@ -40,13 +40,27 @@ import net.sf.jailer.datamodel.Table;
  * @author Ralf Wisser
  */
 public class PrintUtil {
-    
+	
+	/**
+	 * The command line arguments.
+	 */
+	private final CommandLine commandLine;
+	
+	/**
+	 * Constructor.
+	 * 
+	 * @param commandLine the command line arguments
+	 */
+	public PrintUtil(CommandLine commandLine) {
+		this.commandLine = commandLine;
+	}
+	
     /**
      * Converts a set of tables into a string.
      * 
      * @param tables the set
      */
-    public static String tableSetAsString(Set<Table> tables) {
+    public String tableSetAsString(Set<Table> tables) {
         return tableSetAsString(tables, "      ");
     }
     
@@ -55,7 +69,7 @@ public class PrintUtil {
      * 
      * @param tables the set
      */
-    public static String tableSetAsString(Set<Table> tables, String linePrefix) {
+    public String tableSetAsString(Set<Table> tables, String linePrefix) {
         List<String> tableNames = new ArrayList<String>();
         for (Table table: tables) {
             tableNames.add(table.getName());
@@ -81,7 +95,7 @@ public class PrintUtil {
     /**
      * Cache for {@link #applyTemplate(String, Object[])}.
      */
-    private static Map<String, String> templateCache = new HashMap<String, String>();
+    private Map<String, String> templateCache = new HashMap<String, String>();
     
     /**
      * Applies arguments to template.
@@ -91,7 +105,7 @@ public class PrintUtil {
      * 
      * @return template with arguments filled in
      */
-    public static String applyTemplate(String template, Object[] arguments) throws FileNotFoundException, IOException {
+    public String applyTemplate(String template, Object[] arguments) throws FileNotFoundException, IOException {
         String sb = templateCache.get(template);
         if (sb == null) {
             sb = loadFile(template);
@@ -109,7 +123,7 @@ public class PrintUtil {
      * 
      * @return template with arguments filled in
      */
-    public static String applyTemplate(String template, Map<String, String> arguments, Map<String, List<String>> listArguments) throws FileNotFoundException, IOException {
+    public String applyTemplate(String template, Map<String, String> arguments, Map<String, List<String>> listArguments) throws FileNotFoundException, IOException {
     	String sb = templateCache.get(template);
         if (sb == null) {
             sb = loadFile(template);
@@ -152,7 +166,7 @@ public class PrintUtil {
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public static String loadFile(String file) throws FileNotFoundException, IOException {
+    public String loadFile(String file) throws FileNotFoundException, IOException {
         return loadFile(file, false);
     }
     
@@ -164,10 +178,10 @@ public class PrintUtil {
      * @throws FileNotFoundException
      * @throws IOException
      */
-    public static String loadFile(String file, boolean ignoreComments) throws FileNotFoundException, IOException {
+    public String loadFile(String file, boolean ignoreComments) throws FileNotFoundException, IOException {
         StringBuffer sb;
         sb = new StringBuffer();
-        BufferedReader reader = new BufferedReader(new FileReader(CommandLineParser.getInstance().newFile(file)));
+        BufferedReader reader = new BufferedReader(new FileReader(commandLine.newFile(file)));
         String line = null;
         while ((line = reader.readLine()) != null) {
             if (!ignoreComments || (line.trim().length() > 0 && !line.startsWith("#"))) {
@@ -178,16 +192,16 @@ public class PrintUtil {
         return sb.toString();
     }
 
-	public static File createTempFile() {
+	public File createTempFile() {
 		String file;
 		String ts = UUID.randomUUID().toString();
 		File newFile;
 		for (int i = 1; ; ++i) {
 			file = "tmp";
-			newFile = CommandLineParser.getInstance().newFile(file);
+			newFile = commandLine.newFile(file);
 			newFile.mkdirs();
 			file += File.separator + "up" + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".sql";
-			newFile = CommandLineParser.getInstance().newFile(file);
+			newFile = commandLine.newFile(file);
 			if (!newFile.exists()) {
 				break;
 			}

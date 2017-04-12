@@ -96,7 +96,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 
-import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.database.InlineViewStyle;
@@ -309,6 +309,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private final DataModel dataModel;
 	
 	/**
+	 * The command line arguments.
+	 */
+	protected final CommandLine commandLine;
+	
+	/**
 	 * {@link RowIdSupport} for data model.
 	 */
 	private final RowIdSupport rowIdSupport;
@@ -417,17 +422,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param reload 
 	 */
 	public BrowserContentPane(final DataModel dataModel, final Table table, String condition, Session session, Row parentRow, List<Row> parentRows,
-			final Association association, Frame parentFrame, Set<Pair<BrowserContentPane, Row>> currentClosure, Set<Pair<BrowserContentPane, String>> currentClosureRowIDs, Integer limit, Boolean selectDistinct, boolean reload) {
+			final Association association, Frame parentFrame, Set<Pair<BrowserContentPane, Row>> currentClosure, Set<Pair<BrowserContentPane, String>> currentClosureRowIDs,
+			Integer limit, Boolean selectDistinct, boolean reload, CommandLine commandLine) {
 		this.table = table;
 		this.session = session;
 		this.dataModel = dataModel;
-		this.rowIdSupport = new RowIdSupport(dataModel, Configuration.forDbms(session));
+		this.rowIdSupport = new RowIdSupport(dataModel, Configuration.forDbms(session), commandLine);
 		this.parentRow = parentRow;
 		this.parentRows = parentRows;
 		this.association = association;
 		this.currentClosure = currentClosure;
 		this.currentClosureRowIDs = currentClosureRowIDs;
-
+		this.commandLine = commandLine;
+		
 		rowIdSupport.setUseRowIdsOnlyForTablesWithoutPK(true);
 		
 		suppressReload = true;
@@ -1423,10 +1430,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			
 			for (int i = 1; ; ++i) {
 				file = "extractionmodel" + File.separator + "by-example";
-				newFile = CommandLineParser.getInstance().newFile(file);
+				newFile = commandLine.newFile(file);
 				newFile.mkdirs();
 				file += File.separator + "SbE-" + (dataModel.getDisplayName(stable).replaceAll("[\"'\\[\\]]", "")) + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".csv";
-				newFile = CommandLineParser.getInstance().newFile(file);
+				newFile = commandLine.newFile(file);
 				if (!newFile.exists()) {
 					break;
 				}

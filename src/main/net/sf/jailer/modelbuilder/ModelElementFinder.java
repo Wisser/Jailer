@@ -19,6 +19,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
@@ -40,7 +41,7 @@ public interface ModelElementFinder {
      * 
      * @throws Exception on each error
      */
-    Collection<Table> findTables(Session session) throws Exception;
+    Collection<Table> findTables(Session session, CommandLine commandLine) throws Exception;
 
     /**
      * Finds the {@link Column}s of a given {@link Table}.
@@ -50,7 +51,7 @@ public interface ModelElementFinder {
      * 
      * @throws Exception on each error
      */
-    List<Column> findColumns(Table table, Session session) throws Exception;
+    List<Column> findColumns(Table table, Session session, CommandLine commandLine) throws Exception;
 
     /**
      * Finds a set of {@link Association}s.
@@ -62,6 +63,6 @@ public interface ModelElementFinder {
      * 
      * @throws Exception on each error
      */
-    Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestions, Session session) throws Exception;
+    Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestions, Session session, CommandLine commandLine) throws Exception;
     
 }

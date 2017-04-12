@@ -13,23 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.sf.jailer.render;
+package net.sf.jailer.ui;
 
 import net.sf.jailer.CommandLine;
-import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.CommandLineParser;
 
 /**
- * Generates a human readable representation of the data-model.
- *  
+ * Global (singleton) instance of the {@link CommandLine}.
+ * 
  * @author Ralf Wisser
  */
-public interface DataModelRenderer {
+public class CommandLineInstance {
 
     /**
-     * Generates a human readable representation of the data-model.
-     * 
-     * @param dataModel the data-model
+     * The singleton.
      */
-    void render(DataModel dataModel, CommandLine commandLine);
+    private static CommandLine commandLine;
+    
+    /**
+     * Gets the singleton.
+     * 
+     * @return the singleton
+     */
+    public static CommandLine getInstance() {
+        return commandLine;
+    }
+
+    /**
+     * Sets the singleton.
+     */
+    public static void init(String[] args) throws Exception {
+        commandLine = CommandLineParser.parse(args, true);
+    }
 
 }

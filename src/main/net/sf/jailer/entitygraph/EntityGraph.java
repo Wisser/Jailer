@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.TransformerFactory;
 import net.sf.jailer.database.SQLDialect;
@@ -76,14 +77,20 @@ public abstract class EntityGraph {
     
     public final DataModel dataModel;
     
-    protected boolean inDeleteMode = false;
+    /**
+   	 * The command line arguments.
+   	 */
+   	protected final CommandLine commandLine;
+   	
+   	protected boolean inDeleteMode = false;
     
     /**
      * The unique ID of the graph.
      */
     public final int graphID;
 
-    protected EntityGraph(int graphID, DataModel dataModel) {
+    protected EntityGraph(int graphID, DataModel dataModel, CommandLine commandLine) {
+    	this.commandLine = commandLine;
     	this.graphID = graphID;
     	this.dataModel = dataModel;
     }
@@ -145,7 +152,7 @@ public abstract class EntityGraph {
 	public long getSize(final Set<Table> tables) throws SQLException {
         final long[] total = new long[1];
         total[0] = 0;
-        getSession().executeQuery("Select type, count(*) From " + SQLDialect.dmlTableReference(ENTITY, getSession()) + " Where r_entitygraph=" + graphID + " and birthday>=0 group by type", new Session.AbstractResultSetReader() {
+        getSession().executeQuery("Select type, count(*) From " + dmlTableReference(ENTITY, getSession()) + " Where r_entitygraph=" + graphID + " and birthday>=0 group by type", new Session.AbstractResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 Table table = dataModel.getTableByOrdinal(resultSet.getInt(1));
                 if (tables.contains(table)) {
@@ -400,7 +407,7 @@ public abstract class EntityGraph {
         final long[] total = new long[1];
         total[0] = 0;
         final Set<Table> remaining = new HashSet<Table>(tables);
-        session.executeQuery("Select type, count(*) From " + SQLDialect.dmlTableReference(ENTITY, session) + " Where r_entitygraph=" + graphID + " and birthday>=0 group by type", new Session.AbstractResultSetReader() {
+        session.executeQuery("Select type, count(*) From " + dmlTableReference(ENTITY, session) + " Where r_entitygraph=" + graphID + " and birthday>=0 group by type", new Session.AbstractResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 Table table = dataModel.getTableByOrdinal(resultSet.getInt(1));
                 String type = dataModel.getDisplayName(table);
@@ -432,7 +439,7 @@ public abstract class EntityGraph {
      */
     public void removeDependencies(Association association) throws SQLException {
     	String delete;
-		delete = "Delete from " + SQLDialect.dmlTableReference(DEPENDENCY, getSession()) +
+		delete = "Delete from " + dmlTableReference(DEPENDENCY, getSession()) +
 		 " Where depend_id=" + association.getId() + " and r_entitygraph=" + graphID;
     	getSession().executeUpdate(delete);
     }
@@ -513,4 +520,16 @@ public abstract class EntityGraph {
 		}
 	}
 
+	/**
+     * Gets table reference for DML statements for a given working table.
+     * 
+     * @param tableName the working table
+     * @param session holds connection to DBMS
+     * @return table reference for the working table
+	 * @throws SQLException 
+     */
+	protected String dmlTableReference(String tableName, Session session) throws SQLException {
+		return SQLDialect.dmlTableReference(tableName, session, commandLine);
+	}
+	
 }

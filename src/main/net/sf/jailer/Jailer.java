@@ -125,44 +125,44 @@ public class Jailer {
 
 		try {
 			ProgressListenerRegistry.setProgressListener(progressListener);
-			
-			if (!CommandLineParser.parse(args, false)) {
+			CommandLine commandLine = CommandLineParser.parse(args, false);
+			if (commandLine == null) {
 				return false;
 			}
-			CommandLineParser clp = CommandLineParser.getInstance();
+			Configuration.setConfigurationFolder(commandLine.getWorkingfolder());
 			
-			String command = clp.arguments.get(0);
+			String command = commandLine.arguments.get(0);
 			if (!"create-ddl".equalsIgnoreCase(command)) {
 				if (!"find-association".equalsIgnoreCase(command)) {
 					_log.info("Jailer " + VERSION);
 				}
 			}
 			
-			Session.setClassLoaderForJdbcDriver(ClasspathUtil.addJarToClasspath(clp.jdbcjar, clp.jdbcjar2));
+			Session.setClassLoaderForJdbcDriver(ClasspathUtil.addJarToClasspath(commandLine.jdbcjar, commandLine.jdbcjar2));
 			
 			if ("check-domainmodel".equalsIgnoreCase(command)) {
-				DataModel dataModel = new DataModel();
-				for (String rm : clp.arguments.subList(1, clp.arguments.size())) {
+				DataModel dataModel = new DataModel(commandLine);
+				for (String rm : commandLine.arguments.subList(1, commandLine.arguments.size())) {
 					if (dataModel.getRestrictionModel() == null) {
-						dataModel.setRestrictionModel(new RestrictionModel(dataModel));
+						dataModel.setRestrictionModel(new RestrictionModel(dataModel, commandLine));
 					}
 					dataModel.getRestrictionModel().addRestrictionDefinition(rm, null, new HashMap<String, String>());
 				}
 				new DomainModel(dataModel).check();
 			} else if ("render-datamodel".equalsIgnoreCase(command)) {
-				if (clp.arguments.size() <= 1) {
+				if (commandLine.arguments.size() <= 1) {
 					CommandLineParser.printUsage();
 				} else {
-					renderDataModel(clp.arguments, clp.withClosures, clp.schema);
+					renderDataModel(commandLine.arguments, commandLine.withClosures, commandLine.schema, commandLine);
 				}
 			} else if ("import".equalsIgnoreCase(command)) {
-				if (clp.arguments.size() != 6) {
+				if (commandLine.arguments.size() != 6) {
 					CommandLineParser.printUsage();
 				} else {
-					Session session = new Session(clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4),
-							clp.arguments.get(5), null, clp.transactional);
+					Session session = new Session(commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4),
+							commandLine.arguments.get(5), null, commandLine.transactional);
 					try {
-						new SqlScriptExecutor(session, clp.numberOfThreads).executeScript(clp.arguments.get(1), clp.transactional);
+						new SqlScriptExecutor(session, commandLine.numberOfThreads, commandLine).executeScript(commandLine.arguments.get(1), commandLine.transactional);
 					} finally {
 						try {
 							session.shutDown();
@@ -172,63 +172,63 @@ public class Jailer {
 					}
 				}
 			} else if ("print-datamodel".equalsIgnoreCase(command)) {
-				printDataModel(clp.arguments, clp.withClosures);
+				printDataModel(commandLine.arguments, commandLine.withClosures, commandLine);
 			} else if ("export".equalsIgnoreCase(command)) {
-				if (clp.arguments.size() != 6) {
+				if (commandLine.arguments.size() != 6) {
 					CommandLineParser.printUsage();
 				} else {
-					if (clp.maxNumberOfEntities > 0) {
-						EntityGraph.maxTotalRowcount = clp.maxNumberOfEntities;
+					if (commandLine.maxNumberOfEntities > 0) {
+						EntityGraph.maxTotalRowcount = commandLine.maxNumberOfEntities;
 						_log.info("max-rowcount=" + EntityGraph.maxTotalRowcount);
 					}
 					
-					if (clp.exportScriptFileName == null) {
+					if (commandLine.exportScriptFileName == null) {
 						System.out.println("missing '-e' option");
 						CommandLineParser.printUsage();
 					} else {
-						new SubsettingEngine(clp.numberOfThreads).export(clp.arguments.get(1), clp.exportScriptFileName, clp.deleteScriptFileName, clp.arguments.get(2), clp.arguments.get(3),
-								clp.arguments.get(4), clp.arguments.get(5), clp.explain, clp.getScriptFormat());
+						new SubsettingEngine(commandLine).export(commandLine.arguments.get(1), commandLine.exportScriptFileName, commandLine.deleteScriptFileName, commandLine.arguments.get(2), commandLine.arguments.get(3),
+								commandLine.arguments.get(4), commandLine.arguments.get(5), commandLine.explain, commandLine.getScriptFormat());
 					}
 				}
 			} else if ("delete".equalsIgnoreCase(command)) {
-				if (clp.arguments.size() != 6) {
+				if (commandLine.arguments.size() != 6) {
 					CommandLineParser.printUsage();
 				} else {
-					if (clp.deleteScriptFileName == null) {
+					if (commandLine.deleteScriptFileName == null) {
 						System.out.println("missing '-d' option");
 						CommandLineParser.printUsage();
 					} else {
 						// note we are passing null for script format and the export script name, as we are using the export tool
 						// to generate the delete script only.
-						new SubsettingEngine(clp.numberOfThreads).export(clp.arguments.get(1), /* clp.exportScriptFileName*/ null, clp.deleteScriptFileName, clp.arguments.get(2), clp.arguments.get(3),
-									clp.arguments.get(4), clp.arguments.get(5), clp.explain, /*scriptFormat*/ null);
+						new SubsettingEngine(commandLine).export(commandLine.arguments.get(1), /* clp.exportScriptFileName*/ null, commandLine.deleteScriptFileName, commandLine.arguments.get(2), commandLine.arguments.get(3),
+									commandLine.arguments.get(4), commandLine.arguments.get(5), commandLine.explain, /*scriptFormat*/ null);
 					}
 				}
 			} else if ("find-association".equalsIgnoreCase(command)) {
-				if (clp.arguments.size() < 3) {
+				if (commandLine.arguments.size() < 3) {
 					CommandLineParser.printUsage();
 				} else {
-					findAssociation(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.subList(3, clp.arguments.size()), clp.undirected);
+					findAssociation(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.subList(3, commandLine.arguments.size()), commandLine.undirected, commandLine);
 				}
 			} else if ("create-ddl".equalsIgnoreCase(command)) {
-				if (clp.arguments.size() == 5) {
-					return DDLCreator.createDDL(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4), clp
-							.getTemporaryTableScope(), clp.workingTableSchema);
+				if (commandLine.arguments.size() == 5) {
+					return new DDLCreator(commandLine).createDDL(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), commandLine
+							.getTemporaryTableScope(), commandLine.workingTableSchema);
 				}
-				return DDLCreator.createDDL(null, null, null, null, clp.getTemporaryTableScope(), clp.workingTableSchema);
+				return new DDLCreator(commandLine).createDDL(null, null, null, null, commandLine.getTemporaryTableScope(), commandLine.workingTableSchema);
 			} else if ("build-model-wo-merge".equalsIgnoreCase(command)) {
-				if (clp.arguments.size() != 5) {
+				if (commandLine.arguments.size() != 5) {
 					CommandLineParser.printUsage();
 				} else {
 					_log.info("Building data model.");
-					ModelBuilder.build(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4), clp.schema, warnings);
+					ModelBuilder.build(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), commandLine.schema, warnings, commandLine);
 				}
 			} else if ("build-model".equalsIgnoreCase(command)) {
-				if (clp.arguments.size() != 5) {
+				if (commandLine.arguments.size() != 5) {
 					CommandLineParser.printUsage();
 				} else {
 					_log.info("Building data model.");
-					ModelBuilder.buildAndMerge(clp.arguments.get(1), clp.arguments.get(2), clp.arguments.get(3), clp.arguments.get(4), clp.schema, warnings);
+					ModelBuilder.buildAndMerge(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), commandLine.schema, warnings, commandLine);
 				}
 			} else {
 				CommandLineParser.printUsage();
@@ -256,11 +256,11 @@ public class Jailer {
 	 * 
 	 * @param schema schema to analyze
 	 */
-	private static void renderDataModel(List<String> arguments, boolean withClosures, String schema) throws Exception {
-		DataModel dataModel = new DataModel();
+	private static void renderDataModel(List<String> arguments, boolean withClosures, String schema, CommandLine commandLine) throws Exception {
+		DataModel dataModel = new DataModel(commandLine);
 		for (String rm : arguments.subList(1, arguments.size())) {
 			if (dataModel.getRestrictionModel() == null) {
-				dataModel.setRestrictionModel(new RestrictionModel(dataModel));
+				dataModel.setRestrictionModel(new RestrictionModel(dataModel, commandLine));
 			}
 			dataModel.getRestrictionModel().addRestrictionDefinition(rm, null, new HashMap<String, String>());
 		}
@@ -268,17 +268,17 @@ public class Jailer {
 		if (renderer == null) {
 			throw new RuntimeException("no renderer found");
 		}
-		renderer.render(dataModel);
+		renderer.render(dataModel, commandLine);
 	}
 
 	/**
 	 * Prints shortest association between two tables.
 	 */
-	private static void findAssociation(String from, String to, List<String> restModels, boolean undirected) throws Exception {
-		DataModel dataModel = new DataModel();
+	private static void findAssociation(String from, String to, List<String> restModels, boolean undirected, CommandLine commandLine) throws Exception {
+		DataModel dataModel = new DataModel(commandLine);
 		for (String rm : restModels) {
 			if (dataModel.getRestrictionModel() == null) {
-				dataModel.setRestrictionModel(new RestrictionModel(dataModel));
+				dataModel.setRestrictionModel(new RestrictionModel(dataModel, commandLine));
 			}
 			dataModel.getRestrictionModel().addRestrictionDefinition(rm, null, new HashMap<String, String>());
 		}
@@ -291,9 +291,9 @@ public class Jailer {
 			throw new RuntimeException("unknown table: '" + to);
 		}
 
-		Set<Table> tablesToIgnore = CommandLineParser.getInstance().getTabuTables(dataModel, null);
+		Set<Table> tablesToIgnore = commandLine.getTabuTables(dataModel, null);
 		if (!tablesToIgnore.isEmpty()) {
-			System.out.println("ignoring: " + PrintUtil.tableSetAsString(tablesToIgnore));
+			System.out.println("ignoring: " + new PrintUtil(commandLine).tableSetAsString(tablesToIgnore));
 		}
 		System.out.println();
 		System.out.println("Shortest path from " + source.getName() + " to " + destination.getName() + ":");
@@ -344,14 +344,14 @@ public class Jailer {
 	/**
 	 * Prints restricted data-model.
 	 */
-	private static void printDataModel(List<String> restrictionModels, boolean printClosures) throws Exception {
-		DataModel dataModel = new DataModel();
+	private static void printDataModel(List<String> restrictionModels, boolean printClosures, CommandLine commandLine) throws Exception {
+		DataModel dataModel = new DataModel(commandLine);
 		if (printClosures) {
 			DataModel.printClosures = true;
 		}
 		for (String rm : restrictionModels.subList(1, restrictionModels.size())) {
 			if (dataModel.getRestrictionModel() == null) {
-				dataModel.setRestrictionModel(new RestrictionModel(dataModel));
+				dataModel.setRestrictionModel(new RestrictionModel(dataModel, commandLine));
 			}
 			dataModel.getRestrictionModel().addRestrictionDefinition(rm, null, new HashMap<String, String>());
 		}
@@ -364,7 +364,7 @@ public class Jailer {
 		}
 
 		printCycles(dataModel);
-		printComponents(dataModel);
+		printComponents(dataModel, commandLine);
 	}
 
 	/**
@@ -394,7 +394,7 @@ public class Jailer {
 	 * @param dataModel
 	 *            the data-model
 	 */
-	private static void printComponents(DataModel dataModel) {
+	private static void printComponents(DataModel dataModel, CommandLine commandLine) {
 		List<Set<Table>> components = new ArrayList<Set<Table>>();
 		Set<Table> tables = new HashSet<Table>(dataModel.getTables());
 		while (!tables.isEmpty()) {
@@ -405,7 +405,7 @@ public class Jailer {
 		}
 		System.out.println(components.size() + " components: ");
 		for (Set<Table> component : components) {
-			System.out.println(PrintUtil.tableSetAsString(component));
+			System.out.println(new PrintUtil(commandLine).tableSetAsString(component));
 		}
 	}
 

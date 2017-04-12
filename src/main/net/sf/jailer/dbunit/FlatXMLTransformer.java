@@ -26,7 +26,7 @@ import java.util.Map;
 
 import javax.xml.transform.sax.TransformerHandler;
 
-import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.TransformerFactory;
 import net.sf.jailer.database.DBMS;
@@ -83,7 +83,12 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
     	private final TransformerHandler transformerHandler;
 		private final DatabaseMetaData metaData;
 		private final DBMS dbms;
-
+		
+		/**
+		 * The command line arguments.
+		 */
+		private final CommandLine commandLine;
+		
 		/**
     	 * Constructor.
     	 * 
@@ -94,7 +99,8 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
     	 * @param metaData
     	 *            database meta data
     	 */
-    	public Factory(TransformerHandler transformerHandler, DatabaseMetaData metaData, DBMS dbms) {
+    	public Factory(TransformerHandler transformerHandler, DatabaseMetaData metaData, DBMS dbms, CommandLine commandLine) {
+    		this.commandLine = commandLine;
     		this.transformerHandler = transformerHandler;
     		this.metaData = metaData;
     		this.dbms = dbms;
@@ -109,9 +115,14 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 		 */
 		@Override
 		public ResultSetReader create(Table table) throws SQLException {
-			return new FlatXMLTransformer(table, transformerHandler, metaData, dbms);
+			return new FlatXMLTransformer(table, transformerHandler, metaData, dbms, commandLine);
 		}
     }
+
+	/**
+	 * The command line arguments.
+	 */
+	private final CommandLine commandLine;
 
 	/**
 	 * Constructor.
@@ -122,8 +133,10 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 	 *            to write the XML into
 	 * @param metaData
 	 *            database meta data
+	 * @param commandLine2 
 	 */
-	private FlatXMLTransformer(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData, DBMS dbms) throws SQLException {
+	private FlatXMLTransformer(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData, DBMS dbms, CommandLine commandLine) throws SQLException {
+		this.commandLine = commandLine;
 		this.transformerHandler = transformerHandler;
 		this.rowElementName = qualifiedTableName(table);
 		this.dbms = dbms;
@@ -137,7 +150,7 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
      */
     private String qualifiedTableName(Table t) {
     	String schema = t.getOriginalSchema("");
-    	String mappedSchema = CommandLineParser.getInstance().getSchemaMapping().get(schema);
+    	String mappedSchema = commandLine.getSchemaMapping().get(schema);
     	if (mappedSchema != null) {
     		schema = mappedSchema;
     	}

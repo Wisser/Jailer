@@ -26,15 +26,14 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import net.sf.jailer.CommandLineParser;
+import org.apache.log4j.Logger;
+
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CsvFile;
-import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.CsvFile.Line;
-
-import org.apache.log4j.Logger;
+import net.sf.jailer.util.PrintUtil;
 
 /**
  * Partitioning of the entire data model
@@ -79,7 +78,7 @@ public class DomainModel {
         
         // load files
         Map<String, CsvFile> csvFiles = new HashMap<String, CsvFile>();
-        File domainModelDirectory = CommandLineParser.getInstance().newFile("domainmodel");
+        File domainModelDirectory = new File("domainmodel");
         if (!domainModelDirectory.exists() || !domainModelDirectory.isDirectory()) {
             return;
         }
@@ -143,7 +142,7 @@ public class DomainModel {
      * Loads the composites definition file.
      */
     private void loadComposites() throws Exception {
-        File compositesDefinition = CommandLineParser.getInstance().newFile("domainmodel" + File.separator + "composites.csv");
+        File compositesDefinition = new File("domainmodel" + File.separator + "composites.csv");
         Map<Table, CsvFile.Line> compositeDefinitionOfTable = new HashMap<Table, Line>();
         if (compositesDefinition.exists()) {
             CsvFile compostitesCsvFile = new CsvFile(compositesDefinition);
@@ -258,7 +257,7 @@ public class DomainModel {
             }
         }
         if (withoutDomain.size() > 0) {
-            warn("Tables without domain: " + PrintUtil.tableSetAsString(withoutDomain, "    "));
+            warn("Tables without domain: " + new PrintUtil(null).tableSetAsString(withoutDomain, "    "));
         }
         
         // escape analysis
@@ -317,7 +316,7 @@ public class DomainModel {
         }
         modelAsString.append("\n");
         for (Domain domain: domains.values()) {
-            modelAsString.append(domain.name + " = " + PrintUtil.tableSetAsString(domain.tables, "        ") + "\n");
+            modelAsString.append(domain.name + " = " + new PrintUtil(null).tableSetAsString(domain.tables, "        ") + "\n");
         }
         return modelAsString.toString();
     }

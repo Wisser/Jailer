@@ -87,11 +87,12 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.InternalFrameEvent;
 import javax.swing.event.InternalFrameListener;
 
-import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.CommandLineInstance;
 import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.QueryBuilderDialog;
@@ -151,7 +152,12 @@ public abstract class Desktop extends JDesktopPane {
 	 */
 	public Session session;
 	DbConnectionDialog dbConnectionDialog;
-
+	
+	/**
+	 * The command line arguments.
+	 */
+	private final CommandLine commandLine;
+	
 	private Set<Pair<BrowserContentPane, Row>> currentClosure = new HashSet<Pair<BrowserContentPane, Row>>();
 	private Set<Pair<BrowserContentPane, String>> currentClosureRowIDs = new HashSet<Pair<BrowserContentPane, String>>();
 
@@ -171,6 +177,7 @@ public abstract class Desktop extends JDesktopPane {
 	 *            DB-session
 	 */
 	public Desktop(Reference<DataModel> datamodel, Icon jailerIcon, Session session, DataBrowser parentFrame, DbConnectionDialog dbConnectionDialog) {
+		this.commandLine = CommandLineInstance.getInstance();
 		this.parentFrame = parentFrame;
 		this.datamodel = datamodel;
 		this.jailerIcon = jailerIcon;
@@ -485,7 +492,7 @@ public abstract class Desktop extends JDesktopPane {
 
 		final BrowserContentPane browserContentPane = new BrowserContentPane(datamodel.get(), table, condition, session, parent == null || parentRowIndex < 0 ? null
 				: parent.browserContentPane.rows.get(parentRowIndex), parent == null || parentRowIndex >= 0 ? null : parent.browserContentPane.rows,
-				association, parentFrame, currentClosure, currentClosureRowIDs, limit, selectDistinct, reload) {
+				association, parentFrame, currentClosure, currentClosureRowIDs, limit, selectDistinct, reload, commandLine) {
 
 			@Override
 			protected void reloadDataModel() throws Exception {
@@ -2135,7 +2142,7 @@ public abstract class Desktop extends JDesktopPane {
 			String filename = ".tempsession-" + System.currentTimeMillis();
 			storeSession(filename);
 			
-			DataModel newModel = new DataModel(schemamapping);
+			DataModel newModel = new DataModel(schemamapping, commandLine);
 			datamodel.set(newModel);
 			
 			restoreSession(null, pFrame, filename);
@@ -2297,7 +2304,7 @@ public abstract class Desktop extends JDesktopPane {
 			fnProp = currentSessionFileName;
 		}
 
-		File startDir = CommandLineParser.getInstance().newFile("layout");
+		File startDir = commandLine.newFile("layout");
 		Component pFrame = SwingUtilities.getWindowAncestor(this);
 		if (pFrame == null) {
 			pFrame = this;
@@ -2384,7 +2391,7 @@ public abstract class Desktop extends JDesktopPane {
 	 * Restores browser session.
 	 */
 	public void restoreSession(RowBrowser toBeAppended) {
-		File startDir = CommandLineParser.getInstance().newFile("layout");
+		File startDir = commandLine.newFile("layout");
 		Component pFrame = SwingUtilities.getWindowAncestor(this);
 		if (pFrame == null) {
 			pFrame = this;

@@ -43,17 +43,31 @@ import net.sf.jailer.util.SqlUtil;
  * @author Ralf Wisser
  */
 public class DDLCreator {
-
+	
+	/**
+	 * The command line arguments.
+	 */
+	private final CommandLine commandLine;
+	
+	/**
+	 * Constructor.
+	 * 
+	 * @param commandLine the command line arguments
+	 */
+	public DDLCreator(CommandLine commandLine) {
+		this.commandLine = commandLine;
+	}
+	
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	public static boolean createDDL(String driverClass, String dbUrl, String user, String password, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws Exception {
+	public boolean createDDL(String driverClass, String dbUrl, String user, String password, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws Exception {
 		Session session = null;
 		if (driverClass != null) {
 			session = new Session(driverClass, dbUrl, user, password);
 		}
 		try {
-			return createDDL(new DataModel(), session, temporaryTableScope, workingTableSchema);
+			return createDDL(new DataModel(commandLine), session, temporaryTableScope, workingTableSchema);
 		} finally {
 			if (session != null) {
 				try { session.shutDown(); } catch (Exception e) { /* ignore */ }
@@ -64,22 +78,22 @@ public class DDLCreator {
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	public static void createDDL(Session localSession, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws Exception {
-		createDDL(new DataModel(), localSession, temporaryTableScope, workingTableSchema);
+	public void createDDL(Session localSession, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws Exception {
+		createDDL(new DataModel(commandLine), localSession, temporaryTableScope, workingTableSchema);
 	}
 
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	public static boolean createDDL(DataModel datamodel, Session session, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws Exception {
-		RowIdSupport rowIdSupport = new RowIdSupport(datamodel, Configuration.forDbms(session));
+	public boolean createDDL(DataModel datamodel, Session session, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws Exception {
+		RowIdSupport rowIdSupport = new RowIdSupport(datamodel, Configuration.forDbms(session), commandLine);
 		return createDDL(datamodel, session, temporaryTableScope, rowIdSupport, workingTableSchema);
 	}
 
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	public static boolean createDDL(DataModel datamodel, Session session, TemporaryTableScope temporaryTableScope, RowIdSupport rowIdSupport, String workingTableSchema) throws Exception {
+	public boolean createDDL(DataModel datamodel, Session session, TemporaryTableScope temporaryTableScope, RowIdSupport rowIdSupport, String workingTableSchema) throws Exception {
 		try {
 			return createDDL(datamodel, session, temporaryTableScope, 0, rowIdSupport, workingTableSchema);
 		} catch (SQLException e) {
@@ -98,7 +112,7 @@ public class DDLCreator {
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	private static boolean createDDL(DataModel dataModel, Session session, TemporaryTableScope temporaryTableScope, int indexType, RowIdSupport rowIdSupport, String workingTableSchema) throws Exception {
+	private boolean createDDL(DataModel dataModel, Session session, TemporaryTableScope temporaryTableScope, int indexType, RowIdSupport rowIdSupport, String workingTableSchema) throws Exception {
 		String template = "script" + File.separator + "ddl-template.sql";
 		String contraint = pkColumnConstraint(session);
 		Map<String, String> typeReplacement = Configuration.forDbms(session).getTypeReplacement();
@@ -167,15 +181,15 @@ public class DDLCreator {
 			listArguments.put("column-list-from", Collections.singletonList(""));
 			listArguments.put("column-list-to", Collections.singletonList(""));
 		}
-		String ddl = PrintUtil.applyTemplate(template, arguments, listArguments);
+		String ddl = new PrintUtil(commandLine).applyTemplate(template, arguments, listArguments);
 
 		if (session != null) {
 			// try {
-			File tmp = CommandLineParser.getInstance().newFile("jailer_ddl.sql");
+			File tmp = commandLine.newFile("jailer_ddl.sql");
 			PrintWriter pw = new PrintWriter(tmp);
 			pw.println(ddl);
 			pw.close();
-			new SqlScriptExecutor(session, 1).executeScript(tmp.getCanonicalPath());
+			new SqlScriptExecutor(session, 1, commandLine).executeScript(tmp.getCanonicalPath());
 			// } finally {
 			// session.shutDown();
 			// }
@@ -185,7 +199,7 @@ public class DDLCreator {
 		return true;
 	}
 
-	private static boolean supportsSchemasInIndexDefinitions(Session session) {
+	private boolean supportsSchemasInIndexDefinitions(Session session) {
 		Boolean result = Configuration.forDbms(session).getSupportsSchemasInIndexDefinitions();
 		if (result == null) {
 			try {
@@ -197,7 +211,7 @@ public class DDLCreator {
 		return result;
 	}
 
-	private static String pkColumnConstraint(Session session) {
+	private String pkColumnConstraint(Session session) {
 		String nullableContraint = Configuration.forDbms(session).getNullableContraint();
 		if (nullableContraint != null) {
 			return " " + nullableContraint;
@@ -212,7 +226,7 @@ public class DDLCreator {
 	 * 
 	 * @return <code>true</code> if working-tables schema is up-to-date
 	 */
-	public static boolean isUptodate(String driverClass, String dbUrl, String user, String password, boolean useRowId, String workingTableSchema) {
+	public boolean isUptodate(String driverClass, String dbUrl, String user, String password, boolean useRowId, String workingTableSchema) {
 		try {
 			if (driverClass != null) {
 				final Session session = new Session(driverClass, dbUrl, user, password);
@@ -234,11 +248,11 @@ public class DDLCreator {
 	 * 
 	 * @return <code>true</code> if working-tables schema is up-to-date
 	 */
-	public static boolean isUptodate(final Session session, boolean useRowId, String workingTableSchema) {
+	public boolean isUptodate(final Session session, boolean useRowId, String workingTableSchema) {
 		try {
 			try {
 				final boolean[] uptodate = new boolean[] { false };
-				final DataModel datamodel = new DataModel();
+				final DataModel datamodel = new DataModel(commandLine);
 				final Map<String, String> typeReplacement = Configuration.forDbms(session).getTypeReplacement();
 				final RowIdSupport rowIdSupport = new RowIdSupport(datamodel, Configuration.forDbms(session), useRowId);
 				
@@ -280,7 +294,7 @@ public class DDLCreator {
 	 * 
 	 * @return <code>true</code> if working-tables schema is present
 	 */
-	public static boolean isPresent(Session session) {
+	public boolean isPresent(Session session) {
 		try {
 			try {
 				final boolean[] uptodate = new boolean[] { false };
@@ -306,7 +320,7 @@ public class DDLCreator {
 	 * 
 	 * @return name of table in conflict or <code>null</code>
 	 */
-	public static String getTableInConflict(String driverClass, String dbUrl, String user, String password) {
+	public String getTableInConflict(String driverClass, String dbUrl, String user, String password) {
 		try {
 			if (driverClass != null) {
 				Session session = new Session(driverClass, dbUrl, user, password);

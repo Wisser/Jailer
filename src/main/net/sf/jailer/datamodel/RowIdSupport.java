@@ -20,7 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.Session;
 
@@ -73,8 +73,8 @@ public class RowIdSupport {
 	 * @param rowIdType type of rowid-columns
 	 * @param configuration DBMS configuration
 	 */
-	public RowIdSupport(DataModel dataModel, Configuration configuration, String rowIdType) {
-		this(dataModel, configuration, rowIdType, initialUseRowId(configuration));
+	public RowIdSupport(DataModel dataModel, Configuration configuration, String rowIdType, CommandLine commandLine) {
+		this(dataModel, configuration, rowIdType, initialUseRowId(configuration, commandLine));
 	}
 
 	/**
@@ -83,12 +83,12 @@ public class RowIdSupport {
 	 * @param dataModel the data model
 	 * @param configuration DBMS configuration
 	 */
-	public RowIdSupport(DataModel dataModel, Configuration configuration) {
-		this(dataModel, configuration, initialUseRowId(configuration));
+	public RowIdSupport(DataModel dataModel, Configuration configuration, CommandLine commandLine) {
+		this(dataModel, configuration, initialUseRowId(configuration, commandLine));
 	}
 	
-	private static boolean initialUseRowId(Configuration configuration) {
-		return configuration.getRowidName() != null && !CommandLineParser.getInstance().noRowid;
+	private static boolean initialUseRowId(Configuration configuration, CommandLine commandLine) {
+		return configuration.getRowidName() != null && !commandLine.noRowid;
 	}
 	
 	/**

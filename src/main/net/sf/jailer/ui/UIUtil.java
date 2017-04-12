@@ -63,7 +63,7 @@ import javax.swing.WindowConstants;
 import org.apache.log4j.Logger;
 
 import jsyntaxpane.DefaultSyntaxKit;
-import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.SqlException;
@@ -562,12 +562,11 @@ public class UIUtil {
 	public static StringBuffer createCLIArgumentString(String password,
 			List<String> args) {
 		args.add("-datamodel");
-		args.add(CommandLineParser.getInstance().getDataModelFolder());
-		args.add("-script-enhancer");
-		args.add(CommandLineParser.getInstance().enhancerFolder);
-		if (CommandLineParser.getInstance().workingFolder != null) {
+		CommandLine commandLine = CommandLineInstance.getInstance();
+		args.add(commandLine.getDataModelFolder());
+		if (commandLine.workingFolder != null) {
 			args.add("-working-folder");
-			args.add(CommandLineParser.getInstance().workingFolder);
+			args.add(commandLine.workingFolder);
 		}
 		return createPlainCLIArguments(password, args);
 	}

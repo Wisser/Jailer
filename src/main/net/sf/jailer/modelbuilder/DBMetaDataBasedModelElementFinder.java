@@ -26,6 +26,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
@@ -84,9 +85,9 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
      * @param namingSuggestion to put naming suggestions for associations into
      * @return found associations
      */
-    public Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestion, Session session) throws Exception {
+    public Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestion, Session session, CommandLine commandLine) throws Exception {
         Collection<Association> associations = new ArrayList<Association>();
-        associations.addAll(findAssociations(dataModel, selectForeignKeysScript, session));
+        associations.addAll(findAssociations(dataModel, selectForeignKeysScript, session, commandLine));
         return associations;
     }
 
@@ -109,9 +110,9 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
      *             
      * @return found associations
      */
-    private Collection<Association> findAssociations(final DataModel dataModel, final String sqlFileName, Session session) throws Exception {
+    private Collection<Association> findAssociations(final DataModel dataModel, final String sqlFileName, Session session, CommandLine commandLine) throws Exception {
         final List<Association> associations = new ArrayList<Association>();
-        String select = PrintUtil.applyTemplate(sqlFileName, new Object[] { session.getSchemaName() });
+        String select = new PrintUtil(commandLine).applyTemplate(sqlFileName, new Object[] { session.getSchemaName() });
         session.executeQuery(select, new Session.AbstractResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
                 String tableA = resultSet.getString(1);
@@ -141,10 +142,10 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
      * 
      * @param session the statement executor for executing SQL-statements 
      */
-    public Set<Table> findTables(Session session) throws Exception {
+    public Set<Table> findTables(Session session, CommandLine commandLine) throws Exception {
         final PrimaryKeyFactory primaryKeyFactory = new PrimaryKeyFactory();
         final Set<Table> tables = new TreeSet<Table>();
-        String select = PrintUtil.applyTemplate(selectTablesScript, new Object[] { session.getSchemaName() });
+        String select = new PrintUtil(commandLine).applyTemplate(selectTablesScript, new Object[] { session.getSchemaName() });
         final Map<String, Map<Integer, Column>> pkColumns = new HashMap<String, Map<Integer, Column>>();
         session.executeQuery(select, new Session.AbstractResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {
@@ -183,8 +184,8 @@ public class DBMetaDataBasedModelElementFinder implements ModelElementFinder {
      * 
      * @param session the statement executor for executing SQL-statements 
      */
-    public List<Column> findColumns(Table table, Session session) throws Exception {
-        String select = PrintUtil.applyTemplate(selectColumnsScript, new Object[] { session.getSchemaName(), table.getName() });
+    public List<Column> findColumns(Table table, Session session, CommandLine commandLine) throws Exception {
+        String select = new PrintUtil(commandLine).applyTemplate(selectColumnsScript, new Object[] { session.getSchemaName(), table.getName() });
         final List<Column> columns = new ArrayList<Column>();
         session.executeQuery(select, new Session.AbstractResultSetReader() {
             public void readCurrentRow(ResultSet resultSet) throws SQLException {

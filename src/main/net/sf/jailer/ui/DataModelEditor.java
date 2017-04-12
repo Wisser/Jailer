@@ -45,7 +45,7 @@ import javax.swing.ListModel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
@@ -107,7 +107,12 @@ public class DataModelEditor extends javax.swing.JDialog {
      * <code>true</code> iff model is saved.
      */
     public boolean saved = false;
-    
+ 
+	/**
+	 * The command line arguments.
+	 */
+	private final CommandLine commandLine = CommandLineInstance.getInstance();
+	
     /** 
      * Creates new form DataModelEditor.
      * 
@@ -117,17 +122,17 @@ public class DataModelEditor extends javax.swing.JDialog {
      */
     public DataModelEditor(java.awt.Frame parent, boolean merge, boolean initiallyDirty, final Table toEdit, LineFilter tableFilter, LineFilter assocFilter, String modelname, String modelnameSuggestion) throws Exception {
         super(parent, true);
-        tables = new CsvFile(new File(DataModel.getTablesFile()), tableFilter).getLines();
+        tables = new CsvFile(new File(DataModel.getTablesFile(commandLine)), tableFilter).getLines();
 
         displayNames = new TreeMap<String, String>();
-        File dnFile = new File(DataModel.getDisplayNamesFile());
+        File dnFile = new File(DataModel.getDisplayNamesFile(commandLine));
         if (dnFile.exists()) {
         	for (CsvFile.Line dnl: new CsvFile(dnFile).getLines()) {
         		displayNames.put(dnl.cells.get(0), dnl.cells.get(1));
         	}
         }
         
-        associations = new CsvFile(new File(DataModel.getAssociationsFile()), assocFilter).getLines();
+        associations = new CsvFile(new File(DataModel.getAssociationsFile(commandLine)), assocFilter).getLines();
         boolean isDemoModel = tables.size() > 0;
         for (CsvFile.Line dt: tables) {
         	String lastV = null;
@@ -148,19 +153,19 @@ public class DataModelEditor extends javax.swing.JDialog {
         	associations.clear();
         	initiallyDirty = true;
         } else {
-	        UIUtil.loadTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile());
+	        UIUtil.loadTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile(commandLine));
         }
         int newTables = 0;
         int newAssociations = 0;
         
-        File file = new File(DataModel.getColumnsFile());
+        File file = new File(DataModel.getColumnsFile(commandLine));
         if (file.exists()) {
 			for (CsvFile.Line l: new CsvFile(file).getLines()) {
 	        	columns.put(l.cells.get(0), l);
 	        }
         }
         
-		File modelFinderTablesFile = new File(ModelBuilder.getModelBuilderTablesFilename());
+		File modelFinderTablesFile = new File(ModelBuilder.getModelBuilderTablesFilename(commandLine));
 		if (merge && modelFinderTablesFile.exists()) {
 		    List<CsvFile.Line> tablesFromModelFinder = new CsvFile(modelFinderTablesFile).getLines();
 	        for (Iterator<CsvFile.Line> i = tablesFromModelFinder.iterator(); i.hasNext(); ) {
@@ -199,7 +204,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 	        newTables += tablesFromModelFinder.size();
 		}
 		sortLineList(tables, true);
-        File modelFinderAssociationsFile = new File(ModelBuilder.getModelBuilderAssociationsFilename());
+        File modelFinderAssociationsFile = new File(ModelBuilder.getModelBuilderAssociationsFilename(commandLine));
 		if (merge && modelFinderAssociationsFile.exists()) {
 	        List<CsvFile.Line> associationsFromModelFinder = new CsvFile(modelFinderAssociationsFile).getLines();
 	        associations.addAll(associationsFromModelFinder);
@@ -210,9 +215,9 @@ public class DataModelEditor extends javax.swing.JDialog {
 		sortLineList(associations, false);
 		initComponents();
 		
-		String modelpath = CommandLineParser.getInstance().getDataModelFolder();
+		String modelpath = commandLine.getDataModelFolder();
 		try {
-			modelpath = CommandLineParser.getInstance().newFile(modelpath).getAbsolutePath();
+			modelpath = commandLine.newFile(modelpath).getAbsolutePath();
 		} catch (Throwable t) {
 			// use default modelpath
 		}
@@ -247,7 +252,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 		setSize(900, 700);
 		setLocation(100, 32);
 
-		File modelFinderColumnFile = new File(ModelBuilder.getModelBuilderColumnsFilename());
+		File modelFinderColumnFile = new File(ModelBuilder.getModelBuilderColumnsFilename(commandLine));
 		if (merge && modelFinderColumnFile.exists()) {
 	        for (CsvFile.Line l: new CsvFile(modelFinderColumnFile).getLines()) {
 	        	CsvFile.Line ol = columns.get(l.cells.get(0));
@@ -377,7 +382,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 		}
 		
 		if (merge) {
-			ModelBuilder.cleanUp();
+			ModelBuilder.cleanUp(commandLine);
 		}
     }
     
@@ -829,11 +834,11 @@ public class DataModelEditor extends javax.swing.JDialog {
     private void save() {
     	try {
     		if (needsSave) {
-		    	save(tables, DataModel.getTablesFile(), "# Name; Upsert; Primary key; ; Author");
-		    	save(associations, DataModel.getAssociationsFile(), "# Table A; Table B; First-insert; Cardinality; Join-condition; Name; Author");
-		    	save(new ArrayList<Line>(columns.values()), DataModel.getColumnsFile(), "# Table; Columns");
-	    		saveTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile());
-	    		saveTableList(Arrays.asList(Jailer.VERSION), DataModel.getVersionFile());
+		    	save(tables, DataModel.getTablesFile(commandLine), "# Name; Upsert; Primary key; ; Author");
+		    	save(associations, DataModel.getAssociationsFile(commandLine), "# Table A; Table B; First-insert; Cardinality; Join-condition; Name; Author");
+		    	save(new ArrayList<Line>(columns.values()), DataModel.getColumnsFile(commandLine), "# Table; Columns");
+	    		saveTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile(commandLine));
+	    		saveTableList(Arrays.asList(Jailer.VERSION), DataModel.getVersionFile(commandLine));
 	    		saveDisplayNames();
 	    		saveName();
 	    		saved = true;
@@ -848,7 +853,7 @@ public class DataModelEditor extends javax.swing.JDialog {
      * Saves the display names.
      */
     private void saveDisplayNames() throws FileNotFoundException {
-    	PrintWriter out = new PrintWriter(DataModel.getDisplayNamesFile());
+    	PrintWriter out = new PrintWriter(DataModel.getDisplayNamesFile(commandLine));
 		out.println("# table; display name");
 		for (Map.Entry<String, String> e: displayNames.entrySet()) {
 			out.println(CsvFile.encodeCell(e.getKey()) + "; " + CsvFile.encodeCell(e.getValue()));
@@ -867,7 +872,7 @@ public class DataModelEditor extends javax.swing.JDialog {
      * Saves the model name.
      */
     public static void createNameFile(String name) throws FileNotFoundException {
-    	PrintWriter out = new PrintWriter(DataModel.getModelNameFile());
+    	PrintWriter out = new PrintWriter(DataModel.getModelNameFile(CommandLineInstance.getInstance()));
 		out.println("# name; last modification");
 		out.println(CsvFile.encodeCell(name) + "; " + CsvFile.encodeCell(Long.toString(new Date().getTime())));
 		out.close();
@@ -909,17 +914,17 @@ public class DataModelEditor extends javax.swing.JDialog {
      * @return <code>true</code> if something has changed
      */
     public boolean dataModelHasChanged() throws Exception {
-    	String tmpFile = DataModel.getDatamodelFolder() + File.separator + "tempcsv.tmp";
+    	String tmpFile = DataModel.getDatamodelFolder(commandLine) + File.separator + "tempcsv.tmp";
     	boolean result = false;
     	save(tables, tmpFile, "#");
-    	result = !cvsFilesEquals(tmpFile, DataModel.getTablesFile());
+    	result = !cvsFilesEquals(tmpFile, DataModel.getTablesFile(commandLine));
     	if (!result) {
     		save(associations, tmpFile, "#");
-    		result = !cvsFilesEquals(tmpFile, DataModel.getAssociationsFile());
+    		result = !cvsFilesEquals(tmpFile, DataModel.getAssociationsFile(commandLine));
         }
     	if (!result) {
     		save(new ArrayList<Line>(columns.values()), tmpFile, "#");
-    		result = !cvsFilesEquals(tmpFile, DataModel.getColumnsFile());
+    		result = !cvsFilesEquals(tmpFile, DataModel.getColumnsFile(commandLine));
         }
     	if (!result) {
     		JOptionPane.showMessageDialog(this, "No changes found.", "Analyze Database", JOptionPane.INFORMATION_MESSAGE);

@@ -20,7 +20,7 @@ import java.io.Writer;
 import java.sql.SQLException;
 import java.util.Set;
 
-import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.CommandLine;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.ScriptType;
 import net.sf.jailer.database.SQLDialect;
@@ -35,15 +35,15 @@ import net.sf.jailer.entitygraph.EntityGraph;
  * @author Ralf Wisser
  */
 public class HelperTableEnhancer implements ScriptEnhancer {
-
+	
 	/**
 	 * Is JL_DUAL needed?
 	 */
-	private boolean dualNeeded(Set<Table> progress, SQLDialect sqlDialect) {
+	private boolean dualNeeded(Set<Table> progress, SQLDialect sqlDialect, CommandLine commandLine) {
 		if (sqlDialect.upsertMode != UPSERT_MODE.FROM_JL_DUAL) {
 			return false;
 		}
-		if (CommandLineParser.getInstance().upsertOnly) {
+		if (commandLine.upsertOnly) {
 			return true;
 		}
 		for (Table table: progress) {
@@ -56,21 +56,21 @@ public class HelperTableEnhancer implements ScriptEnhancer {
 	
 	public void addComments(Writer script, ScriptType scriptType,
 			Session session, Configuration targetDBMSConfiguration, EntityGraph entityGraph,
-			Set<Table> progress) throws IOException, SQLException {
+			Set<Table> progress, CommandLine commandLine) throws IOException, SQLException {
 	}
 
 	public void addEpilog(Writer script, ScriptType scriptType,
 			Session session, Configuration targetDBMSConfiguration, EntityGraph entityGraph,
-			Set<Table> progress) throws IOException, SQLException {
-		if (dualNeeded(progress, targetDBMSConfiguration.getSqlDialect())) {
+			Set<Table> progress, CommandLine commandLine) throws IOException, SQLException {
+		if (dualNeeded(progress, targetDBMSConfiguration.getSqlDialect(), commandLine)) {
 			script.append("DROP TABLE " + SQLDialect.DUAL_TABLE + ";\n");
 		}
 	}
 
 	public void addProlog(Writer script, ScriptType scriptType,
 			Session session, Configuration targetDBMSConfiguration, EntityGraph entityGraph,
-			Set<Table> progress) throws IOException, SQLException {
-		if (dualNeeded(progress, targetDBMSConfiguration.getSqlDialect())) {
+			Set<Table> progress, CommandLine commandLine) throws IOException, SQLException {
+		if (dualNeeded(progress, targetDBMSConfiguration.getSqlDialect(), commandLine)) {
 			script.append("CREATE TABLE " + SQLDialect.DUAL_TABLE + "(D INTEGER);\n");
 			script.append("INSERT INTO " + SQLDialect.DUAL_TABLE + "(D) VALUES(1);\n");
 		}
