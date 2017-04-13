@@ -290,6 +290,12 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 				</bean>
 			</property>
 			
+			<property name="jdbcProperties">
+				<map>
+					<entry key="CatalogOptions" value="0"/>
+        		</map>
+			</property>
+			
 			<property name="rowidName" value="ROWID"/>
 			<property name="rowidType" value="ROWID"/>
 			
