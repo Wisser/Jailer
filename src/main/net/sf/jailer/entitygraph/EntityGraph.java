@@ -27,7 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.TransformerFactory;
 import net.sf.jailer.database.SQLDialect;
@@ -78,9 +78,9 @@ public abstract class EntityGraph {
     public final DataModel dataModel;
     
     /**
-   	 * The command line arguments.
+   	 * The execution context.
    	 */
-   	protected final CommandLine commandLine;
+   	protected final ExecutionContext executionContext;
    	
    	protected boolean inDeleteMode = false;
     
@@ -89,8 +89,8 @@ public abstract class EntityGraph {
      */
     public final int graphID;
 
-    protected EntityGraph(int graphID, DataModel dataModel, CommandLine commandLine) {
-    	this.commandLine = commandLine;
+    protected EntityGraph(int graphID, DataModel dataModel, ExecutionContext executionContext) {
+    	this.executionContext = executionContext;
     	this.graphID = graphID;
     	this.dataModel = dataModel;
     }
@@ -529,7 +529,7 @@ public abstract class EntityGraph {
 	 * @throws SQLException 
      */
 	protected String dmlTableReference(String tableName, Session session) throws SQLException {
-		return SQLDialect.dmlTableReference(tableName, session, commandLine);
+		return SQLDialect.dmlTableReference(tableName, session, executionContext);
 	}
 	
 }

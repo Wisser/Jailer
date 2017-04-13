@@ -324,7 +324,7 @@ public class Configuration {
 	/**
 	 * Loads the configuration file.
 	 * 
-	 * @param commandLine the command line arguments
+	 * @param executionContext the command line arguments
 	 */
     @SuppressWarnings("unchecked")
 	private static synchronized void loadConfigurationFile() {

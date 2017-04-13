@@ -88,7 +88,7 @@ import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
@@ -218,9 +218,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	private ConditionEditor restrictionConditionEditor;
 	
 	/**
-	 * The command line arguments.
+	 * The execution context.
 	 */
-	private final CommandLine commandLine = CommandLineInstance.getInstance();
+	private final ExecutionContext executionContext = CommandLineInstance.getExecutionContext();
 	
 	/** 
 	 * Creates new form ModelTree.
@@ -242,7 +242,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		};
 		columnMapperDialog = new ColumnMapperDialog(extractionModelFrame, parametersGetter);
 		try {
-			dataModel = new DataModel(commandLine);
+			dataModel = new DataModel(executionContext);
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error in Data Model", e);
 			return;
@@ -250,11 +250,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		try {
 			if (extractionModelFile == null || !new File(extractionModelFile).exists()) {
 				needsSave = extractionModelFile != null;
-				dataModel = new DataModel(commandLine);
-				extractionModel = new ExtractionModel(dataModel, commandLine);
+				dataModel = new DataModel(executionContext);
+				extractionModel = new ExtractionModel(dataModel, executionContext);
 				LayoutStorage.removeAll();
 			} else {
-				extractionModel = new ExtractionModel(extractionModelFile, new HashMap<String, String>(), new HashMap<String, String>(), commandLine);
+				extractionModel = new ExtractionModel(extractionModelFile, new HashMap<String, String>(), new HashMap<String, String>(), executionContext);
 				LayoutStorage.restore(extractionModelFile);
 			}
 			subject = extractionModel.subject;
@@ -508,9 +508,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		modelName.setText(modelname);
 		modelName.setToolTipText(modelname + lastMod);
 		
-		String modelpath = commandLine.getDataModelFolder();
+		String modelpath = executionContext.getDataModelFolder();
 		try {
-			modelpath = commandLine.newFile(modelpath).getAbsolutePath();
+			modelpath = executionContext.newFile(modelpath).getAbsolutePath();
 		} catch (Throwable t) {
 			// use default modelpath
 		}

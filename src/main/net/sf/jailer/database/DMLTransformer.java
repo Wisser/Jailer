@@ -34,7 +34,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.TransformerFactory;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
@@ -153,9 +153,9 @@ public class DMLTransformer extends AbstractResultSetReader {
 	private final SQLDialect currentDialect;
 
 	/**
-	 * The command line arguments.
+	 * The execution context.
 	 */
-	private final CommandLine commandLine;
+	private final ExecutionContext executionContext;
 	
 	/**
 	 * Transforms {@link Filter} into SQL-expressions.
@@ -175,9 +175,9 @@ public class DMLTransformer extends AbstractResultSetReader {
 		private ImportFilterTransformer importFilterTransformer;
 		
 		/**
-		 * The command line arguments.
+		 * The execution context.
 		 */
-		private final CommandLine commandLine;
+		private final ExecutionContext executionContext;
 		
 	    /**
 	     * Constructor.
@@ -186,13 +186,13 @@ public class DMLTransformer extends AbstractResultSetReader {
 	     * @param maxBodySize maximum length of SQL values list (for generated inserts)
 	     * @param upsertOnly use 'upsert' statements for all entities
 	     */
-		public Factory(OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, Session session, Configuration targetDBMSConfiguration, CommandLine commandLine) {
+		public Factory(OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, Session session, Configuration targetDBMSConfiguration, ExecutionContext executionContext) {
 	        this.maxBodySize = maxBodySize;
 	        this.upsertOnly = upsertOnly;
 	        this.scriptFileWriter = scriptFileWriter;
 	        this.session = session;
 	        this.targetDBMSConfiguration = targetDBMSConfiguration;
-	        this.commandLine = commandLine;
+	        this.executionContext = executionContext;
     	}
 
 		/**
@@ -204,7 +204,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 		 */
 		@Override
 		public ResultSetReader create(Table table) throws SQLException {
-			return new DMLTransformer(table, scriptFileWriter, upsertOnly, maxBodySize, session, targetDBMSConfiguration, importFilterTransformer, commandLine);
+			return new DMLTransformer(table, scriptFileWriter, upsertOnly, maxBodySize, session, targetDBMSConfiguration, importFilterTransformer, executionContext);
 		}
 		
 		/**
@@ -227,11 +227,11 @@ public class DMLTransformer extends AbstractResultSetReader {
      * @param upsertOnly use 'upsert' statements for all entities
      * @param session the session
      * @param targetDBMSConfiguration configuration of the target DBMS
-	 * @param commandLine 
+	 * @param executionContext 
 	 * @param importFilterTransformer2 
      */
-    protected DMLTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, Session session, Configuration targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer, CommandLine commandLine) throws SQLException {
-        this.commandLine = commandLine;
+    protected DMLTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, Session session, Configuration targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer, ExecutionContext executionContext) throws SQLException {
+        this.executionContext = executionContext;
         this.targetDBMSConfiguration = targetDBMSConfiguration;
         this.maxBodySize = maxBodySize;
         this.upsertOnly = upsertOnly;
@@ -598,7 +598,7 @@ public class DMLTransformer extends AbstractResultSetReader {
      */
     protected String qualifiedTableName(Table t) {
     	String schema = t.getOriginalSchema("");
-    	String mappedSchema = commandLine.getSchemaMapping().get(schema);
+    	String mappedSchema = executionContext.getSchemaMapping().get(schema);
     	if (mappedSchema != null) {
     		schema = mappedSchema;
     	}

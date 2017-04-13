@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
@@ -73,9 +73,9 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 * @throws SQLException 
 	 */
 	private IntraDatabaseEntityGraph(DataModel dataModel, int graphID,
-			Session session, PrimaryKey universalPrimaryKey, CommandLine commandLine) throws SQLException {
-		super(dataModel, graphID, session, universalPrimaryKey, commandLine);
-		upsertOnly = commandLine.upsertOnly;
+			Session session, PrimaryKey universalPrimaryKey, ExecutionContext executionContext) throws SQLException {
+		super(dataModel, graphID, session, universalPrimaryKey, executionContext);
+		upsertOnly = executionContext.getUpsertOnly();
 		synchronized (this) {
 			upsertStrategy = null;
 			upsertStrategies = new ArrayList<UpsertStrategy>();
@@ -105,7 +105,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			}
 	
 			String schema = table.getOriginalSchema("");
-			String mappedSchema = commandLine
+			String mappedSchema = executionContext
 					.getSchemaMapping().get(schema);
 			if (mappedSchema != null) {
 				schema = mappedSchema;
@@ -159,10 +159,10 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 * @return the newly created entity-graph
 	 */
 	public static IntraDatabaseEntityGraph create(DataModel dataModel,
-			int graphID, Session session, PrimaryKey universalPrimaryKey, CommandLine commandLine) throws SQLException {
+			int graphID, Session session, PrimaryKey universalPrimaryKey, ExecutionContext executionContext) throws SQLException {
 		IntraDatabaseEntityGraph entityGraph = new IntraDatabaseEntityGraph(
-				dataModel, graphID, session, universalPrimaryKey, commandLine);
-		init(graphID, session, commandLine);
+				dataModel, graphID, session, universalPrimaryKey, executionContext);
+		init(graphID, session, executionContext);
 		return entityGraph;
 	}
 
@@ -178,15 +178,15 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	public EntityGraph copy(int newGraphID, Session session)
 			throws SQLException {
 		IntraDatabaseEntityGraph entityGraph = create(dataModel, newGraphID,
-				session, universalPrimaryKey, commandLine);
+				session, universalPrimaryKey, executionContext);
 		entityGraph.setBirthdayOfSubject(birthdayOfSubject);
 		session.executeUpdate("Insert into "
-				+ SQLDialect.dmlTableReference(ENTITY, session, commandLine)
+				+ SQLDialect.dmlTableReference(ENTITY, session, executionContext)
 				+ "(r_entitygraph, " + universalPrimaryKey.columnList(null)
 				+ ", birthday, orig_birthday, type) " + "Select " + newGraphID
 				+ ", " + universalPrimaryKey.columnList(null)
 				+ ", birthday, birthday, type From "
-				+ SQLDialect.dmlTableReference(ENTITY, session, commandLine)
+				+ SQLDialect.dmlTableReference(ENTITY, session, executionContext)
 				+ " Where r_entitygraph=" + graphID + "");
 		return entityGraph;
 	}
@@ -205,12 +205,12 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	public EntityGraph find(int graphID, Session session,
 			PrimaryKey universalPrimaryKey) throws SQLException {
 		IntraDatabaseEntityGraph entityGraph = new IntraDatabaseEntityGraph(
-				dataModel, graphID, session, universalPrimaryKey, commandLine);
+				dataModel, graphID, session, universalPrimaryKey, executionContext);
 		final boolean[] found = new boolean[1];
 		found[0] = false;
 		session.executeQuery(
 				"Select * From "
-						+ SQLDialect.dmlTableReference(ENTITY_GRAPH, session, commandLine)
+						+ SQLDialect.dmlTableReference(ENTITY_GRAPH, session, executionContext)
 						+ "Where id=" + graphID + "",
 				new Session.ResultSetReader() {
 					public void readCurrentRow(ResultSet resultSet)
@@ -242,7 +242,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			throws SQLException {
 		String selectionSchema = filteredSelectionClause(table, COLUMN_PREFIX, quoting, true);
 		readEntitiesByQuery(table, "Select " + selectionSchema + " From "
-				+ SQLDialect.dmlTableReference(ENTITY, session, commandLine) + " E join "
+				+ SQLDialect.dmlTableReference(ENTITY, session, executionContext) + " E join "
 				+ quoting.requote(table.getName()) + " T on "
 				+ pkEqualsEntityID(table, "T", "E")
 				+ " Where (E.birthday=0 and E.r_entitygraph=" + graphID
@@ -260,7 +260,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	public void readEntities(Table table, boolean orderByPK)
 			throws SQLException {
 		readEntitiesByQuery(table, "Select " + filteredSelectionClause(table, COLUMN_PREFIX, quoting, true) + " From "
-				+ SQLDialect.dmlTableReference(ENTITY, session, commandLine) + " E join "
+				+ SQLDialect.dmlTableReference(ENTITY, session, executionContext) + " E join "
 				+ quoting.requote(table.getName()) + " T on "
 				+ pkEqualsEntityID(table, "T", "E")
 				+ " Where (E.birthday>=0 and E.r_entitygraph=" + graphID
@@ -274,14 +274,14 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 * @param columns the columns;
 	 */
 	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, Configuration targetConfiguration) throws SQLException {
-		File tmp = new PrintUtil(commandLine).createTempFile();
+		File tmp = new PrintUtil(executionContext).createTempFile();
 		OutputStreamWriter tmpFileWriter;
 		try {
 			tmpFileWriter = new FileWriter(tmp);
-			UpdateTransformer reader = new UpdateTransformer(table, columns, tmpFileWriter, commandLine.numberOfEntities, getSession(), Configuration.forDbms(getSession()), importFilterManager, commandLine);
+			UpdateTransformer reader = new UpdateTransformer(table, columns, tmpFileWriter, executionContext.getNumberOfEntities(), getSession(), Configuration.forDbms(getSession()), importFilterManager, executionContext);
 			readEntities(table, false, reader);
 			tmpFileWriter.close();
-			new SqlScriptExecutor(getSession(), commandLine.numberOfThreads, commandLine).executeScript(tmp.getPath());
+			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads(), executionContext).executeScript(tmp.getPath());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -335,7 +335,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 */
 	private String qualifiedTableName(Table t) {
 		String schema = t.getOriginalSchema("");
-		String mappedSchema = commandLine
+		String mappedSchema = executionContext
 				.getSchemaMapping().get(schema);
 		if (mappedSchema != null) {
 			schema = mappedSchema;
@@ -739,20 +739,20 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	public void fillAndWriteMappingTables(JobManager jobManager, final OutputStreamWriter receiptWriter,
 			int numberOfEntities, final Session targetSession, final Configuration targetDBMSConfiguration, Configuration dbmsConfiguration) throws Exception {
 		if (importFilterManager != null) {
-			File tmp = new PrintUtil(commandLine).createTempFile();
+			File tmp = new PrintUtil(executionContext).createTempFile();
 			OutputStreamWriter tmpFileWriter;
 			tmpFileWriter = new FileWriter(tmp);
 			importFilterManager.createMappingTables(dbmsConfiguration, tmpFileWriter);
 			tmpFileWriter.close();
-			new SqlScriptExecutor(getSession(), commandLine.numberOfThreads, commandLine).executeScript(tmp.getPath());
+			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads(), executionContext).executeScript(tmp.getPath());
 	    	tmp.delete();
 
-			tmp = new PrintUtil(commandLine).createTempFile();
+			tmp = new PrintUtil(executionContext).createTempFile();
 			tmpFileWriter = new FileWriter(tmp);
 			tmpFileWriter.write("-- sync\n");
 			importFilterManager.fillAndWriteMappingTables(this, jobManager, tmpFileWriter, numberOfEntities, targetSession, targetDBMSConfiguration);
 			tmpFileWriter.close();
-			new SqlScriptExecutor(getSession(), commandLine.numberOfThreads, commandLine).executeScript(tmp.getPath());
+			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads(), executionContext).executeScript(tmp.getPath());
 	    	tmp.delete();
 		}
 	}
@@ -773,12 +773,12 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	@Override
 	public void dropMappingTables(OutputStreamWriter result, Configuration targetDBMSConfiguration) throws Exception {
 		if (importFilterManager != null) {
-			File tmp = new PrintUtil(commandLine).createTempFile();
+			File tmp = new PrintUtil(executionContext).createTempFile();
 			OutputStreamWriter tmpFileWriter;
 			tmpFileWriter = new FileWriter(tmp);
 			importFilterManager.dropMappingTables(tmpFileWriter);
 			tmpFileWriter.close();
-			new SqlScriptExecutor(getSession(), commandLine.numberOfThreads, commandLine).executeScript(tmp.getPath());
+			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads(), executionContext).executeScript(tmp.getPath());
 	    	tmp.delete();
 		}
 	}

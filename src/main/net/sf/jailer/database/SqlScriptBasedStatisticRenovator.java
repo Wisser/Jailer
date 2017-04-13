@@ -22,7 +22,7 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.SqlScriptExecutor;
 
@@ -54,19 +54,19 @@ public class SqlScriptBasedStatisticRenovator implements StatisticRenovator {
      * 
      * @param session for execution of SQL-statements
      */
-    public void renew(Session session, CommandLine commandLine) throws Exception {
+    public void renew(Session session, ExecutionContext executionContext) throws Exception {
 		Map<String, String> arguments = new HashMap<String, String>();
-		arguments.put("JAILER_ENTITY", SQLDialect.dmlTableReference("JAILER_ENTITY", session, commandLine));
-		arguments.put("JAILER_GRAPH", SQLDialect.dmlTableReference("JAILER_GRAPH", session, commandLine));
-		arguments.put("JAILER_DEPENDENCY", SQLDialect.dmlTableReference("JAILER_DEPENDENCY", session, commandLine));
-		arguments.put("JAILER_SET", SQLDialect.dmlTableReference("JAILER_SET", session, commandLine));
+		arguments.put("JAILER_ENTITY", SQLDialect.dmlTableReference("JAILER_ENTITY", session, executionContext));
+		arguments.put("JAILER_GRAPH", SQLDialect.dmlTableReference("JAILER_GRAPH", session, executionContext));
+		arguments.put("JAILER_DEPENDENCY", SQLDialect.dmlTableReference("JAILER_DEPENDENCY", session, executionContext));
+		arguments.put("JAILER_SET", SQLDialect.dmlTableReference("JAILER_SET", session, executionContext));
 		String fileName = "renew.sql";
 		PrintWriter out = new PrintWriter(new FileOutputStream(fileName));
-		out.print(new PrintUtil(commandLine).applyTemplate(scriptFileName.replace('/', File.separatorChar), arguments, null));
+		out.print(new PrintUtil(executionContext).applyTemplate(scriptFileName.replace('/', File.separatorChar), arguments, null));
 		out.close();
 		boolean silent = session.getSilent();
 		session.setSilent(true);
-        new SqlScriptExecutor(session, 1, commandLine).executeScript(fileName);
+        new SqlScriptExecutor(session, 1, executionContext).executeScript(fileName);
 		session.setSilent(silent);
     }
 

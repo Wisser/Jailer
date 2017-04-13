@@ -17,7 +17,7 @@ package net.sf.jailer.database;
 
 import java.sql.SQLException;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.util.Quoting;
 
@@ -121,10 +121,10 @@ public class SQLDialect {
      * @return table reference for the working table
 	 * @throws SQLException 
      */
-    public static String dmlTableReference(String tableName, Session session, CommandLine commandLine) throws SQLException {
+    public static String dmlTableReference(String tableName, Session session, ExecutionContext executionContext) throws SQLException {
     	String tableRef;
     	TemporaryTableManager tableManager = null;
-    	TemporaryTableScope temporaryTableScope = commandLine.getTemporaryTableScope();
+    	TemporaryTableScope temporaryTableScope = executionContext.getScope();
 		if (temporaryTableScope == TemporaryTableScope.SESSION_LOCAL) {
 			tableManager = Configuration.forDbms(session).sessionTemporaryTableManager;
 		}
@@ -137,7 +137,7 @@ public class SQLDialect {
 			tableRef = tableName;
 		}
 		if (temporaryTableScope != TemporaryTableScope.LOCAL_DATABASE) {
-			String schema = commandLine.workingTableSchema;
+			String schema = executionContext.getWorkingTableSchema();
 			if (schema != null) {
 				tableRef = new Quoting(session).requote(schema) + "." + tableRef;
 			}

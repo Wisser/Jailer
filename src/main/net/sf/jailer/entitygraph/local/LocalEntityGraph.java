@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.DDLCreator;
 import net.sf.jailer.database.DBMS;
@@ -192,8 +192,8 @@ public class LocalEntityGraph extends EntityGraph {
 			InlineViewStyle localInlineViewStyle,
 			InlineViewStyle remoteInlineViewStyle, Set<String> upkColumnNames,
 			PrimaryKey universalPrimaryKey, int birthdayOfSubject, Set<String> fieldProcTables,
-			RowIdSupport rowIdSupport, CommandLine commandLine) throws SQLException {
-		super(graphID, dataModel, commandLine);
+			RowIdSupport rowIdSupport, ExecutionContext executionContext) throws SQLException {
+		super(graphID, dataModel, executionContext);
 		this.remoteSession = remoteSession;
 		this.localSession = localSession;
 		this.localDatabase = localDatabase;
@@ -213,7 +213,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param remoteSession
 	 * @throws Exception 
 	 */
-	private LocalEntityGraph(int graphID, Session remoteSession, CommandLine commandLine) throws Exception {
+	private LocalEntityGraph(int graphID, Session remoteSession, ExecutionContext executionContext) throws Exception {
 		super(graphID, new DataModel(new PrimaryKeyFactory() {
 			@Override
 			public PrimaryKey createPrimaryKey(List<Column> columns) {
@@ -227,16 +227,16 @@ public class LocalEntityGraph extends EntityGraph {
 				}
 				return super.createPrimaryKey(localPK);
 			}
-		}, commandLine.getSourceSchemaMapping(), commandLine), commandLine);
+		}, executionContext.getSourceSchemaMapping(), executionContext), executionContext);
 		this.remoteSession = remoteSession;
 		this.quoting = new Quoting(remoteSession);
-		this.rowIdSupport = new RowIdSupport(getDatamodel(), Configuration.forDbms(remoteSession), getConfiguration().localPKType, commandLine);
+		this.rowIdSupport = new RowIdSupport(getDatamodel(), Configuration.forDbms(remoteSession), getConfiguration().localPKType, executionContext);
 		this.localDatabase = createLocalDatabase(getConfiguration().driver, getConfiguration().urlPattern, getConfiguration().user, getConfiguration().password, getConfiguration().lib);
 		this.localSession = this.localDatabase.getSession();
 		this.universalPrimaryKey = rowIdSupport.getUniversalPrimaryKey();
 		this.localInlineViewStyle = InlineViewStyle.forSession(localSession);
 		this.remoteInlineViewStyle = InlineViewStyle.forSession(remoteSession);
-		new DDLCreator(commandLine).createDDL(getDatamodel(), localSession, TemporaryTableScope.GLOBAL, rowIdSupport, null);
+		new DDLCreator(executionContext).createDDL(getDatamodel(), localSession, TemporaryTableScope.GLOBAL, rowIdSupport, null);
      
 		File fieldProcTablesFile = new File("field-proc-tables.csv");
         if (fieldProcTablesFile.exists()) {
@@ -260,7 +260,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 */
 	private LocalDatabase createLocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile) throws Exception {
 		String databaseFolder = getConfiguration().databasesFolder;
-		return new LocalDatabase(driverClassName, urlPattern, user, password, jarfile, databaseFolder, commandLine);
+		return new LocalDatabase(driverClassName, urlPattern, user, password, jarfile, databaseFolder, executionContext);
 	}
 
 	/**
@@ -298,10 +298,10 @@ public class LocalEntityGraph extends EntityGraph {
      * @return the newly created entity-graph
      * @throws Exception 
      */
-    public static LocalEntityGraph create(DataModel dataModel, int graphID, Session remoteSession, CommandLine commandLine) throws Exception {
-    	LocalEntityGraph entityGraph = new LocalEntityGraph(graphID, remoteSession, commandLine);
+    public static LocalEntityGraph create(DataModel dataModel, int graphID, Session remoteSession, ExecutionContext executionContext) throws Exception {
+    	LocalEntityGraph entityGraph = new LocalEntityGraph(graphID, remoteSession, executionContext);
         try {
-        	entityGraph.localSession.executeUpdate("Insert into " + SQLDialect.dmlTableReference(ENTITY_GRAPH, entityGraph.localSession, commandLine) + "(id, age) values (" + graphID + ", 1)");
+        	entityGraph.localSession.executeUpdate("Insert into " + SQLDialect.dmlTableReference(ENTITY_GRAPH, entityGraph.localSession, executionContext) + "(id, age) values (" + graphID + ", 1)");
         } catch (SQLException e) {
             throw new RuntimeException("Can't find working tables! " +
                     "Run 'jailer.sh create-ddl' " +
@@ -319,7 +319,7 @@ public class LocalEntityGraph extends EntityGraph {
      * @throws Exception 
      */
     public EntityGraph copy(int newGraphID, Session globalSession) throws Exception {
-        LocalEntityGraph entityGraph = new LocalEntityGraph(newGraphID, dataModel, remoteSession, localSession, localDatabase, localInlineViewStyle, remoteInlineViewStyle, upkColumnNames, universalPrimaryKey, birthdayOfSubject, fieldProcTables, rowIdSupport, commandLine);
+        LocalEntityGraph entityGraph = new LocalEntityGraph(newGraphID, dataModel, remoteSession, localSession, localDatabase, localInlineViewStyle, remoteInlineViewStyle, upkColumnNames, universalPrimaryKey, birthdayOfSubject, fieldProcTables, rowIdSupport, executionContext);
         entityGraph.setBirthdayOfSubject(birthdayOfSubject);
         localSession.executeUpdate(
                 "Insert into " + dmlTableReference(ENTITY, localSession) + "(r_entitygraph, " + universalPrimaryKey.columnList(null) + ", birthday, orig_birthday, type) " +
@@ -337,7 +337,7 @@ public class LocalEntityGraph extends EntityGraph {
      * @throws Exception 
      */
     public EntityGraph find(int graphID, Session localSession, PrimaryKey universalPrimaryKey) throws Exception {
-        LocalEntityGraph entityGraph = new LocalEntityGraph(graphID, localSession, commandLine);
+        LocalEntityGraph entityGraph = new LocalEntityGraph(graphID, localSession, executionContext);
         final boolean[] found = new boolean[1];
         found[0] = false;
         localSession.executeQuery("Select * From " + dmlTableReference(ENTITY_GRAPH, localSession) + "Where id=" + graphID + "", new Session.ResultSetReader() {
@@ -944,7 +944,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param columns the columns;
 	 */
 	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, Configuration targetConfiguration) throws SQLException {
-		Session.ResultSetReader reader = new UpdateTransformer(table, columns, scriptFileWriter, commandLine.numberOfEntities, getTargetSession(), targetConfiguration, importFilterManager, commandLine);
+		Session.ResultSetReader reader = new UpdateTransformer(table, columns, scriptFileWriter, executionContext.getNumberOfEntities(), getTargetSession(), targetConfiguration, importFilterManager, executionContext);
     	readEntities(table, false, reader);
 	}
 

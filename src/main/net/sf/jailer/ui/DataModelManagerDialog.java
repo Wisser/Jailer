@@ -90,9 +90,9 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				"Select a data model to work with.");
 		UIUtil.replace(infoBarLabel, infoBar);
 		
-		String modelpath = CommandLineInstance.getInstance().getDataModelFolder();
+		String modelpath = CommandLineInstance.getExecutionContext().getDataModelFolder();
 		try {
-			modelpath = CommandLineInstance.getInstance().newFile(modelpath).getAbsolutePath();
+			modelpath = CommandLineInstance.getExecutionContext().newFile(modelpath).getAbsolutePath();
 		} catch (Throwable t) {
 			// use default modelpath
 		}
@@ -577,7 +577,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	        	args.add("build-model-wo-merge");
 	        	dbConnectionDialog.addDbArgs(args);
 	        	
-	        	DataModel dataModel = new DataModel(CommandLineInstance.getInstance());
+	        	DataModel dataModel = new DataModel(CommandLineInstance.getExecutionContext());
 				AnalyseOptionsDialog analyseOptionsDialog = new AnalyseOptionsDialog(this, dataModel);
 	        	boolean[] isDefaultSchema = new boolean[1];
 	        	String[] defaultSchema = new String[1];

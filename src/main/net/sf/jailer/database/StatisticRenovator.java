@@ -16,7 +16,7 @@
 
 package net.sf.jailer.database;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 
 /**
  * Renews the DB table statistics for the working-tables.
@@ -30,7 +30,7 @@ public interface StatisticRenovator {
      * 
      * @param session for execution of SQL-statements
      */
-    void renew(Session session, CommandLine commandLine) throws Exception;
+    void renew(Session session, ExecutionContext executionContext) throws Exception;
     
 }
 

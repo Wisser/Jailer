@@ -96,7 +96,7 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.database.InlineViewStyle;
@@ -309,9 +309,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private final DataModel dataModel;
 	
 	/**
-	 * The command line arguments.
+	 * The execution context.
 	 */
-	protected final CommandLine commandLine;
+	protected final ExecutionContext executionContext;
 	
 	/**
 	 * {@link RowIdSupport} for data model.
@@ -423,17 +423,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 */
 	public BrowserContentPane(final DataModel dataModel, final Table table, String condition, Session session, Row parentRow, List<Row> parentRows,
 			final Association association, Frame parentFrame, Set<Pair<BrowserContentPane, Row>> currentClosure, Set<Pair<BrowserContentPane, String>> currentClosureRowIDs,
-			Integer limit, Boolean selectDistinct, boolean reload, CommandLine commandLine) {
+			Integer limit, Boolean selectDistinct, boolean reload, ExecutionContext executionContext) {
 		this.table = table;
 		this.session = session;
 		this.dataModel = dataModel;
-		this.rowIdSupport = new RowIdSupport(dataModel, Configuration.forDbms(session), commandLine);
+		this.rowIdSupport = new RowIdSupport(dataModel, Configuration.forDbms(session), executionContext);
 		this.parentRow = parentRow;
 		this.parentRows = parentRows;
 		this.association = association;
 		this.currentClosure = currentClosure;
 		this.currentClosureRowIDs = currentClosureRowIDs;
-		this.commandLine = commandLine;
+		this.executionContext = executionContext;
 		
 		rowIdSupport.setUseRowIdsOnlyForTablesWithoutPK(true);
 		
@@ -1430,10 +1430,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			
 			for (int i = 1; ; ++i) {
 				file = "extractionmodel" + File.separator + "by-example";
-				newFile = commandLine.newFile(file);
+				newFile = executionContext.newFile(file);
 				newFile.mkdirs();
 				file += File.separator + "SbE-" + (dataModel.getDisplayName(stable).replaceAll("[\"'\\[\\]]", "")) + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".csv";
-				newFile = commandLine.newFile(file);
+				newFile = executionContext.newFile(file);
 				if (!newFile.exists()) {
 					break;
 				}

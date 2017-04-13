@@ -53,14 +53,14 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
         super(parent, true);
         initComponents();
         
-        List<Line> tables = new CsvFile(new File(DataModel.getTablesFile(CommandLineInstance.getInstance()))).getLines();
+        List<Line> tables = new CsvFile(new File(DataModel.getTablesFile(CommandLineInstance.getExecutionContext()))).getLines();
         for (Line table: tables) {
         	++numTables;
         	if (isManuallyEditedTable(table)) {
         		++numManTables;
         	}
         }
-        List<Line> assocs = new CsvFile(new File(DataModel.getAssociationsFile(CommandLineInstance.getInstance()))).getLines();
+        List<Line> assocs = new CsvFile(new File(DataModel.getAssociationsFile(CommandLineInstance.getExecutionContext()))).getLines();
         for (Line assoc: assocs) {
         	++numAssociations;
         	if (isManuallyEditedAssoc(assoc)) {

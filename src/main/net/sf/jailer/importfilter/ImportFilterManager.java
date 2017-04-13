@@ -38,7 +38,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.regex.Matcher;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.database.ImportFilterTransformer;
@@ -91,9 +91,9 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 	private final String quotedMappingTablesSchema;
 	
 	/**
-	 * The command line arguments.
+	 * The execution context.
 	 */
-	private final CommandLine commandLine;
+	private final ExecutionContext executionContext;
 	
 	/**
 	 * Constructor.
@@ -101,18 +101,18 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 	 * @param result to write results into
 	 * @param targetQuoting 
 	 */
-	public ImportFilterManager(Session localSession, OutputStreamWriter result, Set<Table> progress, Quoting targetQuoting, CommandLine commandLine) throws Exception {
-		this.commandLine = commandLine;
+	public ImportFilterManager(Session localSession, OutputStreamWriter result, Set<Table> progress, Quoting targetQuoting, ExecutionContext executionContext) throws Exception {
+		this.executionContext = executionContext;
 		this.totalProgress = progress;
 		
-		String mappingTablesSchema = commandLine.importFilterMappingTableSchema.trim();
+		String mappingTablesSchema = executionContext.getImportFilterMappingTableSchema().trim();
 		quotedMappingTablesSchema = mappingTablesSchema.length() > 0? targetQuoting.requote(mappingTablesSchema) + "." : "";
 
 		if (localSession != null) {
 			this.localSession = localSession;
 		} else {
 			LocalConfiguration localConfiguration = (LocalConfiguration) Configuration.localEntityGraphConfiguration;
-			this.localDatabase = new LocalDatabase(localConfiguration.driver, localConfiguration.urlPattern, localConfiguration.user, localConfiguration.password, localConfiguration.lib, localConfiguration.databasesFolder, commandLine);
+			this.localDatabase = new LocalDatabase(localConfiguration.driver, localConfiguration.urlPattern, localConfiguration.user, localConfiguration.password, localConfiguration.lib, localConfiguration.databasesFolder, executionContext);
 			this.localSession = localDatabase.getSession();
 		}
         collectNonderivedFilteredColumnsPerTable();
@@ -154,7 +154,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 			}
 		}
 		
-		File tmpFile = new PrintUtil(commandLine).createTempFile();
+		File tmpFile = new PrintUtil(executionContext).createTempFile();
 		OutputStreamWriter localDDL = new OutputStreamWriter(new FileOutputStream(tmpFile));
 		
 		List<ColumnToMappingTable> mapColumns = new ArrayList<ColumnToMappingTable>();
@@ -199,7 +199,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 			sync(result);
 		}
 		localDDL.close();
-		new SqlScriptExecutor(localSession, 1, commandLine).executeScript(tmpFile.getAbsolutePath());
+		new SqlScriptExecutor(localSession, 1, executionContext).executeScript(tmpFile.getAbsolutePath());
 		tmpFile.delete();
 	}
 
@@ -246,7 +246,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		Map<String, List<String>> listArguments = new HashMap<String, List<String>>();
 		listArguments.put("indexed-columns", indexedColumns);
 		listArguments.put("comments", withComment? Collections.singletonList("dummy") : new ArrayList<String>());
-		return new PrintUtil(commandLine).applyTemplate(template, arguments, listArguments);
+		return new PrintUtil(executionContext).applyTemplate(template, arguments, listArguments);
 	}
 
 	/**
@@ -268,7 +268,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		Map<String, List<String>> listArguments = new HashMap<String, List<String>>();
 		listArguments.put("mapping-tables", new ArrayList<String>(mappingTables));
 		sync(result);
-		result.append(new PrintUtil(commandLine).applyTemplate(template, arguments, listArguments));
+		result.append(new PrintUtil(executionContext).applyTemplate(template, arguments, listArguments));
 	}
 	
 	protected abstract void sync(OutputStreamWriter result) throws IOException;
@@ -354,7 +354,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 					Column newValueColumn = new Column(mapping.newValueColumnName, mapping.type, 0, -1);
 					Column oldValueColumn = new Column(mapping.oldValueColumnName, mapping.type, 0, -1);
 					mappingTable.setColumns(Arrays.asList(oldValueColumn, newValueColumn));
-					ResultSetReader scriptFileWriter = new DMLTransformer(mappingTable, dmlResultWriter, false, 1, targetSession, targetDBMSConfiguration, null, commandLine) {
+					ResultSetReader scriptFileWriter = new DMLTransformer(mappingTable, dmlResultWriter, false, 1, targetSession, targetDBMSConfiguration, null, executionContext) {
 						@Override
 						protected String convertToSql(CellContentConverter cellContentConverter,
 								ResultSet resultSet, int i, Object content) throws SQLException {

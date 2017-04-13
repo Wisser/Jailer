@@ -40,7 +40,7 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.log4j.Logger;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.SqlException;
 
@@ -84,9 +84,9 @@ public class SqlScriptExecutor {
     private RuntimeException exception;
 	
     /**
-	 * The command line arguments.
+	 * The execution context.
 	 */
-	private final CommandLine commandLine;
+	private final ExecutionContext executionContext;
 	
     /**
      * Constructor.
@@ -94,8 +94,8 @@ public class SqlScriptExecutor {
      * @param session for execution of statements
      * @param threads number of threads to use
      */
-    public SqlScriptExecutor(Session session, int threads, CommandLine commandLine) {
-    	this.commandLine = commandLine;
+    public SqlScriptExecutor(Session session, int threads, ExecutionContext executionContext) {
+    	this.executionContext = executionContext;
     	this.session = session;
     	this.threads = threads;
     }
@@ -183,7 +183,7 @@ public class SqlScriptExecutor {
         _log.info("reading file '" + scriptFileName + "'");
     	BufferedReader bufferedReader;
     	long fileSize = 0;
-    	File file = commandLine.newFile(scriptFileName);
+    	File file = executionContext.newFile(scriptFileName);
 		FileInputStream inputStream = new FileInputStream(file);
 		
 		Charset encoding = Charset.defaultCharset();
@@ -457,7 +457,7 @@ public class SqlScriptExecutor {
 		final String column = clobLocator.substring(c1 + 1, c2).trim();
 		final String where = clobLocator.substring(c2 + 1).trim();
 		String line;
-		final File lobFile = commandLine.newFile("lob." + System.currentTimeMillis());
+		final File lobFile = executionContext.newFile("lob." + System.currentTimeMillis());
 		Writer out = new OutputStreamWriter(new FileOutputStream(lobFile), "UTF-8");
 		long length = 0;
 		while ((line = lineReader.readLine()) != null) {
@@ -511,7 +511,7 @@ public class SqlScriptExecutor {
 		final String column = xmlLocator.substring(c1 + 1, c2).trim();
 		final String where = xmlLocator.substring(c2 + 1).trim();
 		String line;
-		final File lobFile = commandLine.newFile("lob." + System.currentTimeMillis());
+		final File lobFile = executionContext.newFile("lob." + System.currentTimeMillis());
 		Writer out = new OutputStreamWriter(new FileOutputStream(lobFile), "UTF-8");
 		long length = 0;
 		while ((line = lineReader.readLine()) != null) {
@@ -566,7 +566,7 @@ public class SqlScriptExecutor {
 		final String column = clobLocator.substring(c1 + 1, c2).trim();
 		final String where = clobLocator.substring(c2 + 1).trim();
 		String line;
-		final File lobFile = commandLine.newFile("lob." + System.currentTimeMillis());
+		final File lobFile = executionContext.newFile("lob." + System.currentTimeMillis());
 		OutputStream out = new FileOutputStream(lobFile);
 		while ((line = lineReader.readLine()) != null) {
 		    line = line.trim();

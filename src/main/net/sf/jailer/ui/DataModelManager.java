@@ -41,7 +41,7 @@ public class DataModelManager {
 	 * default model.
 	 */
 	public static List<String> getModelFolderNames() {
-		File dmFolder = CommandLineInstance.getInstance().newFile(getBaseFolder());
+		File dmFolder = CommandLineInstance.getExecutionContext().newFile(getBaseFolder());
 		List<String> folders = new ArrayList<String>();
 		if (new File(dmFolder, DataModel.TABLE_CSV_FILE).exists()) {
 			folders.add(null);
@@ -60,7 +60,7 @@ public class DataModelManager {
 	}
 
 	private static String getBaseFolder() {
-		return CommandLineInstance.getInstance().datamodelFolder;
+		return CommandLineInstance.getExecutionContext().getDataModelFolder();
 	}
 
 	/**
@@ -71,9 +71,9 @@ public class DataModelManager {
 	 */
 	public static boolean deleteModel(String modelFolder) {
 		String dir = getBaseFolder() + File.separator + (modelFolder != null ? modelFolder + File.separator : "");
-		File nameFile = CommandLineInstance.getInstance().newFile(dir + DataModel.TABLE_CSV_FILE);
+		File nameFile = CommandLineInstance.getExecutionContext().newFile(dir + DataModel.TABLE_CSV_FILE);
 		try {
-			copyFile(nameFile, CommandLineInstance.getInstance().newFile(dir + DataModel.TABLE_CSV_FILE + ".bak"));
+			copyFile(nameFile, CommandLineInstance.getExecutionContext().newFile(dir + DataModel.TABLE_CSV_FILE + ".bak"));
 		} catch (Exception e) {
 			// ignore
 		}
@@ -94,7 +94,7 @@ public class DataModelManager {
 	 *            folder name, <code>null</code> for the default model
 	 */
 	public static Pair<String, Long> getModelDetails(String modelFolder) {
-		File nameFile = CommandLineInstance.getInstance().newFile(
+		File nameFile = CommandLineInstance.getExecutionContext().newFile(
 				getBaseFolder() + File.separator + (modelFolder != null ? modelFolder + File.separator : "") + DataModel.MODELNAME_CSV_FILE);
 		String name = null;
 		Long lastModified = null;
@@ -122,7 +122,7 @@ public class DataModelManager {
 
 	public static void main(String[] args) throws Exception {
 		CommandLineInstance.init(args);
-		Configuration.setConfigurationFolder(CommandLineInstance.getInstance().getWorkingfolder());
+		Configuration.setConfigurationFolder(CommandLineInstance.getExecutionContext().getWorkingfolder());
 		for (String s : getModelFolderNames()) {
 			System.out.println(s + " -> " + getModelDetails(s));
 		}
@@ -135,7 +135,7 @@ public class DataModelManager {
 	 *            the folder, <code>null</code> for default model
 	 */
 	public static void setCurrentModelSubfolder(String modelFolder) {
-		CommandLineInstance.getInstance().setCurrentModelSubfolder(modelFolder);
+		CommandLineInstance.getExecutionContext().setCurrentModelSubfolder(modelFolder);
 	}
 
 	/**
@@ -144,7 +144,7 @@ public class DataModelManager {
 	 * @return modelFolder the folder, <code>null</code> for default model
 	 */
 	public static String getCurrentModelSubfolder() {
-		return CommandLineInstance.getInstance().getCurrentModelSubfolder();
+		return CommandLineInstance.getExecutionContext().getCurrentModelSubfolder();
 	}
 
 	/**
@@ -158,7 +158,7 @@ public class DataModelManager {
 	 */
 	public static void createNewModel(String newName, String folderName) throws IOException {
 		setCurrentModelSubfolder(null);
-		File modelFolder = CommandLineInstance.getInstance().newFile(getBaseFolder() + File.separator + folderName);
+		File modelFolder = CommandLineInstance.getExecutionContext().newFile(getBaseFolder() + File.separator + folderName);
 		if (modelFolder.exists()) {
 			throw new IOException("Folder \"" + modelFolder.getAbsolutePath() + "\" already exists");
 		}
@@ -168,8 +168,8 @@ public class DataModelManager {
 
 		setCurrentModelSubfolder(folderName);
 
-		for (String file : new String[] { DataModel.getTablesFile(CommandLineInstance.getInstance()), DataModel.getAssociationsFile(CommandLineInstance.getInstance()), DataModel.getColumnsFile(CommandLineInstance.getInstance()) }) {
-			File toCreate = CommandLineInstance.getInstance().newFile(file);
+		for (String file : new String[] { DataModel.getTablesFile(CommandLineInstance.getExecutionContext()), DataModel.getAssociationsFile(CommandLineInstance.getExecutionContext()), DataModel.getColumnsFile(CommandLineInstance.getExecutionContext()) }) {
+			File toCreate = CommandLineInstance.getExecutionContext().newFile(file);
 			BufferedWriter out = new BufferedWriter(new FileWriter(toCreate));
 			out.write(" ");
 			out.close();

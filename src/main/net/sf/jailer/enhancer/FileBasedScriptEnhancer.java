@@ -24,7 +24,7 @@ import java.sql.SQLException;
 import java.util.Set;
 import java.util.TreeSet;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.ScriptType;
@@ -48,25 +48,25 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
      * Adds nothing.
      */
     public void addComments(Writer script, ScriptType scriptType, Session session, Configuration targetDBMSConfiguration, EntityGraph entityGraph,
-            Set<Table> progress, CommandLine commandLine) throws IOException, SQLException {
+            Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
     }
     /**
      * Adds epilogs.
      */
     public void addEpilog(Writer script, ScriptType scriptType, Session session, Configuration targetDBMSConfiguration, EntityGraph entityGraph,
-            Set<Table> progress, CommandLine commandLine) throws IOException, SQLException {
+            Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
         File dir = new File(Configuration.getConfigurationFolder(), "epilog" + File.separatorChar + scriptType);
-        addEnhancement(script, progress, dir, commandLine);
+        addEnhancement(script, progress, dir, executionContext);
           addEnhancement(script, dir, "EPILOG.sql");
     }
     /**
      * Adds prologs.
      */
     public void addProlog(Writer script, ScriptType scriptType, Session session, Configuration targetDBMSConfiguration, EntityGraph entityGraph,
-            Set<Table> progress, CommandLine commandLine) throws IOException, SQLException {
+            Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
         File dir = new File(Configuration.getConfigurationFolder(), "prolog" + File.separatorChar + scriptType);
            addEnhancement(script, dir, "PROLOG.sql");
-        addEnhancement(script, progress, dir, commandLine);
+        addEnhancement(script, progress, dir, executionContext);
     }
     /**
      * Adds enhancement to the script.
@@ -75,8 +75,8 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
      * @param progress the export progress
      * @param entityGraph 
      */
-    private void addEnhancement(Writer script, Set<Table> progress, File dir, CommandLine commandLine) throws IOException {
-        if (ScriptFormat.SQL.equals(commandLine.getScriptFormat())) {
+    private void addEnhancement(Writer script, Set<Table> progress, File dir, ExecutionContext executionContext) throws IOException {
+        if (ScriptFormat.SQL.equals(executionContext.getScriptFormat())) {
             Set<String> fileNames = new TreeSet<String>();
             for (Table table: progress) {
                 fileNames.add(table.getOriginalName() + ".sql");

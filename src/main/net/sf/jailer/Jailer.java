@@ -126,10 +126,11 @@ public class Jailer {
 		try {
 			ProgressListenerRegistry.setProgressListener(progressListener);
 			CommandLine commandLine = CommandLineParser.parse(args, false);
+			ExecutionContext executionContext = new ExecutionContext(commandLine);
 			if (commandLine == null) {
 				return false;
 			}
-			Configuration.setConfigurationFolder(commandLine.getWorkingfolder());
+			Configuration.setConfigurationFolder(executionContext.getWorkingfolder());
 			
 			String command = commandLine.arguments.get(0);
 			if (!"create-ddl".equalsIgnoreCase(command)) {
@@ -141,10 +142,10 @@ public class Jailer {
 			Session.setClassLoaderForJdbcDriver(ClasspathUtil.addJarToClasspath(commandLine.jdbcjar, commandLine.jdbcjar2));
 			
 			if ("check-domainmodel".equalsIgnoreCase(command)) {
-				DataModel dataModel = new DataModel(commandLine);
+				DataModel dataModel = new DataModel(executionContext);
 				for (String rm : commandLine.arguments.subList(1, commandLine.arguments.size())) {
 					if (dataModel.getRestrictionModel() == null) {
-						dataModel.setRestrictionModel(new RestrictionModel(dataModel, commandLine));
+						dataModel.setRestrictionModel(new RestrictionModel(dataModel, executionContext));
 					}
 					dataModel.getRestrictionModel().addRestrictionDefinition(rm, null, new HashMap<String, String>());
 				}
@@ -153,7 +154,7 @@ public class Jailer {
 				if (commandLine.arguments.size() <= 1) {
 					CommandLineParser.printUsage();
 				} else {
-					renderDataModel(commandLine.arguments, commandLine.withClosures, commandLine.schema, commandLine);
+					renderDataModel(commandLine.arguments, commandLine.withClosures, commandLine.schema, executionContext);
 				}
 			} else if ("import".equalsIgnoreCase(command)) {
 				if (commandLine.arguments.size() != 6) {
@@ -162,7 +163,7 @@ public class Jailer {
 					Session session = new Session(commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4),
 							commandLine.arguments.get(5), null, commandLine.transactional);
 					try {
-						new SqlScriptExecutor(session, commandLine.numberOfThreads, commandLine).executeScript(commandLine.arguments.get(1), commandLine.transactional);
+						new SqlScriptExecutor(session, commandLine.numberOfThreads, executionContext).executeScript(commandLine.arguments.get(1), commandLine.transactional);
 					} finally {
 						try {
 							session.shutDown();
@@ -172,7 +173,7 @@ public class Jailer {
 					}
 				}
 			} else if ("print-datamodel".equalsIgnoreCase(command)) {
-				printDataModel(commandLine.arguments, commandLine.withClosures, commandLine);
+				printDataModel(commandLine.arguments, commandLine.withClosures, executionContext);
 			} else if ("export".equalsIgnoreCase(command)) {
 				if (commandLine.arguments.size() != 6) {
 					CommandLineParser.printUsage();
@@ -186,8 +187,8 @@ public class Jailer {
 						System.out.println("missing '-e' option");
 						CommandLineParser.printUsage();
 					} else {
-						new SubsettingEngine(commandLine).export(commandLine.arguments.get(1), commandLine.exportScriptFileName, commandLine.deleteScriptFileName, commandLine.arguments.get(2), commandLine.arguments.get(3),
-								commandLine.arguments.get(4), commandLine.arguments.get(5), commandLine.explain, commandLine.getScriptFormat());
+						new SubsettingEngine(executionContext).export(commandLine.arguments.get(1), commandLine.exportScriptFileName, commandLine.deleteScriptFileName, commandLine.arguments.get(2), commandLine.arguments.get(3),
+								commandLine.arguments.get(4), commandLine.arguments.get(5), commandLine.explain, executionContext.getScriptFormat());
 					}
 				}
 			} else if ("delete".equalsIgnoreCase(command)) {
@@ -200,7 +201,7 @@ public class Jailer {
 					} else {
 						// note we are passing null for script format and the export script name, as we are using the export tool
 						// to generate the delete script only.
-						new SubsettingEngine(commandLine).export(commandLine.arguments.get(1), /* clp.exportScriptFileName*/ null, commandLine.deleteScriptFileName, commandLine.arguments.get(2), commandLine.arguments.get(3),
+						new SubsettingEngine(executionContext).export(commandLine.arguments.get(1), /* clp.exportScriptFileName*/ null, commandLine.deleteScriptFileName, commandLine.arguments.get(2), commandLine.arguments.get(3),
 									commandLine.arguments.get(4), commandLine.arguments.get(5), commandLine.explain, /*scriptFormat*/ null);
 					}
 				}
@@ -208,27 +209,27 @@ public class Jailer {
 				if (commandLine.arguments.size() < 3) {
 					CommandLineParser.printUsage();
 				} else {
-					findAssociation(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.subList(3, commandLine.arguments.size()), commandLine.undirected, commandLine);
+					findAssociation(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.subList(3, commandLine.arguments.size()), commandLine.undirected, executionContext);
 				}
 			} else if ("create-ddl".equalsIgnoreCase(command)) {
 				if (commandLine.arguments.size() == 5) {
-					return new DDLCreator(commandLine).createDDL(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), commandLine
-							.getTemporaryTableScope(), commandLine.workingTableSchema);
+					return new DDLCreator(executionContext).createDDL(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), executionContext
+							.getScope(), commandLine.workingTableSchema);
 				}
-				return new DDLCreator(commandLine).createDDL(null, null, null, null, commandLine.getTemporaryTableScope(), commandLine.workingTableSchema);
+				return new DDLCreator(executionContext).createDDL(null, null, null, null, executionContext.getScope(), commandLine.workingTableSchema);
 			} else if ("build-model-wo-merge".equalsIgnoreCase(command)) {
 				if (commandLine.arguments.size() != 5) {
 					CommandLineParser.printUsage();
 				} else {
 					_log.info("Building data model.");
-					ModelBuilder.build(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), commandLine.schema, warnings, commandLine);
+					ModelBuilder.build(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), commandLine.schema, warnings, executionContext);
 				}
 			} else if ("build-model".equalsIgnoreCase(command)) {
 				if (commandLine.arguments.size() != 5) {
 					CommandLineParser.printUsage();
 				} else {
 					_log.info("Building data model.");
-					ModelBuilder.buildAndMerge(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), commandLine.schema, warnings, commandLine);
+					ModelBuilder.buildAndMerge(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), commandLine.schema, warnings, executionContext);
 				}
 			} else {
 				CommandLineParser.printUsage();
@@ -256,11 +257,11 @@ public class Jailer {
 	 * 
 	 * @param schema schema to analyze
 	 */
-	private static void renderDataModel(List<String> arguments, boolean withClosures, String schema, CommandLine commandLine) throws Exception {
-		DataModel dataModel = new DataModel(commandLine);
+	private static void renderDataModel(List<String> arguments, boolean withClosures, String schema, ExecutionContext executionContext) throws Exception {
+		DataModel dataModel = new DataModel(executionContext);
 		for (String rm : arguments.subList(1, arguments.size())) {
 			if (dataModel.getRestrictionModel() == null) {
-				dataModel.setRestrictionModel(new RestrictionModel(dataModel, commandLine));
+				dataModel.setRestrictionModel(new RestrictionModel(dataModel, executionContext));
 			}
 			dataModel.getRestrictionModel().addRestrictionDefinition(rm, null, new HashMap<String, String>());
 		}
@@ -268,17 +269,17 @@ public class Jailer {
 		if (renderer == null) {
 			throw new RuntimeException("no renderer found");
 		}
-		renderer.render(dataModel, commandLine, arguments.subList(1, arguments.size()));
+		renderer.render(dataModel, executionContext, arguments.subList(1, arguments.size()));
 	}
 
 	/**
 	 * Prints shortest association between two tables.
 	 */
-	private static void findAssociation(String from, String to, List<String> restModels, boolean undirected, CommandLine commandLine) throws Exception {
-		DataModel dataModel = new DataModel(commandLine);
+	private static void findAssociation(String from, String to, List<String> restModels, boolean undirected, ExecutionContext executionContext) throws Exception {
+		DataModel dataModel = new DataModel(executionContext);
 		for (String rm : restModels) {
 			if (dataModel.getRestrictionModel() == null) {
-				dataModel.setRestrictionModel(new RestrictionModel(dataModel, commandLine));
+				dataModel.setRestrictionModel(new RestrictionModel(dataModel, executionContext));
 			}
 			dataModel.getRestrictionModel().addRestrictionDefinition(rm, null, new HashMap<String, String>());
 		}
@@ -291,9 +292,9 @@ public class Jailer {
 			throw new RuntimeException("unknown table: '" + to);
 		}
 
-		Set<Table> tablesToIgnore = commandLine.getTabuTables(dataModel, null);
+		Set<Table> tablesToIgnore = executionContext.getTabuTables(dataModel, null);
 		if (!tablesToIgnore.isEmpty()) {
-			System.out.println("ignoring: " + new PrintUtil(commandLine).tableSetAsString(tablesToIgnore));
+			System.out.println("ignoring: " + new PrintUtil(executionContext).tableSetAsString(tablesToIgnore));
 		}
 		System.out.println();
 		System.out.println("Shortest path from " + source.getName() + " to " + destination.getName() + ":");
@@ -344,14 +345,14 @@ public class Jailer {
 	/**
 	 * Prints restricted data-model.
 	 */
-	private static void printDataModel(List<String> restrictionModels, boolean printClosures, CommandLine commandLine) throws Exception {
-		DataModel dataModel = new DataModel(commandLine);
+	private static void printDataModel(List<String> restrictionModels, boolean printClosures, ExecutionContext executionContext) throws Exception {
+		DataModel dataModel = new DataModel(executionContext);
 		if (printClosures) {
 			DataModel.printClosures = true;
 		}
 		for (String rm : restrictionModels.subList(1, restrictionModels.size())) {
 			if (dataModel.getRestrictionModel() == null) {
-				dataModel.setRestrictionModel(new RestrictionModel(dataModel, commandLine));
+				dataModel.setRestrictionModel(new RestrictionModel(dataModel, executionContext));
 			}
 			dataModel.getRestrictionModel().addRestrictionDefinition(rm, null, new HashMap<String, String>());
 		}
@@ -364,7 +365,7 @@ public class Jailer {
 		}
 
 		printCycles(dataModel);
-		printComponents(dataModel, commandLine);
+		printComponents(dataModel, executionContext);
 	}
 
 	/**
@@ -394,7 +395,7 @@ public class Jailer {
 	 * @param dataModel
 	 *            the data-model
 	 */
-	private static void printComponents(DataModel dataModel, CommandLine commandLine) {
+	private static void printComponents(DataModel dataModel, ExecutionContext executionContext) {
 		List<Set<Table>> components = new ArrayList<Set<Table>>();
 		Set<Table> tables = new HashSet<Table>(dataModel.getTables());
 		while (!tables.isEmpty()) {
@@ -405,7 +406,7 @@ public class Jailer {
 		}
 		System.out.println(components.size() + " components: ");
 		for (Set<Table> component : components) {
-			System.out.println(new PrintUtil(commandLine).tableSetAsString(component));
+			System.out.println(new PrintUtil(executionContext).tableSetAsString(component));
 		}
 	}
 

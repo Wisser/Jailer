@@ -45,17 +45,17 @@ import net.sf.jailer.util.SqlUtil;
 public class DDLCreator {
 	
 	/**
-	 * The command line arguments.
+	 * The execution context.
 	 */
-	private final CommandLine commandLine;
+	private final ExecutionContext executionContext;
 	
 	/**
 	 * Constructor.
 	 * 
-	 * @param commandLine the command line arguments
+	 * @param executionContext the command line arguments
 	 */
-	public DDLCreator(CommandLine commandLine) {
-		this.commandLine = commandLine;
+	public DDLCreator(ExecutionContext executionContext) {
+		this.executionContext = executionContext;
 	}
 	
 	/**
@@ -67,7 +67,7 @@ public class DDLCreator {
 			session = new Session(driverClass, dbUrl, user, password);
 		}
 		try {
-			return createDDL(new DataModel(commandLine), session, temporaryTableScope, workingTableSchema);
+			return createDDL(new DataModel(executionContext), session, temporaryTableScope, workingTableSchema);
 		} finally {
 			if (session != null) {
 				try { session.shutDown(); } catch (Exception e) { /* ignore */ }
@@ -79,14 +79,14 @@ public class DDLCreator {
 	 * Creates the DDL for the working-tables.
 	 */
 	public void createDDL(Session localSession, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws Exception {
-		createDDL(new DataModel(commandLine), localSession, temporaryTableScope, workingTableSchema);
+		createDDL(new DataModel(executionContext), localSession, temporaryTableScope, workingTableSchema);
 	}
 
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
 	public boolean createDDL(DataModel datamodel, Session session, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws Exception {
-		RowIdSupport rowIdSupport = new RowIdSupport(datamodel, Configuration.forDbms(session), commandLine);
+		RowIdSupport rowIdSupport = new RowIdSupport(datamodel, Configuration.forDbms(session), executionContext);
 		return createDDL(datamodel, session, temporaryTableScope, rowIdSupport, workingTableSchema);
 	}
 
@@ -181,15 +181,15 @@ public class DDLCreator {
 			listArguments.put("column-list-from", Collections.singletonList(""));
 			listArguments.put("column-list-to", Collections.singletonList(""));
 		}
-		String ddl = new PrintUtil(commandLine).applyTemplate(template, arguments, listArguments);
+		String ddl = new PrintUtil(executionContext).applyTemplate(template, arguments, listArguments);
 
 		if (session != null) {
 			// try {
-			File tmp = commandLine.newFile("jailer_ddl.sql");
+			File tmp = executionContext.newFile("jailer_ddl.sql");
 			PrintWriter pw = new PrintWriter(tmp);
 			pw.println(ddl);
 			pw.close();
-			new SqlScriptExecutor(session, 1, commandLine).executeScript(tmp.getCanonicalPath());
+			new SqlScriptExecutor(session, 1, executionContext).executeScript(tmp.getCanonicalPath());
 			// } finally {
 			// session.shutDown();
 			// }
@@ -252,7 +252,7 @@ public class DDLCreator {
 		try {
 			try {
 				final boolean[] uptodate = new boolean[] { false };
-				final DataModel datamodel = new DataModel(commandLine);
+				final DataModel datamodel = new DataModel(executionContext);
 				final Map<String, String> typeReplacement = Configuration.forDbms(session).getTypeReplacement();
 				final RowIdSupport rowIdSupport = new RowIdSupport(datamodel, Configuration.forDbms(session), useRowId);
 				

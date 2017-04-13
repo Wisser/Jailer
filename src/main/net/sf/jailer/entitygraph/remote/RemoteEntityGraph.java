@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
@@ -79,12 +79,12 @@ public class RemoteEntityGraph extends EntityGraph {
      * @param session for executing SQL-Statements
      * @param universalPrimaryKey the universal primary key
      */
-    protected RemoteEntityGraph(DataModel dataModel, int graphID, Session session, PrimaryKey universalPrimaryKey, CommandLine commandLine) throws SQLException {
-    	super(graphID, dataModel, commandLine);
+    protected RemoteEntityGraph(DataModel dataModel, int graphID, Session session, PrimaryKey universalPrimaryKey, ExecutionContext executionContext) throws SQLException {
+    	super(graphID, dataModel, executionContext);
         this.session = session;
         this.quoting = new Quoting(session);
         this.universalPrimaryKey = universalPrimaryKey;
-        this.rowIdSupport = new RowIdSupport(dataModel, Configuration.forDbms(session), commandLine);
+        this.rowIdSupport = new RowIdSupport(dataModel, Configuration.forDbms(session), executionContext);
         
         File fieldProcTablesFile = new File("field-proc-tables.csv");
         if (fieldProcTablesFile.exists()) {
@@ -118,9 +118,9 @@ public class RemoteEntityGraph extends EntityGraph {
      * @param universalPrimaryKey the universal primary key
      * @return the newly created entity-graph
      */
-    public static RemoteEntityGraph create(DataModel dataModel, int graphID, Session session, PrimaryKey universalPrimaryKey, CommandLine commandLine) throws SQLException {
-        RemoteEntityGraph entityGraph = new RemoteEntityGraph(dataModel, graphID, session, universalPrimaryKey, commandLine);
-        init(graphID, session, commandLine);
+    public static RemoteEntityGraph create(DataModel dataModel, int graphID, Session session, PrimaryKey universalPrimaryKey, ExecutionContext executionContext) throws SQLException {
+        RemoteEntityGraph entityGraph = new RemoteEntityGraph(dataModel, graphID, session, universalPrimaryKey, executionContext);
+        init(graphID, session, executionContext);
         return entityGraph;
     }
 
@@ -130,9 +130,9 @@ public class RemoteEntityGraph extends EntityGraph {
      * @param graphID the unique ID of the graph
      * @param session for executing SQL-Statements
      */
-    protected static void init(int graphID, Session session, CommandLine commandLine) {
+    protected static void init(int graphID, Session session, ExecutionContext executionContext) {
         try {
-            session.executeUpdate("Insert into " + SQLDialect.dmlTableReference(ENTITY_GRAPH, session, commandLine) + "(id, age) values (" + graphID + ", 1)");
+            session.executeUpdate("Insert into " + SQLDialect.dmlTableReference(ENTITY_GRAPH, session, executionContext) + "(id, age) values (" + graphID + ", 1)");
         } catch (SQLException e) {
             throw new RuntimeException("Can't find working tables! " +
                     "Run 'bin/jailer.sh create-ddl' " +
@@ -148,7 +148,7 @@ public class RemoteEntityGraph extends EntityGraph {
      * @return the newly created entity-graph
      */
     public EntityGraph copy(int newGraphID, Session session) throws SQLException {
-        RemoteEntityGraph entityGraph = create(dataModel, newGraphID, session, universalPrimaryKey, commandLine);
+        RemoteEntityGraph entityGraph = create(dataModel, newGraphID, session, universalPrimaryKey, executionContext);
         entityGraph.setBirthdayOfSubject(birthdayOfSubject);
         session.executeUpdate(
                 "Insert into " + dmlTableReference(ENTITY, session) + "(r_entitygraph, " + universalPrimaryKey.columnList(null) + ", birthday, orig_birthday, type) " +
@@ -165,7 +165,7 @@ public class RemoteEntityGraph extends EntityGraph {
      * @return the entity-graph
      */
     public EntityGraph find(int graphID, Session session, PrimaryKey universalPrimaryKey) throws SQLException {
-        RemoteEntityGraph entityGraph = new RemoteEntityGraph(dataModel, graphID, session, universalPrimaryKey, commandLine);
+        RemoteEntityGraph entityGraph = new RemoteEntityGraph(dataModel, graphID, session, universalPrimaryKey, executionContext);
         final boolean[] found = new boolean[1];
         found[0] = false;
         session.executeQuery("Select * From " + dmlTableReference(ENTITY_GRAPH, session) + "Where id=" + graphID + "", new Session.ResultSetReader() {
@@ -628,7 +628,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param columns the columns;
 	 */
 	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, Configuration targetConfiguration) throws SQLException {
-		Session.ResultSetReader reader = new UpdateTransformer(table, columns, scriptFileWriter, commandLine.numberOfEntities, getTargetSession(), targetConfiguration, importFilterManager, commandLine);
+		Session.ResultSetReader reader = new UpdateTransformer(table, columns, scriptFileWriter, executionContext.getNumberOfEntities(), getTargetSession(), targetConfiguration, importFilterManager, executionContext);
     	readEntities(table, false, reader);
 	}
 

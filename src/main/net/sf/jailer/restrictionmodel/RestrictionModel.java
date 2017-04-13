@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.ParameterHandler;
@@ -64,17 +64,17 @@ public class RestrictionModel {
     private static final Logger _log = Logger.getLogger(RestrictionModel.class);
 	
     /**
-	 * The command line arguments.
+	 * The execution context.
 	 */
-	private final CommandLine commandLine;
+	private final ExecutionContext executionContext;
 	
     /**
      * Constructor.
      * 
      * @param dataModel the data-model
      */
-    public RestrictionModel(DataModel dataModel, CommandLine commandLine) {
-    	this.commandLine = commandLine;
+    public RestrictionModel(DataModel dataModel, ExecutionContext executionContext) {
+    	this.executionContext = executionContext;
         this.dataModel = dataModel;
     }
 
@@ -140,19 +140,19 @@ public class RestrictionModel {
         File file;
         boolean embedded = false;
         if (EMBEDDED.equals(fileName)) {
-        	file = commandLine.newFile(extractionModelFileName);
+        	file = executionContext.newFile(extractionModelFileName);
         	embedded = true;
         } else {
-        	file = commandLine.newFile(fileName);
+        	file = executionContext.newFile(fileName);
         }
         if (!file.exists()) {
         	try {
-        		file = new File(commandLine.newFile(extractionModelFileName).getParent(), fileName);
+        		file = new File(executionContext.newFile(extractionModelFileName).getParent(), fileName);
         	} catch (Exception e) {
         	}
         }
         if (!file.exists()) {
-            file = commandLine.newFile("restrictionmodel" + File.separator + fileName);
+            file = executionContext.newFile("restrictionmodel" + File.separator + fileName);
         }
         List<CsvFile.Line> lines = new CsvFile(file).getLines();
         int nr = 0;
