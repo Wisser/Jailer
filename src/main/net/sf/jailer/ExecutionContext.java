@@ -15,6 +15,19 @@
  */
 package net.sf.jailer;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
+import net.sf.jailer.database.DBMS;
+import net.sf.jailer.database.TemporaryTableScope;
+import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.util.CsvFile;
+import net.sf.jailer.util.SqlUtil;
+
 /**
  * Execution context of import-/export commands.
  * 
@@ -22,6 +35,24 @@ package net.sf.jailer;
  */
 public class ExecutionContext {
 	
+	/**
+	 * Default constructor.
+	 */
+	public ExecutionContext() {
+	}
+
+	/**
+	 * Creates new context with attributes taken from {@link ExecutionContext}.
+	 * 
+	 * @param executionContext the command line
+	 */
+	public ExecutionContext(CommandLine commandLine) throws Exception {
+		copyCommandLineFields(commandLine);
+		if (tabuFileName != null) {
+            loadTabuTables(tabuFileName);
+		}
+	}
+
 	/**
 	 * If <code>true</code>, Use UTF-8 encoding
 	 *
@@ -42,36 +73,13 @@ public class ExecutionContext {
 	}
 
 	/**
-	 * Gets export file format: SQL, XML, DBUNIT_FLAT_XML, INTRA_DATABASE or
-	 * LIQUIBASE_XML
-	 *
-	 * @return export file format: SQL, XML, DBUNIT_FLAT_XML, INTRA_DATABASE or
-	 *         LIQUIBASE_XML
-	 */
-	public String getFormat() {
-		return format;
-	}
-
-	/**
-	 * Sets export file format: SQL, XML, DBUNIT_FLAT_XML, INTRA_DATABASE or
-	 * LIQUIBASE_XML
-	 *
-	 * @param format
-	 *            export file format: SQL, XML, DBUNIT_FLAT_XML, INTRA_DATABASE
-	 *            or LIQUIBASE_XML
-	 */
-	public void setFormat(String format) {
-		this.format = format;
-	}
-
-	/**
 	 * Gets target-DBMS: ORACLE, MSSQL, DB2, MySQL, POSTGRESQL, SYBASE, SQLITE,
 	 * HSQL or H2
 	 *
 	 * @return target-DBMS: ORACLE, MSSQL, DB2, MySQL, POSTGRESQL, SYBASE,
 	 *         SQLITE, HSQL or H2
 	 */
-	public String getTargetDBMS() {
+	public DBMS getTargetDBMS() {
 		return targetDBMS;
 	}
 
@@ -83,31 +91,8 @@ public class ExecutionContext {
 	 *            target-DBMS: ORACLE, MSSQL, DB2, MySQL, POSTGRESQL, SYBASE,
 	 *            SQLITE, HSQL or H2
 	 */
-	public void setTargetDBMS(String targetDBMS) {
+	public void setTargetDBMS(DBMS targetDBMS) {
 		this.targetDBMS = targetDBMS;
-	}
-
-	/**
-	 * If <code>true</code>, Export entities into XML file (deprecated, use
-	 * -format XML instead)
-	 *
-	 * @return <code>true</code> if Export entities into XML file (deprecated,
-	 *         use -format XML instead)
-	 */
-	public boolean get_asXml() {
-		return _asXml;
-	}
-
-	/**
-	 * If <code>true</code>, Export entities into XML file (deprecated, use
-	 * -format XML instead)
-	 *
-	 * @param _asXml
-	 *            <code>true</code> if Export entities into XML file
-	 *            (deprecated, use -format XML instead)
-	 */
-	public void set_asXml(boolean _asXml) {
-		this._asXml = _asXml;
 	}
 
 	/**
@@ -187,82 +172,6 @@ public class ExecutionContext {
 	}
 
 	/**
-	 * If <code>true</code>, Print restricted data-model with closures
-	 *
-	 * @return <code>true</code> if Print restricted data-model with closures
-	 */
-	public boolean getWithClosures() {
-		return withClosures;
-	}
-
-	/**
-	 * If <code>true</code>, Print restricted data-model with closures
-	 *
-	 * @param withClosures
-	 *            <code>true</code> if Print restricted data-model with closures
-	 */
-	public void setWithClosures(boolean withClosures) {
-		this.withClosures = withClosures;
-	}
-
-	/**
-	 * If <code>true</code>, Write export-explanation ('explain.log')
-	 *
-	 * @return <code>true</code> if Write export-explanation ('explain.log')
-	 */
-	public boolean getExplain() {
-		return explain;
-	}
-
-	/**
-	 * If <code>true</code>, Write export-explanation ('explain.log')
-	 *
-	 * @param explain
-	 *            <code>true</code> if Write export-explanation ('explain.log')
-	 */
-	public void setExplain(boolean explain) {
-		this.explain = explain;
-	}
-
-	/**
-	 * If <code>true</code>, Consider associations as un-directed
-	 *
-	 * @return <code>true</code> if Consider associations as un-directed
-	 */
-	public boolean getUndirected() {
-		return undirected;
-	}
-
-	/**
-	 * If <code>true</code>, Consider associations as un-directed
-	 *
-	 * @param undirected
-	 *            <code>true</code> if Consider associations as un-directed
-	 */
-	public void setUndirected(boolean undirected) {
-		this.undirected = undirected;
-	}
-
-	/**
-	 * Gets abort export if number of entities is greater than this limit
-	 *
-	 * @return abort export if number of entities is greater than this limit
-	 */
-	public int getMaxNumberOfEntities() {
-		return maxNumberOfEntities;
-	}
-
-	/**
-	 * Sets abort export if number of entities is greater than this limit
-	 *
-	 * @param maxNumberOfEntities
-	 *            abort export if number of entities is greater than this limit
-	 */
-	public void setMaxNumberOfEntities(int maxNumberOfEntities) {
-		this.maxNumberOfEntities = maxNumberOfEntities;
-	}
-
-	/**
 	 * Gets name of the export-script file (compressed if it ends with '.zip' or
 	 * '.gz')
 	 *
@@ -283,25 +192,6 @@ public class ExecutionContext {
 	 */
 	public void setExportScriptFileName(String exportScriptFileName) {
 		this.exportScriptFileName = exportScriptFileName;
-	}
-
-	/**
-	 * Gets schema to reduce JDBC-Introspection to
-	 *
-	 * @return schema to reduce JDBC-Introspection to
-	 */
-	public String getSchema() {
-		return schema;
-	}
-
-	/**
-	 * Sets schema to reduce JDBC-Introspection to
-	 *
-	 * @param schema
-	 *            schema to reduce JDBC-Introspection to
-	 */
-	public void setSchema(String schema) {
-		this.schema = schema;
 	}
 
 	/**
@@ -385,50 +275,6 @@ public class ExecutionContext {
 	}
 
 	/**
-	 * Gets name of the delete-script file (compressed if it ends with '.zip' or
-	 * '.gz')
-	 *
-	 * @return name of the delete-script file (compressed if it ends with '.zip'
-	 *         or '.gz')
-	 */
-	public String getDeleteScriptFileName() {
-		return deleteScriptFileName;
-	}
-
-	/**
-	 * Sets name of the delete-script file (compressed if it ends with '.zip' or
-	 * '.gz')
-	 *
-	 * @param deleteScriptFileName
-	 *            name of the delete-script file (compressed if it ends with
-	 *            '.zip' or '.gz')
-	 */
-	public void setDeleteScriptFileName(String deleteScriptFileName) {
-		this.deleteScriptFileName = deleteScriptFileName;
-	}
-
-	/**
-	 * Gets name of the 'tabu' file (for 'print-datamodel or 'find-association')
-	 *
-	 * @return name of the 'tabu' file (for 'print-datamodel or
-	 *         'find-association')
-	 */
-	public String getTabuFileName() {
-		return tabuFileName;
-	}
-
-	/**
-	 * Sets name of the 'tabu' file (for 'print-datamodel or 'find-association')
-	 *
-	 * @param tabuFileName
-	 *            name of the 'tabu' file (for 'print-datamodel or
-	 *            'find-association')
-	 */
-	public void setTabuFileName(String tabuFileName) {
-		this.tabuFileName = tabuFileName;
-	}
-
-	/**
 	 * Gets subject condition
 	 *
 	 * @return subject condition
@@ -445,63 +291,6 @@ public class ExecutionContext {
 	 */
 	public void setWhere(String where) {
 		this.where = where;
-	}
-
-	/**
-	 * Gets target schema map
-	 *
-	 * @return target schema map
-	 */
-	public String getRawschemamapping() {
-		return rawschemamapping;
-	}
-
-	/**
-	 * Sets target schema map
-	 *
-	 * @param rawschemamapping
-	 *            target schema map
-	 */
-	public void setRawschemamapping(String rawschemamapping) {
-		this.rawschemamapping = rawschemamapping;
-	}
-
-	/**
-	 * Gets source schema map
-	 *
-	 * @return source schema map
-	 */
-	public String getRawsourceschemamapping() {
-		return rawsourceschemamapping;
-	}
-
-	/**
-	 * Sets source schema map
-	 *
-	 * @param rawsourceschemamapping
-	 *            source schema map
-	 */
-	public void setRawsourceschemamapping(String rawsourceschemamapping) {
-		this.rawsourceschemamapping = rawsourceschemamapping;
-	}
-
-	/**
-	 * Gets parameters
-	 *
-	 * @return parameters
-	 */
-	public String getParameters() {
-		return parameters;
-	}
-
-	/**
-	 * Sets parameters
-	 *
-	 * @param parameters
-	 *            parameters
-	 */
-	public void setParameters(String parameters) {
-		this.parameters = parameters;
 	}
 
 	/**
@@ -574,7 +363,7 @@ public class ExecutionContext {
 	 *
 	 * @return scope of working tables, GLOBAL, SESSION_LOCAL or LOCAL_DATABASE
 	 */
-	public String getScope() {
+	public TemporaryTableScope getScope() {
 		return scope;
 	}
 
@@ -585,7 +374,7 @@ public class ExecutionContext {
 	 *            scope of working tables, GLOBAL, SESSION_LOCAL or
 	 *            LOCAL_DATABASE
 	 */
-	public void setScope(String scope) {
+	public void setScope(TemporaryTableScope scope) {
 		this.scope = scope;
 	}
 
@@ -644,44 +433,6 @@ public class ExecutionContext {
 	 */
 	public void setWorkingFolder(String workingFolder) {
 		this.workingFolder = workingFolder;
-	}
-
-	/**
-	 * Gets JDBC driver's jar file
-	 *
-	 * @return JDBC driver's jar file
-	 */
-	public String getJdbcjar() {
-		return jdbcjar;
-	}
-
-	/**
-	 * Sets JDBC driver's jar file
-	 *
-	 * @param jdbcjar
-	 *            JDBC driver's jar file
-	 */
-	public void setJdbcjar(String jdbcjar) {
-		this.jdbcjar = jdbcjar;
-	}
-
-	/**
-	 * Gets JDBC driver's secondary jar file
-	 *
-	 * @return JDBC driver's secondary jar file
-	 */
-	public String getJdbcjar2() {
-		return jdbcjar2;
-	}
-
-	/**
-	 * Sets JDBC driver's secondary jar file
-	 *
-	 * @param jdbcjar2
-	 *            JDBC driver's secondary jar file
-	 */
-	public void setJdbcjar2(String jdbcjar2) {
-		this.jdbcjar2 = jdbcjar2;
 	}
 
 	/**
@@ -770,23 +521,192 @@ public class ExecutionContext {
 	}
 
 	/**
-	 * Gets no longer used
+     * Gets working-folder option.
+     * 
+     * @return working folder option, or <code>null</code> if no working-folder option is given
+     */
+    public File getWorkingfolder() {
+    	if (workingFolder == null) {
+    		return null;
+    	}
+    	return new File(workingFolder);
+    }
+
+    /**
+     * Gets {@link File} from a file name relative to the working-folder.
+     * 
+     * @param filename the file name
+     * @return {@link File} from a file name relative to the working-folder
+     */
+    public File newFile(String filename) {
+    	File wf = getWorkingfolder();
+    	if (wf == null) {
+    		return new File(filename);
+    	}
+    	File f = new File(filename);
+    	if (f.isAbsolute()) {
+    		return f;
+    	}
+    	return new File(wf, filename);
+    }
+    
+	/**
+	 * Gets parameters
 	 *
-	 * @return no longer used
+	 * @return parameters
 	 */
-	public String getScriptEnhancer() {
-		return scriptEnhancer;
+    public Map<String, String> getParameters() {
+    	Map<String, String> map = new TreeMap<String, String>();
+    	
+    	if (parameters != null) {
+    		for (String pv: CsvFile.decodeLine(parameters)) {
+    			int i = pv.indexOf('=');
+    			if (i >= 0) {
+    				map.put(pv.substring(0, i), pv.substring(i + 1));
+    			}
+    		}
+    	}
+    	
+    	return map;
+    }
+
+    /**
+     * Gets 'tabu' tables.
+     * 
+     * @param dataModel to get tables from
+     * @return set of 'tabu' tables or <code>null</code>, empty list if no tabu-file is given
+     */
+    public Set<Table> getTabuTables(DataModel dataModel, Map<String, String> sourceSchemaMapping) {
+        return SqlUtil.readTableList(tabuTableNames, dataModel, sourceSchemaMapping);
+    }
+    
+    /**
+     * Loads 'tabu' tables file.
+     */
+    void loadTabuTables(String fileName) {
+        File file = newFile(fileName);
+        try {
+			tabuTableNames = new CsvFile(file);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+    }
+
+    private Map<String, String> schemaMapping;
+
+    public Map<String, String> getSchemaMapping() {
+		if (schemaMapping == null) {
+			schemaMapping = new HashMap<String, String>();
+			if (rawschemamapping != null) {
+				for (String item: rawschemamapping.split(",")) {
+					String[] fromTo = (" " + item + " ").split("=");
+					if (fromTo.length == 2) {
+						schemaMapping.put(fromTo[0].trim(), fromTo[1].trim());
+					}
+				}
+			}
+		}
+		return schemaMapping;
 	}
 
 	/**
-	 * Sets no longer used
+	 * Sets source schema map
 	 *
-	 * @param scriptEnhancer
-	 *            no longer used
+	 * @param rawsourceschemamapping
+	 *            source schema map
 	 */
-	public void setScriptEnhancer(String scriptEnhancer) {
-		this.scriptEnhancer = scriptEnhancer;
+	public void setSchemaMapping(Map<String, String> schemaMapping) {
+		this.schemaMapping = schemaMapping;
 	}
+
+    private Map<String, String> sourceSchemaMapping;
+
+    /**
+	 * @param sourceSchemaMapping the sourceSchemaMapping to set
+	 */
+	public void setSourceSchemaMapping(Map<String, String> sourceSchemaMapping) {
+		this.sourceSchemaMapping = sourceSchemaMapping;
+	}
+
+	public Map<String, String> getSourceSchemaMapping() {
+		if (sourceSchemaMapping == null) {
+			sourceSchemaMapping = new HashMap<String, String>();
+			if (rawsourceschemamapping != null) {
+				for (String item: rawsourceschemamapping.split(",")) {
+					String[] fromTo = (" " + item + " ").split("=");
+					if (fromTo.length == 2) {
+						sourceSchemaMapping.put(fromTo[0].trim(), fromTo[1].trim());
+					}
+				}
+			}
+		}
+		return sourceSchemaMapping;
+	}
+    
+    private ScriptFormat scriptFormat;
+    
+    /**
+     * Gets the script format.
+     * 
+     * @return the script format
+     */
+    public ScriptFormat getScriptFormat() {
+    	if (scriptFormat == null) {
+	    	if (_asXml) {
+	    		scriptFormat = ScriptFormat.XML;
+	    	} else if (format != null) {
+	    		scriptFormat = ScriptFormat.valueOf(format);
+	    	}
+    	}
+    	return scriptFormat;
+    }
+    
+    /**
+     * Sets the script format.
+     * 
+     * @return the script format
+     */
+    public void setScriptFormat(ScriptFormat scriptFormat) {
+    	this.scriptFormat = scriptFormat;
+    }
+    
+    /**
+     * Folder of current data model.
+     */
+    private String currentModelSubfolder = null;
+    
+    /**
+     * Sets folder of current data model.
+     * 
+     * @param modelFolder the folder, <code>null</code> for default model
+     */
+	public void setCurrentModelSubfolder(String modelFolder) {
+		currentModelSubfolder = modelFolder;
+	}
+
+	/**
+     * Gets folder of current data model.
+     * 
+     * @return modelFolder the folder, <code>null</code> for default model
+     */
+	public String getCurrentModelSubfolder() {
+		return currentModelSubfolder;
+	}
+
+	/**
+     * Gets fully qualified folder name of current data model.
+     */
+	public String getDataModelFolder() {
+		if (currentModelSubfolder == null) {
+			return datamodelFolder;
+		}
+		return datamodelFolder + File.separator + currentModelSubfolder;
+	}
+	
+	/**
+     * Names of 'tabu' tables.
+     */
+    private CsvFile tabuTableNames = null;
 
 	// use UTF-8 encoding
 	private boolean uTF8 = false;
@@ -797,7 +717,7 @@ public class ExecutionContext {
 
 	// target-DBMS: ORACLE, MSSQL, DB2, MySQL, POSTGRESQL, SYBASE, SQLITE, HSQL
 	// or H2
-	private String targetDBMS = "null";
+	private DBMS targetDBMS = null;
 
 	// export entities into XML file (deprecated, use -format XML instead)
 	private boolean _asXml = false;
@@ -814,24 +734,9 @@ public class ExecutionContext {
 	// pattern for time-stamps in XML and LIQUIBASE_XML export file
 	private String xmlTimeStampPattern = "yyyy-MM-dd-HH.mm.ss";
 
-	// print restricted data-model with closures
-	private boolean withClosures = false;
-
-	// write export-explanation ('explain.log')
-	private boolean explain = false;
-
-	// consider associations as un-directed
-	private boolean undirected = false;
-
-	// abort export if number of entities is greater than this limit
-	private int maxNumberOfEntities = 0;
-
 	// name of the export-script file (compressed if it ends with '.zip' or
 	// '.gz')
-	private String exportScriptFileName = "null";
-
-	// schema to reduce JDBC-Introspection to
-	private String schema = "null";
+	private String exportScriptFileName = null;
 
 	// add schema prefix to table names after analysing the DB
 	private boolean qualifyNames = false;
@@ -845,24 +750,20 @@ public class ExecutionContext {
 	// look for views while analysing the DB
 	private boolean analyseView = false;
 
-	// name of the delete-script file (compressed if it ends with '.zip' or
-	// '.gz')
-	private String deleteScriptFileName = "null";
-
 	// name of the 'tabu' file (for 'print-datamodel or 'find-association')
-	private String tabuFileName = "null";
+	private String tabuFileName = null;
 
 	// subject condition
-	private String where = "null";
+	private String where = null;
 
 	// target schema map
-	private String rawschemamapping = "null";
+	private String rawschemamapping = null;
 
 	// source schema map
-	private String rawsourceschemamapping = "null";
+	private String rawsourceschemamapping = null;
 
 	// parameters
-	private String parameters = "null";
+	private String parameters = null;
 
 	// number of threads (default is 1)
 	private int numberOfThreads = 1;
@@ -874,23 +775,14 @@ public class ExecutionContext {
 	// generate 'upsert'-statements for all entities (in export-file)
 	private boolean upsertOnly = false;
 
-	// scope of working tables, GLOBAL, SESSION_LOCAL or LOCAL_DATABASE
-	private String scope = "null";
-
 	// schema in which the working tables will be created
-	private String workingTableSchema = "null";
+	private String workingTableSchema = null;
 
 	// folder holding the data model. Defaults to './datamodel'
 	private String datamodelFolder = "datamodel";
 
 	// the working folder. Defaults to '.'
-	private String workingFolder = "null";
-
-	// JDBC driver's jar file
-	private String jdbcjar = "null";
-
-	// JDBC driver's secondary jar file
-	private String jdbcjar2 = "null";
+	private String workingFolder = null;
 
 	// the exported rows will not be sorted according to foreign key constraints
 	private boolean noSorting = false;
@@ -904,29 +796,22 @@ public class ExecutionContext {
 	// schema in which the import-filter mapping tables will be created
 	private String importFilterMappingTableSchema = "";
 
-	// no longer used
-	private String scriptEnhancer = "";
+	private TemporaryTableScope scope;
 
 	private void copyCommandLineFields(CommandLine commandLine) {
 		uTF8 = commandLine.uTF8;
 		format = commandLine.format;
-		targetDBMS = commandLine.targetDBMS;
+		targetDBMS = commandLine.targetDBMS == null? null : DBMS.valueOf(commandLine.targetDBMS);
 		_asXml = commandLine._asXml;
 		xmlRootTag = commandLine.xmlRootTag;
 		xmlDatePattern = commandLine.xmlDatePattern;
 		xmlTimePattern = commandLine.xmlTimePattern;
 		xmlTimeStampPattern = commandLine.xmlTimeStampPattern;
-		withClosures = commandLine.withClosures;
-		explain = commandLine.explain;
-		undirected = commandLine.undirected;
-		maxNumberOfEntities = commandLine.maxNumberOfEntities;
 		exportScriptFileName = commandLine.exportScriptFileName;
-		schema = commandLine.schema;
 		qualifyNames = commandLine.qualifyNames;
 		analyseAlias = commandLine.analyseAlias;
 		analyseSynonym = commandLine.analyseSynonym;
 		analyseView = commandLine.analyseView;
-		deleteScriptFileName = commandLine.deleteScriptFileName;
 		tabuFileName = commandLine.tabuFileName;
 		where = commandLine.where;
 		rawschemamapping = commandLine.rawschemamapping;
@@ -935,17 +820,21 @@ public class ExecutionContext {
 		numberOfThreads = commandLine.numberOfThreads;
 		numberOfEntities = commandLine.numberOfEntities;
 		upsertOnly = commandLine.upsertOnly;
-		scope = commandLine.scope;
-		workingTableSchema = commandLine.workingTableSchema;
+		if (commandLine.scope == null) {
+    		scope = TemporaryTableScope.GLOBAL;
+    	}
+    	try {
+    		scope = TemporaryTableScope.valueOf(commandLine.scope);
+    	} catch (Exception e) {
+    		scope = TemporaryTableScope.GLOBAL;
+    	}
+    	workingTableSchema = commandLine.workingTableSchema;
 		datamodelFolder = commandLine.datamodelFolder;
 		workingFolder = commandLine.workingFolder;
-		jdbcjar = commandLine.jdbcjar;
-		jdbcjar2 = commandLine.jdbcjar2;
 		noSorting = commandLine.noSorting;
 		transactional = commandLine.transactional;
 		noRowid = commandLine.noRowid;
 		importFilterMappingTableSchema = commandLine.importFilterMappingTableSchema;
-		scriptEnhancer = commandLine.scriptEnhancer;
 	}
 
 }

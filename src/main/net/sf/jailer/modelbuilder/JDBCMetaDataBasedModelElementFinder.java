@@ -32,7 +32,7 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.Session;
@@ -116,7 +116,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
      * @param namingSuggestion to put naming suggestions for associations into
      * @return found associations
      */
-    public Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestion, Session session, CommandLine commandLine) throws Exception {
+    public Collection<Association> findAssociations(DataModel dataModel, Map<Association, String[]> namingSuggestion, Session session, ExecutionContext executionContext) throws Exception {
         Collection<Association> associations = new ArrayList<Association>();
         DatabaseMetaData metaData = session.getMetaData();
     	Quoting quoting = new Quoting(session);
@@ -188,14 +188,14 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
      * 
      * @param session the statement executor for executing SQL-statements 
      */
-    public Set<Table> findTables(Session session, CommandLine commandLine) throws Exception {
+    public Set<Table> findTables(Session session, ExecutionContext executionContext) throws Exception {
         PrimaryKeyFactory primaryKeyFactory = new PrimaryKeyFactory();
         
         Set<Table> tables = new HashSet<Table>();
         DatabaseMetaData metaData = session.getMetaData();
         Quoting quoting = new Quoting(session);
         ResultSet resultSet;
-        List<String> types = getTypes(commandLine);
+        List<String> types = getTypes(executionContext);
 		resultSet = getTables(session, metaData, session.getIntrospectionSchema(), "%", types.toArray(new String[0]));
         List<String> tableNames = new ArrayList<String>();
         while (resultSet.next()) {
@@ -203,7 +203,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
             if (resultSet.getString(4) != null && types.contains(resultSet.getString(4).toUpperCase())) {
                 if (isValidName(tableName)) {
                 	tableName = quoting.quote(tableName);
-                	if (commandLine.qualifyNames) {
+                	if (executionContext.getQualifyNames()) {
                 		String schemaName = resultSet.getString(session.dbms == DBMS.MySQL? 1 : 2);
                 		if (schemaName != null) {
                 			schemaName = quoting.quote(schemaName.trim());
@@ -316,16 +316,16 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         return tables;
     }
 
-	private List<String> getTypes(CommandLine commandLine) {
+	private List<String> getTypes(ExecutionContext executionContext) {
 		ArrayList<String> result = new ArrayList<String>();
 		result.add("TABLE");
-		if (commandLine.analyseAlias) {
+		if (executionContext.getAnalyseAlias()) {
 			result.add("ALIAS");
 		}
-		if (commandLine.analyseSynonym) {
+		if (executionContext.getAnalyseSynonym()) {
 			result.add("SYNONYM");
 		}
-		if (commandLine.analyseView) {
+		if (executionContext.getAnalyseView()) {
 			result.add("VIEW");
 		}
 		return result;
@@ -576,7 +576,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
      * 
      * @throws Exception on each error
      */
-    public List<Column> findColumns(Table table, Session session, CommandLine commandLine) throws Exception {
+    public List<Column> findColumns(Table table, Session session, ExecutionContext executionContext) throws Exception {
     	List<Column> columns = new ArrayList<Column>();
     	DatabaseMetaData metaData = session.getMetaData();
     	Quoting quoting = new Quoting(session);

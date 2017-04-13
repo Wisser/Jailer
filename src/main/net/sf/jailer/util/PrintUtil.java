@@ -31,7 +31,7 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.Table;
 
 /**
@@ -42,17 +42,17 @@ import net.sf.jailer.datamodel.Table;
 public class PrintUtil {
 	
 	/**
-	 * The command line arguments.
+	 * The execution context.
 	 */
-	private final CommandLine commandLine;
+	private final ExecutionContext executionContext;
 	
 	/**
 	 * Constructor.
 	 * 
-	 * @param commandLine the command line arguments
+	 * @param executionContext the command line arguments
 	 */
-	public PrintUtil(CommandLine commandLine) {
-		this.commandLine = commandLine;
+	public PrintUtil(ExecutionContext executionContext) {
+		this.executionContext = executionContext;
 	}
 	
     /**
@@ -181,7 +181,7 @@ public class PrintUtil {
     public String loadFile(String file, boolean ignoreComments) throws FileNotFoundException, IOException {
         StringBuffer sb;
         sb = new StringBuffer();
-        BufferedReader reader = new BufferedReader(new FileReader(commandLine.newFile(file)));
+        BufferedReader reader = new BufferedReader(new FileReader(executionContext.newFile(file)));
         String line = null;
         while ((line = reader.readLine()) != null) {
             if (!ignoreComments || (line.trim().length() > 0 && !line.startsWith("#"))) {
@@ -198,10 +198,10 @@ public class PrintUtil {
 		File newFile;
 		for (int i = 1; ; ++i) {
 			file = "tmp";
-			newFile = commandLine.newFile(file);
+			newFile = executionContext.newFile(file);
 			newFile.mkdirs();
 			file += File.separator + "up" + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".sql";
-			newFile = commandLine.newFile(file);
+			newFile = executionContext.newFile(file);
 			if (!newFile.exists()) {
 				break;
 			}

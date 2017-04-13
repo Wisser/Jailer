@@ -15,11 +15,12 @@
  */
 package net.sf.jailer.ui;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.CommandLine;
 
 /**
- * Global (singleton) instance of the {@link CommandLine}.
+ * Global (singleton) instance of the {@link ExecutionContext}.
  * 
  * @author Ralf Wisser
  */
@@ -31,6 +32,11 @@ public class CommandLineInstance {
     private static CommandLine commandLine;
     
     /**
+     * The singleton as {@link ExecutionContext}.
+     */
+    private static ExecutionContext executionContext;
+    
+    /**
      * Gets the singleton.
      * 
      * @return the singleton
@@ -40,10 +46,20 @@ public class CommandLineInstance {
     }
 
     /**
+     * Gets the singleton as Ex.
+     * 
+     * @return the singleton
+     */
+    public static ExecutionContext getExecutionContext() {
+        return executionContext;
+    }
+
+    /**
      * Sets the singleton.
      */
-    public static void init(String[] args) throws Exception {
+    public static synchronized void init(String[] args) throws Exception {
         commandLine = CommandLineParser.parse(args, true);
+        executionContext = new ExecutionContext(commandLine);
     }
 
 }

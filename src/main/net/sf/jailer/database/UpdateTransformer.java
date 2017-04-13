@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
@@ -114,9 +114,9 @@ public class UpdateTransformer extends AbstractResultSetReader {
 	private final ImportFilterTransformer importFilterTransformer;
 	
 	/**
-	 * The command line arguments.
+	 * The execution context.
 	 */
-	private final CommandLine commandLine;
+	private final ExecutionContext executionContext;
 	
     /**
      * Constructor.
@@ -127,8 +127,8 @@ public class UpdateTransformer extends AbstractResultSetReader {
      * @param session the session
      * @param targetDBMSConfiguration configuration of the target DBMS
      */
-    public UpdateTransformer(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, Configuration targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer, CommandLine commandLine) throws SQLException {
-    	this.commandLine = commandLine;
+    public UpdateTransformer(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, Configuration targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer, ExecutionContext executionContext) throws SQLException {
+    	this.executionContext = executionContext;
     	this.targetDBMSConfiguration = targetDBMSConfiguration;
         this.maxBodySize = maxBodySize;
         this.table = table;
@@ -381,7 +381,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
      */
     private String qualifiedTableName(Table t) {
     	String schema = t.getOriginalSchema("");
-    	String mappedSchema = commandLine.getSchemaMapping().get(schema);
+    	String mappedSchema = executionContext.getSchemaMapping().get(schema);
     	if (mappedSchema != null) {
     		schema = mappedSchema;
     	}

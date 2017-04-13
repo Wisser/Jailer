@@ -20,7 +20,7 @@ import java.io.OutputStreamWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Configuration;
 import net.sf.jailer.TransformerFactory;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
@@ -70,9 +70,9 @@ public class DeletionTransformer extends AbstractResultSetReader {
     private final Quoting quoting;
 
 	/**
-	 * The command line arguments.
+	 * The execution context.
 	 */
-	private final CommandLine commandLine;
+	private final ExecutionContext executionContext;
 
 	/**
      * Factory.
@@ -85,9 +85,9 @@ public class DeletionTransformer extends AbstractResultSetReader {
 		private final Configuration targetDBMSConfiguration;
 		
 		/**
-		 * The command line arguments.
+		 * The execution context.
 		 */
-		private final CommandLine commandLine;
+		private final ExecutionContext executionContext;
 		
 		/**
 	     * Constructor.
@@ -97,8 +97,8 @@ public class DeletionTransformer extends AbstractResultSetReader {
 	     * @param maxBodySize maximum length of SQL values list (for generated deletes)
 	     * @param targetDBMSConfiguration configuration of the target DBMS
 	     */
-		public Factory(OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, Configuration targetDBMSConfiguration, CommandLine commandLine) {
-			this.commandLine = commandLine;
+		public Factory(OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, Configuration targetDBMSConfiguration, ExecutionContext executionContext) {
+			this.executionContext = executionContext;
 			this.maxBodySize = maxBodySize;
 	        this.scriptFileWriter = scriptFileWriter;
 	        this.session = session;
@@ -114,7 +114,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
 		 */
 		@Override
 		public ResultSetReader create(Table table) throws SQLException {
-			return new DeletionTransformer(table, scriptFileWriter, maxBodySize, session, targetDBMSConfiguration, commandLine);
+			return new DeletionTransformer(table, scriptFileWriter, maxBodySize, session, targetDBMSConfiguration, executionContext);
 		}
     };
 
@@ -126,10 +126,10 @@ public class DeletionTransformer extends AbstractResultSetReader {
      * @param maxBodySize maximum length of SQL values list (for generated deletes)
      * @param session the session
      * @param targetDBMSConfiguration configuration of the target DBMS
-     * @param commandLine 
+     * @param executionContext 
      */
-    private DeletionTransformer(Table table, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, Configuration targetDBMSConfiguration, CommandLine commandLine) throws SQLException {
-        this.commandLine = commandLine;
+    private DeletionTransformer(Table table, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, Configuration targetDBMSConfiguration, ExecutionContext executionContext) throws SQLException {
+        this.executionContext = executionContext;
     	this.table = table;
         this.scriptFileWriter = scriptFileWriter;
         deleteStatementBuilder = new StatementBuilder(maxBodySize);
@@ -210,7 +210,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
      */
     private String qualifiedTableName(Table t) {
     	String schema = t.getOriginalSchema("");
-    	String mappedSchema = commandLine.getSourceSchemaMapping().get(schema);
+    	String mappedSchema = executionContext.getSourceSchemaMapping().get(schema);
     	if (mappedSchema != null) {
     		schema = mappedSchema;
     	}

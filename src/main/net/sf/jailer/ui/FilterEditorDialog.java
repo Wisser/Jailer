@@ -59,7 +59,7 @@ import javax.swing.ListCellRenderer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Filter;
@@ -93,9 +93,9 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	private Table selectedTable;
 	
 	/**
-	 * The command line arguments.
+	 * The execution context.
 	 */
-	private final CommandLine commandLine = CommandLineInstance.getInstance();
+	private final ExecutionContext executionContext = CommandLineInstance.getExecutionContext();
 	
 	/**
      * Make {@link #refresh(Table)} reentrant.
@@ -373,7 +373,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 
 		@Override
 		protected String getDisplayName(FilterModel element) {
-			return Quoting.unquotedTableName(element.table, commandLine).toLowerCase() + "." + Quoting.staticUnquote(element.column.name).toLowerCase();
+			return Quoting.unquotedTableName(element.table, executionContext).toLowerCase() + "." + Quoting.staticUnquote(element.column.name).toLowerCase();
 		}
 
 		@Override
@@ -432,7 +432,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 			Collections.sort(model, new Comparator<FilterModel>() {
 				@Override
 				public int compare(FilterModel o1, FilterModel o2) {
-					return Quoting.unquotedTableName(o1.table, commandLine).compareTo(Quoting.unquotedTableName(o2.table, commandLine));
+					return Quoting.unquotedTableName(o1.table, executionContext).compareTo(Quoting.unquotedTableName(o2.table, executionContext));
 				}
 			});
 			super.setModel(model);
@@ -560,7 +560,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		Set<String> columnNames = new TreeSet<String>();
 		Set<String> typeNames = new TreeSet<String>();
 		for (Table tab: getDataModel().getTables()) {
-			tableNames.add(Quoting.unquotedTableName(tab, commandLine).toLowerCase());
+			tableNames.add(Quoting.unquotedTableName(tab, executionContext).toLowerCase());
 			for (Column column: tab.getColumns()) {
 				columnNames.add(Quoting.staticUnquote(column.name).toLowerCase());
 				typeNames.add(column.type.toLowerCase());

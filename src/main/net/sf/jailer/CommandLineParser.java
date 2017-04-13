@@ -18,10 +18,10 @@ package net.sf.jailer;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 
 /**
- * Parser for {@link CommandLine}.
+ * Parser for {@link ExecutionContext}.
  * 
  * @author Ralf Wisser
  */
@@ -43,9 +43,6 @@ public class CommandLineParser {
             		printUsage();
             		return null;
             	}
-            }
-            if (commandLine.tabuFileName != null) {
-                commandLine.loadTabuTables(commandLine.tabuFileName);
             }
             return commandLine;
         } catch (CmdLineException e) {
@@ -104,7 +101,7 @@ public class CommandLineParser {
         System.out.println("    imports data (with C|BLOB support)");
         System.out.println();
         System.out.println("options:");
-        CmdLineParser cmdLineParser = new CmdLineParser(new CommandLine());
+        CmdLineParser cmdLineParser = new CmdLineParser(new ExecutionContext());
         cmdLineParser.setUsageWidth(120);
         cmdLineParser.printUsage(System.out);
         System.out.println();

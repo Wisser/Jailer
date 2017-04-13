@@ -19,7 +19,7 @@ import java.io.File;
 import java.sql.SQLException;
 import java.util.UUID;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.util.ClasspathUtil;
 
 
@@ -41,17 +41,17 @@ public class LocalDatabase {
 	private String databaseFolder;
 	
 	/**
-	 * The command line arguments.
+	 * The execution context.
 	 */
-	private final CommandLine commandLine;
+	private final ExecutionContext executionContext;
 	
 	/**
 	 * Creates a local database.
 	 */
-	public LocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile, String folder, CommandLine commandLine) throws Exception {
-		this.commandLine = commandLine;
+	public LocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile, String folder, ExecutionContext executionContext) throws Exception {
+		this.executionContext = executionContext;
 		this.databaseFolder = folder + File.separator + UUID.randomUUID().toString();
-		commandLine.newFile(databaseFolder).mkdirs();
+		executionContext.newFile(databaseFolder).mkdirs();
 		ClassLoader oldCL = Session.classLoaderForJdbcDriver;
 		Session.setClassLoaderForJdbcDriver(ClasspathUtil.addJarToClasspath(jarfile, null));
 		session = new Session(driverClassName, urlPattern.replace("%s", databaseFolder + File.separator + "local"), "", "", null, false, true);
@@ -63,7 +63,7 @@ public class LocalDatabase {
 	 */
 	public void shutDown() throws SQLException {
 		session.shutDown();
-		File localFolder = commandLine.newFile(databaseFolder);
+		File localFolder = executionContext.newFile(databaseFolder);
 		File[] listFiles = localFolder.listFiles();
 		if (listFiles != null) {
 			for (File file: listFiles) {

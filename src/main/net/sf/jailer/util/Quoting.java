@@ -23,7 +23,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.jailer.CommandLine;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Table;
 
@@ -264,9 +264,9 @@ public class Quoting {
 	 *            the table
 	 * @return unquoted qualified name of t
 	 */
-	public static String unquotedTableName(Table t, CommandLine commandLine) {
+	public static String unquotedTableName(Table t, ExecutionContext executionContext) {
 		String schema = t.getOriginalSchema("");
-		String mappedSchema = commandLine
+		String mappedSchema = executionContext
 				.getSchemaMapping().get(schema);
 		if (mappedSchema != null) {
 			schema = mappedSchema;
