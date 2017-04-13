@@ -39,70 +39,6 @@ import net.sf.jailer.util.SqlUtil;
  */
 public class CommandLine {
 
-    /**
-     * Gets 'tabu' tables.
-     * 
-     * @param dataModel to get tables from
-     * @return set of 'tabu' tables or <code>null</code>, empty list if no tabu-file is given
-     */
-    public Set<Table> getTabuTables(DataModel dataModel, Map<String, String> sourceSchemaMapping) {
-        return SqlUtil.readTableList(tabuTableNames, dataModel, sourceSchemaMapping);
-    }
-    
-    /**
-     * Loads 'tabu' tables file.
-     */
-    void loadTabuTables(String fileName) throws Exception {
-        File file = newFile(fileName);
-        tabuTableNames = new CsvFile(file);
-    }
-
-    private Map<String, String> schemaMapping;
-
-    public Map<String, String> getSchemaMapping() {
-		if (schemaMapping == null) {
-			schemaMapping = new HashMap<String, String>();
-			if (rawschemamapping != null) {
-				for (String item: rawschemamapping.split(",")) {
-					String[] fromTo = (" " + item + " ").split("=");
-					if (fromTo.length == 2) {
-						schemaMapping.put(fromTo[0].trim(), fromTo[1].trim());
-					}
-				}
-			}
-		}
-		return schemaMapping;
-	}
-    
-    private Map<String, String> sourceSchemaMapping;
-
-    public Map<String, String> getSourceSchemaMapping() {
-		if (sourceSchemaMapping == null) {
-			sourceSchemaMapping = new HashMap<String, String>();
-			if (rawsourceschemamapping != null) {
-				for (String item: rawsourceschemamapping.split(",")) {
-					String[] fromTo = (" " + item + " ").split("=");
-					if (fromTo.length == 2) {
-						sourceSchemaMapping.put(fromTo[0].trim(), fromTo[1].trim());
-					}
-				}
-			}
-		}
-		return sourceSchemaMapping;
-	}
-    
-    /**
-     * Gets the script format.
-     * 
-     * @return the script format
-     */
-    public ScriptFormat getScriptFormat() {
-    	if (_asXml) {
-    		return ScriptFormat.XML;
-    	}
-    	return ScriptFormat.valueOf(format);
-    }
-    
     @Option(name="-UTF8",usage="use UTF-8 encoding")
     public boolean uTF8 = false;
     
@@ -202,13 +138,13 @@ public class CommandLine {
 	@Option(name="-jdbcjar2", usage="JDBC driver's secondary jar file")
     public String jdbcjar2 = null;
 
-	@Option(name="-no-sorting", usage="if set, the exported rows will not be sorted according to foreign key constraints")
+	@Option(name="-no-sorting", usage="the exported rows will not be sorted according to foreign key constraints")
     public boolean noSorting = false;
 	
-	@Option(name="-transactional", usage="if set, import rows transactional")
+	@Option(name="-transactional", usage="import rows in a single transaction")
     public boolean transactional = false;
 	
-	@Option(name="-no-rowid", usage="if set, primary keys will determine row identity, else rowid-column determines identity")
+	@Option(name="-no-rowid", usage="use primary keys to determine row identity (instead of rowid-column)")
     public boolean noRowid = false;
 	
 	@Option(name="-import-filter-mapping-table-schema", usage="schema in which the import-filter mapping tables will be created")
@@ -274,6 +210,70 @@ public class CommandLine {
     	}
     	
     	return map;
+    }
+
+    /**
+     * Gets 'tabu' tables.
+     * 
+     * @param dataModel to get tables from
+     * @return set of 'tabu' tables or <code>null</code>, empty list if no tabu-file is given
+     */
+    public Set<Table> getTabuTables(DataModel dataModel, Map<String, String> sourceSchemaMapping) {
+        return SqlUtil.readTableList(tabuTableNames, dataModel, sourceSchemaMapping);
+    }
+    
+    /**
+     * Loads 'tabu' tables file.
+     */
+    void loadTabuTables(String fileName) throws Exception {
+        File file = newFile(fileName);
+        tabuTableNames = new CsvFile(file);
+    }
+
+    private Map<String, String> schemaMapping;
+
+    public Map<String, String> getSchemaMapping() {
+		if (schemaMapping == null) {
+			schemaMapping = new HashMap<String, String>();
+			if (rawschemamapping != null) {
+				for (String item: rawschemamapping.split(",")) {
+					String[] fromTo = (" " + item + " ").split("=");
+					if (fromTo.length == 2) {
+						schemaMapping.put(fromTo[0].trim(), fromTo[1].trim());
+					}
+				}
+			}
+		}
+		return schemaMapping;
+	}
+    
+    private Map<String, String> sourceSchemaMapping;
+
+    public Map<String, String> getSourceSchemaMapping() {
+		if (sourceSchemaMapping == null) {
+			sourceSchemaMapping = new HashMap<String, String>();
+			if (rawsourceschemamapping != null) {
+				for (String item: rawsourceschemamapping.split(",")) {
+					String[] fromTo = (" " + item + " ").split("=");
+					if (fromTo.length == 2) {
+						sourceSchemaMapping.put(fromTo[0].trim(), fromTo[1].trim());
+					}
+				}
+			}
+		}
+		return sourceSchemaMapping;
+	}
+    
+    /**
+     * Gets the script format.
+     * 
+     * @return the script format
+     */
+    public ScriptFormat getScriptFormat() {
+    	if (_asXml) {
+    		return ScriptFormat.XML;
+    	}
+    	return ScriptFormat.valueOf(format);
     }
     
     /**
