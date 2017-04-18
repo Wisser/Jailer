@@ -83,13 +83,9 @@ public class MetaDataCache {
     	_log.info("reading primary keys...");
     	
 		MetaDataCache metaDataCache = new MetaDataCache();
-		ResultSet rs;
 		try {
-			Statement st = session.getConnection().createStatement();
-			rs = st.executeQuery(primaryKeysQuery.replace("${SCHEMA}", schema));
 			Set<Integer> intIndex = new HashSet<Integer>(Arrays.asList(5));
-			readMetaData(metaDataCache, rs, intIndex);
-			st.close();
+			readMetaData(metaDataCache, session, primaryKeysQuery.replace("${SCHEMA}", schema), intIndex);
 			return metaDataCache;
 		} catch (Exception e) {
 			_log.info(e.getMessage());
@@ -113,13 +109,9 @@ public class MetaDataCache {
     	_log.info("reading index info...");
     	
 		MetaDataCache metaDataCache = new MetaDataCache();
-		ResultSet rs;
 		try {
-			Statement st = session.getConnection().createStatement();
-			rs = st.executeQuery(indexInfoQuery.replace("${SCHEMA}", schema));
 			Set<Integer> intIndex = new HashSet<Integer>(Arrays.asList(4));
-			readMetaData(metaDataCache, rs, intIndex);
-			st.close();
+			readMetaData(metaDataCache, session, indexInfoQuery.replace("${SCHEMA}", schema), intIndex);
 			return metaDataCache;
 		} catch (Exception e) {
 			_log.info(e.getMessage());
@@ -143,13 +135,9 @@ public class MetaDataCache {
     	_log.info("reading imported keys...");
     	
 		MetaDataCache metaDataCache = new MetaDataCache();
-		ResultSet rs;
 		try {
-			Statement st = session.getConnection().createStatement();
-			rs = st.executeQuery(importedKeysQuery.replace("${SCHEMA}", schema));
 			Set<Integer> intIndex = new HashSet<Integer>(Arrays.asList(9, 10, 11, 14));
-			readMetaData(metaDataCache, rs, intIndex);
-			st.close();
+			readMetaData(metaDataCache, session, importedKeysQuery.replace("${SCHEMA}", schema), intIndex);
 			return metaDataCache;
 		} catch (Exception e) {
 			_log.info(e.getMessage());
@@ -176,7 +164,29 @@ public class MetaDataCache {
 				rs = metaData.getColumns(null, schema, "%", "%");
 			}
 			Set<Integer> intIndex = new HashSet<Integer>(Arrays.asList(5, 7, 9, 10, 11, 14, 15, 16, 17, 22));
-			readMetaData(metaDataCache, rs, intIndex);
+
+			metaDataCache.cache = new HashMap<String, List<Object[]>>();
+			while (rs.next()) {
+				int numCol = rs.getMetaData().getColumnCount();
+				Object[] row = new Object[numCol];
+				for (int i = 1; i < numCol; ++i) {
+					if (intIndex.contains(i)) {
+						row[i - 1] = rs.getInt(i);
+					} else {
+						row[i - 1] = rs.getString(i);
+					}
+				}
+				String table = (String) row[2];
+				List<Object[]> rowList = metaDataCache.cache.get(table);
+				if (rowList == null) {
+					rowList = new ArrayList<Object[]>();
+					metaDataCache.cache.put(table, rowList);
+				}
+				rowList.add(row);
+			}
+			
+			rs.close();
+			
 			if (metaDataCache.cache.isEmpty()) {
 				metaDataCache.cache = null;
 			}
@@ -203,28 +213,29 @@ public class MetaDataCache {
 	/**
 	 * Reads meta data.
 	 */
-	private static void readMetaData(MetaDataCache metaDataCache, ResultSet rs, Set<Integer> intIndex)
-			throws SQLException {
-		int numCol = rs.getMetaData().getColumnCount();
+	private static void readMetaData(final MetaDataCache metaDataCache, Session session, String query, final Set<Integer> intIndex) throws SQLException {
 		metaDataCache.cache = new HashMap<String, List<Object[]>>();
-		while (rs.next()) {
-			Object[] row = new Object[numCol];
-			for (int i = 1; i < numCol; ++i) {
-				if (intIndex.contains(i)) {
-					row[i - 1] = rs.getInt(i);
-				} else {
-					row[i - 1] = rs.getString(i);
+		session.executeQuery(query, new Session.AbstractResultSetReader() {
+			@Override
+			public void readCurrentRow(ResultSet resultSet) throws SQLException {
+				int numCol = getMetaData(resultSet).getColumnCount();
+				Object[] row = new Object[numCol];
+				for (int i = 1; i < numCol; ++i) {
+					if (intIndex.contains(i)) {
+						row[i - 1] = resultSet.getInt(i);
+					} else {
+						row[i - 1] = resultSet.getString(i);
+					}
 				}
+				String table = (String) row[2];
+				List<Object[]> rowList = metaDataCache.cache.get(table);
+				if (rowList == null) {
+					rowList = new ArrayList<Object[]>();
+					metaDataCache.cache.put(table, rowList);
+				}
+				rowList.add(row);
 			}
-			String table = (String) row[2];
-			List<Object[]> rowList = metaDataCache.cache.get(table);
-			if (rowList == null) {
-				rowList = new ArrayList<Object[]>();
-				metaDataCache.cache.put(table, rowList);
-			}
-			rowList.add(row);
-		}
-		rs.close();
+		});
 	}
 	
 	/**
