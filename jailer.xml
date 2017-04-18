@@ -338,6 +338,35 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 			</property>
 			<property name="useInlineViewsInDataBrowser" value="false" />
 			<property name="virtualColumnsQuery" value="SELECT TABLE_NAME, COLUMN_NAME FROM ALL_TAB_COLS WHERE OWNER = '${SCHEMA}' AND VIRTUAL_COLUMN = 'YES'" />
+		 	<property name="importedKeysQuery" value="
+SELECT null, c_dest.OWNER, c_dest.TABLE_NAME, c_dest.COLUMN_NAME,
+       null, c_src.OWNER, c_src.TABLE_NAME, c_src.COLUMN_NAME, c_src.POSITION,
+       null, null, c_list.CONSTRAINT_NAME, c_list.R_CONSTRAINT_NAME, null
+FROM ALL_CONSTRAINTS c_list, ALL_CONS_COLUMNS c_src, ALL_CONS_COLUMNS c_dest
+WHERE c_list.CONSTRAINT_NAME   = c_src.CONSTRAINT_NAME
+ AND  c_list.OWNER             = c_src.OWNER
+ AND  c_list.R_CONSTRAINT_NAME = c_dest.CONSTRAINT_NAME
+ AND  c_list.R_OWNER             = c_dest.OWNER
+ AND  c_list.CONSTRAINT_TYPE = 'R'
+ AND  c_src.POSITION = c_dest.POSITION
+ AND  c_src.OWNER      = '${SCHEMA}'" />
+		 	<property name="primaryKeysQuery" value="
+SELECT null, c_src.OWNER, c_src.TABLE_NAME, c_src.COLUMN_NAME, c_src.POSITION, c_list.CONSTRAINT_NAME
+FROM ALL_CONSTRAINTS c_list, ALL_CONS_COLUMNS c_src
+WHERE c_list.CONSTRAINT_NAME   = c_src.CONSTRAINT_NAME
+ AND  c_list.OWNER             = c_src.OWNER
+ AND  c_list.CONSTRAINT_TYPE = 'P'
+ AND  c_list.CONSTRAINT_NAME not like 'BIN$%'
+ AND  c_src.OWNER      = '${SCHEMA}'" />
+		 	<property name="indexInfoQuery" value="
+SELECT null, c_src.OWNER, c_src.TABLE_NAME, 0, null, c_list.CONSTRAINT_NAME, null, null, c_src.COLUMN_NAME
+FROM ALL_CONSTRAINTS c_list, ALL_CONS_COLUMNS c_src
+WHERE c_list.CONSTRAINT_NAME   = c_src.CONSTRAINT_NAME
+ AND  c_list.OWNER             = c_src.OWNER
+ AND  c_list.CONSTRAINT_TYPE = 'U'
+ AND  c_list.CONSTRAINT_NAME not like 'BIN$%'
+ AND  c_src.OWNER      = '${SCHEMA}'" />
+
 		</bean>
 		
 		<!-- for PostgreSQL -->
