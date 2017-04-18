@@ -33,8 +33,8 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 
-import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Configuration;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
@@ -43,7 +43,6 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.importfilter.ImportFilterManager;
-import net.sf.jailer.ui.CommandLineInstance;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
 import net.sf.jailer.util.Quoting;
