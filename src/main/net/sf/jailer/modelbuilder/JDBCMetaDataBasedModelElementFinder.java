@@ -32,8 +32,8 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 
-import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Configuration;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.ResultSetReader;
@@ -162,6 +162,16 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     }
 
     private ResultSet getImportedKeys(Session session, DatabaseMetaData metaData, String schema, String table) throws SQLException {
+		final String NAME = "getImportedKeys " + schema;
+		MetaDataCache metaDataCache = (MetaDataCache) session.getSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME);
+		if (metaDataCache == null) {
+			metaDataCache = MetaDataCache.readImportedKeys(session, schema);
+			session.setSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME, metaDataCache);
+		}
+		ResultSet resultSet = metaDataCache.forTable(table);
+		if (resultSet != null) {
+			return resultSet;
+		}
 		if (session.dbms == DBMS.MySQL) {
 	    	return metaData.getImportedKeys(schema, null, table);
 		}
@@ -240,10 +250,6 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
             		keySeq = nextKeySeq++;
             	}
                 pk.put(keySeq, new Column(quoting.quote(resultSet.getString(4)), "", 0, -1));
-            }
-            if (!hasPK) {
-            	_log.info("find unique index of table " + tableName);
-                hasPK = findUniqueIndexBasedKey(metaData, quoting, session, tmp, pk);
             }
             if (!hasPK) {
             	_log.info("find unique index of table " + tableName);
@@ -332,7 +338,17 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	}
 
     private ResultSet getPrimaryKeys(Session session, DatabaseMetaData metaData, String schema, String table) throws SQLException {
-    	if (session.dbms == DBMS.MySQL) {
+    	final String NAME = "getPrimaryKeys " + schema;
+		MetaDataCache metaDataCache = (MetaDataCache) session.getSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME);
+		if (metaDataCache == null) {
+			metaDataCache = MetaDataCache.readPrimaryKeys(session, schema);
+			session.setSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME, metaDataCache);
+		}
+		ResultSet resultSet = metaDataCache.forTable(table);
+		if (resultSet != null) {
+			return resultSet;
+		}
+		if (session.dbms == DBMS.MySQL) {
         	return metaData.getPrimaryKeys(schema, null, table);
     	}
     	return metaData.getPrimaryKeys(null, schema, table);
@@ -392,7 +408,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	        Map<String, List<String>> indexes = new TreeMap<String, List<String>>();
 	        while (resultSet.next()) {
 	        	String indexName = resultSet.getString(6);
-	        	if (indexName == null) {
+	        	if (indexName == null || resultSet.getBoolean(4)) {
 	        		continue;
 	        	}
 	        	List<String> indexColumns = indexes.get(indexName);
@@ -439,6 +455,16 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	}
     
 	private ResultSet getIndexInfo(Session session, DatabaseMetaData metaData, String schema, String table, boolean unique, boolean approximate) throws SQLException {
+		final String NAME = "getIndexInfo " + schema;
+		MetaDataCache metaDataCache = (MetaDataCache) session.getSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME);
+		if (metaDataCache == null) {
+			metaDataCache = MetaDataCache.readIndexInfo(session, schema);
+			session.setSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME, metaDataCache);
+		}
+		ResultSet resultSet = metaDataCache.forTable(table);
+		if (resultSet != null) {
+			return resultSet;
+		}
 		if (session.dbms == DBMS.MySQL) {
 			return metaData.getIndexInfo(schema, null, table, unique, approximate);
 		}
@@ -449,6 +475,16 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 * Calls {@link DatabaseMetaData#getColumns(String, String, String, String)}. Uses schemaPattern as catalogPattern on MySQL.
 	 */
 	public static ResultSet getColumns(Session session, DatabaseMetaData metaData, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
+		final String NAME = "getColumns " + schemaPattern;
+		MetaDataCache metaDataCache = (MetaDataCache) session.getSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME);
+		if (metaDataCache == null) {
+			metaDataCache = MetaDataCache.readColumns(session, metaData, schemaPattern);
+			session.setSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME, metaDataCache);
+		}
+		ResultSet resultSet = metaDataCache.forTable(tableNamePattern);
+		if (resultSet != null) {
+			return resultSet;
+		}
 		if (session.dbms == DBMS.MySQL) {
 			return metaData.getColumns(schemaPattern, null, tableNamePattern, columnNamePattern);
 		}

@@ -131,8 +131,12 @@ public class Configuration {
 	public boolean useInlineViewsInDataBrowser = true;
 	public String virtualColumnsQuery = null;
 	public String userDefinedColumnsQuery = null;
+	public String importedKeysQuery = null;
+	public String primaryKeysQuery = null;
+	public String indexInfoQuery = null;
 	public String identifierQuoteString = "\"";
 	public DBMS dbms = DBMS.UNKNOWN;
+
 	
 	/**
 	 * @return the dbms
@@ -846,6 +850,48 @@ public class Configuration {
 	 */
 	public void setEmptyNCLOBValue(String emptyNCLOBValue) {
 		this.emptyNCLOBValue = emptyNCLOBValue;
+	}
+
+	/**
+	 * @return the importedKeysQuery
+	 */
+	public String getImportedKeysQuery() {
+		return importedKeysQuery;
+	}
+
+	/**
+	 * @param importedKeysQuery the importedKeysQuery to set
+	 */
+	public void setImportedKeysQuery(String importedKeysQuery) {
+		this.importedKeysQuery = importedKeysQuery;
+	}
+
+	/**
+	 * @return the primaryKeysQuery
+	 */
+	public String getPrimaryKeysQuery() {
+		return primaryKeysQuery;
+	}
+
+	/**
+	 * @param primaryKeysQuery the primaryKeysQuery to set
+	 */
+	public void setPrimaryKeysQuery(String primaryKeysQuery) {
+		this.primaryKeysQuery = primaryKeysQuery;
+	}
+
+	/**
+	 * @return the indexInfoQuery
+	 */
+	public String getIndexInfoQuery() {
+		return indexInfoQuery;
+	}
+
+	/**
+	 * @param indexInfoQuery the indexInfoQuery to set
+	 */
+	public void setIndexInfoQuery(String indexInfoQuery) {
+		this.indexInfoQuery = indexInfoQuery;
 	}
 
 	/**

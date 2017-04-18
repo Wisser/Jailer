@@ -1,5 +1,5 @@
 6.7.3
-  - Improved performance of database metadata access. 
+  - Improved performance of database meta data access. 
   - Minor bug fixes (Filter templates).
 
 6.7.2
