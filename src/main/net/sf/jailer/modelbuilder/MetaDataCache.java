@@ -215,27 +215,33 @@ public class MetaDataCache {
 	 */
 	private static void readMetaData(final MetaDataCache metaDataCache, Session session, String query, final Set<Integer> intIndex) throws SQLException {
 		metaDataCache.cache = new HashMap<String, List<Object[]>>();
-		session.executeQuery(query, new Session.AbstractResultSetReader() {
-			@Override
-			public void readCurrentRow(ResultSet resultSet) throws SQLException {
-				int numCol = getMetaData(resultSet).getColumnCount();
-				Object[] row = new Object[numCol];
-				for (int i = 1; i < numCol; ++i) {
-					if (intIndex.contains(i)) {
-						row[i - 1] = resultSet.getInt(i);
-					} else {
-						row[i - 1] = resultSet.getString(i);
+		boolean wasSilent = session.getSilent();
+		session.setSilent(true);
+		try {
+			session.executeQuery(query, new Session.AbstractResultSetReader() {
+				@Override
+				public void readCurrentRow(ResultSet resultSet) throws SQLException {
+					int numCol = getMetaData(resultSet).getColumnCount();
+					Object[] row = new Object[numCol];
+					for (int i = 1; i < numCol; ++i) {
+						if (intIndex.contains(i)) {
+							row[i - 1] = resultSet.getInt(i);
+						} else {
+							row[i - 1] = resultSet.getString(i);
+						}
 					}
+					String table = (String) row[2];
+					List<Object[]> rowList = metaDataCache.cache.get(table);
+					if (rowList == null) {
+						rowList = new ArrayList<Object[]>();
+						metaDataCache.cache.put(table, rowList);
+					}
+					rowList.add(row);
 				}
-				String table = (String) row[2];
-				List<Object[]> rowList = metaDataCache.cache.get(table);
-				if (rowList == null) {
-					rowList = new ArrayList<Object[]>();
-					metaDataCache.cache.put(table, rowList);
-				}
-				rowList.add(row);
-			}
-		});
+			});
+		} finally {
+			session.setSilent(wasSilent);
+		}
 	}
 	
 	/**
