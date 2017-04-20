@@ -304,58 +304,5 @@ public class Configuration {
 	public void setColumnsPerIFMTable(int columnsPerIFMTable) {
 		this.columnsPerIFMTable = columnsPerIFMTable;
 	}
-	
-	
-	// TODO
 
-/*
-	public static void main(String[] args) throws Exception {
-		
-		Configuration dest = new Configuration();
-		net.sf.jailer.DBMSConfiguration.getScriptEnhancer(); 
-		
-		for (Field f: net.sf.jailer.DBMSConfiguration.class.getDeclaredFields()) {
-			if ("defaultConfiguration".equals(f.getName())) {
-				continue;
-			}
-			if (Modifier.isStatic(f.getModifiers())) {
-				f.setAccessible(true);
-				try {
-					Field declaredField = dest.getClass().getDeclaredField(f.getName());
-					declaredField.set(dest, f.get(null));
-				} catch (NoSuchFieldException e) {
-					
-				}
-			}
-		}
-		List<net.sf.jailer.DBMSConfiguration> cs = (List<net.sf.jailer.DBMSConfiguration>) net.sf.jailer.DBMSConfiguration.getContext().getBean("dbms-configuration");  
-        
-		for (net.sf.jailer.DBMSConfiguration c: cs) {
-			net.sf.jailer.configuration.DBMSConfiguration d = new net.sf.jailer.configuration.DBMSConfiguration();
-			dest.dBMSConfigurations.add(d);
-			for (Field f: net.sf.jailer.DBMSConfiguration.class.getDeclaredFields()) {
-				if ("".equals(f.getName())) {
-					continue;
-				}
-				if (!Modifier.isStatic(f.getModifiers())) {
-					f.setAccessible(true);
-					try {
-						Field declaredField = d.getClass().getDeclaredField(f.getName());
-						declaredField.setAccessible(true);
-						declaredField.set(d, f.get(c));
-					} catch (NoSuchFieldException e) {
-						
-					}
-				}
-			}
-		}
-		
-		dest.setRenderer((HtmlDataModelRenderer) net.sf.jailer.DBMSConfiguration.getRenderer());
-		JAXBContext jc = JAXBContext.newInstance(Configuration.class, DBMSConfiguration.class, DefaultTemporaryTableManager.class);
-		Marshaller m = jc.createMarshaller();
-		m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-	    m.marshal(dest, new File("_jailer.xml"));
-	}
-*/
-	
 }

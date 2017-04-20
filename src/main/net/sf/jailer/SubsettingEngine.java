@@ -480,11 +480,7 @@ public class SubsettingEngine {
 		if (targetDBMS == null) {
 			return Configuration.getInstance().forDbms(session);
 		}
-		try {
-			return Configuration.getInstance().forDbms(targetDBMS);
-		} catch (IllegalArgumentException e) {
-			return Configuration.getInstance().forDbms(session);
-		}
+		return Configuration.getInstance().forDbms(targetDBMS);
 	}
 
 	/**

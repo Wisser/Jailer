@@ -62,7 +62,7 @@ public class Jailer {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "6.7.3";
+	public static final String VERSION = "6.7.4";
 	
 	/**
 	 * The Jailer application name.
