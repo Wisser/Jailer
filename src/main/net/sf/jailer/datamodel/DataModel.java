@@ -34,6 +34,8 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
+import org.apache.log4j.Logger;
+
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.ScriptFormat;
@@ -50,8 +52,6 @@ import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.LineFilter;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.SqlUtil;
-
-import org.apache.log4j.Logger;
 
 /**
  * Relational data model.

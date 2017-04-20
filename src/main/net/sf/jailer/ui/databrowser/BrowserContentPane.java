@@ -97,8 +97,8 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.Configuration;
 import net.sf.jailer.ScriptFormat;
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.InlineViewStyle;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
@@ -427,7 +427,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		this.table = table;
 		this.session = session;
 		this.dataModel = dataModel;
-		this.rowIdSupport = new RowIdSupport(dataModel, Configuration.forDbms(session), executionContext);
+		this.rowIdSupport = new RowIdSupport(dataModel, Configuration.getInstance().forDbms(session), executionContext);
 		this.parentRow = parentRow;
 		this.parentRows = parentRows;
 		this.association = association;
@@ -2086,7 +2086,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	static boolean useInlineViewForResolvingAssociation(Session session) {
-		return Configuration.forDbms(session).isUseInlineViewsInDataBrowser();
+		return Configuration.getInstance().forDbms(session).isUseInlineViewsInDataBrowser();
 	}
 
 	private void loadRowBlocks(InlineViewStyle inlineViewStyle, String andCond, final List<Row> rows, Object context, int limit, boolean selectDistinct, List<Row> pRows,
@@ -2112,10 +2112,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				pRowBlock = null;
 			}
 			
-			if (Configuration.forDbms(session).getSqlLimitSuffix() != null) {
+			if (Configuration.getInstance().forDbms(session).getSqlLimitSuffix() != null) {
 				try {
 					session.setSilent(true);
-					reloadRows(inlineViewStyle, andCond, pRowBlock, newBlockRows, context, limit, false, Configuration.forDbms(session).getSqlLimitSuffix(), existingColumnsLowerCase);
+					reloadRows(inlineViewStyle, andCond, pRowBlock, newBlockRows, context, limit, false, Configuration.getInstance().forDbms(session).getSqlLimitSuffix(), existingColumnsLowerCase);
 					loaded = true;
 				} catch (SQLException e) {
 					Session._log.warn("failed, try another limit-strategy (" +  e.getMessage() + ")");
@@ -2568,7 +2568,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								}
 							}
 						} else {
-							CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, Configuration.forDbms(session));
+							CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, Configuration.getInstance().forDbms(session));
 							Object o = cellContentConverter.getObject(resultSet, i);
 							boolean isPK = false;
 							if (pkColumnNames.isEmpty()) {

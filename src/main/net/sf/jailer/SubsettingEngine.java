@@ -48,6 +48,8 @@ import javax.xml.transform.stream.StreamResult;
 import org.apache.log4j.Logger;
 import org.xml.sax.helpers.AttributesImpl;
 
+import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.configuration.DBMSConfiguration;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.database.DeletionTransformer;
@@ -473,15 +475,15 @@ public class SubsettingEngine {
 	 * @param session the session
 	 * @return configuration of the target DBMS
 	 */
-	private Configuration targetDBMSConfiguration(Session session) {
+	private DBMSConfiguration targetDBMSConfiguration(Session session) {
 		DBMS targetDBMS = executionContext.getTargetDBMS();
 		if (targetDBMS == null) {
-			return Configuration.forDbms(session);
+			return Configuration.getInstance().forDbms(session);
 		}
 		try {
-			return Configuration.forDbms(targetDBMS);
+			return Configuration.getInstance().forDbms(targetDBMS);
 		} catch (IllegalArgumentException e) {
-			return Configuration.forDbms(session);
+			return Configuration.getInstance().forDbms(session);
 		}
 	}
 
@@ -576,19 +578,19 @@ public class SubsettingEngine {
 			}
 			result.append(commentHeader);
 			// result.append(System.getProperty("line.separator"));
-			for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
+			for (ScriptEnhancer enhancer: Configuration.getScriptEnhancer()) {
 				enhancer.addComments(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress, executionContext);
 			}
 			// result.append(System.getProperty("line.separator"));
-			for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
+			for (ScriptEnhancer enhancer: Configuration.getScriptEnhancer()) {
 				enhancer.addProlog(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress, executionContext);
 			}
 			Session localSession = null;
 			if (entityGraph instanceof LocalEntityGraph) {
 				localSession = ((LocalEntityGraph) entityGraph).getSession();
 			}
-			Configuration sourceConfig = Configuration.forDbms(session);
-			Configuration targetConfig = targetDBMSConfiguration(entityGraph.getTargetSession());
+			DBMSConfiguration sourceConfig = Configuration.getInstance().forDbms(session);
+			DBMSConfiguration targetConfig = targetDBMSConfiguration(entityGraph.getTargetSession());
 			Quoting targetQuoting;
 			targetQuoting = new Quoting(session);
 			if (sourceConfig != targetConfig) {
@@ -610,7 +612,7 @@ public class SubsettingEngine {
 		}
 		
 		Session targetSession = entityGraph.getTargetSession();
-		entityGraph.fillAndWriteMappingTables(jobManager, result, executionContext.getNumberOfEntities(), targetSession, targetDBMSConfiguration(targetSession), Configuration.forDbms(session));
+		entityGraph.fillAndWriteMappingTables(jobManager, result, executionContext.getNumberOfEntities(), targetSession, targetDBMSConfiguration(targetSession), Configuration.getInstance().forDbms(session));
 
 		
 		long rest = 0;
@@ -1229,7 +1231,7 @@ public class SubsettingEngine {
 			if (force || lastRunstats == 0 || (lastRunstats * 2 <= entityGraph.getTotalRowcount() && entityGraph.getTotalRowcount() > 1000)) {
 				lastRunstats = entityGraph.getTotalRowcount();
 	
-				StatisticRenovator statisticRenovator = Configuration.forDbms(session).getStatisticRenovator();
+				StatisticRenovator statisticRenovator = Configuration.getInstance().forDbms(session).getStatisticRenovator();
 				if (statisticRenovator != null) {
 					_log.info("gather statistics after " + lastRunstats + " inserted rows...");
 					try {
@@ -1265,16 +1267,16 @@ public class SubsettingEngine {
 
 		ExtractionModel extractionModel = new ExtractionModel(extractionModelFileName, executionContext.getSourceSchemaMapping(), executionContext.getParameters(), executionContext);
 
-		_log.info(Configuration.forDbms(session).getSqlDialect());
+		_log.info(Configuration.getInstance().forDbms(session).getSqlDialect());
 		
 		EntityGraph entityGraph;
 		if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
-			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, Configuration.forDbms(session), executionContext);
+			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, Configuration.getInstance().forDbms(session), executionContext);
 			entityGraph = IntraDatabaseEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session), executionContext);
 		} else if (executionContext.getScope() == TemporaryTableScope.LOCAL_DATABASE) {
 			entityGraph = LocalEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, executionContext);
 		} else {
-			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, Configuration.forDbms(session), executionContext);
+			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, Configuration.getInstance().forDbms(session), executionContext);
 			entityGraph = RemoteEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session), executionContext);
 		}
 
@@ -1306,13 +1308,13 @@ public class SubsettingEngine {
 		if (executionContext.getNoSorting()) {
 			appendCommentHeader("                   unsorted");
 		}
-		appendCommentHeader("Source DBMS:       " + Configuration.forDbms(session).dbms.displayName);
-		appendCommentHeader("Target DBMS:       " + targetDBMSConfiguration(session).dbms.displayName);
+		appendCommentHeader("Source DBMS:       " + Configuration.getInstance().forDbms(session).getDbms().displayName);
+		appendCommentHeader("Target DBMS:       " + targetDBMSConfiguration(session).getDbms().displayName);
 		appendCommentHeader("Database URL:      " + dbUrl);
 		appendCommentHeader("Database User:     " + dbUser);
 		appendCommentHeader("");
 
-		if (Configuration.forDbms(session).getRowidName() == null) {
+		if (Configuration.getInstance().forDbms(session).getRowidName() == null) {
     		Set<Table> toCheck = new HashSet<Table>();
 			if (extractionModel.additionalSubjects != null) {
 				for (AdditionalSubject as: extractionModel.additionalSubjects) {

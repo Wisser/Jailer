@@ -21,8 +21,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.Configuration;
 import net.sf.jailer.TransformerFactory;
+import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.configuration.DBMSConfiguration;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
@@ -62,7 +63,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
     /**
      * Configuration of the target DBMS.
      */
-    private final Configuration targetDBMSConfiguration;
+    private final DBMSConfiguration targetDBMSConfiguration;
 
     /**
      * For quoting of column names.
@@ -82,7 +83,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
 	    private final int maxBodySize;
 		private final OutputStreamWriter scriptFileWriter;
 		private final Session session;
-		private final Configuration targetDBMSConfiguration;
+		private final DBMSConfiguration targetDBMSConfiguration;
 		
 		/**
 		 * The execution context.
@@ -97,7 +98,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
 	     * @param maxBodySize maximum length of SQL values list (for generated deletes)
 	     * @param targetDBMSConfiguration configuration of the target DBMS
 	     */
-		public Factory(OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, Configuration targetDBMSConfiguration, ExecutionContext executionContext) {
+		public Factory(OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, DBMSConfiguration targetDBMSConfiguration, ExecutionContext executionContext) {
 			this.executionContext = executionContext;
 			this.maxBodySize = maxBodySize;
 	        this.scriptFileWriter = scriptFileWriter;
@@ -128,13 +129,13 @@ public class DeletionTransformer extends AbstractResultSetReader {
      * @param targetDBMSConfiguration configuration of the target DBMS
      * @param executionContext 
      */
-    private DeletionTransformer(Table table, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, Configuration targetDBMSConfiguration, ExecutionContext executionContext) throws SQLException {
+    private DeletionTransformer(Table table, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, DBMSConfiguration targetDBMSConfiguration, ExecutionContext executionContext) throws SQLException {
         this.executionContext = executionContext;
     	this.table = table;
         this.scriptFileWriter = scriptFileWriter;
         deleteStatementBuilder = new StatementBuilder(maxBodySize);
         this.quoting = new Quoting(session);
-        if (targetDBMSConfiguration != null && targetDBMSConfiguration != Configuration.forDbms(session)) {
+        if (targetDBMSConfiguration != null && targetDBMSConfiguration != Configuration.getInstance().forDbms(session)) {
         	if (targetDBMSConfiguration.getIdentifierQuoteString() != null) {
         		this.quoting.setIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
         	}
@@ -158,7 +159,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
         	final SQLDialect currentDialect = targetDBMSConfiguration.getSqlDialect();
             
         	CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, targetDBMSConfiguration);
-			if (targetDBMSConfiguration.dbms == DBMS.SYBASE || (currentDialect != null && !currentDialect.supportsInClauseForDeletes)) {
+			if (targetDBMSConfiguration.getDbms() == DBMS.SYBASE || (currentDialect != null && !currentDialect.isSupportsInClauseForDeletes())) {
         		String deleteHead = "Delete from " + qualifiedTableName(table) + " Where (";
                 boolean firstTime = true;
                 String item = "";
@@ -188,7 +189,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
 	                }
 	                item += ")";
 	                deleteHead += ") in (";
-	                if (currentDialect.needsValuesKeywordForDeletes) {
+	                if (currentDialect.isNeedsValuesKeywordForDeletes()) {
 	                	deleteHead += "values ";
 	                }
 	            }
@@ -225,7 +226,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
      */
     private void writeToScriptFile(String content) throws IOException {
         synchronized (scriptFileWriter) {
-        	if (targetDBMSConfiguration.dbms == DBMS.ORACLE) {
+        	if (targetDBMSConfiguration.getDbms() == DBMS.ORACLE) {
        			scriptFileWriter.write(SqlUtil.splitDMLStatement(content, 2400));
         	} else {
         		scriptFileWriter.write(content);

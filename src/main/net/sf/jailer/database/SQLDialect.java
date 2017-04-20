@@ -18,7 +18,7 @@ package net.sf.jailer.database;
 import java.sql.SQLException;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.Configuration;
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -48,14 +48,14 @@ public class SQLDialect {
 	 * or
 	 * 'DELETE FROM T where PK IN (...)'
 	 */
-	public boolean needsValuesKeywordForDeletes = false;
-	public boolean supportsInClauseForDeletes = false;
-	public boolean supportsMultiRowInserts = false;
+	private boolean needsValuesKeywordForDeletes = false;
+	private boolean supportsInClauseForDeletes = false;
+	private boolean supportsMultiRowInserts = false;
 
 	/**
 	 * Upsert mode.
 	 */
-	public UPSERT_MODE upsertMode = UPSERT_MODE.FROM_JL_DUAL;
+	private UPSERT_MODE upsertMode = UPSERT_MODE.FROM_JL_DUAL;
 
     /**
 	 * @return the needsValuesKeywordForDeletes
@@ -126,10 +126,10 @@ public class SQLDialect {
     	TemporaryTableManager tableManager = null;
     	TemporaryTableScope temporaryTableScope = executionContext.getScope();
 		if (temporaryTableScope == TemporaryTableScope.SESSION_LOCAL) {
-			tableManager = Configuration.forDbms(session).sessionTemporaryTableManager;
+			tableManager = Configuration.getInstance().forDbms(session).getSessionTemporaryTableManager();
 		}
 		if (temporaryTableScope == TemporaryTableScope.TRANSACTION_LOCAL) {
-			tableManager = Configuration.forDbms(session).transactionTemporaryTableManager;
+			tableManager = Configuration.getInstance().forDbms(session).getTransactionTemporaryTableManager();
 		}
 		if (tableManager != null) {
 			tableRef = tableManager.getDmlTableReference(tableName);

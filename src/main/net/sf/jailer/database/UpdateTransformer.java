@@ -30,7 +30,8 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.Configuration;
+import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.configuration.DBMSConfiguration;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
@@ -101,7 +102,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
     /**
      * Configuration of the target DBMS.
      */
-    private final Configuration targetDBMSConfiguration;
+    private final DBMSConfiguration targetDBMSConfiguration;
 
     /**
      * SQL Dialect.
@@ -127,7 +128,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
      * @param session the session
      * @param targetDBMSConfiguration configuration of the target DBMS
      */
-    public UpdateTransformer(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, Configuration targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer, ExecutionContext executionContext) throws SQLException {
+    public UpdateTransformer(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, DBMSConfiguration targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer, ExecutionContext executionContext) throws SQLException {
     	this.executionContext = executionContext;
     	this.targetDBMSConfiguration = targetDBMSConfiguration;
         this.maxBodySize = maxBodySize;
@@ -137,7 +138,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
         this.currentDialect = targetDBMSConfiguration.getSqlDialect();
         this.quoting = new Quoting(session);
         this.importFilterTransformer = importFilterTransformer;
-        if (targetDBMSConfiguration != null && targetDBMSConfiguration != Configuration.forDbms(session)) {
+        if (targetDBMSConfiguration != null && targetDBMSConfiguration != Configuration.getInstance().forDbms(session)) {
         	if (targetDBMSConfiguration.getIdentifierQuoteString() != null) {
         		this.quoting.setIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
         	}
@@ -245,11 +246,11 @@ public class UpdateTransformer extends AbstractResultSetReader {
                     content = null;
                 }
                 String cVal = convertToSql(cellContentConverter, resultSet, i, content);
-                if (targetDBMSConfiguration.dbms == DBMS.POSTGRESQL && (content instanceof Date || content instanceof Timestamp)) {
+                if (targetDBMSConfiguration.getDbms() == DBMS.POSTGRESQL && (content instanceof Date || content instanceof Timestamp)) {
                 	// explicit cast needed
                 	cVal = "timestamp " + cVal;
                 }
-                if (targetDBMSConfiguration.dbms == DBMS.POSTGRESQL) {
+                if (targetDBMSConfiguration.getDbms() == DBMS.POSTGRESQL) {
                 	// explicit cast needed
                 	int mdColumnType = getMetaData(resultSet).getColumnType(i);
                 	if (mdColumnType == Types.TIME) {
@@ -295,7 +296,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
                 whereWOAlias.append(quoting.requote(pk.name) + "=" + value);
             }
 
-            if (currentDialect.upsertMode == UPSERT_MODE.MERGE) {
+            if (currentDialect.getUpsertMode() == UPSERT_MODE.MERGE) {
             	// MERGE INTO JL_TMP T USING (SELECT 1 c1, 2 c2 from dual) incoming 
             	// ON (T.c1 = incoming.c1) 
             	// WHEN MATCHED THEN UPDATE SET T.c2 = incoming.c2 
@@ -346,7 +347,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
             	sb.append(insertHead, item, " UNION ALL ", terminator.toString());
             }
             
-            if (currentDialect.upsertMode != UPSERT_MODE.MERGE) {
+            if (currentDialect.getUpsertMode() != UPSERT_MODE.MERGE) {
                 StringBuffer insert = new StringBuffer("");
                 insert.append("Update " + qualifiedTableName(table) + " set ");
                 f = true;
@@ -431,7 +432,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
      */
     private void writeToScriptFile(String content, boolean wrap) throws IOException {
         synchronized (scriptFileWriter) {
-        	if (wrap && targetDBMSConfiguration.dbms == DBMS.ORACLE) {
+        	if (wrap && targetDBMSConfiguration.getDbms() == DBMS.ORACLE) {
        			scriptFileWriter.write(SqlUtil.splitDMLStatement(content, 2400));
         	} else {
         		scriptFileWriter.write(content);

@@ -33,7 +33,6 @@ import java.util.TreeMap;
 
 import org.apache.log4j.Logger;
 
-import net.sf.jailer.Configuration;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
@@ -186,11 +185,9 @@ public class ModelBuilder {
         DataModel dataModel = new DataModel(executionContext);
         Collection<Table> tables = new ArrayList<Table>();
         
-        List<ModelElementFinder> modelElementFinder = Configuration.getModelElementFinder();
-        for (ModelElementFinder finder: modelElementFinder) {
-            _log.info("find tables with " + finder);
-            tables.addAll(finder.findTables(session, executionContext));
-        }
+        ModelElementFinder finder = new JDBCMetaDataBasedModelElementFinder();
+        _log.info("find tables with " + finder);
+        tables.addAll(finder.findTables(session, executionContext));
         
         Collection<Table> allTables = new ArrayList<Table>(tables);
         Set<Table> written = new HashSet<Table>();
@@ -221,21 +218,16 @@ public class ModelBuilder {
         	if (!isJailerTable(table, quoting) &&
         	    !excludeTablesCSV.contains(new String[] { table.getName()}) && 
         		!excludeTablesCSV.contains(new String[] { table.getName().toUpperCase() })) {
-        		// if (!table.primaryKey.getColumns().isEmpty()) {
-	        		for (ModelElementFinder finder: modelElementFinder) {
-			            _log.info("find colums with " + finder);
-	            		List<Column> columns = finder.findColumns(table, session, executionContext);
-	            		if (!columns.isEmpty()) {
-	            			columnPerTable.put(table, columns);
-	            			columnsDefinition.append(CsvFile.encodeCell(table.getName()) + "; ");
-	            			for (Column c: columns) {
-	            				columnsDefinition.append(CsvFile.encodeCell(c.toSQL(null) + (c.isIdentityColumn? " identity" : "") + (c.isVirtual? " virtual" : "") + (c.isNullable? " null" : "")) + "; ");
-	            			}
-	            			columnsDefinition.append("\n");
-	            			break;
-	            		}
-	            	}
-        		// }
+	            _log.info("find colums with " + finder);
+        		List<Column> columns = finder.findColumns(table, session, executionContext);
+        		if (!columns.isEmpty()) {
+        			columnPerTable.put(table, columns);
+        			columnsDefinition.append(CsvFile.encodeCell(table.getName()) + "; ");
+        			for (Column c: columns) {
+        				columnsDefinition.append(CsvFile.encodeCell(c.toSQL(null) + (c.isIdentityColumn? " identity" : "") + (c.isVirtual? " virtual" : "") + (c.isNullable? " null" : "")) + "; ");
+        			}
+        			columnsDefinition.append("\n");
+        		}
             }
         }
         resetColumnsFile(columnsDefinition.toString(), executionContext);
@@ -286,10 +278,8 @@ public class ModelBuilder {
 
         Collection<Association> associations = new ArrayList<Association>();
         Map<Association, String[]> namingSuggestion = new HashMap<Association, String[]>();
-        for (ModelElementFinder finder: modelElementFinder) {
-            _log.info("find associations with " + finder);
-            associations.addAll(finder.findAssociations(dataModel, namingSuggestion, session, executionContext));
-        }
+        _log.info("find associations with " + finder);
+        associations.addAll(finder.findAssociations(dataModel, namingSuggestion, session, executionContext));
 
         Collection<Association> associationsToWrite = new ArrayList<Association>();
         CsvFile excludeAssociationsCSV = getExcludeAssociationsCSV(executionContext);

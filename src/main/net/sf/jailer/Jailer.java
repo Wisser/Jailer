@@ -27,6 +27,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
@@ -265,7 +266,7 @@ public class Jailer {
 			}
 			dataModel.getRestrictionModel().addRestrictionDefinition(rm, null, new HashMap<String, String>());
 		}
-		DataModelRenderer renderer = Configuration.getRenderer();
+		DataModelRenderer renderer = Configuration.getInstance().getRenderer();
 		if (renderer == null) {
 			throw new RuntimeException("no renderer found");
 		}

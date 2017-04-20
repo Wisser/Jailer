@@ -26,17 +26,18 @@ import java.util.Map;
 
 import javax.xml.transform.sax.TransformerHandler;
 
+import org.xml.sax.SAXException;
+import org.xml.sax.helpers.AttributesImpl;
+
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.Configuration;
 import net.sf.jailer.TransformerFactory;
+import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.configuration.DBMSConfiguration;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.Base64;
-
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.AttributesImpl;
 
 /**
  * Reads a JDBC result set and writes the read rows into a 
@@ -252,7 +253,7 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 		}
 
 		if (object == null || resultSet.wasNull()) {
-			return Configuration.getNullColumnPlaceholder();
+			return Configuration.getInstance().getNullColumnPlaceholder();
 		}
 
 		if (object instanceof byte[]) {

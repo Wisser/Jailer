@@ -34,7 +34,7 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.Configuration;
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
@@ -137,7 +137,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 		this.cyclicAggregatedTables = cyclicAggregatedTables;
 		this.session = session;
 		this.quoting = new Quoting(session);
-        this.rowIdSupport = new RowIdSupport(entityGraph.getDatamodel(), Configuration.forDbms(session), executionContext);
+        this.rowIdSupport = new RowIdSupport(entityGraph.getDatamodel(), Configuration.getInstance().forDbms(session), executionContext);
 	}
 
 	/**
@@ -145,7 +145,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	 */
 	public void readCurrentRow(ResultSet resultSet) throws SQLException {
 		try {
-			writeEntity(table, null, resultSet, new ArrayList<String>(), getCellContentConverter(resultSet, session, Configuration.forDbms(session)));
+			writeEntity(table, null, resultSet, new ArrayList<String>(), getCellContentConverter(resultSet, session, Configuration.getInstance().forDbms(session)));
 		} catch (SAXException e) {
 			throw new RuntimeException(e);
 		} catch (ParserConfigurationException e) {
@@ -206,7 +206,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 							ResultSetReader reader = new ResultSetReader() {
 								public void readCurrentRow(ResultSet resultSet) throws SQLException {
 									try {
-										writeEntity(sa.destination, sa, resultSet, ancestors, getCellContentConverter(resultSet, session, Configuration.forDbms(session)));
+										writeEntity(sa.destination, sa, resultSet, ancestors, getCellContentConverter(resultSet, session, Configuration.getInstance().forDbms(session)));
 									} catch (SAXException e) {
 										throw new RuntimeException(e);
 									} catch (ParserConfigurationException e) {

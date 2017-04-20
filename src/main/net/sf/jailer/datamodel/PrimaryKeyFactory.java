@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.jailer.Configuration;
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.Session;
 
 /**
@@ -58,7 +58,7 @@ public class PrimaryKeyFactory {
 		}
 		PrimaryKey primaryKey = new PrimaryKey(columns);
 
-		if (Configuration.getDoMinimizeUPK()) {
+		if (Configuration.getInstance().getDoMinimizeUPK()) {
 			Set<Integer> assignedUPKColumns = new HashSet<Integer>();
 			for (Column column: columns) {
 				boolean assigned = false;

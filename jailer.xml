@@ -1,13 +1,22 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
-<beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:lang="http://www.springframework.org/schema/lang"
-	xmlns:util="http://www.springframework.org/schema/util"
-	xsi:schemaLocation="
-http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
-http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-2.0.xsd
-http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.0.xsd">
-	
-	<!--
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<configuration>
+    
+    <!-- Configuration of the local database -->
+    <localDatabase>
+        <databaseFolder>local</databaseFolder>
+        <lib>lib/h2-1.3.160.jar</lib>
+        <driver>org.h2.Driver</driver>
+        <urlPattern>jdbc:h2:%s</urlPattern>
+        <localPKType>VARCHAR</localPKType>
+        <localNPKType>NVARCHAR</localNPKType>
+        <localPKLength>10000</localPKLength>
+        <user></user>
+        <password></password>
+    </localDatabase>
+    
+    <!--
+    nullColumnPlaceholder:
+    
 	For DBUnit flat XML files, null columns can carry a placeholder value
 	which can later be replaced using a ReplacementDataSet.
 	In Flat XML files the first row of a table defines the metadata. If a null
@@ -15,882 +24,788 @@ http://www.springframework.org/schema/util http://www.springframework.org/schema
 	default behaviour of Jailer.
 	Thus, define a null placeholder and replace it with a null value when you load
 	the data set with DBUnit.     
-	 -->
+    -->
 	<!--
-	<bean name="null-column-placeholder" class="java.lang.String">
-		<constructor-arg value="[NULL]" />
-	</bean>
+	<nullColumnPlaceholder>[NULL]</nullColumnPlaceholder>
 	-->
-	
-	<!--
+
+	<!--  number of columns per import-filter-mapping-table -->
+	<columnsPerIFMTable>8</columnsPerIFMTable>
+    
+    <!--
 		If minimize-UPK is true, the UPK don't preserve order. This minimizes
 		the size of the UPK.
 	-->
-	<bean name="minimize-UPK" class="java.lang.Boolean">
-		<!--
-			set value="true" if you use MySQL and get the following exception:
-			"java.sql.SQLException: Too many key parts specified; max 16 parts
-			allowed"
-		-->
-		<constructor-arg value="false" />
-	</bean>
-	
-	<!-- Configuration of the local database holding the entity graph -->
-	<bean name="local-entity-graph" class="net.sf.jailer.entitygraph.local.LocalConfiguration">
-		<!-- for H2 -->
-		<property name="localPKType" value="VARCHAR" />
-		<property name="localNPKType" value="NVARCHAR" />
-		<property name="localPKLength" value="10000" />
-		<property name="databasesFolder" value="local" />
-		<property name="urlPattern" value="jdbc:h2:%s" />
-		<property name="driver" value="org.h2.Driver" />
-		<property name="user" value="" />
-		<property name="password" value="" />
-		<property name="lib" value="lib/h2-1.3.160.jar" />
+	<doMinimizeUPK>false</doMinimizeUPK>
 
-		<!-- for SQLite -->
-		<!-- (doesn't work with more than 1 thread)
-		<property name="localPKType" value="VARCHAR" />
-		<property name="localNPKType" value="NVARCHAR" />
-		<property name="localPKLength" value="10000" />
-		<property name="databasesFolder" value="local" />
-		<property name="urlPattern" value="jdbc:sqlite:%s" />
-		<property name="driver" value="org.sqlite.JDBC" />
-		<property name="user" value="" />
-		<property name="password" value="" />
-		<property name="lib" value="lib/sqlite-jdbc-3.8.11.2.jar" />
-		-->
-	</bean>
+    <!-- HTML renderer -->	
+    <renderer>
+        <maxDepth>0</maxDepth>
+        <outputFolder>render</outputFolder>
+    </renderer>
 
-	<bean name="columns-per-import-filter-mapping-table" class="java.lang.Integer">
-		<constructor-arg value="8" />
-	</bean>
-
-	<!--
-		Script-enhancer adds application specific extensions to generated
-		SQL-scripts
-	-->
-	<util:list id="script-enhancer">
-		<!--
-			Inserts the content of the files - prolog/[INSERT|DELETE]/<TABLE>.sql
-			- epilog/[INSERT|DELETE]/<TABLE>.sql at top/bottom of the generated
-			script for each table <TABLE> for which at least one row is
-			inserted/deleted.
-		-->
-		<bean class="net.sf.jailer.enhancer.FileBasedScriptEnhancer" />
-		<bean class="net.sf.jailer.enhancer.HelperTableEnhancer" />
-	</util:list>
-	
-	<!--
-		Model-finder reads table- and association definitions from meta-data
-		sources
-	-->
-	<util:list id="model-finder">
-		<!--
-			<bean
-			class="net.sf.jailer.modelbuilder.DBMetaDataBasedModelElementFinder">
-			<constructor-arg value="script/db2/selectTables.sql"/>
-			<constructor-arg value="script/db2/selectAssociations.sql"/>
-			<constructor-arg value="script/db2/selectColumns.sql"/> </bean>
-		-->
-		<bean class="net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder" />
-	</util:list>
-	<bean name="renderer" class="net.sf.jailer.render.HtmlDataModelRenderer">
-		<constructor-arg value="render" />
-		<constructor-arg value="0" />
-	</bean>
-
-	<!--
-	    DBMS configuration
-	-->
-	<util:list id="dbms-configuration">
-		
-		<!-- for Informix -->
-		<bean class="net.sf.jailer.Configuration">
-			<property name="urlPattern" value="jdbc:informix.*" />
-
-			<property name="dbms" value="INFORMIX"/>
-			
-			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
-			<property name="tableProperties" value="" />
-			
-			<property name="sqlDialect">
-				<bean class="net.sf.jailer.database.SQLDialect">
-					<property name="supportsMultiRowInserts" value="true"/>
-					<property name="needsValuesKeywordForDeletes" value="true"/>
-					<property name="supportsInClauseForDeletes" value="true"/>
-					<property name="upsertMode" value="DB2"/>
-				</bean>
-			</property>
-			<property name="timestampPattern" value="cast(%s as datetime year to fraction)" />
-			<property name="varcharLengthLimit"	value="255" />
-			<property name="typeReplacement">
-				<map>
-					<entry key="datetime" value="datetime year to fraction"/>
-					<entry key="serial" value="int"/>
-					<entry key="serial8" value="int8"/>
-					<entry key="bigserial" value="bigint"/>
-        		</map>
-			</property>
-	        <property name="sqlLimitSuffix" value="FIRST %s" />
-			<property name="statisticRenovator">
-                <bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
-                    <constructor-arg value="script/informix/update_statistics.sql" />
-                </bean>
-            </property>
-            <property name="sessionTemporaryTableManager">
-	            <bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
-	                <property name="dmlTableReferencePrefix" value="" />
-                    <property name="createTablePrefix" value="CREATE TEMP TABLE " />
-                    <property name="createTableSuffix" value=" WITH NO LOG" />
-                    <property name="createIndexPrefix" value="CREATE INDEX " />
-                    <property name="createIndexSuffix" value="" />
-                    <property name="indexTablePrefix" value="" />
-                    <property name="dropTablePrefix" value="DROP TABLE " />
-                <!-- 
-	                <property name="dmlTableReferencePrefix" value="" />
-	                <property name="createTablePrefix" value="CREATE RAW TABLE " />
-	                <property name="createTableSuffix" value=" extent size 51200 next size 25000" />
-	                <property name="createIndexPrefix" value="CREATE INDEX " />
-	                <property name="createIndexSuffix" value="" />
-	                <property name="indexTablePrefix" value="" />
-	                <property name="dropTablePrefix" value="DROP TABLE " />
-	            -->
-	            </bean>
-	        </property>
-		</bean>
-		
-		<!-- for IBM DB2 LUW -->
-		<bean class="net.sf.jailer.Configuration">
-			<property name="urlPattern" value="jdbc:db2.*" />
-			<property name="testQuery" value="Select A, B, C from (values (1, '2', 3), (4, '5', 6)) E(A, B, C)" />
-
-			<property name="dbms" value="DB2"/>
-			
-			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
-			<property name="tableProperties" value="NOT LOGGED INITIALLY" />
-			
-			<property name="sqlDialect">
-				<bean class="net.sf.jailer.database.SQLDialect">
-					<property name="supportsMultiRowInserts" value="true"/>
-					<property name="needsValuesKeywordForDeletes" value="true"/>
-					<property name="supportsInClauseForDeletes" value="true"/>
-					<property name="upsertMode" value="DB2"/>
-				</bean>
-			</property>
-			<property name="typeReplacement">
-				<map>
-					<entry key="graphic" value="varchar"/>
-					<entry key="GRAPHIC" value="VARCHAR"/>
-				</map>
-			</property>
-            <property name="stringLiteralEscapeSequences">
-                <map>
-                    <entry key="'" value="''"/>
-                    <entry key="\n" value="' || chr(10) || '"/>
-                    <entry key="\r" value="' || chr(13) || '"/>
-               </map>
-            </property>
-			<property name="sqlLimitSuffix" value="fetch first %s rows only" />
-			<property name="statisticRenovator">
-				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
-					<constructor-arg value="script/db2/update_statistics.sql" />
-				</bean>
-			</property>
-			<property name="emptyCLOBValue" value="clob('')" />
-			<property name="emptyNCLOBValue" value="nclob('')" />
-			<property name="emptyBLOBValue" value="blob('')" />
-			<property name="toBlob" value="blob('%s')" />
-			<property name="toClob" value="clob('%s')" />
-			<property name="toNClob" value="nclob('%s')" />
-			<property name="embeddedLobSizeLimit" value="32000" />
-			<property name="sessionTemporaryTableManager">
-				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
-					<property name="dmlTableReferencePrefix" value="SESSION." />
-					<property name="createTablePrefix" value="DECLARE GLOBAL TEMPORARY TABLE " />
-					<property name="createTableSuffix" value="ON COMMIT PRESERVE ROWS NOT LOGGED" />
-					<property name="createIndexPrefix" value="CREATE INDEX SESSION." />
-					<property name="createIndexSuffix" value="" />
-					<property name="indexTablePrefix" value="SESSION." />
-					<property name="dropTablePrefix" value="DROP TABLE SESSION." />
-				</bean>
-			</property>
-			<property name="virtualColumnsQuery" value="SELECT TABNAME, COLNAME from syscat.columns WHERE TABSCHEMA='${SCHEMA}' AND GENERATED='A'" />
-		 	<property name="importedKeysQuery" value="
-SELECT null, REF.REFTABSCHEMA, REF.REFTABNAME, PKCOL.COLNAME,
-       null, REF.TABSCHEMA, REF.TABNAME, FKCOL.COLNAME, FKCOL.COLSEQ,
-       null, null, REF.CONSTNAME, REF.REFKEYNAME, null
-FROM syscat.references REF, syscat.keycoluse PKCOL, syscat.keycoluse FKCOL
-WHERE REF.CONSTNAME = FKCOL.CONSTNAME
-  AND REF.TABSCHEMA = FKCOL.TABSCHEMA
-  AND REF.TABNAME = FKCOL.TABNAME
-  AND REF.REFKEYNAME = PKCOL.CONSTNAME
-  AND REF.REFTABSCHEMA = PKCOL.TABSCHEMA
-  AND REF.REFTABNAME = PKCOL.TABNAME
-  AND FKCOL.COLSEQ = PKCOL.COLSEQ
-  AND REF.REFTABSCHEMA = '${SCHEMA}'
-  ORDER BY FKCOL.COLSEQ"
-  />
-  			<property name="primaryKeysQuery" value="
-  SELECT null, CONST.TABSCHEMA, CONST.TABNAME, PKCOL.COLNAME, PKCOL.COLSEQ, CONST.CONSTNAME
-FROM syscat.tabconst CONST, syscat.keycoluse PKCOL
-WHERE CONST.CONSTNAME = PKCOL.CONSTNAME
-  AND CONST.TABSCHEMA = PKCOL.TABSCHEMA
-  AND CONST.TABNAME = PKCOL.TABNAME
-  AND CONST.TYPE = 'P'
-  AND CONST.TABSCHEMA = '${SCHEMA}'
-  ORDER BY PKCOL.COLSEQ"
-  />
-		</bean>
-
-		<!-- for IBM DB2 z/OS -->
-		<bean class="net.sf.jailer.Configuration">
-			<property name="urlPattern" value="jdbc:db2.*" />
-
-			<property name="dbms" value="DB2_ZOS"/>
-			
-			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
-			<property name="tableProperties" value="NOT LOGGED INITIALLY" />
-			
-			<property name="sqlDialect">
-				<bean class="net.sf.jailer.database.SQLDialect">
-					<property name="supportsMultiRowInserts" value="true"/>
-					<property name="needsValuesKeywordForDeletes" value="true"/>
-					<property name="supportsInClauseForDeletes" value="false"/>
-					<property name="upsertMode" value="FROM_SYSDUMMY1"/>
-				</bean>
-			</property>
-			<property name="typeReplacement">
-				<map>
-					<entry key="graphic" value="varchar"/>
-					<entry key="GRAPHIC" value="VARCHAR"/>
-				</map>
-			</property>
-            <property name="stringLiteralEscapeSequences">
-                <map>
-                    <entry key="'" value="''"/>
-                    <entry key="\n" value="' || chr(10) || '"/>
-                    <entry key="\r" value="' || chr(13) || '"/>
-               </map>
-            </property>
-			<property name="sqlLimitSuffix" value="fetch first %s rows only" />
-			<property name="statisticRenovator">
-				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
-					<constructor-arg value="script/db2/update_statistics.sql" />
-				</bean>
-			</property>
-			<property name="emptyCLOBValue" value="clob('')" />
-			<property name="emptyNCLOBValue" value="nclob('')" />
-			<property name="emptyBLOBValue" value="blob('')" />
-			<property name="toBlob" value="blob('%s')" />
-			<property name="toClob" value="clob('%s')" />
-			<property name="toNClob" value="nclob('%s')" />
-			<property name="embeddedLobSizeLimit" value="32000" />
-			<property name="sessionTemporaryTableManager">
-				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
-					<property name="dmlTableReferencePrefix" value="SESSION." />
-					<property name="createTablePrefix" value="DECLARE GLOBAL TEMPORARY TABLE " />
-					<property name="createTableSuffix" value="ON COMMIT PRESERVE ROWS NOT LOGGED" />
-					<property name="createIndexPrefix" value="CREATE INDEX SESSION." />
-					<property name="createIndexSuffix" value="" />
-					<property name="indexTablePrefix" value="SESSION." />
-					<property name="dropTablePrefix" value="DROP TABLE SESSION." />
-				</bean>
-			</property>
-			<property name="virtualColumnsQuery" value="SELECT TABNAME, COLNAME from syscat.columns WHERE TABSCHEMA='${SCHEMA}' AND GENERATED='A'" />
-		</bean>
-
-		<!-- for Oracle -->
-		<bean class="net.sf.jailer.Configuration">
-			<property name="urlPattern" value="jdbc:oracle.*" />
-
-			<property name="dbms" value="ORACLE"/>
-			
-			<property name="sqlDialect">
-				<bean class="net.sf.jailer.database.SQLDialect">
-					<property name="supportsMultiRowInserts" value="false"/>
-					<property name="needsValuesKeywordForDeletes" value="false"/>
-					<property name="supportsInClauseForDeletes" value="true"/>
-					<property name="upsertMode" value="MERGE"/>
-				</bean>
-			</property>
-			
-			<property name="jdbcProperties">
-				<map>
-					<entry key="CatalogOptions" value="0"/>
-        		</map>
-			</property>
-			
-			<property name="rowidName" value="ROWID"/>
-			<property name="rowidType" value="ROWID"/>
-			
-			<property name="avoidLeftJoin" value="true" />
-			<property name="statisticRenovator">
-				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
-					<constructor-arg value="script/oracle/gatherStatistics.sql" />
-				</bean>
-			</property>
-            <property name="stringLiteralEscapeSequences">
-                <map>
-                    <entry key="'" value="''"/>
-                    <entry key="\n" value="' || chr(10) || '"/>
-                    <entry key="\r" value="' || chr(13) || '"/>
-               </map>
-            </property>
-			<property name="emptyCLOBValue" value="empty_clob()" />
-			<property name="emptyNCLOBValue" value="empty_clob()" />
-			<property name="emptyBLOBValue" value="empty_blob()" />
-			<property name="toBlob" value="to_blob(hextoraw('%s'))" />
-			<property name="toClob" value="to_clob('%s')" />
-			<property name="toNClob" value="to_nclob('%s')" />
-			<property name="embeddedLobSizeLimit" value="3980" />
-			<property name="binaryPattern" value="hextoraw('%s')" />
-			<property name="useToTimestampFunction" value="true" />
-			
-			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
-			<property name="tableProperties" value="NOLOGGING" />
-			
-			<property name="sessionTemporaryTableManager">
-				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
-					<property name="dmlTableReferencePrefix" value="" />
-					<property name="createTablePrefix" value="CREATE GLOBAL TEMPORARY TABLE " />
-					<property name="createTableSuffix" value="ON COMMIT PRESERVE ROWS" />
-					<property name="createIndexPrefix" value="CREATE INDEX " />
-					<property name="createIndexSuffix" value="" />
-					<property name="indexTablePrefix" value="" />
-					<property name="dropTablePrefix" value="DROP TABLE " />
-				</bean>
-			</property>
-			<property name="useInlineViewsInDataBrowser" value="false" />
-			<property name="virtualColumnsQuery" value="SELECT TABLE_NAME, COLUMN_NAME FROM ALL_TAB_COLS WHERE OWNER = '${SCHEMA}' AND VIRTUAL_COLUMN = 'YES'" />
-		 	<property name="importedKeysQuery" value="
-SELECT null, c_dest.OWNER, c_dest.TABLE_NAME, c_dest.COLUMN_NAME,
-       null, c_src.OWNER, c_src.TABLE_NAME, c_src.COLUMN_NAME, c_src.POSITION,
-       null, null, c_list.CONSTRAINT_NAME, c_list.R_CONSTRAINT_NAME, null
-FROM ALL_CONSTRAINTS c_list, ALL_CONS_COLUMNS c_src, ALL_CONS_COLUMNS c_dest
-WHERE c_list.CONSTRAINT_NAME   = c_src.CONSTRAINT_NAME
- AND  c_list.OWNER             = c_src.OWNER
- AND  c_list.R_CONSTRAINT_NAME = c_dest.CONSTRAINT_NAME
- AND  c_list.R_OWNER             = c_dest.OWNER
- AND  c_list.CONSTRAINT_TYPE = 'R'
- AND  c_src.POSITION = c_dest.POSITION
- AND  c_src.OWNER      = '${SCHEMA}'
- ORDER BY c_src.POSITION" />
-		 	<property name="primaryKeysQuery" value="
-SELECT null, c_src.OWNER, c_src.TABLE_NAME, c_src.COLUMN_NAME, c_src.POSITION, c_list.CONSTRAINT_NAME
-FROM ALL_CONSTRAINTS c_list, ALL_CONS_COLUMNS c_src
-WHERE c_list.CONSTRAINT_NAME   = c_src.CONSTRAINT_NAME
- AND  c_list.OWNER             = c_src.OWNER
- AND  c_list.CONSTRAINT_TYPE = 'P'
- AND  c_list.CONSTRAINT_NAME not like 'BIN$%'
- AND  c_src.OWNER      = '${SCHEMA}'
- ORDER BY c_src.POSITION" />
-		 	<property name="indexInfoQuery" value="
-SELECT null, c_src.OWNER, c_src.TABLE_NAME, 0, null, c_list.CONSTRAINT_NAME, null, null, c_src.COLUMN_NAME
-FROM ALL_CONSTRAINTS c_list, ALL_CONS_COLUMNS c_src
-WHERE c_list.CONSTRAINT_NAME   = c_src.CONSTRAINT_NAME
- AND  c_list.OWNER             = c_src.OWNER
- AND  c_list.CONSTRAINT_TYPE = 'U'
- AND  c_list.CONSTRAINT_NAME not like 'BIN$%'
- AND  c_src.OWNER      = '${SCHEMA}'" />
-		</bean>
-		
-		<!-- for PostgreSQL -->
-		<bean class="net.sf.jailer.Configuration">
-			<property name="urlPattern" value="jdbc:postgres.*" />
-
-			<property name="dbms" value="POSTGRESQL"/>
-			
-			<property name="supportsSchemasInIndexDefinitions" value="false"/>
-			
-			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
-			<property name="tableProperties" value="" />
-			
-			<property name="sqlDialect">
-				<bean class="net.sf.jailer.database.SQLDialect">
-					<property name="supportsMultiRowInserts" value="true"/>
-					<property name="needsValuesKeywordForDeletes" value="true"/>
-					<property name="supportsInClauseForDeletes" value="true"/>
-					<property name="upsertMode" value="DB2"/>
-				</bean>
-			</property>
-			<property name="typeReplacement">
-				<map>
-					<entry key="DOUBLE" value="DOUBLE PRECISION"/>
-					<entry key="double" value="double precision"/>
-					<entry key="bigserial" value="int8"/>
-					<entry key="serial8" value="int8"/>
-					<entry key="serial" value="int4"/>
-					<entry key="serial4" value="int4"/>
-					<entry key="NVARCHAR" value="VARCHAR" />
-					<entry key="nvarchar" value="varchar" />
-				</map>
-			</property>
-			<property name="binaryPattern" value="E'\\x%s'" />
-			<property name="statisticRenovator">
-				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
-					<constructor-arg value="script/postgres/update_statistics.sql" />
-				</bean>
-			</property>
-			<property name="sqlLimitSuffix" value="LIMIT %s" />
-
-			<property name="sessionTemporaryTableManager">
-				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
-					<property name="dmlTableReferencePrefix" value="" />
-					<property name="createTablePrefix" value="CREATE TEMPORARY TABLE " />
-					<property name="createTableSuffix" value="" />
-					<property name="createIndexPrefix" value="CREATE INDEX " />
-					<property name="createIndexSuffix" value="" />
-					<property name="indexTablePrefix" value="" />
-					<property name="dropTablePrefix" value="-- DROP TABLE " />
-				</bean>
-			</property>
-
-		 	<property name="importedKeysQuery" value="
-SELECT null, PKCU.TABLE_SCHEMA, PKCU.TABLE_NAME, PKCU.COLUMN_NAME,
-       null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION,
-       null, null, RC.CONSTRAINT_NAME, RC.UNIQUE_CONSTRAINT_NAME, null
- FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS RC
- JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU
-   ON KCU.CONSTRAINT_CATALOG = RC.CONSTRAINT_CATALOG 
-      AND KCU.CONSTRAINT_SCHEMA = RC.CONSTRAINT_SCHEMA
-      AND KCU.CONSTRAINT_NAME = RC.CONSTRAINT_NAME
- JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE PKCU
-   ON PKCU.CONSTRAINT_CATALOG = RC.UNIQUE_CONSTRAINT_CATALOG 
-      AND PKCU.CONSTRAINT_SCHEMA = RC.UNIQUE_CONSTRAINT_SCHEMA
-      AND PKCU.CONSTRAINT_NAME = RC.UNIQUE_CONSTRAINT_NAME
-      AND PKCU.ORDINAL_POSITION = KCU.ORDINAL_POSITION
- WHERE PKCU.TABLE_SCHEMA = '${SCHEMA}'
- ORDER BY KCU.ORDINAL_POSITION" />
- 
-			<property name="primaryKeysQuery" value="
-SELECT null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION, C.CONSTRAINT_NAME
-  FROM
-  INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
-  JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU
-    ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG 
-      AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA
-      AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME
-  WHERE C.CONSTRAINT_TYPE = 'PRIMARY KEY'
-      AND  KCU.TABLE_SCHEMA = '${SCHEMA}'
-  ORDER BY KCU.ORDINAL_POSITION" />
-  
-		</bean>
-		
-		<!-- for Cloudscape -->
-		<bean class="net.sf.jailer.Configuration">
-			<property name="urlPattern" value="jdbc:cloudscape.*" />
-
-			<property name="dbms" value="CLOADSCAPE"/>
-			
-			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
-			<property name="tableProperties" value="" />
-			
-			<property name="sqlDialect">
-				<bean class="net.sf.jailer.database.SQLDialect">
-					<property name="supportsMultiRowInserts" value="false"/>
-					<property name="needsValuesKeywordForDeletes" value="false"/>
-					<property name="supportsInClauseForDeletes" value="false"/>
-					<property name="upsertMode" value="FROM_JL_DUAL"/>
-				</bean>
-			</property>
-			<property name="statisticRenovator">
-				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
-					<constructor-arg value="script/cloudscape/update_statistics.sql" />
-				</bean>
-			</property>
-		</bean>
-		
-		<!-- for Firebird -->
-		<bean class="net.sf.jailer.Configuration">
-			<property name="urlPattern" value="jdbc:firebirdsql.*" />
-
-			<property name="dbms" value="FIREBIRD"/>
-			
-			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
-			<property name="tableProperties" value="" />
-			
-			<property name="sqlDialect">
-				<bean class="net.sf.jailer.database.SQLDialect">
-					<property name="supportsMultiRowInserts" value="false"/>
-					<property name="needsValuesKeywordForDeletes" value="false"/>
-					<property name="supportsInClauseForDeletes" value="false"/>
-					<property name="upsertMode" value="FROM_JL_DUAL"/>
-				</bean>
-			</property>
-			<property name="typeReplacement">
-				<map>
-					<entry key="DOUBLE" value="DOUBLE PRECISION"/>
-				</map>
-			</property>
-			<property name="statisticRenovator">
-				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
-					<constructor-arg value="script/firebird/update_statistics.sql" />
-				</bean>
-			</property>
-		</bean>
-		
-		<!-- for MS SQL -->
-		<bean class="net.sf.jailer.Configuration">
-			<property name="urlPattern"
-				value="jdbc:sqlserver.*|jdbc:inetdae.*|jdbc:JTurbo.*|jdbc:weblogic:mssqlserver.*|jdbc:jtds:sqlserver.*" />
-
-			<property name="dbms" value="MSSQL"/>
-			
-			<property name="supportsSchemasInIndexDefinitions" value="false"/>
-			<property name="nullableContraint" value="NULL" />
-			
-			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
-			<property name="tableProperties" value="" />
-			
-			<property name="sqlDialect">
-				<bean class="net.sf.jailer.database.SQLDialect">
-					<property name="supportsMultiRowInserts" value="true"/>
-					<property name="needsValuesKeywordForDeletes" value="false"/>
-					<property name="supportsInClauseForDeletes" value="false"/>
-					<property name="upsertMode" value="DB2"/>
-				</bean>
-			</property>
-			<property name="emptyCLOBValue" value="''" />
-			<property name="emptyNCLOBValue" value="N''" />
-			<property name="emptyBLOBValue" value="0x" />
-			<property name="toBlob" value="0x%s" />
-			<property name="toClob" value="'%s'" />
-			<property name="toNClob" value="N'%s'" />
-			<property name="embeddedLobSizeLimit" value="32000" />
-			<property name="stringLiteralEscapeSequences">
-                <map>
-                    <entry key="'" value="''"/>
-                    <entry key="\n" value="' + char(10) + '"/>
-                    <entry key="\r" value="' + char(13) + '"/>
-               </map>
-            </property>
-            <property name="ncharPrefix" value="N" />
-            <property name="exportBlocks">
-				<set>
-				   <value>timestamp</value>
-				   <value>TIMESTAMP</value>
-				</set>
-			</property>
-			<property name="sqlLimitSuffix" value="TOP %s" />
-			<property name="statisticRenovator">
-				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
-					<constructor-arg value="script/mssql/update_statistics.sql" />
-				</bean>
-			</property>
-			<property name="identityInserts" value="true"/>
-			<property name="binaryPattern" value="0x%s" />
-			
-			<!-- unsolved problem with temp table and collations
-			<property name="sessionTemporaryTableManager">
-				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
-					<property name="dmlTableReferencePrefix" value="#" />
-					<property name="createTablePrefix" value="CREATE TABLE #" />
-					<property name="createTableSuffix" value="" />
-					<property name="createIndexPrefix" value="CREATE INDEX " />
-					<property name="createIndexSuffix" value="" />
-					<property name="indexTablePrefix" value="#" />
-					<property name="dropTablePrefix" value="DROP TABLE #" />
-				</bean>
-			</property>
-			-->
-			<property name="virtualColumnsQuery" value="SELECT sysobjects.name AS TableName, syscolumns.name AS ColumnName FROM syscolumns JOIN sysobjects ON syscolumns.id = sysobjects.id AND sysobjects.xtype = 'U' WHERE syscolumns.iscomputed = 1" />
-			<property name="userDefinedColumnsQuery" value="SELECT distinct DOMAIN_NAME from INFORMATION_SCHEMA.COLUMNS WHERE DOMAIN_NAME is not null" />
-		 	<property name="importedKeysQuery" value="
-SELECT null, PKCU.TABLE_SCHEMA, PKCU.TABLE_NAME, PKCU.COLUMN_NAME,
-       null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION,
-       null, null, RC.CONSTRAINT_NAME, RC.UNIQUE_CONSTRAINT_NAME, null
- FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS RC
- JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU
-   ON KCU.CONSTRAINT_CATALOG = RC.CONSTRAINT_CATALOG 
-      AND KCU.CONSTRAINT_SCHEMA = RC.CONSTRAINT_SCHEMA
-      AND KCU.CONSTRAINT_NAME = RC.CONSTRAINT_NAME
- JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE PKCU
-   ON PKCU.CONSTRAINT_CATALOG = RC.UNIQUE_CONSTRAINT_CATALOG 
-      AND PKCU.CONSTRAINT_SCHEMA = RC.UNIQUE_CONSTRAINT_SCHEMA
-      AND PKCU.CONSTRAINT_NAME = RC.UNIQUE_CONSTRAINT_NAME
-      AND PKCU.ORDINAL_POSITION = KCU.ORDINAL_POSITION
- WHERE PKCU.TABLE_SCHEMA = '${SCHEMA}'
- ORDER BY KCU.ORDINAL_POSITION" />
- 
-			<property name="primaryKeysQuery" value="
-SELECT null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION, C.CONSTRAINT_NAME
-  FROM
-  INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
-  JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU
-    ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG 
-      AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA
-      AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME
-  WHERE C.CONSTRAINT_TYPE = 'PRIMARY KEY'
-      AND  KCU.TABLE_SCHEMA = '${SCHEMA}'
-  ORDER BY KCU.ORDINAL_POSITION" />
- 		</bean>
-		
-		<!-- for MySQL -->
-		<bean class="net.sf.jailer.Configuration">
-			<property name="urlPattern" value="jdbc:mysql.*" />
-
-			<property name="dbms" value="MySQL"/>
-			<property name="nullableContraint" value="NULL" />
-			
-			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
-			<property name="tableProperties" value="" />
-			
-			<property name="jdbcProperties">
-				<map>
-					<entry key="noDatetimeStringSync" value="true"/>
-        		</map>
-			</property>
-			
-			<property name="sqlDialect">
-				<bean class="net.sf.jailer.database.SQLDialect">
-					<property name="supportsMultiRowInserts" value="true"/>
-					<property name="needsValuesKeywordForDeletes" value="false"/>
-					<property name="supportsInClauseForDeletes" value="true"/>
-					<property name="upsertMode" value="FROM_DUAL"/>
-				</bean>
-			</property>
-			<property name="emptyCLOBValue" value="''" />
-			<property name="emptyNCLOBValue" value="''" />
-			<property name="emptyBLOBValue" value="BINARY ''" />
-			<property name="toBlob" value="0x%s" />
-			<property name="toClob" value="'%s'" />
-			<property name="toNClob" value="'%s'" />
-			<property name="embeddedLobSizeLimit" value="32000" />
-			<property name="stringLiteralEscapeSequences">
-				<map>
-					<entry key="\0" value="\0"/>
-					<entry key="'" value="\'"/>
-					<entry key="&quot;" value="\&quot;"/>
-					<entry key="\n" value="\n"/>
-					<entry key="\r" value="\r"/>
-					<entry key="\t" value="\t"/>
-					<entry key="\b" value="\b"/>
-					<entry key="\26" value="\Z"/>
-					<entry key="\\" value="\\"/>
-				</map>
-			</property>
-			<property name="typeReplacement">
-				<map>
-					<entry key="TINYINT" value="INT"/>
-					<entry key="SMALLINT" value="INT"/>
-					<entry key="MEDIUMINT" value="INT"/>
-					<entry key="INT" value="BIGINT"/>
-					<entry key="INTEGER" value="BIGINT"/>
-					<entry key="tinyint" value="int"/>
-					<entry key="smallint" value="int"/>
-					<entry key="mediumint" value="int"/>
-					<entry key="int" value="bigint"/>
-					<entry key="integer" value="bigint"/>
-				</map>
-			</property>
-			<property name="sqlLimitSuffix" value="LIMIT 0, %s" />
-			<property name="statisticRenovator">
-				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
-					<constructor-arg value="script/mysql/update_statistics.sql" />
-				</bean>
-			</property>
-			<property name="virtualColumnsQuery" value="SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '${SCHEMA}' AND EXTRA LIKE '%VIRTUAL%'" />
-		 	<property name="importedKeysQuery" value="
-SELECT null, PKCU.TABLE_SCHEMA, PKCU.TABLE_NAME, PKCU.COLUMN_NAME,
-       null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION,
-       null, null, RC.CONSTRAINT_NAME, RC.UNIQUE_CONSTRAINT_NAME, null
- FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS RC
- JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU
-   ON KCU.CONSTRAINT_CATALOG = RC.CONSTRAINT_CATALOG 
-      AND KCU.CONSTRAINT_SCHEMA = RC.CONSTRAINT_SCHEMA
-      AND KCU.CONSTRAINT_NAME = RC.CONSTRAINT_NAME
- JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE PKCU
-   ON PKCU.CONSTRAINT_CATALOG = RC.UNIQUE_CONSTRAINT_CATALOG 
-      AND PKCU.CONSTRAINT_SCHEMA = RC.UNIQUE_CONSTRAINT_SCHEMA
-      AND PKCU.CONSTRAINT_NAME = RC.UNIQUE_CONSTRAINT_NAME
-      AND PKCU.ORDINAL_POSITION = KCU.ORDINAL_POSITION
- WHERE PKCU.TABLE_SCHEMA = '${SCHEMA}'
- ORDER BY KCU.ORDINAL_POSITION" />
- 
-			<property name="primaryKeysQuery" value="
-SELECT null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION, C.CONSTRAINT_NAME
-  FROM
-  INFORMATION_SCHEMA.TABLE_CONSTRAINTS C
-  JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU
-    ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG 
-      AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA
-      AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME
-  WHERE C.CONSTRAINT_TYPE = 'PRIMARY KEY'
-      AND  KCU.TABLE_SCHEMA = '${SCHEMA}'
-  ORDER BY KCU.ORDINAL_POSITION" />
-  
-  			<property name="identifierQuoteString" value="`" />
-		</bean>
-		
-		<!-- for Derby -->
-		<bean class="net.sf.jailer.Configuration">
-			<property name="urlPattern" value="jdbc:derby.*" />
-
-			<property name="dbms" value="DERBY"/>
-			
-			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
-			<property name="tableProperties" value="" />
-			
-			<property name="sqlDialect">
-				<bean class="net.sf.jailer.database.SQLDialect">
-					<property name="supportsMultiRowInserts" value="false"/>
-					<property name="needsValuesKeywordForDeletes" value="false"/>
-					<property name="supportsInClauseForDeletes" value="false"/>
-					<property name="upsertMode" value="FROM_JL_DUAL"/>
-				</bean>
-			</property>
-			<property name="statisticRenovator">
-				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
-					<constructor-arg value="script/derby/update_statistics.sql" />
-				</bean>
-			</property>
-		</bean>
-		
-		<!-- for Sybase -->
-		<bean class="net.sf.jailer.Configuration">
-			<property name="urlPattern" value="jdbc:sybase.*|jdbc:jtds:sybase.*" />
-
-			<property name="dbms" value="SYBASE"/>
-			<property name="nullableContraint" value="NULL" />
-			
-			<property name="sqlDialect">
-				<bean class="net.sf.jailer.database.SQLDialect">
-					<property name="supportsMultiRowInserts" value="true"/>
-					<property name="needsValuesKeywordForDeletes" value="false"/>
-					<property name="supportsInClauseForDeletes" value="false"/>
-					<property name="upsertMode" value="DB2"/>
-				</bean>
-			</property>
-			<property name="exportBlocks">
-				<set>
-				   <value>timestamp</value>
-				   <value>TIMESTAMP</value>
-				</set>
-			</property>
-			<property name="sqlLimitSuffix" value="TOP %s" />
-			<property name="statisticRenovator">
-				<bean class="net.sf.jailer.database.SqlScriptBasedStatisticRenovator">
-					<constructor-arg value="script/sybase/update_statistics.sql" />
-				</bean>
-			</property>
-			
-			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
-			<property name="tableProperties" value="" />
-			
-			<property name="identityInserts" value="true"/>
-			<property name="binaryPattern" value="0x%s" />
-			<property name="sessionTemporaryTableManager">
-				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
-					<property name="dmlTableReferencePrefix" value="#" />
-					<property name="createTablePrefix" value="CREATE TABLE #" />
-					<property name="createTableSuffix" value="" />
-					<property name="createIndexPrefix" value="CREATE INDEX " />
-					<property name="createIndexSuffix" value="" />
-					<property name="indexTablePrefix" value="#" />
-					<property name="dropTablePrefix" value="DROP TABLE #" />
-				</bean>
-			</property>
-		</bean>
-
-    	<!-- for SQlite -->
-		<bean class="net.sf.jailer.Configuration">
-			<property name="urlPattern" value="jdbc:sqlite.*" />
-			
-			<property name="dbms" value="SQLITE"/>
-			
-			<property name="sqlDialect">
-				<bean class="net.sf.jailer.database.SQLDialect">
-					<property name="supportsMultiRowInserts" value="false"/>
-					<property name="needsValuesKeywordForDeletes" value="false"/>
-					<property name="supportsInClauseForDeletes" value="false"/>
-					<property name="upsertMode" value="FROM_JL_DUAL"/>
-				</bean>
-			</property>
-			
-			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
-			<property name="tableProperties" value="" />
-			
-			<property name="sqlLimitSuffix" value="LIMIT %s" />
-			<property name="typeReplacement">
-				<map>
-					<entry key="NVARCHAR" value="VARCHAR" />
-					<entry key="nvarchar" value="varchar" />
-				</map>
-			</property>
-			<property name="sessionTemporaryTableManager">
-				<bean class="net.sf.jailer.database.DefaultTemporaryTableManager">
-					<property name="dmlTableReferencePrefix" value="" />
-					<property name="createTablePrefix" value="CREATE TEMPORARY TABLE " />
-					<property name="createTableSuffix" value="" />
-					<property name="createIndexPrefix" value="CREATE INDEX " />
-					<property name="createIndexSuffix" value="" />
-					<property name="indexTablePrefix" value="" />
-					<property name="dropTablePrefix" value="DROP TABLE " />
-				</bean>
-			</property>
-		</bean>
-
-    	<!-- for HSQL -->
-		<bean class="net.sf.jailer.Configuration">
-			<property name="urlPattern" value="jdbc:hsqldb.*" />
-
-			<property name="dbms" value="HSQL"/>
-			
-			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
-			<property name="tableProperties" value="NOLOGGING" />
-			
-			<property name="sqlDialect">
-				<bean class="net.sf.jailer.database.SQLDialect">
-					<property name="supportsMultiRowInserts" value="false"/>
-					<property name="needsValuesKeywordForDeletes" value="false"/>
-					<property name="supportsInClauseForDeletes" value="false"/>
-					<property name="upsertMode" value="FROM_JL_DUAL"/>
-				</bean>
-			</property>
-			<property name="sqlLimitSuffix" value="LIMIT %s" />
-		</bean>
-
-        <!-- for H2 -->
-        <bean class="net.sf.jailer.Configuration">
-            <property name="urlPattern" value="jdbc:h2.*" />
-
-			<property name="jdbcProperties">
-				<map>
-					<entry key="MODE" value="DB2"/>
-        		</map>
-			</property>
-			
-			<property name="dbms" value="H2"/>
-			
-			<property name="sqlDialect">
-				<bean class="net.sf.jailer.database.SQLDialect">
-					<property name="supportsMultiRowInserts" value="true"/>
-					<property name="needsValuesKeywordForDeletes" value="false"/>
-					<property name="supportsInClauseForDeletes" value="true"/>
-					<property name="upsertMode" value="FROM_DUAL"/>
-				</bean>
-			</property>
-			
-			<!-- NOLOGGING, TABLESPACE-spec., etc. -->
-			<property name="tableProperties" value="" />
-            
-            <property name="sqlLimitSuffix" value="LIMIT %s" />
-			<property name="typeReplacement">
-				<map>
-					<entry key="NVARCHAR" value="VARCHAR" />
-				</map>
-			</property>
-            <property name="stringLiteralEscapeSequences">
-                <map>
-                    <entry key="'" value="''"/>
-                    <entry key="\n" value="' || char(10) || '"/>
-                    <entry key="\r" value="' || char(13) || '"/>
-               </map>
-            </property>
-            <property name="useInlineViewsInDataBrowser" value="false" />
-            <property name="virtualColumnsQuery" value="SELECT TABLE_NAME, COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='${SCHEMA}' AND IS_COMPUTED" />
-        </bean>
-	</util:list>
-	
-</beans>
+    
+    <!-- for Informix -->
+    <dbmsConfiguration>
+        <dbms>INFORMIX</dbms>
+        <urlPattern>jdbc:informix.*</urlPattern>
+        <sqlDialect>
+            <needsValuesKeywordForDeletes>true</needsValuesKeywordForDeletes>
+            <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
+            <supportsMultiRowInserts>true</supportsMultiRowInserts>
+            <upsertMode>DB2</upsertMode>
+        </sqlDialect>
+        <statisticRenovator>
+            <scriptFileName>script/informix/update_statistics.sql</scriptFileName>
+        </statisticRenovator>
+        <typeReplacement>
+            <entry>
+                <key>datetime</key>
+                <value>datetime year to fraction</value>
+            </entry>
+            <entry>
+                <key>serial</key>
+                <value>int</value>
+            </entry>
+            <entry>
+                <key>serial8</key>
+                <value>int8</value>
+            </entry>
+            <entry>
+                <key>bigserial</key>
+                <value>bigint</value>
+            </entry>
+        </typeReplacement>
+        <sqlLimitSuffix>FIRST %s</sqlLimitSuffix>
+        <varcharLengthLimit>255</varcharLengthLimit>
+        <tableProperties></tableProperties>
+        <sessionTemporaryTableManager>
+            <createIndexPrefix>CREATE INDEX </createIndexPrefix>
+            <createIndexSuffix></createIndexSuffix>
+            <createTablePrefix>CREATE TEMP TABLE </createTablePrefix>
+            <createTableSuffix> WITH NO LOG</createTableSuffix>
+            <dropTablePrefix>DROP TABLE </dropTablePrefix>
+            <indexTablePrefix></indexTablePrefix>
+        </sessionTemporaryTableManager>
+        <identityInserts>false</identityInserts>
+        <appendNanosToTimestamp>true</appendNanosToTimestamp>
+        <appendMillisToTimestamp>false</appendMillisToTimestamp>
+        <useToTimestampFunction>false</useToTimestampFunction>
+        <timestampPattern>cast(%s as datetime year to fraction)</timestampPattern>
+        <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
+        <binaryPattern>x'%s'</binaryPattern>
+        <avoidLeftJoin>false</avoidLeftJoin>
+        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <identifierQuoteString>"</identifierQuoteString>
+    </dbmsConfiguration>
+    
+    <!-- for DB2 LUW -->
+    <dbmsConfiguration>
+        <dbms>DB2</dbms>
+        <urlPattern>jdbc:db2.*</urlPattern>
+        <testQuery>Select A, B, C from (values (1, '2', 3), (4, '5', 6)) E(A, B, C)</testQuery>
+        <sqlDialect>
+            <needsValuesKeywordForDeletes>true</needsValuesKeywordForDeletes>
+            <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
+            <supportsMultiRowInserts>true</supportsMultiRowInserts>
+            <upsertMode>DB2</upsertMode>
+        </sqlDialect>
+        <statisticRenovator>
+            <scriptFileName>script/db2/update_statistics.sql</scriptFileName>
+        </statisticRenovator>
+        <typeReplacement>
+            <entry>
+                <key>graphic</key>
+                <value>varchar</value>
+            </entry>
+            <entry>
+                <key>GRAPHIC</key>
+                <value>VARCHAR</value>
+            </entry>
+        </typeReplacement>
+        <stringLiteralEscapeSequences>
+            <entry>
+                <key>'</key>
+                <value>''</value>
+            </entry>
+            <entry>
+                <key>\n</key>
+                <value>' || chr(10) || '</value>
+            </entry>
+            <entry>
+                <key>\r</key>
+                <value>' || chr(13) || '</value>
+            </entry>
+        </stringLiteralEscapeSequences>
+        <sqlLimitSuffix>fetch first %s rows only</sqlLimitSuffix>
+        <tableProperties>NOT LOGGED INITIALLY</tableProperties>
+        <sessionTemporaryTableManager>
+            <createIndexPrefix>CREATE INDEX SESSION.</createIndexPrefix>
+            <createIndexSuffix></createIndexSuffix>
+            <createTablePrefix>DECLARE GLOBAL TEMPORARY TABLE </createTablePrefix>
+            <createTableSuffix>ON COMMIT PRESERVE ROWS NOT LOGGED</createTableSuffix>
+            <dropTablePrefix>DROP TABLE SESSION.</dropTablePrefix>
+            <indexTablePrefix>SESSION.</indexTablePrefix>
+        </sessionTemporaryTableManager>
+        <identityInserts>false</identityInserts>
+        <appendNanosToTimestamp>true</appendNanosToTimestamp>
+        <appendMillisToTimestamp>false</appendMillisToTimestamp>
+        <useToTimestampFunction>false</useToTimestampFunction>
+        <emptyBLOBValue>blob('')</emptyBLOBValue>
+        <emptyCLOBValue>clob('')</emptyCLOBValue>
+        <emptyNCLOBValue>nclob('')</emptyNCLOBValue>
+        <toBlob>blob('%s')</toBlob>
+        <toClob>clob('%s')</toClob>
+        <toNClob>nclob('%s')</toNClob>
+        <embeddedLobSizeLimit>32000</embeddedLobSizeLimit>
+        <binaryPattern>x'%s'</binaryPattern>
+        <avoidLeftJoin>false</avoidLeftJoin>
+        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <virtualColumnsQuery>SELECT TABNAME, COLNAME from syscat.columns WHERE TABSCHEMA='${SCHEMA}' AND GENERATED='A'</virtualColumnsQuery>
+        <importedKeysQuery> SELECT null, REF.REFTABSCHEMA, REF.REFTABNAME, PKCOL.COLNAME,        null, REF.TABSCHEMA, REF.TABNAME, FKCOL.COLNAME, FKCOL.COLSEQ,        null, null, REF.CONSTNAME, REF.REFKEYNAME, null FROM syscat.references REF, syscat.keycoluse PKCOL, syscat.keycoluse FKCOL WHERE REF.CONSTNAME = FKCOL.CONSTNAME   AND REF.TABSCHEMA = FKCOL.TABSCHEMA   AND REF.TABNAME = FKCOL.TABNAME   AND REF.REFKEYNAME = PKCOL.CONSTNAME   AND REF.REFTABSCHEMA = PKCOL.TABSCHEMA   AND REF.REFTABNAME = PKCOL.TABNAME   AND FKCOL.COLSEQ = PKCOL.COLSEQ   AND REF.REFTABSCHEMA = '${SCHEMA}'   ORDER BY FKCOL.COLSEQ</importedKeysQuery>
+        <primaryKeysQuery>   SELECT null, CONST.TABSCHEMA, CONST.TABNAME, PKCOL.COLNAME, PKCOL.COLSEQ, CONST.CONSTNAME FROM syscat.tabconst CONST, syscat.keycoluse PKCOL WHERE CONST.CONSTNAME = PKCOL.CONSTNAME   AND CONST.TABSCHEMA = PKCOL.TABSCHEMA   AND CONST.TABNAME = PKCOL.TABNAME   AND CONST.TYPE = 'P'   AND CONST.TABSCHEMA = '${SCHEMA}'   ORDER BY PKCOL.COLSEQ</primaryKeysQuery>
+        <identifierQuoteString>"</identifierQuoteString>
+    </dbmsConfiguration>
+    
+    <!-- for DB2 z/OS -->
+    <dbmsConfiguration>
+        <dbms>DB2_ZOS</dbms>
+        <urlPattern>jdbc:db2.*</urlPattern>
+        <sqlDialect>
+            <needsValuesKeywordForDeletes>true</needsValuesKeywordForDeletes>
+            <supportsInClauseForDeletes>false</supportsInClauseForDeletes>
+            <supportsMultiRowInserts>true</supportsMultiRowInserts>
+            <upsertMode>FROM_SYSDUMMY1</upsertMode>
+        </sqlDialect>
+        <statisticRenovator>
+            <scriptFileName>script/db2/update_statistics.sql</scriptFileName>
+        </statisticRenovator>
+        <typeReplacement>
+            <entry>
+                <key>graphic</key>
+                <value>varchar</value>
+            </entry>
+            <entry>
+                <key>GRAPHIC</key>
+                <value>VARCHAR</value>
+            </entry>
+        </typeReplacement>
+        <stringLiteralEscapeSequences>
+            <entry>
+                <key>'</key>
+                <value>''</value>
+            </entry>
+            <entry>
+                <key>\n</key>
+                <value>' || chr(10) || '</value>
+            </entry>
+            <entry>
+                <key>\r</key>
+                <value>' || chr(13) || '</value>
+            </entry>
+        </stringLiteralEscapeSequences>
+        <sqlLimitSuffix>fetch first %s rows only</sqlLimitSuffix>
+        <tableProperties>NOT LOGGED INITIALLY</tableProperties>
+        <sessionTemporaryTableManager>
+            <createIndexPrefix>CREATE INDEX SESSION.</createIndexPrefix>
+            <createIndexSuffix></createIndexSuffix>
+            <createTablePrefix>DECLARE GLOBAL TEMPORARY TABLE </createTablePrefix>
+            <createTableSuffix>ON COMMIT PRESERVE ROWS NOT LOGGED</createTableSuffix>
+            <dropTablePrefix>DROP TABLE SESSION.</dropTablePrefix>
+            <indexTablePrefix>SESSION.</indexTablePrefix>
+        </sessionTemporaryTableManager>
+        <identityInserts>false</identityInserts>
+        <appendNanosToTimestamp>true</appendNanosToTimestamp>
+        <appendMillisToTimestamp>false</appendMillisToTimestamp>
+        <useToTimestampFunction>false</useToTimestampFunction>
+        <emptyBLOBValue>blob('')</emptyBLOBValue>
+        <emptyCLOBValue>clob('')</emptyCLOBValue>
+        <emptyNCLOBValue>nclob('')</emptyNCLOBValue>
+        <toBlob>blob('%s')</toBlob>
+        <toClob>clob('%s')</toClob>
+        <toNClob>nclob('%s')</toNClob>
+        <embeddedLobSizeLimit>32000</embeddedLobSizeLimit>
+        <binaryPattern>x'%s'</binaryPattern>
+        <avoidLeftJoin>false</avoidLeftJoin>
+        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <virtualColumnsQuery>SELECT TABNAME, COLNAME from syscat.columns WHERE TABSCHEMA='${SCHEMA}' AND GENERATED='A'</virtualColumnsQuery>
+        <importedKeysQuery>SELECT null, REF.REFTABSCHEMA, REF.REFTABNAME, PKCOL.COLNAME, null, REF.TABSCHEMA, REF.TABNAME, FKCOL.COLNAME, FKCOL.COLSEQ, null, null, REF.CONSTNAME, REF.REFKEYNAME, null FROM syscat.references REF, syscat.keycoluse PKCOL, syscat.keycoluse FKCOL WHERE REF.CONSTNAME = FKCOL.CONSTNAME   AND REF.TABSCHEMA = FKCOL.TABSCHEMA   AND REF.TABNAME = FKCOL.TABNAME   AND REF.REFKEYNAME = PKCOL.CONSTNAME   AND REF.REFTABSCHEMA = PKCOL.TABSCHEMA   AND REF.REFTABNAME = PKCOL.TABNAME   AND FKCOL.COLSEQ = PKCOL.COLSEQ   AND REF.REFTABSCHEMA = '${SCHEMA}' ORDER BY FKCOL.COLSEQ</importedKeysQuery>
+        <primaryKeysQuery>SELECT null, CONST.TABSCHEMA, CONST.TABNAME, PKCOL.COLNAME, PKCOL.COLSEQ, CONST.CONSTNAME FROM syscat.tabconst CONST, syscat.keycoluse PKCOL WHERE CONST.CONSTNAME = PKCOL.CONSTNAME   AND CONST.TABSCHEMA = PKCOL.TABSCHEMA   AND CONST.TABNAME = PKCOL.TABNAME   AND CONST.TYPE = 'P'   AND CONST.TABSCHEMA = '${SCHEMA}'   ORDER BY PKCOL.COLSEQ</primaryKeysQuery>
+        <identifierQuoteString>"</identifierQuoteString>
+    </dbmsConfiguration>
+    
+    <!-- for Oracle -->
+    <dbmsConfiguration>
+        <dbms>ORACLE</dbms>
+        <urlPattern>jdbc:oracle.*</urlPattern>
+        <sqlDialect>
+            <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
+            <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
+            <supportsMultiRowInserts>false</supportsMultiRowInserts>
+            <upsertMode>MERGE</upsertMode>
+        </sqlDialect>
+        <jdbcProperties>
+            <entry>
+                <key>CatalogOptions</key>
+                <value>0</value>
+            </entry>
+        </jdbcProperties>
+        <statisticRenovator>
+            <scriptFileName>script/oracle/gatherStatistics.sql</scriptFileName>
+        </statisticRenovator>
+        <stringLiteralEscapeSequences>
+            <entry>
+                <key>'</key>
+                <value>''</value>
+            </entry>
+            <entry>
+                <key>\n</key>
+                <value>' || chr(10) || '</value>
+            </entry>
+            <entry>
+                <key>\r</key>
+                <value>' || chr(13) || '</value>
+            </entry>
+        </stringLiteralEscapeSequences>
+        <tableProperties>NOLOGGING</tableProperties>
+        <sessionTemporaryTableManager>
+            <createIndexPrefix>CREATE INDEX </createIndexPrefix>
+            <createIndexSuffix></createIndexSuffix>
+            <createTablePrefix>CREATE GLOBAL TEMPORARY TABLE </createTablePrefix>
+            <createTableSuffix>ON COMMIT PRESERVE ROWS</createTableSuffix>
+            <dropTablePrefix>DROP TABLE </dropTablePrefix>
+            <indexTablePrefix></indexTablePrefix>
+        </sessionTemporaryTableManager>
+        <identityInserts>false</identityInserts>
+        <appendNanosToTimestamp>true</appendNanosToTimestamp>
+        <appendMillisToTimestamp>false</appendMillisToTimestamp>
+        <useToTimestampFunction>true</useToTimestampFunction>
+        <emptyBLOBValue>empty_blob()</emptyBLOBValue>
+        <emptyCLOBValue>empty_clob()</emptyCLOBValue>
+        <emptyNCLOBValue>empty_clob()</emptyNCLOBValue>
+        <toBlob>to_blob(hextoraw('%s'))</toBlob>
+        <toClob>to_clob('%s')</toClob>
+        <toNClob>to_nclob('%s')</toNClob>
+        <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
+        <binaryPattern>hextoraw('%s')</binaryPattern>
+        <avoidLeftJoin>true</avoidLeftJoin>
+        <rowidName>ROWID</rowidName>
+        <rowidType>ROWID</rowidType>
+        <useInlineViewsInDataBrowser>false</useInlineViewsInDataBrowser>
+        <virtualColumnsQuery>SELECT TABLE_NAME, COLUMN_NAME FROM ALL_TAB_COLS WHERE OWNER = '${SCHEMA}' AND VIRTUAL_COLUMN = 'YES'</virtualColumnsQuery>
+        <importedKeysQuery>SELECT null, c_dest.OWNER, c_dest.TABLE_NAME, c_dest.COLUMN_NAME, null, c_src.OWNER, c_src.TABLE_NAME, c_src.COLUMN_NAME, c_src.POSITION,        null, null, c_list.CONSTRAINT_NAME, c_list.R_CONSTRAINT_NAME, null FROM ALL_CONSTRAINTS c_list, ALL_CONS_COLUMNS c_src, ALL_CONS_COLUMNS c_dest WHERE c_list.CONSTRAINT_NAME   = c_src.CONSTRAINT_NAME  AND  c_list.OWNER = c_src.OWNER  AND  c_list.R_CONSTRAINT_NAME = c_dest.CONSTRAINT_NAME  AND  c_list.R_OWNER = c_dest.OWNER  AND  c_list.CONSTRAINT_TYPE = 'R'  AND  c_src.POSITION = c_dest.POSITION  AND  c_src.OWNER = '${SCHEMA}'  ORDER BY c_src.POSITION</importedKeysQuery>
+        <primaryKeysQuery>SELECT null, c_src.OWNER, c_src.TABLE_NAME, c_src.COLUMN_NAME, c_src.POSITION, c_list.CONSTRAINT_NAME FROM ALL_CONSTRAINTS c_list, ALL_CONS_COLUMNS c_src WHERE c_list.CONSTRAINT_NAME   = c_src.CONSTRAINT_NAME  AND  c_list.OWNER             = c_src.OWNER  AND  c_list.CONSTRAINT_TYPE = 'P'  AND  c_list.CONSTRAINT_NAME not like 'BIN$%'  AND  c_src.OWNER      = '${SCHEMA}'  ORDER BY c_src.POSITION</primaryKeysQuery>
+        <indexInfoQuery>SELECT null, c_src.OWNER, c_src.TABLE_NAME, 0, null, c_list.CONSTRAINT_NAME, null, null, c_src.COLUMN_NAME FROM ALL_CONSTRAINTS c_list, ALL_CONS_COLUMNS c_src WHERE c_list.CONSTRAINT_NAME   = c_src.CONSTRAINT_NAME  AND  c_list.OWNER             = c_src.OWNER  AND  c_list.CONSTRAINT_TYPE = 'U'  AND  c_list.CONSTRAINT_NAME not like 'BIN$%'  AND  c_src.OWNER      = '${SCHEMA}'</indexInfoQuery>
+        <identifierQuoteString>"</identifierQuoteString>
+    </dbmsConfiguration>
+    
+    <!-- for PostgreSQL -->
+    <dbmsConfiguration>
+        <dbms>POSTGRESQL</dbms>
+        <urlPattern>jdbc:postgres.*</urlPattern>
+        <sqlDialect>
+            <needsValuesKeywordForDeletes>true</needsValuesKeywordForDeletes>
+            <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
+            <supportsMultiRowInserts>true</supportsMultiRowInserts>
+            <upsertMode>DB2</upsertMode>
+        </sqlDialect>
+        <statisticRenovator>
+            <scriptFileName>script/postgres/update_statistics.sql</scriptFileName>
+        </statisticRenovator>
+        <typeReplacement>
+            <entry>
+                <key>DOUBLE</key>
+                <value>DOUBLE PRECISION</value>
+            </entry>
+            <entry>
+                <key>double</key>
+                <value>double precision</value>
+            </entry>
+            <entry>
+                <key>bigserial</key>
+                <value>int8</value>
+            </entry>
+            <entry>
+                <key>serial8</key>
+                <value>int8</value>
+            </entry>
+            <entry>
+                <key>serial</key>
+                <value>int4</value>
+            </entry>
+            <entry>
+                <key>serial4</key>
+                <value>int4</value>
+            </entry>
+            <entry>
+                <key>NVARCHAR</key>
+                <value>VARCHAR</value>
+            </entry>
+            <entry>
+                <key>nvarchar</key>
+                <value>varchar</value>
+            </entry>
+        </typeReplacement>
+        <sqlLimitSuffix>LIMIT %s</sqlLimitSuffix>
+        
+        <!-- NOLOGGING, TABLESPACE-spec., etc. -->
+        <tableProperties></tableProperties>
+        
+        <sessionTemporaryTableManager>
+            <createIndexPrefix>CREATE INDEX </createIndexPrefix>
+            <createIndexSuffix></createIndexSuffix>
+            <createTablePrefix>CREATE TEMPORARY TABLE </createTablePrefix>
+            <createTableSuffix></createTableSuffix>
+            <dropTablePrefix>-- DROP TABLE </dropTablePrefix>
+            <indexTablePrefix></indexTablePrefix>
+        </sessionTemporaryTableManager>
+        <identityInserts>false</identityInserts>
+        <appendNanosToTimestamp>true</appendNanosToTimestamp>
+        <appendMillisToTimestamp>false</appendMillisToTimestamp>
+        <useToTimestampFunction>false</useToTimestampFunction>
+        <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
+        <binaryPattern>E'\\x%s'</binaryPattern>
+        <avoidLeftJoin>false</avoidLeftJoin>
+        <supportsSchemasInIndexDefinitions>false</supportsSchemasInIndexDefinitions>
+        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <importedKeysQuery>SELECT null, PKCU.TABLE_SCHEMA, PKCU.TABLE_NAME, PKCU.COLUMN_NAME, null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION,        null, null, RC.CONSTRAINT_NAME, RC.UNIQUE_CONSTRAINT_NAME, null  FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS RC  JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU    ON KCU.CONSTRAINT_CATALOG = RC.CONSTRAINT_CATALOG        AND KCU.CONSTRAINT_SCHEMA = RC.CONSTRAINT_SCHEMA       AND KCU.CONSTRAINT_NAME = RC.CONSTRAINT_NAME  JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE PKCU    ON PKCU.CONSTRAINT_CATALOG = RC.UNIQUE_CONSTRAINT_CATALOG        AND PKCU.CONSTRAINT_SCHEMA = RC.UNIQUE_CONSTRAINT_SCHEMA       AND PKCU.CONSTRAINT_NAME = RC.UNIQUE_CONSTRAINT_NAME       AND PKCU.ORDINAL_POSITION = KCU.ORDINAL_POSITION  WHERE PKCU.TABLE_SCHEMA = '${SCHEMA}'  ORDER BY KCU.ORDINAL_POSITION</importedKeysQuery>
+        <primaryKeysQuery>SELECT null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION, C.CONSTRAINT_NAME   FROM   INFORMATION_SCHEMA.TABLE_CONSTRAINTS C   JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU     ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG        AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA       AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME   WHERE C.CONSTRAINT_TYPE = 'PRIMARY KEY'       AND  KCU.TABLE_SCHEMA = '${SCHEMA}'   ORDER BY KCU.ORDINAL_POSITION</primaryKeysQuery>
+        <identifierQuoteString>"</identifierQuoteString>
+    </dbmsConfiguration>
+    
+    <!-- for Cloudscape -->
+    <dbmsConfiguration>
+        <dbms>CLOADSCAPE</dbms>
+        <urlPattern>jdbc:cloudscape.*</urlPattern>
+        <sqlDialect>
+            <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
+            <supportsInClauseForDeletes>false</supportsInClauseForDeletes>
+            <supportsMultiRowInserts>false</supportsMultiRowInserts>
+            <upsertMode>FROM_JL_DUAL</upsertMode>
+        </sqlDialect>
+        <statisticRenovator>
+            <scriptFileName>script/cloudscape/update_statistics.sql</scriptFileName>
+        </statisticRenovator>
+        
+        <!-- NOLOGGING, TABLESPACE-spec., etc. -->
+        <tableProperties></tableProperties>
+        
+        <identityInserts>false</identityInserts>
+        <appendNanosToTimestamp>true</appendNanosToTimestamp>
+        <appendMillisToTimestamp>false</appendMillisToTimestamp>
+        <useToTimestampFunction>false</useToTimestampFunction>
+        <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
+        <binaryPattern>x'%s'</binaryPattern>
+        <avoidLeftJoin>false</avoidLeftJoin>
+        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <identifierQuoteString>"</identifierQuoteString>
+    </dbmsConfiguration>
+    
+    <!-- for Firebird -->
+    <dbmsConfiguration>
+        <dbms>FIREBIRD</dbms>
+        <urlPattern>jdbc:firebirdsql.*</urlPattern>
+        <sqlDialect>
+            <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
+            <supportsInClauseForDeletes>false</supportsInClauseForDeletes>
+            <supportsMultiRowInserts>false</supportsMultiRowInserts>
+            <upsertMode>FROM_JL_DUAL</upsertMode>
+        </sqlDialect>
+        <statisticRenovator>
+            <scriptFileName>script/firebird/update_statistics.sql</scriptFileName>
+        </statisticRenovator>
+        <typeReplacement>
+            <entry>
+                <key>DOUBLE</key>
+                <value>DOUBLE PRECISION</value>
+            </entry>
+        </typeReplacement>
+        
+        <!-- NOLOGGING, TABLESPACE-spec., etc. -->
+        <tableProperties></tableProperties>
+        
+        <identityInserts>false</identityInserts>
+        <appendNanosToTimestamp>true</appendNanosToTimestamp>
+        <appendMillisToTimestamp>false</appendMillisToTimestamp>
+        <useToTimestampFunction>false</useToTimestampFunction>
+        <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
+        <binaryPattern>x'%s'</binaryPattern>
+        <avoidLeftJoin>false</avoidLeftJoin>
+        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <identifierQuoteString>"</identifierQuoteString>
+    </dbmsConfiguration>
+    
+    <!-- for MS SQL Server -->
+    <dbmsConfiguration>
+        <dbms>MSSQL</dbms>
+        <urlPattern>jdbc:sqlserver.*|jdbc:inetdae.*|jdbc:JTurbo.*|jdbc:weblogic:mssqlserver.*|jdbc:jtds:sqlserver.*</urlPattern>
+        <sqlDialect>
+            <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
+            <supportsInClauseForDeletes>false</supportsInClauseForDeletes>
+            <supportsMultiRowInserts>true</supportsMultiRowInserts>
+            <upsertMode>DB2</upsertMode>
+        </sqlDialect>
+        <statisticRenovator>
+            <scriptFileName>script/mssql/update_statistics.sql</scriptFileName>
+        </statisticRenovator>
+        <stringLiteralEscapeSequences>
+            <entry>
+                <key>'</key>
+                <value>''</value>
+            </entry>
+            <entry>
+                <key>\n</key>
+                <value>' + char(10) + '</value>
+            </entry>
+            <entry>
+                <key>\r</key>
+                <value>' + char(13) + '</value>
+            </entry>
+        </stringLiteralEscapeSequences>
+        <sqlLimitSuffix>TOP %s</sqlLimitSuffix>
+        
+        <!-- NOLOGGING, TABLESPACE-spec., etc. -->
+        <tableProperties></tableProperties>
+        
+        <ncharPrefix>N</ncharPrefix>
+        <exportBlocks>timestamp</exportBlocks>
+        <exportBlocks>TIMESTAMP</exportBlocks>
+        <identityInserts>true</identityInserts>
+        <appendNanosToTimestamp>true</appendNanosToTimestamp>
+        <appendMillisToTimestamp>false</appendMillisToTimestamp>
+        <useToTimestampFunction>false</useToTimestampFunction>
+        <emptyBLOBValue>0x</emptyBLOBValue>
+        <emptyCLOBValue>''</emptyCLOBValue>
+        <emptyNCLOBValue>N''</emptyNCLOBValue>
+        <toBlob>0x%s</toBlob>
+        <toClob>'%s'</toClob>
+        <toNClob>N'%s'</toNClob>
+        <embeddedLobSizeLimit>32000</embeddedLobSizeLimit>
+        <binaryPattern>0x%s</binaryPattern>
+        <avoidLeftJoin>false</avoidLeftJoin>
+        <supportsSchemasInIndexDefinitions>false</supportsSchemasInIndexDefinitions>
+        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <virtualColumnsQuery>SELECT sysobjects.name AS TableName, syscolumns.name AS ColumnName FROM syscolumns JOIN sysobjects ON syscolumns.id = sysobjects.id AND sysobjects.xtype = 'U' WHERE syscolumns.iscomputed = 1</virtualColumnsQuery>
+        <userDefinedColumnsQuery>SELECT distinct DOMAIN_NAME from INFORMATION_SCHEMA.COLUMNS WHERE DOMAIN_NAME is not null</userDefinedColumnsQuery>
+        <importedKeysQuery>SELECT null, PKCU.TABLE_SCHEMA, PKCU.TABLE_NAME, PKCU.COLUMN_NAME, null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION,        null, null, RC.CONSTRAINT_NAME, RC.UNIQUE_CONSTRAINT_NAME, null  FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS RC  JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU    ON KCU.CONSTRAINT_CATALOG = RC.CONSTRAINT_CATALOG        AND KCU.CONSTRAINT_SCHEMA = RC.CONSTRAINT_SCHEMA       AND KCU.CONSTRAINT_NAME = RC.CONSTRAINT_NAME  JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE PKCU    ON PKCU.CONSTRAINT_CATALOG = RC.UNIQUE_CONSTRAINT_CATALOG        AND PKCU.CONSTRAINT_SCHEMA = RC.UNIQUE_CONSTRAINT_SCHEMA       AND PKCU.CONSTRAINT_NAME = RC.UNIQUE_CONSTRAINT_NAME       AND PKCU.ORDINAL_POSITION = KCU.ORDINAL_POSITION  WHERE PKCU.TABLE_SCHEMA = '${SCHEMA}'  ORDER BY KCU.ORDINAL_POSITION</importedKeysQuery>
+        <primaryKeysQuery>SELECT null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION, C.CONSTRAINT_NAME   FROM   INFORMATION_SCHEMA.TABLE_CONSTRAINTS C   JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU     ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG        AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA       AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME   WHERE C.CONSTRAINT_TYPE = 'PRIMARY KEY'       AND  KCU.TABLE_SCHEMA = '${SCHEMA}'   ORDER BY KCU.ORDINAL_POSITION</primaryKeysQuery>
+        <nullableContraint>NULL</nullableContraint>
+        <identifierQuoteString>"</identifierQuoteString>
+    </dbmsConfiguration>
+    
+    <!-- for MySQL -->
+    <dbmsConfiguration>
+        <dbms>MySQL</dbms>
+        <urlPattern>jdbc:mysql.*</urlPattern>
+        <sqlDialect>
+            <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
+            <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
+            <supportsMultiRowInserts>true</supportsMultiRowInserts>
+            <upsertMode>FROM_DUAL</upsertMode>
+        </sqlDialect>
+        <jdbcProperties>
+            <entry>
+                <key>noDatetimeStringSync</key>
+                <value>true</value>
+            </entry>
+        </jdbcProperties>
+        <statisticRenovator>
+            <scriptFileName>script/mysql/update_statistics.sql</scriptFileName>
+        </statisticRenovator>
+        <typeReplacement>
+            <entry>
+                <key>TINYINT</key>
+                <value>INT</value>
+            </entry>
+            <entry>
+                <key>SMALLINT</key>
+                <value>INT</value>
+            </entry>
+            <entry>
+                <key>MEDIUMINT</key>
+                <value>INT</value>
+            </entry>
+            <entry>
+                <key>INT</key>
+                <value>BIGINT</value>
+            </entry>
+            <entry>
+                <key>INTEGER</key>
+                <value>BIGINT</value>
+            </entry>
+            <entry>
+                <key>tinyint</key>
+                <value>int</value>
+            </entry>
+            <entry>
+                <key>smallint</key>
+                <value>int</value>
+            </entry>
+            <entry>
+                <key>mediumint</key>
+                <value>int</value>
+            </entry>
+            <entry>
+                <key>int</key>
+                <value>bigint</value>
+            </entry>
+            <entry>
+                <key>integer</key>
+                <value>bigint</value>
+            </entry>
+        </typeReplacement>
+        <stringLiteralEscapeSequences>
+            <entry>
+                <key>\0</key>
+                <value>\0</value>
+            </entry>
+            <entry>
+                <key>'</key>
+                <value>\'</value>
+            </entry>
+            <entry>
+                <key>"</key>
+                <value>\"</value>
+            </entry>
+            <entry>
+                <key>\n</key>
+                <value>\n</value>
+            </entry>
+            <entry>
+                <key>\r</key>
+                <value>\r</value>
+            </entry>
+            <entry>
+                <key>\t</key>
+                <value>\t</value>
+            </entry>
+            <entry>
+                <key>\b</key>
+                <value>\b</value>
+            </entry>
+            <entry>
+                <key>\26</key>
+                <value>\Z</value>
+            </entry>
+            <entry>
+                <key>\\</key>
+                <value>\\</value>
+            </entry>
+        </stringLiteralEscapeSequences>
+        <sqlLimitSuffix>LIMIT 0, %s</sqlLimitSuffix>
+        
+        <!-- NOLOGGING, TABLESPACE-spec., etc. -->
+        <tableProperties></tableProperties>
+        
+        <identityInserts>false</identityInserts>
+        <appendNanosToTimestamp>true</appendNanosToTimestamp>
+        <appendMillisToTimestamp>false</appendMillisToTimestamp>
+        <useToTimestampFunction>false</useToTimestampFunction>
+        <emptyBLOBValue>BINARY ''</emptyBLOBValue>
+        <emptyCLOBValue>''</emptyCLOBValue>
+        <emptyNCLOBValue>''</emptyNCLOBValue>
+        <toBlob>0x%s</toBlob>
+        <toClob>'%s'</toClob>
+        <toNClob>'%s'</toNClob>
+        <embeddedLobSizeLimit>32000</embeddedLobSizeLimit>
+        <binaryPattern>x'%s'</binaryPattern>
+        <avoidLeftJoin>false</avoidLeftJoin>
+        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <virtualColumnsQuery>SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '${SCHEMA}' AND EXTRA LIKE '%VIRTUAL%'</virtualColumnsQuery>
+        <importedKeysQuery>SELECT null, PKCU.TABLE_SCHEMA, PKCU.TABLE_NAME, PKCU.COLUMN_NAME, null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION,        null, null, RC.CONSTRAINT_NAME, RC.UNIQUE_CONSTRAINT_NAME, null  FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS RC  JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU    ON KCU.CONSTRAINT_CATALOG = RC.CONSTRAINT_CATALOG        AND KCU.CONSTRAINT_SCHEMA = RC.CONSTRAINT_SCHEMA       AND KCU.CONSTRAINT_NAME = RC.CONSTRAINT_NAME  JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE PKCU    ON PKCU.CONSTRAINT_CATALOG = RC.UNIQUE_CONSTRAINT_CATALOG        AND PKCU.CONSTRAINT_SCHEMA = RC.UNIQUE_CONSTRAINT_SCHEMA       AND PKCU.CONSTRAINT_NAME = RC.UNIQUE_CONSTRAINT_NAME       AND PKCU.ORDINAL_POSITION = KCU.ORDINAL_POSITION  WHERE PKCU.TABLE_SCHEMA = '${SCHEMA}'  ORDER BY KCU.ORDINAL_POSITION</importedKeysQuery>
+        <primaryKeysQuery>SELECT null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION, C.CONSTRAINT_NAME   FROM   INFORMATION_SCHEMA.TABLE_CONSTRAINTS C   JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU     ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG        AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA       AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME   WHERE C.CONSTRAINT_TYPE = 'PRIMARY KEY'       AND  KCU.TABLE_SCHEMA = '${SCHEMA}'   ORDER BY KCU.ORDINAL_POSITION</primaryKeysQuery>
+        <nullableContraint>NULL</nullableContraint>
+        <identifierQuoteString>`</identifierQuoteString>
+    </dbmsConfiguration>
+    
+    <!-- for Derby -->
+    <dbmsConfiguration>
+        <dbms>DERBY</dbms>
+        <urlPattern>jdbc:derby.*</urlPattern>
+        <sqlDialect>
+            <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
+            <supportsInClauseForDeletes>false</supportsInClauseForDeletes>
+            <supportsMultiRowInserts>false</supportsMultiRowInserts>
+            <upsertMode>FROM_JL_DUAL</upsertMode>
+        </sqlDialect>
+        <statisticRenovator>
+            <scriptFileName>script/derby/update_statistics.sql</scriptFileName>
+        </statisticRenovator>
+        
+        <!-- NOLOGGING, TABLESPACE-spec., etc. -->
+        <tableProperties></tableProperties>
+        
+        <identityInserts>false</identityInserts>
+        <appendNanosToTimestamp>true</appendNanosToTimestamp>
+        <appendMillisToTimestamp>false</appendMillisToTimestamp>
+        <useToTimestampFunction>false</useToTimestampFunction>
+        <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
+        <binaryPattern>x'%s'</binaryPattern>
+        <avoidLeftJoin>false</avoidLeftJoin>
+        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <identifierQuoteString>"</identifierQuoteString>
+    </dbmsConfiguration>
+    
+    <!-- for SyBASE -->
+    <dbmsConfiguration>
+        <dbms>SYBASE</dbms>
+        <urlPattern>jdbc:sybase.*|jdbc:jtds:sybase.*</urlPattern>
+        <sqlDialect>
+            <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
+            <supportsInClauseForDeletes>false</supportsInClauseForDeletes>
+            <supportsMultiRowInserts>true</supportsMultiRowInserts>
+            <upsertMode>DB2</upsertMode>
+        </sqlDialect>
+        <statisticRenovator>
+            <scriptFileName>script/sybase/update_statistics.sql</scriptFileName>
+        </statisticRenovator>
+        <sqlLimitSuffix>TOP %s</sqlLimitSuffix>
+        
+        <!-- NOLOGGING, TABLESPACE-spec., etc. -->
+        <tableProperties></tableProperties>
+        
+        <sessionTemporaryTableManager>
+            <createIndexPrefix>CREATE INDEX </createIndexPrefix>
+            <createIndexSuffix></createIndexSuffix>
+            <createTablePrefix>CREATE TABLE #</createTablePrefix>
+            <createTableSuffix></createTableSuffix>
+            <dropTablePrefix>DROP TABLE #</dropTablePrefix>
+            <indexTablePrefix>#</indexTablePrefix>
+        </sessionTemporaryTableManager>
+        <exportBlocks>timestamp</exportBlocks>
+        <exportBlocks>TIMESTAMP</exportBlocks>
+        <identityInserts>true</identityInserts>
+        <appendNanosToTimestamp>true</appendNanosToTimestamp>
+        <appendMillisToTimestamp>false</appendMillisToTimestamp>
+        <useToTimestampFunction>false</useToTimestampFunction>
+        <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
+        <binaryPattern>0x%s</binaryPattern>
+        <avoidLeftJoin>false</avoidLeftJoin>
+        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <nullableContraint>NULL</nullableContraint>
+        <identifierQuoteString>"</identifierQuoteString>
+    </dbmsConfiguration>
+    
+    <!-- for SQLite -->
+    <dbmsConfiguration>
+        <dbms>SQLITE</dbms>
+        <urlPattern>jdbc:sqlite.*</urlPattern>
+        <sqlDialect>
+            <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
+            <supportsInClauseForDeletes>false</supportsInClauseForDeletes>
+            <supportsMultiRowInserts>false</supportsMultiRowInserts>
+            <upsertMode>FROM_JL_DUAL</upsertMode>
+        </sqlDialect>
+        <typeReplacement>
+            <entry>
+                <key>NVARCHAR</key>
+                <value>VARCHAR</value>
+            </entry>
+            <entry>
+                <key>nvarchar</key>
+                <value>varchar</value>
+            </entry>
+        </typeReplacement>
+        <sqlLimitSuffix>LIMIT %s</sqlLimitSuffix>
+        
+        <!-- NOLOGGING, TABLESPACE-spec., etc. -->
+        <tableProperties></tableProperties>
+        
+        <sessionTemporaryTableManager>
+            <createIndexPrefix>CREATE INDEX </createIndexPrefix>
+            <createIndexSuffix></createIndexSuffix>
+            <createTablePrefix>CREATE TEMPORARY TABLE </createTablePrefix>
+            <createTableSuffix></createTableSuffix>
+            <dropTablePrefix>DROP TABLE </dropTablePrefix>
+            <indexTablePrefix></indexTablePrefix>
+        </sessionTemporaryTableManager>
+        <identityInserts>false</identityInserts>
+        <appendNanosToTimestamp>true</appendNanosToTimestamp>
+        <appendMillisToTimestamp>false</appendMillisToTimestamp>
+        <useToTimestampFunction>false</useToTimestampFunction>
+        <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
+        <binaryPattern>x'%s'</binaryPattern>
+        <avoidLeftJoin>false</avoidLeftJoin>
+        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <identifierQuoteString>"</identifierQuoteString>
+    </dbmsConfiguration>
+    
+    <!-- for HSQLDB -->
+    <dbmsConfiguration>
+        <dbms>HSQL</dbms>
+        <urlPattern>jdbc:hsqldb.*</urlPattern>
+        <sqlDialect>
+            <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
+            <supportsInClauseForDeletes>false</supportsInClauseForDeletes>
+            <supportsMultiRowInserts>false</supportsMultiRowInserts>
+            <upsertMode>FROM_JL_DUAL</upsertMode>
+        </sqlDialect>
+        <sqlLimitSuffix>LIMIT %s</sqlLimitSuffix>
+        
+        <!-- NOLOGGING, TABLESPACE-spec., etc. -->
+        <tableProperties>NOLOGGING</tableProperties>
+        
+        <identityInserts>false</identityInserts>
+        <appendNanosToTimestamp>true</appendNanosToTimestamp>
+        <appendMillisToTimestamp>false</appendMillisToTimestamp>
+        <useToTimestampFunction>false</useToTimestampFunction>
+        <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
+        <binaryPattern>x'%s'</binaryPattern>
+        <avoidLeftJoin>false</avoidLeftJoin>
+        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <identifierQuoteString>"</identifierQuoteString>
+    </dbmsConfiguration>
+    
+    <!-- for H2 -->
+    <dbmsConfiguration>
+        <dbms>H2</dbms>
+        <urlPattern>jdbc:h2.*</urlPattern>
+        <sqlDialect>
+            <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
+            <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
+            <supportsMultiRowInserts>true</supportsMultiRowInserts>
+            <upsertMode>FROM_DUAL</upsertMode>
+        </sqlDialect>
+        <jdbcProperties>
+            <entry>
+                <key>MODE</key>
+                <value>DB2</value>
+            </entry>
+        </jdbcProperties>
+        <typeReplacement>
+            <entry>
+                <key>NVARCHAR</key>
+                <value>VARCHAR</value>
+            </entry>
+        </typeReplacement>
+        <stringLiteralEscapeSequences>
+            <entry>
+                <key>'</key>
+                <value>''</value>
+            </entry>
+            <entry>
+                <key>\n</key>
+                <value>' || char(10) || '</value>
+            </entry>
+            <entry>
+                <key>\r</key>
+                <value>' || char(13) || '</value>
+            </entry>
+        </stringLiteralEscapeSequences>
+        <sqlLimitSuffix>LIMIT %s</sqlLimitSuffix>
+        
+        <!-- NOLOGGING, TABLESPACE-spec., etc. -->
+        <tableProperties></tableProperties>
+        
+        <identityInserts>false</identityInserts>
+        <appendNanosToTimestamp>true</appendNanosToTimestamp>
+        <appendMillisToTimestamp>false</appendMillisToTimestamp>
+        <useToTimestampFunction>false</useToTimestampFunction>
+        <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
+        <binaryPattern>x'%s'</binaryPattern>
+        <avoidLeftJoin>false</avoidLeftJoin>
+        <useInlineViewsInDataBrowser>false</useInlineViewsInDataBrowser>
+        <virtualColumnsQuery>SELECT TABLE_NAME, COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='${SCHEMA}' AND IS_COMPUTED</virtualColumnsQuery>
+        <identifierQuoteString>"</identifierQuoteString>
+    </dbmsConfiguration>
+</configuration>

@@ -46,9 +46,10 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import net.sf.jailer.Configuration;
 import net.sf.jailer.DDLCreator;
 import net.sf.jailer.ScriptFormat;
+import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.configuration.DBMSConfiguration;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.SqlException;
@@ -149,7 +150,7 @@ public class ExportDialog extends javax.swing.JDialog {
         this.initialArgs = new ArrayList<String>(initialArgs);
         this.password = password;
         this.settingsContext = session.dbUrl;
-        this.sourceDBMS = Configuration.forDbms(session).dbms;
+        this.sourceDBMS = Configuration.getInstance().forDbms(session).getDbms();
         this.dbConnectionDialog = dbConnectionDialog;
         this.additionalSubjects = additionalSubjects;
         initComponents();
@@ -252,7 +253,7 @@ public class ExportDialog extends javax.swing.JDialog {
         }
         
     	useRowIds.setSelected(true);
-        if (Configuration.forDbms(session).getRowidName() == null) {
+        if (Configuration.getInstance().forDbms(session).getRowidName() == null) {
         	useRowIds.setVisible(false);
         }
         
@@ -566,8 +567,8 @@ public class ExportDialog extends javax.swing.JDialog {
 
     private void initScopeButtons(final Session session) {
     	globalIsAvailable = true;
-    	Configuration configuration = Configuration.forDbms(session);
-    	sessionLocalIsAvailable = configuration.sessionTemporaryTableManager != null;
+    	DBMSConfiguration configuration = Configuration.getInstance().forDbms(session);
+    	sessionLocalIsAvailable = configuration.getSessionTemporaryTableManager() != null;
 
     	scopeGlobal.setEnabled(true);
     	scopeSession.setEnabled(sessionLocalIsAvailable);

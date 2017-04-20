@@ -18,8 +18,6 @@ package net.sf.jailer;
 import org.kohsuke.args4j.CmdLineException;
 import org.kohsuke.args4j.CmdLineParser;
 
-import net.sf.jailer.ExecutionContext;
-
 /**
  * Parser for {@link ExecutionContext}.
  * 

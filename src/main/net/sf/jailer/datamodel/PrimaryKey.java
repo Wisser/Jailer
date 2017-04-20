@@ -21,7 +21,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.jailer.Configuration;
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -63,7 +63,7 @@ public class PrimaryKey {
      * @return a match of all columns of <code>primaryKey</code>
      */
     public Map<Column, Column> match(PrimaryKey primaryKey) {
-    	if (Configuration.getDoMinimizeUPK()) {
+    	if (Configuration.getInstance().getDoMinimizeUPK()) {
 			Set<Integer> assignedUPKColumns = new HashSet<Integer>();
 	        Map<Column, Column> match = new HashMap<Column, Column>();
 	        for (Column column: getColumns()) {
