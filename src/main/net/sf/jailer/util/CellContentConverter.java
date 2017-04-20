@@ -35,7 +35,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import net.sf.jailer.Configuration;
+import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.configuration.DBMSConfiguration;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.Session;
 
@@ -65,9 +66,10 @@ public class CellContentConverter {
 	private final Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
 	private final Map<String, Integer> columnIndex = new HashMap<String, Integer>();
 	private final Session session;
-	private final Configuration configuration;
-	private final Configuration targetConfiguration;
+	private final DBMSConfiguration configuration;
+	private final DBMSConfiguration targetConfiguration;
 	private Method pgObjectGetType;
+	private final char NANO_SEP = '.';
 	
 	/**
 	 * Constructor.
@@ -76,11 +78,11 @@ public class CellContentConverter {
 	 * @param session database session
      * @param targetDBMSConfiguration configuration of the target DBMS
 	 */
-	public CellContentConverter(ResultSetMetaData resultSetMetaData, Session session, Configuration targetConfiguration) {
+	public CellContentConverter(ResultSetMetaData resultSetMetaData, Session session, DBMSConfiguration targetConfiguration) {
 		this.resultSetMetaData = resultSetMetaData;
 		this.session = session;
 		this.targetConfiguration = targetConfiguration;
-		this.configuration = Configuration.forDbms(this.session);
+		this.configuration = Configuration.getInstance().forDbms(this.session);
 	}
 
     /**
@@ -95,45 +97,40 @@ public class CellContentConverter {
         }
 
         if (content instanceof java.sql.Date) {
-        	String suffix = targetConfiguration.dbms == DBMS.POSTGRESQL? "::date" : "";
-        	if (targetConfiguration.useToTimestampFunction) {
+        	String suffix = targetConfiguration.getDbms() == DBMS.POSTGRESQL? "::date" : "";
+        	if (targetConfiguration.isUseToTimestampFunction()) {
         		String format;
         		synchronized(defaultDateFormat) {
 	        		format = defaultDateFormat.format((Date) content);
 	       		}
 				return "to_date('" + format + "', 'YYYY-MM-DD')" + suffix;
         	}
-        	if (targetConfiguration.dateFormat != null) {
-        		synchronized(targetConfiguration.dateFormat) {
-        			return "'" + targetConfiguration.dateFormat.format((Date) content) + "'" + suffix;
-        		}
-        	}
-            return "'" + content + "'" + suffix;
+        	return "'" + content + "'" + suffix;
         }
         if (content instanceof java.sql.Timestamp) {
-        	String suffix = targetConfiguration.dbms == DBMS.POSTGRESQL? "::timestamp" : "";
-        	if (targetConfiguration.useToTimestampFunction) {
+        	String suffix = targetConfiguration.getDbms() == DBMS.POSTGRESQL? "::timestamp" : "";
+        	if (targetConfiguration.isUseToTimestampFunction()) {
         		String format;
         		String nanoFormat;
         		synchronized(defaultTimestampFormat) {
 	        		format = defaultTimestampFormat.format((Date) content);
-	        		String nanoString = getNanoString((Timestamp) content, targetConfiguration.appendNanosToTimestamp, targetConfiguration.nanoSep);
+	        		String nanoString = getNanoString((Timestamp) content, targetConfiguration.isAppendNanosToTimestamp(), NANO_SEP);
 	        		nanoFormat = "FF" + (nanoString.length() - 1);
 	    			format += nanoString;
         		}
 				return "to_timestamp('" + format + "', 'YYYY-MM-DD HH24.MI.SS." + nanoFormat + "')" + suffix;
-        	} else if (targetConfiguration.timestampFormat != null) {
+        	} else if (targetConfiguration.getTimestampFormat() != null) {
         		String format;
-        		synchronized(targetConfiguration.timestampFormat) {
-	        		format = targetConfiguration.timestampFormat.format((Date) content);
-	        		if (targetConfiguration.appendMillisToTimestamp) {
-	        			format += getNanoString((Timestamp) content, targetConfiguration.appendNanosToTimestamp, targetConfiguration.nanoSep);
+        		synchronized(targetConfiguration.getTimestampFormat()) {
+	        		format = targetConfiguration.getTimestampFormat().format((Date) content);
+	        		if (targetConfiguration.isAppendMillisToTimestamp()) {
+	        			format += getNanoString((Timestamp) content, targetConfiguration.isAppendNanosToTimestamp(), NANO_SEP);
 	        		}
         		}
 				content = format;
         	}
-        	if (targetConfiguration.timestampPattern != null) {
-        		return targetConfiguration.timestampPattern.replace("%s", "'" + content + "'") + suffix;
+        	if (targetConfiguration.getTimestampPattern() != null) {
+        		return targetConfiguration.getTimestampPattern().replace("%s", "'" + content + "'") + suffix;
         	}
             return "'" + content + "'" + suffix;
         }
@@ -157,7 +154,7 @@ public class CellContentConverter {
         		hex.append(hexChar[(b >> 4) & 15]);
         		hex.append(hexChar[b & 15]);
         	}
-        	return targetConfiguration.binaryPattern.replace("%s", hex);
+        	return targetConfiguration.getBinaryPattern().replace("%s", hex);
         }
         if (content instanceof Time) {
         	return "'" + content + "'";
@@ -177,7 +174,7 @@ public class CellContentConverter {
 			}
     	}
         if (content instanceof UUID) {
-        	if (targetConfiguration.dbms == DBMS.POSTGRESQL) {
+        	if (targetConfiguration.getDbms() == DBMS.POSTGRESQL) {
         		return "'" + content + "'::uuid";
         	}
         	return "'" + content + "'";
@@ -257,12 +254,12 @@ public class CellContentConverter {
 		if (type == null) {
 			try {
 				type = resultSetMetaData.getColumnType(i);
-				if (configuration.dbms == DBMS.ORACLE) {
+				if (configuration.getDbms() == DBMS.ORACLE) {
 					if (type == Types.DATE) {
 						type = Types.TIMESTAMP;
 					}
 				 }
-				 if (configuration.dbms == DBMS.POSTGRESQL) {
+				 if (configuration.getDbms() == DBMS.POSTGRESQL) {
 	                String typeName = resultSetMetaData.getColumnTypeName(i);
 	                if ("hstore".equalsIgnoreCase(typeName)) {
 	                    type = TYPE_HSTORE;
@@ -300,7 +297,7 @@ public class CellContentConverter {
 				return resultSet.getTimestamp(i);
 			}
 			if (type == Types.DATE) {
-				if (configuration.dbms == DBMS.MySQL) {
+				if (configuration.getDbms() == DBMS.MySQL) {
 					// YEAR
 					String typeName = resultSetMetaData.getColumnTypeName(i);
 					if (typeName != null && typeName.toUpperCase().equals("YEAR")) {
@@ -323,7 +320,7 @@ public class CellContentConverter {
 				object = new NCharWrapper((String) object);
 			}
 		}
-		if (configuration.dbms == DBMS.POSTGRESQL) {
+		if (configuration.getDbms() == DBMS.POSTGRESQL) {
 			if (type == TYPE_HSTORE) {
 				return new HStoreWrapper(resultSet.getString(i));
             } else if (object instanceof Boolean) {
@@ -386,7 +383,7 @@ public class CellContentConverter {
 				} else {
 					toClob = targetConfiguration.getToClob();
 				}
-				if (toClob == null || clob.length() > targetConfiguration.embeddedLobSizeLimit) {
+				if (toClob == null || clob.length() > targetConfiguration.getEmbeddedLobSizeLimit()) {
 					return null;
 				}
 				Reader in = clob.getCharacterStream();
@@ -397,19 +394,19 @@ public class CellContentConverter {
 				}
 				in.close();
 				if (lob instanceof NClob) {
-					if (line.length() == 0 && targetConfiguration.emptyNCLOBValue != null) {
-						return targetConfiguration.emptyNCLOBValue;
+					if (line.length() == 0 && targetConfiguration.getEmptyNCLOBValue() != null) {
+						return targetConfiguration.getEmptyNCLOBValue();
 					}
 				} else {
-					if (line.length() == 0 && targetConfiguration.emptyCLOBValue != null) {
-						return targetConfiguration.emptyCLOBValue;
+					if (line.length() == 0 && targetConfiguration.getEmptyCLOBValue() != null) {
+						return targetConfiguration.getEmptyCLOBValue();
 					}
 				}
 				return toClob.replace("%s",targetConfiguration.convertToStringLiteral(line.toString()));
 			}
 	        if (lob instanceof Blob) {
 				Blob blob = (Blob) lob;
-				if (targetConfiguration.getToBlob() == null || 2 * blob.length() > targetConfiguration.embeddedLobSizeLimit) {
+				if (targetConfiguration.getToBlob() == null || 2 * blob.length() > targetConfiguration.getEmbeddedLobSizeLimit()) {
 					return null;
 				}
 	
@@ -421,8 +418,8 @@ public class CellContentConverter {
 	        		hex.append(hexChar[b & 15]);
 	        	}
 				in.close();
-				if (hex.length() == 0 && targetConfiguration.emptyBLOBValue != null) {
-					return targetConfiguration.emptyBLOBValue;
+				if (hex.length() == 0 && targetConfiguration.getEmptyBLOBValue() != null) {
+					return targetConfiguration.getEmptyBLOBValue();
 				}
 				return targetConfiguration.getToBlob().replace("%s", targetConfiguration.convertToStringLiteral(hex.toString()));
 			}

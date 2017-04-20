@@ -13,30 +13,44 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.sf.jailer.entitygraph.local;
+package net.sf.jailer.configuration;
+
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlType;
 
 /**
- * Configuration of the {@link LocalEntityGraph}.
+ * Configuration of the local database.
  * 
  * @author Ralf Wisser
  */
-public class LocalConfiguration {
+@XmlType(propOrder = {
+		"databasesFolder",
+        "lib",
+        "driver",
+        "urlPattern",
+        "localPKType",
+        "localNPKType",
+        "localPKLength",
+        "user",
+        "password"
+        })
+public class LocalDatabaseConfiguration {
 
-	public String localPKType = "VARCHAR";
-	public String localNPKType = "NVARCHAR";
-	public int localPKLength = 10000;
+	private String localPKType = "VARCHAR";
+	private String localNPKType = "NVARCHAR";
+	private int localPKLength = 10000;
 
 	/**
 	 * Name of the folder containing the local database's folders.
 	 */
-	public String databasesFolder = "local";
-	public String urlPattern = "jdbc:h2:%s";
+	private String databasesFolder = "local";
+	private String urlPattern = "jdbc:h2:%s";
 
-	public String user = "";
-	public String password = "";
+	private String user = "";
+	private String password = "";
 
-	public String driver = "org.h2.Driver";
-	public String lib = "lib/h2-1.3.160.jar";
+	private String driver = "org.h2.Driver";
+	private String lib = "lib/h2-1.3.160.jar";
 
 	/**
 	 * @return the localPKType
@@ -51,6 +65,21 @@ public class LocalConfiguration {
 	 */
 	public void setLocalPKType(String localPKType) {
 		this.localPKType = localPKType;
+	}
+
+	/**
+	 * @return the localNPKType
+	 */
+	public String getLocalNPKType() {
+		return localNPKType;
+	}
+
+	/**
+	 * @param localNPKType
+	 *            the localNPKType to set
+	 */
+	public void setLocalNPKType(String localNPKType) {
+		this.localNPKType = localNPKType;
 	}
 
 	/**
@@ -71,6 +100,7 @@ public class LocalConfiguration {
 	/**
 	 * @return the databasesFolder
 	 */
+	@XmlElement(name = "databaseFolder")
 	public String getDatabasesFolder() {
 		return databasesFolder;
 	}
@@ -126,21 +156,6 @@ public class LocalConfiguration {
 	 */
 	public void setLib(String lib) {
 		this.lib = lib;
-	}
-
-	/**
-	 * @return the localNPKType
-	 */
-	public String getLocalNPKType() {
-		return localNPKType;
-	}
-
-	/**
-	 * @param localNPKType
-	 *            the localNPKType to set
-	 */
-	public void setLocalNPKType(String localNPKType) {
-		this.localNPKType = localNPKType;
 	}
 
 	/**

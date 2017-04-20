@@ -72,7 +72,7 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreePath;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.Configuration;
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;

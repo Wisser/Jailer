@@ -26,7 +26,8 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.Configuration;
+import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.configuration.DBMSConfiguration;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
@@ -84,7 +85,7 @@ public class RemoteEntityGraph extends EntityGraph {
         this.session = session;
         this.quoting = new Quoting(session);
         this.universalPrimaryKey = universalPrimaryKey;
-        this.rowIdSupport = new RowIdSupport(dataModel, Configuration.forDbms(session), executionContext);
+        this.rowIdSupport = new RowIdSupport(dataModel, Configuration.getInstance().forDbms(session), executionContext);
         
         File fieldProcTablesFile = new File("field-proc-tables.csv");
         if (fieldProcTablesFile.exists()) {
@@ -324,7 +325,7 @@ public class RemoteEntityGraph extends EntityGraph {
         	joinCondition = SqlUtil.resolvePseudoColumns(joinCondition, isInverseAssociation? null : "E", isInverseAssociation? "E" : null, today, birthdayOfSubject, inDeleteMode);
         }
         String select;
-        if (Configuration.forDbms(session).isAvoidLeftJoin()) {
+        if (Configuration.getInstance().forDbms(session).isAvoidLeftJoin()) {
         	// bug fix for [ jailer-Bugs-3294893 ] "Outer Join for selecting dependant entries and Oracle 10"
         	// mixing left joins and theta-style joins causes problems on oracle DBMS
         	select =
@@ -627,7 +628,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	 * @param table the table
 	 * @param columns the columns;
 	 */
-	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, Configuration targetConfiguration) throws SQLException {
+	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, DBMSConfiguration targetConfiguration) throws SQLException {
 		Session.ResultSetReader reader = new UpdateTransformer(table, columns, scriptFileWriter, executionContext.getNumberOfEntities(), getTargetSession(), targetConfiguration, importFilterManager, executionContext);
     	readEntities(table, false, reader);
 	}
@@ -853,7 +854,7 @@ public class RemoteEntityGraph extends EntityGraph {
      */
     public void readDependentEntities(Table table, Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, ResultSetReader reader, Map<String, Integer> typeCache, String selectionSchema, String originalPKAliasPrefix) throws SQLException {
     	String select;
-    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, session, Configuration.forDbms(session));
+    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, session, Configuration.getInstance().forDbms(session));
     	if (originalPKAliasPrefix != null) {
         	StringBuffer selectOPK = new StringBuffer();
         	List<Column> pkColumns = rowIdSupport.getPrimaryKey(table).getColumns();
@@ -890,7 +891,7 @@ public class RemoteEntityGraph extends EntityGraph {
      */
     public void markDependentEntitiesAsTraversed(Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, Map<String, Integer> typeCache) throws SQLException {
     	String update;
-    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, session, Configuration.forDbms(session));
+    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, session, Configuration.getInstance().forDbms(session));
     	if (session.dbms == DBMS.SYBASE) {
     		update = "Update " + dmlTableReference(DEPENDENCY, session) + " set traversed=1" +
     		 " Where " + pkEqualsEntityID(association.source, resultSet, dmlTableReference(DEPENDENCY, session), "FROM_", cellContentConverter) +

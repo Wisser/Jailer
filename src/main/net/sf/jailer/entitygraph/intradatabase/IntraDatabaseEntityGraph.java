@@ -29,7 +29,8 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.Configuration;
+import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.configuration.DBMSConfiguration;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
@@ -273,12 +274,12 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 * @param table the table
 	 * @param columns the columns;
 	 */
-	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, Configuration targetConfiguration) throws SQLException {
+	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, DBMSConfiguration targetConfiguration) throws SQLException {
 		File tmp = new PrintUtil(executionContext).createTempFile();
 		OutputStreamWriter tmpFileWriter;
 		try {
 			tmpFileWriter = new FileWriter(tmp);
-			UpdateTransformer reader = new UpdateTransformer(table, columns, tmpFileWriter, executionContext.getNumberOfEntities(), getSession(), Configuration.forDbms(getSession()), importFilterManager, executionContext);
+			UpdateTransformer reader = new UpdateTransformer(table, columns, tmpFileWriter, executionContext.getNumberOfEntities(), getSession(), Configuration.getInstance().forDbms(getSession()), importFilterManager, executionContext);
 			readEntities(table, false, reader);
 			tmpFileWriter.close();
 			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads(), executionContext).executeScript(tmp.getPath());
@@ -297,7 +298,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 */
 	private void readEntitiesByQuery(Table table, String sql) throws SQLException {
 		boolean tableHasIdentityColumn = false;
-        if (Configuration.forDbms(session).isIdentityInserts()) {
+        if (Configuration.getInstance().forDbms(session).isIdentityInserts()) {
         	for (Column c: table.getColumns()) {
         		if (c.isIdentityColumn) {
         			tableHasIdentityColumn = true;
@@ -737,7 +738,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 */
 	@Override
 	public void fillAndWriteMappingTables(JobManager jobManager, final OutputStreamWriter receiptWriter,
-			int numberOfEntities, final Session targetSession, final Configuration targetDBMSConfiguration, Configuration dbmsConfiguration) throws Exception {
+			int numberOfEntities, final Session targetSession, final DBMSConfiguration targetDBMSConfiguration, DBMSConfiguration dbmsConfiguration) throws Exception {
 		if (importFilterManager != null) {
 			File tmp = new PrintUtil(executionContext).createTempFile();
 			OutputStreamWriter tmpFileWriter;
@@ -771,7 +772,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 * Creates the DROP-statements for the mapping tables.
 	 */
 	@Override
-	public void dropMappingTables(OutputStreamWriter result, Configuration targetDBMSConfiguration) throws Exception {
+	public void dropMappingTables(OutputStreamWriter result, DBMSConfiguration targetDBMSConfiguration) throws Exception {
 		if (importFilterManager != null) {
 			File tmp = new PrintUtil(executionContext).createTempFile();
 			OutputStreamWriter tmpFileWriter;

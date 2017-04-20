@@ -39,7 +39,9 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.Configuration;
+import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.configuration.DBMSConfiguration;
+import net.sf.jailer.configuration.LocalDatabaseConfiguration;
 import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.database.ImportFilterTransformer;
 import net.sf.jailer.database.LocalDatabase;
@@ -50,7 +52,6 @@ import net.sf.jailer.datamodel.Filter;
 import net.sf.jailer.datamodel.PKColumnFilterSource;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
-import net.sf.jailer.entitygraph.local.LocalConfiguration;
 import net.sf.jailer.progress.ProgressListenerRegistry;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.JobManager;
@@ -111,8 +112,8 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		if (localSession != null) {
 			this.localSession = localSession;
 		} else {
-			LocalConfiguration localConfiguration = (LocalConfiguration) Configuration.localEntityGraphConfiguration;
-			this.localDatabase = new LocalDatabase(localConfiguration.driver, localConfiguration.urlPattern, localConfiguration.user, localConfiguration.password, localConfiguration.lib, localConfiguration.databasesFolder, executionContext);
+			LocalDatabaseConfiguration localConfiguration = (LocalDatabaseConfiguration) Configuration.getInstance().localEntityGraphConfiguration;
+			this.localDatabase = new LocalDatabase(localConfiguration.getDriver(), localConfiguration.getUrlPattern(), localConfiguration.getUser(), localConfiguration.getPassword(), localConfiguration.getLib(), localConfiguration.getDatabasesFolder(), executionContext);
 			this.localSession = localDatabase.getSession();
 		}
         collectNonderivedFilteredColumnsPerTable();
@@ -136,7 +137,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 	/**
 	 * Creates the DDL for the mapping tables. 
 	 */
-	public void createMappingTables(Configuration configuration, OutputStreamWriter result) throws IOException, SQLException {
+	public void createMappingTables(DBMSConfiguration configuration, OutputStreamWriter result) throws IOException, SQLException {
 		if (nonderivedFilteredColumnsPerTable.isEmpty()) {
 			return;
 		}
@@ -160,11 +161,11 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		List<ColumnToMappingTable> mapColumns = new ArrayList<ColumnToMappingTable>();
 		List<ColumnToMappingTable> mapColumnsLocal = new ArrayList<ColumnToMappingTable>();
 		int mapTableIndex = 0;
-		LocalConfiguration localConfiguration = (LocalConfiguration) Configuration.localEntityGraphConfiguration;
+		LocalDatabaseConfiguration localConfiguration = (LocalDatabaseConfiguration) Configuration.getInstance().localEntityGraphConfiguration;
 		
 		String schema = quotedMappingTablesSchema;
 		
-		int maxColumnsPerMappingTable = Configuration.getColumnsPerIFMTable();
+		int maxColumnsPerMappingTable = Configuration.getInstance().getColumnsPerIFMTable();
 
 		for (Entry<Pair<String, String>, List<Column>> part: partition.entrySet()) {
 			ColumnToMappingTable columnToMappingTableRemote = new ColumnToMappingTable();
@@ -178,7 +179,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 			columnToMappingTableLocal.mappingTableName = columnToMappingTableRemote.mappingTableName;
 			columnToMappingTableLocal.newValueColumnName = null;
 			columnToMappingTableLocal.oldValueColumnName = columnToMappingTableRemote.oldValueColumnName;
-			columnToMappingTableLocal.type = localConfiguration.localPKType + "(" + localConfiguration.localPKLength + ")";
+			columnToMappingTableLocal.type = localConfiguration.getLocalPKType() + "(" + localConfiguration.getLocalPKLength() + ")";
 			columnToMappingTableSet .add(columnToMappingTableRemote);
 			for (Column c: part.getValue()) {
 				columnMapping.put(c, columnToMappingTableRemote);
@@ -187,7 +188,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 			mapColumnsLocal.add(columnToMappingTableLocal);
 			if (mapColumns.size() == maxColumnsPerMappingTable) {
 				result.append(createDDL(schema, mapColumns, configuration, mapTableIndex == 0));
-				localDDL.append(createDDL("", mapColumnsLocal, Configuration.forDbms(localSession), mapTableIndex == 0));
+				localDDL.append(createDDL("", mapColumnsLocal, Configuration.getInstance().forDbms(localSession), mapTableIndex == 0));
 				mapColumns.clear();
 				mapColumnsLocal.clear();
 				++mapTableIndex;
@@ -195,7 +196,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		}
 		if (mapColumns.size() > 0) {
 			result.append(createDDL(schema, mapColumns, configuration, mapTableIndex == 0));
-			localDDL.append(createDDL("", mapColumnsLocal, Configuration.forDbms(localSession), mapTableIndex == 0));
+			localDDL.append(createDDL("", mapColumnsLocal, Configuration.getInstance().forDbms(localSession), mapTableIndex == 0));
 			sync(result);
 		}
 		localDDL.close();
@@ -203,7 +204,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		tmpFile.delete();
 	}
 
-	private String createDDL(String schema, List<ColumnToMappingTable> mapColumns, Configuration configuration, boolean withComment) throws FileNotFoundException, IOException {
+	private String createDDL(String schema, List<ColumnToMappingTable> mapColumns, DBMSConfiguration configuration, boolean withComment) throws FileNotFoundException, IOException {
 		String template = "script" + File.separator + "imp-filter-map-ddl.sql";
 		String nullableContraint = configuration.getNullableContraint();
 		String contraint;
@@ -288,7 +289,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 	 * @param dmlResultWriter
 	 */
 	public void fillAndWriteMappingTables(final EntityGraph entityGraph, JobManager jobManager, final OutputStreamWriter dmlResultWriter,
-			int numberOfEntities, final Session targetSession, final Configuration targetDBMSConfiguration) throws Exception {
+			int numberOfEntities, final Session targetSession, final DBMSConfiguration targetDBMSConfiguration) throws Exception {
 		ProgressListenerRegistry.getProgressListener().newStage("processing import filters", false, false);
 		
 		Collection<Job> insertJobs = new ArrayList<Job>();
@@ -314,7 +315,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 						private final int MAX_BATCH_SIZE = 1000;
 						@Override
 						public void readCurrentRow(ResultSet resultSet) throws SQLException {
-							CellContentConverter cellContentConverter = getCellContentConverter(resultSet, entityGraph.getSession(), Configuration.forDbms(entityGraph.getSession()));
+							CellContentConverter cellContentConverter = getCellContentConverter(resultSet, entityGraph.getSession(), Configuration.getInstance().forDbms(entityGraph.getSession()));
 							for (int i = 0; i < columns.size(); ++i) {
 								Object content = cellContentConverter.getObject(resultSet, i + 1);
 								if (content != null) {

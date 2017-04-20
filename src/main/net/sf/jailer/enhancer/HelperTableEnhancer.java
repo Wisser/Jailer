@@ -21,8 +21,8 @@ import java.sql.SQLException;
 import java.util.Set;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.Configuration;
 import net.sf.jailer.ScriptType;
+import net.sf.jailer.configuration.DBMSConfiguration;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.UPSERT_MODE;
@@ -40,7 +40,7 @@ public class HelperTableEnhancer implements ScriptEnhancer {
 	 * Is JL_DUAL needed?
 	 */
 	private boolean dualNeeded(Set<Table> progress, SQLDialect sqlDialect, ExecutionContext executionContext) {
-		if (sqlDialect.upsertMode != UPSERT_MODE.FROM_JL_DUAL) {
+		if (sqlDialect.getUpsertMode() != UPSERT_MODE.FROM_JL_DUAL) {
 			return false;
 		}
 		if (executionContext.getUpsertOnly()) {
@@ -55,12 +55,12 @@ public class HelperTableEnhancer implements ScriptEnhancer {
 	}
 	
 	public void addComments(Writer script, ScriptType scriptType,
-			Session session, Configuration targetDBMSConfiguration, EntityGraph entityGraph,
+			Session session, DBMSConfiguration targetDBMSConfiguration, EntityGraph entityGraph,
 			Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
 	}
 
 	public void addEpilog(Writer script, ScriptType scriptType,
-			Session session, Configuration targetDBMSConfiguration, EntityGraph entityGraph,
+			Session session, DBMSConfiguration targetDBMSConfiguration, EntityGraph entityGraph,
 			Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
 		if (dualNeeded(progress, targetDBMSConfiguration.getSqlDialect(), executionContext)) {
 			script.append("DROP TABLE " + SQLDialect.DUAL_TABLE + ";\n");
@@ -68,7 +68,7 @@ public class HelperTableEnhancer implements ScriptEnhancer {
 	}
 
 	public void addProlog(Writer script, ScriptType scriptType,
-			Session session, Configuration targetDBMSConfiguration, EntityGraph entityGraph,
+			Session session, DBMSConfiguration targetDBMSConfiguration, EntityGraph entityGraph,
 			Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
 		if (dualNeeded(progress, targetDBMSConfiguration.getSqlDialect(), executionContext)) {
 			script.append("CREATE TABLE " + SQLDialect.DUAL_TABLE + "(D INTEGER);\n");

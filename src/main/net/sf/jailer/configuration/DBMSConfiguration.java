@@ -13,50 +13,74 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.sf.jailer;
+package net.sf.jailer.configuration;
 
-import java.io.File;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Pattern;
+
+import javax.xml.bind.annotation.XmlType;
 
 import net.sf.jailer.database.DBMS;
+import net.sf.jailer.database.DefaultTemporaryTableManager;
 import net.sf.jailer.database.SQLDialect;
-import net.sf.jailer.database.Session;
-import net.sf.jailer.database.StatisticRenovator;
-import net.sf.jailer.database.TemporaryTableManager;
-import net.sf.jailer.enhancer.ScriptEnhancer;
-import net.sf.jailer.modelbuilder.ModelElementFinder;
-import net.sf.jailer.render.DataModelRenderer;
-
-import org.springframework.context.support.AbstractXmlApplicationContext;
-import org.springframework.context.support.FileSystemXmlApplicationContext;
+import net.sf.jailer.database.SqlScriptBasedStatisticRenovator;
 
 /**
  * Reads and holds configuration file <code>jailer.xml</code>.
  * 
  * @author Ralf Wisser
  */
-public class Configuration {
+@XmlType(propOrder = {
+		"dbms",
+		"urlPattern",
+		"testQuery",
+		"sqlDialect",
+		"jdbcProperties",
+		"statisticRenovator",
+		"typeReplacement",
+		"stringLiteralEscapeSequences",
+		"sqlLimitSuffix",
+		"varcharLengthLimit",
+		"tableProperties",
+		"ncharPrefix",
+		"sessionTemporaryTableManager",
+		"transactionTemporaryTableManager",
+		"exportBlocks",
+		"identityInserts",
+		"appendNanosToTimestamp",
+		"appendMillisToTimestamp",
+		"useToTimestampFunction",
+		"timestampPattern",
+		"timestampFormat",
+		"emptyBLOBValue",
+		"emptyCLOBValue",
+		"emptyNCLOBValue",
+		"toBlob",
+		"toClob",
+		"toNClob",
+		"embeddedLobSizeLimit",
+		"binaryPattern",
+		"avoidLeftJoin",
+		"rowidName",
+		"rowidType",
+		"supportsSchemasInIndexDefinitions",
+		"useInlineViewsInDataBrowser",
+		"virtualColumnsQuery",
+		"userDefinedColumnsQuery",
+		"importedKeysQuery",
+		"primaryKeysQuery",
+		"indexInfoQuery",
+		"nullableContraint",
+		"identifierQuoteString" })
+
+public class DBMSConfiguration {
+
+	private DBMS dbms = DBMS.UNKNOWN;
     
 	/**
-     * The scipt-enhancer.
-     */
-    private static List<ScriptEnhancer> theScriptEnhancer;
-    
-    /**
-     * The renderer.
-     */
-    private static DataModelRenderer theRenderer;
-
-    /**
      * DB-URL pattern of DBMS for which this holds the configuration.
      */
 	private String urlPattern;
@@ -67,9 +91,9 @@ public class Configuration {
 	private String testQuery;
 	
 	/**
-     * The {@link StatisticRenovator}.
+     * The {@link SqlScriptBasedStatisticRenovator}.
      */
-    private StatisticRenovator statisticRenovator;
+    private SqlScriptBasedStatisticRenovator statisticRenovator;
     
     /**
      * Replacement map for column types used for DDL generation.
@@ -108,31 +132,28 @@ public class Configuration {
      */
     private boolean identityInserts = false;
     
-    public SimpleDateFormat dateFormat = null;
-
-	public char nanoSep = '.';
-	public boolean appendNanosToTimestamp = true;
-	public boolean appendMillisToTimestamp = false;
-	public boolean useToTimestampFunction = false;
-	public DateFormat timestampFormat = null;
-	public String emptyCLOBValue = null;
-	public String emptyNCLOBValue = null;
-	public String emptyBLOBValue = null;
-	public String toBlob;
-	public String toClob;
-	public String toNClob;
-	public int embeddedLobSizeLimit = 3980;
-	public String binaryPattern = "x'%s'";
-	public boolean avoidLeftJoin = false;
-	public String timestampPattern = null;
-	public SQLDialect sqlDialect = new SQLDialect();
-	public String rowidName = null;
-	public Boolean supportsSchemasInIndexDefinitions = null;
-	public boolean useInlineViewsInDataBrowser = true;
-	public String virtualColumnsQuery = null;
-	public String userDefinedColumnsQuery = null;
+	private boolean appendNanosToTimestamp = true;
+	private boolean appendMillisToTimestamp = false;
+	private boolean useToTimestampFunction = false;
+	private DateFormat timestampFormat = null;
+	private String emptyCLOBValue = null;
+	private String emptyNCLOBValue = null;
+	private String emptyBLOBValue = null;
+	private String toBlob;
+	private String toClob;
+	private String toNClob;
+	private int embeddedLobSizeLimit = 3980;
+	private String binaryPattern = "x'%s'";
+	private boolean avoidLeftJoin = false;
+	private String timestampPattern = null;
+	private SQLDialect sqlDialect = new SQLDialect();
+	private String rowidName = null;
+	private Boolean supportsSchemasInIndexDefinitions = null;
+	private boolean useInlineViewsInDataBrowser = true;
+	private String virtualColumnsQuery = null;
+	private String userDefinedColumnsQuery = null;
 	
-	public String importedKeysQuery = 
+	private String importedKeysQuery = 
 			  "SELECT null, PKCU.TABLE_SCHEMA, PKCU.TABLE_NAME, PKCU.COLUMN_NAME,"
 			+ "       null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION,"
 			+ "       null, null, RC.CONSTRAINT_NAME, RC.UNIQUE_CONSTRAINT_NAME, null"
@@ -149,7 +170,7 @@ public class Configuration {
 			+ " WHERE PKCU.TABLE_SCHEMA = '${SCHEMA}'"
 			+ " ORDER BY KCU.ORDINAL_POSITION";
 	
-	public String primaryKeysQuery = 
+	private String primaryKeysQuery = 
 			  "SELECT null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION, C.CONSTRAINT_NAME"
 			+ "  FROM"
 			+ "  INFORMATION_SCHEMA.TABLE_CONSTRAINTS C"
@@ -161,11 +182,8 @@ public class Configuration {
 			+ "      AND  KCU.TABLE_SCHEMA = '${SCHEMA}'"
 			+ "  ORDER BY KCU.ORDINAL_POSITION";
 	
-	public String indexInfoQuery = null;
-	public String identifierQuoteString = "\"";
-	public DBMS dbms = DBMS.UNKNOWN;
-
-	
+	private String indexInfoQuery = null;
+	private String identifierQuoteString = "\"";
 	/**
 	 * @return the dbms
 	 */
@@ -265,7 +283,7 @@ public class Configuration {
 		this.rowidType = rowidType;
 	}
 
-	public String rowidType = null;
+	private String rowidType = null;
 	
 	/**
 	 * @return the sqlDialect
@@ -284,12 +302,12 @@ public class Configuration {
 	/**
 	 * Manages session local temporary tables.
 	 */
-	public TemporaryTableManager sessionTemporaryTableManager = null;
+	private DefaultTemporaryTableManager sessionTemporaryTableManager = null;
 	
 	/**
 	 * Manages transaction local temporary tables.
 	 */
-	public TemporaryTableManager transactionTemporaryTableManager = null;
+	private DefaultTemporaryTableManager transactionTemporaryTableManager = null;
 
 	/**
 	 * Optional JDBC properties.
@@ -297,204 +315,17 @@ public class Configuration {
 	private Map<String, String> jdbcProperties = null;
 
 	/**
-     * Default configuration for unknown DBMS.
-     */
-	private static final Configuration defaultConfiguration = new Configuration();
-    
-	/**
-	 * If <code>true</code>, the UPK don't preserve order. This minimizes the size of the UPK.
+	 * @return the urlPattern
 	 */
-	private static boolean doMinimizeUPK = false;
-
-	public static Object localEntityGraphConfiguration;
-	
-	/**
-	 * Replacement for null in DBUnit datasets.
-	 */
-	private static String nullColumnPlaceholder = null;
-
-	private static int columnsPerIFMTable = 8;
-
-	/**
-	 * Gets replacement for null in DBUnit datasets.
-	 * 
-	 * @return replacement for null in DBUnit datasets
-	 */
-	public static String getNullColumnPlaceholder() {
-		return nullColumnPlaceholder;
+	public String getUrlPattern() {
+		return urlPattern;
 	}
 
 	/**
-	 * Returns <code>true</code>, the UPK don't preserve order. This minimizes the size of the UPK.
+	 * Sets DB-URL pattern of DBMS for which this holds the configuration.
 	 */
-	public static boolean getDoMinimizeUPK() {
-		getContext();
-		return doMinimizeUPK;
-	}
-	
-    /**
-     * Gets all {@link ModelElementFinder}.
-     * 
-     * @return all {@link ModelElementFinder}
-     */
-    @SuppressWarnings("unchecked")
-	public static List<ModelElementFinder> getModelElementFinder() throws Exception {
-        List<ModelElementFinder> modelElementFinder = (List<ModelElementFinder>) getContext().getBean("model-finder");
-        return modelElementFinder;
-    }
-    
-	/**
-     * The configuration.
-     */
-    private static AbstractXmlApplicationContext theApplicationContext = null;
-
-	private static synchronized AbstractXmlApplicationContext getContext() {
-		loadConfigurationFile();
-    	return theApplicationContext;
-    }
-    
-	/**
-	 * Loads the configuration file.
-	 * 
-	 * @param executionContext the command line arguments
-	 */
-    @SuppressWarnings("unchecked")
-	private static synchronized void loadConfigurationFile() {
-    	if (theApplicationContext == null) {
-    		String configFile = "jailer.xml";
-    		if (getConfigurationFolder() != null) {
-    			configFile = "file:" + new File(getConfigurationFolder(), configFile).getAbsolutePath();
-    		}
-	    	theApplicationContext = new FileSystemXmlApplicationContext(configFile);
-	    	doMinimizeUPK = Boolean.TRUE.equals(theApplicationContext.getBean("minimize-UPK"));
-	        theScriptEnhancer = (List<ScriptEnhancer>) theApplicationContext.getBean("script-enhancer");
-	        theRenderer = (DataModelRenderer) theApplicationContext.getBean("renderer");
-	        if (theApplicationContext.containsBean("null-column-placeholder")) {
-	        	nullColumnPlaceholder = (String) theApplicationContext.getBean("null-column-placeholder");
-	        }
-	        if (theApplicationContext.containsBean("local-entity-graph")) {
-		        localEntityGraphConfiguration = theApplicationContext.getBean("local-entity-graph");
-	        }
-	        if (theApplicationContext.containsBean("columns-per-import-filter-mapping-table")) {
-	        	columnsPerIFMTable = (Integer) theApplicationContext.getBean("columns-per-import-filter-mapping-table");
-	        }
-    	}
-    }
-    
-    private static File configurationFolder = new File(".");
-    
-    /**
-	 * @return the configurationFolder
-	 */
-	public static File getConfigurationFolder() {
-		return configurationFolder;
-	}
-
-	/**
-	 * @param configurationFolder the configurationFolder to set
-	 */
-	public static void setConfigurationFolder(File configurationFolder) {
-		Configuration.configurationFolder = configurationFolder;
-	}
-
-	/**
-     * Holds configurations.
-     */
-    private static Map<String, Configuration> perUrl = new HashMap<String, Configuration>();
-    
-    /**
-     * Holds configurations.
-     */
-    private static Map<DBMS, Configuration> perDBMS = new HashMap<DBMS, Configuration>();
-
-	/**
-     * Gets DBMS specific configuration.
-     * 
-     * @param session connected to the DBMS
-     * @return configuration for the DBMS to which the {@link Session} is connected to
-     */
-	@SuppressWarnings("unchecked")
-	public static synchronized Configuration forDbms(Session session) {
-		if (session == null) {
-			return defaultConfiguration;
-		}
-		if (perUrl.containsKey(session.dbUrl)) {
-			return perUrl.get(session.dbUrl);
-		}
-        if (getContext().containsBean("dbms-configuration")) {
-            List<Configuration> cs = (List<Configuration>) getContext().getBean("dbms-configuration");  
-            for (Configuration c: cs) {
-            	if (Pattern.matches(c.urlPattern, session.dbUrl)) {
-            		boolean ok = true;
-            		if (c.getTestQuery() != null) {
-            			boolean wasSilent = session.getSilent();
-            			session.setSilent(true);
-            			try {
-							session.executeQuery(c.getTestQuery(), new Session.AbstractResultSetReader() {
-								@Override
-								public void readCurrentRow(ResultSet resultSet) throws SQLException {
-								}
-							});
-						} catch (SQLException e) {
-							ok = false;
-						}
-            			session.setSilent(wasSilent);
-            		}
-            		if (ok) {
-            			perUrl.put(session.dbUrl, c);
-            			return c;
-            		}
-            	}
-            }
-        }
-        perUrl.put(session.dbUrl, defaultConfiguration);
-        return defaultConfiguration;
-	}
-
-    /**
-     * Gets DBMS specific configuration.
-     * 
-     * @param dbUrl URL
-     * @return configuration for the DBMS with given URL
-     */
-	@SuppressWarnings("unchecked")
-	public static Configuration forDbms(String dbUrl) {
-		if (dbUrl == null) {
-			return defaultConfiguration;
-		}
-        if (getContext().containsBean("dbms-configuration")) {
-            List<Configuration> cs = (List<Configuration>) getContext().getBean("dbms-configuration");  
-            for (Configuration c: cs) {
-            	if (Pattern.matches(c.urlPattern, dbUrl)) {
-        			return c;
-        		}
-            }
-        }
-        return defaultConfiguration;
-	}
-	
-	/**
-     * Gets DBMS specific configuration.
-     * 
-     * @param dbms the DBMS
-     * @return configuration for the DBMS
-     */
-	@SuppressWarnings("unchecked")
-	public static synchronized Configuration forDbms(DBMS dbms) {
-		if (perDBMS.containsKey(dbms)) {
-			return perDBMS.get(dbms);
-		}
-        if (getContext().containsBean("dbms-configuration")) {
-            List<Configuration> cs = (List<Configuration>) getContext().getBean("dbms-configuration");  
-            for (Configuration c: cs) {
-            	if (c.dbms == dbms) {
-            		perDBMS.put(dbms, c);
-	                return c;
-            	}
-            }
-        }
-        perDBMS.put(dbms, defaultConfiguration);
-        return defaultConfiguration;
+	public void setUrlPattern(String urlPattern) {
+		this.urlPattern = urlPattern;
 	}
 
 	public Set<String> getExportBlocks() {
@@ -506,36 +337,21 @@ public class Configuration {
 	}
     
     /**
-     * Sets DB-URL pattern of DBMS for which this holds the configuration.
-     */
-	public void setUrlPattern(String urlPattern) {
-		this.urlPattern = urlPattern;
-	}
-
-	/**
-	 * Gets the {@link StatisticRenovator}.
+	 * Gets the {@link SqlScriptBasedStatisticRenovator}.
 	 * 
-	 * @return the {@link StatisticRenovator}
+	 * @return the {@link SqlScriptBasedStatisticRenovator}
 	 */
-	public StatisticRenovator getStatisticRenovator() {
+	public SqlScriptBasedStatisticRenovator getStatisticRenovator() {
 		return statisticRenovator;
 	}
 	
 	/**
-	 * Sets the {@link StatisticRenovator}.
+	 * Sets the {@link SqlScriptBasedStatisticRenovator}.
 	 * 
-	 * @param statisticRenovator the {@link StatisticRenovator}
+	 * @param statisticRenovator the {@link SqlScriptBasedStatisticRenovator}
 	 */
-	public void setStatisticRenovator(StatisticRenovator statisticRenovator) {
+	public void setStatisticRenovator(SqlScriptBasedStatisticRenovator statisticRenovator) {
 		this.statisticRenovator = statisticRenovator;
-	}
-
-	public void setDateFormat(SimpleDateFormat dateFormat) {
-		this.dateFormat = dateFormat;
-	}
-
-	public void setNanoSep(char nanoSep) {
-		this.nanoSep = nanoSep;
 	}
 
 	public void setAppendNanosToTimestamp(boolean appendNanosToTimestamp) {
@@ -611,32 +427,16 @@ public class Configuration {
 	/**
 	 * Sets manager for session local temporary tables.
 	 */
-	public void setSessionTemporaryTableManager(TemporaryTableManager tableManager) {
+	public void setSessionTemporaryTableManager(DefaultTemporaryTableManager tableManager) {
 		sessionTemporaryTableManager = tableManager;
 	}
 	
 	/**
 	 * Sets manager for transaction local temporary tables.
 	 */
-	public void setTransactionTemporaryTableManager(TemporaryTableManager tableManager) {
+	public void setTransactionTemporaryTableManager(DefaultTemporaryTableManager tableManager) {
 		transactionTemporaryTableManager = tableManager;
 	}
-	
-	/**
-     * Gets the scipt-enhancer.
-     */
-    public static List<ScriptEnhancer> getScriptEnhancer() {
-    	getContext();
-    	return theScriptEnhancer;
-    }
-    
-    /**
-     * Gets the renderer.
-     */
-    public static DataModelRenderer getRenderer() {
-    	getContext();
-    	return theRenderer;
-    }
 
 	public boolean isIdentityInserts() {
 		return identityInserts;
@@ -846,8 +646,8 @@ public class Configuration {
 		this.userDefinedColumnsQuery = userDefinedColumnsQuery;
 	}
 
-	public String nullableContraint = null;
-    
+	private String nullableContraint = null;
+
     /**
 	 * @return the nullableContraint
 	 */
@@ -860,10 +660,6 @@ public class Configuration {
 	 */
 	public void setNullableContraint(String nullableContraint) {
 		this.nullableContraint = nullableContraint;
-	}
-
-	public static int getColumnsPerIFMTable() {
-		return columnsPerIFMTable;
 	}
 
 	/**
@@ -934,6 +730,69 @@ public class Configuration {
 	 */
 	public void setToNClob(String toNClob) {
 		this.toNClob = toNClob;
+	}
+
+	/**
+	 * @return the appendNanosToTimestamp
+	 */
+	public boolean isAppendNanosToTimestamp() {
+		return appendNanosToTimestamp;
+	}
+
+	/**
+	 * @return the appendMillisToTimestamp
+	 */
+	public boolean isAppendMillisToTimestamp() {
+		return appendMillisToTimestamp;
+	}
+
+	/**
+	 * @return the useToTimestampFunction
+	 */
+	public boolean isUseToTimestampFunction() {
+		return useToTimestampFunction;
+	}
+
+	/**
+	 * @return the timestampFormat
+	 */
+	public DateFormat getTimestampFormat() {
+		return timestampFormat;
+	}
+
+	/**
+	 * @return the emptyCLOBValue
+	 */
+	public String getEmptyCLOBValue() {
+		return emptyCLOBValue;
+	}
+
+	/**
+	 * @return the emptyBLOBValue
+	 */
+	public String getEmptyBLOBValue() {
+		return emptyBLOBValue;
+	}
+
+	/**
+	 * @return the binaryPattern
+	 */
+	public String getBinaryPattern() {
+		return binaryPattern;
+	}
+
+	/**
+	 * @return the sessionTemporaryTableManager
+	 */
+	public DefaultTemporaryTableManager getSessionTemporaryTableManager() {
+		return sessionTemporaryTableManager;
+	}
+
+	/**
+	 * @return the transactionTemporaryTableManager
+	 */
+	public DefaultTemporaryTableManager getTransactionTemporaryTableManager() {
+		return transactionTemporaryTableManager;
 	}
 
 }

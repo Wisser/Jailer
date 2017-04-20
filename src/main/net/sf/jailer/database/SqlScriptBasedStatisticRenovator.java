@@ -37,15 +37,40 @@ public class SqlScriptBasedStatisticRenovator implements StatisticRenovator {
 	/**
      * Name of SQL-script file.
      */
-    private final String scriptFileName;
+    private String scriptFileName;
     
     /**
+     * Gets name of SQL-script file.
+     * 
+	 * @return Name of SQL-script file
+	 */
+	public String getScriptFileName() {
+		return scriptFileName;
+	}
+
+	/**
+	 * Sets name of SQL-script file.
+	 * 
+	 * @param scriptFileName Name of SQL-script file
+	 */
+	public void setScriptFileName(String scriptFileName) {
+		this.scriptFileName = scriptFileName;
+	}
+
+	/**
      * Constructor.
      * 
      * @param scriptFileName name of SQL-script file
      */
+	// TODO remove
     public SqlScriptBasedStatisticRenovator(String scriptFileName) {
         this.scriptFileName = scriptFileName;
+    }
+    
+    /**
+     * Constructor.
+     */
+	public SqlScriptBasedStatisticRenovator() {
     }
 
 	/**

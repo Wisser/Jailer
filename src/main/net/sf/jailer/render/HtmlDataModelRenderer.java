@@ -56,12 +56,12 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
     /**
      * The directory to put the HTML-render in.
      */
-    private final String outputDir;
+    private String outputFolder;
     
     /**
      * Maximum depth of expansion on table render.
      */
-    private final int maxDepth;
+    private int maxDepth;
     
     /**
      * The logger.
@@ -78,13 +78,48 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
      * 
      * @param outputDir the directory to put the HTML-render in
      * @param maxDepth maximum depth of expansion on table render
-      */
+     */
+	// TODO: remove
     public HtmlDataModelRenderer(String outputDir, int maxDepth) {
-        this.outputDir = outputDir;
+        this.outputFolder = outputDir;
         this.maxDepth = maxDepth;
     }
     
-    /** 
+    /**
+     * Constructor.
+     */
+	public HtmlDataModelRenderer() {
+    }
+
+    /**
+	 * @return the outputDir
+	 */
+	public String getOutputFolder() {
+		return outputFolder;
+	}
+
+	/**
+	 * @param outputFolder the outputDir to set
+	 */
+	public void setOutputFolder(String outputFolder) {
+		this.outputFolder = outputFolder;
+	}
+
+	/**
+	 * @return the maxDepth
+	 */
+	public int getMaxDepth() {
+		return maxDepth;
+	}
+
+	/**
+	 * @param maxDepth the maxDepth to set
+	 */
+	public void setMaxDepth(int maxDepth) {
+		this.maxDepth = maxDepth;
+	}
+
+	/** 
      * Generates a human readable HTML-representation of the data-model.
      * 
      * @param dataModel the data-model
@@ -123,7 +158,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
                     domainSuffix = " <small>(" + linkTo(domain) + ")</small>";
                 }
                 String title = composite == null? "Component " + table.getName() : composite.toString();
-                writeFile(new File(outputDir, toFileName(table)), new PrintUtil(executionContext).applyTemplate("template" + File.separator + "tableframe.html", new Object[] { title, renderTableBody(table, table, 0, 1, new HashSet<Table>()), closure + legend, components + columns, domainSuffix }));
+                writeFile(new File(outputFolder, toFileName(table)), new PrintUtil(executionContext).applyTemplate("template" + File.separator + "tableframe.html", new Object[] { title, renderTableBody(table, table, 0, 1, new HashSet<Table>()), closure + legend, components + columns, domainSuffix }));
                 CancellationHandler.checkForCancellation(null);
             }
             
@@ -139,7 +174,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
                 domains = renderDomainModel(domainModel) + "<br>";
             }
             
-            writeFile(new File(outputDir, "index.html"), new PrintUtil(executionContext).applyTemplate("template" + File.separatorChar + "index.html", new Object[] { new Date(), generateHTMLTable("Tables", null, tablesColumn, domainsColumn), restrictions, domains }));
+            writeFile(new File(outputFolder, "index.html"), new PrintUtil(executionContext).applyTemplate("template" + File.separatorChar + "index.html", new Object[] { new Date(), generateHTMLTable("Tables", null, tablesColumn, domainsColumn), restrictions, domains }));
         } catch (CancellationException e) {
             throw e;
         } catch (Exception e) {
@@ -471,7 +506,7 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
                 content += tablesTable + "<br>";
             }
             
-            writeFile(new File(outputDir, domain.name + "_DOMAIN.html"), new PrintUtil(executionContext).applyTemplate("template" + File.separator + "tableframe.html", new Object[] { "Domain " + domain.name, content, "", "", "" }));
+            writeFile(new File(outputFolder, domain.name + "_DOMAIN.html"), new PrintUtil(executionContext).applyTemplate("template" + File.separator + "tableframe.html", new Object[] { "Domain " + domain.name, content, "", "", "" }));
         }
         return generateHTMLTable("Domains", indent, column1, column2);
     }

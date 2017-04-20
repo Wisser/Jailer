@@ -26,9 +26,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.Configuration;
 import net.sf.jailer.DDLCreator;
+import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.configuration.DBMSConfiguration;
+import net.sf.jailer.configuration.LocalDatabaseConfiguration;
 import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.InlineViewBuilder;
 import net.sf.jailer.database.InlineViewStyle;
@@ -97,7 +99,7 @@ public class LocalEntityGraph extends EntityGraph {
 			if (!allUPK && !isUPKColumn(columnNames[i - 1])) {
 				value = cellContentConverter.toSql(value);
 			} else if (value instanceof String && isNUPKColumn(columnNames[i - 1])) {
-				String prefix = Configuration.forDbms(remoteSession).getNcharPrefix();
+				String prefix = Configuration.getInstance().forDbms(remoteSession).getNcharPrefix();
 				if (prefix != null && value != null && !value.toString().startsWith(prefix)) {
 					value = prefix + value;
 				}
@@ -107,7 +109,7 @@ public class LocalEntityGraph extends EntityGraph {
 
 		@Override
 		protected CellContentConverter createCellContentConverter() {
-			return new CellContentConverter(resultSetMetaData, localSession, Configuration.forDbms(localSession));
+			return new CellContentConverter(resultSetMetaData, localSession, Configuration.getInstance().forDbms(localSession));
 		}
 		
 	}
@@ -121,11 +123,11 @@ public class LocalEntityGraph extends EntityGraph {
 		public LocalInlineViewBuilder(String name, String columnList, boolean allUPK) {
 			super(localInlineViewStyle, name, localSession, columnList.split(", *"));
 			this.allUPK = allUPK;
-			this.localDBMSConfiguration = Configuration.forDbms(localSession);
+			this.localDBMSConfiguration = Configuration.getInstance().forDbms(localSession);
 		}
 		
 		private final boolean allUPK;
-		private final Configuration localDBMSConfiguration;
+		private final DBMSConfiguration localDBMSConfiguration;
 		
 		protected String sqlValue(ResultSet resultSet, int i) throws SQLException {
 			String value = cellContentConverter.toSql(cellContentConverter.getObject(resultSet, i));
@@ -138,7 +140,7 @@ public class LocalEntityGraph extends EntityGraph {
 
 		@Override
 		protected CellContentConverter createCellContentConverter() {
-			return new CellContentConverter(resultSetMetaData, remoteSession, Configuration.forDbms(remoteSession));
+			return new CellContentConverter(resultSetMetaData, remoteSession, Configuration.getInstance().forDbms(remoteSession));
 		}
 
 	}
@@ -169,13 +171,13 @@ public class LocalEntityGraph extends EntityGraph {
 		return nupkColumnNames.contains(columnName);
 	}
 
-	private static LocalConfiguration localConfiguration = null;
+	private static LocalDatabaseConfiguration localConfiguration = null;
 	
-	private static synchronized LocalConfiguration getConfiguration() {
+	private static synchronized LocalDatabaseConfiguration getConfiguration() {
 		if (localConfiguration == null) {
-			localConfiguration = (LocalConfiguration) Configuration.localEntityGraphConfiguration;
+			localConfiguration = (LocalDatabaseConfiguration) Configuration.getInstance().localEntityGraphConfiguration;
 			if (localConfiguration == null) {
-				localConfiguration = new LocalConfiguration();
+				localConfiguration = new LocalDatabaseConfiguration();
 			}
 		}
 		return localConfiguration;
@@ -220,9 +222,9 @@ public class LocalEntityGraph extends EntityGraph {
 				List<Column> localPK = new ArrayList<Column>(columns.size());
 				for (Column c: columns) {
 					if (c.type.equalsIgnoreCase("nvarchar") || c.type.equalsIgnoreCase("nchar")) {
-						localPK.add(new Column(c.name, getConfiguration().localNPKType, getConfiguration().localPKLength, -1));
+						localPK.add(new Column(c.name, getConfiguration().getLocalNPKType(), getConfiguration().getLocalPKLength(), -1));
 					} else {
-						localPK.add(new Column(c.name, getConfiguration().localPKType, getConfiguration().localPKLength, -1));
+						localPK.add(new Column(c.name, getConfiguration().getLocalPKType(), getConfiguration().getLocalPKLength(), -1));
 					}
 				}
 				return super.createPrimaryKey(localPK);
@@ -230,8 +232,8 @@ public class LocalEntityGraph extends EntityGraph {
 		}, executionContext.getSourceSchemaMapping(), executionContext), executionContext);
 		this.remoteSession = remoteSession;
 		this.quoting = new Quoting(remoteSession);
-		this.rowIdSupport = new RowIdSupport(getDatamodel(), Configuration.forDbms(remoteSession), getConfiguration().localPKType, executionContext);
-		this.localDatabase = createLocalDatabase(getConfiguration().driver, getConfiguration().urlPattern, getConfiguration().user, getConfiguration().password, getConfiguration().lib);
+		this.rowIdSupport = new RowIdSupport(getDatamodel(), Configuration.getInstance().forDbms(remoteSession), getConfiguration().getLocalPKType(), executionContext);
+		this.localDatabase = createLocalDatabase(getConfiguration().getDriver(), getConfiguration().getUrlPattern(), getConfiguration().getUser(), getConfiguration().getPassword(), getConfiguration().getLib());
 		this.localSession = this.localDatabase.getSession();
 		this.universalPrimaryKey = rowIdSupport.getUniversalPrimaryKey();
 		this.localInlineViewStyle = InlineViewStyle.forSession(localSession);
@@ -259,7 +261,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @throws Exception 
 	 */
 	private LocalDatabase createLocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile) throws Exception {
-		String databaseFolder = getConfiguration().databasesFolder;
+		String databaseFolder = getConfiguration().getDatabasesFolder();
 		return new LocalDatabase(driverClassName, urlPattern, user, password, jarfile, databaseFolder, executionContext);
 	}
 
@@ -943,7 +945,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param table the table
 	 * @param columns the columns;
 	 */
-	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, Configuration targetConfiguration) throws SQLException {
+	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, DBMSConfiguration targetConfiguration) throws SQLException {
 		Session.ResultSetReader reader = new UpdateTransformer(table, columns, scriptFileWriter, executionContext.getNumberOfEntities(), getTargetSession(), targetConfiguration, importFilterManager, executionContext);
     	readEntities(table, false, reader);
 	}
@@ -1186,7 +1188,7 @@ public class LocalEntityGraph extends EntityGraph {
      * @param selectionSchema the selection schema
      */
     public void readDependentEntities(final Table table, final Association association, final ResultSet resultSet, ResultSetMetaData resultSetMetaData, final ResultSetReader reader, final Map<String, Integer> theTypeCache, final String selectionSchema, final String originalPKAliasPrefix) throws SQLException {
-    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, localSession, Configuration.forDbms(localSession));
+    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, localSession, Configuration.getInstance().forDbms(localSession));
     	String select = "Select " + upkColumnList(table, "TO_") + " from " + dmlTableReference(DEPENDENCY, localSession) + " D" +
 	    		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", cellContentConverter) +
 	    		 " and D.to_type=" + typeName(table) + "" +
@@ -1229,7 +1231,7 @@ public class LocalEntityGraph extends EntityGraph {
      */
     public void markDependentEntitiesAsTraversed(Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, Map<String, Integer> typeCache) throws SQLException {
     	String update;
-    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, localSession, Configuration.forDbms(localSession));
+    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, localSession, Configuration.getInstance().forDbms(localSession));
     	if (localSession.dbms == DBMS.SYBASE) {
     		update = "Update " + dmlTableReference(DEPENDENCY, localSession) + " set traversed=1" +
     		 " Where " + pkEqualsEntityID(association.source, resultSet, dmlTableReference(DEPENDENCY, localSession), "FROM_", cellContentConverter) +

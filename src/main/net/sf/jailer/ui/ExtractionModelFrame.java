@@ -46,12 +46,12 @@ import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
-import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.CommandLine;
-import net.sf.jailer.Configuration;
 import net.sf.jailer.DDLCreator;
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.ScriptFormat;
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.TemporaryTableScope;
@@ -1054,7 +1054,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        	Session.closeTemporaryTableSession();
 			        	Session session = new Session(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword());
 
-			        	if (extractionModelEditor.dataModel != null && Configuration.forDbms(session).getRowidName() == null) {
+			        	if (extractionModelEditor.dataModel != null && Configuration.getInstance().forDbms(session).getRowidName() == null) {
 			        		Set<Table> toCheck = new HashSet<Table>();
 			    			if (extractionModelEditor.extractionModel != null) {
 			    				if (extractionModelEditor.extractionModel.additionalSubjects != null) {
