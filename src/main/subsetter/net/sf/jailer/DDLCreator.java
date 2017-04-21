@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.configuration.DBMSConfiguration;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.TemporaryTableManager;
@@ -87,7 +88,7 @@ public class DDLCreator {
 	 * Creates the DDL for the working-tables.
 	 */
 	public boolean createDDL(DataModel datamodel, Session session, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws Exception {
-		RowIdSupport rowIdSupport = new RowIdSupport(datamodel, Configuration.getInstance().forDbms(session), executionContext);
+		RowIdSupport rowIdSupport = new RowIdSupport(datamodel, targetDBMS(session), executionContext);
 		return createDDL(datamodel, session, temporaryTableScope, rowIdSupport, workingTableSchema);
 	}
 
@@ -116,11 +117,11 @@ public class DDLCreator {
 	private boolean createDDL(DataModel dataModel, Session session, TemporaryTableScope temporaryTableScope, int indexType, RowIdSupport rowIdSupport, String workingTableSchema) throws Exception {
 		String template = "script" + File.separator + "ddl-template.sql";
 		String contraint = pkColumnConstraint(session);
-		Map<String, String> typeReplacement = Configuration.getInstance().forDbms(session).getTypeReplacement();
+		Map<String, String> typeReplacement = targetDBMS(session).getTypeReplacement();
 		String universalPrimaryKey = rowIdSupport.getUniversalPrimaryKey().toSQL(null, contraint, typeReplacement);
 		Map<String, String> arguments = new HashMap<String, String>();
 		arguments.put("upk", universalPrimaryKey);
-		arguments.put("upk-hash", "" + ((universalPrimaryKey + Configuration.getInstance().forDbms(session).getTableProperties()).hashCode()));
+		arguments.put("upk-hash", "" + ((universalPrimaryKey + targetDBMS(session).getTableProperties()).hashCode()));
 		arguments.put("pre", rowIdSupport.getUniversalPrimaryKey().toSQL("PRE_", contraint, typeReplacement));
 		arguments.put("from", rowIdSupport.getUniversalPrimaryKey().toSQL("FROM_", contraint, typeReplacement));
 		arguments.put("to", rowIdSupport.getUniversalPrimaryKey().toSQL("TO_", contraint, typeReplacement));
@@ -129,14 +130,14 @@ public class DDLCreator {
 
 		TemporaryTableManager tableManager = null;
 		if (temporaryTableScope == TemporaryTableScope.SESSION_LOCAL) {
-			tableManager = Configuration.getInstance().forDbms(session).getSessionTemporaryTableManager();
+			tableManager = targetDBMS(session).getSessionTemporaryTableManager();
 		}
 		if (temporaryTableScope == TemporaryTableScope.TRANSACTION_LOCAL) {
-			tableManager = Configuration.getInstance().forDbms(session).getTransactionTemporaryTableManager();
+			tableManager = targetDBMS(session).getTransactionTemporaryTableManager();
 		}
 		String tableName = SQLDialect.CONFIG_TABLE_;
 		arguments.put("config-dml-reference", tableName);
-		String schema = workingTableSchema != null? new Quoting(session).requote(workingTableSchema) + "." : "";
+		String schema = workingTableSchema != null? (session == null? workingTableSchema : new Quoting(session).requote(workingTableSchema)) + "." : "";
 		arguments.put("schema", schema);
 		arguments.put("index-schema", supportsSchemasInIndexDefinitions(session)? schema : "");
 		if (tableManager != null) {
@@ -151,7 +152,7 @@ public class DDLCreator {
 			arguments.put("table-suffix", "");
 			arguments.put("drop-table", "DROP TABLE ");
 			arguments.put("create-table", "CREATE TABLE ");
-			arguments.put("create-table-suffix", Configuration.getInstance().forDbms(session).getTableProperties());
+			arguments.put("create-table-suffix", targetDBMS(session).getTableProperties());
 			arguments.put("create-index", "CREATE INDEX ");
 			arguments.put("create-index-suffix", "");
 			arguments.put("index-table-prefix", "");
@@ -201,7 +202,7 @@ public class DDLCreator {
 	}
 
 	private boolean supportsSchemasInIndexDefinitions(Session session) {
-		Boolean result = Configuration.getInstance().forDbms(session).getSupportsSchemasInIndexDefinitions();
+		Boolean result = targetDBMS(session).getSupportsSchemasInIndexDefinitions();
 		if (result == null) {
 			if (session == null) {
 				return true;
@@ -216,11 +217,18 @@ public class DDLCreator {
 	}
 
 	private String pkColumnConstraint(Session session) {
-		String nullableContraint = Configuration.getInstance().forDbms(session).getNullableContraint();
+		String nullableContraint = targetDBMS(session).getNullableContraint();
 		if (nullableContraint != null) {
 			return " " + nullableContraint;
 		}
 		return "";
+	}
+
+	private DBMSConfiguration targetDBMS(Session session) {
+		if (session == null) {
+			return Configuration.getInstance().forDbms(executionContext.getTargetDBMS());
+		}
+		return Configuration.getInstance().forDbms(session);
 	}
 
 	/**
@@ -257,8 +265,8 @@ public class DDLCreator {
 			try {
 				final boolean[] uptodate = new boolean[] { false };
 				final DataModel datamodel = new DataModel(executionContext);
-				final Map<String, String> typeReplacement = Configuration.getInstance().forDbms(session).getTypeReplacement();
-				final RowIdSupport rowIdSupport = new RowIdSupport(datamodel, Configuration.getInstance().forDbms(session), useRowId);
+				final Map<String, String> typeReplacement = targetDBMS(session).getTypeReplacement();
+				final RowIdSupport rowIdSupport = new RowIdSupport(datamodel, targetDBMS(session), useRowId);
 				
 				final String schema = workingTableSchema == null ? "" : new Quoting(session).requote(workingTableSchema) + ".";
 				
@@ -267,7 +275,7 @@ public class DDLCreator {
 							public void readCurrentRow(ResultSet resultSet) throws SQLException {
 								String contraint = pkColumnConstraint(session);
 								String universalPrimaryKey = rowIdSupport.getUniversalPrimaryKey().toSQL(null, contraint, typeReplacement);
-								String h = "" + (universalPrimaryKey + Configuration.getInstance().forDbms(session).getTableProperties()).hashCode();
+								String h = "" + (universalPrimaryKey + targetDBMS(session).getTableProperties()).hashCode();
 								uptodate[0] = resultSet.getString(1).equals(h);
 							}
 
