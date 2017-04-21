@@ -217,7 +217,6 @@ public class Jailer {
 					return new DDLCreator(executionContext).createDDL(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), executionContext
 							.getScope(), commandLine.workingTableSchema);
 				}
-				// TODO target DBMS config nehmen (usage updaten)
 				return new DDLCreator(executionContext).createDDL(null, null, null, null, executionContext.getScope(), commandLine.workingTableSchema);
 			} else if ("build-model-wo-merge".equalsIgnoreCase(command)) {
 				if (commandLine.arguments.size() != 5) {
