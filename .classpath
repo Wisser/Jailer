@@ -3,7 +3,6 @@
 	<classpathentry kind="src" path="src/test"/>
 	<classpathentry kind="src" path="src/main/subsetter"/>
 	<classpathentry kind="src" path="src/main/gui"/>
-	<classpathentry kind="src" path="jailer"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre8"/>
 	<classpathentry kind="lib" path="lib/dbunit-2.4.4.jar"/>
 	<classpathentry kind="lib" path="lib/junit-4.4.jar"/>
