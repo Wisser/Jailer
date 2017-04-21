@@ -1,3 +1,6 @@
+6.7.4
+  - CLI usage didn't print options.
+
 6.7.3
   - Improved performance of database meta-data access. 
   - Minor bug fixes (Filter templates).

@@ -9,16 +9,17 @@ svn checkout --username=rwisser https://svn.code.sf.net/p/jailer/code/trunk
 cd ..
 mv $1.co/trunk/* dbeauty
 cd dbeauty
-sed "s/new javax.swing.JComboBox()/new net.sf.jailer.ui.JComboBox()/g" src/main/net/sf/jailer/ui/*.java --in-place
-sed "s/new javax.swing.JComboBox()/new net.sf.jailer.ui.JComboBox()/g" src/main/net/sf/jailer/ui/databrowser/*.java --in-place
+sed "s/new javax.swing.JComboBox()/new net.sf.jailer.ui.JComboBox()/g" src/main/gui/net/sf/jailer/ui/*.java --in-place
+sed "s/new javax.swing.JComboBox()/new net.sf.jailer.ui.JComboBox()/g" src/main/gui/net/sf/jailer/ui/databrowser/*.java --in-place
 find -iname ".svn" -exec rm -rf '{}' \;
-find -iname ".cvs*" -exec rm -rf '{}' \;
+
 ant package
+
 chmod a+x *.sh
+
 rm -rf admin
 rm -rf docs
 rm -rf out
-rm -rf beta
 rm svn-commit.tmp
 mv datamodel.def datamodel
 rm -rf datamodel.scr
