@@ -1,7 +1,5 @@
+echo off
 set LIB=lib
-
-rem JDBC-driver
-rem set CP=%CP%;<jdbc-driver>.jar
 
 rem configuration files in the config directory
 set CP=%CP%;config
@@ -13,7 +11,5 @@ set CP=%CP%;%LIB%\args4j.jar
 set CP=%CP%;%LIB%\prefuse.jar
 set CP=%CP%;%LIB%\sdoc-0.5.0-beta.jar
 set CP=%CP%;jailer.jar
-
-echo %CP%
 
 start javaw -Xmx1024M -cp %CP% net.sf.jailer.ui.ExtractionModelFrame %*
