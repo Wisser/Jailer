@@ -20,7 +20,7 @@ package net.sf.jailer.database;
  * 
  * @author Ralf Wisser
  */
-public enum DBMS {
+public enum DBMS2 {
 	UNKNOWN(" "),
 
 	ORACLE("Oracle"),
@@ -40,7 +40,7 @@ public enum DBMS {
 	
 	public final String displayName;
 	
-	DBMS(String displayName) {
+	DBMS2(String displayName) {
 		this.displayName = displayName;
 	}
 	

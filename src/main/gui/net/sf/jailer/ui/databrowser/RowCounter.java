@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.InlineViewStyle;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
@@ -141,10 +141,10 @@ public class RowCounter {
 			}
 			
 			long brc = 0;
-			if (Configuration.getInstance().forDbms(session).getSqlLimitSuffix() != null) {
+			if (DBMS.forSession(session).getSqlLimitSuffix() != null) {
 				try {
 					session.setSilent(true);
-					brc += countRows(andCond, pRowBlock, newBlockRows, context, limit, false, Configuration.getInstance().forDbms(session).getSqlLimitSuffix(), selectDistinct, maxTime, inlineViewStyle);
+					brc += countRows(andCond, pRowBlock, newBlockRows, context, limit, false, DBMS.forSession(session).getSqlLimitSuffix(), selectDistinct, maxTime, inlineViewStyle);
 					loaded = true;
 				} catch (SQLException e) {
 					if (System.currentTimeMillis() >= maxTime) {

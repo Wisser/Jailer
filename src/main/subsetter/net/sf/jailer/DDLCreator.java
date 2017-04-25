@@ -25,8 +25,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.jailer.configuration.Configuration;
-import net.sf.jailer.configuration.DBMSConfiguration;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.TemporaryTableManager;
@@ -224,11 +223,11 @@ public class DDLCreator {
 		return "";
 	}
 
-	private DBMSConfiguration targetDBMS(Session session) {
+	private DBMS targetDBMS(Session session) {
 		if (session == null) {
-			return Configuration.getInstance().forDbms(executionContext.getTargetDBMS());
+			executionContext.getTargetDBMS();
 		}
-		return Configuration.getInstance().forDbms(session);
+		return DBMS.forSession(session);
 	}
 
 	/**

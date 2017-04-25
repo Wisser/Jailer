@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
-import net.sf.jailer.database.DBMS;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.TemporaryTableScope;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
@@ -801,7 +801,7 @@ public class ExecutionContext {
 	private void copyCommandLineFields(CommandLine commandLine) {
 		uTF8 = commandLine.uTF8;
 		format = commandLine.format;
-		targetDBMS = commandLine.targetDBMS == null? null : DBMS.valueOf(commandLine.targetDBMS);
+		targetDBMS = commandLine.targetDBMS == null? null : DBMS.forDBMS(commandLine.targetDBMS);
 		_asXml = commandLine._asXml;
 		xmlRootTag = commandLine.xmlRootTag;
 		xmlDatePattern = commandLine.xmlDatePattern;

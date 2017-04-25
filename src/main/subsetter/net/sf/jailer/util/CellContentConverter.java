@@ -35,9 +35,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import net.sf.jailer.configuration.Configuration;
-import net.sf.jailer.configuration.DBMSConfiguration;
-import net.sf.jailer.database.DBMS;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 
 /**
@@ -66,8 +64,8 @@ public class CellContentConverter {
 	private final Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
 	private final Map<String, Integer> columnIndex = new HashMap<String, Integer>();
 	private final Session session;
-	private final DBMSConfiguration configuration;
-	private final DBMSConfiguration targetConfiguration;
+	private final DBMS configuration;
+	private final DBMS targetConfiguration;
 	private Method pgObjectGetType;
 	private final char NANO_SEP = '.';
 	
@@ -78,11 +76,11 @@ public class CellContentConverter {
 	 * @param session database session
      * @param targetDBMSConfiguration configuration of the target DBMS
 	 */
-	public CellContentConverter(ResultSetMetaData resultSetMetaData, Session session, DBMSConfiguration targetConfiguration) {
+	public CellContentConverter(ResultSetMetaData resultSetMetaData, Session session, DBMS targetConfiguration) {
 		this.resultSetMetaData = resultSetMetaData;
 		this.session = session;
 		this.targetConfiguration = targetConfiguration;
-		this.configuration = Configuration.getInstance().forDbms(this.session);
+		this.configuration = DBMS.forSession(this.session);
 	}
 
     /**
@@ -97,7 +95,7 @@ public class CellContentConverter {
         }
 
         if (content instanceof java.sql.Date) {
-        	String suffix = targetConfiguration.getDbms() == DBMS.POSTGRESQL? "::date" : "";
+        	String suffix = targetConfiguration == DBMS.POSTGRESQL? "::date" : "";
         	if (targetConfiguration.isUseToTimestampFunction()) {
         		String format;
         		synchronized(defaultDateFormat) {
@@ -108,7 +106,7 @@ public class CellContentConverter {
         	return "'" + content + "'" + suffix;
         }
         if (content instanceof java.sql.Timestamp) {
-        	String suffix = targetConfiguration.getDbms() == DBMS.POSTGRESQL? "::timestamp" : "";
+        	String suffix = targetConfiguration == DBMS.POSTGRESQL? "::timestamp" : "";
         	if (targetConfiguration.isUseToTimestampFunction()) {
         		String format;
         		String nanoFormat;
@@ -174,7 +172,7 @@ public class CellContentConverter {
 			}
     	}
         if (content instanceof UUID) {
-        	if (targetConfiguration.getDbms() == DBMS.POSTGRESQL) {
+        	if (targetConfiguration == DBMS.POSTGRESQL) {
         		return "'" + content + "'::uuid";
         	}
         	return "'" + content + "'";
@@ -254,12 +252,12 @@ public class CellContentConverter {
 		if (type == null) {
 			try {
 				type = resultSetMetaData.getColumnType(i);
-				if (configuration.getDbms() == DBMS.ORACLE) {
+				if (configuration == DBMS.ORACLE) {
 					if (type == Types.DATE) {
 						type = Types.TIMESTAMP;
 					}
 				 }
-				 if (configuration.getDbms() == DBMS.POSTGRESQL) {
+				 if (configuration == DBMS.POSTGRESQL) {
 	                String typeName = resultSetMetaData.getColumnTypeName(i);
 	                if ("hstore".equalsIgnoreCase(typeName)) {
 	                    type = TYPE_HSTORE;
@@ -297,7 +295,7 @@ public class CellContentConverter {
 				return resultSet.getTimestamp(i);
 			}
 			if (type == Types.DATE) {
-				if (configuration.getDbms() == DBMS.MySQL) {
+				if (configuration == DBMS.MySQL) {
 					// YEAR
 					String typeName = resultSetMetaData.getColumnTypeName(i);
 					if (typeName != null && typeName.toUpperCase().equals("YEAR")) {
@@ -320,7 +318,7 @@ public class CellContentConverter {
 				object = new NCharWrapper((String) object);
 			}
 		}
-		if (configuration.getDbms() == DBMS.POSTGRESQL) {
+		if (configuration == DBMS.POSTGRESQL) {
 			if (type == TYPE_HSTORE) {
 				return new HStoreWrapper(resultSet.getString(i));
             } else if (object instanceof Boolean) {

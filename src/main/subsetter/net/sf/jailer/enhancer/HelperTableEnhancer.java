@@ -22,7 +22,7 @@ import java.util.Set;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.ScriptType;
-import net.sf.jailer.configuration.DBMSConfiguration;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.UPSERT_MODE;
@@ -55,12 +55,12 @@ public class HelperTableEnhancer implements ScriptEnhancer {
 	}
 	
 	public void addComments(Writer script, ScriptType scriptType,
-			Session session, DBMSConfiguration targetDBMSConfiguration, EntityGraph entityGraph,
+			Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
 			Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
 	}
 
 	public void addEpilog(Writer script, ScriptType scriptType,
-			Session session, DBMSConfiguration targetDBMSConfiguration, EntityGraph entityGraph,
+			Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
 			Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
 		if (dualNeeded(progress, targetDBMSConfiguration.getSqlDialect(), executionContext)) {
 			script.append("DROP TABLE " + SQLDialect.DUAL_TABLE + ";\n");
@@ -68,7 +68,7 @@ public class HelperTableEnhancer implements ScriptEnhancer {
 	}
 
 	public void addProlog(Writer script, ScriptType scriptType,
-			Session session, DBMSConfiguration targetDBMSConfiguration, EntityGraph entityGraph,
+			Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
 			Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
 		if (dualNeeded(progress, targetDBMSConfiguration.getSqlDialect(), executionContext)) {
 			script.append("CREATE TABLE " + SQLDialect.DUAL_TABLE + "(D INTEGER);\n");

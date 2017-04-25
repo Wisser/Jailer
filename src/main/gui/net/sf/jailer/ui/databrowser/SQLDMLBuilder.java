@@ -21,7 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
@@ -72,7 +72,7 @@ public class SQLDMLBuilder {
 		String sql = "Update " + table.getName() + " " + LF + "Set ";
 		boolean f = true;
 		int i = 0;
-		CellContentConverter cellContentConverter = new CellContentConverter(null, session, Configuration.getInstance().forDbms(session));
+		CellContentConverter cellContentConverter = new CellContentConverter(null, session, DBMS.forSession(session));
 		for (Column column : table.getColumns()) {
 			String value = getSQLLiteral(row.values[i++], cellContentConverter);
 			if (value == null) {
@@ -132,7 +132,7 @@ public class SQLDMLBuilder {
 		String values = "";
 		boolean f = true;
 		int i = 0;
-		CellContentConverter cellContentConverter = new CellContentConverter(null, session, Configuration.getInstance().forDbms(session));
+		CellContentConverter cellContentConverter = new CellContentConverter(null, session, DBMS.forSession(session));
 		for (Column column : table.getColumns()) {
 			String value = getSQLLiteral(row.values[i++], cellContentConverter);
 			if (value == null) {

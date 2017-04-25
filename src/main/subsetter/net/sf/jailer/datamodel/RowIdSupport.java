@@ -21,7 +21,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.configuration.DBMSConfiguration;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 
 
@@ -46,7 +46,7 @@ public class RowIdSupport {
 	 * @param rowIdType type of rowid-columns
 	 * @param useRowIds <code>true</code> iff rowid column is used instead of primary keys
 	 */
-	public RowIdSupport(DataModel dataModel, DBMSConfiguration configuration, String rowIdType, boolean useRowIds) {
+	public RowIdSupport(DataModel dataModel, DBMS configuration, String rowIdType, boolean useRowIds) {
 		this.dataModel = dataModel;
 		this.useRowIds = useRowIds;
 		if (useRowIds) {
@@ -62,7 +62,7 @@ public class RowIdSupport {
 	 * @param configuration DBMS configuration
 	 * @param useRowIds <code>true</code> iff rowid column is used instead of primary keys
 	 */
-	public RowIdSupport(DataModel dataModel, DBMSConfiguration configuration, boolean useRowIds) {
+	public RowIdSupport(DataModel dataModel, DBMS configuration, boolean useRowIds) {
 		this(dataModel, configuration, configuration.getRowidType(), useRowIds && configuration.getRowidName() != null);
 	}
 
@@ -73,7 +73,7 @@ public class RowIdSupport {
 	 * @param rowIdType type of rowid-columns
 	 * @param configuration DBMS configuration
 	 */
-	public RowIdSupport(DataModel dataModel, DBMSConfiguration configuration, String rowIdType, ExecutionContext executionContext) {
+	public RowIdSupport(DataModel dataModel, DBMS configuration, String rowIdType, ExecutionContext executionContext) {
 		this(dataModel, configuration, rowIdType, initialUseRowId(configuration, executionContext));
 	}
 
@@ -83,11 +83,11 @@ public class RowIdSupport {
 	 * @param dataModel the data model
 	 * @param configuration DBMS configuration
 	 */
-	public RowIdSupport(DataModel dataModel, DBMSConfiguration configuration, ExecutionContext executionContext) {
+	public RowIdSupport(DataModel dataModel, DBMS configuration, ExecutionContext executionContext) {
 		this(dataModel, configuration, initialUseRowId(configuration, executionContext));
 	}
 	
-	private static boolean initialUseRowId(DBMSConfiguration configuration, ExecutionContext executionContext) {
+	private static boolean initialUseRowId(DBMS configuration, ExecutionContext executionContext) {
 		return configuration.getRowidName() != null && !executionContext.getNoRowid();
 	}
 	

@@ -16,13 +16,8 @@
 package net.sf.jailer.configuration;
 
 import java.io.File;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.regex.Pattern;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -30,9 +25,7 @@ import javax.xml.bind.Unmarshaller;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.DefaultTemporaryTableManager;
-import net.sf.jailer.database.Session;
 import net.sf.jailer.enhancer.FileBasedScriptEnhancer;
 import net.sf.jailer.enhancer.HelperTableEnhancer;
 import net.sf.jailer.enhancer.ScriptEnhancer;
@@ -50,16 +43,11 @@ public class Configuration {
      * The renderer.
      */
     private HtmlDataModelRenderer renderer;
-
-    /**
-     * Default configuration for unknown DBMS.
-     */
-	private final DBMSConfiguration defaultConfiguration = new DBMSConfiguration();
     
 	/**
-	 * All {@link DBMSConfiguration}s.
+	 * All {@link DBMS}s.
 	 */
-	private List<DBMSConfiguration> dBMSConfigurations = new ArrayList<DBMSConfiguration>();
+	private List<DBMS> dBMSConfigurations = new ArrayList<DBMS>();
 
 	/**
 	 * If <code>true</code>, the UPK don't preserve order. This minimizes the size of the UPK.
@@ -125,9 +113,10 @@ public class Configuration {
     			configFile = new File(getConfigurationFolder(), configFile.getName());
     		}
     		try {
-    			JAXBContext jc = JAXBContext.newInstance(Configuration.class, DBMSConfiguration.class, DefaultTemporaryTableManager.class);
+    			JAXBContext jc = JAXBContext.newInstance(Configuration.class, DBMS.class, DefaultTemporaryTableManager.class);
     			Unmarshaller um = jc.createUnmarshaller();
     			theConfiguration = (Configuration) um.unmarshal(configFile);
+    			DBMS.initPredefinedDBMSes();
     		} catch (JAXBException e) {
     			throw new RuntimeException(e);
     		}
@@ -148,97 +137,6 @@ public class Configuration {
 	 */
 	public static void setConfigurationFolder(File theConfigurationFolder) {
 		configurationFolder = theConfigurationFolder;
-	}
-
-	/**
-     * Holds configurations.
-     */
-    private Map<String, DBMSConfiguration> perUrl = new HashMap<String, DBMSConfiguration>();
-    
-    /**
-     * Holds configurations.
-     */
-    private Map<DBMS, DBMSConfiguration> perDBMS = new HashMap<DBMS, DBMSConfiguration>();
-
-	/**
-     * Gets DBMS specific configuration.
-     * 
-     * @param session connected to the DBMS
-     * @return configuration for the DBMS to which the {@link Session} is connected to
-     */
-	public synchronized DBMSConfiguration forDbms(Session session) {
-		if (session == null) {
-			return defaultConfiguration;
-		}
-		if (perUrl.containsKey(session.dbUrl)) {
-			return perUrl.get(session.dbUrl);
-		}
-        List<DBMSConfiguration> cs = (List<DBMSConfiguration>) getInstance().dBMSConfigurations;  
-        for (DBMSConfiguration c: cs) {
-        	if (Pattern.matches(c.getUrlPattern(), session.dbUrl)) {
-        		boolean ok = true;
-        		if (c.getTestQuery() != null) {
-        			boolean wasSilent = session.getSilent();
-        			session.setSilent(true);
-        			try {
-						session.executeQuery(c.getTestQuery(), new Session.AbstractResultSetReader() {
-							@Override
-							public void readCurrentRow(ResultSet resultSet) throws SQLException {
-							}
-						});
-					} catch (SQLException e) {
-						ok = false;
-					}
-        			session.setSilent(wasSilent);
-        		}
-        		if (ok) {
-        			perUrl.put(session.dbUrl, c);
-        			return c;
-        		}
-        	}
-        }
-        perUrl.put(session.dbUrl, defaultConfiguration);
-        return defaultConfiguration;
-	}
-
-	/**
-     * Gets DBMS specific configuration.
-     * 
-     * @param dbUrl URL
-     * @return configuration for the DBMS with given URL
-     */
-	public DBMSConfiguration forDbms(String dbUrl) {
-		if (dbUrl == null) {
-			return defaultConfiguration;
-		}
-        List<DBMSConfiguration> cs = dBMSConfigurations;  
-        for (DBMSConfiguration c: cs) {
-        	if (Pattern.matches(c.getUrlPattern(), dbUrl)) {
-    			return c;
-    		}
-        }
-        return defaultConfiguration;
-	}
-	
-	/**
-     * Gets DBMS specific configuration.
-     * 
-     * @param dbms the DBMS
-     * @return configuration for the DBMS
-     */
-	public synchronized DBMSConfiguration forDbms(DBMS dbms) {
-		if (perDBMS.containsKey(dbms)) {
-			return perDBMS.get(dbms);
-		}
-        List<DBMSConfiguration> cs = dBMSConfigurations;  
-        for (DBMSConfiguration c: cs) {
-        	if (c.getDbms() == dbms) {
-        		perDBMS.put(dbms, c);
-                return c;
-        	}
-        }
-        perDBMS.put(dbms, defaultConfiguration);
-        return defaultConfiguration;
 	}
 
     /**
@@ -265,23 +163,16 @@ public class Configuration {
 	/**
 	 * @return the dBMSConfigurations
 	 */
-	@XmlElement(name = "dbmsConfiguration")
-	public List<DBMSConfiguration> getdBMSConfigurations() {
+	@XmlElement(name = "dbms")
+	public List<DBMS> getDBMS() {
 		return dBMSConfigurations;
 	}
 
 	/**
 	 * @param dBMSConfigurations the dBMSConfigurations to set
 	 */
-	public void setdBMSConfigurations(List<DBMSConfiguration> dBMSConfigurations) {
+	public void setdBMSConfigurations(List<DBMS> dBMSConfigurations) {
 		this.dBMSConfigurations = dBMSConfigurations;
-	}
-
-	/**
-	 * @return the defaultConfiguration
-	 */
-	public DBMSConfiguration getDefaultConfiguration() {
-		return defaultConfiguration;
 	}
 
 	/**
