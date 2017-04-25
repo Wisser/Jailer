@@ -44,199 +44,10 @@
         <outputFolder>render</outputFolder>
     </renderer>
 
-    
-    <!-- for Informix -->
-    <dbmsConfiguration>
-        <dbms>INFORMIX</dbms>
-        <urlPattern>jdbc:informix.*</urlPattern>
-        <sqlDialect>
-            <needsValuesKeywordForDeletes>true</needsValuesKeywordForDeletes>
-            <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
-            <supportsMultiRowInserts>true</supportsMultiRowInserts>
-            <upsertMode>DB2</upsertMode>
-        </sqlDialect>
-        <statisticRenovator>
-            <scriptFileName>script/informix/update_statistics.sql</scriptFileName>
-        </statisticRenovator>
-        <typeReplacement>
-            <entry>
-                <key>datetime</key>
-                <value>datetime year to fraction</value>
-            </entry>
-            <entry>
-                <key>serial</key>
-                <value>int</value>
-            </entry>
-            <entry>
-                <key>serial8</key>
-                <value>int8</value>
-            </entry>
-            <entry>
-                <key>bigserial</key>
-                <value>bigint</value>
-            </entry>
-        </typeReplacement>
-        <sqlLimitSuffix>FIRST %s</sqlLimitSuffix>
-        <varcharLengthLimit>255</varcharLengthLimit>
-        <tableProperties></tableProperties>
-        <sessionTemporaryTableManager>
-            <createIndexPrefix>CREATE INDEX </createIndexPrefix>
-            <createIndexSuffix></createIndexSuffix>
-            <createTablePrefix>CREATE TEMP TABLE </createTablePrefix>
-            <createTableSuffix> WITH NO LOG</createTableSuffix>
-            <dropTablePrefix>DROP TABLE </dropTablePrefix>
-            <indexTablePrefix></indexTablePrefix>
-        </sessionTemporaryTableManager>
-        <identityInserts>false</identityInserts>
-        <appendNanosToTimestamp>true</appendNanosToTimestamp>
-        <appendMillisToTimestamp>false</appendMillisToTimestamp>
-        <useToTimestampFunction>false</useToTimestampFunction>
-        <timestampPattern>cast(%s as datetime year to fraction)</timestampPattern>
-        <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
-        <binaryPattern>x'%s'</binaryPattern>
-        <avoidLeftJoin>false</avoidLeftJoin>
-        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
-        <identifierQuoteString>"</identifierQuoteString>
-    </dbmsConfiguration>
-    
-    <!-- for DB2 LUW -->
-    <dbmsConfiguration>
-        <dbms>DB2</dbms>
-        <urlPattern>jdbc:db2.*</urlPattern>
-        <testQuery>Select A, B, C from (values (1, '2', 3), (4, '5', 6)) E(A, B, C)</testQuery>
-        <sqlDialect>
-            <needsValuesKeywordForDeletes>true</needsValuesKeywordForDeletes>
-            <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
-            <supportsMultiRowInserts>true</supportsMultiRowInserts>
-            <upsertMode>DB2</upsertMode>
-        </sqlDialect>
-        <statisticRenovator>
-            <scriptFileName>script/db2/update_statistics.sql</scriptFileName>
-        </statisticRenovator>
-        <typeReplacement>
-            <entry>
-                <key>graphic</key>
-                <value>varchar</value>
-            </entry>
-            <entry>
-                <key>GRAPHIC</key>
-                <value>VARCHAR</value>
-            </entry>
-        </typeReplacement>
-        <stringLiteralEscapeSequences>
-            <entry>
-                <key>'</key>
-                <value>''</value>
-            </entry>
-            <entry>
-                <key>\n</key>
-                <value>' || chr(10) || '</value>
-            </entry>
-            <entry>
-                <key>\r</key>
-                <value>' || chr(13) || '</value>
-            </entry>
-        </stringLiteralEscapeSequences>
-        <sqlLimitSuffix>fetch first %s rows only</sqlLimitSuffix>
-        <tableProperties>NOT LOGGED INITIALLY</tableProperties>
-        <sessionTemporaryTableManager>
-            <createIndexPrefix>CREATE INDEX SESSION.</createIndexPrefix>
-            <createIndexSuffix></createIndexSuffix>
-            <createTablePrefix>DECLARE GLOBAL TEMPORARY TABLE </createTablePrefix>
-            <createTableSuffix>ON COMMIT PRESERVE ROWS NOT LOGGED</createTableSuffix>
-            <dropTablePrefix>DROP TABLE SESSION.</dropTablePrefix>
-            <indexTablePrefix>SESSION.</indexTablePrefix>
-        </sessionTemporaryTableManager>
-        <identityInserts>false</identityInserts>
-        <appendNanosToTimestamp>true</appendNanosToTimestamp>
-        <appendMillisToTimestamp>false</appendMillisToTimestamp>
-        <useToTimestampFunction>false</useToTimestampFunction>
-        <emptyBLOBValue>blob('')</emptyBLOBValue>
-        <emptyCLOBValue>clob('')</emptyCLOBValue>
-        <emptyNCLOBValue>nclob('')</emptyNCLOBValue>
-        <toBlob>blob('%s')</toBlob>
-        <toClob>clob('%s')</toClob>
-        <toNClob>nclob('%s')</toNClob>
-        <embeddedLobSizeLimit>32000</embeddedLobSizeLimit>
-        <binaryPattern>x'%s'</binaryPattern>
-        <avoidLeftJoin>false</avoidLeftJoin>
-        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
-        <virtualColumnsQuery>SELECT TABNAME, COLNAME from syscat.columns WHERE TABSCHEMA='${SCHEMA}' AND GENERATED='A'</virtualColumnsQuery>
-        <importedKeysQuery> SELECT null, REF.REFTABSCHEMA, REF.REFTABNAME, PKCOL.COLNAME,        null, REF.TABSCHEMA, REF.TABNAME, FKCOL.COLNAME, FKCOL.COLSEQ,        null, null, REF.CONSTNAME, REF.REFKEYNAME, null FROM syscat.references REF, syscat.keycoluse PKCOL, syscat.keycoluse FKCOL WHERE REF.CONSTNAME = FKCOL.CONSTNAME   AND REF.TABSCHEMA = FKCOL.TABSCHEMA   AND REF.TABNAME = FKCOL.TABNAME   AND REF.REFKEYNAME = PKCOL.CONSTNAME   AND REF.REFTABSCHEMA = PKCOL.TABSCHEMA   AND REF.REFTABNAME = PKCOL.TABNAME   AND FKCOL.COLSEQ = PKCOL.COLSEQ   AND REF.REFTABSCHEMA = '${SCHEMA}'   ORDER BY FKCOL.COLSEQ</importedKeysQuery>
-        <primaryKeysQuery>   SELECT null, CONST.TABSCHEMA, CONST.TABNAME, PKCOL.COLNAME, PKCOL.COLSEQ, CONST.CONSTNAME FROM syscat.tabconst CONST, syscat.keycoluse PKCOL WHERE CONST.CONSTNAME = PKCOL.CONSTNAME   AND CONST.TABSCHEMA = PKCOL.TABSCHEMA   AND CONST.TABNAME = PKCOL.TABNAME   AND CONST.TYPE = 'P'   AND CONST.TABSCHEMA = '${SCHEMA}'   ORDER BY PKCOL.COLSEQ</primaryKeysQuery>
-        <identifierQuoteString>"</identifierQuoteString>
-    </dbmsConfiguration>
-    
-    <!-- for DB2 z/OS -->
-    <dbmsConfiguration>
-        <dbms>DB2_ZOS</dbms>
-        <urlPattern>jdbc:db2.*</urlPattern>
-        <sqlDialect>
-            <needsValuesKeywordForDeletes>true</needsValuesKeywordForDeletes>
-            <supportsInClauseForDeletes>false</supportsInClauseForDeletes>
-            <supportsMultiRowInserts>true</supportsMultiRowInserts>
-            <upsertMode>FROM_SYSDUMMY1</upsertMode>
-        </sqlDialect>
-        <statisticRenovator>
-            <scriptFileName>script/db2/update_statistics.sql</scriptFileName>
-        </statisticRenovator>
-        <typeReplacement>
-            <entry>
-                <key>graphic</key>
-                <value>varchar</value>
-            </entry>
-            <entry>
-                <key>GRAPHIC</key>
-                <value>VARCHAR</value>
-            </entry>
-        </typeReplacement>
-        <stringLiteralEscapeSequences>
-            <entry>
-                <key>'</key>
-                <value>''</value>
-            </entry>
-            <entry>
-                <key>\n</key>
-                <value>' || chr(10) || '</value>
-            </entry>
-            <entry>
-                <key>\r</key>
-                <value>' || chr(13) || '</value>
-            </entry>
-        </stringLiteralEscapeSequences>
-        <sqlLimitSuffix>fetch first %s rows only</sqlLimitSuffix>
-        <tableProperties>NOT LOGGED INITIALLY</tableProperties>
-        <sessionTemporaryTableManager>
-            <createIndexPrefix>CREATE INDEX SESSION.</createIndexPrefix>
-            <createIndexSuffix></createIndexSuffix>
-            <createTablePrefix>DECLARE GLOBAL TEMPORARY TABLE </createTablePrefix>
-            <createTableSuffix>ON COMMIT PRESERVE ROWS NOT LOGGED</createTableSuffix>
-            <dropTablePrefix>DROP TABLE SESSION.</dropTablePrefix>
-            <indexTablePrefix>SESSION.</indexTablePrefix>
-        </sessionTemporaryTableManager>
-        <identityInserts>false</identityInserts>
-        <appendNanosToTimestamp>true</appendNanosToTimestamp>
-        <appendMillisToTimestamp>false</appendMillisToTimestamp>
-        <useToTimestampFunction>false</useToTimestampFunction>
-        <emptyBLOBValue>blob('')</emptyBLOBValue>
-        <emptyCLOBValue>clob('')</emptyCLOBValue>
-        <emptyNCLOBValue>nclob('')</emptyNCLOBValue>
-        <toBlob>blob('%s')</toBlob>
-        <toClob>clob('%s')</toClob>
-        <toNClob>nclob('%s')</toNClob>
-        <embeddedLobSizeLimit>32000</embeddedLobSizeLimit>
-        <binaryPattern>x'%s'</binaryPattern>
-        <avoidLeftJoin>false</avoidLeftJoin>
-        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
-        <virtualColumnsQuery>SELECT TABNAME, COLNAME from syscat.columns WHERE TABSCHEMA='${SCHEMA}' AND GENERATED='A'</virtualColumnsQuery>
-        <importedKeysQuery>SELECT null, REF.REFTABSCHEMA, REF.REFTABNAME, PKCOL.COLNAME, null, REF.TABSCHEMA, REF.TABNAME, FKCOL.COLNAME, FKCOL.COLSEQ, null, null, REF.CONSTNAME, REF.REFKEYNAME, null FROM syscat.references REF, syscat.keycoluse PKCOL, syscat.keycoluse FKCOL WHERE REF.CONSTNAME = FKCOL.CONSTNAME   AND REF.TABSCHEMA = FKCOL.TABSCHEMA   AND REF.TABNAME = FKCOL.TABNAME   AND REF.REFKEYNAME = PKCOL.CONSTNAME   AND REF.REFTABSCHEMA = PKCOL.TABSCHEMA   AND REF.REFTABNAME = PKCOL.TABNAME   AND FKCOL.COLSEQ = PKCOL.COLSEQ   AND REF.REFTABSCHEMA = '${SCHEMA}' ORDER BY FKCOL.COLSEQ</importedKeysQuery>
-        <primaryKeysQuery>SELECT null, CONST.TABSCHEMA, CONST.TABNAME, PKCOL.COLNAME, PKCOL.COLSEQ, CONST.CONSTNAME FROM syscat.tabconst CONST, syscat.keycoluse PKCOL WHERE CONST.CONSTNAME = PKCOL.CONSTNAME   AND CONST.TABSCHEMA = PKCOL.TABSCHEMA   AND CONST.TABNAME = PKCOL.TABNAME   AND CONST.TYPE = 'P'   AND CONST.TABSCHEMA = '${SCHEMA}'   ORDER BY PKCOL.COLSEQ</primaryKeysQuery>
-        <identifierQuoteString>"</identifierQuoteString>
-    </dbmsConfiguration>
-    
     <!-- for Oracle -->
-    <dbmsConfiguration>
-        <dbms>ORACLE</dbms>
+    <dbms>
+        <id>ORACLE</id>
+        <displayName>Oracle</displayName>
         <urlPattern>jdbc:oracle.*</urlPattern>
         <sqlDialect>
             <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
@@ -297,147 +108,12 @@
         <primaryKeysQuery>SELECT null, c_src.OWNER, c_src.TABLE_NAME, c_src.COLUMN_NAME, c_src.POSITION, c_list.CONSTRAINT_NAME FROM ALL_CONSTRAINTS c_list, ALL_CONS_COLUMNS c_src WHERE c_list.CONSTRAINT_NAME   = c_src.CONSTRAINT_NAME  AND  c_list.OWNER             = c_src.OWNER  AND  c_list.CONSTRAINT_TYPE = 'P'  AND  c_list.CONSTRAINT_NAME not like 'BIN$%'  AND  c_src.OWNER      = '${SCHEMA}'  ORDER BY c_src.POSITION</primaryKeysQuery>
         <indexInfoQuery>SELECT null, c_src.OWNER, c_src.TABLE_NAME, 0, null, c_list.CONSTRAINT_NAME, null, null, c_src.COLUMN_NAME FROM ALL_CONSTRAINTS c_list, ALL_CONS_COLUMNS c_src WHERE c_list.CONSTRAINT_NAME   = c_src.CONSTRAINT_NAME  AND  c_list.OWNER             = c_src.OWNER  AND  c_list.CONSTRAINT_TYPE = 'U'  AND  c_list.CONSTRAINT_NAME not like 'BIN$%'  AND  c_src.OWNER      = '${SCHEMA}'</indexInfoQuery>
         <identifierQuoteString>"</identifierQuoteString>
-    </dbmsConfiguration>
-    
-    <!-- for PostgreSQL -->
-    <dbmsConfiguration>
-        <dbms>POSTGRESQL</dbms>
-        <urlPattern>jdbc:postgres.*</urlPattern>
-        <sqlDialect>
-            <needsValuesKeywordForDeletes>true</needsValuesKeywordForDeletes>
-            <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
-            <supportsMultiRowInserts>true</supportsMultiRowInserts>
-            <upsertMode>DB2</upsertMode>
-        </sqlDialect>
-        <statisticRenovator>
-            <scriptFileName>script/postgres/update_statistics.sql</scriptFileName>
-        </statisticRenovator>
-        <typeReplacement>
-            <entry>
-                <key>DOUBLE</key>
-                <value>DOUBLE PRECISION</value>
-            </entry>
-            <entry>
-                <key>double</key>
-                <value>double precision</value>
-            </entry>
-            <entry>
-                <key>bigserial</key>
-                <value>int8</value>
-            </entry>
-            <entry>
-                <key>serial8</key>
-                <value>int8</value>
-            </entry>
-            <entry>
-                <key>serial</key>
-                <value>int4</value>
-            </entry>
-            <entry>
-                <key>serial4</key>
-                <value>int4</value>
-            </entry>
-            <entry>
-                <key>NVARCHAR</key>
-                <value>VARCHAR</value>
-            </entry>
-            <entry>
-                <key>nvarchar</key>
-                <value>varchar</value>
-            </entry>
-        </typeReplacement>
-        <sqlLimitSuffix>LIMIT %s</sqlLimitSuffix>
-        
-        <!-- NOLOGGING, TABLESPACE-spec., etc. -->
-        <tableProperties></tableProperties>
-        
-        <sessionTemporaryTableManager>
-            <createIndexPrefix>CREATE INDEX </createIndexPrefix>
-            <createIndexSuffix></createIndexSuffix>
-            <createTablePrefix>CREATE TEMPORARY TABLE </createTablePrefix>
-            <createTableSuffix></createTableSuffix>
-            <dropTablePrefix>-- DROP TABLE </dropTablePrefix>
-            <indexTablePrefix></indexTablePrefix>
-        </sessionTemporaryTableManager>
-        <identityInserts>false</identityInserts>
-        <appendNanosToTimestamp>true</appendNanosToTimestamp>
-        <appendMillisToTimestamp>false</appendMillisToTimestamp>
-        <useToTimestampFunction>false</useToTimestampFunction>
-        <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
-        <binaryPattern>E'\\x%s'</binaryPattern>
-        <avoidLeftJoin>false</avoidLeftJoin>
-        <supportsSchemasInIndexDefinitions>false</supportsSchemasInIndexDefinitions>
-        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
-        <importedKeysQuery>SELECT null, PKCU.TABLE_SCHEMA, PKCU.TABLE_NAME, PKCU.COLUMN_NAME, null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION,        null, null, RC.CONSTRAINT_NAME, RC.UNIQUE_CONSTRAINT_NAME, null  FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS RC  JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU    ON KCU.CONSTRAINT_CATALOG = RC.CONSTRAINT_CATALOG        AND KCU.CONSTRAINT_SCHEMA = RC.CONSTRAINT_SCHEMA       AND KCU.CONSTRAINT_NAME = RC.CONSTRAINT_NAME  JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE PKCU    ON PKCU.CONSTRAINT_CATALOG = RC.UNIQUE_CONSTRAINT_CATALOG        AND PKCU.CONSTRAINT_SCHEMA = RC.UNIQUE_CONSTRAINT_SCHEMA       AND PKCU.CONSTRAINT_NAME = RC.UNIQUE_CONSTRAINT_NAME       AND PKCU.ORDINAL_POSITION = KCU.ORDINAL_POSITION  WHERE PKCU.TABLE_SCHEMA = '${SCHEMA}'  ORDER BY KCU.ORDINAL_POSITION</importedKeysQuery>
-        <primaryKeysQuery>SELECT null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION, C.CONSTRAINT_NAME   FROM   INFORMATION_SCHEMA.TABLE_CONSTRAINTS C   JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU     ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG        AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA       AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME   WHERE C.CONSTRAINT_TYPE = 'PRIMARY KEY'       AND  KCU.TABLE_SCHEMA = '${SCHEMA}'   ORDER BY KCU.ORDINAL_POSITION</primaryKeysQuery>
-        <identifierQuoteString>"</identifierQuoteString>
-    </dbmsConfiguration>
-    
-    <!-- for Cloudscape -->
-    <dbmsConfiguration>
-        <dbms>CLOADSCAPE</dbms>
-        <urlPattern>jdbc:cloudscape.*</urlPattern>
-        <sqlDialect>
-            <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
-            <supportsInClauseForDeletes>false</supportsInClauseForDeletes>
-            <supportsMultiRowInserts>false</supportsMultiRowInserts>
-            <upsertMode>FROM_JL_DUAL</upsertMode>
-        </sqlDialect>
-        <statisticRenovator>
-            <scriptFileName>script/cloudscape/update_statistics.sql</scriptFileName>
-        </statisticRenovator>
-        
-        <!-- NOLOGGING, TABLESPACE-spec., etc. -->
-        <tableProperties></tableProperties>
-        
-        <identityInserts>false</identityInserts>
-        <appendNanosToTimestamp>true</appendNanosToTimestamp>
-        <appendMillisToTimestamp>false</appendMillisToTimestamp>
-        <useToTimestampFunction>false</useToTimestampFunction>
-        <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
-        <binaryPattern>x'%s'</binaryPattern>
-        <avoidLeftJoin>false</avoidLeftJoin>
-        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
-        <identifierQuoteString>"</identifierQuoteString>
-    </dbmsConfiguration>
-    
-    <!-- for Firebird -->
-    <dbmsConfiguration>
-        <dbms>FIREBIRD</dbms>
-        <urlPattern>jdbc:firebirdsql.*</urlPattern>
-        <sqlDialect>
-            <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
-            <supportsInClauseForDeletes>false</supportsInClauseForDeletes>
-            <supportsMultiRowInserts>false</supportsMultiRowInserts>
-            <upsertMode>FROM_JL_DUAL</upsertMode>
-        </sqlDialect>
-        <statisticRenovator>
-            <scriptFileName>script/firebird/update_statistics.sql</scriptFileName>
-        </statisticRenovator>
-        <typeReplacement>
-            <entry>
-                <key>DOUBLE</key>
-                <value>DOUBLE PRECISION</value>
-            </entry>
-        </typeReplacement>
-        
-        <!-- NOLOGGING, TABLESPACE-spec., etc. -->
-        <tableProperties></tableProperties>
-        
-        <identityInserts>false</identityInserts>
-        <appendNanosToTimestamp>true</appendNanosToTimestamp>
-        <appendMillisToTimestamp>false</appendMillisToTimestamp>
-        <useToTimestampFunction>false</useToTimestampFunction>
-        <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
-        <binaryPattern>x'%s'</binaryPattern>
-        <avoidLeftJoin>false</avoidLeftJoin>
-        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
-        <identifierQuoteString>"</identifierQuoteString>
-    </dbmsConfiguration>
+    </dbms>
     
     <!-- for MS SQL Server -->
-    <dbmsConfiguration>
-        <dbms>MSSQL</dbms>
+    <dbms>
+        <id>MSSQL</id>
+        <displayName>MS SQL Server</displayName>
         <urlPattern>jdbc:sqlserver.*|jdbc:inetdae.*|jdbc:JTurbo.*|jdbc:weblogic:mssqlserver.*|jdbc:jtds:sqlserver.*</urlPattern>
         <sqlDialect>
             <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
@@ -491,11 +167,12 @@
         <primaryKeysQuery>SELECT null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION, C.CONSTRAINT_NAME   FROM   INFORMATION_SCHEMA.TABLE_CONSTRAINTS C   JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU     ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG        AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA       AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME   WHERE C.CONSTRAINT_TYPE = 'PRIMARY KEY'       AND  KCU.TABLE_SCHEMA = '${SCHEMA}'   ORDER BY KCU.ORDINAL_POSITION</primaryKeysQuery>
         <nullableContraint>NULL</nullableContraint>
         <identifierQuoteString>"</identifierQuoteString>
-    </dbmsConfiguration>
+    </dbms>
     
     <!-- for MySQL -->
-    <dbmsConfiguration>
-        <dbms>MySQL</dbms>
+    <dbms>
+        <id>MySQL</id>
+        <displayName>MySQL</displayName>
         <urlPattern>jdbc:mysql.*</urlPattern>
         <sqlDialect>
             <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
@@ -616,11 +293,343 @@
         <primaryKeysQuery>SELECT null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION, C.CONSTRAINT_NAME   FROM   INFORMATION_SCHEMA.TABLE_CONSTRAINTS C   JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU     ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG        AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA       AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME   WHERE C.CONSTRAINT_TYPE = 'PRIMARY KEY'       AND  KCU.TABLE_SCHEMA = '${SCHEMA}'   ORDER BY KCU.ORDINAL_POSITION</primaryKeysQuery>
         <nullableContraint>NULL</nullableContraint>
         <identifierQuoteString>`</identifierQuoteString>
-    </dbmsConfiguration>
+    </dbms>
+    
+    <!-- for DB2 LUW -->
+    <dbms>
+        <id>DB2</id>
+        <displayName>DB2 LUW</displayName>
+        <urlPattern>jdbc:db2.*</urlPattern>
+        <testQuery>Select A, B, C from (values (1, '2', 3), (4, '5', 6)) E(A, B, C)</testQuery>
+        <sqlDialect>
+            <needsValuesKeywordForDeletes>true</needsValuesKeywordForDeletes>
+            <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
+            <supportsMultiRowInserts>true</supportsMultiRowInserts>
+            <upsertMode>DB2</upsertMode>
+        </sqlDialect>
+        <statisticRenovator>
+            <scriptFileName>script/db2/update_statistics.sql</scriptFileName>
+        </statisticRenovator>
+        <typeReplacement>
+            <entry>
+                <key>graphic</key>
+                <value>varchar</value>
+            </entry>
+            <entry>
+                <key>GRAPHIC</key>
+                <value>VARCHAR</value>
+            </entry>
+        </typeReplacement>
+        <stringLiteralEscapeSequences>
+            <entry>
+                <key>'</key>
+                <value>''</value>
+            </entry>
+            <entry>
+                <key>\n</key>
+                <value>' || chr(10) || '</value>
+            </entry>
+            <entry>
+                <key>\r</key>
+                <value>' || chr(13) || '</value>
+            </entry>
+        </stringLiteralEscapeSequences>
+        <sqlLimitSuffix>fetch first %s rows only</sqlLimitSuffix>
+        <tableProperties>NOT LOGGED INITIALLY</tableProperties>
+        <sessionTemporaryTableManager>
+            <createIndexPrefix>CREATE INDEX SESSION.</createIndexPrefix>
+            <createIndexSuffix></createIndexSuffix>
+            <createTablePrefix>DECLARE GLOBAL TEMPORARY TABLE </createTablePrefix>
+            <createTableSuffix>ON COMMIT PRESERVE ROWS NOT LOGGED</createTableSuffix>
+            <dropTablePrefix>DROP TABLE SESSION.</dropTablePrefix>
+            <indexTablePrefix>SESSION.</indexTablePrefix>
+        </sessionTemporaryTableManager>
+        <identityInserts>false</identityInserts>
+        <appendNanosToTimestamp>true</appendNanosToTimestamp>
+        <appendMillisToTimestamp>false</appendMillisToTimestamp>
+        <useToTimestampFunction>false</useToTimestampFunction>
+        <emptyBLOBValue>blob('')</emptyBLOBValue>
+        <emptyCLOBValue>clob('')</emptyCLOBValue>
+        <emptyNCLOBValue>nclob('')</emptyNCLOBValue>
+        <toBlob>blob('%s')</toBlob>
+        <toClob>clob('%s')</toClob>
+        <toNClob>nclob('%s')</toNClob>
+        <embeddedLobSizeLimit>32000</embeddedLobSizeLimit>
+        <binaryPattern>x'%s'</binaryPattern>
+        <avoidLeftJoin>false</avoidLeftJoin>
+        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <virtualColumnsQuery>SELECT TABNAME, COLNAME from syscat.columns WHERE TABSCHEMA='${SCHEMA}' AND GENERATED='A'</virtualColumnsQuery>
+        <importedKeysQuery> SELECT null, REF.REFTABSCHEMA, REF.REFTABNAME, PKCOL.COLNAME,        null, REF.TABSCHEMA, REF.TABNAME, FKCOL.COLNAME, FKCOL.COLSEQ,        null, null, REF.CONSTNAME, REF.REFKEYNAME, null FROM syscat.references REF, syscat.keycoluse PKCOL, syscat.keycoluse FKCOL WHERE REF.CONSTNAME = FKCOL.CONSTNAME   AND REF.TABSCHEMA = FKCOL.TABSCHEMA   AND REF.TABNAME = FKCOL.TABNAME   AND REF.REFKEYNAME = PKCOL.CONSTNAME   AND REF.REFTABSCHEMA = PKCOL.TABSCHEMA   AND REF.REFTABNAME = PKCOL.TABNAME   AND FKCOL.COLSEQ = PKCOL.COLSEQ   AND REF.REFTABSCHEMA = '${SCHEMA}'   ORDER BY FKCOL.COLSEQ</importedKeysQuery>
+        <primaryKeysQuery>   SELECT null, CONST.TABSCHEMA, CONST.TABNAME, PKCOL.COLNAME, PKCOL.COLSEQ, CONST.CONSTNAME FROM syscat.tabconst CONST, syscat.keycoluse PKCOL WHERE CONST.CONSTNAME = PKCOL.CONSTNAME   AND CONST.TABSCHEMA = PKCOL.TABSCHEMA   AND CONST.TABNAME = PKCOL.TABNAME   AND CONST.TYPE = 'P'   AND CONST.TABSCHEMA = '${SCHEMA}'   ORDER BY PKCOL.COLSEQ</primaryKeysQuery>
+        <identifierQuoteString>"</identifierQuoteString>
+    </dbms>
+    
+    <!-- for DB2 z/OS -->
+    <dbms>
+        <id>DB2_ZOS</id>
+        <displayName>DB2 z/OS</displayName>
+        <urlPattern>jdbc:db2.*</urlPattern>
+        <sqlDialect>
+            <needsValuesKeywordForDeletes>true</needsValuesKeywordForDeletes>
+            <supportsInClauseForDeletes>false</supportsInClauseForDeletes>
+            <supportsMultiRowInserts>true</supportsMultiRowInserts>
+            <upsertMode>FROM_SYSDUMMY1</upsertMode>
+        </sqlDialect>
+        <statisticRenovator>
+            <scriptFileName>script/db2/update_statistics.sql</scriptFileName>
+        </statisticRenovator>
+        <typeReplacement>
+            <entry>
+                <key>graphic</key>
+                <value>varchar</value>
+            </entry>
+            <entry>
+                <key>GRAPHIC</key>
+                <value>VARCHAR</value>
+            </entry>
+        </typeReplacement>
+        <stringLiteralEscapeSequences>
+            <entry>
+                <key>'</key>
+                <value>''</value>
+            </entry>
+            <entry>
+                <key>\n</key>
+                <value>' || chr(10) || '</value>
+            </entry>
+            <entry>
+                <key>\r</key>
+                <value>' || chr(13) || '</value>
+            </entry>
+        </stringLiteralEscapeSequences>
+        <sqlLimitSuffix>fetch first %s rows only</sqlLimitSuffix>
+        <tableProperties>NOT LOGGED INITIALLY</tableProperties>
+        <sessionTemporaryTableManager>
+            <createIndexPrefix>CREATE INDEX SESSION.</createIndexPrefix>
+            <createIndexSuffix></createIndexSuffix>
+            <createTablePrefix>DECLARE GLOBAL TEMPORARY TABLE </createTablePrefix>
+            <createTableSuffix>ON COMMIT PRESERVE ROWS NOT LOGGED</createTableSuffix>
+            <dropTablePrefix>DROP TABLE SESSION.</dropTablePrefix>
+            <indexTablePrefix>SESSION.</indexTablePrefix>
+        </sessionTemporaryTableManager>
+        <identityInserts>false</identityInserts>
+        <appendNanosToTimestamp>true</appendNanosToTimestamp>
+        <appendMillisToTimestamp>false</appendMillisToTimestamp>
+        <useToTimestampFunction>false</useToTimestampFunction>
+        <emptyBLOBValue>blob('')</emptyBLOBValue>
+        <emptyCLOBValue>clob('')</emptyCLOBValue>
+        <emptyNCLOBValue>nclob('')</emptyNCLOBValue>
+        <toBlob>blob('%s')</toBlob>
+        <toClob>clob('%s')</toClob>
+        <toNClob>nclob('%s')</toNClob>
+        <embeddedLobSizeLimit>32000</embeddedLobSizeLimit>
+        <binaryPattern>x'%s'</binaryPattern>
+        <avoidLeftJoin>false</avoidLeftJoin>
+        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <virtualColumnsQuery>SELECT TABNAME, COLNAME from syscat.columns WHERE TABSCHEMA='${SCHEMA}' AND GENERATED='A'</virtualColumnsQuery>
+        <importedKeysQuery>SELECT null, REF.REFTABSCHEMA, REF.REFTABNAME, PKCOL.COLNAME, null, REF.TABSCHEMA, REF.TABNAME, FKCOL.COLNAME, FKCOL.COLSEQ, null, null, REF.CONSTNAME, REF.REFKEYNAME, null FROM syscat.references REF, syscat.keycoluse PKCOL, syscat.keycoluse FKCOL WHERE REF.CONSTNAME = FKCOL.CONSTNAME   AND REF.TABSCHEMA = FKCOL.TABSCHEMA   AND REF.TABNAME = FKCOL.TABNAME   AND REF.REFKEYNAME = PKCOL.CONSTNAME   AND REF.REFTABSCHEMA = PKCOL.TABSCHEMA   AND REF.REFTABNAME = PKCOL.TABNAME   AND FKCOL.COLSEQ = PKCOL.COLSEQ   AND REF.REFTABSCHEMA = '${SCHEMA}' ORDER BY FKCOL.COLSEQ</importedKeysQuery>
+        <primaryKeysQuery>SELECT null, CONST.TABSCHEMA, CONST.TABNAME, PKCOL.COLNAME, PKCOL.COLSEQ, CONST.CONSTNAME FROM syscat.tabconst CONST, syscat.keycoluse PKCOL WHERE CONST.CONSTNAME = PKCOL.CONSTNAME   AND CONST.TABSCHEMA = PKCOL.TABSCHEMA   AND CONST.TABNAME = PKCOL.TABNAME   AND CONST.TYPE = 'P'   AND CONST.TABSCHEMA = '${SCHEMA}'   ORDER BY PKCOL.COLSEQ</primaryKeysQuery>
+        <identifierQuoteString>"</identifierQuoteString>
+    </dbms>
+
+    <!-- for Informix -->
+    <dbms>
+        <id>INFORMIX</id>
+        <displayName>Informix</displayName>
+        <urlPattern>jdbc:informix.*</urlPattern>
+        <sqlDialect>
+            <needsValuesKeywordForDeletes>true</needsValuesKeywordForDeletes>
+            <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
+            <supportsMultiRowInserts>true</supportsMultiRowInserts>
+            <upsertMode>DB2</upsertMode>
+        </sqlDialect>
+        <statisticRenovator>
+            <scriptFileName>script/informix/update_statistics.sql</scriptFileName>
+        </statisticRenovator>
+        <typeReplacement>
+            <entry>
+                <key>datetime</key>
+                <value>datetime year to fraction</value>
+            </entry>
+            <entry>
+                <key>serial</key>
+                <value>int</value>
+            </entry>
+            <entry>
+                <key>serial8</key>
+                <value>int8</value>
+            </entry>
+            <entry>
+                <key>bigserial</key>
+                <value>bigint</value>
+            </entry>
+        </typeReplacement>
+        <sqlLimitSuffix>FIRST %s</sqlLimitSuffix>
+        <varcharLengthLimit>255</varcharLengthLimit>
+        <tableProperties></tableProperties>
+        <sessionTemporaryTableManager>
+            <createIndexPrefix>CREATE INDEX </createIndexPrefix>
+            <createIndexSuffix></createIndexSuffix>
+            <createTablePrefix>CREATE TEMP TABLE </createTablePrefix>
+            <createTableSuffix> WITH NO LOG</createTableSuffix>
+            <dropTablePrefix>DROP TABLE </dropTablePrefix>
+            <indexTablePrefix></indexTablePrefix>
+        </sessionTemporaryTableManager>
+        <identityInserts>false</identityInserts>
+        <appendNanosToTimestamp>true</appendNanosToTimestamp>
+        <appendMillisToTimestamp>false</appendMillisToTimestamp>
+        <useToTimestampFunction>false</useToTimestampFunction>
+        <timestampPattern>cast(%s as datetime year to fraction)</timestampPattern>
+        <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
+        <binaryPattern>x'%s'</binaryPattern>
+        <avoidLeftJoin>false</avoidLeftJoin>
+        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <identifierQuoteString>"</identifierQuoteString>
+    </dbms>
+    
+    <!-- for PostgreSQL -->
+    <dbms>
+        <id>POSTGRESQL</id>
+        <displayName>PostgreSQL</displayName>
+        <urlPattern>jdbc:postgres.*</urlPattern>
+        <sqlDialect>
+            <needsValuesKeywordForDeletes>true</needsValuesKeywordForDeletes>
+            <supportsInClauseForDeletes>true</supportsInClauseForDeletes>
+            <supportsMultiRowInserts>true</supportsMultiRowInserts>
+            <upsertMode>DB2</upsertMode>
+        </sqlDialect>
+        <statisticRenovator>
+            <scriptFileName>script/postgres/update_statistics.sql</scriptFileName>
+        </statisticRenovator>
+        <typeReplacement>
+            <entry>
+                <key>DOUBLE</key>
+                <value>DOUBLE PRECISION</value>
+            </entry>
+            <entry>
+                <key>double</key>
+                <value>double precision</value>
+            </entry>
+            <entry>
+                <key>bigserial</key>
+                <value>int8</value>
+            </entry>
+            <entry>
+                <key>serial8</key>
+                <value>int8</value>
+            </entry>
+            <entry>
+                <key>serial</key>
+                <value>int4</value>
+            </entry>
+            <entry>
+                <key>serial4</key>
+                <value>int4</value>
+            </entry>
+            <entry>
+                <key>NVARCHAR</key>
+                <value>VARCHAR</value>
+            </entry>
+            <entry>
+                <key>nvarchar</key>
+                <value>varchar</value>
+            </entry>
+        </typeReplacement>
+        <sqlLimitSuffix>LIMIT %s</sqlLimitSuffix>
+        
+        <!-- NOLOGGING, TABLESPACE-spec., etc. -->
+        <tableProperties></tableProperties>
+        
+        <sessionTemporaryTableManager>
+            <createIndexPrefix>CREATE INDEX </createIndexPrefix>
+            <createIndexSuffix></createIndexSuffix>
+            <createTablePrefix>CREATE TEMPORARY TABLE </createTablePrefix>
+            <createTableSuffix></createTableSuffix>
+            <dropTablePrefix>-- DROP TABLE </dropTablePrefix>
+            <indexTablePrefix></indexTablePrefix>
+        </sessionTemporaryTableManager>
+        <identityInserts>false</identityInserts>
+        <appendNanosToTimestamp>true</appendNanosToTimestamp>
+        <appendMillisToTimestamp>false</appendMillisToTimestamp>
+        <useToTimestampFunction>false</useToTimestampFunction>
+        <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
+        <binaryPattern>E'\\x%s'</binaryPattern>
+        <avoidLeftJoin>false</avoidLeftJoin>
+        <supportsSchemasInIndexDefinitions>false</supportsSchemasInIndexDefinitions>
+        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <importedKeysQuery>SELECT null, PKCU.TABLE_SCHEMA, PKCU.TABLE_NAME, PKCU.COLUMN_NAME, null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION,        null, null, RC.CONSTRAINT_NAME, RC.UNIQUE_CONSTRAINT_NAME, null  FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS RC  JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU    ON KCU.CONSTRAINT_CATALOG = RC.CONSTRAINT_CATALOG        AND KCU.CONSTRAINT_SCHEMA = RC.CONSTRAINT_SCHEMA       AND KCU.CONSTRAINT_NAME = RC.CONSTRAINT_NAME  JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE PKCU    ON PKCU.CONSTRAINT_CATALOG = RC.UNIQUE_CONSTRAINT_CATALOG        AND PKCU.CONSTRAINT_SCHEMA = RC.UNIQUE_CONSTRAINT_SCHEMA       AND PKCU.CONSTRAINT_NAME = RC.UNIQUE_CONSTRAINT_NAME       AND PKCU.ORDINAL_POSITION = KCU.ORDINAL_POSITION  WHERE PKCU.TABLE_SCHEMA = '${SCHEMA}'  ORDER BY KCU.ORDINAL_POSITION</importedKeysQuery>
+        <primaryKeysQuery>SELECT null, KCU.TABLE_SCHEMA, KCU.TABLE_NAME, KCU.COLUMN_NAME, KCU.ORDINAL_POSITION, C.CONSTRAINT_NAME   FROM   INFORMATION_SCHEMA.TABLE_CONSTRAINTS C   JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE KCU     ON KCU.CONSTRAINT_CATALOG = C.CONSTRAINT_CATALOG        AND KCU.CONSTRAINT_SCHEMA = C.CONSTRAINT_SCHEMA       AND KCU.CONSTRAINT_NAME = C.CONSTRAINT_NAME   WHERE C.CONSTRAINT_TYPE = 'PRIMARY KEY'       AND  KCU.TABLE_SCHEMA = '${SCHEMA}'   ORDER BY KCU.ORDINAL_POSITION</primaryKeysQuery>
+        <identifierQuoteString>"</identifierQuoteString>
+    </dbms>
+    
+    <!-- for Cloudscape -->
+    <dbms>
+        <id>CLOADSCAPE</id>
+        <displayName>Cloudscape</displayName>
+        <urlPattern>jdbc:cloudscape.*</urlPattern>
+        <sqlDialect>
+            <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
+            <supportsInClauseForDeletes>false</supportsInClauseForDeletes>
+            <supportsMultiRowInserts>false</supportsMultiRowInserts>
+            <upsertMode>FROM_JL_DUAL</upsertMode>
+        </sqlDialect>
+        <statisticRenovator>
+            <scriptFileName>script/cloudscape/update_statistics.sql</scriptFileName>
+        </statisticRenovator>
+        
+        <!-- NOLOGGING, TABLESPACE-spec., etc. -->
+        <tableProperties></tableProperties>
+        
+        <identityInserts>false</identityInserts>
+        <appendNanosToTimestamp>true</appendNanosToTimestamp>
+        <appendMillisToTimestamp>false</appendMillisToTimestamp>
+        <useToTimestampFunction>false</useToTimestampFunction>
+        <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
+        <binaryPattern>x'%s'</binaryPattern>
+        <avoidLeftJoin>false</avoidLeftJoin>
+        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <identifierQuoteString>"</identifierQuoteString>
+    </dbms>
+    
+    <!-- for Firebird -->
+    <dbms>
+        <id>FIREBIRD</id>
+        <displayName>Firebird</displayName>
+        <urlPattern>jdbc:firebirdsql.*</urlPattern>
+        <sqlDialect>
+            <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
+            <supportsInClauseForDeletes>false</supportsInClauseForDeletes>
+            <supportsMultiRowInserts>false</supportsMultiRowInserts>
+            <upsertMode>FROM_JL_DUAL</upsertMode>
+        </sqlDialect>
+        <statisticRenovator>
+            <scriptFileName>script/firebird/update_statistics.sql</scriptFileName>
+        </statisticRenovator>
+        <typeReplacement>
+            <entry>
+                <key>DOUBLE</key>
+                <value>DOUBLE PRECISION</value>
+            </entry>
+        </typeReplacement>
+        
+        <!-- NOLOGGING, TABLESPACE-spec., etc. -->
+        <tableProperties></tableProperties>
+        
+        <identityInserts>false</identityInserts>
+        <appendNanosToTimestamp>true</appendNanosToTimestamp>
+        <appendMillisToTimestamp>false</appendMillisToTimestamp>
+        <useToTimestampFunction>false</useToTimestampFunction>
+        <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
+        <binaryPattern>x'%s'</binaryPattern>
+        <avoidLeftJoin>false</avoidLeftJoin>
+        <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <identifierQuoteString>"</identifierQuoteString>
+    </dbms>
     
     <!-- for Derby -->
-    <dbmsConfiguration>
-        <dbms>DERBY</dbms>
+    <dbms>
+        <id>DERBY</id>
+        <displayName>Derby</displayName>
         <urlPattern>jdbc:derby.*</urlPattern>
         <sqlDialect>
             <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
@@ -644,11 +653,12 @@
         <avoidLeftJoin>false</avoidLeftJoin>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <identifierQuoteString>"</identifierQuoteString>
-    </dbmsConfiguration>
+    </dbms>
     
     <!-- for SyBASE -->
-    <dbmsConfiguration>
-        <dbms>SYBASE</dbms>
+    <dbms>
+        <id>SYBASE</id>
+        <displayName>Sybase</displayName>
         <urlPattern>jdbc:sybase.*|jdbc:jtds:sybase.*</urlPattern>
         <sqlDialect>
             <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
@@ -684,11 +694,12 @@
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <nullableContraint>NULL</nullableContraint>
         <identifierQuoteString>"</identifierQuoteString>
-    </dbmsConfiguration>
+    </dbms>
     
     <!-- for SQLite -->
-    <dbmsConfiguration>
-        <dbms>SQLITE</dbms>
+    <dbms>
+        <id>SQLITE</id>
+        <displayName>SQLite</displayName>
         <urlPattern>jdbc:sqlite.*</urlPattern>
         <sqlDialect>
             <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
@@ -728,11 +739,12 @@
         <avoidLeftJoin>false</avoidLeftJoin>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <identifierQuoteString>"</identifierQuoteString>
-    </dbmsConfiguration>
+    </dbms>
     
     <!-- for HSQLDB -->
-    <dbmsConfiguration>
-        <dbms>HSQL</dbms>
+    <dbms>
+        <id>HSQL</id>
+        <displayName>HSQLDB</displayName>
         <urlPattern>jdbc:hsqldb.*</urlPattern>
         <sqlDialect>
             <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
@@ -754,11 +766,12 @@
         <avoidLeftJoin>false</avoidLeftJoin>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <identifierQuoteString>"</identifierQuoteString>
-    </dbmsConfiguration>
+    </dbms>
     
     <!-- for H2 -->
-    <dbmsConfiguration>
-        <dbms>H2</dbms>
+    <dbms>
+        <id>H2</id>
+        <displayName>H2</displayName>
         <urlPattern>jdbc:h2.*</urlPattern>
         <sqlDialect>
             <needsValuesKeywordForDeletes>false</needsValuesKeywordForDeletes>
@@ -807,5 +820,6 @@
         <useInlineViewsInDataBrowser>false</useInlineViewsInDataBrowser>
         <virtualColumnsQuery>SELECT TABLE_NAME, COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='${SCHEMA}' AND IS_COMPUTED</virtualColumnsQuery>
         <identifierQuoteString>"</identifierQuoteString>
-    </dbmsConfiguration>
+    </dbms>
+    
 </configuration>

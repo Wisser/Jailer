@@ -49,8 +49,7 @@ import javax.swing.event.DocumentListener;
 import net.sf.jailer.DDLCreator;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.configuration.Configuration;
-import net.sf.jailer.configuration.DBMSConfiguration;
-import net.sf.jailer.database.DBMS;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.SqlException;
 import net.sf.jailer.database.TemporaryTableScope;
@@ -150,7 +149,7 @@ public class ExportDialog extends javax.swing.JDialog {
         this.initialArgs = new ArrayList<String>(initialArgs);
         this.password = password;
         this.settingsContext = session.dbUrl;
-        this.sourceDBMS = Configuration.getInstance().forDbms(session).getDbms();
+        this.sourceDBMS = DBMS.forSession(session);
         this.dbConnectionDialog = dbConnectionDialog;
         this.additionalSubjects = additionalSubjects;
         initComponents();
@@ -253,7 +252,7 @@ public class ExportDialog extends javax.swing.JDialog {
         }
         
     	useRowIds.setSelected(true);
-        if (Configuration.getInstance().forDbms(session).getRowidName() == null) {
+        if (DBMS.forSession(session).getRowidName() == null) {
         	useRowIds.setVisible(false);
         }
         
@@ -422,7 +421,7 @@ public class ExportDialog extends javax.swing.JDialog {
                         Object value, int index, boolean isSelected,
                         boolean cellHasFocus) {
                     return super.getListCellRendererComponent(list,
-                            value instanceof DBMS? ((DBMS) value).displayName : value, index, isSelected,
+                            value instanceof DBMS? ((DBMS) value).getDisplayName() : value, index, isSelected,
                             cellHasFocus);
                 }
     		});
@@ -567,7 +566,7 @@ public class ExportDialog extends javax.swing.JDialog {
 
     private void initScopeButtons(final Session session) {
     	globalIsAvailable = true;
-    	DBMSConfiguration configuration = Configuration.getInstance().forDbms(session);
+    	DBMS configuration = DBMS.forSession(session);
     	sessionLocalIsAvailable = configuration.getSessionTemporaryTableManager() != null;
 
     	scopeGlobal.setEnabled(true);
@@ -1735,9 +1734,9 @@ public class ExportDialog extends javax.swing.JDialog {
     		Object selectedItem = targetDBMSComboBox.getSelectedItem();
     		if (selectedItem instanceof DBMS) {
 				DBMS targetDBMS = (DBMS) selectedItem;
-	    		if (targetDBMS != null && targetDBMS != DBMS.UNKNOWN && targetDBMS != sourceDBMS) {
+	    		if (targetDBMS != null && targetDBMS != sourceDBMS) {
 	    			args.add("-target-dbms");
-	    			args.add(targetDBMS.name());
+	    			args.add(targetDBMS.getId());
 	    		}
     		}
     	}

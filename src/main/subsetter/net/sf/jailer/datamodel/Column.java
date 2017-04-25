@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.util.SqlUtil;
 
@@ -283,7 +283,7 @@ public class Column {
      * @return <code>true</code> iff this column cannot be updated
      */
 	public boolean isVirtualOrBlocked(Session session) {
-		return isVirtual || Configuration.getInstance().forDbms(session).getExportBlocks().contains(type);
+		return isVirtual || DBMS.forSession(session).getExportBlocks().contains(type);
 	}
 
 }

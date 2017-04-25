@@ -46,8 +46,7 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import net.sf.jailer.configuration.Configuration;
-import net.sf.jailer.database.DBMS;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 
 /**
@@ -75,7 +74,7 @@ public class MetaDataCache {
 	 * @return cache
 	 */
 	public static MetaDataCache readPrimaryKeys(Session session, String schema) {
-    	String primaryKeysQuery = Configuration.getInstance().forDbms(session).getPrimaryKeysQuery();
+    	String primaryKeysQuery = DBMS.forSession(session).getPrimaryKeysQuery();
     	if (primaryKeysQuery == null) {
     		return new MetaDataCache();
     	}
@@ -101,7 +100,7 @@ public class MetaDataCache {
 	 * @return cache
 	 */
 	public static MetaDataCache readIndexInfo(Session session, String schema) {
-    	String indexInfoQuery = Configuration.getInstance().forDbms(session).getIndexInfoQuery();
+    	String indexInfoQuery = DBMS.forSession(session).getIndexInfoQuery();
     	if (indexInfoQuery == null) {
     		return new MetaDataCache();
     	}
@@ -127,7 +126,7 @@ public class MetaDataCache {
 	 * @return cache
 	 */
 	public static MetaDataCache readImportedKeys(Session session, String schema) {
-    	String importedKeysQuery = Configuration.getInstance().forDbms(session).getImportedKeysQuery();
+    	String importedKeysQuery = DBMS.forSession(session).getImportedKeysQuery();
     	if (importedKeysQuery == null) {
     		return new MetaDataCache();
     	}

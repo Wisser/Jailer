@@ -42,8 +42,7 @@ import java.util.Random;
 
 import org.apache.log4j.Logger;
 
-import net.sf.jailer.configuration.Configuration;
-import net.sf.jailer.configuration.DBMSConfiguration;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
 
@@ -142,7 +141,7 @@ public class Session {
     	 * @return meta data of resultSet
     	 * @throws SQLException 
     	 */
-    	protected CellContentConverter getCellContentConverter(ResultSet resultSet, Session session, DBMSConfiguration targetDBMSConfiguration) throws SQLException {
+    	protected CellContentConverter getCellContentConverter(ResultSet resultSet, Session session, DBMS targetDBMSConfiguration) throws SQLException {
     		if (cccOwner == resultSet && cccSession == session) {
     			return cellContentConverter;
     		}
@@ -305,7 +304,7 @@ public class Session {
                 
                 if (con == null) {
                 	try {
-                		Map<String, String> jdbcProperties = Configuration.getInstance().forDbms(Session.this.dbUrl).getJdbcProperties();
+                		Map<String, String> jdbcProperties = DBMS.forJdbcUrl(Session.this.dbUrl).getJdbcProperties();
                 		if (jdbcProperties != null) {
 	                		try {
 	                			 java.util.Properties info = new java.util.Properties();
@@ -385,7 +384,7 @@ public class Session {
         };
         // fail fast
         Connection connection = connectionFactory.getConnection();
-        dbms = Configuration.getInstance().forDbms(this).getDbms();
+        dbms = DBMS.forSession(this);
         logDriverInfo(connection);
     }
 

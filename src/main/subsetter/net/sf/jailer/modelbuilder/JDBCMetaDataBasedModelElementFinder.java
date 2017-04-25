@@ -33,8 +33,7 @@ import java.util.TreeMap;
 import org.apache.log4j.Logger;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.configuration.Configuration;
-import net.sf.jailer.database.DBMS;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Association;
@@ -86,7 +85,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     private Set<String> getUserDefinedTypes(Session session) {
     	if (userDefinedTypes == null) {
     		userDefinedTypes = new HashSet<String>();
-    		String query = Configuration.getInstance().forDbms(session).getUserDefinedColumnsQuery();
+    		String query = DBMS.forSession(session).getUserDefinedColumnsQuery();
     		if (query != null) {
     			try {
     				session.executeQuery(query, new ResultSetReader() {
@@ -652,8 +651,8 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
             if (typesWithLength.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
                 length = resultSet.getInt(7);
                 if (type == Types.VARCHAR) {
-                	if (Configuration.getInstance().forDbms(session).getVarcharLengthLimit() != null) {
-                		length = Math.min(length, Configuration.getInstance().forDbms(session).getVarcharLengthLimit());
+                	if (DBMS.forSession(session).getVarcharLengthLimit() != null) {
+                		length = Math.min(length, DBMS.forSession(session).getVarcharLengthLimit());
                 	}
                 }
             }
@@ -689,7 +688,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				Set<Pair<String, String>> virtualColumns = (Set<Pair<String, String>>) session.getSessionProperty(getClass(), "virtualColumns" + schemaName);
             	if (virtualColumns == null) {
             		virtualColumns = new HashSet<Pair<String,String>>();
-            		String virtualColumnsQuery = Configuration.getInstance().forDbms(session).getVirtualColumnsQuery();
+            		String virtualColumnsQuery = DBMS.forSession(session).getVirtualColumnsQuery();
             		if (virtualColumnsQuery != null) {
             			try {
             				session.setSilent(true);

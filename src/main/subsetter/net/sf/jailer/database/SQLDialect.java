@@ -18,7 +18,7 @@ package net.sf.jailer.database;
 import java.sql.SQLException;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -126,10 +126,10 @@ public class SQLDialect {
     	TemporaryTableManager tableManager = null;
     	TemporaryTableScope temporaryTableScope = executionContext.getScope();
 		if (temporaryTableScope == TemporaryTableScope.SESSION_LOCAL) {
-			tableManager = Configuration.getInstance().forDbms(session).getSessionTemporaryTableManager();
+			tableManager = DBMS.forSession(session).getSessionTemporaryTableManager();
 		}
 		if (temporaryTableScope == TemporaryTableScope.TRANSACTION_LOCAL) {
-			tableManager = Configuration.getInstance().forDbms(session).getTransactionTemporaryTableManager();
+			tableManager = DBMS.forSession(session).getTransactionTemporaryTableManager();
 		}
 		if (tableManager != null) {
 			tableRef = tableManager.getDmlTableReference(tableName);

@@ -29,7 +29,7 @@ import java.util.Set;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.TransformerFactory;
-import net.sf.jailer.configuration.DBMSConfiguration;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.ResultSetReader;
@@ -260,7 +260,7 @@ public abstract class EntityGraph {
 	 * @param table the table
 	 * @param columns the columns;
 	 */
-	public abstract void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, DBMSConfiguration targetConfiguration) throws SQLException;
+	public abstract void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, DBMS targetConfiguration) throws SQLException;
 
     /**
      * Reads some columns of all entities of a given table without using filters.
@@ -504,7 +504,7 @@ public abstract class EntityGraph {
 	 * Insert the values of columns with non-derived-import-filters into the local database.
 	 */
 	public void fillAndWriteMappingTables(JobManager jobManager, final OutputStreamWriter dmlResultWriter,
-			int numberOfEntities, final Session targetSession, final DBMSConfiguration targetDBMSConfiguration, DBMSConfiguration dbmsConfiguration) throws Exception {
+			int numberOfEntities, final Session targetSession, final DBMS targetDBMSConfiguration, DBMS dbmsConfiguration) throws Exception {
 		if (importFilterManager != null) {
 			importFilterManager.createMappingTables(dbmsConfiguration, dmlResultWriter);
 			importFilterManager.fillAndWriteMappingTables(this, jobManager, dmlResultWriter, numberOfEntities, targetSession, targetDBMSConfiguration);
@@ -514,7 +514,7 @@ public abstract class EntityGraph {
 	/**
 	 * Creates the DROP-statements for the mapping tables.
 	 */
-	public void dropMappingTables(OutputStreamWriter result, DBMSConfiguration targetDBMSConfiguration) throws Exception {
+	public void dropMappingTables(OutputStreamWriter result, DBMS targetDBMSConfiguration) throws Exception {
 		if (importFilterManager != null) {
 			importFilterManager.dropMappingTables(result);
 		}

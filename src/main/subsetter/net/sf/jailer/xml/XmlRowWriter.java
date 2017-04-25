@@ -37,8 +37,7 @@ import javax.xml.transform.stream.StreamResult;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
-import net.sf.jailer.configuration.Configuration;
-import net.sf.jailer.database.DBMS;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
@@ -189,7 +188,7 @@ public class XmlRowWriter {
 			this.table = table;
 			this.association = association;
 			this.session = session;
-			this.cellContentConverter =  new CellContentConverter(resultSetMetaData, session, Configuration.getInstance().forDbms(session));
+			this.cellContentConverter =  new CellContentConverter(resultSetMetaData, session, DBMS.forSession(session));
 	    }
 
 		/**

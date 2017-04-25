@@ -28,7 +28,7 @@ import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.ScriptType;
 import net.sf.jailer.configuration.Configuration;
-import net.sf.jailer.configuration.DBMSConfiguration;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
@@ -48,13 +48,13 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
 	/**
      * Adds nothing.
      */
-    public void addComments(Writer script, ScriptType scriptType, Session session, DBMSConfiguration targetDBMSConfiguration, EntityGraph entityGraph,
+    public void addComments(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
             Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
     }
     /**
      * Adds epilogs.
      */
-    public void addEpilog(Writer script, ScriptType scriptType, Session session, DBMSConfiguration targetDBMSConfiguration, EntityGraph entityGraph,
+    public void addEpilog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
             Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
         File dir = new File(Configuration.getConfigurationFolder(), "epilog" + File.separatorChar + scriptType);
         addEnhancement(script, progress, dir, executionContext);
@@ -63,7 +63,7 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
     /**
      * Adds prologs.
      */
-    public void addProlog(Writer script, ScriptType scriptType, Session session, DBMSConfiguration targetDBMSConfiguration, EntityGraph entityGraph,
+    public void addProlog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
             Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
         File dir = new File(Configuration.getConfigurationFolder(), "prolog" + File.separatorChar + scriptType);
            addEnhancement(script, dir, "PROLOG.sql");

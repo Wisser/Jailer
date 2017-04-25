@@ -31,7 +31,7 @@ import java.util.Set;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.Configuration;
-import net.sf.jailer.configuration.DBMSConfiguration;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
@@ -102,7 +102,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
     /**
      * Configuration of the target DBMS.
      */
-    private final DBMSConfiguration targetDBMSConfiguration;
+    private final DBMS targetDBMSConfiguration;
 
     /**
      * SQL Dialect.
@@ -128,7 +128,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
      * @param session the session
      * @param targetDBMSConfiguration configuration of the target DBMS
      */
-    public UpdateTransformer(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, DBMSConfiguration targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer, ExecutionContext executionContext) throws SQLException {
+    public UpdateTransformer(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, DBMS targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer, ExecutionContext executionContext) throws SQLException {
     	this.executionContext = executionContext;
     	this.targetDBMSConfiguration = targetDBMSConfiguration;
         this.maxBodySize = maxBodySize;
@@ -138,7 +138,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
         this.currentDialect = targetDBMSConfiguration.getSqlDialect();
         this.quoting = new Quoting(session);
         this.importFilterTransformer = importFilterTransformer;
-        if (targetDBMSConfiguration != null && targetDBMSConfiguration != Configuration.getInstance().forDbms(session)) {
+        if (targetDBMSConfiguration != null && targetDBMSConfiguration != DBMS.forSession(session)) {
         	if (targetDBMSConfiguration.getIdentifierQuoteString() != null) {
         		this.quoting.setIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
         	}
@@ -246,11 +246,11 @@ public class UpdateTransformer extends AbstractResultSetReader {
                     content = null;
                 }
                 String cVal = convertToSql(cellContentConverter, resultSet, i, content);
-                if (targetDBMSConfiguration.getDbms() == DBMS.POSTGRESQL && (content instanceof Date || content instanceof Timestamp)) {
+                if (targetDBMSConfiguration == DBMS.POSTGRESQL && (content instanceof Date || content instanceof Timestamp)) {
                 	// explicit cast needed
                 	cVal = "timestamp " + cVal;
                 }
-                if (targetDBMSConfiguration.getDbms() == DBMS.POSTGRESQL) {
+                if (targetDBMSConfiguration == DBMS.POSTGRESQL) {
                 	// explicit cast needed
                 	int mdColumnType = getMetaData(resultSet).getColumnType(i);
                 	if (mdColumnType == Types.TIME) {
@@ -432,7 +432,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
      */
     private void writeToScriptFile(String content, boolean wrap) throws IOException {
         synchronized (scriptFileWriter) {
-        	if (wrap && targetDBMSConfiguration.getDbms() == DBMS.ORACLE) {
+        	if (wrap && targetDBMSConfiguration == DBMS.ORACLE) {
        			scriptFileWriter.write(SqlUtil.splitDMLStatement(content, 2400));
         	} else {
         		scriptFileWriter.write(content);

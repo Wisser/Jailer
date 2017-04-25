@@ -15,70 +15,168 @@
  */
 package net.sf.jailer.configuration;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.text.DateFormat;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
-import javax.xml.bind.annotation.XmlType;
-
-import net.sf.jailer.database.DBMS;
 import net.sf.jailer.database.DefaultTemporaryTableManager;
 import net.sf.jailer.database.SQLDialect;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.database.SqlScriptBasedStatisticRenovator;
 
 /**
- * Reads and holds configuration file <code>jailer.xml</code>.
+ * Describes a specific DBMS.
  * 
  * @author Ralf Wisser
  */
-@XmlType(propOrder = {
-		"dbms",
-		"urlPattern",
-		"testQuery",
-		"sqlDialect",
-		"jdbcProperties",
-		"statisticRenovator",
-		"typeReplacement",
-		"stringLiteralEscapeSequences",
-		"sqlLimitSuffix",
-		"varcharLengthLimit",
-		"tableProperties",
-		"ncharPrefix",
-		"sessionTemporaryTableManager",
-		"transactionTemporaryTableManager",
-		"exportBlocks",
-		"identityInserts",
-		"appendNanosToTimestamp",
-		"appendMillisToTimestamp",
-		"useToTimestampFunction",
-		"timestampPattern",
-		"timestampFormat",
-		"emptyBLOBValue",
-		"emptyCLOBValue",
-		"emptyNCLOBValue",
-		"toBlob",
-		"toClob",
-		"toNClob",
-		"embeddedLobSizeLimit",
-		"binaryPattern",
-		"avoidLeftJoin",
-		"rowidName",
-		"rowidType",
-		"supportsSchemasInIndexDefinitions",
-		"useInlineViewsInDataBrowser",
-		"virtualColumnsQuery",
-		"userDefinedColumnsQuery",
-		"importedKeysQuery",
-		"primaryKeysQuery",
-		"indexInfoQuery",
-		"nullableContraint",
-		"identifierQuoteString" })
+public class DBMS {
 
-public class DBMSConfiguration {
+	// predefined DBMSes
+	public static DBMS ORACLE;
+	public static DBMS MSSQL;
+	public static DBMS DB2;
+	public static DBMS DB2_ZOS;
+	public static DBMS MySQL;
+	public static DBMS POSTGRESQL;
+	public static DBMS SQLITE;
+	public static DBMS HSQL;
+	public static DBMS H2;
+	public static DBMS SYBASE;
+	public static DBMS INFORMIX;
+	public static DBMS CLOADSCAPE;
+	public static DBMS FIREBIRD;
+	public static DBMS DERBY;
 
-	private DBMS dbms = DBMS.UNKNOWN;
+	/**
+	 * Gets all DBMSes.
+	 * 
+	 * @return array of all DBMSes
+	 */
+	public static DBMS[] values() {
+		return Configuration.getInstance().getDBMS().toArray(new DBMS[0]);
+	}
+
+
+	/**
+     * Gets DBMS specific configuration.
+     * 
+     * @param session connected to the DBMS
+     * @return configuration for the DBMS to which the {@link Session} is connected to
+     */
+	public static synchronized DBMS forSession(Session session) {
+		if (session == null) {
+			return defaultConfiguration;
+		}
+		if (perUrl.containsKey(session.dbUrl)) {
+			return perUrl.get(session.dbUrl);
+		}
+        List<DBMS> cs = Configuration.getInstance().getDBMS();  
+        for (DBMS c: cs) {
+        	if (Pattern.matches(c.getUrlPattern(), session.dbUrl)) {
+        		boolean ok = true;
+        		if (c.getTestQuery() != null) {
+        			boolean wasSilent = session.getSilent();
+        			session.setSilent(true);
+        			try {
+						session.executeQuery(c.getTestQuery(), new Session.AbstractResultSetReader() {
+							@Override
+							public void readCurrentRow(ResultSet resultSet) throws SQLException {
+							}
+						});
+					} catch (SQLException e) {
+						ok = false;
+					}
+        			session.setSilent(wasSilent);
+        		}
+        		if (ok) {
+        			perUrl.put(session.dbUrl, c);
+        			return c;
+        		}
+        	}
+        }
+        perUrl.put(session.dbUrl, defaultConfiguration);
+        return defaultConfiguration;
+	}
+
+	/**
+     * Gets DBMS specific configuration.
+     * 
+     * @param dbUrl URL
+     * @return configuration for the DBMS with given URL
+     */
+	public static DBMS forJdbcUrl(String dbUrl) {
+		if (dbUrl == null) {
+			return defaultConfiguration;
+		}
+        List<DBMS> cs = Configuration.getInstance().getDBMS();  
+        for (DBMS c: cs) {
+        	if (Pattern.matches(c.getUrlPattern(), dbUrl)) {
+    			return c;
+    		}
+        }
+        return defaultConfiguration;
+	}
+	
+	/**
+     * Gets DBMS specific configuration.
+     * 
+     * @param dbmsId the DBMS id
+     * @return the DBMS
+     */
+	public static synchronized DBMS forDBMS(String dbmsId) {
+		if (perDBMS.containsKey(dbmsId)) {
+			return perDBMS.get(dbmsId);
+		}
+        List<DBMS> cs = Configuration.getInstance().getDBMS();  
+        for (DBMS c: cs) {
+        	if (dbmsId.equals(c.getId())) {
+        		perDBMS.put(dbmsId, c);
+                return c;
+        	}
+        }
+        throw new RuntimeException("Unknown DBMS: \"" + dbmsId + "\"");
+	}
+
+	/**
+     * Holds configurations.
+     */
+    private static Map<String, DBMS> perUrl = new HashMap<String, DBMS>();
+    
+    /**
+     * Holds configurations.
+     */
+    private static Map<String, DBMS> perDBMS = new HashMap<String, DBMS>();
+
+    /**
+     * Default configuration for unknown DBMS.
+     */
+	private static final DBMS defaultConfiguration = new DBMS();
+
+	static void initPredefinedDBMSes() {
+		ORACLE = forDBMS("ORACLE");
+		MSSQL = forDBMS("MSSQL");
+		DB2 = forDBMS("DB2");
+		DB2_ZOS = forDBMS("DB2_ZOS");
+		MySQL = forDBMS("MySQL");
+		POSTGRESQL = forDBMS("POSTGRESQL");
+		SQLITE = forDBMS("SQLITE");
+		HSQL = forDBMS("HSQL");
+		H2 = forDBMS("H2");
+		SYBASE = forDBMS("SYBASE");
+		INFORMIX = forDBMS("INFORMIX");
+		CLOADSCAPE = forDBMS("CLOADSCAPE");
+		FIREBIRD = forDBMS("FIREBIRD");
+		DERBY = forDBMS("DERBY");
+	}
+	
+	private String id;
+	private String displayName;
     
 	/**
      * DB-URL pattern of DBMS for which this holds the configuration.
@@ -184,19 +282,6 @@ public class DBMSConfiguration {
 	
 	private String indexInfoQuery = null;
 	private String identifierQuoteString = "\"";
-	/**
-	 * @return the dbms
-	 */
-	public DBMS getDbms() {
-		return dbms;
-	}
-
-	/**
-	 * @param dbmsEnum the dbmsEnum to set
-	 */
-	public void setDbms(DBMS dbms) {
-		this.dbms = dbms;
-	}
 
 	/**
 	 * @return the virtualColumnsQuery
@@ -793,6 +878,22 @@ public class DBMSConfiguration {
 	 */
 	public DefaultTemporaryTableManager getTransactionTemporaryTableManager() {
 		return transactionTemporaryTableManager;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+	public void setId(String id) {
+		this.id = id;
+	}
+
+	public String getDisplayName() {
+		return displayName;
+	}
+
+	public void setDisplayName(String displayName) {
+		this.displayName = displayName;
 	}
 
 }
