@@ -35,7 +35,7 @@ available targets:
 	</target>
 
 	<target name="compile-engine" depends="clean">
-		<delete file="${JAR}" />
+		<delete file="${JAR-ENGINE}" />
 		<mkdir dir="${COMPILE_DIR}" />
 		<javac destdir="${COMPILE_DIR}" srcdir="${SRC_DIR}/main/engine" debug="on" deprecation="off" encoding="ISO-8859-1">
 			<classpath>
@@ -43,6 +43,11 @@ available targets:
 			</classpath>
 			<include name="**/*.java" />
 		</javac>
+		<copy todir="${COMPILE_DIR}/net/sf/jailer/configuration">
+			<fileset dir="${SRC_DIR}/main/engine/net/sf/jailer/configuration">
+				<include name="**/*.xml" />
+			</fileset>
+		</copy>
 	</target>
 
 	<target name="compile-gui" depends="compile-engine">
@@ -77,6 +82,11 @@ available targets:
 				<attribute name="Class-Path" value="lib/prefuse.jar lib/junit.jar lib/log4j.jar lib/args4j.jar lib/sdoc-0.5.0-beta.jar config/" />
 			</manifest>
 		</jar>
+		<copy todir=".">
+			<fileset dir="${SRC_DIR}/main/engine/net/sf/jailer/configuration">
+				<include name="**/*.xml" />
+			</fileset>
+		</copy>
 	</target>
 
 	<target name="compile-test" depends="compile-engine">
