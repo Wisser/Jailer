@@ -22,7 +22,6 @@ import java.sql.SQLException;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.TransformerFactory;
-import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
@@ -159,7 +158,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
         	final SQLDialect currentDialect = targetDBMSConfiguration.getSqlDialect();
             
         	CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, targetDBMSConfiguration);
-			if (targetDBMSConfiguration == DBMS.SYBASE || (currentDialect != null && !currentDialect.isSupportsInClauseForDeletes())) {
+			if (DBMS.SYBASE.equals(targetDBMSConfiguration) || (currentDialect != null && !currentDialect.isSupportsInClauseForDeletes())) {
         		String deleteHead = "Delete from " + qualifiedTableName(table) + " Where (";
                 boolean firstTime = true;
                 String item = "";
@@ -226,7 +225,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
      */
     private void writeToScriptFile(String content) throws IOException {
         synchronized (scriptFileWriter) {
-        	if (targetDBMSConfiguration == DBMS.ORACLE) {
+        	if (DBMS.ORACLE.equals(targetDBMSConfiguration)) {
        			scriptFileWriter.write(SqlUtil.splitDMLStatement(content, 2400));
         	} else {
         		scriptFileWriter.write(content);

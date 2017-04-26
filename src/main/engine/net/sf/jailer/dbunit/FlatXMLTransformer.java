@@ -230,7 +230,7 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 		if (type == null) {
 			try {
 				type = getMetaData(resultSet).getColumnType(i);
-				if (dbms == DBMS.ORACLE) {
+				if (DBMS.ORACLE.equals(dbms)) {
 					if (type == Types.DATE) {
 						type = Types.TIMESTAMP;
 					}

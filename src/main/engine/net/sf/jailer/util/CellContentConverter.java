@@ -95,7 +95,7 @@ public class CellContentConverter {
         }
 
         if (content instanceof java.sql.Date) {
-        	String suffix = targetConfiguration == DBMS.POSTGRESQL? "::date" : "";
+        	String suffix = DBMS.POSTGRESQL.equals(targetConfiguration)? "::date" : "";
         	if (targetConfiguration.isUseToTimestampFunction()) {
         		String format;
         		synchronized(defaultDateFormat) {
@@ -106,7 +106,7 @@ public class CellContentConverter {
         	return "'" + content + "'" + suffix;
         }
         if (content instanceof java.sql.Timestamp) {
-        	String suffix = targetConfiguration == DBMS.POSTGRESQL? "::timestamp" : "";
+        	String suffix = DBMS.POSTGRESQL.equals(targetConfiguration)? "::timestamp" : "";
         	if (targetConfiguration.isUseToTimestampFunction()) {
         		String format;
         		String nanoFormat;
@@ -172,7 +172,7 @@ public class CellContentConverter {
 			}
     	}
         if (content instanceof UUID) {
-        	if (targetConfiguration == DBMS.POSTGRESQL) {
+        	if (DBMS.POSTGRESQL.equals(targetConfiguration)) {
         		return "'" + content + "'::uuid";
         	}
         	return "'" + content + "'";
@@ -252,12 +252,12 @@ public class CellContentConverter {
 		if (type == null) {
 			try {
 				type = resultSetMetaData.getColumnType(i);
-				if (configuration == DBMS.ORACLE) {
+				if (DBMS.ORACLE.equals(configuration)) {
 					if (type == Types.DATE) {
 						type = Types.TIMESTAMP;
 					}
 				 }
-				 if (configuration == DBMS.POSTGRESQL) {
+				 if (DBMS.POSTGRESQL.equals(configuration)) {
 	                String typeName = resultSetMetaData.getColumnTypeName(i);
 	                if ("hstore".equalsIgnoreCase(typeName)) {
 	                    type = TYPE_HSTORE;
@@ -295,7 +295,7 @@ public class CellContentConverter {
 				return resultSet.getTimestamp(i);
 			}
 			if (type == Types.DATE) {
-				if (configuration == DBMS.MySQL) {
+				if (DBMS.MySQL.equals(configuration)) {
 					// YEAR
 					String typeName = resultSetMetaData.getColumnTypeName(i);
 					if (typeName != null && typeName.toUpperCase().equals("YEAR")) {
@@ -318,7 +318,7 @@ public class CellContentConverter {
 				object = new NCharWrapper((String) object);
 			}
 		}
-		if (configuration == DBMS.POSTGRESQL) {
+		if (DBMS.POSTGRESQL.equals(configuration)) {
 			if (type == TYPE_HSTORE) {
 				return new HStoreWrapper(resultSet.getString(i));
             } else if (object instanceof Boolean) {

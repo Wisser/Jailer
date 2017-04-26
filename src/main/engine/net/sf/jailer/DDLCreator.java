@@ -225,7 +225,10 @@ public class DDLCreator {
 
 	private DBMS targetDBMS(Session session) {
 		if (session == null) {
-			executionContext.getTargetDBMS();
+			if (executionContext.getTargetDBMS() != null) {
+				return executionContext.getTargetDBMS();
+			}
+			return DBMS.forJdbcUrl(""); // default
 		}
 		return DBMS.forSession(session);
 	}

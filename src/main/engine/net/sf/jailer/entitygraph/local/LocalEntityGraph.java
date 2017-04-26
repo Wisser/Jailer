@@ -1231,7 +1231,7 @@ public class LocalEntityGraph extends EntityGraph {
     public void markDependentEntitiesAsTraversed(Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, Map<String, Integer> typeCache) throws SQLException {
     	String update;
     	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, localSession, DBMS.forSession(localSession));
-    	if (localSession.dbms == DBMS.SYBASE) {
+    	if (DBMS.SYBASE.equals(localSession.dbms)) {
     		update = "Update " + dmlTableReference(DEPENDENCY, localSession) + " set traversed=1" +
     		 " Where " + pkEqualsEntityID(association.source, resultSet, dmlTableReference(DEPENDENCY, localSession), "FROM_", cellContentConverter) +
     		 " and " + dmlTableReference(DEPENDENCY, localSession) + ".from_type=" + typeName(association.source) + " and assoc=" + association.getId() +

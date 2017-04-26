@@ -157,7 +157,7 @@ public class MetaDataCache {
     	MetaDataCache metaDataCache = new MetaDataCache();
 		ResultSet rs;
 		try {
-			if (session.dbms == DBMS.MySQL) {
+			if (DBMS.MySQL.equals(session.dbms)) {
 				rs = metaData.getColumns(schema, null, "%", "%");
 			} else {
 				rs = metaData.getColumns(null, schema, "%", "%");
