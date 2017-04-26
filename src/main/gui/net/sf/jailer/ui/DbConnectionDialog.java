@@ -29,9 +29,8 @@ import java.io.FileOutputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.net.URL;
 import java.sql.Connection;
-import java.sql.Driver;
-import java.sql.DriverManager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -48,6 +47,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.util.ClasspathUtil;
@@ -787,23 +787,17 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		if (d2.length() == 0) {
 			d2 = null;
 		}
+		URL[] urls;
 		try {
-			Session.setClassLoaderForJdbcDriver(ClasspathUtil.addJarToClasspath(d1, d2));
+			urls = ClasspathUtil.toURLArray(d1, d2);
 		} catch (Exception e) {
 			UIUtil.showException(parent, "Error loading driver jars", e, UIUtil.EXCEPTION_CONTEXT_USER_ERROR);
 			return false;
 		}
 
 		try {
-			if (Session.classLoaderForJdbcDriver != null) {
-				Driver d = (Driver) Class.forName(
-						ci.driverClass, true,
-						Session.classLoaderForJdbcDriver).newInstance();
-				DriverManager.registerDriver(new Session.DriverShim(d));
-			} else {
-				Class.forName(ci.driverClass);
-			}
-			Connection con = DriverManager.getConnection(ci.url, ci.user, ci.password);
+			BasicDataSource dataSource = new BasicDataSource(ci.driverClass, ci.url, ci.user, ci.password, urls);
+			Connection con = dataSource.getConnection();
 			con.close();
 			return true;
 		} catch (ClassNotFoundException e) {
@@ -822,9 +816,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 * @return all DB schemas
 	 */
 	public List<String> getDBSchemas(String[] defaultSchema) throws Exception {
-		Session session = new Session(currentConnection.driverClass,
+		BasicDataSource dataSource = new BasicDataSource(currentConnection.driverClass,
 				currentConnection.url, currentConnection.user,
-				currentConnection.password);
+				currentConnection.password, ClasspathUtil.toURLArray(currentConnection.jar1, currentConnection.jar2));
+		Session session = new Session(dataSource, dataSource.dbms);
 		List<String> schemas = JDBCMetaDataBasedModelElementFinder.getSchemas(
 				session, currentConnection.user);
 		defaultSchema[0] = JDBCMetaDataBasedModelElementFinder
@@ -843,9 +838,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 */
 	public String selectDBSchema(Component parent, boolean[] isDefaultSchema)
 			throws Exception {
-		Session session = new Session(currentConnection.driverClass,
+		BasicDataSource dataSource = new BasicDataSource(currentConnection.driverClass,
 				currentConnection.url, currentConnection.user,
-				currentConnection.password);
+				currentConnection.password, ClasspathUtil.toURLArray(currentConnection.jar1, currentConnection.jar2));
+		Session session = new Session(dataSource, dataSource.dbms);
 		List<String> schemas = JDBCMetaDataBasedModelElementFinder.getSchemas(
 				session, currentConnection.user);
 		String defaultSchema = JDBCMetaDataBasedModelElementFinder
@@ -924,5 +920,12 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}
 
 	private static final long serialVersionUID = -3983034803834547687L;
+
+	public URL[] currentJarURLs() throws Exception {
+		if (currentConnection != null) {
+			return ClasspathUtil.toURLArray(currentConnection.jar1, currentConnection.jar2);
+		}
+		return null;
+	}
 
 }

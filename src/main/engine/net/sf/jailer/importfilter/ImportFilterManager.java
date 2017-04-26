@@ -188,7 +188,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 			mapColumnsLocal.add(columnToMappingTableLocal);
 			if (mapColumns.size() == maxColumnsPerMappingTable) {
 				result.append(createDDL(schema, mapColumns, configuration, mapTableIndex == 0));
-				localDDL.append(createDDL("", mapColumnsLocal, DBMS.forSession(localSession), mapTableIndex == 0));
+				localDDL.append(createDDL("", mapColumnsLocal, localSession.dbms, mapTableIndex == 0));
 				mapColumns.clear();
 				mapColumnsLocal.clear();
 				++mapTableIndex;
@@ -196,7 +196,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		}
 		if (mapColumns.size() > 0) {
 			result.append(createDDL(schema, mapColumns, configuration, mapTableIndex == 0));
-			localDDL.append(createDDL("", mapColumnsLocal, DBMS.forSession(localSession), mapTableIndex == 0));
+			localDDL.append(createDDL("", mapColumnsLocal, localSession.dbms, mapTableIndex == 0));
 			sync(result);
 		}
 		localDDL.close();
@@ -315,7 +315,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 						private final int MAX_BATCH_SIZE = 1000;
 						@Override
 						public void readCurrentRow(ResultSet resultSet) throws SQLException {
-							CellContentConverter cellContentConverter = getCellContentConverter(resultSet, entityGraph.getSession(), DBMS.forSession(entityGraph.getSession()));
+							CellContentConverter cellContentConverter = getCellContentConverter(resultSet, entityGraph.getSession(), entityGraph.getSession().dbms);
 							for (int i = 0; i < columns.size(); ++i) {
 								Object content = cellContentConverter.getObject(resultSet, i + 1);
 								if (content != null) {

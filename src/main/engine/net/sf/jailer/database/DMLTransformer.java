@@ -241,7 +241,7 @@ public class DMLTransformer extends AbstractResultSetReader {
         this.insertStatementBuilder = new StatementBuilder(currentDialect.isSupportsMultiRowInserts() || DBMS.ORACLE.equals(targetDBMSConfiguration) || DBMS.SQLITE.equals(targetDBMSConfiguration)? maxBodySize : 1);
         this.quoting = createQuoting(session);
         this.importFilterTransformer = importFilterTransformer;
-        if (targetDBMSConfiguration != null && targetDBMSConfiguration != DBMS.forSession(session)) {
+        if (targetDBMSConfiguration != null && targetDBMSConfiguration != session.dbms) {
         	if (targetDBMSConfiguration.getIdentifierQuoteString() != null) {
         		this.quoting.setIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
         	}

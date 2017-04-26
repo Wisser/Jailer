@@ -126,10 +126,10 @@ public class SQLDialect {
     	TemporaryTableManager tableManager = null;
     	TemporaryTableScope temporaryTableScope = executionContext.getScope();
 		if (temporaryTableScope == TemporaryTableScope.SESSION_LOCAL) {
-			tableManager = DBMS.forSession(session).getSessionTemporaryTableManager();
+			tableManager = session.dbms.getSessionTemporaryTableManager();
 		}
 		if (temporaryTableScope == TemporaryTableScope.TRANSACTION_LOCAL) {
-			tableManager = DBMS.forSession(session).getTransactionTemporaryTableManager();
+			tableManager = session.dbms.getTransactionTemporaryTableManager();
 		}
 		if (tableManager != null) {
 			tableRef = tableManager.getDmlTableReference(tableName);

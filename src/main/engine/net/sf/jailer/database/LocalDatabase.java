@@ -52,10 +52,8 @@ public class LocalDatabase {
 		this.executionContext = executionContext;
 		this.databaseFolder = folder + File.separator + UUID.randomUUID().toString();
 		executionContext.newFile(databaseFolder).mkdirs();
-		ClassLoader oldCL = Session.classLoaderForJdbcDriver;
-		Session.setClassLoaderForJdbcDriver(ClasspathUtil.addJarToClasspath(jarfile, null));
-		session = new Session(driverClassName, urlPattern.replace("%s", databaseFolder + File.separator + "local"), "", "", null, false, true);
-		Session.setClassLoaderForJdbcDriver(oldCL);
+		BasicDataSource dataSource = new BasicDataSource(driverClassName, urlPattern.replace("%s", databaseFolder + File.separator + "local"), user, password, ClasspathUtil.toURLArray(jarfile, null));
+		session = new Session(dataSource, dataSource.dbms, null, false, true);
 	}
 	
 	/**

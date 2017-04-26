@@ -98,7 +98,7 @@ public class LocalEntityGraph extends EntityGraph {
 			if (!allUPK && !isUPKColumn(columnNames[i - 1])) {
 				value = cellContentConverter.toSql(value);
 			} else if (value instanceof String && isNUPKColumn(columnNames[i - 1])) {
-				String prefix = DBMS.forSession(remoteSession).getNcharPrefix();
+				String prefix = remoteSession.dbms.getNcharPrefix();
 				if (prefix != null && value != null && !value.toString().startsWith(prefix)) {
 					value = prefix + value;
 				}
@@ -108,7 +108,7 @@ public class LocalEntityGraph extends EntityGraph {
 
 		@Override
 		protected CellContentConverter createCellContentConverter() {
-			return new CellContentConverter(resultSetMetaData, localSession, DBMS.forSession(localSession));
+			return new CellContentConverter(resultSetMetaData, localSession, localSession.dbms);
 		}
 		
 	}
@@ -122,7 +122,7 @@ public class LocalEntityGraph extends EntityGraph {
 		public LocalInlineViewBuilder(String name, String columnList, boolean allUPK) {
 			super(localInlineViewStyle, name, localSession, columnList.split(", *"));
 			this.allUPK = allUPK;
-			this.localDBMSConfiguration = DBMS.forSession(localSession);
+			this.localDBMSConfiguration = localSession.dbms;
 		}
 		
 		private final boolean allUPK;
@@ -139,7 +139,7 @@ public class LocalEntityGraph extends EntityGraph {
 
 		@Override
 		protected CellContentConverter createCellContentConverter() {
-			return new CellContentConverter(resultSetMetaData, remoteSession, DBMS.forSession(remoteSession));
+			return new CellContentConverter(resultSetMetaData, remoteSession, remoteSession.dbms);
 		}
 
 	}
@@ -231,7 +231,7 @@ public class LocalEntityGraph extends EntityGraph {
 		}, executionContext.getSourceSchemaMapping(), executionContext), executionContext);
 		this.remoteSession = remoteSession;
 		this.quoting = new Quoting(remoteSession);
-		this.rowIdSupport = new RowIdSupport(getDatamodel(), DBMS.forSession(remoteSession), getConfiguration().getLocalPKType(), executionContext);
+		this.rowIdSupport = new RowIdSupport(getDatamodel(), remoteSession.dbms, getConfiguration().getLocalPKType(), executionContext);
 		this.localDatabase = createLocalDatabase(getConfiguration().getDriver(), getConfiguration().getUrlPattern(), getConfiguration().getUser(), getConfiguration().getPassword(), getConfiguration().getLib());
 		this.localSession = this.localDatabase.getSession();
 		this.universalPrimaryKey = rowIdSupport.getUniversalPrimaryKey();
@@ -1187,7 +1187,7 @@ public class LocalEntityGraph extends EntityGraph {
      * @param selectionSchema the selection schema
      */
     public void readDependentEntities(final Table table, final Association association, final ResultSet resultSet, ResultSetMetaData resultSetMetaData, final ResultSetReader reader, final Map<String, Integer> theTypeCache, final String selectionSchema, final String originalPKAliasPrefix) throws SQLException {
-    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, localSession, DBMS.forSession(localSession));
+    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, localSession, localSession.dbms);
     	String select = "Select " + upkColumnList(table, "TO_") + " from " + dmlTableReference(DEPENDENCY, localSession) + " D" +
 	    		 " Where " + pkEqualsEntityID(association.source, resultSet, "D", "FROM_", cellContentConverter) +
 	    		 " and D.to_type=" + typeName(table) + "" +
@@ -1230,7 +1230,7 @@ public class LocalEntityGraph extends EntityGraph {
      */
     public void markDependentEntitiesAsTraversed(Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, Map<String, Integer> typeCache) throws SQLException {
     	String update;
-    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, localSession, DBMS.forSession(localSession));
+    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, localSession, localSession.dbms);
     	if (DBMS.SYBASE.equals(localSession.dbms)) {
     		update = "Update " + dmlTableReference(DEPENDENCY, localSession) + " set traversed=1" +
     		 " Where " + pkEqualsEntityID(association.source, resultSet, dmlTableReference(DEPENDENCY, localSession), "FROM_", cellContentConverter) +

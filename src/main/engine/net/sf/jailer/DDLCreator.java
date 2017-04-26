@@ -25,6 +25,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.sql.DataSource;
+
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
@@ -62,10 +64,10 @@ public class DDLCreator {
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	public boolean createDDL(String driverClass, String dbUrl, String user, String password, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws Exception {
+	public boolean createDDL(DataSource dataSource, DBMS dbms, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws Exception {
 		Session session = null;
-		if (driverClass != null) {
-			session = new Session(driverClass, dbUrl, user, password);
+		if (dataSource != null) {
+			session = new Session(dataSource, dbms);
 		}
 		try {
 			return createDDL(new DataModel(executionContext), session, temporaryTableScope, workingTableSchema);
@@ -228,9 +230,9 @@ public class DDLCreator {
 			if (executionContext.getTargetDBMS() != null) {
 				return executionContext.getTargetDBMS();
 			}
-			return DBMS.forJdbcUrl(""); // default
+			return DBMS.forDBMS(null); // default
 		}
-		return DBMS.forSession(session);
+		return session.dbms;
 	}
 
 	/**
@@ -240,10 +242,10 @@ public class DDLCreator {
 	 * 
 	 * @return <code>true</code> if working-tables schema is up-to-date
 	 */
-	public boolean isUptodate(String driverClass, String dbUrl, String user, String password, boolean useRowId, String workingTableSchema) {
+	public boolean isUptodate(DataSource dataSource, DBMS dbms, boolean useRowId, String workingTableSchema) {
 		try {
-			if (driverClass != null) {
-				final Session session = new Session(driverClass, dbUrl, user, password);
+			if (dataSource != null) {
+				final Session session = new Session(dataSource, dbms);
 				try {
 					return isUptodate(session, useRowId, workingTableSchema);
 				} finally {
@@ -334,10 +336,10 @@ public class DDLCreator {
 	 * 
 	 * @return name of table in conflict or <code>null</code>
 	 */
-	public String getTableInConflict(String driverClass, String dbUrl, String user, String password) {
+	public String getTableInConflict(DataSource dataSource, DBMS dbms) {
 		try {
-			if (driverClass != null) {
-				Session session = new Session(driverClass, dbUrl, user, password);
+			if (dataSource != null) {
+				Session session = new Session(dataSource, dbms);
 				session.setSilent(true);
 				try {
 					final boolean[] uptodate = new boolean[] { false };

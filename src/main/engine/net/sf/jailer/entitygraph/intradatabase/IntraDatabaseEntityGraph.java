@@ -100,7 +100,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			}
 			
 			if (defaultSchema == null) {
-				defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.dbUser);
+				defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
 			}
 	
 			String schema = table.getOriginalSchema("");
@@ -277,7 +277,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		OutputStreamWriter tmpFileWriter;
 		try {
 			tmpFileWriter = new FileWriter(tmp);
-			UpdateTransformer reader = new UpdateTransformer(table, columns, tmpFileWriter, executionContext.getNumberOfEntities(), getSession(), DBMS.forSession(getSession()), importFilterManager, executionContext);
+			UpdateTransformer reader = new UpdateTransformer(table, columns, tmpFileWriter, executionContext.getNumberOfEntities(), getSession(), getSession().dbms, importFilterManager, executionContext);
 			readEntities(table, false, reader);
 			tmpFileWriter.close();
 			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads(), executionContext).executeScript(tmp.getPath());
@@ -296,7 +296,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 */
 	private void readEntitiesByQuery(Table table, String sql) throws SQLException {
 		boolean tableHasIdentityColumn = false;
-        if (DBMS.forSession(session).isIdentityInserts()) {
+        if (session.dbms.isIdentityInserts()) {
         	for (Column c: table.getColumns()) {
         		if (c.isIdentityColumn) {
         			tableHasIdentityColumn = true;

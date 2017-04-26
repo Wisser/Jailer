@@ -23,22 +23,19 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
-import java.sql.Driver;
-import java.sql.DriverManager;
-import java.sql.DriverPropertyInfo;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 import java.util.Random;
+
+import javax.sql.DataSource;
 
 import org.apache.log4j.Logger;
 
@@ -178,34 +175,14 @@ public class Session {
     private final ConnectionFactory connectionFactory;
 
     /**
-     * The DB schema name.
+     * The DB schema name (empty string if unknown).
      */
-    private final String schemaName;
-
-    /**
-     * The DB URL.
-     */
-    public final String dbUrl;
-    
-    /**
-     * The DB user.
-     */
-    public final String dbUser;
-    
-    /**
-     * The DB password.
-     */
-    public final String dbPassword;
+    private final String schema;
 
     /**
      * Optional schema for database analysis.
      */
     private String introspectionSchema;
-    
-    /**
-     * Classloader to load Jdbc-Driver with.
-     */
-    public static ClassLoader classLoaderForJdbcDriver = null;
 
     /**
      * The DBMS.
@@ -213,84 +190,45 @@ public class Session {
     public final DBMS dbms;
     
     /**
-     * Wraps a Jdbc-Driver.
+     * The dbUrl (<code>null</code> if unknown)
      */
-    public static class DriverShim implements Driver {
-        private Driver driver;
-        public DriverShim(Driver d) {
-            this.driver = d;
-        }
-        public boolean acceptsURL(String u) throws SQLException {
-            return this.driver.acceptsURL(u);
-        }
-        public Connection connect(String u, Properties p) throws SQLException {
-            return this.driver.connect(u, p);
-        }
-        public int getMajorVersion() {
-            return this.driver.getMajorVersion();
-        }
-        public int getMinorVersion() {
-            return this.driver.getMinorVersion();
-        }
-        public DriverPropertyInfo[] getPropertyInfo(String u, Properties p) throws SQLException {
-            return this.driver.getPropertyInfo(u, p);
-        }
-        public boolean jdbcCompliant() {
-            return this.driver.jdbcCompliant();
-        }
-        public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
-        	throw new SQLFeatureNotSupportedException();
-        }
-    }
-    
+    public final String dbUrl;
+	
     /**
      * Constructor.
      * 
-     * @param driverClassName name of JDBC-driver class
-     * @param dbUrl the database URL
-     * @param user the DB-user
-     * @param password the DB-password
+     * @param dataSource the data source
+     * @param schema the schema
+     * @param dbms the DBMS
      */
-    public Session(String driverClassName, final String dbUrl, final String user, final String password) throws Exception {
-    	this(driverClassName, dbUrl, user, password, null, false);
+    public Session(DataSource dataSource, DBMS dbms) throws Exception {
+    	this(dataSource, dbms, null, false);
     }
 
     /**
      * Constructor.
      * 
-     * @param driverClassName name of JDBC-driver class
-     * @param dbUrl the database URL
-     * @param user the DB-user
-     * @param password the DB-password
+     * @param dataSource the data source
+     * @param dbms the DBMS
      */
-    public Session(String driverClassName, final String dbUrl, final String user, final String password, final TemporaryTableScope scope, boolean transactional) throws Exception {
-    	this(driverClassName, dbUrl, user, password, scope, transactional, false);
+    public Session(DataSource dataSource, DBMS dbms, final TemporaryTableScope scope, boolean transactional) throws Exception {
+    	this(dataSource, dbms, scope, transactional, false);
     }
     
     /**
      * Constructor.
      * 
-     * @param driverClassName name of JDBC-driver class
-     * @param dbUrl the database URL
-     * @param user the DB-user
-     * @param password the DB-password
+     * @param dataSource the data source
+     * @param dbms the DBMS
      * @param local <code>true</code> for the local entity-graph database
      */
-    public Session(String driverClassName, final String dbUrl, final String user, final String password, final TemporaryTableScope scope, boolean transactional, final boolean local) throws Exception {
+    public Session(final DataSource dataSource, DBMS dbms, final TemporaryTableScope scope, boolean transactional, final boolean local) throws Exception {
     	this.transactional = transactional;
     	this.local = local;
         this.scope = scope;
-    	_log.info("connect to user " + user + " at "+ dbUrl);
-        if (classLoaderForJdbcDriver != null) {
-            Driver d = (Driver)Class.forName(driverClassName, true, classLoaderForJdbcDriver).newInstance();
-            DriverManager.registerDriver(new DriverShim(d));
-        } else {
-            Class.forName(driverClassName);
-        }
-        this.schemaName = user;
-        this.dbUrl = dbUrl;
-        this.dbUser = user;
-        this.dbPassword = password;
+        this.dbms = dbms;
+        this.dbUrl = (dataSource instanceof BasicDataSource)? ((BasicDataSource) dataSource).dbUrl : null;
+        this.schema = (dataSource instanceof BasicDataSource)? ((BasicDataSource) dataSource).dbUser : "";;
         if (scope != null) {
         	closeTemporaryTableSession();
         	temporaryTableScope = scope;
@@ -304,27 +242,7 @@ public class Session {
                 
                 if (con == null) {
                 	try {
-                		Map<String, String> jdbcProperties = DBMS.forJdbcUrl(Session.this.dbUrl).getJdbcProperties();
-                		if (jdbcProperties != null) {
-	                		try {
-	                			 java.util.Properties info = new java.util.Properties();
-	                			 if (user != null) {
-	                				 info.put("user", user);
-	                			 }
-	                			 if (password != null) {
-	                				 info.put("password", password);
-	                			 }
-	                			 for (Map.Entry<String, String> entry: jdbcProperties.entrySet()) {
-	                				 info.put(entry.getKey(), entry.getValue());
-	                			 }
-	                			 con = DriverManager.getConnection(dbUrl, info);
-	                		} catch (SQLException e2) {
-	                			// ignore
-	                		}
-                		}
-                		if (con == null) {
-                			con = DriverManager.getConnection(dbUrl, user, password);
-                		}
+                		con = dataSource.getConnection();
                 		synchronized (this) {
                     		defaultConnection = con;
 						}
@@ -384,7 +302,6 @@ public class Session {
         };
         // fail fast
         Connection connection = connectionFactory.getConnection();
-        dbms = DBMS.forSession(this);
         logDriverInfo(connection);
     }
 
@@ -452,10 +369,10 @@ public class Session {
 	/**
      * Gets DB schema name.
      * 
-     * @return DB schema name
+     * @return DB schema name (empty string if unknown)
      */
-    public String getSchemaName() {
-        return schemaName;
+    public String getSchema() {
+        return schema;
     }
 
     /**
@@ -782,15 +699,6 @@ public class Session {
     }
 
     /**
-     * Sets {@link ClassLoader} to load Jdbc-driver with.
-     * 
-     * @param classLoader {@link ClassLoader} to load Jdbc-driver with
-     */
-    public static synchronized void setClassLoaderForJdbcDriver(ClassLoader classLoader) {
-        classLoaderForJdbcDriver = classLoader;
-    }
-    
-    /**
      * Closes all connections.
      */
     public void shutDown() throws SQLException {
@@ -936,7 +844,7 @@ public class Session {
 	}
 	
 	private Map<String, Object> sessionProperty = Collections.synchronizedMap(new HashMap<String, Object>());
-	
+
 	/**
 	 * Sets a session property.
 	 * 

@@ -72,7 +72,7 @@ public class SQLDMLBuilder {
 		String sql = "Update " + table.getName() + " " + LF + "Set ";
 		boolean f = true;
 		int i = 0;
-		CellContentConverter cellContentConverter = new CellContentConverter(null, session, DBMS.forSession(session));
+		CellContentConverter cellContentConverter = new CellContentConverter(null, session, session.dbms);
 		for (Column column : table.getColumns()) {
 			String value = getSQLLiteral(row.values[i++], cellContentConverter);
 			if (value == null) {
@@ -132,7 +132,7 @@ public class SQLDMLBuilder {
 		String values = "";
 		boolean f = true;
 		int i = 0;
-		CellContentConverter cellContentConverter = new CellContentConverter(null, session, DBMS.forSession(session));
+		CellContentConverter cellContentConverter = new CellContentConverter(null, session, session.dbms);
 		for (Column column : table.getColumns()) {
 			String value = getSQLLiteral(row.values[i++], cellContentConverter);
 			if (value == null) {

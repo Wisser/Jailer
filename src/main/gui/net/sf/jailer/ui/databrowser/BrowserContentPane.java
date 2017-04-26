@@ -428,7 +428,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		this.table = table;
 		this.session = session;
 		this.dataModel = dataModel;
-		this.rowIdSupport = new RowIdSupport(dataModel, DBMS.forSession(session), executionContext);
+		this.rowIdSupport = new RowIdSupport(dataModel, session.dbms, executionContext);
 		this.parentRow = parentRow;
 		this.parentRows = parentRows;
 		this.association = association;
@@ -1974,7 +1974,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	    	Set<String> columns = new HashSet<String>();
 	    	DatabaseMetaData metaData = session.getMetaData();
 	    	Quoting quoting = new Quoting(session);
-	    	String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.dbUser);
+	    	String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
 	    	String schema = quoting.unquote(table.getOriginalSchema(defaultSchema));
 			String tableName = quoting.unquote(table.getUnqualifiedName());
 			ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, metaData, schema, tableName, "%");
@@ -2088,7 +2088,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	static boolean useInlineViewForResolvingAssociation(Session session) {
-		return DBMS.forSession(session).isUseInlineViewsInDataBrowser();
+		return session.dbms.isUseInlineViewsInDataBrowser();
 	}
 
 	private void loadRowBlocks(InlineViewStyle inlineViewStyle, String andCond, final List<Row> rows, Object context, int limit, boolean selectDistinct, List<Row> pRows,
@@ -2114,10 +2114,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				pRowBlock = null;
 			}
 			
-			if (DBMS.forSession(session).getSqlLimitSuffix() != null) {
+			if (session.dbms.getSqlLimitSuffix() != null) {
 				try {
 					session.setSilent(true);
-					reloadRows(inlineViewStyle, andCond, pRowBlock, newBlockRows, context, limit, false, DBMS.forSession(session).getSqlLimitSuffix(), existingColumnsLowerCase);
+					reloadRows(inlineViewStyle, andCond, pRowBlock, newBlockRows, context, limit, false, session.dbms.getSqlLimitSuffix(), existingColumnsLowerCase);
 					loaded = true;
 				} catch (SQLException e) {
 					Session._log.warn("failed, try another limit-strategy (" +  e.getMessage() + ")");
@@ -2570,7 +2570,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 								}
 							}
 						} else {
-							CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, DBMS.forSession(session));
+							CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, session.dbms);
 							Object o = cellContentConverter.getObject(resultSet, i);
 							boolean isPK = false;
 							if (pkColumnNames.isEmpty()) {

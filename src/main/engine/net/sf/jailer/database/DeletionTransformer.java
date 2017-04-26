@@ -134,7 +134,7 @@ public class DeletionTransformer extends AbstractResultSetReader {
         this.scriptFileWriter = scriptFileWriter;
         deleteStatementBuilder = new StatementBuilder(maxBodySize);
         this.quoting = new Quoting(session);
-        if (targetDBMSConfiguration != null && targetDBMSConfiguration != DBMS.forSession(session)) {
+        if (targetDBMSConfiguration != null && targetDBMSConfiguration != session.dbms) {
         	if (targetDBMSConfiguration.getIdentifierQuoteString() != null) {
         		this.quoting.setIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
         	}

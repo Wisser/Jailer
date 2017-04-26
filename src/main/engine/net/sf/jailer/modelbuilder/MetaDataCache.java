@@ -74,7 +74,7 @@ public class MetaDataCache {
 	 * @return cache
 	 */
 	public static MetaDataCache readPrimaryKeys(Session session, String schema) {
-    	String primaryKeysQuery = DBMS.forSession(session).getPrimaryKeysQuery();
+    	String primaryKeysQuery = session.dbms.getPrimaryKeysQuery();
     	if (primaryKeysQuery == null) {
     		return new MetaDataCache();
     	}
@@ -100,7 +100,7 @@ public class MetaDataCache {
 	 * @return cache
 	 */
 	public static MetaDataCache readIndexInfo(Session session, String schema) {
-    	String indexInfoQuery = DBMS.forSession(session).getIndexInfoQuery();
+    	String indexInfoQuery = session.dbms.getIndexInfoQuery();
     	if (indexInfoQuery == null) {
     		return new MetaDataCache();
     	}
@@ -126,7 +126,7 @@ public class MetaDataCache {
 	 * @return cache
 	 */
 	public static MetaDataCache readImportedKeys(Session session, String schema) {
-    	String importedKeysQuery = DBMS.forSession(session).getImportedKeysQuery();
+    	String importedKeysQuery = session.dbms.getImportedKeysQuery();
     	if (importedKeysQuery == null) {
     		return new MetaDataCache();
     	}

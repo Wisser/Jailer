@@ -188,7 +188,7 @@ public class XmlRowWriter {
 			this.table = table;
 			this.association = association;
 			this.session = session;
-			this.cellContentConverter =  new CellContentConverter(resultSetMetaData, session, DBMS.forSession(session));
+			this.cellContentConverter =  new CellContentConverter(resultSetMetaData, session, session.dbms);
 	    }
 
 		/**

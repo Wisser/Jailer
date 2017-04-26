@@ -141,10 +141,10 @@ public class RowCounter {
 			}
 			
 			long brc = 0;
-			if (DBMS.forSession(session).getSqlLimitSuffix() != null) {
+			if (session.dbms.getSqlLimitSuffix() != null) {
 				try {
 					session.setSilent(true);
-					brc += countRows(andCond, pRowBlock, newBlockRows, context, limit, false, DBMS.forSession(session).getSqlLimitSuffix(), selectDistinct, maxTime, inlineViewStyle);
+					brc += countRows(andCond, pRowBlock, newBlockRows, context, limit, false, session.dbms.getSqlLimitSuffix(), selectDistinct, maxTime, inlineViewStyle);
 					loaded = true;
 				} catch (SQLException e) {
 					if (System.currentTimeMillis() >= maxTime) {

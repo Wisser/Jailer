@@ -42,6 +42,7 @@ import java.util.zip.GZIPOutputStream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
+import javax.sql.DataSource;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
@@ -478,7 +479,7 @@ public class SubsettingEngine {
 	private DBMS targetDBMSConfiguration(Session session) {
 		DBMS targetDBMS = executionContext.getTargetDBMS();
 		if (targetDBMS == null) {
-			return DBMS.forSession(session);
+			return session.dbms;
 		}
 		return targetDBMS;
 	}
@@ -586,7 +587,7 @@ public class SubsettingEngine {
 			if (entityGraph instanceof LocalEntityGraph) {
 				localSession = ((LocalEntityGraph) entityGraph).getSession();
 			}
-			DBMS sourceConfig = DBMS.forSession(session);
+			DBMS sourceConfig = session.dbms;
 			DBMS targetConfig = targetDBMSConfiguration(entityGraph.getTargetSession());
 			Quoting targetQuoting;
 			targetQuoting = new Quoting(session);
@@ -609,7 +610,7 @@ public class SubsettingEngine {
 		}
 		
 		Session targetSession = entityGraph.getTargetSession();
-		entityGraph.fillAndWriteMappingTables(jobManager, result, executionContext.getNumberOfEntities(), targetSession, targetDBMSConfiguration(targetSession), DBMS.forSession(session));
+		entityGraph.fillAndWriteMappingTables(jobManager, result, executionContext.getNumberOfEntities(), targetSession, targetDBMSConfiguration(targetSession), session.dbms);
 
 		ProgressListenerRegistry.getProgressListener().newStage(stage, false, false);
 		
@@ -1229,7 +1230,7 @@ public class SubsettingEngine {
 			if (force || lastRunstats == 0 || (lastRunstats * 2 <= entityGraph.getTotalRowcount() && entityGraph.getTotalRowcount() > 1000)) {
 				lastRunstats = entityGraph.getTotalRowcount();
 	
-				StatisticRenovator statisticRenovator = DBMS.forSession(session).getStatisticRenovator();
+				StatisticRenovator statisticRenovator = session.dbms.getStatisticRenovator();
 				if (statisticRenovator != null) {
 					_log.info("gather statistics after " + lastRunstats + " inserted rows...");
 					try {
@@ -1245,14 +1246,12 @@ public class SubsettingEngine {
 	/**
 	 * Exports entities.
 	 */
-	public void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, String driverClassName, String dbUrl,
-			String dbUser, String dbPassword, boolean explain, ScriptFormat scriptFormat) throws Exception {
-		
+	public void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, DataSource dataSource, DBMS dbms, boolean explain, ScriptFormat scriptFormat) throws Exception {
 		if (scriptFile != null) {
 			_log.info("exporting '" + extractionModelFileName + "' to '" + scriptFile + "'");
 		}
 		
-		Session session = new Session(driverClassName, dbUrl, dbUser, dbPassword, executionContext.getScope(), false);
+		Session session = new Session(dataSource, dbms, executionContext.getScope(), false);
 		DDLCreator ddlCreator = new DDLCreator(executionContext);
 		if (executionContext.getScope() == TemporaryTableScope.SESSION_LOCAL
 		 || executionContext.getScope() == TemporaryTableScope.TRANSACTION_LOCAL) {
@@ -1265,16 +1264,16 @@ public class SubsettingEngine {
 
 		ExtractionModel extractionModel = new ExtractionModel(extractionModelFileName, executionContext.getSourceSchemaMapping(), executionContext.getParameters(), executionContext);
 
-		_log.info(DBMS.forSession(session).getSqlDialect());
+		_log.info(session.dbms.getSqlDialect());
 		
 		EntityGraph entityGraph;
 		if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
-			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, DBMS.forSession(session), executionContext);
+			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, session.dbms, executionContext);
 			entityGraph = IntraDatabaseEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session), executionContext);
 		} else if (executionContext.getScope() == TemporaryTableScope.LOCAL_DATABASE) {
 			entityGraph = LocalEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, executionContext);
 		} else {
-			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, DBMS.forSession(session), executionContext);
+			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, session.dbms, executionContext);
 			entityGraph = RemoteEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session), executionContext);
 		}
 
@@ -1306,13 +1305,17 @@ public class SubsettingEngine {
 		if (executionContext.getNoSorting()) {
 			appendCommentHeader("                   unsorted");
 		}
-		appendCommentHeader("Source DBMS:       " + DBMS.forSession(session).getDisplayName());
+		appendCommentHeader("Source DBMS:       " + session.dbms.getDisplayName());
 		appendCommentHeader("Target DBMS:       " + targetDBMSConfiguration(session).getDisplayName());
-		appendCommentHeader("Database URL:      " + dbUrl);
-		appendCommentHeader("Database User:     " + dbUser);
+		if (session.dbUrl != null) {
+			appendCommentHeader("Database URL:      " + session.dbUrl);
+		}
+		if (!"".equals(session.getSchema())) {
+			appendCommentHeader("Database User:     " + session.getSchema());
+		}
 		appendCommentHeader("");
 
-		if (DBMS.forSession(session).getRowidName() == null) {
+		if (session.dbms.getRowidName() == null) {
     		Set<Table> toCheck = new HashSet<Table>();
 			if (extractionModel.additionalSubjects != null) {
 				for (AdditionalSubject as: extractionModel.additionalSubjects) {

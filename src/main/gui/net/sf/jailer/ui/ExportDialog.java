@@ -48,8 +48,8 @@ import javax.swing.event.DocumentListener;
 
 import net.sf.jailer.DDLCreator;
 import net.sf.jailer.ScriptFormat;
-import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
+import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.SqlException;
 import net.sf.jailer.database.TemporaryTableScope;
@@ -149,7 +149,7 @@ public class ExportDialog extends javax.swing.JDialog {
         this.initialArgs = new ArrayList<String>(initialArgs);
         this.password = password;
         this.settingsContext = session.dbUrl;
-        this.sourceDBMS = DBMS.forSession(session);
+        this.sourceDBMS = session.dbms;
         this.dbConnectionDialog = dbConnectionDialog;
         this.additionalSubjects = additionalSubjects;
         initComponents();
@@ -252,7 +252,7 @@ public class ExportDialog extends javax.swing.JDialog {
         }
         
     	useRowIds.setSelected(true);
-        if (DBMS.forSession(session).getRowidName() == null) {
+        if (session.dbms.getRowidName() == null) {
         	useRowIds.setVisible(false);
         }
         
@@ -463,8 +463,8 @@ public class ExportDialog extends javax.swing.JDialog {
 		}
 		List<String> schemas = new ArrayList<String>();
 		schemas.add(DEFAULT_SCHEMA);
-    	schemas.addAll(JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchemaName()));
-    	schemas.remove(JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchemaName()));
+    	schemas.addAll(JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchema()));
+    	schemas.remove(JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema()));
     	quoteSchemas(schemas, session);
     	if (lastIFMTableSchema != null && !schemas.contains(lastIFMTableSchema)) {
     		schemas.add(lastIFMTableSchema);
@@ -503,8 +503,8 @@ public class ExportDialog extends javax.swing.JDialog {
 	private void initWorkingTableSchemaBox(Session session) {
 		List<String> schemas = new ArrayList<String>();
 		schemas.add(DEFAULT_SCHEMA);
-    	schemas.addAll(JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchemaName()));
-    	schemas.remove(JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchemaName()));
+    	schemas.addAll(JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchema()));
+    	schemas.remove(JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema()));
     	quoteSchemas(schemas, session);
 		schemaComboboxModel = schemas.toArray(new String[0]);
 		workingTableSchemaComboBox.setModel(new DefaultComboBoxModel(schemaComboboxModel));
@@ -566,7 +566,7 @@ public class ExportDialog extends javax.swing.JDialog {
 
     private void initScopeButtons(final Session session) {
     	globalIsAvailable = true;
-    	DBMS configuration = DBMS.forSession(session);
+    	DBMS configuration = session.dbms;
     	sessionLocalIsAvailable = configuration.getSessionTemporaryTableManager() != null;
 
     	scopeGlobal.setEnabled(true);
@@ -1587,41 +1587,46 @@ public class ExportDialog extends javax.swing.JDialog {
     		ddlArgs.add(getWorkingTableSchema());
     	}
     	DDLCreator ddlCreator = new DDLCreator(CommandLineInstance.getExecutionContext());
-		String tableInConflict = ddlCreator.getTableInConflict(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4));
-    	if (tableInConflict != null && getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL)) {
-    		JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);
-    	}
-    	else {
-    		if (!getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL) || ddlCreator.isUptodate(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), isUseRowId(), getWorkingTableSchema())) {
-    			return true;
-    		} else {
-    			try {
-	    			return UIUtil.runJailer(this, ddlArgs, false,
-						false, false, true,
-						null, dbConnectionDialog.getPassword(), null,
-						null, false, false, true, false, true);
-    			} catch (Exception e) {
-    				Throwable cause = e;
-    				while (cause != null && !(cause instanceof SqlException) && cause.getCause() != null && cause.getCause() != cause) {
-    					cause = cause.getCause();
-    				}
-    				if (cause instanceof SqlException) {
-    					String hint = 
-    							"Possible solutions:\n" +
-    							"  - choose working table scope \"local database\"\n" +
-    							"  - choose another working table schema\n" +
-		        				"  - execute the Jailer-DDL manually (jailer_ddl.sql)\n";
-    					SqlException sqlEx = (SqlException) cause;
-    					if (sqlEx.getInsufficientPrivileges()) {
-    						JOptionPane.showMessageDialog(this, "Insufficient privileges to create working-tables!\n" + hint, "Insufficient privileges", JOptionPane.ERROR_MESSAGE);
-    					} else {
-    						UIUtil.showException(this, "Error", new SqlException("Automatic creation of working-tables failed!\n" + hint + "\n\nCause: " + sqlEx.message + "", sqlEx.sqlStatement, null));
-    					}
-    				}
-    				return false;
-    			}
-    		}
-    	}
+    	BasicDataSource dataSource;
+		String hint = 
+				"Possible solutions:\n" +
+				"  - choose working table scope \"local database\"\n" +
+				"  - choose another working table schema\n" +
+				"  - execute the Jailer-DDL manually (jailer_ddl.sql)\n";
+		try {
+			dataSource = new BasicDataSource(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), dbConnectionDialog.currentJarURLs());
+			String tableInConflict = ddlCreator.getTableInConflict(dataSource, dataSource.dbms);
+	    	if (tableInConflict != null && getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL)) {
+	    		JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);
+	    	} else {
+	    		if (!getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL) || ddlCreator.isUptodate(dataSource, dataSource.dbms, isUseRowId(), getWorkingTableSchema())) {
+	    			return true;
+	    		} else {
+	    			try {
+		    			return UIUtil.runJailer(this, ddlArgs, false,
+							false, false, true,
+							null, dbConnectionDialog.getPassword(), null,
+							null, false, false, true, false, true);
+	    			} catch (Exception e) {
+	    				Throwable cause = e;
+	    				while (cause != null && !(cause instanceof SqlException) && cause.getCause() != null && cause.getCause() != cause) {
+	    					cause = cause.getCause();
+	    				}
+	    				if (cause instanceof SqlException) {
+	    					SqlException sqlEx = (SqlException) cause;
+	    					if (sqlEx.getInsufficientPrivileges()) {
+	    						JOptionPane.showMessageDialog(this, "Insufficient privileges to create working-tables!\n" + hint, "Insufficient privileges", JOptionPane.ERROR_MESSAGE);
+	    					} else {
+	    						UIUtil.showException(this, "Error", new SqlException("Automatic creation of working-tables failed!\n" + hint + "\n\nCause: " + sqlEx.message + "", sqlEx.sqlStatement, null));
+	    					}
+	    				}
+	    				return false;
+	    			}
+	    		}
+	    	}
+		} catch (Exception e) {
+			UIUtil.showException(this, "Error", e);
+		}
     	return false;
 	}
 
