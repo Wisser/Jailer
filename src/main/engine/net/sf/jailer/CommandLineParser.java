@@ -55,18 +55,6 @@ public class CommandLineParser {
      */
     public static void printUsage() {
         System.out.println("usage:");
-        System.out.println("  jailer print-datamodel [options] {<restriction-model>}*");
-        System.out.println("    prints restricted data-model");
-        System.out.println("    -c with closures ");
-        System.out.println();
-        System.out.println("  jailer render-datamodel [options] {<restriction-model>}* ");
-        System.out.println("    generates a HTML render of the restricted data-model into directory 'render'");
-        System.out.println();
-        System.out.println("  jailer find-association [options] <source-table> <destination-table> {<restriction-model>}*");
-        System.out.println("    finds the shortest path of associations between two tables");
-        System.out.println("    -u considers associations as un-directed");
-        System.out.println("    -t ignores 'tabu'-tables");
-        System.out.println();
         System.out.println("  jailer export [options] <extraction-model> <jdbc-driver-class> <db-URL> <db-user> <db-password>");
         System.out.println("    extracts data (see option '-e') and optionally creates a delete-script (see option '-d')");
         System.out.println("    -where subject condition. Optional, overrides condition in extraction-model");
@@ -76,6 +64,9 @@ public class CommandLineParser {
         System.out.println("    -xml-time pattern for times in XML and LIQUIBASE_XML export file");
         System.out.println("    -xml-timestamp pattern for time-stamps in XML and LIQUIBASE_XML export file");
         System.out.println("    -t prevents deletion of entities from 'tabu'-tables");
+        System.out.println();
+        System.out.println("  jailer import <sql-script> <jdbc-driver-class> <db-URL> <db-user> <db-password>");
+        System.out.println("    imports data (with C|BLOB support)");
         System.out.println();
         System.out.println("  jailer delete [options] <extraction-model> <jdbc-driver-class> <db-URL> <db-user> <db-password>");
         System.out.println("    Like export, but skips the export and creates a delete-script (see option '-d')");
@@ -92,8 +83,17 @@ public class CommandLineParser {
         System.out.println("    automatically retrieves datamodel elements using the 'model-finder' beans");
         System.out.println("    reduces JDBC-Introspection to schema <schema>");
         System.out.println();
-        System.out.println("  jailer import <sql-script> <jdbc-driver-class> <db-URL> <db-user> <db-password>");
-        System.out.println("    imports data (with C|BLOB support)");
+        System.out.println("  jailer print-datamodel [options] {<restriction-model>}*");
+        System.out.println("    prints restricted data-model");
+        System.out.println("    -c with closures ");
+        System.out.println();
+        System.out.println("  jailer render-datamodel [options] {<restriction-model>}* ");
+        System.out.println("    generates a HTML render of the restricted data-model into directory 'render'");
+        System.out.println();
+        System.out.println("  jailer find-association [options] <source-table> <destination-table> {<restriction-model>}*");
+        System.out.println("    finds the shortest path of associations between two tables");
+        System.out.println("    -u considers associations as un-directed");
+        System.out.println("    -t ignores 'tabu'-tables");
         System.out.println();
         System.out.println("options:");
         CmdLineParser cmdLineParser = new CmdLineParser(new CommandLine());

@@ -1,3 +1,4 @@
+echo off
 set LIB=lib
 
 rem JDBC-driver
@@ -15,7 +16,5 @@ set CP=%CP%;%LIB%\spring.jar
 set CP=%CP%;%LIB%\prefuse.jar
 set CP=%CP%;%LIB%\sdoc-0.5.0-beta.jar
 set CP=%CP%;jailer.jar
-
-echo %CP%
 
 start javaw -Xmx1024M -cp %CP% net.sf.jailer.ui.databrowser.DataBrowser %*
