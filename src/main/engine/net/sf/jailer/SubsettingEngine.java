@@ -709,7 +709,7 @@ public class SubsettingEngine {
 								}
 							});
 							String nullExpression = "null";
-							if (session.dbms == DBMS.POSTGRESQL && scriptFormat == ScriptFormat.INTRA_DATABASE) {
+							if (DBMS.POSTGRESQL.equals(session.dbms) && scriptFormat == ScriptFormat.INTRA_DATABASE) {
 								nullExpression += "::" + column.type;
 							}
 							column.setFilter(new Filter(nullExpression, null, false, null));

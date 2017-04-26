@@ -62,6 +62,62 @@ public class DBMS {
 		return Configuration.getInstance().getDBMS().toArray(new DBMS[0]);
 	}
 
+	/**
+	 * Default constructor.
+	 */
+	public DBMS() {
+	}
+	
+	/**
+	 * Copy constructor.
+	 */
+	public DBMS(DBMS other) {
+		this.id = other.id;
+		this.displayName = other.displayName;
+		this.urlPattern = other.urlPattern;
+		this.testQuery = other.testQuery;
+		this.statisticRenovator = other.statisticRenovator;
+		this.typeReplacement = other.typeReplacement;
+		this.stringLiteralEscapeSequences = other.stringLiteralEscapeSequences;
+		this.sqlLimitSuffix = other.sqlLimitSuffix;
+		this.varcharLengthLimit = other.varcharLengthLimit;
+		this.tableProperties = other.tableProperties;
+		this.charToEscapeSequence = other.charToEscapeSequence;
+		this.keysOfCharToEscapeSequence = other.keysOfCharToEscapeSequence;
+		this.ncharPrefix = other.ncharPrefix;
+		this.exportBlocks = other.exportBlocks;
+		this.identityInserts = other.identityInserts;
+		this.appendNanosToTimestamp = other.appendNanosToTimestamp;
+		this.appendMillisToTimestamp = other.appendMillisToTimestamp;
+		this.useToTimestampFunction = other.useToTimestampFunction;
+		this.timestampFormat = other.timestampFormat;
+		this.emptyCLOBValue = other.emptyCLOBValue;
+		this.emptyNCLOBValue = other.emptyNCLOBValue;
+		this.emptyBLOBValue = other.emptyBLOBValue;
+		this.toBlob = other.toBlob;
+		this.toClob = other.toClob;
+		this.toNClob = other.toNClob;
+		this.embeddedLobSizeLimit = other.embeddedLobSizeLimit;
+		this.binaryPattern = other.binaryPattern;
+		this.avoidLeftJoin = other.avoidLeftJoin;
+		this.timestampPattern = other.timestampPattern;
+		this.sqlDialect = other.sqlDialect;
+		this.rowidName = other.rowidName;
+		this.supportsSchemasInIndexDefinitions = other.supportsSchemasInIndexDefinitions;
+		this.useInlineViewsInDataBrowser = other.useInlineViewsInDataBrowser;
+		this.virtualColumnsQuery = other.virtualColumnsQuery;
+		this.userDefinedColumnsQuery = other.userDefinedColumnsQuery;
+		this.importedKeysQuery = other.importedKeysQuery;
+		this.primaryKeysQuery = other.primaryKeysQuery;
+		this.indexInfoQuery = other.indexInfoQuery;
+		this.identifierQuoteString = other.identifierQuoteString;
+		this.rowidType = other.rowidType;
+		this.sessionTemporaryTableManager = other.sessionTemporaryTableManager;
+		this.transactionTemporaryTableManager = other.transactionTemporaryTableManager;
+		this.jdbcProperties = other.jdbcProperties;
+		this.nullableContraint = other.nullableContraint;
+	}
+
 
 	/**
      * Gets DBMS specific configuration.
@@ -894,6 +950,39 @@ public class DBMS {
 
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#hashCode()
+	 */
+	@Override
+	public int hashCode() {
+		return id == null ? 0 : id.hashCode();
+	}
+
+	/* (non-Javadoc)
+	 * @see java.lang.Object#equals(java.lang.Object)
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
+		if (obj == null) {
+			return false;
+		}
+		if (getClass() != obj.getClass()) {
+			return false;
+		}
+		DBMS other = (DBMS) obj;
+		if (id == null) {
+			if (other.id != null) {
+				return false;
+			}
+		} else if (!id.equals(other.id)) {
+			return false;
+		}
+		return true;
 	}
 
 }

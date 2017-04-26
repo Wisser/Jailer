@@ -140,7 +140,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	private ResultSet getPrimaryKeys(Session session,
 			DatabaseMetaData metaData, String schema, String table)
 			throws SQLException {
-		if (session.dbms == DBMS.MySQL) {
+		if (DBMS.MySQL.equals(session.dbms)) {
 			return metaData.getPrimaryKeys(schema, null, table);
 		}
 		return metaData.getPrimaryKeys(null, schema, table);

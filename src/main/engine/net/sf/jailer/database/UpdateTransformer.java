@@ -30,7 +30,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
@@ -246,11 +245,11 @@ public class UpdateTransformer extends AbstractResultSetReader {
                     content = null;
                 }
                 String cVal = convertToSql(cellContentConverter, resultSet, i, content);
-                if (targetDBMSConfiguration == DBMS.POSTGRESQL && (content instanceof Date || content instanceof Timestamp)) {
+                if (DBMS.POSTGRESQL.equals(targetDBMSConfiguration) && (content instanceof Date || content instanceof Timestamp)) {
                 	// explicit cast needed
                 	cVal = "timestamp " + cVal;
                 }
-                if (targetDBMSConfiguration == DBMS.POSTGRESQL) {
+                if (DBMS.POSTGRESQL.equals(targetDBMSConfiguration)) {
                 	// explicit cast needed
                 	int mdColumnType = getMetaData(resultSet).getColumnType(i);
                 	if (mdColumnType == Types.TIME) {
@@ -432,7 +431,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
      */
     private void writeToScriptFile(String content, boolean wrap) throws IOException {
         synchronized (scriptFileWriter) {
-        	if (wrap && targetDBMSConfiguration == DBMS.ORACLE) {
+        	if (wrap && DBMS.ORACLE.equals(targetDBMSConfiguration)) {
        			scriptFileWriter.write(SqlUtil.splitDMLStatement(content, 2400));
         	} else {
         		scriptFileWriter.write(content);

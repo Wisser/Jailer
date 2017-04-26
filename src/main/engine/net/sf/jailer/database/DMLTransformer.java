@@ -36,7 +36,6 @@ import java.util.Set;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.TransformerFactory;
-import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
@@ -239,7 +238,7 @@ public class DMLTransformer extends AbstractResultSetReader {
         this.table = table;
         this.scriptFileWriter = scriptFileWriter;
         this.currentDialect = targetDBMSConfiguration.getSqlDialect();
-        this.insertStatementBuilder = new StatementBuilder(currentDialect.isSupportsMultiRowInserts() || targetDBMSConfiguration == DBMS.ORACLE || targetDBMSConfiguration == DBMS.SQLITE? maxBodySize : 1);
+        this.insertStatementBuilder = new StatementBuilder(currentDialect.isSupportsMultiRowInserts() || DBMS.ORACLE.equals(targetDBMSConfiguration) || DBMS.SQLITE.equals(targetDBMSConfiguration)? maxBodySize : 1);
         this.quoting = createQuoting(session);
         this.importFilterTransformer = importFilterTransformer;
         if (targetDBMSConfiguration != null && targetDBMSConfiguration != DBMS.forSession(session)) {
@@ -281,7 +280,7 @@ public class DMLTransformer extends AbstractResultSetReader {
                 String mdColumnLabel = quoting.quote(getMetaData(resultSet).getColumnLabel(i));
                 int mdColumnType = getMetaData(resultSet).getColumnType(i);
                 
-                if ((mdColumnType == Types.BLOB || mdColumnType == Types.CLOB || mdColumnType == Types.NCLOB || mdColumnType == Types.SQLXML) && targetDBMSConfiguration != DBMS.SQLITE) {
+                if ((mdColumnType == Types.BLOB || mdColumnType == Types.CLOB || mdColumnType == Types.NCLOB || mdColumnType == Types.SQLXML) && !DBMS.SQLITE.equals(targetDBMSConfiguration)) {
                 	tableHasLobs = true;
                 	isLobColumn[i] = true;
                 	lobColumnIndexes.add(i);
@@ -360,11 +359,11 @@ public class DMLTransformer extends AbstractResultSetReader {
                         content = null;
                     }
                     String cVal = convertToSql(cellContentConverter, resultSet, i, content);
-                    if (targetDBMSConfiguration == DBMS.POSTGRESQL && (content instanceof Date || content instanceof Timestamp)) {
+                    if (DBMS.POSTGRESQL.equals(targetDBMSConfiguration) && (content instanceof Date || content instanceof Timestamp)) {
                     	// explicit cast needed
                     	cVal = "timestamp " + cVal;
                     }
-                    if (targetDBMSConfiguration == DBMS.POSTGRESQL) {
+                    if (DBMS.POSTGRESQL.equals(targetDBMSConfiguration)) {
                     	// explicit cast needed
                     	int mdColumnType = getMetaData(resultSet).getColumnType(i);
                     	if (mdColumnType == Types.TIME) {
@@ -527,21 +526,21 @@ public class DMLTransformer extends AbstractResultSetReader {
 	                }
                 }
             } else {
-            	if (targetDBMSConfiguration == DBMS.DB2_ZOS && maxBodySize > 1) {
+            	if (DBMS.DB2_ZOS.equals(targetDBMSConfiguration) && maxBodySize > 1) {
             		String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
 	                String item = "\n Select " + valueList + " From sysibm.sysdummy1";
 	                if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
 	                    writeToScriptFile(insertStatementBuilder.build(), true);
 	                }
 	                insertStatementBuilder.append(insertSchema, item, " Union all ", ";\n");
-            	} else if (targetDBMSConfiguration == DBMS.ORACLE && maxBodySize > 1) {
+            	} else if (DBMS.ORACLE.equals(targetDBMSConfiguration) && maxBodySize > 1) {
             		String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
 	                String item = "\n Select " + valueList + " From DUAL";
 	                if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
 	                    writeToScriptFile(insertStatementBuilder.build(), true);
 	                }
 	                insertStatementBuilder.append(insertSchema, item, " Union all ", ";\n");
-            	} else if (targetDBMSConfiguration == DBMS.SQLITE && maxBodySize > 1) {
+            	} else if (DBMS.SQLITE.equals(targetDBMSConfiguration) && maxBodySize > 1) {
             		String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
 	                String item = "\n Select " + valueList + " ";
 	                if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
@@ -794,7 +793,7 @@ public class DMLTransformer extends AbstractResultSetReader {
         			identityInsertTable = table;
         		}
         	}
-        	if (wrap && targetDBMSConfiguration == DBMS.ORACLE) {
+        	if (wrap && DBMS.ORACLE.equals(targetDBMSConfiguration)) {
        			scriptFileWriter.write(SqlUtil.splitDMLStatement(content, 2400));
         	} else {
         		scriptFileWriter.write(content);

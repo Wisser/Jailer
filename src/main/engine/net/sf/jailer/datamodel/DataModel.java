@@ -46,8 +46,8 @@ import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.CsvFile;
-import net.sf.jailer.util.LayoutStorage;
 import net.sf.jailer.util.CsvFile.LineFilter;
+import net.sf.jailer.util.LayoutStorage;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.SqlUtil;
 

@@ -371,10 +371,10 @@ public class RemoteEntityGraph extends EntityGraph {
         }
         
         String insert = "Insert into " + dmlTableReference(ENTITY, session) + " (r_entitygraph, " + upkColumnList(table, null) + ", birthday, type" + (source == null || !explain? "" : ", association, PRE_TYPE, " + upkColumnList(source, "PRE_"))  + ") " + select;
-        if (session.dbms == DBMS.SYBASE) session.execute("set forceplan on ");
+        if (DBMS.SYBASE.equals(session.dbms)) session.execute("set forceplan on ");
         long rc = session.executeUpdate(insert);
         totalRowcount += rc;
-        if (session.dbms == DBMS.SYBASE) session.execute("set forceplan off ");
+        if (DBMS.SYBASE.equals(session.dbms)) session.execute("set forceplan off ");
         return rc;
     }
 
@@ -890,7 +890,7 @@ public class RemoteEntityGraph extends EntityGraph {
     public void markDependentEntitiesAsTraversed(Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, Map<String, Integer> typeCache) throws SQLException {
     	String update;
     	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, session, DBMS.forSession(session));
-    	if (session.dbms == DBMS.SYBASE) {
+    	if (DBMS.SYBASE.equals(session.dbms)) {
     		update = "Update " + dmlTableReference(DEPENDENCY, session) + " set traversed=1" +
     		 " Where " + pkEqualsEntityID(association.source, resultSet, dmlTableReference(DEPENDENCY, session), "FROM_", cellContentConverter) +
     		 " and " + dmlTableReference(DEPENDENCY, session) + ".from_type=" + typeName(association.source) + " and assoc=" + association.getId() +
