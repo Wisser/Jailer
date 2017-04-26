@@ -1620,7 +1620,7 @@ public class ExportDialog extends javax.swing.JDialog {
 	    						UIUtil.showException(this, "Error", new SqlException("Automatic creation of working-tables failed!\n" + hint + "\n\nCause: " + sqlEx.message + "", sqlEx.sqlStatement, null));
 	    					}
 	    				}
-	    				return false;
+	    				UIUtil.showException(this, "Error", e);
 	    			}
 	    		}
 	    	}

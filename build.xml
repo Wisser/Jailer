@@ -48,6 +48,11 @@ available targets:
 				<include name="**/*.xml" />
 			</fileset>
 		</copy>
+		<copy todir="${COMPILE_DIR}/net/sf/jailer/script">
+			<fileset dir="${SRC_DIR}/main/engine/net/sf/jailer/script">
+				<include name="**/*" />
+			</fileset>
+		</copy>
 	</target>
 
 	<target name="compile-gui" depends="compile-engine">
@@ -85,6 +90,11 @@ available targets:
 		<copy todir=".">
 			<fileset dir="${SRC_DIR}/main/engine/net/sf/jailer/configuration">
 				<include name="**/*.xml" />
+			</fileset>
+		</copy>
+		<copy todir="script">
+			<fileset dir="${SRC_DIR}/main/engine/net/sf/jailer/script">
+				<include name="**/*" />
 			</fileset>
 		</copy>
 	</target>

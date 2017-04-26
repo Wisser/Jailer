@@ -20,6 +20,8 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -96,7 +98,37 @@ public class PrintUtil {
      * Cache for {@link #applyTemplate(String, Object[])}.
      */
     private Map<String, String> templateCache = new HashMap<String, String>();
-    
+
+    /**
+     * Loads a file.
+     * 
+     * @param file the file to load
+     * @return content of file
+     * @throws FileNotFoundException
+     * @throws IOException
+     */
+    public String loadResource(String name) throws FileNotFoundException, IOException {
+        StringBuffer sb;
+        sb = new StringBuffer();
+        File newFile = executionContext.newFile(name);
+		BufferedReader reader;
+		if (newFile.exists()) {
+			reader = new BufferedReader(new FileReader(newFile));
+		} else {
+			InputStream in = getClass().getResourceAsStream("/net/sf/jailer/" + name.replace('\\', '/'));
+			if (in == null) {
+				throw new FileNotFoundException(newFile.getPath());
+			}
+			reader = new BufferedReader(new InputStreamReader(in));
+		}
+        String line = null;
+        while ((line = reader.readLine()) != null) {
+        	sb.append(line + "\n");
+        }
+        reader.close();
+        return sb.toString();
+    }
+
     /**
      * Applies arguments to template.
      * 
@@ -108,7 +140,7 @@ public class PrintUtil {
     public String applyTemplate(String template, Object[] arguments) throws FileNotFoundException, IOException {
         String sb = templateCache.get(template);
         if (sb == null) {
-            sb = loadFile(template);
+            sb = loadResource(template);
             templateCache.put(template, sb);
         }
         
@@ -126,7 +158,7 @@ public class PrintUtil {
     public String applyTemplate(String template, Map<String, String> arguments, Map<String, List<String>> listArguments) throws FileNotFoundException, IOException {
     	String sb = templateCache.get(template);
         if (sb == null) {
-            sb = loadFile(template);
+            sb = loadResource(template);
             templateCache.put(template, sb);
         }
         
