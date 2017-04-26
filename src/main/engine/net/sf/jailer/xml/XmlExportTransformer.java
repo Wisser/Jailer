@@ -137,7 +137,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 		this.cyclicAggregatedTables = cyclicAggregatedTables;
 		this.session = session;
 		this.quoting = new Quoting(session);
-        this.rowIdSupport = new RowIdSupport(entityGraph.getDatamodel(), DBMS.forSession(session), executionContext);
+        this.rowIdSupport = new RowIdSupport(entityGraph.getDatamodel(), session.dbms, executionContext);
 	}
 
 	/**
@@ -145,7 +145,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	 */
 	public void readCurrentRow(ResultSet resultSet) throws SQLException {
 		try {
-			writeEntity(table, null, resultSet, new ArrayList<String>(), getCellContentConverter(resultSet, session, DBMS.forSession(session)));
+			writeEntity(table, null, resultSet, new ArrayList<String>(), getCellContentConverter(resultSet, session, session.dbms));
 		} catch (SAXException e) {
 			throw new RuntimeException(e);
 		} catch (ParserConfigurationException e) {
@@ -206,7 +206,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 							ResultSetReader reader = new ResultSetReader() {
 								public void readCurrentRow(ResultSet resultSet) throws SQLException {
 									try {
-										writeEntity(sa.destination, sa, resultSet, ancestors, getCellContentConverter(resultSet, session, DBMS.forSession(session)));
+										writeEntity(sa.destination, sa, resultSet, ancestors, getCellContentConverter(resultSet, session, session.dbms));
 									} catch (SAXException e) {
 										throw new RuntimeException(e);
 									} catch (ParserConfigurationException e) {

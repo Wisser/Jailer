@@ -53,6 +53,7 @@ import net.sf.jailer.Jailer;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
+import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.TemporaryTableScope;
@@ -1053,9 +1054,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        	args.add(tmpFileName != null? tmpFileName : extractionModelEditor.extractionModelFile);
 			        	dbConnectionDialog.addDbArgs(args);
 			        	Session.closeTemporaryTableSession();
-			        	Session session = new Session(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword());
+			        	BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), dbConnectionDialog.currentJarURLs()); 
+			        	Session session = new Session(dataSource, dataSource.dbms);
 
-			        	if (extractionModelEditor.dataModel != null && DBMS.forSession(session).getRowidName() == null) {
+			        	if (extractionModelEditor.dataModel != null && session.dbms.getRowidName() == null) {
 			        		Set<Table> toCheck = new HashSet<Table>();
 			    			if (extractionModelEditor.extractionModel != null) {
 			    				if (extractionModelEditor.extractionModel.additionalSubjects != null) {
@@ -1085,12 +1087,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				        	}
 				        	DMLTransformer.numberOfExportedLOBs = 0;
 				        	DDLCreator ddlCreator = new DDLCreator(executionContext);
-							String tableInConflict = ddlCreator.getTableInConflict(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4));
+				        	dataSource = new BasicDataSource(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), dbConnectionDialog.currentJarURLs());
+							String tableInConflict = ddlCreator.getTableInConflict(dataSource, dataSource.dbms);
 				        	if (tableInConflict != null && exportDialog.getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL)) {
 				        		JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);
 				        	}
 				        	else {
-				        		if (!exportDialog.getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL) || ddlCreator.isUptodate(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), exportDialog.isUseRowId(), exportDialog.getWorkingTableSchema()) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
+				        		if (!exportDialog.getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL) || ddlCreator.isUptodate(dataSource, dataSource.dbms, exportDialog.isUseRowId(), exportDialog.getWorkingTableSchema()) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
 				        			"Automatic creation of working-tables failed!\n" +
 			        				"Please execute the Jailer-DDL manually (jailer_ddl.sql)\n" +
 			        				"or try another \"Working table schema\"\n\n" +

@@ -17,6 +17,7 @@ package net.sf.jailer;
 
 import java.io.BufferedReader;
 import java.io.StringReader;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -25,9 +26,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.sql.DataSource;
+
 import org.apache.log4j.Logger;
 
 import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
@@ -140,8 +144,8 @@ public class Jailer {
 				}
 			}
 			
-			Session.setClassLoaderForJdbcDriver(ClasspathUtil.addJarToClasspath(commandLine.jdbcjar, commandLine.jdbcjar2));
-			
+			URL[] jdbcJarURLs = ClasspathUtil.toURLArray(commandLine.jdbcjar, commandLine.jdbcjar2);
+
 			if ("check-domainmodel".equalsIgnoreCase(command)) {
 				DataModel dataModel = new DataModel(executionContext);
 				for (String rm : commandLine.arguments.subList(1, commandLine.arguments.size())) {
@@ -161,8 +165,9 @@ public class Jailer {
 				if (commandLine.arguments.size() != 6) {
 					CommandLineParser.printUsage();
 				} else {
-					Session session = new Session(commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4),
-							commandLine.arguments.get(5), null, commandLine.transactional);
+					BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4),
+							commandLine.arguments.get(5), jdbcJarURLs);
+					Session session = new Session(dataSource, dataSource.dbms, null, commandLine.transactional);
 					try {
 						new SqlScriptExecutor(session, commandLine.numberOfThreads, executionContext).executeScript(commandLine.arguments.get(1), commandLine.transactional);
 					} finally {
@@ -188,8 +193,10 @@ public class Jailer {
 						System.out.println("missing '-e' option");
 						CommandLineParser.printUsage();
 					} else {
-						new SubsettingEngine(executionContext).export(commandLine.arguments.get(1), commandLine.exportScriptFileName, commandLine.deleteScriptFileName, commandLine.arguments.get(2), commandLine.arguments.get(3),
-								commandLine.arguments.get(4), commandLine.arguments.get(5), commandLine.explain, executionContext.getScriptFormat());
+						BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(2), commandLine.arguments.get(3),
+								commandLine.arguments.get(4), commandLine.arguments.get(5), jdbcJarURLs);
+						new SubsettingEngine(executionContext).export(commandLine.arguments.get(1), commandLine.exportScriptFileName, commandLine.deleteScriptFileName,
+								dataSource, dataSource.dbms, commandLine.explain, executionContext.getScriptFormat());
 					}
 				}
 			} else if ("delete".equalsIgnoreCase(command)) {
@@ -200,10 +207,12 @@ public class Jailer {
 						System.out.println("missing '-d' option");
 						CommandLineParser.printUsage();
 					} else {
+						BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(2), commandLine.arguments.get(3),
+								commandLine.arguments.get(4), commandLine.arguments.get(5), jdbcJarURLs);
 						// note we are passing null for script format and the export script name, as we are using the export tool
 						// to generate the delete script only.
-						new SubsettingEngine(executionContext).export(commandLine.arguments.get(1), /* clp.exportScriptFileName*/ null, commandLine.deleteScriptFileName, commandLine.arguments.get(2), commandLine.arguments.get(3),
-									commandLine.arguments.get(4), commandLine.arguments.get(5), commandLine.explain, /*scriptFormat*/ null);
+						new SubsettingEngine(executionContext).export(commandLine.arguments.get(1), /* clp.exportScriptFileName*/ null, commandLine.deleteScriptFileName,
+								dataSource, dataSource.dbms, commandLine.explain, /*scriptFormat*/ null);
 					}
 				}
 			} else if ("find-association".equalsIgnoreCase(command)) {
@@ -214,23 +223,25 @@ public class Jailer {
 				}
 			} else if ("create-ddl".equalsIgnoreCase(command)) {
 				if (commandLine.arguments.size() == 5) {
-					return new DDLCreator(executionContext).createDDL(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), executionContext
-							.getScope(), commandLine.workingTableSchema);
+					BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), jdbcJarURLs);
+					return new DDLCreator(executionContext).createDDL(dataSource, dataSource.dbms, executionContext.getScope(), commandLine.workingTableSchema);
 				}
-				return new DDLCreator(executionContext).createDDL(null, null, null, null, executionContext.getScope(), commandLine.workingTableSchema);
+				return new DDLCreator(executionContext).createDDL((DataSource) null, null, executionContext.getScope(), commandLine.workingTableSchema);
 			} else if ("build-model-wo-merge".equalsIgnoreCase(command)) {
 				if (commandLine.arguments.size() != 5) {
 					CommandLineParser.printUsage();
 				} else {
 					_log.info("Building data model.");
-					ModelBuilder.build(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), commandLine.schema, warnings, executionContext);
+					BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), jdbcJarURLs);
+					ModelBuilder.build(dataSource, dataSource.dbms, commandLine.schema, warnings, executionContext);
 				}
 			} else if ("build-model".equalsIgnoreCase(command)) {
 				if (commandLine.arguments.size() != 5) {
 					CommandLineParser.printUsage();
 				} else {
 					_log.info("Building data model.");
-					ModelBuilder.buildAndMerge(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), commandLine.schema, warnings, executionContext);
+					BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), jdbcJarURLs);
+					ModelBuilder.buildAndMerge(dataSource, dataSource.dbms, commandLine.schema, warnings, executionContext);
 				}
 			} else {
 				CommandLineParser.printUsage();

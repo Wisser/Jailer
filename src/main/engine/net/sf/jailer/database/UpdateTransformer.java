@@ -137,7 +137,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
         this.currentDialect = targetDBMSConfiguration.getSqlDialect();
         this.quoting = new Quoting(session);
         this.importFilterTransformer = importFilterTransformer;
-        if (targetDBMSConfiguration != null && targetDBMSConfiguration != DBMS.forSession(session)) {
+        if (targetDBMSConfiguration != null && targetDBMSConfiguration != session.dbms) {
         	if (targetDBMSConfiguration.getIdentifierQuoteString() != null) {
         		this.quoting.setIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
         	}

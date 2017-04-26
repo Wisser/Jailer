@@ -85,7 +85,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     private Set<String> getUserDefinedTypes(Session session) {
     	if (userDefinedTypes == null) {
     		userDefinedTypes = new HashSet<String>();
-    		String query = DBMS.forSession(session).getUserDefinedColumnsQuery();
+    		String query = session.dbms.getUserDefinedColumnsQuery();
     		if (query != null) {
     			try {
     				session.executeQuery(query, new ResultSetReader() {
@@ -120,7 +120,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
         DatabaseMetaData metaData = session.getMetaData();
     	Quoting quoting = new Quoting(session);
     	ResultSet resultSet;
-        String defaultSchema = getDefaultSchema(session, session.dbUser);
+        String defaultSchema = getDefaultSchema(session, session.getSchema());
          
         for (Table table: dataModel.getTables()) {
             _log.info("find associations with " + table.getName());
@@ -618,7 +618,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
     	if (forDefaultSchema != session) {
     		forDefaultSchema = session;
     		_log.info("getting default schema...");
-    		defaultSchema = getDefaultSchema(session, session.dbUser);
+    		defaultSchema = getDefaultSchema(session, session.getSchema());
     		_log.info("default schema is '" + defaultSchema + "'");
     	}
     	String schemaName = quoting.unquote(table.getOriginalSchema(defaultSchema));
@@ -651,8 +651,8 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
             if (typesWithLength.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
                 length = resultSet.getInt(7);
                 if (type == Types.VARCHAR) {
-                	if (DBMS.forSession(session).getVarcharLengthLimit() != null) {
-                		length = Math.min(length, DBMS.forSession(session).getVarcharLengthLimit());
+                	if (session.dbms.getVarcharLengthLimit() != null) {
+                		length = Math.min(length, session.dbms.getVarcharLengthLimit());
                 	}
                 }
             }
@@ -688,7 +688,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				Set<Pair<String, String>> virtualColumns = (Set<Pair<String, String>>) session.getSessionProperty(getClass(), "virtualColumns" + schemaName);
             	if (virtualColumns == null) {
             		virtualColumns = new HashSet<Pair<String,String>>();
-            		String virtualColumnsQuery = DBMS.forSession(session).getVirtualColumnsQuery();
+            		String virtualColumnsQuery = session.dbms.getVirtualColumnsQuery();
             		if (virtualColumnsQuery != null) {
             			try {
             				session.setSilent(true);

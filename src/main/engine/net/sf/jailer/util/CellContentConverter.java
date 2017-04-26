@@ -80,7 +80,7 @@ public class CellContentConverter {
 		this.resultSetMetaData = resultSetMetaData;
 		this.session = session;
 		this.targetConfiguration = targetConfiguration;
-		this.configuration = DBMS.forSession(this.session);
+		this.configuration = this.session.dbms;
 	}
 
     /**

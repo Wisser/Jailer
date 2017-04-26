@@ -49,7 +49,7 @@ public class DB2ShellScriptBasedStatisticRenovator extends ShellScriptBasedStati
 			String s = session.dbUrl;
         	dbName = s.substring(s.lastIndexOf(":") + 1);
         }
-        return super.getScriptInvocation(session) + " " + dbName + " " + session.dbUser + " " + session.dbPassword;
+        return super.getScriptInvocation(session) + " " + dbName + " " + session.getSchema();
     }
 
 }

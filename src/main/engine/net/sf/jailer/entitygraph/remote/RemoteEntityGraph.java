@@ -83,7 +83,7 @@ public class RemoteEntityGraph extends EntityGraph {
         this.session = session;
         this.quoting = new Quoting(session);
         this.universalPrimaryKey = universalPrimaryKey;
-        this.rowIdSupport = new RowIdSupport(dataModel, DBMS.forSession(session), executionContext);
+        this.rowIdSupport = new RowIdSupport(dataModel, session.dbms, executionContext);
         
         File fieldProcTablesFile = new File("field-proc-tables.csv");
         if (fieldProcTablesFile.exists()) {
@@ -323,7 +323,7 @@ public class RemoteEntityGraph extends EntityGraph {
         	joinCondition = SqlUtil.resolvePseudoColumns(joinCondition, isInverseAssociation? null : "E", isInverseAssociation? "E" : null, today, birthdayOfSubject, inDeleteMode);
         }
         String select;
-        if (DBMS.forSession(session).isAvoidLeftJoin()) {
+        if (session.dbms.isAvoidLeftJoin()) {
         	// bug fix for [ jailer-Bugs-3294893 ] "Outer Join for selecting dependant entries and Oracle 10"
         	// mixing left joins and theta-style joins causes problems on oracle DBMS
         	select =
@@ -852,7 +852,7 @@ public class RemoteEntityGraph extends EntityGraph {
      */
     public void readDependentEntities(Table table, Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, ResultSetReader reader, Map<String, Integer> typeCache, String selectionSchema, String originalPKAliasPrefix) throws SQLException {
     	String select;
-    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, session, DBMS.forSession(session));
+    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, session, session.dbms);
     	if (originalPKAliasPrefix != null) {
         	StringBuffer selectOPK = new StringBuffer();
         	List<Column> pkColumns = rowIdSupport.getPrimaryKey(table).getColumns();
@@ -889,7 +889,7 @@ public class RemoteEntityGraph extends EntityGraph {
      */
     public void markDependentEntitiesAsTraversed(Association association, ResultSet resultSet, ResultSetMetaData resultSetMetaData, Map<String, Integer> typeCache) throws SQLException {
     	String update;
-    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, session, DBMS.forSession(session));
+    	CellContentConverter cellContentConverter = new CellContentConverter(resultSetMetaData, session, session.dbms);
     	if (DBMS.SYBASE.equals(session.dbms)) {
     		update = "Update " + dmlTableReference(DEPENDENCY, session) + " set traversed=1" +
     		 " Where " + pkEqualsEntityID(association.source, resultSet, dmlTableReference(DEPENDENCY, session), "FROM_", cellContentConverter) +

@@ -283,7 +283,7 @@ public class Column {
      * @return <code>true</code> iff this column cannot be updated
      */
 	public boolean isVirtualOrBlocked(Session session) {
-		return isVirtual || DBMS.forSession(session).getExportBlocks().contains(type);
+		return isVirtual || session.dbms.getExportBlocks().contains(type);
 	}
 
 }

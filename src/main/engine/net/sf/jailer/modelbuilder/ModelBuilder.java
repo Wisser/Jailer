@@ -31,9 +31,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import javax.sql.DataSource;
+
 import org.apache.log4j.Logger;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
@@ -126,15 +129,10 @@ public class ModelBuilder {
     /**
      * Builds and merges model.
      * 
-     * @param driverClassName the name of the JDBC driver class
-     * @param dbUrl URL of the DB
-     * @param dbUser name of DB-user
-     * @param dbPassword DB-password
-     * @param string 
      * @param warnings string-buffer to print warnings into, may be <code>null</code>
      */
-    public static void buildAndMerge(String driverClassName, String dbUrl, String dbUser, String dbPassword, String schema, StringBuffer warnings, ExecutionContext executionContext) throws Exception {
-    	build(driverClassName, dbUrl, dbUser, dbPassword, schema, warnings, executionContext);
+    public static void buildAndMerge(DataSource dataSource, DBMS dbms, String schema, StringBuffer warnings, ExecutionContext executionContext) throws Exception {
+    	build(dataSource, dbms, schema, warnings, executionContext);
     	merge(getModelBuilderTablesFilename(executionContext), DataModel.getTablesFile(executionContext), 0, TABLE_HEADER);
     	merge(getModelBuilderAssociationsFilename(executionContext), DataModel.getAssociationsFile(executionContext), 5, ASSOC_HEADER);
     	merge(getModelBuilderColumnsFilename(executionContext), DataModel.getColumnsFile(executionContext), 0, COLUMN_HEADER);
@@ -169,15 +167,10 @@ public class ModelBuilder {
 	/**
      * Builds model.
      * 
-     * @param driverClassName the name of the JDBC driver class
-     * @param dbUrl URL of the DB
-     * @param dbUser name of DB-user
-     * @param dbPassword DB-password
-     * @param string 
      * @param warnings string-buffer to print warnings into, may be <code>null</code>
      */
-    public static void build(String driverClassName, String dbUrl, String dbUser, String dbPassword, String schema, StringBuffer warnings, ExecutionContext executionContext) throws Exception {
-    	session = new Session(driverClassName, dbUrl, dbUser, dbPassword);
+    public static void build(DataSource dataSource, DBMS dbms, String schema, StringBuffer warnings, ExecutionContext executionContext) throws Exception {
+    	session = new Session(dataSource, dbms);
     	session.setIntrospectionSchema(schema);
 
         resetFiles(executionContext);

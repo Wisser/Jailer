@@ -71,7 +71,7 @@ public class ExplainTool {
             succEqualsE.append("Succ.PRE_" + column.name + "=E." + column.name);
         }
         final FileWriter writer = new FileWriter("explain.log");
-        final RowIdSupport rowIdSupport = new RowIdSupport(graph.getDatamodel(), DBMS.forSession(session), executionContext);
+        final RowIdSupport rowIdSupport = new RowIdSupport(graph.getDatamodel(), session.dbms, executionContext);
         String selectLeafs = "Select type, " + graph.getUniversalPrimaryKey().columnList(null) + " From " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, session, executionContext) + " E Where E.r_entitygraph=" + graph.graphID +
             " and not exists (Select * from " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, session, executionContext) + " Succ Where Succ.r_entitygraph=" + graph.graphID + " and Succ.PRE_TYPE=E.type and " + succEqualsE + ")";
         session.executeQuery(selectLeafs, new Session.AbstractResultSetReader() {
@@ -84,7 +84,7 @@ public class ExplainTool {
                 }
                 List<String> keys = new ArrayList<String>();
                 int i = 2;
-                CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, DBMS.forSession(session));
+                CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, session.dbms);
 				for (@SuppressWarnings("unused") Column column: graph.getUniversalPrimaryKey().getColumns()) {
                     keys.add(cellContentConverter.toSql(cellContentConverter.getObject(resultSet, i++)));
                 }
@@ -146,7 +146,7 @@ public class ExplainTool {
                 }
                 associationID[0] = resultSet.getInt(2);
                 int i = 3;
-                CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, DBMS.forSession(session));
+                CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, session.dbms);
 				for (@SuppressWarnings("unused") Column column: graph.getUniversalPrimaryKey().getColumns()) {
                     preKeys.add(cellContentConverter.toSql(cellContentConverter.getObject(resultSet, i++)));
                 }

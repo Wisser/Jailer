@@ -22,6 +22,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.ui.CommandLineInstance;
 import net.sf.jailer.util.SqlScriptExecutor;
@@ -78,7 +79,8 @@ public class DeletionTestCase extends DbmsAwareTestCase {
 		File insertResult = new File(resultDir, "insert.sql");
 		
 		if (doDeletion(datamodelDir, new File(testDir, "extractionmodel.csv"), result, insertResult, scope)) {
-			Session statementExecutor = new Session(connectionArguments.get(0), connectionArguments.get(1), connectionArguments.get(2), connectionArguments.get(3));
+			BasicDataSource dataSource = new BasicDataSource(connectionArguments.get(0), connectionArguments.get(1), connectionArguments.get(2), connectionArguments.get(3));
+			Session statementExecutor = new Session(dataSource, dataSource.dbms);
 			new SqlScriptExecutor(statementExecutor, 1, CommandLineInstance.getExecutionContext()).executeScript(result.getCanonicalPath());
 			statementExecutor.shutDown();
 			

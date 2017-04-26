@@ -73,6 +73,7 @@ import javax.swing.tree.TreePath;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.Configuration;
+import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
@@ -489,7 +490,8 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private void createSession(DbConnectionDialog dbConnectionDialog) throws Exception {
 		ConnectionInfo connection = dbConnectionDialog.currentConnection;
-		session = new Session(connection.driverClass, connection.url, connection.user, connection.password);
+		BasicDataSource dataSource = new BasicDataSource(connection.driverClass, connection.url, connection.user, connection.password, dbConnectionDialog.currentJarURLs());
+		session = new Session(dataSource, dataSource.dbms);
 		List<String> args = new ArrayList<String>();
 		dbConnectionDialog.addDbArgs(args);
 		session.setCliArguments(args);
