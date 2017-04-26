@@ -16,6 +16,9 @@
 package net.sf.jailer.configuration;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -108,36 +111,27 @@ public class Configuration {
 	 */
 	private synchronized static void loadConfigurationFile() {
     	if (theConfiguration == null) {
-    		File configFile = new File("jailer.xml");
-    		if (getConfigurationFolder() != null) {
-    			configFile = new File(getConfigurationFolder(), configFile.getName());
-    		}
+    		String name = "jailer.xml";
     		try {
+	    		InputStream res;
+	    		File configFile = new File(name);
+	    		if (!configFile.exists()) {
+	    			res = Configuration.class.getResourceAsStream(name);
+	    		} else {
+	    			res = new FileInputStream(configFile);
+	    		}
     			JAXBContext jc = JAXBContext.newInstance(Configuration.class, DBMS.class, DefaultTemporaryTableManager.class);
     			Unmarshaller um = jc.createUnmarshaller();
-    			theConfiguration = (Configuration) um.unmarshal(configFile);
+    			theConfiguration = (Configuration) um.unmarshal(res);
     			DBMS.initPredefinedDBMSes();
+    			res.close();
     		} catch (JAXBException e) {
+    			throw new RuntimeException(e);
+    		} catch (IOException e) {
     			throw new RuntimeException(e);
     		}
     	}
     }
-    
-    private static File configurationFolder = new File(".");
-    
-    /**
-	 * @return the configurationFolder
-	 */
-	public static File getConfigurationFolder() {
-		return configurationFolder;
-	}
-
-	/**
-	 * @param configurationFolder the configurationFolder to set
-	 */
-	public static void setConfigurationFolder(File theConfigurationFolder) {
-		configurationFolder = theConfigurationFolder;
-	}
 
     /**
 	 * @return the columnsPerIFMTable

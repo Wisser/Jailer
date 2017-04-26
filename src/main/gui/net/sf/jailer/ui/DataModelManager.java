@@ -122,7 +122,6 @@ public class DataModelManager {
 
 	public static void main(String[] args) throws Exception {
 		CommandLineInstance.init(args);
-		Configuration.setConfigurationFolder(CommandLineInstance.getExecutionContext().getWorkingfolder());
 		for (String s : getModelFolderNames()) {
 			System.out.println(s + " -> " + getModelDetails(s));
 		}

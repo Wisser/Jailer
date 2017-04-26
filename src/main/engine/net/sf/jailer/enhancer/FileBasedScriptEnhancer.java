@@ -56,7 +56,7 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
      */
     public void addEpilog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
             Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
-        File dir = new File(Configuration.getConfigurationFolder(), "epilog" + File.separatorChar + scriptType);
+        File dir = new File(executionContext.getWorkingFolder(), "epilog" + File.separatorChar + scriptType);
         addEnhancement(script, progress, dir, executionContext);
           addEnhancement(script, dir, "EPILOG.sql");
     }
@@ -65,7 +65,7 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
      */
     public void addProlog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
             Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
-        File dir = new File(Configuration.getConfigurationFolder(), "prolog" + File.separatorChar + scriptType);
+        File dir = new File(executionContext.getWorkingFolder(), "prolog" + File.separatorChar + scriptType);
            addEnhancement(script, dir, "PROLOG.sql");
         addEnhancement(script, progress, dir, executionContext);
     }
