@@ -135,8 +135,7 @@ public class Jailer {
 				return false;
 			}
 			ExecutionContext executionContext = new ExecutionContext(commandLine);
-			Configuration.setConfigurationFolder(executionContext.getWorkingfolder());
-			
+
 			String command = commandLine.arguments.get(0);
 			if (!"create-ddl".equalsIgnoreCase(command)) {
 				if (!"find-association".equalsIgnoreCase(command)) {

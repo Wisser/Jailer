@@ -521,25 +521,18 @@ public class ExecutionContext {
 	}
 
 	/**
-     * Gets working-folder option.
-     * 
-     * @return working folder option, or <code>null</code> if no working-folder option is given
-     */
-    public File getWorkingfolder() {
-    	if (workingFolder == null) {
-    		return null;
-    	}
-    	return new File(workingFolder);
-    }
-
-    /**
      * Gets {@link File} from a file name relative to the working-folder.
      * 
      * @param filename the file name
      * @return {@link File} from a file name relative to the working-folder
      */
     public File newFile(String filename) {
-    	File wf = getWorkingfolder();
+    	File wf;
+    	if (workingFolder == null) {
+    		wf = null;
+    	} else {
+    		wf = new File(workingFolder);
+    	}
     	if (wf == null) {
     		return new File(filename);
     	}

@@ -1357,17 +1357,6 @@ public class DataBrowser extends javax.swing.JFrame {
 	 *            the command line arguments
 	 */
 	public static void main(final String args[]) {
-
-		// UIUtil.showMaxMemory();
-
-		// check working folder
-		String configFileName = "jailer.xml";
-		File configFile = new File(configFileName);
-		if (!configFile.exists()) {
-			JOptionPane.showMessageDialog(null, "File '" + configFileName + "' not found!", "Missing configuration file", JOptionPane.ERROR_MESSAGE);
-			return;
-		}
-
 		// turn off logging for prefuse library
 		try {
 			Logger.getLogger("prefuse").setLevel(Level.OFF);
@@ -1381,7 +1370,6 @@ public class DataBrowser extends javax.swing.JFrame {
 			return;
 		}
 		final ExecutionContext executionContext = CommandLineInstance.getExecutionContext();
-		Configuration.setConfigurationFolder(executionContext.getWorkingfolder());
 		try {
 			System.setProperty("db2.jcc.charsetDecoderEncoder", "3");
 		} catch (Exception e) {
