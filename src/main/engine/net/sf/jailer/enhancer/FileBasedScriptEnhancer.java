@@ -49,35 +49,38 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
      * Adds nothing.
      */
     public void addComments(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
-            Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
+            Set<Table> progress, ExecutionContext executionContext, ScriptFormat scriptFormat) throws IOException, SQLException {
     }
     /**
      * Adds epilogs.
+     * @param scriptFormat 
      */
     public void addEpilog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
-            Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
+            Set<Table> progress, ExecutionContext executionContext, ScriptFormat scriptFormat) throws IOException, SQLException {
         File dir = new File(executionContext.getWorkingFolder(), "epilog" + File.separatorChar + scriptType);
-        addEnhancement(script, progress, dir, executionContext);
+        addEnhancement(script, progress, dir, executionContext, scriptFormat);
           addEnhancement(script, dir, "EPILOG.sql");
     }
     /**
      * Adds prologs.
+     * @param scriptFormat 
      */
     public void addProlog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
-            Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
+            Set<Table> progress, ExecutionContext executionContext, ScriptFormat scriptFormat) throws IOException, SQLException {
         File dir = new File(executionContext.getWorkingFolder(), "prolog" + File.separatorChar + scriptType);
            addEnhancement(script, dir, "PROLOG.sql");
-        addEnhancement(script, progress, dir, executionContext);
+        addEnhancement(script, progress, dir, executionContext, scriptFormat);
     }
     /**
      * Adds enhancement to the script.
      *
      * @param script writer to script
      * @param progress the export progress
+     * @param scriptFormat 
      * @param entityGraph 
      */
-    private void addEnhancement(Writer script, Set<Table> progress, File dir, ExecutionContext executionContext) throws IOException {
-        if (ScriptFormat.SQL.equals(executionContext.getScriptFormat())) {
+    private void addEnhancement(Writer script, Set<Table> progress, File dir, ExecutionContext executionContext, ScriptFormat scriptFormat) throws IOException {
+        if (ScriptFormat.SQL.equals(scriptFormat)) {
             Set<String> fileNames = new TreeSet<String>();
             for (Table table: progress) {
                 fileNames.add(table.getOriginalName() + ".sql");

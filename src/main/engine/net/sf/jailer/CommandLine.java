@@ -145,4 +145,18 @@ public class CommandLine {
 	@Argument
     public List<String> arguments = new ArrayList<String>();
 
+    /**
+     * Gets the script format.
+     * 
+     * @return the script format
+     */
+    public ScriptFormat getScriptFormat() {
+		if (_asXml) {
+    		return ScriptFormat.XML;
+    	} else if (format != null) {
+    		return ScriptFormat.valueOf(format);
+    	}
+		return null;
+	}
+    
 }

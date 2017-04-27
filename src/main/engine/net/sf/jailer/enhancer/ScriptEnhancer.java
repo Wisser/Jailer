@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.util.Set;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.ScriptType;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
@@ -43,7 +44,7 @@ public interface ScriptEnhancer {
      * @param progress the export progress
      * @param targetDBMSConfiguration configuration of the target DBMS
      */
-    void addComments(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph, Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException;
+    void addComments(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph, Set<Table> progress, ExecutionContext executionContext, ScriptFormat scriptFormat) throws IOException, SQLException;
     
     /**
      * Adds statements at top of the script.
@@ -54,7 +55,7 @@ public interface ScriptEnhancer {
      * @param progress the export progress
      * @param targetDBMSConfiguration configuration of the target DBMS
      */
-    void addProlog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph, Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException;
+    void addProlog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph, Set<Table> progress, ExecutionContext executionContext, ScriptFormat scriptFormat) throws IOException, SQLException;
     
     /**
      * Adds comments at bottom of the script.
@@ -65,6 +66,6 @@ public interface ScriptEnhancer {
      * @param progress the export progress
      * @param targetDBMSConfiguration configuration of the target DBMS
      */
-    void addEpilog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph, Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException;
+    void addEpilog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph, Set<Table> progress, ExecutionContext executionContext, ScriptFormat scriptFormat) throws IOException, SQLException;
     
 }
