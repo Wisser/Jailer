@@ -678,33 +678,6 @@ public class ExecutionContext {
 		return sourceSchemaMapping;
 	}
     
-    private ScriptFormat scriptFormat;
-    
-    /**
-     * Gets the script format.
-     * 
-     * @return the script format
-     */
-    public ScriptFormat getScriptFormat() {
-    	if (scriptFormat == null) {
-	    	if (_asXml) {
-	    		scriptFormat = ScriptFormat.XML;
-	    	} else if (format != null) {
-	    		scriptFormat = ScriptFormat.valueOf(format);
-	    	}
-    	}
-    	return scriptFormat;
-    }
-    
-    /**
-     * Sets the script format.
-     * 
-     * @return the script format
-     */
-    public void setScriptFormat(ScriptFormat scriptFormat) {
-    	this.scriptFormat = scriptFormat;
-    }
-    
     /**
      * Folder of current data model.
      */
@@ -746,16 +719,9 @@ public class ExecutionContext {
 	// use UTF-8 encoding
 	private boolean uTF8 = false;
 
-	// export file format: SQL, XML, DBUNIT_FLAT_XML, INTRA_DATABASE or
-	// LIQUIBASE_XML
-	private String format = "SQL";
-
 	// target-DBMS: ORACLE, MSSQL, DB2, MySQL, POSTGRESQL, SYBASE, SQLITE, HSQL
 	// or H2
 	private DBMS targetDBMS = null;
-
-	// export entities into XML file (deprecated, use -format XML instead)
-	private boolean _asXml = false;
 
 	// root tag of XML export file
 	private String xmlRootTag = "entities";
@@ -838,9 +804,7 @@ public class ExecutionContext {
 
 	private void copyCommandLineFields(CommandLine commandLine) {
 		uTF8 = commandLine.uTF8;
-		format = commandLine.format;
 		targetDBMS = commandLine.targetDBMS == null? null : DBMS.forDBMS(commandLine.targetDBMS);
-		_asXml = commandLine._asXml;
 		xmlRootTag = commandLine.xmlRootTag;
 		xmlDatePattern = commandLine.xmlDatePattern;
 		xmlTimePattern = commandLine.xmlTimePattern;
