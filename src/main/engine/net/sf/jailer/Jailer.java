@@ -194,8 +194,8 @@ public class Jailer {
 					} else {
 						BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(2), commandLine.arguments.get(3),
 								commandLine.arguments.get(4), commandLine.arguments.get(5), jdbcJarURLs);
-						new SubsettingEngine(executionContext, commandLine.getScriptFormat()).export(commandLine.arguments.get(1), commandLine.exportScriptFileName, commandLine.deleteScriptFileName,
-								dataSource, dataSource.dbms, commandLine.explain);
+						new SubsettingEngine(executionContext).export(commandLine.arguments.get(1), commandLine.exportScriptFileName, commandLine.deleteScriptFileName,
+								dataSource, dataSource.dbms, commandLine.explain, executionContext.getScriptFormat());
 					}
 				}
 			} else if ("delete".equalsIgnoreCase(command)) {
@@ -210,8 +210,8 @@ public class Jailer {
 								commandLine.arguments.get(4), commandLine.arguments.get(5), jdbcJarURLs);
 						// note we are passing null for script format and the export script name, as we are using the export tool
 						// to generate the delete script only.
-						new SubsettingEngine(executionContext, /*scriptFormat*/ null).export(commandLine.arguments.get(1), /* clp.exportScriptFileName*/ null, commandLine.deleteScriptFileName,
-								dataSource, dataSource.dbms, commandLine.explain);
+						new SubsettingEngine(executionContext).export(commandLine.arguments.get(1), /* clp.exportScriptFileName*/ null, commandLine.deleteScriptFileName,
+								dataSource, dataSource.dbms, commandLine.explain, /*scriptFormat*/ null);
 					}
 				}
 			} else if ("find-association".equalsIgnoreCase(command)) {
@@ -303,10 +303,6 @@ public class Jailer {
 			throw new RuntimeException("unknown table: '" + to);
 		}
 
-		Set<Table> tablesToIgnore = executionContext.getTabuTables(dataModel, null);
-		if (!tablesToIgnore.isEmpty()) {
-			System.out.println("ignoring: " + new PrintUtil(executionContext).tableSetAsString(tablesToIgnore));
-		}
 		System.out.println();
 		System.out.println("Shortest path from " + source.getName() + " to " + destination.getName() + ":");
 
@@ -318,15 +314,13 @@ public class Jailer {
 		while (!agenda.isEmpty()) {
 			Table table = agenda.remove(0);
 			for (Association association : incomingAssociations(table, undirected)) {
-				if (!tablesToIgnore.contains(association.source)) {
-					if (!successor.containsKey(association.source)) {
-						successor.put(association.source, table);
-						outgoingAssociation.put(association.source, association);
-						agenda.add(association.source);
-						if (association.source.equals(source)) {
-							agenda.clear();
-							break;
-						}
+				if (!successor.containsKey(association.source)) {
+					successor.put(association.source, table);
+					outgoingAssociation.put(association.source, association);
+					agenda.add(association.source);
+					if (association.source.equals(source)) {
+						agenda.clear();
+						break;
 					}
 				}
 			}

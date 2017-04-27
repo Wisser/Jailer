@@ -30,20 +30,20 @@ import net.sf.jailer.util.CsvFile;
  * 
  * @author Ralf Wisser
  */
-public class ExecutionContext {
+public class SubsettingParameters {
 	
 	/**
 	 * Default constructor.
 	 */
-	public ExecutionContext() {
+	public SubsettingParameters() {
 	}
 
 	/**
-	 * Creates new context with attributes taken from {@link ExecutionContext}.
+	 * Creates new context with attributes taken from {@link SubsettingParameters}.
 	 * 
 	 * @param executionContext the command line
 	 */
-	public ExecutionContext(CommandLine commandLine) throws Exception {
+	public SubsettingParameters(CommandLine commandLine) throws Exception {
 		copyCommandLineFields(commandLine);
 	}
 
@@ -708,7 +708,7 @@ public class ExecutionContext {
 		}
 		return datamodelFolder + File.separator + currentModelSubfolder;
 	}
-	
+
 	// use UTF-8 encoding
 	private boolean uTF8 = false;
 
