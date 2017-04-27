@@ -93,7 +93,6 @@ public class CommandLineParser {
         System.out.println("  jailer find-association [options] <source-table> <destination-table> {<restriction-model>}*");
         System.out.println("    finds the shortest path of associations between two tables");
         System.out.println("    -u considers associations as un-directed");
-        System.out.println("    -t ignores 'tabu'-tables");
         System.out.println();
         System.out.println("options:");
         CmdLineParser cmdLineParser = new CmdLineParser(new CommandLine());

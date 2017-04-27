@@ -85,9 +85,6 @@ public class CommandLine {
     @Option(name="-d",usage="name of the delete-script file (compressed if it ends with '.zip' or '.gz')", metaVar="delete-script")
     public String deleteScriptFileName = null;
 
-    @Option(name="-t",usage="name of the 'tabu' file (for 'print-datamodel or 'find-association')", metaVar="'tabu'-file")
-    public String tabuFileName = null;
-
     @Option(name="-where",usage="subject condition", metaVar="SQL-expression")
     public String where = null;
     

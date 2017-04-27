@@ -97,11 +97,9 @@ public class SubsettingEngine {
 	 * Constructor.
 	 * 
 	 * @param executionContext the command line arguments
-	 * @param scriptFormat the script format
 	 */
-	public SubsettingEngine(ExecutionContext executionContext, ScriptFormat scriptFormat) throws Exception {
+	public SubsettingEngine(ExecutionContext executionContext) throws Exception {
 		this.executionContext = executionContext;
-		this.scriptFormat = scriptFormat;
 		jobManager = new JobManager(executionContext.getNumberOfThreads());
 	}
 
@@ -125,11 +123,6 @@ public class SubsettingEngine {
 	 */
 	private final JobManager jobManager;
 
-	/**
-	 * The script format.
-	 */
-	private final ScriptFormat scriptFormat;
-	
 	/**
 	 * The logger.
 	 */
@@ -507,11 +500,11 @@ public class SubsettingEngine {
 	private TransformerFactory createTransformerFactory(OutputStreamWriter outputWriter, TransformerHandler transformerHandler, ScriptType scriptType, String filepath) throws SQLException	{
 		Session targetSession = entityGraph.getTargetSession();
 		if (scriptType == ScriptType.INSERT) {
-			if (ScriptFormat.INTRA_DATABASE.equals(scriptFormat)) {
+			if (ScriptFormat.INTRA_DATABASE.equals(executionContext.getScriptFormat())) {
 				return null;
-			} if (ScriptFormat.DBUNIT_FLAT_XML.equals(scriptFormat)) {
+			} if (ScriptFormat.DBUNIT_FLAT_XML.equals(executionContext.getScriptFormat())) {
 				return new FlatXMLTransformer.Factory(transformerHandler, targetSession.getMetaData(), targetSession.dbms, executionContext);
-			} else if (ScriptFormat.LIQUIBASE_XML.equals(scriptFormat)) {
+			} else if (ScriptFormat.LIQUIBASE_XML.equals(executionContext.getScriptFormat())) {
 				return new LiquibaseXMLTransformer.Factory(transformerHandler,targetSession.getMetaData(), entityGraph, filepath,
 						executionContext.getXmlDatePattern(),
 						executionContext.getXmlTimePattern(),
@@ -553,10 +546,10 @@ public class SubsettingEngine {
 		if (executionContext.getUTF8()) {
 			charset = Charset.forName("UTF8");
 		}
-		if (scriptType == ScriptType.INSERT && ScriptFormat.DBUNIT_FLAT_XML.equals(scriptFormat)) {
+		if (scriptType == ScriptType.INSERT && ScriptFormat.DBUNIT_FLAT_XML.equals(executionContext.getScriptFormat())) {
 			StreamResult streamResult = new StreamResult(new OutputStreamWriter(outputStream, charset));
 			transformerHandler = XmlUtil.createTransformerHandler(commentHeader.toString(), "dataset", streamResult, charset);
-		} else if(scriptType == ScriptType.INSERT && ScriptFormat.LIQUIBASE_XML.equals(scriptFormat)){
+		} else if(scriptType == ScriptType.INSERT && ScriptFormat.LIQUIBASE_XML.equals(executionContext.getScriptFormat())){
 			StreamResult streamResult = new StreamResult(
 					new OutputStreamWriter(outputStream,
 							charset));
@@ -584,11 +577,11 @@ public class SubsettingEngine {
 			result.append(commentHeader);
 			// result.append(System.getProperty("line.separator"));
 			for (ScriptEnhancer enhancer: Configuration.getScriptEnhancer()) {
-				enhancer.addComments(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress, executionContext, scriptFormat);
+				enhancer.addComments(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress, executionContext);
 			}
 			// result.append(System.getProperty("line.separator"));
 			for (ScriptEnhancer enhancer: Configuration.getScriptEnhancer()) {
-				enhancer.addProlog(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress, executionContext, scriptFormat);
+				enhancer.addProlog(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress, executionContext);
 			}
 			Session localSession = null;
 			if (entityGraph instanceof LocalEntityGraph) {
@@ -651,7 +644,7 @@ public class SubsettingEngine {
 	
 			rest = 0;
 	
-			if (scriptType == ScriptType.INSERT && (ScriptFormat.DBUNIT_FLAT_XML.equals(scriptFormat)||ScriptFormat.LIQUIBASE_XML.equals(scriptFormat))) {
+			if (scriptType == ScriptType.INSERT && (ScriptFormat.DBUNIT_FLAT_XML.equals(executionContext.getScriptFormat())||ScriptFormat.LIQUIBASE_XML.equals(executionContext.getScriptFormat()))) {
 				Set<Table> remaining = new HashSet<Table>(dependentTables);
 	
 				// topologically sort remaining tables while ignoring reflexive
@@ -704,6 +697,8 @@ public class SubsettingEngine {
 					Map<Table, Set<Column>> nullableForeignKeys = findAndRemoveNullableForeignKeys(dependentTables, entityGraph, scriptType != ScriptType.DELETE);
 					_log.info("nullable foreign keys: " + nullableForeignKeys.values());
 
+					ScriptFormat scriptFormat = executionContext.getScriptFormat();
+					
 					List<Runnable> resetFilters = new ArrayList<Runnable>();
 					for (Map.Entry<Table, Set<Column>> entry: nullableForeignKeys.entrySet()) {
 						for (final Column column: entry.getValue()) {
@@ -758,12 +753,12 @@ public class SubsettingEngine {
 			
 		if (result != null) {
 			entityGraph.dropMappingTables(result, targetDBMSConfiguration(targetSession));
-			if (scriptFormat != ScriptFormat.INTRA_DATABASE) {
+			if (executionContext.getScriptFormat() != ScriptFormat.INTRA_DATABASE) {
 				// write epilogs
 				result.append("-- epilog");
 				result.append(System.getProperty("line.separator"));
 				for (ScriptEnhancer enhancer : Configuration.getScriptEnhancer()) {
-					enhancer.addEpilog(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress, executionContext, scriptFormat);
+					enhancer.addEpilog(result, scriptType, session, targetDBMSConfiguration(session), entityGraph, progress, executionContext);
 				}
 			}
 			result.close();
@@ -772,12 +767,12 @@ public class SubsettingEngine {
 		if (transformerHandler != null) {
 			String content = "\n";
 			transformerHandler.characters(content.toCharArray(), 0, content.length());
-			if (ScriptFormat.LIQUIBASE_XML.equals(scriptFormat)) {
+			if (ScriptFormat.LIQUIBASE_XML.equals(executionContext.getScriptFormat())) {
 
 				transformerHandler.endElement("","", "changeSet");
 				transformerHandler.endElement("","", "databaseChangeLog");
 				
-			} else if (ScriptFormat.DBUNIT_FLAT_XML.equals(scriptFormat)) {
+			} else if (ScriptFormat.DBUNIT_FLAT_XML.equals(executionContext.getScriptFormat())) {
 				transformerHandler.endElement("", "", "dataset");			
 			}
 			transformerHandler.endDocument();
@@ -1156,7 +1151,7 @@ public class SubsettingEngine {
 			_log.info("independent tables: " + asString(independentTables));
 			List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 			for (final Table independentTable : independentTables) {
-				if (ScriptFormat.DBUNIT_FLAT_XML.equals(scriptFormat) || ScriptFormat.LIQUIBASE_XML.equals(scriptFormat)) {
+				if (ScriptFormat.DBUNIT_FLAT_XML.equals(executionContext.getScriptFormat()) || ScriptFormat.LIQUIBASE_XML.equals(executionContext.getScriptFormat())) {
 					// export rows sequentially, don't mix rows of different
 					// tables in a dataset!
 					writeEntities(independentTable, true);
@@ -1182,7 +1177,7 @@ public class SubsettingEngine {
 	}
 	
 	private void appendSync(OutputStreamWriter result) throws IOException {
-		if (scriptFormat != ScriptFormat.INTRA_DATABASE) {
+		if (executionContext.getScriptFormat() != ScriptFormat.INTRA_DATABASE) {
 			result.append("-- sync" + System.getProperty("line.separator"));
 		}
 	}
@@ -1251,7 +1246,7 @@ public class SubsettingEngine {
 	/**
 	 * Exports entities.
 	 */
-	public void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, DataSource dataSource, DBMS dbms, boolean explain) throws Exception {
+	public void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, DataSource dataSource, DBMS dbms, boolean explain, ScriptFormat scriptFormat) throws Exception {
 		if (scriptFile != null) {
 			_log.info("exporting '" + extractionModelFileName + "' to '" + scriptFile + "'");
 		}
