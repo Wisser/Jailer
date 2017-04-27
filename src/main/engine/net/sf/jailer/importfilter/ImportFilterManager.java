@@ -113,7 +113,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 			this.localSession = localSession;
 		} else {
 			LocalDatabaseConfiguration localConfiguration = (LocalDatabaseConfiguration) Configuration.getInstance().localEntityGraphConfiguration;
-			this.localDatabase = new LocalDatabase(localConfiguration.getDriver(), localConfiguration.getUrlPattern(), localConfiguration.getUser(), localConfiguration.getPassword(), localConfiguration.getLib(), localConfiguration.getDatabasesFolder(), executionContext);
+			this.localDatabase = new LocalDatabase(localConfiguration.getDriver(), localConfiguration.getUrlPattern(), localConfiguration.getUser(), localConfiguration.getPassword(), localConfiguration.getLib(), executionContext);
 			this.localSession = localDatabase.getSession();
 		}
         collectNonderivedFilteredColumnsPerTable();
@@ -155,7 +155,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 			}
 		}
 		
-		File tmpFile = new PrintUtil(executionContext).createTempFile();
+		File tmpFile = executionContext.createTempFile();
 		OutputStreamWriter localDDL = new OutputStreamWriter(new FileOutputStream(tmpFile));
 		
 		List<ColumnToMappingTable> mapColumns = new ArrayList<ColumnToMappingTable>();

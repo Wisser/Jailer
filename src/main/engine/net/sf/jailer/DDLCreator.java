@@ -187,17 +187,15 @@ public class DDLCreator {
 		String ddl = new PrintUtil(executionContext).applyTemplate(template, arguments, listArguments);
 
 		if (session != null) {
-			// try {
-			File tmp = executionContext.newFile("jailer_ddl.sql");
+			File tmp = executionContext.createTempFile();
 			PrintWriter pw = new PrintWriter(tmp);
 			pw.println(ddl);
 			pw.close();
 			new SqlScriptExecutor(session, 1, executionContext).executeScript(tmp.getCanonicalPath());
-			// } finally {
-			// session.shutDown();
-			// }
+			tmp.delete();
+		} else {
+			System.out.println(ddl);
 		}
-		System.out.println(ddl);
 
 		return true;
 	}
