@@ -48,9 +48,9 @@ public class LocalDatabase {
 	/**
 	 * Creates a local database.
 	 */
-	public LocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile, String folder, ExecutionContext executionContext) throws Exception {
+	public LocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile, ExecutionContext executionContext) throws Exception {
 		this.executionContext = executionContext;
-		this.databaseFolder = folder + File.separator + UUID.randomUUID().toString();
+		this.databaseFolder = executionContext.newFile(executionContext.getTempFileFolder()) + File.separator + UUID.randomUUID().toString();
 		executionContext.newFile(databaseFolder).mkdirs();
 		BasicDataSource dataSource = new BasicDataSource(driverClassName, urlPattern.replace("%s", databaseFolder + File.separator + "local"), user, password, ClasspathUtil.toURLArray(jarfile, null));
 		session = new Session(dataSource, dataSource.dbms, null, false, true);

@@ -260,8 +260,7 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @throws Exception 
 	 */
 	private LocalDatabase createLocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile) throws Exception {
-		String databaseFolder = getConfiguration().getDatabasesFolder();
-		return new LocalDatabase(driverClassName, urlPattern, user, password, jarfile, databaseFolder, executionContext);
+		return new LocalDatabase(driverClassName, urlPattern, user, password, jarfile, executionContext);
 	}
 
 	/**

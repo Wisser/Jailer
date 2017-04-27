@@ -248,21 +248,4 @@ public class PrintUtil {
         return sb.toString();
     }
 
-	public File createTempFile() {
-		String file;
-		String ts = UUID.randomUUID().toString();
-		File newFile;
-		for (int i = 1; ; ++i) {
-			file = "tmp";
-			newFile = executionContext.newFile(file);
-			newFile.mkdirs();
-			file += File.separator + "up" + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".sql";
-			newFile = executionContext.newFile(file);
-			if (!newFile.exists()) {
-				break;
-			}
-		}
-		return new File(file);
-	}
-
 }

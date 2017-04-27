@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.UUID;
 
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.TemporaryTableScope;
@@ -51,6 +52,28 @@ public class ExecutionContext {
 		if (tabuFileName != null) {
             loadTabuTables(tabuFileName);
 		}
+	}
+
+	/**
+	 * Creates a temporary file
+	 * 
+	 * @return a temporary file
+	 */
+	public File createTempFile() {
+		String file;
+		String ts = UUID.randomUUID().toString();
+		File newFile;
+		for (int i = 1; ; ++i) {
+			file = getTempFileFolder();
+			newFile = newFile(file);
+			newFile.mkdirs();
+			file += File.separator + "up" + "-" + ts + (i > 1? "-" + Integer.toString(i) : "");
+			newFile = newFile(file);
+			if (!newFile.exists()) {
+				break;
+			}
+		}
+		return new File(file);
 	}
 
 	/**
@@ -426,6 +449,25 @@ public class ExecutionContext {
 	}
 
 	/**
+	 * Gets the temporary files folder. Defaults to 'tmp'.
+	 * 
+	 * @return the tempFileFolder absolute or relative to {@link #getWorkingFolder()}
+	 */
+	public String getTempFileFolder() {
+		return tempFileFolder;
+	}
+
+	/**
+	 * Sets the temporary files folder. Defaults to 'tmp'.
+	 * 
+	 * @param tempFileFolder absolute or relative to {@link #getWorkingFolder()}
+	 */
+	public void setTempFileFolder(String tempFileFolder) {
+		this.tempFileFolder = tempFileFolder;
+	}
+
+
+	/**
 	 * Sets the working folder. Defaults to '.'
 	 *
 	 * @param workingFolder
@@ -776,6 +818,9 @@ public class ExecutionContext {
 
 	// the working folder. Defaults to '.'
 	private String workingFolder = null;
+
+	// the temporary files folder. Defaults to 'tmp'
+	private String tempFileFolder = "tmp";
 
 	// the exported rows will not be sorted according to foreign key constraints
 	private boolean noSorting = false;

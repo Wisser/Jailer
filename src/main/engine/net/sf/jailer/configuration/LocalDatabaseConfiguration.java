@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.configuration;
 
-import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlType;
 
 /**
@@ -23,27 +22,12 @@ import javax.xml.bind.annotation.XmlType;
  * 
  * @author Ralf Wisser
  */
-@XmlType(propOrder = {
-		"databasesFolder",
-        "lib",
-        "driver",
-        "urlPattern",
-        "localPKType",
-        "localNPKType",
-        "localPKLength",
-        "user",
-        "password"
-        })
 public class LocalDatabaseConfiguration {
 
 	private String localPKType = "VARCHAR";
 	private String localNPKType = "NVARCHAR";
 	private int localPKLength = 10000;
 
-	/**
-	 * Name of the folder containing the local database's folders.
-	 */
-	private String databasesFolder = "local";
 	private String urlPattern = "jdbc:h2:%s";
 
 	private String user = "";
@@ -95,22 +79,6 @@ public class LocalDatabaseConfiguration {
 	 */
 	public void setLocalPKLength(int localPKLength) {
 		this.localPKLength = localPKLength;
-	}
-
-	/**
-	 * @return the databasesFolder
-	 */
-	@XmlElement(name = "databaseFolder")
-	public String getDatabasesFolder() {
-		return databasesFolder;
-	}
-
-	/**
-	 * @param databasesFolder
-	 *            the databasesFolder to set
-	 */
-	public void setDatabasesFolder(String databasesFolder) {
-		this.databasesFolder = databasesFolder;
 	}
 
 	/**

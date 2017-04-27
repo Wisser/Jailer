@@ -45,7 +45,6 @@ import net.sf.jailer.entitygraph.remote.RemoteEntityGraph;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.progress.ProgressListenerRegistry;
 import net.sf.jailer.util.JobManager;
-import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlScriptExecutor;
 
@@ -273,7 +272,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 * @param columns the columns;
 	 */
 	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, DBMS targetConfiguration) throws SQLException {
-		File tmp = new PrintUtil(executionContext).createTempFile();
+		File tmp = executionContext.createTempFile();
 		OutputStreamWriter tmpFileWriter;
 		try {
 			tmpFileWriter = new FileWriter(tmp);
@@ -738,7 +737,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	public void fillAndWriteMappingTables(JobManager jobManager, final OutputStreamWriter receiptWriter,
 			int numberOfEntities, final Session targetSession, final DBMS targetDBMSConfiguration, DBMS dbmsConfiguration) throws Exception {
 		if (importFilterManager != null) {
-			File tmp = new PrintUtil(executionContext).createTempFile();
+			File tmp = executionContext.createTempFile();
 			OutputStreamWriter tmpFileWriter;
 			tmpFileWriter = new FileWriter(tmp);
 			importFilterManager.createMappingTables(dbmsConfiguration, tmpFileWriter);
@@ -746,7 +745,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads(), executionContext).executeScript(tmp.getPath());
 	    	tmp.delete();
 
-			tmp = new PrintUtil(executionContext).createTempFile();
+			tmp = executionContext.createTempFile();
 			tmpFileWriter = new FileWriter(tmp);
 			tmpFileWriter.write("-- sync\n");
 			importFilterManager.fillAndWriteMappingTables(this, jobManager, tmpFileWriter, numberOfEntities, targetSession, targetDBMSConfiguration);
@@ -772,7 +771,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	@Override
 	public void dropMappingTables(OutputStreamWriter result, DBMS targetDBMSConfiguration) throws Exception {
 		if (importFilterManager != null) {
-			File tmp = new PrintUtil(executionContext).createTempFile();
+			File tmp = executionContext.createTempFile();
 			OutputStreamWriter tmpFileWriter;
 			tmpFileWriter = new FileWriter(tmp);
 			importFilterManager.dropMappingTables(tmpFileWriter);
