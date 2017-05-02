@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.configuration;
 
-import java.text.DateFormat;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -86,7 +85,6 @@ public class DBMS {
 		this.appendNanosToTimestamp = other.appendNanosToTimestamp;
 		this.appendMillisToTimestamp = other.appendMillisToTimestamp;
 		this.useToTimestampFunction = other.useToTimestampFunction;
-		this.timestampFormat = other.timestampFormat;
 		this.emptyCLOBValue = other.emptyCLOBValue;
 		this.emptyNCLOBValue = other.emptyNCLOBValue;
 		this.emptyBLOBValue = other.emptyBLOBValue;
@@ -222,7 +220,6 @@ public class DBMS {
 	private boolean appendNanosToTimestamp = true;
 	private boolean appendMillisToTimestamp = false;
 	private boolean useToTimestampFunction = false;
-	private DateFormat timestampFormat = null;
 	private String emptyCLOBValue = null;
 	private String emptyNCLOBValue = null;
 	private String emptyBLOBValue = null;
@@ -438,10 +435,6 @@ public class DBMS {
 
 	public void setUseToTimestampFunction(boolean useToTimestampFunction) {
 		this.useToTimestampFunction = useToTimestampFunction;
-	}
-
-	public void setTimestampFormat(DateFormat timestampFormat) {
-		this.timestampFormat = timestampFormat;
 	}
 
 	public void setEmptyCLOBValue(String emptyCLOBValue) {
@@ -825,13 +818,6 @@ public class DBMS {
 	 */
 	public boolean isUseToTimestampFunction() {
 		return useToTimestampFunction;
-	}
-
-	/**
-	 * @return the timestampFormat
-	 */
-	public DateFormat getTimestampFormat() {
-		return timestampFormat;
 	}
 
 	/**

@@ -304,7 +304,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	 * @param table the table
 	 * @return xml mapping for table
 	 */
-	public TableMapping getTableMapping(Table table) throws ParserConfigurationException, SAXException, IOException {
+	public TableMapping getTableMapping(Table table) throws SAXException, IOException {
 		if (tableMappings.containsKey(table)) {
 			return tableMappings.get(table);
 		}
@@ -346,7 +346,11 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 			// there was a bug in Jailer 3.0 which causes corruption of XML templates
 			// in windows platform
 			_log.warn("can't parse XML template for table " + table.getName() + ", using defaults", e);
-			tableMapping.template = table.getDefaultXmlTemplate(quoting);
+			try {
+				tableMapping.template = table.getDefaultXmlTemplate(quoting);
+			} catch (ParserConfigurationException e1) {
+				throw new RuntimeException(e1);
+			}
 		}
 		
 		final StringBuilder sb = new StringBuilder();

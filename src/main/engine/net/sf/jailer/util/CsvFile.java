@@ -18,6 +18,7 @@ package net.sf.jailer.util;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -113,7 +114,7 @@ public class CsvFile {
      * 
      * @param csvFile the csv file
      */
-    public CsvFile(File csvFile) throws Exception {
+    public CsvFile(File csvFile) throws IOException {
     	this(csvFile, null, null);
     }
 
@@ -122,7 +123,7 @@ public class CsvFile {
      * 
      * @param csvFile the csv file
      */
-    public CsvFile(File csvFile, LineFilter filter) throws Exception {
+    public CsvFile(File csvFile, LineFilter filter) throws IOException {
     	this(csvFile, null, filter);
     }
 
@@ -132,7 +133,7 @@ public class CsvFile {
      * @param csvFile the csv file
      * @param block the block to read, <code>null</code> to read default block
      */
-    public CsvFile(File csvFile, String block) throws Exception {
+    public CsvFile(File csvFile, String block) throws IOException {
     	this(csvFile, block, null);
     }
     
@@ -142,7 +143,7 @@ public class CsvFile {
      * @param csvFile the csv file
      * @param block the block to read, <code>null</code> to read default block
      */
-    public CsvFile(File csvFile, String block, LineFilter filter) throws Exception {
+    public CsvFile(File csvFile, String block, LineFilter filter) throws IOException {
     	if (csvFile.exists()) {
 	        BufferedReader reader = new BufferedReader(new FileReader(csvFile));
 	        String line = null;

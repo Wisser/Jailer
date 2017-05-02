@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.util;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -37,7 +38,7 @@ public class JobManager {
         /**
          * Runs the job.
          */
-        void run() throws Exception;
+        void run() throws SQLException, CancellationException;
     };
 
     /**
@@ -126,9 +127,8 @@ public class JobManager {
      * Executes a list of jobs.
      * 
      * @param jobs the job-list
-     * @throws Exception exception thrown during job-execution
      */
-    public void executeJobs(Collection<Job> jobs) throws Exception {
+    public void executeJobs(Collection<Job> jobs) throws CancellationException, SQLException {
         int jobCount = jobs.size();
         _log.info("starting " + jobCount + " jobs");
         if (runnersList.isEmpty()) {
@@ -138,7 +138,11 @@ public class JobManager {
         } else {
 	        setJobs(new LinkedList<Job>(jobs));
 	        while (getJobsDoneCounter() < jobCount || getJobsInExecutionCounter() > 0) {
-	            Thread.sleep(100);
+	            try {
+					Thread.sleep(100);
+				} catch (InterruptedException e1) {
+					throw new RuntimeException(e1);
+				}
 	            Exception e = getException();
 	            if (e != null) {
 	            	if (!(e instanceof CancellationException)) {
@@ -146,9 +150,19 @@ public class JobManager {
 	            	}
 	                // wait for other jobs
 	                while (getJobsInExecutionCounter() > 0) {
-	                    Thread.sleep(50);
+	                	try {
+	                		Thread.sleep(50);
+	    				} catch (InterruptedException e1) {
+	    					throw new RuntimeException(e1);
+	    				}
 	                }
-	                throw e;
+	                if (e instanceof CancellationException) {
+	                	throw (CancellationException) e;
+	                }
+	                if (e instanceof SQLException) {
+	                	throw (SQLException) e;
+	                }
+	                throw new RuntimeException(e);
 	            }
 	        }
         }
@@ -253,7 +267,8 @@ public class JobManager {
      * Sets an exception.
      */
     private synchronized void setException(Exception e) {
-        exception = e == null? null : e instanceof CancellationException? e : new RuntimeException(Thread.currentThread().getName() + " failed", e);
+        exception = e == null? null : (e instanceof CancellationException || e instanceof SQLException)? e 
+        		: new RuntimeException(Thread.currentThread().getName() + " failed", e);
         jobs = null;
     }
     

@@ -201,7 +201,7 @@ public class Session {
      * @param schema the schema
      * @param dbms the DBMS
      */
-    public Session(DataSource dataSource, DBMS dbms) throws Exception {
+    public Session(DataSource dataSource, DBMS dbms) throws SQLException {
     	this(dataSource, dbms, null, false);
     }
 
@@ -211,7 +211,7 @@ public class Session {
      * @param dataSource the data source
      * @param dbms the DBMS
      */
-    public Session(DataSource dataSource, DBMS dbms, final TemporaryTableScope scope, boolean transactional) throws Exception {
+    public Session(DataSource dataSource, DBMS dbms, final TemporaryTableScope scope, boolean transactional) throws SQLException {
     	this(dataSource, dbms, scope, transactional, false);
     }
     
@@ -222,7 +222,7 @@ public class Session {
      * @param dbms the DBMS
      * @param local <code>true</code> for the local entity-graph database
      */
-    public Session(final DataSource dataSource, DBMS dbms, final TemporaryTableScope scope, boolean transactional, final boolean local) throws Exception {
+    public Session(final DataSource dataSource, DBMS dbms, final TemporaryTableScope scope, boolean transactional, final boolean local) throws SQLException {
     	this.transactional = transactional;
     	this.local = local;
         this.scope = scope;

@@ -28,7 +28,6 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.TransformerFactoryConfigurationError;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXTransformerFactory;
 import javax.xml.transform.sax.TransformerHandler;
@@ -238,15 +237,19 @@ public class XmlUtil {
 	 */
 	public static TransformerHandler createTransformerHandler(String commentHeader, String rootTag,
 			StreamResult streamResult, Charset charset)
-			throws TransformerFactoryConfigurationError,
-			TransformerConfigurationException, SAXException {
+			throws SAXException {
 		SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
         try {
         	tf.setAttribute("indent-number", new Integer(2));
         } catch (Exception e) {
         	// ignore, workaround for JDK 1.5 bug, see http://forum.java.sun.com/thread.jspa?threadID=562510
         }
-        TransformerHandler transformerHandler = tf.newTransformerHandler();
+        TransformerHandler transformerHandler;
+		try {
+			transformerHandler = tf.newTransformerHandler();
+		} catch (TransformerConfigurationException e) {
+			throw new RuntimeException(e);
+		}
         Transformer serializer = transformerHandler.getTransformer();
         serializer.setOutputProperty(OutputKeys.ENCODING, charset.name());
         serializer.setOutputProperty(OutputKeys.METHOD, "xml");

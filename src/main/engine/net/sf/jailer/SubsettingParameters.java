@@ -15,15 +15,10 @@
  */
 package net.sf.jailer;
 
-import java.io.File;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.TreeMap;
-import java.util.UUID;
 
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.TemporaryTableScope;
-import net.sf.jailer.util.CsvFile;
 
 /**
  * Execution context of import-/export commands.
@@ -32,42 +27,7 @@ import net.sf.jailer.util.CsvFile;
  */
 public class SubsettingParameters {
 	
-	/**
-	 * Default constructor.
-	 */
-	public SubsettingParameters() {
-	}
-
-	/**
-	 * Creates new context with attributes taken from {@link SubsettingParameters}.
-	 * 
-	 * @param executionContext the command line
-	 */
-	public SubsettingParameters(CommandLine commandLine) throws Exception {
-		copyCommandLineFields(commandLine);
-	}
-
-	/**
-	 * Creates a temporary file
-	 * 
-	 * @return a temporary file
-	 */
-	public File createTempFile() {
-		String file;
-		String ts = UUID.randomUUID().toString();
-		File newFile;
-		for (int i = 1; ; ++i) {
-			file = getTempFileFolder();
-			newFile = newFile(file);
-			newFile.mkdirs();
-			file += File.separator + "up" + "-" + ts + (i > 1? "-" + Integer.toString(i) : "");
-			newFile = newFile(file);
-			if (!newFile.exists()) {
-				break;
-			}
-		}
-		return new File(file);
-	}
+	private final ExecutionContext executionContext = new ExecutionContext();
 
 	/**
 	 * If <code>true</code>, Use UTF-8 encoding
@@ -75,7 +35,7 @@ public class SubsettingParameters {
 	 * @return <code>true</code> if Use UTF-8 encoding
 	 */
 	public boolean getUTF8() {
-		return uTF8;
+		return executionContext.getUTF8();
 	}
 
 	/**
@@ -85,7 +45,7 @@ public class SubsettingParameters {
 	 *            <code>true</code> if Use UTF-8 encoding
 	 */
 	public void setUTF8(boolean uTF8) {
-		this.uTF8 = uTF8;
+		executionContext.setUTF8(uTF8);
 	}
 
 	/**
@@ -96,7 +56,7 @@ public class SubsettingParameters {
 	 *         SQLITE, HSQL or H2
 	 */
 	public DBMS getTargetDBMS() {
-		return targetDBMS;
+		return executionContext.getTargetDBMS();
 	}
 
 	/**
@@ -108,7 +68,7 @@ public class SubsettingParameters {
 	 *            SQLITE, HSQL or H2
 	 */
 	public void setTargetDBMS(DBMS targetDBMS) {
-		this.targetDBMS = targetDBMS;
+		executionContext.setTargetDBMS(targetDBMS);
 	}
 
 	/**
@@ -117,7 +77,7 @@ public class SubsettingParameters {
 	 * @return root tag of XML export file
 	 */
 	public String getXmlRootTag() {
-		return xmlRootTag;
+		return executionContext.getXmlRootTag();
 	}
 
 	/**
@@ -127,7 +87,7 @@ public class SubsettingParameters {
 	 *            root tag of XML export file
 	 */
 	public void setXmlRootTag(String xmlRootTag) {
-		this.xmlRootTag = xmlRootTag;
+		executionContext.setXmlRootTag(xmlRootTag);
 	}
 
 	/**
@@ -136,7 +96,7 @@ public class SubsettingParameters {
 	 * @return pattern for dates in XML and LIQUIBASE_XML export file
 	 */
 	public String getXmlDatePattern() {
-		return xmlDatePattern;
+		return executionContext.getXmlDatePattern();
 	}
 
 	/**
@@ -146,7 +106,7 @@ public class SubsettingParameters {
 	 *            pattern for dates in XML and LIQUIBASE_XML export file
 	 */
 	public void setXmlDatePattern(String xmlDatePattern) {
-		this.xmlDatePattern = xmlDatePattern;
+		executionContext.setXmlDatePattern(xmlDatePattern);
 	}
 
 	/**
@@ -155,7 +115,7 @@ public class SubsettingParameters {
 	 * @return pattern for times in XML and LIQUIBASE_XML export file
 	 */
 	public String getXmlTimePattern() {
-		return xmlTimePattern;
+		return executionContext.getXmlTimePattern();
 	}
 
 	/**
@@ -165,7 +125,7 @@ public class SubsettingParameters {
 	 *            pattern for times in XML and LIQUIBASE_XML export file
 	 */
 	public void setXmlTimePattern(String xmlTimePattern) {
-		this.xmlTimePattern = xmlTimePattern;
+		executionContext.setXmlTimePattern(xmlTimePattern);
 	}
 
 	/**
@@ -174,7 +134,7 @@ public class SubsettingParameters {
 	 * @return pattern for time-stamps in XML and LIQUIBASE_XML export file
 	 */
 	public String getXmlTimeStampPattern() {
-		return xmlTimeStampPattern;
+		return executionContext.getXmlTimeStampPattern();
 	}
 
 	/**
@@ -184,7 +144,7 @@ public class SubsettingParameters {
 	 *            pattern for time-stamps in XML and LIQUIBASE_XML export file
 	 */
 	public void setXmlTimeStampPattern(String xmlTimeStampPattern) {
-		this.xmlTimeStampPattern = xmlTimeStampPattern;
+		executionContext.setXmlTimeStampPattern(xmlTimeStampPattern);
 	}
 
 	/**
@@ -195,7 +155,7 @@ public class SubsettingParameters {
 	 *         or '.gz')
 	 */
 	public String getExportScriptFileName() {
-		return exportScriptFileName;
+		return executionContext.getExportScriptFileName();
 	}
 
 	/**
@@ -207,7 +167,7 @@ public class SubsettingParameters {
 	 *            '.zip' or '.gz')
 	 */
 	public void setExportScriptFileName(String exportScriptFileName) {
-		this.exportScriptFileName = exportScriptFileName;
+		executionContext.setExportScriptFileName(exportScriptFileName);
 	}
 
 	/**
@@ -218,7 +178,7 @@ public class SubsettingParameters {
 	 *         analysing the DB
 	 */
 	public boolean getQualifyNames() {
-		return qualifyNames;
+		return executionContext.getQualifyNames();
 	}
 
 	/**
@@ -230,7 +190,7 @@ public class SubsettingParameters {
 	 *            analysing the DB
 	 */
 	public void setQualifyNames(boolean qualifyNames) {
-		this.qualifyNames = qualifyNames;
+		executionContext.setQualifyNames(qualifyNames);
 	}
 
 	/**
@@ -239,7 +199,7 @@ public class SubsettingParameters {
 	 * @return <code>true</code> if Look for aliases while analysing the DB
 	 */
 	public boolean getAnalyseAlias() {
-		return analyseAlias;
+		return executionContext.getAnalyseAlias();
 	}
 
 	/**
@@ -249,7 +209,7 @@ public class SubsettingParameters {
 	 *            <code>true</code> if Look for aliases while analysing the DB
 	 */
 	public void setAnalyseAlias(boolean analyseAlias) {
-		this.analyseAlias = analyseAlias;
+		executionContext.setAnalyseAlias(analyseAlias);
 	}
 
 	/**
@@ -258,7 +218,7 @@ public class SubsettingParameters {
 	 * @return <code>true</code> if Look for synonyms while analysing the DB
 	 */
 	public boolean getAnalyseSynonym() {
-		return analyseSynonym;
+		return executionContext.getAnalyseSynonym();
 	}
 
 	/**
@@ -268,7 +228,7 @@ public class SubsettingParameters {
 	 *            <code>true</code> if Look for synonyms while analysing the DB
 	 */
 	public void setAnalyseSynonym(boolean analyseSynonym) {
-		this.analyseSynonym = analyseSynonym;
+		executionContext.setAnalyseSynonym(analyseSynonym);
 	}
 
 	/**
@@ -277,7 +237,7 @@ public class SubsettingParameters {
 	 * @return <code>true</code> if Look for views while analysing the DB
 	 */
 	public boolean getAnalyseView() {
-		return analyseView;
+		return executionContext.getAnalyseView();
 	}
 
 	/**
@@ -287,7 +247,7 @@ public class SubsettingParameters {
 	 *            <code>true</code> if Look for views while analysing the DB
 	 */
 	public void setAnalyseView(boolean analyseView) {
-		this.analyseView = analyseView;
+		executionContext.setAnalyseView(analyseView);
 	}
 
 	/**
@@ -296,7 +256,7 @@ public class SubsettingParameters {
 	 * @return subject condition
 	 */
 	public String getWhere() {
-		return where;
+		return executionContext.getWhere();
 	}
 
 	/**
@@ -306,7 +266,7 @@ public class SubsettingParameters {
 	 *            subject condition
 	 */
 	public void setWhere(String where) {
-		this.where = where;
+		executionContext.setWhere(where);
 	}
 
 	/**
@@ -315,7 +275,7 @@ public class SubsettingParameters {
 	 * @return number of threads (default is 1)
 	 */
 	public int getNumberOfThreads() {
-		return numberOfThreads;
+		return executionContext.getNumberOfThreads();
 	}
 
 	/**
@@ -325,7 +285,7 @@ public class SubsettingParameters {
 	 *            number of threads (default is 1)
 	 */
 	public void setNumberOfThreads(int numberOfThreads) {
-		this.numberOfThreads = numberOfThreads;
+		executionContext.setNumberOfThreads(numberOfThreads);
 	}
 
 	/**
@@ -336,7 +296,7 @@ public class SubsettingParameters {
 	 *         default is 10)
 	 */
 	public int getNumberOfEntities() {
-		return numberOfEntities;
+		return executionContext.getNumberOfEntities();
 	}
 
 	/**
@@ -348,7 +308,7 @@ public class SubsettingParameters {
 	 *            export-file, default is 10)
 	 */
 	public void setNumberOfEntities(int numberOfEntities) {
-		this.numberOfEntities = numberOfEntities;
+		executionContext.setNumberOfEntities(numberOfEntities);
 	}
 
 	/**
@@ -359,7 +319,7 @@ public class SubsettingParameters {
 	 *         entities (in export-file)
 	 */
 	public boolean getUpsertOnly() {
-		return upsertOnly;
+		return executionContext.getUpsertOnly();
 	}
 
 	/**
@@ -371,7 +331,7 @@ public class SubsettingParameters {
 	 *            entities (in export-file)
 	 */
 	public void setUpsertOnly(boolean upsertOnly) {
-		this.upsertOnly = upsertOnly;
+		executionContext.setUpsertOnly(upsertOnly);
 	}
 
 	/**
@@ -380,7 +340,7 @@ public class SubsettingParameters {
 	 * @return scope of working tables, GLOBAL, SESSION_LOCAL or LOCAL_DATABASE
 	 */
 	public TemporaryTableScope getScope() {
-		return scope;
+		return executionContext.getScope();
 	}
 
 	/**
@@ -391,7 +351,7 @@ public class SubsettingParameters {
 	 *            LOCAL_DATABASE
 	 */
 	public void setScope(TemporaryTableScope scope) {
-		this.scope = scope;
+		executionContext.setScope(scope);
 	}
 
 	/**
@@ -400,7 +360,7 @@ public class SubsettingParameters {
 	 * @return schema in which the working tables will be created
 	 */
 	public String getWorkingTableSchema() {
-		return workingTableSchema;
+		return executionContext.getWorkingTableSchema();
 	}
 
 	/**
@@ -410,7 +370,7 @@ public class SubsettingParameters {
 	 *            schema in which the working tables will be created
 	 */
 	public void setWorkingTableSchema(String workingTableSchema) {
-		this.workingTableSchema = workingTableSchema;
+		executionContext.setWorkingTableSchema(workingTableSchema);
 	}
 
 	/**
@@ -419,7 +379,7 @@ public class SubsettingParameters {
 	 * @return folder holding the data model. Defaults to './datamodel'
 	 */
 	public String getDatamodelFolder() {
-		return datamodelFolder;
+		return executionContext.getDataModelFolder();
 	}
 
 	/**
@@ -429,7 +389,7 @@ public class SubsettingParameters {
 	 *            folder holding the data model. Defaults to './datamodel'
 	 */
 	public void setDatamodelFolder(String datamodelFolder) {
-		this.datamodelFolder = datamodelFolder;
+		executionContext.setDatamodelFolder(datamodelFolder);
 	}
 
 	/**
@@ -438,7 +398,7 @@ public class SubsettingParameters {
 	 * @return the working folder. Defaults to '.'
 	 */
 	public String getWorkingFolder() {
-		return workingFolder;
+		return executionContext.getWorkingFolder();
 	}
 
 	/**
@@ -447,7 +407,7 @@ public class SubsettingParameters {
 	 * @return the tempFileFolder absolute or relative to {@link #getWorkingFolder()}
 	 */
 	public String getTempFileFolder() {
-		return tempFileFolder;
+		return executionContext.getTempFileFolder();
 	}
 
 	/**
@@ -456,7 +416,7 @@ public class SubsettingParameters {
 	 * @param tempFileFolder absolute or relative to {@link #getWorkingFolder()}
 	 */
 	public void setTempFileFolder(String tempFileFolder) {
-		this.tempFileFolder = tempFileFolder;
+		executionContext.setTempFileFolder(tempFileFolder);
 	}
 
 
@@ -467,7 +427,7 @@ public class SubsettingParameters {
 	 *            the working folder. Defaults to '.'
 	 */
 	public void setWorkingFolder(String workingFolder) {
-		this.workingFolder = workingFolder;
+		executionContext.setWorkingFolder(workingFolder);
 	}
 
 	/**
@@ -478,7 +438,7 @@ public class SubsettingParameters {
 	 *         according to foreign key constraints
 	 */
 	public boolean getNoSorting() {
-		return noSorting;
+		return executionContext.getNoSorting();
 	}
 
 	/**
@@ -490,7 +450,7 @@ public class SubsettingParameters {
 	 *            according to foreign key constraints
 	 */
 	public void setNoSorting(boolean noSorting) {
-		this.noSorting = noSorting;
+		executionContext.setNoSorting(noSorting);
 	}
 
 	/**
@@ -499,7 +459,7 @@ public class SubsettingParameters {
 	 * @return <code>true</code> if Import rows in a single transaction
 	 */
 	public boolean getTransactional() {
-		return transactional;
+		return executionContext.getTransactional();
 	}
 
 	/**
@@ -509,7 +469,7 @@ public class SubsettingParameters {
 	 *            <code>true</code> if Import rows in a single transaction
 	 */
 	public void setTransactional(boolean transactional) {
-		this.transactional = transactional;
+		executionContext.setTransactional(transactional);
 	}
 
 	/**
@@ -520,7 +480,7 @@ public class SubsettingParameters {
 	 *         (instead of rowid-column)
 	 */
 	public boolean getNoRowid() {
-		return noRowid;
+		return executionContext.getNoRowid();
 	}
 
 	/**
@@ -532,7 +492,7 @@ public class SubsettingParameters {
 	 *            identity (instead of rowid-column)
 	 */
 	public void setNoRowid(boolean noRowid) {
-		this.noRowid = noRowid;
+		executionContext.setNoRowid(noRowid);
 	}
 
 	/**
@@ -541,7 +501,7 @@ public class SubsettingParameters {
 	 * @return schema in which the import-filter mapping tables will be created
 	 */
 	public String getImportFilterMappingTableSchema() {
-		return importFilterMappingTableSchema;
+		return executionContext.getImportFilterMappingTableSchema();
 	}
 
 	/**
@@ -552,68 +512,21 @@ public class SubsettingParameters {
 	 *            created
 	 */
 	public void setImportFilterMappingTableSchema(String importFilterMappingTableSchema) {
-		this.importFilterMappingTableSchema = importFilterMappingTableSchema;
+		executionContext.setImportFilterMappingTableSchema(importFilterMappingTableSchema);
 	}
 
-	/**
-     * Gets {@link File} from a file name relative to the working-folder.
-     * 
-     * @param filename the file name
-     * @return {@link File} from a file name relative to the working-folder
-     */
-    public File newFile(String filename) {
-    	File wf;
-    	if (workingFolder == null) {
-    		wf = null;
-    	} else {
-    		wf = new File(workingFolder);
-    	}
-    	if (wf == null) {
-    		return new File(filename);
-    	}
-    	File f = new File(filename);
-    	if (f.isAbsolute()) {
-    		return f;
-    	}
-    	return new File(wf, filename);
-    }
-    
 	/**
 	 * Gets parameters
 	 *
 	 * @return parameters
 	 */
     public Map<String, String> getParameters() {
-    	Map<String, String> map = new TreeMap<String, String>();
-    	
-    	if (parameters != null) {
-    		for (String pv: CsvFile.decodeLine(parameters)) {
-    			int i = pv.indexOf('=');
-    			if (i >= 0) {
-    				map.put(pv.substring(0, i), pv.substring(i + 1));
-    			}
-    		}
-    	}
-    	
-    	return map;
+    	return executionContext.getParameters();
     }
 
-    private Map<String, String> schemaMapping;
-
     public Map<String, String> getSchemaMapping() {
-		if (schemaMapping == null) {
-			schemaMapping = new HashMap<String, String>();
-			if (rawschemamapping != null) {
-				for (String item: rawschemamapping.split(",")) {
-					String[] fromTo = (" " + item + " ").split("=");
-					if (fromTo.length == 2) {
-						schemaMapping.put(fromTo[0].trim(), fromTo[1].trim());
-					}
-				}
-			}
-		}
-		return schemaMapping;
-	}
+    	return executionContext.getSchemaMapping();
+    }
 
 	/**
 	 * Sets source schema map
@@ -622,34 +535,19 @@ public class SubsettingParameters {
 	 *            source schema map
 	 */
 	public void setSchemaMapping(Map<String, String> schemaMapping) {
-		this.schemaMapping = schemaMapping;
+		executionContext.setSchemaMapping(schemaMapping);
 	}
-
-    private Map<String, String> sourceSchemaMapping;
 
     /**
 	 * @param sourceSchemaMapping the sourceSchemaMapping to set
 	 */
 	public void setSourceSchemaMapping(Map<String, String> sourceSchemaMapping) {
-		this.sourceSchemaMapping = sourceSchemaMapping;
+		executionContext.setSourceSchemaMapping(sourceSchemaMapping);
 	}
 
 	public Map<String, String> getSourceSchemaMapping() {
-		if (sourceSchemaMapping == null) {
-			sourceSchemaMapping = new HashMap<String, String>();
-			if (rawsourceschemamapping != null) {
-				for (String item: rawsourceschemamapping.split(",")) {
-					String[] fromTo = (" " + item + " ").split("=");
-					if (fromTo.length == 2) {
-						sourceSchemaMapping.put(fromTo[0].trim(), fromTo[1].trim());
-					}
-				}
-			}
-		}
-		return sourceSchemaMapping;
+		return executionContext.getSourceSchemaMapping();
 	}
-    
-    private ScriptFormat scriptFormat;
     
     /**
      * Gets the script format.
@@ -657,14 +555,7 @@ public class SubsettingParameters {
      * @return the script format
      */
     public ScriptFormat getScriptFormat() {
-    	if (scriptFormat == null) {
-	    	if (_asXml) {
-	    		scriptFormat = ScriptFormat.XML;
-	    	} else if (format != null) {
-	    		scriptFormat = ScriptFormat.valueOf(format);
-	    	}
-    	}
-    	return scriptFormat;
+    	return executionContext.getScriptFormat();
     }
     
     /**
@@ -673,13 +564,8 @@ public class SubsettingParameters {
      * @return the script format
      */
     public void setScriptFormat(ScriptFormat scriptFormat) {
-    	this.scriptFormat = scriptFormat;
+    	executionContext.setScriptFormat(scriptFormat);
     }
-    
-    /**
-     * Folder of current data model.
-     */
-    private String currentModelSubfolder = null;
     
     /**
      * Sets folder of current data model.
@@ -687,7 +573,7 @@ public class SubsettingParameters {
      * @param modelFolder the folder, <code>null</code> for default model
      */
 	public void setCurrentModelSubfolder(String modelFolder) {
-		currentModelSubfolder = modelFolder;
+		executionContext.setCurrentModelSubfolder(modelFolder);
 	}
 
 	/**
@@ -696,145 +582,7 @@ public class SubsettingParameters {
      * @return modelFolder the folder, <code>null</code> for default model
      */
 	public String getCurrentModelSubfolder() {
-		return currentModelSubfolder;
-	}
-
-	/**
-     * Gets fully qualified folder name of current data model.
-     */
-	public String getDataModelFolder() {
-		if (currentModelSubfolder == null) {
-			return datamodelFolder;
-		}
-		return datamodelFolder + File.separator + currentModelSubfolder;
-	}
-
-	// use UTF-8 encoding
-	private boolean uTF8 = false;
-
-	// export file format: SQL, XML, DBUNIT_FLAT_XML, INTRA_DATABASE or
-	// LIQUIBASE_XML
-	private String format = "SQL";
-
-	// target-DBMS: ORACLE, MSSQL, DB2, MySQL, POSTGRESQL, SYBASE, SQLITE, HSQL
-	// or H2
-	private DBMS targetDBMS = null;
-
-	// export entities into XML file (deprecated, use -format XML instead)
-	private boolean _asXml = false;
-
-	// root tag of XML export file
-	private String xmlRootTag = "entities";
-
-	// pattern for dates in XML and LIQUIBASE_XML export file
-	private String xmlDatePattern = "yyyy-MM-dd";
-
-	// pattern for times in XML and LIQUIBASE_XML export file
-	private String xmlTimePattern = "HH.mm.ss";
-
-	// pattern for time-stamps in XML and LIQUIBASE_XML export file
-	private String xmlTimeStampPattern = "yyyy-MM-dd-HH.mm.ss";
-
-	// name of the export-script file (compressed if it ends with '.zip' or
-	// '.gz')
-	private String exportScriptFileName = null;
-
-	// add schema prefix to table names after analysing the DB
-	private boolean qualifyNames = false;
-
-	// look for aliases while analysing the DB
-	private boolean analyseAlias = false;
-
-	// look for synonyms while analysing the DB
-	private boolean analyseSynonym = false;
-
-	// look for views while analysing the DB
-	private boolean analyseView = false;
-
-	// subject condition
-	private String where = null;
-
-	// target schema map
-	private String rawschemamapping = null;
-
-	// source schema map
-	private String rawsourceschemamapping = null;
-
-	// parameters
-	private String parameters = null;
-
-	// number of threads (default is 1)
-	private int numberOfThreads = 1;
-
-	// maximum number of entities per insert-statement (in export-file, default
-	// is 10)
-	private int numberOfEntities = 10;
-
-	// generate 'upsert'-statements for all entities (in export-file)
-	private boolean upsertOnly = false;
-
-	// schema in which the working tables will be created
-	private String workingTableSchema = null;
-
-	// folder holding the data model. Defaults to './datamodel'
-	private String datamodelFolder = "datamodel";
-
-	// the working folder. Defaults to '.'
-	private String workingFolder = null;
-
-	// the temporary files folder. Defaults to 'tmp'
-	private String tempFileFolder = "tmp";
-
-	// the exported rows will not be sorted according to foreign key constraints
-	private boolean noSorting = false;
-
-	// import rows in a single transaction
-	private boolean transactional = false;
-
-	// use primary keys to determine row identity (instead of rowid-column)
-	private boolean noRowid = false;
-
-	// schema in which the import-filter mapping tables will be created
-	private String importFilterMappingTableSchema = "";
-
-	private TemporaryTableScope scope;
-
-	private void copyCommandLineFields(CommandLine commandLine) {
-		uTF8 = commandLine.uTF8;
-		format = commandLine.format;
-		targetDBMS = commandLine.targetDBMS == null? null : DBMS.forDBMS(commandLine.targetDBMS);
-		_asXml = commandLine._asXml;
-		xmlRootTag = commandLine.xmlRootTag;
-		xmlDatePattern = commandLine.xmlDatePattern;
-		xmlTimePattern = commandLine.xmlTimePattern;
-		xmlTimeStampPattern = commandLine.xmlTimeStampPattern;
-		exportScriptFileName = commandLine.exportScriptFileName;
-		qualifyNames = commandLine.qualifyNames;
-		analyseAlias = commandLine.analyseAlias;
-		analyseSynonym = commandLine.analyseSynonym;
-		analyseView = commandLine.analyseView;
-		where = commandLine.where;
-		rawschemamapping = commandLine.rawschemamapping;
-		rawsourceschemamapping = commandLine.rawsourceschemamapping;
-		parameters = commandLine.parameters;
-		numberOfThreads = commandLine.numberOfThreads;
-		numberOfEntities = commandLine.numberOfEntities;
-		upsertOnly = commandLine.upsertOnly;
-		if (commandLine.scope == null) {
-    		scope = TemporaryTableScope.GLOBAL;
-    	}
-    	try {
-    		scope = TemporaryTableScope.valueOf(commandLine.scope);
-    	} catch (Exception e) {
-    		scope = TemporaryTableScope.GLOBAL;
-    	}
-    	workingTableSchema = commandLine.workingTableSchema;
-		datamodelFolder = commandLine.datamodelFolder;
-		workingFolder = commandLine.workingFolder;
-		noSorting = commandLine.noSorting;
-		transactional = commandLine.transactional;
-		noRowid = commandLine.noRowid;
-		importFilterMappingTableSchema = commandLine.importFilterMappingTableSchema;
+		return executionContext.getCurrentModelSubfolder();
 	}
 
 }

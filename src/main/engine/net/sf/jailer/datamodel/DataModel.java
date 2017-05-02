@@ -18,6 +18,7 @@ package net.sf.jailer.datamodel;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ import java.util.TreeSet;
 import org.apache.log4j.Logger;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.Jailer;
+import net.sf.jailer.JailerVersion;
 import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.filter_template.Clause;
@@ -261,7 +262,7 @@ public class DataModel {
      * Reads in <code>table.csv</code> and <code>association.csv</code>
      * and builds the relational data model.
      */
-    public DataModel(PrimaryKeyFactory primaryKeyFactory, Map<String, String> sourceSchemaMapping, ExecutionContext executionContext) throws Exception {
+    public DataModel(PrimaryKeyFactory primaryKeyFactory, Map<String, String> sourceSchemaMapping, ExecutionContext executionContext) throws IOException {
         this(null, null, sourceSchemaMapping, null, primaryKeyFactory, executionContext);
     }
 
@@ -269,7 +270,7 @@ public class DataModel {
      * Reads in <code>table.csv</code> and <code>association.csv</code>
      * and builds the relational data model.
      */
-    public DataModel(ExecutionContext executionContext) throws Exception {
+    public DataModel(ExecutionContext executionContext) throws IOException {
         this(null, null, new PrimaryKeyFactory(), executionContext);
     }
 
@@ -277,7 +278,7 @@ public class DataModel {
      * Reads in <code>table.csv</code> and <code>association.csv</code>
      * and builds the relational data model.
      */
-    public DataModel(Map<String, String> sourceSchemaMapping, ExecutionContext executionContext) throws Exception {
+    public DataModel(Map<String, String> sourceSchemaMapping, ExecutionContext executionContext) throws IOException {
         this(null, null, sourceSchemaMapping, null, new PrimaryKeyFactory(), executionContext);
     }
 
@@ -288,7 +289,7 @@ public class DataModel {
      * @param additionalTablesFile table file to read too
      * @param additionalAssociationsFile association file to read too
      */
-    public DataModel(String additionalTablesFile, String additionalAssociationsFile, PrimaryKeyFactory primaryKeyFactory, ExecutionContext executionContext) throws Exception {
+    public DataModel(String additionalTablesFile, String additionalAssociationsFile, PrimaryKeyFactory primaryKeyFactory, ExecutionContext executionContext) throws IOException {
     	this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, primaryKeyFactory, executionContext);
     }
 
@@ -299,7 +300,7 @@ public class DataModel {
      * @param additionalTablesFile table file to read too
      * @param additionalAssociationsFile association file to read too
      */
-    public DataModel(String additionalTablesFile, String additionalAssociationsFile, ExecutionContext executionContext) throws Exception {
+    public DataModel(String additionalTablesFile, String additionalAssociationsFile, ExecutionContext executionContext) throws IOException {
     	this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, new PrimaryKeyFactory(), executionContext);
     }
 
@@ -310,7 +311,7 @@ public class DataModel {
      * @param additionalTablesFile table file to read too
      * @param additionalAssociationsFile association file to read too
      */
-    public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, ExecutionContext executionContext) throws Exception {
+    public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, ExecutionContext executionContext) throws IOException {
     	this(additionalTablesFile, additionalAssociationsFile, sourceSchemaMapping, assocFilter, new PrimaryKeyFactory(), executionContext);
     }
     
@@ -320,8 +321,9 @@ public class DataModel {
      * 
      * @param additionalTablesFile table file to read too
      * @param additionalAssociationsFile association file to read too
+     * @throws IOException 
      */
-    public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, PrimaryKeyFactory primaryKeyFactory, ExecutionContext executionContext) throws Exception {
+    public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, PrimaryKeyFactory primaryKeyFactory, ExecutionContext executionContext) throws IOException {
     	this.executionContext = executionContext;
     	this.primaryKeyFactory = primaryKeyFactory;
     	try {
@@ -456,7 +458,7 @@ public class DataModel {
 	        } catch (Throwable t) {
 	        	// keep defaults
 	        }
-    	} catch (Exception e) {
+    	} catch (IOException e) {
     		_log.error("failed to load data-model " + getDatamodelFolder(executionContext) + File.separator, e);
     		throw e;
     	}
@@ -478,7 +480,7 @@ public class DataModel {
 	/**
      * Initializes display names.
      */
-    private void initDisplayNames() throws Exception {
+    private void initDisplayNames() throws IOException {
     	Set<String> unqualifiedNames = new HashSet<String>();
     	Set<String> nonUniqueUnqualifiedNames = new HashSet<String>();
     	
@@ -896,7 +898,7 @@ public class DataModel {
 		
 		out.println();
 		out.println(CsvFile.BLOCK_INDICATOR + "version");
-		out.println(Jailer.VERSION);
+		out.println(JailerVersion.VERSION);
 		out.close();
 	}
 	
@@ -942,7 +944,7 @@ public class DataModel {
 	 * 
 	 * @param file to save restrictions into
 	 */
-	public void saveRestrictions(File file, List<RestrictionDefinition> restrictionDefinitions) throws Exception {
+	public void saveRestrictions(File file, List<RestrictionDefinition> restrictionDefinitions) throws FileNotFoundException {
 		PrintWriter out = new PrintWriter(file);
 		saveRestrictions(out, restrictionDefinitions);
 		out.close();

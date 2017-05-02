@@ -731,11 +731,11 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 
 
 	/**
-	 * Insert the values of columns with non-derived-import-filters into the local database.
+	 * Insert the values of columns with non-derived-import-filters into the local database. 
 	 */
 	@Override
 	public void fillAndWriteMappingTables(JobManager jobManager, final OutputStreamWriter receiptWriter,
-			int numberOfEntities, final Session targetSession, final DBMS targetDBMSConfiguration, DBMS dbmsConfiguration) throws Exception {
+			int numberOfEntities, final Session targetSession, final DBMS targetDBMSConfiguration, DBMS dbmsConfiguration) throws IOException, SQLException {
 		if (importFilterManager != null) {
 			File tmp = executionContext.createTempFile();
 			OutputStreamWriter tmpFileWriter;
@@ -766,10 +766,10 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	}
 
 	/**
-	 * Creates the DROP-statements for the mapping tables.
+	 * Creates the DROP-statements for the mapping tables. 
 	 */
 	@Override
-	public void dropMappingTables(OutputStreamWriter result, DBMS targetDBMSConfiguration) throws Exception {
+	public void dropMappingTables(OutputStreamWriter result, DBMS targetDBMSConfiguration) throws IOException, SQLException {
 		if (importFilterManager != null) {
 			File tmp = executionContext.createTempFile();
 			OutputStreamWriter tmpFileWriter;

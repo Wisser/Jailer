@@ -53,6 +53,7 @@ import net.sf.jailer.datamodel.PKColumnFilterSource;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.progress.ProgressListenerRegistry;
+import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.JobManager;
 import net.sf.jailer.util.JobManager.Job;
@@ -100,9 +101,9 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 	 * Constructor.
 	 * 
 	 * @param result to write results into
-	 * @param targetQuoting 
+	 * @param targetQuoting
 	 */
-	public ImportFilterManager(Session localSession, OutputStreamWriter result, Set<Table> progress, Quoting targetQuoting, ExecutionContext executionContext) throws Exception {
+	public ImportFilterManager(Session localSession, OutputStreamWriter result, Set<Table> progress, Quoting targetQuoting, ExecutionContext executionContext) throws FileNotFoundException, SQLException {
 		this.executionContext = executionContext;
 		this.totalProgress = progress;
 		
@@ -113,7 +114,11 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 			this.localSession = localSession;
 		} else {
 			LocalDatabaseConfiguration localConfiguration = (LocalDatabaseConfiguration) Configuration.getInstance().localEntityGraphConfiguration;
-			this.localDatabase = new LocalDatabase(localConfiguration.getDriver(), localConfiguration.getUrlPattern(), localConfiguration.getUser(), localConfiguration.getPassword(), localConfiguration.getLib(), executionContext);
+			try {
+				this.localDatabase = new LocalDatabase(localConfiguration.getDriver(), localConfiguration.getUrlPattern(), localConfiguration.getUser(), localConfiguration.getPassword(), localConfiguration.getLib(), executionContext);
+			} catch (ClassNotFoundException e) {
+				throw new RuntimeException(e);
+			}
 			this.localSession = localDatabase.getSession();
 		}
         collectNonderivedFilteredColumnsPerTable();
@@ -289,7 +294,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 	 * @param dmlResultWriter
 	 */
 	public void fillAndWriteMappingTables(final EntityGraph entityGraph, JobManager jobManager, final OutputStreamWriter dmlResultWriter,
-			int numberOfEntities, final Session targetSession, final DBMS targetDBMSConfiguration) throws Exception {
+			int numberOfEntities, final Session targetSession, final DBMS targetDBMSConfiguration) throws CancellationException, SQLException {
 		ProgressListenerRegistry.getProgressListener().newStage("processing import filters", false, false);
 		
 		Collection<Job> insertJobs = new ArrayList<Job>();
@@ -299,7 +304,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 			final Table table = filters.getKey();
 			insertJobs.add(new Job() {
 				@Override
-				public void run() throws Exception {
+				public void run() throws SQLException {
 					final Map<Column, PreparedStatement> insertStatement = new HashMap<Column, PreparedStatement>();
 					Connection connection = localSession.getConnection();
 					final List<Column> columns = filters.getValue();
@@ -350,7 +355,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		for (final ColumnToMappingTable mapping: columnToMappingTableSet) {
 			writeOutJobs.add(new Job() {
 				@Override
-				public void run() throws Exception {
+				public void run() throws SQLException {
 					Table mappingTable = new Table(schema + mapping.mappingTableName, null, false, false);
 					Column newValueColumn = new Column(mapping.newValueColumnName, mapping.type, 0, -1);
 					Column oldValueColumn = new Column(mapping.oldValueColumnName, mapping.type, 0, -1);

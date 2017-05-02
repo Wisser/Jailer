@@ -46,7 +46,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.Jailer;
+import net.sf.jailer.JailerVersion;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.ModelBuilder;
@@ -839,7 +839,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 		    	save(associations, DataModel.getAssociationsFile(executionContext), "# Table A; Table B; First-insert; Cardinality; Join-condition; Name; Author");
 		    	save(new ArrayList<Line>(columns.values()), DataModel.getColumnsFile(executionContext), "# Table; Columns");
 	    		saveTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile(executionContext));
-	    		saveTableList(Arrays.asList(Jailer.VERSION), DataModel.getVersionFile(executionContext));
+	    		saveTableList(Arrays.asList(JailerVersion.VERSION), DataModel.getVersionFile(executionContext));
 	    		saveDisplayNames();
 	    		saveName();
 	    		saved = true;

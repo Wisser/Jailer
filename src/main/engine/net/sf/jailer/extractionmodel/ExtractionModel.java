@@ -16,6 +16,7 @@
 package net.sf.jailer.extractionmodel;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -165,7 +166,7 @@ public class ExtractionModel {
      * 
      * @param dataModel the data model to restrict
      */
-    public ExtractionModel(DataModel dataModel, ExecutionContext executionContext) throws Exception {
+    public ExtractionModel(DataModel dataModel, ExecutionContext executionContext) {
     	this.executionContext = executionContext;
     	this.dataModel = dataModel;
     	subject = dataModel.getTables().iterator().hasNext()? dataModel.getTables().iterator().next() : null;
@@ -181,7 +182,7 @@ public class ExtractionModel {
      * @param the name of the model-file
      * @param parameters apply this parameter-value mapping to all restriction conditions, XML templates and filters 
      */
-    public ExtractionModel(String fileName, Map<String, String> sourceSchemaMapping, Map<String, String> parameters, ExecutionContext executionContext) throws Exception {
+    public ExtractionModel(String fileName, Map<String, String> sourceSchemaMapping, Map<String, String> parameters, ExecutionContext executionContext) throws IOException {
     	this.executionContext = executionContext;
     	List<CsvFile.Line> csv = new CsvFile(executionContext.newFile(fileName)).getLines();
         if (csv.isEmpty()) {
@@ -425,7 +426,7 @@ public class ExtractionModel {
 	 * 
 	 * @return the initial-data-tables list
 	 */
-	private Set<Table> readInitialDataTables(Map<String, String> sourceSchemaMapping, DataModel datamodel) throws Exception {
+	private Set<Table> readInitialDataTables(Map<String, String> sourceSchemaMapping, DataModel datamodel) throws IOException {
 		File file = executionContext.newFile(DataModel.getDatamodelFolder(executionContext) + File.separator + "initial_data_tables.csv");
 		if (file.exists()) {
 			Set<Table> idTables = SqlUtil.readTableList(new CsvFile(file), datamodel, sourceSchemaMapping);
@@ -435,7 +436,7 @@ public class ExtractionModel {
 		}
 	}
 
-    public static String loadDatamodelFolder(String fileName, ExecutionContext executionContext) throws Exception {
+    public static String loadDatamodelFolder(String fileName, ExecutionContext executionContext) throws IOException {
         List<CsvFile.Line> dmf = new CsvFile(executionContext.newFile(fileName), "datamodelfolder").getLines();
         if (dmf.size() > 0) {
         	return dmf.get(0).cells.get(0);

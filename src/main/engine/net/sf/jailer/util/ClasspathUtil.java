@@ -17,6 +17,7 @@ package net.sf.jailer.util;
 
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.net.MalformedURLException;
 import java.net.URL;
 
 /**
@@ -26,8 +27,7 @@ import java.net.URL;
  */
 public class ClasspathUtil {
 	
-	public static URL[] toURLArray(String jarName1, String jarName2)
-			throws Exception {
+	public static URL[] toURLArray(String jarName1, String jarName2) throws FileNotFoundException {
 		URL[] urls;
 		if (jarName1 != null && jarName1.trim().length() == 0) {
 			jarName1 = null;
@@ -46,17 +46,21 @@ public class ClasspathUtil {
 		if (!file.exists()) {
 			throw new FileNotFoundException("Jar-file not found: '" + jarName1 + "'");
 		}
-		if (jarName2 == null) {
-			urls = new URL[] { file.toURI().toURL() };
-		} else {
-			File file2 = new File(jarName2);
-			if (!file2.exists()) {
-				throw new FileNotFoundException("Jar-file not found: '" + jarName2 + "'");
+		try {
+			if (jarName2 == null) {
+				urls = new URL[] { file.toURI().toURL() };
+			} else {
+				File file2 = new File(jarName2);
+				if (!file2.exists()) {
+					throw new FileNotFoundException("Jar-file not found: '" + jarName2 + "'");
+				}
+				urls = new URL[] { file.toURI().toURL(),
+						file2.toURI().toURL() };
 			}
-			urls = new URL[] { file.toURI().toURL(),
-					file2.toURI().toURL() };
+			return urls;
+		} catch (MalformedURLException e) {
+			throw new RuntimeException(e);
 		}
-		return urls;
 	}
 
 }

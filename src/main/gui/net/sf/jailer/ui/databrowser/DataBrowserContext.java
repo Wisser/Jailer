@@ -17,7 +17,7 @@ package net.sf.jailer.ui.databrowser;
 
 import java.io.File;
 
-import net.sf.jailer.Jailer;
+import net.sf.jailer.JailerVersion;
 
 /**
  * Holds information about the context, in which the data browser is used.
@@ -57,14 +57,14 @@ public class DataBrowserContext {
 		if (isStandAlone()) {
 			return STANDALONE_APP_NAME + " " + STANDALONE_APP_VERSION + (shortName? "" : " - Relational Data Browser");
 		}
-		return Jailer.APPLICATION_NAME + " " + Jailer.VERSION + (shortName? "" : " - Relational Data Browser");
+		return JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + (shortName? "" : " - Relational Data Browser");
 	}
 	
 	public static String getAppName() {
 		if (isStandAlone()) {
 			return STANDALONE_APP_NAME;
 		}
-		return Jailer.APPLICATION_NAME;
+		return JailerVersion.APPLICATION_NAME;
 	}
 	
 }
