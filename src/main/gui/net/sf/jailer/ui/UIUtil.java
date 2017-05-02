@@ -31,11 +31,9 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.FileReader;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -65,6 +63,7 @@ import org.apache.log4j.Logger;
 import jsyntaxpane.DefaultSyntaxKit;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Jailer;
+import net.sf.jailer.JailerVersion;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.SqlException;
 import net.sf.jailer.progress.ProgressListener;
@@ -674,7 +673,7 @@ public class UIUtil {
 		if (context != EXCEPTION_CONTEXT_USER_ERROR) {
 			contextDesc += "\nHelp Desk: https://sourceforge.net/forum/?group_id=197260";
 			contextDesc += "\nMail: rwisser@users.sourceforge.net\n";
-			contextDesc += "\n" + Jailer.APPLICATION_NAME + " " + Jailer.VERSION + "\n\n" + sw.toString();
+			contextDesc += "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
 		}
 		
 		new SqlErrorDialog(parent == null ? null

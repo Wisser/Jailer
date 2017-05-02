@@ -64,16 +64,6 @@ import net.sf.jailer.util.SqlUtil;
 public class Jailer {
 
 	/**
-	 * The Jailer version.
-	 */
-	public static final String VERSION = "6.7.4";
-	
-	/**
-	 * The Jailer application name.
-	 */
-	public static final String APPLICATION_NAME = "Jailer";
-	
-	/**
 	 * The logger.
 	 */
 	private static final Logger _log = Logger.getLogger(Jailer.class);
@@ -139,7 +129,7 @@ public class Jailer {
 			String command = commandLine.arguments.get(0);
 			if (!"create-ddl".equalsIgnoreCase(command)) {
 				if (!"find-association".equalsIgnoreCase(command)) {
-					_log.info("Jailer " + VERSION);
+					_log.info("Jailer " + JailerVersion.VERSION);
 				}
 			}
 			

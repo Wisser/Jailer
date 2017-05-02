@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.entitygraph;
 
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -109,7 +110,7 @@ public abstract class EntityGraph {
      * @return the newly created entity-graph
      * @throws Exception 
      */
-    public abstract EntityGraph copy(int graphID, Session session) throws SQLException, Exception;
+    public abstract EntityGraph copy(int graphID, Session session) throws SQLException;
     
     /**
      * Finds an entity-graph.
@@ -504,7 +505,7 @@ public abstract class EntityGraph {
 	 * Insert the values of columns with non-derived-import-filters into the local database.
 	 */
 	public void fillAndWriteMappingTables(JobManager jobManager, final OutputStreamWriter dmlResultWriter,
-			int numberOfEntities, final Session targetSession, final DBMS targetDBMSConfiguration, DBMS dbmsConfiguration) throws Exception {
+			int numberOfEntities, final Session targetSession, final DBMS targetDBMSConfiguration, DBMS dbmsConfiguration) throws SQLException, IOException {
 		if (importFilterManager != null) {
 			importFilterManager.createMappingTables(dbmsConfiguration, dmlResultWriter);
 			importFilterManager.fillAndWriteMappingTables(this, jobManager, dmlResultWriter, numberOfEntities, targetSession, targetDBMSConfiguration);
@@ -514,7 +515,7 @@ public abstract class EntityGraph {
 	/**
 	 * Creates the DROP-statements for the mapping tables.
 	 */
-	public void dropMappingTables(OutputStreamWriter result, DBMS targetDBMSConfiguration) throws Exception {
+	public void dropMappingTables(OutputStreamWriter result, DBMS targetDBMSConfiguration) throws IOException, SQLException {
 		if (importFilterManager != null) {
 			importFilterManager.dropMappingTables(result);
 		}

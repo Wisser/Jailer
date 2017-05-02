@@ -117,15 +117,6 @@ public class CellContentConverter {
 	    			format += nanoString;
         		}
 				return "to_timestamp('" + format + "', 'YYYY-MM-DD HH24.MI.SS." + nanoFormat + "')" + suffix;
-        	} else if (targetConfiguration.getTimestampFormat() != null) {
-        		String format;
-        		synchronized(targetConfiguration.getTimestampFormat()) {
-	        		format = targetConfiguration.getTimestampFormat().format((Date) content);
-	        		if (targetConfiguration.isAppendMillisToTimestamp()) {
-	        			format += getNanoString((Timestamp) content, targetConfiguration.isAppendNanosToTimestamp(), NANO_SEP);
-	        		}
-        		}
-				content = format;
         	}
         	if (targetConfiguration.getTimestampPattern() != null) {
         		return targetConfiguration.getTimestampPattern().replace("%s", "'" + content + "'") + suffix;

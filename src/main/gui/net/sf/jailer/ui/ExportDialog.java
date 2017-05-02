@@ -23,7 +23,6 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
-import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -1831,11 +1830,6 @@ public class ExportDialog extends javax.swing.JDialog {
 			args.add(sourceSchemaMapping.toString());
 		}
 
-		File excludeFromDeletion = new File(DataModel.getExcludeFromDeletionFile(CommandLineInstance.getExecutionContext()));
-		if (excludeFromDeletion.exists()) {
-			args.add("-t");
-			args.add(DataModel.getExcludeFromDeletionFile(CommandLineInstance.getExecutionContext()));
-		}
 		args.add("-scope");
 		args.add(getTemporaryTableScope().toString());
 

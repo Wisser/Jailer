@@ -16,6 +16,8 @@
 package net.sf.jailer.entitygraph.local;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -212,9 +214,8 @@ public class LocalEntityGraph extends EntityGraph {
 	 * Constructor.
 	 * 
 	 * @param remoteSession
-	 * @throws Exception 
 	 */
-	private LocalEntityGraph(int graphID, Session remoteSession, ExecutionContext executionContext) throws Exception {
+	private LocalEntityGraph(int graphID, Session remoteSession, ExecutionContext executionContext) throws IOException, SQLException {
 		super(graphID, new DataModel(new PrimaryKeyFactory() {
 			@Override
 			public PrimaryKey createPrimaryKey(List<Column> columns) {
@@ -257,10 +258,14 @@ public class LocalEntityGraph extends EntityGraph {
 	 * @param urlparameter 
 	 * 
 	 * @return the localSession
-	 * @throws Exception 
+	 * @
 	 */
-	private LocalDatabase createLocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile) throws Exception {
-		return new LocalDatabase(driverClassName, urlPattern, user, password, jarfile, executionContext);
+	private LocalDatabase createLocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile) throws FileNotFoundException, SQLException {
+		try {
+			return new LocalDatabase(driverClassName, urlPattern, user, password, jarfile, executionContext);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**
@@ -296,9 +301,8 @@ public class LocalEntityGraph extends EntityGraph {
      * @param remoteSession for executing SQL-Statements
      * @param universalPrimaryKey the universal primary key
      * @return the newly created entity-graph
-     * @throws Exception 
      */
-    public static LocalEntityGraph create(DataModel dataModel, int graphID, Session remoteSession, ExecutionContext executionContext) throws Exception {
+    public static LocalEntityGraph create(DataModel dataModel, int graphID, Session remoteSession, ExecutionContext executionContext) throws IOException, SQLException {
     	LocalEntityGraph entityGraph = new LocalEntityGraph(graphID, remoteSession, executionContext);
         try {
         	entityGraph.localSession.executeUpdate("Insert into " + SQLDialect.dmlTableReference(ENTITY_GRAPH, entityGraph.localSession, executionContext) + "(id, age) values (" + graphID + ", 1)");
@@ -316,9 +320,8 @@ public class LocalEntityGraph extends EntityGraph {
      * @param newGraphID the unique ID of the new graph
      * @param localSession for executing SQL-Statements
      * @return the newly created entity-graph
-     * @throws Exception 
      */
-    public EntityGraph copy(int newGraphID, Session globalSession) throws Exception {
+    public EntityGraph copy(int newGraphID, Session globalSession) throws SQLException {
         LocalEntityGraph entityGraph = new LocalEntityGraph(newGraphID, dataModel, remoteSession, localSession, localDatabase, localInlineViewStyle, remoteInlineViewStyle, upkColumnNames, universalPrimaryKey, birthdayOfSubject, fieldProcTables, rowIdSupport, executionContext);
         entityGraph.setBirthdayOfSubject(birthdayOfSubject);
         localSession.executeUpdate(
@@ -334,9 +337,8 @@ public class LocalEntityGraph extends EntityGraph {
      * @param universalPrimaryKey the universal primary key
      * @param localSession for executing SQL-Statements
      * @return the entity-graph
-     * @throws Exception 
      */
-    public EntityGraph find(int graphID, Session localSession, PrimaryKey universalPrimaryKey) throws Exception {
+    public EntityGraph find(int graphID, Session localSession, PrimaryKey universalPrimaryKey) throws IOException, SQLException {
         LocalEntityGraph entityGraph = new LocalEntityGraph(graphID, localSession, executionContext);
         final boolean[] found = new boolean[1];
         found[0] = false;

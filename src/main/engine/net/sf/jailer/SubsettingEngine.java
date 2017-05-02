@@ -43,10 +43,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 import javax.sql.DataSource;
+import javax.xml.transform.TransformerConfigurationException;
 import javax.xml.transform.sax.TransformerHandler;
 import javax.xml.transform.stream.StreamResult;
 
 import org.apache.log4j.Logger;
+import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import net.sf.jailer.configuration.Configuration;
@@ -98,7 +100,7 @@ public class SubsettingEngine {
 	 * 
 	 * @param executionContext the command line arguments
 	 */
-	public SubsettingEngine(ExecutionContext executionContext) throws Exception {
+	public SubsettingEngine(ExecutionContext executionContext) {
 		this.executionContext = executionContext;
 		jobManager = new JobManager(executionContext.getNumberOfThreads());
 	}
@@ -177,7 +179,7 @@ public class SubsettingEngine {
 	 * 
 	 * @return set of tables from which entities are added
 	 */
-	private Set<Table> export(Table table, String condition, Collection<Table> progressOfYesterday, boolean skipRoot, Set<Table> completedTables) throws Exception {
+	private Set<Table> export(Table table, String condition, Collection<Table> progressOfYesterday, boolean skipRoot, Set<Table> completedTables) throws SQLException {
 		_log.info("exporting " + datamodel.getDisplayName(table) + " Where " + condition.replace('\n', ' ').replace('\r', ' '));
 		int today = entityGraph.getAge();
 		entityGraph.setAge(today + 1);
@@ -246,7 +248,7 @@ public class SubsettingEngine {
 	 * 
 	 * @param extractionModel the extraction model
 	 */
-	private Set<Table> exportSubjects(ExtractionModel extractionModel, Set<Table> completedTables) throws Exception {
+	private Set<Table> exportSubjects(ExtractionModel extractionModel, Set<Table> completedTables) throws CancellationException, SQLException {
 		List<AdditionalSubject> allSubjects = new ArrayList<ExtractionModel.AdditionalSubject>();
 		for (AdditionalSubject as: extractionModel.additionalSubjects) {
 			allSubjects.add(new AdditionalSubject(as.getSubject(), ParameterHandler.assignParameterValues(as.getCondition(), executionContext.getParameters())));
@@ -282,7 +284,7 @@ public class SubsettingEngine {
 			}
 			jobs.add(new JobManager.Job() {
 				@Override
-				public void run() throws Exception {
+				public void run() throws SQLException {
 					int today = entityGraph.getAge();
 					ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today, table);
 					ProgressListenerRegistry.getProgressListener().collectionJobStarted(today, table);
@@ -310,7 +312,7 @@ public class SubsettingEngine {
 	 * @return map from tables from which entities are added to all associations
 	 *         which lead to the entities
 	 */
-	private Map<Table, Collection<Association>> resolveAssociations(final int today, Map<Table, Collection<Association>> progressOfYesterday, Set<Table> completedTables) throws Exception {
+	private Map<Table, Collection<Association>> resolveAssociations(final int today, Map<Table, Collection<Association>> progressOfYesterday, Set<Table> completedTables) throws CancellationException, SQLException {
 		final Map<Table, Collection<Association>> progress = new HashMap<Table, Collection<Association>>();
 
 		// resolve associations with same dest-type sequentially
@@ -336,7 +338,7 @@ public class SubsettingEngine {
 		        	ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today, association);
 		        }
 				JobManager.Job job = new JobManager.Job() {
-					public void run() throws Exception {
+					public void run() throws SQLException {
 						runstats(false);
 						if (association.getJoinCondition() != null) {
 							_log.info("resolving " + datamodel.getDisplayName(table) + " -> " + association.toString(0, true) + "...");
@@ -370,7 +372,7 @@ public class SubsettingEngine {
 		List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 		for (final Map.Entry<Table, List<JobManager.Job>> entry : jobsPerDestination.entrySet()) {
 			jobs.add(new JobManager.Job() {
-				public void run() throws Exception {
+				public void run() throws CancellationException, SQLException {
 					for (JobManager.Job job : entry.getValue()) {
 						job.run();
 					}
@@ -392,7 +394,7 @@ public class SubsettingEngine {
 	 * @param progress
 	 *            set of tables to take into account
 	 */
-	private void addDependencies(Set<Table> progress, boolean treatAggregationAsDependency) throws Exception {
+	private void addDependencies(Set<Table> progress, boolean treatAggregationAsDependency) throws CancellationException, SQLException {
 		List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 		Set<Association> done = new HashSet<Association>();
 		for (final Table table : progress) {
@@ -408,7 +410,7 @@ public class SubsettingEngine {
 							final String jc = association.getUnrestrictedJoinCondition();
 							done.add(association);
 							jobs.add(new JobManager.Job() {
-								public void run() throws Exception {
+								public void run() throws SQLException {
 									_log.info("find aggregation for " + datamodel.getDisplayName(table) + " -> "
 											+ datamodel.getDisplayName(association.destination) + " on " + jc);
 									String fromAlias, toAlias;
@@ -424,7 +426,7 @@ public class SubsettingEngine {
 						if (jc != null && association.isInsertDestinationBeforeSource()) {
 							done.add(association);
 							jobs.add(new JobManager.Job() {
-								public void run() throws Exception {
+								public void run() throws SQLException {
 									_log.info("find dependencies " + datamodel.getDisplayName(table) + " -> "
 											+ datamodel.getDisplayName(association.destination) + " on " + jc);
 									String fromAlias, toAlias;
@@ -438,7 +440,7 @@ public class SubsettingEngine {
 //						if (jc != null && association.isInsertSourceBeforeDestination()) {
 //							done.add(association);
 //							jobs.add(new JobManager.Job() {
-//								public void run() throws Exception {
+//								public void run() {
 //									_log.info("find dependencies " + datamodel.getDisplayName(association.destination) + " -> "
 //											+ datamodel.getDisplayName(table) + " on " + jc);
 //									String fromAlias, toAlias;
@@ -464,8 +466,7 @@ public class SubsettingEngine {
 	 * @param orderByPK
 	 *            if <code>true</code>, result will be ordered by primary keys
 	 */
-	private void writeEntities(Table table, boolean orderByPK)
-			throws Exception {
+	private void writeEntities(Table table, boolean orderByPK) throws SQLException {
 		entityGraph.readEntities(table, orderByPK);
 		entityGraph.deleteEntities(table);
 	}
@@ -526,7 +527,7 @@ public class SubsettingEngine {
 	 *            set of tables to account for extraction
 	 * @param stage stage name for {@link ProgressListener}
 	 */
-	private void writeEntities(final String sqlScriptFile, final ScriptType scriptType, final Set<Table> progress, Session session, String stage) throws Exception {
+	private void writeEntities(final String sqlScriptFile, final ScriptType scriptType, final Set<Table> progress, Session session, String stage) throws IOException, SAXException, SQLException {
 		_log.info("writing file '" + sqlScriptFile + "'...");
 
 		OutputStream outputStream = new FileOutputStream(sqlScriptFile);
@@ -825,12 +826,12 @@ public class SubsettingEngine {
 	}
 
 	private void updateNullableForeignKeys(final OutputStreamWriter result, final EntityGraph eg,
-			Map<Table, Set<Column>> nullableForeignKeys) throws Exception {
+			Map<Table, Set<Column>> nullableForeignKeys) throws CancellationException, SQLException {
 		List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 		for (final Map.Entry<Table, Set<Column>> entry: nullableForeignKeys.entrySet()) {
 			jobs.add(new JobManager.Job() {
 				@Override
-				public void run() throws Exception {
+				public void run() throws SQLException {
 					eg.updateEntities(entry.getKey(), entry.getValue(), result, targetDBMSConfiguration(entityGraph.getTargetSession()));
 				}
 			});
@@ -883,7 +884,7 @@ public class SubsettingEngine {
 	 * @return number of remaining entities
 	 */
 	private long writeIndependentEntities(OutputStreamWriter result, Set<Table> dependentTables, final EntityGraph theEntityGraph)
-			throws SQLException, IOException, Exception {
+			throws SQLException, IOException {
 		long rest;
 		rest = theEntityGraph.getSize(dependentTables);
 		for (;;) {
@@ -893,7 +894,7 @@ public class SubsettingEngine {
 			List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 			for (final Table table : dependentTables) {
 				jobs.add(new JobManager.Job() {
-					public void run() throws Exception {
+					public void run() throws SQLException {
 						theEntityGraph.readMarkedEntities(table, false);
 					}
 				});
@@ -962,7 +963,7 @@ public class SubsettingEngine {
 	 * @param session
 	 *            for executing SQL statements
 	 */
-	private void removeSingleRowCycles(Set<Table> progress, Session session) throws Exception {
+	private void removeSingleRowCycles(Set<Table> progress, Session session) throws SQLException {
 		for (Table table : progress) {
 			boolean hasReflexiveAssociation = false;
 			for (Association a : table.associations) {
@@ -985,7 +986,7 @@ public class SubsettingEngine {
 	 * @param progress
 	 *            set of tables to account for extraction
 	 */
-	private void writeEntitiesAsXml(String xmlFile, final Set<Table> progress, final Set<Table> subjects, Session session) throws Exception {
+	private void writeEntitiesAsXml(String xmlFile, final Set<Table> progress, final Set<Table> subjects, Session session) throws IOException, CancellationException, SQLException, SAXException {
 		_log.info("writing file '" + xmlFile + "'...");
 
 		OutputStream outputStream = new FileOutputStream(xmlFile);
@@ -1063,9 +1064,14 @@ public class SubsettingEngine {
 			charset = Charset.forName("UTF8");
 		}
 		
-		XmlExportTransformer reader = new XmlExportTransformer(outputStream, commentHeader.toString(), entityGraph, progress, cyclicAggregatedTables,
-				executionContext.getXmlRootTag(), executionContext.getXmlDatePattern(),
-				executionContext.getXmlTimeStampPattern(), entityGraph.getTargetSession(), charset, executionContext);
+		XmlExportTransformer reader;
+		try {
+			reader = new XmlExportTransformer(outputStream, commentHeader.toString(), entityGraph, progress, cyclicAggregatedTables,
+					executionContext.getXmlRootTag(), executionContext.getXmlDatePattern(),
+					executionContext.getXmlTimeStampPattern(), entityGraph.getTargetSession(), charset, executionContext);
+		} catch (TransformerConfigurationException e) {
+			throw new RuntimeException(e);
+		}
 
 		for (Table table: sortedTables) {
 			entityGraph.markRoots(table);
@@ -1143,7 +1149,7 @@ public class SubsettingEngine {
 	 * @return set of tables from which no entities are written
 	 */
 	private Set<Table> writeEntitiesOfIndependentTables(final OutputStreamWriter result, final TransformerHandler transformerHandler, final ScriptType scriptType,
-			Set<Table> progress, final String filepath) throws Exception {
+			Set<Table> progress, final String filepath) throws SQLException, IOException {
 		Set<Table> tables = new HashSet<Table>(progress);
 
 		Set<Table> independentTables = datamodel.getIndependentTables(tables);
@@ -1157,7 +1163,7 @@ public class SubsettingEngine {
 					writeEntities(independentTable, true);
 				} else {
 					jobs.add(new JobManager.Job() {
-						public void run() throws Exception {
+						public void run() throws SQLException {
 							writeEntities(independentTable, false);
 						}
 					});
@@ -1224,7 +1230,7 @@ public class SubsettingEngine {
 	/**
 	 * Runs script for updating the DB-statistics.
 	 */
-	private synchronized void runstats(boolean force) throws Exception {
+	private synchronized void runstats(boolean force) {
 		if (entityGraph != null) {
 			Session session = entityGraph.getSession();
 			if (force || lastRunstats == 0 || (lastRunstats * 2 <= entityGraph.getTotalRowcount() && entityGraph.getTotalRowcount() > 1000)) {
@@ -1246,23 +1252,23 @@ public class SubsettingEngine {
 	/**
 	 * Exports entities.
 	 */
-	public void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, DataSource dataSource, DBMS dbms, boolean explain, ScriptFormat scriptFormat) throws Exception {
+	public void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, DataSource dataSource, DBMS dbms, boolean explain, ScriptFormat scriptFormat) throws SQLException, IOException, SAXException {
 		if (scriptFile != null) {
 			_log.info("exporting '" + extractionModelFileName + "' to '" + scriptFile + "'");
 		}
 		
 		Session session = new Session(dataSource, dbms, executionContext.getScope(), false);
+		ExtractionModel extractionModel = new ExtractionModel(extractionModelFileName, executionContext.getSourceSchemaMapping(), executionContext.getParameters(), executionContext);
+
 		DDLCreator ddlCreator = new DDLCreator(executionContext);
 		if (executionContext.getScope() == TemporaryTableScope.SESSION_LOCAL
 		 || executionContext.getScope() == TemporaryTableScope.TRANSACTION_LOCAL) {
-			ddlCreator.createDDL(session, executionContext.getScope(), executionContext.getWorkingTableSchema());
+			ddlCreator.createDDL(extractionModel.dataModel, session, executionContext.getScope(), executionContext.getWorkingTableSchema());
 		} else if (executionContext.getScope() == TemporaryTableScope.GLOBAL) {
 			if (!ddlCreator.isUptodate(session, !executionContext.getNoRowid(), executionContext.getWorkingTableSchema())) {
-				throw new IllegalStateException("Jailer working tables do not exist or are not up to date. Use 'jailer create-ddl' to create them.");
+				ddlCreator.createDDL(extractionModel.dataModel, session, executionContext.getScope(), executionContext.getWorkingTableSchema());
 			}
 		}
-
-		ExtractionModel extractionModel = new ExtractionModel(extractionModelFileName, executionContext.getSourceSchemaMapping(), executionContext.getParameters(), executionContext);
 
 		_log.info(session.dbms.getSqlDialect());
 		
@@ -1285,7 +1291,7 @@ public class SubsettingEngine {
 			appendCommentHeader("encoding " + charset.name());
 			appendCommentHeader("");
 		}
-		appendCommentHeader("generated by Jailer " + Jailer.VERSION + ", " + new Date() + " from " + getUsername());
+		appendCommentHeader("generated by Jailer " + JailerVersion.VERSION + ", " + new Date() + " from " + getUsername());
 		Set<Table> totalProgress = new HashSet<Table>();
 		Set<Table> subjects = new HashSet<Table>();
 
@@ -1455,7 +1461,7 @@ public class SubsettingEngine {
 	 * @param statementExecutor
 	 *            for executing SQL-statements
 	 */
-	private void deleteEntities(Set<Table> subjects, Set<Table> allTables, Session session) throws Exception {
+	private void deleteEntities(Set<Table> subjects, Set<Table> allTables, Session session) throws SQLException {
 		Set<Table> tabuTables = new HashSet<Table>();
 		for (Table table: allTables) {
 			if (table.isExcludedFromDeletion()) {
@@ -1543,7 +1549,7 @@ public class SubsettingEngine {
 							ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today, a.reversalAssociation);
 						}
 						jobs.add(new JobManager.Job() {
-							public void run() throws Exception {
+							public void run() throws SQLException {
 								if (!isFirstStep) {
 									ProgressListenerRegistry.getProgressListener().collectionJobStarted(finalToday, a.reversalAssociation);
 								}

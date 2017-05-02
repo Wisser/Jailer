@@ -49,10 +49,8 @@ import javax.swing.UIManager.LookAndFeelInfo;
 import net.sf.jailer.CommandLine;
 import net.sf.jailer.DDLCreator;
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.Jailer;
+import net.sf.jailer.JailerVersion;
 import net.sf.jailer.ScriptFormat;
-import net.sf.jailer.configuration.Configuration;
-import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.database.Session;
@@ -131,7 +129,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         extractionModelEditor.extractionModelFile = extractionModelFile;
         pack();
         updateTitle(extractionModelEditor.needsSave);
-        dbConnectionDialog = new DbConnectionDialog(this, Jailer.APPLICATION_NAME, null);
+        dbConnectionDialog = new DbConnectionDialog(this, JailerVersion.APPLICATION_NAME, null);
 
 		// L&F can no longer be changed
         view.setVisible(false);
@@ -1242,7 +1240,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
      */
     public void setDbConnectionDialogClone(DbConnectionDialog dbConnectionDialog) {
     	try {
-    		this.dbConnectionDialog = new DbConnectionDialog(this, dbConnectionDialog, Jailer.APPLICATION_NAME);
+    		this.dbConnectionDialog = new DbConnectionDialog(this, dbConnectionDialog, JailerVersion.APPLICATION_NAME);
     	} finally {
         	updateMenuItems();
     	}
@@ -1250,7 +1248,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
 		About about = new About(this, true);
-		about.setTitle("Jailer " + Jailer.VERSION);
+		about.setTitle("Jailer " + JailerVersion.VERSION);
 		about.pack();
 		about.setLocation(getLocation().x + (getSize().width - about.getPreferredSize().width) / 2, getLocation().y + (getSize().height - about.getPreferredSize().height) / 2);
 		about.setVisible(true);
@@ -1567,7 +1565,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		if (extractionModelEditor == null) {
 			return;
 		}
-		String title = "Jailer " + Jailer.VERSION + " Extraction Model Editor";
+		String title = "Jailer " + JailerVersion.VERSION + " Extraction Model Editor";
 //		if (!"datamodel".equals(CommandLineParser.getInstance().getDataModelFolder())) {
 //			title += " (" + new File(CommandLineParser.getInstance().getDataModelFolder()).getName() + ")";
 //		}
@@ -1659,7 +1657,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	            		DataModelManager.setCurrentModelSubfolder(ExtractionModel.loadDatamodelFolder(file, CommandLineInstance.getExecutionContext()));
 	            		createFrame(finalFile, true, true);
 	            	} else {
-		            	DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(Jailer.APPLICATION_NAME + " " + Jailer.VERSION + " - Database Subsetting Tool") {
+		            	DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + " - Database Subsetting Tool") {
 							@Override
 							protected void onSelect() {
 				            	ExtractionModelFrame extractionModelFrame = null;
@@ -1704,12 +1702,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     private static void askForDataModel(
 			ExtractionModelFrame extractionModelFrame) throws Exception {
 		if (extractionModelFrame.extractionModelEditor == null || extractionModelFrame.extractionModelEditor.dataModel == null || extractionModelFrame.extractionModelEditor.dataModel.getTables().isEmpty()) {
-        	switch (JOptionPane.showOptionDialog(extractionModelFrame, "Data model \"" + DataModelManager.getModelDetails(DataModelManager.getCurrentModelSubfolder()).a + "\" is empty.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor" }, null)) {
+        	switch (JOptionPane.showOptionDialog(extractionModelFrame, "Data model \"" + DataModelManager.getModelDetails(DataModelManager.getCurrentModelSubfolder()).a + "\" is empty.", "Jailer " + JailerVersion.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor" }, null)) {
         		case 0: extractionModelFrame.updateDataModelActionPerformed(null); break;
                	case 1: extractionModelFrame.openDataModelEditorActionPerformed(null); break;
         	}
         } else if (!new File(DataModel.getColumnsFile(CommandLineInstance.getExecutionContext())).exists()) {
-           	switch (JOptionPane.showOptionDialog(extractionModelFrame, "No column definition found.", "Jailer " + Jailer.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor" }, null)) {
+           	switch (JOptionPane.showOptionDialog(extractionModelFrame, "No column definition found.", "Jailer " + JailerVersion.VERSION, JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor" }, null)) {
         		case 0: extractionModelFrame.updateDataModelActionPerformed(null); break;
                	case 1: extractionModelFrame.openDataModelEditorActionPerformed(null); break;
             }

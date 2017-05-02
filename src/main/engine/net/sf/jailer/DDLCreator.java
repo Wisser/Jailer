@@ -16,6 +16,8 @@
 package net.sf.jailer;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -64,7 +66,7 @@ public class DDLCreator {
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	public boolean createDDL(DataSource dataSource, DBMS dbms, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws Exception {
+	public boolean createDDL(DataSource dataSource, DBMS dbms, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws SQLException, FileNotFoundException, IOException {
 		Session session = null;
 		if (dataSource != null) {
 			session = new Session(dataSource, dbms);
@@ -81,14 +83,14 @@ public class DDLCreator {
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	public void createDDL(Session localSession, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws Exception {
+	public void createDDL(Session localSession, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
 		createDDL(new DataModel(executionContext), localSession, temporaryTableScope, workingTableSchema);
 	}
 
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	public boolean createDDL(DataModel datamodel, Session session, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws Exception {
+	public boolean createDDL(DataModel datamodel, Session session, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
 		RowIdSupport rowIdSupport = new RowIdSupport(datamodel, targetDBMS(session), executionContext);
 		return createDDL(datamodel, session, temporaryTableScope, rowIdSupport, workingTableSchema);
 	}
@@ -96,7 +98,7 @@ public class DDLCreator {
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	public boolean createDDL(DataModel datamodel, Session session, TemporaryTableScope temporaryTableScope, RowIdSupport rowIdSupport, String workingTableSchema) throws Exception {
+	public boolean createDDL(DataModel datamodel, Session session, TemporaryTableScope temporaryTableScope, RowIdSupport rowIdSupport, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
 		try {
 			return createDDL(datamodel, session, temporaryTableScope, 0, rowIdSupport, workingTableSchema);
 		} catch (SQLException e) {
@@ -115,7 +117,7 @@ public class DDLCreator {
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	private boolean createDDL(DataModel dataModel, Session session, TemporaryTableScope temporaryTableScope, int indexType, RowIdSupport rowIdSupport, String workingTableSchema) throws Exception {
+	private boolean createDDL(DataModel dataModel, Session session, TemporaryTableScope temporaryTableScope, int indexType, RowIdSupport rowIdSupport, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
 		String template = "script" + File.separator + "ddl-template.sql";
 		String contraint = pkColumnConstraint(session);
 		Map<String, String> typeReplacement = targetDBMS(session).getTypeReplacement();
@@ -126,7 +128,7 @@ public class DDLCreator {
 		arguments.put("pre", rowIdSupport.getUniversalPrimaryKey().toSQL("PRE_", contraint, typeReplacement));
 		arguments.put("from", rowIdSupport.getUniversalPrimaryKey().toSQL("FROM_", contraint, typeReplacement));
 		arguments.put("to", rowIdSupport.getUniversalPrimaryKey().toSQL("TO_", contraint, typeReplacement));
-		arguments.put("version", Jailer.VERSION);
+		arguments.put("version", JailerVersion.VERSION);
 		arguments.put("constraint", contraint);
 
 		TemporaryTableManager tableManager = null;
@@ -272,7 +274,7 @@ public class DDLCreator {
 				
 				final String schema = workingTableSchema == null ? "" : new Quoting(session).requote(workingTableSchema) + ".";
 				
-				session.executeQuery("Select jvalue from " + schema + SQLDialect.CONFIG_TABLE_ + " where jversion='" + Jailer.VERSION + "' and jkey='upk'",
+				session.executeQuery("Select jvalue from " + schema + SQLDialect.CONFIG_TABLE_ + " where jversion='" + JailerVersion.VERSION + "' and jkey='upk'",
 						new Session.ResultSetReader() {
 							public void readCurrentRow(ResultSet resultSet) throws SQLException {
 								String contraint = pkColumnConstraint(session);
