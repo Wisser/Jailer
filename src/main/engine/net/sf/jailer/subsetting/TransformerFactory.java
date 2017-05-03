@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package net.sf.jailer;
+package net.sf.jailer.subsetting;
 
 import java.sql.SQLException;
 

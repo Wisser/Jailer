@@ -21,6 +21,8 @@ import java.util.List;
 import org.kohsuke.args4j.Argument;
 import org.kohsuke.args4j.Option;
 
+import net.sf.jailer.subsetting.ScriptFormat;
+
 /**
  * Holds command-line arguments.
  * 

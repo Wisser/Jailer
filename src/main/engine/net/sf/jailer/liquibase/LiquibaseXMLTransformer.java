@@ -27,11 +27,11 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.TransformerFactory;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
+import net.sf.jailer.subsetting.TransformerFactory;
 
 public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 	

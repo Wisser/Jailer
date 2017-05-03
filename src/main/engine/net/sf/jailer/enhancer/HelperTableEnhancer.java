@@ -21,13 +21,13 @@ import java.sql.SQLException;
 import java.util.Set;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.ScriptType;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.UPSERT_MODE;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
+import net.sf.jailer.subsetting.ScriptType;
 
 /**
  * Inserts DDL for helper tables.

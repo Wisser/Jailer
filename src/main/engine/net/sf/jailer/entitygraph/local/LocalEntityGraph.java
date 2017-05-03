@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import net.sf.jailer.DDLCreator;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
@@ -48,6 +47,7 @@ import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.progress.ProgressListenerRegistry;
 import net.sf.jailer.util.CellContentConverter;

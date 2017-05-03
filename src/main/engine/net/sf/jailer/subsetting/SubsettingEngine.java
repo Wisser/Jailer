@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.sf.jailer;
+package net.sf.jailer.subsetting;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -52,6 +52,8 @@ import org.apache.log4j.Logger;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
+import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.JailerVersion;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.DMLTransformer;
@@ -69,6 +71,7 @@ import net.sf.jailer.datamodel.ParameterHandler;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.dbunit.FlatXMLTransformer;
+import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.enhancer.ScriptEnhancer;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.entitygraph.intradatabase.IntraDatabaseEntityGraph;
@@ -1212,7 +1215,7 @@ public class SubsettingEngine {
 	 *            the progress-set
 	 * @return the progress-set as string
 	 */
-	static String asString(Set<Table> progress) {
+	public static String asString(Set<Table> progress) {
 		String str = "";
 		for (Table table : progress) {
 			if (!"".equals(str)) {
