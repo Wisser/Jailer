@@ -19,7 +19,10 @@ package net.sf.jailer.datamodel;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -111,7 +114,7 @@ public class DataModel {
      * Gets name of data model folder.
      */
     public static String getDatamodelFolder(ExecutionContext executionContext) {
-    	return executionContext.getDataModelFolder();
+    	return executionContext.getQualifiedDatamodelFolder();
     }
 
     /**
@@ -328,11 +331,12 @@ public class DataModel {
     	this.primaryKeyFactory = primaryKeyFactory;
     	try {
 			List<String> excludeFromDeletion = new ArrayList<String>();
-			PrintUtil.loadTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile(executionContext));
+			PrintUtil.loadTableList(excludeFromDeletion, openModelFile(executionContext.newFile(DataModel.getExcludeFromDeletionFile(executionContext)), executionContext));
 
 	    	// tables
-	    	File nTablesFile = executionContext.newFile(getTablesFile(executionContext));
-			CsvFile tablesFile = new CsvFile(nTablesFile);
+	    	File tabFile = executionContext.newFile(getTablesFile(executionContext));
+			InputStream nTablesFile = openModelFile(tabFile, executionContext);
+			CsvFile tablesFile = new CsvFile(nTablesFile, null, tabFile.getPath(), null);
 	        List<CsvFile.Line> tableList = new ArrayList<CsvFile.Line>(tablesFile.getLines());
 	        if (additionalTablesFile != null) {
 	            tableList.addAll(new CsvFile(executionContext.newFile(additionalTablesFile)).getLines());
@@ -362,9 +366,10 @@ public class DataModel {
 	        }
 	        
 	        // columns
-	        File file = executionContext.newFile(getColumnsFile(executionContext));
-	        if (file.exists()) {
-		    	CsvFile columnsFile = new CsvFile(file);
+	        File colFile = executionContext.newFile(getColumnsFile(executionContext));
+			InputStream is = openModelFile(colFile, executionContext);
+	        if (is != null) {
+		    	CsvFile columnsFile = new CsvFile(is, null, colFile.getPath(), null);
 		        List<CsvFile.Line> columnsList = new ArrayList<CsvFile.Line>(columnsFile.getLines());
 		        for (CsvFile.Line line: columnsList) {
 		            List<Column> columns = new ArrayList<Column>();
@@ -384,7 +389,8 @@ public class DataModel {
 	        }
 	        
 	        // associations
-	        List<CsvFile.Line> associationList = new ArrayList<CsvFile.Line>(new CsvFile(executionContext.newFile(getAssociationsFile(executionContext)), assocFilter).getLines());
+	        File assFile = executionContext.newFile(getAssociationsFile(executionContext));
+			List<CsvFile.Line> associationList = new ArrayList<CsvFile.Line>(new CsvFile(openModelFile(assFile, executionContext), null, assFile.getPath(), assocFilter).getLines());
 	        if (additionalAssociationsFile != null) {
 	            associationList.addAll(new CsvFile(executionContext.newFile(additionalAssociationsFile)).getLines());
 	        }
@@ -446,7 +452,7 @@ public class DataModel {
 	        name = DEFAULT_NAME;
 	    	lastModified = null;
 	        try {
-	        	lastModified = nTablesFile.lastModified();
+	        	lastModified = nameFile.lastModified();
 		        if (nameFile.exists()) {
 		        	List<CsvFile.Line> nameList = new ArrayList<CsvFile.Line>(new CsvFile(nameFile).getLines());
 		        	if (nameList.size() > 0) {
@@ -811,6 +817,18 @@ public class DataModel {
     	return parameters;
     }
 
+    private static InputStream openModelFile(File file, ExecutionContext executionContext) {
+    	try {
+			return executionContext.getDataModelURL().toURI().resolve(file.getName()).toURL().openStream();
+		} catch (MalformedURLException e) {
+			throw new RuntimeException(e);
+		} catch (IOException e) {
+			return null;
+		} catch (URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
+    }
+    
     /**
      * Gets {@link #getLastModified()} as String.
      * 
@@ -838,8 +856,8 @@ public class DataModel {
 	public void save(String file, Table stable, String subjectCondition, ScriptFormat scriptFormat, List<RestrictionDefinition> restrictionDefinitions, Map<String, Map<String, double[]>> positions, List<AdditionalSubject> additionalSubjects, String currentModelSubfolder) throws FileNotFoundException {
 		File extractionModel = new File(file);
 		PrintWriter out = new PrintWriter(extractionModel);
-		out.println("# subject; condition;  limit; restrictions");
-		out.println(CsvFile.encodeCell("" + stable.getName()) + "; " + CsvFile.encodeCell(subjectCondition) + "; ; " + RestrictionModel.EMBEDDED);
+		out.println("# subject; condition");
+		out.println(CsvFile.encodeCell("" + stable.getName()) + "; " + CsvFile.encodeCell(subjectCondition));
 		saveRestrictions(out, restrictionDefinitions);
 		saveXmlMapping(out);
 		out.println();
@@ -928,7 +946,7 @@ public class DataModel {
 	 */
 	private void saveRestrictions(PrintWriter out, List<RestrictionDefinition> restrictionDefinitions) {
 		out.println();
-		out.println("# from A (or association name); to B; restriction-condition");
+		out.println("# association; ; restriction-condition");
 		for (RestrictionDefinition rd: restrictionDefinitions) {
 			String condition = rd.isIgnored? "ignore" : rd.condition;
 			if (rd.name == null || rd.name.trim().length() == 0) {

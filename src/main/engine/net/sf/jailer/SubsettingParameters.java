@@ -15,6 +15,9 @@
  */
 package net.sf.jailer;
 
+import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Map;
 
 import net.sf.jailer.configuration.DBMS;
@@ -374,22 +377,32 @@ public class SubsettingParameters {
 	}
 
 	/**
-	 * Gets folder holding the data model. Defaults to './datamodel'
-	 *
-	 * @return folder holding the data model. Defaults to './datamodel'
-	 */
-	public String getDatamodelFolder() {
-		return executionContext.getDataModelFolder();
+     * Gets URL of the current data model (the datamodels base folder)
+     */
+	public URL getDataModelURL() {
+		return executionContext.getDataModelURL();
+	}
+	
+	/**
+     * Sets URL of the current data model (the datamodels base folder)
+     */
+	public void setDataModelURL(URL datamodelURL) {
+		executionContext.setDataModelURL(datamodelURL);
 	}
 
 	/**
-	 * Sets folder holding the data model. Defaults to './datamodel'
-	 *
-	 * @param datamodelFolder
-	 *            folder holding the data model. Defaults to './datamodel'
-	 */
-	public void setDatamodelFolder(String datamodelFolder) {
-		executionContext.setDatamodelFolder(datamodelFolder);
+     * Sets the current data model base folder.
+     * 
+     * @param datamodelBaseFolder represents the folder. Will be converted to an URL an set as datamodel URL
+     * 
+     * @see #setDataModelURL(URL)
+     */
+	public void setDataModelBaseFolder(File datamodelBaseFolder) {
+		try {
+			setDataModelURL(datamodelBaseFolder.toURI().toURL());
+		} catch (MalformedURLException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	/**
