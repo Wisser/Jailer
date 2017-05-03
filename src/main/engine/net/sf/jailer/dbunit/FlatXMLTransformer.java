@@ -30,12 +30,12 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.AttributesImpl;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.TransformerFactory;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.subsetting.TransformerFactory;
 import net.sf.jailer.util.Base64;
 
 /**

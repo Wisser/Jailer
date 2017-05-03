@@ -29,7 +29,6 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.TransformerFactory;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
@@ -40,6 +39,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.importfilter.ImportFilterManager;
+import net.sf.jailer.subsetting.TransformerFactory;
 import net.sf.jailer.util.JobManager;
 
 /**

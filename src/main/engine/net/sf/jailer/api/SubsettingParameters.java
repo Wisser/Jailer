@@ -13,15 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.sf.jailer;
+package net.sf.jailer.api;
 
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Map;
 
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.TemporaryTableScope;
+import net.sf.jailer.subsetting.ScriptFormat;
 
 /**
  * Execution context of import-/export commands.
@@ -377,14 +379,14 @@ public class SubsettingParameters {
 	}
 
 	/**
-     * Gets URL of the current data model (the datamodels base folder)
+     * Gets URL of the current data model (the datamodel's base folder)
      */
 	public URL getDataModelURL() {
 		return executionContext.getDataModelURL();
 	}
 	
 	/**
-     * Sets URL of the current data model (the datamodels base folder)
+     * Sets URL of the current data model (the datamodel's base folder)
      */
 	public void setDataModelURL(URL datamodelURL) {
 		executionContext.setDataModelURL(datamodelURL);
@@ -415,6 +417,16 @@ public class SubsettingParameters {
 	}
 
 	/**
+	 * Sets the working folder. Defaults to '.'
+	 *
+	 * @param workingFolder
+	 *            the working folder. Defaults to '.'
+	 */
+	public void setWorkingFolder(String workingFolder) {
+		executionContext.setWorkingFolder(workingFolder);
+	}
+
+	/**
 	 * Gets the temporary files folder. Defaults to 'tmp'.
 	 * 
 	 * @return the tempFileFolder absolute or relative to {@link #getWorkingFolder()}
@@ -430,17 +442,6 @@ public class SubsettingParameters {
 	 */
 	public void setTempFileFolder(String tempFileFolder) {
 		executionContext.setTempFileFolder(tempFileFolder);
-	}
-
-
-	/**
-	 * Sets the working folder. Defaults to '.'
-	 *
-	 * @param workingFolder
-	 *            the working folder. Defaults to '.'
-	 */
-	public void setWorkingFolder(String workingFolder) {
-		executionContext.setWorkingFolder(workingFolder);
 	}
 
 	/**

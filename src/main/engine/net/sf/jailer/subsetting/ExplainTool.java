@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.sf.jailer;
+package net.sf.jailer.subsetting;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -26,6 +26,7 @@ import java.util.Map;
 
 import org.apache.log4j.Logger;
 
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;

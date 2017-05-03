@@ -25,6 +25,7 @@ import java.util.UUID;
 
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.TemporaryTableScope;
+import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.util.CsvFile;
 
 /**

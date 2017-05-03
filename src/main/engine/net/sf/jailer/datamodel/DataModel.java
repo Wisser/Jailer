@@ -42,13 +42,13 @@ import org.apache.log4j.Logger;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.JailerVersion;
-import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.filter_template.Clause;
 import net.sf.jailer.datamodel.filter_template.FilterTemplate;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
+import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.LineFilter;
 import net.sf.jailer.util.LayoutStorage;

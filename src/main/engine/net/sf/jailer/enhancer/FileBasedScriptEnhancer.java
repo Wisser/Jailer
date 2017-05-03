@@ -25,13 +25,13 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.ScriptFormat;
-import net.sf.jailer.ScriptType;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
+import net.sf.jailer.subsetting.ScriptFormat;
+import net.sf.jailer.subsetting.ScriptType;
 /**
  * Inserts the content of the files
  * <ul>

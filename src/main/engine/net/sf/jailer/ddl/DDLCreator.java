@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package net.sf.jailer;
+package net.sf.jailer.ddl;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -29,6 +29,8 @@ import java.util.Map;
 
 import javax.sql.DataSource;
 
+import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.JailerVersion;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
