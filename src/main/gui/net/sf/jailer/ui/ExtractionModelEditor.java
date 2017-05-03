@@ -508,7 +508,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		modelName.setText(modelname);
 		modelName.setToolTipText(modelname + lastMod);
 		
-		String modelpath = executionContext.getDataModelFolder();
+		String modelpath = executionContext.getQualifiedDatamodelFolder();
 		try {
 			modelpath = executionContext.newFile(modelpath).getAbsolutePath();
 		} catch (Throwable t) {

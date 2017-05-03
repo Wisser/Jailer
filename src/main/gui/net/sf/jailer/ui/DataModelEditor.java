@@ -216,7 +216,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 		sortLineList(associations, false);
 		initComponents();
 		
-		String modelpath = executionContext.getDataModelFolder();
+		String modelpath = executionContext.getQualifiedDatamodelFolder();
 		try {
 			modelpath = executionContext.newFile(modelpath).getAbsolutePath();
 		} catch (Throwable t) {

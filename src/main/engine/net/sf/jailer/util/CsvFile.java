@@ -19,6 +19,8 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -162,11 +164,6 @@ public class CsvFile {
 	            	inBlock = block.equals(blockName);
 	            	continue;
 	            }
-	            if (line.trim().startsWith("#include ")) {
-	                String includeFile = line.trim().substring(9).trim();
-	                rows.addAll(new CsvFile(new File(csvFile.getParent() + File.separator + includeFile)).rows);
-	                continue;
-	            }
 	            if (line.trim().startsWith("#")) {
 	                continue;
 	            }
@@ -192,6 +189,55 @@ public class CsvFile {
     }
     
     /**
+     * Constructor.
+     * 
+     * @param in to read from
+     * @param block the block to read, <code>null</code> to read default block
+     */
+    public CsvFile(InputStream in, String block, String location, LineFilter filter) throws IOException {
+    	if (in != null) {
+	        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+	        String line = null;
+	        int lineNr = 0;
+	        boolean inBlock = block == null;
+	        while ((line = reader.readLine()) != null) {
+	            ++lineNr;
+	            if (line.trim().length() == 0) {
+	                continue;
+	            }
+	            if (line.trim().startsWith(BLOCK_INDICATOR)) {
+	            	if (inBlock) {
+	            		break;
+	            	}
+	                String blockName = line.trim().substring(BLOCK_INDICATOR.length()).trim();
+	            	inBlock = block.equals(blockName);
+	            	continue;
+	            }
+	            if (line.trim().startsWith("#")) {
+	                continue;
+	            }
+	            if (!inBlock) {
+	            	continue;
+	            }
+	            List<String> row = new ArrayList<String>();
+	            String[] col = decodeLine(line);
+	            for (int i = 0; i < col.length; ++i) {
+	                String s = col[i];
+	                row.add(s.trim());
+	            }
+	            while (row.size() < 100) {
+	                row.add("");
+	            }
+	            Line cvsLine = new Line("line " + lineNr + ", file " + location, row);
+				if (filter == null || filter.accept(cvsLine)) {
+					rows.add(cvsLine);
+				}
+	        }
+	        in.close();
+    	}
+    }
+
+	/**
      * Decodes and splits csv-line.
      * 
      * @param line the line to decode

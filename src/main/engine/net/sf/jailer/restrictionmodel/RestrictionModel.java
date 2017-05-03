@@ -15,11 +15,13 @@
  */
 package net.sf.jailer.restrictionmodel;
 
-import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import org.apache.log4j.Logger;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.Association;
@@ -28,8 +30,6 @@ import net.sf.jailer.datamodel.ParameterHandler;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.SqlUtil;
-
-import org.apache.log4j.Logger;
 
 /**
  * Restricts association-definitions in a {@link DataModel}.
@@ -62,19 +62,13 @@ public class RestrictionModel {
      * The logger.
      */
     private static final Logger _log = Logger.getLogger(RestrictionModel.class);
-	
-    /**
-	 * The execution context.
-	 */
-	private final ExecutionContext executionContext;
-	
+
     /**
      * Constructor.
      * 
      * @param dataModel the data-model
      */
     public RestrictionModel(DataModel dataModel, ExecutionContext executionContext) {
-    	this.executionContext = executionContext;
         this.dataModel = dataModel;
     }
 
@@ -101,11 +95,6 @@ public class RestrictionModel {
     public static final String IGNORE = new String("ignore");
 
     /**
-     * Special name for restriction models embedded into extraction model.
-     */
-	public static final Object EMBEDDED = ".embedded";
-    
-    /**
      * Gets the restriction (in SQL) for an association.
      * 
      * @param association the association
@@ -130,35 +119,17 @@ public class RestrictionModel {
     /**
      * Adds restrictions defined in a restriction-file.
      * 
-     * @param parameters apply this parameter-value mapping to all restriction conditions 
-     * @param fileName the name of the restriction-file
+     * @param parameters apply this parameter-value mapping to all restriction conditions
      */
-    public void addRestrictionDefinition(String fileName, String extractionModelFileName, Map<String, String> parameters) throws Exception {
+    public void addRestrictionDefinition(URL extractionModelURL, Map<String, String> parameters) throws Exception {
         if (dataModel != null) {
         	dataModel.version++;
         }
-        File file;
-        boolean embedded = false;
-        if (EMBEDDED.equals(fileName)) {
-        	file = executionContext.newFile(extractionModelFileName);
-        	embedded = true;
-        } else {
-        	file = executionContext.newFile(fileName);
-        }
-        if (!file.exists()) {
-        	try {
-        		file = new File(executionContext.newFile(extractionModelFileName).getParent(), fileName);
-        	} catch (Exception e) {
-        	}
-        }
-        if (!file.exists()) {
-            file = executionContext.newFile("restrictionmodel" + File.separator + fileName);
-        }
-        List<CsvFile.Line> lines = new CsvFile(file).getLines();
+        List<CsvFile.Line> lines = new CsvFile(extractionModelURL.openStream(), null, extractionModelURL.toString(), null).getLines();
         int nr = 0;
         for (CsvFile.Line line: lines) {
         	++nr;
-        	if (nr == 1 && embedded) {
+        	if (nr == 1) {
         		continue;
         	}
             String location = line.location;
@@ -247,7 +218,7 @@ public class RestrictionModel {
                 }
             }
         }
-        filesRead.add(fileName);
+        filesRead.add(extractionModelURL.toString());
     }
 
     /**

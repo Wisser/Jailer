@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.net.InetAddress;
+import java.net.URL;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
 import java.sql.ResultSet;
@@ -1251,14 +1252,15 @@ public class SubsettingEngine {
 
 	/**
 	 * Exports entities.
+	 * @param datamodelBaseURL URL of datamodel folder
 	 */
-	public void export(String extractionModelFileName, String scriptFile, String deleteScriptFileName, DataSource dataSource, DBMS dbms, boolean explain, ScriptFormat scriptFormat) throws SQLException, IOException, SAXException {
+	public void export(URL extractionModelURL, String scriptFile, String deleteScriptFileName, DataSource dataSource, DBMS dbms, boolean explain, ScriptFormat scriptFormat) throws SQLException, IOException, SAXException {
 		if (scriptFile != null) {
-			_log.info("exporting '" + extractionModelFileName + "' to '" + scriptFile + "'");
+			_log.info("exporting '" + extractionModelURL + "' to '" + scriptFile + "'");
 		}
-		
+
 		Session session = new Session(dataSource, dbms, executionContext.getScope(), false);
-		ExtractionModel extractionModel = new ExtractionModel(extractionModelFileName, executionContext.getSourceSchemaMapping(), executionContext.getParameters(), executionContext);
+		ExtractionModel extractionModel = new ExtractionModel(extractionModelURL, executionContext.getSourceSchemaMapping(), executionContext.getParameters(), executionContext);
 
 		DDLCreator ddlCreator = new DDLCreator(executionContext);
 		if (executionContext.getScope() == TemporaryTableScope.SESSION_LOCAL
@@ -1302,7 +1304,7 @@ public class SubsettingEngine {
 		appendCommentHeader("");
 		String condition = (extractionModel.condition != null && !"1=1".equals(extractionModel.condition)) ? extractionModel.subject.getName() + " where " + extractionModel.condition
 				: "all rows from " + extractionModel.subject.getName();
-		appendCommentHeader("Extraction Model:  " + condition + " (" + extractionModelFileName + ")");
+		appendCommentHeader("Extraction Model:  " + condition + " (" + extractionModelURL + ")");
 		for (AdditionalSubject as: extractionModel.additionalSubjects) {
 			condition = (as.getCondition() != null && as.getCondition().trim().length() > 0) ? as.getSubject().getName() + " where " + as.getCondition()
 					: "all rows from " + as.getSubject().getName();

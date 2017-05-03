@@ -562,7 +562,7 @@ public class UIUtil {
 			List<String> args) {
 		args.add("-datamodel");
 		ExecutionContext executionContext = CommandLineInstance.getExecutionContext();
-		args.add(executionContext.getDataModelFolder());
+		args.add(executionContext.getQualifiedDatamodelFolder());
 		if (executionContext.getWorkingFolder() != null) {
 			args.add("-working-folder");
 			args.add(executionContext.getWorkingFolder());

@@ -16,6 +16,8 @@
 package net.sf.jailer;
 
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -442,6 +444,16 @@ public class ExecutionContext {
 	}
 
 	/**
+     * Gets fully qualified folder name of current data model.
+     */
+	public String getQualifiedDatamodelFolder() {
+		if (currentModelSubfolder == null) {
+			return datamodelFolder;
+		}
+		return datamodelFolder + File.separator + currentModelSubfolder;
+	}
+
+	/**
 	 * Gets the temporary files folder. Defaults to 'tmp'.
 	 * 
 	 * @return the tempFileFolder absolute or relative to {@link #getWorkingFolder()}
@@ -699,14 +711,33 @@ public class ExecutionContext {
 		return currentModelSubfolder;
 	}
 
+	private URL datamodelURL;
+	
 	/**
-     * Gets fully qualified folder name of current data model.
+     * Gets URL of the current data model (the datamodels base folder)
      */
-	public String getDataModelFolder() {
-		if (currentModelSubfolder == null) {
-			return datamodelFolder;
+	public URL getDataModelURL() {
+		if (datamodelURL == null) {
+			String fn;
+			if (currentModelSubfolder == null) {
+				fn = datamodelFolder;
+			} else {
+				fn = datamodelFolder + File.separator + currentModelSubfolder;
+			}
+			try {
+				datamodelURL = newFile(fn).toURI().toURL();
+			} catch (MalformedURLException e) {
+				throw new RuntimeException(e);
+			}
 		}
-		return datamodelFolder + File.separator + currentModelSubfolder;
+		return datamodelURL;
+	}
+	
+	/**
+     * Sets URL of the current data model (the datamodels base folder)
+     */
+	public void setDataModelURL(URL datamodelURL) {
+		this.datamodelURL = datamodelURL;
 	}
 	
 	// use UTF-8 encoding

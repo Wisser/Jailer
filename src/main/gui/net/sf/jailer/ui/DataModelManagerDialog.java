@@ -90,7 +90,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				"Select a data model to work with.");
 		UIUtil.replace(infoBarLabel, infoBar);
 		
-		String modelpath = CommandLineInstance.getExecutionContext().getDataModelFolder();
+		String modelpath = CommandLineInstance.getExecutionContext().getQualifiedDatamodelFolder();
 		try {
 			modelpath = CommandLineInstance.getExecutionContext().newFile(modelpath).getAbsolutePath();
 		} catch (Throwable t) {

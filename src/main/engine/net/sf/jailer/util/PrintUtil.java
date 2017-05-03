@@ -214,6 +214,28 @@ public class PrintUtil {
 		}
 	}
 
+	/**
+	 * Loads table list file and fill a list.
+	 * 
+	 * @param list
+	 *            to fill
+	 * @param in to read from
+	 */
+	public static void loadTableList(List<String> list, InputStream in)
+			throws IOException {
+		if (in != null) {
+			BufferedReader ir = new BufferedReader(new InputStreamReader(in));
+			String line;
+			while ((line = ir.readLine()) != null) {
+				line = line.trim();
+				if (line.length() > 0) {
+					list.add(line);
+				}
+			}
+			ir.close();
+		}
+	}
+
     /**
      * Loads a file.
      * 

@@ -15,8 +15,8 @@
  */
 package net.sf.jailer.extractionmodel;
 
-import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -24,6 +24,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import org.apache.log4j.Logger;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.AggregationSchema;
@@ -41,8 +43,6 @@ import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
 import net.sf.jailer.util.SqlUtil;
-
-import org.apache.log4j.Logger;
 
 /**
  * Extraction-model, defines the subject and the {@link RestrictionModel}
@@ -157,17 +157,11 @@ public class ExtractionModel {
     public final DataModel dataModel;
 
 	/**
-	 * The execution context.
-	 */
-	private final ExecutionContext executionContext;
-
-	/**
      * Constructor for empty restriction models.
      * 
      * @param dataModel the data model to restrict
      */
     public ExtractionModel(DataModel dataModel, ExecutionContext executionContext) {
-    	this.executionContext = executionContext;
     	this.dataModel = dataModel;
     	subject = dataModel.getTables().iterator().hasNext()? dataModel.getTables().iterator().next() : null;
         condition = "";
@@ -183,10 +177,20 @@ public class ExtractionModel {
      * @param parameters apply this parameter-value mapping to all restriction conditions, XML templates and filters 
      */
     public ExtractionModel(String fileName, Map<String, String> sourceSchemaMapping, Map<String, String> parameters, ExecutionContext executionContext) throws IOException {
-    	this.executionContext = executionContext;
-    	List<CsvFile.Line> csv = new CsvFile(executionContext.newFile(fileName)).getLines();
+    	this(executionContext.newFile(fileName).toURI().toURL(), sourceSchemaMapping, parameters, executionContext);
+    }
+    
+    /**
+     * Constructor.
+     *  
+     * @param the name of the model-file
+     * @param parameters apply this parameter-value mapping to all restriction conditions, XML templates and filters 
+     */
+    public ExtractionModel(URL modelURL, Map<String, String> sourceSchemaMapping, Map<String, String> parameters, ExecutionContext executionContext) throws IOException {
+    	String csvLocation = modelURL.toString();
+		List<CsvFile.Line> csv = new CsvFile(modelURL.openStream(), null, csvLocation, null).getLines();
         if (csv.isEmpty()) {
-        	throw new RuntimeException("file '" + fileName + "' is empty");
+        	throw new RuntimeException(modelURL + "' is empty");
         }
         CsvFile.Line subjectLine = csv.get(0);
         String location = subjectLine.location;
@@ -207,15 +211,13 @@ public class ExtractionModel {
                 throw new RuntimeException(location, e);
             }
         }
-        for (int i = 3; subjectLine.cells.get(i).length() > 0; ++i) {
-            if (dataModel.getRestrictionModel() == null) {
-                dataModel.setRestrictionModel(new RestrictionModel(dataModel, executionContext));
-            }
-            try {
-                dataModel.getRestrictionModel().addRestrictionDefinition(subjectLine.cells.get(i), fileName, parameters);
-            } catch (Exception e) {
-                throw new RuntimeException(location, e);
-            }
+        if (dataModel.getRestrictionModel() == null) {
+            dataModel.setRestrictionModel(new RestrictionModel(dataModel, executionContext));
+        }
+        try {
+            dataModel.getRestrictionModel().addRestrictionDefinition(modelURL, parameters);
+        } catch (Exception e) {
+            throw new RuntimeException(location, e);
         }
         this.subject = subject;
         this.condition = condition;
@@ -223,7 +225,7 @@ public class ExtractionModel {
         this.dataModel = dataModel;
 
         // read xml mapping
-        List<CsvFile.Line> xmlMapping = new CsvFile(executionContext.newFile(fileName), "xml-mapping").getLines();
+        List<CsvFile.Line> xmlMapping = new CsvFile(modelURL.openStream(), "xml-mapping", csvLocation, null).getLines();
         for (CsvFile.Line xmLine: xmlMapping) {
             location = subjectLine.location;
 			String name = xmLine.cells.get(0);
@@ -241,7 +243,7 @@ public class ExtractionModel {
         }
 
         // read upserts
-        List<CsvFile.Line> upserts = new CsvFile(executionContext.newFile(fileName), "upserts").getLines();
+        List<CsvFile.Line> upserts = new CsvFile(modelURL.openStream(), "upserts", csvLocation, null).getLines();
         for (CsvFile.Line upsert: upserts) {
             location = subjectLine.location;
 			String name = upsert.cells.get(0);
@@ -255,7 +257,7 @@ public class ExtractionModel {
         }
         
         // read "exclude from deletion"
-        List<CsvFile.Line> excludes = new CsvFile(executionContext.newFile(fileName), "exclude from deletion").getLines();
+        List<CsvFile.Line> excludes = new CsvFile(modelURL.openStream(), "exclude from deletion", csvLocation, null).getLines();
         for (CsvFile.Line excludesLine: excludes) {
             location = subjectLine.location;
 			String name = excludesLine.cells.get(0);
@@ -269,14 +271,14 @@ public class ExtractionModel {
         }
         
         // read export modus
-        List<CsvFile.Line> exportModusFile = new CsvFile(executionContext.newFile(fileName), "export modus").getLines();
+        List<CsvFile.Line> exportModusFile = new CsvFile(modelURL.openStream(), "export modus", csvLocation, null).getLines();
         Iterator<CsvFile.Line> i = exportModusFile.iterator();
         if (i.hasNext()) {
         	dataModel.setExportModus(i.next().cells.get(0));
         }
         
         // read column mapping
-        List<CsvFile.Line> columnMappingFile = new CsvFile(executionContext.newFile(fileName), "xml column mapping").getLines();
+        List<CsvFile.Line> columnMappingFile = new CsvFile(modelURL.openStream(), "xml column mapping", csvLocation, null).getLines();
         for (CsvFile.Line xmLine: columnMappingFile) {
         	String name = xmLine.cells.get(0);
 			String mapping = xmLine.cells.get(1);
@@ -289,7 +291,7 @@ public class ExtractionModel {
         }
         
         // read filters
-        List<CsvFile.Line> filtersFile = new CsvFile(executionContext.newFile(fileName), "filters").getLines();
+        List<CsvFile.Line> filtersFile = new CsvFile(modelURL.openStream(), "filters", csvLocation, null).getLines();
         for (CsvFile.Line xmLine: filtersFile) {
         	String name = xmLine.cells.get(0);
 			String column = xmLine.cells.get(1);
@@ -321,7 +323,7 @@ public class ExtractionModel {
         }
         
         // read filter templates
-        List<CsvFile.Line> templatesFile = new CsvFile(executionContext.newFile(fileName), "filter templates").getLines();
+        List<CsvFile.Line> templatesFile = new CsvFile(modelURL.openStream(), "filter templates", csvLocation, null).getLines();
         int lineNr = 0;
         FilterTemplate template = null;
         while (lineNr < templatesFile.size()) {
@@ -349,7 +351,7 @@ public class ExtractionModel {
         }
         
         // read xml settings
-        List<CsvFile.Line> xmlSettingsFile = new CsvFile(executionContext.newFile(fileName), "xml settings").getLines();
+        List<CsvFile.Line> xmlSettingsFile = new CsvFile(modelURL.openStream(), "xml settings", csvLocation, null).getLines();
         i = xmlSettingsFile.iterator();
         if (i.hasNext()) {
         	List<String> cells = i.next().cells;
@@ -360,7 +362,7 @@ public class ExtractionModel {
 
         // read version
         int[] version = null;
-        List<CsvFile.Line> versionBlock = new CsvFile(executionContext.newFile(fileName), "version").getLines();
+        List<CsvFile.Line> versionBlock = new CsvFile(modelURL.openStream(), "version", csvLocation, null).getLines();
         if (!versionBlock.isEmpty()) {
         	String vCell = versionBlock.get(0).cells.get(0);
         	String[] versionLine = vCell.split("[^0-9]+");
@@ -380,7 +382,7 @@ public class ExtractionModel {
         }
         
         // read additional subjects
-        List<CsvFile.Line> additionalSubsLines = new CsvFile(executionContext.newFile(fileName), "additional subjects").getLines();
+        List<CsvFile.Line> additionalSubsLines = new CsvFile(modelURL.openStream(), "additional subjects", csvLocation, null).getLines();
         for (CsvFile.Line line: additionalSubsLines) {
         	Table additSubject = dataModel.getTable(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0)));
             if (additSubject != null) {
@@ -388,16 +390,8 @@ public class ExtractionModel {
             }
         }
         
-        if (version != null) {
-        	if (version[0] < 5 || version[0] == 5 && version[1] < 4) {
-        		// convert pre 5.4 "initial data" tables into additional subjects
-        		for (Table table: readInitialDataTables(sourceSchemaMapping, dataModel)) {
-        			additionalSubjects.add(new AdditionalSubject(table, ""));
-        		}
-        	}
-        }
         dataModel.deriveFilters();
-        disableUnknownChildren(new CsvFile(executionContext.newFile(fileName), "known").getLines());
+        disableUnknownChildren(new CsvFile(modelURL.openStream(), "known", csvLocation, null).getLines());
     }
 
 	private void disableUnknownChildren(List<Line> lines) {
@@ -413,26 +407,6 @@ public class ExtractionModel {
 			if (!known.contains(name) && a.isInsertSourceBeforeDestination()) {
 				dataModel.getRestrictionModel().addRestriction(a.source, a, "false", "SYSTEM", true, new HashMap<String, String>());
 			}
-		}
-	}
-
-	/**
-	 * <b>
-	 * Initial-data-tables are no longer supported! This method is used to convert old (pre 5.4) extraction-models.
-	 * </b>
-	 * 
-	 * Reads the initial-data-tables list. An initial-data-table is a table
-	 * which will be exported completely if it is in closure from subject.
-	 * 
-	 * @return the initial-data-tables list
-	 */
-	private Set<Table> readInitialDataTables(Map<String, String> sourceSchemaMapping, DataModel datamodel) throws IOException {
-		File file = executionContext.newFile(DataModel.getDatamodelFolder(executionContext) + File.separator + "initial_data_tables.csv");
-		if (file.exists()) {
-			Set<Table> idTables = SqlUtil.readTableList(new CsvFile(file), datamodel, sourceSchemaMapping);
-			return idTables;
-		} else {
-			return new HashSet<Table>();
 		}
 	}
 

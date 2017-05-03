@@ -25,15 +25,18 @@ public class JailerVersion {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "6.7.4";
+	public static final String VERSION = "6.7.5";
 	
 	/**
 	 * The Jailer application name.
 	 */
 	public static final String APPLICATION_NAME = "Jailer";
 
+	/**
+	 * Prints version.
+	 */
 	public static void main(String[] args) {
 		System.out.print(VERSION);
 	}
-	
+
 }

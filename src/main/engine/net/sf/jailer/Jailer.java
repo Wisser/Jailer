@@ -141,7 +141,8 @@ public class Jailer {
 					if (dataModel.getRestrictionModel() == null) {
 						dataModel.setRestrictionModel(new RestrictionModel(dataModel, executionContext));
 					}
-					dataModel.getRestrictionModel().addRestrictionDefinition(rm, null, new HashMap<String, String>());
+					URL modelURL = executionContext.newFile(rm).toURI().toURL();
+					dataModel.getRestrictionModel().addRestrictionDefinition(modelURL, new HashMap<String, String>());
 				}
 				new DomainModel(dataModel).check();
 			} else if ("render-datamodel".equalsIgnoreCase(command)) {
@@ -184,7 +185,8 @@ public class Jailer {
 					} else {
 						BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(2), commandLine.arguments.get(3),
 								commandLine.arguments.get(4), commandLine.arguments.get(5), jdbcJarURLs);
-						new SubsettingEngine(executionContext).export(commandLine.arguments.get(1), commandLine.exportScriptFileName, commandLine.deleteScriptFileName,
+						URL modelURL = executionContext.newFile(commandLine.arguments.get(1)).toURI().toURL();
+						new SubsettingEngine(executionContext).export(modelURL, commandLine.exportScriptFileName, commandLine.deleteScriptFileName,
 								dataSource, dataSource.dbms, commandLine.explain, executionContext.getScriptFormat());
 					}
 				}
@@ -200,7 +202,8 @@ public class Jailer {
 								commandLine.arguments.get(4), commandLine.arguments.get(5), jdbcJarURLs);
 						// note we are passing null for script format and the export script name, as we are using the export tool
 						// to generate the delete script only.
-						new SubsettingEngine(executionContext).export(commandLine.arguments.get(1), /* clp.exportScriptFileName*/ null, commandLine.deleteScriptFileName,
+						URL modelURL = executionContext.newFile(commandLine.arguments.get(1)).toURI().toURL();
+						new SubsettingEngine(executionContext).export(modelURL, /* clp.exportScriptFileName*/ null, commandLine.deleteScriptFileName,
 								dataSource, dataSource.dbms, commandLine.explain, /*scriptFormat*/ null);
 					}
 				}
@@ -264,7 +267,8 @@ public class Jailer {
 			if (dataModel.getRestrictionModel() == null) {
 				dataModel.setRestrictionModel(new RestrictionModel(dataModel, executionContext));
 			}
-			dataModel.getRestrictionModel().addRestrictionDefinition(rm, null, new HashMap<String, String>());
+			URL modelURL = executionContext.newFile(rm).toURI().toURL();
+			dataModel.getRestrictionModel().addRestrictionDefinition(modelURL, new HashMap<String, String>());
 		}
 		DataModelRenderer renderer = Configuration.getInstance().getRenderer();
 		if (renderer == null) {
@@ -282,7 +286,8 @@ public class Jailer {
 			if (dataModel.getRestrictionModel() == null) {
 				dataModel.setRestrictionModel(new RestrictionModel(dataModel, executionContext));
 			}
-			dataModel.getRestrictionModel().addRestrictionDefinition(rm, null, new HashMap<String, String>());
+			URL modelURL = executionContext.newFile(rm).toURI().toURL();
+			dataModel.getRestrictionModel().addRestrictionDefinition(modelURL, new HashMap<String, String>());
 		}
 		Table source = dataModel.getTable(from);
 		if (source == null) {
@@ -349,7 +354,8 @@ public class Jailer {
 			if (dataModel.getRestrictionModel() == null) {
 				dataModel.setRestrictionModel(new RestrictionModel(dataModel, executionContext));
 			}
-			dataModel.getRestrictionModel().addRestrictionDefinition(rm, null, new HashMap<String, String>());
+			URL modelURL = executionContext.newFile(rm).toURI().toURL();
+			dataModel.getRestrictionModel().addRestrictionDefinition(modelURL, new HashMap<String, String>());
 		}
 
 		BufferedReader in = new BufferedReader(new StringReader(dataModel.toString()));

@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.Pair;
@@ -60,7 +59,7 @@ public class DataModelManager {
 	}
 
 	private static String getBaseFolder() {
-		return CommandLineInstance.getExecutionContext().getDataModelFolder();
+		return CommandLineInstance.getExecutionContext().getQualifiedDatamodelFolder();
 	}
 
 	/**
