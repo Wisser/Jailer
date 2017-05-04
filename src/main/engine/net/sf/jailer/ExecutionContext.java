@@ -39,6 +39,44 @@ public class ExecutionContext {
 	 */
 	public ExecutionContext() {
 	}
+	
+	/**
+	 * Copy constructor.
+	 */
+	public ExecutionContext(ExecutionContext other) {
+		this.schemaMapping = copy(other.schemaMapping);
+		this.sourceSchemaMapping = copy(other.sourceSchemaMapping);
+		this.scriptFormat = other.scriptFormat;
+		this.currentModelSubfolder = other.currentModelSubfolder;
+		this.datamodelURL = other.datamodelURL;
+		this.uTF8 = other.uTF8;
+		this.format = other.format;
+		this.targetDBMS = other.targetDBMS;
+		this._asXml = other._asXml;
+		this.xmlRootTag = other.xmlRootTag;
+		this.xmlDatePattern = other.xmlDatePattern;
+		this.xmlTimePattern = other.xmlTimePattern;
+		this.xmlTimeStampPattern = other.xmlTimeStampPattern;
+		this.qualifyNames = other.qualifyNames;
+		this.analyseAlias = other.analyseAlias;
+		this.analyseSynonym = other.analyseSynonym;
+		this.analyseView = other.analyseView;
+		this.where = other.where;
+		this.rawschemamapping = other.rawschemamapping;
+		this.rawsourceschemamapping = other.rawsourceschemamapping;
+		this.parameters = copy(other.parameters);
+		this.numberOfThreads = other.numberOfThreads;
+		this.numberOfEntities = other.numberOfEntities;
+		this.upsertOnly = other.upsertOnly;
+		this.workingTableSchema = other.workingTableSchema;
+		this.datamodelFolder = other.datamodelFolder;
+		this.noSorting = other.noSorting;
+		this.transactional = other.transactional;
+		this.noRowid = other.noRowid;
+		this.importFilterMappingTableSchema = other.importFilterMappingTableSchema;
+		this.scope = other.scope;
+		this.rawparameters = other.rawparameters;
+	}
 
 	/**
 	 * Creates new context with attributes taken from {@link ExecutionContext}.
@@ -490,18 +528,30 @@ public class ExecutionContext {
 	 * @return parameters
 	 */
     public Map<String, String> getParameters() {
-    	Map<String, String> map = new TreeMap<String, String>();
-    	
-    	if (parameters != null) {
-    		for (String pv: CsvFile.decodeLine(parameters)) {
-    			int i = pv.indexOf('=');
-    			if (i >= 0) {
-    				map.put(pv.substring(0, i), pv.substring(i + 1));
-    			}
-    		}
-    	}
-    	
-    	return map;
+    	if (parameters == null) {
+	    	Map<String, String> map = new TreeMap<String, String>();
+	    	
+	    	if (rawparameters != null) {
+	    		for (String pv: CsvFile.decodeLine(rawparameters)) {
+	    			int i = pv.indexOf('=');
+	    			if (i >= 0) {
+	    				map.put(pv.substring(0, i), pv.substring(i + 1));
+	    			}
+	    		}
+	    	}
+	    	parameters = map;
+    	}	    	
+    	return parameters;
+    }
+    
+    /**
+     * Sets a parameter.
+     * 
+     * @param name parameter name
+     * @param value value
+     */
+    public void setParameter(String name, String value) {
+    	getParameters().put(name, value);
     }
 
     private Map<String, String> schemaMapping;
@@ -690,7 +740,7 @@ public class ExecutionContext {
 	private String rawsourceschemamapping = null;
 
 	// parameters
-	private String parameters = null;
+	private Map<String, String> parameters = null;
 
 	// number of threads (default is 1)
 	private int numberOfThreads = 1;
@@ -720,7 +770,9 @@ public class ExecutionContext {
 	// schema in which the import-filter mapping tables will be created
 	private String importFilterMappingTableSchema = "";
 
-	private WorkingTableScope scope;
+	private WorkingTableScope scope = WorkingTableScope.GLOBAL;
+
+	private String rawparameters;
 
 	private void copyCommandLineFields(CommandLine commandLine) {
 		uTF8 = commandLine.uTF8;
@@ -738,17 +790,18 @@ public class ExecutionContext {
 		where = commandLine.where;
 		rawschemamapping = commandLine.rawschemamapping;
 		rawsourceschemamapping = commandLine.rawsourceschemamapping;
-		parameters = commandLine.parameters;
+		rawparameters = commandLine.parameters;
 		numberOfThreads = commandLine.numberOfThreads;
 		numberOfEntities = commandLine.numberOfEntities;
 		upsertOnly = commandLine.upsertOnly;
 		if (commandLine.scope == null) {
     		scope = WorkingTableScope.GLOBAL;
-    	}
-    	try {
-    		scope = WorkingTableScope.valueOf(commandLine.scope);
-    	} catch (Exception e) {
-    		scope = WorkingTableScope.GLOBAL;
+    	} else {
+	    	try {
+	    		scope = WorkingTableScope.valueOf(commandLine.scope);
+	    	} catch (Exception e) {
+	    		scope = WorkingTableScope.GLOBAL;
+	    	}
     	}
     	workingTableSchema = commandLine.workingTableSchema;
 		datamodelFolder = commandLine.datamodelFolder;
@@ -756,6 +809,10 @@ public class ExecutionContext {
 		transactional = commandLine.transactional;
 		noRowid = commandLine.noRowid;
 		importFilterMappingTableSchema = commandLine.importFilterMappingTableSchema;
+	}
+
+	private Map<String, String> copy(Map<String, String> map) {
+		return map == null? null : new HashMap<String, String>(map);
 	}
 
 }

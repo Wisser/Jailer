@@ -40,7 +40,6 @@ import java.util.zip.ZipInputStream;
 
 import org.apache.log4j.Logger;
 
-import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.SqlException;
 
@@ -84,18 +83,12 @@ public class SqlScriptExecutor {
     private RuntimeException exception;
 	
     /**
-	 * The execution context.
-	 */
-	private final ExecutionContext executionContext;
-	
-    /**
      * Constructor.
      * 
      * @param session for execution of statements
      * @param threads number of threads to use
      */
-    public SqlScriptExecutor(Session session, int threads, ExecutionContext executionContext) {
-    	this.executionContext = executionContext;
+    public SqlScriptExecutor(Session session, int threads) {
     	this.session = session;
     	this.threads = threads;
     }

@@ -205,7 +205,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 			sync(result);
 		}
 		localDDL.close();
-		new SqlScriptExecutor(localSession, 1, executionContext).executeScript(tmpFile.getAbsolutePath());
+		new SqlScriptExecutor(localSession, 1).executeScript(tmpFile.getAbsolutePath());
 		tmpFile.delete();
 	}
 

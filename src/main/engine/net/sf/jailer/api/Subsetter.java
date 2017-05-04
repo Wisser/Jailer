@@ -44,6 +44,17 @@ public class Subsetter {
 	 * Default constructor.
 	 */
 	public Subsetter() {
+		executionContext = new ExecutionContext();
+	}
+
+	/**
+	 * Copy constructor.
+	 */
+	public Subsetter(Subsetter other) {
+		this.dataSource = other.dataSource;
+		this.dbms = other.dbms;
+		this.executionContext = new ExecutionContext(other.executionContext);
+		this.extractionModelURL = other.extractionModelURL;
 	}
 
 	/**
@@ -61,6 +72,7 @@ public class Subsetter {
 			URL dataModel,
 			URL extractionModel,
 			ScriptFormat scriptFormat) {
+		executionContext = new ExecutionContext();
 		setDataSource(dataSource);
 		setDbms(dbms);
 		setDataModelURL(dataModel);
@@ -83,6 +95,7 @@ public class Subsetter {
 			File dataModel,
 			File extractionModel,
 			ScriptFormat scriptFormat) {
+		executionContext = new ExecutionContext();
 		setDataSource(dataSource);
 		setDbms(dbms);
 		try {
@@ -555,6 +568,16 @@ public class Subsetter {
     	return executionContext.getParameters();
     }
 
+    /**
+     * Sets a parameter.
+     * 
+     * @param name parameter name
+     * @param value value
+     */
+    public void setParameter(String name, String value) {
+    	executionContext.setParameter(name, value);
+    }
+
     public Map<String, String> getSchemaMapping() {
     	return executionContext.getSchemaMapping();
     }
@@ -582,7 +605,7 @@ public class Subsetter {
 		return executionContext.getSourceSchemaMapping();
 	}
 
-	private final ExecutionContext executionContext = new ExecutionContext();
+	private final ExecutionContext executionContext;
 	
 	private URL extractionModelURL;
 	private DataSource dataSource;
