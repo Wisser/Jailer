@@ -22,7 +22,7 @@ import java.util.Map;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.DBMS;
-import net.sf.jailer.database.TemporaryTableScope;
+import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.subsetting.ScriptFormat;
 
 /**
@@ -35,19 +35,19 @@ public class SubsettingParameters {
 	private final ExecutionContext executionContext = new ExecutionContext();
 
 	/**
-	 * If <code>true</code>, Use UTF-8 encoding
+	 * If <code>true</code>, Use uTF-8 encoding
 	 *
-	 * @return <code>true</code> if Use UTF-8 encoding
+	 * @return <code>true</code> if use UTF-8 encoding
 	 */
 	public boolean getUTF8() {
 		return executionContext.getUTF8();
 	}
 
 	/**
-	 * If <code>true</code>, Use UTF-8 encoding
+	 * If <code>true</code>, use UTF-8 encoding
 	 *
 	 * @param uTF8
-	 *            <code>true</code> if Use UTF-8 encoding
+	 *            <code>true</code> if use UTF-8 encoding
 	 */
 	public void setUTF8(boolean uTF8) {
 		executionContext.setUTF8(uTF8);
@@ -344,7 +344,7 @@ public class SubsettingParameters {
 	 *
 	 * @return scope of working tables, GLOBAL, SESSION_LOCAL or LOCAL_DATABASE
 	 */
-	public TemporaryTableScope getScope() {
+	public WorkingTableScope getScope() {
 		return executionContext.getScope();
 	}
 
@@ -355,7 +355,7 @@ public class SubsettingParameters {
 	 *            scope of working tables, GLOBAL, SESSION_LOCAL or
 	 *            LOCAL_DATABASE
 	 */
-	public void setScope(TemporaryTableScope scope) {
+	public void setScope(WorkingTableScope scope) {
 		executionContext.setScope(scope);
 	}
 
@@ -405,43 +405,6 @@ public class SubsettingParameters {
 		} catch (MalformedURLException e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	/**
-	 * Gets the working folder. Defaults to '.'
-	 *
-	 * @return the working folder. Defaults to '.'
-	 */
-	public String getWorkingFolder() {
-		return executionContext.getWorkingFolder();
-	}
-
-	/**
-	 * Sets the working folder. Defaults to '.'
-	 *
-	 * @param workingFolder
-	 *            the working folder. Defaults to '.'
-	 */
-	public void setWorkingFolder(String workingFolder) {
-		executionContext.setWorkingFolder(workingFolder);
-	}
-
-	/**
-	 * Gets the temporary files folder. Defaults to 'tmp'.
-	 * 
-	 * @return the tempFileFolder absolute or relative to {@link #getWorkingFolder()}
-	 */
-	public String getTempFileFolder() {
-		return executionContext.getTempFileFolder();
-	}
-
-	/**
-	 * Sets the temporary files folder. Defaults to 'tmp'.
-	 * 
-	 * @param tempFileFolder absolute or relative to {@link #getWorkingFolder()}
-	 */
-	public void setTempFileFolder(String tempFileFolder) {
-		executionContext.setTempFileFolder(tempFileFolder);
 	}
 
 	/**

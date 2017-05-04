@@ -2142,7 +2142,7 @@ public abstract class Desktop extends JDesktopPane {
 			String filename = ".tempsession-" + System.currentTimeMillis();
 			storeSession(filename);
 			
-			DataModel newModel = new DataModel(schemamapping, executionContext);
+			DataModel newModel = new DataModel(schemamapping, executionContext, false);
 			datamodel.set(newModel);
 			
 			restoreSession(null, pFrame, filename);
@@ -2304,7 +2304,7 @@ public abstract class Desktop extends JDesktopPane {
 			fnProp = currentSessionFileName;
 		}
 
-		File startDir = executionContext.newFile("layout");
+		File startDir = new File("layout");
 		Component pFrame = SwingUtilities.getWindowAncestor(this);
 		if (pFrame == null) {
 			pFrame = this;
@@ -2391,7 +2391,7 @@ public abstract class Desktop extends JDesktopPane {
 	 * Restores browser session.
 	 */
 	public void restoreSession(RowBrowser toBeAppended) {
-		File startDir = executionContext.newFile("layout");
+		File startDir = new File("layout");
 		Component pFrame = SwingUtilities.getWindowAncestor(this);
 		if (pFrame == null) {
 			pFrame = this;

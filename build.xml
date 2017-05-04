@@ -55,6 +55,11 @@ available targets:
 				<include name="**/*" />
 			</fileset>
 		</copy>
+		<copy todir="${COMPILE_DIR}/net/sf/jailer/example">
+			<fileset dir="${SRC_DIR}/main/engine/net/sf/jailer/example">
+				<include name="**/*.csv" />
+			</fileset>
+		</copy>
 	</target>
 
 	<target name="compile-gui" depends="compile-engine">

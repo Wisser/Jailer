@@ -49,10 +49,10 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 
-import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.ExtractionModelEditor;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;

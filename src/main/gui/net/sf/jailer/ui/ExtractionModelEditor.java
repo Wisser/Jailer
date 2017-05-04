@@ -89,7 +89,6 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
@@ -99,6 +98,7 @@ import net.sf.jailer.datamodel.RestrictionDefinition;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
+import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.graphical_view.AssociationRenderer;
 import net.sf.jailer.ui.graphical_view.GraphicalDataModelView;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
@@ -510,7 +510,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		
 		String modelpath = executionContext.getQualifiedDatamodelFolder();
 		try {
-			modelpath = executionContext.newFile(modelpath).getAbsolutePath();
+			modelpath = new File(modelpath).getAbsolutePath();
 		} catch (Throwable t) {
 			// use default modelpath
 		}

@@ -21,6 +21,7 @@ import java.sql.SQLException;
 import java.util.UUID;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.util.ClasspathUtil;
 
 
@@ -51,8 +52,8 @@ public class LocalDatabase {
 	 */
 	public LocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile, ExecutionContext executionContext) throws ClassNotFoundException, FileNotFoundException, SQLException {
 		this.executionContext = executionContext;
-		this.databaseFolder = executionContext.newFile(executionContext.getTempFileFolder()) + File.separator + UUID.randomUUID().toString();
-		executionContext.newFile(databaseFolder).mkdirs();
+		this.databaseFolder = new File(Configuration.getInstance().getTempFileFolder()) + File.separator + UUID.randomUUID().toString();
+		new File(databaseFolder).mkdirs();
 		BasicDataSource dataSource = new BasicDataSource(driverClassName, urlPattern.replace("%s", databaseFolder + File.separator + "local"), user, password, ClasspathUtil.toURLArray(jarfile, null));
 		session = new Session(dataSource, dataSource.dbms, null, false, true);
 	}
@@ -62,7 +63,7 @@ public class LocalDatabase {
 	 */
 	public void shutDown() throws SQLException {
 		session.shutDown();
-		File localFolder = executionContext.newFile(databaseFolder);
+		File localFolder = new File(databaseFolder);
 		File[] listFiles = localFolder.listFiles();
 		if (listFiles != null) {
 			for (File file: listFiles) {

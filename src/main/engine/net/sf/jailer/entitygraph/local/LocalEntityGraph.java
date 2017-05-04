@@ -38,7 +38,7 @@ import net.sf.jailer.database.LocalDatabase;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.ResultSetReader;
-import net.sf.jailer.database.TemporaryTableScope;
+import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.database.UpdateTransformer;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
@@ -238,7 +238,7 @@ public class LocalEntityGraph extends EntityGraph {
 		this.universalPrimaryKey = rowIdSupport.getUniversalPrimaryKey();
 		this.localInlineViewStyle = InlineViewStyle.forSession(localSession);
 		this.remoteInlineViewStyle = InlineViewStyle.forSession(remoteSession);
-		new DDLCreator(executionContext).createDDL(getDatamodel(), localSession, TemporaryTableScope.GLOBAL, rowIdSupport, null);
+		new DDLCreator(executionContext).createDDL(getDatamodel(), localSession, WorkingTableScope.GLOBAL, rowIdSupport, null);
      
 		File fieldProcTablesFile = new File("field-proc-tables.csv");
         if (fieldProcTablesFile.exists()) {

@@ -29,7 +29,7 @@ import org.xml.sax.SAXException;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.BasicDataSource;
-import net.sf.jailer.database.TemporaryTableScope;
+import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.subsetting.SubsettingEngine;
 
@@ -39,6 +39,60 @@ import net.sf.jailer.subsetting.SubsettingEngine;
  * @author Ralf Wisser
  */
 public class Subsetter {
+
+	/**
+	 * Default constructor.
+	 */
+	public Subsetter() {
+	}
+
+	/**
+	 * Creates a new Subsetter with all mandatory attributes.
+	 * 
+	 * @param dataSource the data-source to connect with the source database
+	 * @param dbms the DBMS of the source database
+	 * @param dataModel URL of the current data model (the datamodel's base folder)
+	 * @param extractionModel URL of the extraction model
+	 * @param scriptFormat script format
+	 */
+	public Subsetter(
+			DataSource dataSource,
+			DBMS dbms,
+			URL dataModel,
+			URL extractionModel,
+			ScriptFormat scriptFormat) {
+		setDataSource(dataSource);
+		setDbms(dbms);
+		setDataModelURL(dataModel);
+		setExtractionModelURL(extractionModel);
+		setScriptFormat(scriptFormat);
+	}
+
+	/**
+	 * Creates a new Subsetter with all mandatory attributes.
+	 * 
+	 * @param dataSource the data-source to connect with the source database
+	 * @param dbms the DBMS of the source database
+	 * @param dataModel the current data model (the datamodel's base folder)
+	 * @param extractionModel the extraction model
+	 * @param scriptFormat script format
+	 */
+	public Subsetter(
+			DataSource dataSource,
+			DBMS dbms,
+			File dataModel,
+			File extractionModel,
+			ScriptFormat scriptFormat) {
+		setDataSource(dataSource);
+		setDbms(dbms);
+		try {
+			setDataModelURL(dataModel.toURI().toURL());
+			setExtractionModelURL(extractionModel.toURI().toURL());
+		} catch (MalformedURLException e) {
+			throw new RuntimeException(e);
+		}
+		setScriptFormat(scriptFormat);
+	}
 	
 	/**
 	 * Generates the export- and/or delete-script.
@@ -75,6 +129,60 @@ public class Subsetter {
 		} catch (SAXException e) {
 			throw new RuntimeException(e);
 		}
+	}
+
+	/**
+	 * Gets the export-script file (compressed if it ends with '.zip' or
+	 * '.gz')
+	 *
+	 * @return the export-script file (compressed if it ends with '.zip'
+	 *         or '.gz')
+	 */
+	public File getExportScriptFile() {
+		String name = executionContext.getExportScriptFileName();
+		if (name == null) {
+			return null;
+		}
+		return new File(name);
+	}
+
+	/**
+	 * Sets the export-script file (compressed if it ends with '.zip' or
+	 * '.gz')
+	 *
+	 * @param exportScriptFileName
+	 *            the export-script file (compressed if it ends with
+	 *            '.zip' or '.gz')
+	 */
+	public void setExportScriptFile(File exportScriptFile) {
+		executionContext.setExportScriptFileName(exportScriptFile == null? null : exportScriptFile.getPath());
+	}
+
+	/**
+	 * Gets the delete-script file (compressed if it ends with '.zip' or
+	 * '.gz')
+	 *
+	 * @return the delete-script file (compressed if it ends with '.zip'
+	 *         or '.gz')
+	 */
+	public File getDeleteScriptFile() {
+		String name = executionContext.getDeleteScriptFileName();
+		if (name == null) {
+			return null;
+		}
+		return new File(name);
+	}
+
+	/**
+	 * Sets the delete-script file (compressed if it ends with '.zip' or
+	 * '.gz')
+	 *
+	 * @param deleteScriptFileName
+	 *            the delete-script file (compressed if it ends with
+	 *            '.zip' or '.gz')
+	 */
+	public void setDeleteScriptFile(File deleteScriptFile) {
+		executionContext.setDeleteScriptFileName(deleteScriptFile == null? null : deleteScriptFile.getPath());
 	}
 
 	/**
@@ -129,6 +237,21 @@ public class Subsetter {
 	}
 
 	/**
+     * Sets the current data model as {@link File}
+     * 
+     * @param datamodelBaseFolder represents the folder. Will be converted to an URL an set as datamodel URL
+     * 
+     * @see #setDataModelURL(URL)
+     */
+	public void setDataModelBaseFolder(File datamodelBaseFolder) {
+		try {
+			setDataModelURL(datamodelBaseFolder.toURI().toURL());
+		} catch (MalformedURLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	/**
 	 * Gets the URL of the extraction model.
 	 * 
 	 * @return the URL of the extraction model
@@ -165,6 +288,25 @@ public class Subsetter {
     }
     
 	/**
+	 * Gets subject condition.
+	 *
+	 * @return subject condition
+	 */
+	public String getWhereClause() {
+		return executionContext.getWhere();
+	}
+
+	/**
+	 * Sets subject condition.
+	 *
+	 * @param where
+	 *            subject condition. If it's <code>null</code>, the subject condition from the extraction-model is used.
+	 */
+	public void setWhereClause(String where) {
+		executionContext.setWhere(where);
+	}
+
+	/**
 	 * If <code>true</code>, Use uTF-8 encoding
 	 *
 	 * @return <code>true</code> if use UTF-8 encoding
@@ -184,23 +326,18 @@ public class Subsetter {
 	}
 
 	/**
-	 * Gets target-DBMS: ORACLE, MSSQL, DB2, MySQL, POSTGRESQL, SYBASE, SQLITE,
-	 * HSQL or H2
+	 * Gets target-DBMS.
 	 *
-	 * @return target-DBMS: ORACLE, MSSQL, DB2, MySQL, POSTGRESQL, SYBASE,
-	 *         SQLITE, HSQL or H2
+	 * @return target-DBMS
 	 */
 	public DBMS getTargetDBMS() {
 		return executionContext.getTargetDBMS();
 	}
 
 	/**
-	 * Sets target-DBMS: ORACLE, MSSQL, DB2, MySQL, POSTGRESQL, SYBASE, SQLITE,
-	 * HSQL or H2
+	 * Sets target-DBMS.
 	 *
-	 * @param targetDBMS
-	 *            target-DBMS: ORACLE, MSSQL, DB2, MySQL, POSTGRESQL, SYBASE,
-	 *            SQLITE, HSQL or H2
+	 * @param targetDBMS target-DBMS. If it's <code>null</code>, target DBMS is assumed to be the same as {@link #getDbms()}
 	 */
 	public void setTargetDBMS(DBMS targetDBMS) {
 		executionContext.setTargetDBMS(targetDBMS);
@@ -283,160 +420,7 @@ public class Subsetter {
 	}
 
 	/**
-	 * Gets the export-script file (compressed if it ends with '.zip' or
-	 * '.gz')
-	 *
-	 * @return the export-script file (compressed if it ends with '.zip'
-	 *         or '.gz')
-	 */
-	public File getExportScriptFile() {
-		String name = executionContext.getExportScriptFileName();
-		if (name == null) {
-			return null;
-		}
-		return new File(name);
-	}
-
-	/**
-	 * Sets the export-script file (compressed if it ends with '.zip' or
-	 * '.gz')
-	 *
-	 * @param exportScriptFileName
-	 *            the export-script file (compressed if it ends with
-	 *            '.zip' or '.gz')
-	 */
-	public void setExportScriptFile(File exportScriptFile) {
-		executionContext.setExportScriptFileName(exportScriptFile == null? null : exportScriptFile.getPath());
-	}
-
-	/**
-	 * Gets the delete-script file (compressed if it ends with '.zip' or
-	 * '.gz')
-	 *
-	 * @return the delete-script file (compressed if it ends with '.zip'
-	 *         or '.gz')
-	 */
-	public File getDeleteScriptFile() {
-		String name = executionContext.getDeleteScriptFileName();
-		if (name == null) {
-			return null;
-		}
-		return new File(name);
-	}
-
-	/**
-	 * Sets the delete-script file (compressed if it ends with '.zip' or
-	 * '.gz')
-	 *
-	 * @param deleteScriptFileName
-	 *            the delete-script file (compressed if it ends with
-	 *            '.zip' or '.gz')
-	 */
-	public void setDeleteScriptFile(File deleteScriptFile) {
-		executionContext.setDeleteScriptFileName(deleteScriptFile == null? null : deleteScriptFile.getPath());
-	}
-
-	/**
-	 * If <code>true</code>, Add schema prefix to table names after analysing
-	 * the DB
-	 *
-	 * @return <code>true</code> if Add schema prefix to table names after
-	 *         analysing the DB
-	 */
-	public boolean getQualifyNames() {
-		return executionContext.getQualifyNames();
-	}
-
-	/**
-	 * If <code>true</code>, Add schema prefix to table names after analysing
-	 * the DB
-	 *
-	 * @param qualifyNames
-	 *            <code>true</code> if Add schema prefix to table names after
-	 *            analysing the DB
-	 */
-	public void setQualifyNames(boolean qualifyNames) {
-		executionContext.setQualifyNames(qualifyNames);
-	}
-
-	/**
-	 * If <code>true</code>, Look for aliases while analysing the DB
-	 *
-	 * @return <code>true</code> if Look for aliases while analysing the DB
-	 */
-	public boolean getAnalyseAlias() {
-		return executionContext.getAnalyseAlias();
-	}
-
-	/**
-	 * If <code>true</code>, Look for aliases while analysing the DB
-	 *
-	 * @param analyseAlias
-	 *            <code>true</code> if Look for aliases while analysing the DB
-	 */
-	public void setAnalyseAlias(boolean analyseAlias) {
-		executionContext.setAnalyseAlias(analyseAlias);
-	}
-
-	/**
-	 * If <code>true</code>, Look for synonyms while analysing the DB
-	 *
-	 * @return <code>true</code> if Look for synonyms while analysing the DB
-	 */
-	public boolean getAnalyseSynonym() {
-		return executionContext.getAnalyseSynonym();
-	}
-
-	/**
-	 * If <code>true</code>, Look for synonyms while analysing the DB
-	 *
-	 * @param analyseSynonym
-	 *            <code>true</code> if Look for synonyms while analysing the DB
-	 */
-	public void setAnalyseSynonym(boolean analyseSynonym) {
-		executionContext.setAnalyseSynonym(analyseSynonym);
-	}
-
-	/**
-	 * If <code>true</code>, Look for views while analysing the DB
-	 *
-	 * @return <code>true</code> if Look for views while analysing the DB
-	 */
-	public boolean getAnalyseView() {
-		return executionContext.getAnalyseView();
-	}
-
-	/**
-	 * If <code>true</code>, Look for views while analysing the DB
-	 *
-	 * @param analyseView
-	 *            <code>true</code> if Look for views while analysing the DB
-	 */
-	public void setAnalyseView(boolean analyseView) {
-		executionContext.setAnalyseView(analyseView);
-	}
-
-	/**
-	 * Gets subject condition
-	 *
-	 * @return subject condition
-	 */
-	public String getWhere() {
-		return executionContext.getWhere();
-	}
-
-	/**
-	 * Sets subject condition
-	 *
-	 * @param where
-	 *            subject condition
-	 */
-	public void setWhere(String where) {
-		executionContext.setWhere(where);
-	}
-
-	/**
-	 * Gets number of threads (default is 1)
+	 * Gets number of parallel threads (default is 1) to be used.
 	 *
 	 * @return number of threads (default is 1)
 	 */
@@ -445,10 +429,10 @@ public class Subsetter {
 	}
 
 	/**
-	 * Sets number of threads (default is 1)
+	 * Sets number of parallel threads (default is 1) to be used
 	 *
 	 * @param numberOfThreads
-	 *            number of threads (default is 1)
+	 *            number of threads
 	 */
 	public void setNumberOfThreads(int numberOfThreads) {
 		executionContext.setNumberOfThreads(numberOfThreads);
@@ -501,11 +485,12 @@ public class Subsetter {
 	}
 
 	/**
-	 * Gets scope of working tables, GLOBAL, SESSION_LOCAL or LOCAL_DATABASE
+	 * Gets scope of working tables, GLOBAL, SESSION_LOCAL or LOCAL_DATABASE <br>
+	 * Default is GLOBAL.
 	 *
 	 * @return scope of working tables, GLOBAL, SESSION_LOCAL or LOCAL_DATABASE
 	 */
-	public TemporaryTableScope getScope() {
+	public WorkingTableScope getScope() {
 		return executionContext.getScope();
 	}
 
@@ -516,7 +501,7 @@ public class Subsetter {
 	 *            scope of working tables, GLOBAL, SESSION_LOCAL or
 	 *            LOCAL_DATABASE
 	 */
-	public void setScope(TemporaryTableScope scope) {
+	public void setScope(WorkingTableScope scope) {
 		executionContext.setScope(scope);
 	}
 
@@ -540,58 +525,6 @@ public class Subsetter {
 	}
 
 	/**
-     * Sets the current data model base folder.
-     * 
-     * @param datamodelBaseFolder represents the folder. Will be converted to an URL an set as datamodel URL
-     * 
-     * @see #setDataModelURL(URL)
-     */
-	public void setDataModelBaseFolder(File datamodelBaseFolder) {
-		try {
-			setDataModelURL(datamodelBaseFolder.toURI().toURL());
-		} catch (MalformedURLException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	/**
-	 * Gets the working folder. Defaults to '.'
-	 *
-	 * @return the working folder. Defaults to '.'
-	 */
-	public String getWorkingFolder() {
-		return executionContext.getWorkingFolder();
-	}
-
-	/**
-	 * Sets the working folder. Defaults to '.'
-	 *
-	 * @param workingFolder
-	 *            the working folder. Defaults to '.'
-	 */
-	public void setWorkingFolder(String workingFolder) {
-		executionContext.setWorkingFolder(workingFolder);
-	}
-
-	/**
-	 * Gets the temporary files folder. Defaults to 'tmp'.
-	 * 
-	 * @return the tempFileFolder absolute or relative to {@link #getWorkingFolder()}
-	 */
-	public String getTempFileFolder() {
-		return executionContext.getTempFileFolder();
-	}
-
-	/**
-	 * Sets the temporary files folder. Defaults to 'tmp'.
-	 * 
-	 * @param tempFileFolder absolute or relative to {@link #getWorkingFolder()}
-	 */
-	public void setTempFileFolder(String tempFileFolder) {
-		executionContext.setTempFileFolder(tempFileFolder);
-	}
-
-	/**
 	 * If <code>true</code>, The exported rows will not be sorted according to
 	 * foreign key constraints
 	 *
@@ -612,25 +545,6 @@ public class Subsetter {
 	 */
 	public void setNoSorting(boolean noSorting) {
 		executionContext.setNoSorting(noSorting);
-	}
-
-	/**
-	 * If <code>true</code>, Import rows in a single transaction
-	 *
-	 * @return <code>true</code> if Import rows in a single transaction
-	 */
-	public boolean getTransactional() {
-		return executionContext.getTransactional();
-	}
-
-	/**
-	 * If <code>true</code>, Import rows in a single transaction
-	 *
-	 * @param transactional
-	 *            <code>true</code> if Import rows in a single transaction
-	 */
-	public void setTransactional(boolean transactional) {
-		executionContext.setTransactional(transactional);
 	}
 
 	/**
@@ -678,7 +592,7 @@ public class Subsetter {
 
 	/**
 	 * Gets parameters
-	 *
+	 * TODO
 	 * @return parameters
 	 */
     public Map<String, String> getParameters() {
@@ -691,7 +605,7 @@ public class Subsetter {
 
 	/**
 	 * Sets source schema map
-	 *
+	 * TODO
 	 * @param rawsourceschemamapping
 	 *            source schema map
 	 */
@@ -700,6 +614,8 @@ public class Subsetter {
 	}
 
     /**
+     * TODO
+     * 
 	 * @param sourceSchemaMapping the sourceSchemaMapping to set
 	 */
 	public void setSourceSchemaMapping(Map<String, String> sourceSchemaMapping) {
@@ -708,24 +624,6 @@ public class Subsetter {
 
 	public Map<String, String> getSourceSchemaMapping() {
 		return executionContext.getSourceSchemaMapping();
-	}
-    
-    /**
-     * Sets folder of current data model.
-     * 
-     * @param modelFolder the folder, <code>null</code> for default model
-     */
-	public void setCurrentModelSubfolder(String modelFolder) {
-		executionContext.setCurrentModelSubfolder(modelFolder);
-	}
-
-	/**
-     * Gets folder of current data model.
-     * 
-     * @return modelFolder the folder, <code>null</code> for default model
-     */
-	public String getCurrentModelSubfolder() {
-		return executionContext.getCurrentModelSubfolder();
 	}
 
 	private final ExecutionContext executionContext = new ExecutionContext();

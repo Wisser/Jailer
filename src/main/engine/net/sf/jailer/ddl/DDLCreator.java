@@ -31,11 +31,12 @@ import javax.sql.DataSource;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.JailerVersion;
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.TemporaryTableManager;
-import net.sf.jailer.database.TemporaryTableScope;
+import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.RowIdSupport;
@@ -68,7 +69,7 @@ public class DDLCreator {
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	public boolean createDDL(DataSource dataSource, DBMS dbms, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws SQLException, FileNotFoundException, IOException {
+	public boolean createDDL(DataSource dataSource, DBMS dbms, WorkingTableScope temporaryTableScope, String workingTableSchema) throws SQLException, FileNotFoundException, IOException {
 		Session session = null;
 		if (dataSource != null) {
 			session = new Session(dataSource, dbms);
@@ -85,14 +86,14 @@ public class DDLCreator {
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	public void createDDL(Session localSession, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
+	public void createDDL(Session localSession, WorkingTableScope temporaryTableScope, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
 		createDDL(new DataModel(executionContext), localSession, temporaryTableScope, workingTableSchema);
 	}
 
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	public boolean createDDL(DataModel datamodel, Session session, TemporaryTableScope temporaryTableScope, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
+	public boolean createDDL(DataModel datamodel, Session session, WorkingTableScope temporaryTableScope, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
 		RowIdSupport rowIdSupport = new RowIdSupport(datamodel, targetDBMS(session), executionContext);
 		return createDDL(datamodel, session, temporaryTableScope, rowIdSupport, workingTableSchema);
 	}
@@ -100,7 +101,7 @@ public class DDLCreator {
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	public boolean createDDL(DataModel datamodel, Session session, TemporaryTableScope temporaryTableScope, RowIdSupport rowIdSupport, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
+	public boolean createDDL(DataModel datamodel, Session session, WorkingTableScope temporaryTableScope, RowIdSupport rowIdSupport, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
 		try {
 			return createDDL(datamodel, session, temporaryTableScope, 0, rowIdSupport, workingTableSchema);
 		} catch (SQLException e) {
@@ -119,7 +120,7 @@ public class DDLCreator {
 	/**
 	 * Creates the DDL for the working-tables.
 	 */
-	private boolean createDDL(DataModel dataModel, Session session, TemporaryTableScope temporaryTableScope, int indexType, RowIdSupport rowIdSupport, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
+	private boolean createDDL(DataModel dataModel, Session session, WorkingTableScope temporaryTableScope, int indexType, RowIdSupport rowIdSupport, String workingTableSchema) throws FileNotFoundException, IOException, SQLException {
 		String template = "script" + File.separator + "ddl-template.sql";
 		String contraint = pkColumnConstraint(session);
 		Map<String, String> typeReplacement = targetDBMS(session).getTypeReplacement();
@@ -134,10 +135,10 @@ public class DDLCreator {
 		arguments.put("constraint", contraint);
 
 		TemporaryTableManager tableManager = null;
-		if (temporaryTableScope == TemporaryTableScope.SESSION_LOCAL) {
+		if (temporaryTableScope == WorkingTableScope.SESSION_LOCAL) {
 			tableManager = targetDBMS(session).getSessionTemporaryTableManager();
 		}
-		if (temporaryTableScope == TemporaryTableScope.TRANSACTION_LOCAL) {
+		if (temporaryTableScope == WorkingTableScope.TRANSACTION_LOCAL) {
 			tableManager = targetDBMS(session).getTransactionTemporaryTableManager();
 		}
 		String tableName = SQLDialect.CONFIG_TABLE_;
@@ -188,10 +189,10 @@ public class DDLCreator {
 			listArguments.put("column-list-from", Collections.singletonList(""));
 			listArguments.put("column-list-to", Collections.singletonList(""));
 		}
-		String ddl = new PrintUtil(executionContext).applyTemplate(template, arguments, listArguments);
+		String ddl = new PrintUtil().applyTemplate(template, arguments, listArguments);
 
 		if (session != null) {
-			File tmp = executionContext.createTempFile();
+			File tmp = Configuration.getInstance().createTempFile();
 			PrintWriter pw = new PrintWriter(tmp);
 			pw.println(ddl);
 			pw.close();

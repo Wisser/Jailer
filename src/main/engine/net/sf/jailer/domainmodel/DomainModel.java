@@ -257,7 +257,7 @@ public class DomainModel {
             }
         }
         if (withoutDomain.size() > 0) {
-            warn("Tables without domain: " + new PrintUtil(null).tableSetAsString(withoutDomain, "    "));
+            warn("Tables without domain: " + new PrintUtil().tableSetAsString(withoutDomain, "    "));
         }
         
         // escape analysis
@@ -316,7 +316,7 @@ public class DomainModel {
         }
         modelAsString.append("\n");
         for (Domain domain: domains.values()) {
-            modelAsString.append(domain.name + " = " + new PrintUtil(null).tableSetAsString(domain.tables, "        ") + "\n");
+            modelAsString.append(domain.name + " = " + new PrintUtil().tableSetAsString(domain.tables, "        ") + "\n");
         }
         return modelAsString.toString();
     }

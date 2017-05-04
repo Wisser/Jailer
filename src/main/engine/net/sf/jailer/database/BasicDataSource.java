@@ -1,6 +1,8 @@
 package net.sf.jailer.database;
 
+import java.io.File;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.sql.Connection;
@@ -11,7 +13,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -70,8 +71,32 @@ public class BasicDataSource implements DataSource {
      * @param dbUrl the URL
      * @param dbUser the user
      * @param dbPassword the password
+     * @param jdbcDriver driver jar file
      */
-	public BasicDataSource(String driverClassName, String dbUrl, String dbUser, String dbPassword, URL... jdbcDriverURL) throws ClassNotFoundException, SQLException {
+	public BasicDataSource(String driverClassName, String dbUrl, String dbUser, String dbPassword, File jdbcDriver) {
+		this.driverClassName = driverClassName;
+		this.dbUrl = dbUrl;
+		this.dbUser = dbUser;
+		this.dbPassword = dbPassword;
+		try {
+			loadDriver(jdbcDriver == null? null : new URL[] { jdbcDriver.toURI().toURL() });
+		} catch (MalformedURLException e) {
+			throw new RuntimeException(e);
+		}
+		this.dbms = findDBMS();	
+	}
+
+
+    /**
+     * Constructor. Derives DBMS from URL.
+     * 
+     * @param driverClassName name of JDBC-driver class
+     * @param dbUrl the URL
+     * @param dbUser the user
+     * @param dbPassword the password
+     * @param jdbcDriverURL URL of driver jar file
+     */
+	public BasicDataSource(String driverClassName, String dbUrl, String dbUser, String dbPassword, URL... jdbcDriverURL) {
 		this.driverClassName = driverClassName;
 		this.dbUrl = dbUrl;
 		this.dbUser = dbUser;
@@ -80,7 +105,7 @@ public class BasicDataSource implements DataSource {
 		this.dbms = findDBMS();	
 	}
 
-    /**
+	/**
      * Constructor.
      * 
      * @param driverClassName name of JDBC-driver class
@@ -89,7 +114,7 @@ public class BasicDataSource implements DataSource {
      * @param dbPassword the password
      * @param dbms the DBMS 
      */
-	public BasicDataSource(String driverClassName, String dbUrl, String dbUser, String dbPassword, DBMS dbms, URL... jdbcDriverURL) throws ClassNotFoundException, SQLException {
+	public BasicDataSource(String driverClassName, String dbUrl, String dbUser, String dbPassword, DBMS dbms, URL... jdbcDriverURL) {
 		this.driverClassName = driverClassName;
 		this.dbUrl = dbUrl;
 		this.dbUser = dbUser;
@@ -129,21 +154,27 @@ public class BasicDataSource implements DataSource {
         }
     }
 
-    private void loadDriver(URL[] jdbcDriverURL) throws ClassNotFoundException, SQLException {
+    private void loadDriver(URL[] jdbcDriverURL) {
     	ClassLoader classLoaderForJdbcDriver = addJarToClasspath(jdbcDriverURL);
-    	if (classLoaderForJdbcDriver != null) {
-            Driver d;
-			try {
-				d = (Driver) Class.forName(driverClassName, true, classLoaderForJdbcDriver).newInstance();
-	            DriverManager.registerDriver(new DriverShim(d));
-			} catch (InstantiationException e) {
-				throw new RuntimeException(e);
-			} catch (IllegalAccessException e) {
-				throw new RuntimeException(e);
-			}
-        } else {
-            Class.forName(driverClassName);
-        }
+    	try {
+	    	if (classLoaderForJdbcDriver != null) {
+	            Driver d;
+				try {
+					d = (Driver) Class.forName(driverClassName, true, classLoaderForJdbcDriver).newInstance();
+		            DriverManager.registerDriver(new DriverShim(d));
+				} catch (InstantiationException e) {
+					throw new RuntimeException(e);
+				} catch (IllegalAccessException e) {
+					throw new RuntimeException(e);
+				}
+	        } else {
+	            Class.forName(driverClassName);
+	        }
+    	} catch (SQLException e) {
+    		throw new RuntimeException(e);
+    	} catch (ClassNotFoundException e) {
+    		throw new RuntimeException(e);
+		}
 	}
 
 	private DBMS findDBMS() {

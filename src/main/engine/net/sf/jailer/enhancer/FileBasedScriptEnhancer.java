@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Table;
@@ -56,7 +55,7 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
      */
     public void addEpilog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
             Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
-        File dir = new File(executionContext.getWorkingFolder(), "epilog" + File.separatorChar + scriptType);
+        File dir = new File("epilog" + File.separatorChar + scriptType);
         addEnhancement(script, progress, dir, executionContext);
           addEnhancement(script, dir, "EPILOG.sql");
     }
@@ -65,7 +64,7 @@ public class FileBasedScriptEnhancer implements ScriptEnhancer {
      */
     public void addProlog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
             Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
-        File dir = new File(executionContext.getWorkingFolder(), "prolog" + File.separatorChar + scriptType);
+        File dir = new File("prolog" + File.separatorChar + scriptType);
            addEnhancement(script, dir, "PROLOG.sql");
         addEnhancement(script, progress, dir, executionContext);
     }

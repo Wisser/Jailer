@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.extractionmodel;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
@@ -177,16 +178,16 @@ public class ExtractionModel {
      * @param parameters apply this parameter-value mapping to all restriction conditions, XML templates and filters 
      */
     public ExtractionModel(String fileName, Map<String, String> sourceSchemaMapping, Map<String, String> parameters, ExecutionContext executionContext) throws IOException {
-    	this(executionContext.newFile(fileName).toURI().toURL(), sourceSchemaMapping, parameters, executionContext);
+    	this(new File(fileName).toURI().toURL(), sourceSchemaMapping, parameters, executionContext, false);
     }
-    
+
     /**
      * Constructor.
      *  
      * @param the name of the model-file
      * @param parameters apply this parameter-value mapping to all restriction conditions, XML templates and filters 
      */
-    public ExtractionModel(URL modelURL, Map<String, String> sourceSchemaMapping, Map<String, String> parameters, ExecutionContext executionContext) throws IOException {
+    public ExtractionModel(URL modelURL, Map<String, String> sourceSchemaMapping, Map<String, String> parameters, ExecutionContext executionContext, boolean failOnMissingSubject) throws IOException {
     	String csvLocation = modelURL.toString();
 		List<CsvFile.Line> csv = new CsvFile(modelURL.openStream(), null, csvLocation, null).getLines();
         if (csv.isEmpty()) {
@@ -194,10 +195,15 @@ public class ExtractionModel {
         }
         CsvFile.Line subjectLine = csv.get(0);
         String location = subjectLine.location;
-        DataModel dataModel = new DataModel(sourceSchemaMapping, executionContext);
+        DataModel dataModel = new DataModel(sourceSchemaMapping, executionContext, true);
         Table subject = dataModel.getTable(SqlUtil.mappedSchema(sourceSchemaMapping, subjectLine.cells.get(0)));
         if (subject == null) {
-        	_log.warn(location + ": unknown table " + subjectLine.cells.get(0));
+        	String message = location + ": unknown subject table " + subjectLine.cells.get(0);
+        	if (failOnMissingSubject) {
+        		throw new RuntimeException(message);
+        	} else {
+        		_log.warn(message);
+        	}
         }
         String condition = subjectLine.cells.get(1);
         if ("".equals(condition)) {
@@ -284,7 +290,7 @@ public class ExtractionModel {
 			String mapping = xmLine.cells.get(1);
 			Table table = dataModel.getTable(SqlUtil.mappedSchema(sourceSchemaMapping, name));
 			if (table == null) {
-				_log.warn("unknown table" + name);
+				_log.warn("unknown table " + name);
 			} else {
 				table.setXmlTemplate(ParameterHandler.assignParameterValues(mapping, parameters));
 			}
@@ -298,7 +304,7 @@ public class ExtractionModel {
 			String filter = xmLine.cells.get(2);
 			Table table = dataModel.getTable(SqlUtil.mappedSchema(sourceSchemaMapping, name));
 			if (table == null) {
-				_log.warn("unknown table" + name);
+				_log.warn("unknown table " + name);
 			} else {
 				Column col = null;
 				for (Column c: table.getColumns()) {
@@ -411,7 +417,7 @@ public class ExtractionModel {
 	}
 
     public static String loadDatamodelFolder(String fileName, ExecutionContext executionContext) throws IOException {
-        List<CsvFile.Line> dmf = new CsvFile(executionContext.newFile(fileName), "datamodelfolder").getLines();
+        List<CsvFile.Line> dmf = new CsvFile(new File(fileName), "datamodelfolder").getLines();
         if (dmf.size() > 0) {
         	return dmf.get(0).cells.get(0);
         }

@@ -179,7 +179,7 @@ public class CsvFile {
 	            while (row.size() < 100) {
 	                row.add("");
 	            }
-	            Line cvsLine = new Line("line " + lineNr + ", file " + csvFile.getName(), row);
+	            Line cvsLine = new Line("line " + lineNr + ", " + csvFile.getName(), row);
 				if (filter == null || filter.accept(cvsLine)) {
 					rows.add(cvsLine);
 				}
@@ -228,7 +228,7 @@ public class CsvFile {
 	            while (row.size() < 100) {
 	                row.add("");
 	            }
-	            Line cvsLine = new Line("line " + lineNr + ", file " + location, row);
+	            Line cvsLine = new Line("line " + lineNr + ", " + location, row);
 				if (filter == null || filter.accept(cvsLine)) {
 					rows.add(cvsLine);
 				}

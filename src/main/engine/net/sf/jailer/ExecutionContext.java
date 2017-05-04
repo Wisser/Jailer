@@ -17,14 +17,14 @@ package net.sf.jailer;
 
 import java.io.File;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
-import java.util.UUID;
 
 import net.sf.jailer.configuration.DBMS;
-import net.sf.jailer.database.TemporaryTableScope;
+import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.util.CsvFile;
 
@@ -48,28 +48,6 @@ public class ExecutionContext {
 	 */
 	public ExecutionContext(CommandLine commandLine) throws Exception {
 		copyCommandLineFields(commandLine);
-	}
-
-	/**
-	 * Creates a temporary file
-	 * 
-	 * @return a temporary file
-	 */
-	public File createTempFile() {
-		String file;
-		String ts = UUID.randomUUID().toString();
-		File newFile;
-		for (int i = 1; ; ++i) {
-			file = getTempFileFolder();
-			newFile = newFile(file);
-			newFile.mkdirs();
-			file += File.separator + "up" + "-" + ts + (i > 1? "-" + Integer.toString(i) : "");
-			newFile = newFile(file);
-			if (!newFile.exists()) {
-				break;
-			}
-		}
-		return new File(file);
 	}
 
 	/**
@@ -211,6 +189,29 @@ public class ExecutionContext {
 	 */
 	public void setExportScriptFileName(String exportScriptFileName) {
 		this.exportScriptFileName = exportScriptFileName;
+	}
+	
+	/**
+	 * Gets name of the delete-script file (compressed if it ends with '.zip' or
+	 * '.gz')
+	 *
+	 * @return name of the delete-script file (compressed if it ends with '.zip'
+	 *         or '.gz')
+	 */
+	public String getDeleteScriptFileName() {
+		return deleteScriptFileName;
+	}
+
+	/**
+	 * Sets name of the delete-script file (compressed if it ends with '.zip' or
+	 * '.gz')
+	 *
+	 * @param exportScriptFileName
+	 *            name of the delete-script file (compressed if it ends with
+	 *            '.zip' or '.gz')
+	 */
+	public void setDeleteScriptFileName(String deleteScriptFileName) {
+		this.deleteScriptFileName = deleteScriptFileName;
 	}
 
 	/**
@@ -382,7 +383,7 @@ public class ExecutionContext {
 	 *
 	 * @return scope of working tables, GLOBAL, SESSION_LOCAL or LOCAL_DATABASE
 	 */
-	public TemporaryTableScope getScope() {
+	public WorkingTableScope getScope() {
 		return scope;
 	}
 
@@ -393,7 +394,7 @@ public class ExecutionContext {
 	 *            scope of working tables, GLOBAL, SESSION_LOCAL or
 	 *            LOCAL_DATABASE
 	 */
-	public void setScope(TemporaryTableScope scope) {
+	public void setScope(WorkingTableScope scope) {
 		this.scope = scope;
 	}
 
@@ -436,15 +437,6 @@ public class ExecutionContext {
 	}
 
 	/**
-	 * Gets the working folder. Defaults to '.'
-	 *
-	 * @return the working folder. Defaults to '.'
-	 */
-	public String getWorkingFolder() {
-		return workingFolder;
-	}
-
-	/**
      * Gets fully qualified folder name of current data model.
      */
 	public String getQualifiedDatamodelFolder() {
@@ -452,35 +444,6 @@ public class ExecutionContext {
 			return datamodelFolder;
 		}
 		return datamodelFolder + File.separator + currentModelSubfolder;
-	}
-
-	/**
-	 * Gets the temporary files folder. Defaults to 'tmp'.
-	 * 
-	 * @return the tempFileFolder absolute or relative to {@link #getWorkingFolder()}
-	 */
-	public String getTempFileFolder() {
-		return tempFileFolder;
-	}
-
-	/**
-	 * Sets the temporary files folder. Defaults to 'tmp'.
-	 * 
-	 * @param tempFileFolder absolute or relative to {@link #getWorkingFolder()}
-	 */
-	public void setTempFileFolder(String tempFileFolder) {
-		this.tempFileFolder = tempFileFolder;
-	}
-
-
-	/**
-	 * Sets the working folder. Defaults to '.'
-	 *
-	 * @param workingFolder
-	 *            the working folder. Defaults to '.'
-	 */
-	public void setWorkingFolder(String workingFolder) {
-		this.workingFolder = workingFolder;
 	}
 
 	/**
@@ -568,29 +531,6 @@ public class ExecutionContext {
 		this.importFilterMappingTableSchema = importFilterMappingTableSchema;
 	}
 
-	/**
-     * Gets {@link File} from a file name relative to the working-folder.
-     * 
-     * @param filename the file name
-     * @return {@link File} from a file name relative to the working-folder
-     */
-    public File newFile(String filename) {
-    	File wf;
-    	if (workingFolder == null) {
-    		wf = null;
-    	} else {
-    		wf = new File(workingFolder);
-    	}
-    	if (wf == null) {
-    		return new File(filename);
-    	}
-    	File f = new File(filename);
-    	if (f.isAbsolute()) {
-    		return f;
-    	}
-    	return new File(wf, filename);
-    }
-    
 	/**
 	 * Gets parameters
 	 *
@@ -726,7 +666,7 @@ public class ExecutionContext {
 				fn = datamodelFolder + File.separator + currentModelSubfolder;
 			}
 			try {
-				datamodelURL = newFile(fn).toURI().toURL();
+				datamodelURL = new File(fn).toURI().toURL();
 			} catch (MalformedURLException e) {
 				throw new RuntimeException(e);
 			}
@@ -738,7 +678,15 @@ public class ExecutionContext {
      * Sets URL of the current data model (the datamodels base folder)
      */
 	public void setDataModelURL(URL datamodelURL) {
-		this.datamodelURL = datamodelURL;
+		if (!datamodelURL.toExternalForm().endsWith("/")) {
+			try {
+				this.datamodelURL = new URL(datamodelURL.toExternalForm() + "/");
+			} catch (MalformedURLException e) {
+				throw new RuntimeException(e);
+			}
+		} else {
+			this.datamodelURL = datamodelURL;
+		}
 	}
 	
 	// use UTF-8 encoding
@@ -770,6 +718,9 @@ public class ExecutionContext {
 	// name of the export-script file (compressed if it ends with '.zip' or
 	// '.gz')
 	private String exportScriptFileName = null;
+	
+	// name of the delete-script file (compressed if it ends with '.zip' or '.gz')
+    private String deleteScriptFileName = null;
 
 	// add schema prefix to table names after analysing the DB
 	private boolean qualifyNames = false;
@@ -811,12 +762,6 @@ public class ExecutionContext {
 	// folder holding the data model. Defaults to './datamodel'
 	private String datamodelFolder = "datamodel";
 
-	// the working folder. Defaults to '.'
-	private String workingFolder = null;
-
-	// the temporary files folder. Defaults to 'tmp'
-	private String tempFileFolder = "tmp";
-
 	// the exported rows will not be sorted according to foreign key constraints
 	private boolean noSorting = false;
 
@@ -829,7 +774,7 @@ public class ExecutionContext {
 	// schema in which the import-filter mapping tables will be created
 	private String importFilterMappingTableSchema = "";
 
-	private TemporaryTableScope scope;
+	private WorkingTableScope scope;
 
 	private void copyCommandLineFields(CommandLine commandLine) {
 		uTF8 = commandLine.uTF8;
@@ -841,6 +786,7 @@ public class ExecutionContext {
 		xmlTimePattern = commandLine.xmlTimePattern;
 		xmlTimeStampPattern = commandLine.xmlTimeStampPattern;
 		exportScriptFileName = commandLine.exportScriptFileName;
+		deleteScriptFileName = commandLine.deleteScriptFileName;
 		qualifyNames = commandLine.qualifyNames;
 		analyseAlias = commandLine.analyseAlias;
 		analyseSynonym = commandLine.analyseSynonym;
@@ -853,16 +799,15 @@ public class ExecutionContext {
 		numberOfEntities = commandLine.numberOfEntities;
 		upsertOnly = commandLine.upsertOnly;
 		if (commandLine.scope == null) {
-    		scope = TemporaryTableScope.GLOBAL;
+    		scope = WorkingTableScope.GLOBAL;
     	}
     	try {
-    		scope = TemporaryTableScope.valueOf(commandLine.scope);
+    		scope = WorkingTableScope.valueOf(commandLine.scope);
     	} catch (Exception e) {
-    		scope = TemporaryTableScope.GLOBAL;
+    		scope = WorkingTableScope.GLOBAL;
     	}
     	workingTableSchema = commandLine.workingTableSchema;
 		datamodelFolder = commandLine.datamodelFolder;
-		workingFolder = commandLine.workingFolder;
 		noSorting = commandLine.noSorting;
 		transactional = commandLine.transactional;
 		noRowid = commandLine.noRowid;

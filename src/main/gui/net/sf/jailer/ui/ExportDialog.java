@@ -45,19 +45,19 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import net.sf.jailer.DDLCreator;
-import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.SqlException;
-import net.sf.jailer.database.TemporaryTableScope;
+import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
+import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.Quoting;
@@ -1595,10 +1595,10 @@ public class ExportDialog extends javax.swing.JDialog {
 		try {
 			dataSource = new BasicDataSource(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), dbConnectionDialog.currentJarURLs());
 			String tableInConflict = ddlCreator.getTableInConflict(dataSource, dataSource.dbms);
-	    	if (tableInConflict != null && getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL)) {
+	    	if (tableInConflict != null && getTemporaryTableScope().equals(WorkingTableScope.GLOBAL)) {
 	    		JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);
 	    	} else {
-	    		if (!getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL) || ddlCreator.isUptodate(dataSource, dataSource.dbms, isUseRowId(), getWorkingTableSchema())) {
+	    		if (!getTemporaryTableScope().equals(WorkingTableScope.GLOBAL) || ddlCreator.isUptodate(dataSource, dataSource.dbms, isUseRowId(), getWorkingTableSchema())) {
 	    			return true;
 	    		} else {
 	    			try {
@@ -1912,17 +1912,17 @@ public class ExportDialog extends javax.swing.JDialog {
 		return null;
 	}
 
-    public TemporaryTableScope getTemporaryTableScope() {
+    public WorkingTableScope getTemporaryTableScope() {
     	if (scopeLocal.isSelected()) {
-    		return TemporaryTableScope.LOCAL_DATABASE;
+    		return WorkingTableScope.LOCAL_DATABASE;
     	}
     	if (scopeSession.isSelected()) {
-    		return TemporaryTableScope.SESSION_LOCAL;
+    		return WorkingTableScope.SESSION_LOCAL;
     	}
 //    	if (scopeTransaction.isSelected()) {
 //    		return TemporaryTableScope.TRANSACTION_LOCAL;
 //    	}
-    	return TemporaryTableScope.GLOBAL;
+    	return WorkingTableScope.GLOBAL;
     }
 
     public boolean hasDeleteScript() {

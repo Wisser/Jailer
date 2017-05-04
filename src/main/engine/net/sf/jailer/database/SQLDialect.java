@@ -124,11 +124,11 @@ public class SQLDialect {
     public static String dmlTableReference(String tableName, Session session, ExecutionContext executionContext) throws SQLException {
     	String tableRef;
     	TemporaryTableManager tableManager = null;
-    	TemporaryTableScope temporaryTableScope = executionContext.getScope();
-		if (temporaryTableScope == TemporaryTableScope.SESSION_LOCAL) {
+    	WorkingTableScope temporaryTableScope = executionContext.getScope();
+		if (temporaryTableScope == WorkingTableScope.SESSION_LOCAL) {
 			tableManager = session.dbms.getSessionTemporaryTableManager();
 		}
-		if (temporaryTableScope == TemporaryTableScope.TRANSACTION_LOCAL) {
+		if (temporaryTableScope == WorkingTableScope.TRANSACTION_LOCAL) {
 			tableManager = session.dbms.getTransactionTemporaryTableManager();
 		}
 		if (tableManager != null) {
@@ -136,7 +136,7 @@ public class SQLDialect {
 		} else {
 			tableRef = tableName;
 		}
-		if (temporaryTableScope != TemporaryTableScope.LOCAL_DATABASE) {
+		if (temporaryTableScope != WorkingTableScope.LOCAL_DATABASE) {
 			String schema = executionContext.getWorkingTableSchema();
 			if (schema != null) {
 				tableRef = new Quoting(session).requote(schema) + "." + tableRef;

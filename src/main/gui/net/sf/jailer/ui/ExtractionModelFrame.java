@@ -47,22 +47,22 @@ import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 
 import net.sf.jailer.CommandLine;
-import net.sf.jailer.DDLCreator;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.JailerVersion;
-import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.database.Session;
-import net.sf.jailer.database.TemporaryTableScope;
+import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.DataModel.NoPrimaryKeyException;
+import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.render.HtmlDataModelRenderer;
+import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
 import net.sf.jailer.util.LayoutStorage;
@@ -1005,10 +1005,10 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		File newFile;
 		for (int i = 1; ; ++i) {
 			file = "tmp";
-			newFile = executionContext.newFile(file);
+			newFile = new File(file);
 			newFile.mkdirs();
 			file += File.separator + "em" + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".csv";
-			newFile = executionContext.newFile(file);
+			newFile = new File(file);
 			if (!newFile.exists()) {
 				break;
 			}
@@ -1087,11 +1087,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				        	DDLCreator ddlCreator = new DDLCreator(executionContext);
 				        	dataSource = new BasicDataSource(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), dbConnectionDialog.currentJarURLs());
 							String tableInConflict = ddlCreator.getTableInConflict(dataSource, dataSource.dbms);
-				        	if (tableInConflict != null && exportDialog.getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL)) {
+				        	if (tableInConflict != null && exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL)) {
 				        		JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);
 				        	}
 				        	else {
-				        		if (!exportDialog.getTemporaryTableScope().equals(TemporaryTableScope.GLOBAL) || ddlCreator.isUptodate(dataSource, dataSource.dbms, exportDialog.isUseRowId(), exportDialog.getWorkingTableSchema()) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
+				        		if (!exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL) || ddlCreator.isUptodate(dataSource, dataSource.dbms, exportDialog.isUseRowId(), exportDialog.getWorkingTableSchema()) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
 				        			"Automatic creation of working-tables failed!\n" +
 			        				"Please execute the Jailer-DDL manually (jailer_ddl.sql)\n" +
 			        				"or try another \"Working table schema\"\n\n" +
