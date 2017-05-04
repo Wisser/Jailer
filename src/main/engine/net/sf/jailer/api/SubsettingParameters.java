@@ -153,29 +153,6 @@ public class SubsettingParameters {
 	}
 
 	/**
-	 * Gets name of the export-script file (compressed if it ends with '.zip' or
-	 * '.gz')
-	 *
-	 * @return name of the export-script file (compressed if it ends with '.zip'
-	 *         or '.gz')
-	 */
-	public String getExportScriptFileName() {
-		return executionContext.getExportScriptFileName();
-	}
-
-	/**
-	 * Sets name of the export-script file (compressed if it ends with '.zip' or
-	 * '.gz')
-	 *
-	 * @param exportScriptFileName
-	 *            name of the export-script file (compressed if it ends with
-	 *            '.zip' or '.gz')
-	 */
-	public void setExportScriptFileName(String exportScriptFileName) {
-		executionContext.setExportScriptFileName(exportScriptFileName);
-	}
-
-	/**
 	 * If <code>true</code>, Add schema prefix to table names after analysing
 	 * the DB
 	 *

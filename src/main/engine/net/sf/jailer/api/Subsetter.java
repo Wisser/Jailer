@@ -95,11 +95,21 @@ public class Subsetter {
 	}
 	
 	/**
-	 * Generates the export- and/or delete-script.
+	 * Generates the export-script.
+	 * 
+	 * @param exportScriptFile the export-script file (compressed if it ends with '.zip' or '.gz')
 	 */
-	public void execute() throws SQLException, IOException {
-		File exportScriptFile = getExportScriptFile();
-		File deleteScriptFile = getDeleteScriptFile();
+	public void execute(File exportScriptFile) throws SQLException, IOException {
+		execute(exportScriptFile, null);
+	}
+
+	/**
+	 * Generates the export- and/or delete-script.
+	 * 
+	 * @param exportScriptFile the export-script file (compressed if it ends with '.zip' or '.gz'), optional
+	 * @param deleteScriptFile the delete-script file (compressed if it ends with '.zip' or '.gz'), optional
+	 */
+	public void execute(File exportScriptFile, File deleteScriptFile) throws SQLException, IOException {
 		try {
 			if (getDataModelURL() == null) {
 				throw new IllegalStateException("missing DataModelURL");
@@ -129,60 +139,6 @@ public class Subsetter {
 		} catch (SAXException e) {
 			throw new RuntimeException(e);
 		}
-	}
-
-	/**
-	 * Gets the export-script file (compressed if it ends with '.zip' or
-	 * '.gz')
-	 *
-	 * @return the export-script file (compressed if it ends with '.zip'
-	 *         or '.gz')
-	 */
-	public File getExportScriptFile() {
-		String name = executionContext.getExportScriptFileName();
-		if (name == null) {
-			return null;
-		}
-		return new File(name);
-	}
-
-	/**
-	 * Sets the export-script file (compressed if it ends with '.zip' or
-	 * '.gz')
-	 *
-	 * @param exportScriptFileName
-	 *            the export-script file (compressed if it ends with
-	 *            '.zip' or '.gz')
-	 */
-	public void setExportScriptFile(File exportScriptFile) {
-		executionContext.setExportScriptFileName(exportScriptFile == null? null : exportScriptFile.getPath());
-	}
-
-	/**
-	 * Gets the delete-script file (compressed if it ends with '.zip' or
-	 * '.gz')
-	 *
-	 * @return the delete-script file (compressed if it ends with '.zip'
-	 *         or '.gz')
-	 */
-	public File getDeleteScriptFile() {
-		String name = executionContext.getDeleteScriptFileName();
-		if (name == null) {
-			return null;
-		}
-		return new File(name);
-	}
-
-	/**
-	 * Sets the delete-script file (compressed if it ends with '.zip' or
-	 * '.gz')
-	 *
-	 * @param deleteScriptFileName
-	 *            the delete-script file (compressed if it ends with
-	 *            '.zip' or '.gz')
-	 */
-	public void setDeleteScriptFile(File deleteScriptFile) {
-		executionContext.setDeleteScriptFileName(deleteScriptFile == null? null : deleteScriptFile.getPath());
 	}
 
 	/**

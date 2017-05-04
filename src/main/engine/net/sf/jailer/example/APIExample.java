@@ -42,8 +42,7 @@ public class APIExample {
 
 	private void exportScott() throws SQLException, IOException {
 		File exportScriptFile = Configuration.getInstance().createTempFile();
-		subsetter.setExportScriptFile(exportScriptFile);
-		subsetter.execute();
+		subsetter.execute(exportScriptFile);
 	}
 	
 }
