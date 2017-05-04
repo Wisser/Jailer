@@ -162,7 +162,7 @@ public class Jailer {
 							commandLine.arguments.get(5), jdbcJarURLs);
 					Session session = new Session(dataSource, dataSource.dbms, null, commandLine.transactional);
 					try {
-						new SqlScriptExecutor(session, commandLine.numberOfThreads, executionContext).executeScript(commandLine.arguments.get(1), commandLine.transactional);
+						new SqlScriptExecutor(session, commandLine.numberOfThreads).executeScript(commandLine.arguments.get(1), commandLine.transactional);
 					} finally {
 						try {
 							session.shutDown();

@@ -19,6 +19,7 @@ import java.io.File;
 import java.io.IOException;
 import java.sql.SQLException;
 
+import net.sf.jailer.api.Importer;
 import net.sf.jailer.api.Subsetter;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.BasicDataSource;
@@ -36,13 +37,26 @@ public class APIExample {
 			getClass().getResource("Demo-Scott.csv"),
 			ScriptFormat.SQL);
 	
+	private Importer importer =
+		new Importer(
+			new BasicDataSource(
+				"org.h2.Driver", "jdbc:h2:demo-scott-subset", "sa", "",
+				new File("lib/h2-1.3.160.jar")));
+
 	public static void main(String[] args) throws SQLException, IOException {
 		new APIExample().exportScott();
 	}
 
 	private void exportScott() throws SQLException, IOException {
 		File exportScriptFile = Configuration.getInstance().createTempFile();
+		
+		subsetter.setWhereClause("NAME='SCOTT'");
+		subsetter.setUpsertOnly(true); // overwrite previous data
 		subsetter.execute(exportScriptFile);
+		
+		importer.execute(exportScriptFile);
+		
+		exportScriptFile.delete();
 	}
-	
+
 }

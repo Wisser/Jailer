@@ -280,7 +280,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			UpdateTransformer reader = new UpdateTransformer(table, columns, tmpFileWriter, executionContext.getNumberOfEntities(), getSession(), getSession().dbms, importFilterManager, executionContext);
 			readEntities(table, false, reader);
 			tmpFileWriter.close();
-			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads(), executionContext).executeScript(tmp.getPath());
+			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads()).executeScript(tmp.getPath());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -743,7 +743,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			tmpFileWriter = new FileWriter(tmp);
 			importFilterManager.createMappingTables(dbmsConfiguration, tmpFileWriter);
 			tmpFileWriter.close();
-			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads(), executionContext).executeScript(tmp.getPath());
+			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads()).executeScript(tmp.getPath());
 	    	tmp.delete();
 
 			tmp = Configuration.getInstance().createTempFile();
@@ -751,7 +751,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			tmpFileWriter.write("-- sync\n");
 			importFilterManager.fillAndWriteMappingTables(this, jobManager, tmpFileWriter, numberOfEntities, targetSession, targetDBMSConfiguration);
 			tmpFileWriter.close();
-			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads(), executionContext).executeScript(tmp.getPath());
+			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads()).executeScript(tmp.getPath());
 	    	tmp.delete();
 		}
 	}
@@ -777,7 +777,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			tmpFileWriter = new FileWriter(tmp);
 			importFilterManager.dropMappingTables(tmpFileWriter);
 			tmpFileWriter.close();
-			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads(), executionContext).executeScript(tmp.getPath());
+			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads()).executeScript(tmp.getPath());
 	    	tmp.delete();
 		}
 	}
