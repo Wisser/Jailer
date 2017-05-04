@@ -17,7 +17,6 @@ package net.sf.jailer;
 
 import java.io.File;
 import java.net.MalformedURLException;
-import java.net.URI;
 import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
@@ -166,52 +165,6 @@ public class ExecutionContext {
 	 */
 	public void setXmlTimeStampPattern(String xmlTimeStampPattern) {
 		this.xmlTimeStampPattern = xmlTimeStampPattern;
-	}
-
-	/**
-	 * Gets name of the export-script file (compressed if it ends with '.zip' or
-	 * '.gz')
-	 *
-	 * @return name of the export-script file (compressed if it ends with '.zip'
-	 *         or '.gz')
-	 */
-	public String getExportScriptFileName() {
-		return exportScriptFileName;
-	}
-
-	/**
-	 * Sets name of the export-script file (compressed if it ends with '.zip' or
-	 * '.gz')
-	 *
-	 * @param exportScriptFileName
-	 *            name of the export-script file (compressed if it ends with
-	 *            '.zip' or '.gz')
-	 */
-	public void setExportScriptFileName(String exportScriptFileName) {
-		this.exportScriptFileName = exportScriptFileName;
-	}
-	
-	/**
-	 * Gets name of the delete-script file (compressed if it ends with '.zip' or
-	 * '.gz')
-	 *
-	 * @return name of the delete-script file (compressed if it ends with '.zip'
-	 *         or '.gz')
-	 */
-	public String getDeleteScriptFileName() {
-		return deleteScriptFileName;
-	}
-
-	/**
-	 * Sets name of the delete-script file (compressed if it ends with '.zip' or
-	 * '.gz')
-	 *
-	 * @param exportScriptFileName
-	 *            name of the delete-script file (compressed if it ends with
-	 *            '.zip' or '.gz')
-	 */
-	public void setDeleteScriptFileName(String deleteScriptFileName) {
-		this.deleteScriptFileName = deleteScriptFileName;
 	}
 
 	/**
@@ -715,13 +668,6 @@ public class ExecutionContext {
 	// pattern for time-stamps in XML and LIQUIBASE_XML export file
 	private String xmlTimeStampPattern = "yyyy-MM-dd-HH.mm.ss";
 
-	// name of the export-script file (compressed if it ends with '.zip' or
-	// '.gz')
-	private String exportScriptFileName = null;
-	
-	// name of the delete-script file (compressed if it ends with '.zip' or '.gz')
-    private String deleteScriptFileName = null;
-
 	// add schema prefix to table names after analysing the DB
 	private boolean qualifyNames = false;
 
@@ -785,8 +731,6 @@ public class ExecutionContext {
 		xmlDatePattern = commandLine.xmlDatePattern;
 		xmlTimePattern = commandLine.xmlTimePattern;
 		xmlTimeStampPattern = commandLine.xmlTimeStampPattern;
-		exportScriptFileName = commandLine.exportScriptFileName;
-		deleteScriptFileName = commandLine.deleteScriptFileName;
 		qualifyNames = commandLine.qualifyNames;
 		analyseAlias = commandLine.analyseAlias;
 		analyseSynonym = commandLine.analyseSynonym;
