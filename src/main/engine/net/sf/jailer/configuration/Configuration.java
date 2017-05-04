@@ -21,6 +21,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -41,7 +42,52 @@ import net.sf.jailer.render.HtmlDataModelRenderer;
  */
 @XmlRootElement
 public class Configuration {
-    
+
+	/**
+	 * Gets the temporary files folder. Defaults to 'tmp'.
+	 * 
+	 * @return the tempFileFolder absolute or relative to {@link #getWorkingFolder()}
+	 */
+	public String getTempFileFolder() {
+		return tempFileFolder;
+	}
+
+	/**
+	 * Sets the temporary files folder. Defaults to 'tmp'.
+	 * 
+	 * @param tempFileFolder absolute or relative to {@link #getWorkingFolder()}
+	 */
+	public void setTempFileFolder(String tempFileFolder) {
+		this.tempFileFolder = tempFileFolder;
+	}
+
+	/**
+	 * Creates a temporary file
+	 * 
+	 * @return a temporary file
+	 */
+	public File createTempFile() {
+		String file;
+		String ts = UUID.randomUUID().toString();
+		File newFile;
+		for (int i = 1; ; ++i) {
+			file = getTempFileFolder();
+			newFile = new File(file);
+			newFile.mkdirs();
+			file += File.separator + "up" + "-" + ts + (i > 1? "-" + Integer.toString(i) : "");
+			newFile = new File(file);
+			if (!newFile.exists()) {
+				break;
+			}
+		}
+		return new File(file);
+	}
+	
+	/**
+	 * The temporary files folder. Defaults to 'tmp'.
+	 */
+	private String tempFileFolder = "tmp";
+	
 	/**
      * The renderer.
      */

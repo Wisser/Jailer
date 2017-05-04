@@ -101,7 +101,7 @@ public class ModelBuilder {
      */
     private static CsvFile getExcludeTablesCSV(ExecutionContext executionContext) {
     	try {
-            File exTFile = executionContext.newFile(DataModel.getDatamodelFolder(executionContext) + File.separator + "exclude-tables.csv");
+            File exTFile = new File(DataModel.getDatamodelFolder(executionContext) + File.separator + "exclude-tables.csv");
             if (!exTFile.exists()) {
             	exTFile.createNewFile();
             }
@@ -116,7 +116,7 @@ public class ModelBuilder {
      */
     private static CsvFile getExcludeAssociationsCSV(ExecutionContext executionContext) {
         try {
-            File exAFile = executionContext.newFile(DataModel.getDatamodelFolder(executionContext) + File.separator + "exclude-associations.csv");
+            File exAFile = new File(DataModel.getDatamodelFolder(executionContext) + File.separator + "exclude-associations.csv");
             if (!exAFile.exists()) {
             	exAFile.createNewFile();
             }

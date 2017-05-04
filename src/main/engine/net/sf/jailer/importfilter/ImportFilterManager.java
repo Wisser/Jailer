@@ -160,7 +160,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 			}
 		}
 		
-		File tmpFile = executionContext.createTempFile();
+		File tmpFile = Configuration.getInstance().createTempFile();
 		OutputStreamWriter localDDL = new OutputStreamWriter(new FileOutputStream(tmpFile));
 		
 		List<ColumnToMappingTable> mapColumns = new ArrayList<ColumnToMappingTable>();
@@ -252,7 +252,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		Map<String, List<String>> listArguments = new HashMap<String, List<String>>();
 		listArguments.put("indexed-columns", indexedColumns);
 		listArguments.put("comments", withComment? Collections.singletonList("dummy") : new ArrayList<String>());
-		return new PrintUtil(executionContext).applyTemplate(template, arguments, listArguments);
+		return new PrintUtil().applyTemplate(template, arguments, listArguments);
 	}
 
 	/**
@@ -274,7 +274,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 		Map<String, List<String>> listArguments = new HashMap<String, List<String>>();
 		listArguments.put("mapping-tables", new ArrayList<String>(mappingTables));
 		sync(result);
-		result.append(new PrintUtil(executionContext).applyTemplate(template, arguments, listArguments));
+		result.append(new PrintUtil().applyTemplate(template, arguments, listArguments));
 	}
 	
 	protected abstract void sync(OutputStreamWriter result) throws IOException;

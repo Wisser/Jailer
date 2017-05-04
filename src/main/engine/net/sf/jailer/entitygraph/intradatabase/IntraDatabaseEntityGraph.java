@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
@@ -272,7 +273,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 * @param columns the columns;
 	 */
 	public void updateEntities(Table table, Set<Column> columns, OutputStreamWriter scriptFileWriter, DBMS targetConfiguration) throws SQLException {
-		File tmp = executionContext.createTempFile();
+		File tmp = Configuration.getInstance().createTempFile();
 		OutputStreamWriter tmpFileWriter;
 		try {
 			tmpFileWriter = new FileWriter(tmp);
@@ -737,7 +738,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	public void fillAndWriteMappingTables(JobManager jobManager, final OutputStreamWriter receiptWriter,
 			int numberOfEntities, final Session targetSession, final DBMS targetDBMSConfiguration, DBMS dbmsConfiguration) throws IOException, SQLException {
 		if (importFilterManager != null) {
-			File tmp = executionContext.createTempFile();
+			File tmp = Configuration.getInstance().createTempFile();
 			OutputStreamWriter tmpFileWriter;
 			tmpFileWriter = new FileWriter(tmp);
 			importFilterManager.createMappingTables(dbmsConfiguration, tmpFileWriter);
@@ -745,7 +746,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads(), executionContext).executeScript(tmp.getPath());
 	    	tmp.delete();
 
-			tmp = executionContext.createTempFile();
+			tmp = Configuration.getInstance().createTempFile();
 			tmpFileWriter = new FileWriter(tmp);
 			tmpFileWriter.write("-- sync\n");
 			importFilterManager.fillAndWriteMappingTables(this, jobManager, tmpFileWriter, numberOfEntities, targetSession, targetDBMSConfiguration);
@@ -771,7 +772,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	@Override
 	public void dropMappingTables(OutputStreamWriter result, DBMS targetDBMSConfiguration) throws IOException, SQLException {
 		if (importFilterManager != null) {
-			File tmp = executionContext.createTempFile();
+			File tmp = Configuration.getInstance().createTempFile();
 			OutputStreamWriter tmpFileWriter;
 			tmpFileWriter = new FileWriter(tmp);
 			importFilterManager.dropMappingTables(tmpFileWriter);

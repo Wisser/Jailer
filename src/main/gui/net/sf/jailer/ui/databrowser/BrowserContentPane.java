@@ -97,7 +97,6 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.ScriptFormat;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.InlineViewStyle;
 import net.sf.jailer.database.Session;
@@ -113,6 +112,7 @@ import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
+import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.DbConnectionDialog;
@@ -1431,10 +1431,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			
 			for (int i = 1; ; ++i) {
 				file = "extractionmodel" + File.separator + "by-example";
-				newFile = executionContext.newFile(file);
+				newFile = new File(file);
 				newFile.mkdirs();
 				file += File.separator + "SbE-" + (dataModel.getDisplayName(stable).replaceAll("[\"'\\[\\]]", "")) + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".csv";
-				newFile = executionContext.newFile(file);
+				newFile = new File(file);
 				if (!newFile.exists()) {
 					break;
 				}

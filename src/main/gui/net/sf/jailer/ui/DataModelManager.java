@@ -40,7 +40,7 @@ public class DataModelManager {
 	 * default model.
 	 */
 	public static List<String> getModelFolderNames() {
-		File dmFolder = CommandLineInstance.getExecutionContext().newFile(getBaseFolder());
+		File dmFolder = new File(getBaseFolder());
 		List<String> folders = new ArrayList<String>();
 		if (new File(dmFolder, DataModel.TABLE_CSV_FILE).exists()) {
 			folders.add(null);
@@ -70,9 +70,9 @@ public class DataModelManager {
 	 */
 	public static boolean deleteModel(String modelFolder) {
 		String dir = getBaseFolder() + File.separator + (modelFolder != null ? modelFolder + File.separator : "");
-		File nameFile = CommandLineInstance.getExecutionContext().newFile(dir + DataModel.TABLE_CSV_FILE);
+		File nameFile = new File(dir + DataModel.TABLE_CSV_FILE);
 		try {
-			copyFile(nameFile, CommandLineInstance.getExecutionContext().newFile(dir + DataModel.TABLE_CSV_FILE + ".bak"));
+			copyFile(nameFile, new File(dir + DataModel.TABLE_CSV_FILE + ".bak"));
 		} catch (Exception e) {
 			// ignore
 		}
@@ -93,7 +93,7 @@ public class DataModelManager {
 	 *            folder name, <code>null</code> for the default model
 	 */
 	public static Pair<String, Long> getModelDetails(String modelFolder) {
-		File nameFile = CommandLineInstance.getExecutionContext().newFile(
+		File nameFile = new File(
 				getBaseFolder() + File.separator + (modelFolder != null ? modelFolder + File.separator : "") + DataModel.MODELNAME_CSV_FILE);
 		String name = null;
 		Long lastModified = null;
@@ -156,7 +156,7 @@ public class DataModelManager {
 	 */
 	public static void createNewModel(String newName, String folderName) throws IOException {
 		setCurrentModelSubfolder(null);
-		File modelFolder = CommandLineInstance.getExecutionContext().newFile(getBaseFolder() + File.separator + folderName);
+		File modelFolder = new File(getBaseFolder() + File.separator + folderName);
 		if (modelFolder.exists()) {
 			throw new IOException("Folder \"" + modelFolder.getAbsolutePath() + "\" already exists");
 		}
@@ -167,7 +167,7 @@ public class DataModelManager {
 		setCurrentModelSubfolder(folderName);
 
 		for (String file : new String[] { DataModel.getTablesFile(CommandLineInstance.getExecutionContext()), DataModel.getAssociationsFile(CommandLineInstance.getExecutionContext()), DataModel.getColumnsFile(CommandLineInstance.getExecutionContext()) }) {
-			File toCreate = CommandLineInstance.getExecutionContext().newFile(file);
+			File toCreate = new File(file);
 			BufferedWriter out = new BufferedWriter(new FileWriter(toCreate));
 			out.write(" ");
 			out.close();

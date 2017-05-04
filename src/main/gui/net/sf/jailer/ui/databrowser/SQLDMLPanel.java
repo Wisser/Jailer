@@ -16,6 +16,7 @@
 package net.sf.jailer.ui.databrowser;
 
 import java.awt.Color;
+import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.util.ArrayList;
@@ -26,9 +27,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
-import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
-import net.sf.jailer.ui.CommandLineInstance;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.SqlScriptExecutor;
 
@@ -316,16 +315,15 @@ public class SQLDMLPanel extends javax.swing.JPanel {
     private void executeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_executeButtonActionPerformed
     	if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(this, "Execute Statements?", "Execute", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
     		String sqlFile;
-    		ExecutionContext executionContext = CommandLineInstance.getExecutionContext();
-			try {
+    		try {
 	    		String sqlFileBase = "temp_" + System.currentTimeMillis();
 	    		for (int i = 0; ; ++i) {
 	    			sqlFile = sqlFileBase + i + ".sql";
-	    			if (!executionContext.newFile(sqlFile).exists()) {
+	    			if (!new File(sqlFile).exists()) {
 	    				break;
 	    			}
 	    		}
-	    		PrintWriter out = new PrintWriter(executionContext.newFile(sqlFile));
+	    		PrintWriter out = new PrintWriter(new File(sqlFile));
 	    		out.println(sqlTextArea.getText());
 	    		out.close();
     		} catch (Exception e) {
@@ -348,7 +346,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 				statusLabel.setText("Error, rolled back");
 				statusLabel.setForeground(new Color(115, 0, 0));
 			}
-			executionContext.newFile(sqlFile).delete();
+			new File(sqlFile).delete();
     	}
     }//GEN-LAST:event_executeButtonActionPerformed
 

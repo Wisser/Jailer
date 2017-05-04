@@ -60,7 +60,7 @@ import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.database.DeletionTransformer;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.StatisticRenovator;
-import net.sf.jailer.database.TemporaryTableScope;
+import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.datamodel.AggregationSchema;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Cardinality;
@@ -534,7 +534,7 @@ public class SubsettingEngine {
 	private void writeEntities(final String sqlScriptFile, final ScriptType scriptType, final Set<Table> progress, Session session, String stage) throws IOException, SAXException, SQLException {
 		_log.info("writing file '" + sqlScriptFile + "'...");
 
-		OutputStream outputStream = new FileOutputStream(sqlScriptFile);
+		OutputStream outputStream = new FileOutputStream(new File(sqlScriptFile));
 		if (sqlScriptFile.toLowerCase().endsWith(".zip")) {
 			outputStream = new ZipOutputStream(outputStream);
 			String zipFileName = new File(sqlScriptFile).getName();
@@ -698,7 +698,7 @@ public class SubsettingEngine {
 					EntityGraph egCopy = entityGraph.copy(EntityGraph.createUniqueGraphID(), entityGraph.getSession());
 					egCopy.setImportFilterManager(entityGraph.getImportFilterManager());
 					
-					_log.info(rest + " entities in cycle. Involved tables: " + new PrintUtil(executionContext).tableSetAsString(dependentTables));
+					_log.info(rest + " entities in cycle. Involved tables: " + new PrintUtil().tableSetAsString(dependentTables));
 					Map<Table, Set<Column>> nullableForeignKeys = findAndRemoveNullableForeignKeys(dependentTables, entityGraph, scriptType != ScriptType.DELETE);
 					_log.info("nullable foreign keys: " + nullableForeignKeys.values());
 
@@ -993,7 +993,7 @@ public class SubsettingEngine {
 	private void writeEntitiesAsXml(String xmlFile, final Set<Table> progress, final Set<Table> subjects, Session session) throws IOException, CancellationException, SQLException, SAXException {
 		_log.info("writing file '" + xmlFile + "'...");
 
-		OutputStream outputStream = new FileOutputStream(xmlFile);
+		OutputStream outputStream = new FileOutputStream(new File(xmlFile));
 		if (xmlFile.toLowerCase().endsWith(".zip")) {
 			outputStream = new ZipOutputStream(outputStream);
 			String zipFileName = new File(xmlFile).getName();
@@ -1056,12 +1056,12 @@ public class SubsettingEngine {
 			lexSortedTables.removeAll(sortedTables);
 		}
 		if (!lexSortedTables.isEmpty()) {
-			_log.warn("remaining tables after sorting: " + new PrintUtil(executionContext).tableSetAsString(new HashSet<Table>(lexSortedTables)));
+			_log.warn("remaining tables after sorting: " + new PrintUtil().tableSetAsString(new HashSet<Table>(lexSortedTables)));
 			sortedTables.addAll(lexSortedTables);
 		}
 		
 		Set<Table> cyclicAggregatedTables = getCyclicAggregatedTables(progress);
-		_log.info("cyclic aggregated tables: " + new PrintUtil(executionContext).tableSetAsString(cyclicAggregatedTables));
+		_log.info("cyclic aggregated tables: " + new PrintUtil().tableSetAsString(cyclicAggregatedTables));
 
 		Charset charset = Charset.defaultCharset();
 		if (executionContext.getUTF8()) {
@@ -1263,13 +1263,13 @@ public class SubsettingEngine {
 		}
 
 		Session session = new Session(dataSource, dbms, executionContext.getScope(), false);
-		ExtractionModel extractionModel = new ExtractionModel(extractionModelURL, executionContext.getSourceSchemaMapping(), executionContext.getParameters(), executionContext);
+		ExtractionModel extractionModel = new ExtractionModel(extractionModelURL, executionContext.getSourceSchemaMapping(), executionContext.getParameters(), executionContext, true);
 
 		DDLCreator ddlCreator = new DDLCreator(executionContext);
-		if (executionContext.getScope() == TemporaryTableScope.SESSION_LOCAL
-		 || executionContext.getScope() == TemporaryTableScope.TRANSACTION_LOCAL) {
+		if (executionContext.getScope() == WorkingTableScope.SESSION_LOCAL
+		 || executionContext.getScope() == WorkingTableScope.TRANSACTION_LOCAL) {
 			ddlCreator.createDDL(extractionModel.dataModel, session, executionContext.getScope(), executionContext.getWorkingTableSchema());
-		} else if (executionContext.getScope() == TemporaryTableScope.GLOBAL) {
+		} else if (executionContext.getScope() == WorkingTableScope.GLOBAL) {
 			if (!ddlCreator.isUptodate(session, !executionContext.getNoRowid(), executionContext.getWorkingTableSchema())) {
 				ddlCreator.createDDL(extractionModel.dataModel, session, executionContext.getScope(), executionContext.getWorkingTableSchema());
 			}
@@ -1281,7 +1281,7 @@ public class SubsettingEngine {
 		if (scriptFormat == ScriptFormat.INTRA_DATABASE) {
 			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, session.dbms, executionContext);
 			entityGraph = IntraDatabaseEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, rowIdSupport.getUniversalPrimaryKey(session), executionContext);
-		} else if (executionContext.getScope() == TemporaryTableScope.LOCAL_DATABASE) {
+		} else if (executionContext.getScope() == WorkingTableScope.LOCAL_DATABASE) {
 			entityGraph = LocalEntityGraph.create(extractionModel.dataModel, EntityGraph.createUniqueGraphID(), session, executionContext);
 		} else {
 			RowIdSupport rowIdSupport = new RowIdSupport(extractionModel.dataModel, session.dbms, executionContext);
@@ -1406,7 +1406,7 @@ public class SubsettingEngine {
 				entityGraph.getSession().rollbackAll();
 				entityGraph.delete();
 				if (exportedEntities != null) {
-					if (entityGraph.getSession().scope == TemporaryTableScope.GLOBAL) {
+					if (entityGraph.getSession().scope == WorkingTableScope.GLOBAL) {
 						exportedEntities.delete();
 					} else {
 						_log.info("skipping clean up of temporary tables");
@@ -1424,7 +1424,7 @@ public class SubsettingEngine {
 				_log.info("cleaning up...");
 				entityGraph.delete();
 				if (exportedEntities != null) {
-					if (entityGraph.getSession().scope == TemporaryTableScope.GLOBAL) {
+					if (entityGraph.getSession().scope == WorkingTableScope.GLOBAL) {
 						exportedEntities.delete();
 					} else {
 						_log.info("skipping clean up of temporary tables");
@@ -1474,8 +1474,8 @@ public class SubsettingEngine {
 			}
 		}
 		appendCommentHeader("");
-		appendCommentHeader("Tabu-tables: " + new PrintUtil(executionContext).tableSetAsString(tabuTables, "--                 "));
-		_log.info("Tabu-tables: " + new PrintUtil(executionContext).tableSetAsString(tabuTables, null));
+		appendCommentHeader("Tabu-tables: " + new PrintUtil().tableSetAsString(tabuTables, "--                 "));
+		_log.info("Tabu-tables: " + new PrintUtil().tableSetAsString(tabuTables, null));
 		entityGraph.setDeleteMode(true);
 		removeFilters(datamodel);
 
@@ -1526,7 +1526,7 @@ public class SubsettingEngine {
 		Set<Table> emptyTables = new HashSet<Table>();
 
 		Set<Table> tablesToCheck = new HashSet<Table>(allTables);
-		_log.info("don't check initially: " + new PrintUtil(executionContext).tableSetAsString(dontCheckInitially, null));
+		_log.info("don't check initially: " + new PrintUtil().tableSetAsString(dontCheckInitially, null));
 		tablesToCheck.removeAll(dontCheckInitially);
 
 		boolean firstStep = true;
@@ -1535,7 +1535,7 @@ public class SubsettingEngine {
 		// remove associated entities
 		while (!tablesToCheck.isEmpty()) {
 			++today;
-			_log.info("tables to check: " + new PrintUtil(executionContext).tableSetAsString(tablesToCheck, null));
+			_log.info("tables to check: " + new PrintUtil().tableSetAsString(tablesToCheck, null));
 			List<JobManager.Job> jobs = new ArrayList<JobManager.Job>();
 			final Set<Table> tablesToCheckNextTime = new HashSet<Table>();
 			for (final Table table : tablesToCheck) {

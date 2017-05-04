@@ -69,12 +69,12 @@ public class Session {
     /**
      * Shared scope of temporary tables.
      */
-    private static TemporaryTableScope temporaryTableScope;
+    private static WorkingTableScope temporaryTableScope;
     
     /**
      * Scope of temporary tables.
      */
-    public final TemporaryTableScope scope;
+    public final WorkingTableScope scope;
     
     /**
      * No SQL-Exceptions will be logged in silent mode. 
@@ -211,7 +211,7 @@ public class Session {
      * @param dataSource the data source
      * @param dbms the DBMS
      */
-    public Session(DataSource dataSource, DBMS dbms, final TemporaryTableScope scope, boolean transactional) throws SQLException {
+    public Session(DataSource dataSource, DBMS dbms, final WorkingTableScope scope, boolean transactional) throws SQLException {
     	this(dataSource, dbms, scope, transactional, false);
     }
     
@@ -222,7 +222,7 @@ public class Session {
      * @param dbms the DBMS
      * @param local <code>true</code> for the local entity-graph database
      */
-    public Session(final DataSource dataSource, DBMS dbms, final TemporaryTableScope scope, boolean transactional, final boolean local) throws SQLException {
+    public Session(final DataSource dataSource, DBMS dbms, final WorkingTableScope scope, boolean transactional, final boolean local) throws SQLException {
     	this.transactional = transactional;
     	this.local = local;
         this.scope = scope;
@@ -258,7 +258,7 @@ public class Session {
 	                		}
                 		}
                 	}
-                    boolean ac = scope == null || scope != TemporaryTableScope.TRANSACTION_LOCAL;
+                    boolean ac = scope == null || scope != WorkingTableScope.TRANSACTION_LOCAL;
                     if (Session.this.transactional) {
                     	ac = false;
                     }
@@ -279,7 +279,7 @@ public class Session {
                     } catch (SQLException e) {
                         _log.info("can't set isolation level to UR. Reason: " + e.getMessage());
                     }
-                	if (scope != null && scope != TemporaryTableScope.GLOBAL) {
+                	if (scope != null && scope != WorkingTableScope.GLOBAL) {
                 		temporaryTableSession = con;
                 	} else {
                         connection.set(con);
@@ -311,7 +311,7 @@ public class Session {
     public void reconnect() throws SQLException {
     	Connection con = connection.get();
     	if (con != null) {
-    		if (temporaryTableScope == TemporaryTableScope.TRANSACTION_LOCAL) {
+    		if (temporaryTableScope == WorkingTableScope.TRANSACTION_LOCAL) {
     			con.commit();
     		}
     		con.close();
@@ -322,7 +322,7 @@ public class Session {
     		}
     	}
     	if (temporaryTableSession != null) {
-    		if (temporaryTableScope == TemporaryTableScope.TRANSACTION_LOCAL) {
+    		if (temporaryTableScope == WorkingTableScope.TRANSACTION_LOCAL) {
     			temporaryTableSession.commit();
     		}
     		temporaryTableSession.close();
@@ -765,7 +765,7 @@ public class Session {
     public static void closeTemporaryTableSession() {
     	try {
     		if (temporaryTableSession != null) {
-    			if (temporaryTableScope == TemporaryTableScope.TRANSACTION_LOCAL) {
+    			if (temporaryTableScope == WorkingTableScope.TRANSACTION_LOCAL) {
     				temporaryTableSession.commit();
     			}
     			temporaryTableSession.close();

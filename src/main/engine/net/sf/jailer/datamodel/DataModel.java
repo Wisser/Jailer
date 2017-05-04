@@ -266,7 +266,7 @@ public class DataModel {
      * and builds the relational data model.
      */
     public DataModel(PrimaryKeyFactory primaryKeyFactory, Map<String, String> sourceSchemaMapping, ExecutionContext executionContext) throws IOException {
-        this(null, null, sourceSchemaMapping, null, primaryKeyFactory, executionContext);
+        this(null, null, sourceSchemaMapping, null, primaryKeyFactory, executionContext, false);
     }
 
     /**
@@ -281,8 +281,8 @@ public class DataModel {
      * Reads in <code>table.csv</code> and <code>association.csv</code>
      * and builds the relational data model.
      */
-    public DataModel(Map<String, String> sourceSchemaMapping, ExecutionContext executionContext) throws IOException {
-        this(null, null, sourceSchemaMapping, null, new PrimaryKeyFactory(), executionContext);
+    public DataModel(Map<String, String> sourceSchemaMapping, ExecutionContext executionContext, boolean failOnMissingTables) throws IOException {
+        this(null, null, sourceSchemaMapping, null, new PrimaryKeyFactory(), executionContext, failOnMissingTables);
     }
 
     /**
@@ -293,7 +293,7 @@ public class DataModel {
      * @param additionalAssociationsFile association file to read too
      */
     public DataModel(String additionalTablesFile, String additionalAssociationsFile, PrimaryKeyFactory primaryKeyFactory, ExecutionContext executionContext) throws IOException {
-    	this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, primaryKeyFactory, executionContext);
+    	this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, primaryKeyFactory, executionContext, false);
     }
 
     /**
@@ -304,7 +304,7 @@ public class DataModel {
      * @param additionalAssociationsFile association file to read too
      */
     public DataModel(String additionalTablesFile, String additionalAssociationsFile, ExecutionContext executionContext) throws IOException {
-    	this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, new PrimaryKeyFactory(), executionContext);
+    	this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, new PrimaryKeyFactory(), executionContext, false);
     }
 
     /**
@@ -315,9 +315,9 @@ public class DataModel {
      * @param additionalAssociationsFile association file to read too
      */
     public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, ExecutionContext executionContext) throws IOException {
-    	this(additionalTablesFile, additionalAssociationsFile, sourceSchemaMapping, assocFilter, new PrimaryKeyFactory(), executionContext);
+    	this(additionalTablesFile, additionalAssociationsFile, sourceSchemaMapping, assocFilter, new PrimaryKeyFactory(), executionContext, false);
     }
-    
+
     /**
      * Reads in <code>table.csv</code> and <code>association.csv</code>
      * and builds the relational data model.
@@ -326,20 +326,23 @@ public class DataModel {
      * @param additionalAssociationsFile association file to read too
      * @throws IOException 
      */
-    public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, PrimaryKeyFactory primaryKeyFactory, ExecutionContext executionContext) throws IOException {
+    public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, PrimaryKeyFactory primaryKeyFactory, ExecutionContext executionContext, boolean failOnMissingTables) throws IOException {
     	this.executionContext = executionContext;
     	this.primaryKeyFactory = primaryKeyFactory;
     	try {
 			List<String> excludeFromDeletion = new ArrayList<String>();
-			PrintUtil.loadTableList(excludeFromDeletion, openModelFile(executionContext.newFile(DataModel.getExcludeFromDeletionFile(executionContext)), executionContext));
+			PrintUtil.loadTableList(excludeFromDeletion, openModelFile(new File(DataModel.getExcludeFromDeletionFile(executionContext)), executionContext));
 
 	    	// tables
-	    	File tabFile = executionContext.newFile(getTablesFile(executionContext));
+	    	File tabFile = new File(getTablesFile(executionContext));
 			InputStream nTablesFile = openModelFile(tabFile, executionContext);
+			if (failOnMissingTables && nTablesFile == null) {
+				throw new RuntimeException("Datamodel not found: " + executionContext.getDataModelURL());
+			}
 			CsvFile tablesFile = new CsvFile(nTablesFile, null, tabFile.getPath(), null);
 	        List<CsvFile.Line> tableList = new ArrayList<CsvFile.Line>(tablesFile.getLines());
 	        if (additionalTablesFile != null) {
-	            tableList.addAll(new CsvFile(executionContext.newFile(additionalTablesFile)).getLines());
+	            tableList.addAll(new CsvFile(new File(additionalTablesFile)).getLines());
 	        }
 	        for (CsvFile.Line line: tableList) {
 	            boolean defaultUpsert = "Y".equalsIgnoreCase(line.cells.get(1));
@@ -366,7 +369,7 @@ public class DataModel {
 	        }
 	        
 	        // columns
-	        File colFile = executionContext.newFile(getColumnsFile(executionContext));
+	        File colFile = new File(getColumnsFile(executionContext));
 			InputStream is = openModelFile(colFile, executionContext);
 	        if (is != null) {
 		    	CsvFile columnsFile = new CsvFile(is, null, colFile.getPath(), null);
@@ -389,10 +392,10 @@ public class DataModel {
 	        }
 	        
 	        // associations
-	        File assFile = executionContext.newFile(getAssociationsFile(executionContext));
+	        File assFile = new File(getAssociationsFile(executionContext));
 			List<CsvFile.Line> associationList = new ArrayList<CsvFile.Line>(new CsvFile(openModelFile(assFile, executionContext), null, assFile.getPath(), assocFilter).getLines());
 	        if (additionalAssociationsFile != null) {
-	            associationList.addAll(new CsvFile(executionContext.newFile(additionalAssociationsFile)).getLines());
+	            associationList.addAll(new CsvFile(new File(additionalAssociationsFile)).getLines());
 	        }
 	        for (CsvFile.Line line: associationList) {
 	            String location = line.location;
@@ -448,7 +451,7 @@ public class DataModel {
 	        initTableOrdinals();
 	        
 	        // model name
-	        File nameFile = executionContext.newFile(getModelNameFile(executionContext));
+	        File nameFile = new File(getModelNameFile(executionContext));
 	        name = DEFAULT_NAME;
 	    	lastModified = null;
 	        try {
@@ -522,7 +525,7 @@ public class DataModel {
     	}
     	
     	Map<String, String> userDefinedDisplayNames = new TreeMap<String, String>();
-        File dnFile = executionContext.newFile(DataModel.getDisplayNamesFile(executionContext));
+        File dnFile = new File(DataModel.getDisplayNamesFile(executionContext));
         if (dnFile.exists()) {
         	for (CsvFile.Line dnl: new CsvFile(dnFile).getLines()) {
         		userDefinedDisplayNames.put(dnl.cells.get(0), dnl.cells.get(1));
@@ -650,7 +653,7 @@ public class DataModel {
             str.append(table);
             if (printClosures) {
                 str.append("  closure =");
-                str.append(new PrintUtil(executionContext).tableSetAsString(table.closure(true)) + "\n\n");
+                str.append(new PrintUtil().tableSetAsString(table.closure(true)) + "\n\n");
             }
         }
         return str.toString();

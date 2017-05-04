@@ -123,9 +123,6 @@ public class CommandLine {
 	@Option(name="-datamodel", usage="folder holding the data model. Defaults to './datamodel'")
     public String datamodelFolder = "datamodel";
 
-	@Option(name="-working-folder", usage="the working folder. Defaults to '.'")
-    public String workingFolder = null;
-
 	@Option(name="-jdbcjar", usage="JDBC driver's jar file")
     public String jdbcjar = null;
 

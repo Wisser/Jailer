@@ -29,11 +29,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.Table;
 
 /**
@@ -42,20 +40,6 @@ import net.sf.jailer.datamodel.Table;
  * @author Ralf Wisser
  */
 public class PrintUtil {
-	
-	/**
-	 * The execution context.
-	 */
-	private final ExecutionContext executionContext;
-	
-	/**
-	 * Constructor.
-	 * 
-	 * @param executionContext the command line arguments
-	 */
-	public PrintUtil(ExecutionContext executionContext) {
-		this.executionContext = executionContext;
-	}
 	
     /**
      * Converts a set of tables into a string.
@@ -110,7 +94,7 @@ public class PrintUtil {
     public String loadResource(String name) throws FileNotFoundException, IOException {
         StringBuffer sb;
         sb = new StringBuffer();
-        File newFile = executionContext.newFile(name);
+        File newFile = new File(name);
 		BufferedReader reader;
 		if (newFile.exists()) {
 			reader = new BufferedReader(new FileReader(newFile));
@@ -259,7 +243,7 @@ public class PrintUtil {
     public String loadFile(String file, boolean ignoreComments) throws FileNotFoundException, IOException {
         StringBuffer sb;
         sb = new StringBuffer();
-        BufferedReader reader = new BufferedReader(new FileReader(executionContext.newFile(file)));
+        BufferedReader reader = new BufferedReader(new FileReader(new File(file)));
         String line = null;
         while ((line = reader.readLine()) != null) {
             if (!ignoreComments || (line.trim().length() > 0 && !line.startsWith("#"))) {

@@ -563,10 +563,6 @@ public class UIUtil {
 		args.add("-datamodel");
 		ExecutionContext executionContext = CommandLineInstance.getExecutionContext();
 		args.add(executionContext.getQualifiedDatamodelFolder());
-		if (executionContext.getWorkingFolder() != null) {
-			args.add("-working-folder");
-			args.add(executionContext.getWorkingFolder());
-		}
 		return createPlainCLIArguments(password, args);
 	}
 

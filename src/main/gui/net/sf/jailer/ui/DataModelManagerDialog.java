@@ -92,7 +92,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		
 		String modelpath = CommandLineInstance.getExecutionContext().getQualifiedDatamodelFolder();
 		try {
-			modelpath = CommandLineInstance.getExecutionContext().newFile(modelpath).getAbsolutePath();
+			modelpath = new File(modelpath).getAbsolutePath();
 		} catch (Throwable t) {
 			// use default modelpath
 		}

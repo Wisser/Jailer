@@ -241,7 +241,7 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
      */
     private static Map<String, Map<String, String>> restore() {
     	try {
-    		File file = CommandLineInstance.getExecutionContext().newFile(MAPPINGS_FILE);
+    		File file = new File(MAPPINGS_FILE);
     		ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
     		@SuppressWarnings("unchecked")
 			Map<String, Map<String, String>> mappings = (Map<String, Map<String, String>>) in.readObject();
@@ -278,7 +278,7 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
     public static void store(Map<String, String> mapping, DbConnectionDialog connectionDialog) {
     	try {
     		Map<String, Map<String, String>> mappings = restore();
-    		File file = CommandLineInstance.getExecutionContext().newFile(MAPPINGS_FILE);
+    		File file = new File(MAPPINGS_FILE);
     		file.delete();
     		mappings.put(connectionDialog.currentConnection.user + "@" + connectionDialog.currentConnection.url, mapping);
     		ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
