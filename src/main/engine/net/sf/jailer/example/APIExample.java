@@ -27,24 +27,37 @@ import net.sf.jailer.subsetting.ScriptFormat;
 
 public class APIExample {
 	
-	private Subsetter subsetter = 
+	private static final int POOL_SIZE = 10;
+
+	private static Subsetter subsetter = 
 		new Subsetter(
 			new BasicDataSource(
 					"org.h2.Driver", "jdbc:h2:demo-scott", "sa", "",
+					POOL_SIZE,
 					new File("lib/h2-1.3.160.jar")),
 			null,
-			getClass().getResource("Demo-Scott"),
-			getClass().getResource("Demo-Scott.csv"),
+			APIExample.class.getResource("Demo-Scott"),
+			APIExample.class.getResource("Demo-Scott.csv"),
 			ScriptFormat.SQL);
 	
-	private Importer importer =
+	private static Importer importer =
 		new Importer(
 			new BasicDataSource(
 				"org.h2.Driver", "jdbc:h2:demo-scott-subset", "sa", "",
+				10,
 				new File("lib/h2-1.3.160.jar")));
 
 	public static void main(String[] args) throws SQLException, IOException {
 		new APIExample().exportScott();
+		
+		long t = System.currentTimeMillis();
+
+		for (int i = 0; i < 100; ++i) {
+			new APIExample().exportScott();
+		}
+		
+		System.out.println(System.currentTimeMillis() - t);
+		
 	}
 
 	private void exportScott() throws SQLException, IOException {

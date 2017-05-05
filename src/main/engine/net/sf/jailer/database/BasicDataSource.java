@@ -2,6 +2,10 @@ package net.sf.jailer.database;
 
 import java.io.File;
 import java.io.PrintWriter;
+import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Proxy;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -13,7 +17,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
 import java.sql.Statement;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -63,7 +69,12 @@ public class BasicDataSource implements DataSource {
      * The DBMS.
      */
     public final DBMS dbms;
-    
+
+    /**
+     * Maximum number of pooled connections.
+     */
+    private final int maxPoolSize;
+
     /**
      * Constructor. Derives DBMS from URL.
      * 
@@ -71,13 +82,15 @@ public class BasicDataSource implements DataSource {
      * @param dbUrl the URL
      * @param dbUser the user
      * @param dbPassword the password
+     * @param maxPoolSize maximum number of pooled connections
      * @param jdbcDriver driver jar file
      */
-	public BasicDataSource(String driverClassName, String dbUrl, String dbUser, String dbPassword, File jdbcDriver) {
+	public BasicDataSource(String driverClassName, String dbUrl, String dbUser, String dbPassword, int maxPoolSize, File jdbcDriver) {
 		this.driverClassName = driverClassName;
 		this.dbUrl = dbUrl;
 		this.dbUser = dbUser;
 		this.dbPassword = dbPassword;
+		this.maxPoolSize = maxPoolSize;
 		try {
 			loadDriver(jdbcDriver == null? null : new URL[] { jdbcDriver.toURI().toURL() });
 		} catch (MalformedURLException e) {
@@ -94,13 +107,15 @@ public class BasicDataSource implements DataSource {
      * @param dbUrl the URL
      * @param dbUser the user
      * @param dbPassword the password
+     * @param maxPoolSize maximum number of pooled connections
      * @param jdbcDriverURL URL of driver jar file
      */
-	public BasicDataSource(String driverClassName, String dbUrl, String dbUser, String dbPassword, URL... jdbcDriverURL) {
+	public BasicDataSource(String driverClassName, String dbUrl, String dbUser, String dbPassword, int maxPoolSize, URL... jdbcDriverURL) {
 		this.driverClassName = driverClassName;
 		this.dbUrl = dbUrl;
 		this.dbUser = dbUser;
 		this.dbPassword = dbPassword;
+		this.maxPoolSize = maxPoolSize;
 		loadDriver(jdbcDriverURL);
 		this.dbms = findDBMS();	
 	}
@@ -112,17 +127,35 @@ public class BasicDataSource implements DataSource {
      * @param dbUrl the URL
      * @param dbUser the user
      * @param dbPassword the password
+     * @param maxPoolSize maximum number of pooled connections
      * @param dbms the DBMS 
      */
-	public BasicDataSource(String driverClassName, String dbUrl, String dbUser, String dbPassword, DBMS dbms, URL... jdbcDriverURL) {
+	public BasicDataSource(String driverClassName, String dbUrl, String dbUser, String dbPassword, DBMS dbms, int maxPoolSize, URL... jdbcDriverURL) {
 		this.driverClassName = driverClassName;
 		this.dbUrl = dbUrl;
 		this.dbUser = dbUser;
 		this.dbPassword = dbPassword;
+		this.maxPoolSize = maxPoolSize;
 		loadDriver(jdbcDriverURL);
 		this.dbms = dbms;
 	}
 
+	/**
+	 * Closes all pooled connections.
+	 */
+	public void close() {
+		synchronized (pool) {
+			for (Connection connection: pool) {
+				try {
+					connection.close();
+				} catch (SQLException e) {
+					// ignore
+				}
+			}
+			pool.clear();
+		}
+	}
+	
     /**
      * Wraps a Jdbc-Driver.
      */
@@ -189,7 +222,7 @@ public class BasicDataSource implements DataSource {
         		if (c.getTestQuery() != null) {
         			Connection connection = null;
         			try {
-        				connection = getConnection(defaultDBMS);
+        				connection = getConnection(defaultDBMS, false);
         				Statement st = connection.createStatement();
         				ResultSet rs = st.executeQuery(c.getTestQuery());
         				while (rs.next()) {
@@ -217,16 +250,27 @@ public class BasicDataSource implements DataSource {
         return defaultDBMS;
 	}
 
+	private final List<Connection> pool = Collections.synchronizedList(new LinkedList<Connection>());
+	
 	/**
 	 * Creates a new connection.
 	 * 
 	 * @param theDbms the DBMS to use
 	 * @return new connection
 	 */
-    private Connection getConnection(DBMS theDbms) throws SQLException {
-		Map<String, String> jdbcProperties = theDbms.getJdbcProperties();
+    private Connection getConnection(DBMS theDbms, boolean usePool) throws SQLException {
 		Connection con = null;
-		if (jdbcProperties != null) {
+
+		if (usePool) {
+    		synchronized (pool) {
+				if (pool.size() > 0) {
+					con = pool.remove(0);
+				}
+			}
+    	}
+		
+		Map<String, String> jdbcProperties = theDbms.getJdbcProperties();
+		if (con == null && jdbcProperties != null) {
 			try {
 				 java.util.Properties info = new java.util.Properties();
 				 if (dbUser != null) {
@@ -243,10 +287,47 @@ public class BasicDataSource implements DataSource {
 				// ignore
 			}
 		}
+		
 		if (con == null) {
 			con = DriverManager.getConnection(dbUrl, dbUser, dbPassword);
 		}
-		return con;
+		
+		if (maxPoolSize == 0) {
+			return con;
+		}
+		
+		final Connection finalCon = con;
+		return (Connection) Proxy.newProxyInstance(con.getClass().getClassLoader(), con.getClass().getInterfaces(), new InvocationHandler() {
+			private volatile boolean valid = true;
+			@Override
+			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+				if ("close".equals(method.getName())) {
+					if (valid && pool.size() < maxPoolSize) {
+						try {
+							finalCon.rollback();
+							pool.add(finalCon);
+							return null;
+						} catch (SQLException e) {
+							// ignore
+						}
+					}
+				}
+				try {
+					return method.invoke(finalCon, args);
+				} catch (InvocationTargetException e) {
+					if (e.getCause() instanceof SQLException) {
+						try {
+							valid = finalCon.isValid(10);
+						} catch (SQLException e2) {
+							valid = false;
+						} catch (Throwable t) {
+							valid = true;
+						}
+					}
+					throw e;
+				}
+			}
+		});
 	}
 
 	/**
@@ -282,7 +363,7 @@ public class BasicDataSource implements DataSource {
 
 	@Override
 	public Connection getConnection() throws SQLException {
-		return getConnection(dbms);
+		return getConnection(dbms, true);
 	}
 
 	@Override
@@ -314,7 +395,7 @@ public class BasicDataSource implements DataSource {
 
 	@Override
 	public boolean isWrapperFor(Class<?> arg0) throws SQLException {
-		throw new UnsupportedOperationException();
+		return false;
 	}
 
 	@Override

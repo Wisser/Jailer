@@ -43,18 +43,12 @@ public class LocalDatabase {
 	private String databaseFolder;
 	
 	/**
-	 * The execution context.
-	 */
-	private final ExecutionContext executionContext;
-	
-	/**
 	 * Creates a local database.
 	 */
-	public LocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile, ExecutionContext executionContext) throws ClassNotFoundException, FileNotFoundException, SQLException {
-		this.executionContext = executionContext;
+	public LocalDatabase(String driverClassName, String urlPattern, String user, String password, String jarfile) throws ClassNotFoundException, FileNotFoundException, SQLException {
 		this.databaseFolder = new File(Configuration.getInstance().getTempFileFolder()) + File.separator + UUID.randomUUID().toString();
 		new File(databaseFolder).mkdirs();
-		BasicDataSource dataSource = new BasicDataSource(driverClassName, urlPattern.replace("%s", databaseFolder + File.separator + "local"), user, password, ClasspathUtil.toURLArray(jarfile, null));
+		BasicDataSource dataSource = new BasicDataSource(driverClassName, urlPattern.replace("%s", databaseFolder + File.separator + "local"), user, password, 0, ClasspathUtil.toURLArray(jarfile, null));
 		session = new Session(dataSource, dataSource.dbms, null, false, true);
 	}
 	

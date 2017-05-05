@@ -159,7 +159,7 @@ public class Jailer {
 					CommandLineParser.printUsage();
 				} else {
 					BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4),
-							commandLine.arguments.get(5), jdbcJarURLs);
+							commandLine.arguments.get(5), 0, jdbcJarURLs);
 					Session session = new Session(dataSource, dataSource.dbms, null, commandLine.transactional);
 					try {
 						new SqlScriptExecutor(session, commandLine.numberOfThreads).executeScript(commandLine.arguments.get(1), commandLine.transactional);
@@ -187,7 +187,7 @@ public class Jailer {
 						CommandLineParser.printUsage();
 					} else {
 						BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(2), commandLine.arguments.get(3),
-								commandLine.arguments.get(4), commandLine.arguments.get(5), jdbcJarURLs);
+								commandLine.arguments.get(4), commandLine.arguments.get(5), 0, jdbcJarURLs);
 						URL modelURL = new File(commandLine.arguments.get(1)).toURI().toURL();
 						new SubsettingEngine(executionContext).export(modelURL, commandLine.exportScriptFileName, commandLine.deleteScriptFileName,
 								dataSource, dataSource.dbms, commandLine.explain, executionContext.getScriptFormat());
@@ -202,7 +202,7 @@ public class Jailer {
 						CommandLineParser.printUsage();
 					} else {
 						BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(2), commandLine.arguments.get(3),
-								commandLine.arguments.get(4), commandLine.arguments.get(5), jdbcJarURLs);
+								commandLine.arguments.get(4), commandLine.arguments.get(5), 0, jdbcJarURLs);
 						// note we are passing null for script format and the export script name, as we are using the export tool
 						// to generate the delete script only.
 						URL modelURL = new File(commandLine.arguments.get(1)).toURI().toURL();
@@ -218,7 +218,7 @@ public class Jailer {
 				}
 			} else if ("create-ddl".equalsIgnoreCase(command)) {
 				if (commandLine.arguments.size() == 5) {
-					BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), jdbcJarURLs);
+					BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), 0, jdbcJarURLs);
 					return new DDLCreator(executionContext).createDDL(dataSource, dataSource.dbms, executionContext.getScope(), commandLine.workingTableSchema);
 				}
 				return new DDLCreator(executionContext).createDDL((DataSource) null, null, executionContext.getScope(), commandLine.workingTableSchema);
@@ -227,7 +227,7 @@ public class Jailer {
 					CommandLineParser.printUsage();
 				} else {
 					_log.info("Building data model.");
-					BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), jdbcJarURLs);
+					BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), 0, jdbcJarURLs);
 					ModelBuilder.build(dataSource, dataSource.dbms, commandLine.schema, warnings, executionContext);
 				}
 			} else if ("build-model".equalsIgnoreCase(command)) {
@@ -235,7 +235,7 @@ public class Jailer {
 					CommandLineParser.printUsage();
 				} else {
 					_log.info("Building data model.");
-					BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), jdbcJarURLs);
+					BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(1), commandLine.arguments.get(2), commandLine.arguments.get(3), commandLine.arguments.get(4), 0, jdbcJarURLs);
 					ModelBuilder.buildAndMerge(dataSource, dataSource.dbms, commandLine.schema, warnings, executionContext);
 				}
 			} else {
