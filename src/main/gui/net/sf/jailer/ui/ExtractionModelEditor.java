@@ -445,7 +445,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		if (extractionModel.subject != null) {
 			subjectTable.setSelectedItem(dataModel.getDisplayName(extractionModel.subject));
 		}
-		String cond = extractionModel.condition;
+		String cond = extractionModel.getCondition();
 		if (cond.equals("1=1")) {
 			cond = "";
 		}

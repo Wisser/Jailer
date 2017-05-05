@@ -189,8 +189,8 @@ public class Jailer {
 						BasicDataSource dataSource = new BasicDataSource(commandLine.arguments.get(2), commandLine.arguments.get(3),
 								commandLine.arguments.get(4), commandLine.arguments.get(5), 0, jdbcJarURLs);
 						URL modelURL = new File(commandLine.arguments.get(1)).toURI().toURL();
-						new SubsettingEngine(executionContext).export(modelURL, commandLine.exportScriptFileName, commandLine.deleteScriptFileName,
-								dataSource, dataSource.dbms, commandLine.explain, executionContext.getScriptFormat());
+						new SubsettingEngine(executionContext).export(commandLine.where, modelURL, commandLine.exportScriptFileName, commandLine.deleteScriptFileName,
+								dataSource, dataSource.dbms, commandLine.explain, executionContext.getScriptFormat(), 0);
 					}
 				}
 			} else if ("delete".equalsIgnoreCase(command)) {
@@ -206,8 +206,8 @@ public class Jailer {
 						// note we are passing null for script format and the export script name, as we are using the export tool
 						// to generate the delete script only.
 						URL modelURL = new File(commandLine.arguments.get(1)).toURI().toURL();
-						new SubsettingEngine(executionContext).export(modelURL, /* clp.exportScriptFileName*/ null, commandLine.deleteScriptFileName,
-								dataSource, dataSource.dbms, commandLine.explain, /*scriptFormat*/ null);
+						new SubsettingEngine(executionContext).export(commandLine.where, modelURL, /* clp.exportScriptFileName*/ null, commandLine.deleteScriptFileName,
+								dataSource, dataSource.dbms, commandLine.explain, /*scriptFormat*/ null, 0);
 					}
 				}
 			} else if ("find-association".equalsIgnoreCase(command)) {

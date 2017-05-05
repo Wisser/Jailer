@@ -34,6 +34,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -257,7 +258,7 @@ public class SubsettingEngine {
 		for (AdditionalSubject as: extractionModel.additionalSubjects) {
 			allSubjects.add(new AdditionalSubject(as.getSubject(), ParameterHandler.assignParameterValues(as.getCondition(), executionContext.getParameters())));
 		}
-		allSubjects.add(new AdditionalSubject(extractionModel.subject, extractionModel.condition.equals("1=1")? "" : extractionModel.condition));
+		allSubjects.add(new AdditionalSubject(extractionModel.subject, subjectCondition.equals("1=1")? "" : subjectCondition));
 		Map<Table, String> conditionPerTable = new HashMap<Table, String>();
 		for (AdditionalSubject as: allSubjects) {
 			String cond = conditionPerTable.get(as.getSubject());
@@ -1253,17 +1254,32 @@ public class SubsettingEngine {
 		}
 	}
 
+	private String subjectCondition;
+	private static Map<String, List<ExtractionModel>> modelPool = new HashMap<String, List<ExtractionModel>>();
+	
 	/**
 	 * Exports entities.
 	 * @param datamodelBaseURL URL of datamodel folder
+	 * @param modelPoolSize size of extraction-model pool
 	 */
-	public void export(URL extractionModelURL, String scriptFile, String deleteScriptFileName, DataSource dataSource, DBMS dbms, boolean explain, ScriptFormat scriptFormat) throws SQLException, IOException, SAXException {
+	public void export(String whereClause, URL extractionModelURL, String scriptFile, String deleteScriptFileName, DataSource dataSource, DBMS dbms, boolean explain, ScriptFormat scriptFormat, int modelPoolSize) throws SQLException, IOException, SAXException {
 		if (scriptFile != null) {
 			_log.info("exporting '" + extractionModelURL + "' to '" + scriptFile + "'");
 		}
 
 		Session session = new Session(dataSource, dbms, executionContext.getScope(), false);
-		ExtractionModel extractionModel = new ExtractionModel(extractionModelURL, executionContext.getSourceSchemaMapping(), executionContext.getParameters(), executionContext, true);
+		ExtractionModel extractionModel = null;
+		if (modelPoolSize > 0) {
+			synchronized (modelPool) {
+				List<ExtractionModel> models = modelPool.get(extractionModelURL.toString());
+				if (models != null && models.size() > 0) {
+					extractionModel = models.remove(0);
+				}
+			}
+		}
+		if (extractionModel == null) {
+			extractionModel = new ExtractionModel(extractionModelURL, executionContext.getSourceSchemaMapping(), executionContext.getParameters(), executionContext, true);
+		}
 
 		DDLCreator ddlCreator = new DDLCreator(executionContext);
 		if (executionContext.getScope() == WorkingTableScope.SESSION_LOCAL
@@ -1300,12 +1316,14 @@ public class SubsettingEngine {
 		Set<Table> totalProgress = new HashSet<Table>();
 		Set<Table> subjects = new HashSet<Table>();
 
-		if (executionContext.getWhere() != null && executionContext.getWhere().trim().length() > 0) {
-			extractionModel.condition = executionContext.getWhere();
+		if (whereClause != null) {
+			subjectCondition = whereClause;
+		} else {
+			subjectCondition = extractionModel.getCondition();
 		}
 
 		appendCommentHeader("");
-		String condition = (extractionModel.condition != null && !"1=1".equals(extractionModel.condition)) ? extractionModel.subject.getName() + " where " + extractionModel.condition
+		String condition = (subjectCondition != null && !"1=1".equals(subjectCondition)) ? extractionModel.subject.getName() + " where " + subjectCondition
 				: "all rows from " + extractionModel.subject.getName();
 		appendCommentHeader("Extraction Model:  " + condition + " (" + extractionModelURL + ")");
 		for (AdditionalSubject as: extractionModel.additionalSubjects) {
@@ -1337,7 +1355,7 @@ public class SubsettingEngine {
 			extractionModel.dataModel.checkForPrimaryKey(toCheck, deleteScriptFileName != null);
 		}
 
-		extractionModel.condition = ParameterHandler.assignParameterValues(extractionModel.condition, executionContext.getParameters());
+		subjectCondition = ParameterHandler.assignParameterValues(subjectCondition, executionContext.getParameters());
 		
 		if (!executionContext.getParameters().isEmpty()) {
 			String suffix = "Parameters:        ";
@@ -1359,7 +1377,7 @@ public class SubsettingEngine {
 			Set<Table> completedTables = new HashSet<Table>();
 			Set<Table> progress = exportSubjects(extractionModel, completedTables);
 			entityGraph.setBirthdayOfSubject(entityGraph.getAge());
-			progress.addAll(export(extractionModel.subject, extractionModel.condition, progress, true, completedTables));
+			progress.addAll(export(extractionModel.subject, subjectCondition, progress, true, completedTables));
 			totalProgress.addAll(progress);
 			subjects.add(extractionModel.subject);
 	
@@ -1397,6 +1415,7 @@ public class SubsettingEngine {
 				exportedEntities.delete();
 				exportedEntities.shutDown();
 				setEntityGraph(entityGraph);
+				datamodel.transpose();
 			}
 			entityGraph.close();
 		} catch (CancellationException e) {
@@ -1436,6 +1455,18 @@ public class SubsettingEngine {
 				_log.warn(t.getMessage());
 			}
 			throw e;
+		}
+		if (modelPoolSize > 0) {
+			synchronized (modelPool) {
+				List<ExtractionModel> models = modelPool.get(extractionModelURL.toString());
+				if (models == null) {
+					models = new LinkedList<ExtractionModel>();
+					modelPool.put(extractionModelURL.toString(), models);
+				}
+				if (models.size() < modelPoolSize) {
+					models.add(extractionModel);
+				}
+			}
 		}
 		shutDown();
 	}
@@ -1477,7 +1508,7 @@ public class SubsettingEngine {
 		appendCommentHeader("Tabu-tables: " + new PrintUtil().tableSetAsString(tabuTables, "--                 "));
 		_log.info("Tabu-tables: " + new PrintUtil().tableSetAsString(tabuTables, null));
 		entityGraph.setDeleteMode(true);
-		removeFilters(datamodel);
+		List<Runnable> resetFilters = removeFilters(datamodel);
 
 		final Map<Table, Long> removedEntities = new HashMap<Table, Long>();
 
@@ -1629,17 +1660,31 @@ public class SubsettingEngine {
 			firstLine = false;
 		}
 		appendCommentHeader("");
+		for (Runnable rf: resetFilters) {
+			rf.run();
+		}
 	}
 
 	/**
 	 * Removes filters on every column.
 	 */
-	private void removeFilters(DataModel theDatamodel) {
+	private List<Runnable> removeFilters(DataModel theDatamodel) {
+		List<Runnable> resetFilters = new ArrayList<Runnable>();
 		for (Table table: theDatamodel.getTables()) {
-			for (Column column: table.getColumns()) {
-				column.setFilter(null);
+			for (final Column column: table.getColumns()) {
+				final Filter filter = column.getFilter();
+				if (filter != null) {
+					column.setFilter(null);
+					resetFilters.add(new Runnable() {
+						@Override
+						public void run() {
+							column.setFilter(filter);
+						}
+					});
+				}
 			}
 		}
+		return resetFilters;
 	}
 
 }
