@@ -145,7 +145,7 @@ public class ExtractionModel {
     /**
      * The SQL-condition.
      */
-    public String condition;
+    private final String condition;
     
     /**
      * A limit for the number of subject-entities. (-1 for unlimited)
@@ -423,5 +423,12 @@ public class ExtractionModel {
         }
         return null;
     }
+
+	/**
+	 * @return the subject condition
+	 */
+	public String getCondition() {
+		return condition;
+	}
     
 }

@@ -61,7 +61,6 @@ public class ExecutionContext {
 		this.analyseAlias = other.analyseAlias;
 		this.analyseSynonym = other.analyseSynonym;
 		this.analyseView = other.analyseView;
-		this.where = other.where;
 		this.rawschemamapping = other.rawschemamapping;
 		this.rawsourceschemamapping = other.rawsourceschemamapping;
 		this.parameters = copy(other.parameters);
@@ -283,25 +282,6 @@ public class ExecutionContext {
 	 */
 	public void setAnalyseView(boolean analyseView) {
 		this.analyseView = analyseView;
-	}
-
-	/**
-	 * Gets subject condition
-	 *
-	 * @return subject condition
-	 */
-	public String getWhere() {
-		return where;
-	}
-
-	/**
-	 * Sets subject condition
-	 *
-	 * @param where
-	 *            subject condition
-	 */
-	public void setWhere(String where) {
-		this.where = where;
 	}
 
 	/**
@@ -730,9 +710,6 @@ public class ExecutionContext {
 	// look for views while analysing the DB
 	private boolean analyseView = false;
 
-	// subject condition
-	private String where = null;
-
 	// target schema map
 	private String rawschemamapping = null;
 
@@ -787,7 +764,6 @@ public class ExecutionContext {
 		analyseAlias = commandLine.analyseAlias;
 		analyseSynonym = commandLine.analyseSynonym;
 		analyseView = commandLine.analyseView;
-		where = commandLine.where;
 		rawschemamapping = commandLine.rawschemamapping;
 		rawsourceschemamapping = commandLine.rawsourceschemamapping;
 		rawparameters = commandLine.parameters;

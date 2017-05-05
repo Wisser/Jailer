@@ -63,9 +63,8 @@ public class APIExample {
 	private void exportScott() throws SQLException, IOException {
 		File exportScriptFile = Configuration.getInstance().createTempFile();
 		
-		subsetter.setWhereClause("NAME='SCOTT'");
 		subsetter.setUpsertOnly(true); // overwrite previous data
-		subsetter.execute(exportScriptFile);
+		subsetter.execute("NAME='SCOTT'", exportScriptFile);
 		
 		importer.execute(exportScriptFile);
 		

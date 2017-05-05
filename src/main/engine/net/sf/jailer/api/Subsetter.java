@@ -52,6 +52,7 @@ public class Subsetter {
 	 */
 	public Subsetter(Subsetter other) {
 		this.dataSource = other.dataSource;
+		this.modelPoolSize = other.modelPoolSize;
 		this.dbms = other.dbms;
 		this.executionContext = new ExecutionContext(other.executionContext);
 		this.extractionModelURL = other.extractionModelURL;
@@ -109,20 +110,22 @@ public class Subsetter {
 	
 	/**
 	 * Generates the export-script.
+	 * @param whereClause if not <code>null</code>, overrides the extraction model's subject condition 
 	 * 
 	 * @param exportScriptFile the export-script file (compressed if it ends with '.zip' or '.gz')
 	 */
-	public void execute(File exportScriptFile) throws SQLException, IOException {
-		execute(exportScriptFile, null);
+	public void execute(String whereClause, File exportScriptFile) throws SQLException, IOException {
+		execute(whereClause, exportScriptFile, null);
 	}
 
 	/**
 	 * Generates the export- and/or delete-script.
 	 * 
+	 * @param whereClause if not <code>null</code>, overrides the extraction model's subject condition 
 	 * @param exportScriptFile the export-script file (compressed if it ends with '.zip' or '.gz'), optional
 	 * @param deleteScriptFile the delete-script file (compressed if it ends with '.zip' or '.gz'), optional
 	 */
-	public void execute(File exportScriptFile, File deleteScriptFile) throws SQLException, IOException {
+	public void execute(String whereClause, File exportScriptFile, File deleteScriptFile) throws SQLException, IOException {
 		try {
 			if (getDataModelURL() == null) {
 				throw new IllegalStateException("missing DataModelURL");
@@ -145,10 +148,11 @@ public class Subsetter {
 				}
 			}
 			new SubsettingEngine(executionContext).export(
+					whereClause,
 					getExtractionModelURL(), 
 					exportScriptFile == null? null : exportScriptFile.getAbsolutePath(),
 					deleteScriptFile == null? null : deleteScriptFile.getAbsolutePath(),
-					getDataSource(), sourceDBMS, false, getScriptFormat());
+					getDataSource(), sourceDBMS, false, getScriptFormat(), getModelPoolSize());
 		} catch (SAXException e) {
 			throw new RuntimeException(e);
 		}
@@ -255,25 +259,6 @@ public class Subsetter {
     public void setScriptFormat(ScriptFormat scriptFormat) {
     	executionContext.setScriptFormat(scriptFormat);
     }
-    
-	/**
-	 * Gets subject condition.
-	 *
-	 * @return subject condition
-	 */
-	public String getWhereClause() {
-		return executionContext.getWhere();
-	}
-
-	/**
-	 * Sets subject condition.
-	 *
-	 * @param where
-	 *            subject condition. If it's <code>null</code>, the subject condition from the extraction-model is used.
-	 */
-	public void setWhereClause(String where) {
-		executionContext.setWhere(where);
-	}
 
 	/**
 	 * If <code>true</code>, Use uTF-8 encoding
@@ -605,8 +590,23 @@ public class Subsetter {
 		return executionContext.getSourceSchemaMapping();
 	}
 
+	/**
+	 * @return the size of extraction-model pool (default is 10)
+	 */
+	public int getModelPoolSize() {
+		return modelPoolSize;
+	}
+
+	/**
+	 * @param modelPoolSize size of extraction-model pool (default is 10)
+	 */
+	public void setModelPoolSize(int modelPoolSize) {
+		this.modelPoolSize = modelPoolSize;
+	}
+
 	private final ExecutionContext executionContext;
 	
+	private int modelPoolSize = 10;
 	private URL extractionModelURL;
 	private DataSource dataSource;
 	private DBMS dbms;
