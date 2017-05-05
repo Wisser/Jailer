@@ -490,7 +490,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	private void createSession(DbConnectionDialog dbConnectionDialog) throws Exception {
 		ConnectionInfo connection = dbConnectionDialog.currentConnection;
-		BasicDataSource dataSource = new BasicDataSource(connection.driverClass, connection.url, connection.user, connection.password, dbConnectionDialog.currentJarURLs());
+		BasicDataSource dataSource = new BasicDataSource(connection.driverClass, connection.url, connection.user, connection.password, 0, dbConnectionDialog.currentJarURLs());
 		session = new Session(dataSource, dataSource.dbms);
 		List<String> args = new ArrayList<String>();
 		dbConnectionDialog.addDbArgs(args);

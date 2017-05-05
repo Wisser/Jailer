@@ -1052,7 +1052,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			        	args.add(tmpFileName != null? tmpFileName : extractionModelEditor.extractionModelFile);
 			        	dbConnectionDialog.addDbArgs(args);
 			        	Session.closeTemporaryTableSession();
-			        	BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), dbConnectionDialog.currentJarURLs()); 
+			        	BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs()); 
 			        	Session session = new Session(dataSource, dataSource.dbms);
 
 			        	if (extractionModelEditor.dataModel != null && session.dbms.getRowidName() == null) {
@@ -1085,7 +1085,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				        	}
 				        	DMLTransformer.numberOfExportedLOBs = 0;
 				        	DDLCreator ddlCreator = new DDLCreator(executionContext);
-				        	dataSource = new BasicDataSource(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), dbConnectionDialog.currentJarURLs());
+				        	dataSource = new BasicDataSource(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), 0, dbConnectionDialog.currentJarURLs());
 							String tableInConflict = ddlCreator.getTableInConflict(dataSource, dataSource.dbms);
 				        	if (tableInConflict != null && exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL)) {
 				        		JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);

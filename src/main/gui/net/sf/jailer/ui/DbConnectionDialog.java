@@ -796,7 +796,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 
 		try {
-			BasicDataSource dataSource = new BasicDataSource(ci.driverClass, ci.url, ci.user, ci.password, urls);
+			BasicDataSource dataSource = new BasicDataSource(ci.driverClass, ci.url, ci.user, ci.password, 0, urls);
 			Connection con = dataSource.getConnection();
 			con.close();
 			return true;
@@ -819,7 +819,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	public List<String> getDBSchemas(String[] defaultSchema) throws Exception {
 		BasicDataSource dataSource = new BasicDataSource(currentConnection.driverClass,
 				currentConnection.url, currentConnection.user,
-				currentConnection.password, ClasspathUtil.toURLArray(currentConnection.jar1, currentConnection.jar2));
+				currentConnection.password, 0, ClasspathUtil.toURLArray(currentConnection.jar1, currentConnection.jar2));
 		Session session = new Session(dataSource, dataSource.dbms);
 		List<String> schemas = JDBCMetaDataBasedModelElementFinder.getSchemas(
 				session, currentConnection.user);
@@ -841,7 +841,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			throws Exception {
 		BasicDataSource dataSource = new BasicDataSource(currentConnection.driverClass,
 				currentConnection.url, currentConnection.user,
-				currentConnection.password, ClasspathUtil.toURLArray(currentConnection.jar1, currentConnection.jar2));
+				currentConnection.password, 0, ClasspathUtil.toURLArray(currentConnection.jar1, currentConnection.jar2));
 		Session session = new Session(dataSource, dataSource.dbms);
 		List<String> schemas = JDBCMetaDataBasedModelElementFinder.getSchemas(
 				session, currentConnection.user);

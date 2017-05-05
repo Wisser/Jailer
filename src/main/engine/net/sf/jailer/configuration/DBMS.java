@@ -33,20 +33,20 @@ import net.sf.jailer.database.SqlScriptBasedStatisticRenovator;
 public class DBMS {
 
 	// predefined DBMSes
-	public static DBMS ORACLE;
-	public static DBMS MSSQL;
-	public static DBMS DB2;
-	public static DBMS DB2_ZOS;
-	public static DBMS MySQL;
-	public static DBMS POSTGRESQL;
-	public static DBMS SQLITE;
-	public static DBMS HSQL;
-	public static DBMS H2;
-	public static DBMS SYBASE;
-	public static DBMS INFORMIX;
-	public static DBMS CLOADSCAPE;
-	public static DBMS FIREBIRD;
-	public static DBMS DERBY;
+	public static final DBMS ORACLE;
+	public static final DBMS MSSQL;
+	public static final DBMS DB2;
+	public static final DBMS DB2_ZOS;
+	public static final DBMS MySQL;
+	public static final DBMS POSTGRESQL;
+	public static final DBMS SQLITE;
+	public static final DBMS HSQL;
+	public static final DBMS H2;
+	public static final DBMS SYBASE;
+	public static final DBMS INFORMIX;
+	public static final DBMS CLOADSCAPE;
+	public static final DBMS FIREBIRD;
+	public static final DBMS DERBY;
 
 	/**
 	 * Gets all DBMSes.
@@ -145,7 +145,7 @@ public class DBMS {
      */
 	private static final DBMS defaultDBMS = new DBMS();
 
-	static void initPredefinedDBMSes() {
+	static {
 		ORACLE = forDBMS("ORACLE");
 		MSSQL = forDBMS("MSSQL");
 		DB2 = forDBMS("DB2");

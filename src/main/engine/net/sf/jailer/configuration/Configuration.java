@@ -169,7 +169,6 @@ public class Configuration {
     			JAXBContext jc = JAXBContext.newInstance(Configuration.class, DBMS.class, DefaultTemporaryTableManager.class);
     			Unmarshaller um = jc.createUnmarshaller();
     			theConfiguration = (Configuration) um.unmarshal(res);
-    			DBMS.initPredefinedDBMSes();
     			res.close();
     		} catch (JAXBException e) {
     			throw new RuntimeException(e);
