@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src/test"/>
-	<classpathentry kind="src" path="src/main/subsetter"/>
+	<classpathentry kind="src" path="src/main/engine"/>
 	<classpathentry kind="src" path="src/main/gui"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/jre8"/>
 	<classpathentry kind="lib" path="lib/dbunit-2.4.4.jar"/>
