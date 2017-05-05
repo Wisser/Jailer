@@ -2885,7 +2885,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         where = new javax.swing.JLabel();
         jPanel7 = new javax.swing.JPanel();
         loadButton = new javax.swing.JButton();
-        andCondition = new net.sf.jailer.ui.JComboBox();
+        andCondition = new javax.swing.JComboBox();
         onPanel = new javax.swing.JPanel();
         on = new javax.swing.JLabel();
         joinPanel = new javax.swing.JPanel();
@@ -2919,7 +2919,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         fetchLabel = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
-        limitBox = new net.sf.jailer.ui.JComboBox();
+        limitBox = new javax.swing.JComboBox();
         relatedRowsPanel = new javax.swing.JPanel();
         relatedRowsLabel = new javax.swing.JLabel();
         jPanel9 = new javax.swing.JPanel();
@@ -2933,7 +2933,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         wherePanel.setMinimumSize(new java.awt.Dimension(66, 17));
         wherePanel.setLayout(new java.awt.BorderLayout());
 
-        where.setFont(new java.awt.Font("DejaVu Sans", 0, 14));
+        where.setFont(new java.awt.Font("DejaVu Sans", 0, 13)); // NOI18N
         where.setText("jLabel3");
         wherePanel.add(where, java.awt.BorderLayout.CENTER);
 
@@ -2978,7 +2978,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         onPanel.setMinimumSize(new java.awt.Dimension(66, 17));
         onPanel.setLayout(new java.awt.BorderLayout());
 
-        on.setFont(new java.awt.Font("DejaVu Sans", 0, 14));
+        on.setFont(new java.awt.Font("DejaVu Sans", 0, 13)); // NOI18N
         on.setText("jLabel3");
         onPanel.add(on, java.awt.BorderLayout.CENTER);
 
@@ -2994,14 +2994,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         joinPanel.setMinimumSize(new java.awt.Dimension(66, 17));
         joinPanel.setLayout(new java.awt.GridBagLayout());
 
-        join.setFont(new java.awt.Font("DejaVu Sans", 0, 14));
+        join.setFont(new java.awt.Font("DejaVu Sans", 0, 13)); // NOI18N
         join.setText("jLabel3");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         joinPanel.add(join, gridBagConstraints);
 
-        jLabel6.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
+        jLabel6.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         jLabel6.setText(" as B  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -3021,14 +3021,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel10.setMinimumSize(new java.awt.Dimension(66, 17));
         jPanel10.setLayout(new java.awt.GridBagLayout());
 
-        from.setFont(new java.awt.Font("DejaVu Sans", 0, 14));
+        from.setFont(new java.awt.Font("DejaVu Sans", 0, 13)); // NOI18N
         from.setText("jLabel3");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         jPanel10.add(from, gridBagConstraints);
 
-        jLabel5.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
+        jLabel5.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         jLabel5.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         jLabel5.setText(" as A");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -3051,7 +3051,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        jLabel2.setFont(new java.awt.Font("DejaVu Sans", 1, 14));
+        jLabel2.setFont(new java.awt.Font("DejaVu Sans", 1, 14)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(141, 16, 16));
         jLabel2.setText("loading...");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -3133,7 +3133,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
-        jLabel10.setFont(new java.awt.Font("DejaVu Sans", 1, 14));
+        jLabel10.setFont(new java.awt.Font("DejaVu Sans", 1, 14)); // NOI18N
         jLabel10.setForeground(new java.awt.Color(141, 16, 16));
         jLabel10.setText("Error");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -3149,7 +3149,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
-        jLabel8.setFont(new java.awt.Font("DejaVu Sans", 1, 14));
+        jLabel8.setFont(new java.awt.Font("DejaVu Sans", 1, 14)); // NOI18N
         jLabel8.setForeground(new java.awt.Color(141, 16, 16));
         jLabel8.setText("Cancelled");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -3167,7 +3167,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         jPanel8.setLayout(new java.awt.GridBagLayout());
 
-        jLabel11.setFont(new java.awt.Font("DejaVu Sans", 1, 14));
+        jLabel11.setFont(new java.awt.Font("DejaVu Sans", 1, 14)); // NOI18N
         jLabel11.setForeground(new java.awt.Color(141, 16, 16));
         jLabel11.setText("pending...");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -3190,7 +3190,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         add(pendingNonpendingPanel, gridBagConstraints);
 
-        jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
+        jLabel1.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         jLabel1.setText(" Join ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -3198,7 +3198,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel1, gridBagConstraints);
 
-        jLabel4.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
+        jLabel4.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         jLabel4.setText(" On ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -3207,7 +3207,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel4, gridBagConstraints);
 
-        jLabel9.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
+        jLabel9.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         jLabel9.setText(" Where ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -3216,7 +3216,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel9, gridBagConstraints);
 
-        andLabel.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
+        andLabel.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         andLabel.setText(" And  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -3231,7 +3231,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(openEditorLabel, gridBagConstraints);
 
-        jLabel3.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
+        jLabel3.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         jLabel3.setText(" From ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -3239,7 +3239,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel3, gridBagConstraints);
 
-        fetchLabel.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
+        fetchLabel.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         fetchLabel.setText(" Limit  ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -3305,14 +3305,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
         add(sqlPanel, gridBagConstraints);
 
-        dropA.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
+        dropA.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         dropA.setText("drop");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 4;
         add(dropA, gridBagConstraints);
 
-        dropB.setFont(new java.awt.Font("DejaVu Sans", 1, 13));
+        dropB.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
         dropB.setText("drop");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
@@ -3347,7 +3347,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    net.sf.jailer.ui.JComboBox andCondition;
+    javax.swing.JComboBox andCondition;
     private javax.swing.JLabel andLabel;
     private javax.swing.JButton cancelLoadButton;
     private javax.swing.JPanel cardPanel;
@@ -3377,7 +3377,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel9;
     private javax.swing.JLabel join;
     private javax.swing.JPanel joinPanel;
-    net.sf.jailer.ui.JComboBox limitBox;
+    javax.swing.JComboBox limitBox;
     private javax.swing.JButton loadButton;
     private javax.swing.JLabel on;
     private javax.swing.JPanel onPanel;
