@@ -36,16 +36,25 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLConnection;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.StringJoiner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -94,11 +103,9 @@ public class UIUtil {
 	 * @param description
 	 *            description of file to chose
 	 */
-	public static String choseFile(File selectedFile, String startDir,
-			final String description, final String extension, Component parent,
-			boolean addExtension, boolean forLoad) {
-		return choseFile(selectedFile, startDir, description, extension,
-				parent, addExtension, forLoad, true);
+	public static String choseFile(File selectedFile, String startDir, final String description, final String extension,
+			Component parent, boolean addExtension, boolean forLoad) {
+		return choseFile(selectedFile, startDir, description, extension, parent, addExtension, forLoad, true);
 	}
 
 	/**
@@ -111,14 +118,13 @@ public class UIUtil {
 	 * @param description
 	 *            description of file to chose
 	 */
-	public static String choseFile(File selectedFile, String startDir,
-			final String description, final String extension, Component parent,
-			boolean addExtension, boolean forLoad, final boolean allowZip) {
+	public static String choseFile(File selectedFile, String startDir, final String description, final String extension,
+			Component parent, boolean addExtension, boolean forLoad, final boolean allowZip) {
 		String newStartDir = restoreCurrentDir(extension);
 		if (newStartDir != null) {
 			startDir = newStartDir;
 		}
-		
+
 		parent = SwingUtilities.getWindowAncestor(parent);
 		FileDialog fileChooser;
 		if (parent instanceof Dialog) {
@@ -135,17 +141,16 @@ public class UIUtil {
 			fileChooser.setFile(selectedFile.getName());
 		} else if (extension != null && extension.length() > 0) {
 			if (System.getProperty("os.name", "").toLowerCase().startsWith("windows")) {
-				fileChooser.setFile("*" + extension + (allowZip? ";*" + extension + ".zip;" + extension + ".gz;" : ""));
+				fileChooser
+						.setFile("*" + extension + (allowZip ? ";*" + extension + ".zip;" + extension + ".gz;" : ""));
 			}
 		}
 		FilenameFilter filter = new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {
 				return name.toLowerCase().endsWith(extension)
-						|| allowZip && name.toLowerCase()
-								.endsWith(extension + ".gz")
-						|| allowZip && name.toLowerCase()
-								.endsWith(extension + ".zip");
+						|| allowZip && name.toLowerCase().endsWith(extension + ".gz")
+						|| allowZip && name.toLowerCase().endsWith(extension + ".zip");
 			}
 		};
 		fileChooser.setFilenameFilter(filter);
@@ -167,9 +172,8 @@ public class UIUtil {
 				} else {
 					fn = f.getCanonicalPath();
 				}
-				if (addExtension
-						&& !(fn.endsWith(extension) || (allowZip 
-								&& (fn.endsWith(extension + ".zip") || fn.endsWith(extension + ".gz"))))) {
+				if (addExtension && !(fn.endsWith(extension)
+						|| (allowZip && (fn.endsWith(extension + ".zip") || fn.endsWith(extension + ".gz"))))) {
 					fn += extension;
 				}
 				try {
@@ -181,9 +185,8 @@ public class UIUtil {
 			} catch (IOException e1) {
 				try {
 					fn = selFile.getCanonicalPath();
-					if (addExtension
-							&& !(fn.endsWith(extension) || (allowZip 
-									&& (fn.endsWith(extension + ".zip") || fn.endsWith(extension + ".gz"))))) {
+					if (addExtension && !(fn.endsWith(extension)
+							|| (allowZip && (fn.endsWith(extension + ".zip") || fn.endsWith(extension + ".gz"))))) {
 						fn += extension;
 					}
 					return fn;
@@ -214,8 +217,7 @@ public class UIUtil {
 			Map<String, String> cd = new HashMap<String, String>();
 			if (cdSettings.exists()) {
 				try {
-					ObjectInputStream in = new ObjectInputStream(
-							new FileInputStream(cdSettings));
+					ObjectInputStream in = new ObjectInputStream(new FileInputStream(cdSettings));
 					cd = (Map<String, String>) in.readObject();
 					in.close();
 				} catch (Exception e) {
@@ -224,8 +226,7 @@ public class UIUtil {
 			}
 			cdSettings.delete();
 			cd.put(key, currentDir);
-			ObjectOutputStream out = new ObjectOutputStream(
-					new FileOutputStream(cdSettings));
+			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(cdSettings));
 			out.writeObject(cd);
 			out.close();
 		} catch (Exception e) {
@@ -245,8 +246,7 @@ public class UIUtil {
 	private static String restoreCurrentDir(String key) {
 		if (cdSettings.exists()) {
 			try {
-				ObjectInputStream in = new ObjectInputStream(
-						new FileInputStream(cdSettings));
+				ObjectInputStream in = new ObjectInputStream(new FileInputStream(cdSettings));
 				String cd = ((Map<String, String>) in.readObject()).get(key);
 				in.close();
 				return cd;
@@ -278,17 +278,14 @@ public class UIUtil {
 	 *            CLI argument to print as "*****"
 	 * @return <code>true</code> iff call succeeded
 	 */
-	public static boolean runJailer(Window ownerOfConsole,
-			List<String> cliArgs, boolean showLogfileButton,
-			final boolean printCommandLine, boolean showExplainLogButton,
-			final boolean closeOutputWindow, String continueOnErrorQuestion,
-			String password, final ProgressListener progressListener,
-			final ProgressPanel progressPanel, final boolean showExeptions,
-			boolean fullSize, boolean returnFalseOnError) {
-		return runJailer(ownerOfConsole, cliArgs, showLogfileButton,
-				printCommandLine, showExplainLogButton, closeOutputWindow,
-				continueOnErrorQuestion, password, progressListener,
-				progressPanel, showExeptions, fullSize, false, returnFalseOnError, false);
+	public static boolean runJailer(Window ownerOfConsole, List<String> cliArgs, boolean showLogfileButton,
+			final boolean printCommandLine, boolean showExplainLogButton, final boolean closeOutputWindow,
+			String continueOnErrorQuestion, String password, final ProgressListener progressListener,
+			final ProgressPanel progressPanel, final boolean showExeptions, boolean fullSize,
+			boolean returnFalseOnError) {
+		return runJailer(ownerOfConsole, cliArgs, showLogfileButton, printCommandLine, showExplainLogButton,
+				closeOutputWindow, continueOnErrorQuestion, password, progressListener, progressPanel, showExeptions,
+				fullSize, false, returnFalseOnError, false);
 	}
 
 	/**
@@ -312,14 +309,11 @@ public class UIUtil {
 	 *            CLI argument to print as "*****"
 	 * @return <code>true</code> iff call succeeded
 	 */
-	public static boolean runJailer(Window ownerOfConsole,
-			List<String> cliArgs, boolean showLogfileButton,
-			final boolean printCommandLine, boolean showExplainLogButton,
-			final boolean closeOutputWindow, String continueOnErrorQuestion,
-			String password, final ProgressListener progressListener,
-			final ProgressPanel progressPanel, final boolean showExeptions,
-			boolean fullSize, final boolean closeOutputWindowOnError,
-			boolean returnFalseOnError, boolean throwException) {
+	public static boolean runJailer(Window ownerOfConsole, List<String> cliArgs, boolean showLogfileButton,
+			final boolean printCommandLine, boolean showExplainLogButton, final boolean closeOutputWindow,
+			String continueOnErrorQuestion, String password, final ProgressListener progressListener,
+			final ProgressPanel progressPanel, final boolean showExeptions, boolean fullSize,
+			final boolean closeOutputWindowOnError, boolean returnFalseOnError, boolean throwException) {
 		JDialog dialog = new JDialog(ownerOfConsole);
 		List<String> args = new ArrayList<String>(cliArgs);
 		final StringBuffer arglist = createCLIArgumentString(password, args);
@@ -328,17 +322,15 @@ public class UIUtil {
 		for (String arg : args) {
 			argsarray[i++] = arg.trim();
 		}
-		final JailerConsole outputView = new JailerConsole(ownerOfConsole,
-				dialog, showLogfileButton, showExplainLogButton, progressPanel,
-				fullSize);
+		final JailerConsole outputView = new JailerConsole(ownerOfConsole, dialog, showLogfileButton,
+				showExplainLogButton, progressPanel, fullSize);
 		final PrintStream originalOut = System.out;
 		final boolean[] ready = new boolean[] { true };
 		System.setOut(new PrintStream(new OutputStream() {
 			private int lineNr = 0;
 			StringBuffer buffer = new StringBuffer();
 
-			public synchronized void write(byte[] arg0, int arg1, int arg2)
-					throws IOException {
+			public synchronized void write(byte[] arg0, int arg1, int arg2) throws IOException {
 				super.write(arg0, arg1, arg2);
 			}
 
@@ -365,8 +357,7 @@ public class UIUtil {
 							public void run() {
 								synchronized (buffer) {
 									if (buffer.length() > 0) {
-										outputView.appendText(buffer
-												.toString());
+										outputView.appendText(buffer.toString());
 										buffer.setLength(0);
 									}
 								}
@@ -407,15 +398,12 @@ public class UIUtil {
 						f = exp[0] == null;
 					}
 					if (cancelled && f) {
-						JOptionPane.showMessageDialog(outputView.dialog,
-								"Cancellation in progress...", "Cancellation",
+						JOptionPane.showMessageDialog(outputView.dialog, "Cancellation in progress...", "Cancellation",
 								JOptionPane.INFORMATION_MESSAGE);
 					}
 					if (exp[0] == null && !fin[0] && !cancelled) {
-						if (JOptionPane.showConfirmDialog(outputView.dialog,
-								"Cancel operation?", "Cancellation",
-								JOptionPane.YES_NO_OPTION,
-								JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+						if (JOptionPane.showConfirmDialog(outputView.dialog, "Cancel operation?", "Cancellation",
+								JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
 							if (!outputView.hasFinished) {
 								new Thread(new Runnable() {
 									@Override
@@ -423,11 +411,9 @@ public class UIUtil {
 										CancellationHandler.cancel(null);
 									}
 								}).start();
-								outputView.dialog
-										.setTitle("Jailer Console - cancelling...");
+								outputView.dialog.setTitle("Jailer Console - cancelling...");
 								if (progressListener != null) {
-									progressListener.newStage("cancelling", true,
-											true);
+									progressListener.newStage("cancelling", true, true);
 								}
 								cancelled = true;
 							}
@@ -458,10 +444,8 @@ public class UIUtil {
 						if (printCommandLine) {
 							_log.info("arguments: " + arglist.toString().trim());
 						}
-						result[0] = Jailer
-								.jailerMain(argsarray,
-										disableWarnings ? new StringBuffer()
-												: warnings, progressListener);
+						result[0] = Jailer.jailerMain(argsarray, disableWarnings ? new StringBuffer() : warnings,
+								progressListener);
 					} catch (Throwable t) {
 						synchronized (UIUtil.class) {
 							exp[0] = t;
@@ -476,40 +460,28 @@ public class UIUtil {
 					SwingUtilities.invokeLater(new Runnable() {
 						public void run() {
 							synchronized (UIUtil.class) {
-								outputView.dialog
-										.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+								outputView.dialog.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 								if (progressListener != null) {
-									progressListener.newStage(
-											outputView.hasCancelled? "cancelled" :
-											exp[0] == null ? "finished"
-													: "failed", exp[0] != null,
-											true);
+									progressListener.newStage(outputView.hasCancelled ? "cancelled"
+											: exp[0] == null ? "finished" : "failed", exp[0] != null, true);
 								}
-								if ((exp[0] instanceof CancellationException)
-										|| closeOutputWindowOnError
-										|| (closeOutputWindow && result[0]
-												&& exp[0] == null && warnings
-												.length() == 0)) {
+								if ((exp[0] instanceof CancellationException) || closeOutputWindowOnError
+										|| (closeOutputWindow && result[0] && exp[0] == null
+												&& warnings.length() == 0)) {
 									if (!outputView.hasCancelled) {
 										outputView.dialog.setVisible(false);
 									}
 								} else {
-									outputView.finish(result[0]
-											&& exp[0] == null);
+									outputView.finish(result[0] && exp[0] == null);
 									if (result[0] && warnings.length() > 0) {
-										JOptionPane.showMessageDialog(
-												outputView.dialog,
-												warnings.length() > 800 ? warnings
-														.substring(0, 800)
-														+ "..." : warnings
-														.toString(), "Warning",
-												JOptionPane.INFORMATION_MESSAGE);
+										JOptionPane.showMessageDialog(outputView.dialog,
+												warnings.length() > 800 ? warnings.substring(0, 800) + "..."
+														: warnings.toString(),
+												"Warning", JOptionPane.INFORMATION_MESSAGE);
 										outputView.dialog.setVisible(false);
-									} else if (showExeptions
-											&& exp[0] != null
+									} else if (showExeptions && exp[0] != null
 											&& !(exp[0] instanceof CancellationException)) {
-										UIUtil.showException(outputView.dialog,
-												"Error", exp[0], arglist);
+										UIUtil.showException(outputView.dialog, "Error", exp[0], arglist);
 										exceptionShown[0] = true;
 									}
 									if (result[0] && progressPanel != null) {
@@ -532,8 +504,7 @@ public class UIUtil {
 				}
 			}
 			if (!result[0] && continueOnErrorQuestion != null) {
-				result[0] = JOptionPane.showConfirmDialog(outputView.dialog,
-						continueOnErrorQuestion, "Error",
+				result[0] = JOptionPane.showConfirmDialog(outputView.dialog, continueOnErrorQuestion, "Error",
 						JOptionPane.YES_NO_OPTION) == JOptionPane.YES_OPTION;
 			}
 			return result[0];
@@ -558,19 +529,17 @@ public class UIUtil {
 		}
 	}
 
-	public static StringBuffer createCLIArgumentString(String password,
-			List<String> args) {
+	public static StringBuffer createCLIArgumentString(String password, List<String> args) {
 		args.add("-datamodel");
 		ExecutionContext executionContext = CommandLineInstance.getExecutionContext();
 		args.add(executionContext.getQualifiedDatamodelFolder());
 		return createPlainCLIArguments(password, args);
 	}
 
-	public static StringBuffer createPlainCLIArguments(String password,
-			List<String> args) {
+	public static StringBuffer createPlainCLIArguments(String password, List<String> args) {
 		final StringBuffer arglist = new StringBuffer();
 		int pwi = -1;
-		for (int i = args.size() - 1; i >=0; --i) {
+		for (int i = args.size() - 1; i >= 0; --i) {
 			if (args.get(i) != null && args.get(i).equals(password) && password.length() > 0) {
 				pwi = i;
 				break;
@@ -581,12 +550,9 @@ public class UIUtil {
 			if (i == pwi) {
 				arglist.append(" \"<password>\"");
 			} else {
-				if ("".equals(arg) || arg.contains(" ") || arg.contains("<")
-						|| arg.contains(">") || arg.contains("*")
-						|| arg.contains("?") || arg.contains("|")
-						|| arg.contains("$") || arg.contains("\"")
-						|| arg.contains("'") || arg.contains("\\")
-						|| arg.contains(";") || arg.contains("&")) {
+				if ("".equals(arg) || arg.contains(" ") || arg.contains("<") || arg.contains(">") || arg.contains("*")
+						|| arg.contains("?") || arg.contains("|") || arg.contains("$") || arg.contains("\"")
+						|| arg.contains("'") || arg.contains("\\") || arg.contains(";") || arg.contains("&")) {
 					arglist.append(" \"");
 					for (int j = 0; j < arg.length(); ++j) {
 						char c = arg.charAt(j);
@@ -603,7 +569,7 @@ public class UIUtil {
 		}
 		return arglist;
 	}
-	
+
 	public static Object EXCEPTION_CONTEXT_USER_ERROR = new Object();
 
 	/**
@@ -635,17 +601,15 @@ public class UIUtil {
 	public static void showException(Component parent, String title, Throwable t, Object context) {
 		t.printStackTrace();
 		if (!(t instanceof ClassNotFoundException)) {
-			while (t.getCause() != null && t != t.getCause()
-					&& !(t instanceof SqlException)) {
+			while (t.getCause() != null && t != t.getCause() && !(t instanceof SqlException)) {
 				t = t.getCause();
 			}
 		}
 		if (t instanceof SqlException) {
 			String message = ((SqlException) t).message;
 			String sql = ((SqlException) t).sqlStatement;
-			new SqlErrorDialog(parent == null ? null
-					: SwingUtilities.getWindowAncestor(parent), lineWrap(
-					message, 120).toString(), lineWrap(sql, 120).toString(), true, null);
+			new SqlErrorDialog(parent == null ? null : SwingUtilities.getWindowAncestor(parent),
+					lineWrap(message, 120).toString(), lineWrap(sql, 120).toString(), true, null);
 			return;
 		}
 		String message = t.getMessage();
@@ -653,7 +617,7 @@ public class UIUtil {
 			message = t.getClass().getName();
 		}
 		StringBuilder msg = lineWrap(message, 80);
-		
+
 		String contextDesc = "";
 		if (context != null) {
 			if (context instanceof Session) {
@@ -670,16 +634,17 @@ public class UIUtil {
 			contextDesc += "\nHelp Desk: https://sourceforge.net/forum/?group_id=197260";
 			contextDesc += "\nMail: rwisser@users.sourceforge.net\n";
 			contextDesc += "\n" + JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + "\n\n" + sw.toString();
+			
+			sendIssue("internal", msg.toString() + "\n" + contextDesc);
 		}
-		
-		new SqlErrorDialog(parent == null ? null
-				: SwingUtilities.getWindowAncestor(parent), msg.toString(), contextDesc, false, context == EXCEPTION_CONTEXT_USER_ERROR? title : null);
+
+		new SqlErrorDialog(parent == null ? null : SwingUtilities.getWindowAncestor(parent), msg.toString(),
+				contextDesc, false, context == EXCEPTION_CONTEXT_USER_ERROR ? title : null);
 	}
 
 	private static StringBuilder lineWrap(String message, int maxwidth) {
 		StringBuilder msg = new StringBuilder();
-		Pattern wrapRE = Pattern.compile("(\\S\\S{" + maxwidth + ",}|.{1,"
-				+ maxwidth + "})(\\s+|$)");
+		Pattern wrapRE = Pattern.compile("(\\S\\S{" + maxwidth + ",}|.{1," + maxwidth + "})(\\s+|$)");
 		Matcher m = wrapRE.matcher(message == null ? "" : message);
 		while (m.find()) {
 			String line = m.group();
@@ -735,28 +700,24 @@ public class UIUtil {
 				memSize += MB;
 			}
 		} catch (OutOfMemoryError e) {
-			JOptionPane.showConfirmDialog(null, "MaxMem=" + memSize, "",
-					JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showConfirmDialog(null, "MaxMem=" + memSize, "", JOptionPane.INFORMATION_MESSAGE);
 		}
 	}
 
 	public static void replace(JComponent component, JComponent replacement) {
 		Container parent = component.getParent();
-		GridBagConstraints c = ((GridBagLayout) parent.getLayout())
-				.getConstraints(component);
+		GridBagConstraints c = ((GridBagLayout) parent.getLayout()).getConstraints(component);
 		parent.remove(component);
 		if (replacement != null) {
 			parent.add(replacement, c);
 		}
 	}
 
-	public static void wireComponentWithButton(JComponent component,
-			final JButton button) {
+	public static void wireComponentWithButton(JComponent component, final JButton button) {
 		component.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				if (e.getButton() == MouseEvent.BUTTON1
-						&& e.getClickCount() > 1) {
+				if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() > 1) {
 					if (button.isEnabled()) {
 						button.doClick();
 					}
@@ -812,12 +773,74 @@ public class UIUtil {
 	}
 
 	public static void checkTermination() {
-		for (Window w: Frame.getWindows()) {
+		for (Window w : Frame.getWindows()) {
 			if (w.isShowing()) {
 				return;
 			}
 		}
 		System.exit(0);
+	}
+
+	public static void initIssueSending() {
+		File issueSending = new File(".issue");
+		if (!issueSending.exists()) {
+			try {
+				issueSending.createNewFile();
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+			sendIssue("init", "1\n2");
+		}
+	}
+	
+	private static void sendIssue(final String type, final String issue) {
+		new Thread(new Runnable() {
+			@Override
+			public void run() {
+				URL url;
+				try {
+					url = new URL("http://jailer.sf.net/issueReport.php?type=" + URLEncoder.encode(type, "UTF-8") + "&" + "issue=" + URLEncoder.encode(issue, "UTF-8"));
+					URLConnection con = url.openConnection();
+					InputStreamReader in = new InputStreamReader(con.getInputStream());
+					int c;
+					while ((c = in.read()) != -1) {
+						System.out.print((char) c);
+					}
+					System.out.println();
+					
+					/*
+					 * url = new URL("http://jailer.sf.net/issueReport.php");
+					 
+					URLConnection con = url.openConnection();
+					HttpURLConnection http = (HttpURLConnection) con;
+					http.setRequestMethod("POST"); // PUT is another valid
+													// option
+					http.setDoOutput(true);
+
+					String body = "type=" + URLEncoder.encode(type, "UTF-8") + "&" + "issue="
+							+ URLEncoder.encode(issue, "UTF-8");
+
+					byte[] out = body.getBytes(StandardCharsets.UTF_8);
+					int length = out.length;
+
+					http.setFixedLengthStreamingMode(length);
+					http.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
+					http.connect();
+					OutputStream os = http.getOutputStream();
+					os.write(out);
+//					InputStreamReader in = new InputStreamReader(http.getInputStream());
+//					int c;
+//					while ((c = in.read()) != -1) {
+//						System.out.print((char) c);
+//					}
+//					System.out.println();
+					os.close();
+					*/
+				} catch (Throwable e) {
+					e.printStackTrace();
+				}
+			}
+		}).start();
 	}
 
 	public static void initSyntaxKit() {
@@ -829,5 +852,5 @@ public class UIUtil {
 			e.printStackTrace();
 		}
 	}
-	
+
 }
