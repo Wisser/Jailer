@@ -784,7 +784,7 @@ public class UIUtil {
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-			sendIssue("init", "1\n2");
+			sendIssue("init", "");
 		}
 	}
 	
@@ -799,38 +799,7 @@ public class UIUtil {
 					InputStreamReader in = new InputStreamReader(con.getInputStream());
 					int c;
 					while ((c = in.read()) != -1) {
-						System.out.print((char) c);
 					}
-					System.out.println();
-					
-					/*
-					 * url = new URL("http://jailer.sf.net/issueReport.php");
-					 
-					URLConnection con = url.openConnection();
-					HttpURLConnection http = (HttpURLConnection) con;
-					http.setRequestMethod("POST"); // PUT is another valid
-													// option
-					http.setDoOutput(true);
-
-					String body = "type=" + URLEncoder.encode(type, "UTF-8") + "&" + "issue="
-							+ URLEncoder.encode(issue, "UTF-8");
-
-					byte[] out = body.getBytes(StandardCharsets.UTF_8);
-					int length = out.length;
-
-					http.setFixedLengthStreamingMode(length);
-					http.setRequestProperty("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
-					http.connect();
-					OutputStream os = http.getOutputStream();
-					os.write(out);
-//					InputStreamReader in = new InputStreamReader(http.getInputStream());
-//					int c;
-//					while ((c = in.read()) != -1) {
-//						System.out.print((char) c);
-//					}
-//					System.out.println();
-					os.close();
-					*/
 				} catch (Throwable e) {
 					e.printStackTrace();
 				}
