@@ -1624,7 +1624,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
     		}
     	} catch (Exception e) {
     	}
-    	UIUtil.initIssueSending();
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
             	
