@@ -1,3 +1,6 @@
+3.2.3
+  - Fixed an issue with Microsoft JDBC Driver 6.0 for SQL Server.
+
 3.2.2
   - Added support for NCLOB data type.
   - Improved graph layout optimisation in progress panel.

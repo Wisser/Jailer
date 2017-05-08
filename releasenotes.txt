@@ -1,3 +1,6 @@
+6.7.6
+  - Fixed an issue with Microsoft JDBC Driver 6.0 for SQL Server.
+
 6.7.5
   - Fixed an incompatibility with jre 7.
 

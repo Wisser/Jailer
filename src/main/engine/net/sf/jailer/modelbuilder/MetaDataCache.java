@@ -162,7 +162,7 @@ public class MetaDataCache {
 			} else {
 				rs = metaData.getColumns(null, schema, "%", "%");
 			}
-			Set<Integer> intIndex = new HashSet<Integer>(Arrays.asList(5, 7, 9, 10, 11, 14, 15, 16, 17, 22));
+			Set<Integer> intIndex = new HashSet<Integer>(Arrays.asList(5, 7, 9, 10, 11, 14, 15, 16, 17));
 
 			metaDataCache.cache = new HashMap<String, List<Object[]>>();
 			while (rs.next()) {
