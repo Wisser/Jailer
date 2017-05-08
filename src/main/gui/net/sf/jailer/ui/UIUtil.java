@@ -776,18 +776,6 @@ public class UIUtil {
 		System.exit(0);
 	}
 
-	public static void initIssueSending() {
-		File issueSending = new File(".issue");
-		if (!issueSending.exists()) {
-			try {
-				issueSending.createNewFile();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-			sendIssue("init", "");
-		}
-	}
-	
 	private static void sendIssue(final String type, final String issue) {
 		new Thread(new Runnable() {
 			@Override
