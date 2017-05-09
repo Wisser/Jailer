@@ -25,10 +25,18 @@ import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.subsetting.ScriptFormat;
 
+/**
+ * Jailer API Example.  <br>
+ * 
+ * Extracts some data from the "demo-scott" database
+ * and imports it into another database "demo-scott-subset".
+ */
 public class APIExample {
 	
+	// JDBC connection pool size
 	private static final int POOL_SIZE = 10;
 
+	// The subsetter
 	private static Subsetter subsetter = 
 		new Subsetter(
 			new BasicDataSource(
@@ -40,6 +48,7 @@ public class APIExample {
 			APIExample.class.getResource("Demo-Scott.csv"),
 			ScriptFormat.SQL);
 	
+	// The importer
 	private static Importer importer =
 		new Importer(
 			new BasicDataSource(
@@ -47,20 +56,11 @@ public class APIExample {
 				10,
 				new File("lib/h2-1.3.160.jar")));
 
+	/**
+	 * Exports data related with employee "SCOTT"
+	 * and imports it into another database.
+	 */
 	public static void main(String[] args) throws SQLException, IOException {
-		new APIExample().exportScott();
-		
-		long t = System.currentTimeMillis();
-
-		for (int i = 0; i < 100; ++i) {
-			new APIExample().exportScott();
-		}
-		
-		System.out.println(System.currentTimeMillis() - t);
-		
-	}
-
-	private void exportScott() throws SQLException, IOException {
 		File exportScriptFile = Configuration.getInstance().createTempFile();
 		
 		subsetter.setUpsertOnly(true); // overwrite previous data

@@ -1,3 +1,6 @@
+7.0
+  - New API provides programmatic access to the data export and import functionality.
+
 6.7.6
   - Fixed an issue with Microsoft JDBC Driver 6.0 for SQL Server.
 

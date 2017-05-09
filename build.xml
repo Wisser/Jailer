@@ -55,8 +55,8 @@ available targets:
 				<include name="**/*" />
 			</fileset>
 		</copy>
-		<copy todir="${COMPILE_DIR}/net/sf/jailer/example">
-			<fileset dir="${SRC_DIR}/main/engine/net/sf/jailer/example">
+		<copy todir="${COMPILE_DIR}/net/sf/jailer/api_example">
+			<fileset dir="${SRC_DIR}/main/engine/net/sf/jailer/api_example">
 				<include name="**/*.csv" />
 			</fileset>
 		</copy>
