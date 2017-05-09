@@ -22,7 +22,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -822,7 +824,10 @@ public class DataModel {
 
     private static InputStream openModelFile(File file, ExecutionContext executionContext) {
     	try {
-			return executionContext.getDataModelURL().toURI().resolve(file.getName()).toURL().openStream();
+			URL dataModelURL = executionContext.getDataModelURL();
+			URI uri = dataModelURL.toURI();
+			URI resolved = new URI(uri.toString() + file.getName()); // uri.resolve(file.getName());
+			return resolved.toURL().openStream();
 		} catch (MalformedURLException e) {
 			throw new RuntimeException(e);
 		} catch (IOException e) {
