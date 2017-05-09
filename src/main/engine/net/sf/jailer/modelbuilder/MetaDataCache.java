@@ -162,17 +162,21 @@ public class MetaDataCache {
 			} else {
 				rs = metaData.getColumns(null, schema, "%", "%");
 			}
-			Set<Integer> intIndex = new HashSet<Integer>(Arrays.asList(5, 7, 9, 10, 11, 14, 15, 16, 17));
+			Set<Integer> intIndex = new HashSet<Integer>(Arrays.asList(5, 7, 9, 10, 11, 14, 15, 16, 17, 22));
 
 			metaDataCache.cache = new HashMap<String, List<Object[]>>();
 			while (rs.next()) {
 				int numCol = rs.getMetaData().getColumnCount();
 				Object[] row = new Object[numCol];
 				for (int i = 1; i < numCol; ++i) {
-					if (intIndex.contains(i)) {
-						row[i - 1] = rs.getInt(i);
+					if (i >= 22 && DBMS.MSSQL.equals(session.dbms)) {
+						row[i - 1] = null;
 					} else {
-						row[i - 1] = rs.getString(i);
+						if (intIndex.contains(i)) {
+							row[i - 1] = rs.getInt(i);
+						} else {
+							row[i - 1] = rs.getString(i);
+						}
 					}
 				}
 				String table = (String) row[2];
