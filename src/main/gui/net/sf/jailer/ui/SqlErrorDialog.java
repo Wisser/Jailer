@@ -61,6 +61,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
     			}
     		};
     		sendButton.addKeyListener(keyListener);
+    		jButton1.setVisible(false);
         } else {
         	sendButton.setVisible(false);
         }
@@ -231,7 +232,8 @@ public class SqlErrorDialog extends javax.swing.JDialog {
     }//GEN-LAST:event_copyButtonActionPerformed
 
     private void sendButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sendButtonActionPerformed
-		URI url;
+		setVisible(false);
+    	URI url;
 		try {
 			url = new URI("http://jailer.sf.net/issueReport.php?type=" + URLEncoder.encode("GUI", "UTF-8") + "&" + "issue=" + URLEncoder.encode(sqlEditorPane.getText(), "UTF-8"));
 			Desktop.getDesktop().browse(url);
