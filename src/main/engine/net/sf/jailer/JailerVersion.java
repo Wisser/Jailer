@@ -18,7 +18,7 @@ package net.sf.jailer;
 /**
  * The Jailer Version.
  * 
- * @author RalfW
+ * @author Ralf Wisser
  */
 public class JailerVersion {
 
