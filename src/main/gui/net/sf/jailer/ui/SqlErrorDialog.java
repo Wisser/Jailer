@@ -17,6 +17,8 @@ package net.sf.jailer.ui;
 
 import java.awt.Desktop;
 import java.awt.Window;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.net.URI;
 import java.net.URLEncoder;
 
@@ -43,6 +45,22 @@ public class SqlErrorDialog extends javax.swing.JDialog {
         		setTitle("Internal Error");
         	}
         	sendButton.grabFocus();
+            KeyListener keyListener = new KeyListener() {
+    			@Override
+    			public void keyTyped(KeyEvent e) {
+    				if (e.getKeyChar() == '\n') {
+    					sendButtonActionPerformed(null);
+    					setVisible(false);
+    				}
+    			}
+    			@Override
+    			public void keyReleased(KeyEvent e) {
+    			}
+    			@Override
+    			public void keyPressed(KeyEvent arg0) {
+    			}
+    		};
+    		sendButton.addKeyListener(keyListener);
         } else {
         	sendButton.setVisible(false);
         }
