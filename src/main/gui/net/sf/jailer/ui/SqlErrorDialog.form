@@ -128,7 +128,7 @@
         </Component>
         <Component class="javax.swing.JButton" name="sendButton">
           <Properties>
-            <Property name="text" type="java.lang.String" value="Report Issue"/>
+            <Property name="text" type="java.lang.String" value="Report and Close"/>
           </Properties>
           <Events>
             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="sendButtonActionPerformed"/>
