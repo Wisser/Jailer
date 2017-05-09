@@ -1,0 +1,207 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head><title>Jailer - API</title>
+
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="keywords" content="Data Export Tool">
+<meta name="description" content="data export referential integrity java jdbc dbms">
+<link rel="stylesheet" type="text/css" href="installation-2-Dateien/styles.css">
+<link rel="shortcut icon" href="favicon.ico"></head>
+<body left-margin="0" top-margin="0">
+<div align="left">
+<table style="text-align: left; position: absolute; left: 0pt; top: 0pt;" border="0" cellpadding="0" cellspacing="0" height="407" width="100%">
+<tbody>
+<tr>
+<td colspan="2" class="bannerbackground" height="33" width="100%">
+<table border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td><img src="installation-2-Dateien/logo.png" hspace="10"></td>
+<td class="slogan" width="100%">Database&nbsp;Subsetting&nbsp;Tool</td>
+<td style="text-align: right; width: 100%;">
+<table border="0" cellpadding="0" cellspacing="0">
+<tbody>
+<tr>
+<td><a href="http://sourceforge.net/projects/jailer/"><img src="http://sflogo.sourceforge.net/sflogo.php?group_id=197260&amp;type=1" alt="SourceForge.net Logo" style="border: 0px solid ;"></a></td>
+</tr>
+<tr>
+<td><a href="http://www.java.net"><img src="javanet_button_90.gif" alt="java.net Member Button: 90px wide" border="0" height="25" width="90"></a></td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+<tr>
+<td colspan="2" class="nav1background" height="33" width="100%">&nbsp; <b><font color="#ffffff"><a href="home.htm" target="_self" class="tlink">Home</a> &nbsp;&nbsp;&nbsp;
+<a href="quicktour.htm" target="_self" class="tlink">Quick Tour</a>
+&nbsp;&nbsp;&nbsp;<a href="exporting-data.htm" target="_self" class="tlink">Tutorial</a>
+&nbsp;&nbsp;&nbsp;<a href="data-browsing.html" target="_self" class="tlink">Data Browser</a> &nbsp;&nbsp;&nbsp;<a href="faq.html" target="_self" class="tlink">FAQ</a> &nbsp;&nbsp;&nbsp;<a href="api.html" target="_self" class="tlinkA">API</a>
+&nbsp;&nbsp;&nbsp; <a href="design.htm" target="_self" class="tlink">Documentation</a>
+&nbsp;&nbsp;&nbsp; <a href="http://sourceforge.net/forum/?group_id=197260" target="_self" class="tlink">Forum</a>&nbsp;&nbsp;&nbsp;
+<a href="http://sourceforge.net/project/showfiles.php?group_id=197260" target="_self" class="tlink">Download</a>
+&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;</font></b></td>
+</tr>
+<tr>
+<td colspan="2" class="spacer" width="100%">
+</td>
+</tr>
+<tr>
+<td class="lmenucontainer" height="100%" valign="top" width="14%">
+<div align="center">
+<center>
+<table border="0" cellpadding="0" cellspacing="0" width="100%">
+<tbody>
+<tr>
+<td width="100%"><br>
+</td>
+</tr>
+</tbody>
+</table>
+</center>
+</div>
+<ul>
+<li><a href="api.html" target="_self" class="llinkA">API</a></li>
+</ul>
+<table border="0" cellpadding="5" cellspacing="0" width="100%">
+<tbody>
+<tr>
+<td class="content2background"><img style="width: 160px; height: 1px;" alt="" src="architecture-Dateien/vgradp.gif"></td>
+</tr>
+</tbody>
+</table>
+<p>&nbsp;</p>
+</td>
+<td class="contentbackground" height="418" valign="top" width="86%">
+<div align="right">
+<table border="0" cellpadding="0" cellspacing="0" height="542" width="98%">
+<tbody>
+<tr>
+<td class="contentbackground" height="21" width="100%"><br>
+</td>
+</tr>
+<tr>
+<td class="content" height="520" valign="top" width="100%">
+<small><small>&nbsp; </small></small><br>
+<big><span style="font-weight: bold;">Application Programming Interface<br>
+<br>
+</span></big>The API provides programmatic access to the data export and import functionality.<br><br><br>
+<big><span style="font-weight: bold;">Dependencies</span></big>
+<ul>
+<li>jailer-engine-<i>version</i>.jar</li>
+<li>log4J</li>
+</ul><br>
+
+<big><span style="font-weight: bold;">Classes</span></big>
+<ul>
+<li>
+<a href = "api/net/sf/jailer/api/Subsetter.html" target="_blank">net.sf.jailer.api.Subsetter</a> <br>
+generates a subset of a relational database that respects foreign key constraints. 
+</li>
+<li>
+<a href = "api/net/sf/jailer/api/Importer.html" target="_blank">net.sf.jailer.api.Importer</a> <br>
+imports subset data.<br></li> 
+</ul>
+
+<br><big><span style="font-weight: bold;">Example</span></big>
+
+<br><br>
+The example is included in the jailer-engine-<i>version</i>.jar. It extracts some data from the "demo-scott" database and imports it into another database "demo-scott-subset".
+<br>
+<ul>
+<li>Packages<br> <img src="apipackages.gif"><br><br>
+The data model "Demo-Scott" and the extraction model "Demo-Scott.csv" are both embedded into the package and thus accessible as class resources.
+<br><br><br>
+</li>
+<li>Source<br>
+
+<div style='background:#FFFFFF; font-family: Courier New, Courier; font-size: 10pt; COLOR: #000000; padding-bottom: 0px; padding-left: 0px; padding-right: 0px; padding-top: 0px;'>
+<br/><strong><font color='#7f0055'>package</font></strong>&nbsp;net.sf.jailer.api_example;
+<br/>
+<br/><strong><font color='#7f0055'>import</font></strong>&nbsp;java.io.File;
+<br/><strong><font color='#7f0055'>import</font></strong>&nbsp;java.io.IOException;
+<br/><strong><font color='#7f0055'>import</font></strong>&nbsp;java.sql.SQLException;
+<br/>
+<br/><strong><font color='#7f0055'>import</font></strong>&nbsp;net.sf.jailer.api.Importer;
+<br/><strong><font color='#7f0055'>import</font></strong>&nbsp;net.sf.jailer.api.Subsetter;
+<br/><strong><font color='#7f0055'>import</font></strong>&nbsp;net.sf.jailer.configuration.Configuration;
+<br/><strong><font color='#7f0055'>import</font></strong>&nbsp;net.sf.jailer.database.BasicDataSource;
+<br/><strong><font color='#7f0055'>import</font></strong>&nbsp;net.sf.jailer.subsetting.ScriptFormat;
+<br/>
+<br/><font color='#2040a0'>/**
+<br/>&nbsp;*&nbsp;Jailer&nbsp;API&nbsp;Example.&nbsp;&nbsp;<br>
+<br/>&nbsp;*&nbsp;
+<br/>&nbsp;*&nbsp;Extracts&nbsp;some&nbsp;data&nbsp;from&nbsp;the&nbsp;"demo-scott"&nbsp;database
+<br/>&nbsp;*&nbsp;and&nbsp;imports&nbsp;it&nbsp;into&nbsp;another&nbsp;database&nbsp;"demo-scott-subset".
+<br/>&nbsp;*/</font>
+<br/><strong><font color='#7f0055'>public</font></strong>&nbsp;<strong><font color='#7f0055'>class</font></strong>&nbsp;APIExample&nbsp;{
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;<font color='#3f7f5f'>//&nbsp;JDBC&nbsp;connection&nbsp;pool&nbsp;size
+</font><br/>&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color='#7f0055'>private</font></strong>&nbsp;<strong><font color='#7f0055'>static</font></strong>&nbsp;<strong><font color='#7f0055'>final</font></strong>&nbsp;<strong><font color='#7f0055'>int</font></strong>&nbsp;POOL_SIZE&nbsp;=&nbsp;10;
+<br/>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;<font color='#3f7f5f'>//&nbsp;The&nbsp;subsetter
+</font><br/>&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color='#7f0055'>private</font></strong>&nbsp;<strong><font color='#7f0055'>static</font></strong>&nbsp;Subsetter&nbsp;subsetter&nbsp;=&nbsp;
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color='#7f0055'>new</font></strong>&nbsp;Subsetter(
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color='#7f0055'>new</font></strong>&nbsp;BasicDataSource(
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color='#2a00ff'>"org.h2.Driver"</font>,&nbsp;<font color='#2a00ff'>"jdbc:h2:demo-scott"</font>,&nbsp;<font color='#2a00ff'>"sa"</font>,&nbsp;<font color='#2a00ff'>""</font>,
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;POOL_SIZE,
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color='#7f0055'>new</font></strong>&nbsp;File(<font color='#2a00ff'>"lib/h2-1.3.160.jar"</font>)),
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color='#7f0055'>null</font></strong>,
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APIExample.<strong><font color='#7f0055'>class</font></strong>.getResource(<font color='#2a00ff'>"Demo-Scott"</font>),
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;APIExample.<strong><font color='#7f0055'>class</font></strong>.getResource(<font color='#2a00ff'>"Demo-Scott.csv"</font>),
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;ScriptFormat.SQL);
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;<font color='#3f7f5f'>//&nbsp;The&nbsp;importer
+</font><br/>&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color='#7f0055'>private</font></strong>&nbsp;<strong><font color='#7f0055'>static</font></strong>&nbsp;Importer&nbsp;importer&nbsp;=
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color='#7f0055'>new</font></strong>&nbsp;Importer(
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color='#7f0055'>new</font></strong>&nbsp;BasicDataSource(
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<font color='#2a00ff'>"org.h2.Driver"</font>,&nbsp;<font color='#2a00ff'>"jdbc:h2:demo-scott-subset"</font>,&nbsp;<font color='#2a00ff'>"sa"</font>,&nbsp;<font color='#2a00ff'>""</font>,
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;10,
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color='#7f0055'>new</font></strong>&nbsp;File(<font color='#2a00ff'>"lib/h2-1.3.160.jar"</font>)));
+<br/>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;<font color='#2040a0'>/**
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;Exports&nbsp;data&nbsp;related&nbsp;with&nbsp;employee&nbsp;"SCOTT"
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*&nbsp;and&nbsp;imports&nbsp;it&nbsp;into&nbsp;another&nbsp;database.
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;*/</font>
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;<strong><font color='#7f0055'>public</font></strong>&nbsp;<strong><font color='#7f0055'>static</font></strong>&nbsp;<strong><font color='#7f0055'>void</font></strong>&nbsp;main(String[]&nbsp;args)&nbsp;<strong><font color='#7f0055'>throws</font></strong>&nbsp;SQLException,&nbsp;IOException&nbsp;{
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;File&nbsp;exportScriptFile&nbsp;=&nbsp;Configuration.getInstance().createTempFile();
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;subsetter.setUpsertOnly(<strong><font color='#7f0055'>true</font></strong>);&nbsp;<font color='#3f7f5f'>//&nbsp;overwrite&nbsp;previous&nbsp;data
+</font><br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;subsetter.execute(<font color='#2a00ff'>"NAME='SCOTT'"</font>,&nbsp;exportScriptFile);
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;importer.execute(exportScriptFile);
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;exportScriptFile.delete();
+<br/>&nbsp;&nbsp;&nbsp;&nbsp;}
+<br/>
+<br/>}
+<br/><div style='text-align:right;BORDER-TOP: #ccc 1px dashed'><a href="http://www.togotutor.com/code-to-html/java-to-html.php" target="_blank">Code Formatted by ToGoTutor</a></div></div>
+
+</li>
+</ul>
+</td>
+
+</tr>
+</tbody>
+</table>
+</div>
+<p><br>
+</p>
+<p><br>
+</p>
+<p><br>
+&nbsp; </p>
+</td>
+</tr>
+<tr>
+<td height="12" valign="top" width="14%"><br>
+</td>
+<td><br>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</body></html>
