@@ -259,7 +259,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
         java.awt.GridBagConstraints gridBagConstraints;
 
         detailsPanel = new javax.swing.JPanel();
-        detailsComboBox = new javax.swing.JComboBox();
+        detailsComboBox = new net.sf.jailer.ui.JComboBox();
         detailsLabel = new javax.swing.JLabel();
         detailsCondtition = new javax.swing.JTextField();
         detailsWhere = new javax.swing.JLabel();

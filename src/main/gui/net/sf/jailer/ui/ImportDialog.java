@@ -152,7 +152,7 @@ public class ImportDialog extends javax.swing.JDialog {
         placeholder1 = new javax.swing.JLabel();
         transactionalCheckBox = new javax.swing.JCheckBox();
         importFile = new javax.swing.JLabel();
-        threadComboBox = new javax.swing.JComboBox();
+        threadComboBox = new net.sf.jailer.ui.JComboBox();
         jPanel7 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();

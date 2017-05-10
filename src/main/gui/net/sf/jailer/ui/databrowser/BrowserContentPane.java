@@ -2885,7 +2885,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         where = new javax.swing.JLabel();
         jPanel7 = new javax.swing.JPanel();
         loadButton = new javax.swing.JButton();
-        andCondition = new javax.swing.JComboBox();
+        andCondition = new net.sf.jailer.ui.JComboBox();
         onPanel = new javax.swing.JPanel();
         on = new javax.swing.JLabel();
         joinPanel = new javax.swing.JPanel();
@@ -2919,7 +2919,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         fetchLabel = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
-        limitBox = new javax.swing.JComboBox();
+        limitBox = new net.sf.jailer.ui.JComboBox();
         relatedRowsPanel = new javax.swing.JPanel();
         relatedRowsLabel = new javax.swing.JLabel();
         jPanel9 = new javax.swing.JPanel();

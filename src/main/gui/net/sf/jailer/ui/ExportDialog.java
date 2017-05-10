@@ -823,13 +823,13 @@ public class ExportDialog extends javax.swing.JDialog {
         additSubsLabelTitel = new javax.swing.JLabel();
         useRowIds = new javax.swing.JCheckBox();
         jLabel10 = new javax.swing.JLabel();
-        workingTableSchemaComboBox = new javax.swing.JComboBox();
+        workingTableSchemaComboBox = new net.sf.jailer.ui.JComboBox();
         confirmInsert = new javax.swing.JCheckBox();
         jLabel17 = new javax.swing.JLabel();
         toLabel = new javax.swing.JLabel();
-        targetDBMSComboBox = new javax.swing.JComboBox();
+        targetDBMSComboBox = new net.sf.jailer.ui.JComboBox();
         targetDBMSLabel = new javax.swing.JLabel();
-        iFMTableSchemaComboBox = new javax.swing.JComboBox();
+        iFMTableSchemaComboBox = new net.sf.jailer.ui.JComboBox();
         iFMTPanel = new javax.swing.JPanel();
         jLabel29 = new javax.swing.JLabel();
         jLabel30 = new javax.swing.JLabel();
