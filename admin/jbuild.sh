@@ -11,6 +11,7 @@ mkdir _$1
 cd _$1
 unzip ../jailer_$1.zip 
 cd jailer/
+cp jailer-engine-* ../../
 head releasenotes.txt 
 
 cd ..
