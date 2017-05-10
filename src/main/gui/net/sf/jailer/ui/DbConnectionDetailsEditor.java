@@ -16,6 +16,7 @@
 package net.sf.jailer.ui;
 
 import java.awt.Color;
+import java.awt.event.ActionEvent;
 import java.net.URI;
 
 import javax.swing.Icon;
@@ -74,37 +75,23 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         			"Edit connection credentials for the database."));
         }
         setLocation(120, 170);
-        load1.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
+        loadButton1.addActionListener(new java.awt.event.ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
                 String fn = UIUtil.choseFile(null, ".", "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
                 if (fn != null) {
                     jar1.setText(fn);
                 }
-            }
+			}
         });
-        load2.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                String fn = UIUtil.choseFile(null, ".", "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
+        loadButton2.addActionListener(new java.awt.event.ActionListener() {
+        	@Override
+			public void actionPerformed(ActionEvent e) {
+        		String fn = UIUtil.choseFile(null, ".", "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
                 if (fn != null) {
                     jar2.setText(fn);
                 }
             }
-        });
-        load1.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-            	load1.setEnabled(false);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-            	load1.setEnabled(true);
-           }
-        });
-        load2.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-            	load2.setEnabled(false);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-            	load2.setEnabled(true);
-           }
         });
         helpjdbc.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
@@ -125,10 +112,8 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		});
         helpjdbc.setIcon(helpIcon);
         helpjdbc.setText(null);
-        load1.setIcon(loadIcon);
-        load1.setText(null);
-        load2.setIcon(loadIcon);
-        load2.setText(null);
+        loadButton1.setIcon(loadIcon);
+        loadButton2.setIcon(loadIcon);
         pack();
         setSize(Math.max(570, getWidth()), getHeight());
         UIUtil.initPeer();
@@ -164,11 +149,11 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         testConnectionButton = new javax.swing.JButton();
         jLabel11 = new javax.swing.JLabel();
         password = new javax.swing.JPasswordField();
-        load1 = new javax.swing.JLabel();
         helpjdbc = new javax.swing.JLabel();
-        load2 = new javax.swing.JLabel();
         alias = new javax.swing.JTextField();
         infoBarLabel = new javax.swing.JLabel();
+        loadButton1 = new javax.swing.JButton();
+        loadButton2 = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Database Connection");
@@ -333,27 +318,12 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.weighty = 1.0;
         jPanel1.add(password, gridBagConstraints);
 
-        load1.setText("load");
-        load1.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 20;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
-        jPanel1.add(load1, gridBagConstraints);
-
         helpjdbc.setText("help");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 20;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
         jPanel1.add(helpjdbc, gridBagConstraints);
-
-        load2.setText("load");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 40;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
-        jPanel1.add(load2, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 10;
@@ -370,6 +340,28 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
         jPanel1.add(infoBarLabel, gridBagConstraints);
+
+        loadButton1.setText(" Browse..");
+        loadButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadButton1ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 20;
+        jPanel1.add(loadButton1, gridBagConstraints);
+
+        loadButton2.setText(" Browse..");
+        loadButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                loadButton2ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 40;
+        jPanel1.add(loadButton2, gridBagConstraints);
 
         getContentPane().add(jPanel1, "card2");
 
@@ -422,6 +414,12 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
         	}
         }
     }//GEN-LAST:event_testConnectionButtonActionPerformed
+
+    private void loadButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadButton1ActionPerformed
+    }//GEN-LAST:event_loadButton1ActionPerformed
+
+    private void loadButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadButton2ActionPerformed
+    }//GEN-LAST:event_loadButton2ActionPerformed
    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JTextField alias;
@@ -444,8 +442,8 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JTextField jar1;
     private javax.swing.JTextField jar2;
-    private javax.swing.JLabel load1;
-    private javax.swing.JLabel load2;
+    private javax.swing.JButton loadButton1;
+    private javax.swing.JButton loadButton2;
     private javax.swing.JButton okButton;
     private javax.swing.JPasswordField password;
     private javax.swing.JButton testConnectionButton;

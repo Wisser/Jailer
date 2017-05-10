@@ -197,7 +197,7 @@ public class ExportDialog extends javax.swing.JDialog {
         	exportLabel.setText(" Receipt*");
         	jLabel3.setVisible(false);
         	delete.setVisible(false);
-        	selectDeleteFile.setVisible(false);
+        	browseDeleteButton.setVisible(false);
         } else {
         	confirmInsert.setVisible(false);
         }
@@ -283,29 +283,9 @@ public class ExportDialog extends javax.swing.JDialog {
         }
         
         initScopeButtons(session);
-
-        selectInsertFile.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-            	selectInsertFile.setEnabled(false);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-            	selectInsertFile.setEnabled(true);
-           }
-        });
         
-        selectDeleteFile.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-            	selectDeleteFile.setEnabled(false);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-            	selectDeleteFile.setEnabled(true);
-           }
-        });
-        
-        selectInsertFile.setText("");
-        selectInsertFile.setIcon(loadIcon);
-        selectDeleteFile.setText("");
-        selectDeleteFile.setIcon(loadIcon);
+        browseInsertButton.setIcon(loadIcon);
+        browseDeleteButton.setIcon(loadIcon);
         
         if (parameterEditor.firstTextField != null) {
         	parameterEditor.firstTextField.grabFocus();
@@ -825,8 +805,6 @@ public class ExportDialog extends javax.swing.JDialog {
         jLabel26 = new javax.swing.JLabel();
         jLabel27 = new javax.swing.JLabel();
         jLabel9 = new javax.swing.JLabel();
-        selectInsertFile = new javax.swing.JLabel();
-        selectDeleteFile = new javax.swing.JLabel();
         jLabel21 = new javax.swing.JLabel();
         parameterPanel = new javax.swing.JPanel();
         commandLinePanel = new javax.swing.JPanel();
@@ -855,6 +833,8 @@ public class ExportDialog extends javax.swing.JDialog {
         iFMTPanel = new javax.swing.JPanel();
         jLabel29 = new javax.swing.JLabel();
         jLabel30 = new javax.swing.JLabel();
+        browseInsertButton = new javax.swing.JButton();
+        browseDeleteButton = new javax.swing.JButton();
         jPanel7 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jButton1 = new javax.swing.JButton();
@@ -1168,30 +1148,6 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.gridy = 58;
         jPanel1.add(jLabel9, gridBagConstraints);
 
-        selectInsertFile.setText("jLabel21"); // NOI18N
-        selectInsertFile.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                selectInsertFileMouseClicked(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 30;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
-        jPanel1.add(selectInsertFile, gridBagConstraints);
-
-        selectDeleteFile.setText("jLabel21"); // NOI18N
-        selectDeleteFile.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                selectDeleteFileMouseClicked(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 40;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
-        jPanel1.add(selectDeleteFile, gridBagConstraints);
-
         jLabel21.setText(" With"); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -1456,6 +1412,28 @@ public class ExportDialog extends javax.swing.JDialog {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         jPanel1.add(iFMTPanel, gridBagConstraints);
 
+        browseInsertButton.setText(" Browse..");
+        browseInsertButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseInsertButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 30;
+        jPanel1.add(browseInsertButton, gridBagConstraints);
+
+        browseDeleteButton.setText(" Browse..");
+        browseDeleteButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseDeleteButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 40;
+        jPanel1.add(browseDeleteButton, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 0;
@@ -1632,20 +1610,6 @@ public class ExportDialog extends javax.swing.JDialog {
 	private void scopeGlobalActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_scopeGlobalActionPerformed
     }//GEN-LAST:event_scopeGlobalActionPerformed
 
-    private void selectInsertFileMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_selectInsertFileMouseClicked
-    	String fn = UIUtil.choseFile(null, ".", scriptFormat.getFileChooserTitle(), scriptFormat.getFileExtension(), ExportDialog.this, true, false);
-        if (fn != null) {
-            insert.setText(fn);
-        }
-    }//GEN-LAST:event_selectInsertFileMouseClicked
-
-    private void selectDeleteFileMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_selectDeleteFileMouseClicked
-    	String fn = UIUtil.choseFile(null, ".", "SQL Delete Script", ".sql", ExportDialog.this, true, false);
-        if (fn != null) {
-            delete.setText(fn);
-        }
-    }//GEN-LAST:event_selectDeleteFileMouseClicked
-
     private void copyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copyButtonActionPerformed
         cliArea.selectAll();
         cliArea.copy();
@@ -1694,6 +1658,20 @@ public class ExportDialog extends javax.swing.JDialog {
 
     private void iFMTableSchemaComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_iFMTableSchemaComboBoxActionPerformed
     }//GEN-LAST:event_iFMTableSchemaComboBoxActionPerformed
+
+    private void browseInsertButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseInsertButtonActionPerformed
+    	String fn = UIUtil.choseFile(null, ".", scriptFormat.getFileChooserTitle(), scriptFormat.getFileExtension(), ExportDialog.this, true, false);
+        if (fn != null) {
+            insert.setText(fn);
+        }
+    }//GEN-LAST:event_browseInsertButtonActionPerformed
+
+    private void browseDeleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseDeleteButtonActionPerformed
+    	String fn = UIUtil.choseFile(null, ".", "SQL Delete Script", ".sql", ExportDialog.this, true, false);
+        if (fn != null) {
+            delete.setText(fn);
+        }
+    }//GEN-LAST:event_browseDeleteButtonActionPerformed
     
     public boolean isOk() {
 		return isOk;
@@ -1932,6 +1910,8 @@ public class ExportDialog extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel additSubsLabel;
     private javax.swing.JLabel additSubsLabelTitel;
+    private javax.swing.JButton browseDeleteButton;
+    private javax.swing.JButton browseInsertButton;
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JButton cancelButton;
     private javax.swing.JTextArea cliArea;
@@ -1991,8 +1971,6 @@ public class ExportDialog extends javax.swing.JDialog {
     private javax.swing.JRadioButton scopeGlobal;
     private javax.swing.JRadioButton scopeLocal;
     private javax.swing.JRadioButton scopeSession;
-    private javax.swing.JLabel selectDeleteFile;
-    private javax.swing.JLabel selectInsertFile;
     private javax.swing.JCheckBox sortedCheckBox;
     public javax.swing.JPanel sourceSchemaMappingPanel;
     private javax.swing.JLabel subjectTable;
