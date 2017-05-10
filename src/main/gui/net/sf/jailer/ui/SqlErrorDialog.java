@@ -36,8 +36,10 @@ public class SqlErrorDialog extends javax.swing.JDialog {
   private static final long serialVersionUID = -6737420167295938488L;
 	/** Creates new form SqlErrorDialog */
     public SqlErrorDialog(Window parent, String message, String sql, boolean sqlError, String title) {
-        super(parent, ModalityType.APPLICATION_MODAL);
-        initComponents();
+    	super(parent, ModalityType.APPLICATION_MODAL);
+        this.sqlError = sqlError;
+        this.message = message;
+    	initComponents();
         if (!sqlError) {
         	if (title != null) {
         		setTitle(title);
@@ -62,8 +64,6 @@ public class SqlErrorDialog extends javax.swing.JDialog {
     		};
     		sendButton.addKeyListener(keyListener);
     		jButton1.setVisible(false);
-        } else {
-        	sendButton.setVisible(false);
         }
         int y = 1;
         for (String line: message.trim().split("\n")) {
@@ -102,7 +102,10 @@ public class SqlErrorDialog extends javax.swing.JDialog {
         UIUtil.fit(this);
         setVisible(true);
     }
-
+    
+    private final boolean sqlError;
+	private final String message;
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -188,7 +191,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        jButton1.setText("  OK  ");
+        jButton1.setText(" Close ");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -207,7 +210,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel2.add(sendButton, gridBagConstraints);
@@ -235,7 +238,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 		setVisible(false);
     	URI url;
 		try {
-			url = new URI("http://jailer.sf.net/issueReport.php?type=" + URLEncoder.encode("GUI", "UTF-8") + "&" + "issue=" + URLEncoder.encode(sqlEditorPane.getText(), "UTF-8"));
+			url = new URI("http://jailer.sf.net/issueReport.php?type=" + URLEncoder.encode(sqlError? "SQL" : "GUI", "UTF-8") + "&" + "issue=" + URLEncoder.encode(sqlEditorPane.getText() + (sqlError? "\n\n" + message : ""), "UTF-8"));
 			Desktop.getDesktop().browse(url);
 		} catch (Exception e) {
 			// ignore
