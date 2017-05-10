@@ -202,18 +202,18 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				});
 		connectionsTable.addMouseListener(new MouseAdapter() {
 			@Override
-		    public void mousePressed(MouseEvent me) {
-		        JTable table =(JTable) me.getSource();
-		        Point p = me.getPoint();
-		        int row = table.rowAtPoint(p);
-		        if (me.getClickCount() >= 2) {
-		        	connectionsTable.getSelectionModel().setSelectionInterval(row, row);
-		        	refresh();
-		        	if (jButton1.isEnabled()) {
-		        		connect();
-		        	}
-		        }
-		    }
+			public void mousePressed(MouseEvent me) {
+				JTable table =(JTable) me.getSource();
+				Point p = me.getPoint();
+				int row = table.rowAtPoint(p);
+				if (me.getClickCount() >= 2) {
+					connectionsTable.getSelectionModel().setSelectionInterval(row, row);
+					refresh();
+					if (jButton1.isEnabled()) {
+						connect();
+					}
+				}
+			}
 		});
 		
 		if (currentConnection != null) {
@@ -293,25 +293,25 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 				currentConnection = null;
 			}
 			for (int i = 0; i < connectionsTable.getColumnCount(); i++) {
-	            TableColumn column = connectionsTable.getColumnModel().getColumn(i);
-	            int width = 1;
-	            
-	            Component comp = connectionsTable.getDefaultRenderer(String.class).
-	            						getTableCellRendererComponent(
-	            								connectionsTable, column.getHeaderValue(),
-	            								false, false, 0, i);
-	            width = Math.max(width, comp.getPreferredSize().width);
+				TableColumn column = connectionsTable.getColumnModel().getColumn(i);
+				int width = 1;
+				
+				Component comp = connectionsTable.getDefaultRenderer(String.class).
+										getTableCellRendererComponent(
+												connectionsTable, column.getHeaderValue(),
+												false, false, 0, i);
+				width = Math.max(width, comp.getPreferredSize().width);
 	
-	            for (int line = 0; line < data.length; ++line) {
-		            comp = connectionsTable.getDefaultRenderer(String.class).
-		                             getTableCellRendererComponent(
-		                            		 connectionsTable, data[line][i],
-		                                 false, false, line, i);
-		            width = Math.max(width, comp.getPreferredSize().width);
-	            }
-	            
-	            column.setPreferredWidth(width);
-	        }
+				for (int line = 0; line < data.length; ++line) {
+					comp = connectionsTable.getDefaultRenderer(String.class).
+									 getTableCellRendererComponent(
+											 connectionsTable, data[line][i],
+										 false, false, line, i);
+					width = Math.max(width, comp.getPreferredSize().width);
+				}
+				
+				column.setPreferredWidth(width);
+			}
 			editButton.setEnabled(currentConnection != null);
 			deleteButton.setEnabled(currentConnection != null);
 			copy.setEnabled(currentConnection != null);
@@ -331,19 +331,19 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 */
 	private void store() {
 		try {
-            File file = new File(CONNECTIONS_FILE);
-            ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
-            out.writeObject(connectionList);
-            out.writeInt(connectionList.indexOf(currentConnection));
-            List<String> dataModels = new ArrayList<String>();
-            for (ConnectionInfo ci: connectionList) {
-            	dataModels.add(ci.dataModelFolder);
-            }
-            out.writeObject(dataModels);
-            out.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+			File file = new File(CONNECTIONS_FILE);
+			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
+			out.writeObject(connectionList);
+			out.writeInt(connectionList.indexOf(currentConnection));
+			List<String> dataModels = new ArrayList<String>();
+			for (ConnectionInfo ci: connectionList) {
+				dataModels.add(ci.dataModelFolder);
+			}
+			out.writeObject(dataModels);
+			out.close();
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 	
 	/**
@@ -357,31 +357,31 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		boolean preV4 = true;
 		
 		try {
-            File file = new File(CONNECTIONS_FILE);
-            if (file.exists()) {
-            	ObjectInputStream in = new ObjectInputStream(new FileInputStream(CONNECTIONS_FILE));
-                List<ConnectionInfo> cis = (List<ConnectionInfo>) in.readObject();
-                int i = in.readInt();
-                try {
-                	List<String> dma = (List<String>) in.readObject();
-                	for (int n = 0; n < dma.size(); ++n) {
-                		cis.get(n).dataModelFolder = dma.get(n);
-                	}
-                	preV4 = false;
-                } catch (Throwable t) {
-                	// ignore. pre 4.0 files do not contain data model assignments.
-                }
-                in.close();
-                connectionList = cis;
-                if (i >= 0 && i < connectionList.size()) {
+			File file = new File(CONNECTIONS_FILE);
+			if (file.exists()) {
+				ObjectInputStream in = new ObjectInputStream(new FileInputStream(CONNECTIONS_FILE));
+				List<ConnectionInfo> cis = (List<ConnectionInfo>) in.readObject();
+				int i = in.readInt();
+				try {
+					List<String> dma = (List<String>) in.readObject();
+					for (int n = 0; n < dma.size(); ++n) {
+						cis.get(n).dataModelFolder = dma.get(n);
+					}
+					preV4 = false;
+				} catch (Throwable t) {
+					// ignore. pre 4.0 files do not contain data model assignments.
+				}
+				in.close();
+				connectionList = cis;
+				if (i >= 0 && i < connectionList.size()) {
 //                	currentConnection = connectionList.get(i);
-                }
-                ok = true;
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        
+				}
+				ok = true;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		
 		if (!ok) {
 			// migration of old settings
 			try {
@@ -458,224 +458,224 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 * regenerated by the Form Editor.
 	 */
 	// <editor-fold defaultstate="collapsed"
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
+	// <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+	private void initComponents() {
+		java.awt.GridBagConstraints gridBagConstraints;
 
-        jPanel1 = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        jButton2 = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
-        jPanel3 = new javax.swing.JPanel();
-        newButton = new javax.swing.JButton();
-        editButton = new javax.swing.JButton();
-        copy = new javax.swing.JButton();
-        deleteButton = new javax.swing.JButton();
-        infoBarLabel = new javax.swing.JLabel();
-        jPanel4 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        connectionsTable = new javax.swing.JTable();
+		jPanel1 = new javax.swing.JPanel();
+		jPanel2 = new javax.swing.JPanel();
+		jButton2 = new javax.swing.JButton();
+		jButton1 = new javax.swing.JButton();
+		jPanel3 = new javax.swing.JPanel();
+		newButton = new javax.swing.JButton();
+		editButton = new javax.swing.JButton();
+		copy = new javax.swing.JButton();
+		deleteButton = new javax.swing.JButton();
+		infoBarLabel = new javax.swing.JLabel();
+		jPanel4 = new javax.swing.JPanel();
+		jScrollPane2 = new javax.swing.JScrollPane();
+		connectionsTable = new javax.swing.JTable();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Connect with DB");
-        getContentPane().setLayout(new java.awt.CardLayout());
+		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+		setTitle("Connect with DB");
+		getContentPane().setLayout(new java.awt.CardLayout());
 
-        jPanel1.setLayout(new java.awt.GridBagLayout());
+		jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jPanel2.setLayout(new java.awt.GridBagLayout());
+		jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        jButton2.setText(" Cancel ");
-        jButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton2ActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 4);
-        jPanel2.add(jButton2, gridBagConstraints);
+		jButton2.setText(" Cancel ");
+		jButton2.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				jButton2ActionPerformed(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+		gridBagConstraints.weighty = 1.0;
+		gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 4);
+		jPanel2.add(jButton2, gridBagConstraints);
 
-        jButton1.setText(" Connect ");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
-        jPanel2.add(jButton1, gridBagConstraints);
+		jButton1.setText(" Connect ");
+		jButton1.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				jButton1ActionPerformed(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+		jPanel2.add(jButton1, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 100;
-        gridBagConstraints.gridwidth = 20;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        jPanel1.add(jPanel2, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 100;
+		gridBagConstraints.gridwidth = 20;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		jPanel1.add(jPanel2, gridBagConstraints);
 
-        jPanel3.setLayout(new java.awt.GridBagLayout());
+		jPanel3.setLayout(new java.awt.GridBagLayout());
 
-        newButton.setText(" New ");
-        newButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                newButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(16, 4, 2, 0);
-        jPanel3.add(newButton, gridBagConstraints);
+		newButton.setText(" New ");
+		newButton.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				newButtonActionPerformed(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 10;
+		gridBagConstraints.gridy = 10;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.insets = new java.awt.Insets(16, 4, 2, 0);
+		jPanel3.add(newButton, gridBagConstraints);
 
-        editButton.setText(" Edit ");
-        editButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                editButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 11;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
-        jPanel3.add(editButton, gridBagConstraints);
+		editButton.setText(" Edit ");
+		editButton.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				editButtonActionPerformed(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 10;
+		gridBagConstraints.gridy = 11;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
+		jPanel3.add(editButton, gridBagConstraints);
 
-        copy.setText(" Copy ");
-        copy.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                copyActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 20;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
-        jPanel3.add(copy, gridBagConstraints);
+		copy.setText(" Copy ");
+		copy.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				copyActionPerformed(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 10;
+		gridBagConstraints.gridy = 20;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
+		jPanel3.add(copy, gridBagConstraints);
 
-        deleteButton.setText(" Delete ");
-        deleteButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                deleteButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 30;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
-        jPanel3.add(deleteButton, gridBagConstraints);
+		deleteButton.setText(" Delete ");
+		deleteButton.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				deleteButtonActionPerformed(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 10;
+		gridBagConstraints.gridy = 30;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
+		jPanel3.add(deleteButton, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 20;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        jPanel1.add(jPanel3, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 10;
+		gridBagConstraints.gridy = 20;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+		jPanel1.add(jPanel3, gridBagConstraints);
 
-        infoBarLabel.setText("info bar");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 11;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        jPanel1.add(infoBarLabel, gridBagConstraints);
+		infoBarLabel.setText("info bar");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.gridwidth = 11;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		jPanel1.add(infoBarLabel, gridBagConstraints);
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Connections"));
-        jPanel4.setLayout(new java.awt.GridBagLayout());
+		jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Connections"));
+		jPanel4.setLayout(new java.awt.GridBagLayout());
 
-        connectionsTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Title 1", "Title 2", "Title 3", "Title 4"
-            }
-        ));
-        jScrollPane2.setViewportView(connectionsTable);
+		connectionsTable.setModel(new javax.swing.table.DefaultTableModel(
+			new Object [][] {
+				{null, null, null, null},
+				{null, null, null, null},
+				{null, null, null, null},
+				{null, null, null, null}
+			},
+			new String [] {
+				"Title 1", "Title 2", "Title 3", "Title 4"
+			}
+		));
+		jScrollPane2.setViewportView(connectionsTable);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel4.add(jScrollPane2, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		jPanel4.add(jScrollPane2, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 20;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel1.add(jPanel4, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 20;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		jPanel1.add(jPanel4, gridBagConstraints);
 
-        getContentPane().add(jPanel1, "card2");
+		getContentPane().add(jPanel1, "card2");
 
-        pack();
-    }// </editor-fold>//GEN-END:initComponents
+		pack();
+	}// </editor-fold>//GEN-END:initComponents
 
-    private void copyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copyActionPerformed
-    	if (currentConnection != null) {
-        	int i = connectionList.indexOf(currentConnection);
-        	if (i >= 0) {
-        		for (int nr = 1; ; ++nr) {
-        			String newAlias = "Copy of " + currentConnection.alias + (nr > 1? " (" + nr + ")" : "");
-        			boolean found = false;
-        			for (ConnectionInfo ci: connectionList) {
-        				if (ci.alias.equals(newAlias)) {
-        					found = true;
-        					break;
-        				}
-        			}
-        			if (!found) {
-        				ConnectionInfo ci = new ConnectionInfo();
-        				ci.alias = newAlias;
-        				ci.driverClass = currentConnection.driverClass;
-        				ci.jar1 = currentConnection.jar1;
-        				ci.jar2 = currentConnection.jar2;
-        				ci.password = currentConnection.password;
-        				ci.url = currentConnection.url;
-        				ci.user = currentConnection.user;
-        				connectionList.add(i + 1, ci);
-            			connectionsTable.getSelectionModel().setSelectionInterval(i + 1, i + 1);
-            			refresh();
-                		store();
-            			break;
-        			}
-        		}
-        	}
-        }
-    }//GEN-LAST:event_copyActionPerformed
+	private void copyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copyActionPerformed
+		if (currentConnection != null) {
+			int i = connectionList.indexOf(currentConnection);
+			if (i >= 0) {
+				for (int nr = 1; ; ++nr) {
+					String newAlias = "Copy of " + currentConnection.alias + (nr > 1? " (" + nr + ")" : "");
+					boolean found = false;
+					for (ConnectionInfo ci: connectionList) {
+						if (ci.alias.equals(newAlias)) {
+							found = true;
+							break;
+						}
+					}
+					if (!found) {
+						ConnectionInfo ci = new ConnectionInfo();
+						ci.alias = newAlias;
+						ci.driverClass = currentConnection.driverClass;
+						ci.jar1 = currentConnection.jar1;
+						ci.jar2 = currentConnection.jar2;
+						ci.password = currentConnection.password;
+						ci.url = currentConnection.url;
+						ci.user = currentConnection.user;
+						connectionList.add(i + 1, ci);
+						connectionsTable.getSelectionModel().setSelectionInterval(i + 1, i + 1);
+						refresh();
+						store();
+						break;
+					}
+				}
+			}
+		}
+	}//GEN-LAST:event_copyActionPerformed
 
-    private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
-        if (currentConnection != null) {
-        	int i = connectionList.indexOf(currentConnection);
-        	if (i >= 0) {
-        		if (JOptionPane.showConfirmDialog(this, "Delete '" + currentConnection.alias + "'?", "Delete", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
-        			connectionList.remove(i);
-        			connectionsTable.getSelectionModel().clearSelection();
-        			refresh();
-            		store();
-        		}
-        	}
-        }
-    }//GEN-LAST:event_deleteButtonActionPerformed
+	private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
+		if (currentConnection != null) {
+			int i = connectionList.indexOf(currentConnection);
+			if (i >= 0) {
+				if (JOptionPane.showConfirmDialog(this, "Delete '" + currentConnection.alias + "'?", "Delete", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
+					connectionList.remove(i);
+					connectionsTable.getSelectionModel().clearSelection();
+					refresh();
+					store();
+				}
+			}
+		}
+	}//GEN-LAST:event_deleteButtonActionPerformed
 
-    private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
-    	ConnectionInfo ci = new ConnectionInfo();
-    	try {
+	private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
+		ConnectionInfo ci = new ConnectionInfo();
+		try {
 			CsvFile drivers = new CsvFile(new File("driverlist.csv"));
 			List<Line> lines = new ArrayList<Line>(drivers.getLines());
 			Collections.sort(lines, new Comparator<Line>() {
@@ -689,13 +689,13 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 					dbmsNames.add(line.cells.get(0));
 				}
 			}
-	    	String s = (String) JOptionPane.showInputDialog(this,
+			String s = (String) JOptionPane.showInputDialog(this,
 					"Select DBMS", "Select DBMS",
 					JOptionPane.QUESTION_MESSAGE, null, dbmsNames.toArray(), dbmsNames.get(0));
 			if (s == null) return;
 			for (Line line: lines) {
 				if (line.cells.get(0).equals(s)) {
-			    	ci.url = line.cells.get(1);
+					ci.url = line.cells.get(1);
 					ci.driverClass = line.cells.get(2);
 					String[] jars = line.cells.get(3).replace("/", File.separator).split(" ");
 					if (jars.length > 0) {
@@ -711,47 +711,47 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 		if (edit(ci, true)) {
 			for (int nr = 1; ; ++nr) {
-    			String newAlias = ci.alias + (nr > 1? " (" + nr + ")" : "");
-    			boolean found = false;
-    			for (ConnectionInfo ci2: connectionList) {
-    				if (newAlias.equals(ci2.alias)) {
-    					found = true;
-    					break;
-    				}
-    			}
-    			if (!found) {
-    				ci.alias = newAlias;
-    				connectionList.add(0, ci);
-    				int i = 0;
-        			connectionsTable.getSelectionModel().setSelectionInterval(i, i);
-        			refresh();
-            		store();
-        			break;
-    			}
-    		}
+				String newAlias = ci.alias + (nr > 1? " (" + nr + ")" : "");
+				boolean found = false;
+				for (ConnectionInfo ci2: connectionList) {
+					if (newAlias.equals(ci2.alias)) {
+						found = true;
+						break;
+					}
+				}
+				if (!found) {
+					ci.alias = newAlias;
+					connectionList.add(0, ci);
+					int i = 0;
+					connectionsTable.getSelectionModel().setSelectionInterval(i, i);
+					refresh();
+					store();
+					break;
+				}
+			}
 		}
-    }//GEN-LAST:event_newButtonActionPerformed
+	}//GEN-LAST:event_newButtonActionPerformed
 
-    private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
+	private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
 		if (currentConnection == null) return;
-    	if (edit(currentConnection, false)) {
+		if (edit(currentConnection, false)) {
 			refresh();
-    		store();
-    	}
-    }//GEN-LAST:event_editButtonActionPerformed
+			store();
+		}
+	}//GEN-LAST:event_editButtonActionPerformed
 
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        isConnected = false;
-        setVisible(false);
-    }//GEN-LAST:event_jButton2ActionPerformed
+	private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
+		isConnected = false;
+		setVisible(false);
+	}//GEN-LAST:event_jButton2ActionPerformed
 
-    /**
-     * Opens detail editor for a connection.
-     * 
-     * @param ci the connection
-     * @param forNew 
-     * @return <code>true</code> if connection has been edited
-     */
+	/**
+	 * Opens detail editor for a connection.
+	 * 
+	 * @param ci the connection
+	 * @param forNew 
+	 * @return <code>true</code> if connection has been edited
+	 */
 	private boolean edit(ConnectionInfo ci, boolean forNew) {
 		return new DbConnectionDetailsEditor(parent, jdbcHelpURL, forNew).edit(ci);
 	}
@@ -894,21 +894,21 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 	}
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JTable connectionsTable;
-    private javax.swing.JButton copy;
-    private javax.swing.JButton deleteButton;
-    private javax.swing.JButton editButton;
-    private javax.swing.JLabel infoBarLabel;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JButton newButton;
-    // End of variables declaration//GEN-END:variables
+	// Variables declaration - do not modify//GEN-BEGIN:variables
+	private javax.swing.JTable connectionsTable;
+	private javax.swing.JButton copy;
+	private javax.swing.JButton deleteButton;
+	private javax.swing.JButton editButton;
+	private javax.swing.JLabel infoBarLabel;
+	private javax.swing.JButton jButton1;
+	private javax.swing.JButton jButton2;
+	private javax.swing.JPanel jPanel1;
+	private javax.swing.JPanel jPanel2;
+	private javax.swing.JPanel jPanel3;
+	private javax.swing.JPanel jPanel4;
+	private javax.swing.JScrollPane jScrollPane2;
+	private javax.swing.JButton newButton;
+	// End of variables declaration//GEN-END:variables
 
 	public String getPassword() {
 		return currentConnection.password;

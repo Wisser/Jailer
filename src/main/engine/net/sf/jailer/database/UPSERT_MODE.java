@@ -24,13 +24,13 @@ public enum UPSERT_MODE {
 	FROM_JL_DUAL("Select 1, 2 From $ where not exists(Select * from $ T where T.c1=1)"),
 	FROM_SYSDUMMY1("Select 1, 2 From sysibm.sysdummy1 where not exists(Select * from $ T where T.c1=1)"),
 	MERGE("MERGE INTO $ T " +
-                          "USING (SELECT 1 c1, 2 c2 from dual) incoming " +
-                          "ON (T.c1 = incoming.c1) " +
-                          "WHEN MATCHED THEN " +
-                          "UPDATE SET T.c2 = incoming.c2 " +
-                          "WHEN NOT MATCHED THEN " +
-                          "INSERT (T.c1, T.c2) " +
-                          "VALUES (incoming.c1, incoming.c2)");
+						  "USING (SELECT 1 c1, 2 c2 from dual) incoming " +
+						  "ON (T.c1 = incoming.c1) " +
+						  "WHEN MATCHED THEN " +
+						  "UPDATE SET T.c2 = incoming.c2 " +
+						  "WHEN NOT MATCHED THEN " +
+						  "INSERT (T.c1, T.c2) " +
+						  "VALUES (incoming.c1, incoming.c2)");
 	
 	public final String testSQL_;
 	UPSERT_MODE(String testSQL) {

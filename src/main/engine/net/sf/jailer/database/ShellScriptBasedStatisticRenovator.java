@@ -31,52 +31,52 @@ import net.sf.jailer.ExecutionContext;
  */
 public class ShellScriptBasedStatisticRenovator implements StatisticRenovator {
 
-    /**
-     * Invocation of the script-file.
-     */
-    private final String scriptInvocation;
-    
-    /**
-     * The logger.
-     */
-    private static final Logger _log = Logger.getLogger(ShellScriptBasedStatisticRenovator.class);
-    
-    /**
-     * Constructor.
-     * 
-     * @param scriptInvocation invocation of the script-file
-     */
-    public ShellScriptBasedStatisticRenovator(String scriptInvocation) {
-    	this.scriptInvocation = scriptInvocation;
-    }
-    
-    /**
-     * Renews the DB table statistics for the working-tables
-     * by executing the shell-script.
-     * 
-     * @param session for execution of SQL-statements
-     */
-    public void renew(Session session, ExecutionContext executionContext) throws Exception {
-        String theScriptInvocation = getScriptInvocation(session);
-        _log.info("executing: " + theScriptInvocation);
-        Process process = Runtime.getRuntime().exec(theScriptInvocation);
-        process.waitFor();
-        BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
-        String line;
-        while ((line = input.readLine()) != null) {
-            _log.info("+ " + line);
-        }
-        _log.info("exit value = " + process.exitValue());
-    }
+	/**
+	 * Invocation of the script-file.
+	 */
+	private final String scriptInvocation;
+	
+	/**
+	 * The logger.
+	 */
+	private static final Logger _log = Logger.getLogger(ShellScriptBasedStatisticRenovator.class);
+	
+	/**
+	 * Constructor.
+	 * 
+	 * @param scriptInvocation invocation of the script-file
+	 */
+	public ShellScriptBasedStatisticRenovator(String scriptInvocation) {
+		this.scriptInvocation = scriptInvocation;
+	}
+	
+	/**
+	 * Renews the DB table statistics for the working-tables
+	 * by executing the shell-script.
+	 * 
+	 * @param session for execution of SQL-statements
+	 */
+	public void renew(Session session, ExecutionContext executionContext) throws Exception {
+		String theScriptInvocation = getScriptInvocation(session);
+		_log.info("executing: " + theScriptInvocation);
+		Process process = Runtime.getRuntime().exec(theScriptInvocation);
+		process.waitFor();
+		BufferedReader input = new BufferedReader(new InputStreamReader(process.getInputStream()));
+		String line;
+		while ((line = input.readLine()) != null) {
+			_log.info("+ " + line);
+		}
+		_log.info("exit value = " + process.exitValue());
+	}
 
-    /**
-     * Gets shell-invocation.
-     * 
-     * @param session for execution of SQL-statements
-     * @return shell-invocation
-     */
-    protected String getScriptInvocation(Session session) throws Exception {
-        return scriptInvocation;
-    }
+	/**
+	 * Gets shell-invocation.
+	 * 
+	 * @param session for execution of SQL-statements
+	 * @return shell-invocation
+	 */
+	protected String getScriptInvocation(Session session) throws Exception {
+		return scriptInvocation;
+	}
 
 }

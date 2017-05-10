@@ -47,99 +47,99 @@ public abstract class DetailsView extends javax.swing.JPanel {
 	private final RowSorter<? extends TableModel> rowSorter;
 	private final RowIdSupport rowIdSupport;
 	
-    /** Creates new form DetailsView 
-     * @param rowSorter 
-    */
-    public DetailsView(List<Row> rows, int size, DataModel dataModel, Table table, int rowIndex, RowSorter<? extends TableModel> rowSorter, boolean showSpinner, RowIdSupport rowIdSupport) {
-        this.table = table;
-    	this.rows = rows;
-    	this.rowSorter = rowSorter;
-    	this.rowIdSupport = rowIdSupport;
-        initComponents();
-        if (rowSorter != null) {
-        	rowIndex = rowSorter.convertRowIndexToView(rowIndex);
-        }
-        final SpinnerNumberModel model = new SpinnerNumberModel(rowIndex + 1, 1, size, -1);
-        rowSpinner.setModel(model);
-        rowSpinner.addChangeListener(new ChangeListener() {
+	/** Creates new form DetailsView 
+	 * @param rowSorter 
+	*/
+	public DetailsView(List<Row> rows, int size, DataModel dataModel, Table table, int rowIndex, RowSorter<? extends TableModel> rowSorter, boolean showSpinner, RowIdSupport rowIdSupport) {
+		this.table = table;
+		this.rows = rows;
+		this.rowSorter = rowSorter;
+		this.rowIdSupport = rowIdSupport;
+		initComponents();
+		if (rowSorter != null) {
+			rowIndex = rowSorter.convertRowIndexToView(rowIndex);
+		}
+		final SpinnerNumberModel model = new SpinnerNumberModel(rowIndex + 1, 1, size, -1);
+		rowSpinner.setModel(model);
+		rowSpinner.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
 				setCurrentRow((Integer) model.getValue() - 1, true);
 			}
 		});
-        if (!showSpinner) {
-        	jLabel1.setVisible(false);
-        	rowSpinner.setVisible(false);
+		if (!showSpinner) {
+			jLabel1.setVisible(false);
+			rowSpinner.setVisible(false);
 //        	jScrollPane1.setBorder(null);
-        	jScrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
+			jScrollPane1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_NEVER);
 			jScrollPane1.setHorizontalScrollBarPolicy(ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 		}
-        setCurrentRow(rowIndex, showSpinner);
-    }
-    
-    private final Font font = new JLabel().getFont();
-    private final Font nonbold = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize()); 
-    private final Font italic = new Font(font.getName(), font.getStyle() & ~Font.BOLD | Font.ITALIC, font.getSize()); 
-    private final Color BG1 = new Color(255, 255, 255);
-    private final Color BG2 = new Color(230, 255, 255);
-    private final Color FG1 = new Color(155, 0, 0);
+		setCurrentRow(rowIndex, showSpinner);
+	}
 	
-    public void setBorderColor(Color color) {
+	private final Font font = new JLabel().getFont();
+	private final Font nonbold = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize()); 
+	private final Font italic = new Font(font.getName(), font.getStyle() & ~Font.BOLD | Font.ITALIC, font.getSize()); 
+	private final Color BG1 = new Color(255, 255, 255);
+	private final Color BG2 = new Color(230, 255, 255);
+	private final Color FG1 = new Color(155, 0, 0);
+	
+	public void setBorderColor(Color color) {
 		jScrollPane1.setBorder(BorderFactory.createEtchedBorder(color, Color.GRAY));
-    }
-    
-    private void setCurrentRow(int row, boolean selectableFields) {
-    	jPanel1.removeAll();
-    	int i = 0;
-    	java.awt.GridBagConstraints gridBagConstraints;
-    	List<Column> columns = rowIdSupport.getColumns(table);
+	}
+	
+	private void setCurrentRow(int row, boolean selectableFields) {
+		jPanel1.removeAll();
+		int i = 0;
+		java.awt.GridBagConstraints gridBagConstraints;
+		List<Column> columns = rowIdSupport.getColumns(table);
 		while (i < columns.size()) {
-    		Column c = columns.get(i);
-    		JLabel l = new JLabel();
-    		l.setText(" " + c.name + "  ");
-    		l.setFont(nonbold);
-    		gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-            gridBagConstraints.weightx = 0;
-            gridBagConstraints.weighty = 0;
-            gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-            gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = i;
-            jPanel1.add(l, gridBagConstraints);
+			Column c = columns.get(i);
+			JLabel l = new JLabel();
+			l.setText(" " + c.name + "  ");
+			l.setFont(nonbold);
+			gridBagConstraints = new java.awt.GridBagConstraints();
+			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+			gridBagConstraints.weightx = 0;
+			gridBagConstraints.weighty = 0;
+			gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			gridBagConstraints.gridx = 0;
+			gridBagConstraints.gridy = i;
+			jPanel1.add(l, gridBagConstraints);
 
-            gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-            gridBagConstraints.weighty = 0;
-            gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-            gridBagConstraints.weightx = 1;
-            gridBagConstraints.gridx = 1;
-            gridBagConstraints.gridy = i;
-            Object v = rows.get(rowSorter != null? rowSorter.convertRowIndexToModel(row) : row).values[i];
-            if (selectableFields) {
-	            JTextField f = new JTextField();
+			gridBagConstraints = new java.awt.GridBagConstraints();
+			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+			gridBagConstraints.weighty = 0;
+			gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			gridBagConstraints.weightx = 1;
+			gridBagConstraints.gridx = 1;
+			gridBagConstraints.gridy = i;
+			Object v = rows.get(rowSorter != null? rowSorter.convertRowIndexToModel(row) : row).values[i];
+			if (selectableFields) {
+				JTextField f = new JTextField();
 				f.setText(v == null? "" : v.toString());
 				f.setEnabled(v != null);
-	            f.setEditable(false);
-	            jPanel1.add(f, gridBagConstraints);
-            } else {
-	            JLabel f = new JLabel();
+				f.setEditable(false);
+				jPanel1.add(f, gridBagConstraints);
+			} else {
+				JLabel f = new JLabel();
 				f.setText((v == null? "null" : v.toString()) + "    ");
-	    		f.setFont(v == null? italic : nonbold);
-	    		if (v == null) {
-	    			f.setForeground(Color.GRAY);
-	    		}
-	            jPanel1.add(f, gridBagConstraints);
-	            f.setBackground(i % 2 == 0? BG1 : BG2);
-	            l.setBackground(i % 2 == 0? BG1 : BG2);
-	            f.setOpaque(true);
-	            l.setOpaque(true);
-	            if (rowIdSupport.getPrimaryKey(table) != null && rowIdSupport.getPrimaryKey(table).getColumns().contains(c)) {
-	            	l.setForeground(FG1);
-	            } else {
-	            	l.setForeground(Color.BLUE);
-	            }
-            }
-            
+				f.setFont(v == null? italic : nonbold);
+				if (v == null) {
+					f.setForeground(Color.GRAY);
+				}
+				jPanel1.add(f, gridBagConstraints);
+				f.setBackground(i % 2 == 0? BG1 : BG2);
+				l.setBackground(i % 2 == 0? BG1 : BG2);
+				f.setOpaque(true);
+				l.setOpaque(true);
+				if (rowIdSupport.getPrimaryKey(table) != null && rowIdSupport.getPrimaryKey(table).getColumns().contains(c)) {
+					l.setForeground(FG1);
+				} else {
+					l.setForeground(Color.BLUE);
+				}
+			}
+			
 //          l = new JLabel();
 //    		l.setText(" ");
 //    		gridBagConstraints = new java.awt.GridBagConstraints();
@@ -149,91 +149,91 @@ public abstract class DetailsView extends javax.swing.JPanel {
 //            gridBagConstraints.gridy = i;
 //            gridBagConstraints.fill = GridBagConstraints.BOTH;
 //            jPanel1.add(l, gridBagConstraints);
-            
-            ++i;
-    	}
-    	if (selectableFields) {
-    		JLabel l = new JLabel();
-    		l.setText(" ");
-    		gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-            gridBagConstraints.weightx = 0;
-            gridBagConstraints.weighty = 1;
-            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-            gridBagConstraints.gridx = 1;
-            gridBagConstraints.gridy = i;
-            jPanel1.add(l, gridBagConstraints);
-    	}
-    	invalidate();
-    	validate();
-    	setSize(getWidth() - 1, getHeight() - 1);
-    	setSize(getWidth() + 1, getHeight() + 1);
+			
+			++i;
+		}
+		if (selectableFields) {
+			JLabel l = new JLabel();
+			l.setText(" ");
+			gridBagConstraints = new java.awt.GridBagConstraints();
+			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+			gridBagConstraints.weightx = 0;
+			gridBagConstraints.weighty = 1;
+			gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+			gridBagConstraints.gridx = 1;
+			gridBagConstraints.gridy = i;
+			jPanel1.add(l, gridBagConstraints);
+		}
+		invalidate();
+		validate();
+		setSize(getWidth() - 1, getHeight() - 1);
+		setSize(getWidth() + 1, getHeight() + 1);
 		onRowChanged((row));
 	}
 
 	protected abstract void onRowChanged(int row);
 	
 	/** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
-     */
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
+	 * initialize the form.
+	 * WARNING: Do NOT modify this code. The content of this method is
+	 * always regenerated by the Form Editor.
+	 */
+	// <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+	private void initComponents() {
+		java.awt.GridBagConstraints gridBagConstraints;
 
-        jLabel1 = new javax.swing.JLabel();
-        rowSpinner = new javax.swing.JSpinner();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jPanel1 = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
-        jTextField1 = new javax.swing.JTextField();
+		jLabel1 = new javax.swing.JLabel();
+		rowSpinner = new javax.swing.JSpinner();
+		jScrollPane1 = new javax.swing.JScrollPane();
+		jPanel1 = new javax.swing.JPanel();
+		jLabel2 = new javax.swing.JLabel();
+		jTextField1 = new javax.swing.JTextField();
 
-        setLayout(new java.awt.GridBagLayout());
+		setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText(" Row ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        add(jLabel1, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(rowSpinner, gridBagConstraints);
+		jLabel1.setText(" Row ");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 1;
+		add(jLabel1, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		add(rowSpinner, gridBagConstraints);
 
-        jPanel1.setLayout(new java.awt.GridBagLayout());
+		jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel2.setText("jLabel2");
-        jPanel1.add(jLabel2, new java.awt.GridBagConstraints());
+		jLabel2.setText("jLabel2");
+		jPanel1.add(jLabel2, new java.awt.GridBagConstraints());
 
-        jTextField1.setText("jTextField1");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        jPanel1.add(jTextField1, gridBagConstraints);
+		jTextField1.setText("jTextField1");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		gridBagConstraints.weightx = 1.0;
+		jPanel1.add(jTextField1, gridBagConstraints);
 
-        jScrollPane1.setViewportView(jPanel1);
+		jScrollPane1.setViewportView(jPanel1);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jScrollPane1, gridBagConstraints);
-    }// </editor-fold>//GEN-END:initComponents
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 2;
+		gridBagConstraints.gridwidth = 2;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		add(jScrollPane1, gridBagConstraints);
+	}// </editor-fold>//GEN-END:initComponents
 
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JSpinner rowSpinner;
-    // End of variables declaration//GEN-END:variables
+	// Variables declaration - do not modify//GEN-BEGIN:variables
+	private javax.swing.JLabel jLabel1;
+	private javax.swing.JLabel jLabel2;
+	private javax.swing.JPanel jPanel1;
+	private javax.swing.JScrollPane jScrollPane1;
+	private javax.swing.JTextField jTextField1;
+	private javax.swing.JSpinner rowSpinner;
+	// End of variables declaration//GEN-END:variables
 
 }

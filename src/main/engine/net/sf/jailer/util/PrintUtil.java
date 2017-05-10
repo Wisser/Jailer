@@ -41,60 +41,60 @@ import net.sf.jailer.datamodel.Table;
  */
 public class PrintUtil {
 	
-    /**
-     * Converts a set of tables into a string.
-     * 
-     * @param tables the set
-     */
-    public String tableSetAsString(Set<Table> tables) {
-        return tableSetAsString(tables, "      ");
-    }
-    
-    /**
-     * Converts a set of tables into a string.
-     * 
-     * @param tables the set
-     */
-    public String tableSetAsString(Set<Table> tables, String linePrefix) {
-        List<String> tableNames = new ArrayList<String>();
-        for (Table table: tables) {
-            tableNames.add(table.getName());
-        }
-        Collections.sort(tableNames);
-        StringBuffer str = new StringBuffer();
-        str.append(" { ");
-        int i = 1;
-        for (String tableName: tableNames) {
-            if (i > 1) {
-                str.append(", ");
-            }
-            if (i % 5 == 0 && linePrefix != null) {
-                str.append("\n" + linePrefix);
-            }
-            str.append(tableName);
-            ++i;
-        }
-        str.append(" }");
-        return str.toString();
-    }
+	/**
+	 * Converts a set of tables into a string.
+	 * 
+	 * @param tables the set
+	 */
+	public String tableSetAsString(Set<Table> tables) {
+		return tableSetAsString(tables, "      ");
+	}
+	
+	/**
+	 * Converts a set of tables into a string.
+	 * 
+	 * @param tables the set
+	 */
+	public String tableSetAsString(Set<Table> tables, String linePrefix) {
+		List<String> tableNames = new ArrayList<String>();
+		for (Table table: tables) {
+			tableNames.add(table.getName());
+		}
+		Collections.sort(tableNames);
+		StringBuffer str = new StringBuffer();
+		str.append(" { ");
+		int i = 1;
+		for (String tableName: tableNames) {
+			if (i > 1) {
+				str.append(", ");
+			}
+			if (i % 5 == 0 && linePrefix != null) {
+				str.append("\n" + linePrefix);
+			}
+			str.append(tableName);
+			++i;
+		}
+		str.append(" }");
+		return str.toString();
+	}
 
-    /**
-     * Cache for {@link #applyTemplate(String, Object[])}.
-     */
-    private Map<String, String> templateCache = new HashMap<String, String>();
+	/**
+	 * Cache for {@link #applyTemplate(String, Object[])}.
+	 */
+	private Map<String, String> templateCache = new HashMap<String, String>();
 
-    /**
-     * Loads a file.
-     * 
-     * @param file the file to load
-     * @return content of file
-     * @throws FileNotFoundException
-     * @throws IOException
-     */
-    public String loadResource(String name) throws FileNotFoundException, IOException {
-        StringBuffer sb;
-        sb = new StringBuffer();
-        File newFile = new File(name);
+	/**
+	 * Loads a file.
+	 * 
+	 * @param file the file to load
+	 * @return content of file
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	public String loadResource(String name) throws FileNotFoundException, IOException {
+		StringBuffer sb;
+		sb = new StringBuffer();
+		File newFile = new File(name);
 		BufferedReader reader;
 		if (newFile.exists()) {
 			reader = new BufferedReader(new FileReader(newFile));
@@ -105,73 +105,73 @@ public class PrintUtil {
 			}
 			reader = new BufferedReader(new InputStreamReader(in));
 		}
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-        	sb.append(line + "\n");
-        }
-        reader.close();
-        return sb.toString();
-    }
+		String line = null;
+		while ((line = reader.readLine()) != null) {
+			sb.append(line + "\n");
+		}
+		reader.close();
+		return sb.toString();
+	}
 
-    /**
-     * Applies arguments to template.
-     * 
-     * @param template file name of template
-     * @param arguments the arguments
-     * 
-     * @return template with arguments filled in
-     */
-    public String applyTemplate(String template, Object[] arguments) throws FileNotFoundException, IOException {
-        String sb = templateCache.get(template);
-        if (sb == null) {
-            sb = loadResource(template);
-            templateCache.put(template, sb);
-        }
-        
-        return MessageFormat.format(sb, arguments);
-    }
+	/**
+	 * Applies arguments to template.
+	 * 
+	 * @param template file name of template
+	 * @param arguments the arguments
+	 * 
+	 * @return template with arguments filled in
+	 */
+	public String applyTemplate(String template, Object[] arguments) throws FileNotFoundException, IOException {
+		String sb = templateCache.get(template);
+		if (sb == null) {
+			sb = loadResource(template);
+			templateCache.put(template, sb);
+		}
+		
+		return MessageFormat.format(sb, arguments);
+	}
 
-    /**
-     * Applies arguments to template.
-     * 
-     * @param template file name of template
-     * @param arguments the arguments (named values)
-     * 
-     * @return template with arguments filled in
-     */
-    public String applyTemplate(String template, Map<String, String> arguments, Map<String, List<String>> listArguments) throws FileNotFoundException, IOException {
-    	String sb = templateCache.get(template);
-        if (sb == null) {
-            sb = loadResource(template);
-            templateCache.put(template, sb);
-        }
-        
-        for (Map.Entry<String, String> e: arguments.entrySet()) {
-        	sb = sb.replaceAll(Pattern.quote("${" + e.getKey() + "}"), Matcher.quoteReplacement(e.getValue())); 
-        }
-        
-        for (;;) {
-        	int begin = sb.indexOf("${for-each:");
-        	int end = sb.indexOf("${end}");
-        	
-        	if (begin >= 0 && end >= 0) {
-        		String pre = sb.substring(0, begin);
-        		String woPre = sb.substring(begin + 11);
-        		int i = woPre.indexOf('}');
-         		String content = woPre.substring(i + 1, end - begin - 11);
-         		String suf = sb.substring(end + 6);
-         		String cContent = "";
-         		int index = 1;
-	        	for (String var: listArguments.get(woPre.substring(0, i))) {
-	        		cContent += content.replaceAll("\\$i", "" + (index++)).replaceAll("\\$", Matcher.quoteReplacement(var));
-        		}
-        		sb = pre + cContent + suf;
-        	} else {
-        		break;
-        	}
-        }
-        
-        return sb;
+	/**
+	 * Applies arguments to template.
+	 * 
+	 * @param template file name of template
+	 * @param arguments the arguments (named values)
+	 * 
+	 * @return template with arguments filled in
+	 */
+	public String applyTemplate(String template, Map<String, String> arguments, Map<String, List<String>> listArguments) throws FileNotFoundException, IOException {
+		String sb = templateCache.get(template);
+		if (sb == null) {
+			sb = loadResource(template);
+			templateCache.put(template, sb);
+		}
+		
+		for (Map.Entry<String, String> e: arguments.entrySet()) {
+			sb = sb.replaceAll(Pattern.quote("${" + e.getKey() + "}"), Matcher.quoteReplacement(e.getValue())); 
+		}
+		
+		for (;;) {
+			int begin = sb.indexOf("${for-each:");
+			int end = sb.indexOf("${end}");
+			
+			if (begin >= 0 && end >= 0) {
+				String pre = sb.substring(0, begin);
+				String woPre = sb.substring(begin + 11);
+				int i = woPre.indexOf('}');
+				 String content = woPre.substring(i + 1, end - begin - 11);
+				 String suf = sb.substring(end + 6);
+				 String cContent = "";
+				 int index = 1;
+				for (String var: listArguments.get(woPre.substring(0, i))) {
+					cContent += content.replaceAll("\\$i", "" + (index++)).replaceAll("\\$", Matcher.quoteReplacement(var));
+				}
+				sb = pre + cContent + suf;
+			} else {
+				break;
+			}
+		}
+		
+		return sb;
 	}
 
 	/**
@@ -220,38 +220,38 @@ public class PrintUtil {
 		}
 	}
 
-    /**
-     * Loads a file.
-     * 
-     * @param file the file to load
-     * @return content of file
-     * @throws FileNotFoundException
-     * @throws IOException
-     */
-    public String loadFile(String file) throws FileNotFoundException, IOException {
-        return loadFile(file, false);
-    }
-    
-    /**
-     * Loads a file.
-     * 
-     * @param file the file to load
-     * @return content of file
-     * @throws FileNotFoundException
-     * @throws IOException
-     */
-    public String loadFile(String file, boolean ignoreComments) throws FileNotFoundException, IOException {
-        StringBuffer sb;
-        sb = new StringBuffer();
-        BufferedReader reader = new BufferedReader(new FileReader(new File(file)));
-        String line = null;
-        while ((line = reader.readLine()) != null) {
-            if (!ignoreComments || (line.trim().length() > 0 && !line.startsWith("#"))) {
-                sb.append(line + "\n");
-            }
-        }
-        reader.close();
-        return sb.toString();
-    }
+	/**
+	 * Loads a file.
+	 * 
+	 * @param file the file to load
+	 * @return content of file
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	public String loadFile(String file) throws FileNotFoundException, IOException {
+		return loadFile(file, false);
+	}
+	
+	/**
+	 * Loads a file.
+	 * 
+	 * @param file the file to load
+	 * @return content of file
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
+	public String loadFile(String file, boolean ignoreComments) throws FileNotFoundException, IOException {
+		StringBuffer sb;
+		sb = new StringBuffer();
+		BufferedReader reader = new BufferedReader(new FileReader(new File(file)));
+		String line = null;
+		while ((line = reader.readLine()) != null) {
+			if (!ignoreComments || (line.trim().length() > 0 && !line.startsWith("#"))) {
+				sb.append(line + "\n");
+			}
+		}
+		reader.close();
+		return sb.toString();
+	}
 
 }

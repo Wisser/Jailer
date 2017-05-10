@@ -49,7 +49,7 @@ public class Pair<A, B> {
 		this.a = a;
 		this.b = b;
 	}
-    
+	
 	/**
 	 * Compares two pairs.
 	 */
@@ -102,4 +102,4 @@ public class Pair<A, B> {
 		return "Pair(" + a + ", " + b + ")";
 	}
 
- }
+}

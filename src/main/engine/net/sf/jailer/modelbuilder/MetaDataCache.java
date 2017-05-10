@@ -74,13 +74,13 @@ public class MetaDataCache {
 	 * @return cache
 	 */
 	public static MetaDataCache readPrimaryKeys(Session session, String schema) {
-    	String primaryKeysQuery = session.dbms.getPrimaryKeysQuery();
-    	if (primaryKeysQuery == null) {
-    		return new MetaDataCache();
-    	}
+		String primaryKeysQuery = session.dbms.getPrimaryKeysQuery();
+		if (primaryKeysQuery == null) {
+			return new MetaDataCache();
+		}
 
-    	_log.info("reading primary keys...");
-    	
+		_log.info("reading primary keys...");
+		
 		MetaDataCache metaDataCache = new MetaDataCache();
 		try {
 			Set<Integer> intIndex = new HashSet<Integer>(Arrays.asList(5));
@@ -100,13 +100,13 @@ public class MetaDataCache {
 	 * @return cache
 	 */
 	public static MetaDataCache readIndexInfo(Session session, String schema) {
-    	String indexInfoQuery = session.dbms.getIndexInfoQuery();
-    	if (indexInfoQuery == null) {
-    		return new MetaDataCache();
-    	}
+		String indexInfoQuery = session.dbms.getIndexInfoQuery();
+		if (indexInfoQuery == null) {
+			return new MetaDataCache();
+		}
 
-    	_log.info("reading index info...");
-    	
+		_log.info("reading index info...");
+		
 		MetaDataCache metaDataCache = new MetaDataCache();
 		try {
 			Set<Integer> intIndex = new HashSet<Integer>(Arrays.asList(4));
@@ -126,13 +126,13 @@ public class MetaDataCache {
 	 * @return cache
 	 */
 	public static MetaDataCache readImportedKeys(Session session, String schema) {
-    	String importedKeysQuery = session.dbms.getImportedKeysQuery();
-    	if (importedKeysQuery == null) {
-    		return new MetaDataCache();
-    	}
+		String importedKeysQuery = session.dbms.getImportedKeysQuery();
+		if (importedKeysQuery == null) {
+			return new MetaDataCache();
+		}
 
-    	_log.info("reading imported keys...");
-    	
+		_log.info("reading imported keys...");
+		
 		MetaDataCache metaDataCache = new MetaDataCache();
 		try {
 			Set<Integer> intIndex = new HashSet<Integer>(Arrays.asList(9, 10, 11, 14));
@@ -152,9 +152,9 @@ public class MetaDataCache {
 	 * @return cache
 	 */
 	public static MetaDataCache readColumns(Session session, DatabaseMetaData metaData, String schema) {
-    	_log.info("reading columns...");
-    	
-    	MetaDataCache metaDataCache = new MetaDataCache();
+		_log.info("reading columns...");
+		
+		MetaDataCache metaDataCache = new MetaDataCache();
 		ResultSet rs;
 		try {
 			if (DBMS.MySQL.equals(session.dbms)) {

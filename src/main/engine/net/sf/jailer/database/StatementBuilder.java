@@ -29,108 +29,108 @@ import java.util.List;
  */
 public class StatementBuilder {
 
-    /**
-     * The maximal size of a body-list.
-     */
-    private final int maxBodySize;
+	/**
+	 * The maximal size of a body-list.
+	 */
+	private final int maxBodySize;
 
-    /**
-     * The head of the statement.
-     */
-    private String head = null;
+	/**
+	 * The head of the statement.
+	 */
+	private String head = null;
 
-    /**
-     * Item-list.
-     */
-    private List<String> body = new ArrayList<String>();
+	/**
+	 * Item-list.
+	 */
+	private List<String> body = new ArrayList<String>();
 
-    /**
-     * Separates the items.
-     */
-    private String separator;
-    
-    /**
-     * Terminates the statement.
-     */
-    private String terminator;
+	/**
+	 * Separates the items.
+	 */
+	private String separator;
+	
+	/**
+	 * Terminates the statement.
+	 */
+	private String terminator;
 
-    /**
-     * Constructor.
-     * 
-     * @param maxBodySize the maximal size of a body-list
-     */
-    public StatementBuilder(int maxBodySize) {
-        this.maxBodySize = maxBodySize;
-    }
-    
-    /**
-     * Checks whether an item is appendable to previously appended items.
-     * 
-     * @param head the statements head
-     * @param item the item
-     * @return <code>true</code> iff item is appendable
-     */
-    public boolean isAppendable(String head, String item) {
-        return body.size() < maxBodySize && (this.head == null || this.head.equals(head));
-    }
-    
-    /**
-     * Checks whether an item is appendable to previously appended items.
-     * 
-     * @param head the statements head
-     * @return <code>true</code> iff item is appendable
-     */
-    public boolean isAppendable(String head) {
-        return isAppendable(head, null);
-    }
+	/**
+	 * Constructor.
+	 * 
+	 * @param maxBodySize the maximal size of a body-list
+	 */
+	public StatementBuilder(int maxBodySize) {
+		this.maxBodySize = maxBodySize;
+	}
+	
+	/**
+	 * Checks whether an item is appendable to previously appended items.
+	 * 
+	 * @param head the statements head
+	 * @param item the item
+	 * @return <code>true</code> iff item is appendable
+	 */
+	public boolean isAppendable(String head, String item) {
+		return body.size() < maxBodySize && (this.head == null || this.head.equals(head));
+	}
+	
+	/**
+	 * Checks whether an item is appendable to previously appended items.
+	 * 
+	 * @param head the statements head
+	 * @return <code>true</code> iff item is appendable
+	 */
+	public boolean isAppendable(String head) {
+		return isAppendable(head, null);
+	}
 
-    /**
-     * Builds the SQL-statement and resets the builder.
-     * 
-     * @return the SQL-statement
-     */
-    public String build() {
-        if (this.head != null) {
-            StringBuilder sqlStatement = new StringBuilder(head);
-            boolean firstTime = true;
-            for (String item: body) {
-                if (!firstTime) {
-                    sqlStatement.append(separator);
-                }
-                firstTime = false;
-                sqlStatement.append(item);
-            }
-            sqlStatement.append(terminator);
-            head = null;
-            body.clear();
-            return sqlStatement.toString();
-        }
-        return "";
-    }
+	/**
+	 * Builds the SQL-statement and resets the builder.
+	 * 
+	 * @return the SQL-statement
+	 */
+	public String build() {
+		if (this.head != null) {
+			StringBuilder sqlStatement = new StringBuilder(head);
+			boolean firstTime = true;
+			for (String item: body) {
+				if (!firstTime) {
+					sqlStatement.append(separator);
+				}
+				firstTime = false;
+				sqlStatement.append(item);
+			}
+			sqlStatement.append(terminator);
+			head = null;
+			body.clear();
+			return sqlStatement.toString();
+		}
+		return "";
+	}
 
-    /**
-     * Appends an item.
-     * 
-     * @param head same head as previously appended, if any
-     * @param item the item
-     * @param separator separates the items
-     * @param terminator terminates the statement
-     */
-    public void append(String head, String item, String separator, String terminator) {
-        if (this.head != null && !this.head.equals(head)) {
-            throw new IllegalStateException("can't append, '" + this.head + "'!='" + head + "'");
-        }
-        this.head = head;
-        this.terminator = terminator;
-        this.separator = separator;
-        body.add(item);
-    }
+	/**
+	 * Appends an item.
+	 * 
+	 * @param head same head as previously appended, if any
+	 * @param item the item
+	 * @param separator separates the items
+	 * @param terminator terminates the statement
+	 */
+	public void append(String head, String item, String separator, String terminator) {
+		if (this.head != null && !this.head.equals(head)) {
+			throw new IllegalStateException("can't append, '" + this.head + "'!='" + head + "'");
+		}
+		this.head = head;
+		this.terminator = terminator;
+		this.separator = separator;
+		body.add(item);
+	}
 
-    /**
-     * Checks if builder is empty.
-     * 
-     * @return <code>true</code> if builder is empty
-     */
+	/**
+	 * Checks if builder is empty.
+	 * 
+	 * @return <code>true</code> if builder is empty
+	 */
 	public boolean isEmpty() {
 		return body.isEmpty();
 	}
@@ -141,12 +141,12 @@ public class StatementBuilder {
 	public int size() {
 		return body.size();
 	}
-    
-    /**
-     * Gets the maximal size of a body-list.
-     */
-    public int getMaxBodySize() {
-    	return maxBodySize;
-    }
-    
+	
+	/**
+	 * Gets the maximal size of a body-list.
+	 */
+	public int getMaxBodySize() {
+		return maxBodySize;
+	}
+	
 }

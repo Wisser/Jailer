@@ -75,7 +75,7 @@ public class AssociationRenderer extends EdgeRenderer {
 	public AssociationRenderer() {
 		full = true;
 	}
-    
+	
 	/**
 	 * Temporary used in getRawShape.
 	 */
@@ -83,12 +83,12 @@ public class AssociationRenderer extends EdgeRenderer {
 	private Point2D starPosition = null;
 	
 	/**
-     * Return a non-transformed shape for the visual representation of the
-     * {@link Association}.
-     * 
-     * @param item the VisualItem being drawn
-     * @return the "raw", untransformed shape
-     */
+	 * Return a non-transformed shape for the visual representation of the
+	 * {@link Association}.
+	 * 
+	 * @param item the VisualItem being drawn
+	 * @return the "raw", untransformed shape
+	 */
 	@Override
 	protected Shape getRawShape(VisualItem item) {
 		EdgeItem   edge = (EdgeItem)item;
@@ -104,74 +104,74 @@ public class AssociationRenderer extends EdgeRenderer {
 		}
 		
 		getAlignedPoint(m_tmpPoints[0], item1.getBounds(),
-		                m_xAlign1, m_yAlign1);
+						m_xAlign1, m_yAlign1);
 		getAlignedPoint(m_tmpPoints[1], item2.getBounds(),
-		                m_xAlign2, m_yAlign2);
+						m_xAlign2, m_yAlign2);
 		m_curWidth = (float)(m_width * getLineWidth(item));
 		EdgeItem e = (EdgeItem)item;
 		
-	    boolean forward = (m_edgeArrow == Constants.EDGE_ARROW_FORWARD);
+		boolean forward = (m_edgeArrow == Constants.EDGE_ARROW_FORWARD);
 
-	    // get starting and ending edge endpoints
-	    Point2D start = null, end = null;
-	    start = m_tmpPoints[forward?0:1];
-	    end   = m_tmpPoints[forward?1:0];
+		// get starting and ending edge endpoints
+		Point2D start = null, end = null;
+		start = m_tmpPoints[forward?0:1];
+		end   = m_tmpPoints[forward?1:0];
 
-	    if (!full) {
+		if (!full) {
 			double midX;
 			double midY;
-		    Point2D sp = start, ep = end;
-		    
-		    VisualItem dest = forward ? e.getTargetItem() : e.getSourceItem();
-		    int i = GraphicsLib.intersectLineRectangle(start, end,
-		            dest.getBounds(), m_isctPoints);
-		    if ( i > 0 ) ep = m_isctPoints[0];
+			Point2D sp = start, ep = end;
+			
+			VisualItem dest = forward ? e.getTargetItem() : e.getSourceItem();
+			int i = GraphicsLib.intersectLineRectangle(start, end,
+					dest.getBounds(), m_isctPoints);
+			if ( i > 0 ) ep = m_isctPoints[0];
 
-		    VisualItem src = !forward ? e.getTargetItem() : e.getSourceItem();
-		    i = GraphicsLib.intersectLineRectangle(start, end,
-		            src.getBounds(), m_isctPoints2);
-		    if ( i > 0 ) sp = m_isctPoints2[0];
-		    
-	    	midX = (sp.getX() + ep.getX()) / 2;
+			VisualItem src = !forward ? e.getTargetItem() : e.getSourceItem();
+			i = GraphicsLib.intersectLineRectangle(start, end,
+					src.getBounds(), m_isctPoints2);
+			if ( i > 0 ) sp = m_isctPoints2[0];
+			
+			midX = (sp.getX() + ep.getX()) / 2;
 			midY = (sp.getY() + ep.getY()) / 2;
 			m_tmpPoints[reversed? 1 : 0].setLocation(midX, midY);
 		}
 		
 		// create the arrow head, if needed
 		if ( e.isDirected() && m_edgeArrow != Constants.EDGE_ARROW_NONE) {
-		    if (type == Constants.EDGE_TYPE_CURVE) {
-			    AffineTransform t = new AffineTransform();
-		    	t.setToRotation(Math.PI/4 * (reversedCurve? 1 : -1));
-		    	Point2D p = new Point2D.Double(), shift = new Point2D.Double();
-		    	double d = start.distance(end) / 5.0;
-		    	p.setLocation((end.getX() - start.getX()) / d, (end.getY() - start.getY()) / d);
-		    	t.transform(p, shift);
-		    	start.setLocation(start.getX() + shift.getX(), start.getY() + shift.getY());
-		    	end.setLocation(end.getX() + shift.getX(), end.getY() + shift.getY());
-		    }
-	    	
-		    // compute the intersection with the target bounding box
-		    VisualItem dest = forward ? e.getTargetItem() : e.getSourceItem();
-		    int i = GraphicsLib.intersectLineRectangle(start, end,
-		            dest.getBounds(), m_isctPoints);
-		    if ( i > 0 ) end = m_isctPoints[0];
-		    
-		    // create the arrow head shape
-		    AffineTransform at = getArrowTrans(start, end, m_curWidth);
-		    m_curArrow = at.createTransformedShape(m_arrowHead);
-		    
-		    // update the endpoints for the edge shape
-		    // need to bias this by arrow head size
-		    if (type == Constants.EDGE_TYPE_CURVE) {
-		    	if (!"XML".equals(association.getDataModel().getExportModus()) || !isAggregation(association)) {
-		    		m_curArrow = null;
-		    	}
-		    }
-	    	Point2D lineEnd = m_tmpPoints[forward?1:0]; 
-	    	lineEnd.setLocation(0, type == Constants.EDGE_TYPE_CURVE? 0 : -m_arrowHeight);
-	    	at.transform(lineEnd, lineEnd);
+			if (type == Constants.EDGE_TYPE_CURVE) {
+				AffineTransform t = new AffineTransform();
+				t.setToRotation(Math.PI/4 * (reversedCurve? 1 : -1));
+				Point2D p = new Point2D.Double(), shift = new Point2D.Double();
+				double d = start.distance(end) / 5.0;
+				p.setLocation((end.getX() - start.getX()) / d, (end.getY() - start.getY()) / d);
+				t.transform(p, shift);
+				start.setLocation(start.getX() + shift.getX(), start.getY() + shift.getY());
+				end.setLocation(end.getX() + shift.getX(), end.getY() + shift.getY());
+			}
+			
+			// compute the intersection with the target bounding box
+			VisualItem dest = forward ? e.getTargetItem() : e.getSourceItem();
+			int i = GraphicsLib.intersectLineRectangle(start, end,
+					dest.getBounds(), m_isctPoints);
+			if ( i > 0 ) end = m_isctPoints[0];
+			
+			// create the arrow head shape
+			AffineTransform at = getArrowTrans(start, end, m_curWidth);
+			m_curArrow = at.createTransformedShape(m_arrowHead);
+			
+			// update the endpoints for the edge shape
+			// need to bias this by arrow head size
+			if (type == Constants.EDGE_TYPE_CURVE) {
+				if (!"XML".equals(association.getDataModel().getExportModus()) || !isAggregation(association)) {
+					m_curArrow = null;
+				}
+			}
+			Point2D lineEnd = m_tmpPoints[forward?1:0]; 
+			lineEnd.setLocation(0, type == Constants.EDGE_TYPE_CURVE? 0 : -m_arrowHeight);
+			at.transform(lineEnd, lineEnd);
 		} else {
-		    m_curArrow = null;
+			m_curArrow = null;
 		}
 		
 		// create the edge shape
@@ -180,56 +180,56 @@ public class AssociationRenderer extends EdgeRenderer {
 		double n1y = m_tmpPoints[0].getY();
 		double n2x = m_tmpPoints[1].getX();
 		double n2y = m_tmpPoints[1].getY();
-        m_line.setLine(n1x, n1y, n2x, n2y);
-        shape = m_line;
-        
-        starBounds = null;
-        starPosition = null;
-        
-        if (!forward && (Cardinality.MANY_TO_MANY.equals(association.getCardinality()) || Cardinality.MANY_TO_ONE.equals(association.getCardinality()))
-        ||   forward && (Cardinality.MANY_TO_MANY.equals(association.getCardinality()) || Cardinality.ONE_TO_MANY.equals(association.getCardinality()))) {
-        	starPosition = m_tmpPoints[forward? 1:0];
-            start = starPosition;
-        	end = m_tmpPoints[forward? 0:1];
-		    AffineTransform t = new AffineTransform();
-	    	t.setToRotation(-Math.PI/3);
-	    	Point2D p = new Point2D.Double(), shift = new Point2D.Double();
-	    	double d = m_tmpPoints[0].distance(m_tmpPoints[1]) / 9.0;
-	    	p.setLocation((end.getX() - start.getX()) / d, (end.getY() - start.getY()) / d);
-	    	t.transform(p, shift);
-	    	starPosition.setLocation(starPosition.getX() + shift.getX(), starPosition.getY() + shift.getY());
-	        starBounds = new Rectangle2D.Double(starPosition.getX() - STAR_SIZE * (starWidth / 2), starPosition.getY() - STAR_SIZE * (starHeight / 2), starWidth * STAR_SIZE, starHeight * STAR_SIZE);
-        }
+		m_line.setLine(n1x, n1y, n2x, n2y);
+		shape = m_line;
+		
+		starBounds = null;
+		starPosition = null;
+		
+		if (!forward && (Cardinality.MANY_TO_MANY.equals(association.getCardinality()) || Cardinality.MANY_TO_ONE.equals(association.getCardinality()))
+		||   forward && (Cardinality.MANY_TO_MANY.equals(association.getCardinality()) || Cardinality.ONE_TO_MANY.equals(association.getCardinality()))) {
+			starPosition = m_tmpPoints[forward? 1:0];
+			start = starPosition;
+			end = m_tmpPoints[forward? 0:1];
+			AffineTransform t = new AffineTransform();
+			t.setToRotation(-Math.PI/3);
+			Point2D p = new Point2D.Double(), shift = new Point2D.Double();
+			double d = m_tmpPoints[0].distance(m_tmpPoints[1]) / 9.0;
+			p.setLocation((end.getX() - start.getX()) / d, (end.getY() - start.getY()) / d);
+			t.transform(p, shift);
+			starPosition.setLocation(starPosition.getX() + shift.getX(), starPosition.getY() + shift.getY());
+			starBounds = new Rectangle2D.Double(starPosition.getX() - STAR_SIZE * (starWidth / 2), starPosition.getY() - STAR_SIZE * (starHeight / 2), starWidth * STAR_SIZE, starHeight * STAR_SIZE);
+		}
 
 		return shape;
 	}
 
 	/**
-     * Returns an affine transformation that maps the arrowhead shape
-     * to the position and orientation specified by the provided
-     * line segment end points.
-     */
-    protected AffineTransform getArrowTrans(Point2D p1, Point2D p2, 
-                                            double width)
-    {
-        m_arrowTrans.setToTranslation(p2.getX(), p2.getY());
-        m_arrowTrans.rotate(-HALF_PI + 
-            Math.atan2(p2.getY()-p1.getY(), p2.getX()-p1.getX()));
-        if ( width > 1 ) {
-            double scalar = width/2;
-            m_arrowTrans.scale(scalar, scalar);
-        }
-        return m_arrowTrans;
-    }
+	 * Returns an affine transformation that maps the arrowhead shape
+	 * to the position and orientation specified by the provided
+	 * line segment end points.
+	 */
+	protected AffineTransform getArrowTrans(Point2D p1, Point2D p2, 
+											double width)
+	{
+		m_arrowTrans.setToTranslation(p2.getX(), p2.getY());
+		m_arrowTrans.rotate(-HALF_PI + 
+			Math.atan2(p2.getY()-p1.getY(), p2.getX()-p1.getX()));
+		if ( width > 1 ) {
+			double scalar = width/2;
+			m_arrowTrans.scale(scalar, scalar);
+		}
+		return m_arrowTrans;
+	}
 
-    /**
-     * Renders an {@link Association}.
-     * 
-     * @param g the 2D graphics
-     * @param item visual item for the association
-     * @param isSelected <code>true</code> for selected association
-     */
-    public void render(Graphics2D g, VisualItem item, boolean isSelected) {
+	/**
+	 * Renders an {@link Association}.
+	 * 
+	 * @param g the 2D graphics
+	 * @param item visual item for the association
+	 * @param isSelected <code>true</code> for selected association
+	 */
+	public void render(Graphics2D g, VisualItem item, boolean isSelected) {
 		Association association = (Association) item.get("association");
 		item.setSize(isSelected? 3 : 1);
 		int color;
@@ -273,33 +273,33 @@ public class AssociationRenderer extends EdgeRenderer {
 		render(g, item);
 		if (starPosition != null && starImage != null) {
 			double size = STAR_SIZE;
-		    transform.setTransform(size, 0, 0, size, starPosition.getX() - size * (starWidth / 2), starPosition.getY() - size * (starHeight / 2));
-            g.drawImage(starImage, transform, null);
+			transform.setTransform(size, 0, 0, size, starPosition.getX() - size * (starWidth / 2), starPosition.getY() - size * (starHeight / 2));
+			g.drawImage(starImage, transform, null);
 			starPosition = null;
 		}
 	}
 
-    /**
-     * @see prefuse.render.Renderer#setBounds(prefuse.visual.VisualItem)
-     */
-    public void setBounds(VisualItem item) {
-    	super.setBounds(item);
-        if (starBounds != null ) {
-            Rectangle2D bbox = (Rectangle2D)item.get(VisualItem.BOUNDS);
-            Rectangle2D.union(bbox, starBounds, bbox);
-        }
-    }
+	/**
+	 * @see prefuse.render.Renderer#setBounds(prefuse.visual.VisualItem)
+	 */
+	public void setBounds(VisualItem item) {
+		super.setBounds(item);
+		if (starBounds != null ) {
+			Rectangle2D bbox = (Rectangle2D)item.get(VisualItem.BOUNDS);
+			Rectangle2D.union(bbox, starBounds, bbox);
+		}
+	}
 
-    private boolean arrowIsPotAggregation = false;
+	private boolean arrowIsPotAggregation = false;
 	private AffineTransform transform = new AffineTransform();
 	private Rectangle2D starBounds = null;
 	
-    /**
-     * Gets color for association.
-     * 
-     * @param association the association
-     * @return the color for the association
-     */
+	/**
+	 * Gets color for association.
+	 * 
+	 * @param association the association
+	 * @return the color for the association
+	 */
 	private int associationColor(Association association) {
 		if (association.isIgnored()) {
 			return COLOR_IGNORED.getRGB();
@@ -314,25 +314,25 @@ public class AssociationRenderer extends EdgeRenderer {
 	}
 
 	 /**
-     * Returns true if the Point is located inside the extents of the item.
-     * This calculation matches against the exact item shape, and so is more
-     * sensitive than just checking within a bounding box.
-     * 
-     * @param p the point to test for containment
-     * @param item the item to test containment against
-     * @return true if the point is contained within the the item, else false
-     */
+	 * Returns true if the Point is located inside the extents of the item.
+	 * This calculation matches against the exact item shape, and so is more
+	 * sensitive than just checking within a bounding box.
+	 * 
+	 * @param p the point to test for containment
+	 * @param item the item to test containment against
+	 * @return true if the point is contained within the the item, else false
+	 */
 	@Override
 	public boolean locatePoint(Point2D p, VisualItem item) {
 		Shape s = getShape(item);
 		if ( s == null ) {
-		    return false;
+			return false;
 		} else {
-		    double width = Math.max(14, getLineWidth(item));
-		    double halfWidth = width/2.0;
-		    return s.intersects(p.getX()-halfWidth,
-		                        p.getY()-halfWidth,
-		                        width,width);
+			double width = Math.max(14, getLineWidth(item));
+			double halfWidth = width/2.0;
+			return s.intersects(p.getX()-halfWidth,
+								p.getY()-halfWidth,
+								width,width);
 		}
 	}
 
@@ -342,9 +342,9 @@ public class AssociationRenderer extends EdgeRenderer {
 	protected Polygon updateArrowHead(int w, int h, Association association, boolean isSelected) {
 		if (isAggregation(association)) {
 			if ( m_arrowHead == null ) {
-			    m_arrowHead = new Polygon();
+				m_arrowHead = new Polygon();
 			} else {
-			    m_arrowHead.reset();
+				m_arrowHead.reset();
 			}
 			double ws = 0.9;
 			double hs = 2.0/3.0;

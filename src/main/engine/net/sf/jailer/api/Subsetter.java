@@ -196,26 +196,26 @@ public class Subsetter {
 	}
 
 	/**
-     * Gets URL of the current data model (the datamodel's base folder)
-     */
+	 * Gets URL of the current data model (the datamodel's base folder)
+	 */
 	public URL getDataModelURL() {
 		return executionContext.getDataModelURL();
 	}
 	
 	/**
-     * Sets URL of the current data model (the datamodel's base folder)
-     */
+	 * Sets URL of the current data model (the datamodel's base folder)
+	 */
 	public void setDataModelURL(URL datamodelURL) {
 		executionContext.setDataModelURL(datamodelURL);
 	}
 
 	/**
-     * Sets the current data model as {@link File}
-     * 
-     * @param datamodelBaseFolder represents the folder. Will be converted to an URL an set as datamodel URL
-     * 
-     * @see #setDataModelURL(URL)
-     */
+	 * Sets the current data model as {@link File}
+	 * 
+	 * @param datamodelBaseFolder represents the folder. Will be converted to an URL an set as datamodel URL
+	 * 
+	 * @see #setDataModelURL(URL)
+	 */
 	public void setDataModelBaseFolder(File datamodelBaseFolder) {
 		try {
 			setDataModelURL(datamodelBaseFolder.toURI().toURL());
@@ -242,23 +242,23 @@ public class Subsetter {
 		this.extractionModelURL = extractionModelURL;
 	}
 
-    /**
-     * Gets the script format.
-     * 
-     * @return the script format
-     */
-    public ScriptFormat getScriptFormat() {
-    	return executionContext.getScriptFormat();
-    }
-    
-    /**
-     * Sets the script format.
-     * 
-     * @return the script format
-     */
-    public void setScriptFormat(ScriptFormat scriptFormat) {
-    	executionContext.setScriptFormat(scriptFormat);
-    }
+	/**
+	 * Gets the script format.
+	 * 
+	 * @return the script format
+	 */
+	public ScriptFormat getScriptFormat() {
+		return executionContext.getScriptFormat();
+	}
+	
+	/**
+	 * Sets the script format.
+	 * 
+	 * @return the script format
+	 */
+	public void setScriptFormat(ScriptFormat scriptFormat) {
+		executionContext.setScriptFormat(scriptFormat);
+	}
 
 	/**
 	 * If <code>true</code>, Use uTF-8 encoding
@@ -549,23 +549,23 @@ public class Subsetter {
 	 * TODO
 	 * @return parameters
 	 */
-    public Map<String, String> getParameters() {
-    	return executionContext.getParameters();
-    }
+	public Map<String, String> getParameters() {
+		return executionContext.getParameters();
+	}
 
-    /**
-     * Sets a parameter.
-     * 
-     * @param name parameter name
-     * @param value value
-     */
-    public void setParameter(String name, String value) {
-    	executionContext.setParameter(name, value);
-    }
+	/**
+	 * Sets a parameter.
+	 * 
+	 * @param name parameter name
+	 * @param value value
+	 */
+	public void setParameter(String name, String value) {
+		executionContext.setParameter(name, value);
+	}
 
-    public Map<String, String> getSchemaMapping() {
-    	return executionContext.getSchemaMapping();
-    }
+	public Map<String, String> getSchemaMapping() {
+		return executionContext.getSchemaMapping();
+	}
 
 	/**
 	 * Sets source schema map
@@ -577,9 +577,9 @@ public class Subsetter {
 		executionContext.setSchemaMapping(schemaMapping);
 	}
 
-    /**
-     * TODO
-     * 
+	/**
+	 * TODO
+	 * 
 	 * @param sourceSchemaMapping the sourceSchemaMapping to set
 	 */
 	public void setSourceSchemaMapping(Map<String, String> sourceSchemaMapping) {

@@ -41,50 +41,50 @@ import net.sf.jailer.configuration.DBMS;
 public class BasicDataSource implements DataSource {
 
 	/**
-     * The logger.
-     */
-    private static final Logger _log = Logger.getLogger(BasicDataSource.class);
-    
-    /**
-     * Name of JDBC-driver class.
-     */
-    private final String driverClassName;
-    
+	 * The logger.
+	 */
+	private static final Logger _log = Logger.getLogger(BasicDataSource.class);
+	
 	/**
-     * The DB URL.
-     */
-    final String dbUrl;
-    
-    /**
-     * The DB user.
-     */
-    final String dbUser;
-    
-    /**
-     * The DB password.
-     */
-    private final String dbPassword;
+	 * Name of JDBC-driver class.
+	 */
+	private final String driverClassName;
+	
+	/**
+	 * The DB URL.
+	 */
+	final String dbUrl;
+	
+	/**
+	 * The DB user.
+	 */
+	final String dbUser;
+	
+	/**
+	 * The DB password.
+	 */
+	private final String dbPassword;
 
-    /**
-     * The DBMS.
-     */
-    public final DBMS dbms;
+	/**
+	 * The DBMS.
+	 */
+	public final DBMS dbms;
 
-    /**
-     * Maximum number of pooled connections.
-     */
-    private final int maxPoolSize;
+	/**
+	 * Maximum number of pooled connections.
+	 */
+	private final int maxPoolSize;
 
-    /**
-     * Constructor. Derives DBMS from URL.
-     * 
-     * @param driverClassName name of JDBC-driver class
-     * @param dbUrl the URL
-     * @param dbUser the user
-     * @param dbPassword the password
-     * @param maxPoolSize maximum number of pooled connections
-     * @param jdbcDriver driver jar file
-     */
+	/**
+	 * Constructor. Derives DBMS from URL.
+	 * 
+	 * @param driverClassName name of JDBC-driver class
+	 * @param dbUrl the URL
+	 * @param dbUser the user
+	 * @param dbPassword the password
+	 * @param maxPoolSize maximum number of pooled connections
+	 * @param jdbcDriver driver jar file
+	 */
 	public BasicDataSource(String driverClassName, String dbUrl, String dbUser, String dbPassword, int maxPoolSize, File jdbcDriver) {
 		this.driverClassName = driverClassName;
 		this.dbUrl = dbUrl;
@@ -100,16 +100,16 @@ public class BasicDataSource implements DataSource {
 	}
 
 
-    /**
-     * Constructor. Derives DBMS from URL.
-     * 
-     * @param driverClassName name of JDBC-driver class
-     * @param dbUrl the URL
-     * @param dbUser the user
-     * @param dbPassword the password
-     * @param maxPoolSize maximum number of pooled connections
-     * @param jdbcDriverURL URL of driver jar file
-     */
+	/**
+	 * Constructor. Derives DBMS from URL.
+	 * 
+	 * @param driverClassName name of JDBC-driver class
+	 * @param dbUrl the URL
+	 * @param dbUser the user
+	 * @param dbPassword the password
+	 * @param maxPoolSize maximum number of pooled connections
+	 * @param jdbcDriverURL URL of driver jar file
+	 */
 	public BasicDataSource(String driverClassName, String dbUrl, String dbUser, String dbPassword, int maxPoolSize, URL... jdbcDriverURL) {
 		this.driverClassName = driverClassName;
 		this.dbUrl = dbUrl;
@@ -121,15 +121,15 @@ public class BasicDataSource implements DataSource {
 	}
 
 	/**
-     * Constructor.
-     * 
-     * @param driverClassName name of JDBC-driver class
-     * @param dbUrl the URL
-     * @param dbUser the user
-     * @param dbPassword the password
-     * @param maxPoolSize maximum number of pooled connections
-     * @param dbms the DBMS 
-     */
+	 * Constructor.
+	 * 
+	 * @param driverClassName name of JDBC-driver class
+	 * @param dbUrl the URL
+	 * @param dbUser the user
+	 * @param dbPassword the password
+	 * @param maxPoolSize maximum number of pooled connections
+	 * @param dbms the DBMS 
+	 */
 	public BasicDataSource(String driverClassName, String dbUrl, String dbUser, String dbPassword, DBMS dbms, int maxPoolSize, URL... jdbcDriverURL) {
 		this.driverClassName = driverClassName;
 		this.dbUrl = dbUrl;
@@ -156,57 +156,57 @@ public class BasicDataSource implements DataSource {
 		}
 	}
 	
-    /**
-     * Wraps a Jdbc-Driver.
-     */
-    public static class DriverShim implements Driver {
-        private Driver driver;
-        public DriverShim(Driver d) {
-            this.driver = d;
-        }
-        public boolean acceptsURL(String u) throws SQLException {
-            return this.driver.acceptsURL(u);
-        }
-        public Connection connect(String u, Properties p) throws SQLException {
-            return this.driver.connect(u, p);
-        }
-        public int getMajorVersion() {
-            return this.driver.getMajorVersion();
-        }
-        public int getMinorVersion() {
-            return this.driver.getMinorVersion();
-        }
-        public DriverPropertyInfo[] getPropertyInfo(String u, Properties p) throws SQLException {
-            return this.driver.getPropertyInfo(u, p);
-        }
-        public boolean jdbcCompliant() {
-            return this.driver.jdbcCompliant();
-        }
-        public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
-        	throw new SQLFeatureNotSupportedException();
-        }
-    }
+	/**
+	 * Wraps a Jdbc-Driver.
+	 */
+	public static class DriverShim implements Driver {
+		private Driver driver;
+		public DriverShim(Driver d) {
+			this.driver = d;
+		}
+		public boolean acceptsURL(String u) throws SQLException {
+			return this.driver.acceptsURL(u);
+		}
+		public Connection connect(String u, Properties p) throws SQLException {
+			return this.driver.connect(u, p);
+		}
+		public int getMajorVersion() {
+			return this.driver.getMajorVersion();
+		}
+		public int getMinorVersion() {
+			return this.driver.getMinorVersion();
+		}
+		public DriverPropertyInfo[] getPropertyInfo(String u, Properties p) throws SQLException {
+			return this.driver.getPropertyInfo(u, p);
+		}
+		public boolean jdbcCompliant() {
+			return this.driver.jdbcCompliant();
+		}
+		public java.util.logging.Logger getParentLogger() throws SQLFeatureNotSupportedException {
+			throw new SQLFeatureNotSupportedException();
+		}
+	}
 
-    private void loadDriver(URL[] jdbcDriverURL) {
-    	ClassLoader classLoaderForJdbcDriver = addJarToClasspath(jdbcDriverURL);
-    	try {
-	    	if (classLoaderForJdbcDriver != null) {
-	            Driver d;
+	private void loadDriver(URL[] jdbcDriverURL) {
+		ClassLoader classLoaderForJdbcDriver = addJarToClasspath(jdbcDriverURL);
+		try {
+			if (classLoaderForJdbcDriver != null) {
+				Driver d;
 				try {
 					d = (Driver) Class.forName(driverClassName, true, classLoaderForJdbcDriver).newInstance();
-		            DriverManager.registerDriver(new DriverShim(d));
+					DriverManager.registerDriver(new DriverShim(d));
 				} catch (InstantiationException e) {
 					throw new RuntimeException(e);
 				} catch (IllegalAccessException e) {
 					throw new RuntimeException(e);
 				}
-	        } else {
-	            Class.forName(driverClassName);
-	        }
-    	} catch (SQLException e) {
-    		throw new RuntimeException(e);
-    	} catch (ClassNotFoundException e) {
-    		throw new RuntimeException(e);
+			} else {
+				Class.forName(driverClassName);
+			}
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		} catch (ClassNotFoundException e) {
+			throw new RuntimeException(e);
 		}
 	}
 
@@ -214,21 +214,21 @@ public class BasicDataSource implements DataSource {
 		if (perUrl.containsKey(dbUrl)) {
 			return perUrl.get(dbUrl);
 		}
-        DBMS defaultDBMS = DBMS.forDBMS(null);
-        List<DBMS> cs = Configuration.getInstance().getDBMS();  
-        for (DBMS c: cs) {
-        	if (Pattern.matches(c.getUrlPattern(), dbUrl)) {
-        		boolean ok = true;
-        		if (c.getTestQuery() != null) {
-        			Connection connection = null;
-        			try {
-        				connection = getConnection(defaultDBMS, false);
-        				Statement st = connection.createStatement();
-        				ResultSet rs = st.executeQuery(c.getTestQuery());
-        				while (rs.next()) {
-        				}
-        				rs.close();
-        				st.close();
+		DBMS defaultDBMS = DBMS.forDBMS(null);
+		List<DBMS> cs = Configuration.getInstance().getDBMS();  
+		for (DBMS c: cs) {
+			if (Pattern.matches(c.getUrlPattern(), dbUrl)) {
+				boolean ok = true;
+				if (c.getTestQuery() != null) {
+					Connection connection = null;
+					try {
+						connection = getConnection(defaultDBMS, false);
+						Statement st = connection.createStatement();
+						ResultSet rs = st.executeQuery(c.getTestQuery());
+						while (rs.next()) {
+						}
+						rs.close();
+						st.close();
 					} catch (SQLException e) {
 						ok = false;
 					} finally {
@@ -239,15 +239,15 @@ public class BasicDataSource implements DataSource {
 							}
 						}
 					}
-        		}
-        		if (ok) {
-        			perUrl.put(dbUrl, c);
-        			return c;
-        		}
-        	}
-        }
+				}
+				if (ok) {
+					perUrl.put(dbUrl, c);
+					return c;
+				}
+			}
+		}
 		perUrl.put(dbUrl, defaultDBMS);
-        return defaultDBMS;
+		return defaultDBMS;
 	}
 
 	private final List<Connection> pool = Collections.synchronizedList(new LinkedList<Connection>());
@@ -258,16 +258,16 @@ public class BasicDataSource implements DataSource {
 	 * @param theDbms the DBMS to use
 	 * @return new connection
 	 */
-    private Connection getConnection(DBMS theDbms, boolean usePool) throws SQLException {
+	private Connection getConnection(DBMS theDbms, boolean usePool) throws SQLException {
 		Connection con = null;
 
 		if (usePool) {
-    		synchronized (pool) {
+			synchronized (pool) {
 				if (pool.size() > 0) {
 					con = pool.remove(0);
 				}
 			}
-    	}
+		}
 		
 		Map<String, String> jdbcProperties = theDbms.getJdbcProperties();
 		if (con == null && jdbcProperties != null) {
@@ -357,9 +357,9 @@ public class BasicDataSource implements DataSource {
 	}
 
 	/**
-     * Holds configurations.
-     */
-    private static Map<String, DBMS> perUrl = new HashMap<String, DBMS>();
+	 * Holds configurations.
+	 */
+	private static Map<String, DBMS> perUrl = new HashMap<String, DBMS>();
 
 	@Override
 	public Connection getConnection() throws SQLException {

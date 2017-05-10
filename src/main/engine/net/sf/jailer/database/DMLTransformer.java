@@ -56,100 +56,100 @@ import net.sf.jailer.util.SqlUtil;
  */
 public class DMLTransformer extends AbstractResultSetReader {
 
-    /**
-     * The table to read from.
-     */
-    private final Table table;
-    
-    /**
-     * The file to write to.
-     */
-    private final OutputStreamWriter scriptFileWriter;
-    
-    /**
-     * Number of columns.
-     */
-    private int columnCount;
+	/**
+	 * The table to read from.
+	 */
+	private final Table table;
+	
+	/**
+	 * The file to write to.
+	 */
+	private final OutputStreamWriter scriptFileWriter;
+	
+	/**
+	 * Number of columns.
+	 */
+	private int columnCount;
 
-    /**
-     * Labels of columns.
-     */
-    private String[] columnLabel = null;
+	/**
+	 * Labels of columns.
+	 */
+	private String[] columnLabel = null;
 
-    /**
-     * Lob columns.
-     */
-    private List<String> lobColumns = null;
-    private boolean[] isLobColumn;
-    
-    /**
-     * Literals for empty lob values.
-     */
-    private String[] emptyLobValue = null;
+	/**
+	 * Lob columns.
+	 */
+	private List<String> lobColumns = null;
+	private boolean[] isLobColumn;
+	
+	/**
+	 * Literals for empty lob values.
+	 */
+	private String[] emptyLobValue = null;
 
-    /**
-     * Whether or not the table has columns of type CLOB or BLOB.
-     */
-    private boolean tableHasLobs = false;
-    
-    /**
-     * Lob columns indexes.
-     */
-    private List<Integer> lobColumnIndexes = null;
+	/**
+	 * Whether or not the table has columns of type CLOB or BLOB.
+	 */
+	private boolean tableHasLobs = false;
+	
+	/**
+	 * Lob columns indexes.
+	 */
+	private List<Integer> lobColumnIndexes = null;
 
-    /**
-     * Labels of columns as comma separated list.
-     */
-    private String labelCSL;
+	/**
+	 * Labels of columns as comma separated list.
+	 */
+	private String labelCSL;
 
-    /**
-     * For building compact insert-statements.
-     */
-    private final StatementBuilder insertStatementBuilder;
-    
-    /**
-     * For building compact insert-parts of upsert-statements.
-     */
-    private Map<String, StatementBuilder> upsertInsertStatementBuilder = new HashMap<String, StatementBuilder>();
+	/**
+	 * For building compact insert-statements.
+	 */
+	private final StatementBuilder insertStatementBuilder;
+	
+	/**
+	 * For building compact insert-parts of upsert-statements.
+	 */
+	private Map<String, StatementBuilder> upsertInsertStatementBuilder = new HashMap<String, StatementBuilder>();
 
-    /**
-     * Whether to create INSERTs or UPSERTS for all entities.
-     */
-    private final boolean upsertOnly;
+	/**
+	 * Whether to create INSERTs or UPSERTS for all entities.
+	 */
+	private final boolean upsertOnly;
 
-    /**
-     * Maximum length of SQL values list (for generated inserts).
-     */
-    private final int maxBodySize;
-    
-    /**
-     * Counts the exported LOBs. (GUI support)
-     */
-    public static long numberOfExportedLOBs;
+	/**
+	 * Maximum length of SQL values list (for generated inserts).
+	 */
+	private final int maxBodySize;
+	
+	/**
+	 * Counts the exported LOBs. (GUI support)
+	 */
+	public static long numberOfExportedLOBs;
 
-    /**
-     * For quoting of column names.
-     */
-    protected final Quoting quoting;
-    
-    /**
-     * If table has identity column (MSSQL/Sybase)
-     */
-    private boolean tableHasIdentityColumn;
-    
-    /**
-     * Current session;
-     */
-    private final Session session;
+	/**
+	 * For quoting of column names.
+	 */
+	protected final Quoting quoting;
+	
+	/**
+	 * If table has identity column (MSSQL/Sybase)
+	 */
+	private boolean tableHasIdentityColumn;
+	
+	/**
+	 * Current session;
+	 */
+	private final Session session;
 
-    /**
-     * Configuration of the target DBMS.
-     */
-    private final DBMS targetDBMSConfiguration;
+	/**
+	 * Configuration of the target DBMS.
+	 */
+	private final DBMS targetDBMSConfiguration;
 
-    /**
-     * SQL Dialect.
-     */
+	/**
+	 * SQL Dialect.
+	 */
 	private final SQLDialect currentDialect;
 
 	/**
@@ -162,16 +162,16 @@ public class DMLTransformer extends AbstractResultSetReader {
 	 */
 	private final ImportFilterTransformer importFilterTransformer;
 	
-    /**
-     * Factory.
-     */
-    public static class Factory implements TransformerFactory {
-    	
-    	private final int maxBodySize;
+	/**
+	 * Factory.
+	 */
+	public static class Factory implements TransformerFactory {
+		
+		private final int maxBodySize;
 		private final boolean upsertOnly;
 		private final OutputStreamWriter scriptFileWriter;
 		private final Session session;
-	    private final DBMS targetDBMSConfiguration;
+		private final DBMS targetDBMSConfiguration;
 		private ImportFilterTransformer importFilterTransformer;
 		
 		/**
@@ -179,21 +179,21 @@ public class DMLTransformer extends AbstractResultSetReader {
 		 */
 		private final ExecutionContext executionContext;
 		
-	    /**
-	     * Constructor.
-	     * 
-	     * @param scriptFileWriter the file to write to
-	     * @param maxBodySize maximum length of SQL values list (for generated inserts)
-	     * @param upsertOnly use 'upsert' statements for all entities
-	     */
+		/**
+		 * Constructor.
+		 * 
+		 * @param scriptFileWriter the file to write to
+		 * @param maxBodySize maximum length of SQL values list (for generated inserts)
+		 * @param upsertOnly use 'upsert' statements for all entities
+		 */
 		public Factory(OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, Session session, DBMS targetDBMSConfiguration, ExecutionContext executionContext) {
-	        this.maxBodySize = maxBodySize;
-	        this.upsertOnly = upsertOnly;
-	        this.scriptFileWriter = scriptFileWriter;
-	        this.session = session;
-	        this.targetDBMSConfiguration = targetDBMSConfiguration;
-	        this.executionContext = executionContext;
-    	}
+			this.maxBodySize = maxBodySize;
+			this.upsertOnly = upsertOnly;
+			this.scriptFileWriter = scriptFileWriter;
+			this.session = session;
+			this.targetDBMSConfiguration = targetDBMSConfiguration;
+			this.executionContext = executionContext;
+		}
 
 		/**
 		 * Creates transformer (as {@link ResultSetReader} which 
@@ -214,100 +214,100 @@ public class DMLTransformer extends AbstractResultSetReader {
 			this.importFilterTransformer = importFilterManager;
 		}
 
-    };
+	};
 
 	private final List<Column> selectionClause;
 	
 	/**
-     * Constructor.
-     * 
-     * @param table the table to read from
-     * @param scriptFileWriter the file to write to
-     * @param maxBodySize maximum length of SQL values list (for generated inserts)
-     * @param upsertOnly use 'upsert' statements for all entities
-     * @param session the session
-     * @param targetDBMSConfiguration configuration of the target DBMS
+	 * Constructor.
+	 * 
+	 * @param table the table to read from
+	 * @param scriptFileWriter the file to write to
+	 * @param maxBodySize maximum length of SQL values list (for generated inserts)
+	 * @param upsertOnly use 'upsert' statements for all entities
+	 * @param session the session
+	 * @param targetDBMSConfiguration configuration of the target DBMS
 	 * @param executionContext 
 	 * @param importFilterTransformer2 
-     */
-    protected DMLTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, Session session, DBMS targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer, ExecutionContext executionContext) throws SQLException {
-        this.executionContext = executionContext;
-        this.targetDBMSConfiguration = targetDBMSConfiguration;
-        this.maxBodySize = maxBodySize;
-        this.upsertOnly = upsertOnly;
-        this.table = table;
-        this.scriptFileWriter = scriptFileWriter;
-        this.currentDialect = targetDBMSConfiguration.getSqlDialect();
-        this.insertStatementBuilder = new StatementBuilder(currentDialect.isSupportsMultiRowInserts() || DBMS.ORACLE.equals(targetDBMSConfiguration) || DBMS.SQLITE.equals(targetDBMSConfiguration)? maxBodySize : 1);
-        this.quoting = createQuoting(session);
-        this.importFilterTransformer = importFilterTransformer;
-        if (targetDBMSConfiguration != null && targetDBMSConfiguration != session.dbms) {
-        	if (targetDBMSConfiguration.getIdentifierQuoteString() != null) {
-        		this.quoting.setIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
-        	}
-        }
-        this.session = session;
-        this.selectionClause = table.getSelectionClause(session);
-        tableHasIdentityColumn = false;
-        if (targetDBMSConfiguration.isIdentityInserts()) {
-        	for (Column c: table.getColumns()) {
-        		if (c.isIdentityColumn) {
-        			tableHasIdentityColumn = true;
-        			break;
-        		}
-        	}
-        }
-    }
+	 */
+	protected DMLTransformer(Table table, OutputStreamWriter scriptFileWriter, boolean upsertOnly, int maxBodySize, Session session, DBMS targetDBMSConfiguration, ImportFilterTransformer importFilterTransformer, ExecutionContext executionContext) throws SQLException {
+		this.executionContext = executionContext;
+		this.targetDBMSConfiguration = targetDBMSConfiguration;
+		this.maxBodySize = maxBodySize;
+		this.upsertOnly = upsertOnly;
+		this.table = table;
+		this.scriptFileWriter = scriptFileWriter;
+		this.currentDialect = targetDBMSConfiguration.getSqlDialect();
+		this.insertStatementBuilder = new StatementBuilder(currentDialect.isSupportsMultiRowInserts() || DBMS.ORACLE.equals(targetDBMSConfiguration) || DBMS.SQLITE.equals(targetDBMSConfiguration)? maxBodySize : 1);
+		this.quoting = createQuoting(session);
+		this.importFilterTransformer = importFilterTransformer;
+		if (targetDBMSConfiguration != null && targetDBMSConfiguration != session.dbms) {
+			if (targetDBMSConfiguration.getIdentifierQuoteString() != null) {
+				this.quoting.setIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
+			}
+		}
+		this.session = session;
+		this.selectionClause = table.getSelectionClause(session);
+		tableHasIdentityColumn = false;
+		if (targetDBMSConfiguration.isIdentityInserts()) {
+			for (Column c: table.getColumns()) {
+				if (c.isIdentityColumn) {
+					tableHasIdentityColumn = true;
+					break;
+				}
+			}
+		}
+	}
 
 	protected Quoting createQuoting(Session session) throws SQLException {
 		return new Quoting(session);
 	}
-    
-    /**
-     * Reads result-set and writes into export-script.
-     */
-    public void readCurrentRow(ResultSet resultSet) throws SQLException {
-    	if (columnLabel == null) {
-            columnCount = getMetaData(resultSet).getColumnCount();
-            columnLabel = new String[columnCount + 1];
-            lobColumns = new ArrayList<String>();
-            isLobColumn = new boolean[columnCount + 1];
-            emptyLobValue = new String[columnCount + 1];
-            lobColumnIndexes = new ArrayList<Integer>();
-            labelCSL = "";
-            tableHasLobs = false;
-            for (int i = 1; i <= columnCount; ++i) {
-                String mdColumnLabel = quoting.quote(getMetaData(resultSet).getColumnLabel(i));
-                int mdColumnType = getMetaData(resultSet).getColumnType(i);
-                
-                if ((mdColumnType == Types.BLOB || mdColumnType == Types.CLOB || mdColumnType == Types.NCLOB || mdColumnType == Types.SQLXML) && !DBMS.SQLITE.equals(targetDBMSConfiguration)) {
-                	tableHasLobs = true;
-                	isLobColumn[i] = true;
-                	lobColumnIndexes.add(i);
-                	lobColumns.add(mdColumnLabel);
-                	if (mdColumnType == Types.SQLXML) {
-                		emptyLobValue[i] = null;
-                	} else {
-                		DBMS c = targetDBMSConfiguration;
-                		emptyLobValue[i] = mdColumnType == Types.BLOB? c.getEmptyBLOBValue() : mdColumnType == Types.CLOB? c.getEmptyCLOBValue() : c.getEmptyNCLOBValue();
-                	}
-                    if (emptyLobValue[i] == null) {
-                    	continue;
-                    }
-                }
-                columnLabel[i] = mdColumnLabel;
-                if (labelCSL.length() > 0) {
-                    labelCSL += ", ";
-                }
-                labelCSL += columnLabel[i];
-            }
-        }
-        try {
-            StringBuffer valueList = new StringBuffer("");
-            StringBuffer namedValues = new StringBuffer("");
-            boolean f = true;
-            Map<Integer, String> smallLobsPerIndex = new HashMap<Integer, String>();
-            CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, targetDBMSConfiguration);
+	
+	/**
+	 * Reads result-set and writes into export-script.
+	 */
+	public void readCurrentRow(ResultSet resultSet) throws SQLException {
+		if (columnLabel == null) {
+			columnCount = getMetaData(resultSet).getColumnCount();
+			columnLabel = new String[columnCount + 1];
+			lobColumns = new ArrayList<String>();
+			isLobColumn = new boolean[columnCount + 1];
+			emptyLobValue = new String[columnCount + 1];
+			lobColumnIndexes = new ArrayList<Integer>();
+			labelCSL = "";
+			tableHasLobs = false;
+			for (int i = 1; i <= columnCount; ++i) {
+				String mdColumnLabel = quoting.quote(getMetaData(resultSet).getColumnLabel(i));
+				int mdColumnType = getMetaData(resultSet).getColumnType(i);
+				
+				if ((mdColumnType == Types.BLOB || mdColumnType == Types.CLOB || mdColumnType == Types.NCLOB || mdColumnType == Types.SQLXML) && !DBMS.SQLITE.equals(targetDBMSConfiguration)) {
+					tableHasLobs = true;
+					isLobColumn[i] = true;
+					lobColumnIndexes.add(i);
+					lobColumns.add(mdColumnLabel);
+					if (mdColumnType == Types.SQLXML) {
+						emptyLobValue[i] = null;
+					} else {
+						DBMS c = targetDBMSConfiguration;
+						emptyLobValue[i] = mdColumnType == Types.BLOB? c.getEmptyBLOBValue() : mdColumnType == Types.CLOB? c.getEmptyCLOBValue() : c.getEmptyNCLOBValue();
+					}
+					if (emptyLobValue[i] == null) {
+						continue;
+					}
+				}
+				columnLabel[i] = mdColumnLabel;
+				if (labelCSL.length() > 0) {
+					labelCSL += ", ";
+				}
+				labelCSL += columnLabel[i];
+			}
+		}
+		try {
+			StringBuffer valueList = new StringBuffer("");
+			StringBuffer namedValues = new StringBuffer("");
+			boolean f = true;
+			Map<Integer, String> smallLobsPerIndex = new HashMap<Integer, String>();
+			CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, targetDBMSConfiguration);
 			for (int i = 1; i <= columnCount; ++i) {
 				Object content = null;
 				if (columnLabel[i] == null) {
@@ -316,273 +316,273 @@ public class DMLTransformer extends AbstractResultSetReader {
 				boolean isSmallLob = false;
 				if (isLobColumn[i]) {
 					content = cellContentConverter.getSmallLob(resultSet, i);
-                	if (content != null) {
-                		isSmallLob = true;
-                		smallLobsPerIndex.put(i, (String) content);
-                	}
-                }
-				if (content == null) {
-	            	content = cellContentConverter.getObject(resultSet, i);
-	                if (resultSet.wasNull()) {
-	                    content = null;
-	                }
+					if (content != null) {
+						isSmallLob = true;
+						smallLobsPerIndex.put(i, (String) content);
+					}
 				}
-                if (!f) {
-                	namedValues.append(", ");
-                	valueList.append(", ");
-                }
-                f = false;
-                String cVal = isSmallLob? (String) content : 
-                	 convertToSql(cellContentConverter, resultSet, i, content);
-                if (!isSmallLob && content != null && emptyLobValue[i] != null) {
-            		cVal = emptyLobValue[i];
-            	}
-            	valueList.append(cVal);
-                namedValues.append(cVal + " " + columnLabel[i]);
-            }
-            if (table.getUpsert() || upsertOnly) {
-                if (table.primaryKey.getColumns().isEmpty()) {
-                	throw new RuntimeException("Unable to merge/upsert into table \"" + table.getName() + "\".\n" +
-                			"No primary key.");
-                }
+				if (content == null) {
+					content = cellContentConverter.getObject(resultSet, i);
+					if (resultSet.wasNull()) {
+						content = null;
+					}
+				}
+				if (!f) {
+					namedValues.append(", ");
+					valueList.append(", ");
+				}
+				f = false;
+				String cVal = isSmallLob? (String) content : 
+					 convertToSql(cellContentConverter, resultSet, i, content);
+				if (!isSmallLob && content != null && emptyLobValue[i] != null) {
+					cVal = emptyLobValue[i];
+				}
+				valueList.append(cVal);
+				namedValues.append(cVal + " " + columnLabel[i]);
+			}
+			if (table.getUpsert() || upsertOnly) {
+				if (table.primaryKey.getColumns().isEmpty()) {
+					throw new RuntimeException("Unable to merge/upsert into table \"" + table.getName() + "\".\n" +
+							"No primary key.");
+				}
 
-                Map<String, String> val = new HashMap<String, String>();
-                StringBuffer valuesWONull = new StringBuffer("");
-                StringBuffer columnsWONull = new StringBuffer("");
-                f = true;
-                for (int i = 1; i <= columnCount; ++i) {
-                    if (columnLabel[i] == null) {
-                    	continue;
-                    }
-                    Object content = cellContentConverter.getObject(resultSet, i);
-                    if (resultSet.wasNull()) {
-                        content = null;
-                    }
-                    String cVal = convertToSql(cellContentConverter, resultSet, i, content);
-                    if (DBMS.POSTGRESQL.equals(targetDBMSConfiguration) && (content instanceof Date || content instanceof Timestamp)) {
-                    	// explicit cast needed
-                    	cVal = "timestamp " + cVal;
-                    }
-                    if (DBMS.POSTGRESQL.equals(targetDBMSConfiguration)) {
-                    	// explicit cast needed
-                    	int mdColumnType = getMetaData(resultSet).getColumnType(i);
-                    	if (mdColumnType == Types.TIME) {
-                    		cVal = "time " + cVal;
-                    	}
-                    }
-                	if (content != null && emptyLobValue[i] != null) {
-                		cVal = smallLobsPerIndex.get(i);
-                		if (cVal == null) {
-                			cVal = emptyLobValue[i];
-                		}
-                	}
-                	val.put(columnLabel[i], cVal);
-                    if (content != null) {
-                        if (!f) {
-                        	valuesWONull.append(", ");
-                            columnsWONull.append(", ");
-                        }
-                        f = false;
-                        valuesWONull.append(cVal);
-                        columnsWONull.append(columnLabel[i]);
-                    }
-                }
-                
-                String insertHead = "Insert into " + qualifiedTableName(table) + "(" + columnsWONull + ") ";
-                f = true;
-                StringBuffer whereForTerminator = new StringBuffer("");
-                StringBuffer where = new StringBuffer("");
-                StringBuffer whereWOAlias = new StringBuffer("");
-                
-                // assemble 'where' for sub-select and update
-                for (Column pk: table.primaryKey.getColumns()) {
-                    if (!f) {
-                        whereForTerminator.append(" and ");
-                        where.append(" and ");
-                        whereWOAlias.append(" and ");
-                    }
-                    f = false;
-                    whereForTerminator.append("T." + quoting.requote(pk.name) + "=Q." + quoting.requote(pk.name));
-                    String value;
-                    String name = quoting.quote(pk.name);
-                    if (val.containsKey(name)) {
-                    	value = val.get(name);
-                    } else if (val.containsKey(name.toLowerCase())) {
-                    	value = val.get(name.toLowerCase());
-                    } else {
-                    	value = val.get(name.toUpperCase());
-                    }
-                    where.append("T." + quoting.requote(pk.name) + "=" + value);
-                    whereWOAlias.append(quoting.requote(pk.name) + "=" + value);
-                }
+				Map<String, String> val = new HashMap<String, String>();
+				StringBuffer valuesWONull = new StringBuffer("");
+				StringBuffer columnsWONull = new StringBuffer("");
+				f = true;
+				for (int i = 1; i <= columnCount; ++i) {
+					if (columnLabel[i] == null) {
+						continue;
+					}
+					Object content = cellContentConverter.getObject(resultSet, i);
+					if (resultSet.wasNull()) {
+						content = null;
+					}
+					String cVal = convertToSql(cellContentConverter, resultSet, i, content);
+					if (DBMS.POSTGRESQL.equals(targetDBMSConfiguration) && (content instanceof Date || content instanceof Timestamp)) {
+						// explicit cast needed
+						cVal = "timestamp " + cVal;
+					}
+					if (DBMS.POSTGRESQL.equals(targetDBMSConfiguration)) {
+						// explicit cast needed
+						int mdColumnType = getMetaData(resultSet).getColumnType(i);
+						if (mdColumnType == Types.TIME) {
+							cVal = "time " + cVal;
+						}
+					}
+					if (content != null && emptyLobValue[i] != null) {
+						cVal = smallLobsPerIndex.get(i);
+						if (cVal == null) {
+							cVal = emptyLobValue[i];
+						}
+					}
+					val.put(columnLabel[i], cVal);
+					if (content != null) {
+						if (!f) {
+							valuesWONull.append(", ");
+							columnsWONull.append(", ");
+						}
+						f = false;
+						valuesWONull.append(cVal);
+						columnsWONull.append(columnLabel[i]);
+					}
+				}
+				
+				String insertHead = "Insert into " + qualifiedTableName(table) + "(" + columnsWONull + ") ";
+				f = true;
+				StringBuffer whereForTerminator = new StringBuffer("");
+				StringBuffer where = new StringBuffer("");
+				StringBuffer whereWOAlias = new StringBuffer("");
+				
+				// assemble 'where' for sub-select and update
+				for (Column pk: table.primaryKey.getColumns()) {
+					if (!f) {
+						whereForTerminator.append(" and ");
+						where.append(" and ");
+						whereWOAlias.append(" and ");
+					}
+					f = false;
+					whereForTerminator.append("T." + quoting.requote(pk.name) + "=Q." + quoting.requote(pk.name));
+					String value;
+					String name = quoting.quote(pk.name);
+					if (val.containsKey(name)) {
+						value = val.get(name);
+					} else if (val.containsKey(name.toLowerCase())) {
+						value = val.get(name.toLowerCase());
+					} else {
+						value = val.get(name.toUpperCase());
+					}
+					where.append("T." + quoting.requote(pk.name) + "=" + value);
+					whereWOAlias.append(quoting.requote(pk.name) + "=" + value);
+				}
 
-                if (currentDialect.getUpsertMode() == UPSERT_MODE.MERGE && !tableHasLobs) {
-                	// MERGE INTO JL_TMP T USING (SELECT 1 c1, 2 c2 from dual) incoming 
-                	// ON (T.c1 = incoming.c1) 
-                	// WHEN MATCHED THEN UPDATE SET T.c2 = incoming.c2 
-                	// WHEN NOT MATCHED THEN INSERT (T.c1, T.c2) VALUES (incoming.c1, incoming.c2)
-                	insertHead = "MERGE INTO " + qualifiedTableName(table) + " T USING(";
-                    StringBuffer terminator = new StringBuffer(") Q ON(" + whereForTerminator + ") ");
-	                
-                    StringBuffer sets = new StringBuffer();
-                    StringBuffer tSchema = new StringBuffer();
-                    StringBuffer iSchema = new StringBuffer();
-	                for (int i = 1; i <= columnCount; ++i) {
-	                    if (columnLabel[i] == null) {
-	                    	continue;
-	                    }
-	                    if  (!isPrimaryKeyColumn(columnLabel[i])) {
-		                    if (sets.length() > 0) {
-		                    	sets.append(", ");
-		                    }
-		                    sets.append("T." + columnLabel[i] + "=Q." + columnLabel[i]);
-	                    }
-	                    if (tSchema.length() > 0) {
-	                    	tSchema.append(", ");
-	                    }
-	                    tSchema.append("T." + columnLabel[i]);
-	                    if (iSchema.length() > 0) {
-	                    	iSchema.append(", ");
-	                    }
-	                    iSchema.append("Q." + columnLabel[i]);
-	                }
-	                if (sets.length() > 0) {
-	                	terminator.append("WHEN MATCHED THEN UPDATE SET " + sets + " ");
-	                }
-                	terminator.append("WHEN NOT MATCHED THEN INSERT (" + tSchema + ") VALUES(" + iSchema + ");\n");
+				if (currentDialect.getUpsertMode() == UPSERT_MODE.MERGE && !tableHasLobs) {
+					// MERGE INTO JL_TMP T USING (SELECT 1 c1, 2 c2 from dual) incoming 
+					// ON (T.c1 = incoming.c1) 
+					// WHEN MATCHED THEN UPDATE SET T.c2 = incoming.c2 
+					// WHEN NOT MATCHED THEN INSERT (T.c1, T.c2) VALUES (incoming.c1, incoming.c2)
+					insertHead = "MERGE INTO " + qualifiedTableName(table) + " T USING(";
+					StringBuffer terminator = new StringBuffer(") Q ON(" + whereForTerminator + ") ");
+					
+					StringBuffer sets = new StringBuffer();
+					StringBuffer tSchema = new StringBuffer();
+					StringBuffer iSchema = new StringBuffer();
+					for (int i = 1; i <= columnCount; ++i) {
+						if (columnLabel[i] == null) {
+							continue;
+						}
+						if  (!isPrimaryKeyColumn(columnLabel[i])) {
+							if (sets.length() > 0) {
+								sets.append(", ");
+							}
+							sets.append("T." + columnLabel[i] + "=Q." + columnLabel[i]);
+						}
+						if (tSchema.length() > 0) {
+							tSchema.append(", ");
+						}
+						tSchema.append("T." + columnLabel[i]);
+						if (iSchema.length() > 0) {
+							iSchema.append(", ");
+						}
+						iSchema.append("Q." + columnLabel[i]);
+					}
+					if (sets.length() > 0) {
+						terminator.append("WHEN MATCHED THEN UPDATE SET " + sets + " ");
+					}
+					terminator.append("WHEN NOT MATCHED THEN INSERT (" + tSchema + ") VALUES(" + iSchema + ");\n");
 
-	                StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
-	                if (sb == null) {
-	                    sb = new StatementBuilder(maxBodySize);
-	                    upsertInsertStatementBuilder.put(insertHead, sb);
-	                }
-	            
-	                String item = "Select " + valueList + " from dual";
-	                if (!sb.isAppendable(insertHead, item)) {
-	                    writeToScriptFile(sb.build(), true);
-	                }
-	                if (sb.isEmpty()) {
-	                	item = "Select " + namedValues + " from dual";
-	                }
-                	sb.append(insertHead, item, " UNION ALL ", terminator.toString());
-                } else if (currentDialect.getUpsertMode() == UPSERT_MODE.DB2) {
-                	insertHead += "Select * From (values ";
-	                StringBuffer terminator = new StringBuffer(") as Q(" + columnsWONull + ") Where not exists (Select * from " + qualifiedTableName(table) + " T "
-	                        + "Where ");
-	                terminator.append(whereForTerminator + ");\n");
-	                
-	                StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
-	                if (sb == null) {
-	                    sb = new StatementBuilder(maxBodySize);
-	                    upsertInsertStatementBuilder.put(insertHead, sb);
-	                }
-	            
-	                String item = "(" + valuesWONull + ")";
-	                if (!sb.isAppendable(insertHead, item)) {
-	                    writeToScriptFile(sb.build(), true);
-	                }
-	                sb.append(insertHead, item, ", ", terminator.toString());
-                } else {
-                	String item = "Select " + valuesWONull + " From " + 
-                		(currentDialect.getUpsertMode() == UPSERT_MODE.FROM_DUAL || 
-                		 currentDialect.getUpsertMode() == UPSERT_MODE.MERGE? // oracle table with lobs
-                				 "dual" : currentDialect.getUpsertMode() == UPSERT_MODE.FROM_SYSDUMMY1? "sysibm.sysdummy1" : SQLDialect.DUAL_TABLE);
-                	StringBuffer terminator = new StringBuffer(" Where not exists (Select * from " + qualifiedTableName(table) + " T "
-	                        + "Where ");
-	                terminator.append(where + ");\n");
-	                
-	                StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
-	                if (sb == null) {
-	                    sb = new StatementBuilder(1 /* insertStatementBuilder.getMaxBodySize() */);
-	                    upsertInsertStatementBuilder.put(insertHead, sb);
-	                }
-	            
-	                if (!sb.isAppendable(insertHead, item)) {
-	                    writeToScriptFile(sb.build(), true);
-	                }
-	                sb.append(insertHead, item, ", ", terminator.toString());
-                }
-                
-                if (currentDialect.getUpsertMode() != UPSERT_MODE.MERGE || tableHasLobs) {
-	                StringBuffer insert = new StringBuffer("");
-	                insert.append("Update " + qualifiedTableName(table) + " set ");
-	                f = true;
-	                for (int i = 1; i <= columnCount; ++i) {
-	                    if (columnLabel[i] == null || (emptyLobValue[i] != null && !"null".equals(val.get(columnLabel[i])))) {
-	                    	continue;
-	                    }
-	                    if (isPrimaryKeyColumn(columnLabel[i])) {
-	                    	continue;
-	                    }
-	                    if (!f) {
-	                        insert.append(", ");
-	                    }
-	                    f = false;
-	                    insert.append(columnLabel[i] + "=" + val.get(columnLabel[i]));
-	                }
-	                if (!f) {
-	                	insert.append(" Where " + whereWOAlias + ";\n");
-	                    writeToScriptFile(insert.toString(), true);
-	                }
-                }
-            } else {
-            	if (DBMS.DB2_ZOS.equals(targetDBMSConfiguration) && maxBodySize > 1) {
-            		String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
-	                String item = "\n Select " + valueList + " From sysibm.sysdummy1";
-	                if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
-	                    writeToScriptFile(insertStatementBuilder.build(), true);
-	                }
-	                insertStatementBuilder.append(insertSchema, item, " Union all ", ";\n");
-            	} else if (DBMS.ORACLE.equals(targetDBMSConfiguration) && maxBodySize > 1) {
-            		String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
-	                String item = "\n Select " + valueList + " From DUAL";
-	                if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
-	                    writeToScriptFile(insertStatementBuilder.build(), true);
-	                }
-	                insertStatementBuilder.append(insertSchema, item, " Union all ", ";\n");
-            	} else if (DBMS.SQLITE.equals(targetDBMSConfiguration) && maxBodySize > 1) {
-            		String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
-	                String item = "\n Select " + valueList + " ";
-	                if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
-	                    writeToScriptFile(insertStatementBuilder.build(), true);
-	                }
-	                insertStatementBuilder.append(insertSchema, item, " Union all ", ";\n");
-            	} else {
-	                String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") values ";
-	                String item = (maxBodySize > 1? "\n " : "") + "(" + valueList + ")";
-	                if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
-	                    writeToScriptFile(insertStatementBuilder.build(), true);
-	                }
-	                insertStatementBuilder.append(insertSchema, item, ", ", ";\n");
-            	}
-            }
-            
-            exportLobs(table, resultSet, smallLobsPerIndex.keySet());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+					StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
+					if (sb == null) {
+						sb = new StatementBuilder(maxBodySize);
+						upsertInsertStatementBuilder.put(insertHead, sb);
+					}
+				
+					String item = "Select " + valueList + " from dual";
+					if (!sb.isAppendable(insertHead, item)) {
+						writeToScriptFile(sb.build(), true);
+					}
+					if (sb.isEmpty()) {
+						item = "Select " + namedValues + " from dual";
+					}
+					sb.append(insertHead, item, " UNION ALL ", terminator.toString());
+				} else if (currentDialect.getUpsertMode() == UPSERT_MODE.DB2) {
+					insertHead += "Select * From (values ";
+					StringBuffer terminator = new StringBuffer(") as Q(" + columnsWONull + ") Where not exists (Select * from " + qualifiedTableName(table) + " T "
+							+ "Where ");
+					terminator.append(whereForTerminator + ");\n");
+					
+					StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
+					if (sb == null) {
+						sb = new StatementBuilder(maxBodySize);
+						upsertInsertStatementBuilder.put(insertHead, sb);
+					}
+				
+					String item = "(" + valuesWONull + ")";
+					if (!sb.isAppendable(insertHead, item)) {
+						writeToScriptFile(sb.build(), true);
+					}
+					sb.append(insertHead, item, ", ", terminator.toString());
+				} else {
+					String item = "Select " + valuesWONull + " From " + 
+						(currentDialect.getUpsertMode() == UPSERT_MODE.FROM_DUAL || 
+						 currentDialect.getUpsertMode() == UPSERT_MODE.MERGE? // oracle table with lobs
+								 "dual" : currentDialect.getUpsertMode() == UPSERT_MODE.FROM_SYSDUMMY1? "sysibm.sysdummy1" : SQLDialect.DUAL_TABLE);
+					StringBuffer terminator = new StringBuffer(" Where not exists (Select * from " + qualifiedTableName(table) + " T "
+							+ "Where ");
+					terminator.append(where + ");\n");
+					
+					StatementBuilder sb = upsertInsertStatementBuilder.get(insertHead);
+					if (sb == null) {
+						sb = new StatementBuilder(1 /* insertStatementBuilder.getMaxBodySize() */);
+						upsertInsertStatementBuilder.put(insertHead, sb);
+					}
+				
+					if (!sb.isAppendable(insertHead, item)) {
+						writeToScriptFile(sb.build(), true);
+					}
+					sb.append(insertHead, item, ", ", terminator.toString());
+				}
+				
+				if (currentDialect.getUpsertMode() != UPSERT_MODE.MERGE || tableHasLobs) {
+					StringBuffer insert = new StringBuffer("");
+					insert.append("Update " + qualifiedTableName(table) + " set ");
+					f = true;
+					for (int i = 1; i <= columnCount; ++i) {
+						if (columnLabel[i] == null || (emptyLobValue[i] != null && !"null".equals(val.get(columnLabel[i])))) {
+							continue;
+						}
+						if (isPrimaryKeyColumn(columnLabel[i])) {
+							continue;
+						}
+						if (!f) {
+							insert.append(", ");
+						}
+						f = false;
+						insert.append(columnLabel[i] + "=" + val.get(columnLabel[i]));
+					}
+					if (!f) {
+						insert.append(" Where " + whereWOAlias + ";\n");
+						writeToScriptFile(insert.toString(), true);
+					}
+				}
+			} else {
+				if (DBMS.DB2_ZOS.equals(targetDBMSConfiguration) && maxBodySize > 1) {
+					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
+					String item = "\n Select " + valueList + " From sysibm.sysdummy1";
+					if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
+						writeToScriptFile(insertStatementBuilder.build(), true);
+					}
+					insertStatementBuilder.append(insertSchema, item, " Union all ", ";\n");
+				} else if (DBMS.ORACLE.equals(targetDBMSConfiguration) && maxBodySize > 1) {
+					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
+					String item = "\n Select " + valueList + " From DUAL";
+					if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
+						writeToScriptFile(insertStatementBuilder.build(), true);
+					}
+					insertStatementBuilder.append(insertSchema, item, " Union all ", ";\n");
+				} else if (DBMS.SQLITE.equals(targetDBMSConfiguration) && maxBodySize > 1) {
+					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
+					String item = "\n Select " + valueList + " ";
+					if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
+						writeToScriptFile(insertStatementBuilder.build(), true);
+					}
+					insertStatementBuilder.append(insertSchema, item, " Union all ", ";\n");
+				} else {
+					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") values ";
+					String item = (maxBodySize > 1? "\n " : "") + "(" + valueList + ")";
+					if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
+						writeToScriptFile(insertStatementBuilder.build(), true);
+					}
+					insertStatementBuilder.append(insertSchema, item, ", ", ";\n");
+				}
+			}
+			
+			exportLobs(table, resultSet, smallLobsPerIndex.keySet());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-    /**
-     * Converts cell content to SQL literals.
-     * 
-     * @param cellContentConverter converter
-     * @param resultSet points to current row
-     * @param i current result set index
-     * @param content cell content
-     * @return SQL literal
-     */
-    protected String convertToSql(CellContentConverter cellContentConverter, ResultSet resultSet, int i, Object content) throws SQLException {
-    	String cVal = cellContentConverter.toSql(content);
-    	Column column = selectionClause.get(i - 1);
+	/**
+	 * Converts cell content to SQL literals.
+	 * 
+	 * @param cellContentConverter converter
+	 * @param resultSet points to current row
+	 * @param i current result set index
+	 * @param content cell content
+	 * @return SQL literal
+	 */
+	protected String convertToSql(CellContentConverter cellContentConverter, ResultSet resultSet, int i, Object content) throws SQLException {
+		String cVal = cellContentConverter.toSql(content);
+		Column column = selectionClause.get(i - 1);
 		Filter filter = column.getFilter();
 		
-    	if (filter != null && importFilterTransformer != null) {
-    		if (!filter.isApplyAtExport()) {
-    			return importFilterTransformer.transform(column, cVal);
-    		}
-    	}
-    	
+		if (filter != null && importFilterTransformer != null) {
+			if (!filter.isApplyAtExport()) {
+				return importFilterTransformer.transform(column, cVal);
+			}
+		}
+		
 		if (content != null && filter != null && filter.getExpression().trim().startsWith(Filter.LITERAL_PREFIX)) {
 			return content.toString();
 		}
@@ -591,76 +591,76 @@ public class DMLTransformer extends AbstractResultSetReader {
 	}
 
 	/**
-     * Gets qualified table name.
-     * 
-     * @param t the table
-     * @return qualified name of t
-     */
-    protected String qualifiedTableName(Table t) {
-    	String schema = t.getOriginalSchema("");
-    	String mappedSchema = executionContext.getSchemaMapping().get(schema);
-    	if (mappedSchema != null) {
-    		schema = mappedSchema;
-    	}
-    	if (schema.length() == 0) {
-    		return quoting.requote(t.getUnqualifiedName());
-    	}
+	 * Gets qualified table name.
+	 * 
+	 * @param t the table
+	 * @return qualified name of t
+	 */
+	protected String qualifiedTableName(Table t) {
+		String schema = t.getOriginalSchema("");
+		String mappedSchema = executionContext.getSchemaMapping().get(schema);
+		if (mappedSchema != null) {
+			schema = mappedSchema;
+		}
+		if (schema.length() == 0) {
+			return quoting.requote(t.getUnqualifiedName());
+		}
 		return quoting.requote(schema) + "." + quoting.requote(t.getUnqualifiedName());
 	}
 
 	/**
-     * Checks if columns is part of primary key.
-     * 
-     * @param column the column
-     * @return <code>true</code> if column is part of primary key
-     */
-    private boolean isPrimaryKeyColumn(String column) {
-    	for (Column c: table.primaryKey.getColumns()) {
-    		if (c.name.equalsIgnoreCase(column)) {
-    			return true;
-    		}
-    	}
+	 * Checks if columns is part of primary key.
+	 * 
+	 * @param column the column
+	 * @return <code>true</code> if column is part of primary key
+	 */
+	private boolean isPrimaryKeyColumn(String column) {
+		for (Column c: table.primaryKey.getColumns()) {
+			if (c.name.equalsIgnoreCase(column)) {
+				return true;
+			}
+		}
 		return false;
 	}
 
 	/**
-     * Exports the (c|b)lob content.
-     * 
-     * @param resultSet export current row
-     */
-    private void exportLobs(Table table, ResultSet resultSet, Set<Integer> smallLobsIndexes) throws IOException, SQLException {
-    	synchronized (scriptFileWriter) {
-            CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, targetDBMSConfiguration);
-	    	for (int i = 0; i < lobColumnIndexes.size(); ++i) {
-	    		if (smallLobsIndexes.contains(lobColumnIndexes.get(i))) {
-	    			continue;
-	    		}
+	 * Exports the (c|b)lob content.
+	 * 
+	 * @param resultSet export current row
+	 */
+	private void exportLobs(Table table, ResultSet resultSet, Set<Integer> smallLobsIndexes) throws IOException, SQLException {
+		synchronized (scriptFileWriter) {
+			CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, targetDBMSConfiguration);
+			for (int i = 0; i < lobColumnIndexes.size(); ++i) {
+				if (smallLobsIndexes.contains(lobColumnIndexes.get(i))) {
+					continue;
+				}
 				Object lob = resultSet.getObject(lobColumnIndexes.get(i));
 				Map<String, String> val = new HashMap<String, String>();
 				for (int j = 1; j <= columnCount; ++j) {
-	                if (columnLabel[j] == null) {
-	                	continue;
-	                }
+					if (columnLabel[j] == null) {
+						continue;
+					}
 					Object content = cellContentConverter.getObject(resultSet, j);
-	                if (resultSet.wasNull()) {
-	                    content = null;
-	                }
-	                String cVal = cellContentConverter.toSql(content);
-	                val.put(columnLabel[j], cVal);
-	            }
+					if (resultSet.wasNull()) {
+						content = null;
+					}
+					String cVal = cellContentConverter.toSql(content);
+					val.put(columnLabel[j], cVal);
+				}
 				boolean f = true;
-	            StringBuffer where = new StringBuffer("");
-	            for (Column pk: table.primaryKey.getColumns()) {
-	            	if (!f) {
-	                    where.append(" and ");
-	                }
-	                f = false;
-	                where.append(quoting.requote(pk.name) + "=" + val.get(pk.name));
-	            }
-	            if (lob instanceof SQLXML) {
-	            	++numberOfExportedLOBs;
-	            	flush();
-	            	SQLXML xml = (SQLXML) lob;
+				StringBuffer where = new StringBuffer("");
+				for (Column pk: table.primaryKey.getColumns()) {
+					if (!f) {
+						where.append(" and ");
+					}
+					f = false;
+					where.append(quoting.requote(pk.name) + "=" + val.get(pk.name));
+				}
+				if (lob instanceof SQLXML) {
+					++numberOfExportedLOBs;
+					flush();
+					SQLXML xml = (SQLXML) lob;
 					writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "XML " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + "\n", false);
 					Reader in = xml.getCharacterStream();
 					int c;
@@ -687,9 +687,9 @@ public class DMLTransformer extends AbstractResultSetReader {
 					in.close();
 					writeToScriptFile(line.toString() + "\n" + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "\n", false);
 				}
-	            if (lob instanceof Clob) {
-	            	++numberOfExportedLOBs;
-	            	flush();
+				if (lob instanceof Clob) {
+					++numberOfExportedLOBs;
+					flush();
 					Clob clob = (Clob) lob;
 					writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "CLOB " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + "\n", false);
 					Reader in = clob.getCharacterStream();
@@ -717,9 +717,9 @@ public class DMLTransformer extends AbstractResultSetReader {
 					in.close();
 					writeToScriptFile(line.toString() + "\n" + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "\n", false);
 				}
-	            if (lob instanceof Blob) {
-	            	++numberOfExportedLOBs;
-	            	flush();
+				if (lob instanceof Blob) {
+					++numberOfExportedLOBs;
+					flush();
 					Blob blob = (Blob) lob;
 					writeToScriptFile(SqlScriptExecutor.UNFINISHED_MULTILINE_COMMENT + "BLOB " + qualifiedTableName(table) + ", " + lobColumns.get(i) + ", " + where + "\n", false);
 					InputStream in = blob.getBinaryStream();
@@ -739,66 +739,66 @@ public class DMLTransformer extends AbstractResultSetReader {
 					writeToScriptFile(line.toString() + Base64.encodeBytes(buffer, 0, size, Base64.DONT_BREAK_LINES) + "\n" + SqlScriptExecutor.FINISHED_MULTILINE_COMMENT + "\n", false);
 				}
 			}
-    	}
+		}
 	}
 
 	/**
-     * Flushes the export-reader.
-     */
-    public void flush() {
-        try {
-            writeToScriptFile(insertStatementBuilder.build(), true);
-            for (StatementBuilder sb: upsertInsertStatementBuilder.values()) {
-                writeToScriptFile(sb.build(), true);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    
+	 * Flushes the export-reader.
+	 */
+	public void flush() {
+		try {
+			writeToScriptFile(insertStatementBuilder.build(), true);
+			for (StatementBuilder sb: upsertInsertStatementBuilder.values()) {
+				writeToScriptFile(sb.build(), true);
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 	/**
-     * Flushes the export-reader.
-     */
-    public void close() {
-    	flush();
-    	synchronized (scriptFileWriter) {
-    		if (identityInsertTable != null) {
-    			try {
+	 * Flushes the export-reader.
+	 */
+	public void close() {
+		flush();
+		synchronized (scriptFileWriter) {
+			if (identityInsertTable != null) {
+				try {
 					scriptFileWriter.write("SET IDENTITY_INSERT " + qualifiedTableName(identityInsertTable) + " OFF;\n");
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
-    			identityInsertTable = null;
-    		}
-    	}
-    }
-    
-    /**
-     * Table which is currently enabled for identity-inserts.
-     */
-    private static Table identityInsertTable = null;
-    
-    /**
-     * Writes into script.
-     */
-    private void writeToScriptFile(String content, boolean wrap) throws IOException {
-        synchronized (scriptFileWriter) {
-        	if (tableHasIdentityColumn) {
-        		if (identityInsertTable != table) {
-        			if (identityInsertTable != null) {
-        				scriptFileWriter.write("SET IDENTITY_INSERT " + qualifiedTableName(identityInsertTable) + " OFF;\n");
-            			identityInsertTable = null;
-        			}
-        			scriptFileWriter.write("SET IDENTITY_INSERT " + qualifiedTableName(table) + " ON;\n");
-        			identityInsertTable = table;
-        		}
-        	}
-        	if (wrap && DBMS.ORACLE.equals(targetDBMSConfiguration)) {
-       			scriptFileWriter.write(SqlUtil.splitDMLStatement(content, 2400));
-        	} else {
-        		scriptFileWriter.write(content);
-        	}
-        }
-    }
-    
+				identityInsertTable = null;
+			}
+		}
+	}
+	
+	/**
+	 * Table which is currently enabled for identity-inserts.
+	 */
+	private static Table identityInsertTable = null;
+	
+	/**
+	 * Writes into script.
+	 */
+	private void writeToScriptFile(String content, boolean wrap) throws IOException {
+		synchronized (scriptFileWriter) {
+			if (tableHasIdentityColumn) {
+				if (identityInsertTable != table) {
+					if (identityInsertTable != null) {
+						scriptFileWriter.write("SET IDENTITY_INSERT " + qualifiedTableName(identityInsertTable) + " OFF;\n");
+						identityInsertTable = null;
+					}
+					scriptFileWriter.write("SET IDENTITY_INSERT " + qualifiedTableName(table) + " ON;\n");
+					identityInsertTable = table;
+				}
+			}
+			if (wrap && DBMS.ORACLE.equals(targetDBMSConfiguration)) {
+				   scriptFileWriter.write(SqlUtil.splitDMLStatement(content, 2400));
+			} else {
+				scriptFileWriter.write(content);
+			}
+		}
+	}
+	
 }

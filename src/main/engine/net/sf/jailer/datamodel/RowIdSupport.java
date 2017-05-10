@@ -109,7 +109,7 @@ public class RowIdSupport {
 	/**
 	 * Gets the universal primary key.
 	 * 
-     * @param session for null value guessing
+	 * @param session for null value guessing
 	 * @return the universal primary key
 	 */
 	public PrimaryKey getUniversalPrimaryKey(Session session) {

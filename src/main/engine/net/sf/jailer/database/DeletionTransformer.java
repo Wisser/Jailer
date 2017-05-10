@@ -39,35 +39,35 @@ import net.sf.jailer.util.SqlUtil;
  */
 public class DeletionTransformer extends AbstractResultSetReader {
 
-    /**
-     * The table to read from.
-     */
-    private final Table table;
-    
-    /**
-     * The file to write to.
-     */
-    private final OutputStreamWriter scriptFileWriter;
-    
-    /**
-     * For building compact delete-statements.
-     */
-    private StatementBuilder deleteStatementBuilder;
+	/**
+	 * The table to read from.
+	 */
+	private final Table table;
+	
+	/**
+	 * The file to write to.
+	 */
+	private final OutputStreamWriter scriptFileWriter;
+	
+	/**
+	 * For building compact delete-statements.
+	 */
+	private StatementBuilder deleteStatementBuilder;
 
-    /**
-     * Current session;
-     */
-    private final Session session;
+	/**
+	 * Current session;
+	 */
+	private final Session session;
 
-    /**
-     * Configuration of the target DBMS.
-     */
-    private final DBMS targetDBMSConfiguration;
+	/**
+	 * Configuration of the target DBMS.
+	 */
+	private final DBMS targetDBMSConfiguration;
 
-    /**
-     * For quoting of column names.
-     */
-    private final Quoting quoting;
+	/**
+	 * For quoting of column names.
+	 */
+	private final Quoting quoting;
 
 	/**
 	 * The execution context.
@@ -75,11 +75,11 @@ public class DeletionTransformer extends AbstractResultSetReader {
 	private final ExecutionContext executionContext;
 
 	/**
-     * Factory.
-     */
-    public static class Factory implements TransformerFactory {
-    	
-	    private final int maxBodySize;
+	 * Factory.
+	 */
+	public static class Factory implements TransformerFactory {
+		
+		private final int maxBodySize;
 		private final OutputStreamWriter scriptFileWriter;
 		private final Session session;
 		private final DBMS targetDBMSConfiguration;
@@ -90,20 +90,20 @@ public class DeletionTransformer extends AbstractResultSetReader {
 		private final ExecutionContext executionContext;
 		
 		/**
-	     * Constructor.
-	     * 
-	     * @param table the table to read from
-	     * @param scriptFileWriter the file to write to
-	     * @param maxBodySize maximum length of SQL values list (for generated deletes)
-	     * @param targetDBMSConfiguration configuration of the target DBMS
-	     */
+		 * Constructor.
+		 * 
+		 * @param table the table to read from
+		 * @param scriptFileWriter the file to write to
+		 * @param maxBodySize maximum length of SQL values list (for generated deletes)
+		 * @param targetDBMSConfiguration configuration of the target DBMS
+		 */
 		public Factory(OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, DBMS targetDBMSConfiguration, ExecutionContext executionContext) {
 			this.executionContext = executionContext;
 			this.maxBodySize = maxBodySize;
-	        this.scriptFileWriter = scriptFileWriter;
-	        this.session = session;
-	        this.targetDBMSConfiguration = targetDBMSConfiguration;
-    	}
+			this.scriptFileWriter = scriptFileWriter;
+			this.session = session;
+			this.targetDBMSConfiguration = targetDBMSConfiguration;
+		}
 
 		/**
 		 * Creates transformer (as {@link ResultSetReader} which 
@@ -116,132 +116,132 @@ public class DeletionTransformer extends AbstractResultSetReader {
 		public ResultSetReader create(Table table) throws SQLException {
 			return new DeletionTransformer(table, scriptFileWriter, maxBodySize, session, targetDBMSConfiguration, executionContext);
 		}
-    };
+	};
 
-    /**
-     * Constructor.
-     * 
-     * @param table the table to read from
-     * @param scriptFileWriter the file to write to
-     * @param maxBodySize maximum length of SQL values list (for generated deletes)
-     * @param session the session
-     * @param targetDBMSConfiguration configuration of the target DBMS
-     * @param executionContext 
-     */
-    private DeletionTransformer(Table table, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, DBMS targetDBMSConfiguration, ExecutionContext executionContext) throws SQLException {
-        this.executionContext = executionContext;
-    	this.table = table;
-        this.scriptFileWriter = scriptFileWriter;
-        deleteStatementBuilder = new StatementBuilder(maxBodySize);
-        this.quoting = new Quoting(session);
-        if (targetDBMSConfiguration != null && targetDBMSConfiguration != session.dbms) {
-        	if (targetDBMSConfiguration.getIdentifierQuoteString() != null) {
-        		this.quoting.setIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
-        	}
-        }
-        this.session = session;
-        this.targetDBMSConfiguration = targetDBMSConfiguration;
-        
-        if (table.primaryKey.getColumns().isEmpty()) {
-        	throw new RuntimeException("Unable to delete from table \"" + table.getName() + "\".\n" +
-        			"No primary key.");
-        }
-    }
-    
-    /**
-     * Reads result-set and writes into export-script.
-     * 
-     * @param resultSet the result set
-     */
-    public void readCurrentRow(ResultSet resultSet) throws SQLException {
-        try {
-        	final SQLDialect currentDialect = targetDBMSConfiguration.getSqlDialect();
-            
-        	CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, targetDBMSConfiguration);
+	/**
+	 * Constructor.
+	 * 
+	 * @param table the table to read from
+	 * @param scriptFileWriter the file to write to
+	 * @param maxBodySize maximum length of SQL values list (for generated deletes)
+	 * @param session the session
+	 * @param targetDBMSConfiguration configuration of the target DBMS
+	 * @param executionContext 
+	 */
+	private DeletionTransformer(Table table, OutputStreamWriter scriptFileWriter, int maxBodySize, Session session, DBMS targetDBMSConfiguration, ExecutionContext executionContext) throws SQLException {
+		this.executionContext = executionContext;
+		this.table = table;
+		this.scriptFileWriter = scriptFileWriter;
+		deleteStatementBuilder = new StatementBuilder(maxBodySize);
+		this.quoting = new Quoting(session);
+		if (targetDBMSConfiguration != null && targetDBMSConfiguration != session.dbms) {
+			if (targetDBMSConfiguration.getIdentifierQuoteString() != null) {
+				this.quoting.setIdentifierQuoteString(targetDBMSConfiguration.getIdentifierQuoteString());
+			}
+		}
+		this.session = session;
+		this.targetDBMSConfiguration = targetDBMSConfiguration;
+		
+		if (table.primaryKey.getColumns().isEmpty()) {
+			throw new RuntimeException("Unable to delete from table \"" + table.getName() + "\".\n" +
+					"No primary key.");
+		}
+	}
+	
+	/**
+	 * Reads result-set and writes into export-script.
+	 * 
+	 * @param resultSet the result set
+	 */
+	public void readCurrentRow(ResultSet resultSet) throws SQLException {
+		try {
+			final SQLDialect currentDialect = targetDBMSConfiguration.getSqlDialect();
+			
+			CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, targetDBMSConfiguration);
 			if (DBMS.SYBASE.equals(targetDBMSConfiguration) || (currentDialect != null && !currentDialect.isSupportsInClauseForDeletes())) {
-        		String deleteHead = "Delete from " + qualifiedTableName(table) + " Where (";
-                boolean firstTime = true;
-                String item = "";
-                for (Column pkColumn: table.primaryKey.getColumns()) {
-                	item += (firstTime? "" : " and ") + quoting.requote(pkColumn.name) + "="
-                    		+ cellContentConverter.toSql(cellContentConverter.getObject(resultSet, quoting.unquote(pkColumn.name)));
-                    firstTime = false;
-                }
-                if (!deleteStatementBuilder.isAppendable(deleteHead, item)) {
-	                writeToScriptFile(deleteStatementBuilder.build());
-	            }
-	            deleteStatementBuilder.append(deleteHead, item, ") or (", ");\n");
+				String deleteHead = "Delete from " + qualifiedTableName(table) + " Where (";
+				boolean firstTime = true;
+				String item = "";
+				for (Column pkColumn: table.primaryKey.getColumns()) {
+					item += (firstTime? "" : " and ") + quoting.requote(pkColumn.name) + "="
+							+ cellContentConverter.toSql(cellContentConverter.getObject(resultSet, quoting.unquote(pkColumn.name)));
+					firstTime = false;
+				}
+				if (!deleteStatementBuilder.isAppendable(deleteHead, item)) {
+					writeToScriptFile(deleteStatementBuilder.build());
+				}
+				deleteStatementBuilder.append(deleteHead, item, ") or (", ");\n");
 			} else {
-	            String deleteHead;
-	            String item;
-	            if (table.primaryKey.getColumns().size() == 1) {
-	                deleteHead = "Delete from " + qualifiedTableName(table) + " Where " + quoting.requote(table.primaryKey.getColumns().get(0).name) + " in (";
-	                item = cellContentConverter.toSql(cellContentConverter.getObject(resultSet, quoting.unquote(table.primaryKey.getColumns().get(0).name)));
-	            } else {
-	                deleteHead = "Delete from " + qualifiedTableName(table) + " Where (";
-	                item = "(";
-	                boolean firstTime = true;
-	                for (Column pkColumn: table.primaryKey.getColumns()) {
-	                    deleteHead += (firstTime? "" : ", ") + quoting.requote(pkColumn.name);
-	                    item += (firstTime? "" : ", ") + cellContentConverter.toSql(cellContentConverter.getObject(resultSet, quoting.unquote(pkColumn.name)));
-	                    firstTime = false;
-	                }
-	                item += ")";
-	                deleteHead += ") in (";
-	                if (currentDialect.isNeedsValuesKeywordForDeletes()) {
-	                	deleteHead += "values ";
-	                }
-	            }
-	            if (!deleteStatementBuilder.isAppendable(deleteHead, item)) {
-	                writeToScriptFile(deleteStatementBuilder.build());
-	            }
-	            deleteStatementBuilder.append(deleteHead, item, ", ", ");\n");
-        	}
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
+				String deleteHead;
+				String item;
+				if (table.primaryKey.getColumns().size() == 1) {
+					deleteHead = "Delete from " + qualifiedTableName(table) + " Where " + quoting.requote(table.primaryKey.getColumns().get(0).name) + " in (";
+					item = cellContentConverter.toSql(cellContentConverter.getObject(resultSet, quoting.unquote(table.primaryKey.getColumns().get(0).name)));
+				} else {
+					deleteHead = "Delete from " + qualifiedTableName(table) + " Where (";
+					item = "(";
+					boolean firstTime = true;
+					for (Column pkColumn: table.primaryKey.getColumns()) {
+						deleteHead += (firstTime? "" : ", ") + quoting.requote(pkColumn.name);
+						item += (firstTime? "" : ", ") + cellContentConverter.toSql(cellContentConverter.getObject(resultSet, quoting.unquote(pkColumn.name)));
+						firstTime = false;
+					}
+					item += ")";
+					deleteHead += ") in (";
+					if (currentDialect.isNeedsValuesKeywordForDeletes()) {
+						deleteHead += "values ";
+					}
+				}
+				if (!deleteStatementBuilder.isAppendable(deleteHead, item)) {
+					writeToScriptFile(deleteStatementBuilder.build());
+				}
+				deleteStatementBuilder.append(deleteHead, item, ", ", ");\n");
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
-    /**
-     * Gets qualified table name.
-     * 
-     * @param t the table
-     * @return qualified name of t
-     */
-    private String qualifiedTableName(Table t) {
-    	String schema = t.getOriginalSchema("");
-    	String mappedSchema = executionContext.getSourceSchemaMapping().get(schema);
-    	if (mappedSchema != null) {
-    		schema = mappedSchema;
-    	}
-    	if (schema.length() == 0) {
-    		return quoting.requote(t.getUnqualifiedName());
-    	}
+	/**
+	 * Gets qualified table name.
+	 * 
+	 * @param t the table
+	 * @return qualified name of t
+	 */
+	private String qualifiedTableName(Table t) {
+		String schema = t.getOriginalSchema("");
+		String mappedSchema = executionContext.getSourceSchemaMapping().get(schema);
+		if (mappedSchema != null) {
+			schema = mappedSchema;
+		}
+		if (schema.length() == 0) {
+			return quoting.requote(t.getUnqualifiedName());
+		}
 		return quoting.requote(schema) + "." + quoting.requote(t.getUnqualifiedName());
 	}
 
-    /**
-     * Writes into script.
-     */
-    private void writeToScriptFile(String content) throws IOException {
-        synchronized (scriptFileWriter) {
-        	if (DBMS.ORACLE.equals(targetDBMSConfiguration)) {
-       			scriptFileWriter.write(SqlUtil.splitDMLStatement(content, 2400));
-        	} else {
-        		scriptFileWriter.write(content);
-        	}
-        }
-    }
+	/**
+	 * Writes into script.
+	 */
+	private void writeToScriptFile(String content) throws IOException {
+		synchronized (scriptFileWriter) {
+			if (DBMS.ORACLE.equals(targetDBMSConfiguration)) {
+				   scriptFileWriter.write(SqlUtil.splitDMLStatement(content, 2400));
+			} else {
+				scriptFileWriter.write(content);
+			}
+		}
+	}
 
-    /**
-     * Finalizes reading.
-     */
-    public void close() {
-        try {
-            writeToScriptFile(deleteStatementBuilder.build());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-    }
-    
+	/**
+	 * Finalizes reading.
+	 */
+	public void close() {
+		try {
+			writeToScriptFile(deleteStatementBuilder.build());
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
 }

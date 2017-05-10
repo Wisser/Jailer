@@ -43,11 +43,11 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 	private ConnectionInfo ci;
 	
 	/**
-     * Opens detail editor for a connection.
-     * 
-     * @param ci the connection
-     * @return <code>true</code> if connection has been edited
-     */
+	 * Opens detail editor for a connection.
+	 * 
+	 * @param ci the connection
+	 * @return <code>true</code> if connection has been edited
+	 */
 	public boolean edit(ConnectionInfo ci) {
 		this.ci = ci;
 		alias.setText(ci.alias);
@@ -61,394 +61,394 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		return isOk;
 	}
 	
-    /** Creates new form DbConnectionDialog 
-     * @param forNew */
-    public DbConnectionDetailsEditor(java.awt.Frame parent, final String jdbcHelpURL, boolean forNew) {
-        super(parent, true);
-        initComponents();
-        if (forNew) {
-        	UIUtil.replace(infoBarLabel, new InfoBar("New Connection",
-        			"Enter connection credentials for the database.\n" +
-        			"Replace placeholders (\"<...>\") with appropriate URL parameters."));
-        } else {
-        	UIUtil.replace(infoBarLabel, new InfoBar("Edit Connection",
-        			"Edit connection credentials for the database."));
-        }
-        setLocation(120, 170);
-        loadButton1.addActionListener(new java.awt.event.ActionListener() {
+	/** Creates new form DbConnectionDialog 
+	 * @param forNew */
+	public DbConnectionDetailsEditor(java.awt.Frame parent, final String jdbcHelpURL, boolean forNew) {
+		super(parent, true);
+		initComponents();
+		if (forNew) {
+			UIUtil.replace(infoBarLabel, new InfoBar("New Connection",
+					"Enter connection credentials for the database.\n" +
+					"Replace placeholders (\"<...>\") with appropriate URL parameters."));
+		} else {
+			UIUtil.replace(infoBarLabel, new InfoBar("Edit Connection",
+					"Edit connection credentials for the database."));
+		}
+		setLocation(120, 170);
+		loadButton1.addActionListener(new java.awt.event.ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-                String fn = UIUtil.choseFile(null, ".", "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
-                if (fn != null) {
-                    jar1.setText(fn);
-                }
+				String fn = UIUtil.choseFile(null, ".", "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
+				if (fn != null) {
+					jar1.setText(fn);
+				}
 			}
-        });
-        loadButton2.addActionListener(new java.awt.event.ActionListener() {
-        	@Override
-			public void actionPerformed(ActionEvent e) {
-        		String fn = UIUtil.choseFile(null, ".", "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
-                if (fn != null) {
-                    jar2.setText(fn);
-                }
-            }
-        });
-        helpjdbc.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
-            	helpjdbc.setEnabled(false);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-            	helpjdbc.setEnabled(true);
-           }
-        });
-        helpjdbc.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-            	try {
-            		BrowserLauncher.openURL(new URI(jdbcHelpURL));
-            	} catch (Exception e) {
-            		UIUtil.showException(DbConnectionDetailsEditor.this, "Error", e);
-            	}
-            }
 		});
-        helpjdbc.setIcon(helpIcon);
-        helpjdbc.setText(null);
-        loadButton1.setIcon(loadIcon);
-        loadButton2.setIcon(loadIcon);
-        pack();
-        setSize(Math.max(570, getWidth()), getHeight());
-        UIUtil.initPeer();
- 	}
+		loadButton2.addActionListener(new java.awt.event.ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String fn = UIUtil.choseFile(null, ".", "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
+				if (fn != null) {
+					jar2.setText(fn);
+				}
+			}
+		});
+		helpjdbc.addMouseListener(new java.awt.event.MouseAdapter() {
+			public void mouseEntered(java.awt.event.MouseEvent evt) {
+				helpjdbc.setEnabled(false);
+			}
+			public void mouseExited(java.awt.event.MouseEvent evt) {
+				helpjdbc.setEnabled(true);
+		   }
+		});
+		helpjdbc.addMouseListener(new java.awt.event.MouseAdapter() {
+			public void mouseClicked(java.awt.event.MouseEvent evt) {
+				try {
+					BrowserLauncher.openURL(new URI(jdbcHelpURL));
+				} catch (Exception e) {
+					UIUtil.showException(DbConnectionDetailsEditor.this, "Error", e);
+				}
+			}
+		});
+		helpjdbc.setIcon(helpIcon);
+		helpjdbc.setText(null);
+		loadButton1.setIcon(loadIcon);
+		loadButton2.setIcon(loadIcon);
+		pack();
+		setSize(Math.max(570, getWidth()), getHeight());
+		UIUtil.initPeer();
+	 }
 
 	/** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
-     */
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
+	 * initialize the form.
+	 * WARNING: Do NOT modify this code. The content of this method is
+	 * always regenerated by the Form Editor.
+	 */
+	// <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+	private void initComponents() {
+		java.awt.GridBagConstraints gridBagConstraints;
 
-        jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
-        jLabel8 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
-        jar1 = new javax.swing.JTextField();
-        jar2 = new javax.swing.JTextField();
-        driverClass = new javax.swing.JTextField();
-        dbUrl = new javax.swing.JTextField();
-        user = new javax.swing.JTextField();
-        jPanel2 = new javax.swing.JPanel();
-        okButton = new javax.swing.JButton();
-        cancelButton = new javax.swing.JButton();
-        testConnectionButton = new javax.swing.JButton();
-        jLabel11 = new javax.swing.JLabel();
-        password = new javax.swing.JPasswordField();
-        helpjdbc = new javax.swing.JLabel();
-        alias = new javax.swing.JTextField();
-        infoBarLabel = new javax.swing.JLabel();
-        loadButton1 = new javax.swing.JButton();
-        loadButton2 = new javax.swing.JButton();
+		jPanel1 = new javax.swing.JPanel();
+		jLabel1 = new javax.swing.JLabel();
+		jLabel2 = new javax.swing.JLabel();
+		jLabel3 = new javax.swing.JLabel();
+		jLabel4 = new javax.swing.JLabel();
+		jLabel5 = new javax.swing.JLabel();
+		jLabel6 = new javax.swing.JLabel();
+		jLabel7 = new javax.swing.JLabel();
+		jLabel8 = new javax.swing.JLabel();
+		jLabel9 = new javax.swing.JLabel();
+		jar1 = new javax.swing.JTextField();
+		jar2 = new javax.swing.JTextField();
+		driverClass = new javax.swing.JTextField();
+		dbUrl = new javax.swing.JTextField();
+		user = new javax.swing.JTextField();
+		jPanel2 = new javax.swing.JPanel();
+		okButton = new javax.swing.JButton();
+		cancelButton = new javax.swing.JButton();
+		testConnectionButton = new javax.swing.JButton();
+		jLabel11 = new javax.swing.JLabel();
+		password = new javax.swing.JPasswordField();
+		helpjdbc = new javax.swing.JLabel();
+		alias = new javax.swing.JTextField();
+		infoBarLabel = new javax.swing.JLabel();
+		loadButton1 = new javax.swing.JButton();
+		loadButton2 = new javax.swing.JButton();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Database Connection");
-        getContentPane().setLayout(new java.awt.CardLayout());
+		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+		setTitle("Database Connection");
+		getContentPane().setLayout(new java.awt.CardLayout());
 
-        jPanel1.setLayout(new java.awt.GridBagLayout());
+		jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jLabel1.setText(" Alias ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel1.add(jLabel1, gridBagConstraints);
+		jLabel1.setText(" Alias ");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 10;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		jPanel1.add(jLabel1, gridBagConstraints);
 
-        jLabel2.setText(" JDBC Driver JAR ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 20;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel1.add(jLabel2, gridBagConstraints);
+		jLabel2.setText(" JDBC Driver JAR ");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 20;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		jPanel1.add(jLabel2, gridBagConstraints);
 
-        jLabel3.setText(" secondary JAR ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 40;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel1.add(jLabel3, gridBagConstraints);
+		jLabel3.setText(" secondary JAR ");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 40;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		jPanel1.add(jLabel3, gridBagConstraints);
 
-        jLabel4.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 15;
-        jPanel1.add(jLabel4, gridBagConstraints);
+		jLabel4.setText(" ");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridy = 15;
+		jPanel1.add(jLabel4, gridBagConstraints);
 
-        jLabel5.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 45;
-        jPanel1.add(jLabel5, gridBagConstraints);
+		jLabel5.setText(" ");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 45;
+		jPanel1.add(jLabel5, gridBagConstraints);
 
-        jLabel6.setText(" Driver-Class");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 50;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel1.add(jLabel6, gridBagConstraints);
+		jLabel6.setText(" Driver-Class");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 50;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		jPanel1.add(jLabel6, gridBagConstraints);
 
-        jLabel7.setText(" DB-URL");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 60;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel1.add(jLabel7, gridBagConstraints);
+		jLabel7.setText(" DB-URL");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 60;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		jPanel1.add(jLabel7, gridBagConstraints);
 
-        jLabel8.setText(" User");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 70;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel1.add(jLabel8, gridBagConstraints);
+		jLabel8.setText(" User");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 70;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		jPanel1.add(jLabel8, gridBagConstraints);
 
-        jLabel9.setText(" Password");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 80;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel1.add(jLabel9, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 20;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel1.add(jar1, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 40;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel1.add(jar2, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 50;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel1.add(driverClass, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 60;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel1.add(dbUrl, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 70;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel1.add(user, gridBagConstraints);
+		jLabel9.setText(" Password");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 80;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		jPanel1.add(jLabel9, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 20;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		jPanel1.add(jar1, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 40;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		jPanel1.add(jar2, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 50;
+		gridBagConstraints.gridwidth = 3;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		jPanel1.add(driverClass, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 60;
+		gridBagConstraints.gridwidth = 3;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		jPanel1.add(dbUrl, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 70;
+		gridBagConstraints.gridwidth = 3;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		jPanel1.add(user, gridBagConstraints);
 
-        jPanel2.setLayout(new java.awt.GridBagLayout());
+		jPanel2.setLayout(new java.awt.GridBagLayout());
 
-        okButton.setText(" Ok ");
-        okButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                okButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
-        jPanel2.add(okButton, gridBagConstraints);
+		okButton.setText(" Ok ");
+		okButton.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				okButtonActionPerformed(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+		gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+		jPanel2.add(okButton, gridBagConstraints);
 
-        cancelButton.setText(" Cancel ");
-        cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        jPanel2.add(cancelButton, gridBagConstraints);
+		cancelButton.setText(" Cancel ");
+		cancelButton.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				cancelButtonActionPerformed(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+		gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+		jPanel2.add(cancelButton, gridBagConstraints);
 
-        testConnectionButton.setText(" Test Connection ");
-        testConnectionButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                testConnectionButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 12);
-        jPanel2.add(testConnectionButton, gridBagConstraints);
+		testConnectionButton.setText(" Test Connection ");
+		testConnectionButton.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				testConnectionButtonActionPerformed(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 12);
+		jPanel2.add(testConnectionButton, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 100;
-        gridBagConstraints.gridwidth = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel1.add(jPanel2, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 100;
+		gridBagConstraints.gridwidth = 4;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		jPanel1.add(jPanel2, gridBagConstraints);
 
-        jLabel11.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 10;
-        jPanel1.add(jLabel11, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 80;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weighty = 1.0;
-        jPanel1.add(password, gridBagConstraints);
+		jLabel11.setText(" ");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 10;
+		gridBagConstraints.gridy = 10;
+		jPanel1.add(jLabel11, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 80;
+		gridBagConstraints.gridwidth = 3;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weighty = 1.0;
+		jPanel1.add(password, gridBagConstraints);
 
-        helpjdbc.setText("help");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 20;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
-        jPanel1.add(helpjdbc, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel1.add(alias, gridBagConstraints);
+		helpjdbc.setText("help");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 20;
+		gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 4);
+		jPanel1.add(helpjdbc, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 10;
+		gridBagConstraints.gridwidth = 3;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		jPanel1.add(alias, gridBagConstraints);
 
-        infoBarLabel.setText("info bar");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 11;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
-        jPanel1.add(infoBarLabel, gridBagConstraints);
+		infoBarLabel.setText("info bar");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.gridwidth = 11;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.insets = new java.awt.Insets(0, 0, 12, 0);
+		jPanel1.add(infoBarLabel, gridBagConstraints);
 
-        loadButton1.setText(" Browse..");
-        loadButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                loadButton1ActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 20;
-        jPanel1.add(loadButton1, gridBagConstraints);
+		loadButton1.setText(" Browse..");
+		loadButton1.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				loadButton1ActionPerformed(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 3;
+		gridBagConstraints.gridy = 20;
+		jPanel1.add(loadButton1, gridBagConstraints);
 
-        loadButton2.setText(" Browse..");
-        loadButton2.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                loadButton2ActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 40;
-        jPanel1.add(loadButton2, gridBagConstraints);
+		loadButton2.setText(" Browse..");
+		loadButton2.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				loadButton2ActionPerformed(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 3;
+		gridBagConstraints.gridy = 40;
+		jPanel1.add(loadButton2, gridBagConstraints);
 
-        getContentPane().add(jPanel1, "card2");
+		getContentPane().add(jPanel1, "card2");
 
-        pack();
-    }// </editor-fold>//GEN-END:initComponents
+		pack();
+	}// </editor-fold>//GEN-END:initComponents
 
-   private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-    	if (fillConnectionInfo()) {
-       		isOk = true;
-       		setVisible(false);
-        }
-    }//GEN-LAST:event_okButtonActionPerformed
+private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
+		if (fillConnectionInfo()) {
+			   isOk = true;
+			   setVisible(false);
+		}
+	}//GEN-LAST:event_okButtonActionPerformed
 
-   	@SuppressWarnings("deprecation")
+	   @SuppressWarnings("deprecation")
 	private boolean fillConnectionInfo() {
 		boolean ok = true;
-        Color red = new Color(255, 200, 180);
+		Color red = new Color(255, 200, 180);
 		if (alias.getText().trim().length() == 0) {
-        	alias.setBackground(red);
-        	ok = false;
-        }
-        if (driverClass.getText().trim().length() == 0) {
-        	driverClass.setBackground(red);
-        	ok = false;
-        }
-        if (dbUrl.getText().trim().length() == 0) {
-        	dbUrl.setBackground(red);
-        	ok = false;
-        }
-        if (ok) {
-        	ci.alias = alias.getText().trim();
-        	ci.driverClass = driverClass.getText().trim();
-        	ci.jar1 = jar1.getText().trim();
-        	ci.jar2 = jar2.getText().trim();
-        	ci.url = dbUrl.getText().trim();
-        	ci.user = user.getText().trim();
-        	ci.password = password.getText().trim();
-        }
-        return ok;
+			alias.setBackground(red);
+			ok = false;
+		}
+		if (driverClass.getText().trim().length() == 0) {
+			driverClass.setBackground(red);
+			ok = false;
+		}
+		if (dbUrl.getText().trim().length() == 0) {
+			dbUrl.setBackground(red);
+			ok = false;
+		}
+		if (ok) {
+			ci.alias = alias.getText().trim();
+			ci.driverClass = driverClass.getText().trim();
+			ci.jar1 = jar1.getText().trim();
+			ci.jar2 = jar2.getText().trim();
+			ci.url = dbUrl.getText().trim();
+			ci.user = user.getText().trim();
+			ci.password = password.getText().trim();
+		}
+		return ok;
 	}
 
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        setVisible(false);
-    }//GEN-LAST:event_cancelButtonActionPerformed
+	private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+		setVisible(false);
+	}//GEN-LAST:event_cancelButtonActionPerformed
 
-    private void testConnectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testConnectionButtonActionPerformed
-        if (fillConnectionInfo()) {
-        	if (DbConnectionDialog.testConnection(this, ci)) {
-        		JOptionPane.showMessageDialog(this, "Successfully established connection.", "Connected", JOptionPane.INFORMATION_MESSAGE);
-        	}
-        }
-    }//GEN-LAST:event_testConnectionButtonActionPerformed
+	private void testConnectionButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_testConnectionButtonActionPerformed
+		if (fillConnectionInfo()) {
+			if (DbConnectionDialog.testConnection(this, ci)) {
+				JOptionPane.showMessageDialog(this, "Successfully established connection.", "Connected", JOptionPane.INFORMATION_MESSAGE);
+			}
+		}
+	}//GEN-LAST:event_testConnectionButtonActionPerformed
 
-    private void loadButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadButton1ActionPerformed
-    }//GEN-LAST:event_loadButton1ActionPerformed
+	private void loadButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadButton1ActionPerformed
+	}//GEN-LAST:event_loadButton1ActionPerformed
 
-    private void loadButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadButton2ActionPerformed
-    }//GEN-LAST:event_loadButton2ActionPerformed
-   
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    public javax.swing.JTextField alias;
-    private javax.swing.JButton cancelButton;
-    public javax.swing.JTextField dbUrl;
-    public javax.swing.JTextField driverClass;
-    private javax.swing.JLabel helpjdbc;
-    private javax.swing.JLabel infoBarLabel;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel11;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JTextField jar1;
-    private javax.swing.JTextField jar2;
-    private javax.swing.JButton loadButton1;
-    private javax.swing.JButton loadButton2;
-    private javax.swing.JButton okButton;
-    private javax.swing.JPasswordField password;
-    private javax.swing.JButton testConnectionButton;
-    public javax.swing.JTextField user;
-    // End of variables declaration//GEN-END:variables
+	private void loadButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadButton2ActionPerformed
+	}//GEN-LAST:event_loadButton2ActionPerformed
+
+	// Variables declaration - do not modify//GEN-BEGIN:variables
+	public javax.swing.JTextField alias;
+	private javax.swing.JButton cancelButton;
+	public javax.swing.JTextField dbUrl;
+	public javax.swing.JTextField driverClass;
+	private javax.swing.JLabel helpjdbc;
+	private javax.swing.JLabel infoBarLabel;
+	private javax.swing.JLabel jLabel1;
+	private javax.swing.JLabel jLabel11;
+	private javax.swing.JLabel jLabel2;
+	private javax.swing.JLabel jLabel3;
+	private javax.swing.JLabel jLabel4;
+	private javax.swing.JLabel jLabel5;
+	private javax.swing.JLabel jLabel6;
+	private javax.swing.JLabel jLabel7;
+	private javax.swing.JLabel jLabel8;
+	private javax.swing.JLabel jLabel9;
+	private javax.swing.JPanel jPanel1;
+	private javax.swing.JPanel jPanel2;
+	private javax.swing.JTextField jar1;
+	private javax.swing.JTextField jar2;
+	private javax.swing.JButton loadButton1;
+	private javax.swing.JButton loadButton2;
+	private javax.swing.JButton okButton;
+	private javax.swing.JPasswordField password;
+	private javax.swing.JButton testConnectionButton;
+	public javax.swing.JTextField user;
+	// End of variables declaration//GEN-END:variables
 
 	private Icon helpIcon;
 	private Icon loadIcon;

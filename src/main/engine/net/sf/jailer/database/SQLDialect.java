@@ -57,7 +57,7 @@ public class SQLDialect {
 	 */
 	private UPSERT_MODE upsertMode = UPSERT_MODE.FROM_JL_DUAL;
 
-    /**
+	/**
 	 * @return the needsValuesKeywordForDeletes
 	 */
 	public boolean isNeedsValuesKeywordForDeletes() {
@@ -114,17 +114,17 @@ public class SQLDialect {
 	}
 
 	/**
-     * Gets table reference for DML statements for a given working table.
-     * 
-     * @param tableName the working table
-     * @param session holds connection to DBMS
-     * @return table reference for the working table
+	 * Gets table reference for DML statements for a given working table.
+	 * 
+	 * @param tableName the working table
+	 * @param session holds connection to DBMS
+	 * @return table reference for the working table
 	 * @throws SQLException 
-     */
-    public static String dmlTableReference(String tableName, Session session, ExecutionContext executionContext) throws SQLException {
-    	String tableRef;
-    	TemporaryTableManager tableManager = null;
-    	WorkingTableScope temporaryTableScope = executionContext.getScope();
+	 */
+	public static String dmlTableReference(String tableName, Session session, ExecutionContext executionContext) throws SQLException {
+		String tableRef;
+		TemporaryTableManager tableManager = null;
+		WorkingTableScope temporaryTableScope = executionContext.getScope();
 		if (temporaryTableScope == WorkingTableScope.SESSION_LOCAL) {
 			tableManager = session.dbms.getSessionTemporaryTableManager();
 		}
@@ -143,7 +143,7 @@ public class SQLDialect {
 			}
 		}
 		return tableRef;
-    }
+	}
 
 	/**
 	 * @see java.lang.Object#toString()

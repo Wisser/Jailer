@@ -34,95 +34,95 @@ import prefuse.visual.VisualItem;
  * @author Ralf Wisser
  */
 public class ZoomBoxControl extends AbstractZoomControl {
-    
-    /**
-     * Label of Zoom-box item.
-     */
-    public static final String BOX_ITEM_LABEL = "$ZOOMBOX";
-
-    /**
-     * The renderer for the zoom box.
-     */
-    private ZoomBoxRenderer zoomBoxRenderer;
- 
-    /**
-     * Zoom drag box as visual item.
-     */
-    private VisualItem boxItem;
-    
-    /**
-     * Point at which dragging was started.
-     */
-    private Point2D down = null;
-    
-    /**
-     * Current mouse position.
-     */
-    private Point2D current = null;
-    
-    /**
-     * Mouse button to be used for zooming.
-     */
-    private int button = RIGHT_MOUSE_BUTTON;
-    
-    /**
-     * Constructor.
-     * 
-     * @param visualGraph the visual model graph
-     */
-    public ZoomBoxControl() {
-    	zoomBoxRenderer = new ZoomBoxRenderer();
-    }
-    
+	
 	/**
-     * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
-     */
-    public void mousePressed(MouseEvent e) {
-        if ( UILib.isButtonPressed(e, button) ) {
-            Display display = (Display)e.getComponent();
-            if (display.isTranformInProgress()) {
-                return;
-            }
-            down = new Point2D.Float();
-            current = null;
-            display.getAbsoluteCoordinate(e.getPoint(), down);
-        }
-    }
-    
-    /**
-     * Overridden to hide zoom box if no mouse button is pressed.
-     */
-    @Override
+	 * Label of Zoom-box item.
+	 */
+	public static final String BOX_ITEM_LABEL = "$ZOOMBOX";
+
+	/**
+	 * The renderer for the zoom box.
+	 */
+	private ZoomBoxRenderer zoomBoxRenderer;
+
+	/**
+	 * Zoom drag box as visual item.
+	 */
+	private VisualItem boxItem;
+	
+	/**
+	 * Point at which dragging was started.
+	 */
+	private Point2D down = null;
+	
+	/**
+	 * Current mouse position.
+	 */
+	private Point2D current = null;
+	
+	/**
+	 * Mouse button to be used for zooming.
+	 */
+	private int button = RIGHT_MOUSE_BUTTON;
+	
+	/**
+	 * Constructor.
+	 * 
+	 * @param visualGraph the visual model graph
+	 */
+	public ZoomBoxControl() {
+		zoomBoxRenderer = new ZoomBoxRenderer();
+	}
+	
+	/**
+	 * @see java.awt.event.MouseListener#mousePressed(java.awt.event.MouseEvent)
+	 */
+	public void mousePressed(MouseEvent e) {
+		if ( UILib.isButtonPressed(e, button) ) {
+			Display display = (Display)e.getComponent();
+			if (display.isTranformInProgress()) {
+				return;
+			}
+			down = new Point2D.Float();
+			current = null;
+			display.getAbsoluteCoordinate(e.getPoint(), down);
+		}
+	}
+	
+	/**
+	 * Overridden to hide zoom box if no mouse button is pressed.
+	 */
+	@Override
 	public void mouseMoved(MouseEvent e) {
-    	if (!UILib.isButtonPressed(e, button) ) {
-    		hideZoomBox();
-        }
+		if (!UILib.isButtonPressed(e, button) ) {
+			hideZoomBox();
+		}
 	}
 
-    /**
-     * @see java.awt.event.MouseMotionListener#mouseDragged(java.awt.event.MouseEvent)
-     */
-    public void mouseDragged(MouseEvent e) {
-        if (UILib.isButtonPressed(e, button) ) {
-            Display display = (Display)e.getComponent();
-            if (display.isTranformInProgress() || down == null) {
-                hideZoomBox();
-                return;
-            }
-            current = new Point2D.Float();
-            display.getAbsoluteCoordinate(e.getPoint(), current);
-       
-            if (boxItem != null) {
-            	boxItem.setVisible(true);
-	            boxItem.setValidated(false);
-	            boxItem.getVisualization().repaint();
-            }
-        }
-    }
+	/**
+	 * @see java.awt.event.MouseMotionListener#mouseDragged(java.awt.event.MouseEvent)
+	 */
+	public void mouseDragged(MouseEvent e) {
+		if (UILib.isButtonPressed(e, button) ) {
+			Display display = (Display)e.getComponent();
+			if (display.isTranformInProgress() || down == null) {
+				hideZoomBox();
+				return;
+			}
+			current = new Point2D.Float();
+			display.getAbsoluteCoordinate(e.getPoint(), current);
+	   
+			if (boxItem != null) {
+				boxItem.setVisible(true);
+				boxItem.setValidated(false);
+				boxItem.getVisualization().repaint();
+			}
+		}
+	}
 
-    /**
-     * Hides zoom box.
-     */
+	/**
+	 * Hides zoom box.
+	 */
 	private void hideZoomBox() {
 		if (down != null || current != null) {
 			down = null;
@@ -134,48 +134,48 @@ public class ZoomBoxControl extends AbstractZoomControl {
 		}
 	}
 
-    /**
-     * @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
-     */
-    public void mouseReleased(MouseEvent e) {
-        if ( UILib.isButtonPressed(e, button) ) {
-        	if (down != null && current != null) {
-        		Display display = (Display)e.getComponent();
-                DisplayLib.fitViewToBounds(display, getZoomBoxBounds(200), 500);
-        	}
-        	hideZoomBox();
-        }
-    }
-    
-    /**
-     * @see prefuse.controls.Control#itemPressed(prefuse.visual.VisualItem, java.awt.event.MouseEvent)
-     */
-    public void itemPressed(VisualItem item, MouseEvent e) {
-        if ( m_zoomOverItem )
-            mousePressed(e);
-    }
+	/**
+	 * @see java.awt.event.MouseListener#mouseReleased(java.awt.event.MouseEvent)
+	 */
+	public void mouseReleased(MouseEvent e) {
+		if ( UILib.isButtonPressed(e, button) ) {
+			if (down != null && current != null) {
+				Display display = (Display)e.getComponent();
+				DisplayLib.fitViewToBounds(display, getZoomBoxBounds(200), 500);
+			}
+			hideZoomBox();
+		}
+	}
+	
+	/**
+	 * @see prefuse.controls.Control#itemPressed(prefuse.visual.VisualItem, java.awt.event.MouseEvent)
+	 */
+	public void itemPressed(VisualItem item, MouseEvent e) {
+		if ( m_zoomOverItem )
+			mousePressed(e);
+	}
 
-    /**
-     * @see prefuse.controls.Control#itemDragged(prefuse.visual.VisualItem, java.awt.event.MouseEvent)
-     */
-    public void itemDragged(VisualItem item, MouseEvent e) {
-        if ( m_zoomOverItem )
-            mouseDragged(e);
-    }
-    
-    /**
-     * @see prefuse.controls.Control#itemReleased(prefuse.visual.VisualItem, java.awt.event.MouseEvent)
-     */
-    public void itemReleased(VisualItem item, MouseEvent e) {
-        if ( m_zoomOverItem )
-            mouseReleased(e);
-    }
+	/**
+	 * @see prefuse.controls.Control#itemDragged(prefuse.visual.VisualItem, java.awt.event.MouseEvent)
+	 */
+	public void itemDragged(VisualItem item, MouseEvent e) {
+		if ( m_zoomOverItem )
+			mouseDragged(e);
+	}
+	
+	/**
+	 * @see prefuse.controls.Control#itemReleased(prefuse.visual.VisualItem, java.awt.event.MouseEvent)
+	 */
+	public void itemReleased(VisualItem item, MouseEvent e) {
+		if ( m_zoomOverItem )
+			mouseReleased(e);
+	}
 
-    /**
-     * Gets bounding rectangle of zoom box.
-     * 
-     * @return bounding rectangle of zoom box
-     */
+	/**
+	 * Gets bounding rectangle of zoom box.
+	 * 
+	 * @return bounding rectangle of zoom box
+	 */
 	private Rectangle2D getZoomBoxBounds(double minWidth) {
 		Rectangle2D bounds = new Rectangle2D.Double();
 		
@@ -188,11 +188,11 @@ public class ZoomBoxControl extends AbstractZoomControl {
 		return bounds;
 	}
 	
-    /**
-     * Gets the renderer for the zoom box.
-     * 
-     * @return the renderer for the zoom box
-     */
+	/**
+	 * Gets the renderer for the zoom box.
+	 * 
+	 * @return the renderer for the zoom box
+	 */
 	public ZoomBoxRenderer getRenderer() {
 		return zoomBoxRenderer;
 	}

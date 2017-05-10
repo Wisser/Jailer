@@ -186,8 +186,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	/**
 	 * Dialog for XML column mapping.
 	 */
-    private final ColumnMapperDialog columnMapperDialog;
-    
+	private final ColumnMapperDialog columnMapperDialog;
+	
 	/**
 	 * Name of file containing the currently edited model.
 	 */
@@ -227,7 +227,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 *  
 	 * @param extractionModelFile file containing the model
 	 * @param extractionModelFrame the enclosing frame
-     */
+	 */
 	public ExtractionModelEditor(String extractionModelFile, ExtractionModelFrame extractionModelFrame, boolean horizontalLayout, String connectionState, String connectionStateToolTip) {
 		this.extractionModelFrame = extractionModelFrame;
 		this.extractionModelFile = extractionModelFile;
@@ -268,7 +268,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			return;
 		}
 
-        boolean saveNeedsSave = needsSave;
+		boolean saveNeedsSave = needsSave;
 		initComponents();
 
 		ItemListener aListener = new ItemListener() {
@@ -301,7 +301,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			protected void onSelect(Association association) {
 				select(association);
 			}
-        };
+		};
 
 		closureView = new ClosureView(this, rootTable) {
 			@Override
@@ -315,13 +315,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		closureView.addTabComponent("Closure Border", closureBorderView.getContentPane());
 		closureBorderView.dispose();
 		
-        Container cVContentPane = closureView.getContentPane();
-        closureView.dispose();
+		Container cVContentPane = closureView.getContentPane();
+		closureView.dispose();
 		toolPanel.add(cVContentPane, java.awt.BorderLayout.CENTER);
 
 		validate();
-        
-        tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+		
+		tree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
 		tree.setExpandsSelectedPaths(true);
 		restrictionEditor = new RestrictionEditor();
 		
@@ -338,19 +338,19 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		layeredPane.setLayout(new GridBagLayout());
 		GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        layeredPane.add(graphContainer, gridBagConstraints);
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		layeredPane.add(graphContainer, gridBagConstraints);
 		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 0;
-        gridBagConstraints.weighty = 0;
-        layeredPane.add(toolBarPanel, gridBagConstraints);
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+		gridBagConstraints.weightx = 0;
+		gridBagConstraints.weighty = 0;
+		layeredPane.add(toolBarPanel, gridBagConstraints);
 		
 		AssociationRenderer.COLOR_ASSOCIATION = associatedWith.getForeground();
 		AssociationRenderer.COLOR_DEPENDENCY = dependsOn.getForeground();
@@ -383,12 +383,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		restrictionsTable.setShowGrid(false);
 		
 		gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        inspectorHolder.add(restrictionEditor, gridBagConstraints);
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		inspectorHolder.add(restrictionEditor, gridBagConstraints);
 		inspectorHolder.setMinimumSize(inspectorHolder.getPreferredSize());
 		restrictionEditor.restriction.getDocument().addDocumentListener(new DocumentListener() {
 
@@ -465,7 +465,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			public void actionPerformed(ActionEvent e) {
 				ExtractionModelEditor.this.extractionModelFrame.dataExportActionPerformed(e);
 			}
-    	});
+		});
 		
 		needsSave = saveNeedsSave;
 		extractionModelFrame.updateTitle(needsSave);
@@ -493,10 +493,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			private static final long serialVersionUID = 2393022320508863837L;
 		});
 		exportFormat.setSelectedItem(scriptFormat);
-    	
+		
 		openXmlSettings.setVisible(ScriptFormat.XML.equals(scriptFormat));
 		onExportModusChanged(null);
-        setOrientation(horizontalLayout);
+		setOrientation(horizontalLayout);
 		connectivityState.setText(connectionState);
 		connectivityState.setToolTipText(connectionStateToolTip);
 		
@@ -553,11 +553,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				if (currentAssociation != null) {
 					restrictionEditor.openRestrictionConditionEditor.setIcon(conditionEditorSelectedIcon);
 				}
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-            	restrictionEditor.openRestrictionConditionEditor.setIcon(conditionEditorIcon);
-           }
-        });
+			}
+			public void mouseExited(java.awt.event.MouseEvent evt) {
+				restrictionEditor.openRestrictionConditionEditor.setIcon(conditionEditorIcon);
+		   }
+		});
 		openSubjectConditionEditor.addMouseListener(new java.awt.event.MouseAdapter() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
@@ -577,11 +577,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			
 			public void mouseEntered(java.awt.event.MouseEvent evt) {
 				openSubjectConditionEditor.setIcon(conditionEditorSelectedIcon);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-            	openSubjectConditionEditor.setIcon(conditionEditorIcon);
-           }
-        });
+			}
+			public void mouseExited(java.awt.event.MouseEvent evt) {
+				openSubjectConditionEditor.setIcon(conditionEditorIcon);
+		   }
+		});
 		
 		leftButton.setIcon(leftIcon);
 		leftButton.setPressedIcon(leftIconP);
@@ -613,12 +613,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		if (isHorizontalLayout) {
 			jPanel1.removeAll();
 			GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-	        gridBagConstraints.gridx = 0;
-	        gridBagConstraints.gridy = 1;
-	        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-	        gridBagConstraints.weightx = 1.0;
-	        gridBagConstraints.weighty = 1.0;
-	        jPanel1.add(editorPanel, gridBagConstraints);
+			gridBagConstraints.gridx = 0;
+			gridBagConstraints.gridy = 1;
+			gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+			gridBagConstraints.weightx = 1.0;
+			gridBagConstraints.weighty = 1.0;
+			jPanel1.add(editorPanel, gridBagConstraints);
 
 			jSplitPane1.setOrientation(JSplitPane.VERTICAL_SPLIT);
 			jSplitPane1.setLeftComponent(jPanel1);
@@ -669,28 +669,28 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			JPanel panel2 = new JPanel();
 			panel2.setLayout(new GridBagLayout());
 			gridBagConstraints = new java.awt.GridBagConstraints();
-	        gridBagConstraints.gridx = 0;
-	        gridBagConstraints.gridy = 0;
-	        gridBagConstraints.weightx = 1;
-	        gridBagConstraints.weighty = 0;
-	        gridBagConstraints.fill = GridBagConstraints.BOTH;
-	        
+			gridBagConstraints.gridx = 0;
+			gridBagConstraints.gridy = 0;
+			gridBagConstraints.weightx = 1;
+			gridBagConstraints.weighty = 0;
+			gridBagConstraints.fill = GridBagConstraints.BOTH;
+			
 			panel2.add(jPanel3, gridBagConstraints);
 			gridBagConstraints = new java.awt.GridBagConstraints();
-	        gridBagConstraints.gridx = 0;
-	        gridBagConstraints.gridy = 1;
-	        gridBagConstraints.weightx = 1;
-	        gridBagConstraints.weighty = 1;
-	        gridBagConstraints.fill = GridBagConstraints.BOTH;
-	        gridBagConstraints.insets = new Insets(4, 0, 0, 0);
+			gridBagConstraints.gridx = 0;
+			gridBagConstraints.gridy = 1;
+			gridBagConstraints.weightx = 1;
+			gridBagConstraints.weighty = 1;
+			gridBagConstraints.fill = GridBagConstraints.BOTH;
+			gridBagConstraints.insets = new Insets(4, 0, 0, 0);
 			panel2.add(jPanel4, gridBagConstraints);
 			gridBagConstraints = new java.awt.GridBagConstraints();
-	        gridBagConstraints.gridx = 0;
-	        gridBagConstraints.gridy = 2;
-	        gridBagConstraints.weightx = 1;
-	        gridBagConstraints.weighty = 0;
-	        gridBagConstraints.fill = GridBagConstraints.BOTH;
-	        gridBagConstraints.insets = new Insets(4, 0, 0, 0);
+			gridBagConstraints.gridx = 0;
+			gridBagConstraints.gridy = 2;
+			gridBagConstraints.weightx = 1;
+			gridBagConstraints.weighty = 0;
+			gridBagConstraints.fill = GridBagConstraints.BOTH;
+			gridBagConstraints.insets = new Insets(4, 0, 0, 0);
 			panel2.add(inspectorHolder, gridBagConstraints);
 			
 			editorPanel.removeAll();
@@ -699,12 +699,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			((GridLayout) editorPanel.getLayout()).setColumns(1);
 			if (ScriptFormat.XML.equals(scriptFormat)) {
 				gridBagConstraints = new java.awt.GridBagConstraints();
-		        gridBagConstraints.gridx = 0;
-		        gridBagConstraints.gridy = 3;
-		        gridBagConstraints.weightx = 1;
-		        gridBagConstraints.weighty = 1;
-		        gridBagConstraints.fill = GridBagConstraints.BOTH;
-		        gridBagConstraints.insets = new Insets(4, 0, 0, 0);
+				gridBagConstraints.gridx = 0;
+				gridBagConstraints.gridy = 3;
+				gridBagConstraints.weightx = 1;
+				gridBagConstraints.weighty = 1;
+				gridBagConstraints.fill = GridBagConstraints.BOTH;
+				gridBagConstraints.insets = new Insets(4, 0, 0, 0);
 				panel2.add(xmlMappingPanel, gridBagConstraints);
 //				editorPanel.add(xmlMappingPanel);
 				((GridLayout) editorPanel.getLayout()).setRows(1);
@@ -753,608 +753,608 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * regenerated by the Form Editor.
 	 */
 	// <editor-fold defaultstate="collapsed" desc=" Erzeugter Quelltext
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
-
-        jScrollPane4 = new javax.swing.JScrollPane();
-        restrictionsTable = new javax.swing.JTable();
-        jSplitPane1 = new javax.swing.JSplitPane();
-        jpanel = new javax.swing.JPanel();
-        jPanel12 = new javax.swing.JPanel();
-        jSplitPane2 = new javax.swing.JSplitPane();
-        layeredPane = new javax.swing.JLayeredPane();
-        toolBarPanel = new javax.swing.JPanel();
-        leftButton = new javax.swing.JButton();
-        graphContainer = new javax.swing.JPanel();
-        toolPanel = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
-        editorPanel = new javax.swing.JPanel();
-        jPanel3 = new javax.swing.JPanel();
-        jLabel8 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        jPanel2 = new javax.swing.JPanel();
-        additionalSubjectsButton = new javax.swing.JButton();
-        jPanel7 = new javax.swing.JPanel();
-        condition = new javax.swing.JTextField();
-        jPanel8 = new javax.swing.JPanel();
-        jLabel7 = new javax.swing.JLabel();
-        openSubjectConditionEditor = new javax.swing.JLabel();
-        subjectTable = new JComboBox();
-        jPanel10 = new javax.swing.JPanel();
-        exportFormat = new JComboBox();
-        exportButton = new javax.swing.JButton();
-        openXmlSettings = new javax.swing.JButton();
-        jPanel4 = new javax.swing.JPanel();
-        jPanel13 = new javax.swing.JPanel();
-        jPanel6 = new javax.swing.JPanel();
-        rootTable = new JComboBox();
-        jPanel9 = new javax.swing.JPanel();
-        resetFocus = new javax.swing.JButton();
-        jPanel14 = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        tree = new javax.swing.JTree();
-        inspectorHolder = new javax.swing.JPanel();
-        xmlMappingPanel = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        aggregationCombobox = new JComboBox();
-        tagField = new javax.swing.JTextField();
-        jPanel5 = new javax.swing.JPanel();
-        xmlTagApply = new javax.swing.JButton();
-        mapColumns = new javax.swing.JButton();
-        sketchTabbedPane = new javax.swing.JTabbedPane();
-        jPanel11 = new javax.swing.JPanel();
-        legende1 = new javax.swing.JPanel();
-        modelName = new javax.swing.JLabel();
-        modelPath = new javax.swing.JLabel();
-        legende = new javax.swing.JPanel();
-        dependsOn = new javax.swing.JLabel();
-        hasDependent = new javax.swing.JLabel();
-        associatedWith = new javax.swing.JLabel();
-        ignored = new javax.swing.JLabel();
-        legende2 = new javax.swing.JPanel();
-        connectivityState = new javax.swing.JLabel();
-
-        restrictionsTable.setModel(restrictionTableModel());
-        jScrollPane4.setViewportView(restrictionsTable);
-
-        setLayout(new java.awt.GridBagLayout());
-
-        jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane1.setContinuousLayout(true);
-        jSplitPane1.setOneTouchExpandable(true);
-
-        jpanel.setLayout(new java.awt.BorderLayout());
-
-        jPanel12.setLayout(new java.awt.BorderLayout());
-
-        jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane2.setResizeWeight(1.0);
-        jSplitPane2.setToolTipText("");
-        jSplitPane2.setOneTouchExpandable(true);
-
-        toolBarPanel.setBackground(new java.awt.Color(255, 255, 255));
-        toolBarPanel.setOpaque(false);
-        toolBarPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
-
-        leftButton.setToolTipText("back");
-        leftButton.setContentAreaFilled(false);
-        leftButton.setIconTextGap(0);
-        leftButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
-        toolBarPanel.add(leftButton);
-
-        toolBarPanel.setBounds(0, 0, 5, 5);
-        layeredPane.add(toolBarPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
-
-        graphContainer.setLayout(new java.awt.BorderLayout());
-        graphContainer.setBounds(0, 0, 0, 0);
-        layeredPane.add(graphContainer, javax.swing.JLayeredPane.DEFAULT_LAYER);
-
-        jSplitPane2.setTopComponent(layeredPane);
-
-        toolPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Closure", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, null, new java.awt.Color(82, 86, 125)));
-        toolPanel.setLayout(new java.awt.BorderLayout());
-        jSplitPane2.setBottomComponent(toolPanel);
-
-        jPanel12.add(jSplitPane2, java.awt.BorderLayout.CENTER);
-
-        jpanel.add(jPanel12, java.awt.BorderLayout.CENTER);
-
-        jSplitPane1.setBottomComponent(jpanel);
-
-        jPanel1.setLayout(new java.awt.GridBagLayout());
-
-        editorPanel.setLayout(new java.awt.GridLayout(1, 4));
-
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Subject ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
-        jPanel3.setMaximumSize(new java.awt.Dimension(2147483647, 2147483647));
-        jPanel3.setMinimumSize(new java.awt.Dimension(158, 122));
-        jPanel3.setLayout(new java.awt.GridBagLayout());
-
-        jLabel8.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 9;
-        gridBagConstraints.weighty = 1.0;
-        jPanel3.add(jLabel8, gridBagConstraints);
-
-        jLabel6.setText(" Export from ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel3.add(jLabel6, gridBagConstraints);
-
-        jLabel4.setText(" To");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel3.add(jLabel4, gridBagConstraints);
-
-        jLabel5.setText(" as T ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 0;
-        jPanel3.add(jLabel5, gridBagConstraints);
-
-        jPanel2.setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 11;
-        gridBagConstraints.gridwidth = 3;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.weightx = 1.0;
-        jPanel3.add(jPanel2, gridBagConstraints);
-
-        additionalSubjectsButton.setText("Additional Subjects");
-        additionalSubjectsButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                additionalSubjectsButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel3.add(additionalSubjectsButton, gridBagConstraints);
-
-        jPanel7.setLayout(new java.awt.BorderLayout());
-
-        condition.setText("jTextField1");
-        condition.setToolTipText("SQL expression. Keep empty if you want to export all rows.");
-        jPanel7.add(condition, java.awt.BorderLayout.CENTER);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel3.add(jPanel7, gridBagConstraints);
-
-        jPanel8.setLayout(new java.awt.BorderLayout());
-
-        jLabel7.setText(" Where ");
-        jPanel8.add(jLabel7, java.awt.BorderLayout.WEST);
-
-        openSubjectConditionEditor.setText("jLabel10");
-        openSubjectConditionEditor.setToolTipText("open editor");
-        jPanel8.add(openSubjectConditionEditor, java.awt.BorderLayout.EAST);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel3.add(jPanel8, gridBagConstraints);
-
-        subjectTable.setMaximumRowCount(18);
-        subjectTable.setModel(subjectListModel());
-        subjectTable.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                subjectTableItemStateChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel3.add(subjectTable, gridBagConstraints);
-
-        jPanel10.setLayout(new java.awt.GridBagLayout());
-
-        exportFormat.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        exportFormat.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                onExportModusChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel10.add(exportFormat, gridBagConstraints);
-
-        exportButton.setText("Export");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        jPanel10.add(exportButton, gridBagConstraints);
-
-        openXmlSettings.setText("Setting");
-        openXmlSettings.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                openXmlSettingsActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        jPanel10.add(openXmlSettings, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        jPanel3.add(jPanel10, gridBagConstraints);
-
-        editorPanel.add(jPanel3);
-
-        jPanel4.setLayout(new java.awt.BorderLayout(0, 4));
-
-        jPanel13.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Focus", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
-        jPanel13.setForeground(new java.awt.Color(86, 82, 125));
-        jPanel13.setToolTipText("");
-        jPanel13.setLayout(new java.awt.BorderLayout());
-
-        jPanel6.setLayout(new java.awt.GridBagLayout());
-
-        rootTable.setMaximumRowCount(18);
-        rootTable.setModel(getTableListModel());
-        rootTable.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                rootTableItemStateChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel6.add(rootTable, gridBagConstraints);
-
-        jPanel9.setLayout(new java.awt.BorderLayout());
-
-        resetFocus.setText("Reset");
-        resetFocus.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                resetFocusActionPerformed(evt);
-            }
-        });
-        jPanel9.add(resetFocus, java.awt.BorderLayout.CENTER);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
-        jPanel6.add(jPanel9, gridBagConstraints);
-
-        jPanel13.add(jPanel6, java.awt.BorderLayout.NORTH);
-
-        jPanel4.add(jPanel13, java.awt.BorderLayout.PAGE_START);
-
-        jPanel14.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Association", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(82, 86, 125))); // NOI18N
-        jPanel14.setLayout(new java.awt.BorderLayout());
-
-        jScrollPane1.setAutoscrolls(true);
-
-        tree.setModel(getModel());
-        tree.setAutoscrolls(true);
-        tree.setCellRenderer(getTreeCellRenderer(tree.getCellRenderer()));
-        tree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
-            public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
-                treeValueChanged(evt);
-            }
-        });
-        tree.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                treeMouseClicked(evt);
-            }
-        });
-        jScrollPane1.setViewportView(tree);
-
-        jPanel14.add(jScrollPane1, java.awt.BorderLayout.CENTER);
-
-        jPanel4.add(jPanel14, java.awt.BorderLayout.CENTER);
-
-        editorPanel.add(jPanel4);
-
-        inspectorHolder.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Restriction ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
-        inspectorHolder.setMinimumSize(new java.awt.Dimension(100, 400));
-        inspectorHolder.setLayout(new java.awt.GridBagLayout());
-        editorPanel.add(inspectorHolder);
-
-        xmlMappingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "XML Mapping ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
-        xmlMappingPanel.setLayout(new java.awt.GridBagLayout());
-
-        jLabel1.setText(" Aggregation ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        xmlMappingPanel.add(jLabel1, gridBagConstraints);
-
-        jLabel2.setText(" Tag ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        xmlMappingPanel.add(jLabel2, gridBagConstraints);
-
-        jLabel3.setText(" Sketch ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        xmlMappingPanel.add(jLabel3, gridBagConstraints);
-
-        aggregationCombobox.setModel(getAggregationModel());
-        aggregationCombobox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                aggregationComboboxActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
-        xmlMappingPanel.add(aggregationCombobox, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 4);
-        xmlMappingPanel.add(tagField, gridBagConstraints);
-
-        jPanel5.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 0));
-
-        xmlTagApply.setText("apply");
-        xmlTagApply.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                xmlTagApplyActionPerformed(evt);
-            }
-        });
-        jPanel5.add(xmlTagApply);
-
-        mapColumns.setText("map columns");
-        mapColumns.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                mapColumnsActionPerformed(evt);
-            }
-        });
-        jPanel5.add(mapColumns);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        xmlMappingPanel.add(jPanel5, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 11;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        xmlMappingPanel.add(sketchTabbedPane, gridBagConstraints);
-
-        editorPanel.add(xmlMappingPanel);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel1.add(editorPanel, gridBagConstraints);
-
-        jSplitPane1.setTopComponent(jPanel1);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jSplitPane1, gridBagConstraints);
-
-        jPanel11.setLayout(new java.awt.GridBagLayout());
-
-        legende1.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
-        legende1.setLayout(new java.awt.GridBagLayout());
-
-        modelName.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
-        modelName.setText("Data Model \"Demo\"");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 12);
-        legende1.add(modelName, gridBagConstraints);
-
-        modelPath.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
-        modelPath.setForeground(java.awt.Color.gray);
-        modelPath.setText("/home/jailer/datamodel/");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        legende1.add(modelPath, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
-        jPanel11.add(legende1, gridBagConstraints);
-
-        legende.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
-        legende.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
-
-        dependsOn.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
-        dependsOn.setForeground(new java.awt.Color(170, 0, 0));
-        dependsOn.setText(" depends on (has parent) ");
-        legende.add(dependsOn);
-
-        hasDependent.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
-        hasDependent.setForeground(new java.awt.Color(0, 112, 0));
-        hasDependent.setText("   has dependent (has child) ");
-        legende.add(hasDependent);
-
-        associatedWith.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
-        associatedWith.setForeground(new java.awt.Color(0, 100, 255));
-        associatedWith.setText("   associated with");
-        legende.add(associatedWith);
-
-        ignored.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
-        ignored.setForeground(new java.awt.Color(153, 153, 153));
-        ignored.setText("   disabled ");
-        legende.add(ignored);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
-        jPanel11.add(legende, gridBagConstraints);
-
-        legende2.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
-        legende2.setLayout(new java.awt.GridBagLayout());
-
-        connectivityState.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
-        connectivityState.setText("offline");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
-        legende2.add(connectivityState, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
-        jPanel11.add(legende2, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        add(jPanel11, gridBagConstraints);
-    }// </editor-fold>//GEN-END:initComponents
-
-    private void treeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_treeMouseClicked
-    	if (evt.getButton() == MouseEvent.BUTTON3) {
-            if (evt.getClickCount() == 1) {
-                TreePath node = tree.getPathForLocation(evt.getX(), evt.getY());
-                if (node != null) {
-                    Object sel = node.getLastPathComponent();
-                    if (sel instanceof DefaultMutableTreeNode) {
-                        Object selNode = ((DefaultMutableTreeNode) sel).getUserObject();
-                        Table table = null;
-                        if (selNode instanceof Table) {
-                            table = (Table) selNode;
-                        }
-                        if (selNode instanceof Association) {
-                            table = ((Association) selNode).destination;
-                        }
-                        JPopupMenu popup = graphView.createPopupMenu(table, false);
-				        popup.show(evt.getComponent(), evt.getX(), evt.getY());
-                    }
-                }
-            }
-        }
-    }//GEN-LAST:event_treeMouseClicked
-
-    private void mapColumnsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mapColumnsActionPerformed
-    	applyXmlMapping();
-    	Table table = root;
-    	if (currentAssociation != null) {
-    		table = currentAssociation.source;
-    	}
-    	openColumnMapper(table);
-    }//GEN-LAST:event_mapColumnsActionPerformed
-
-    private void xmlTagApplyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_xmlTagApplyActionPerformed
-    	applyXmlMapping();
-    }//GEN-LAST:event_xmlTagApplyActionPerformed
-
-    private XmlSettingsDialog xmlSettingsDialog;
-    
-    private void openXmlSettingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openXmlSettingsActionPerformed
-    	if (xmlSettingsDialog == null) {
-    		 xmlSettingsDialog = new XmlSettingsDialog(extractionModelFrame);
-    	}
-    	if (xmlSettingsDialog.edit(dataModel)) {
-    		needsSave = true;
-			ExtractionModelEditor.this.extractionModelFrame.updateTitle(needsSave);
-    	}
-    }//GEN-LAST:event_openXmlSettingsActionPerformed
-
-    private void aggregationComboboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aggregationComboboxActionPerformed
-    	tagField.setEnabled(AggregationSchema.NONE != aggregationCombobox.getSelectedItem() && AggregationSchema.FLAT != aggregationCombobox.getSelectedItem());
-    	tagField.setEditable(AggregationSchema.NONE != aggregationCombobox.getSelectedItem() && AggregationSchema.FLAT != aggregationCombobox.getSelectedItem());
+	// <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+	private void initComponents() {
+		java.awt.GridBagConstraints gridBagConstraints;
+
+		jScrollPane4 = new javax.swing.JScrollPane();
+		restrictionsTable = new javax.swing.JTable();
+		jSplitPane1 = new javax.swing.JSplitPane();
+		jpanel = new javax.swing.JPanel();
+		jPanel12 = new javax.swing.JPanel();
+		jSplitPane2 = new javax.swing.JSplitPane();
+		layeredPane = new javax.swing.JLayeredPane();
+		toolBarPanel = new javax.swing.JPanel();
+		leftButton = new javax.swing.JButton();
+		graphContainer = new javax.swing.JPanel();
+		toolPanel = new javax.swing.JPanel();
+		jPanel1 = new javax.swing.JPanel();
+		editorPanel = new javax.swing.JPanel();
+		jPanel3 = new javax.swing.JPanel();
+		jLabel8 = new javax.swing.JLabel();
+		jLabel6 = new javax.swing.JLabel();
+		jLabel4 = new javax.swing.JLabel();
+		jLabel5 = new javax.swing.JLabel();
+		jPanel2 = new javax.swing.JPanel();
+		additionalSubjectsButton = new javax.swing.JButton();
+		jPanel7 = new javax.swing.JPanel();
+		condition = new javax.swing.JTextField();
+		jPanel8 = new javax.swing.JPanel();
+		jLabel7 = new javax.swing.JLabel();
+		openSubjectConditionEditor = new javax.swing.JLabel();
+		subjectTable = new JComboBox();
+		jPanel10 = new javax.swing.JPanel();
+		exportFormat = new JComboBox();
+		exportButton = new javax.swing.JButton();
+		openXmlSettings = new javax.swing.JButton();
+		jPanel4 = new javax.swing.JPanel();
+		jPanel13 = new javax.swing.JPanel();
+		jPanel6 = new javax.swing.JPanel();
+		rootTable = new JComboBox();
+		jPanel9 = new javax.swing.JPanel();
+		resetFocus = new javax.swing.JButton();
+		jPanel14 = new javax.swing.JPanel();
+		jScrollPane1 = new javax.swing.JScrollPane();
+		tree = new javax.swing.JTree();
+		inspectorHolder = new javax.swing.JPanel();
+		xmlMappingPanel = new javax.swing.JPanel();
+		jLabel1 = new javax.swing.JLabel();
+		jLabel2 = new javax.swing.JLabel();
+		jLabel3 = new javax.swing.JLabel();
+		aggregationCombobox = new JComboBox();
+		tagField = new javax.swing.JTextField();
+		jPanel5 = new javax.swing.JPanel();
+		xmlTagApply = new javax.swing.JButton();
+		mapColumns = new javax.swing.JButton();
+		sketchTabbedPane = new javax.swing.JTabbedPane();
+		jPanel11 = new javax.swing.JPanel();
+		legende1 = new javax.swing.JPanel();
+		modelName = new javax.swing.JLabel();
+		modelPath = new javax.swing.JLabel();
+		legende = new javax.swing.JPanel();
+		dependsOn = new javax.swing.JLabel();
+		hasDependent = new javax.swing.JLabel();
+		associatedWith = new javax.swing.JLabel();
+		ignored = new javax.swing.JLabel();
+		legende2 = new javax.swing.JPanel();
+		connectivityState = new javax.swing.JLabel();
+
+		restrictionsTable.setModel(restrictionTableModel());
+		jScrollPane4.setViewportView(restrictionsTable);
+
+		setLayout(new java.awt.GridBagLayout());
+
+		jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+		jSplitPane1.setContinuousLayout(true);
+		jSplitPane1.setOneTouchExpandable(true);
+
+		jpanel.setLayout(new java.awt.BorderLayout());
+
+		jPanel12.setLayout(new java.awt.BorderLayout());
+
+		jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+		jSplitPane2.setResizeWeight(1.0);
+		jSplitPane2.setToolTipText("");
+		jSplitPane2.setOneTouchExpandable(true);
+
+		toolBarPanel.setBackground(new java.awt.Color(255, 255, 255));
+		toolBarPanel.setOpaque(false);
+		toolBarPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+
+		leftButton.setToolTipText("back");
+		leftButton.setContentAreaFilled(false);
+		leftButton.setIconTextGap(0);
+		leftButton.setMargin(new java.awt.Insets(0, 0, 0, 0));
+		toolBarPanel.add(leftButton);
+
+		toolBarPanel.setBounds(0, 0, 5, 5);
+		layeredPane.add(toolBarPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
+
+		graphContainer.setLayout(new java.awt.BorderLayout());
+		graphContainer.setBounds(0, 0, 0, 0);
+		layeredPane.add(graphContainer, javax.swing.JLayeredPane.DEFAULT_LAYER);
+
+		jSplitPane2.setTopComponent(layeredPane);
+
+		toolPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Closure", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, null, new java.awt.Color(82, 86, 125)));
+		toolPanel.setLayout(new java.awt.BorderLayout());
+		jSplitPane2.setBottomComponent(toolPanel);
+
+		jPanel12.add(jSplitPane2, java.awt.BorderLayout.CENTER);
+
+		jpanel.add(jPanel12, java.awt.BorderLayout.CENTER);
+
+		jSplitPane1.setBottomComponent(jpanel);
+
+		jPanel1.setLayout(new java.awt.GridBagLayout());
+
+		editorPanel.setLayout(new java.awt.GridLayout(1, 4));
+
+		jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Subject ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
+		jPanel3.setMaximumSize(new java.awt.Dimension(2147483647, 2147483647));
+		jPanel3.setMinimumSize(new java.awt.Dimension(158, 122));
+		jPanel3.setLayout(new java.awt.GridBagLayout());
+
+		jLabel8.setText(" ");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 9;
+		gridBagConstraints.weighty = 1.0;
+		jPanel3.add(jLabel8, gridBagConstraints);
+
+		jLabel6.setText(" Export from ");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		jPanel3.add(jLabel6, gridBagConstraints);
+
+		jLabel4.setText(" To");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 8;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		jPanel3.add(jLabel4, gridBagConstraints);
+
+		jLabel5.setText(" as T ");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 0;
+		jPanel3.add(jLabel5, gridBagConstraints);
+
+		jPanel2.setLayout(new java.awt.GridBagLayout());
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 11;
+		gridBagConstraints.gridwidth = 3;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+		gridBagConstraints.weightx = 1.0;
+		jPanel3.add(jPanel2, gridBagConstraints);
+
+		additionalSubjectsButton.setText("Additional Subjects");
+		additionalSubjectsButton.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				additionalSubjectsButtonActionPerformed(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 7;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		jPanel3.add(additionalSubjectsButton, gridBagConstraints);
+
+		jPanel7.setLayout(new java.awt.BorderLayout());
+
+		condition.setText("jTextField1");
+		condition.setToolTipText("SQL expression. Keep empty if you want to export all rows.");
+		jPanel7.add(condition, java.awt.BorderLayout.CENTER);
+
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.gridwidth = 2;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		jPanel3.add(jPanel7, gridBagConstraints);
+
+		jPanel8.setLayout(new java.awt.BorderLayout());
+
+		jLabel7.setText(" Where ");
+		jPanel8.add(jLabel7, java.awt.BorderLayout.WEST);
+
+		openSubjectConditionEditor.setText("jLabel10");
+		openSubjectConditionEditor.setToolTipText("open editor");
+		jPanel8.add(openSubjectConditionEditor, java.awt.BorderLayout.EAST);
+
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		jPanel3.add(jPanel8, gridBagConstraints);
+
+		subjectTable.setMaximumRowCount(18);
+		subjectTable.setModel(subjectListModel());
+		subjectTable.addItemListener(new java.awt.event.ItemListener() {
+			public void itemStateChanged(java.awt.event.ItemEvent evt) {
+				subjectTableItemStateChanged(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		jPanel3.add(subjectTable, gridBagConstraints);
+
+		jPanel10.setLayout(new java.awt.GridBagLayout());
+
+		exportFormat.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+		exportFormat.addItemListener(new java.awt.event.ItemListener() {
+			public void itemStateChanged(java.awt.event.ItemEvent evt) {
+				onExportModusChanged(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		jPanel10.add(exportFormat, gridBagConstraints);
+
+		exportButton.setText("Export");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 3;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+		jPanel10.add(exportButton, gridBagConstraints);
+
+		openXmlSettings.setText("Setting");
+		openXmlSettings.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				openXmlSettingsActionPerformed(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 1;
+		jPanel10.add(openXmlSettings, gridBagConstraints);
+
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 8;
+		gridBagConstraints.gridwidth = 2;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+		jPanel3.add(jPanel10, gridBagConstraints);
+
+		editorPanel.add(jPanel3);
+
+		jPanel4.setLayout(new java.awt.BorderLayout(0, 4));
+
+		jPanel13.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Focus", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
+		jPanel13.setForeground(new java.awt.Color(86, 82, 125));
+		jPanel13.setToolTipText("");
+		jPanel13.setLayout(new java.awt.BorderLayout());
+
+		jPanel6.setLayout(new java.awt.GridBagLayout());
+
+		rootTable.setMaximumRowCount(18);
+		rootTable.setModel(getTableListModel());
+		rootTable.addItemListener(new java.awt.event.ItemListener() {
+			public void itemStateChanged(java.awt.event.ItemEvent evt) {
+				rootTableItemStateChanged(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		jPanel6.add(rootTable, gridBagConstraints);
+
+		jPanel9.setLayout(new java.awt.BorderLayout());
+
+		resetFocus.setText("Reset");
+		resetFocus.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				resetFocusActionPerformed(evt);
+			}
+		});
+		jPanel9.add(resetFocus, java.awt.BorderLayout.CENTER);
+
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 0);
+		jPanel6.add(jPanel9, gridBagConstraints);
+
+		jPanel13.add(jPanel6, java.awt.BorderLayout.NORTH);
+
+		jPanel4.add(jPanel13, java.awt.BorderLayout.PAGE_START);
+
+		jPanel14.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Association", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(82, 86, 125))); // NOI18N
+		jPanel14.setLayout(new java.awt.BorderLayout());
+
+		jScrollPane1.setAutoscrolls(true);
+
+		tree.setModel(getModel());
+		tree.setAutoscrolls(true);
+		tree.setCellRenderer(getTreeCellRenderer(tree.getCellRenderer()));
+		tree.addTreeSelectionListener(new javax.swing.event.TreeSelectionListener() {
+			public void valueChanged(javax.swing.event.TreeSelectionEvent evt) {
+				treeValueChanged(evt);
+			}
+		});
+		tree.addMouseListener(new java.awt.event.MouseAdapter() {
+			public void mouseClicked(java.awt.event.MouseEvent evt) {
+				treeMouseClicked(evt);
+			}
+		});
+		jScrollPane1.setViewportView(tree);
+
+		jPanel14.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+
+		jPanel4.add(jPanel14, java.awt.BorderLayout.CENTER);
+
+		editorPanel.add(jPanel4);
+
+		inspectorHolder.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Restriction ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
+		inspectorHolder.setMinimumSize(new java.awt.Dimension(100, 400));
+		inspectorHolder.setLayout(new java.awt.GridBagLayout());
+		editorPanel.add(inspectorHolder);
+
+		xmlMappingPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "XML Mapping ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
+		xmlMappingPanel.setLayout(new java.awt.GridBagLayout());
+
+		jLabel1.setText(" Aggregation ");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		xmlMappingPanel.add(jLabel1, gridBagConstraints);
+
+		jLabel2.setText(" Tag ");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 5;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+		xmlMappingPanel.add(jLabel2, gridBagConstraints);
+
+		jLabel3.setText(" Sketch ");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 10;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+		xmlMappingPanel.add(jLabel3, gridBagConstraints);
+
+		aggregationCombobox.setModel(getAggregationModel());
+		aggregationCombobox.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				aggregationComboboxActionPerformed(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+		xmlMappingPanel.add(aggregationCombobox, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 5;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 4);
+		xmlMappingPanel.add(tagField, gridBagConstraints);
+
+		jPanel5.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 0));
+
+		xmlTagApply.setText("apply");
+		xmlTagApply.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				xmlTagApplyActionPerformed(evt);
+			}
+		});
+		jPanel5.add(xmlTagApply);
+
+		mapColumns.setText("map columns");
+		mapColumns.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				mapColumnsActionPerformed(evt);
+			}
+		});
+		jPanel5.add(mapColumns);
+
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 8;
+		gridBagConstraints.gridwidth = 2;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+		gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+		xmlMappingPanel.add(jPanel5, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 11;
+		gridBagConstraints.gridwidth = 2;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		xmlMappingPanel.add(sketchTabbedPane, gridBagConstraints);
+
+		editorPanel.add(xmlMappingPanel);
+
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		jPanel1.add(editorPanel, gridBagConstraints);
+
+		jSplitPane1.setTopComponent(jPanel1);
+
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.gridwidth = 2;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		add(jSplitPane1, gridBagConstraints);
+
+		jPanel11.setLayout(new java.awt.GridBagLayout());
+
+		legende1.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+		legende1.setLayout(new java.awt.GridBagLayout());
+
+		modelName.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+		modelName.setText("Data Model \"Demo\"");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 12);
+		legende1.add(modelName, gridBagConstraints);
+
+		modelPath.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+		modelPath.setForeground(java.awt.Color.gray);
+		modelPath.setText("/home/jailer/datamodel/");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		legende1.add(modelPath, gridBagConstraints);
+
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+		jPanel11.add(legende1, gridBagConstraints);
+
+		legende.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+		legende.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
+
+		dependsOn.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+		dependsOn.setForeground(new java.awt.Color(170, 0, 0));
+		dependsOn.setText(" depends on (has parent) ");
+		legende.add(dependsOn);
+
+		hasDependent.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+		hasDependent.setForeground(new java.awt.Color(0, 112, 0));
+		hasDependent.setText("   has dependent (has child) ");
+		legende.add(hasDependent);
+
+		associatedWith.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+		associatedWith.setForeground(new java.awt.Color(0, 100, 255));
+		associatedWith.setText("   associated with");
+		legende.add(associatedWith);
+
+		ignored.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+		ignored.setForeground(new java.awt.Color(153, 153, 153));
+		ignored.setText("   disabled ");
+		legende.add(ignored);
+
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+		jPanel11.add(legende, gridBagConstraints);
+
+		legende2.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+		legende2.setLayout(new java.awt.GridBagLayout());
+
+		connectivityState.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+		connectivityState.setText("offline");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
+		legende2.add(connectivityState, gridBagConstraints);
+
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 3;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+		jPanel11.add(legende2, gridBagConstraints);
+
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 4;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		add(jPanel11, gridBagConstraints);
+	}// </editor-fold>//GEN-END:initComponents
+
+	private void treeMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_treeMouseClicked
+		if (evt.getButton() == MouseEvent.BUTTON3) {
+			if (evt.getClickCount() == 1) {
+				TreePath node = tree.getPathForLocation(evt.getX(), evt.getY());
+				if (node != null) {
+					Object sel = node.getLastPathComponent();
+					if (sel instanceof DefaultMutableTreeNode) {
+						Object selNode = ((DefaultMutableTreeNode) sel).getUserObject();
+						Table table = null;
+						if (selNode instanceof Table) {
+							table = (Table) selNode;
+						}
+						if (selNode instanceof Association) {
+							table = ((Association) selNode).destination;
+						}
+						JPopupMenu popup = graphView.createPopupMenu(table, false);
+						popup.show(evt.getComponent(), evt.getX(), evt.getY());
+					}
+				}
+			}
+		}
+	}//GEN-LAST:event_treeMouseClicked
+
+	private void mapColumnsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mapColumnsActionPerformed
+		applyXmlMapping();
+		Table table = root;
 		if (currentAssociation != null) {
-    		if (currentAssociation.getAggregationSchema() != aggregationCombobox.getSelectedItem()) {
-    			currentAssociation.setAggregationSchema((AggregationSchema) aggregationCombobox.getSelectedItem());
-    			needsSave = true;
+			table = currentAssociation.source;
+		}
+		openColumnMapper(table);
+	}//GEN-LAST:event_mapColumnsActionPerformed
+
+	private void xmlTagApplyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_xmlTagApplyActionPerformed
+		applyXmlMapping();
+	}//GEN-LAST:event_xmlTagApplyActionPerformed
+
+	private XmlSettingsDialog xmlSettingsDialog;
+	
+	private void openXmlSettingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openXmlSettingsActionPerformed
+		if (xmlSettingsDialog == null) {
+			 xmlSettingsDialog = new XmlSettingsDialog(extractionModelFrame);
+		}
+		if (xmlSettingsDialog.edit(dataModel)) {
+			needsSave = true;
+			ExtractionModelEditor.this.extractionModelFrame.updateTitle(needsSave);
+		}
+	}//GEN-LAST:event_openXmlSettingsActionPerformed
+
+	private void aggregationComboboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_aggregationComboboxActionPerformed
+		tagField.setEnabled(AggregationSchema.NONE != aggregationCombobox.getSelectedItem() && AggregationSchema.FLAT != aggregationCombobox.getSelectedItem());
+		tagField.setEditable(AggregationSchema.NONE != aggregationCombobox.getSelectedItem() && AggregationSchema.FLAT != aggregationCombobox.getSelectedItem());
+		if (currentAssociation != null) {
+			if (currentAssociation.getAggregationSchema() != aggregationCombobox.getSelectedItem()) {
+				currentAssociation.setAggregationSchema((AggregationSchema) aggregationCombobox.getSelectedItem());
+				needsSave = true;
 				ExtractionModelEditor.this.extractionModelFrame.updateTitle(needsSave);
 				updateSketch();
 			}
-    	}
-    }//GEN-LAST:event_aggregationComboboxActionPerformed
+		}
+	}//GEN-LAST:event_aggregationComboboxActionPerformed
 
-    private boolean rootTableItemStateChangedSetRoot = true;
-    private void rootTableItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rootTableItemStateChanged
-    	if (evt.getItem() != null) {
-    		if (evt.getStateChange() == ItemEvent.SELECTED) {
-    			Table table = dataModel.getTableByDisplayName(evt.getItem().toString());
-    			if (rootTableItemStateChangedSetRoot) {
-    				setRoot(table, true);
-    			}
-    		}
-    	}
-    }//GEN-LAST:event_rootTableItemStateChanged
+	private boolean rootTableItemStateChangedSetRoot = true;
+	private void rootTableItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_rootTableItemStateChanged
+		if (evt.getItem() != null) {
+			if (evt.getStateChange() == ItemEvent.SELECTED) {
+				Table table = dataModel.getTableByDisplayName(evt.getItem().toString());
+				if (rootTableItemStateChangedSetRoot) {
+					setRoot(table, true);
+				}
+			}
+		}
+	}//GEN-LAST:event_rootTableItemStateChanged
 
-    /**
-     * Sets the root table
-     * 
-     * @param table the new root
-     */
+	/**
+	 * Sets the root table
+	 * 
+	 * @param table the new root
+	 */
 	public void setRoot(Table table, boolean storeLayout) {
 		if (table != null) {
 			root = table;
@@ -1370,101 +1370,101 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	}
 	
 	/**
-     * Sets root table selection of select-box.
-     * 
-     * @param table the new root
-     */
+	 * Sets root table selection of select-box.
+	 * 
+	 * @param table the new root
+	 */
 	public void setRootSelection(Table table) {
 		if (table != null) {
 			rootTable.setSelectedItem(dataModel.getDisplayName(table));
 		}
 	}
 
-    /**
-     * {@link RestrictionDefinition}s currently rendered in restrictions-table.
-     */
-    private List<RestrictionDefinition> currentRestrictionDefinitions;
-    
-    /**
-     * Gets data model for the restrictions-table.
-     * 
-     * @return data model for the restrictions-table
-     */
-    private TableModel restrictionTableModel() {
-    	currentRestrictionDefinitions = RestrictionDefinition.fromRestrictionModel(extractionModel);
-    	Object[][] data = new Object[currentRestrictionDefinitions.size()][];
-    	int i = 0;
-    	for (RestrictionDefinition def: currentRestrictionDefinitions) {
-    		data[i++] = new Object[] { dataModel.getDisplayName(def.from), dataModel.getDisplayName(def.to), def.condition };
-    	}
-        return new DefaultTableModel(data, new Object[] { "From", "To", "Condition" }) {
+	/**
+	 * {@link RestrictionDefinition}s currently rendered in restrictions-table.
+	 */
+	private List<RestrictionDefinition> currentRestrictionDefinitions;
+	
+	/**
+	 * Gets data model for the restrictions-table.
+	 * 
+	 * @return data model for the restrictions-table
+	 */
+	private TableModel restrictionTableModel() {
+		currentRestrictionDefinitions = RestrictionDefinition.fromRestrictionModel(extractionModel);
+		Object[][] data = new Object[currentRestrictionDefinitions.size()][];
+		int i = 0;
+		for (RestrictionDefinition def: currentRestrictionDefinitions) {
+			data[i++] = new Object[] { dataModel.getDisplayName(def.from), dataModel.getDisplayName(def.to), def.condition };
+		}
+		return new DefaultTableModel(data, new Object[] { "From", "To", "Condition" }) {
 			public boolean isCellEditable(int row, int column) {
 				return false;
 			}
 			private static final long serialVersionUID = 7309234765268573389L;
-        };
-    }
-    
-    /**
-     * Gets list model for the subject-combobox.
-     * 
-     * @return list model for the subject-combobox
-     */
-    private ComboBoxModel subjectListModel() {
-    	Vector<String> tableNames = new Vector<String>();
-    	for (Table table: dataModel.getTables()) {
-    		tableNames.add(dataModel.getDisplayName(table));
-    	}
-    	Collections.sort(tableNames);
-    	DefaultComboBoxModel model = new DefaultComboBoxModel(tableNames);
-        return model;
-    }
+		};
+	}
+	
+	/**
+	 * Gets list model for the subject-combobox.
+	 * 
+	 * @return list model for the subject-combobox
+	 */
+	private ComboBoxModel subjectListModel() {
+		Vector<String> tableNames = new Vector<String>();
+		for (Table table: dataModel.getTables()) {
+			tableNames.add(dataModel.getDisplayName(table));
+		}
+		Collections.sort(tableNames);
+		DefaultComboBoxModel model = new DefaultComboBoxModel(tableNames);
+		return model;
+	}
 
-    /**
-     * Gets list model for the root-combobox.
-     * 
-     * @return list model for the root-combobox
-     */
-    private ComboBoxModel getTableListModel() {
-    	Vector<String> tableNames = new Vector<String>();
-    	for (Table table: dataModel.getTables()) {
-    		tableNames.add(dataModel.getDisplayName(table));
-    	}
-    	Collections.sort(tableNames);
+	/**
+	 * Gets list model for the root-combobox.
+	 * 
+	 * @return list model for the root-combobox
+	 */
+	private ComboBoxModel getTableListModel() {
+		Vector<String> tableNames = new Vector<String>();
+		for (Table table: dataModel.getTables()) {
+			tableNames.add(dataModel.getDisplayName(table));
+		}
+		Collections.sort(tableNames);
 //        if (subject != null) {
 //	    	tableNames.add(0, dataModel.getDisplayName(subject));
 //	        tableNames.add(1, "---");
 //        }
-    	DefaultComboBoxModel model = new DefaultComboBoxModel(tableNames);
-        return model;
-    }
+		DefaultComboBoxModel model = new DefaultComboBoxModel(tableNames);
+		return model;
+	}
 
-    /**
-     * Reacts on changes of selection of tree-view.
-     */
-    private void treeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_treeValueChanged
-    	suppressRestrictionSelection = true;
-    	try {
-    		captureLayout();
-	    	if (evt.getNewLeadSelectionPath() != null) {
-	    		DefaultMutableTreeNode node = ((DefaultMutableTreeNode) evt.getNewLeadSelectionPath().getLastPathComponent());
+	/**
+	 * Reacts on changes of selection of tree-view.
+	 */
+	private void treeValueChanged(javax.swing.event.TreeSelectionEvent evt) {//GEN-FIRST:event_treeValueChanged
+		suppressRestrictionSelection = true;
+		try {
+			captureLayout();
+			if (evt.getNewLeadSelectionPath() != null) {
+				DefaultMutableTreeNode node = ((DefaultMutableTreeNode) evt.getNewLeadSelectionPath().getLastPathComponent());
 				Object selection = node.getUserObject();
-		    	if (selection instanceof Association) {
-		    		initRestrictionEditor((Association) selection, node);
-		    	}
-		    	if (selection instanceof Table) {
-		    		initRestrictionEditor(null, null);
-		    	}
-	    	} else {
-	    		initRestrictionEditor(null, null);
-	    	}
-    	} finally {
-    		suppressRestrictionSelection = false;
-    		checkLayoutStack();
-    	}
-    	if (evt.getPath() != null && evt.getPath().getLastPathComponent() != null) {
-    		Object node = evt.getPath().getLastPathComponent();
-	    	if (node instanceof DefaultMutableTreeNode) {
+				if (selection instanceof Association) {
+					initRestrictionEditor((Association) selection, node);
+				}
+				if (selection instanceof Table) {
+					initRestrictionEditor(null, null);
+				}
+			} else {
+				initRestrictionEditor(null, null);
+			}
+		} finally {
+			suppressRestrictionSelection = false;
+			checkLayoutStack();
+		}
+		if (evt.getPath() != null && evt.getPath().getLastPathComponent() != null) {
+			Object node = evt.getPath().getLastPathComponent();
+			if (node instanceof DefaultMutableTreeNode) {
 				DefaultMutableTreeNode n = (DefaultMutableTreeNode) node;
 				if (n.getChildCount() == 0 && n.getUserObject() instanceof Association) {
 					for (Association a: ((Association) n.getUserObject()).destination.associations) {
@@ -1473,16 +1473,16 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					sort(n);
 				}
 			}
-    	}
-    }//GEN-LAST:event_treeValueChanged
+		}
+	}//GEN-LAST:event_treeValueChanged
 
-    Association currentAssociation;
-    private DefaultMutableTreeNode currentNode;
-    private String initialRestrictionCondition = null;
+	Association currentAssociation;
+	private DefaultMutableTreeNode currentNode;
+	private String initialRestrictionCondition = null;
 
-    /**
-     * Opens a drop-down box which allows the user to select columns for restriction definitions.
-     */
+	/**
+	 * Opens a drop-down box which allows the user to select columns for restriction definitions.
+	 */
 	private void openColumnDropDownBox(JLabel label, String alias, Table table) {
 		JPopupMenu popup = new JScrollPopupMenu();
 		List<String> columns = new ArrayList<String>();
@@ -1519,62 +1519,62 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
 	private MouseAdapter maA, maB;
 	
-    /**
-     * Initializes the restriction editor.
-     * 
-     * @param association the association on which a restriction can be edited
-     * @param node selected tree node
-     */
-    private void initRestrictionEditor(final Association association, DefaultMutableTreeNode node) {
-    	currentAssociation = association;
-    	currentNode = node;
-    	initialRestrictionCondition = null;
-    	initXmlMappingEditor(association);
-    	initRestrictedDependencyWarningField();
-    	restrictionEditor.columnsA.setText(null);
-    	restrictionEditor.columnsB.setText(null);
-    	restrictionEditor.columnsA.setIcon(dropDownIcon);
-    	restrictionEditor.columnsB.setIcon(dropDownIcon);
-    	restrictionEditor.columnsA.setEnabled(true);
-    	restrictionEditor.columnsB.setEnabled(true);
-    	restrictionEditor.openRestrictionConditionEditor.setEnabled(true);
-    	if (maA != null) {
-    		restrictionEditor.columnsA.removeMouseListener(maA);
-    	}
-    	if (maB != null) {
-    		restrictionEditor.columnsB.removeMouseListener(maB);
-    	}
-    	maA = maB = null;
-    	if (association != null) {
-    		restrictionEditor.columnsB.addMouseListener(maB = new java.awt.event.MouseAdapter() {
-    			public void mousePressed(java.awt.event.MouseEvent evt) {
-    				openColumnDropDownBox(restrictionEditor.columnsB, "B", association.destination);
-    			}
-    			
+	/**
+	 * Initializes the restriction editor.
+	 * 
+	 * @param association the association on which a restriction can be edited
+	 * @param node selected tree node
+	 */
+	private void initRestrictionEditor(final Association association, DefaultMutableTreeNode node) {
+		currentAssociation = association;
+		currentNode = node;
+		initialRestrictionCondition = null;
+		initXmlMappingEditor(association);
+		initRestrictedDependencyWarningField();
+		restrictionEditor.columnsA.setText(null);
+		restrictionEditor.columnsB.setText(null);
+		restrictionEditor.columnsA.setIcon(dropDownIcon);
+		restrictionEditor.columnsB.setIcon(dropDownIcon);
+		restrictionEditor.columnsA.setEnabled(true);
+		restrictionEditor.columnsB.setEnabled(true);
+		restrictionEditor.openRestrictionConditionEditor.setEnabled(true);
+		if (maA != null) {
+			restrictionEditor.columnsA.removeMouseListener(maA);
+		}
+		if (maB != null) {
+			restrictionEditor.columnsB.removeMouseListener(maB);
+		}
+		maA = maB = null;
+		if (association != null) {
+			restrictionEditor.columnsB.addMouseListener(maB = new java.awt.event.MouseAdapter() {
+				public void mousePressed(java.awt.event.MouseEvent evt) {
+					openColumnDropDownBox(restrictionEditor.columnsB, "B", association.destination);
+				}
+				
 				public void mouseEntered(java.awt.event.MouseEvent evt) {
-	            	restrictionEditor.columnsB.setEnabled(false);
-	            }
-	            public void mouseExited(java.awt.event.MouseEvent evt) {
-	            	restrictionEditor.columnsB.setEnabled(true);
-	           }
-	        });
-    		restrictionEditor.columnsA.addMouseListener(maA = new java.awt.event.MouseAdapter() {
-    			public void mousePressed(java.awt.event.MouseEvent evt) {
-    				openColumnDropDownBox(restrictionEditor.columnsA, "A", association.source);
-    			}
-    			
+					restrictionEditor.columnsB.setEnabled(false);
+				}
+				public void mouseExited(java.awt.event.MouseEvent evt) {
+					restrictionEditor.columnsB.setEnabled(true);
+			   }
+			});
+			restrictionEditor.columnsA.addMouseListener(maA = new java.awt.event.MouseAdapter() {
+				public void mousePressed(java.awt.event.MouseEvent evt) {
+					openColumnDropDownBox(restrictionEditor.columnsA, "A", association.source);
+				}
+				
 				public void mouseEntered(java.awt.event.MouseEvent evt) {
-	            	restrictionEditor.columnsA.setEnabled(false);
-	            }
-	            public void mouseExited(java.awt.event.MouseEvent evt) {
-	            	restrictionEditor.columnsA.setEnabled(true);
-	           }
-	        });
-    	}
-    	if (association == null) {
-        	restrictionEditor.columnsA.setEnabled(false);
-        	restrictionEditor.columnsB.setEnabled(false);
-        	restrictionEditor.openRestrictionConditionEditor.setEnabled(false);
+					restrictionEditor.columnsA.setEnabled(false);
+				}
+				public void mouseExited(java.awt.event.MouseEvent evt) {
+					restrictionEditor.columnsA.setEnabled(true);
+			   }
+			});
+		}
+		if (association == null) {
+			restrictionEditor.columnsA.setEnabled(false);
+			restrictionEditor.columnsB.setEnabled(false);
+			restrictionEditor.openRestrictionConditionEditor.setEnabled(false);
 
 			int l = currentRestrictionDefinitions == null? -1 : currentRestrictionDefinitions.size();
 			if (l > 0) {
@@ -1593,7 +1593,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			restrictionEditor.restriction.setEditable(false);
 			restrictionEditor.source.setText(noVal);
 			restrictionEditor.type.setText(noVal);
-            restrictionEditor.aName.setText(noVal);
+			restrictionEditor.aName.setText(noVal);
 		} else {
 			if (currentRestrictionDefinitions != null) {
 				int row = 0;
@@ -1629,20 +1629,20 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				type = "has dependent (has child)  ";
 				typeColor = hasDependent.getForeground();
 			}
-            String shortendName = association.getName();
-            if (shortendName != null && shortendName.length() > 30) {
-            	restrictionEditor.aName.setToolTipText(shortendName);
-            	shortendName = shortendName.substring(0, 30) + "...";
-            } else {
-            	restrictionEditor.aName.setToolTipText(null);
-            }
+			String shortendName = association.getName();
+			if (shortendName != null && shortendName.length() > 30) {
+				restrictionEditor.aName.setToolTipText(shortendName);
+				shortendName = shortendName.substring(0, 30) + "...";
+			} else {
+				restrictionEditor.aName.setToolTipText(null);
+			}
 			restrictionEditor.aName.setText(shortendName);
 //            restrictionEditor.aName.setForeground(restrictionEditor.type.getForeground());
-            if (getAmbiguousNonames().contains(association)) {
+			if (getAmbiguousNonames().contains(association)) {
 //                restrictionEditor.aName.setForeground(Color.RED);
-                restrictionEditor.aName.setText("unnamed and ambiguous");
-                editable = false;
-            }
+				restrictionEditor.aName.setText("unnamed and ambiguous");
+				editable = false;
+			}
 			restrictionEditor.restriction.setEditable(true);
 			restrictionEditor.source.setText(dataModel.getDisplayName(association.source));
 			restrictionEditor.destination.setText(dataModel.getDisplayName(association.destination));
@@ -1684,65 +1684,65 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			restrictionEditor.joinCondition.setToolTipText(joinCondition);
 		}
 		graphView.setSelection(association);
-    	restrictionEditor.apply.setEnabled(false);
+		restrictionEditor.apply.setEnabled(false);
 	}
 
-    private void initRestrictedDependencyWarningField() {
+	private void initRestrictedDependencyWarningField() {
 		restrictionEditor.restrictedDependencyWarning.setVisible(currentAssociation != null && !ScriptFormat.XML.equals(scriptFormat) && currentAssociation.isInsertDestinationBeforeSource() && currentAssociation.isRestricted());
 	}
 
 	/**
-     * Initializes the XML mapping editor.
-     * 
-     * @param association the association on which mapping can be edited
-     */
-    private void initXmlMappingEditor(Association association) {
-    	if (association == null) {
-    		aggregationCombobox.setSelectedItem(AggregationSchema.NONE);
-    		tagField.setText("");
-    		aggregationCombobox.setEnabled(false);
-    		tagField.setEnabled(false);
-    		tagField.setEditable(false);
-    		xmlTagApply.setEnabled(false);
-    	} else {
-    		aggregationCombobox.setEditable(false); // association.reversalAssociation.getAggregationSchema() == AggregationSchema.NONE);
-    		aggregationCombobox.setEnabled(association.reversalAssociation.getAggregationSchema() == AggregationSchema.NONE);
-    		aggregationCombobox.setSelectedItem(association.getAggregationSchema());
-    		tagField.setText(association.getAggregationTagName());
-    		tagField.setEnabled(AggregationSchema.NONE != association.getAggregationSchema() && AggregationSchema.FLAT != association.getAggregationSchema());
-    		tagField.setEditable(AggregationSchema.NONE != association.getAggregationSchema() && AggregationSchema.FLAT != association.getAggregationSchema());
-    		xmlTagApply.setEnabled(true);
-    	}
-    	updateSketch();
-    	xmlTagApply.setEnabled(false);
-    }
-    
+	 * Initializes the XML mapping editor.
+	 * 
+	 * @param association the association on which mapping can be edited
+	 */
+	private void initXmlMappingEditor(Association association) {
+		if (association == null) {
+			aggregationCombobox.setSelectedItem(AggregationSchema.NONE);
+			tagField.setText("");
+			aggregationCombobox.setEnabled(false);
+			tagField.setEnabled(false);
+			tagField.setEditable(false);
+			xmlTagApply.setEnabled(false);
+		} else {
+			aggregationCombobox.setEditable(false); // association.reversalAssociation.getAggregationSchema() == AggregationSchema.NONE);
+			aggregationCombobox.setEnabled(association.reversalAssociation.getAggregationSchema() == AggregationSchema.NONE);
+			aggregationCombobox.setSelectedItem(association.getAggregationSchema());
+			tagField.setText(association.getAggregationTagName());
+			tagField.setEnabled(AggregationSchema.NONE != association.getAggregationSchema() && AggregationSchema.FLAT != association.getAggregationSchema());
+			tagField.setEditable(AggregationSchema.NONE != association.getAggregationSchema() && AggregationSchema.FLAT != association.getAggregationSchema());
+			xmlTagApply.setEnabled(true);
+		}
+		updateSketch();
+		xmlTagApply.setEnabled(false);
+	}
+	
 	/**
 	 * Reacts on 'Apply'-button pressed.
 	 */
-    public void onApply(boolean applyButtonKlicked) {
-    	if (currentAssociation != null) {
-    		if (!needsSave) {
-    			needsSave = true;
-    			extractionModelFrame.updateTitle(needsSave);
-    		}
-    		String condition;
-    		if (restrictionEditor.ignore.getModel().isSelected()) {
-    			condition = "ignore";
-    		} else {
-    			if (!applyButtonKlicked) {
-    				if (initialRestrictionCondition != null) {
-    					condition = initialRestrictionCondition;
-    				} else {
-    					condition = "";
-    				}
-    			} else {
-    				condition = ConditionEditor.toMultiLine(restrictionEditor.restriction.getText()).trim();
-    			}
-    		}
+	public void onApply(boolean applyButtonKlicked) {
+		if (currentAssociation != null) {
+			if (!needsSave) {
+				needsSave = true;
+				extractionModelFrame.updateTitle(needsSave);
+			}
+			String condition;
+			if (restrictionEditor.ignore.getModel().isSelected()) {
+				condition = "ignore";
+			} else {
+				if (!applyButtonKlicked) {
+					if (initialRestrictionCondition != null) {
+						condition = initialRestrictionCondition;
+					} else {
+						condition = "";
+					}
+				} else {
+					condition = ConditionEditor.toMultiLine(restrictionEditor.restriction.getText()).trim();
+				}
+			}
 			dataModel.getRestrictionModel().addRestriction(currentAssociation.source, currentAssociation, condition, "GUI", true, new HashMap<String, String>());
-    		tree.repaint();
-    		graphView.display.invalidate();
+			tree.repaint();
+			graphView.display.invalidate();
 			restrictionsTable.setModel(restrictionTableModel());
 			String saveInitialRestrictionCondition = initialRestrictionCondition;
 			initRestrictionEditor(currentAssociation, currentNode);
@@ -1751,39 +1751,39 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			closureBorderView.refresh();
 			extractionModelFrame.restrictedDependenciesView.refresh();
 			tree.grabFocus();
-    	}
-    }
-    
-    public void removeRestrictions(Collection<Association> associations) {
-    	for (Association association: associations) {
-    		if (!needsSave) {
-    			needsSave = true;
-    			extractionModelFrame.updateTitle(needsSave);
-    		}
-    		String condition = "";
+		}
+	}
+	
+	public void removeRestrictions(Collection<Association> associations) {
+		for (Association association: associations) {
+			if (!needsSave) {
+				needsSave = true;
+				extractionModelFrame.updateTitle(needsSave);
+			}
+			String condition = "";
 			dataModel.getRestrictionModel().addRestriction(association.source, association, condition, "GUI", true, new HashMap<String, String>());
 			graphView.setSelection(association);
-    	}
+		}
 		tree.repaint();
 		graphView.display.invalidate();
 		restrictionsTable.setModel(restrictionTableModel());
 		closureView.refresh();
 		closureBorderView.refresh();
 		extractionModelFrame.restrictedDependenciesView.refresh();
-    }
+	}
 
 	/**
-     * Gets model of the associations-tree.
-     */
+	 * Gets model of the associations-tree.
+	 */
 	private TreeModel getModel() {
 		return getModel(null);
 	}
 	
-    /**
-     * Gets model of the associations-tree.
-     * 
-     * @param dontExclude don't exclude this association
-     */
+	/**
+	 * Gets model of the associations-tree.
+	 * 
+	 * @param dontExclude don't exclude this association
+	 */
 	private TreeModel getModel(Association dontExclude) {
 		representant = new HashMap<Association, Association>();
 		toNode = new HashMap<ModelElement, DefaultMutableTreeNode>();
@@ -1938,32 +1938,32 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	private void applyXmlMapping() {//GEN-FIRST:event_xmlMappingApplyButtonActionPerformed
 		if (currentAssociation != null) {
 			String tag = tagField.getText().trim();
-		  	if (tag.length() == 0) {
-		  		tag = null;
-		  	}
-		  	if (!currentAssociation.getAggregationTagName().equals(tag)) {
-			  	currentAssociation.setAggregationTagName(tag);
-			  	tagField.setText(currentAssociation.getAggregationTagName());
-			  	needsSave = true;
-			  	ExtractionModelEditor.this.extractionModelFrame.updateTitle(needsSave);
-		  	}
-		  	updateSketch();
-		  	xmlTagApply.setEnabled(false);
-	  	}
-  	}//GEN-LAST:event_xmlMappingApplyButtonActionPerformed
+			  if (tag.length() == 0) {
+				  tag = null;
+			  }
+			  if (!currentAssociation.getAggregationTagName().equals(tag)) {
+				  currentAssociation.setAggregationTagName(tag);
+				  tagField.setText(currentAssociation.getAggregationTagName());
+				  needsSave = true;
+				  ExtractionModelEditor.this.extractionModelFrame.updateTitle(needsSave);
+			  }
+			  updateSketch();
+			  xmlTagApply.setEnabled(false);
+		  }
+	  }//GEN-LAST:event_xmlMappingApplyButtonActionPerformed
 
-    private void onExportModusChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_onExportModusChanged
-        ScriptFormat f = (ScriptFormat) exportFormat.getSelectedItem();
-        if (f != null) {
-        	scriptFormat = f;
-        	dataModel.setExportModus(scriptFormat.toString());
-        }
-        setOrientation(isHorizontalLayout);
-        openXmlSettings.setVisible(ScriptFormat.XML.equals(scriptFormat));
+	private void onExportModusChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_onExportModusChanged
+		ScriptFormat f = (ScriptFormat) exportFormat.getSelectedItem();
+		if (f != null) {
+			scriptFormat = f;
+			dataModel.setExportModus(scriptFormat.toString());
+		}
+		setOrientation(isHorizontalLayout);
+		openXmlSettings.setVisible(ScriptFormat.XML.equals(scriptFormat));
 		validate();
-    }//GEN-LAST:event_onExportModusChanged
+	}//GEN-LAST:event_onExportModusChanged
 
-    private void subjectTableItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_subjectTableItemStateChanged
+	private void subjectTableItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_subjectTableItemStateChanged
 		Object selectedItem = subjectTable.getSelectedItem();
 		if (selectedItem instanceof String) {
 			if (dataModel.getTableByDisplayName(selectedItem.toString()) != null) {
@@ -1979,26 +1979,26 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			needsSave = true;
 			extractionModelFrame.updateTitle(needsSave);
 		}
-    }//GEN-LAST:event_subjectTableItemStateChanged
+	}//GEN-LAST:event_subjectTableItemStateChanged
 
-    private void resetFocusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetFocusActionPerformed
-        rootTable.setSelectedItem(subjectTable.getSelectedItem());
-    }//GEN-LAST:event_resetFocusActionPerformed
+	private void resetFocusActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_resetFocusActionPerformed
+		rootTable.setSelectedItem(subjectTable.getSelectedItem());
+	}//GEN-LAST:event_resetFocusActionPerformed
 
-    private void additionalSubjectsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_additionalSubjectsButtonActionPerformed
-    	AdditionalSubjectsDialog additionalSubjectsDialog;
-    	try {
-        	setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        	additionalSubjectsDialog = new AdditionalSubjectsDialog(extractionModelFrame, extractionModel, subject, condition.getText());
-        } finally {
-        	setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-        }
-        if (additionalSubjectsDialog.edit()) {
-        	needsSave = true;
-        	updateAdditionalSubjectsButton();
+	private void additionalSubjectsButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_additionalSubjectsButtonActionPerformed
+		AdditionalSubjectsDialog additionalSubjectsDialog;
+		try {
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			additionalSubjectsDialog = new AdditionalSubjectsDialog(extractionModelFrame, extractionModel, subject, condition.getText());
+		} finally {
+			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		}
+		if (additionalSubjectsDialog.edit()) {
+			needsSave = true;
+			updateAdditionalSubjectsButton();
 			extractionModelFrame.updateTitle(needsSave);
-        }
-    }//GEN-LAST:event_additionalSubjectsButtonActionPerformed
+		}
+	}//GEN-LAST:event_additionalSubjectsButtonActionPerformed
 
 	/**
 	 * Renderer for the tree-view.
@@ -2059,30 +2059,30 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			return component;
 		}
 		
-        JPanel panel = new javax.swing.JPanel();
-        panel.setOpaque(false);
+		JPanel panel = new javax.swing.JPanel();
+		panel.setOpaque(false);
 //        ((JLabel) component).setOpaque(false);
 //        ((JLabel) component).setBackground(selected? Color.BLUE : null);
-        final JLabel reversal = new javax.swing.JLabel();
-        reversal.setText("re");
+		final JLabel reversal = new javax.swing.JLabel();
+		reversal.setText("re");
 
-        panel.setLayout(new java.awt.GridBagLayout());
+		panel.setLayout(new java.awt.GridBagLayout());
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        panel.add(component, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		gridBagConstraints.weightx = 1.0;
+		panel.add(component, gridBagConstraints);
 
-        reversal.setFont(((JLabel) component).getFont());
-        reversal.setBackground(((JLabel) component).getBackground());
+		reversal.setFont(((JLabel) component).getFont());
+		reversal.setBackground(((JLabel) component).getBackground());
 
-        JPanel revArrow = new JPanel() {
-        	public void paintComponent(Graphics g) {
-        		if (association.reversalAssociation.isIgnored()) {
-        			return;
-        		}
-        		Color color;
-        		if (association.reversalAssociation.isIgnored()) {
+		JPanel revArrow = new JPanel() {
+			public void paintComponent(Graphics g) {
+				if (association.reversalAssociation.isIgnored()) {
+					return;
+				}
+				Color color;
+				if (association.reversalAssociation.isIgnored()) {
 					color = ignored.getForeground();
 				} else if (association.reversalAssociation.isInsertDestinationBeforeSource()) {
 					color = dependsOn.getForeground();
@@ -2091,61 +2091,61 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				} else {
 					color = associatedWith.getForeground();
 				}
-        	    int width = getWidth();
-        	    int height = getHeight();
-        	    if (g instanceof Graphics2D) {
-        	    	Graphics2D g2d = (Graphics2D) g;
-        	    	color = new Color(color.getRed(), color.getGreen(), color.getBlue(), 100);
-        	    	g2d.setColor(color);
-        	    	g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        	    	g2d.setStroke(new BasicStroke(2));
-	        	    int a = height / 4;
-	        	    g2d.drawLine(0, height / 2, width, height / 2);
-	        	    g2d.drawLine(1, height / 2 - 1, a, height / 2 - a);
-	        	    g2d.drawLine(1, height / 2 + 1, a, height / 2 + a);
-        	    } else {
-	        	    g.setColor(color);
-	        	    int a = height / 4;
-	        	    g.drawLine(0, height / 2, width, height / 2);
-	        	    g.drawLine(0, height / 2, a, height / 2 - a);
-	        	    g.drawLine(0, height / 2, a, height / 2 + a);
-        	    }
-        	}
-        	
+				int width = getWidth();
+				int height = getHeight();
+				if (g instanceof Graphics2D) {
+					Graphics2D g2d = (Graphics2D) g;
+					color = new Color(color.getRed(), color.getGreen(), color.getBlue(), 100);
+					g2d.setColor(color);
+					g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+					g2d.setStroke(new BasicStroke(2));
+					int a = height / 4;
+					g2d.drawLine(0, height / 2, width, height / 2);
+					g2d.drawLine(1, height / 2 - 1, a, height / 2 - a);
+					g2d.drawLine(1, height / 2 + 1, a, height / 2 + a);
+				} else {
+					g.setColor(color);
+					int a = height / 4;
+					g.drawLine(0, height / 2, width, height / 2);
+					g.drawLine(0, height / 2, a, height / 2 - a);
+					g.drawLine(0, height / 2, a, height / 2 + a);
+				}
+			}
+			
 			@Override
 			public Dimension getMinimumSize() {
 				return getPreferredSize();
 			}
-        	
+			
 			@Override
 			public Dimension getPreferredSize() {
 				return reversal.getPreferredSize();
 			}
 
 			private static final long serialVersionUID = -8515778652672162975L;
-        };
-        
-        revArrow.setOpaque(false);
-        
-        panel.add(revArrow, new java.awt.GridBagConstraints());
+		};
+		
+		revArrow.setOpaque(false);
+		
+		panel.add(revArrow, new java.awt.GridBagConstraints());
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        return panel;
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		return panel;
 	}
 	
 	/**
-     * Set of all association which are not editable due to ambiguity.
-     */
-    private Set<Association> ambiguousNonames = null;
+	 * Set of all association which are not editable due to ambiguity.
+	 */
+	private Set<Association> ambiguousNonames = null;
 
-    /**
-     * Selects a table in tree view.
-     * 
-     * @param table the table to select
-     * @return <code>true</code> if table was selected
-     */
+	/**
+	 * Selects a table in tree view.
+	 * 
+	 * @param table the table to select
+	 * @return <code>true</code> if table was selected
+	 */
 	public boolean select(Table table) {
 		try {
 			captureLayout();
@@ -2196,11 +2196,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 	}
 	
-    /**
-     * Selects a restriction.
-     * 
-     * @param restrictionDefinition the restriction to select
-     */
+	/**
+	 * Selects a restriction.
+	 * 
+	 * @param restrictionDefinition the restriction to select
+	 */
 	private void select(RestrictionDefinition restrictionDefinition) {
 		if (!suppressRestrictionSelection) {
 			suppressRestrictionSelection = true;
@@ -2250,12 +2250,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 	}
 
-    /**
-     * Selects an association.
-     * 
-     * @param association the association to select
-     * @return <code>true</code> if table was selected
-     */
+	/**
+	 * Selects an association.
+	 * 
+	 * @param association the association to select
+	 * @return <code>true</code> if table was selected
+	 */
 	public boolean select(Association association) {
 		if (!suppressRestrictionSelection) {
 			captureLayout();
@@ -2393,32 +2393,32 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	}
 
 	/**
-     * Gets set of all association which are not editable due to ambiguity.
-     */
-    private Set<Association> getAmbiguousNonames() {
-        if (ambiguousNonames == null) {
-            ambiguousNonames = new HashSet<Association>();
-            for (Table table: dataModel.getTables()) {
-                for (Association a: table.associations) {
-                    if (a.getName() == null) {
-                        for (Association b: table.associations) {
-                            if (!a.equals(b)) {
-                                if (a.destination.equals(b.destination)) {
-                                    ambiguousNonames.add(a);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        return ambiguousNonames;
-    }
-        
-    /**
-     * Refreshes associations tree.
-     */
+	 * Gets set of all association which are not editable due to ambiguity.
+	 */
+	private Set<Association> getAmbiguousNonames() {
+		if (ambiguousNonames == null) {
+			ambiguousNonames = new HashSet<Association>();
+			for (Table table: dataModel.getTables()) {
+				for (Association a: table.associations) {
+					if (a.getName() == null) {
+						for (Association b: table.associations) {
+							if (!a.equals(b)) {
+								if (a.destination.equals(b.destination)) {
+									ambiguousNonames.add(a);
+									break;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+		return ambiguousNonames;
+	}
+		
+	/**
+	 * Refreshes associations tree.
+	 */
 	public void refresh(boolean restoreSelection, boolean fullGraphModelReset, boolean storeLayout, boolean removeLayout) {
 		Association association = currentAssociation;
 		tree.setModel(getModel());
@@ -2595,22 +2595,22 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		graphView.zoomToFit();
 	}
 
-    /**
-     * Model for aggregation combobox.
-     */
-    private ComboBoxModel getAggregationModel() {
-        DefaultComboBoxModel model = new DefaultComboBoxModel();
-        for (AggregationSchema aggregation: AggregationSchema.values()) {
-        	model.addElement(aggregation);
-        }
-        return model;
-    }
-    
-    /**
-     * Opens column mapper dialog for given table.
-     * 
-     * @param table the table
-     */
+	/**
+	 * Model for aggregation combobox.
+	 */
+	private ComboBoxModel getAggregationModel() {
+		DefaultComboBoxModel model = new DefaultComboBoxModel();
+		for (AggregationSchema aggregation: AggregationSchema.values()) {
+			model.addElement(aggregation);
+		}
+		return model;
+	}
+	
+	/**
+	 * Opens column mapper dialog for given table.
+	 * 
+	 * @param table the table
+	 */
 	public void openColumnMapper(Table table) {
 		if (columnMapperDialog.edit(dataModel, table)) {
 			updateSketch();
@@ -2619,8 +2619,8 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	} 
 
 	/**
-     * Marks the model as dirty (needs save)
-     */
+	 * Marks the model as dirty (needs save)
+	 */
 	public void markDirty() {
 		if (!needsSave) {
 			needsSave = true;
@@ -2746,75 +2746,75 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		return false;
 	}
 	
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton additionalSubjectsButton;
-    private JComboBox aggregationCombobox;
-    private javax.swing.JLabel associatedWith;
-    javax.swing.JTextField condition;
-    public javax.swing.JLabel connectivityState;
-    private javax.swing.JLabel dependsOn;
-    private javax.swing.JPanel editorPanel;
-    public javax.swing.JButton exportButton;
-    private JComboBox exportFormat;
-    private javax.swing.JPanel graphContainer;
-    private javax.swing.JLabel hasDependent;
-    private javax.swing.JLabel ignored;
-    private javax.swing.JPanel inspectorHolder;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel10;
-    private javax.swing.JPanel jPanel11;
-    private javax.swing.JPanel jPanel12;
-    private javax.swing.JPanel jPanel13;
-    private javax.swing.JPanel jPanel14;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
-    private javax.swing.JPanel jPanel5;
-    private javax.swing.JPanel jPanel6;
-    private javax.swing.JPanel jPanel7;
-    private javax.swing.JPanel jPanel8;
-    private javax.swing.JPanel jPanel9;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane4;
-    private javax.swing.JSplitPane jSplitPane1;
-    private javax.swing.JSplitPane jSplitPane2;
-    private javax.swing.JPanel jpanel;
-    private javax.swing.JLayeredPane layeredPane;
-    private javax.swing.JButton leftButton;
-    private javax.swing.JPanel legende;
-    private javax.swing.JPanel legende1;
-    private javax.swing.JPanel legende2;
-    private javax.swing.JButton mapColumns;
-    private javax.swing.JLabel modelName;
-    private javax.swing.JLabel modelPath;
-    private javax.swing.JLabel openSubjectConditionEditor;
-    private javax.swing.JButton openXmlSettings;
-    private javax.swing.JButton resetFocus;
-    private javax.swing.JTable restrictionsTable;
-    private JComboBox rootTable;
-    private javax.swing.JTabbedPane sketchTabbedPane;
-    private JComboBox subjectTable;
-    private javax.swing.JTextField tagField;
-    private javax.swing.JPanel toolBarPanel;
-    private javax.swing.JPanel toolPanel;
-    private javax.swing.JTree tree;
-    private javax.swing.JPanel xmlMappingPanel;
-    private javax.swing.JButton xmlTagApply;
-    // End of variables declaration//GEN-END:variables
-    
-    private Icon dropDownIcon;
-    private Icon conditionEditorIcon;
-    private Icon conditionEditorSelectedIcon;
-    private Icon leftIcon;
-    private Icon leftIconP;
+	// Variables declaration - do not modify//GEN-BEGIN:variables
+	private javax.swing.JButton additionalSubjectsButton;
+	private JComboBox aggregationCombobox;
+	private javax.swing.JLabel associatedWith;
+	javax.swing.JTextField condition;
+	public javax.swing.JLabel connectivityState;
+	private javax.swing.JLabel dependsOn;
+	private javax.swing.JPanel editorPanel;
+	public javax.swing.JButton exportButton;
+	private JComboBox exportFormat;
+	private javax.swing.JPanel graphContainer;
+	private javax.swing.JLabel hasDependent;
+	private javax.swing.JLabel ignored;
+	private javax.swing.JPanel inspectorHolder;
+	private javax.swing.JLabel jLabel1;
+	private javax.swing.JLabel jLabel2;
+	private javax.swing.JLabel jLabel3;
+	private javax.swing.JLabel jLabel4;
+	private javax.swing.JLabel jLabel5;
+	private javax.swing.JLabel jLabel6;
+	private javax.swing.JLabel jLabel7;
+	private javax.swing.JLabel jLabel8;
+	private javax.swing.JPanel jPanel1;
+	private javax.swing.JPanel jPanel10;
+	private javax.swing.JPanel jPanel11;
+	private javax.swing.JPanel jPanel12;
+	private javax.swing.JPanel jPanel13;
+	private javax.swing.JPanel jPanel14;
+	private javax.swing.JPanel jPanel2;
+	private javax.swing.JPanel jPanel3;
+	private javax.swing.JPanel jPanel4;
+	private javax.swing.JPanel jPanel5;
+	private javax.swing.JPanel jPanel6;
+	private javax.swing.JPanel jPanel7;
+	private javax.swing.JPanel jPanel8;
+	private javax.swing.JPanel jPanel9;
+	private javax.swing.JScrollPane jScrollPane1;
+	private javax.swing.JScrollPane jScrollPane4;
+	private javax.swing.JSplitPane jSplitPane1;
+	private javax.swing.JSplitPane jSplitPane2;
+	private javax.swing.JPanel jpanel;
+	private javax.swing.JLayeredPane layeredPane;
+	private javax.swing.JButton leftButton;
+	private javax.swing.JPanel legende;
+	private javax.swing.JPanel legende1;
+	private javax.swing.JPanel legende2;
+	private javax.swing.JButton mapColumns;
+	private javax.swing.JLabel modelName;
+	private javax.swing.JLabel modelPath;
+	private javax.swing.JLabel openSubjectConditionEditor;
+	private javax.swing.JButton openXmlSettings;
+	private javax.swing.JButton resetFocus;
+	private javax.swing.JTable restrictionsTable;
+	private JComboBox rootTable;
+	private javax.swing.JTabbedPane sketchTabbedPane;
+	private JComboBox subjectTable;
+	private javax.swing.JTextField tagField;
+	private javax.swing.JPanel toolBarPanel;
+	private javax.swing.JPanel toolPanel;
+	private javax.swing.JTree tree;
+	private javax.swing.JPanel xmlMappingPanel;
+	private javax.swing.JButton xmlTagApply;
+	// End of variables declaration//GEN-END:variables
+	
+	private Icon dropDownIcon;
+	private Icon conditionEditorIcon;
+	private Icon conditionEditorSelectedIcon;
+	private Icon leftIcon;
+	private Icon leftIconP;
 	{
 		String dir = "/net/sf/jailer/ui/resource";
 		

@@ -27,7 +27,7 @@ import java.util.Map;
  * @author Ralf Wisser
  */
 public class LayoutStorage {
-    
+	
 	/**
 	 * Folder holding global layouts.
 	 */

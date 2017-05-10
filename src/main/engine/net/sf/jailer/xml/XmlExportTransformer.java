@@ -90,32 +90,32 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 	private final Set<Table> cyclicAggregatedTables;
 	
 	/**
-     * The logger.
-     */
-    private static final Logger _log = Logger.getLogger(XmlExportTransformer.class);
+	 * The logger.
+	 */
+	private static final Logger _log = Logger.getLogger(XmlExportTransformer.class);
 
-    /**
+	/**
 	 * Maps clear text SQL-types to {@link java.sql.Types}.
 	 */
 	private Map<Table, Map<String, Integer>> typeCache = new HashMap<Table, Map<String,Integer>>();
 
-    /**
-     * Current session;
-     */
-    private final Session session;
-    
-    /**
+	/**
+	 * Current session;
+	 */
+	private final Session session;
+	
+	/**
 	 * Association cache.
 	 */
 	private Map<Table, Map<String, Association>> associationCache = new HashMap<Table, Map<String,Association>>();
 
 	/**
-     * {@link RowIdSupport}.
-     */
-    private final RowIdSupport rowIdSupport;
+	 * {@link RowIdSupport}.
+	 */
+	private final RowIdSupport rowIdSupport;
 
 	private final Quoting quoting;
-    
+	
 	/**
 	 * Constructor.
 	 * 
@@ -137,7 +137,7 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 		this.cyclicAggregatedTables = cyclicAggregatedTables;
 		this.session = session;
 		this.quoting = new Quoting(session);
-        this.rowIdSupport = new RowIdSupport(entityGraph.getDatamodel(), session.dbms, executionContext);
+		this.rowIdSupport = new RowIdSupport(entityGraph.getDatamodel(), session.dbms, executionContext);
 	}
 
 	/**
@@ -313,10 +313,10 @@ public class XmlExportTransformer extends AbstractResultSetReader {
 		
 		boolean isFiltered = false;
 		for (Column c: table.getColumns()) {
-    		String filterExpression = null;
-    		if (c.getFilter() != null && c.getFilter().isApplyAtExport()) {
-    			filterExpression = c.getFilterExpression();
-    		}
+			String filterExpression = null;
+			if (c.getFilter() != null && c.getFilter().isApplyAtExport()) {
+				filterExpression = c.getFilterExpression();
+			}
 			if (filterExpression != null) {
 				isFiltered = true;
 				break;

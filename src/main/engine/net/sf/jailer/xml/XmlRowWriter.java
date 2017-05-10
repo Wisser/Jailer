@@ -108,7 +108,7 @@ public class XmlRowWriter {
 		if (rootTag.length() > 0) {
 			transformerHandler.endElement("", "", rootTag);
 		}
-        transformerHandler.endDocument();
+		transformerHandler.endDocument();
 	}
 
 	/**
@@ -176,7 +176,7 @@ public class XmlRowWriter {
 		 * {@link CellContentConverter}.
 		 */
 		protected final CellContentConverter cellContentConverter;
-        
+		
 		/**
 		 * Constructor.
 		 * 
@@ -189,7 +189,7 @@ public class XmlRowWriter {
 			this.association = association;
 			this.session = session;
 			this.cellContentConverter =  new CellContentConverter(resultSetMetaData, session, session.dbms);
-	    }
+		}
 
 		/**
 		 * Gets text to write out. If it starts with "SQL:", write out next column value.

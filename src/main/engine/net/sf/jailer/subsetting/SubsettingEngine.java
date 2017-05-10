@@ -237,8 +237,8 @@ public class SubsettingEngine {
 					}
 					String prefix = "";
 					if (c.getFilter().getExpression().trim().startsWith(Filter.LITERAL_PREFIX)) {
-			    		prefix = Filter.LITERAL_PREFIX + " ";
-			    	}
+						prefix = Filter.LITERAL_PREFIX + " ";
+					}
 					String suffix = c.getFilter().isApplyAtExport()? "" : " (applied at import phase)";
 					appendCommentHeader("    " + t.getUnqualifiedName() + "." + c.name + " := " + prefix + c.getFilterExpression() + suffix);
 				}
@@ -339,9 +339,9 @@ public class SubsettingEngine {
 				}
 				
 				String jc = association.getJoinCondition();
-		        if (jc != null) {
-		        	ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today, association);
-		        }
+				if (jc != null) {
+					ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today, association);
+				}
 				JobManager.Job job = new JobManager.Job() {
 					public void run() throws SQLException {
 						runstats(false);
@@ -1345,7 +1345,7 @@ public class SubsettingEngine {
 		appendCommentHeader("");
 
 		if (session.dbms.getRowidName() == null) {
-    		Set<Table> toCheck = new HashSet<Table>();
+			Set<Table> toCheck = new HashSet<Table>();
 			if (extractionModel.additionalSubjects != null) {
 				for (AdditionalSubject as: extractionModel.additionalSubjects) {
 					toCheck.add(as.getSubject());

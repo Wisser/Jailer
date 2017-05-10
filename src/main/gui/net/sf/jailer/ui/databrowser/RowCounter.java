@@ -335,17 +335,17 @@ public class RowCounter {
 		return rc[0];
 	}
 
-    /**
-     * Gets qualified table name.
-     * 
-     * @param t the table
-     * @return qualified name of t
-     */
-    private String qualifiedTableName(Table t, Quoting quoting) {
-    	String schema = t.getSchema("");
-    	if (schema.length() == 0) {
-    		return quoting.requote(t.getUnqualifiedName());
-    	}
+	/**
+	 * Gets qualified table name.
+	 * 
+	 * @param t the table
+	 * @return qualified name of t
+	 */
+	private String qualifiedTableName(Table t, Quoting quoting) {
+		String schema = t.getSchema("");
+		if (schema.length() == 0) {
+			return quoting.requote(t.getUnqualifiedName());
+		}
 		return quoting.requote(schema) + "." + quoting.requote(t.getUnqualifiedName());
 	}
 

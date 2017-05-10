@@ -192,7 +192,7 @@ public enum InlineViewStyle {
 		}
 	},
 	DB2_ZOS("(Select 1, '2', 3 from sysibm.sysdummy1 Union all " + 
-	       "Select 4, '5', 6 from sysibm.sysdummy1) %s(A, B, C)") {
+		   "Select 4, '5', 6 from sysibm.sysdummy1) %s(A, B, C)") {
 		@Override
 		public String head(String[] columnNames) throws SQLException {
 			return "(Select ";

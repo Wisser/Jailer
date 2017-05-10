@@ -60,11 +60,11 @@ public class DeletionTestCase extends DbmsAwareTestCase {
 	}
 
 	/**
-     * Gets data set holding the initial DB state.
-     */
-    protected IDataSet getDataSet() throws Exception {
-        return new FlatXmlDataSet(initialDataset, false, true);
-    }
+	 * Gets data set holding the initial DB state.
+	 */
+	protected IDataSet getDataSet() throws Exception {
+		return new FlatXmlDataSet(initialDataset, false, true);
+	}
 
 	/**
 	 * Tests export.
@@ -87,8 +87,8 @@ public class DeletionTestCase extends DbmsAwareTestCase {
 			File actualState = new File(resultDir, "remaining-state.xml");
 			IDataSet depDataset = getConnection().createDataSet(getDataSet().getTableNames());
 			Writer out = new FileWriter(actualState);
-		    FlatXmlDataSet.write(depDataset, out, Charset.defaultCharset().name());
-		    out.close();
+			FlatXmlDataSet.write(depDataset, out, Charset.defaultCharset().name());
+			out.close();
 
 			assertEqualDatasets(expectedResult, actualState);
 		}

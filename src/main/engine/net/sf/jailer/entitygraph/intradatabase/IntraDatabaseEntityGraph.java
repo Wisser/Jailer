@@ -120,12 +120,12 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			resultSet.close();
 			if (!hasPrimarykey) {
 				if (session.getMetaData().storesUpperCaseIdentifiers()) {
-	        		schema = schema.toUpperCase();
-	        		tableName = tableName.toUpperCase();
-	        	} else {
-	        		schema = schema.toLowerCase();
-	        		tableName = tableName.toLowerCase();
-	        	}
+					schema = schema.toUpperCase();
+					tableName = tableName.toUpperCase();
+				} else {
+					schema = schema.toLowerCase();
+					tableName = tableName.toLowerCase();
+				}
 				resultSet = getPrimaryKeys(session, session.getMetaData(), schema, tableName);
 				hasPrimarykey = resultSet.next();
 				resultSet.close();
@@ -284,7 +284,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-    	tmp.delete();
+		tmp.delete();
 	}
 	
 	/**
@@ -296,14 +296,14 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 	 */
 	private void readEntitiesByQuery(Table table, String sql) throws SQLException {
 		boolean tableHasIdentityColumn = false;
-        if (session.dbms.isIdentityInserts()) {
-        	for (Column c: table.getColumns()) {
-        		if (c.isIdentityColumn) {
-        			tableHasIdentityColumn = true;
-        			break;
-        		}
-        	}
-        }
+		if (session.dbms.isIdentityInserts()) {
+			for (Column c: table.getColumns()) {
+				if (c.isIdentityColumn) {
+					tableHasIdentityColumn = true;
+					break;
+				}
+			}
+		}
 		long rc;
 		if (tableHasIdentityColumn) {
 			synchronized (session.getConnection()) {
@@ -744,7 +744,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			importFilterManager.createMappingTables(dbmsConfiguration, tmpFileWriter);
 			tmpFileWriter.close();
 			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads()).executeScript(tmp.getPath());
-	    	tmp.delete();
+			tmp.delete();
 
 			tmp = Configuration.getInstance().createTempFile();
 			tmpFileWriter = new FileWriter(tmp);
@@ -752,16 +752,16 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			importFilterManager.fillAndWriteMappingTables(this, jobManager, tmpFileWriter, numberOfEntities, targetSession, targetDBMSConfiguration);
 			tmpFileWriter.close();
 			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads()).executeScript(tmp.getPath());
-	    	tmp.delete();
+			tmp.delete();
 		}
 	}
 	
 	private String applyImportFilter(String oldValue, Column column) {
 		Filter filter = column.getFilter();
 		if (filter != null && importFilterManager != null) {
-    		if (!filter.isApplyAtExport()) {
-    			return importFilterManager.transform(column, oldValue);
-    		}
+			if (!filter.isApplyAtExport()) {
+				return importFilterManager.transform(column, oldValue);
+			}
 		}
 		return oldValue;
 	}
@@ -778,7 +778,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 			importFilterManager.dropMappingTables(tmpFileWriter);
 			tmpFileWriter.close();
 			new SqlScriptExecutor(getSession(), executionContext.getNumberOfThreads()).executeScript(tmp.getPath());
-	    	tmp.delete();
+			tmp.delete();
 		}
 	}
 

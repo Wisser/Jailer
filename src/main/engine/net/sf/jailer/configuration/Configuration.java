@@ -89,10 +89,10 @@ public class Configuration {
 	private String tempFileFolder = "tmp";
 	
 	/**
-     * The renderer.
-     */
-    private HtmlDataModelRenderer renderer;
-    
+	 * The renderer.
+	 */
+	private HtmlDataModelRenderer renderer;
+	
 	/**
 	 * All {@link DBMS}s.
 	 */
@@ -129,56 +129,56 @@ public class Configuration {
 		return doMinimizeUPK;
 	}
 	
-    /**
-     * The configuration.
-     */
-    private static Configuration theConfiguration = null;
+	/**
+	 * The configuration.
+	 */
+	private static Configuration theConfiguration = null;
 
 	/**
-     * Gets the configuration.
-     */
+	 * Gets the configuration.
+	 */
 	public synchronized static Configuration getInstance() {
 		loadConfigurationFile();
-    	return theConfiguration;
-    }
+		return theConfiguration;
+	}
 	
 	/**
-     * Gets the scipt-enhancer.
-     */
-    public static List<ScriptEnhancer> getScriptEnhancer() {
-    	ArrayList<ScriptEnhancer> enhancer = new ArrayList<ScriptEnhancer>();
-    	enhancer.add(new FileBasedScriptEnhancer());
-    	enhancer.add(new HelperTableEnhancer());
-    	return enhancer;
-    }
-    
+	 * Gets the scipt-enhancer.
+	 */
+	public static List<ScriptEnhancer> getScriptEnhancer() {
+		ArrayList<ScriptEnhancer> enhancer = new ArrayList<ScriptEnhancer>();
+		enhancer.add(new FileBasedScriptEnhancer());
+		enhancer.add(new HelperTableEnhancer());
+		return enhancer;
+	}
+	
 	/**
 	 * Loads the configuration file.
 	 */
 	private synchronized static void loadConfigurationFile() {
-    	if (theConfiguration == null) {
-    		String name = "jailer.xml";
-    		try {
-	    		InputStream res;
-	    		File configFile = new File(name);
-	    		if (!configFile.exists()) {
-	    			res = Configuration.class.getResourceAsStream(name);
-	    		} else {
-	    			res = new FileInputStream(configFile);
-	    		}
-    			JAXBContext jc = JAXBContext.newInstance(Configuration.class, DBMS.class, DefaultTemporaryTableManager.class);
-    			Unmarshaller um = jc.createUnmarshaller();
-    			theConfiguration = (Configuration) um.unmarshal(res);
-    			res.close();
-    		} catch (JAXBException e) {
-    			throw new RuntimeException(e);
-    		} catch (IOException e) {
-    			throw new RuntimeException(e);
-    		}
-    	}
-    }
+		if (theConfiguration == null) {
+			String name = "jailer.xml";
+			try {
+				InputStream res;
+				File configFile = new File(name);
+				if (!configFile.exists()) {
+					res = Configuration.class.getResourceAsStream(name);
+				} else {
+					res = new FileInputStream(configFile);
+				}
+				JAXBContext jc = JAXBContext.newInstance(Configuration.class, DBMS.class, DefaultTemporaryTableManager.class);
+				Unmarshaller um = jc.createUnmarshaller();
+				theConfiguration = (Configuration) um.unmarshal(res);
+				res.close();
+			} catch (JAXBException e) {
+				throw new RuntimeException(e);
+			} catch (IOException e) {
+				throw new RuntimeException(e);
+			}
+		}
+	}
 
-    /**
+	/**
 	 * @return the columnsPerIFMTable
 	 */
 	public int getColumnsPerIFMTable() {

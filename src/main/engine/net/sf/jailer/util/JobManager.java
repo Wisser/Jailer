@@ -30,246 +30,246 @@ import org.apache.log4j.Logger;
  */
 public class JobManager {
 
-    /**
-     * A job to be managed by a {@link JobManager}.
-     */
-    public interface Job {
-        
-        /**
-         * Runs the job.
-         */
-        void run() throws SQLException, CancellationException;
-    };
+	/**
+	 * A job to be managed by a {@link JobManager}.
+	 */
+	public interface Job {
+		
+		/**
+		 * Runs the job.
+		 */
+		void run() throws SQLException, CancellationException;
+	};
 
-    /**
-     * The logger.
-     */
-    private static final Logger _log = Logger.getLogger(JobManager.class);
+	/**
+	 * The logger.
+	 */
+	private static final Logger _log = Logger.getLogger(JobManager.class);
 
-    /**
-     * The runners list.
-     */
-    private final List<JobRunner> runnersList;
-    
-    /**
-     * Thread for executing jobs.
-     */
-    private class JobRunner implements Runnable {
+	/**
+	 * The runners list.
+	 */
+	private final List<JobRunner> runnersList;
+	
+	/**
+	 * Thread for executing jobs.
+	 */
+	private class JobRunner implements Runnable {
 
-        /**
-         * For shutting down the runner.
-         */
-        private boolean isRunning = true;
-        
-        /**
-         * Shuts the runner down.
-         */
-        public synchronized void shutdown() {
-            isRunning = false;
-        }
+		/**
+		 * For shutting down the runner.
+		 */
+		private boolean isRunning = true;
+		
+		/**
+		 * Shuts the runner down.
+		 */
+		public synchronized void shutdown() {
+			isRunning = false;
+		}
 
-        /**
-         * Still running?
-         */
-        public synchronized boolean isRunning() {
-            return isRunning;
-        }
-        
-        /**
-         * Executes jobs.
-         */
-        public void run() {
-            _log.debug("start up");
-            while (isRunning()) {
-                Job job = nextJob();
-                if (job == null) {
-                    try {
-                        Thread.sleep(200);
-                    } catch (InterruptedException e) {
-                    }
-                } else {
-                    try {
-                        incrementJobsInExecutionCounter();
-                        job.run();
-                        incrementJobsDoneCounter();
-                    } catch (Exception e) {
-                        setException(e);
-                    } finally {
-                        decrementJobsInExecutionCounter();
-                    }
-                }
-            }
-            _log.debug("shutting down");
-        }
-    }
-    
-    /**
-     * Constructor.
-     * 
-     * @param threads number of threads
-     */
-    public JobManager(int threads) {
-        runnersList = new ArrayList<JobRunner>(threads);
-        if (threads > 1) {
-	        for (int i = 0; i < threads; ++i) {
-	            JobRunner jobRunner = new JobRunner();
-	            runnersList.add(jobRunner);
-	            String threadName = "job-runner " + (i + 1);
-	            _log.debug("starting " + threadName);
-	            Thread thread = new Thread(jobRunner, threadName);
-	            thread.setDaemon(true);
-	            thread.start();
-	        }
-        }
-    }
+		/**
+		 * Still running?
+		 */
+		public synchronized boolean isRunning() {
+			return isRunning;
+		}
+		
+		/**
+		 * Executes jobs.
+		 */
+		public void run() {
+			_log.debug("start up");
+			while (isRunning()) {
+				Job job = nextJob();
+				if (job == null) {
+					try {
+						Thread.sleep(200);
+					} catch (InterruptedException e) {
+					}
+				} else {
+					try {
+						incrementJobsInExecutionCounter();
+						job.run();
+						incrementJobsDoneCounter();
+					} catch (Exception e) {
+						setException(e);
+					} finally {
+						decrementJobsInExecutionCounter();
+					}
+				}
+			}
+			_log.debug("shutting down");
+		}
+	}
+	
+	/**
+	 * Constructor.
+	 * 
+	 * @param threads number of threads
+	 */
+	public JobManager(int threads) {
+		runnersList = new ArrayList<JobRunner>(threads);
+		if (threads > 1) {
+			for (int i = 0; i < threads; ++i) {
+				JobRunner jobRunner = new JobRunner();
+				runnersList.add(jobRunner);
+				String threadName = "job-runner " + (i + 1);
+				_log.debug("starting " + threadName);
+				Thread thread = new Thread(jobRunner, threadName);
+				thread.setDaemon(true);
+				thread.start();
+			}
+		}
+	}
 
-    /**
-     * Executes a list of jobs.
-     * 
-     * @param jobs the job-list
-     */
-    public void executeJobs(Collection<Job> jobs) throws CancellationException, SQLException {
-        int jobCount = jobs.size();
-        _log.info("starting " + jobCount + " jobs");
-        if (runnersList.isEmpty()) {
-        	for (Job job: jobs) {
-        		job.run();
-        	}
-        } else {
-	        setJobs(new LinkedList<Job>(jobs));
-	        while (getJobsDoneCounter() < jobCount || getJobsInExecutionCounter() > 0) {
-	            try {
+	/**
+	 * Executes a list of jobs.
+	 * 
+	 * @param jobs the job-list
+	 */
+	public void executeJobs(Collection<Job> jobs) throws CancellationException, SQLException {
+		int jobCount = jobs.size();
+		_log.info("starting " + jobCount + " jobs");
+		if (runnersList.isEmpty()) {
+			for (Job job: jobs) {
+				job.run();
+			}
+		} else {
+			setJobs(new LinkedList<Job>(jobs));
+			while (getJobsDoneCounter() < jobCount || getJobsInExecutionCounter() > 0) {
+				try {
 					Thread.sleep(100);
 				} catch (InterruptedException e1) {
 					throw new RuntimeException(e1);
 				}
-	            Exception e = getException();
-	            if (e != null) {
-	            	if (!(e instanceof CancellationException)) {
-	            		_log.error("Job-error", e);
-	            	}
-	                // wait for other jobs
-	                while (getJobsInExecutionCounter() > 0) {
-	                	try {
-	                		Thread.sleep(50);
-	    				} catch (InterruptedException e1) {
-	    					throw new RuntimeException(e1);
-	    				}
-	                }
-	                if (e instanceof CancellationException) {
-	                	throw (CancellationException) e;
-	                }
-	                if (e instanceof SQLException) {
-	                	throw (SQLException) e;
-	                }
-	                throw new RuntimeException(e);
-	            }
-	        }
-        }
-        _log.info("executed " + jobCount + " jobs");
-    }
-    
-    /**
-     * Shuts the manager down.
-     */
-    public void shutdown() {
-        for (int i = 0; i < runnersList.size(); ++i) {
-            String threadName = "job-runner " + (i + 1);
-            _log.debug("shutting down " + threadName);
-            runnersList.get(i).shutdown();
-        }
-    }
-    
-    /**
-     * Number of executed jobs.
-     */
-    private int jobsDoneCounter;
-    
-    /**
-     * Number of jobs currently executed.
-     */
-    private int jobsInExecutionCounter;
-    
-    /**
-     * The job-list.
-     */
-    private List<Job> jobs;
+				Exception e = getException();
+				if (e != null) {
+					if (!(e instanceof CancellationException)) {
+						_log.error("Job-error", e);
+					}
+					// wait for other jobs
+					while (getJobsInExecutionCounter() > 0) {
+						try {
+							Thread.sleep(50);
+						} catch (InterruptedException e1) {
+							throw new RuntimeException(e1);
+						}
+					}
+					if (e instanceof CancellationException) {
+						throw (CancellationException) e;
+					}
+					if (e instanceof SQLException) {
+						throw (SQLException) e;
+					}
+					throw new RuntimeException(e);
+				}
+			}
+		}
+		_log.info("executed " + jobCount + " jobs");
+	}
+	
+	/**
+	 * Shuts the manager down.
+	 */
+	public void shutdown() {
+		for (int i = 0; i < runnersList.size(); ++i) {
+			String threadName = "job-runner " + (i + 1);
+			_log.debug("shutting down " + threadName);
+			runnersList.get(i).shutdown();
+		}
+	}
+	
+	/**
+	 * Number of executed jobs.
+	 */
+	private int jobsDoneCounter;
+	
+	/**
+	 * Number of jobs currently executed.
+	 */
+	private int jobsInExecutionCounter;
+	
+	/**
+	 * The job-list.
+	 */
+	private List<Job> jobs;
 
-    /**
-     * Exception during job-execution.
-     */
-    private Exception exception;
+	/**
+	 * Exception during job-execution.
+	 */
+	private Exception exception;
 
-    /**
-     * Sets the job-list.
-     * Resets the job-counter to 0.
-     */
-    private synchronized void setJobs(List<Job> jobs) {
-        jobsDoneCounter = 0;
-        jobsInExecutionCounter = 0;
-        this.jobs = jobs;
-        exception = null;
-    }
+	/**
+	 * Sets the job-list.
+	 * Resets the job-counter to 0.
+	 */
+	private synchronized void setJobs(List<Job> jobs) {
+		jobsDoneCounter = 0;
+		jobsInExecutionCounter = 0;
+		this.jobs = jobs;
+		exception = null;
+	}
 
-    /**
-     * Gets the Number of executed jobs.
-     */
-    private synchronized int getJobsDoneCounter() {
-        return jobsDoneCounter;
-    }
+	/**
+	 * Gets the Number of executed jobs.
+	 */
+	private synchronized int getJobsDoneCounter() {
+		return jobsDoneCounter;
+	}
 
-    /**
-     * Increments the Number of executed jobs.
-     */
-    private synchronized void incrementJobsDoneCounter() {
-        ++jobsDoneCounter;
-    }
+	/**
+	 * Increments the Number of executed jobs.
+	 */
+	private synchronized void incrementJobsDoneCounter() {
+		++jobsDoneCounter;
+	}
 
-    /**
-     * Gets the Number of jobs currently executed.
-     */
-    private synchronized int getJobsInExecutionCounter() {
-        return jobsInExecutionCounter;
-    }
+	/**
+	 * Gets the Number of jobs currently executed.
+	 */
+	private synchronized int getJobsInExecutionCounter() {
+		return jobsInExecutionCounter;
+	}
 
-    /**
-     * Increments the Number of jobs currently executed.
-     */
-    private synchronized void incrementJobsInExecutionCounter() {
-        ++jobsInExecutionCounter;
-    }
+	/**
+	 * Increments the Number of jobs currently executed.
+	 */
+	private synchronized void incrementJobsInExecutionCounter() {
+		++jobsInExecutionCounter;
+	}
 
-    /**
-     * Decrements the Number of jobs currently executed.
-     */
-    private synchronized void decrementJobsInExecutionCounter() {
-        --jobsInExecutionCounter;
-    }
+	/**
+	 * Decrements the Number of jobs currently executed.
+	 */
+	private synchronized void decrementJobsInExecutionCounter() {
+		--jobsInExecutionCounter;
+	}
 
-    /**
-     * Gets the exception.
-     */
-    private synchronized Exception getException() {
-        return exception;
-    }
-    
-    /**
-     * Gets next job.
-     */
-    private synchronized Job nextJob() {
-        if (jobs != null && !jobs.isEmpty()) {
-            return jobs.remove(0);
-        }
-        return null;
-    }
-    
-    /**
-     * Sets an exception.
-     */
-    private synchronized void setException(Exception e) {
-        exception = e == null? null : (e instanceof CancellationException || e instanceof SQLException)? e 
-        		: new RuntimeException(Thread.currentThread().getName() + " failed", e);
-        jobs = null;
-    }
-    
+	/**
+	 * Gets the exception.
+	 */
+	private synchronized Exception getException() {
+		return exception;
+	}
+	
+	/**
+	 * Gets next job.
+	 */
+	private synchronized Job nextJob() {
+		if (jobs != null && !jobs.isEmpty()) {
+			return jobs.remove(0);
+		}
+		return null;
+	}
+	
+	/**
+	 * Sets an exception.
+	 */
+	private synchronized void setException(Exception e) {
+		exception = e == null? null : (e instanceof CancellationException || e instanceof SQLException)? e 
+				: new RuntimeException(Thread.currentThread().getName() + " failed", e);
+		jobs = null;
+	}
+	
 }

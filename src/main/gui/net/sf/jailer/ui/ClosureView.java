@@ -125,33 +125,33 @@ public abstract class ClosureView extends javax.swing.JDialog {
 	
 	private final JComboBox rootTable;
 	
-    /** Creates new form FindDialog 
-     * @param rootTable */
-    public ClosureView(ExtractionModelEditor extractionModelEditor, JComboBox rootTable) {
-        super();
-    	this.extractionModelEditor = extractionModelEditor;
-    	this.rootTable = rootTable;
-        initComponents();
-        
-        columnsComboBox.setModel(new DefaultComboBoxModel<Integer>(new Integer[] { 
-        		4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
-        }));
-        columnsComboBox.setSelectedItem(new Integer(tablesPerLine));
-        columnsComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-            	if (evt.getItem() instanceof Integer) {
-            		tablesPerLine = (Integer) evt.getItem();
-            		refresh();
-            	}
-            }
-        });
-        showOnlyEnabledCheckBox.setMnemonic(KeyEvent.VK_S);
+	/** Creates new form FindDialog 
+	 * @param rootTable */
+	public ClosureView(ExtractionModelEditor extractionModelEditor, JComboBox rootTable) {
+		super();
+		this.extractionModelEditor = extractionModelEditor;
+		this.rootTable = rootTable;
+		initComponents();
+		
+		columnsComboBox.setModel(new DefaultComboBoxModel<Integer>(new Integer[] { 
+				4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
+		}));
+		columnsComboBox.setSelectedItem(new Integer(tablesPerLine));
+		columnsComboBox.addItemListener(new java.awt.event.ItemListener() {
+			public void itemStateChanged(java.awt.event.ItemEvent evt) {
+				if (evt.getItem() instanceof Integer) {
+					tablesPerLine = (Integer) evt.getItem();
+					refresh();
+				}
+			}
+		});
+		showOnlyEnabledCheckBox.setMnemonic(KeyEvent.VK_S);
 //        disableAssocButton.setMnemonic(KeyEvent.VK_D);
 //        disableAssocButton.setEnabled(false);
-        
+		
 //        tableSelection.setMaximumRowCount(22);
-        
-        closureTable = new JTable() {
+		
+		closureTable = new JTable() {
 			private static final long serialVersionUID = 8960056200057023368L;
 
 			/**
@@ -187,57 +187,57 @@ public abstract class ClosureView extends javax.swing.JDialog {
 						r = closureTable.getCellRect(posInfo.row, posInfo.column, false);
 						x[1] = ((int) r.getCenterX());
 						y[1] = ((int) r.getCenterY());
-		    	    	Color color = new Color(0, 0, 245, 60);
-		    	    	g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+						Color color = new Color(0, 0, 245, 60);
+						g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 	
-		    	    	if (selectionInfo.ignored) {
-		    	    		BasicStroke stroke = new BasicStroke(3);
-		    	    		g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
-		    					1.0f));
-		    	    		color = new Color(0, 0, 0, 60);
-		    	    	} else {
-		    	    		g2d.setStroke(new BasicStroke(3));
-		    	    	}
-		    	    	if (isDependency) {
-		    	    		color = new Color(245, 0, 0, 60);
-		    	    	}
-		    	    	g2d.setColor(color);
-		        	    g2d.drawPolyline(x, y, 2);
+						if (selectionInfo.ignored) {
+							BasicStroke stroke = new BasicStroke(3);
+							g2d.setStroke(new BasicStroke(stroke.getLineWidth(), stroke.getEndCap(), stroke.getLineJoin(), stroke.getMiterLimit(), new float[] { 2f, 6f },
+								1.0f));
+							color = new Color(0, 0, 0, 60);
+						} else {
+							g2d.setStroke(new BasicStroke(3));
+						}
+						if (isDependency) {
+							color = new Color(245, 0, 0, 60);
+						}
+						g2d.setColor(color);
+						g2d.drawPolyline(x, y, 2);
 					}
-	        	    paint(g2d, parent, drawDependencies, painted);
+					paint(g2d, parent, drawDependencies, painted);
 				}
 			}
-        };
-        closureTable.setShowGrid(false);
-        closureTable.setSurrendersFocusOnKeystroke(true);
-        jScrollPane1.setViewportView(closureTable);
+		};
+		closureTable.setShowGrid(false);
+		closureTable.setSurrendersFocusOnKeystroke(true);
+		jScrollPane1.setViewportView(closureTable);
 
-        closureTable.addMouseListener(new MouseListener() {
+		closureTable.addMouseListener(new MouseListener() {
 			public void mouseClicked(final MouseEvent e) {
 				// context menu
-                if (SwingUtilities.isRightMouseButton(e)) {
-                	int row = closureTable.rowAtPoint(e.getPoint());
-                	int column = closureTable.columnAtPoint(e.getPoint());
-                	if (row < 0 || column < 0) return;
-                	Object value = closureTable.getModel().getValueAt(row, column);
-                	if (value == null || !(value instanceof String)) return;
-                	Table table = getDataModel().getTableByDisplayName((String) value);
-                	if (table != null) {
+				if (SwingUtilities.isRightMouseButton(e)) {
+					int row = closureTable.rowAtPoint(e.getPoint());
+					int column = closureTable.columnAtPoint(e.getPoint());
+					if (row < 0 || column < 0) return;
+					Object value = closureTable.getModel().getValueAt(row, column);
+					if (value == null || !(value instanceof String)) return;
+					Table table = getDataModel().getTableByDisplayName((String) value);
+					if (table != null) {
 						JPopupMenu popup = ClosureView.this.extractionModelEditor.graphView.createPopupMenu(table, true);
 						popup.show(e.getComponent(), e.getX(), e.getY());
-                	}
-                }
-                if (SwingUtilities.isLeftMouseButton(e)) {
-                	int row = closureTable.rowAtPoint(e.getPoint());
-                	int column = closureTable.columnAtPoint(e.getPoint());
-                	if (row < 0 || column < 0) return;
-                	
-                	final Rectangle cellRect = closureTable.getCellRect(row, column, false);
-                	
-                	Object value = closureTable.getModel().getValueAt(row, column);
-                	if (value == null || !(value instanceof String)) return;
-                	final Table table = getDataModel().getTableByDisplayName((String) value);
-                	if (table != null) {
+					}
+				}
+				if (SwingUtilities.isLeftMouseButton(e)) {
+					int row = closureTable.rowAtPoint(e.getPoint());
+					int column = closureTable.columnAtPoint(e.getPoint());
+					if (row < 0 || column < 0) return;
+					
+					final Rectangle cellRect = closureTable.getCellRect(row, column, false);
+					
+					Object value = closureTable.getModel().getValueAt(row, column);
+					if (value == null || !(value instanceof String)) return;
+					final Table table = getDataModel().getTableByDisplayName((String) value);
+					if (table != null) {
 						JMenuItem restrictAll = new JMenuItem("Disable all associations");
 						restrictAll.setToolTipText("disables every non-dependent (child) association with this table");
 						restrictAll.addActionListener(new ActionListener () {
@@ -323,8 +323,8 @@ public abstract class ClosureView extends javax.swing.JDialog {
 						
 						ClosureView.this.extractionModelEditor.graphView.createPopupMenu(table, false);
 						popup.show(e.getComponent(), cellRect.x, cellRect.y + cellRect.height + 4);
-                	}
-                }
+					}
+				}
 			}
 			public void mouseEntered(MouseEvent e) {
 			}
@@ -334,11 +334,11 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			}
 			public void mouseReleased(MouseEvent e) {
 			}
-        });
-        
-        searchComboBox.setMaximumRowCount(30);
-        
-        final TableCellRenderer defaultTableCellRenderer = closureTable.getDefaultRenderer(String.class);
+		});
+		
+		searchComboBox.setMaximumRowCount(30);
+		
+		final TableCellRenderer defaultTableCellRenderer = closureTable.getDefaultRenderer(String.class);
 		closureTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
 			private Font font = new JLabel("normal").getFont();
 			private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
@@ -401,16 +401,16 @@ public abstract class ClosureView extends javax.swing.JDialog {
 //		closureTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 		closureTable.setRowSelectionAllowed(false);
 		rootTable.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-            	Table table = getDataModel().getTableByDisplayName((String) ClosureView.this.rootTable.getSelectedItem());
+			public void itemStateChanged(java.awt.event.ItemEvent evt) {
+				Table table = getDataModel().getTableByDisplayName((String) ClosureView.this.rootTable.getSelectedItem());
 				refresh(table);
-            }
-        });
+			}
+		});
 		initTabbedPane();
 		setLocation(100, 100);
-        setSize(500, 500);
-        setAlwaysOnTop(true);
-    }
+		setSize(500, 500);
+		setAlwaysOnTop(true);
+	}
 
 	protected SortedMap<String, Association> sortedNamed(List<Association> aList) {
 		SortedMap<String, Association> result = new TreeMap<String, Association>();
@@ -470,45 +470,45 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		}
 	}
 	
-    /**
-     * Gets current data model.
-     * 
-     * @return current data model
-     */
-    private DataModel getDataModel() {
-    	return extractionModelEditor.dataModel;
-    }
+	/**
+	 * Gets current data model.
+	 * 
+	 * @return current data model
+	 */
+	private DataModel getDataModel() {
+		return extractionModelEditor.dataModel;
+	}
 
-    /**
-     * Make {@link #refresh(Table)} reentrant.
-     */
-    private boolean refreshing = false;
-    
-    /**
-     * Refreshes the dialog.
-     * 
-     * @param tableToSelect the table to select initially or <code>null</code> to keep the current selection
-     */
-    public void refresh(Table tableToSelect) {
-    	if (refreshing) {
-    		return;
-    	}
-    	refreshing = true;
-    	
-    	selectedTable = null;
-    	
-    	// table list model
-    	if (tableToSelect == null) {
-    		Object currentSelection = rootTable.getSelectedItem();
-    		if (currentSelection instanceof String) {
-    			tableToSelect = getDataModel().getTableByDisplayName((String) currentSelection);
-    		}
-    	}
-    	Vector<String> tableNames = new Vector<String>();
-    	for (Table table: getDataModel().getTables()) {
-    		tableNames.add(getDataModel().getDisplayName(table));
-    	}
-    	Collections.sort(tableNames);
+	/**
+	 * Make {@link #refresh(Table)} reentrant.
+	 */
+	private boolean refreshing = false;
+	
+	/**
+	 * Refreshes the dialog.
+	 * 
+	 * @param tableToSelect the table to select initially or <code>null</code> to keep the current selection
+	 */
+	public void refresh(Table tableToSelect) {
+		if (refreshing) {
+			return;
+		}
+		refreshing = true;
+		
+		selectedTable = null;
+		
+		// table list model
+		if (tableToSelect == null) {
+			Object currentSelection = rootTable.getSelectedItem();
+			if (currentSelection instanceof String) {
+				tableToSelect = getDataModel().getTableByDisplayName((String) currentSelection);
+			}
+		}
+		Vector<String> tableNames = new Vector<String>();
+		for (Table table: getDataModel().getTables()) {
+			tableNames.add(getDataModel().getDisplayName(table));
+		}
+		Collections.sort(tableNames);
 //    	DefaultComboBoxModel model = new DefaultComboBoxModel(tableNames);
 //        tableSelection.setModel(model);
 //    	if (tableToSelect != null) {
@@ -516,35 +516,35 @@ public abstract class ClosureView extends javax.swing.JDialog {
 //    	} else {
 //    		tableSelection.setSelectedItem(0);
 //    	}
-    	
-    	// table model
-    	refreshTableModel();
+		
+		// table model
+		refreshTableModel();
 
-    	refreshing = false;
-    }
-    
-    /**
-     * Refreshes the dialog after the model has been changed.
-     */
-    public void refresh() {
-    	String prevSelection = selectedTable;
-    	refreshTableModel();
-    	if (cellInfo.containsKey(prevSelection)) {
-    		selectedTable = prevSelection;
-    	} else {
-    		selectedTable = null;
-    	}
+		refreshing = false;
+	}
+	
+	/**
+	 * Refreshes the dialog after the model has been changed.
+	 */
+	public void refresh() {
+		String prevSelection = selectedTable;
+		refreshTableModel();
+		if (cellInfo.containsKey(prevSelection)) {
+			selectedTable = prevSelection;
+		} else {
+			selectedTable = null;
+		}
 //    	disableAssocButton.setEnabled(false);
-    	repaintClosureView();
-    }
-    
-    /**
-     * Refreshes the table model.
-     */
-    private void refreshTableModel() {
-    	cellInfo.clear();
-    	dependencies.clear();
-    	Table selectedTable = getSelectedTable();
+		repaintClosureView();
+	}
+	
+	/**
+	 * Refreshes the table model.
+	 */
+	private void refreshTableModel() {
+		cellInfo.clear();
+		dependencies.clear();
+		Table selectedTable = getSelectedTable();
 		refreshAssociationView(selectedTable);
 		
 		Object[] columns = new Object[tablesPerLine + 1];
@@ -721,29 +721,29 @@ public abstract class ClosureView extends javax.swing.JDialog {
 				return false;
 			}
 			private static final long serialVersionUID = -6639310191624899380L;
-    	};
-    	closureTable.setModel(tableModel);
+		};
+		closureTable.setModel(tableModel);
 
 		for (int i = 0; i < closureTable.getColumnCount(); i++) {
-            TableColumn column = closureTable.getColumnModel().getColumn(i);
-            int width = 1;
-            
-            Component comp = closureTable.getDefaultRenderer(String.class).
-            						getTableCellRendererComponent(
-            								closureTable, column.getHeaderValue(),
-            								false, false, 0, i);
-            width = Math.max(width, comp.getPreferredSize().width);
+			TableColumn column = closureTable.getColumnModel().getColumn(i);
+			int width = 1;
+			
+			Component comp = closureTable.getDefaultRenderer(String.class).
+									getTableCellRendererComponent(
+											closureTable, column.getHeaderValue(),
+											false, false, 0, i);
+			width = Math.max(width, comp.getPreferredSize().width);
 
-            for (int line = 0; line < dataArray.length; ++line) {
-	            comp = closureTable.getDefaultRenderer(String.class).
-	                             getTableCellRendererComponent(
-	                            		 closureTable, dataArray[line][i],
-	                                 false, false, line, i);
-	            width = Math.max(width, comp.getPreferredSize().width);
-            }
-            
-            column.setPreferredWidth(width);
-        }
+			for (int line = 0; line < dataArray.length; ++line) {
+				comp = closureTable.getDefaultRenderer(String.class).
+								 getTableCellRendererComponent(
+										 closureTable, dataArray[line][i],
+									 false, false, line, i);
+				width = Math.max(width, comp.getPreferredSize().width);
+			}
+			
+			column.setPreferredWidth(width);
+		}
 		closureTable.setIntercellSpacing(new Dimension(0, 0));
 //    	disableAssocButton.setEnabled(false);
 		
@@ -756,39 +756,39 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
 	private Table getSelectedTable() {
 		Table selectedTable = null;
-    	Object currentSelection = rootTable.getSelectedItem();
+		Object currentSelection = rootTable.getSelectedItem();
 		if (currentSelection instanceof String) {
 			selectedTable = getDataModel().getTableByDisplayName((String) currentSelection);
 		}
 		return selectedTable;
 	}
 
-    /**
-     * Names of associations which have been recently disabled and therefore are still be visible.
-     */
-    private Set<String> editedAssociations = new TreeSet<String>();
-    
-    /**
-     * Names of associations in the closure ordered by distance.
-     */
-    private List<List<String>> associationClosure = new ArrayList<List<String>>();
+	/**
+	 * Names of associations which have been recently disabled and therefore are still be visible.
+	 */
+	private Set<String> editedAssociations = new TreeSet<String>();
+	
+	/**
+	 * Names of associations in the closure ordered by distance.
+	 */
+	private List<List<String>> associationClosure = new ArrayList<List<String>>();
 
-    /**
-     * All components of the association-closure render.
-     */
-    private Collection<JComponent> associationClosureRender = new ArrayList<JComponent>();
-    
-    /**
-     * Name of focused table for which no association closure size limit exists.
-     */
-    private String noAssocLimitTableName;
-    private final int MAX_ASSOC_CLOSURE_SIZE_LIMIT = 200;
-    
-    /**
-     * Refreshes the associations view.
-     * 
-     * @param selectedTable selected table (focus) or <code>null</code>
-     */
+	/**
+	 * All components of the association-closure render.
+	 */
+	private Collection<JComponent> associationClosureRender = new ArrayList<JComponent>();
+	
+	/**
+	 * Name of focused table for which no association closure size limit exists.
+	 */
+	private String noAssocLimitTableName;
+	private final int MAX_ASSOC_CLOSURE_SIZE_LIMIT = 200;
+	
+	/**
+	 * Refreshes the associations view.
+	 * 
+	 * @param selectedTable selected table (focus) or <code>null</code>
+	 */
 	private void refreshAssociationView(Table selectedTable) {
 		jLabel2.setFont(nonbold);
 		jLabel3.setFont(nonbold);
@@ -805,68 +805,68 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		int y = 3;
 		int surplus = 0;
 		
-    	GridBagConstraints gridBagConstraints;
-    	int distance = 0;
-    	boolean limitExceeded = false;
-    	final Table st = getSelectedTable();
-    	boolean unlimited = noAssocLimitTableName != null && st != null && noAssocLimitTableName.equals(st.getName());
-    	Color bgColor = Color.WHITE;
+		GridBagConstraints gridBagConstraints;
+		int distance = 0;
+		boolean limitExceeded = false;
+		final Table st = getSelectedTable();
+		boolean unlimited = noAssocLimitTableName != null && st != null && noAssocLimitTableName.equals(st.getName());
+		Color bgColor = Color.WHITE;
 		for (List<String> assocList: associationClosure) {
-    		boolean firstTime = true;
-    		if (distance % 2 == 0) {
-    			bgColor = new java.awt.Color(240, 255, 255);
-    		} else {
-    			bgColor = Color.WHITE;
-            }
-    		for (final String assocName: assocList) {
-	    		Association association = getDataModel().namedAssociations.get(assocName);
-	    		if (association == null || association.isInsertDestinationBeforeSource()) {
-	    			continue;
-	    		}
-	    		if (y - 3 > MAX_ASSOC_CLOSURE_SIZE_LIMIT && !unlimited) {
-	    			limitExceeded = true;
-	    		}
-	    		if (limitExceeded) {
-	    			++surplus;
-	    			continue;
-	    		}
-	    		Font font = nonbold;
-	    		Color bgc = bgColor;
-	    		if (extractionModelEditor.graphView.selectedAssociation != null &&
-	    			assocName.equals(extractionModelEditor.graphView.selectedAssociation.getName())) {
-	    			bgc = new Color(255, 230, 220);
-	    		}
-	    		JLabel l = createLabel(y, null, assocName, bgc, distance == 0 || !firstTime? " " : (" " + distance + " "), false);
-	            firstTime = false;
-	    		l.setOpaque(true);
-	            l.setFont(font);
-	            gridBagConstraints = new java.awt.GridBagConstraints();
-	            gridBagConstraints.gridx = 0;
-	            gridBagConstraints.gridy = y;
-	            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-	            assocViewPanel.add(l, gridBagConstraints);
+			boolean firstTime = true;
+			if (distance % 2 == 0) {
+				bgColor = new java.awt.Color(240, 255, 255);
+			} else {
+				bgColor = Color.WHITE;
+			}
+			for (final String assocName: assocList) {
+				Association association = getDataModel().namedAssociations.get(assocName);
+				if (association == null || association.isInsertDestinationBeforeSource()) {
+					continue;
+				}
+				if (y - 3 > MAX_ASSOC_CLOSURE_SIZE_LIMIT && !unlimited) {
+					limitExceeded = true;
+				}
+				if (limitExceeded) {
+					++surplus;
+					continue;
+				}
+				Font font = nonbold;
+				Color bgc = bgColor;
+				if (extractionModelEditor.graphView.selectedAssociation != null &&
+					assocName.equals(extractionModelEditor.graphView.selectedAssociation.getName())) {
+					bgc = new Color(255, 230, 220);
+				}
+				JLabel l = createLabel(y, null, assocName, bgc, distance == 0 || !firstTime? " " : (" " + distance + " "), false);
+				firstTime = false;
+				l.setOpaque(true);
+				l.setFont(font);
+				gridBagConstraints = new java.awt.GridBagConstraints();
+				gridBagConstraints.gridx = 0;
+				gridBagConstraints.gridy = y;
+				gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+				assocViewPanel.add(l, gridBagConstraints);
 	
-	            l = createLabel(y, association.source.getName(), assocName, bgc, " " + getDataModel().getDisplayName(association.source), false);
-	            l.setOpaque(true);
-	            l.setFont(font);
-	            gridBagConstraints = new java.awt.GridBagConstraints();
-	            gridBagConstraints.gridx = 1;
-	            gridBagConstraints.gridy = y;
-	            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-	            assocViewPanel.add(l, gridBagConstraints);
-	            
-	            l = createLabel(y, association.destination.getName(), assocName, bgc, " " + getDataModel().getDisplayName(association.destination), false);
-	            l.setOpaque(true);
-	            l.setFont(font);
-	            gridBagConstraints = new java.awt.GridBagConstraints();
-	            gridBagConstraints.gridx = 2;
-	            gridBagConstraints.gridy = y;
-	            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-	            assocViewPanel.add(l, gridBagConstraints);
+				l = createLabel(y, association.source.getName(), assocName, bgc, " " + getDataModel().getDisplayName(association.source), false);
+				l.setOpaque(true);
+				l.setFont(font);
+				gridBagConstraints = new java.awt.GridBagConstraints();
+				gridBagConstraints.gridx = 1;
+				gridBagConstraints.gridy = y;
+				gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+				assocViewPanel.add(l, gridBagConstraints);
+				
+				l = createLabel(y, association.destination.getName(), assocName, bgc, " " + getDataModel().getDisplayName(association.destination), false);
+				l.setOpaque(true);
+				l.setFont(font);
+				gridBagConstraints = new java.awt.GridBagConstraints();
+				gridBagConstraints.gridx = 2;
+				gridBagConstraints.gridy = y;
+				gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+				assocViewPanel.add(l, gridBagConstraints);
 
-	            final JCheckBox checkBox = new JCheckBox();
-	            checkBox.setSelected(!association.isIgnored());
-	            checkBox.addItemListener(new ItemListener() {
+				final JCheckBox checkBox = new JCheckBox();
+				checkBox.setSelected(!association.isIgnored());
+				checkBox.addItemListener(new ItemListener() {
 					@Override
 					public void itemStateChanged(ItemEvent e) {
 						editedAssociations.add(assocName);
@@ -880,71 +880,71 @@ public abstract class ClosureView extends javax.swing.JDialog {
 						}
 					}
 				});
-	            associationClosureRender.add(checkBox);
-	            checkBox.setBackground(bgc);
-	            checkBox.setOpaque(true);
-	            checkBox.setFont(nonbold);
-	            gridBagConstraints = new java.awt.GridBagConstraints();
-	            gridBagConstraints.gridx = 3;
-	            gridBagConstraints.gridy = y;
-	            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-	            assocViewPanel.add(checkBox, gridBagConstraints);
+				associationClosureRender.add(checkBox);
+				checkBox.setBackground(bgc);
+				checkBox.setOpaque(true);
+				checkBox.setFont(nonbold);
+				gridBagConstraints = new java.awt.GridBagConstraints();
+				gridBagConstraints.gridx = 3;
+				gridBagConstraints.gridy = y;
+				gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+				assocViewPanel.add(checkBox, gridBagConstraints);
 
-	            String unrestrictedJoinCondition = association.getUnrestrictedJoinCondition();
-	            if (association.reversed) {
-	            	unrestrictedJoinCondition = SqlUtil.reversRestrictionCondition(unrestrictedJoinCondition);
-	            }
+				String unrestrictedJoinCondition = association.getUnrestrictedJoinCondition();
+				if (association.reversed) {
+					unrestrictedJoinCondition = SqlUtil.reversRestrictionCondition(unrestrictedJoinCondition);
+				}
 				l = createLabel(y, null, assocName, bgc, " " + unrestrictedJoinCondition, true);
-	            l.setOpaque(true);
-	            l.setFont(nonbold);
-	            l.setForeground(Color.GRAY);
-	            gridBagConstraints = new java.awt.GridBagConstraints();
-	            gridBagConstraints.gridx = 4;
-	            gridBagConstraints.gridy = y;
-	            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-	            assocViewPanel.add(l, gridBagConstraints);
-	            
-	            ++y;
-	    	}
-	    	if (firstTime && !limitExceeded) {
-		    	JLabel l = createLabel(y, null, null, bgColor, distance == 0 || !firstTime? " " : (" " + distance + " "), false);
-	            firstTime = false;
-	    		l.setOpaque(true);
-	            l.setFont(nonbold);
-	            gridBagConstraints = new java.awt.GridBagConstraints();
-	            gridBagConstraints.gridx = 0;
-	            gridBagConstraints.gridy = y;
-	            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-	            assocViewPanel.add(l, gridBagConstraints);
+				l.setOpaque(true);
+				l.setFont(nonbold);
+				l.setForeground(Color.GRAY);
+				gridBagConstraints = new java.awt.GridBagConstraints();
+				gridBagConstraints.gridx = 4;
+				gridBagConstraints.gridy = y;
+				gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+				assocViewPanel.add(l, gridBagConstraints);
+				
+				++y;
+			}
+			if (firstTime && !limitExceeded) {
+				JLabel l = createLabel(y, null, null, bgColor, distance == 0 || !firstTime? " " : (" " + distance + " "), false);
+				firstTime = false;
+				l.setOpaque(true);
+				l.setFont(nonbold);
+				gridBagConstraints = new java.awt.GridBagConstraints();
+				gridBagConstraints.gridx = 0;
+				gridBagConstraints.gridy = y;
+				gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+				assocViewPanel.add(l, gridBagConstraints);
 	
-	            l = createLabel(y, null, null, bgColor, " no non-dependency association", true);
-	            l.setOpaque(true);
-	            l.setFont(nonbold);
-	            l.setForeground(Color.GRAY);
-	            gridBagConstraints = new java.awt.GridBagConstraints();
-	            gridBagConstraints.gridx = 1;
-	            gridBagConstraints.gridy = y;
-	            gridBagConstraints.gridwidth = 4;
-	            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-	            assocViewPanel.add(l, gridBagConstraints);
-	            ++y;
-	    	}
-	    	++distance;
-    	}
-    	if (limitExceeded) {
-            JLabel l = createLabel(y, null, null, null, " " + surplus + " more...", false);
-    		l.setOpaque(true);
-            l.setFont(nonbold);
-            gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridwidth = 4;
-            gridBagConstraints.gridy = y;
-            gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-            assocViewPanel.add(l, gridBagConstraints);
+				l = createLabel(y, null, null, bgColor, " no non-dependency association", true);
+				l.setOpaque(true);
+				l.setFont(nonbold);
+				l.setForeground(Color.GRAY);
+				gridBagConstraints = new java.awt.GridBagConstraints();
+				gridBagConstraints.gridx = 1;
+				gridBagConstraints.gridy = y;
+				gridBagConstraints.gridwidth = 4;
+				gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+				assocViewPanel.add(l, gridBagConstraints);
+				++y;
+			}
+			++distance;
+		}
+		if (limitExceeded) {
+			JLabel l = createLabel(y, null, null, null, " " + surplus + " more...", false);
+			l.setOpaque(true);
+			l.setFont(nonbold);
+			gridBagConstraints = new java.awt.GridBagConstraints();
+			gridBagConstraints.gridx = 0;
+			gridBagConstraints.gridwidth = 4;
+			gridBagConstraints.gridy = y;
+			gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+			assocViewPanel.add(l, gridBagConstraints);
 
-    		JButton showAll = new JButton("Show all");
-            associationClosureRender.add(showAll);
-            showAll.addActionListener(new ActionListener() {
+			JButton showAll = new JButton("Show all");
+			associationClosureRender.add(showAll);
+			showAll.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
 					noAssocLimitTableName = st != null? st.getName() : null;
@@ -952,23 +952,23 @@ public abstract class ClosureView extends javax.swing.JDialog {
 					repaintClosureView();
 				}
 			});
-            gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = y+1;
-            gridBagConstraints.gridwidth = 4;
-            gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-            assocViewPanel.add(showAll, gridBagConstraints);
-            ++y;
-    	}
-    	JLabel l = new JLabel("");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = y;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weighty = 1.0;
-        assocViewPanel.add(l, gridBagConstraints);
-        associationClosureRender.add(l);
+			gridBagConstraints = new java.awt.GridBagConstraints();
+			gridBagConstraints.gridx = 0;
+			gridBagConstraints.gridy = y+1;
+			gridBagConstraints.gridwidth = 4;
+			gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+			assocViewPanel.add(showAll, gridBagConstraints);
+			++y;
+		}
+		JLabel l = new JLabel("");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = y;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weighty = 1.0;
+		assocViewPanel.add(l, gridBagConstraints);
+		associationClosureRender.add(l);
 	}
 	
 	private JLabel createLabel(final int y, final String tableName, final String assocName, Color bgColor, String text, boolean unbounded) {
@@ -1001,13 +1001,13 @@ public abstract class ClosureView extends javax.swing.JDialog {
 				@Override
 				public void mouseClicked(MouseEvent e) {
 					if (SwingUtilities.isRightMouseButton(e)) {
-	                	if (tableName != null) {
-	                		Table table = getDataModel().getTable(tableName);
-		                	if (table != null) {
+						if (tableName != null) {
+							Table table = getDataModel().getTable(tableName);
+							if (table != null) {
 								JPopupMenu popup = ClosureView.this.extractionModelEditor.graphView.createPopupMenu(table, false);
 								popup.show(e.getComponent(), e.getX(), e.getY());
-		                	}
-	                	}
+							}
+						}
 					}
 					else if (SwingUtilities.isLeftMouseButton(e)) {
 						Association association = getDataModel().namedAssociations.get(assocName);
@@ -1095,261 +1095,261 @@ public abstract class ClosureView extends javax.swing.JDialog {
 	}
 
 	/** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
-     */
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
+	 * initialize the form.
+	 * WARNING: Do NOT modify this code. The content of this method is
+	 * always regenerated by the Form Editor.
+	 */
+	// <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+	private void initComponents() {
+		java.awt.GridBagConstraints gridBagConstraints;
 
-        contentPanel = new javax.swing.JPanel();
-        tabbedPane = new javax.swing.JTabbedPane();
-        tablePane = new javax.swing.JPanel();
-        tablePanel = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        closureTable = new javax.swing.JTable();
-        jLabel1 = new javax.swing.JLabel();
-        searchComboBox = new net.sf.jailer.ui.JComboBox();
-        jLabel7 = new javax.swing.JLabel();
-        columnsComboBox = new net.sf.jailer.ui.JComboBox();
-        associationPane = new javax.swing.JPanel();
-        associationPanel = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        assocViewPanel = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JSeparator();
-        showOnlyEnabledCheckBox = new javax.swing.JCheckBox();
-        tableAssociationPane = new javax.swing.JPanel();
-        tabAssPanel = new javax.swing.JPanel();
-        tabAssTabPanel = new javax.swing.JPanel();
-        tabAssAssPanel = new javax.swing.JPanel();
+		contentPanel = new javax.swing.JPanel();
+		tabbedPane = new javax.swing.JTabbedPane();
+		tablePane = new javax.swing.JPanel();
+		tablePanel = new javax.swing.JPanel();
+		jScrollPane1 = new javax.swing.JScrollPane();
+		closureTable = new javax.swing.JTable();
+		jLabel1 = new javax.swing.JLabel();
+		searchComboBox = new net.sf.jailer.ui.JComboBox();
+		jLabel7 = new javax.swing.JLabel();
+		columnsComboBox = new net.sf.jailer.ui.JComboBox();
+		associationPane = new javax.swing.JPanel();
+		associationPanel = new javax.swing.JPanel();
+		jScrollPane2 = new javax.swing.JScrollPane();
+		assocViewPanel = new javax.swing.JPanel();
+		jLabel2 = new javax.swing.JLabel();
+		jLabel3 = new javax.swing.JLabel();
+		jLabel4 = new javax.swing.JLabel();
+		jLabel5 = new javax.swing.JLabel();
+		jLabel6 = new javax.swing.JLabel();
+		jSeparator1 = new javax.swing.JSeparator();
+		showOnlyEnabledCheckBox = new javax.swing.JCheckBox();
+		tableAssociationPane = new javax.swing.JPanel();
+		tabAssPanel = new javax.swing.JPanel();
+		tabAssTabPanel = new javax.swing.JPanel();
+		tabAssAssPanel = new javax.swing.JPanel();
 
-        contentPanel.setLayout(new java.awt.GridBagLayout());
+		contentPanel.setLayout(new java.awt.GridBagLayout());
 
-        setTitle("Closure Browser");
-        getContentPane().setLayout(new java.awt.GridBagLayout());
+		setTitle("Closure Browser");
+		getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        tabbedPane.setMinimumSize(new java.awt.Dimension(182, 190));
-        tabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                tabbedPaneStateChanged(evt);
-            }
-        });
+		tabbedPane.setMinimumSize(new java.awt.Dimension(182, 190));
+		tabbedPane.addChangeListener(new javax.swing.event.ChangeListener() {
+			public void stateChanged(javax.swing.event.ChangeEvent evt) {
+				tabbedPaneStateChanged(evt);
+			}
+		});
 
-        tablePane.setLayout(new javax.swing.BoxLayout(tablePane, javax.swing.BoxLayout.LINE_AXIS));
+		tablePane.setLayout(new javax.swing.BoxLayout(tablePane, javax.swing.BoxLayout.LINE_AXIS));
 
-        tablePanel.setLayout(new java.awt.GridBagLayout());
+		tablePanel.setLayout(new java.awt.GridBagLayout());
 
-        jScrollPane1.setMinimumSize(new java.awt.Dimension(23, 64));
+		jScrollPane1.setMinimumSize(new java.awt.Dimension(23, 64));
 
-        closureTable.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        closureTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Titel 1", "Titel 2", "Titel 3", "Titel 4"
-            }
-        ));
-        closureTable.setMinimumSize(new java.awt.Dimension(60, 80));
-        closureTable.setPreferredSize(new java.awt.Dimension(300, 80));
-        closureTable.setSurrendersFocusOnKeystroke(true);
-        jScrollPane1.setViewportView(closureTable);
+		closureTable.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
+		closureTable.setModel(new javax.swing.table.DefaultTableModel(
+			new Object [][] {
+				{null, null, null, null},
+				{null, null, null, null},
+				{null, null, null, null},
+				{null, null, null, null}
+			},
+			new String [] {
+				"Titel 1", "Titel 2", "Titel 3", "Titel 4"
+			}
+		));
+		closureTable.setMinimumSize(new java.awt.Dimension(60, 80));
+		closureTable.setPreferredSize(new java.awt.Dimension(300, 80));
+		closureTable.setSurrendersFocusOnKeystroke(true);
+		jScrollPane1.setViewportView(closureTable);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 30;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 2);
-        tablePanel.add(jScrollPane1, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.gridwidth = 30;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 2);
+		tablePanel.add(jScrollPane1, gridBagConstraints);
 
-        jLabel1.setText("  Search ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        tablePanel.add(jLabel1, gridBagConstraints);
+		jLabel1.setText("  Search ");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 2;
+		tablePanel.add(jLabel1, gridBagConstraints);
 
-        searchComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        searchComboBox.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                searchComboBoxActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 2;
-        tablePanel.add(searchComboBox, gridBagConstraints);
+		searchComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+		searchComboBox.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				searchComboBoxActionPerformed(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 2;
+		tablePanel.add(searchComboBox, gridBagConstraints);
 
-        jLabel7.setText("Columns ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.weightx = 1.0;
-        tablePanel.add(jLabel7, gridBagConstraints);
+		jLabel7.setText("Columns ");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 3;
+		gridBagConstraints.gridy = 2;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+		gridBagConstraints.weightx = 1.0;
+		tablePanel.add(jLabel7, gridBagConstraints);
 
-        columnsComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        columnsComboBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                columnsComboBoxItemStateChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 2;
-        tablePanel.add(columnsComboBox, gridBagConstraints);
+		columnsComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+		columnsComboBox.addItemListener(new java.awt.event.ItemListener() {
+			public void itemStateChanged(java.awt.event.ItemEvent evt) {
+				columnsComboBoxItemStateChanged(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 4;
+		gridBagConstraints.gridy = 2;
+		tablePanel.add(columnsComboBox, gridBagConstraints);
 
-        tablePane.add(tablePanel);
+		tablePane.add(tablePanel);
 
-        tabbedPane.addTab("Table", tablePane);
+		tabbedPane.addTab("Table", tablePane);
 
-        associationPane.setLayout(new javax.swing.BoxLayout(associationPane, javax.swing.BoxLayout.LINE_AXIS));
+		associationPane.setLayout(new javax.swing.BoxLayout(associationPane, javax.swing.BoxLayout.LINE_AXIS));
 
-        associationPanel.setLayout(new java.awt.GridBagLayout());
+		associationPanel.setLayout(new java.awt.GridBagLayout());
 
-        jScrollPane2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+		jScrollPane2.setBorder(javax.swing.BorderFactory.createEtchedBorder());
 
-        assocViewPanel.setLayout(new java.awt.GridBagLayout());
+		assocViewPanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel2.setText(" Distance  ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        assocViewPanel.add(jLabel2, gridBagConstraints);
+		jLabel2.setText(" Distance  ");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		assocViewPanel.add(jLabel2, gridBagConstraints);
 
-        jLabel3.setText(" to ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        assocViewPanel.add(jLabel3, gridBagConstraints);
+		jLabel3.setText(" to ");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		assocViewPanel.add(jLabel3, gridBagConstraints);
 
-        jLabel4.setText("         ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        assocViewPanel.add(jLabel4, gridBagConstraints);
+		jLabel4.setText("         ");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 3;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		assocViewPanel.add(jLabel4, gridBagConstraints);
 
-        jLabel5.setText(" on");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        assocViewPanel.add(jLabel5, gridBagConstraints);
+		jLabel5.setText(" on");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 4;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		gridBagConstraints.weightx = 1.0;
+		assocViewPanel.add(jLabel5, gridBagConstraints);
 
-        jLabel6.setText(" from ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
-        assocViewPanel.add(jLabel6, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 5;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        assocViewPanel.add(jSeparator1, gridBagConstraints);
+		jLabel6.setText(" from ");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
+		assocViewPanel.add(jLabel6, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 2;
+		gridBagConstraints.gridwidth = 5;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		assocViewPanel.add(jSeparator1, gridBagConstraints);
 
-        jScrollPane2.setViewportView(assocViewPanel);
+		jScrollPane2.setViewportView(assocViewPanel);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        associationPanel.add(jScrollPane2, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		associationPanel.add(jScrollPane2, gridBagConstraints);
 
-        showOnlyEnabledCheckBox.setText("Show only enabled associations");
-        showOnlyEnabledCheckBox.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                showOnlyEnabledCheckBoxItemStateChanged(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        associationPanel.add(showOnlyEnabledCheckBox, gridBagConstraints);
+		showOnlyEnabledCheckBox.setText("Show only enabled associations");
+		showOnlyEnabledCheckBox.addItemListener(new java.awt.event.ItemListener() {
+			public void itemStateChanged(java.awt.event.ItemEvent evt) {
+				showOnlyEnabledCheckBoxItemStateChanged(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+		associationPanel.add(showOnlyEnabledCheckBox, gridBagConstraints);
 
-        associationPane.add(associationPanel);
+		associationPane.add(associationPanel);
 
-        tabbedPane.addTab("Association", associationPane);
+		tabbedPane.addTab("Association", associationPane);
 
-        tableAssociationPane.setLayout(new javax.swing.BoxLayout(tableAssociationPane, javax.swing.BoxLayout.LINE_AXIS));
+		tableAssociationPane.setLayout(new javax.swing.BoxLayout(tableAssociationPane, javax.swing.BoxLayout.LINE_AXIS));
 
-        tabAssPanel.setLayout(new java.awt.GridBagLayout());
+		tabAssPanel.setLayout(new java.awt.GridBagLayout());
 
-        tabAssTabPanel.setLayout(new javax.swing.BoxLayout(tabAssTabPanel, javax.swing.BoxLayout.LINE_AXIS));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
-        tabAssPanel.add(tabAssTabPanel, gridBagConstraints);
+		tabAssTabPanel.setLayout(new javax.swing.BoxLayout(tabAssTabPanel, javax.swing.BoxLayout.LINE_AXIS));
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+		tabAssPanel.add(tabAssTabPanel, gridBagConstraints);
 
-        tabAssAssPanel.setLayout(new javax.swing.BoxLayout(tabAssAssPanel, javax.swing.BoxLayout.LINE_AXIS));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        tabAssPanel.add(tabAssAssPanel, gridBagConstraints);
+		tabAssAssPanel.setLayout(new javax.swing.BoxLayout(tabAssAssPanel, javax.swing.BoxLayout.LINE_AXIS));
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		tabAssPanel.add(tabAssAssPanel, gridBagConstraints);
 
-        tableAssociationPane.add(tabAssPanel);
+		tableAssociationPane.add(tabAssPanel);
 
-        tabbedPane.addTab("Table + Association", tableAssociationPane);
+		tabbedPane.addTab("Table + Association", tableAssociationPane);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 16;
-        gridBagConstraints.gridwidth = 20;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        getContentPane().add(tabbedPane, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 10;
+		gridBagConstraints.gridy = 16;
+		gridBagConstraints.gridwidth = 20;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		getContentPane().add(tabbedPane, gridBagConstraints);
 
-        pack();
-    }// </editor-fold>//GEN-END:initComponents
+		pack();
+	}// </editor-fold>//GEN-END:initComponents
 
-    private void showOnlyEnabledCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_showOnlyEnabledCheckBoxItemStateChanged
-        clearView();
-    }//GEN-LAST:event_showOnlyEnabledCheckBoxItemStateChanged
+	private void showOnlyEnabledCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_showOnlyEnabledCheckBoxItemStateChanged
+		clearView();
+	}//GEN-LAST:event_showOnlyEnabledCheckBoxItemStateChanged
 
-    private void tabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tabbedPaneStateChanged
-        initTabbedPane();
-    }//GEN-LAST:event_tabbedPaneStateChanged
+	private void tabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tabbedPaneStateChanged
+		initTabbedPane();
+	}//GEN-LAST:event_tabbedPaneStateChanged
 
-    private void searchComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchComboBoxActionPerformed
-    	Object toFind = searchComboBox.getSelectedItem();
-    	if (toFind != null && !toFind.equals(selectedTable)) {
-    		CellInfo cellInfo = this.cellInfo.get(toFind);
-    		if (cellInfo != null) {
-    			selectTableCell(cellInfo.column, cellInfo.row);
-    		}
-    	}
-    }//GEN-LAST:event_searchComboBoxActionPerformed
+	private void searchComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_searchComboBoxActionPerformed
+		Object toFind = searchComboBox.getSelectedItem();
+		if (toFind != null && !toFind.equals(selectedTable)) {
+			CellInfo cellInfo = this.cellInfo.get(toFind);
+			if (cellInfo != null) {
+				selectTableCell(cellInfo.column, cellInfo.row);
+			}
+		}
+	}//GEN-LAST:event_searchComboBoxActionPerformed
 
-    private void columnsComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_columnsComboBoxItemStateChanged
-    }//GEN-LAST:event_columnsComboBoxItemStateChanged
+	private void columnsComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_columnsComboBoxItemStateChanged
+	}//GEN-LAST:event_columnsComboBoxItemStateChanged
 
 	private void initTabbedPane() {
 		if (tabbedPane.getSelectedIndex() == 2) {
@@ -1367,40 +1367,40 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
 	private void clearView() {
 		editedAssociations.clear();
-        refreshAssociationView(getSelectedTable());
-        repaintClosureView();
+		refreshAssociationView(getSelectedTable());
+		repaintClosureView();
 	}
 
-    protected abstract void repaintClosureView();
+	protected abstract void repaintClosureView();
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JPanel assocViewPanel;
-    private javax.swing.JPanel associationPane;
-    private javax.swing.JPanel associationPanel;
-    private javax.swing.JTable closureTable;
-    private net.sf.jailer.ui.JComboBox columnsComboBox;
-    public javax.swing.JPanel contentPanel;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JSeparator jSeparator1;
-    private net.sf.jailer.ui.JComboBox searchComboBox;
-    private javax.swing.JCheckBox showOnlyEnabledCheckBox;
-    private javax.swing.JPanel tabAssAssPanel;
-    private javax.swing.JPanel tabAssPanel;
-    private javax.swing.JPanel tabAssTabPanel;
-    private javax.swing.JTabbedPane tabbedPane;
-    private javax.swing.JPanel tableAssociationPane;
-    private javax.swing.JPanel tablePane;
-    private javax.swing.JPanel tablePanel;
-    // End of variables declaration//GEN-END:variables
-    
+	// Variables declaration - do not modify//GEN-BEGIN:variables
+	private javax.swing.JPanel assocViewPanel;
+	private javax.swing.JPanel associationPane;
+	private javax.swing.JPanel associationPanel;
+	private javax.swing.JTable closureTable;
+	private net.sf.jailer.ui.JComboBox columnsComboBox;
+	public javax.swing.JPanel contentPanel;
+	private javax.swing.JLabel jLabel1;
+	private javax.swing.JLabel jLabel2;
+	private javax.swing.JLabel jLabel3;
+	private javax.swing.JLabel jLabel4;
+	private javax.swing.JLabel jLabel5;
+	private javax.swing.JLabel jLabel6;
+	private javax.swing.JLabel jLabel7;
+	private javax.swing.JScrollPane jScrollPane1;
+	private javax.swing.JScrollPane jScrollPane2;
+	private javax.swing.JSeparator jSeparator1;
+	private net.sf.jailer.ui.JComboBox searchComboBox;
+	private javax.swing.JCheckBox showOnlyEnabledCheckBox;
+	private javax.swing.JPanel tabAssAssPanel;
+	private javax.swing.JPanel tabAssPanel;
+	private javax.swing.JPanel tabAssTabPanel;
+	private javax.swing.JTabbedPane tabbedPane;
+	private javax.swing.JPanel tableAssociationPane;
+	private javax.swing.JPanel tablePane;
+	private javax.swing.JPanel tablePanel;
+	// End of variables declaration//GEN-END:variables
+	
 	private static final long serialVersionUID = 5485949274233292142L;
 	private Font normalfont = new JLabel("normal").getFont();
 	private Font nonbold = new Font(normalfont.getName(), normalfont.getStyle() & ~Font.BOLD, normalfont.getSize());

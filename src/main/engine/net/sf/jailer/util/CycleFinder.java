@@ -218,21 +218,21 @@ public class CycleFinder {
 	}
 	
 	/**
-     * Gets set of all tables involved in a cycle.
-     * 
-     * @param tables all tables
-     * @return subset of <code>tables</code> involved in a cycle
-     */
-    public static Set<Table> getCycle(Collection<Table> tables) {
-    	return getCycle(tables, new HashSet<Pair<Table,Table>>());
+	 * Gets set of all tables involved in a cycle.
+	 * 
+	 * @param tables all tables
+	 * @return subset of <code>tables</code> involved in a cycle
+	 */
+	public static Set<Table> getCycle(Collection<Table> tables) {
+		return getCycle(tables, new HashSet<Pair<Table,Table>>());
 	}
 
 	/**
-     * Gets set of all tables involved in a cycle.
-     * 
-     * @param tables all tables
-     * @return subset of <code>tables</code> involved in a cycle
-     */
+	 * Gets set of all tables involved in a cycle.
+	 * 
+	 * @param tables all tables
+	 * @return subset of <code>tables</code> involved in a cycle
+	 */
 	private static Set<Table> getCycle(Collection<Table> tables, Set<Pair<Table, Table>> tabu) {
 		Set<Table> cycle = new TreeSet<Table>(tables);
 		for (;;) {

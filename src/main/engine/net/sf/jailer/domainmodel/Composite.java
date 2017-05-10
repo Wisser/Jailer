@@ -32,57 +32,57 @@ import net.sf.jailer.datamodel.Table;
  */
 public class Composite {
 
-    /**
-     * The main table representing the entire composite.
-     */
-    public final Table mainTable;
-    
-    /**
-     * The component tables.
-     */
-    public final List<Table> componentTables;
-    
-    /**
-     * Constructor.
-     * 
-     * @param mainTable the main table representing the entire composite
-     * @param componentTables the component tables
-     */
-    public Composite(Table mainTable, List<Table> componentTables) {
-        this.mainTable = mainTable;
-        this.componentTables = new ArrayList<Table>(componentTables);
-        Collections.sort(this.componentTables);
-    }
+	/**
+	 * The main table representing the entire composite.
+	 */
+	public final Table mainTable;
+	
+	/**
+	 * The component tables.
+	 */
+	public final List<Table> componentTables;
+	
+	/**
+	 * Constructor.
+	 * 
+	 * @param mainTable the main table representing the entire composite
+	 * @param componentTables the component tables
+	 */
+	public Composite(Table mainTable, List<Table> componentTables) {
+		this.mainTable = mainTable;
+		this.componentTables = new ArrayList<Table>(componentTables);
+		Collections.sort(this.componentTables);
+	}
 
-    /**
-     * Gets all associations of a composites' table with a table outside.
-     * 
-     * @return Set of all associations of a composites' table with a table outside
-     */
-    public Set<Association> getAssociations() {
-        Set<Association> associationSet = new HashSet<Association>();
-        Set<Table> allTables = new HashSet<Table>();
-        allTables.add(mainTable);
-        allTables.addAll(componentTables);
-        
-        for (Table table: allTables) {
-            for (Association a: table.associations) {
-                if (!allTables.contains(a.destination)) {
-                    associationSet.add(a);
-                }
-            }
-        }
-        return associationSet;
-    }
+	/**
+	 * Gets all associations of a composites' table with a table outside.
+	 * 
+	 * @return Set of all associations of a composites' table with a table outside
+	 */
+	public Set<Association> getAssociations() {
+		Set<Association> associationSet = new HashSet<Association>();
+		Set<Table> allTables = new HashSet<Table>();
+		allTables.add(mainTable);
+		allTables.addAll(componentTables);
+		
+		for (Table table: allTables) {
+			for (Association a: table.associations) {
+				if (!allTables.contains(a.destination)) {
+					associationSet.add(a);
+				}
+			}
+		}
+		return associationSet;
+	}
 
-    /**
-     * Stringifies a composite.
-     */
-    @Override
-    public String toString() {
-        StringBuffer str = new StringBuffer(componentTables.isEmpty()? "Table " : "Composite ");
-        str.append(mainTable.getName());
-        return str.toString();
-    }
+	/**
+	 * Stringifies a composite.
+	 */
+	@Override
+	public String toString() {
+		StringBuffer str = new StringBuffer(componentTables.isEmpty()? "Table " : "Composite ");
+		str.append(mainTable.getName());
+		return str.toString();
+	}
 
 }

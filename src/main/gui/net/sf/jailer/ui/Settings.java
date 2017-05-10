@@ -35,114 +35,114 @@ import javax.swing.JTextField;
  */
 public class Settings  {
 
-    /**
-     * The formular fields.
-     */
-    private final Map<String, JComponent> fields;
+	/**
+	 * The formular fields.
+	 */
+	private final Map<String, JComponent> fields;
 
-    /**
-     * The name of the file holding the settings.
-     */
-    private final String FILENAME;
-    
-    /**
-     * <code>true</code> iff no settings-file exists.
-     */
-    public final boolean isNew;
-    
-    /**
-     * Holds field values for each setting.
-     */
-    private Map<String, Map<String, String>> settings = new TreeMap<String, Map<String,String>>();
-    
-    public String currentSetting = null;
-    
-    /**
-     * Constructor.
-     * 
-     * @param fields the formular fields
-     */
-    @SuppressWarnings("unchecked")
+	/**
+	 * The name of the file holding the settings.
+	 */
+	private final String FILENAME;
+	
+	/**
+	 * <code>true</code> iff no settings-file exists.
+	 */
+	public final boolean isNew;
+	
+	/**
+	 * Holds field values for each setting.
+	 */
+	private Map<String, Map<String, String>> settings = new TreeMap<String, Map<String,String>>();
+	
+	public String currentSetting = null;
+	
+	/**
+	 * Constructor.
+	 * 
+	 * @param fields the formular fields
+	 */
+	@SuppressWarnings("unchecked")
 	public Settings(String fileName, Map<String, JComponent> fields) {
-        this.FILENAME = fileName;
-        this.fields = fields;
-        boolean isNew = true;
-        if (new File(FILENAME).exists()) {
-            try {
-                ObjectInputStream in = new ObjectInputStream(new FileInputStream(FILENAME));
-                settings = (Map<String, Map<String, String>>) in.readObject();
-                currentSetting = (String) in.readObject();
-                in.close();
-                isNew = false;
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-        this.isNew = isNew;
-    }
+		this.FILENAME = fileName;
+		this.fields = fields;
+		boolean isNew = true;
+		if (new File(FILENAME).exists()) {
+			try {
+				ObjectInputStream in = new ObjectInputStream(new FileInputStream(FILENAME));
+				settings = (Map<String, Map<String, String>>) in.readObject();
+				currentSetting = (String) in.readObject();
+				in.close();
+				isNew = false;
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		this.isNew = isNew;
+	}
 
-    /**
-     * Gets names of all settings.
-     * 
-     * @return names of all settings
-     */
-    public Object[] getSettingNames() {
-        return settings.keySet().toArray();
-    }
+	/**
+	 * Gets names of all settings.
+	 * 
+	 * @return names of all settings
+	 */
+	public Object[] getSettingNames() {
+		return settings.keySet().toArray();
+	}
 
-    /**
-     * Saves a setting.
-     * 
-     * @param name the name of the setting
-     */
-    public void save(String name) {
-        if (name != null && name.trim().length() > 0) {
-            Map<String, String> setting = new HashMap<String, String>();
-            for (Map.Entry<String, JComponent> entry: fields.entrySet()) {
-            	if (entry.getValue() instanceof JTextField) {
-            		setting.put(entry.getKey(), ((JTextField) entry.getValue()).getText());
-            	} else if (entry.getValue() instanceof JCheckBox) {
-            		setting.put(entry.getKey(), Boolean.valueOf(((JCheckBox) entry.getValue()).isSelected()).toString());
-            	}
-            }
-            settings.put(name.trim(), setting);
-            currentSetting = name;
-            try {
-                File file = new File(FILENAME);
-                file.delete();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            try {
-                File file = new File(FILENAME);
-                ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
-                out.writeObject(settings);
-                out.writeObject(currentSetting);
-                out.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-    }
+	/**
+	 * Saves a setting.
+	 * 
+	 * @param name the name of the setting
+	 */
+	public void save(String name) {
+		if (name != null && name.trim().length() > 0) {
+			Map<String, String> setting = new HashMap<String, String>();
+			for (Map.Entry<String, JComponent> entry: fields.entrySet()) {
+				if (entry.getValue() instanceof JTextField) {
+					setting.put(entry.getKey(), ((JTextField) entry.getValue()).getText());
+				} else if (entry.getValue() instanceof JCheckBox) {
+					setting.put(entry.getKey(), Boolean.valueOf(((JCheckBox) entry.getValue()).isSelected()).toString());
+				}
+			}
+			settings.put(name.trim(), setting);
+			currentSetting = name;
+			try {
+				File file = new File(FILENAME);
+				file.delete();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			try {
+				File file = new File(FILENAME);
+				ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
+				out.writeObject(settings);
+				out.writeObject(currentSetting);
+				out.close();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+	}
 
-    /**
-     * Restores a setting.
-     * 
-     * @param name the name of the setting
-     */
-    public void restore(String name) {
-        if (name != null && name.trim().length() > 0) {
-            Map<String, String> setting = settings.get(name.trim());
-            if (setting != null) {
-                for (Map.Entry<String, JComponent> entry: fields.entrySet()) {
-                	if (entry.getValue() instanceof JTextField) {
-                		((JTextField) entry.getValue()).setText(setting.get(entry.getKey()));
-                	} else if (entry.getValue() instanceof JCheckBox) {
-                		((JCheckBox) entry.getValue()).setSelected(Boolean.valueOf(setting.get(entry.getKey())));
-                	}
-                }
-            }
-        }
-    }
-    
+	/**
+	 * Restores a setting.
+	 * 
+	 * @param name the name of the setting
+	 */
+	public void restore(String name) {
+		if (name != null && name.trim().length() > 0) {
+			Map<String, String> setting = settings.get(name.trim());
+			if (setting != null) {
+				for (Map.Entry<String, JComponent> entry: fields.entrySet()) {
+					if (entry.getValue() instanceof JTextField) {
+						((JTextField) entry.getValue()).setText(setting.get(entry.getKey()));
+					} else if (entry.getValue() instanceof JCheckBox) {
+						((JCheckBox) entry.getValue()).setSelected(Boolean.valueOf(setting.get(entry.getKey())));
+					}
+				}
+			}
+		}
+	}
+	
 }

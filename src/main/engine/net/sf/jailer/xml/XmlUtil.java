@@ -104,20 +104,20 @@ public class XmlUtil {
 	/**
 	 * Identity transformer for building XML strings.
 	 */
-    private static Transformer transformer;
+	private static Transformer transformer;
 
-    /**
+	/**
 	 * Identity transformer for building XML strings without XML declaration.
 	 */
-    private static Transformer transformerWODecl;
-    
-    /**
-  	 * Generates a XML string from DOM without XML declaration.
-  	 * 
-  	 * @param xmlDocument the DOM 
-  	 * @return XML string
-  	 */
-  	public static synchronized String buildOmitDeclaration(Document xmlDocument) throws TransformerException {
+	private static Transformer transformerWODecl;
+	
+	/**
+	   * Generates a XML string from DOM without XML declaration.
+	   * 
+	   * @param xmlDocument the DOM 
+	   * @return XML string
+	   */
+	  public static synchronized String buildOmitDeclaration(Document xmlDocument) throws TransformerException {
 		if (transformerWODecl == null) {
 			TransformerFactory xformFactory = TransformerFactory.newInstance();
 			try {
@@ -133,12 +133,12 @@ public class XmlUtil {
 		transformerWODecl.transform(new DOMSource(xmlDocument), new StreamResult(out));
 		return out.getBuffer().toString();
 	}
-  	
-    /**
+	  
+	/**
 	 * Generates a XML string from DOM.
 	 * 
 	 * @param xmlDocument the DOM
-     * @param omitXMLDeclaration 
+	 * @param omitXMLDeclaration 
 	 * @return XML string
 	 */
 	public static synchronized String build(Document xmlDocument) throws TransformerException {
@@ -150,10 +150,10 @@ public class XmlUtil {
 				// ignore
 			}
 			transformer = xformFactory.newTransformer();
-		    transformer.setOutputProperty(OutputKeys.INDENT, "yes");
+			transformer.setOutputProperty(OutputKeys.INDENT, "yes");
 		}
 		StringWriter out = new StringWriter();
-        transformer.transform(new DOMSource(xmlDocument), new StreamResult(out));
+		transformer.transform(new DOMSource(xmlDocument), new StreamResult(out));
 		return out.getBuffer().toString();
 	}
 
@@ -239,35 +239,35 @@ public class XmlUtil {
 			StreamResult streamResult, Charset charset)
 			throws SAXException {
 		SAXTransformerFactory tf = (SAXTransformerFactory) TransformerFactory.newInstance();
-        try {
-        	tf.setAttribute("indent-number", new Integer(2));
-        } catch (Exception e) {
-        	// ignore, workaround for JDK 1.5 bug, see http://forum.java.sun.com/thread.jspa?threadID=562510
-        }
-        TransformerHandler transformerHandler;
+		try {
+			tf.setAttribute("indent-number", new Integer(2));
+		} catch (Exception e) {
+			// ignore, workaround for JDK 1.5 bug, see http://forum.java.sun.com/thread.jspa?threadID=562510
+		}
+		TransformerHandler transformerHandler;
 		try {
 			transformerHandler = tf.newTransformerHandler();
 		} catch (TransformerConfigurationException e) {
 			throw new RuntimeException(e);
 		}
-        Transformer serializer = transformerHandler.getTransformer();
-        serializer.setOutputProperty(OutputKeys.ENCODING, charset.name());
-        serializer.setOutputProperty(OutputKeys.METHOD, "xml");
-        serializer.setOutputProperty(OutputKeys.INDENT, "yes");
-        transformerHandler.setResult(streamResult);
-        transformerHandler.startDocument();
-        String newline = System.getProperty("line.separator");
-        if (newline == null) {
-        	newline = "\n";
-        }
+		Transformer serializer = transformerHandler.getTransformer();
+		serializer.setOutputProperty(OutputKeys.ENCODING, charset.name());
+		serializer.setOutputProperty(OutputKeys.METHOD, "xml");
+		serializer.setOutputProperty(OutputKeys.INDENT, "yes");
+		transformerHandler.setResult(streamResult);
+		transformerHandler.startDocument();
+		String newline = System.getProperty("line.separator");
+		if (newline == null) {
+			newline = "\n";
+		}
 		commentHeader = (newline + commentHeader).replaceAll("\\n--", newline + " ");
 		transformerHandler.characters("\n".toCharArray(), 0, 1);
-        transformerHandler.comment(commentHeader.toCharArray(), 0, commentHeader.toCharArray().length);
+		transformerHandler.comment(commentHeader.toCharArray(), 0, commentHeader.toCharArray().length);
 		transformerHandler.characters("\n".toCharArray(), 0, 1);
 		if (rootTag.length() > 0) {
 			transformerHandler.startElement("", "", rootTag, null);
 		}
-        return transformerHandler;
+		return transformerHandler;
 	}
 
 }

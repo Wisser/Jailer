@@ -68,34 +68,34 @@ public class DataModel {
 	public static final String MODELNAME_CSV_FILE = "modelname.csv";
 
 	/**
-     * Maps table-names to tables.
-     */
-    private Map<String, Table> tables = new HashMap<String, Table>();
-    
+	 * Maps table-names to tables.
+	 */
+	private Map<String, Table> tables = new HashMap<String, Table>();
+	
 	/**
-     * Maps table display names to tables.
-     */
-    private Map<String, Table> tablesByDisplayName = new HashMap<String, Table>();
-    
+	 * Maps table display names to tables.
+	 */
+	private Map<String, Table> tablesByDisplayName = new HashMap<String, Table>();
+	
 	/**
-     * Maps tables to display names.
-     */
-    private Map<Table, String> displayName = new HashMap<Table, String>();
-    
-    /**
-     * Maps association-names to associations;
-     */
-    public Map<String, Association> namedAssociations = new TreeMap<String, Association>();
-    
-    /**
-     * The restriction model.
-     */
-    private RestrictionModel restrictionModel;
-    
-    /**
-     * Internal version number. Incremented on each modification.
-     */
-    public long version = 0;
+	 * Maps tables to display names.
+	 */
+	private Map<Table, String> displayName = new HashMap<Table, String>();
+	
+	/**
+	 * Maps association-names to associations;
+	 */
+	public Map<String, Association> namedAssociations = new TreeMap<String, Association>();
+	
+	/**
+	 * The restriction model.
+	 */
+	private RestrictionModel restrictionModel;
+	
+	/**
+	 * Internal version number. Incremented on each modification.
+	 */
+	public long version = 0;
 
 	/**
 	 * The execution context.
@@ -103,53 +103,53 @@ public class DataModel {
 	private final ExecutionContext executionContext;
 	
 	/**
-     * Default model name.
-     */
+	 * Default model name.
+	 */
 	public static final String DEFAULT_NAME = "New Model";
 
-    /**
-     * For creation of primary-keys.
-     */
-    private final PrimaryKeyFactory primaryKeyFactory;
+	/**
+	 * For creation of primary-keys.
+	 */
+	private final PrimaryKeyFactory primaryKeyFactory;
 
-    /**
-     * Gets name of data model folder.
-     */
-    public static String getDatamodelFolder(ExecutionContext executionContext) {
-    	return executionContext.getQualifiedDatamodelFolder();
-    }
+	/**
+	 * Gets name of data model folder.
+	 */
+	public static String getDatamodelFolder(ExecutionContext executionContext) {
+		return executionContext.getQualifiedDatamodelFolder();
+	}
 
-    /**
-     * Gets name of file containing the table definitions.
-     */
-    public static String getTablesFile(ExecutionContext executionContext) {
-    	return getDatamodelFolder(executionContext) + File.separator + TABLE_CSV_FILE;
-    }
+	/**
+	 * Gets name of file containing the table definitions.
+	 */
+	public static String getTablesFile(ExecutionContext executionContext) {
+		return getDatamodelFolder(executionContext) + File.separator + TABLE_CSV_FILE;
+	}
 
-    /**
-     * Gets name of file containing the model name
-     */
-    public static String getModelNameFile(ExecutionContext executionContext) {
-    	return getDatamodelFolder(executionContext) + File.separator + MODELNAME_CSV_FILE;
-    }
+	/**
+	 * Gets name of file containing the model name
+	 */
+	public static String getModelNameFile(ExecutionContext executionContext) {
+		return getDatamodelFolder(executionContext) + File.separator + MODELNAME_CSV_FILE;
+	}
 
-    /**
-     * Gets name of file containing the display names.
-     */
-    public static String getDisplayNamesFile(ExecutionContext executionContext) {
-    	return getDatamodelFolder(executionContext) + File.separator + "displayname.csv";
-    }
+	/**
+	 * Gets name of file containing the display names.
+	 */
+	public static String getDisplayNamesFile(ExecutionContext executionContext) {
+		return getDatamodelFolder(executionContext) + File.separator + "displayname.csv";
+	}
 
-    /**
-     * Gets name of file containing the column definitions.
-     */
-    public static String getColumnsFile(ExecutionContext executionContext) {
-    	return getDatamodelFolder(executionContext) + File.separator + "column.csv";
-    }
+	/**
+	 * Gets name of file containing the column definitions.
+	 */
+	public static String getColumnsFile(ExecutionContext executionContext) {
+		return getDatamodelFolder(executionContext) + File.separator + "column.csv";
+	}
 
-    /**
-     * Gets name of file containing the association definitions.
-     */
+	/**
+	 * Gets name of file containing the association definitions.
+	 */
 	public static String getAssociationsFile(ExecutionContext executionContext) {
 		return getDatamodelFolder(executionContext) + File.separator + "association.csv";
 	}
@@ -162,13 +162,13 @@ public class DataModel {
 	}
 	
 	/**
-     * Name of file containing the version number.
-     */
-    public static String getVersionFile(ExecutionContext executionContext) {
-    	return getDatamodelFolder(executionContext) + File.separator + "version.csv";
-   	}
+	 * Name of file containing the version number.
+	 */
+	public static String getVersionFile(ExecutionContext executionContext) {
+		return getDatamodelFolder(executionContext) + File.separator + "version.csv";
+	   }
 
-    /**
+	/**
 	 * Export modus, SQL or XML. (GUI support).
 	 */
 	private String exportModus;
@@ -203,24 +203,24 @@ public class DataModel {
 	private static final Logger _log = Logger.getLogger(DataModel.class);
 
 	/**
-     * Gets a table by name.
-     * 
-     * @param name the name of the table
-     * @return the table or <code>null</code> iff no table with the name exists
-     */
-    public Table getTable(String name) {
-        return tables.get(name);
-    }
+	 * Gets a table by name.
+	 * 
+	 * @param name the name of the table
+	 * @return the table or <code>null</code> iff no table with the name exists
+	 */
+	public Table getTable(String name) {
+		return tables.get(name);
+	}
 
-    /**
-     * Gets a table by display name.
-     * 
-     * @param displayName the display name of the table
-     * @return the table or <code>null</code> iff no table with the display name exists
-     */
-    public Table getTableByDisplayName(String displayName) {
-        return tablesByDisplayName.get(displayName);
-    }
+	/**
+	 * Gets a table by display name.
+	 * 
+	 * @param displayName the display name of the table
+	 * @return the table or <code>null</code> iff no table with the display name exists
+	 */
+	public Table getTableByDisplayName(String displayName) {
+		return tablesByDisplayName.get(displayName);
+	}
 
 	/**
 	 * Gets name of the model.
@@ -240,125 +240,125 @@ public class DataModel {
 		return lastModified;
 	}
 
-    /**
-     * Gets display name of a table
-     * 
-     * @param table the table
-     * @return the display name of the table
-     */
-    public String getDisplayName(Table table) {
-        String displayName = this.displayName.get(table);
-        if (displayName == null) {
-        	return table.getName();
-        }
-        return displayName;
-    }
+	/**
+	 * Gets display name of a table
+	 * 
+	 * @param table the table
+	 * @return the display name of the table
+	 */
+	public String getDisplayName(Table table) {
+		String displayName = this.displayName.get(table);
+		if (displayName == null) {
+			return table.getName();
+		}
+		return displayName;
+	}
 
-    /**
-     * Gets all tables.
-     * 
-     * @return a collection of all tables
-     */
-    public Collection<Table> getTables() {
-        return tables.values();
-    }
-    
-    /**
-     * Reads in <code>table.csv</code> and <code>association.csv</code>
-     * and builds the relational data model.
-     */
-    public DataModel(PrimaryKeyFactory primaryKeyFactory, Map<String, String> sourceSchemaMapping, ExecutionContext executionContext) throws IOException {
-        this(null, null, sourceSchemaMapping, null, primaryKeyFactory, executionContext, false);
-    }
+	/**
+	 * Gets all tables.
+	 * 
+	 * @return a collection of all tables
+	 */
+	public Collection<Table> getTables() {
+		return tables.values();
+	}
+	
+	/**
+	 * Reads in <code>table.csv</code> and <code>association.csv</code>
+	 * and builds the relational data model.
+	 */
+	public DataModel(PrimaryKeyFactory primaryKeyFactory, Map<String, String> sourceSchemaMapping, ExecutionContext executionContext) throws IOException {
+		this(null, null, sourceSchemaMapping, null, primaryKeyFactory, executionContext, false);
+	}
 
-    /**
-     * Reads in <code>table.csv</code> and <code>association.csv</code>
-     * and builds the relational data model.
-     */
-    public DataModel(ExecutionContext executionContext) throws IOException {
-        this(null, null, new PrimaryKeyFactory(), executionContext);
-    }
+	/**
+	 * Reads in <code>table.csv</code> and <code>association.csv</code>
+	 * and builds the relational data model.
+	 */
+	public DataModel(ExecutionContext executionContext) throws IOException {
+		this(null, null, new PrimaryKeyFactory(), executionContext);
+	}
 
-    /**
-     * Reads in <code>table.csv</code> and <code>association.csv</code>
-     * and builds the relational data model.
-     */
-    public DataModel(Map<String, String> sourceSchemaMapping, ExecutionContext executionContext, boolean failOnMissingTables) throws IOException {
-        this(null, null, sourceSchemaMapping, null, new PrimaryKeyFactory(), executionContext, failOnMissingTables);
-    }
+	/**
+	 * Reads in <code>table.csv</code> and <code>association.csv</code>
+	 * and builds the relational data model.
+	 */
+	public DataModel(Map<String, String> sourceSchemaMapping, ExecutionContext executionContext, boolean failOnMissingTables) throws IOException {
+		this(null, null, sourceSchemaMapping, null, new PrimaryKeyFactory(), executionContext, failOnMissingTables);
+	}
 
-    /**
-     * Reads in <code>table.csv</code> and <code>association.csv</code>
-     * and builds the relational data model.
-     * 
-     * @param additionalTablesFile table file to read too
-     * @param additionalAssociationsFile association file to read too
-     */
-    public DataModel(String additionalTablesFile, String additionalAssociationsFile, PrimaryKeyFactory primaryKeyFactory, ExecutionContext executionContext) throws IOException {
-    	this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, primaryKeyFactory, executionContext, false);
-    }
+	/**
+	 * Reads in <code>table.csv</code> and <code>association.csv</code>
+	 * and builds the relational data model.
+	 * 
+	 * @param additionalTablesFile table file to read too
+	 * @param additionalAssociationsFile association file to read too
+	 */
+	public DataModel(String additionalTablesFile, String additionalAssociationsFile, PrimaryKeyFactory primaryKeyFactory, ExecutionContext executionContext) throws IOException {
+		this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, primaryKeyFactory, executionContext, false);
+	}
 
-    /**
-     * Reads in <code>table.csv</code> and <code>association.csv</code>
-     * and builds the relational data model.
-     * 
-     * @param additionalTablesFile table file to read too
-     * @param additionalAssociationsFile association file to read too
-     */
-    public DataModel(String additionalTablesFile, String additionalAssociationsFile, ExecutionContext executionContext) throws IOException {
-    	this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, new PrimaryKeyFactory(), executionContext, false);
-    }
+	/**
+	 * Reads in <code>table.csv</code> and <code>association.csv</code>
+	 * and builds the relational data model.
+	 * 
+	 * @param additionalTablesFile table file to read too
+	 * @param additionalAssociationsFile association file to read too
+	 */
+	public DataModel(String additionalTablesFile, String additionalAssociationsFile, ExecutionContext executionContext) throws IOException {
+		this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, new PrimaryKeyFactory(), executionContext, false);
+	}
 
-    /**
-     * Reads in <code>table.csv</code> and <code>association.csv</code>
-     * and builds the relational data model.
-     * 
-     * @param additionalTablesFile table file to read too
-     * @param additionalAssociationsFile association file to read too
-     */
-    public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, ExecutionContext executionContext) throws IOException {
-    	this(additionalTablesFile, additionalAssociationsFile, sourceSchemaMapping, assocFilter, new PrimaryKeyFactory(), executionContext, false);
-    }
+	/**
+	 * Reads in <code>table.csv</code> and <code>association.csv</code>
+	 * and builds the relational data model.
+	 * 
+	 * @param additionalTablesFile table file to read too
+	 * @param additionalAssociationsFile association file to read too
+	 */
+	public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, ExecutionContext executionContext) throws IOException {
+		this(additionalTablesFile, additionalAssociationsFile, sourceSchemaMapping, assocFilter, new PrimaryKeyFactory(), executionContext, false);
+	}
 
-    /**
-     * Reads in <code>table.csv</code> and <code>association.csv</code>
-     * and builds the relational data model.
-     * 
-     * @param additionalTablesFile table file to read too
-     * @param additionalAssociationsFile association file to read too
-     * @throws IOException 
-     */
-    public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, PrimaryKeyFactory primaryKeyFactory, ExecutionContext executionContext, boolean failOnMissingTables) throws IOException {
-    	this.executionContext = executionContext;
-    	this.primaryKeyFactory = primaryKeyFactory;
-    	try {
+	/**
+	 * Reads in <code>table.csv</code> and <code>association.csv</code>
+	 * and builds the relational data model.
+	 * 
+	 * @param additionalTablesFile table file to read too
+	 * @param additionalAssociationsFile association file to read too
+	 * @throws IOException 
+	 */
+	public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, PrimaryKeyFactory primaryKeyFactory, ExecutionContext executionContext, boolean failOnMissingTables) throws IOException {
+		this.executionContext = executionContext;
+		this.primaryKeyFactory = primaryKeyFactory;
+		try {
 			List<String> excludeFromDeletion = new ArrayList<String>();
 			PrintUtil.loadTableList(excludeFromDeletion, openModelFile(new File(DataModel.getExcludeFromDeletionFile(executionContext)), executionContext));
 
-	    	// tables
-	    	File tabFile = new File(getTablesFile(executionContext));
+			// tables
+			File tabFile = new File(getTablesFile(executionContext));
 			InputStream nTablesFile = openModelFile(tabFile, executionContext);
 			if (failOnMissingTables && nTablesFile == null) {
 				throw new RuntimeException("Datamodel not found: " + executionContext.getDataModelURL());
 			}
 			CsvFile tablesFile = new CsvFile(nTablesFile, null, tabFile.getPath(), null);
-	        List<CsvFile.Line> tableList = new ArrayList<CsvFile.Line>(tablesFile.getLines());
-	        if (additionalTablesFile != null) {
-	            tableList.addAll(new CsvFile(new File(additionalTablesFile)).getLines());
-	        }
-	        for (CsvFile.Line line: tableList) {
-	            boolean defaultUpsert = "Y".equalsIgnoreCase(line.cells.get(1));
-	            List<Column> pk = new ArrayList<Column>();
-	            int j;
-	            for (j = 2; j < line.cells.size() && line.cells.get(j).toString().length() > 0; ++j) {
-	                String col = line.cells.get(j).trim();
-	                try {
-	                	pk.add(Column.parse(col));
-	                } catch (Exception e) {
-	                	throw new RuntimeException("unable to load table '" + line.cells.get(0) + "'. " + line.location, e);
-	                }
-	            }
-	            String mappedSchemaTableName = SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0));
+			List<CsvFile.Line> tableList = new ArrayList<CsvFile.Line>(tablesFile.getLines());
+			if (additionalTablesFile != null) {
+				tableList.addAll(new CsvFile(new File(additionalTablesFile)).getLines());
+			}
+			for (CsvFile.Line line: tableList) {
+				boolean defaultUpsert = "Y".equalsIgnoreCase(line.cells.get(1));
+				List<Column> pk = new ArrayList<Column>();
+				int j;
+				for (j = 2; j < line.cells.size() && line.cells.get(j).toString().length() > 0; ++j) {
+					String col = line.cells.get(j).trim();
+					try {
+						pk.add(Column.parse(col));
+					} catch (Exception e) {
+						throw new RuntimeException("unable to load table '" + line.cells.get(0) + "'. " + line.location, e);
+					}
+				}
+				String mappedSchemaTableName = SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0));
 				Table table = new Table(mappedSchemaTableName, primaryKeyFactory.createPrimaryKey(pk), defaultUpsert, excludeFromDeletion.contains(mappedSchemaTableName));
 				table.setAuthor(line.cells.get(j + 1));
 				table.setOriginalName(line.cells.get(0));
@@ -367,338 +367,338 @@ public class DataModel {
 						throw new RuntimeException("Duplicate table name '" + mappedSchemaTableName + "'");
 					}
 				}
-	            tables.put(mappedSchemaTableName, table);
-	        }
-	        
-	        // columns
-	        File colFile = new File(getColumnsFile(executionContext));
+				tables.put(mappedSchemaTableName, table);
+			}
+			
+			// columns
+			File colFile = new File(getColumnsFile(executionContext));
 			InputStream is = openModelFile(colFile, executionContext);
-	        if (is != null) {
-		    	CsvFile columnsFile = new CsvFile(is, null, colFile.getPath(), null);
-		        List<CsvFile.Line> columnsList = new ArrayList<CsvFile.Line>(columnsFile.getLines());
-		        for (CsvFile.Line line: columnsList) {
-		            List<Column> columns = new ArrayList<Column>();
-		            for (int j = 1; j < line.cells.size() && line.cells.get(j).toString().length() > 0; ++j) {
-		                String col = line.cells.get(j).trim();
-		                try {
-		                	columns.add(Column.parse(col));
-		                } catch (Exception e) {
-		                	// ignore
+			if (is != null) {
+				CsvFile columnsFile = new CsvFile(is, null, colFile.getPath(), null);
+				List<CsvFile.Line> columnsList = new ArrayList<CsvFile.Line>(columnsFile.getLines());
+				for (CsvFile.Line line: columnsList) {
+					List<Column> columns = new ArrayList<Column>();
+					for (int j = 1; j < line.cells.size() && line.cells.get(j).toString().length() > 0; ++j) {
+						String col = line.cells.get(j).trim();
+						try {
+							columns.add(Column.parse(col));
+						} catch (Exception e) {
+							// ignore
 						}
-		            }
-		            Table table = tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0)));
-		            if (table != null) {
-		            	table.setColumns(columns);
-		            }
-		        }
-	        }
-	        
-	        // associations
-	        File assFile = new File(getAssociationsFile(executionContext));
+					}
+					Table table = tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0)));
+					if (table != null) {
+						table.setColumns(columns);
+					}
+				}
+			}
+			
+			// associations
+			File assFile = new File(getAssociationsFile(executionContext));
 			List<CsvFile.Line> associationList = new ArrayList<CsvFile.Line>(new CsvFile(openModelFile(assFile, executionContext), null, assFile.getPath(), assocFilter).getLines());
-	        if (additionalAssociationsFile != null) {
-	            associationList.addAll(new CsvFile(new File(additionalAssociationsFile)).getLines());
-	        }
-	        for (CsvFile.Line line: associationList) {
-	            String location = line.location;
-	            try {
-	            	String associationLoadFailedMessage = "Unable to load association from " + line.cells.get(0) + " to " + line.cells.get(1) + " on " + line.cells.get(4) + " because: ";
-	                Table tableA = (Table) tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0)));
-	                if (tableA == null) {
-	                     continue;
+			if (additionalAssociationsFile != null) {
+				associationList.addAll(new CsvFile(new File(additionalAssociationsFile)).getLines());
+			}
+			for (CsvFile.Line line: associationList) {
+				String location = line.location;
+				try {
+					String associationLoadFailedMessage = "Unable to load association from " + line.cells.get(0) + " to " + line.cells.get(1) + " on " + line.cells.get(4) + " because: ";
+					Table tableA = (Table) tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0)));
+					if (tableA == null) {
+						 continue;
 //	                     throw new RuntimeException(associationLoadFailedMessage + "Table '" + line.cells.get(0) + "' not found");
-	                }
-	                Table tableB = (Table) tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(1)));
-	                if (tableB == null) {
-	                	continue;
+					}
+					Table tableB = (Table) tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(1)));
+					if (tableB == null) {
+						continue;
 //	                	throw new RuntimeException(associationLoadFailedMessage + "Table '" + line.cells.get(1) + "' not found");
-	                }
-	                boolean insertSourceBeforeDestination = "A".equalsIgnoreCase(line.cells.get(2)); 
-	                boolean insertDestinationBeforeSource = "B".equalsIgnoreCase(line.cells.get(2));
-	                Cardinality cardinality = Cardinality.parse(line.cells.get(3).trim());
-	                if (cardinality == null) {
-	                	cardinality = Cardinality.MANY_TO_MANY;
-	                }
-	                String joinCondition = line.cells.get(4);
-	                String name = line.cells.get(5);
-	                if ("".equals(name)) {
-	                    name = null;
-	                }
-	                if (name == null) {
-	                    throw new RuntimeException(associationLoadFailedMessage + "Association name missing (column 6 is empty, each association must have an unique name)");
-	                }
-	                String author = line.cells.get(6);
-	                Association associationA = new Association(tableA, tableB, insertSourceBeforeDestination, insertDestinationBeforeSource, joinCondition, this, false, cardinality, author);
-	                Association associationB = new Association(tableB, tableA, insertDestinationBeforeSource, insertSourceBeforeDestination, joinCondition, this, true, cardinality.reverse(), author);
-	                associationA.reversalAssociation = associationB;
-	                associationB.reversalAssociation = associationA;
-	                tableA.associations.add(associationA);
-	                tableB.associations.add(associationB);
-	                if (name != null) {
-	                    if (namedAssociations.put(name, associationA) != null) {
-	                        throw new RuntimeException("duplicate association name: " + name);
-	                    }
-	                    associationA.setName(name);
-	                    name = "inverse-" + name;
-	                    if (namedAssociations.put(name, associationB) != null) {
-	                        throw new RuntimeException("duplicate association name: " + name);
-	                    }
-	                    associationB.setName(name);
-	                }
-	            } catch (Exception e) {
-	                throw new RuntimeException(location + ": " + e.getMessage(), e);
-	            }
-	        }
-	        initDisplayNames();
-	        initTableOrdinals();
-	        
-	        // model name
-	        File nameFile = new File(getModelNameFile(executionContext));
-	        name = DEFAULT_NAME;
-	    	lastModified = null;
-	        try {
-	        	lastModified = nameFile.lastModified();
-		        if (nameFile.exists()) {
-		        	List<CsvFile.Line> nameList = new ArrayList<CsvFile.Line>(new CsvFile(nameFile).getLines());
-		        	if (nameList.size() > 0) {
-		        		CsvFile.Line line =  nameList.get(0);
-		        		name = line.cells.get(0);
-		        		lastModified = Long.parseLong(line.cells.get(1));
-		        	}
-		        }
-	        } catch (Throwable t) {
-	        	// keep defaults
-	        }
-    	} catch (IOException e) {
-    		_log.error("failed to load data-model " + getDatamodelFolder(executionContext) + File.separator, e);
-    		throw e;
-    	}
-    }
+					}
+					boolean insertSourceBeforeDestination = "A".equalsIgnoreCase(line.cells.get(2)); 
+					boolean insertDestinationBeforeSource = "B".equalsIgnoreCase(line.cells.get(2));
+					Cardinality cardinality = Cardinality.parse(line.cells.get(3).trim());
+					if (cardinality == null) {
+						cardinality = Cardinality.MANY_TO_MANY;
+					}
+					String joinCondition = line.cells.get(4);
+					String name = line.cells.get(5);
+					if ("".equals(name)) {
+						name = null;
+					}
+					if (name == null) {
+						throw new RuntimeException(associationLoadFailedMessage + "Association name missing (column 6 is empty, each association must have an unique name)");
+					}
+					String author = line.cells.get(6);
+					Association associationA = new Association(tableA, tableB, insertSourceBeforeDestination, insertDestinationBeforeSource, joinCondition, this, false, cardinality, author);
+					Association associationB = new Association(tableB, tableA, insertDestinationBeforeSource, insertSourceBeforeDestination, joinCondition, this, true, cardinality.reverse(), author);
+					associationA.reversalAssociation = associationB;
+					associationB.reversalAssociation = associationA;
+					tableA.associations.add(associationA);
+					tableB.associations.add(associationB);
+					if (name != null) {
+						if (namedAssociations.put(name, associationA) != null) {
+							throw new RuntimeException("duplicate association name: " + name);
+						}
+						associationA.setName(name);
+						name = "inverse-" + name;
+						if (namedAssociations.put(name, associationB) != null) {
+							throw new RuntimeException("duplicate association name: " + name);
+						}
+						associationB.setName(name);
+					}
+				} catch (Exception e) {
+					throw new RuntimeException(location + ": " + e.getMessage(), e);
+				}
+			}
+			initDisplayNames();
+			initTableOrdinals();
+			
+			// model name
+			File nameFile = new File(getModelNameFile(executionContext));
+			name = DEFAULT_NAME;
+			lastModified = null;
+			try {
+				lastModified = nameFile.lastModified();
+				if (nameFile.exists()) {
+					List<CsvFile.Line> nameList = new ArrayList<CsvFile.Line>(new CsvFile(nameFile).getLines());
+					if (nameList.size() > 0) {
+						CsvFile.Line line =  nameList.get(0);
+						name = line.cells.get(0);
+						lastModified = Long.parseLong(line.cells.get(1));
+					}
+				}
+			} catch (Throwable t) {
+				// keep defaults
+			}
+		} catch (IOException e) {
+			_log.error("failed to load data-model " + getDatamodelFolder(executionContext) + File.separator, e);
+			throw e;
+		}
+	}
 
-    private final List<Table> tableList = new ArrayList<Table>();
+	private final List<Table> tableList = new ArrayList<Table>();
 	private final List<FilterTemplate> filterTemplates = new ArrayList<FilterTemplate>();
-    
-    /**
-     * Initializes table ordinals.
-     */
-    private void initTableOrdinals() {
-    	for (Table table: getSortedTables()) {
-    		table.ordinal = tableList.size();
-    		tableList.add(table);
-    	}
+	
+	/**
+	 * Initializes table ordinals.
+	 */
+	private void initTableOrdinals() {
+		for (Table table: getSortedTables()) {
+			table.ordinal = tableList.size();
+			tableList.add(table);
+		}
 	}
 
 	/**
-     * Initializes display names.
-     */
-    private void initDisplayNames() throws IOException {
-    	Set<String> unqualifiedNames = new HashSet<String>();
-    	Set<String> nonUniqueUnqualifiedNames = new HashSet<String>();
-    	
-    	for (Table table: getTables()) {
-    		String uName = table.getUnqualifiedName();
-    		if (unqualifiedNames.contains(uName)) {
-    			nonUniqueUnqualifiedNames.add(uName);
-    		} else {
-    			unqualifiedNames.add(uName);
-    		}
-    	}
+	 * Initializes display names.
+	 */
+	private void initDisplayNames() throws IOException {
+		Set<String> unqualifiedNames = new HashSet<String>();
+		Set<String> nonUniqueUnqualifiedNames = new HashSet<String>();
+		
+		for (Table table: getTables()) {
+			String uName = table.getUnqualifiedName();
+			if (unqualifiedNames.contains(uName)) {
+				nonUniqueUnqualifiedNames.add(uName);
+			} else {
+				unqualifiedNames.add(uName);
+			}
+		}
 
-    	for (Table table: getTables()) {
-    		String uName = table.getUnqualifiedName();
-    		if (uName != null && uName.length() > 0) {
-                char fc = uName.charAt(0);
-                if (!Character.isLetterOrDigit(fc) && fc != '_') {
-                   String fcStr = Character.toString(fc);
-                   if (uName.startsWith(fcStr) && uName.endsWith(fcStr)) {
-                       uName = uName.substring(1, uName.length() -1);
-                   }
-                }
-    		}
-    		String schema = table.getSchema(null);
-    		String displayName;
-    		if (nonUniqueUnqualifiedNames.contains(uName) && schema != null) {
-    			displayName = uName + " (" + schema + ")";
-    		} else {
-    			displayName = uName;
-    		}
-    		this.displayName.put(table, displayName);
-    		tablesByDisplayName.put(displayName, table);
-    	}
-    	
-    	Map<String, String> userDefinedDisplayNames = new TreeMap<String, String>();
-        File dnFile = new File(DataModel.getDisplayNamesFile(executionContext));
-        if (dnFile.exists()) {
-        	for (CsvFile.Line dnl: new CsvFile(dnFile).getLines()) {
-        		userDefinedDisplayNames.put(dnl.cells.get(0), dnl.cells.get(1));
-        	}
-        }
-        
-    	for (Map.Entry<String, String> e: userDefinedDisplayNames.entrySet()) {
-    		Table table = getTable(e.getKey());
-    		if (table != null && !tablesByDisplayName.containsKey(e.getValue())) {
-    			String displayName = getDisplayName(table);
-        		this.displayName.remove(table);
-        		if (displayName != null) {
-        			tablesByDisplayName.remove(displayName);
-        		}
-        		this.displayName.put(table, e.getValue());
-        		tablesByDisplayName.put(e.getValue(), table);
-    		}
-    	}
-    }
-    
-    /**
-     * Gets the primary-key to be used for the entity-table.
-     *
-     * @param session for null value guessing
-     * @return the universal primary key
-     */
-    PrimaryKey getUniversalPrimaryKey(Session session) {
-        return primaryKeyFactory.getUniversalPrimaryKey(session);
-    }
+		for (Table table: getTables()) {
+			String uName = table.getUnqualifiedName();
+			if (uName != null && uName.length() > 0) {
+				char fc = uName.charAt(0);
+				if (!Character.isLetterOrDigit(fc) && fc != '_') {
+				   String fcStr = Character.toString(fc);
+				   if (uName.startsWith(fcStr) && uName.endsWith(fcStr)) {
+					   uName = uName.substring(1, uName.length() -1);
+				   }
+				}
+			}
+			String schema = table.getSchema(null);
+			String displayName;
+			if (nonUniqueUnqualifiedNames.contains(uName) && schema != null) {
+				displayName = uName + " (" + schema + ")";
+			} else {
+				displayName = uName;
+			}
+			this.displayName.put(table, displayName);
+			tablesByDisplayName.put(displayName, table);
+		}
+		
+		Map<String, String> userDefinedDisplayNames = new TreeMap<String, String>();
+		File dnFile = new File(DataModel.getDisplayNamesFile(executionContext));
+		if (dnFile.exists()) {
+			for (CsvFile.Line dnl: new CsvFile(dnFile).getLines()) {
+				userDefinedDisplayNames.put(dnl.cells.get(0), dnl.cells.get(1));
+			}
+		}
+		
+		for (Map.Entry<String, String> e: userDefinedDisplayNames.entrySet()) {
+			Table table = getTable(e.getKey());
+			if (table != null && !tablesByDisplayName.containsKey(e.getValue())) {
+				String displayName = getDisplayName(table);
+				this.displayName.remove(table);
+				if (displayName != null) {
+					tablesByDisplayName.remove(displayName);
+				}
+				this.displayName.put(table, e.getValue());
+				tablesByDisplayName.put(e.getValue(), table);
+			}
+		}
+	}
+	
+	/**
+	 * Gets the primary-key to be used for the entity-table.
+	 *
+	 * @param session for null value guessing
+	 * @return the universal primary key
+	 */
+	PrimaryKey getUniversalPrimaryKey(Session session) {
+		return primaryKeyFactory.getUniversalPrimaryKey(session);
+	}
 
-    /**
-     * Gets the primary-key to be used for the entity-table.
-     * 
-     * @return the universal primary key
-     */
-    PrimaryKey getUniversalPrimaryKey() {
-        return getUniversalPrimaryKey(null);
-    }
+	/**
+	 * Gets the primary-key to be used for the entity-table.
+	 * 
+	 * @return the universal primary key
+	 */
+	PrimaryKey getUniversalPrimaryKey() {
+		return getUniversalPrimaryKey(null);
+	}
 
-    /**
-     * Gets the restriction model.
-     * 
-     * @return the restriction model
-     */
-    public RestrictionModel getRestrictionModel() {
-        return restrictionModel;
-    }
+	/**
+	 * Gets the restriction model.
+	 * 
+	 * @return the restriction model
+	 */
+	public RestrictionModel getRestrictionModel() {
+		return restrictionModel;
+	}
 
-    /**
-     * Sets the restriction model.
-     * 
-     * @param restrictionModel the restriction model
-     */
-    public void setRestrictionModel(RestrictionModel restrictionModel) {
-        this.restrictionModel = restrictionModel;
+	/**
+	 * Sets the restriction model.
+	 * 
+	 * @param restrictionModel the restriction model
+	 */
+	public void setRestrictionModel(RestrictionModel restrictionModel) {
+		this.restrictionModel = restrictionModel;
 		++version;
-    }
+	}
 
-    /**
-     * Gets all independent tables
-     * (i.e. tables which don't depend on other tables in the set)
-     * of a given table-set.
-     * 
-     * @param tableSet the table-set
-     * @return the sub-set of independent tables of the table-set
-     */
-    public Set<Table> getIndependentTables(Set<Table> tableSet) {
-    	return getIndependentTables(tableSet, null);
-    }
-    
-    /**
-     * Gets all independent tables
-     * (i.e. tables which don't depend on other tables in the set)
-     * of a given table-set.
-     * 
-     * @param tableSet the table-set
-     * @param associations the associations to consider, <code>null</code> for all associations
-     * @return the sub-set of independent tables of the table-set
-     */
-    public Set<Table> getIndependentTables(Set<Table> tableSet, Set<Association> associations) {
-        Set<Table> independentTables = new HashSet<Table>();
-        
-        for (Table table: tableSet) {
-            boolean depends = false;
-            for (Association a: table.associations) {
-            	if (associations == null || associations.contains(a)) {
-	                if (tableSet.contains(a.destination)) {
-	                    if (a.getJoinCondition() != null) {
-	                        if (a.isInsertDestinationBeforeSource()) {
-	                            depends = true;
-	                            break;
-	                        }
-	                    }
-	                }
-                }
-            }
-            if (!depends) {
-                independentTables.add(table);
-            }
-        }
-        return independentTables;
-    }
+	/**
+	 * Gets all independent tables
+	 * (i.e. tables which don't depend on other tables in the set)
+	 * of a given table-set.
+	 * 
+	 * @param tableSet the table-set
+	 * @return the sub-set of independent tables of the table-set
+	 */
+	public Set<Table> getIndependentTables(Set<Table> tableSet) {
+		return getIndependentTables(tableSet, null);
+	}
+	
+	/**
+	 * Gets all independent tables
+	 * (i.e. tables which don't depend on other tables in the set)
+	 * of a given table-set.
+	 * 
+	 * @param tableSet the table-set
+	 * @param associations the associations to consider, <code>null</code> for all associations
+	 * @return the sub-set of independent tables of the table-set
+	 */
+	public Set<Table> getIndependentTables(Set<Table> tableSet, Set<Association> associations) {
+		Set<Table> independentTables = new HashSet<Table>();
+		
+		for (Table table: tableSet) {
+			boolean depends = false;
+			for (Association a: table.associations) {
+				if (associations == null || associations.contains(a)) {
+					if (tableSet.contains(a.destination)) {
+						if (a.getJoinCondition() != null) {
+							if (a.isInsertDestinationBeforeSource()) {
+								depends = true;
+								break;
+							}
+						}
+					}
+				}
+			}
+			if (!depends) {
+				independentTables.add(table);
+			}
+		}
+		return independentTables;
+	}
 
-    /**
-     * Transposes the data-model.
-     */
-    public void transpose() {
-        if (getRestrictionModel() != null) {
-            getRestrictionModel().transpose();
-        }
+	/**
+	 * Transposes the data-model.
+	 */
+	public void transpose() {
+		if (getRestrictionModel() != null) {
+			getRestrictionModel().transpose();
+		}
 		++version;
-    }
-    
-    /**
-     * Stringifies the data model.
-     */
-    public String toString() {
-        List<Table> sortedTables;
-        sortedTables = getSortedTables();
-        StringBuffer str = new StringBuffer();
-        if (restrictionModel != null) {
-            str.append("restricted by: " + restrictionModel + "\n");
-        }
-        for (Table table: sortedTables) {
-            str.append(table);
-            if (printClosures) {
-                str.append("  closure =");
-                str.append(new PrintUtil().tableSetAsString(table.closure(true)) + "\n\n");
-            }
-        }
-        return str.toString();
-    }
+	}
+	
+	/**
+	 * Stringifies the data model.
+	 */
+	public String toString() {
+		List<Table> sortedTables;
+		sortedTables = getSortedTables();
+		StringBuffer str = new StringBuffer();
+		if (restrictionModel != null) {
+			str.append("restricted by: " + restrictionModel + "\n");
+		}
+		for (Table table: sortedTables) {
+			str.append(table);
+			if (printClosures) {
+				str.append("  closure =");
+				str.append(new PrintUtil().tableSetAsString(table.closure(true)) + "\n\n");
+			}
+		}
+		return str.toString();
+	}
 
-    /**
-     * Gets list of tables sorted by name.
-     * 
-     * @return list of tables sorted by name
-     */
+	/**
+	 * Gets list of tables sorted by name.
+	 * 
+	 * @return list of tables sorted by name
+	 */
 	public List<Table> getSortedTables() {
 		List<Table> sortedTables;
 		sortedTables = new ArrayList<Table>(getTables());
-        Collections.sort(sortedTables, new Comparator<Table>() {
-            public int compare(Table o1, Table o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
+		Collections.sort(sortedTables, new Comparator<Table>() {
+			public int compare(Table o1, Table o2) {
+				return o1.getName().compareTo(o2.getName());
+			}
+		});
 		return sortedTables;
 	}
 
-    /**
-     * Printing-mode.
-     */
-    public static boolean printClosures = false;
+	/**
+	 * Printing-mode.
+	 */
+	public static boolean printClosures = false;
 
-    /**
-     * Normalizes a set of tables.
-     * 
-     * @param tables set of tables
-     * @return set of all tables from this model for which a table with same name exists in <code>tables</code> 
-     */
-    public Set<Table> normalize(Set<Table> tables) {
-        Set<Table> result = new HashSet<Table>();
-        for (Table table: tables) {
-            result.add(getTable(table.getName()));
-        }
-        return result;
-    }
+	/**
+	 * Normalizes a set of tables.
+	 * 
+	 * @param tables set of tables
+	 * @return set of all tables from this model for which a table with same name exists in <code>tables</code> 
+	 */
+	public Set<Table> normalize(Set<Table> tables) {
+		Set<Table> result = new HashSet<Table>();
+		for (Table table: tables) {
+			result.add(getTable(table.getName()));
+		}
+		return result;
+	}
 
-    /**
-     * Assigns a unique ID to each association.
-     */
+	/**
+	 * Assigns a unique ID to each association.
+	 */
 	public void assignAssociationIDs() {
 		int n = 1;
 		for (Map.Entry<String, Association> e: namedAssociations.entrySet()) {
@@ -706,14 +706,14 @@ public class DataModel {
 		}
 	}
 
-    /**
+	/**
 	 * Gets export modus, SQL or XML. (GUI support).
 	 */
 	public String getExportModus() {
 		return exportModus;
 	}
 	
-    /**
+	/**
 	 * Sets export modus, SQL or XML. (GUI support).
 	 */
 	public void setExportModus(String modus) {
@@ -736,94 +736,94 @@ public class DataModel {
 		++version;
 	}
 
-    /**
-     * Gets internal version number. Incremented on each modification.
-     * 
-     * @return internal version number. Incremented on each modification.
-     */
-    public long getVersion() {
-    	return version;
-    }
-    
-    /**
-     * Thrown if a table has no primary key.
-     */
-    public static class NoPrimaryKeyException extends RuntimeException {
+	/**
+	 * Gets internal version number. Incremented on each modification.
+	 * 
+	 * @return internal version number. Incremented on each modification.
+	 */
+	public long getVersion() {
+		return version;
+	}
+	
+	/**
+	 * Thrown if a table has no primary key.
+	 */
+	public static class NoPrimaryKeyException extends RuntimeException {
 		private static final long serialVersionUID = 4523935351640139649L;
 		public final Table table;
-    	public NoPrimaryKeyException(Table table) {
+		public NoPrimaryKeyException(Table table) {
 			super("Table '" + table.getName() + "' has no primary key");
 			this.table = table;
 		}
-    }
+	}
 
-    /**
-     * Checks whether all tables in the closure of a given subject have primary keys.
-     * 
-     * @param subject the subject
-     * @throws NoPrimaryKeyException if a table has no primary key
-     */
-    public void checkForPrimaryKey(Set<Table> subjects, boolean forDeletion) throws NoPrimaryKeyException {
-    	Set<Table> checked = new HashSet<Table>();
-    	for (Table subject: subjects) {
-	    	Set<Table> toCheck = new HashSet<Table>(subject.closure(checked, true));
-	    	if (forDeletion) {
-	    		Set<Table> border = new HashSet<Table>();
-	    		for (Table table: toCheck) {
-	    			for (Association a: table.associations) {
-	    				if (!a.reversalAssociation.isIgnored()) {
-	    					border.add(a.destination);
-	    				}
-	    			}
-	    		}
-	    		toCheck.addAll(border);
-	    	}
-	    	for (Table table: toCheck) {
-	    		if (table.primaryKey.getColumns().isEmpty()) {
-	    			throw new NoPrimaryKeyException(table);
-	    		}
-	    	}
-	    	checked.addAll(toCheck);
-    	}
-    }
+	/**
+	 * Checks whether all tables in the closure of a given subject have primary keys.
+	 * 
+	 * @param subject the subject
+	 * @throws NoPrimaryKeyException if a table has no primary key
+	 */
+	public void checkForPrimaryKey(Set<Table> subjects, boolean forDeletion) throws NoPrimaryKeyException {
+		Set<Table> checked = new HashSet<Table>();
+		for (Table subject: subjects) {
+			Set<Table> toCheck = new HashSet<Table>(subject.closure(checked, true));
+			if (forDeletion) {
+				Set<Table> border = new HashSet<Table>();
+				for (Table table: toCheck) {
+					for (Association a: table.associations) {
+						if (!a.reversalAssociation.isIgnored()) {
+							border.add(a.destination);
+						}
+					}
+				}
+				toCheck.addAll(border);
+			}
+			for (Table table: toCheck) {
+				if (table.primaryKey.getColumns().isEmpty()) {
+					throw new NoPrimaryKeyException(table);
+				}
+			}
+			checked.addAll(toCheck);
+		}
+	}
 
-    /**
-     * Gets all parameters which occur in subject condition, association restrictions or XML templates.
-     * 
-     * @param subjectCondition the subject condition
-     * @return all parameters which occur in subject condition, association restrictions or XML templates
-     */
-    public SortedSet<String> getParameters(String subjectCondition, List<ExtractionModel.AdditionalSubject> additionalSubjects) {
-    	SortedSet<String> parameters = new TreeSet<String>();
-    	
-    	ParameterHandler.collectParameter(subjectCondition, parameters);
-    	if (additionalSubjects != null) {
-    		for (AdditionalSubject as: additionalSubjects) {
-    			ParameterHandler.collectParameter(as.getCondition(), parameters);
-    		}
-    	}
-    	for (Association a: namedAssociations.values()) {
-    		String r = a.getRestrictionCondition();
-    		if (r != null) {
-    			ParameterHandler.collectParameter(r, parameters);
-    		}
-    	}
-    	for (Table t: getTables()) {
-    		String r = t.getXmlTemplate();
-    		if (r != null) {
-    			ParameterHandler.collectParameter(r, parameters);
-    		}
-    		for (Column c: t.getColumns()) {
-    			if (c.getFilterExpression() != null) {
-    				ParameterHandler.collectParameter(c.getFilterExpression(), parameters);
-    			}
-    		}
-    	}
-    	return parameters;
-    }
+	/**
+	 * Gets all parameters which occur in subject condition, association restrictions or XML templates.
+	 * 
+	 * @param subjectCondition the subject condition
+	 * @return all parameters which occur in subject condition, association restrictions or XML templates
+	 */
+	public SortedSet<String> getParameters(String subjectCondition, List<ExtractionModel.AdditionalSubject> additionalSubjects) {
+		SortedSet<String> parameters = new TreeSet<String>();
+		
+		ParameterHandler.collectParameter(subjectCondition, parameters);
+		if (additionalSubjects != null) {
+			for (AdditionalSubject as: additionalSubjects) {
+				ParameterHandler.collectParameter(as.getCondition(), parameters);
+			}
+		}
+		for (Association a: namedAssociations.values()) {
+			String r = a.getRestrictionCondition();
+			if (r != null) {
+				ParameterHandler.collectParameter(r, parameters);
+			}
+		}
+		for (Table t: getTables()) {
+			String r = t.getXmlTemplate();
+			if (r != null) {
+				ParameterHandler.collectParameter(r, parameters);
+			}
+			for (Column c: t.getColumns()) {
+				if (c.getFilterExpression() != null) {
+					ParameterHandler.collectParameter(c.getFilterExpression(), parameters);
+				}
+			}
+		}
+		return parameters;
+	}
 
-    private static InputStream openModelFile(File file, ExecutionContext executionContext) {
-    	try {
+	private static InputStream openModelFile(File file, ExecutionContext executionContext) {
+		try {
 			URL dataModelURL = executionContext.getDataModelURL();
 			URI uri = dataModelURL.toURI();
 			URI resolved = new URI(uri.toString() + file.getName()); // uri.resolve(file.getName());
@@ -835,13 +835,13 @@ public class DataModel {
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
-    }
-    
-    /**
-     * Gets {@link #getLastModified()} as String.
-     * 
-     * @return {@link #getLastModified()} as String
-     */
+	}
+	
+	/**
+	 * Gets {@link #getLastModified()} as String.
+	 * 
+	 * @return {@link #getLastModified()} as String
+	 */
 	public String getLastModifiedAsString() {
 		try {
 			return SimpleDateFormat.getDateTimeInstance(SimpleDateFormat.MEDIUM, SimpleDateFormat.MEDIUM).format(new Date(getLastModified()));
@@ -884,8 +884,8 @@ public class DataModel {
 		out.println();
 		out.println(CsvFile.BLOCK_INDICATOR + "xml settings");
 		out.println(CsvFile.encodeCell(getXmlSettings().datePattern) + ";" + 
-			    CsvFile.encodeCell(getXmlSettings().timestampPattern) + ";" +
-			    CsvFile.encodeCell(getXmlSettings().rootTag));
+				CsvFile.encodeCell(getXmlSettings().timestampPattern) + ";" +
+				CsvFile.encodeCell(getXmlSettings().rootTag));
 		out.println(CsvFile.BLOCK_INDICATOR + "xml column mapping");
 		for (Table table: getTables()) {
 			String xmlMapping = table.getXmlTemplate();
@@ -1041,11 +1041,11 @@ public class DataModel {
 
 	private Map<Association, Map<Column, Column>> sToDMaps = new HashMap<Association, Map<Column,Column>>();
 	
-    /**
-     * Removes all derived filters and renews them.
-     */
-    public void deriveFilters() {
-    	sToDMaps.clear();
+	/**
+	 * Removes all derived filters and renews them.
+	 */
+	public void deriveFilters() {
+		sToDMaps.clear();
 		for (Table table: getTables()) {
 			for (Column column: table.getColumns()) {
 				Filter filter = column.getFilter();

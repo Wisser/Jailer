@@ -25,12 +25,12 @@ import net.sf.jailer.ExecutionContext;
  */
 public interface StatisticRenovator {
 
-    /**
-     * Renews the DB table statistics for the working-tables.
-     * 
-     * @param session for execution of SQL-statements
-     */
-    void renew(Session session, ExecutionContext executionContext) throws Exception;
-    
+	/**
+	 * Renews the DB table statistics for the working-tables.
+	 * 
+	 * @param session for execution of SQL-statements
+	 */
+	void renew(Session session, ExecutionContext executionContext) throws Exception;
+	
 }
 

@@ -121,22 +121,22 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 			}
 			this.localSession = localDatabase.getSession();
 		}
-        collectNonderivedFilteredColumnsPerTable();
+		collectNonderivedFilteredColumnsPerTable();
 	}
 	
 	private void collectNonderivedFilteredColumnsPerTable() {
-    	for (Table table: totalProgress) {
-    		List<Column> filteredColumns = new ArrayList<Column>();
-    		for (Column column: table.getColumns()) {
-    			Filter filter = column.getFilter();
-    			if (filter != null && !filter.isApplyAtExport() && (!(filter.getFilterSource() instanceof PKColumnFilterSource))) {
-    				filteredColumns.add(column);
-    			}
-    		}
-    		if (!filteredColumns.isEmpty()) {
-    			nonderivedFilteredColumnsPerTable.put(table, filteredColumns);
-    		}
-    	}
+		for (Table table: totalProgress) {
+			List<Column> filteredColumns = new ArrayList<Column>();
+			for (Column column: table.getColumns()) {
+				Filter filter = column.getFilter();
+				if (filter != null && !filter.isApplyAtExport() && (!(filter.getFilterSource() instanceof PKColumnFilterSource))) {
+					filteredColumns.add(column);
+				}
+			}
+			if (!filteredColumns.isEmpty()) {
+				nonderivedFilteredColumnsPerTable.put(table, filteredColumns);
+			}
+		}
 	}
 
 	/**
@@ -375,7 +375,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 							}
 						}
 						@Override
-					    protected String qualifiedTableName(Table t) {
+						protected String qualifiedTableName(Table t) {
 							return schema + quoting.requote(t.getUnqualifiedName());
 						}
 						@Override

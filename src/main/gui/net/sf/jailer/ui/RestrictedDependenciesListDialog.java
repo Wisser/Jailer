@@ -33,24 +33,24 @@ import net.sf.jailer.ui.AssociationListUI.DefaultAssociationModel;
  */
 public abstract class RestrictedDependenciesListDialog extends ClosureBorderDialog {
 
-    private static final long serialVersionUID = -7151994890007647782L;
-    
-    /** Creates new form ClosureBorderDialog */
-    public RestrictedDependenciesListDialog(java.awt.Frame parent) {
-        super(parent, false);
-        setTitle("Restricted Dependencies");
-        setLocation(60, 120);
-        setSize(500, 500);
-        setAlwaysOnTop(true);
-        refresh();
-    }
+	private static final long serialVersionUID = -7151994890007647782L;
+	
+	/** Creates new form ClosureBorderDialog */
+	public RestrictedDependenciesListDialog(java.awt.Frame parent) {
+		super(parent, false);
+		setTitle("Restricted Dependencies");
+		setLocation(60, 120);
+		setSize(500, 500);
+		setAlwaysOnTop(true);
+		refresh();
+	}
 
-    /**
-     * Refreshes view after model changes.
-     */
+	/**
+	 * Refreshes view after model changes.
+	 */
 	public void refresh() {
 		DataModel datamodel = getDataModel();
- 		if (datamodel != null) {
+		 if (datamodel != null) {
 			Set<Association> restDeps = new HashSet<Association>();
 			for (Table table: datamodel.getTables()) {
 				for (Association association: table.associations) {

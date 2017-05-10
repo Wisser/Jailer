@@ -31,6 +31,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.subsetting.ScriptType;
+
 /**
  * Inserts the content of the files
  * <ul>
@@ -45,65 +46,65 @@ import net.sf.jailer.subsetting.ScriptType;
 public class FileBasedScriptEnhancer implements ScriptEnhancer {
 	
 	/**
-     * Adds nothing.
-     */
-    public void addComments(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
-            Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
-    }
-    /**
-     * Adds epilogs.
-     */
-    public void addEpilog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
-            Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
-        File dir = new File("epilog" + File.separatorChar + scriptType);
-        addEnhancement(script, progress, dir, executionContext);
-          addEnhancement(script, dir, "EPILOG.sql");
-    }
-    /**
-     * Adds prologs.
-     */
-    public void addProlog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
-            Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
-        File dir = new File("prolog" + File.separatorChar + scriptType);
-           addEnhancement(script, dir, "PROLOG.sql");
-        addEnhancement(script, progress, dir, executionContext);
-    }
-    /**
-     * Adds enhancement to the script.
-     *
-     * @param script writer to script
-     * @param progress the export progress
-     * @param entityGraph 
-     */
-    private void addEnhancement(Writer script, Set<Table> progress, File dir, ExecutionContext executionContext) throws IOException {
-        if (ScriptFormat.SQL.equals(executionContext.getScriptFormat())) {
-            Set<String> fileNames = new TreeSet<String>();
-            for (Table table: progress) {
-                fileNames.add(table.getOriginalName() + ".sql");
-            }
-            for (String fileName: fileNames) {
-                addEnhancement(script, dir, fileName);
-            }
-        }
-    }
-    /**
-     * Adds enhancement to the script.
-     *
-     * @param script writer to script
-     */
-    private void addEnhancement(Writer script, File dir, String fileName)
-            throws FileNotFoundException, IOException {
-        File enhancement = new File(dir, fileName);
-        if (enhancement.exists()) {
-            BufferedReader in = new BufferedReader(new FileReader(enhancement));
-            String line;
-            while ((line = in.readLine()) != null) {
-                script.append(line);
-                script.append(System.getProperty("line.separator", "\n"));
-            }
-            in.close();
-        }
-    }
-    
+	 * Adds nothing.
+	 */
+	public void addComments(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
+			Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
+	}
+	/**
+	 * Adds epilogs.
+	 */
+	public void addEpilog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
+			Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
+		File dir = new File("epilog" + File.separatorChar + scriptType);
+		addEnhancement(script, progress, dir, executionContext);
+		  addEnhancement(script, dir, "EPILOG.sql");
+	}
+	/**
+	 * Adds prologs.
+	 */
+	public void addProlog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph,
+			Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException {
+		File dir = new File("prolog" + File.separatorChar + scriptType);
+		   addEnhancement(script, dir, "PROLOG.sql");
+		addEnhancement(script, progress, dir, executionContext);
+	}
+	/**
+	 * Adds enhancement to the script.
+	 *
+	 * @param script writer to script
+	 * @param progress the export progress
+	 * @param entityGraph 
+	 */
+	private void addEnhancement(Writer script, Set<Table> progress, File dir, ExecutionContext executionContext) throws IOException {
+		if (ScriptFormat.SQL.equals(executionContext.getScriptFormat())) {
+			Set<String> fileNames = new TreeSet<String>();
+			for (Table table: progress) {
+				fileNames.add(table.getOriginalName() + ".sql");
+			}
+			for (String fileName: fileNames) {
+				addEnhancement(script, dir, fileName);
+			}
+		}
+	}
+	/**
+	 * Adds enhancement to the script.
+	 *
+	 * @param script writer to script
+	 */
+	private void addEnhancement(Writer script, File dir, String fileName)
+			throws FileNotFoundException, IOException {
+		File enhancement = new File(dir, fileName);
+		if (enhancement.exists()) {
+			BufferedReader in = new BufferedReader(new FileReader(enhancement));
+			String line;
+			while ((line = in.readLine()) != null) {
+				script.append(line);
+				script.append(System.getProperty("line.separator", "\n"));
+			}
+			in.close();
+		}
+	}
+	
 }
- 
+
