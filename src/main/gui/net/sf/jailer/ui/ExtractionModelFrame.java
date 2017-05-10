@@ -1642,7 +1642,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 					customizeNimbus();
 				} catch (Exception x) {
 				}
-				UIUtil.initSyntaxKit();
+				try {
+					UIUtil.initSyntaxKit();
+				} catch(Throwable t) {
+					t.printStackTrace();
+				}
 				
 				String file = null;
 				try {
@@ -1691,7 +1695,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 						};
 						dataModelManagerDialog.setVisible(true);
 					}
-				} catch (Exception e) {
+				} catch (Throwable e) {
 					UIUtil.showException(null, "Error", e);
 				}
 			}
