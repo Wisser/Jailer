@@ -44,29 +44,30 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 		if (!sqlError) {
 			if (title != null) {
 				setTitle(title);
+				sendButton.setVisible(false);
 			} else {
 				setTitle("Internal Error");
-			}
-			sendButton.grabFocus();
-			KeyListener keyListener = new KeyListener() {
-				@Override
-				public void keyTyped(KeyEvent e) {
-					if (e.getKeyChar() == '\n') {
-						sendButtonActionPerformed(null);
-						setVisible(false);
+				sendButton.grabFocus();
+				KeyListener keyListener = new KeyListener() {
+					@Override
+					public void keyTyped(KeyEvent e) {
+						if (e.getKeyChar() == '\n') {
+							sendButtonActionPerformed(null);
+							setVisible(false);
+						}
 					}
-				}
-
-				@Override
-				public void keyReleased(KeyEvent e) {
-				}
-
-				@Override
-				public void keyPressed(KeyEvent arg0) {
-				}
-			};
-			sendButton.addKeyListener(keyListener);
-			jButton1.setVisible(false);
+	
+					@Override
+					public void keyReleased(KeyEvent e) {
+					}
+	
+					@Override
+					public void keyPressed(KeyEvent arg0) {
+					}
+				};
+				sendButton.addKeyListener(keyListener);
+				jButton1.setVisible(false);
+			}
 		}
 		int y = 1;
 		for (String line : message.trim().split("\n")) {
