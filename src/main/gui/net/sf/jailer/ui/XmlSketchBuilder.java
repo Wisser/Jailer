@@ -61,39 +61,39 @@ public class XmlSketchBuilder {
 	}
 	
 	private static void insertAssociationSketch(Element element, Table table, Document doc, int depth) throws DOMException, ParserConfigurationException, SAXException, IOException {
-    	NodeList children = element.getChildNodes();
-    	int i = 0;
-    	while (i < children.getLength()) {
-    		if (children.item(i) instanceof Element) {
-    			Element e = (Element) children.item(i);
-    			if (XmlUtil.NS_URI.equals(e.getNamespaceURI()) && XmlUtil.ASSOCIATION_TAG.equals(e.getLocalName()) && e.getTextContent() != null) {
-    				Association association = null;
-    				for (Association a: table.associations) {
-    					if (a.getAggregationSchema() != AggregationSchema.NONE) {
-	    					if (a.getName().equals(e.getTextContent().trim())) {
-	    						association = a;
-	    						break;
-	    					}
-    					}
-    				}
-  					if (association != null && depth < 3) {
-  						Node[] ae = insertAssociationSketch(association, doc, depth + 1);
+		NodeList children = element.getChildNodes();
+		int i = 0;
+		while (i < children.getLength()) {
+			if (children.item(i) instanceof Element) {
+				Element e = (Element) children.item(i);
+				if (XmlUtil.NS_URI.equals(e.getNamespaceURI()) && XmlUtil.ASSOCIATION_TAG.equals(e.getLocalName()) && e.getTextContent() != null) {
+					Association association = null;
+					for (Association a: table.associations) {
+						if (a.getAggregationSchema() != AggregationSchema.NONE) {
+							if (a.getName().equals(e.getTextContent().trim())) {
+								association = a;
+								break;
+							}
+						}
+					}
+					  if (association != null && depth < 3) {
+						  Node[] ae = insertAssociationSketch(association, doc, depth + 1);
 						if (ae != null) {
 							for (Node n: ae) {
 								element.insertBefore(doc.importNode(n, true), e);
 								++i;
 							}
 						}
-  					}
-  					element.removeChild(e);
-    			} else {
-    				++i;
-    			}
-    		} else {
-    			++i;
-    		}
-    	}
-    }
+					  }
+					  element.removeChild(e);
+				} else {
+					++i;
+				}
+			} else {
+				++i;
+			}
+		}
+	}
 
 	private static Node[] insertAssociationSketch(Association association, Document doc, int depth) throws ParserConfigurationException, SAXException, IOException {
 		if (association.getAggregationSchema() == AggregationSchema.EXPLICIT_LIST) {

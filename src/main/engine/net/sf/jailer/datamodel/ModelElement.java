@@ -25,32 +25,32 @@ import net.sf.jailer.modelbuilder.ModelElementFinder;
  */
 public abstract class ModelElement {
 
-    /**
-     * Name of the {@link ModelElementFinder} who defined this element.
-     * Empty string for manually defined elements.
-     */
-    private String author = "";
+	/**
+	 * Name of the {@link ModelElementFinder} who defined this element.
+	 * Empty string for manually defined elements.
+	 */
+	private String author = "";
 
-    /**
-     * Gets the name of the {@link ModelElementFinder} who defined this element.
-     * Empty string for manually defined elements.
-     * 
-     * @return the name of the {@link ModelElementFinder} who defined this element.
-     * Empty string for manually defined elements.
-     */
-    public String getAuthor() {
-        return author;
-    }
+	/**
+	 * Gets the name of the {@link ModelElementFinder} who defined this element.
+	 * Empty string for manually defined elements.
+	 * 
+	 * @return the name of the {@link ModelElementFinder} who defined this element.
+	 * Empty string for manually defined elements.
+	 */
+	public String getAuthor() {
+		return author;
+	}
 
-    /**
-     * Sets the name of the {@link ModelElementFinder} who defined this element.
-     * Empty string for manually defined elements.
-     * 
-     * @param author the name of the {@link ModelElementFinder} who defined this element.
-     * Empty string for manually defined elements.
-     */
-    public void setAuthor(String author) {
-        this.author = author;
-    }
-    
+	/**
+	 * Sets the name of the {@link ModelElementFinder} who defined this element.
+	 * Empty string for manually defined elements.
+	 * 
+	 * @param author the name of the {@link ModelElementFinder} who defined this element.
+	 * Empty string for manually defined elements.
+	 */
+	public void setAuthor(String author) {
+		this.author = author;
+	}
+	
 }

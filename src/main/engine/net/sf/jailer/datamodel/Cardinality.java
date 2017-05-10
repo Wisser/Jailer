@@ -23,62 +23,62 @@ package net.sf.jailer.datamodel;
  * @author Ralf Wisser
  */
 public enum Cardinality {
-    
-    ONE_TO_ONE("1:1"),
-    ONE_TO_MANY("1:n"),
-    MANY_TO_ONE("n:1"),
-    MANY_TO_MANY("n:m"); 
+	
+	ONE_TO_ONE("1:1"),
+	ONE_TO_MANY("1:n"),
+	MANY_TO_ONE("n:1"),
+	MANY_TO_MANY("n:m"); 
 
-    /**
-     * The name of the cardinality.
-     */
-    private final String name;
-    
-    /**
-     * Constructor.
-     * 
-     * @param name the name of the cardinality
-     */
-    private Cardinality(String name) {
-        this.name = name;
-    }
+	/**
+	 * The name of the cardinality.
+	 */
+	private final String name;
+	
+	/**
+	 * Constructor.
+	 * 
+	 * @param name the name of the cardinality
+	 */
+	private Cardinality(String name) {
+		this.name = name;
+	}
 
-    /**
-     * Gets the cardinality of the reversal association.
-     * 
-     * @return the cardinality of the reversal association
-     */
-    public Cardinality reverse() {
-        if (this == ONE_TO_ONE) return ONE_TO_ONE;
-        if (this == ONE_TO_MANY) return MANY_TO_ONE;
-        if (this == MANY_TO_ONE) return ONE_TO_MANY;
-        if (this == MANY_TO_MANY) return MANY_TO_MANY;
-        return null;
-    }
+	/**
+	 * Gets the cardinality of the reversal association.
+	 * 
+	 * @return the cardinality of the reversal association
+	 */
+	public Cardinality reverse() {
+		if (this == ONE_TO_ONE) return ONE_TO_ONE;
+		if (this == ONE_TO_MANY) return MANY_TO_ONE;
+		if (this == MANY_TO_ONE) return ONE_TO_MANY;
+		if (this == MANY_TO_MANY) return MANY_TO_MANY;
+		return null;
+	}
 
-    /**
-     * Parses a stringified cardinality.
-     * 
-     * @param cardinality cardinality name
-     * @return cardinality with given name
-     */
-    public static Cardinality parse(String cardinality) {
-        if (cardinality == null || "".equals(cardinality)) {
-            return null;
-        }
-        for (Cardinality card: Cardinality.values()) {
-            if (card.name.equalsIgnoreCase(cardinality)) {
-                return card;
-            }
-        }
-        throw new RuntimeException("unknown cardinality: " + cardinality);
-    }
-    
-    /**
-     * Stringifies cardinality.
-     */
-    public String toString() {
-        return name;
-    }
-    
+	/**
+	 * Parses a stringified cardinality.
+	 * 
+	 * @param cardinality cardinality name
+	 * @return cardinality with given name
+	 */
+	public static Cardinality parse(String cardinality) {
+		if (cardinality == null || "".equals(cardinality)) {
+			return null;
+		}
+		for (Cardinality card: Cardinality.values()) {
+			if (card.name.equalsIgnoreCase(cardinality)) {
+				return card;
+			}
+		}
+		throw new RuntimeException("unknown cardinality: " + cardinality);
+	}
+	
+	/**
+	 * Stringifies cardinality.
+	 */
+	public String toString() {
+		return name;
+	}
+	
 }

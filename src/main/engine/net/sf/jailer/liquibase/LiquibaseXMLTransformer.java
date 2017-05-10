@@ -67,11 +67,11 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 	 */
 	private final ExecutionContext executionContext;
 	
-    /**
-     * Factory.
-     */
-    public static class Factory implements TransformerFactory {
-    	
+	/**
+	 * Factory.
+	 */
+	public static class Factory implements TransformerFactory {
+		
 		private final TransformerHandler transformerHandler;
 		private final EntityGraph entityGraph;
 		private final String scriptFile;
@@ -86,28 +86,28 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		private final ExecutionContext executionContext;
 		
 		/**
-    	 * Constructor.
-    	 * 
-    	 * @param table
-    	 *            the table to read from
-    	 * @param transformerHandler
-    	 *            to write the XML into
-    	 * @param metaData
-    	 *            database meta data
-    	 */
-    	public Factory(TransformerHandler transformerHandler, DatabaseMetaData metaData, 
-    			EntityGraph entityGraph, String scriptFile, String datePattern, String timePattern, String timestampPattern, ExecutionContext executionContext) {
-    		this.executionContext = executionContext;
-    		this.transformerHandler = transformerHandler;
-    		this.entityGraph = entityGraph;
-    		this.scriptFile = scriptFile;
-    		this.metaData = metaData;
-    		this.datePattern = datePattern;
-    		this.timePattern = timePattern;
-    		this.timestampPattern = timestampPattern;
-    	}
-    	
-    	/**
+		 * Constructor.
+		 * 
+		 * @param table
+		 *            the table to read from
+		 * @param transformerHandler
+		 *            to write the XML into
+		 * @param metaData
+		 *            database meta data
+		 */
+		public Factory(TransformerHandler transformerHandler, DatabaseMetaData metaData, 
+				EntityGraph entityGraph, String scriptFile, String datePattern, String timePattern, String timestampPattern, ExecutionContext executionContext) {
+			this.executionContext = executionContext;
+			this.transformerHandler = transformerHandler;
+			this.entityGraph = entityGraph;
+			this.scriptFile = scriptFile;
+			this.metaData = metaData;
+			this.datePattern = datePattern;
+			this.timePattern = timePattern;
+			this.timestampPattern = timestampPattern;
+		}
+		
+		/**
 		 * Creates transformer (as {@link ResultSetReader} which 
 		 * transforms rows of a given table into an external representation.
 		 * 
@@ -118,7 +118,7 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 		public ResultSetReader create(Table table) throws SQLException {
 			return new LiquibaseXMLTransformer(table, transformerHandler, metaData, entityGraph, scriptFile, datePattern, timePattern, timestampPattern, executionContext);
 		}
-    }
+	}
 
 	private LiquibaseXMLTransformer(Table table, TransformerHandler transformerHandler, DatabaseMetaData metaData, 
 			EntityGraph entityGraph, String scriptFile, String datePattern, String timePattern, String timestampPattern, ExecutionContext executionContext) throws SQLException {
@@ -134,15 +134,15 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 	
 	
 	private String qualifiedTableName(Table t) {
-    	
-    	String schema = t.getOriginalSchema("");
-    	String mappedSchema = executionContext.getSchemaMapping().get(schema);
-    	if (mappedSchema != null) {
-    		schema = mappedSchema;
-    	}
-    	if (schema.length() == 0) {
-    		return unquote(t.getUnqualifiedName());
-    	}
+		
+		String schema = t.getOriginalSchema("");
+		String mappedSchema = executionContext.getSchemaMapping().get(schema);
+		if (mappedSchema != null) {
+			schema = mappedSchema;
+		}
+		if (schema.length() == 0) {
+			return unquote(t.getUnqualifiedName());
+		}
 		return unquote(schema) + "." + unquote(t.getUnqualifiedName());
 	}
 	
@@ -216,12 +216,12 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 				int lengthc = (int) clobValue.length();
 				// liquibase treats an empty clob file as though no file exists
 				if (lengthc > 0) {
-    				String clobcontent=clobValue.getSubString(1, lengthc);
-    				String clobname=lobName(count, ".txt");
-    				attrcolumn=createAttribute(columnname,VALUE_CLOBFILE,clobname);
-    				writeClob(clobcontent,clobname);
+					String clobcontent=clobValue.getSubString(1, lengthc);
+					String clobname=lobName(count, ".txt");
+					attrcolumn=createAttribute(columnname,VALUE_CLOBFILE,clobname);
+					writeClob(clobcontent,clobname);
 				} else {
-				    attrcolumn=createAttribute(columnname,VALUE_CLOBFILE,null);
+					attrcolumn=createAttribute(columnname,VALUE_CLOBFILE,null);
 				}
 				break;
 				
@@ -231,12 +231,12 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 				int lengthnc = (int) nclobValue.length();
 				// liquibase treats an empty clob file as though no file exists
 				if (lengthnc > 0) {
-    				String nclobcontent=nclobValue.getSubString(1, lengthnc);
-    				String nclobname=lobName(count, ".txt");
-    				attrcolumn=createAttribute(columnname,VALUE_NCLOBFILE,nclobname);
-    				writeClob(nclobcontent,nclobname);
+					String nclobcontent=nclobValue.getSubString(1, lengthnc);
+					String nclobname=lobName(count, ".txt");
+					attrcolumn=createAttribute(columnname,VALUE_NCLOBFILE,nclobname);
+					writeClob(nclobcontent,nclobname);
 				} else {
-				    attrcolumn=createAttribute(columnname,VALUE_NCLOBFILE,null);
+					attrcolumn=createAttribute(columnname,VALUE_NCLOBFILE,null);
 				}
 				break;
 				
@@ -247,12 +247,12 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 				int lengthb = (int) blob.length();
 				// liquibase treats an empty blob file as though no file exists
 				if (lengthb > 0) {
-    				byte[] blobcontent = blob.getBytes(1, lengthb);
-    				String blobname=lobName(count, ".bin");
-    				attrcolumn=createAttribute(columnname,VALUE_BLOBFILE,blobname);
-    				writeBlob(blobcontent, blobname);
+					byte[] blobcontent = blob.getBytes(1, lengthb);
+					String blobname=lobName(count, ".bin");
+					attrcolumn=createAttribute(columnname,VALUE_BLOBFILE,blobname);
+					writeBlob(blobcontent, blobname);
 				} else {
-				    attrcolumn=createAttribute(columnname,VALUE_BLOBFILE,null);
+					attrcolumn=createAttribute(columnname,VALUE_BLOBFILE,null);
 				}
 				break;
 				
@@ -373,7 +373,7 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 	}
 	
 	private void writeClob(String clobcontent, String clobname) {
-	    File lobFile = getLobFile(clobname);
+		File lobFile = getLobFile(clobname);
 		
 		try {
 			FileOutputStream fos = new FileOutputStream(lobFile);
@@ -398,29 +398,29 @@ public class LiquibaseXMLTransformer extends AbstractResultSetReader {
 	}
 	
 	private void writeBlob(byte[] blobcontent, String blobname) {
-        File lobFile = getLobFile(blobname);
-        
-        try {
-            FileOutputStream fos = new FileOutputStream(lobFile);
-            try {
-                fos.write(blobcontent);
-                fos.close();
+		File lobFile = getLobFile(blobname);
+		
+		try {
+			FileOutputStream fos = new FileOutputStream(lobFile);
+			try {
+				fos.write(blobcontent);
+				fos.close();
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-    }
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} catch (FileNotFoundException e) {
+			throw new RuntimeException(e);
+		}
+	}
 
 	private File getLobFile(String lobname) {
-	    File lobFile = new File(scriptFile.getParent(), lobname);
-        File parent = lobFile.getParentFile();
-        if (parent != null) {
-            parent.mkdirs(); //ensure that the child table name dir exists
-        }
-        return lobFile;
+		File lobFile = new File(scriptFile.getParent(), lobname);
+		File parent = lobFile.getParentFile();
+		if (parent != null) {
+			parent.mkdirs(); //ensure that the child table name dir exists
+		}
+		return lobFile;
 	}
 	
 	public void close() {}

@@ -34,83 +34,83 @@ import net.sf.jailer.util.PrintUtil;
 public class FileView extends javax.swing.JDialog {
 
 	/**
-     * Component for rendering the file content.
-     */
+	 * Component for rendering the file content.
+	 */
 	private JTextArea jTextPane = null;
 	
 	/**
 	 * Scroll-pane around content.
 	 */
-    private JScrollPane jScrollPane = null;
-    
-    /**
-     * Constructor. 
-     * 
-     * @param owner the enclosing component.
-     */
-    public FileView(Dialog owner) {
-    	super(owner);
-    	initialize();
-    	setModal(true);
-        UIUtil.initPeer();
-    }
+	private JScrollPane jScrollPane = null;
+	
+	/**
+	 * Constructor. 
+	 * 
+	 * @param owner the enclosing component.
+	 */
+	public FileView(Dialog owner) {
+		super(owner);
+		initialize();
+		setModal(true);
+		UIUtil.initPeer();
+	}
 
-    /**
-     * Constructor. 
-     * 
-     * @param owner the enclosing component.
-     * @param file the file to render
-     */
-    public FileView(Dialog owner, String file) throws FileNotFoundException, IOException {
-        super(owner);
-        setModal(true);
-        try {
+	/**
+	 * Constructor. 
+	 * 
+	 * @param owner the enclosing component.
+	 * @param file the file to render
+	 */
+	public FileView(Dialog owner, String file) throws FileNotFoundException, IOException {
+		super(owner);
+		setModal(true);
+		try {
 			initialize();
 			setTitle(file);
 			getJTextPane().setText(new PrintUtil().loadFile(file));
-	        UIUtil.initPeer();
+			UIUtil.initPeer();
 			setVisible(true);
 		} catch (Throwable t) {
 			UIUtil.showException(owner, "Error", t);
 		}
-    }
+	}
 
-    /**
-     * Creates components.
-     */
-    private void initialize() {
-        this.setSize(new Dimension(700, 600));
-        this.setContentPane(getJScrollPane());
-        this.setTitle("Jailer");
-        setLocation(100, 100);
-        getJTextPane().setFont(new Font("Monospaced", Font.PLAIN, 12));
-    }
+	/**
+	 * Creates components.
+	 */
+	private void initialize() {
+		this.setSize(new Dimension(700, 600));
+		this.setContentPane(getJScrollPane());
+		this.setTitle("Jailer");
+		setLocation(100, 100);
+		getJTextPane().setFont(new Font("Monospaced", Font.PLAIN, 12));
+	}
 
-    /**
-     * This method initializes jScrollPane	
-     * 	
-     * @return javax.swing.JScrollPane	
-     */
-    private JScrollPane getJScrollPane() {
-        if (jScrollPane == null) {
-            jScrollPane = new JScrollPane();
-            jScrollPane.setViewportView(getJTextPane());
-        }
-        return jScrollPane;
-    }
+	/**
+	 * This method initializes jScrollPane	
+	 * 	
+	 * @return javax.swing.JScrollPane	
+	 */
+	private JScrollPane getJScrollPane() {
+		if (jScrollPane == null) {
+			jScrollPane = new JScrollPane();
+			jScrollPane.setViewportView(getJTextPane());
+		}
+		return jScrollPane;
+	}
 
-    /**
-     * This method initializes jTextPane	
-     * 	
-     * @return javax.swing.JTextPane	
-     */
-    private JTextArea getJTextPane() {
-        if (jTextPane == null) {
-            jTextPane = new JTextArea();
-            jTextPane.setLineWrap(false);
-        }
-        return jTextPane;
-    }
-    
+	/**
+	 * This method initializes jTextPane	
+	 * 	
+	 * @return javax.swing.JTextPane	
+	 */
+	private JTextArea getJTextPane() {
+		if (jTextPane == null) {
+			jTextPane = new JTextArea();
+			jTextPane.setLineWrap(false);
+		}
+		return jTextPane;
+	}
+	
 	private static final long serialVersionUID = -8991473715127153931L;
 }  //  @jve:decl-index=0:visual-constraint="10,10"

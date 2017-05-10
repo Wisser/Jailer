@@ -27,21 +27,21 @@ public class JComboBox extends javax.swing.JComboBox {
 	private static final long serialVersionUID = 1404824459186814788L;
 	private boolean layingOut = false;
 
-    public void doLayout() {
-        try {
-            layingOut = true;
-            super.doLayout();
-        }
-        finally {
-            layingOut = false;
-        }
-    }
+	public void doLayout() {
+		try {
+			layingOut = true;
+			super.doLayout();
+		}
+		finally {
+			layingOut = false;
+		}
+	}
 
-    public Dimension getSize() {
-        Dimension sz = super.getSize();
-        if (!layingOut) {
-            sz.width = Math.min(800, Math.max(sz.width, getPreferredSize().width));
-        }
-        return sz;
-    }
+	public Dimension getSize() {
+		Dimension sz = super.getSize();
+		if (!layingOut) {
+			sz.width = Math.min(800, Math.max(sz.width, getPreferredSize().width));
+		}
+		return sz;
+	}
 }

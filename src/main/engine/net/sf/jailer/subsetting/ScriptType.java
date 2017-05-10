@@ -23,14 +23,14 @@ package net.sf.jailer.subsetting;
  */
 public enum ScriptType {
 
-    /**
-     * Type of scripts containing INSERT-Statements for import of extracted entities. 
-     */
-    INSERT,
-    
-    /**
-     * Type of scripts containing DELETE-Statements for removal of extracted entities. 
-     */
-    DELETE
-    
+	/**
+	 * Type of scripts containing INSERT-Statements for import of extracted entities. 
+	 */
+	INSERT,
+	
+	/**
+	 * Type of scripts containing DELETE-Statements for removal of extracted entities. 
+	 */
+	DELETE
+	
 }

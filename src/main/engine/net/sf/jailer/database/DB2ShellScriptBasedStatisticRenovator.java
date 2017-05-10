@@ -24,32 +24,32 @@ package net.sf.jailer.database;
  */
 public class DB2ShellScriptBasedStatisticRenovator extends ShellScriptBasedStatisticRenovator {
 
-    /**
-     * Constructor.
-     * 
-     * @param scriptInvocation invocation of the script-file
-     */
-    public DB2ShellScriptBasedStatisticRenovator(String scriptInvocation) {
-        super(scriptInvocation);
-    }
+	/**
+	 * Constructor.
+	 * 
+	 * @param scriptInvocation invocation of the script-file
+	 */
+	public DB2ShellScriptBasedStatisticRenovator(String scriptInvocation) {
+		super(scriptInvocation);
+	}
 
-    /**
-     * Gets shell-invocation.
-     * 
-     * @param session for execution of SQL-statements
-     * @return shell-invocation
-     */
-    protected String getScriptInvocation(Session session) throws Exception {
-        int indexOf = session.dbUrl.indexOf("://");
-        String dbName;
-        if (indexOf >= 0) {
+	/**
+	 * Gets shell-invocation.
+	 * 
+	 * @param session for execution of SQL-statements
+	 * @return shell-invocation
+	 */
+	protected String getScriptInvocation(Session session) throws Exception {
+		int indexOf = session.dbUrl.indexOf("://");
+		String dbName;
+		if (indexOf >= 0) {
 			String s = session.dbUrl.substring(indexOf + 3);
-	        dbName = s.substring(s.indexOf("/") + 1);
-        } else {
+			dbName = s.substring(s.indexOf("/") + 1);
+		} else {
 			String s = session.dbUrl;
-        	dbName = s.substring(s.lastIndexOf(":") + 1);
-        }
-        return super.getScriptInvocation(session) + " " + dbName + " " + session.getSchema();
-    }
+			dbName = s.substring(s.lastIndexOf(":") + 1);
+		}
+		return super.getScriptInvocation(session) + " " + dbName + " " + session.getSchema();
+	}
 
 }

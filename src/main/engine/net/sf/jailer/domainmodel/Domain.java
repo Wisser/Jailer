@@ -28,105 +28,105 @@ import net.sf.jailer.datamodel.Table;
  */
 public class Domain implements Comparable<Domain> {
 
-    /**
-     * The domain name.
-     */
-    public final String name;
-    
-    /**
-     * Set of tables in this domain.
-     */
-    public final Set<Table> tables;
-    
-    /**
-     * Set of sub-domains.
-     */
-    Set<Domain> subDomains = new TreeSet<Domain>();
-    
-    /**
-     * Set of super-domains.
-     */
-    Set<Domain> superDomains = new TreeSet<Domain>();
-    
-    /**
-     * Constructor.
-     * 
-     * @param name the domain name
-     * @param tables set of tables in this domain
-     */
-    Domain(String name, Set<Table> tables) {
-        this.name = name;
-        this.tables = tables;
-    }
-    
-    /**
-     * Gets sub-domains.
-     * 
-     * @return set of sub-domains
-     */
-    public Set<Domain> getSubDomains() {
-        return subDomains;
-    }
-    
-    /**
-     * Gets super-domains.
-     * 
-     * @return set of super-domains
-     */
-    public Set<Domain> getSuperDomains() {
-        return superDomains;
-    }
-    
-    /**
-     * Checks wether this is a sub domain of a given domain.
-     * 
-     * @param domain the domain
-     * @return <code>true</code> iff this is a sub domain of domain
-     */
-    public boolean isSubDomainOf(Domain domain) {
-        Set<Domain> superClosure = new HashSet<Domain>(superDomains);
-        boolean ready = false;
-        while (!ready) {
-            Set<Domain> increment = new HashSet<Domain>(); 
-            for (Domain superDomain: superClosure) {
-                increment.addAll(superDomain.superDomains);
-            }
-            increment.removeAll(superClosure);
-            superClosure.addAll(increment);
-            if (increment.isEmpty()) {
-                break;
-            }
-        }
-        return superClosure.contains(domain);
-    }
+	/**
+	 * The domain name.
+	 */
+	public final String name;
+	
+	/**
+	 * Set of tables in this domain.
+	 */
+	public final Set<Table> tables;
+	
+	/**
+	 * Set of sub-domains.
+	 */
+	Set<Domain> subDomains = new TreeSet<Domain>();
+	
+	/**
+	 * Set of super-domains.
+	 */
+	Set<Domain> superDomains = new TreeSet<Domain>();
+	
+	/**
+	 * Constructor.
+	 * 
+	 * @param name the domain name
+	 * @param tables set of tables in this domain
+	 */
+	Domain(String name, Set<Table> tables) {
+		this.name = name;
+		this.tables = tables;
+	}
+	
+	/**
+	 * Gets sub-domains.
+	 * 
+	 * @return set of sub-domains
+	 */
+	public Set<Domain> getSubDomains() {
+		return subDomains;
+	}
+	
+	/**
+	 * Gets super-domains.
+	 * 
+	 * @return set of super-domains
+	 */
+	public Set<Domain> getSuperDomains() {
+		return superDomains;
+	}
+	
+	/**
+	 * Checks wether this is a sub domain of a given domain.
+	 * 
+	 * @param domain the domain
+	 * @return <code>true</code> iff this is a sub domain of domain
+	 */
+	public boolean isSubDomainOf(Domain domain) {
+		Set<Domain> superClosure = new HashSet<Domain>(superDomains);
+		boolean ready = false;
+		while (!ready) {
+			Set<Domain> increment = new HashSet<Domain>(); 
+			for (Domain superDomain: superClosure) {
+				increment.addAll(superDomain.superDomains);
+			}
+			increment.removeAll(superClosure);
+			superClosure.addAll(increment);
+			if (increment.isEmpty()) {
+				break;
+			}
+		}
+		return superClosure.contains(domain);
+	}
 
-    public int compareTo(Domain o) {
-        return name.compareTo(o.name);
-    }
-    
-    /**
-     * The hash-code.
-     */
-    public int hashCode() {
-        return name.hashCode();
-    }
+	public int compareTo(Domain o) {
+		return name.compareTo(o.name);
+	}
+	
+	/**
+	 * The hash-code.
+	 */
+	public int hashCode() {
+		return name.hashCode();
+	}
 
-    /**
-     * Compares domains.
-     */
-    public boolean equals(Object other) {
-        if (other instanceof Domain) {
-            return name.equals(((Domain) other).name);
-        }
-        return false;
-    }
- 
-    /**
-     * Stringifies the domain.
-     */
-    public String toString() {
-        return "Domain " + name;
-    }
+	/**
+	 * Compares domains.
+	 */
+	public boolean equals(Object other) {
+		if (other instanceof Domain) {
+			return name.equals(((Domain) other).name);
+		}
+		return false;
+	}
+
+	/**
+	 * Stringifies the domain.
+	 */
+	public String toString() {
+		return "Domain " + name;
+	}
 
 }
 

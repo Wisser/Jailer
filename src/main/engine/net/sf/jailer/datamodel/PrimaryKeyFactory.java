@@ -88,7 +88,7 @@ public class PrimaryKeyFactory {
 									i,
 									new Column(uPKColumn.name, uPKColumn.type,
 											Math.max(column.length, uPKColumn.length),
-                                            Math.max(column.precision,uPKColumn.precision)));
+											Math.max(column.precision,uPKColumn.precision)));
 						}
 						assigned = true;
 						assignedUPKColumns.add(i);
@@ -111,23 +111,23 @@ public class PrimaryKeyFactory {
 					Column uPKColumn = universalPrimaryKey.getColumns().get(i);
 					Column column = columns.get(n);
 
-                    if(PrimaryKey.isAssignable(uPKColumn,column)) {
-                        ++n;
-                    } else {
-                        if(PrimaryKey.isIncreasable(uPKColumn, column)) {
-                            // increase length
-                            universalPrimaryKey.getColumns().set(
-                                    i,
-                                    new Column(uPKColumn.name, uPKColumn.type,
-                                            Math.max(column.length, uPKColumn.length),
-                                            Math.max(column.precision,uPKColumn.precision)));
-                            ++n;
-                        }
+					if(PrimaryKey.isAssignable(uPKColumn,column)) {
+						++n;
+					} else {
+						if(PrimaryKey.isIncreasable(uPKColumn, column)) {
+							// increase length
+							universalPrimaryKey.getColumns().set(
+									i,
+									new Column(uPKColumn.name, uPKColumn.type,
+											Math.max(column.length, uPKColumn.length),
+											Math.max(column.precision,uPKColumn.precision)));
+							++n;
+						}
 
-                    }
-                    if(n>=columns.size()) {
-                        break;
-                    }
+					}
+					if(n>=columns.size()) {
+						break;
+					}
 				}
 			}
 			// add new columns to universal primary key

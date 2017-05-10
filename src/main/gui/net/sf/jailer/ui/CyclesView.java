@@ -90,13 +90,13 @@ public class CyclesView extends javax.swing.JDialog {
 	 */
 	private Set<CellInfo> cellInfo = new HashSet<CellInfo>();
 	
-    /** Creates new form FindDialog */
-    public CyclesView(ExtractionModelFrame extractionModelFrame) {
-        super(extractionModelFrame, false);
-    	this.extractionModelFrame = extractionModelFrame;
-        initComponents();
-        
-        cyclesTable = new JTable() {
+	/** Creates new form FindDialog */
+	public CyclesView(ExtractionModelFrame extractionModelFrame) {
+		super(extractionModelFrame, false);
+		this.extractionModelFrame = extractionModelFrame;
+		initComponents();
+		
+		cyclesTable = new JTable() {
 			private static final long serialVersionUID = 8960056200057023368L;
 
 			/**
@@ -109,50 +109,50 @@ public class CyclesView extends javax.swing.JDialog {
 				Graphics2D g2d = (Graphics2D) graphics;
 				for (CellInfo posInfo: cellInfo) {
 					Rectangle r = cyclesTable.getCellRect(posInfo.row, posInfo.column, false);
-        	    	Color color = new Color(255, 0, 0, 150);
-        	    	g2d.setColor(color);
-        	    	g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        	    	g2d.setStroke(new BasicStroke(2));
-	        	    int a = r.height / 4;
-	        	    int w = 3 * a;
-	        	    if (posInfo.arrowLeft) {
-		        	    int x = r.x - w - a * 2;
-		        	    int y = r.y + r.height / 2;
-		        	    g2d.drawLine(x, y, x + w, y);
-		        	    g2d.drawLine(x + w - 1, y, x + w - a, y - a);
-		        	    g2d.drawLine(x + w - 1, y, x + w - a, y + a);
-	        	    }
-	        	    if (posInfo.arrowRight) {
-		        	    int x = r.x + r.width - w - a * 2;
-		        	    int y = r.y + r.height / 2;
-		        	    g2d.drawLine(x, y, x + w, y);
-		        	    g2d.drawLine(x + w - 1, y, x + w - a, y - a);
-		        	    g2d.drawLine(x + w - 1, y, x + w - a, y + a);
-	        	    }
+					Color color = new Color(255, 0, 0, 150);
+					g2d.setColor(color);
+					g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+					g2d.setStroke(new BasicStroke(2));
+					int a = r.height / 4;
+					int w = 3 * a;
+					if (posInfo.arrowLeft) {
+						int x = r.x - w - a * 2;
+						int y = r.y + r.height / 2;
+						g2d.drawLine(x, y, x + w, y);
+						g2d.drawLine(x + w - 1, y, x + w - a, y - a);
+						g2d.drawLine(x + w - 1, y, x + w - a, y + a);
+					}
+					if (posInfo.arrowRight) {
+						int x = r.x + r.width - w - a * 2;
+						int y = r.y + r.height / 2;
+						g2d.drawLine(x, y, x + w, y);
+						g2d.drawLine(x + w - 1, y, x + w - a, y - a);
+						g2d.drawLine(x + w - 1, y, x + w - a, y + a);
+					}
 				}
 			}
-        };
-        cyclesTable.setShowGrid(false);
-        cyclesTable.setSurrendersFocusOnKeystroke(true);
-        jScrollPane1.setViewportView(cyclesTable);
-        jScrollPane1.setColumnHeaderView(null);
-        
-        cyclesTable.addMouseListener(new MouseListener() {
+		};
+		cyclesTable.setShowGrid(false);
+		cyclesTable.setSurrendersFocusOnKeystroke(true);
+		jScrollPane1.setViewportView(cyclesTable);
+		jScrollPane1.setColumnHeaderView(null);
+		
+		cyclesTable.addMouseListener(new MouseListener() {
 			public void mouseClicked(MouseEvent e) {
 				// context menu
-                if (SwingUtilities.isRightMouseButton(e)) {
-                	int row = cyclesTable.rowAtPoint(e.getPoint());
-                	int column = cyclesTable.columnAtPoint(e.getPoint());
-                	if (row < 0 || column < 0) return;
-                	Object value = cyclesTable.getModel().getValueAt(row, column);
-                	if (value == null || !(value instanceof String)) return;
-                	Table table = getDataModel().getTableByDisplayName((String) value);
-                	if (table != null) {
+				if (SwingUtilities.isRightMouseButton(e)) {
+					int row = cyclesTable.rowAtPoint(e.getPoint());
+					int column = cyclesTable.columnAtPoint(e.getPoint());
+					if (row < 0 || column < 0) return;
+					Object value = cyclesTable.getModel().getValueAt(row, column);
+					if (value == null || !(value instanceof String)) return;
+					Table table = getDataModel().getTableByDisplayName((String) value);
+					if (table != null) {
 						JPopupMenu popup = CyclesView.this.extractionModelFrame.extractionModelEditor.graphView.createPopupMenu(table, false);
 						UIUtil.fit(popup);
 						popup.show(e.getComponent(), e.getX(), e.getY());
-                	}
-                }
+					}
+				}
 			}
 			public void mouseEntered(MouseEvent e) {
 			}
@@ -162,9 +162,9 @@ public class CyclesView extends javax.swing.JDialog {
 			}
 			public void mouseReleased(MouseEvent e) {
 			}
-        });
-        
-        final TableCellRenderer defaultTableCellRenderer = cyclesTable.getDefaultRenderer(String.class);
+		});
+		
+		final TableCellRenderer defaultTableCellRenderer = cyclesTable.getDefaultRenderer(String.class);
 		cyclesTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
 			private Font font = new JLabel("normal").getFont();
 			private Font normal = new Font(font.getName(), font.getStyle() & ~Font.BOLD, font.getSize());
@@ -219,63 +219,63 @@ public class CyclesView extends javax.swing.JDialog {
 			}
 		});
 		setLocation(500, 150);
-        setSize(600, 400);
+		setSize(600, 400);
 //        setAlwaysOnTop(true);
-    }
+	}
 
-    private class FindCyclesDialog extends javax.swing.JDialog {
-        public FindCyclesDialog() {
-            super(extractionModelFrame, false);
-            initComponents();
-            UIUtil.initPeer();
-        }
-        
-        private void initComponents() {
-            java.awt.GridBagConstraints gridBagConstraints;
+	private class FindCyclesDialog extends javax.swing.JDialog {
+		public FindCyclesDialog() {
+			super(extractionModelFrame, false);
+			initComponents();
+			UIUtil.initPeer();
+		}
+		
+		private void initComponents() {
+			java.awt.GridBagConstraints gridBagConstraints;
 
-            label = new javax.swing.JLabel();
-            jButton1 = new javax.swing.JButton();
+			label = new javax.swing.JLabel();
+			jButton1 = new javax.swing.JButton();
 
-            setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
-            getContentPane().setLayout(new java.awt.GridBagLayout());
+			setDefaultCloseOperation(javax.swing.WindowConstants.DO_NOTHING_ON_CLOSE);
+			getContentPane().setLayout(new java.awt.GridBagLayout());
 
-            label.setText("       Finding cycles...     ");
-            gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 0;
-            gridBagConstraints.gridwidth = 2;
-            gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-            gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
-            getContentPane().add(label, gridBagConstraints);
+			label.setText("       Finding cycles...     ");
+			gridBagConstraints = new java.awt.GridBagConstraints();
+			gridBagConstraints.gridx = 0;
+			gridBagConstraints.gridy = 0;
+			gridBagConstraints.gridwidth = 2;
+			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+			gridBagConstraints.insets = new java.awt.Insets(12, 12, 12, 12);
+			getContentPane().add(label, gridBagConstraints);
 
-            jButton1.setText(" Abort ");
-            jButton1.addActionListener(new java.awt.event.ActionListener() {
-                public void actionPerformed(java.awt.event.ActionEvent evt) {
-                    jButton1ActionPerformed(evt);
-                }
-            });
-            gridBagConstraints = new java.awt.GridBagConstraints();
-            gridBagConstraints.gridx = 0;
-            gridBagConstraints.gridy = 10;
-            gridBagConstraints.gridwidth = 2;
-            gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
-            getContentPane().add(jButton1, gridBagConstraints);
+			jButton1.setText(" Abort ");
+			jButton1.addActionListener(new java.awt.event.ActionListener() {
+				public void actionPerformed(java.awt.event.ActionEvent evt) {
+					jButton1ActionPerformed(evt);
+				}
+			});
+			gridBagConstraints = new java.awt.GridBagConstraints();
+			gridBagConstraints.gridx = 0;
+			gridBagConstraints.gridy = 10;
+			gridBagConstraints.gridwidth = 2;
+			gridBagConstraints.insets = new java.awt.Insets(12, 0, 12, 0);
+			getContentPane().add(jButton1, gridBagConstraints);
 
-            pack();
-        }// </editor-fold>//GEN-END:initComponents
+			pack();
+		}// </editor-fold>//GEN-END:initComponents
 
-        private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-            this.setVisible(false);
-            CancellationHandler.cancel(null);
-        }//GEN-LAST:event_jButton1ActionPerformed
-        
-        private javax.swing.JButton jButton1;
-        private javax.swing.JLabel label;
-        
-        private static final long serialVersionUID = -6499791486275376059L;
-    }
+		private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+			this.setVisible(false);
+			CancellationHandler.cancel(null);
+		}//GEN-LAST:event_jButton1ActionPerformed
+		
+		private javax.swing.JButton jButton1;
+		private javax.swing.JLabel label;
+		
+		private static final long serialVersionUID = -6499791486275376059L;
+	}
 
-    public void findCycles() {
+	public void findCycles() {
 		final FindCyclesDialog findCyclesDialog = new FindCyclesDialog();
 		findCyclesDialog.setLocation(getLocation().x + getSize().width / 2 - findCyclesDialog.getSize().width / 2,
 				getLocation().y + getSize().height / 2 - findCyclesDialog.getSize().height / 2);
@@ -315,37 +315,37 @@ public class CyclesView extends javax.swing.JDialog {
 		findCyclesDialog.setVisible(true);
 	}
 	
-    /**
-     * Gets current data model.
-     * 
-     * @return current data model
-     */
-    private DataModel getDataModel() {
-    	return extractionModelFrame.extractionModelEditor.dataModel;
-    }
+	/**
+	 * Gets current data model.
+	 * 
+	 * @return current data model
+	 */
+	private DataModel getDataModel() {
+		return extractionModelFrame.extractionModelEditor.dataModel;
+	}
 
-    /**
-     * Refreshes the dialog after the model has been changed.
-     */
-    public void refresh() {
-    }
-    
-    /**
-     * Refreshes the table model.
-     */
-    private synchronized void refreshTableModel(Collection<CycleFinder.Path> cycles) {
-    	cellInfo.clear();
+	/**
+	 * Refreshes the dialog after the model has been changed.
+	 */
+	public void refresh() {
+	}
+	
+	/**
+	 * Refreshes the table model.
+	 */
+	private synchronized void refreshTableModel(Collection<CycleFinder.Path> cycles) {
+		cellInfo.clear();
 		
-    	Set<Table> tables = new HashSet<Table>();
-    	for (CycleFinder.Path p: cycles) {
-    		List<Table> currentLineT = new ArrayList<Table>();
+		Set<Table> tables = new HashSet<Table>();
+		for (CycleFinder.Path p: cycles) {
+			List<Table> currentLineT = new ArrayList<Table>();
 			p.fillPath(currentLineT);
 			for (Table t: currentLineT) {
 				tables.add(t);
 			}
-    	}
-    	numLabel.setText(" " + cycles.size() + " Cycles, " + tables.size() + " distinct tables");
-    	
+		}
+		numLabel.setText(" " + cycles.size() + " Cycles, " + tables.size() + " distinct tables");
+		
 		Object[] columns = new Object[MAX_TABLES_PER_LINE + 1];
 		for (int i = 0; i < columns.length; ++i) {
 			columns[i] = "";
@@ -413,117 +413,117 @@ public class CyclesView extends javax.swing.JDialog {
 				return false;
 			}
 			private static final long serialVersionUID = -6639310191624899380L;
-    	};
-    	cyclesTable.setModel(tableModel);
+		};
+		cyclesTable.setModel(tableModel);
 
 		for (int i = 0; i < cyclesTable.getColumnCount(); i++) {
-            TableColumn column = cyclesTable.getColumnModel().getColumn(i);
-            int width = 1;
-            
-            Component comp = cyclesTable.getDefaultRenderer(String.class).
-            						getTableCellRendererComponent(
-            								cyclesTable, column.getHeaderValue(),
-            								false, false, 0, i);
-            width = Math.max(width, comp.getPreferredSize().width);
+			TableColumn column = cyclesTable.getColumnModel().getColumn(i);
+			int width = 1;
+			
+			Component comp = cyclesTable.getDefaultRenderer(String.class).
+									getTableCellRendererComponent(
+											cyclesTable, column.getHeaderValue(),
+											false, false, 0, i);
+			width = Math.max(width, comp.getPreferredSize().width);
 
-            for (int line = 0; line < dataArray.length; ++line) {
-	            comp = cyclesTable.getDefaultRenderer(String.class).
-	                             getTableCellRendererComponent(
-	                            		 cyclesTable, dataArray[line][i],
-	                                 false, false, line, i);
-	            width = Math.max(width, comp.getPreferredSize().width);
-            }
-            
-            if (i == 0) {
-            	width = 50;
-            	column.setMaxWidth(width);
-            }
-            
-            column.setPreferredWidth(width);
-        }
+			for (int line = 0; line < dataArray.length; ++line) {
+				comp = cyclesTable.getDefaultRenderer(String.class).
+								 getTableCellRendererComponent(
+										 cyclesTable, dataArray[line][i],
+									 false, false, line, i);
+				width = Math.max(width, comp.getPreferredSize().width);
+			}
+			
+			if (i == 0) {
+				width = 50;
+				column.setMaxWidth(width);
+			}
+			
+			column.setPreferredWidth(width);
+		}
 		cyclesTable.setIntercellSpacing(new Dimension(0, 0));
 	}
 
 	/** This method is called from within the constructor to
-     * initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is
-     * always regenerated by the Form Editor.
-     */
-    // <editor-fold defaultstate="collapsed" desc=" Erzeugter Quelltext ">//GEN-BEGIN:initComponents
-    private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
+	 * initialize the form.
+	 * WARNING: Do NOT modify this code. The content of this method is
+	 * always regenerated by the Form Editor.
+	 */
+	// <editor-fold defaultstate="collapsed" desc=" Erzeugter Quelltext ">//GEN-BEGIN:initComponents
+	private void initComponents() {
+		java.awt.GridBagConstraints gridBagConstraints;
 
-        jPanel1 = new javax.swing.JPanel();
-        numLabel = new javax.swing.JLabel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        cyclesTable = new javax.swing.JTable();
-        
-        getContentPane().setLayout(new java.awt.GridBagLayout());
+		jPanel1 = new javax.swing.JPanel();
+		numLabel = new javax.swing.JLabel();
+		jScrollPane1 = new javax.swing.JScrollPane();
+		cyclesTable = new javax.swing.JTable();
+		
+		getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        setTitle("Cycle View");
-        jPanel1.setLayout(new java.awt.GridBagLayout());
+		setTitle("Cycle View");
+		jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        numLabel.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
-        jPanel1.add(numLabel, gridBagConstraints);
+		numLabel.setText(" ");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 10;
+		gridBagConstraints.gridy = 10;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 4);
+		jPanel1.add(numLabel, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 20;
-        gridBagConstraints.gridy = 10;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 2);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 20;
+		gridBagConstraints.gridy = 10;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 2);
 
-        cyclesTable.setTableHeader(null);
-        cyclesTable.setModel(new javax.swing.table.DefaultTableModel(
-            new Object [][] {
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null},
-                {null, null, null, null}
-            },
-            new String [] {
-                "Titel 1", "Titel 2", "Titel 3", "Titel 4"
-            }
-        ));
-        cyclesTable.setShowGrid(false);
-        cyclesTable.setSurrendersFocusOnKeystroke(true);
-        jScrollPane1.setViewportView(cyclesTable);
-        jScrollPane1.setColumnHeaderView(null);
-        jScrollPane1.setColumnHeader(null);
-        
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 10;
-        gridBagConstraints.gridy = 20;
-        gridBagConstraints.gridwidth = 30;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 2);
-        jPanel1.add(jScrollPane1, gridBagConstraints);
+		cyclesTable.setTableHeader(null);
+		cyclesTable.setModel(new javax.swing.table.DefaultTableModel(
+			new Object [][] {
+				{null, null, null, null},
+				{null, null, null, null},
+				{null, null, null, null},
+				{null, null, null, null}
+			},
+			new String [] {
+				"Titel 1", "Titel 2", "Titel 3", "Titel 4"
+			}
+		));
+		cyclesTable.setShowGrid(false);
+		cyclesTable.setSurrendersFocusOnKeystroke(true);
+		jScrollPane1.setViewportView(cyclesTable);
+		jScrollPane1.setColumnHeaderView(null);
+		jScrollPane1.setColumnHeader(null);
+		
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 10;
+		gridBagConstraints.gridy = 20;
+		gridBagConstraints.gridwidth = 30;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		gridBagConstraints.insets = new java.awt.Insets(0, 2, 0, 2);
+		jPanel1.add(jScrollPane1, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        getContentPane().add(jPanel1, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		getContentPane().add(jPanel1, gridBagConstraints);
 
-        pack();
-    }// </editor-fold>//GEN-END:initComponents
+		pack();
+	}// </editor-fold>//GEN-END:initComponents
 
-    // Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables
-    private javax.swing.JTable cyclesTable;
-    private javax.swing.JLabel numLabel;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JScrollPane jScrollPane1;
-    // Ende der Variablendeklaration//GEN-END:variables
-    
+	// Variablendeklaration - nicht modifizieren//GEN-BEGIN:variables
+	private javax.swing.JTable cyclesTable;
+	private javax.swing.JLabel numLabel;
+	private javax.swing.JPanel jPanel1;
+	private javax.swing.JScrollPane jScrollPane1;
+	// Ende der Variablendeklaration//GEN-END:variables
+	
 	private static final long serialVersionUID = 5485949274233292142L;
 
 }

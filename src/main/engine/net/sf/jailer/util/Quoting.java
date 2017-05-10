@@ -75,12 +75,12 @@ public class Quoting {
 		}
 		try {
 			String productName = metaData.getDatabaseProductName();
-    		if (productName != null) {
-    			if (productName.toUpperCase().contains("ADAPTIVE SERVER")) {
-    				// Sybase don't handle quoting correctly
-    				quoteString = null;
-          		}
-    		}
+			if (productName != null) {
+				if (productName.toUpperCase().contains("ADAPTIVE SERVER")) {
+					// Sybase don't handle quoting correctly
+					quoteString = null;
+				  }
+			}
 		} catch (Exception e) {
 			// ignore
 		}

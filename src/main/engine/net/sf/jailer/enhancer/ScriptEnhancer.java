@@ -34,37 +34,37 @@ import net.sf.jailer.subsetting.ScriptType;
  */
 public interface ScriptEnhancer {
 
-    /**
-     * Adds comments to the script.
-     * 
-     * @param script to write into the script
-     * @param scriptType the type of the script
-     * @param session for executing SQL-statements in the source-DB
-     * @param progress the export progress
-     * @param targetDBMSConfiguration configuration of the target DBMS
-     */
-    void addComments(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph, Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException;
-    
-    /**
-     * Adds statements at top of the script.
-     * 
-     * @param script to write into the script
-     * @param scriptType the type of the script
-     * @param session for executing SQL-statements in the source-DB
-     * @param progress the export progress
-     * @param targetDBMSConfiguration configuration of the target DBMS
-     */
-    void addProlog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph, Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException;
-    
-    /**
-     * Adds comments at bottom of the script.
-     * 
-     * @param script to write into the script
-     * @param scriptType the type of the script
-     * @param session for executing SQL-statements in the source-DB
-     * @param progress the export progress
-     * @param targetDBMSConfiguration configuration of the target DBMS
-     */
-    void addEpilog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph, Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException;
-    
+	/**
+	 * Adds comments to the script.
+	 * 
+	 * @param script to write into the script
+	 * @param scriptType the type of the script
+	 * @param session for executing SQL-statements in the source-DB
+	 * @param progress the export progress
+	 * @param targetDBMSConfiguration configuration of the target DBMS
+	 */
+	void addComments(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph, Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException;
+	
+	/**
+	 * Adds statements at top of the script.
+	 * 
+	 * @param script to write into the script
+	 * @param scriptType the type of the script
+	 * @param session for executing SQL-statements in the source-DB
+	 * @param progress the export progress
+	 * @param targetDBMSConfiguration configuration of the target DBMS
+	 */
+	void addProlog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph, Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException;
+	
+	/**
+	 * Adds comments at bottom of the script.
+	 * 
+	 * @param script to write into the script
+	 * @param scriptType the type of the script
+	 * @param session for executing SQL-statements in the source-DB
+	 * @param progress the export progress
+	 * @param targetDBMSConfiguration configuration of the target DBMS
+	 */
+	void addEpilog(Writer script, ScriptType scriptType, Session session, DBMS targetDBMSConfiguration, EntityGraph entityGraph, Set<Table> progress, ExecutionContext executionContext) throws IOException, SQLException;
+	
 }

@@ -408,8 +408,8 @@ public class ExecutionContext {
 	}
 
 	/**
-     * Gets fully qualified folder name of current data model.
-     */
+	 * Gets fully qualified folder name of current data model.
+	 */
 	public String getQualifiedDatamodelFolder() {
 		if (currentModelSubfolder == null) {
 			return datamodelFolder;
@@ -507,36 +507,36 @@ public class ExecutionContext {
 	 *
 	 * @return parameters
 	 */
-    public Map<String, String> getParameters() {
-    	if (parameters == null) {
-	    	Map<String, String> map = new TreeMap<String, String>();
-	    	
-	    	if (rawparameters != null) {
-	    		for (String pv: CsvFile.decodeLine(rawparameters)) {
-	    			int i = pv.indexOf('=');
-	    			if (i >= 0) {
-	    				map.put(pv.substring(0, i), pv.substring(i + 1));
-	    			}
-	    		}
-	    	}
-	    	parameters = map;
-    	}	    	
-    	return parameters;
-    }
-    
-    /**
-     * Sets a parameter.
-     * 
-     * @param name parameter name
-     * @param value value
-     */
-    public void setParameter(String name, String value) {
-    	getParameters().put(name, value);
-    }
+	public Map<String, String> getParameters() {
+		if (parameters == null) {
+			Map<String, String> map = new TreeMap<String, String>();
+			
+			if (rawparameters != null) {
+				for (String pv: CsvFile.decodeLine(rawparameters)) {
+					int i = pv.indexOf('=');
+					if (i >= 0) {
+						map.put(pv.substring(0, i), pv.substring(i + 1));
+					}
+				}
+			}
+			parameters = map;
+		}	    	
+		return parameters;
+	}
+	
+	/**
+	 * Sets a parameter.
+	 * 
+	 * @param name parameter name
+	 * @param value value
+	 */
+	public void setParameter(String name, String value) {
+		getParameters().put(name, value);
+	}
 
-    private Map<String, String> schemaMapping;
+	private Map<String, String> schemaMapping;
 
-    public Map<String, String> getSchemaMapping() {
+	public Map<String, String> getSchemaMapping() {
 		if (schemaMapping == null) {
 			schemaMapping = new HashMap<String, String>();
 			if (rawschemamapping != null) {
@@ -561,9 +561,9 @@ public class ExecutionContext {
 		this.schemaMapping = schemaMapping;
 	}
 
-    private Map<String, String> sourceSchemaMapping;
+	private Map<String, String> sourceSchemaMapping;
 
-    /**
+	/**
 	 * @param sourceSchemaMapping the sourceSchemaMapping to set
 	 */
 	public void setSourceSchemaMapping(Map<String, String> sourceSchemaMapping) {
@@ -584,53 +584,53 @@ public class ExecutionContext {
 		}
 		return sourceSchemaMapping;
 	}
-    
-    private ScriptFormat scriptFormat;
-    
-    /**
-     * Gets the script format.
-     * 
-     * @return the script format
-     */
-    public ScriptFormat getScriptFormat() {
-    	if (scriptFormat == null) {
-	    	if (_asXml) {
-	    		scriptFormat = ScriptFormat.XML;
-	    	} else if (format != null) {
-	    		scriptFormat = ScriptFormat.valueOf(format);
-	    	}
-    	}
-    	return scriptFormat;
-    }
-    
-    /**
-     * Sets the script format.
-     * 
-     * @return the script format
-     */
-    public void setScriptFormat(ScriptFormat scriptFormat) {
-    	this.scriptFormat = scriptFormat;
-    }
-    
-    /**
-     * Folder of current data model.
-     */
-    private String currentModelSubfolder = null;
-    
-    /**
-     * Sets folder of current data model.
-     * 
-     * @param modelFolder the folder, <code>null</code> for default model
-     */
+	
+	private ScriptFormat scriptFormat;
+	
+	/**
+	 * Gets the script format.
+	 * 
+	 * @return the script format
+	 */
+	public ScriptFormat getScriptFormat() {
+		if (scriptFormat == null) {
+			if (_asXml) {
+				scriptFormat = ScriptFormat.XML;
+			} else if (format != null) {
+				scriptFormat = ScriptFormat.valueOf(format);
+			}
+		}
+		return scriptFormat;
+	}
+	
+	/**
+	 * Sets the script format.
+	 * 
+	 * @return the script format
+	 */
+	public void setScriptFormat(ScriptFormat scriptFormat) {
+		this.scriptFormat = scriptFormat;
+	}
+	
+	/**
+	 * Folder of current data model.
+	 */
+	private String currentModelSubfolder = null;
+	
+	/**
+	 * Sets folder of current data model.
+	 * 
+	 * @param modelFolder the folder, <code>null</code> for default model
+	 */
 	public void setCurrentModelSubfolder(String modelFolder) {
 		currentModelSubfolder = modelFolder;
 	}
 
 	/**
-     * Gets folder of current data model.
-     * 
-     * @return modelFolder the folder, <code>null</code> for default model
-     */
+	 * Gets folder of current data model.
+	 * 
+	 * @return modelFolder the folder, <code>null</code> for default model
+	 */
 	public String getCurrentModelSubfolder() {
 		return currentModelSubfolder;
 	}
@@ -638,8 +638,8 @@ public class ExecutionContext {
 	private URL datamodelURL;
 	
 	/**
-     * Gets URL of the current data model (the datamodels base folder)
-     */
+	 * Gets URL of the current data model (the datamodels base folder)
+	 */
 	public URL getDataModelURL() {
 		if (datamodelURL == null) {
 			String fn;
@@ -658,8 +658,8 @@ public class ExecutionContext {
 	}
 	
 	/**
-     * Sets URL of the current data model (the datamodels base folder)
-     */
+	 * Sets URL of the current data model (the datamodels base folder)
+	 */
 	public void setDataModelURL(URL datamodelURL) {
 		if (!datamodelURL.toExternalForm().endsWith("/")) {
 			try {
@@ -771,15 +771,15 @@ public class ExecutionContext {
 		numberOfEntities = commandLine.numberOfEntities;
 		upsertOnly = commandLine.upsertOnly;
 		if (commandLine.scope == null) {
-    		scope = WorkingTableScope.GLOBAL;
-    	} else {
-	    	try {
-	    		scope = WorkingTableScope.valueOf(commandLine.scope);
-	    	} catch (Exception e) {
-	    		scope = WorkingTableScope.GLOBAL;
-	    	}
-    	}
-    	workingTableSchema = commandLine.workingTableSchema;
+			scope = WorkingTableScope.GLOBAL;
+		} else {
+			try {
+				scope = WorkingTableScope.valueOf(commandLine.scope);
+			} catch (Exception e) {
+				scope = WorkingTableScope.GLOBAL;
+			}
+		}
+		workingTableSchema = commandLine.workingTableSchema;
 		datamodelFolder = commandLine.datamodelFolder;
 		noSorting = commandLine.noSorting;
 		transactional = commandLine.transactional;

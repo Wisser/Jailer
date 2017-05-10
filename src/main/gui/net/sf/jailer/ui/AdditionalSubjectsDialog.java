@@ -142,29 +142,29 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 	
 	
 	/**
-     * Creates new form AdditionalSubjectsDialog
-     */
-    public AdditionalSubjectsDialog(java.awt.Frame parent, ExtractionModel extractionModel, Table subject, String subjectCond) {
-        super(parent, true);
-        this.parent = parent;
-        this.extractionModel = extractionModel;
-        this.subjectCond = subjectCond;
-        this.subject = subject;
-        subjects = new ArrayList<ExtractionModel.AdditionalSubject>(this.extractionModel.additionalSubjects);
-        additionalSubjectListEditor = new AdditionalSubjectListEditor();
-        additionalSubjectListEditor.setModel(subjects);
-        initComponents();
-        
-        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        subjectsPanel.add(additionalSubjectListEditor, gridBagConstraints);
-        
-        detailsLabel.setIcon(conditionEditorIcon);
-        detailsLabel.setText(null);
+	 * Creates new form AdditionalSubjectsDialog
+	 */
+	public AdditionalSubjectsDialog(java.awt.Frame parent, ExtractionModel extractionModel, Table subject, String subjectCond) {
+		super(parent, true);
+		this.parent = parent;
+		this.extractionModel = extractionModel;
+		this.subjectCond = subjectCond;
+		this.subject = subject;
+		subjects = new ArrayList<ExtractionModel.AdditionalSubject>(this.extractionModel.additionalSubjects);
+		additionalSubjectListEditor = new AdditionalSubjectListEditor();
+		additionalSubjectListEditor.setModel(subjects);
+		initComponents();
+		
+		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		subjectsPanel.add(additionalSubjectListEditor, gridBagConstraints);
+		
+		detailsLabel.setIcon(conditionEditorIcon);
+		detailsLabel.setText(null);
 		detailsLabel.setToolTipText("open editor");
 		final ParameterSelector.ParametersGetter parametersGetter = new ParameterSelector.ParametersGetter() {
 			@Override
@@ -173,7 +173,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 			}
 		};
 		detailsLabel.addMouseListener(new java.awt.event.MouseAdapter() {
-        	@Override
+			@Override
 			public void mouseReleased(MouseEvent e) {
 				mouseClicked(e);
 			}
@@ -191,22 +191,22 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 			
 			public void mouseEntered(java.awt.event.MouseEvent evt) {
 				detailsLabel.setIcon(conditionEditorSelectedIcon);
-            }
-            public void mouseExited(java.awt.event.MouseEvent evt) {
-            	detailsLabel.setIcon(conditionEditorIcon);
-           }
-        });
+			}
+			public void mouseExited(java.awt.event.MouseEvent evt) {
+				detailsLabel.setIcon(conditionEditorIcon);
+		   }
+		});
 		
-        collectRemaining();
+		collectRemaining();
 		
 		pack();
 		setSize(Math.max(700, getWidth()), 500);
 		setLocation(parent.getLocation().x + parent.getSize().width / 3 - getWidth() / 2,
-    			parent.getLocation().y + parent.getSize().height / 3 - getHeight() / 2);
+				parent.getLocation().y + parent.getSize().height / 3 - getHeight() / 2);
 		UIUtil.fit(this);
 		UIUtil.initPeer();
-    }
-    
+	}
+	
 	public boolean edit() {
 		ok = false;
 		setVisible(true);
@@ -216,30 +216,30 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 	}
 
 	/**
-     * Gets list model for the subject-combobox.
-     * 
-     * @return list model for the subject-combobox
-     */
-    private ComboBoxModel<String> subjectListModel(boolean withNull) {
-    	Vector<String> tableNames = new Vector<String>();
-    	for (Table table: extractionModel.dataModel.getTables()) {
-    		tableNames.add(extractionModel.dataModel.getDisplayName(table));
-    	}
-    	Collections.sort(tableNames);
-    	if (withNull) {
-    		tableNames.add(0, "");
-    	}
-    	DefaultComboBoxModel<String> model = new DefaultComboBoxModel<String>(tableNames);
-        return model;
-    }
+	 * Gets list model for the subject-combobox.
+	 * 
+	 * @return list model for the subject-combobox
+	 */
+	private ComboBoxModel<String> subjectListModel(boolean withNull) {
+		Vector<String> tableNames = new Vector<String>();
+		for (Table table: extractionModel.dataModel.getTables()) {
+			tableNames.add(extractionModel.dataModel.getDisplayName(table));
+		}
+		Collections.sort(tableNames);
+		if (withNull) {
+			tableNames.add(0, "");
+		}
+		DefaultComboBoxModel<String> model = new DefaultComboBoxModel<String>(tableNames);
+		return model;
+	}
 
 	private void collectRemaining() {
-        remaining.clear();
-        remaining.addAll(extractionModel.dataModel.getTables());
-        if (subject != null) {
-        	remaining.remove(subject);
-        }
-        
+		remaining.clear();
+		remaining.addAll(extractionModel.dataModel.getTables());
+		if (subject != null) {
+			remaining.remove(subject);
+		}
+		
 		for (int i = 0; i < subjects.size(); ++i) {
 			remaining.remove(subjects.get(i).getSubject());
 		}
@@ -248,157 +248,157 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 		removeAllButton.setEnabled(!subjects.isEmpty());
 	}
 
-    /**
-     * This method is called from within the constructor to initialize the form.
-     * WARNING: Do NOT modify this code. The content of this method is always
-     * regenerated by the Form Editor.
-     */
-    @SuppressWarnings("unchecked")
-    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-    private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
+	/**
+	 * This method is called from within the constructor to initialize the form.
+	 * WARNING: Do NOT modify this code. The content of this method is always
+	 * regenerated by the Form Editor.
+	 */
+	@SuppressWarnings("unchecked")
+	// <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+	private void initComponents() {
+		java.awt.GridBagConstraints gridBagConstraints;
 
-        detailsPanel = new javax.swing.JPanel();
-        detailsComboBox = new net.sf.jailer.ui.JComboBox();
-        detailsLabel = new javax.swing.JLabel();
-        detailsCondtition = new javax.swing.JTextField();
-        detailsWhere = new javax.swing.JLabel();
-        jPanel3 = new javax.swing.JPanel();
-        okButton = new javax.swing.JButton();
-        cancelButton = new javax.swing.JButton();
-        addAllButton = new javax.swing.JButton();
-        removeAllButton = new javax.swing.JButton();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jPanel1 = new javax.swing.JPanel();
-        subjectsPanel = new javax.swing.JPanel();
+		detailsPanel = new javax.swing.JPanel();
+		detailsComboBox = new net.sf.jailer.ui.JComboBox();
+		detailsLabel = new javax.swing.JLabel();
+		detailsCondtition = new javax.swing.JTextField();
+		detailsWhere = new javax.swing.JLabel();
+		jPanel3 = new javax.swing.JPanel();
+		okButton = new javax.swing.JButton();
+		cancelButton = new javax.swing.JButton();
+		addAllButton = new javax.swing.JButton();
+		removeAllButton = new javax.swing.JButton();
+		jScrollPane1 = new javax.swing.JScrollPane();
+		jPanel1 = new javax.swing.JPanel();
+		subjectsPanel = new javax.swing.JPanel();
 
-        detailsPanel.setLayout(new java.awt.GridBagLayout());
+		detailsPanel.setLayout(new java.awt.GridBagLayout());
 
-        detailsComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        detailsPanel.add(detailsComboBox, gridBagConstraints);
+		detailsComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 1;
+		detailsPanel.add(detailsComboBox, gridBagConstraints);
 
-        detailsLabel.setText("jLabel1");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        detailsPanel.add(detailsLabel, gridBagConstraints);
+		detailsLabel.setText("jLabel1");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 3;
+		gridBagConstraints.gridy = 1;
+		detailsPanel.add(detailsLabel, gridBagConstraints);
 
-        detailsCondtition.setText("jTextField1");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        detailsPanel.add(detailsCondtition, gridBagConstraints);
+		detailsCondtition.setText("jTextField1");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 4;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		detailsPanel.add(detailsCondtition, gridBagConstraints);
 
-        detailsWhere.setText("   Where ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        detailsPanel.add(detailsWhere, gridBagConstraints);
+		detailsWhere.setText("   Where ");
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.gridy = 1;
+		detailsPanel.add(detailsWhere, gridBagConstraints);
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-        setTitle("Additional Subjects");
-        getContentPane().setLayout(new java.awt.GridBagLayout());
+		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+		setTitle("Additional Subjects");
+		getContentPane().setLayout(new java.awt.GridBagLayout());
 
-        jPanel3.setLayout(new java.awt.GridBagLayout());
+		jPanel3.setLayout(new java.awt.GridBagLayout());
 
-        okButton.setText(" Ok ");
-        okButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                okButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
-        jPanel3.add(okButton, gridBagConstraints);
+		okButton.setText(" Ok ");
+		okButton.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				okButtonActionPerformed(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
+		jPanel3.add(okButton, gridBagConstraints);
 
-        cancelButton.setText("Cancel");
-        cancelButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
-        jPanel3.add(cancelButton, gridBagConstraints);
+		cancelButton.setText("Cancel");
+		cancelButton.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				cancelButtonActionPerformed(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 2;
+		gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
+		jPanel3.add(cancelButton, gridBagConstraints);
 
-        addAllButton.setText("Add remaining tables");
-        addAllButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                addAllButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
-        jPanel3.add(addAllButton, gridBagConstraints);
+		addAllButton.setText("Add remaining tables");
+		addAllButton.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				addAllButtonActionPerformed(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
+		jPanel3.add(addAllButton, gridBagConstraints);
 
-        removeAllButton.setText("Delete all");
-        removeAllButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                removeAllButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
-        jPanel3.add(removeAllButton, gridBagConstraints);
+		removeAllButton.setText("Delete all");
+		removeAllButton.addActionListener(new java.awt.event.ActionListener() {
+			public void actionPerformed(java.awt.event.ActionEvent evt) {
+				removeAllButtonActionPerformed(evt);
+			}
+		});
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+		gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
+		jPanel3.add(removeAllButton, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        getContentPane().add(jPanel3, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 2;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+		gridBagConstraints.weightx = 1.0;
+		getContentPane().add(jPanel3, gridBagConstraints);
 
-        jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
+		jScrollPane1.setHorizontalScrollBarPolicy(javax.swing.ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER);
 
-        jPanel1.setLayout(new java.awt.GridBagLayout());
+		jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        subjectsPanel.setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel1.add(subjectsPanel, gridBagConstraints);
+		subjectsPanel.setLayout(new java.awt.GridBagLayout());
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		jPanel1.add(subjectsPanel, gridBagConstraints);
 
-        jScrollPane1.setViewportView(jPanel1);
+		jScrollPane1.setViewportView(jPanel1);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        getContentPane().add(jScrollPane1, gridBagConstraints);
+		gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 1;
+		gridBagConstraints.gridy = 1;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 1.0;
+		getContentPane().add(jScrollPane1, gridBagConstraints);
 
-        pack();
-    }// </editor-fold>//GEN-END:initComponents
+		pack();
+	}// </editor-fold>//GEN-END:initComponents
 
-    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
-        dispose();
-    }//GEN-LAST:event_cancelButtonActionPerformed
+	private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+		dispose();
+	}//GEN-LAST:event_cancelButtonActionPerformed
 
-    private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
-    	sortSubjects();
-    	synchronized (this) {
-    		ok = !extractionModel.additionalSubjects.equals(subjects);
+	private void okButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_okButtonActionPerformed
+		sortSubjects();
+		synchronized (this) {
+			ok = !extractionModel.additionalSubjects.equals(subjects);
 		}
-    	extractionModel.additionalSubjects = new ArrayList<ExtractionModel.AdditionalSubject>(subjects);
-    	dispose();
-    }//GEN-LAST:event_okButtonActionPerformed
+		extractionModel.additionalSubjects = new ArrayList<ExtractionModel.AdditionalSubject>(subjects);
+		dispose();
+	}//GEN-LAST:event_okButtonActionPerformed
 
 	void sortSubjects() {
 		Collections.sort(subjects, new Comparator<ExtractionModel.AdditionalSubject>() {
@@ -409,16 +409,16 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 		});
 	}
 
-    private void addAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAllButtonActionPerformed
-    	try {
-    		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-    		
+	private void addAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addAllButtonActionPerformed
+		try {
+			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			
 			List<Table> tables = new ArrayList<Table>(remaining);
 			Collections.sort(tables);
 			
 			for (Table table: tables) {
 				subjects.add(new AdditionalSubject(table, ""));
-	    	}
+			}
 			sortSubjects();
 			
 			additionalSubjectListEditor.setModel(subjects);
@@ -426,33 +426,33 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 		} finally {
 			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
-    }//GEN-LAST:event_addAllButtonActionPerformed
+	}//GEN-LAST:event_addAllButtonActionPerformed
 
-    private void removeAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeAllButtonActionPerformed
-    	subjects.clear();
-    	additionalSubjectListEditor.setModel(subjects);
+	private void removeAllButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeAllButtonActionPerformed
+		subjects.clear();
+		additionalSubjectListEditor.setModel(subjects);
 		collectRemaining();
-    }//GEN-LAST:event_removeAllButtonActionPerformed
+	}//GEN-LAST:event_removeAllButtonActionPerformed
 
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton addAllButton;
-    private javax.swing.JButton cancelButton;
-    private javax.swing.JComboBox detailsComboBox;
-    private javax.swing.JTextField detailsCondtition;
-    private javax.swing.JLabel detailsLabel;
-    private javax.swing.JPanel detailsPanel;
-    private javax.swing.JLabel detailsWhere;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JButton okButton;
-    private javax.swing.JButton removeAllButton;
-    private javax.swing.JPanel subjectsPanel;
-    // End of variables declaration//GEN-END:variables
+	// Variables declaration - do not modify//GEN-BEGIN:variables
+	private javax.swing.JButton addAllButton;
+	private javax.swing.JButton cancelButton;
+	private javax.swing.JComboBox detailsComboBox;
+	private javax.swing.JTextField detailsCondtition;
+	private javax.swing.JLabel detailsLabel;
+	private javax.swing.JPanel detailsPanel;
+	private javax.swing.JLabel detailsWhere;
+	private javax.swing.JPanel jPanel1;
+	private javax.swing.JPanel jPanel3;
+	private javax.swing.JScrollPane jScrollPane1;
+	private javax.swing.JButton okButton;
+	private javax.swing.JButton removeAllButton;
+	private javax.swing.JPanel subjectsPanel;
+	// End of variables declaration//GEN-END:variables
 
-    private ImageIcon minusImage = null;
-    private ImageIcon conditionEditorIcon = null;
-    private ImageIcon conditionEditorSelectedIcon = null;
+	private ImageIcon minusImage = null;
+	private ImageIcon conditionEditorIcon = null;
+	private ImageIcon conditionEditorSelectedIcon = null;
 
 	private boolean ok;
 

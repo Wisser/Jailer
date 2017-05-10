@@ -62,11 +62,11 @@ public class ExportTestCase extends DbmsAwareTestCase {
 	}
 
 	/**
-     * Gets data set holding the initial DB state.
-     */
-    protected IDataSet getDataSet() throws Exception {
-        return new FlatXmlDataSet(initialDataset, false, true);
-    }
+	 * Gets data set holding the initial DB state.
+	 */
+	protected IDataSet getDataSet() throws Exception {
+		return new FlatXmlDataSet(initialDataset, false, true);
+	}
 
 	/**
 	 * Tests export.
@@ -107,13 +107,13 @@ public class ExportTestCase extends DbmsAwareTestCase {
 		}
 	}
 	
-    /**
+	/**
 	 * Exports data.
 	 * 
 	 * @param extractionModel extraction model file name
 	 * @param scope GLOBAL or SESSION_LOCAL
-     * @param format 
-     * @param overwrite 
+	 * @param format 
+	 * @param overwrite 
 	 */
 	private boolean doExport(File datamodel, File extractionModel, File result, String scope, String format, boolean overwrite) throws Exception {
 		if ("SESSION_LOCAL".equals(scope)) {

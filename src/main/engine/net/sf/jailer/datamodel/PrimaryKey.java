@@ -30,72 +30,72 @@ import net.sf.jailer.util.Quoting;
  * @author Ralf Wisser
  */
 public class PrimaryKey {
-    
-    /**
-     * The primary-key columns.
-     */
-    private final List<Column> columns;
-    
-    /**
-     * Constructor.
-     * 
-     * @param primaryKeyColumns the primary-key columns
-     */
-    PrimaryKey(List<Column> columns) {
-        this.columns = columns;
-    }
-    
-    /**
-     * Gets the primary-key columns.
-     * 
-     * @return the primary-key columns
-     */
-    public List<Column> getColumns() {
-        return columns;
-    }
+	
+	/**
+	 * The primary-key columns.
+	 */
+	private final List<Column> columns;
+	
+	/**
+	 * Constructor.
+	 * 
+	 * @param primaryKeyColumns the primary-key columns
+	 */
+	PrimaryKey(List<Column> columns) {
+		this.columns = columns;
+	}
+	
+	/**
+	 * Gets the primary-key columns.
+	 * 
+	 * @return the primary-key columns
+	 */
+	public List<Column> getColumns() {
+		return columns;
+	}
 
-    /**
-     * Matches the columns with the columns of <code>primaryKey</code>
-     * s.t. each column of <code>primaryKey</code> is assigned to a
-     * column of this PK with same type.
-     * 
-     * @param primaryKey to match
-     * @return a match of all columns of <code>primaryKey</code>
-     */
-    public Map<Column, Column> match(PrimaryKey primaryKey) {
-    	if (Configuration.getInstance().getDoMinimizeUPK()) {
+	/**
+	 * Matches the columns with the columns of <code>primaryKey</code>
+	 * s.t. each column of <code>primaryKey</code> is assigned to a
+	 * column of this PK with same type.
+	 * 
+	 * @param primaryKey to match
+	 * @return a match of all columns of <code>primaryKey</code>
+	 */
+	public Map<Column, Column> match(PrimaryKey primaryKey) {
+		if (Configuration.getInstance().getDoMinimizeUPK()) {
 			Set<Integer> assignedUPKColumns = new HashSet<Integer>();
-	        Map<Column, Column> match = new HashMap<Column, Column>();
-	        for (Column column: getColumns()) {
-	            for (int i = 0; i < primaryKey.getColumns().size(); ++i) {
-	            	if (assignedUPKColumns.contains(i)) {
-	            		continue;
-	            	}
-		        	Column otherColumn = primaryKey.getColumns().get(i);
-		            if (isAssignable(column, otherColumn)) {
-		                match.put(column, otherColumn);
-		                assignedUPKColumns.add(i);
-	                    break;
-		            }
-	            }
-	        }
-	        return match;
-    	} else {
-	        Map<Column, Column> match = new HashMap<Column, Column>();
-	        int i = 0;
-	        for (Column column: getColumns()) {
-	            Column otherColumn = primaryKey.getColumns().get(i);
-	            if (isAssignable(column, otherColumn)) {
-	                match.put(column, otherColumn);
-	                ++i;
-	                if (i >= primaryKey.columns.size()) {
-	                    break;
-	                }
-	            }
-	        }
-	        return match;
-    	}
-    }
+			Map<Column, Column> match = new HashMap<Column, Column>();
+			for (Column column: getColumns()) {
+				for (int i = 0; i < primaryKey.getColumns().size(); ++i) {
+					if (assignedUPKColumns.contains(i)) {
+						continue;
+					}
+					Column otherColumn = primaryKey.getColumns().get(i);
+					if (isAssignable(column, otherColumn)) {
+						match.put(column, otherColumn);
+						assignedUPKColumns.add(i);
+						break;
+					}
+				}
+			}
+			return match;
+		} else {
+			Map<Column, Column> match = new HashMap<Column, Column>();
+			int i = 0;
+			for (Column column: getColumns()) {
+				Column otherColumn = primaryKey.getColumns().get(i);
+				if (isAssignable(column, otherColumn)) {
+					match.put(column, otherColumn);
+					++i;
+					if (i >= primaryKey.columns.size()) {
+						break;
+					}
+				}
+			}
+			return match;
+		}
+	}
 
 	public static boolean  isAssignable(Column uPKColumn, Column entityColumn) {
 		if (!uPKColumn.type.equals(entityColumn.type)) {
@@ -121,110 +121,110 @@ public class PrimaryKey {
 		}
 		return true;
 	}
-    
-    /**
-     * Creates a comma-separated list of column names.
-     * 
-     * @param columnPrefix an optional prefix for each PK-column
-     */
-    public String columnList(String prefix) {
-        return columnList(prefix, null);
-    }
-    
-    /**
-     * Creates a comma-separated list of column names.
-     * 
-     * @param columnPrefix an optional prefix for each PK-column
-     */
-    public String columnList(String prefix, Quoting quoting) {
-        String list = "";
-        for (Column column: getColumns()) {
-            if (list.length() > 0) {
-                list += ", ";
-            }
-            if (prefix != null) {
-                list += prefix;
-            }
-            list += quoting != null? quoting.requote(column.name) : column.name;
-        }
-        return list;
-    }
-    
-    /**
-     * Returns the primary key in SQL syntax.
-     * 
-     * @param columnPrefix an optional prefix for each PK-column
-     */
-    public String toSQL(String columnPrefix) {
-        return toSQL(columnPrefix, true);
-    }
-    
-    /**
-     * Returns the primary key in SQL syntax.
-     * 
-     * @param columnPrefix an optional prefix for each PK-column
-     */
-    public String toSQL(String columnPrefix, boolean withContraints) {
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < columns.size(); ++i) {
-            if (i > 0) {
-                sb.append(", ");
-            }
-            sb.append(columns.get(i).toSQL(columnPrefix) + (withContraints? " NOT NULL" : ""));
-        }
-        return sb.toString();
-    }
-    
-    /**
-     * Returns the primary key in SQL syntax.
-     * 
-     * @param columnPrefix an optional prefix for each PK-column
-     * @param typeReplacement column types replacements
-     */
-    public String toSQL(String columnPrefix, String contraint, Map<String, String> typeReplacement) {
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < columns.size(); ++i) {
-            if (i > 0) {
-                sb.append(", ");
-            }
-            sb.append(columns.get(i).toSQL(columnPrefix, typeReplacement) + " " + contraint);
-        }
-        return sb.toString();
-    }
-    
-    /**
-     * Returns a string representation of the primary key.
-     */ 
-    public String toString() {
-        return toSQL(null);
-    }
+	
+	/**
+	 * Creates a comma-separated list of column names.
+	 * 
+	 * @param columnPrefix an optional prefix for each PK-column
+	 */
+	public String columnList(String prefix) {
+		return columnList(prefix, null);
+	}
+	
+	/**
+	 * Creates a comma-separated list of column names.
+	 * 
+	 * @param columnPrefix an optional prefix for each PK-column
+	 */
+	public String columnList(String prefix, Quoting quoting) {
+		String list = "";
+		for (Column column: getColumns()) {
+			if (list.length() > 0) {
+				list += ", ";
+			}
+			if (prefix != null) {
+				list += prefix;
+			}
+			list += quoting != null? quoting.requote(column.name) : column.name;
+		}
+		return list;
+	}
+	
+	/**
+	 * Returns the primary key in SQL syntax.
+	 * 
+	 * @param columnPrefix an optional prefix for each PK-column
+	 */
+	public String toSQL(String columnPrefix) {
+		return toSQL(columnPrefix, true);
+	}
+	
+	/**
+	 * Returns the primary key in SQL syntax.
+	 * 
+	 * @param columnPrefix an optional prefix for each PK-column
+	 */
+	public String toSQL(String columnPrefix, boolean withContraints) {
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < columns.size(); ++i) {
+			if (i > 0) {
+				sb.append(", ");
+			}
+			sb.append(columns.get(i).toSQL(columnPrefix) + (withContraints? " NOT NULL" : ""));
+		}
+		return sb.toString();
+	}
+	
+	/**
+	 * Returns the primary key in SQL syntax.
+	 * 
+	 * @param columnPrefix an optional prefix for each PK-column
+	 * @param typeReplacement column types replacements
+	 */
+	public String toSQL(String columnPrefix, String contraint, Map<String, String> typeReplacement) {
+		StringBuffer sb = new StringBuffer();
+		for (int i = 0; i < columns.size(); ++i) {
+			if (i > 0) {
+				sb.append(", ");
+			}
+			sb.append(columns.get(i).toSQL(columnPrefix, typeReplacement) + " " + contraint);
+		}
+		return sb.toString();
+	}
+	
+	/**
+	 * Returns a string representation of the primary key.
+	 */ 
+	public String toString() {
+		return toSQL(null);
+	}
 
-    public static boolean isIncreasable(Column uPKColumn, Column column) {
-        if(!uPKColumn.type.equals(column.type)) {
-            return false;
-        }
+	public static boolean isIncreasable(Column uPKColumn, Column column) {
+		if(!uPKColumn.type.equals(column.type)) {
+			return false;
+		}
 
-        if((uPKColumn.precision < 0) && (column.precision >=0) ) {
-            return false;
-        }
+		if((uPKColumn.precision < 0) && (column.precision >=0) ) {
+			return false;
+		}
 
-        if((uPKColumn.precision >=0) && (column.precision < 0)) {
-            return false;
-        }
+		if((uPKColumn.precision >=0) && (column.precision < 0)) {
+			return false;
+		}
 
-        if(uPKColumn.length == 0 && column.length > 0) {
-            return false;
-        }
+		if(uPKColumn.length == 0 && column.length > 0) {
+			return false;
+		}
 
-        if(uPKColumn.length < column.length) {
-            return true;
-        }
+		if(uPKColumn.length < column.length) {
+			return true;
+		}
 
-        if(uPKColumn.precision < column.precision) {
-            return true;
-        }
+		if(uPKColumn.precision < column.precision) {
+			return true;
+		}
 
-        // never should get THIS far !
-        return false;
-    }
+		// never should get THIS far !
+		return false;
+	}
 }

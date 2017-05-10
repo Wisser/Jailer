@@ -26,40 +26,40 @@ import net.sf.jailer.CommandLine;
  */
 public class CommandLineInstance {
 
-    /**
-     * The singleton.
-     */
-    private static CommandLine commandLine;
-    
-    /**
-     * The singleton as {@link ExecutionContext}.
-     */
-    private static ExecutionContext executionContext;
-    
-    /**
-     * Gets the singleton.
-     * 
-     * @return the singleton
-     */
-    public static CommandLine getInstance() {
-        return commandLine;
-    }
+	/**
+	 * The singleton.
+	 */
+	private static CommandLine commandLine;
+	
+	/**
+	 * The singleton as {@link ExecutionContext}.
+	 */
+	private static ExecutionContext executionContext;
+	
+	/**
+	 * Gets the singleton.
+	 * 
+	 * @return the singleton
+	 */
+	public static CommandLine getInstance() {
+		return commandLine;
+	}
 
-    /**
-     * Gets the singleton as Ex.
-     * 
-     * @return the singleton
-     */
-    public static ExecutionContext getExecutionContext() {
-        return executionContext;
-    }
+	/**
+	 * Gets the singleton as Ex.
+	 * 
+	 * @return the singleton
+	 */
+	public static ExecutionContext getExecutionContext() {
+		return executionContext;
+	}
 
-    /**
-     * Sets the singleton.
-     */
-    public static synchronized void init(String[] args) throws Exception {
-        commandLine = CommandLineParser.parse(args, true);
-        executionContext = new ExecutionContext(commandLine);
-    }
+	/**
+	 * Sets the singleton.
+	 */
+	public static synchronized void init(String[] args) throws Exception {
+		commandLine = CommandLineParser.parse(args, true);
+		executionContext = new ExecutionContext(commandLine);
+	}
 
 }

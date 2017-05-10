@@ -113,11 +113,11 @@ public class DBMS {
 	}
 
 	/**
-     * Gets DBMS specific configuration.
-     * 
-     * @param dbmsId the DBMS id
-     * @return the DBMS with given id, or the default DBMS if id is <code>null</code>
-     */
+	 * Gets DBMS specific configuration.
+	 * 
+	 * @param dbmsId the DBMS id
+	 * @return the DBMS with given id, or the default DBMS if id is <code>null</code>
+	 */
 	public static synchronized DBMS forDBMS(String dbmsId) {
 		if (dbmsId == null) {
 			return defaultDBMS;
@@ -125,24 +125,24 @@ public class DBMS {
 		if (perDBMS.containsKey(dbmsId)) {
 			return perDBMS.get(dbmsId);
 		}
-        List<DBMS> cs = Configuration.getInstance().getDBMS();  
-        for (DBMS c: cs) {
-        	if (dbmsId.equals(c.getId())) {
-        		perDBMS.put(dbmsId, c);
-                return c;
-        	}
-        }
-        throw new RuntimeException("Unknown DBMS: \"" + dbmsId + "\"");
+		List<DBMS> cs = Configuration.getInstance().getDBMS();  
+		for (DBMS c: cs) {
+			if (dbmsId.equals(c.getId())) {
+				perDBMS.put(dbmsId, c);
+				return c;
+			}
+		}
+		throw new RuntimeException("Unknown DBMS: \"" + dbmsId + "\"");
 	}
-    
-    /**
-     * Holds configurations.
-     */
-    private static Map<String, DBMS> perDBMS = new HashMap<String, DBMS>();
+	
+	/**
+	 * Holds configurations.
+	 */
+	private static Map<String, DBMS> perDBMS = new HashMap<String, DBMS>();
 
-    /**
-     * Default configuration for unknown DBMS.
-     */
+	/**
+	 * Default configuration for unknown DBMS.
+	 */
 	private static final DBMS defaultDBMS = new DBMS();
 
 	static {
@@ -164,59 +164,59 @@ public class DBMS {
 	
 	private String id;
 	private String displayName;
-    
+	
 	/**
-     * DB-URL pattern of DBMS for which this holds the configuration.
-     */
+	 * DB-URL pattern of DBMS for which this holds the configuration.
+	 */
 	private String urlPattern;
 	
 	/**
-     * Test-query for the DBMS for which this holds the configuration.
-     */
+	 * Test-query for the DBMS for which this holds the configuration.
+	 */
 	private String testQuery;
 	
 	/**
-     * The {@link SqlScriptBasedStatisticRenovator}.
-     */
-    private SqlScriptBasedStatisticRenovator statisticRenovator;
-    
-    /**
-     * Replacement map for column types used for DDL generation.
-     */
-    private Map<String, String> typeReplacement;
-    
-    /**
-     * Replacement map for special characters in string literals.
-     */
-    private Map<String, String> stringLiteralEscapeSequences;
-    
-    /**
-     * Suffix of SQL-Select statement to limit number of rows.
-     */
-    private String sqlLimitSuffix;
-    
-    private Integer varcharLengthLimit = null;
+	 * The {@link SqlScriptBasedStatisticRenovator}.
+	 */
+	private SqlScriptBasedStatisticRenovator statisticRenovator;
+	
+	/**
+	 * Replacement map for column types used for DDL generation.
+	 */
+	private Map<String, String> typeReplacement;
+	
+	/**
+	 * Replacement map for special characters in string literals.
+	 */
+	private Map<String, String> stringLiteralEscapeSequences;
+	
+	/**
+	 * Suffix of SQL-Select statement to limit number of rows.
+	 */
+	private String sqlLimitSuffix;
+	
+	private Integer varcharLengthLimit = null;
 
 	private String tableProperties = "";
 
 	/**
-     * Maps characters to escape sequences according to {@link #stringLiteralEscapeSequences}.
-     */
-    private Map<Character, String> charToEscapeSequence = new HashMap<Character, String>();
-    { charToEscapeSequence.put('\'', "''"); }
-    private char[] keysOfCharToEscapeSequence = new char[] { '\'' };
-    private String ncharPrefix = null;
-    
+	 * Maps characters to escape sequences according to {@link #stringLiteralEscapeSequences}.
+	 */
+	private Map<Character, String> charToEscapeSequence = new HashMap<Character, String>();
+	{ charToEscapeSequence.put('\'', "''"); }
+	private char[] keysOfCharToEscapeSequence = new char[] { '\'' };
+	private String ncharPrefix = null;
+	
 	/**
-     * Set of type names for which no data must be exported.
-     */
-    private Set<String> exportBlocks = new HashSet<String>();
-    
-    /**
-     * <code>true</code> if DBMS supports identity-type (MS-SQL)
-     */
-    private boolean identityInserts = false;
-    
+	 * Set of type names for which no data must be exported.
+	 */
+	private Set<String> exportBlocks = new HashSet<String>();
+	
+	/**
+	 * <code>true</code> if DBMS supports identity-type (MS-SQL)
+	 */
+	private boolean identityInserts = false;
+	
 	private boolean appendNanosToTimestamp = true;
 	private boolean appendMillisToTimestamp = false;
 	private boolean useToTimestampFunction = false;
@@ -406,8 +406,8 @@ public class DBMS {
 	public void setExportBlocks(Set<String> exportBlocks) {
 		this.exportBlocks = exportBlocks;
 	}
-    
-    /**
+	
+	/**
 	 * Gets the {@link SqlScriptBasedStatisticRenovator}.
 	 * 
 	 * @return the {@link SqlScriptBasedStatisticRenovator}
@@ -449,14 +449,14 @@ public class DBMS {
 		this.binaryPattern = binaryPattern;
 	}
 	
-    /**
-     * Sets replacement map for column types used for DDL generation.
-     */
-    public void setTypeReplacement(Map<String, String> tr) {
-    	typeReplacement = tr;
-    }
+	/**
+	 * Sets replacement map for column types used for DDL generation.
+	 */
+	public void setTypeReplacement(Map<String, String> tr) {
+		typeReplacement = tr;
+	}
 
-    /**
+	/**
 	 * @return the toBlob
 	 */
 	public String getToBlob() {
@@ -485,11 +485,11 @@ public class DBMS {
 	}
 
 	/**
-     * Gets replacement map for column types used for DDL generation.
-     */
-    public Map<String, String> getTypeReplacement() {
-    	return typeReplacement;
-    }
+	 * Gets replacement map for column types used for DDL generation.
+	 */
+	public Map<String, String> getTypeReplacement() {
+		return typeReplacement;
+	}
 
 	/**
 	 * Sets manager for session local temporary tables.
@@ -514,86 +514,86 @@ public class DBMS {
 	}
 
 	/**
-     * Sets replacement map for special characters in string literals.
-     */
-    public void setStringLiteralEscapeSequences(Map<String, String> stringLiteralEscapeSequences) {
-    	this.stringLiteralEscapeSequences = stringLiteralEscapeSequences;
-    	try {
-	    	for (Map.Entry<String, String> e: stringLiteralEscapeSequences.entrySet()) {
-	    		if (e.getKey().startsWith("\\")) {
-	    			char c;
-	    			char c2 = e.getKey().charAt(1);
-	    			if (Character.isDigit(c2)) {
-	    				c = (char) Integer.parseInt(e.getKey().substring(1));
-	    			} else if (c2 == '\\') {
-	    				c = '\\';
-	    			} else if (c2 == 'b') {
-	    				c = '\b';
-	    			} else if (c2 == 'n') {
-	    				c = '\n';
-	    			} else if (c2 == 't') {
-	    				c = '\t';
-	    			} else if (c2 == 'r') {
-	    				c = '\r';
-	    			} else {
-	    				throw new RuntimeException("illegal escape sequence: " + e.getKey());
-	    			}
-	    			charToEscapeSequence.put(c, e.getValue());
-	    		} else {
-	    			charToEscapeSequence.put(e.getKey().charAt(0), e.getValue());
-	    		}
-	    	}
-	    	keysOfCharToEscapeSequence = new char[charToEscapeSequence.keySet().size()];
-	    	int i = 0;
-	    	for (char c: charToEscapeSequence.keySet()) {
-	    		keysOfCharToEscapeSequence[i++] = c;
-	    	}
-    	} catch (Exception e) {
-    		throw new RuntimeException("cannot recognize key of stringLiteralEscapeSequences-entry", e);
-    	}
-    }
+	 * Sets replacement map for special characters in string literals.
+	 */
+	public void setStringLiteralEscapeSequences(Map<String, String> stringLiteralEscapeSequences) {
+		this.stringLiteralEscapeSequences = stringLiteralEscapeSequences;
+		try {
+			for (Map.Entry<String, String> e: stringLiteralEscapeSequences.entrySet()) {
+				if (e.getKey().startsWith("\\")) {
+					char c;
+					char c2 = e.getKey().charAt(1);
+					if (Character.isDigit(c2)) {
+						c = (char) Integer.parseInt(e.getKey().substring(1));
+					} else if (c2 == '\\') {
+						c = '\\';
+					} else if (c2 == 'b') {
+						c = '\b';
+					} else if (c2 == 'n') {
+						c = '\n';
+					} else if (c2 == 't') {
+						c = '\t';
+					} else if (c2 == 'r') {
+						c = '\r';
+					} else {
+						throw new RuntimeException("illegal escape sequence: " + e.getKey());
+					}
+					charToEscapeSequence.put(c, e.getValue());
+				} else {
+					charToEscapeSequence.put(e.getKey().charAt(0), e.getValue());
+				}
+			}
+			keysOfCharToEscapeSequence = new char[charToEscapeSequence.keySet().size()];
+			int i = 0;
+			for (char c: charToEscapeSequence.keySet()) {
+				keysOfCharToEscapeSequence[i++] = c;
+			}
+		} catch (Exception e) {
+			throw new RuntimeException("cannot recognize key of stringLiteralEscapeSequences-entry", e);
+		}
+	}
 
-    /**
-     * Gets replacement map for special characters in string literals.
-     */
-    public Map<String, String> getStringLiteralEscapeSequences() {
-    	return stringLiteralEscapeSequences;
-    }
-    
-    /**
-     * Converts a string to a string literal according to the {@link #getStringLiteralEscapeSequences()}.
-     * 
-     * @param string the string to convert
-     * @return the string literal
-     */
-    public String convertToStringLiteral(String string) {
-    	boolean esc = false;
-    	for (char c: keysOfCharToEscapeSequence) {
-    		if (string.indexOf(c) >= 0) {
-    			esc = true;
-    			break;
-    		}
-    	}
-    	if (!esc) {
-    		return string;
-    	}
-    	
-    	StringBuilder qvalue = new StringBuilder();
-        int l = string.length();
-    	
-        for (int i = 0; i < l; ++i) {
-        	char c = string.charAt(i);
-        	String es = charToEscapeSequence.get(c);
-        	if (es != null) {
-        		qvalue.append(es);
-        	} else {
-        		qvalue.append(c);
-        	}
-        }
-        return qvalue.toString();
-    }
+	/**
+	 * Gets replacement map for special characters in string literals.
+	 */
+	public Map<String, String> getStringLiteralEscapeSequences() {
+		return stringLiteralEscapeSequences;
+	}
+	
+	/**
+	 * Converts a string to a string literal according to the {@link #getStringLiteralEscapeSequences()}.
+	 * 
+	 * @param string the string to convert
+	 * @return the string literal
+	 */
+	public String convertToStringLiteral(String string) {
+		boolean esc = false;
+		for (char c: keysOfCharToEscapeSequence) {
+			if (string.indexOf(c) >= 0) {
+				esc = true;
+				break;
+			}
+		}
+		if (!esc) {
+			return string;
+		}
+		
+		StringBuilder qvalue = new StringBuilder();
+		int l = string.length();
+		
+		for (int i = 0; i < l; ++i) {
+			char c = string.charAt(i);
+			String es = charToEscapeSequence.get(c);
+			if (es != null) {
+				qvalue.append(es);
+			} else {
+				qvalue.append(c);
+			}
+		}
+		return qvalue.toString();
+	}
 
-    public boolean isAvoidLeftJoin() {
+	public boolean isAvoidLeftJoin() {
 		return avoidLeftJoin;
 	}
 
@@ -614,8 +614,8 @@ public class DBMS {
 	public String getSqlLimitSuffix() {
 		return sqlLimitSuffix;
 	}
-    
-    public Integer getVarcharLengthLimit() {
+	
+	public Integer getVarcharLengthLimit() {
 		return varcharLengthLimit;
 	}
 
@@ -637,7 +637,7 @@ public class DBMS {
 		this.timestampPattern = timestampPattern;
 	}
 
-    /**
+	/**
 	 * @return the ncharPrefix
 	 */
 	public String getNcharPrefix() {
@@ -665,9 +665,9 @@ public class DBMS {
 		this.tableProperties = tableProperties;
 	}
 	
-    /**
-     * Gets the JDBC properties.
-     * 
+	/**
+	 * Gets the JDBC properties.
+	 * 
 	 * @return the jdbcProperties
 	 */
 	public Map<String, String> getJdbcProperties() {
@@ -677,7 +677,7 @@ public class DBMS {
 	/**
 	 * Sets the JDBC properties.
 	 * 
-     * @param jdbcProperties the jdbcProperties to set
+	 * @param jdbcProperties the jdbcProperties to set
 	 */
 	public void setJdbcProperties(Map<String, String> jdbcProperties) {
 		this.jdbcProperties = jdbcProperties;
@@ -715,7 +715,7 @@ public class DBMS {
 
 	private String nullableContraint = null;
 
-    /**
+	/**
 	 * @return the nullableContraint
 	 */
 	public String getNullableContraint() {

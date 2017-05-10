@@ -43,13 +43,13 @@ public class CancellationHandler {
 	private static Map<Object, List<Statement>> currentStatements = new HashMap<Object, List<Statement>>();
 	
 	/**
-     * The logger.
-     */
-    private static final Logger _log = Logger.getLogger(JobManager.class);
+	 * The logger.
+	 */
+	private static final Logger _log = Logger.getLogger(JobManager.class);
 
-    /**
-     * Default context
-     */
+	/**
+	 * Default context
+	 */
 	private static final Object DEFAULT_CONTEXT = new Object();
 
 	/**

@@ -61,96 +61,96 @@ public class SqlScriptExecutor {
 	public static final String FINISHED_MULTILINE_COMMENT = "--.";
 	
 	/**
-     * The logger.
-     */
-    private static final Logger _log = Logger.getLogger(SqlScriptExecutor.class);
+	 * The logger.
+	 */
+	private static final Logger _log = Logger.getLogger(SqlScriptExecutor.class);
 
-    /**
-     * The session.
-     */
-    private final Session session;
-    
-    /**
-     * Executes the statements.
-     */
-    private BoundedExecutor executor;
-    
-    /**
-     * Threads number of threads to use.
-     */
-    private final int threads;
-    
-    private RuntimeException exception;
+	/**
+	 * The session.
+	 */
+	private final Session session;
 	
-    /**
-     * Constructor.
-     * 
-     * @param session for execution of statements
-     * @param threads number of threads to use
-     */
-    public SqlScriptExecutor(Session session, int threads) {
-    	this.session = session;
-    	this.threads = threads;
-    }
-    
-    /**
-     * Reads in and executes a SQL-script.
-     * 
-     * @param scriptFileName the name of the script-file
-     * 
-     * @return Pair(statementCount, rowCount)
-     */
-    public Pair<Integer, Long> executeScript(String scriptFileName, boolean transactional) throws IOException, SQLException {
-    	if (!transactional) {
-    		return executeScript(scriptFileName);
-    	}
-    	try {
-    		Pair<Integer, Long> r = executeScript(scriptFileName);
-    		session.commitAll();
-    		return r;
-    	} catch (IOException e) {
-    		session.rollbackAll();
-    		throw e;
-    	} catch (SQLException e) {
-    		session.rollbackAll();
-    		throw e;
-    	} catch (Throwable e) {
-    		session.rollbackAll();
-    		throw new RuntimeException(e);
-    	}
-    }
-    
-    private static class BoundedExecutor {
-        private final ExecutorService exec;
-        private final Semaphore semaphore;
+	/**
+	 * Executes the statements.
+	 */
+	private BoundedExecutor executor;
+	
+	/**
+	 * Threads number of threads to use.
+	 */
+	private final int threads;
+	
+	private RuntimeException exception;
+	
+	/**
+	 * Constructor.
+	 * 
+	 * @param session for execution of statements
+	 * @param threads number of threads to use
+	 */
+	public SqlScriptExecutor(Session session, int threads) {
+		this.session = session;
+		this.threads = threads;
+	}
+	
+	/**
+	 * Reads in and executes a SQL-script.
+	 * 
+	 * @param scriptFileName the name of the script-file
+	 * 
+	 * @return Pair(statementCount, rowCount)
+	 */
+	public Pair<Integer, Long> executeScript(String scriptFileName, boolean transactional) throws IOException, SQLException {
+		if (!transactional) {
+			return executeScript(scriptFileName);
+		}
+		try {
+			Pair<Integer, Long> r = executeScript(scriptFileName);
+			session.commitAll();
+			return r;
+		} catch (IOException e) {
+			session.rollbackAll();
+			throw e;
+		} catch (SQLException e) {
+			session.rollbackAll();
+			throw e;
+		} catch (Throwable e) {
+			session.rollbackAll();
+			throw new RuntimeException(e);
+		}
+	}
+	
+	private static class BoundedExecutor {
+		private final ExecutorService exec;
+		private final Semaphore semaphore;
 
-        public BoundedExecutor(ExecutorService exec, int bound) {
-            this.exec = exec;
-            this.semaphore = new Semaphore(bound);
-        }
+		public BoundedExecutor(ExecutorService exec, int bound) {
+			this.exec = exec;
+			this.semaphore = new Semaphore(bound);
+		}
 
-        public void submitTask(final Runnable command)
-                throws RejectedExecutionException {
-            try {
+		public void submitTask(final Runnable command)
+				throws RejectedExecutionException {
+			try {
 				semaphore.acquire();
 			} catch (InterruptedException e) {
 				throw new RuntimeException(e);
 			}
-            try {
-                exec.execute(new Runnable() {
-                    public void run() {
-                        try {
-                            command.run();
-                        } finally {
-                            semaphore.release();
-                        }
-                    }
-                });
-            } catch (RejectedExecutionException e) {
-                semaphore.release();
-                throw e;
-            }
-        }
+			try {
+				exec.execute(new Runnable() {
+					public void run() {
+						try {
+							command.run();
+						} finally {
+							semaphore.release();
+						}
+					}
+				});
+			} catch (RejectedExecutionException e) {
+				semaphore.release();
+				throw e;
+			}
+		}
 
 		public void shutdown() {
 			exec.shutdown();
@@ -160,23 +160,23 @@ public class SqlScriptExecutor {
 				// ignore
 			}
 		}
-    }
-    
-    private long submittedTasks;
-    private AtomicLong executedTasks;
-    
-    /**
-     * Reads in and executes a SQL-script.
-     * 
-     * @param scriptFileName the name of the script-file
-     * 
-     * @return Pair(statementCount, rowCount)
-     */
+	}
+	
+	private long submittedTasks;
+	private AtomicLong executedTasks;
+	
+	/**
+	 * Reads in and executes a SQL-script.
+	 * 
+	 * @param scriptFileName the name of the script-file
+	 * 
+	 * @return Pair(statementCount, rowCount)
+	 */
 	public Pair<Integer, Long> executeScript(String scriptFileName) throws IOException, SQLException {
-        _log.info("reading file '" + scriptFileName + "'");
-    	BufferedReader bufferedReader;
-    	long fileSize = 0;
-    	File file = new File(scriptFileName);
+		_log.info("reading file '" + scriptFileName + "'");
+		BufferedReader bufferedReader;
+		long fileSize = 0;
+		File file = new File(scriptFileName);
 		FileInputStream inputStream = new FileInputStream(file);
 		
 		Charset encoding = Charset.defaultCharset();
@@ -192,13 +192,13 @@ public class SqlScriptExecutor {
 			// retrieve encoding
 			if (scriptFileName.toLowerCase().endsWith(".gz")) {
 				bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), uTF8), 1);
-	    	} else if (scriptFileName.toLowerCase().endsWith(".zip")) {
-	    		ZipInputStream zis = new ZipInputStream(new FileInputStream(scriptFileName));
-	    		zis.getNextEntry();
-	    		bufferedReader = new BufferedReader(new InputStreamReader(zis, uTF8), 1);
-	    	} else {
-	    		bufferedReader = new BufferedReader(new InputStreamReader(inputStream, uTF8), 1);
-	    	}
+			} else if (scriptFileName.toLowerCase().endsWith(".zip")) {
+				ZipInputStream zis = new ZipInputStream(new FileInputStream(scriptFileName));
+				zis.getNextEntry();
+				bufferedReader = new BufferedReader(new InputStreamReader(zis, uTF8), 1);
+			} else {
+				bufferedReader = new BufferedReader(new InputStreamReader(inputStream, uTF8), 1);
+			}
 			String line = bufferedReader.readLine();
 			if (line != null && line.contains("encoding UTF-8")) {
 				encoding = uTF8;
@@ -209,171 +209,171 @@ public class SqlScriptExecutor {
 		inputStream = new FileInputStream(file);
 		if (scriptFileName.toLowerCase().endsWith(".gz")) {
 			bufferedReader = new BufferedReader(new InputStreamReader(new GZIPInputStream(inputStream), encoding));
-    	} else if (scriptFileName.toLowerCase().endsWith(".zip")){
-    		ZipInputStream zis = new ZipInputStream(new FileInputStream(scriptFileName));
-    		zis.getNextEntry();
-    		bufferedReader = new BufferedReader(new InputStreamReader(zis, encoding));
-    	} else {
-    		fileSize = file.length();
-    		bufferedReader = new BufferedReader(new InputStreamReader(inputStream, encoding));
-    	}
+		} else if (scriptFileName.toLowerCase().endsWith(".zip")){
+			ZipInputStream zis = new ZipInputStream(new FileInputStream(scriptFileName));
+			zis.getNextEntry();
+			bufferedReader = new BufferedReader(new InputStreamReader(zis, encoding));
+		} else {
+			fileSize = file.length();
+			bufferedReader = new BufferedReader(new InputStreamReader(inputStream, encoding));
+		}
 		
-        String line = null;
-        StringBuffer currentStatement = new StringBuffer();
-        final AtomicLong linesRead = new AtomicLong(0);
-        final AtomicLong totalRowCount = new AtomicLong(0);
-        final AtomicLong bytesRead = new AtomicLong(0);
-        final AtomicLong t = new AtomicLong(System.currentTimeMillis());
-        final AtomicInteger count = new AtomicInteger(0);
-        submittedTasks = 0;
-        executedTasks = new AtomicLong(0);
-        final long finalFileSize = fileSize;
-        LineReader lineReader = new LineReader(bufferedReader);
-        boolean inSync = false;
-        synchronized (this) {
-        	exception = null;
-        }
-        CancellationHandler.reset(null);
-        
-        Runnable logProgress = new Runnable() {
-        	public void run() {
-                if (System.currentTimeMillis() > t.get() + 1000) {
-                	t.set(System.currentTimeMillis());
-                	long p = 0;
-                	if (finalFileSize > 0) {
-                		p = (100 * bytesRead.get()) / finalFileSize;
-                		if (p > 100) {
-                			p = 100;
-                		}
-                	}
-                	_log.info(linesRead + " statements" + (p > 0? " (" + p + "%)" : ""));
-                }
-        	}
-        };
+		String line = null;
+		StringBuffer currentStatement = new StringBuffer();
+		final AtomicLong linesRead = new AtomicLong(0);
+		final AtomicLong totalRowCount = new AtomicLong(0);
+		final AtomicLong bytesRead = new AtomicLong(0);
+		final AtomicLong t = new AtomicLong(System.currentTimeMillis());
+		final AtomicInteger count = new AtomicInteger(0);
+		submittedTasks = 0;
+		executedTasks = new AtomicLong(0);
+		final long finalFileSize = fileSize;
+		LineReader lineReader = new LineReader(bufferedReader);
+		boolean inSync = false;
+		synchronized (this) {
+			exception = null;
+		}
+		CancellationHandler.reset(null);
+		
+		Runnable logProgress = new Runnable() {
+			public void run() {
+				if (System.currentTimeMillis() > t.get() + 1000) {
+					t.set(System.currentTimeMillis());
+					long p = 0;
+					if (finalFileSize > 0) {
+						p = (100 * bytesRead.get()) / finalFileSize;
+						if (p > 100) {
+							p = 100;
+						}
+					}
+					_log.info(linesRead + " statements" + (p > 0? " (" + p + "%)" : ""));
+				}
+			}
+		};
 
-    	executor = threads > 1? new BoundedExecutor(
-    			new ThreadPoolExecutor(threads, threads, 0, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>()), threads + 3) : null; 
-    	try {
-    		final Pattern IDENTITY_INSERT = Pattern.compile(".*SET\\s+IDENTITY_INSERT.*", Pattern.CASE_INSENSITIVE);
-    		boolean tryMode = false;
-    		
-	        while ((line = lineReader.readLine()) != null) {
-	        	bytesRead.addAndGet(line.length() + 1);
-	            line = line.trim();
-	            if (line.length() == 0) {
-	            	continue;
-	            }
-	            if (line.startsWith("--")) {
-	            	final String TRY = "try:";
+		executor = threads > 1? new BoundedExecutor(
+				new ThreadPoolExecutor(threads, threads, 0, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>()), threads + 3) : null; 
+		try {
+			final Pattern IDENTITY_INSERT = Pattern.compile(".*SET\\s+IDENTITY_INSERT.*", Pattern.CASE_INSENSITIVE);
+			boolean tryMode = false;
+			
+			while ((line = lineReader.readLine()) != null) {
+				bytesRead.addAndGet(line.length() + 1);
+				line = line.trim();
+				if (line.length() == 0) {
+					continue;
+				}
+				if (line.startsWith("--")) {
+					final String TRY = "try:";
 					String uncommentedLine = line.substring(2).trim();
 					if (uncommentedLine.startsWith(TRY)) {
-	            		line = uncommentedLine.substring(TRY.length()).trim();
-	            		tryMode = true;
-	            	} else {
-		            	if (line.startsWith(UNFINISHED_MULTILINE_COMMENT)) {
-		            		String cmd = line.substring(UNFINISHED_MULTILINE_COMMENT.length());
-		            		if (cmd.startsWith("XML")) {
-		            			importSQLXML(cmd.substring(3).trim(), lineReader);
-		            		}
-		            		if (cmd.startsWith("CLOB")) {
-		            			importCLob(cmd.substring(4).trim(), lineReader);
-		            		}
-		            		if (cmd.startsWith("BLOB")) {
-		            			importBLob(cmd.substring(4).trim(), lineReader);
-		            		}
-		            	} else if (uncommentedLine.equals("sync")) {
-		            		inSync = true;
-		            		sync();
-		            	} else if (uncommentedLine.equals("epilog")) {
-		            		inSync = false;
-		            		sync();
-		            	}
-		                continue;
-	            	}
-	            }
-	            if (line.endsWith(";")) {
-	            	currentStatement.append(line.substring(0, line.length() - 1));
-	            	if (IDENTITY_INSERT.matcher(currentStatement).matches()) {
-	            		sync();
-	            		if (executor != null) {
-	            			executor.shutdown();
-	            			executor = null;
-	            		}
-	            	}
-	            	final String stmt = currentStatement.toString();
-	            	final boolean finalTryMode = tryMode;
-	            	execute(new Runnable() {
-	            		public void run() {
-			            	boolean silent = session.getSilent();
-			            	session.setSilent(silent || finalTryMode || stmt.trim().toLowerCase().startsWith("drop"));
-			            	try {
-			                	if (stmt.trim().length() > 0) {
-			                		totalRowCount.addAndGet(session.execute(stmt));
-			                		linesRead.getAndIncrement();
-			                    	count.getAndIncrement();
-			                	}
-			                } catch (SQLException e) {
-			                	// drop may fail
-			                	if (!finalTryMode && !stmt.trim().toLowerCase().startsWith("drop")) {
-			                    	// fix for bug [2946477]
-			                		if (!stmt.trim().toUpperCase().contains("DROP TABLE JAILER_DUAL")) {
-			                			if (e instanceof SqlException) {
-			                				((SqlException) e).setInsufficientPrivileges(count.get() == 0);
-			                			}
-			                    		throw new RuntimeException(e);
-			                    	}
-			                	}
-			                }
-			                session.setSilent(silent);
-	            		}
-	            	}, inSync);
-	                currentStatement.setLength(0);
-	                logProgress.run();
-	                tryMode = false;
-	            } else {
-	                currentStatement.append(line + " ");
-	            }
-	            CancellationHandler.checkForCancellation(null);
-	            synchronized (this) {
-	            	if (exception != null) {
-	            		if (exception.getCause() instanceof SQLException) {
-	            			throw (SQLException) exception.getCause();
-	            		}
-	            		throw exception;
-	            	}
-	            }
-	        }
-	        bufferedReader.close();
-			sync();
-	        _log.info(linesRead + " statements (100%)");
-	    	_log.info("successfully read file '" + scriptFileName + "'");
-	    	Pair<Integer, Long> r = new Pair<Integer, Long>(count.get(), totalRowCount.get());
-			synchronized (SqlScriptExecutor.class) {
-		    	lastRowCount = r;
+						line = uncommentedLine.substring(TRY.length()).trim();
+						tryMode = true;
+					} else {
+						if (line.startsWith(UNFINISHED_MULTILINE_COMMENT)) {
+							String cmd = line.substring(UNFINISHED_MULTILINE_COMMENT.length());
+							if (cmd.startsWith("XML")) {
+								importSQLXML(cmd.substring(3).trim(), lineReader);
+							}
+							if (cmd.startsWith("CLOB")) {
+								importCLob(cmd.substring(4).trim(), lineReader);
+							}
+							if (cmd.startsWith("BLOB")) {
+								importBLob(cmd.substring(4).trim(), lineReader);
+							}
+						} else if (uncommentedLine.equals("sync")) {
+							inSync = true;
+							sync();
+						} else if (uncommentedLine.equals("epilog")) {
+							inSync = false;
+							sync();
+						}
+						continue;
+					}
+				}
+				if (line.endsWith(";")) {
+					currentStatement.append(line.substring(0, line.length() - 1));
+					if (IDENTITY_INSERT.matcher(currentStatement).matches()) {
+						sync();
+						if (executor != null) {
+							executor.shutdown();
+							executor = null;
+						}
+					}
+					final String stmt = currentStatement.toString();
+					final boolean finalTryMode = tryMode;
+					execute(new Runnable() {
+						public void run() {
+							boolean silent = session.getSilent();
+							session.setSilent(silent || finalTryMode || stmt.trim().toLowerCase().startsWith("drop"));
+							try {
+								if (stmt.trim().length() > 0) {
+									totalRowCount.addAndGet(session.execute(stmt));
+									linesRead.getAndIncrement();
+									count.getAndIncrement();
+								}
+							} catch (SQLException e) {
+								// drop may fail
+								if (!finalTryMode && !stmt.trim().toLowerCase().startsWith("drop")) {
+									// fix for bug [2946477]
+									if (!stmt.trim().toUpperCase().contains("DROP TABLE JAILER_DUAL")) {
+										if (e instanceof SqlException) {
+											((SqlException) e).setInsufficientPrivileges(count.get() == 0);
+										}
+										throw new RuntimeException(e);
+									}
+								}
+							}
+							session.setSilent(silent);
+						}
+					}, inSync);
+					currentStatement.setLength(0);
+					logProgress.run();
+					tryMode = false;
+				} else {
+					currentStatement.append(line + " ");
+				}
+				CancellationHandler.checkForCancellation(null);
+				synchronized (this) {
+					if (exception != null) {
+						if (exception.getCause() instanceof SQLException) {
+							throw (SQLException) exception.getCause();
+						}
+						throw exception;
+					}
+				}
 			}
-	    	return r;
-    	} catch (Exception e) {
-    		if (e.getCause() instanceof SQLException) {
-    			throw (SQLException) e.getCause();
-    		}
-    		if (e instanceof RuntimeException) {
-    			throw (RuntimeException) e;
-    		}
-    		throw new RuntimeException(e);
-    	} finally {
-    		if (executor != null) {
-    			executor.shutdown();
-    		}
-            synchronized (this) {
-            	if (exception != null) {
-            		if (exception.getCause() instanceof SQLException) {
-            			throw (SQLException) exception.getCause();
-            		}
-            		throw exception;
-            	}
-            }
-    	}
-    }
+			bufferedReader.close();
+			sync();
+			_log.info(linesRead + " statements (100%)");
+			_log.info("successfully read file '" + scriptFileName + "'");
+			Pair<Integer, Long> r = new Pair<Integer, Long>(count.get(), totalRowCount.get());
+			synchronized (SqlScriptExecutor.class) {
+				lastRowCount = r;
+			}
+			return r;
+		} catch (Exception e) {
+			if (e.getCause() instanceof SQLException) {
+				throw (SQLException) e.getCause();
+			}
+			if (e instanceof RuntimeException) {
+				throw (RuntimeException) e;
+			}
+			throw new RuntimeException(e);
+		} finally {
+			if (executor != null) {
+				executor.shutdown();
+			}
+			synchronized (this) {
+				if (exception != null) {
+					if (exception.getCause() instanceof SQLException) {
+						throw (SQLException) exception.getCause();
+					}
+					throw exception;
+				}
+			}
+		}
+	}
 
 	private void execute(final Runnable task, boolean inSync) {
 		if (!inSync || executor == null) {
@@ -395,12 +395,12 @@ public class SqlScriptExecutor {
 				}
 
 				private void storeException(RuntimeException runtimeException) {
-			        synchronized (SqlScriptExecutor.this) {
-			        	if (exception == null) {
-			        		exception = runtimeException;
-			        	}
-			        }
-			        CancellationHandler.cancel(null);
+					synchronized (SqlScriptExecutor.this) {
+						if (exception == null) {
+							exception = runtimeException;
+						}
+					}
+					CancellationHandler.cancel(null);
 				}
 			});
 		}
@@ -420,9 +420,9 @@ public class SqlScriptExecutor {
 
 	private static class LineReader {
 
-    	private final BufferedReader reader;
-    	private boolean eofRead = false;
-    	
+		private final BufferedReader reader;
+		private boolean eofRead = false;
+		
 		public LineReader(BufferedReader reader) {
 			this.reader = reader;
 		}
@@ -435,14 +435,14 @@ public class SqlScriptExecutor {
 			}
 			return line;
 		}
-    }
-    
-    /**
-     * Imports clob from sql-script.
-     * 
-     * @param clobLocator locates the clob
-     * @param lineReader for reading content
-     */
+	}
+	
+	/**
+	 * Imports clob from sql-script.
+	 * 
+	 * @param clobLocator locates the clob
+	 * @param lineReader for reading content
+	 */
 	private void importCLob(final String clobLocator, final LineReader lineReader) throws IOException, SQLException {
 		int c1 = clobLocator.indexOf(',');
 		int c2 = clobLocator.indexOf(',', c1 + 1);
@@ -490,13 +490,13 @@ public class SqlScriptExecutor {
 		session.insertClob(table, column, where, lobFile, finalLength);
 		lobFile.delete();
 	}
-    
+	
 	/**
-     * Imports SQL-XML from sql-script.
-     * 
-     * @param xmlLocator locates the XML column
-     * @param lineReader for reading content
-     */
+	 * Imports SQL-XML from sql-script.
+	 * 
+	 * @param xmlLocator locates the XML column
+	 * @param lineReader for reading content
+	 */
 	private void importSQLXML(final String xmlLocator, final LineReader lineReader) throws IOException, SQLException {
 		int c1 = xmlLocator.indexOf(',');
 		int c2 = xmlLocator.indexOf(',', c1 + 1);
@@ -508,7 +508,7 @@ public class SqlScriptExecutor {
 		Writer out = new OutputStreamWriter(new FileOutputStream(lobFile), "UTF-8");
 		long length = 0;
 		while ((line = lineReader.readLine()) != null) {
-		    // line = line.trim();
+			// line = line.trim();
 			if (line.startsWith(UNFINISHED_MULTILINE_COMMENT)) {
 				String content = line.substring(UNFINISHED_MULTILINE_COMMENT.length());
 				int l = content.length();
@@ -545,13 +545,13 @@ public class SqlScriptExecutor {
 		session.insertSQLXML(table, column, where, lobFile, finalLength);
 		lobFile.delete();
 	}
-    
+	
 	/**
-     * Imports blob from sql-script.
-     * 
-     * @param clobLocator locates the clob
-     * @param lineReader for reading content
-     */
+	 * Imports blob from sql-script.
+	 * 
+	 * @param clobLocator locates the clob
+	 * @param lineReader for reading content
+	 */
 	private void importBLob(final String clobLocator, final LineReader lineReader) throws IOException, SQLException {
 		int c1 = clobLocator.indexOf(',');
 		int c2 = clobLocator.indexOf(',', c1 + 1);
@@ -562,7 +562,7 @@ public class SqlScriptExecutor {
 		final File lobFile = new File("lob." + System.currentTimeMillis());
 		OutputStream out = new FileOutputStream(lobFile);
 		while ((line = lineReader.readLine()) != null) {
-		    line = line.trim();
+			line = line.trim();
 			if (line.startsWith(UNFINISHED_MULTILINE_COMMENT)) {
 				String content = line.substring(UNFINISHED_MULTILINE_COMMENT.length());
 				out.write(Base64.decode(content));

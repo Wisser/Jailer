@@ -126,117 +126,117 @@ public class GraphicalDataModelView extends JPanel {
 	private List<Association> associationsOnPath = new ArrayList<Association>();
 	
 	// constants
-    private static final String graph = "graph";
-    private static final String nodes = "graph.nodes";
-    private static final String edges = "graph.edges";
+	private static final String graph = "graph";
+	private static final String nodes = "graph.nodes";
+	private static final String edges = "graph.edges";
 
-    // prefuse visualization
-    private Visualization visualization;
-    private VisualGraph visualGraph;
-    public Display display;
-    private boolean inInitialization = false;
-    
-    /**
-     * The root table.
-     */
-    final Table root;
-    
-    /**
-     * Table renderer.
-     */
-    private TableRenderer tableRenderer;
-    
-    /**
-     * Association renderer.
-     */
-    private CompositeAssociationRenderer associationRenderer;
+	// prefuse visualization
+	private Visualization visualization;
+	private VisualGraph visualGraph;
+	public Display display;
+	private boolean inInitialization = false;
+	
+	/**
+	 * The root table.
+	 */
+	final Table root;
+	
+	/**
+	 * Table renderer.
+	 */
+	private TableRenderer tableRenderer;
+	
+	/**
+	 * Association renderer.
+	 */
+	private CompositeAssociationRenderer associationRenderer;
 
-    /**
-     * The enclosing model editor.
-     */
-    public final ExtractionModelEditor modelEditor;
+	/**
+	 * The enclosing model editor.
+	 */
+	public final ExtractionModelEditor modelEditor;
 
-    /**
-     * Layouts the model graph.
-     */
-    private ForceDirectedLayout layout;
-    
-    /**
-     * Zooms to fit on mouse click.
-     */
-    private ZoomToFitControlExtension zoomToFitControl;
-    
-    /**
-     * Table details mode.
-     */
-    private boolean showTableDetails;
+	/**
+	 * Layouts the model graph.
+	 */
+	private ForceDirectedLayout layout;
+	
+	/**
+	 * Zooms to fit on mouse click.
+	 */
+	private ZoomToFitControlExtension zoomToFitControl;
+	
+	/**
+	 * Table details mode.
+	 */
+	private boolean showTableDetails;
 
-    private NBodyForce force;
-    private volatile boolean layoutHasBeenSet = false;
-    
-    /**
-     * Constructor.
-     * 
-     * @param model the restricted data model
-     * @param modelEditor enclosing model editor
-     * @param width
-     * @param height initial size
-     */
+	private NBodyForce force;
+	private volatile boolean layoutHasBeenSet = false;
+	
+	/**
+	 * Constructor.
+	 * 
+	 * @param model the restricted data model
+	 * @param modelEditor enclosing model editor
+	 * @param width
+	 * @param height initial size
+	 */
 	public GraphicalDataModelView(final DataModel model, ExtractionModelEditor modelEditor, Table subject, boolean expandSubject, int width, int height) {
-    	super(new BorderLayout());
-    	this.model = model;
-    	this.modelEditor = modelEditor;
-    	this.root = subject;
+		super(new BorderLayout());
+		this.model = model;
+		this.modelEditor = modelEditor;
+		this.root = subject;
 
-    	tableRenderer = new TableRenderer(model, this);
-    	final Set<Table> initiallyVisibleTables = new HashSet<Table>();
-    	if (subject != null) {
-    		Map<String, double[]> positions = LayoutStorage.getPositions(subject.getName());
+		tableRenderer = new TableRenderer(model, this);
+		final Set<Table> initiallyVisibleTables = new HashSet<Table>();
+		if (subject != null) {
+			Map<String, double[]> positions = LayoutStorage.getPositions(subject.getName());
 			if (positions != null) {
-		    	for (String tn: positions.keySet()) {
-		    		Table table = model.getTable(tn);
-		    		if (table != null && !table.equals(subject)) {
-		    			initiallyVisibleTables.add(table);
-		    		}
-		    	}
+				for (String tn: positions.keySet()) {
+					Table table = model.getTable(tn);
+					if (table != null && !table.equals(subject)) {
+						initiallyVisibleTables.add(table);
+					}
+				}
 			}
-    	}
-    	theGraph = getModelGraph(model, initiallyVisibleTables, expandSubject);
-    	
-        // create a new, empty visualization for our data
-        visualization = new Visualization();
-        
-        final ZoomBoxControl zoomBoxControl = new ZoomBoxControl();
+		}
+		theGraph = getModelGraph(model, initiallyVisibleTables, expandSubject);
 		
-        // --------------------------------------------------------------------
-        // set up the renderers
-        
-        final ShapeRenderer sr = new ShapeRenderer() {
-        	protected Shape getRawShape(VisualItem item) {
-        		item.setFillColor(ColorLib.rgb(220,210,0));
-                double x = item.getX();
-                if ( Double.isNaN(x) || Double.isInfinite(x) )
-                    x = 0;
-                double y = item.getY();
-                if ( Double.isNaN(y) || Double.isInfinite(y) )
-                    y = 0;
-                double width = 10 * item.getSize();
-                
-                // Center the shape around the specified x and y
-                if ( width > 1 ) {
-                    x = x-width/2;
-                    y = y-width/2;
-                }
-                return ellipse((float) x, (float) y, (float) width, (float) width);
-        	}
-        };
-        
-        associationRenderer = new CompositeAssociationRenderer();
-        
-        tableRenderer.setRoundedCorner(3, 3);
-        tableRenderer.setVerticalPadding(3);
-        tableRenderer.setHorizontalPadding(3);
-        visualization.setRendererFactory(new RendererFactory() {
+		// create a new, empty visualization for our data
+		visualization = new Visualization();
+		
+		final ZoomBoxControl zoomBoxControl = new ZoomBoxControl();
+		
+		// --------------------------------------------------------------------
+		// set up the renderers
+		
+		final ShapeRenderer sr = new ShapeRenderer() {
+			protected Shape getRawShape(VisualItem item) {
+				item.setFillColor(ColorLib.rgb(220,210,0));
+				double x = item.getX();
+				if ( Double.isNaN(x) || Double.isInfinite(x) )
+					x = 0;
+				double y = item.getY();
+				if ( Double.isNaN(y) || Double.isInfinite(y) )
+					y = 0;
+				double width = 10 * item.getSize();
+				
+				// Center the shape around the specified x and y
+				if ( width > 1 ) {
+					x = x-width/2;
+					y = y-width/2;
+				}
+				return ellipse((float) x, (float) y, (float) width, (float) width);
+			}
+		};
+		
+		associationRenderer = new CompositeAssociationRenderer();
+		
+		tableRenderer.setRoundedCorner(3, 3);
+		tableRenderer.setVerticalPadding(3);
+		tableRenderer.setHorizontalPadding(3);
+		visualization.setRendererFactory(new RendererFactory() {
 			public Renderer getRenderer(VisualItem item) {
 				if (zoomBoxControl.getRenderer().isBoxItem(item)) {
 					return zoomBoxControl.getRenderer();
@@ -249,390 +249,390 @@ public class GraphicalDataModelView extends JPanel {
 				}
 				return tableRenderer;
 			}
-        });
+		});
 
-        // adds graph to visualization and sets renderer label field
-        setGraph(theGraph);
-        
-        // fix selected focus nodes
-        TupleSet focusGroup = visualization.getGroup(Visualization.FOCUS_ITEMS); 
-        focusGroup.addTupleSetListener(new TupleSetListener() {
-            public void tupleSetChanged(TupleSet ts, Tuple[] add, Tuple[] rem)
-            {
-                boolean draw = false;
-                
-                if (inInitialization) {
-                	return;
-                }
-            	for (int i=0; i<add.length; ++i ) {
-                	if (add[i] instanceof NodeItem) {
-                		draw = true;
-                		// expandTable(theGraph, model.getTable(add[i].getString("label")));
-	    	            ((VisualItem)add[i]).setFixed(false);
-	                    ((VisualItem)add[i]).setFixed(true);
-                	}
-                }
-            	if (draw) {
-            		//  m_vis.run("draw");
-            	}
-            }
-        });
-        
-        // --------------------------------------------------------------------
-        // create actions to process the visual data
+		// adds graph to visualization and sets renderer label field
+		setGraph(theGraph);
+		
+		// fix selected focus nodes
+		TupleSet focusGroup = visualization.getGroup(Visualization.FOCUS_ITEMS); 
+		focusGroup.addTupleSetListener(new TupleSetListener() {
+			public void tupleSetChanged(TupleSet ts, Tuple[] add, Tuple[] rem)
+			{
+				boolean draw = false;
+				
+				if (inInitialization) {
+					return;
+				}
+				for (int i=0; i<add.length; ++i ) {
+					if (add[i] instanceof NodeItem) {
+						draw = true;
+						// expandTable(theGraph, model.getTable(add[i].getString("label")));
+						((VisualItem)add[i]).setFixed(false);
+						((VisualItem)add[i]).setFixed(true);
+					}
+				}
+				if (draw) {
+					//  m_vis.run("draw");
+				}
+			}
+		});
+		
+		// --------------------------------------------------------------------
+		// create actions to process the visual data
 
-        int hops = 30;
-        final GraphDistanceFilter filter = new GraphDistanceFilter(graph, hops);
+		int hops = 30;
+		final GraphDistanceFilter filter = new GraphDistanceFilter(graph, hops);
 
-        ColorAction fill = new ColorAction(nodes, 
-                VisualItem.FILLCOLOR, ColorLib.rgba(255,235,20,100));
-        fill.add(VisualItem.FIXED, ColorLib.rgba(255,235,20,100));
-        fill.add(VisualItem.HIGHLIGHT, ColorLib.rgba(160,160,0,120));
-        
-        ActionList draw = new ActionList();
-        draw.add(filter);
-        draw.add(fill);
-        draw.add(new ColorAction(nodes, VisualItem.STROKECOLOR, 0));
-        draw.add(new ColorAction(nodes, VisualItem.TEXTCOLOR, ColorLib.rgb(0,0,0)));
-        draw.add(new ColorAction(edges, VisualItem.FILLCOLOR, ColorLib.gray(200)));
-        draw.add(new ColorAction(edges, VisualItem.STROKECOLOR, ColorLib.gray(200)));
-        
-        ActionList animate = new ActionList(Activity.INFINITY);
-        animate.add(fill);
-        animate.add(new RepaintAction());
-        
-        if (modelEditor.extractionModelFrame.animationStepTime > 0) {
-        	animate.setStepTime(modelEditor.extractionModelFrame.animationStepTime);
-        }
+		ColorAction fill = new ColorAction(nodes, 
+				VisualItem.FILLCOLOR, ColorLib.rgba(255,235,20,100));
+		fill.add(VisualItem.FIXED, ColorLib.rgba(255,235,20,100));
+		fill.add(VisualItem.HIGHLIGHT, ColorLib.rgba(160,160,0,120));
+		
+		ActionList draw = new ActionList();
+		draw.add(filter);
+		draw.add(fill);
+		draw.add(new ColorAction(nodes, VisualItem.STROKECOLOR, 0));
+		draw.add(new ColorAction(nodes, VisualItem.TEXTCOLOR, ColorLib.rgb(0,0,0)));
+		draw.add(new ColorAction(edges, VisualItem.FILLCOLOR, ColorLib.gray(200)));
+		draw.add(new ColorAction(edges, VisualItem.STROKECOLOR, ColorLib.gray(200)));
+		
+		ActionList animate = new ActionList(Activity.INFINITY);
+		animate.add(fill);
+		animate.add(new RepaintAction());
+		
+		if (modelEditor.extractionModelFrame.animationStepTime > 0) {
+			animate.setStepTime(modelEditor.extractionModelFrame.animationStepTime);
+		}
 
-        // finally, we register our ActionList with the Visualization.
-        // we can later execute our Actions by invoking a method on our
-        // Visualization, using the name we've chosen below.
-        visualization.putAction("draw", draw);
-        visualization.putAction("layout", animate);
-        
-        visualization.runAfter("draw", "layout");
-        
-        
-        // --------------------------------------------------------------------
-        // set up a display to show the visualization
-        
-        display = new Display(visualization);
-        display.setSize(width, height);
-        display.pan(width / 2, height / 2);
-        display.setForeground(Color.GRAY);
-        display.setBackground(Color.WHITE);
-        
-        // main display controls
-        display.addControlListener(new FocusControl(1));
-        display.addControlListener(new DragControl() {
+		// finally, we register our ActionList with the Visualization.
+		// we can later execute our Actions by invoking a method on our
+		// Visualization, using the name we've chosen below.
+		visualization.putAction("draw", draw);
+		visualization.putAction("layout", animate);
+		
+		visualization.runAfter("draw", "layout");
+		
+		
+		// --------------------------------------------------------------------
+		// set up a display to show the visualization
+		
+		display = new Display(visualization);
+		display.setSize(width, height);
+		display.pan(width / 2, height / 2);
+		display.setForeground(Color.GRAY);
+		display.setBackground(Color.WHITE);
+		
+		// main display controls
+		display.addControlListener(new FocusControl(1));
+		display.addControlListener(new DragControl() {
 			@Override
 			public void itemClicked(VisualItem item, MouseEvent e) {
 				Table table = model.getTable(item.getString("label"));
 				if (SwingUtilities.isLeftMouseButton(e)) {
-	            	if (table != null && e.getClickCount() == 1) {
-	            		selectTable(table);
-	            	}
-                }
-            	// context menu
-                if (SwingUtilities.isRightMouseButton(e)) {
-                	Association association = (Association) item.get("association");
-                	if (association != null) {
-                		if (Boolean.TRUE.equals(item.get("full"))) {
-	            			associationRenderer.useAssociationRendererForLocation = true;
-	            			VisualItem findItem = display.findItem(e.getPoint());
+					if (table != null && e.getClickCount() == 1) {
+						selectTable(table);
+					}
+				}
+				// context menu
+				if (SwingUtilities.isRightMouseButton(e)) {
+					Association association = (Association) item.get("association");
+					if (association != null) {
+						if (Boolean.TRUE.equals(item.get("full"))) {
+							associationRenderer.useAssociationRendererForLocation = true;
+							VisualItem findItem = display.findItem(e.getPoint());
 							if (findItem == null || !findItem.equals(item)) {
-	            				association = association.reversalAssociation;
-	            			}
-	            			associationRenderer.useAssociationRendererForLocation = false;
-	            		}
-                		JPopupMenu popup = createPopupMenu(association);
+								association = association.reversalAssociation;
+							}
+							associationRenderer.useAssociationRendererForLocation = false;
+						}
+						JPopupMenu popup = createPopupMenu(association);
 						popup.show(e.getComponent(), e.getX(), e.getY());
-                	}
-                	if (table != null) {
+					}
+					if (table != null) {
 						JPopupMenu popup = createPopupMenu(table, true);
 						popup.show(e.getComponent(), e.getX(), e.getY());
-                	}
-                }
-                super.itemClicked(item, e);
+					}
+				}
+				super.itemClicked(item, e);
 			}
 
 			public void itemPressed(VisualItem item, MouseEvent e) {
 				if (UILib.isButtonPressed(e, LEFT_MOUSE_BUTTON)) {
 					Association association = (Association) item.get("association");
-	            	if (association != null) {
-	            		if (Boolean.TRUE.equals(item.get("full"))) {
-	            			associationRenderer.useAssociationRendererForLocation = true;
-	            			VisualItem findItem = display.findItem(e.getPoint());
+					if (association != null) {
+						if (Boolean.TRUE.equals(item.get("full"))) {
+							associationRenderer.useAssociationRendererForLocation = true;
+							VisualItem findItem = display.findItem(e.getPoint());
 							if (findItem == null || !findItem.equals(item)) {
-	            				association = association.reversalAssociation;
-	            			}
-	            			associationRenderer.useAssociationRendererForLocation = false;
-	            		}
-	            		setSelection(association);
-	            	}
-	            	Table table = model.getTable(item.getString("label"));
-	            	if (table != null && e.getClickCount() > 1) {
-            			GraphicalDataModelView.this.modelEditor.captureLayout();
-            			try {
-		            		if (expandedTables.contains(table)) {
-		            			collapseTable(theGraph, table, false);
-		            			display.pan(1, 0);
-		            			display.pan(0, 1);
-		            			Association sa = selectedAssociation;
-			            		setSelection(null);
-			            		setSelection(sa);
-		            			visualization.invalidateAll();
-		            			display.invalidate();
-		            		} else {
-			    	            expandTable(theGraph, table);
-		            			visualization.invalidateAll();
-		            			display.invalidate();
-		            		}
-        				} finally {
-        					GraphicalDataModelView.this.modelEditor.checkLayoutStack();
-        				}
-		            }
+								association = association.reversalAssociation;
+							}
+							associationRenderer.useAssociationRendererForLocation = false;
+						}
+						setSelection(association);
+					}
+					Table table = model.getTable(item.getString("label"));
+					if (table != null && e.getClickCount() > 1) {
+						GraphicalDataModelView.this.modelEditor.captureLayout();
+						try {
+							if (expandedTables.contains(table)) {
+								collapseTable(theGraph, table, false);
+								display.pan(1, 0);
+								display.pan(0, 1);
+								Association sa = selectedAssociation;
+								setSelection(null);
+								setSelection(sa);
+								visualization.invalidateAll();
+								display.invalidate();
+							} else {
+								expandTable(theGraph, table);
+								visualization.invalidateAll();
+								display.invalidate();
+							}
+						} finally {
+							GraphicalDataModelView.this.modelEditor.checkLayoutStack();
+						}
+					}
 				}
-            	super.itemPressed(item, e);
+				super.itemPressed(item, e);
 			}
 			
 			public void itemReleased(VisualItem item, MouseEvent e) {
 				// fix after drag
 				super.itemReleased(item, e);
-                if (!SwingUtilities.isLeftMouseButton(e)) return;
-                if (item instanceof NodeItem) {
-                	item.setFixed(true);
-                }
-        	}
-        });
-        display.addControlListener(new PanControl());
-        display.addControlListener(zoomBoxControl);
-        display.addControlListener(new WheelZoomControl(){
-            /**
-             * @see java.awt.event.MouseWheelListener#mouseWheelMoved(java.awt.event.MouseWheelEvent)
-             */
-            public void mouseWheelMoved(MouseWheelEvent e) {
-                Display display = (Display)e.getComponent();
-                Point p = e.getPoint();
-                zoom(display, p,
-                     1 + 0.1f * e.getWheelRotation(), false);
-            }
+				if (!SwingUtilities.isLeftMouseButton(e)) return;
+				if (item instanceof NodeItem) {
+					item.setFixed(true);
+				}
+			}
+		});
+		display.addControlListener(new PanControl());
+		display.addControlListener(zoomBoxControl);
+		display.addControlListener(new WheelZoomControl(){
+			/**
+			 * @see java.awt.event.MouseWheelListener#mouseWheelMoved(java.awt.event.MouseWheelEvent)
+			 */
+			public void mouseWheelMoved(MouseWheelEvent e) {
+				Display display = (Display)e.getComponent();
+				Point p = e.getPoint();
+				zoom(display, p,
+					 1 + 0.1f * e.getWheelRotation(), false);
+			}
 
-        });
-        zoomToFitControl = new ZoomToFitControlExtension(Visualization.ALL_ITEMS, 50, 800, Control.RIGHT_MOUSE_BUTTON,	model);
-        display.addControlListener(zoomToFitControl);
-        display.addControlListener(new ToolTipControl("tooltip"));
+		});
+		zoomToFitControl = new ZoomToFitControlExtension(Visualization.ALL_ITEMS, 50, 800, Control.RIGHT_MOUSE_BUTTON,	model);
+		display.addControlListener(zoomToFitControl);
+		display.addControlListener(new ToolTipControl("tooltip"));
 
-        display.setForeground(Color.GRAY);
-        display.setBackground(Color.WHITE);
-        
-        // now we run our action list
-        visualization.run("draw");
-        
+		display.setForeground(Color.GRAY);
+		display.setBackground(Color.WHITE);
+		
+		// now we run our action list
+		visualization.run("draw");
+		
 		resetExpandedState();
 		
-        display.setHighQuality(true);
-        
-        add(display);
+		display.setHighQuality(true);
+		
+		add(display);
 
-        Rectangle2D bounds = null;
-        if (root != null) {
-	        synchronized (visualization) {
-		        Iterator items = visualization.items(BooleanLiteral.TRUE);
-		        for (int m_visibleCount=0; items.hasNext(); ++m_visibleCount ) {
-		            VisualItem item = (VisualItem)items.next();
-		            if (item.canGetString("label") ) {
-		            	String tableName = item.getString("label");
-		            	double[] pos = LayoutStorage.getPosition(root.getName(), tableName);
-		            	if (pos != null) {
-		            		if (bounds == null) {
-		            			bounds = new Rectangle2D.Double(pos[0], pos[1], 1, 1);
-		            		} else {
-		            			bounds.add(new Point2D.Double(pos[0], pos[1]));
-		            		}
-		            	}
-		            }
-		        }
-	        }
-        }
-        
-        if (bounds != null) {
-	        display.panToAbs(new Point2D.Double(bounds.getCenterX(), bounds.getCenterY()));
-        }
-        
-        layout = new ForceDirectedLayout(graph) {
-        	protected float getMassValue(VisualItem n) {
-                return zoomBoxControl.getRenderer().isBoxItem(n)? 0.01f : showTableDetails? 2.0f : 1.0f;
-            }
-        };
-        for (Force force: layout.getForceSimulator().getForces()) {
-        	if (force instanceof NBodyForce) {
-        		this.force = (NBodyForce) force;
-        	}
-        }
+		Rectangle2D bounds = null;
+		if (root != null) {
+			synchronized (visualization) {
+				Iterator items = visualization.items(BooleanLiteral.TRUE);
+				for (int m_visibleCount=0; items.hasNext(); ++m_visibleCount ) {
+					VisualItem item = (VisualItem)items.next();
+					if (item.canGetString("label") ) {
+						String tableName = item.getString("label");
+						double[] pos = LayoutStorage.getPosition(root.getName(), tableName);
+						if (pos != null) {
+							if (bounds == null) {
+								bounds = new Rectangle2D.Double(pos[0], pos[1], 1, 1);
+							} else {
+								bounds.add(new Point2D.Double(pos[0], pos[1]));
+							}
+						}
+					}
+				}
+			}
+		}
+		
+		if (bounds != null) {
+			display.panToAbs(new Point2D.Double(bounds.getCenterX(), bounds.getCenterY()));
+		}
+		
+		layout = new ForceDirectedLayout(graph) {
+			protected float getMassValue(VisualItem n) {
+				return zoomBoxControl.getRenderer().isBoxItem(n)? 0.01f : showTableDetails? 2.0f : 1.0f;
+			}
+		};
+		for (Force force: layout.getForceSimulator().getForces()) {
+			if (force instanceof NBodyForce) {
+				this.force = (NBodyForce) force;
+			}
+		}
 		if (force != null) {
 			force.setParameter(NBodyForce.GRAVITATIONAL_CONST, -100.0f);
 		}
-        updateTableDetailsMode();
-        layout.getForceSimulator().setIntegrator(new Integrator() {
-        	public void integrate(ForceSimulator sim, long timestep) {                
-        		float speedLimit = sim.getSpeedLimit();
-                float vx, vy, v, coeff;
-                float[][] k, l;
-                
-                Iterator iter = sim.getItems();
-                while ( iter.hasNext() ) {
-                    ForceItem item = (ForceItem)iter.next();
-                    coeff = timestep / item.mass;
-                    k = item.k;
-                    l = item.l;
-                    item.plocation[0] = item.location[0];
-                    item.plocation[1] = item.location[1];
-                    k[0][0] = timestep*item.velocity[0];
-                    k[0][1] = timestep*item.velocity[1];
-                    l[0][0] = coeff*item.force[0];
-                    l[0][1] = coeff*item.force[1];
-                
-                    // Set the position to the new predicted position
-                    item.location[0] += 0.5f*k[0][0];
-                    item.location[1] += 0.5f*k[0][1];
-                }
-                
-                // recalculate forces
-                sim.accumulate();
-                
-                iter = sim.getItems();
-                while ( iter.hasNext() ) {
-                    ForceItem item = (ForceItem)iter.next();
-                    coeff = timestep / item.mass;
-                    k = item.k;
-                    l = item.l;
-                    vx = item.velocity[0] + .5f*l[0][0];
-                    vy = item.velocity[1] + .5f*l[0][1];
-                    v = (float)Math.sqrt(vx*vx+vy*vy);
-                    if ( v > speedLimit ) {
-                        vx = speedLimit * vx / v;
-                        vy = speedLimit * vy / v;
-                    }
-                    k[1][0] = timestep*vx;
-                    k[1][1] = timestep*vy;
-                    l[1][0] = coeff*item.force[0];
-                    l[1][1] = coeff*item.force[1];
-                
-                    // Set the position to the new predicted position
-                    item.location[0] = item.plocation[0] + 0.5f*k[1][0];
-                    item.location[1] = item.plocation[1] + 0.5f*k[1][1];
-                }
-                
-                // recalculate forces
-                sim.accumulate();
-                
-                iter = sim.getItems();
-                while ( iter.hasNext() ) {
-                    ForceItem item = (ForceItem)iter.next();
-                    coeff = timestep / item.mass;
-                    k = item.k;
-                    l = item.l;
-                    vx = item.velocity[0] + .5f*l[1][0];
-                    vy = item.velocity[1] + .5f*l[1][1];
-                    v = (float)Math.sqrt(vx*vx+vy*vy);
-                    if ( v > speedLimit ) {
-                        vx = speedLimit * vx / v;
-                        vy = speedLimit * vy / v;
-                    }
-                    k[2][0] = timestep*vx;
-                    k[2][1] = timestep*vy;
-                    l[2][0] = coeff*item.force[0];
-                    l[2][1] = coeff*item.force[1];
-                
-                    // Set the position to the new predicted position
-                    item.location[0] = item.plocation[0] + 0.5f*k[2][0];
-                    item.location[1] = item.plocation[1] + 0.5f*k[2][1];
-                }
-                
-                // recalculate forces
-                sim.accumulate();
-                
-                iter = sim.getItems();
-                while ( iter.hasNext() ) {
-                    ForceItem item = (ForceItem)iter.next();
-                    coeff = timestep / item.mass;
-                    k = item.k;
-                    l = item.l;
-                    float[] p = item.plocation;
-                    vx = item.velocity[0] + l[2][0];
-                    vy = item.velocity[1] + l[2][1];
-                    v = (float)Math.sqrt(vx*vx+vy*vy);
-                    if ( v > speedLimit ) {
-                        vx = speedLimit * vx / v;
-                        vy = speedLimit * vy / v;
-                    }
-                    k[3][0] = timestep*vx;
-                    k[3][1] = timestep*vy;
-                    l[3][0] = coeff*item.force[0];
-                    l[3][1] = coeff*item.force[1];
-                    float dx = (k[0][0]+k[3][0])/6.0f + (k[1][0]+k[2][0])/3.0f;
-                    float dy = (k[0][1]+k[3][1])/6.0f + (k[1][1]+k[2][1])/3.0f;
-                    if (dx*dx+dy*dy < 3) {
-                    	dx = dy = 0;
-                    }
+		updateTableDetailsMode();
+		layout.getForceSimulator().setIntegrator(new Integrator() {
+			public void integrate(ForceSimulator sim, long timestep) {                
+				float speedLimit = sim.getSpeedLimit();
+				float vx, vy, v, coeff;
+				float[][] k, l;
+				
+				Iterator iter = sim.getItems();
+				while ( iter.hasNext() ) {
+					ForceItem item = (ForceItem)iter.next();
+					coeff = timestep / item.mass;
+					k = item.k;
+					l = item.l;
+					item.plocation[0] = item.location[0];
+					item.plocation[1] = item.location[1];
+					k[0][0] = timestep*item.velocity[0];
+					k[0][1] = timestep*item.velocity[1];
+					l[0][0] = coeff*item.force[0];
+					l[0][1] = coeff*item.force[1];
+				
+					// Set the position to the new predicted position
+					item.location[0] += 0.5f*k[0][0];
+					item.location[1] += 0.5f*k[0][1];
+				}
+				
+				// recalculate forces
+				sim.accumulate();
+				
+				iter = sim.getItems();
+				while ( iter.hasNext() ) {
+					ForceItem item = (ForceItem)iter.next();
+					coeff = timestep / item.mass;
+					k = item.k;
+					l = item.l;
+					vx = item.velocity[0] + .5f*l[0][0];
+					vy = item.velocity[1] + .5f*l[0][1];
+					v = (float)Math.sqrt(vx*vx+vy*vy);
+					if ( v > speedLimit ) {
+						vx = speedLimit * vx / v;
+						vy = speedLimit * vy / v;
+					}
+					k[1][0] = timestep*vx;
+					k[1][1] = timestep*vy;
+					l[1][0] = coeff*item.force[0];
+					l[1][1] = coeff*item.force[1];
+				
+					// Set the position to the new predicted position
+					item.location[0] = item.plocation[0] + 0.5f*k[1][0];
+					item.location[1] = item.plocation[1] + 0.5f*k[1][1];
+				}
+				
+				// recalculate forces
+				sim.accumulate();
+				
+				iter = sim.getItems();
+				while ( iter.hasNext() ) {
+					ForceItem item = (ForceItem)iter.next();
+					coeff = timestep / item.mass;
+					k = item.k;
+					l = item.l;
+					vx = item.velocity[0] + .5f*l[1][0];
+					vy = item.velocity[1] + .5f*l[1][1];
+					v = (float)Math.sqrt(vx*vx+vy*vy);
+					if ( v > speedLimit ) {
+						vx = speedLimit * vx / v;
+						vy = speedLimit * vy / v;
+					}
+					k[2][0] = timestep*vx;
+					k[2][1] = timestep*vy;
+					l[2][0] = coeff*item.force[0];
+					l[2][1] = coeff*item.force[1];
+				
+					// Set the position to the new predicted position
+					item.location[0] = item.plocation[0] + 0.5f*k[2][0];
+					item.location[1] = item.plocation[1] + 0.5f*k[2][1];
+				}
+				
+				// recalculate forces
+				sim.accumulate();
+				
+				iter = sim.getItems();
+				while ( iter.hasNext() ) {
+					ForceItem item = (ForceItem)iter.next();
+					coeff = timestep / item.mass;
+					k = item.k;
+					l = item.l;
+					float[] p = item.plocation;
+					vx = item.velocity[0] + l[2][0];
+					vy = item.velocity[1] + l[2][1];
+					v = (float)Math.sqrt(vx*vx+vy*vy);
+					if ( v > speedLimit ) {
+						vx = speedLimit * vx / v;
+						vy = speedLimit * vy / v;
+					}
+					k[3][0] = timestep*vx;
+					k[3][1] = timestep*vy;
+					l[3][0] = coeff*item.force[0];
+					l[3][1] = coeff*item.force[1];
+					float dx = (k[0][0]+k[3][0])/6.0f + (k[1][0]+k[2][0])/3.0f;
+					float dy = (k[0][1]+k[3][1])/6.0f + (k[1][1]+k[2][1])/3.0f;
+					if (dx*dx+dy*dy < 3) {
+						dx = dy = 0;
+					}
 					item.location[0] = p[0] + dx;
 					item.location[1] = p[1] + dy;
-                    
-                    vx = (l[0][0]+l[3][0])/6.0f + (l[1][0]+l[2][0])/3.0f;
-                    vy = (l[0][1]+l[3][1])/6.0f + (l[1][1]+l[2][1])/3.0f;
-                    v = (float)Math.sqrt(vx*vx+vy*vy);
-                    if ( v > speedLimit ) {
-                        vx = speedLimit * vx / v;
-                        vy = speedLimit * vy / v;
-                    }
-                    item.velocity[0] += vx;
-                    item.velocity[1] += vy;
-                }
-            
-        	}
-        });
-        layout.setVisualization(visualization);
-        animate.add(layout);
-        layout.run();
-        if (root != null) {
-	        final Map<String, double[]> posMap = LayoutStorage.getPositions(root.getName());
-	    	Action a = new Action() {
-	        	boolean done = false;
+					
+					vx = (l[0][0]+l[3][0])/6.0f + (l[1][0]+l[2][0])/3.0f;
+					vy = (l[0][1]+l[3][1])/6.0f + (l[1][1]+l[2][1])/3.0f;
+					v = (float)Math.sqrt(vx*vx+vy*vy);
+					if ( v > speedLimit ) {
+						vx = speedLimit * vx / v;
+						vy = speedLimit * vy / v;
+					}
+					item.velocity[0] += vx;
+					item.velocity[1] += vy;
+				}
+			
+			}
+		});
+		layout.setVisualization(visualization);
+		animate.add(layout);
+		layout.run();
+		if (root != null) {
+			final Map<String, double[]> posMap = LayoutStorage.getPositions(root.getName());
+			Action a = new Action() {
+				boolean done = false;
 				@Override
 				public void run(double frac) {
 					if (!done) {
 						synchronized (visualization) {
 							if (root != null && !initiallyVisibleTables.isEmpty()) {
-						        Iterator items = visualization.items(BooleanLiteral.TRUE);
-						        for (int m_visibleCount=0; items.hasNext(); ++m_visibleCount ) {
-						            VisualItem item = (VisualItem)items.next();
-						            if (item.canGetString("label") ) {
-						            	String tableName;
-				                		tableName = item.getString("label");
-						            	double[] pos = posMap.get(tableName);
-						            	if (pos != null) {
-						            		item.setX(pos[0]);
-						            		item.setY(pos[1]);
-						            		item.setEndX(pos[0]);
-						            		item.setEndY(pos[1]);
-						            		item.setFixed(pos[2] == 1.0);
-						            	}
-						            }
-					            }
-					        }
-				        }
+								Iterator items = visualization.items(BooleanLiteral.TRUE);
+								for (int m_visibleCount=0; items.hasNext(); ++m_visibleCount ) {
+									VisualItem item = (VisualItem)items.next();
+									if (item.canGetString("label") ) {
+										String tableName;
+										tableName = item.getString("label");
+										double[] pos = posMap.get(tableName);
+										if (pos != null) {
+											item.setX(pos[0]);
+											item.setY(pos[1]);
+											item.setEndX(pos[0]);
+											item.setEndY(pos[1]);
+											item.setFixed(pos[2] == 1.0);
+										}
+									}
+								}
+							}
+						}
 						layout.reset();
 						visualization.invalidateAll();
 						done = true;
 						layoutHasBeenSet = true;
 					}
 				}
-	        };
-	        a.alwaysRunAfter(layout);
+			};
+			a.alwaysRunAfter(layout);
 			animate.add(a);
-        }
+		}
 		animate.add(new Action() {
 			// force redraw, work-around for a strange repaint bug
 			long startTime = System.currentTimeMillis();
@@ -646,38 +646,38 @@ public class GraphicalDataModelView extends JPanel {
 				}
 			}
 		});
-    }
-    
-    /**
-     * Stores current positions of the tables.
-     */
-    @SuppressWarnings("unchecked")
+	}
+	
+	/**
+	 * Stores current positions of the tables.
+	 */
+	@SuppressWarnings("unchecked")
 	public void storeLayout() {
-    	if (root != null && layoutHasBeenSet) {
-	    	synchronized (visualization) {
-	    		LayoutStorage.removeAll(root.getName());
-		        Iterator items = visualization.items(BooleanLiteral.TRUE);
-		        for (int m_visibleCount=0; items.hasNext(); ++m_visibleCount ) {
-		            VisualItem item = (VisualItem)items.next();
-		            if (item.canGetString("label") ) {
-		            	String tableName;
-                		tableName = item.getString("label");
-                		if (tableName != null) {
-                			LayoutStorage.setPosition(root.getName(), tableName, new double[] { item.getX(), item.getY(), item.isFixed()? 1.0:0.0 });
-                		}
-		            }
-		        }
-		        LayoutStorage.checkSignificance(root.getName());
-	        }
-    	}
-    }
+		if (root != null && layoutHasBeenSet) {
+			synchronized (visualization) {
+				LayoutStorage.removeAll(root.getName());
+				Iterator items = visualization.items(BooleanLiteral.TRUE);
+				for (int m_visibleCount=0; items.hasNext(); ++m_visibleCount ) {
+					VisualItem item = (VisualItem)items.next();
+					if (item.canGetString("label") ) {
+						String tableName;
+						tableName = item.getString("label");
+						if (tableName != null) {
+							LayoutStorage.setPosition(root.getName(), tableName, new double[] { item.getX(), item.getY(), item.isFixed()? 1.0:0.0 });
+						}
+					}
+				}
+				LayoutStorage.checkSignificance(root.getName());
+			}
+		}
+	}
 
-    /**
-     * Creates popup menu.
-     *
-     * @param table the table for which the menu pops up
-     * @return the popup menu
-     */
+	/**
+	 * Creates popup menu.
+	 *
+	 * @param table the table for which the menu pops up
+	 * @return the popup menu
+	 */
 	public JPopupMenu createPopupMenu(final Table table, boolean withNavigation) {
 		JPopupMenu popup = new JScrollPopupMenu();
 
@@ -811,8 +811,8 @@ public class GraphicalDataModelView extends JPanel {
 		restrictAll.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(modelEditor.extractionModelFrame, "Disable each association with '" + model.getDisplayName(table) + "'?\n(except dependencies)?", "Add restrictions", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
-		    		modelEditor.ignoreAll(table);
-		    	}
+					modelEditor.ignoreAll(table);
+				}
 			}
 		});
 		restrictAll.setEnabled(modelEditor.isIgnoreAllApplicable(table));
@@ -821,8 +821,8 @@ public class GraphicalDataModelView extends JPanel {
 		removeRestrictions.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
 				if (JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(modelEditor.extractionModelFrame, "Remove all restrictions from associations with '" + model.getDisplayName(table) + "'?", "Remove restrictions", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
-		    		modelEditor.removeAllRestrictions(table);
-		    	}
+					modelEditor.removeAllRestrictions(table);
+				}
 			}
 		});
 		JMenuItem htmlRender = new JMenuItem("Open HTML Render");
@@ -995,12 +995,12 @@ public class GraphicalDataModelView extends JPanel {
 		return popup;
 	}
 
-    /**
-     * Creates popup menu.
-     *
-     * @param association the association for which the menu pops up
-     * @return the popup menu
-     */
+	/**
+	 * Creates popup menu.
+	 *
+	 * @param association the association for which the menu pops up
+	 * @return the popup menu
+	 */
 	public JPopupMenu createPopupMenu(final Association association) {
 		JPopupMenu popup = new JPopupMenu();
 		
@@ -1073,162 +1073,162 @@ public class GraphicalDataModelView extends JPanel {
 	 * 
 	 * @param g the (non-visual) model graph
 	 */
-    private void setGraph(Graph g) {
-        // update graph
-    	inInitialization = true;
-        visualization.removeGroup(graph);
-        visualGraph = visualization.addGraph(graph, g);
-        if (visualGraph.getNodeCount() > 1) {
-	        VisualItem f = (VisualItem) visualGraph.getNode(1);
-		    visualization.getGroup(Visualization.FOCUS_ITEMS).setTuple(f);
-	        f.setFixed(true);
-	        ((VisualItem) visualGraph.getNode(0)).setFixed(true);
-        }
-        
-        inInitialization = false;
-    }
-    
-    /**
-     * The model as graph.
-     */
-    private Graph theGraph;
-    
-    /**
-     * Maps tables to their graph nodes.
-     */
-    private Map<net.sf.jailer.datamodel.Table, Node> tableNodes = new HashMap<net.sf.jailer.datamodel.Table, Node>();
-
-    /**
-     * Set of all tables which are currently expanded.
-     */
-    Set<net.sf.jailer.datamodel.Table> expandedTables = new HashSet<net.sf.jailer.datamodel.Table>();
-    
-    /**
-     * Maps associations to their edges.
-     */
-    private Map<Association, Edge> renderedAssociations = new HashMap<Association, Edge>();
-    private Map<Association, Node> renderedAssociationsAsNode = new HashMap<Association, Node>();
-
-    /**
-     * The data model.
-     */
-    private DataModel model = null;
-
-    /**
-     * Sets selected association.
-     * 
-     * @param association the association to select or <code>null</code> to deselect
-     */
-    public void setSelection(Association association) {
-    	synchronized (visualization) {
-	    	if (selectedAssociation == null || association == null || !selectedAssociation.equals(association)) {
-	    		if (selectedAssociation != null || association != null) {
-	    			Association newlySelectedAssociation = null;
-	    			if (association != null) {
-	    				if (!(renderedAssociations.containsKey(association) || renderedAssociations.containsKey(association.reversalAssociation))) {
-	    					newlySelectedAssociation = association;
-	    				}
-	    			}
-	    			selectedAssociation = association;
-	    			modelEditor.select(association);
-	    			if (association != null) {
-	    				expandTable(theGraph, association.source, association);
-	    				expandTable(theGraph, association.destination, association);
-	    			}
-	    			tablesOnPath.clear();
-	    			associationsOnPath.clear();
-					if (selectedAssociation != null) {
-    					List<Association> path = getPathToRoot(selectedAssociation.destination, true, newlySelectedAssociation);
-    					if (path.isEmpty()) {
-    						path = getPathToRoot(selectedAssociation.destination, false, newlySelectedAssociation);
-    					}
-    					boolean highlightPath = true;
-    					if (path.isEmpty()) {
-    						highlightPath = false;
-    						path = modelEditor.getPathToRoot(selectedAssociation);
-    					}
-    					for (int i = 0; i < path.size(); ++i) {
-    						if (highlightPath) {
-    							associationsOnPath.add(path.get(i));
-    							tablesOnPath.add(path.get(i).source.getName());
-    							tablesOnPath.add(path.get(i).destination.getName());
-	    					}
-    						expandTable(theGraph, path.get(i).source, path.get(i));
-    						expandTable(theGraph, path.get(i).destination, path.get(i));
-    					}
-	    			}
-	    			invalidate();
-	    		}
-	    	}
-    	}
-    }
-    
-    /**
-     * Gets shortest path from root to a given table.
-     * 
-     * @param destination the table
-     * @param ignoreInvisibleAssociations if <code>true</code>, find a path over visible associations only
-     * @return shortest path from root to a given table
-     */
-    private List<Association> getPathToRoot(Table destination, boolean ignoreInvisibleAssociations, Association newlySelectedAssociation) {
-    	List<Association> path = new ArrayList<Association>();
-    	Map<Table, Table> successor = new HashMap<Table, Table>();
-        Map<Table, Association> outgoingAssociation = new HashMap<Table, Association>();
-        List<Table> agenda = new ArrayList<Table>();
-        agenda.add(destination);
-        
-        while (!agenda.isEmpty()) {
-            Table table = agenda.remove(0);
-            for (Association association: incomingAssociations(table, ignoreInvisibleAssociations, newlySelectedAssociation)) {
-            	if (!ignoreInvisibleAssociations || renderedAssociations.containsKey(association)|| renderedAssociations.containsKey(association.reversalAssociation)) {
-	                if (!successor.containsKey(association.source)) {
-	                    successor.put(association.source, table);
-	                    outgoingAssociation.put(association.source, association);
-	                    agenda.add(association.source);
-	                    if (association.source.equals(root)) {
-	                        agenda.clear();
-	                        break;
-	                    }
-	                }
-                }
-            }
-        }
-        if (successor.containsKey(root)) {
-            for (Table table = root; !table.equals(destination); table = successor.get(table)) {
-                Association association = outgoingAssociation.get(table);
-                path.add(association);
-            }
-        }
-        
-        return path;
-    }
-
-    /**
-     * Collects all non-disabled associations with a given table as destination.
-     * 
-     * @param table the table
-     */
-    private Collection<Association> incomingAssociations(Table table, boolean ignoreInvisibleAssociations, Association newlySelectedAssociation) {
-        Collection<Association> result = new ArrayList<Association>();
-        for (Association association: table.associations) {
-            if (association.reversalAssociation.getJoinCondition() != null || ((!ignoreInvisibleAssociations) && (association.reversalAssociation != newlySelectedAssociation)&& (renderedAssociations.containsKey(association) || renderedAssociations.containsKey(association.reversalAssociation)))) {
-                result.add(association.reversalAssociation);
-            }
-        }
-        return result;
-    }
+	private void setGraph(Graph g) {
+		// update graph
+		inInitialization = true;
+		visualization.removeGroup(graph);
+		visualGraph = visualization.addGraph(graph, g);
+		if (visualGraph.getNodeCount() > 1) {
+			VisualItem f = (VisualItem) visualGraph.getNode(1);
+			visualization.getGroup(Visualization.FOCUS_ITEMS).setTuple(f);
+			f.setFixed(true);
+			((VisualItem) visualGraph.getNode(0)).setFixed(true);
+		}
+		
+		inInitialization = false;
+	}
+	
+	/**
+	 * The model as graph.
+	 */
+	private Graph theGraph;
+	
+	/**
+	 * Maps tables to their graph nodes.
+	 */
+	private Map<net.sf.jailer.datamodel.Table, Node> tableNodes = new HashMap<net.sf.jailer.datamodel.Table, Node>();
 
 	/**
-     * Gets model as graph.
-     * 
-     * @param model the data model
-     * @return graph
-     */
+	 * Set of all tables which are currently expanded.
+	 */
+	Set<net.sf.jailer.datamodel.Table> expandedTables = new HashSet<net.sf.jailer.datamodel.Table>();
+	
+	/**
+	 * Maps associations to their edges.
+	 */
+	private Map<Association, Edge> renderedAssociations = new HashMap<Association, Edge>();
+	private Map<Association, Node> renderedAssociationsAsNode = new HashMap<Association, Node>();
+
+	/**
+	 * The data model.
+	 */
+	private DataModel model = null;
+
+	/**
+	 * Sets selected association.
+	 * 
+	 * @param association the association to select or <code>null</code> to deselect
+	 */
+	public void setSelection(Association association) {
+		synchronized (visualization) {
+			if (selectedAssociation == null || association == null || !selectedAssociation.equals(association)) {
+				if (selectedAssociation != null || association != null) {
+					Association newlySelectedAssociation = null;
+					if (association != null) {
+						if (!(renderedAssociations.containsKey(association) || renderedAssociations.containsKey(association.reversalAssociation))) {
+							newlySelectedAssociation = association;
+						}
+					}
+					selectedAssociation = association;
+					modelEditor.select(association);
+					if (association != null) {
+						expandTable(theGraph, association.source, association);
+						expandTable(theGraph, association.destination, association);
+					}
+					tablesOnPath.clear();
+					associationsOnPath.clear();
+					if (selectedAssociation != null) {
+						List<Association> path = getPathToRoot(selectedAssociation.destination, true, newlySelectedAssociation);
+						if (path.isEmpty()) {
+							path = getPathToRoot(selectedAssociation.destination, false, newlySelectedAssociation);
+						}
+						boolean highlightPath = true;
+						if (path.isEmpty()) {
+							highlightPath = false;
+							path = modelEditor.getPathToRoot(selectedAssociation);
+						}
+						for (int i = 0; i < path.size(); ++i) {
+							if (highlightPath) {
+								associationsOnPath.add(path.get(i));
+								tablesOnPath.add(path.get(i).source.getName());
+								tablesOnPath.add(path.get(i).destination.getName());
+							}
+							expandTable(theGraph, path.get(i).source, path.get(i));
+							expandTable(theGraph, path.get(i).destination, path.get(i));
+						}
+					}
+					invalidate();
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Gets shortest path from root to a given table.
+	 * 
+	 * @param destination the table
+	 * @param ignoreInvisibleAssociations if <code>true</code>, find a path over visible associations only
+	 * @return shortest path from root to a given table
+	 */
+	private List<Association> getPathToRoot(Table destination, boolean ignoreInvisibleAssociations, Association newlySelectedAssociation) {
+		List<Association> path = new ArrayList<Association>();
+		Map<Table, Table> successor = new HashMap<Table, Table>();
+		Map<Table, Association> outgoingAssociation = new HashMap<Table, Association>();
+		List<Table> agenda = new ArrayList<Table>();
+		agenda.add(destination);
+		
+		while (!agenda.isEmpty()) {
+			Table table = agenda.remove(0);
+			for (Association association: incomingAssociations(table, ignoreInvisibleAssociations, newlySelectedAssociation)) {
+				if (!ignoreInvisibleAssociations || renderedAssociations.containsKey(association)|| renderedAssociations.containsKey(association.reversalAssociation)) {
+					if (!successor.containsKey(association.source)) {
+						successor.put(association.source, table);
+						outgoingAssociation.put(association.source, association);
+						agenda.add(association.source);
+						if (association.source.equals(root)) {
+							agenda.clear();
+							break;
+						}
+					}
+				}
+			}
+		}
+		if (successor.containsKey(root)) {
+			for (Table table = root; !table.equals(destination); table = successor.get(table)) {
+				Association association = outgoingAssociation.get(table);
+				path.add(association);
+			}
+		}
+		
+		return path;
+	}
+
+	/**
+	 * Collects all non-disabled associations with a given table as destination.
+	 * 
+	 * @param table the table
+	 */
+	private Collection<Association> incomingAssociations(Table table, boolean ignoreInvisibleAssociations, Association newlySelectedAssociation) {
+		Collection<Association> result = new ArrayList<Association>();
+		for (Association association: table.associations) {
+			if (association.reversalAssociation.getJoinCondition() != null || ((!ignoreInvisibleAssociations) && (association.reversalAssociation != newlySelectedAssociation)&& (renderedAssociations.containsKey(association) || renderedAssociations.containsKey(association.reversalAssociation)))) {
+				result.add(association.reversalAssociation);
+			}
+		}
+		return result;
+	}
+
+	/**
+	 * Gets model as graph.
+	 * 
+	 * @param model the data model
+	 * @return graph
+	 */
 	private Graph getModelGraph(DataModel model, Set<Table> initiallyVisibleTables, boolean expandSubject) {
 		tableNodes = new HashMap<net.sf.jailer.datamodel.Table, Node>();
-        expandedTables = new HashSet<net.sf.jailer.datamodel.Table>();
-        renderedAssociations = new HashMap<Association, Edge>();
-        
+		expandedTables = new HashSet<net.sf.jailer.datamodel.Table>();
+		renderedAssociations = new HashMap<Association, Edge>();
+		
 		Graph g = new Graph(true);
 		Schema s = new Schema();
 		s.addColumn("label", String.class);
@@ -1274,7 +1274,7 @@ public class GraphicalDataModelView extends JPanel {
 			expandTable(g, table);
 		}
 		
-    	return g;
+		return g;
 	}
 	
 	/**
@@ -1583,10 +1583,10 @@ public class GraphicalDataModelView extends JPanel {
 		 * Zooms to fit.
 		 */
 		public void zoomToFit() {
-	        Visualization vis = display.getVisualization();
-	        Rectangle2D bounds = vis.getBounds(Visualization.ALL_ITEMS);
-	        GraphicsLib.expand(bounds, 50 + (int)(1/display.getScale()));
-	        DisplayLib.fitViewToBounds(display, bounds, duration);
+			Visualization vis = display.getVisualization();
+			Rectangle2D bounds = vis.getBounds(Visualization.ALL_ITEMS);
+			GraphicsLib.expand(bounds, 50 + (int)(1/display.getScale()));
+			DisplayLib.fitViewToBounds(display, bounds, duration);
 		}
 		
 	}
@@ -1857,7 +1857,7 @@ public class GraphicalDataModelView extends JPanel {
 	 * 
 	 * @param table subject of query
 	 * @param usePath if <code>true</code>, immediately build query based on selected path
-  	 */
+	   */
 	public void openQueryBuilder(Table table, boolean usePath) {
 		new QueryBuilderDialog(this.modelEditor.extractionModelFrame).buildQuery(table, usePath, true, associationsOnPath, null, model);
 	}
@@ -1903,20 +1903,20 @@ public class GraphicalDataModelView extends JPanel {
 
 	public Set<String> visibleItems() {
 		Set<String> result = new HashSet<String>();
-        synchronized (visualization) {
-	        Iterator items = visualization.items(BooleanLiteral.TRUE);
-	        while (items.hasNext()) {
-	            VisualItem item = (VisualItem)items.next();
-	            if (item.canGetString("label") ) {
-	            	String tableName;
-	            	tableName = item.getString("label");
-	            	if (tableName != null) {
-	            		result.add(tableName);
-	            	}
-	            }
-	        }
-        }
-        return result;
+		synchronized (visualization) {
+			Iterator items = visualization.items(BooleanLiteral.TRUE);
+			while (items.hasNext()) {
+				VisualItem item = (VisualItem)items.next();
+				if (item.canGetString("label") ) {
+					String tableName;
+					tableName = item.getString("label");
+					if (tableName != null) {
+						result.add(tableName);
+					}
+				}
+			}
+		}
+		return result;
 	}
 
 	private static final long serialVersionUID = -5938101712807557555L;

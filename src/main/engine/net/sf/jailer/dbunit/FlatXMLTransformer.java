@@ -75,12 +75,12 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 
 	private final DBMS dbms;
 
-    /**
-     * Factory.
-     */
-    public static class Factory implements TransformerFactory {
-    	
-    	private final TransformerHandler transformerHandler;
+	/**
+	 * Factory.
+	 */
+	public static class Factory implements TransformerFactory {
+		
+		private final TransformerHandler transformerHandler;
 		private final DatabaseMetaData metaData;
 		private final DBMS dbms;
 		
@@ -90,23 +90,23 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 		private final ExecutionContext executionContext;
 		
 		/**
-    	 * Constructor.
-    	 * 
-    	 * @param table
-    	 *            the table to read from
-    	 * @param transformerHandler
-    	 *            to write the XML into
-    	 * @param metaData
-    	 *            database meta data
-    	 */
-    	public Factory(TransformerHandler transformerHandler, DatabaseMetaData metaData, DBMS dbms, ExecutionContext executionContext) {
-    		this.executionContext = executionContext;
-    		this.transformerHandler = transformerHandler;
-    		this.metaData = metaData;
-    		this.dbms = dbms;
-    	}
-    	
-    	/**
+		 * Constructor.
+		 * 
+		 * @param table
+		 *            the table to read from
+		 * @param transformerHandler
+		 *            to write the XML into
+		 * @param metaData
+		 *            database meta data
+		 */
+		public Factory(TransformerHandler transformerHandler, DatabaseMetaData metaData, DBMS dbms, ExecutionContext executionContext) {
+			this.executionContext = executionContext;
+			this.transformerHandler = transformerHandler;
+			this.metaData = metaData;
+			this.dbms = dbms;
+		}
+		
+		/**
 		 * Creates transformer (as {@link ResultSetReader} which 
 		 * transforms rows of a given table into an external representation.
 		 * 
@@ -117,7 +117,7 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 		public ResultSetReader create(Table table) throws SQLException {
 			return new FlatXMLTransformer(table, transformerHandler, metaData, dbms, executionContext);
 		}
-    }
+	}
 
 	/**
 	 * The execution context.
@@ -143,29 +143,29 @@ public class FlatXMLTransformer extends AbstractResultSetReader {
 	}
 	
 	/**
-     * Gets qualified table name.
-     * 
-     * @param t the table
-     * @return qualified name of t
-     */
-    private String qualifiedTableName(Table t) {
-    	String schema = t.getOriginalSchema("");
-    	String mappedSchema = executionContext.getSchemaMapping().get(schema);
-    	if (mappedSchema != null) {
-    		schema = mappedSchema;
-    	}
-    	if (schema.length() == 0) {
-    		return unquote(t.getUnqualifiedName());
-    	}
+	 * Gets qualified table name.
+	 * 
+	 * @param t the table
+	 * @return qualified name of t
+	 */
+	private String qualifiedTableName(Table t) {
+		String schema = t.getOriginalSchema("");
+		String mappedSchema = executionContext.getSchemaMapping().get(schema);
+		if (mappedSchema != null) {
+			schema = mappedSchema;
+		}
+		if (schema.length() == 0) {
+			return unquote(t.getUnqualifiedName());
+		}
 		return unquote(schema) + "." + unquote(t.getUnqualifiedName());
 	}
 
-    /**
-     * Removes quotes from table name.
-     * 
-     * @param name the table name
-     * @return table name without quotes
-     */
+	/**
+	 * Removes quotes from table name.
+	 * 
+	 * @param name the table name
+	 * @return table name without quotes
+	 */
 	private String unquote(String name) {
 		if (!name.isEmpty()) {
 			char fc = name.charAt(0);

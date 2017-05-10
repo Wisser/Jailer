@@ -27,11 +27,11 @@ import net.sf.jailer.datamodel.DataModel;
  */
 public interface DataModelRenderer {
 
-    /**
-     * Generates a human readable representation of the data-model.
-     * 
-     * @param dataModel the data-model
-     */
-    void render(DataModel dataModel, ExecutionContext executionContext, List<String> restrictionFiles);
+	/**
+	 * Generates a human readable representation of the data-model.
+	 * 
+	 * @param dataModel the data-model
+	 */
+	void render(DataModel dataModel, ExecutionContext executionContext, List<String> restrictionFiles);
 
 }

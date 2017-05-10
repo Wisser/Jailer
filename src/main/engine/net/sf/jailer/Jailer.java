@@ -81,14 +81,14 @@ public class Jailer {
 		final Thread mainThread = Thread.currentThread();
 		Thread shutdownHook;
 		Runtime.getRuntime().addShutdownHook(shutdownHook = new Thread("shutdown-hook") {
-		    public void run() {
-		        CancellationHandler.cancel(null);
-		        try {
+			public void run() {
+				CancellationHandler.cancel(null);
+				try {
 					mainThread.join();
 				} catch (InterruptedException e) {
 					// ignore
 				}
-		    }
+			}
 		});
 		try {
 			System.setProperty("db2.jcc.charsetDecoderEncoder", "3");
