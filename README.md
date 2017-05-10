@@ -17,7 +17,7 @@ DbUnit datasets, hierarchically structured XML, and topologically sorted SQL-DML
 
 ## News
 
- - 2017-05-10   New API provides programmatic access to the data export and import functionality.
+ - 2017-05-10   New API provides programmatic access to the data export and import functionality. http://jailer.sourceforge.net/api.html
  - 2017-03-30 	Improved filter management. Support for import-filters and literal-filters.
  - 2017-01-27 	Referential cycles can now be exported by deferring the insert of nullable foreign keys.
  - 2016-21-10 	Filter Templates allows you to define rules for assigning filters to columns.Filters on primary key columns will automatically be propagated to the corresponding foreign key columns.
