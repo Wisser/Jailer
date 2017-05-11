@@ -797,9 +797,7 @@ public class UIUtil {
 
 	public static void initSyntaxKit() {
 		try {
-			if (Integer.parseInt(System.getProperty("java.version", "1.7.0").split("\\.")[1]) < 9) {
 				DefaultSyntaxKit.initKit();
-			}
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
