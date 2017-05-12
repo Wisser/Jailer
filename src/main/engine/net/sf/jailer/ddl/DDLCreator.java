@@ -131,7 +131,7 @@ public class DDLCreator {
 		arguments.put("pre", rowIdSupport.getUniversalPrimaryKey().toSQL("PRE_", contraint, typeReplacement));
 		arguments.put("from", rowIdSupport.getUniversalPrimaryKey().toSQL("FROM_", contraint, typeReplacement));
 		arguments.put("to", rowIdSupport.getUniversalPrimaryKey().toSQL("TO_", contraint, typeReplacement));
-		arguments.put("version", JailerVersion.VERSION);
+		arguments.put("version", "" + JailerVersion.WORKING_TABLE_VERSION);
 		arguments.put("constraint", contraint);
 
 		TemporaryTableManager tableManager = null;
@@ -277,18 +277,23 @@ public class DDLCreator {
 				
 				final String schema = workingTableSchema == null ? "" : new Quoting(session).requote(workingTableSchema) + ".";
 				
-				session.executeQuery("Select jvalue from " + schema + SQLDialect.CONFIG_TABLE_ + " where jversion='" + JailerVersion.VERSION + "' and jkey='upk'",
-						new Session.ResultSetReader() {
-							public void readCurrentRow(ResultSet resultSet) throws SQLException {
-								String contraint = pkColumnConstraint(session);
-								String universalPrimaryKey = rowIdSupport.getUniversalPrimaryKey().toSQL(null, contraint, typeReplacement);
-								String h = "" + (universalPrimaryKey + targetDBMS(session).getTableProperties()).hashCode();
-								uptodate[0] = resultSet.getString(1).equals(h);
-							}
+				Session.ResultSetReader reader = new Session.ResultSetReader() {
+					public void readCurrentRow(ResultSet resultSet) throws SQLException {
+						String contraint = pkColumnConstraint(session);
+						String universalPrimaryKey = rowIdSupport.getUniversalPrimaryKey().toSQL(null, contraint, typeReplacement);
+						String h = "" + (universalPrimaryKey + targetDBMS(session).getTableProperties()).hashCode();
+						uptodate[0] = resultSet.getString(1).equals(h);
+					}
 
-							public void close() {
-							}
-						});
+					public void close() {
+					}
+				};
+				if (JailerVersion.WORKING_TABLE_VERSION == 1) {
+					session.executeQuery("Select jvalue from " + schema + SQLDialect.CONFIG_TABLE_ + " where jversion='" + "7.0" + "' and jkey='upk'", reader);
+				}
+				if (!uptodate[0]) {
+					session.executeQuery("Select jvalue from " + schema + SQLDialect.CONFIG_TABLE_ + " where jversion='" + JailerVersion.WORKING_TABLE_VERSION + "' and jkey='upk'", reader);
+				}
 				// look for jailer tables
 				for (String table : SqlUtil.JAILER_MH_TABLES) {
 					session.executeQuery("Select * from " + schema + table + " Where 1=0", new Session.ResultSetReader() {

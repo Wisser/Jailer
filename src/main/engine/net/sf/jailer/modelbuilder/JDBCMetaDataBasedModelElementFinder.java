@@ -131,6 +131,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				continue;
 			}
 			Map<String, Association> fkMap = new HashMap<String, Association>();
+			Map<String, Integer> unknownFKCounter = new HashMap<String, Integer>();
 			while (resultSet.next()) {
 				Table pkTable = dataModel.getTable(toQualifiedTableName(quoting.quote(defaultSchema), quoting.quote(resultSet.getString(DBMS.MySQL.equals(session.dbms)? 1 : 2)), quoting.quote(resultSet.getString(3))));
 				String pkColumn = quoting.quote(resultSet.getString(4));
@@ -138,6 +139,21 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				String fkColumn = quoting.quote(resultSet.getString(8));
 				String foreignKey = resultSet.getString(12);
 				if (fkTable != null) {
+					if (foreignKey == null || foreignKey.trim().length() == 0) {
+						foreignKey = pkTable.getName();
+						int seq = resultSet.getInt(9);
+						String fkKey = fkTable.getName() + "." + foreignKey;
+						if (seq == 1) {
+							Integer count = unknownFKCounter.get(fkKey);
+							if (count == null) {
+								count = 1;
+							} else {
+								count++;
+							}
+							unknownFKCounter.put(fkKey, count);
+						}
+						foreignKey += "." + unknownFKCounter.get(fkKey);
+					}
 					String fkName = fkTable.getName() + "." + foreignKey;
 					if (foreignKey != null && fkMap.containsKey(fkName)) {
 						fkMap.get(fkName).appendCondition("A." + fkColumn + "=B." + pkColumn);

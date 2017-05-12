@@ -1,3 +1,6 @@
+7.0.1
+  - SQLite fk detection bug has been fixed.
+
 7.0
   - New API provides programmatic access to the data export and import functionality.
     http://jailer.sourceforge.net/api.html
@@ -17,10 +20,10 @@
 
 6.7.2
   - Added support for NCLOB data type.
-  - Improved graph layout optimisation in progress panel.
+  - Improved graph layout optimization in progress panel.
 
 6.7
-  - Visualisation of progress of delete-reduction.
+  - Visualization of progress of delete-reduction.
   - Improved File Dialog.
 
 6.6.3
