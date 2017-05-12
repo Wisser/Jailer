@@ -25,7 +25,12 @@ public class JailerVersion {
 	/**
 	 * The Jailer version.
 	 */
-	public static final String VERSION = "7.0";
+	public static final String VERSION = "7.0.1";
+	
+	/**
+	 * The Jailer working tables version.
+	 */
+	public static final int WORKING_TABLE_VERSION = 1;
 	
 	/**
 	 * The Jailer application name.

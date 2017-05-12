@@ -15,8 +15,11 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.AWTEvent;
 import java.awt.CardLayout;
 import java.awt.Cursor;
+import java.awt.EventQueue;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -56,8 +59,8 @@ import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.DataModel.NoPrimaryKeyException;
-import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.modelbuilder.ModelBuilder;
@@ -1603,13 +1606,41 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	/**
 	 * @param args the command line arguments
 	 */
-	public static void main(final String args[]) {
+	public static void main(String args[]) {
+		try {
+			start(args);
+		} catch (Throwable t) {
+			UIUtil.showException(null, "Error", t);
+		}
+	}
+	
+	/**
+	 * @param args the command line arguments
+	 */
+	private static void start(final String args[]) {
 		// turn off logging for prefuse library
 		try {
 			Logger.getLogger("prefuse").setLevel(Level.OFF);
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
+		try {
+			Toolkit.getDefaultToolkit().getSystemEventQueue().push(new EventQueue() {
+				boolean shown = false;
+				protected void dispatchEvent(final AWTEvent event) {
+					try {
+			            super.dispatchEvent(event);
+			        } catch (Throwable t) {
+			        	if (!shown) {
+			        		shown = true;
+			        		UIUtil.showException(null, "Error", t);
+			        	}
+			        }
+				}
+			});
+		} catch (Exception e) {
+		}
+
 		try {
 			CommandLineInstance.init(args);
 		} catch (Exception e) {

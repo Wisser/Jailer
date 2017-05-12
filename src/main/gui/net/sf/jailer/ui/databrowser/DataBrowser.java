@@ -15,16 +15,19 @@
  */
 package net.sf.jailer.ui.databrowser;
 
+import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -1353,15 +1356,42 @@ public class DataBrowser extends javax.swing.JFrame {
 	private static final String PLAFSETTING = ".plaf2.ui";
 
 	/**
+	 * @param args the command line arguments
+	 */
+	public static void main(String args[]) {
+		try {
+			start(args);
+		} catch (Throwable t) {
+			UIUtil.showException(null, "Error", t);
+		}
+	}
+	
+	/**
 	 * @param args
 	 *            the command line arguments
 	 */
-	public static void main(final String args[]) {
+	private static void start(final String args[]) {
 		// turn off logging for prefuse library
 		try {
 			Logger.getLogger("prefuse").setLevel(Level.OFF);
 		} catch (Exception e1) {
 			e1.printStackTrace();
+		}
+		try {
+			Toolkit.getDefaultToolkit().getSystemEventQueue().push(new EventQueue() {
+				boolean shown = false;
+				protected void dispatchEvent(final AWTEvent event) {
+					try {
+			            super.dispatchEvent(event);
+			        } catch (Throwable t) {
+			        	if (!shown) {
+			        		shown = true;
+			        		UIUtil.showException(null, "Error", t);
+			        	}
+			        }
+				}
+			});
+		} catch (Exception e) {
 		}
 		try {
 			CommandLineInstance.init(args);

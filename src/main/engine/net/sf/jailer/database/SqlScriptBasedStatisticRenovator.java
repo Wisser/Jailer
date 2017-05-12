@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.SqlScriptExecutor;
 
@@ -85,14 +86,15 @@ public class SqlScriptBasedStatisticRenovator implements StatisticRenovator {
 		arguments.put("JAILER_GRAPH", SQLDialect.dmlTableReference("JAILER_GRAPH", session, executionContext));
 		arguments.put("JAILER_DEPENDENCY", SQLDialect.dmlTableReference("JAILER_DEPENDENCY", session, executionContext));
 		arguments.put("JAILER_SET", SQLDialect.dmlTableReference("JAILER_SET", session, executionContext));
-		String fileName = "renew.sql";
-		PrintWriter out = new PrintWriter(new FileOutputStream(fileName));
+		File file = Configuration.getInstance().createTempFile();
+		PrintWriter out = new PrintWriter(new FileOutputStream(file));
 		out.print(new PrintUtil().applyTemplate(scriptFileName.replace('/', File.separatorChar), arguments, null));
 		out.close();
 		boolean silent = session.getSilent();
 		session.setSilent(true);
-		new SqlScriptExecutor(session, 1).executeScript(fileName);
+		new SqlScriptExecutor(session, 1).executeScript(file.getPath());
 		session.setSilent(silent);
+		file.delete();
 	}
 
 }
