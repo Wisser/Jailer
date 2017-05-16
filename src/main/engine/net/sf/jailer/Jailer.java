@@ -42,7 +42,6 @@ import net.sf.jailer.domainmodel.DomainModel;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.progress.ProgressListener;
-import net.sf.jailer.progress.ProgressListenerRegistry;
 import net.sf.jailer.render.DataModelRenderer;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.subsetting.SubsettingEngine;
@@ -122,13 +121,14 @@ public class Jailer {
 		Session.closeTemporaryTableSession();
 
 		try {
-			ProgressListenerRegistry.setProgressListener(progressListener);
 			CommandLine commandLine = CommandLineParser.parse(args, false);
 			if (commandLine == null) {
 				return false;
 			}
 			ExecutionContext executionContext = new ExecutionContext(commandLine);
 
+			executionContext.getProgressListenerRegistry().addProgressListener(progressListener);
+			
 			String command = commandLine.arguments.get(0);
 			if (!"create-ddl".equalsIgnoreCase(command)) {
 				if (!"find-association".equalsIgnoreCase(command)) {
@@ -254,7 +254,6 @@ public class Jailer {
 			_log.error("working directory is " + workingDirectory);
 			throw e;
 		} finally {
-			ProgressListenerRegistry.setProgressListener(null);
 			Session.closeTemporaryTableSession();
 		}
 	}

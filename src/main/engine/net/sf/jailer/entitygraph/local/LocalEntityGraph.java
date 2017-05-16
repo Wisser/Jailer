@@ -38,8 +38,8 @@ import net.sf.jailer.database.LocalDatabase;
 import net.sf.jailer.database.SQLDialect;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.ResultSetReader;
-import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.database.UpdateTransformer;
+import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
@@ -49,7 +49,6 @@ import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ddl.DDLCreator;
 import net.sf.jailer.entitygraph.EntityGraph;
-import net.sf.jailer.progress.ProgressListenerRegistry;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.Quoting;
@@ -767,7 +766,7 @@ public class LocalEntityGraph extends EntityGraph {
 						pkEqualsEntityID(table, "T", "E", "", false) +
 						orderBy,
 						reader);
-				ProgressListenerRegistry.getProgressListener().exported(table, rc);
+				executionContext.getProgressListenerRegistry().fireExported(table, rc);
 			}
 		});
 	}
@@ -825,7 +824,7 @@ public class LocalEntityGraph extends EntityGraph {
 				long rc = remoteSession.executeQuery(
 						sqlQuery + orderBy,
 						reader);
-				ProgressListenerRegistry.getProgressListener().exported(table, rc);
+				executionContext.getProgressListenerRegistry().fireExported(table, rc);
 			}
 		});
 	}
@@ -862,7 +861,7 @@ public class LocalEntityGraph extends EntityGraph {
 	public void readEntities(Table table, boolean orderByPK) throws SQLException {
 		Session.ResultSetReader reader = getTransformerFactory().create(table);
 		long rc = readEntities(table, orderByPK, reader);
-		ProgressListenerRegistry.getProgressListener().exported(table, rc);
+		executionContext.getProgressListenerRegistry().fireExported(table, rc);
 	}
 
 	/**
@@ -1217,7 +1216,7 @@ public class LocalEntityGraph extends EntityGraph {
 						 pkEqualsEntityID(table, "T", "D", "TO_", false) + "";
 				}
 				long rc = remoteSession.executeQuery(select, reader);
-				ProgressListenerRegistry.getProgressListener().exported(table, rc);
+				executionContext.getProgressListenerRegistry().fireExported(table, rc);
 			}
 		});
 	}
@@ -1421,13 +1420,6 @@ public class LocalEntityGraph extends EntityGraph {
 			}
 		}
 		return sb.toString();
-	}
-	
-	/**
-	 * Gets some statistical information.
-	 */
-	public List<String> getStatistics(final DataModel dataModel, Set<Table> tables) throws SQLException {
-		return getStatistics(localSession, dataModel, tables);
 	}
 
 	/**

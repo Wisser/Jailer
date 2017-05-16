@@ -15,11 +15,14 @@
  */
 package net.sf.jailer.configuration;
 
+import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import javax.xml.bind.annotation.XmlTransient;
 
 import net.sf.jailer.database.DefaultTemporaryTableManager;
 import net.sf.jailer.database.SQLDialect;
@@ -82,9 +85,6 @@ public class DBMS {
 		this.ncharPrefix = other.ncharPrefix;
 		this.exportBlocks = other.exportBlocks;
 		this.identityInserts = other.identityInserts;
-		this.appendNanosToTimestamp = other.appendNanosToTimestamp;
-		this.appendMillisToTimestamp = other.appendMillisToTimestamp;
-		this.useToTimestampFunction = other.useToTimestampFunction;
 		this.emptyCLOBValue = other.emptyCLOBValue;
 		this.emptyNCLOBValue = other.emptyNCLOBValue;
 		this.emptyBLOBValue = other.emptyBLOBValue;
@@ -95,6 +95,9 @@ public class DBMS {
 		this.binaryPattern = other.binaryPattern;
 		this.avoidLeftJoin = other.avoidLeftJoin;
 		this.timestampPattern = other.timestampPattern;
+		this.timestampFormat = other.timestampFormat;
+		this.datePattern = other.datePattern;
+		this.dateFormat = other.dateFormat;
 		this.sqlDialect = other.sqlDialect;
 		this.rowidName = other.rowidName;
 		this.supportsSchemasInIndexDefinitions = other.supportsSchemasInIndexDefinitions;
@@ -217,9 +220,6 @@ public class DBMS {
 	 */
 	private boolean identityInserts = false;
 	
-	private boolean appendNanosToTimestamp = true;
-	private boolean appendMillisToTimestamp = false;
-	private boolean useToTimestampFunction = false;
 	private String emptyCLOBValue = null;
 	private String emptyNCLOBValue = null;
 	private String emptyBLOBValue = null;
@@ -230,6 +230,10 @@ public class DBMS {
 	private String binaryPattern = "x'%s'";
 	private boolean avoidLeftJoin = false;
 	private String timestampPattern = null;
+	private String datePattern = null;
+	@XmlTransient
+	private SimpleDateFormat timestampFormat = null;
+	private SimpleDateFormat dateFormat = null;
 	private SQLDialect sqlDialect = new SQLDialect();
 	private String rowidName = null;
 	private Boolean supportsSchemasInIndexDefinitions = null;
@@ -423,18 +427,6 @@ public class DBMS {
 	 */
 	public void setStatisticRenovator(SqlScriptBasedStatisticRenovator statisticRenovator) {
 		this.statisticRenovator = statisticRenovator;
-	}
-
-	public void setAppendNanosToTimestamp(boolean appendNanosToTimestamp) {
-		this.appendNanosToTimestamp = appendNanosToTimestamp;
-	}
-
-	public void setAppendMillisToTimestamp(boolean appendMillisToTimestamp) {
-		this.appendMillisToTimestamp = appendMillisToTimestamp;
-	}
-
-	public void setUseToTimestampFunction(boolean useToTimestampFunction) {
-		this.useToTimestampFunction = useToTimestampFunction;
 	}
 
 	public void setEmptyCLOBValue(String emptyCLOBValue) {
@@ -638,6 +630,40 @@ public class DBMS {
 	}
 
 	/**
+	 * @return the {@link #getTimestampPattern()} as {@link SimpleDateFormat}.
+	 */
+	public SimpleDateFormat createTimestampFormat() {
+		if (timestampFormat == null) {
+			timestampFormat = new SimpleDateFormat(timestampPattern);
+		}
+		return timestampFormat;
+	}
+
+	/**
+	 * @return the datePattern
+	 */
+	public String getDatePattern() {
+		return datePattern;
+	}
+
+	/**
+	 * @param datePattern the datePattern to set
+	 */
+	public void setDatePattern(String datePattern) {
+		this.datePattern = datePattern;
+	}
+
+	/**
+	 * @return the {@link #getDatePattern()} as {@link SimpleDateFormat}.
+	 */
+	public SimpleDateFormat createDateFormat() {
+		if (dateFormat == null) {
+			dateFormat = new SimpleDateFormat(datePattern);
+		}
+		return dateFormat;
+	}
+
+	/**
 	 * @return the ncharPrefix
 	 */
 	public String getNcharPrefix() {
@@ -797,27 +823,6 @@ public class DBMS {
 	 */
 	public void setToNClob(String toNClob) {
 		this.toNClob = toNClob;
-	}
-
-	/**
-	 * @return the appendNanosToTimestamp
-	 */
-	public boolean isAppendNanosToTimestamp() {
-		return appendNanosToTimestamp;
-	}
-
-	/**
-	 * @return the appendMillisToTimestamp
-	 */
-	public boolean isAppendMillisToTimestamp() {
-		return appendMillisToTimestamp;
-	}
-
-	/**
-	 * @return the useToTimestampFunction
-	 */
-	public boolean isUseToTimestampFunction() {
-		return useToTimestampFunction;
 	}
 
 	/**

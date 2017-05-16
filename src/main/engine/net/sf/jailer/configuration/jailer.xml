@@ -88,9 +88,8 @@
             <indexTablePrefix></indexTablePrefix>
         </sessionTemporaryTableManager>
         <identityInserts>false</identityInserts>
-        <appendNanosToTimestamp>true</appendNanosToTimestamp>
-        <appendMillisToTimestamp>false</appendMillisToTimestamp>
-        <useToTimestampFunction>true</useToTimestampFunction>
+        <datePattern>'to_date('''yyyy-MM-dd''', ''YYYY-MM-DD'')'</datePattern>
+        <timestampPattern>'to_timestamp('''yyyy-MM-dd HH.mm.ss'.${NANO}'', ''YYYY-MM-DD HH24.MI.SS.${NANOFORMAT}'')'</timestampPattern>
         <emptyBLOBValue>empty_blob()</emptyBLOBValue>
         <emptyCLOBValue>empty_clob()</emptyCLOBValue>
         <emptyNCLOBValue>empty_clob()</emptyNCLOBValue>
@@ -147,9 +146,7 @@
         <exportBlocks>timestamp</exportBlocks>
         <exportBlocks>TIMESTAMP</exportBlocks>
         <identityInserts>true</identityInserts>
-        <appendNanosToTimestamp>true</appendNanosToTimestamp>
-        <appendMillisToTimestamp>false</appendMillisToTimestamp>
-        <useToTimestampFunction>false</useToTimestampFunction>
+        <timestampPattern>'convert(datetime, '''yyyy-MM-dd'T'HH:mm:ss.SSS''', 126)'</timestampPattern>
         <emptyBLOBValue>0x</emptyBLOBValue>
         <emptyCLOBValue>''</emptyCLOBValue>
         <emptyNCLOBValue>N''</emptyNCLOBValue>
@@ -275,9 +272,6 @@
         <tableProperties></tableProperties>
         
         <identityInserts>false</identityInserts>
-        <appendNanosToTimestamp>true</appendNanosToTimestamp>
-        <appendMillisToTimestamp>false</appendMillisToTimestamp>
-        <useToTimestampFunction>false</useToTimestampFunction>
         <emptyBLOBValue>BINARY ''</emptyBLOBValue>
         <emptyCLOBValue>''</emptyCLOBValue>
         <emptyNCLOBValue>''</emptyNCLOBValue>
@@ -345,9 +339,6 @@
             <indexTablePrefix>SESSION.</indexTablePrefix>
         </sessionTemporaryTableManager>
         <identityInserts>false</identityInserts>
-        <appendNanosToTimestamp>true</appendNanosToTimestamp>
-        <appendMillisToTimestamp>false</appendMillisToTimestamp>
-        <useToTimestampFunction>false</useToTimestampFunction>
         <emptyBLOBValue>blob('')</emptyBLOBValue>
         <emptyCLOBValue>clob('')</emptyCLOBValue>
         <emptyNCLOBValue>nclob('')</emptyNCLOBValue>
@@ -413,9 +404,6 @@
             <indexTablePrefix>SESSION.</indexTablePrefix>
         </sessionTemporaryTableManager>
         <identityInserts>false</identityInserts>
-        <appendNanosToTimestamp>true</appendNanosToTimestamp>
-        <appendMillisToTimestamp>false</appendMillisToTimestamp>
-        <useToTimestampFunction>false</useToTimestampFunction>
         <emptyBLOBValue>blob('')</emptyBLOBValue>
         <emptyCLOBValue>clob('')</emptyCLOBValue>
         <emptyNCLOBValue>nclob('')</emptyNCLOBValue>
@@ -476,10 +464,7 @@
             <indexTablePrefix></indexTablePrefix>
         </sessionTemporaryTableManager>
         <identityInserts>false</identityInserts>
-        <appendNanosToTimestamp>true</appendNanosToTimestamp>
-        <appendMillisToTimestamp>false</appendMillisToTimestamp>
-        <useToTimestampFunction>false</useToTimestampFunction>
-        <timestampPattern>cast(%s as datetime year to fraction)</timestampPattern>
+        <timestampPattern>'cast('''yyyy-MM-dd HH.mm.ss'.${NANO}'' as datetime year to fraction)'</timestampPattern>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
         <binaryPattern>x'%s'</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
@@ -549,9 +534,8 @@
             <indexTablePrefix></indexTablePrefix>
         </sessionTemporaryTableManager>
         <identityInserts>false</identityInserts>
-        <appendNanosToTimestamp>true</appendNanosToTimestamp>
-        <appendMillisToTimestamp>false</appendMillisToTimestamp>
-        <useToTimestampFunction>false</useToTimestampFunction>
+        <datePattern>''yyyy-MM-dd'''::date'</datePattern>
+        <timestampPattern>'to_timestamp('''yyyy-MM-dd HH.mm.ss'.${NANO}'', ''YYYY-MM-DD HH12.MI.SS.US'')'</timestampPattern>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
         <binaryPattern>E'\\x%s'</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
@@ -581,9 +565,6 @@
         <tableProperties></tableProperties>
         
         <identityInserts>false</identityInserts>
-        <appendNanosToTimestamp>true</appendNanosToTimestamp>
-        <appendMillisToTimestamp>false</appendMillisToTimestamp>
-        <useToTimestampFunction>false</useToTimestampFunction>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
         <binaryPattern>x'%s'</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
@@ -616,9 +597,6 @@
         <tableProperties></tableProperties>
         
         <identityInserts>false</identityInserts>
-        <appendNanosToTimestamp>true</appendNanosToTimestamp>
-        <appendMillisToTimestamp>false</appendMillisToTimestamp>
-        <useToTimestampFunction>false</useToTimestampFunction>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
         <binaryPattern>x'%s'</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
@@ -645,9 +623,6 @@
         <tableProperties></tableProperties>
         
         <identityInserts>false</identityInserts>
-        <appendNanosToTimestamp>true</appendNanosToTimestamp>
-        <appendMillisToTimestamp>false</appendMillisToTimestamp>
-        <useToTimestampFunction>false</useToTimestampFunction>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
         <binaryPattern>x'%s'</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
@@ -685,9 +660,6 @@
         <exportBlocks>timestamp</exportBlocks>
         <exportBlocks>TIMESTAMP</exportBlocks>
         <identityInserts>true</identityInserts>
-        <appendNanosToTimestamp>true</appendNanosToTimestamp>
-        <appendMillisToTimestamp>false</appendMillisToTimestamp>
-        <useToTimestampFunction>false</useToTimestampFunction>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
         <binaryPattern>0x%s</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
@@ -731,9 +703,6 @@
             <indexTablePrefix></indexTablePrefix>
         </sessionTemporaryTableManager>
         <identityInserts>false</identityInserts>
-        <appendNanosToTimestamp>true</appendNanosToTimestamp>
-        <appendMillisToTimestamp>false</appendMillisToTimestamp>
-        <useToTimestampFunction>false</useToTimestampFunction>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
         <binaryPattern>x'%s'</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
@@ -758,9 +727,6 @@
         <tableProperties>NOLOGGING</tableProperties>
         
         <identityInserts>false</identityInserts>
-        <appendNanosToTimestamp>true</appendNanosToTimestamp>
-        <appendMillisToTimestamp>false</appendMillisToTimestamp>
-        <useToTimestampFunction>false</useToTimestampFunction>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
         <binaryPattern>x'%s'</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
@@ -811,9 +777,6 @@
         <tableProperties></tableProperties>
         
         <identityInserts>false</identityInserts>
-        <appendNanosToTimestamp>true</appendNanosToTimestamp>
-        <appendMillisToTimestamp>false</appendMillisToTimestamp>
-        <useToTimestampFunction>false</useToTimestampFunction>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
         <binaryPattern>x'%s'</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>

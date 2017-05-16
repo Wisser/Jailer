@@ -20,10 +20,7 @@ import java.io.OutputStreamWriter;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -336,11 +333,6 @@ public abstract class EntityGraph {
 	public abstract void removeReflexiveDependencies(Table table) throws SQLException;
 	
 	/**
-	 * Gets some statistical information.
-	 */
-	public abstract List<String> getStatistics(final DataModel dataModel, Set<Table> tables) throws SQLException;
-
-	/**
 	 * Gets total row-count.
 	 * 
 	 * @return total row-count
@@ -399,39 +391,6 @@ public abstract class EntityGraph {
 	 * Closes the graph. Deletes the local database.
 	 */
 	abstract public void close() throws SQLException;
-	
-	/**
-	 * Gets some statistical information.
-	 */
-	protected final List<String> getStatistics(Session session, final DataModel dataModel, Set<Table> tables) throws SQLException {
-		final List<String> statistic = new ArrayList<String>();
-		final long[] total = new long[1];
-		total[0] = 0;
-		final Set<Table> remaining = new HashSet<Table>(tables);
-		session.executeQuery("Select type, count(*) From " + dmlTableReference(ENTITY, session) + " Where r_entitygraph=" + graphID + " and birthday>=0 group by type", new Session.AbstractResultSetReader() {
-			public void readCurrentRow(ResultSet resultSet) throws SQLException {
-				Table table = dataModel.getTableByOrdinal(resultSet.getInt(1));
-				String type = dataModel.getDisplayName(table);
-				remaining.remove(table);
-				long count = resultSet.getLong(2);
-				total[0] += count;
-				while (type.length() < 30) {
-					type = type + " ";
-				}
-				statistic.add(type + " " + count);
-			}
-		});
-		for (Table table: remaining) {
-			String type = dataModel.getDisplayName(table);
-			while (type.length() < 30) {
-				type = type + " ";
-			}
-			statistic.add(type + " 0");
-		}
-		Collections.sort(statistic);
-		statistic.add(0, "" + total[0]);
-		return statistic;
-	}
 
 	/**
 	 * Removes all dependencies for a given association. 

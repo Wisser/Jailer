@@ -52,7 +52,6 @@ import net.sf.jailer.datamodel.Filter;
 import net.sf.jailer.datamodel.PKColumnFilterSource;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
-import net.sf.jailer.progress.ProgressListenerRegistry;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.JobManager;
@@ -295,7 +294,7 @@ public abstract class ImportFilterManager implements ImportFilterTransformer {
 	 */
 	public void fillAndWriteMappingTables(final EntityGraph entityGraph, JobManager jobManager, final OutputStreamWriter dmlResultWriter,
 			int numberOfEntities, final Session targetSession, final DBMS targetDBMSConfiguration) throws CancellationException, SQLException {
-		ProgressListenerRegistry.getProgressListener().newStage("processing import filters", false, false);
+		executionContext.getProgressListenerRegistry().fireNewStage("processing import filters", false, false);
 		
 		Collection<Job> insertJobs = new ArrayList<Job>();
 		Collection<Job> writeOutJobs = new ArrayList<Job>();
