@@ -15,6 +15,9 @@
  */
 package net.sf.jailer.progress;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.sf.jailer.datamodel.ModelElement;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CancellationException;
@@ -25,53 +28,53 @@ import net.sf.jailer.util.CancellationException;
  * @author Ralf Wisser
  */
 public class ProgressListenerRegistry {
-	
-	/**
-	 * Sets the {@link ProgressListener} for current thread.
-	 * 
-	 * @param theProgressListener to set
-	 */
-	public static synchronized void setProgressListener(ProgressListener theProgressListener) {
-		progressListener.set(theProgressListener);
-	}
+
+	private List<ProgressListener> progressListeners = new ArrayList<ProgressListener>();
 
 	/**
-	 * Gets the {@link ProgressListener} for current thread.
+	 * Adds a {@link ProgressListener}.
 	 * 
-	 * @return the progressListener
+	 * @param theProgressListener
+	 *            to add
 	 */
-	public static synchronized ProgressListener getProgressListener() {
-		ProgressListener theProgressListener = progressListener.get();
-		if (theProgressListener == null) {
-			return NULL_PROGRESS_LISTENER;
-		}
-		return theProgressListener;
+	public synchronized void addProgressListener(ProgressListener theProgressListener) {
+		progressListeners.add(theProgressListener);
 	}
 
-	/**
-	 * Holds {@link ProgressListener}.
-	 */
-	private static InheritableThreadLocal<ProgressListener> progressListener = new InheritableThreadLocal<ProgressListener>();
-	
-	private static ProgressListener NULL_PROGRESS_LISTENER = new ProgressListener() {
-		@Override
-		public void collectionJobEnqueued(int day, ModelElement association) {
+	public synchronized void fireCollectionJobEnqueued(int day, ModelElement modelElement) {
+		for (ProgressListener listener : progressListeners) {
+			listener.collectionJobEnqueued(day, modelElement);
 		}
-		@Override
-		public void collectionJobStarted(int day, ModelElement modelElement) {
+	}
+
+	public synchronized void fireCollectionJobStarted(int day, ModelElement modelElement) {
+		for (ProgressListener listener : progressListeners) {
+			listener.collectionJobStarted(day, modelElement);
 		}
-		@Override
-		public void collected(int day, ModelElement association, long numberOfRows) {
+	}
+
+	public synchronized void fireCollected(int day, ModelElement modelElement, long numberOfRows) {
+		for (ProgressListener listener : progressListeners) {
+			listener.collected(day, modelElement, numberOfRows);
 		}
-		@Override
-		public void exported(Table table, long rc) {
+	}
+
+	public synchronized void fireExported(Table table, long rc) {
+		for (ProgressListener listener : progressListeners) {
+			listener.exported(table, rc);
 		}
-		@Override
-		public void newStage(String stage, boolean isErrorStage, boolean isFinalStage) {
+	}
+
+	public synchronized void fireNewStage(String stage, boolean isErrorStage, boolean isFinalStage) {
+		for (ProgressListener listener : progressListeners) {
+			listener.newStage(stage, isErrorStage, isFinalStage);
 		}
-		@Override
-		public void prepareExport() throws CancellationException {
+	}
+
+	public synchronized void firePrepareExport() throws CancellationException {
+		for (ProgressListener listener : progressListeners) {
+			listener.prepareExport();
 		}
-	};
-	
+	}
+
 }

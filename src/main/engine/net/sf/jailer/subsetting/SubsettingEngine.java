@@ -83,7 +83,6 @@ import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
 import net.sf.jailer.importfilter.ImportFilterManager;
 import net.sf.jailer.liquibase.LiquibaseXMLTransformer;
 import net.sf.jailer.progress.ProgressListener;
-import net.sf.jailer.progress.ProgressListenerRegistry;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CycleFinder;
@@ -107,6 +106,8 @@ public class SubsettingEngine {
 	 */
 	public SubsettingEngine(ExecutionContext executionContext) {
 		this.executionContext = executionContext;
+		this.collectedRowsCounter = new CollectedRowsCounter();
+		this.executionContext.getProgressListenerRegistry().addProgressListener(collectedRowsCounter);
 		jobManager = new JobManager(executionContext.getNumberOfThreads());
 	}
 
@@ -124,6 +125,8 @@ public class SubsettingEngine {
 	 * The execution context.
 	 */
 	private final ExecutionContext executionContext;
+	
+	private final CollectedRowsCounter collectedRowsCounter;
 	
 	/**
 	 * The job-manager to be used for concurrent execution of jobs.
@@ -190,10 +193,10 @@ public class SubsettingEngine {
 		entityGraph.setAge(today + 1);
 		Map<Table, Collection<Association>> progress = new HashMap<Table, Collection<Association>>();
 		if (!skipRoot) {
-			ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today, table);
-			ProgressListenerRegistry.getProgressListener().collectionJobStarted(today, table);
+			executionContext.getProgressListenerRegistry().fireCollectionJobEnqueued(today, table);
+			executionContext.getProgressListenerRegistry().fireCollectionJobStarted(today, table);
 			long rc = entityGraph.addEntities(table, condition, today);
-			ProgressListenerRegistry.getProgressListener().collected(today, table, rc);
+			executionContext.getProgressListenerRegistry().fireCollected(today, table, rc);
 			if (rc > 0) {
 				progress.put(table, new ArrayList<Association>());
 			}
@@ -216,16 +219,12 @@ public class SubsettingEngine {
 		_log.info("exported " + datamodel.getDisplayName(table) + " Where " + condition.replace('\n', ' ').replace('\r', ' '));
 		_log.info("total progress: " + asString(totalProgress));
 		_log.info("export statistic:");
-		boolean firstLine = true;
-		for (String line : entityGraph.getStatistics(datamodel, new HashSet<Table>())) {
-			String l = (firstLine ? "Exported Rows:     " : "    ") + line;
-			_log.info(l);
-			appendCommentHeader(l);
-			if (firstLine) {
-				appendCommentHeader("");
-			}
-			firstLine = false;
+
+		for (String line: collectedRowsCounter.createStatistic(false, datamodel)) {
+			appendCommentHeader(line);
+			_log.info(line);
 		}
+		
 		appendCommentHeader("");
 		boolean isFiltered = false;
 		for (Table t : new TreeSet<Table>(totalProgress)) {
@@ -291,13 +290,13 @@ public class SubsettingEngine {
 				@Override
 				public void run() throws SQLException {
 					int today = entityGraph.getAge();
-					ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today, table);
-					ProgressListenerRegistry.getProgressListener().collectionJobStarted(today, table);
+					executionContext.getProgressListenerRegistry().fireCollectionJobEnqueued(today, table);
+					executionContext.getProgressListenerRegistry().fireCollectionJobStarted(today, table);
 					long rc = entityGraph.addEntities(table, condition.length() > 0? condition : "1=1", today);
 					if (rc > 0) {
 						progress.add(table);
 					}
-					ProgressListenerRegistry.getProgressListener().collected(today, table, rc);
+					executionContext.getProgressListenerRegistry().fireCollected(today, table, rc);
 				}
 			});
 		}
@@ -340,7 +339,7 @@ public class SubsettingEngine {
 				
 				String jc = association.getJoinCondition();
 				if (jc != null) {
-					ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today, association);
+					executionContext.getProgressListenerRegistry().fireCollectionJobEnqueued(today, association);
 				}
 				JobManager.Job job = new JobManager.Job() {
 					public void run() throws SQLException {
@@ -348,9 +347,9 @@ public class SubsettingEngine {
 						if (association.getJoinCondition() != null) {
 							_log.info("resolving " + datamodel.getDisplayName(table) + " -> " + association.toString(0, true) + "...");
 						}
-						ProgressListenerRegistry.getProgressListener().collectionJobStarted(today, association);
+						executionContext.getProgressListenerRegistry().fireCollectionJobStarted(today, association);
 						long rc = entityGraph.resolveAssociation(table, association, today);
-						ProgressListenerRegistry.getProgressListener().collected(today, association, rc);
+						executionContext.getProgressListenerRegistry().fireCollected(today, association, rc);
 						if (rc >= 0) {
 							_log.info(rc + " entities found resolving " + datamodel.getDisplayName(table) + " -> " + association.toString(0, true));
 						}
@@ -618,7 +617,7 @@ public class SubsettingEngine {
 		Session targetSession = entityGraph.getTargetSession();
 		entityGraph.fillAndWriteMappingTables(jobManager, result, executionContext.getNumberOfEntities(), targetSession, targetDBMSConfiguration(targetSession), session.dbms);
 
-		ProgressListenerRegistry.getProgressListener().newStage(stage, false, false);
+		executionContext.getProgressListenerRegistry().fireNewStage(stage, false, false);
 		
 		long rest = 0;
 		Set<Table> dependentTables = null;
@@ -798,7 +797,7 @@ public class SubsettingEngine {
 			try {
 				// try to get a more sophisticated error message
 				_log.info("starting cycle analysis...");
-				ProgressListenerRegistry.getProgressListener().newStage("cycle error, analysing...", true, false);
+				executionContext.getProgressListenerRegistry().fireNewStage("cycle error, analysing...", true, false);
 				String sMsg = msgTitel + "Paths:\n";
 				int i = 0;
 				for (CycleFinder.Path path: CycleFinder.findCycle(datamodel, cycle)) {
@@ -1373,7 +1372,7 @@ public class SubsettingEngine {
 		
 		try {
 			runstats(false);
-			ProgressListenerRegistry.getProgressListener().newStage("collecting rows", false, false);
+			executionContext.getProgressListenerRegistry().fireNewStage("collecting rows", false, false);
 			Set<Table> completedTables = new HashSet<Table>();
 			Set<Table> progress = exportSubjects(extractionModel, completedTables);
 			entityGraph.setBirthdayOfSubject(entityGraph.getAge());
@@ -1382,7 +1381,7 @@ public class SubsettingEngine {
 			subjects.add(extractionModel.subject);
 	
 			if (explain) {
-				ProgressListenerRegistry.getProgressListener().newStage("generating explain-log", false, false);
+				executionContext.getProgressListenerRegistry().fireNewStage("generating explain-log", false, false);
 				ExplainTool.explain(entityGraph, session, executionContext);
 			}
 	
@@ -1394,7 +1393,7 @@ public class SubsettingEngine {
 			}
 
 			if (scriptFile != null) {
-				ProgressListenerRegistry.getProgressListener().prepareExport();
+				executionContext.getProgressListenerRegistry().firePrepareExport();
 				
 				setEntityGraph(entityGraph);
 				if (ScriptFormat.XML.equals(scriptFormat)) {
@@ -1406,8 +1405,8 @@ public class SubsettingEngine {
 			entityGraph.delete();
 			
 			if (deleteScriptFileName != null) {
-				ProgressListenerRegistry.getProgressListener().newStage("delete", false, false);
-				ProgressListenerRegistry.getProgressListener().newStage("delete-reduction", false, false);
+				executionContext.getProgressListenerRegistry().fireNewStage("delete", false, false);
+				executionContext.getProgressListenerRegistry().fireNewStage("delete-reduction", false, false);
 				setEntityGraph(exportedEntities);
 				deleteEntities(subjects, totalProgress, session);
 				datamodel.transpose();
@@ -1434,6 +1433,7 @@ public class SubsettingEngine {
 				_log.info("cleaned up");
 				entityGraph.close();
 				shutDown();
+				executionContext.getProgressListenerRegistry().fireNewStage("cancelled", true, true);
 			} catch (Throwable t) {
 				_log.warn(t.getMessage());
 			}
@@ -1537,18 +1537,18 @@ public class SubsettingEngine {
 		}
 
 		int today = 1;
-		ProgressListenerRegistry.getProgressListener().prepareExport();
+		executionContext.getProgressListenerRegistry().firePrepareExport();
 
 		// remove tabu entities
 		for (Table tabuTable: tabuTables) {
-			ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today, tabuTable);
+			executionContext.getProgressListenerRegistry().fireCollectionJobEnqueued(today, tabuTable);
 		}
 				
 		// remove tabu entities
 		for (Table tabuTable : tabuTables) {
-			ProgressListenerRegistry.getProgressListener().collectionJobStarted(today, tabuTable);
+			executionContext.getProgressListenerRegistry().fireCollectionJobStarted(today, tabuTable);
 			long rc = entityGraph.deleteEntities(tabuTable);
-			ProgressListenerRegistry.getProgressListener().collected(today, tabuTable, rc);
+			executionContext.getProgressListenerRegistry().fireCollected(today, tabuTable, rc);
 			_log.info("excluded " + rc + " entities from " + datamodel.getDisplayName(tabuTable) + " (tabu)");
 			allTables.remove(tabuTable);
 		}
@@ -1582,16 +1582,16 @@ public class SubsettingEngine {
 						final boolean isFirstStep = firstStep;
 						final int finalToday = today;
 						if (!isFirstStep) {
-							ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today, a.reversalAssociation);
+							executionContext.getProgressListenerRegistry().fireCollectionJobEnqueued(today, a.reversalAssociation);
 						}
 						jobs.add(new JobManager.Job() {
 							public void run() throws SQLException {
 								if (!isFirstStep) {
-									ProgressListenerRegistry.getProgressListener().collectionJobStarted(finalToday, a.reversalAssociation);
+									executionContext.getProgressListenerRegistry().fireCollectionJobStarted(finalToday, a.reversalAssociation);
 								}
 								long rc = entityGraph.removeAssociatedDestinations(a.reversalAssociation, !isFirstStep);
 								if (!isFirstStep) {
-									ProgressListenerRegistry.getProgressListener().collected(finalToday, a.reversalAssociation, rc);
+									executionContext.getProgressListenerRegistry().fireCollected(finalToday, a.reversalAssociation, rc);
 								} else if (rc > 0) {
 									roots.add(a.destination);
 									rootAssocs.put(a, rc);
@@ -1615,13 +1615,13 @@ public class SubsettingEngine {
 			if (firstStep) {
 				for (Table table: roots) {
 					if (!tabuTables.contains(table)) {
-						ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today - 1, table);
+						executionContext.getProgressListenerRegistry().fireCollectionJobEnqueued(today - 1, table);
 					}
 				}
 				for (Entry<Association, Long> e: rootAssocs.entrySet()) {
-					ProgressListenerRegistry.getProgressListener().collectionJobEnqueued(today, e.getKey().reversalAssociation);
-					ProgressListenerRegistry.getProgressListener().collectionJobStarted(today, e.getKey().reversalAssociation);
-					ProgressListenerRegistry.getProgressListener().collected(today, e.getKey().reversalAssociation, e.getValue());
+					executionContext.getProgressListenerRegistry().fireCollectionJobEnqueued(today, e.getKey().reversalAssociation);
+					executionContext.getProgressListenerRegistry().fireCollectionJobStarted(today, e.getKey().reversalAssociation);
+					executionContext.getProgressListenerRegistry().fireCollected(today, e.getKey().reversalAssociation, e.getValue());
 									
 				}
 			}
@@ -1631,34 +1631,14 @@ public class SubsettingEngine {
 		}
 
 		_log.info("entities to delete:");
+		
 		appendCommentHeader("");
-		boolean firstLine = true;
-		for (String line : entityGraph.getStatistics(datamodel, removedEntities.keySet())) {
-			if (!firstLine) {
-				String tableName = line.split(" ")[0];
-				Long re = removedEntities.get(datamodel.getTable(tableName));
-				
-				if (re == null) {
-					for (Entry<Table, Long> e: removedEntities.entrySet()) {
-						if (Quoting.staticUnquote(e.getKey().getName()).equals(tableName)) {
-							re = e.getValue();
-							break;
-						}
-					}
-				}
-				
-				if (re != null && re != 0L) {
-					line += " (-" + re + ")";
-				}
-			}
+		
+		for (String line: collectedRowsCounter.createStatistic(true, datamodel)) {
+			appendCommentHeader(line);
 			_log.info(line);
-			String l = (firstLine ? "Deleted Entities: " : "     ") + line;
-			appendCommentHeader(l);
-			if (firstLine) {
-				appendCommentHeader("");
-			}
-			firstLine = false;
 		}
+		
 		appendCommentHeader("");
 		for (Runnable rf: resetFilters) {
 			rf.run();

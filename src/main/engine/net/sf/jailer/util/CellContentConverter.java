@@ -28,8 +28,6 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -44,16 +42,6 @@ import net.sf.jailer.database.Session;
  * @author Ralf Wisser
  */
 public class CellContentConverter {
-	
-	/**
-	 * Default time stamp format (for 'to_timestamp' function).
-	 */
-	private static final DateFormat defaultTimestampFormat = new SimpleDateFormat("yyyy-MM-dd HH.mm.ss");
-
-	/**
-	 * Default time stamp format (for 'to_date' function).
-	 */
-	private static final DateFormat defaultDateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
 	/**
 	 * All hex digits.
@@ -67,7 +55,6 @@ public class CellContentConverter {
 	private final DBMS configuration;
 	private final DBMS targetConfiguration;
 	private Method pgObjectGetType;
-	private final char NANO_SEP = '.';
 	
 	/**
 	 * Constructor.
@@ -95,33 +82,25 @@ public class CellContentConverter {
 		}
 
 		if (content instanceof java.sql.Date) {
-			String suffix = DBMS.POSTGRESQL.equals(targetConfiguration)? "::date" : "";
-			if (targetConfiguration.isUseToTimestampFunction()) {
-				String format;
-				synchronized(defaultDateFormat) {
-					format = defaultDateFormat.format((Date) content);
-				   }
-				return "to_date('" + format + "', 'YYYY-MM-DD')" + suffix;
+			if (targetConfiguration.getDatePattern() != null) {
+				synchronized (targetConfiguration.getDatePattern()) {
+					return targetConfiguration.createDateFormat()
+							.format((Date) content);
+				}
 			}
-			return "'" + content + "'" + suffix;
+			return "'" + content + "'";
 		}
 		if (content instanceof java.sql.Timestamp) {
-			String suffix = DBMS.POSTGRESQL.equals(targetConfiguration)? "::timestamp" : "";
-			if (targetConfiguration.isUseToTimestampFunction()) {
-				String format;
-				String nanoFormat;
-				synchronized(defaultTimestampFormat) {
-					format = defaultTimestampFormat.format((Date) content);
-					String nanoString = getNanoString((Timestamp) content, targetConfiguration.isAppendNanosToTimestamp(), NANO_SEP);
-					nanoFormat = "FF" + (nanoString.length() - 1);
-					format += nanoString;
-				}
-				return "to_timestamp('" + format + "', 'YYYY-MM-DD HH24.MI.SS." + nanoFormat + "')" + suffix;
-			}
+			String nano = getNanoString((Timestamp) content, true);
 			if (targetConfiguration.getTimestampPattern() != null) {
-				return targetConfiguration.getTimestampPattern().replace("%s", "'" + content + "'") + suffix;
+				synchronized (targetConfiguration.getTimestampPattern()) {
+					return targetConfiguration.createTimestampFormat()
+							.format(content)
+							.replace("${NANOFORMAT}", "FF" + (nano.length()))
+							.replace("${NANO}", nano);
+				}
 			}
-			return "'" + content + "'" + suffix;
+			return "'" + content + "'";
 		}
 		if (content instanceof NCharWrapper) {
 			String prefix = targetConfiguration.getNcharPrefix();
@@ -183,7 +162,7 @@ public class CellContentConverter {
 	 * @param timestamp the timestamp
 	 * @param nanoSep 
 	 */
-	private static String getNanoString(Timestamp timestamp, boolean full, char nanoSep) {
+	private static String getNanoString(Timestamp timestamp, boolean full) {
 		String zeros = "000000000";
 		int nanos = timestamp.getNanos();
 		String nanosString = Integer.toString(nanos);
@@ -199,7 +178,7 @@ public class CellContentConverter {
 			truncIndex--;
 		}
 	
-		nanosString = nanoSep + new String(nanosChar, 0, truncIndex + 1);
+		nanosString = new String(nanosChar, 0, truncIndex + 1);
 		
 		if (!full) {
 			if (nanosString.length() > 4) {

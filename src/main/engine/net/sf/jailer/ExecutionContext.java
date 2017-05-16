@@ -24,6 +24,7 @@ import java.util.TreeMap;
 
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.WorkingTableScope;
+import net.sf.jailer.progress.ProgressListenerRegistry;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.util.CsvFile;
 
@@ -75,6 +76,7 @@ public class ExecutionContext {
 		this.importFilterMappingTableSchema = other.importFilterMappingTableSchema;
 		this.scope = other.scope;
 		this.rawparameters = other.rawparameters;
+		this.progressListenerRegistry = other.progressListenerRegistry;
 	}
 
 	/**
@@ -750,6 +752,17 @@ public class ExecutionContext {
 	private WorkingTableScope scope = WorkingTableScope.GLOBAL;
 
 	private String rawparameters;
+	
+	private ProgressListenerRegistry progressListenerRegistry = new ProgressListenerRegistry();
+
+	/**
+	 * Gets the {@link ProgressListenerRegistry}.
+	 * 
+	 * @return the {@link ProgressListenerRegistry}
+	 */
+	public ProgressListenerRegistry getProgressListenerRegistry() {
+		return progressListenerRegistry;
+	}
 
 	private void copyCommandLineFields(CommandLine commandLine) {
 		uTF8 = commandLine.uTF8;

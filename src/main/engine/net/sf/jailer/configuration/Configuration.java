@@ -235,4 +235,8 @@ public class Configuration {
 		this.columnsPerIFMTable = columnsPerIFMTable;
 	}
 
+	static {
+		DBMS.values(); // trigger static init
+	}
+
 }

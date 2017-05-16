@@ -1,4 +1,5 @@
 7.0.1
+  - MS SQL Server datetime issue has been fixed. (https://sourceforge.net/p/jailer/discussion/700499/thread/5773eb1c/ )
   - SQLite fk detection bug has been fixed.
 
 7.0

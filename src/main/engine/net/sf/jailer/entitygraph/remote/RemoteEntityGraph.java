@@ -38,7 +38,6 @@ import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
-import net.sf.jailer.progress.ProgressListenerRegistry;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.Quoting;
@@ -497,7 +496,7 @@ public class RemoteEntityGraph extends EntityGraph {
 				" Where E.birthday=0 and E.r_entitygraph=" + graphID + " and E.type=" + typeName(table) + "" +
 				orderBy,
 				reader);
-		ProgressListenerRegistry.getProgressListener().exported(table, rc);
+		executionContext.getProgressListenerRegistry().fireExported(table, rc);
 	}
 	
 	/**
@@ -534,7 +533,7 @@ public class RemoteEntityGraph extends EntityGraph {
 				sqlQuery + (orderByPK? orderBy : ""),
 				reader,
 				(!orderByPK? sqlQuery : null), null, 0);
-		ProgressListenerRegistry.getProgressListener().exported(table, rc);
+		executionContext.getProgressListenerRegistry().fireExported(table, rc);
 	}
 	
 	/**
@@ -569,7 +568,7 @@ public class RemoteEntityGraph extends EntityGraph {
 	public void readEntities(Table table, boolean orderByPK) throws SQLException {
 		Session.ResultSetReader reader = getTransformerFactory().create(table);
 		long rc = readEntities(table, orderByPK, reader);
-		ProgressListenerRegistry.getProgressListener().exported(table, rc);
+		executionContext.getProgressListenerRegistry().fireExported(table, rc);
 	}
 
 	/**
@@ -877,7 +876,7 @@ public class RemoteEntityGraph extends EntityGraph {
 				 " and D.r_entitygraph=" + graphID;
 		}
 		long rc = session.executeQuery(select, reader);
-		ProgressListenerRegistry.getProgressListener().exported(table, rc);
+		executionContext.getProgressListenerRegistry().fireExported(table, rc);
 	}
 	
 	/**
@@ -1071,13 +1070,6 @@ public class RemoteEntityGraph extends EntityGraph {
 			}
 		}
 		return sb.toString();
-	}
-	
-	/**
-	 * Gets some statistical information.
-	 */
-	public List<String> getStatistics(final DataModel dataModel, Set<Table> tables) throws SQLException {
-		return getStatistics(session, dataModel, tables);
 	}
 
 	/**

@@ -322,7 +322,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 				rc = insertRows(table, sql);
 			}
 		}
-		ProgressListenerRegistry.getProgressListener().exported(table, rc);
+		executionContext.getProgressListenerRegistry().fireExported(table, rc);
 	}
 
 	/**
