@@ -144,7 +144,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 	/**
 	 * Creates new form AdditionalSubjectsDialog
 	 */
-	public AdditionalSubjectsDialog(java.awt.Frame parent, ExtractionModel extractionModel, Table subject, String subjectCond) {
+	public AdditionalSubjectsDialog(java.awt.Frame parent, final ExtractionModel extractionModel, Table subject, String subjectCond) {
 		super(parent, true);
 		this.parent = parent;
 		this.extractionModel = extractionModel;
@@ -179,8 +179,14 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 			}
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
 				ConditionEditor conditionEditor = new ConditionEditor(AdditionalSubjectsDialog.this.parent, parametersGetter);
-				conditionEditor.setTitle(detailsCondtition.getText().trim());
-				String cond = conditionEditor.edit(detailsCondtition.getText(), null, null, null, null, null, null, false);
+				Object item = detailsComboBox.getSelectedItem();
+				conditionEditor.setTitle("");
+				Table table = null;
+				if (item != null) {
+					table = extractionModel.dataModel.getTableByDisplayName(item.toString());
+					conditionEditor.setTitle(item.toString());
+				}
+				String cond = conditionEditor.edit(detailsCondtition.getText(), "Subject", "T", table, null, null, null, false);
 				if (cond != null) {
 					if (!detailsCondtition.getText().equals(ConditionEditor.toSingleLine(cond))) {
 						detailsCondtition.setText(ConditionEditor.toSingleLine(cond));
@@ -206,7 +212,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 		UIUtil.fit(this);
 		UIUtil.initPeer();
 	}
-	
+
 	public boolean edit() {
 		ok = false;
 		setVisible(true);

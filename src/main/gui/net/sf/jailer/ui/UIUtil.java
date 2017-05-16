@@ -70,6 +70,7 @@ import net.sf.jailer.Jailer;
 import net.sf.jailer.JailerVersion;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.SqlException;
+import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.progress.ProgressListener;
 import net.sf.jailer.ui.scrollmenu.JScrollC2PopupMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
@@ -594,6 +595,9 @@ public class UIUtil {
 	 *            the exception
 	 */
 	public static void showException(Component parent, String title, Throwable t, Object context) {
+		if (t instanceof DataModel.NoPrimaryKeyException) {
+			context = EXCEPTION_CONTEXT_USER_ERROR;
+		}
 		t.printStackTrace();
 		if (!(t instanceof ClassNotFoundException)) {
 			while (t.getCause() != null && t != t.getCause() && !(t instanceof SqlException)) {
