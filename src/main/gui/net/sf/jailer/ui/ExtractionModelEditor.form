@@ -70,7 +70,6 @@
                   <Properties>
                     <Property name="orientation" type="int" value="0"/>
                     <Property name="resizeWeight" type="double" value="1.0"/>
-                    <Property name="toolTipText" type="java.lang.String" value=""/>
                     <Property name="oneTouchExpandable" type="boolean" value="true"/>
                   </Properties>
                   <Constraints>
@@ -410,7 +409,6 @@
                         <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
                           <Color blue="7d" green="52" red="56" type="rgb"/>
                         </Property>
-                        <Property name="toolTipText" type="java.lang.String" value=""/>
                       </Properties>
                       <Constraints>
                         <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout" value="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout$BorderConstraintsDescription">

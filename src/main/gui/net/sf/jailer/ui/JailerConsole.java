@@ -158,7 +158,6 @@ public class JailerConsole {
 							}
 						}).start();
 						dialog.setTitle("Jailer Console - cancelled");
-						ProgressListenerRegistry.getProgressListener().newStage("cancelled", true, true);
 						getCancelButton().setEnabled(false);
 					}
 				}

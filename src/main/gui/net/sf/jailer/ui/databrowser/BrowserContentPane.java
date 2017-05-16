@@ -538,7 +538,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		rowsTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
 		rowsTableScrollPane.setViewportView(rowsTable);
 
-		setAndCondition(condition, true);
+		setAndCondition(ConditionEditor.toSingleLine(condition), true);
 		from.setText(table == null? "" : this.dataModel.getDisplayName(table));
 		adjustGui();
 		rowsTable.setShowGrid(false);
@@ -687,7 +687,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						String cond = andConditionEditor.edit(getAndConditionText(), "Table", "A", table, null, null, null, false);
 						if (cond != null) {
 							if (!getAndConditionText().equals(ConditionEditor.toSingleLine(cond))) {
-								setAndCondition(cond, true);
+								setAndCondition(ConditionEditor.toSingleLine(cond), true);
 								loadButton.grabFocus();
 								reloadRows();
 							}
@@ -878,9 +878,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	void setAndCondition(String cond, boolean historize) {
 		try {
 			suppessReloadOnAndConditionAction = true;
-			andCondition.setSelectedItem(ConditionEditor.toSingleLine(cond));
+			andCondition.setSelectedItem(cond);
 			if (historize) {
-				historizeAndCondition(ConditionEditor.toSingleLine(cond));
+				historizeAndCondition(cond);
 			}
 		} finally {
 			suppessReloadOnAndConditionAction = false;
