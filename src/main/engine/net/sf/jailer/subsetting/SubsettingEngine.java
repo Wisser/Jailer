@@ -1343,13 +1343,17 @@ public class SubsettingEngine {
 		}
 		appendCommentHeader("");
 
-		if (session.dbms.getRowidName() == null) {
-			Set<Table> toCheck = new HashSet<Table>();
-			if (extractionModel.additionalSubjects != null) {
-				for (AdditionalSubject as: extractionModel.additionalSubjects) {
-					toCheck.add(as.getSubject());
+		Set<Table> toCheck = new HashSet<Table>();
+		boolean insertOnly = Boolean.FALSE.equals(extractionModel.subject.getUpsert()) && !executionContext.getUpsertOnly();
+		if (extractionModel.additionalSubjects != null) {
+			for (AdditionalSubject as: extractionModel.additionalSubjects) {
+				toCheck.add(as.getSubject());
+				if (Boolean.TRUE.equals(as.getSubject().getUpsert())) {
+					insertOnly = false;
 				}
 			}
+		}
+		if (session.dbms.getRowidName() == null || !insertOnly || deleteScriptFileName != null) {
 			toCheck.add(extractionModel.subject);
 			extractionModel.dataModel.checkForPrimaryKey(toCheck, deleteScriptFileName != null);
 		}

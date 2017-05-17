@@ -801,7 +801,7 @@ public class UIUtil {
 
 	public static void initSyntaxKit() {
 		try {
-				DefaultSyntaxKit.initKit();
+			DefaultSyntaxKit.initKit();
 		} catch (Throwable e) {
 			e.printStackTrace();
 		}
