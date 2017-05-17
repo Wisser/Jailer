@@ -67,6 +67,13 @@ Section "Start Menu Shortcuts"
   
 SectionEnd
 
+Section "Desktop Shortcuts"
+
+  CreateShortcut "$DESKTOP\Jailer ${Version}.lnk" "$INSTDIR\Jailer.exe" 
+  CreateShortcut "$DESKTOP\Jailer ${Version} Data Browser.lnk" "$INSTDIR\JailerDataBrowser.exe" 
+  
+SectionEnd
+
 ;--------------------------------
 
 ; Uninstaller
@@ -84,7 +91,10 @@ Section "Uninstall"
   ; Remove shortcuts, if any
   Delete "$SMPROGRAMS\Jailer\*.*"
   Delete "$INSTDIR\*.*"
-  
+
+  Delete "$DESKTOP\Jailer ${Version}.lnk"
+  Delete "$DESKTOP\Jailer ${Version} Data Browser.lnk"
+
   ; Remove directories used
   RMDir "$SMPROGRAMS\Jailer"
   RMDir "$INSTDIR"
