@@ -61,7 +61,7 @@ Section "Start Menu Shortcuts"
   CreateDirectory "$SMPROGRAMS\Jailer"
   Delete "$SMPROGRAMS\Jailer\*.*"
   CreateShortcut "$SMPROGRAMS\Jailer\Jailer ${Version}  .lnk" "$INSTDIR\Jailer.exe" 
-  CreateShortcut "$SMPROGRAMS\Jailer\Jailer ${Version} Data Browser.lnk" "$INSTDIR\jailerDataBrowser.exe" 
+  CreateShortcut "$SMPROGRAMS\Jailer\Jailer ${Version} Data Browser.lnk" "$INSTDIR\JailerDataBrowser.exe" 
   CreateShortcut "$SMPROGRAMS\Jailer\Work Folder.lnk" "$INSTDIR\" 
   CreateShortcut "$SMPROGRAMS\Jailer\Uninstall.lnk" "$INSTDIR\uninstall.exe" 
   
