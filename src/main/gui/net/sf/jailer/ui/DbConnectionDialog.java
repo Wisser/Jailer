@@ -915,6 +915,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}
 
 	private boolean isAssignedToDataModel(int row) {
+		if (row >= connectionList.size()) {
+			return false;
+		}
 		String rowFN = connectionList.get(row).dataModelFolder;
 		String fn = currentModelSubfolder;
 		return fn == null && rowFN == null || (fn != null && fn.equals(rowFN));
