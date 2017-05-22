@@ -196,7 +196,7 @@ public class MetaDataCache {
 			return metaDataCache;
 		} catch (SQLException e) {
 			_log.info(e.getMessage());
-			return null;
+			return new MetaDataCache();
 		}
 	}
 
