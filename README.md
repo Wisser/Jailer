@@ -33,7 +33,6 @@ DbUnit datasets, hierarchically structured XML, and topologically sorted SQL-DML
 
 
 # Installation
-============
 
 Unzip the file "jailer_<N>.zip".
 
