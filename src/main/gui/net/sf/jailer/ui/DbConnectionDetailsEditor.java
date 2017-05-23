@@ -17,6 +17,7 @@ package net.sf.jailer.ui;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.io.File;
 import java.net.URI;
 
 import javax.swing.Icon;
@@ -78,7 +79,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		loadButton1.addActionListener(new java.awt.event.ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String fn = UIUtil.choseFile(null, ".", "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
+				String fn = UIUtil.choseFile(null, new File(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
 				if (fn != null) {
 					jar1.setText(fn);
 				}
@@ -87,7 +88,7 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		loadButton2.addActionListener(new java.awt.event.ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String fn = UIUtil.choseFile(null, ".", "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
+				String fn = UIUtil.choseFile(null, new File(".").getAbsolutePath(), "Jdbc Driver", ".jar", DbConnectionDetailsEditor.this, true, true, false);
 				if (fn != null) {
 					jar2.setText(fn);
 				}

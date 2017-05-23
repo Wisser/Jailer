@@ -276,7 +276,7 @@ public class Jailer {
 		if (renderer == null) {
 			throw new RuntimeException("no renderer found");
 		}
-		renderer.render(dataModel, executionContext, arguments.subList(1, arguments.size()));
+		renderer.render(dataModel, arguments.subList(1, arguments.size()));
 	}
 
 	/**

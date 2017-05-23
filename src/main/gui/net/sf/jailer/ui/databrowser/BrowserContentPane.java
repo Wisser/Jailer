@@ -116,6 +116,7 @@ import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.DbConnectionDialog;
+import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
@@ -1430,7 +1431,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			subjectCondition = SqlUtil.replaceAliases(subjectCondition, "T", "T");
 			
 			for (int i = 1; ; ++i) {
-				file = "extractionmodel" + File.separator + "by-example";
+				file = Environment.newFile("extractionmodel" + File.separator + "by-example").getPath();
 				newFile = new File(file);
 				newFile.mkdirs();
 				file += File.separator + "SbE-" + (dataModel.getDisplayName(stable).replaceAll("[\"'\\[\\]]", "")) + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".csv";

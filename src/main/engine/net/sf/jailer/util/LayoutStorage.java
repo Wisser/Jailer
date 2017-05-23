@@ -29,11 +29,6 @@ import java.util.Map;
 public class LayoutStorage {
 	
 	/**
-	 * Folder holding global layouts.
-	 */
-	private static final String GLOBAL_STORAGE = ".layout";
-	
-	/**
 	 * Sets position.
 	 * 
 	 * @param rootTable root table
@@ -106,27 +101,29 @@ public class LayoutStorage {
 	 * @return file to store global layout in, <code>null</code> if the file cannot be created
 	 */
 	private static File getGlobalStorageFile(String rootTable) {
-		try {
-			File dir = new File(GLOBAL_STORAGE);
-			if (!dir.exists()) {
-				if (!dir.mkdir()) {
-					return null;
-				}
-			}
-			String fn = "";
-			for (int i = 0; i < rootTable.length(); ++i) {
-				char c = rootTable.charAt(i);
-				if (Character.isLetterOrDigit(c) || c == '.') {
-					fn += c;
-				}
-			}
-			if (fn.length() > 0) {
-				return new File(dir, fn);
-			}
-			return null;
-		} catch (Exception e) {
-			return null;
-		}
+		// disabled in 5.3
+//		try {
+//			File dir = new File(GLOBAL_STORAGE);
+//			if (!dir.exists()) {
+//				if (!dir.mkdir()) {
+//					return null;
+//				}
+//			}
+//			String fn = "";
+//			for (int i = 0; i < rootTable.length(); ++i) {
+//				char c = rootTable.charAt(i);
+//				if (Character.isLetterOrDigit(c) || c == '.') {
+//					fn += c;
+//				}
+//			}
+//			if (fn.length() > 0) {
+//				return new File(dir, fn);
+//			}
+//			return null;
+//		} catch (Exception e) {
+//			return null;
+//		}
+		return null;
 	}
 	
 	/**

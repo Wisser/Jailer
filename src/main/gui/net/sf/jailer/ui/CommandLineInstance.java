@@ -15,9 +15,11 @@
  */
 package net.sf.jailer.ui;
 
-import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.CommandLineParser;
+import java.io.File;
+
 import net.sf.jailer.CommandLine;
+import net.sf.jailer.CommandLineParser;
+import net.sf.jailer.ExecutionContext;
 
 /**
  * Global (singleton) instance of the {@link ExecutionContext}.
@@ -59,6 +61,9 @@ public class CommandLineInstance {
 	 */
 	public static synchronized void init(String[] args) throws Exception {
 		commandLine = CommandLineParser.parse(args, true);
+		if (!new File(commandLine.datamodelFolder).isAbsolute()) {
+			commandLine.datamodelFolder = Environment.newFile(commandLine.datamodelFolder).getPath();
+		}
 		executionContext = new ExecutionContext(commandLine);
 	}
 

@@ -67,7 +67,7 @@ public class FileView extends javax.swing.JDialog {
 		try {
 			initialize();
 			setTitle(file);
-			getJTextPane().setText(new PrintUtil().loadFile(file));
+			getJTextPane().setText(new PrintUtil().loadFile(Environment.newFile(file).getPath()));
 			UIUtil.initPeer();
 			setVisible(true);
 		} catch (Throwable t) {
