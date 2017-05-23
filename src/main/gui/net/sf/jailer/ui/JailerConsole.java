@@ -32,7 +32,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextArea;
 
-import net.sf.jailer.progress.ProgressListenerRegistry;
 import net.sf.jailer.util.CancellationHandler;
 
 /**

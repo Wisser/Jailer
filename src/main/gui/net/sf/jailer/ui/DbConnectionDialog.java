@@ -331,7 +331,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 */
 	private void store() {
 		try {
-			File file = new File(CONNECTIONS_FILE);
+			File file = Environment.newFile(CONNECTIONS_FILE);
 			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));
 			out.writeObject(connectionList);
 			out.writeInt(connectionList.indexOf(currentConnection));
@@ -357,9 +357,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		boolean preV4 = true;
 		
 		try {
-			File file = new File(CONNECTIONS_FILE);
+			File file = Environment.newFile(CONNECTIONS_FILE);
 			if (file.exists()) {
-				ObjectInputStream in = new ObjectInputStream(new FileInputStream(CONNECTIONS_FILE));
+				ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
 				List<ConnectionInfo> cis = (List<ConnectionInfo>) in.readObject();
 				int i = in.readInt();
 				try {

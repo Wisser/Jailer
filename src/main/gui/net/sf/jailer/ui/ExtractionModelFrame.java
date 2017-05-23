@@ -904,12 +904,12 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	private void storeOrientation() {
 		try {
 			try {
-				File file = new File(ORIENTATIONSETTING);
+				File file = Environment.newFile(ORIENTATIONSETTING);
 				file.delete();
 			} catch (Exception e) {
 			}
 			try {
-				File setting = new File(ORIENTATIONSETTING);
+				File setting = Environment.newFile(ORIENTATIONSETTING);
 				PrintWriter out = new PrintWriter(setting);
 				out.println(isHorizontalLayout);
 				out.close();
@@ -1007,7 +1007,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		String ts = new SimpleDateFormat("HH-mm-ss-SSS").format(new Date());
 		File newFile;
 		for (int i = 1; ; ++i) {
-			file = "tmp";
+			file = Environment.newFile("tmp").getPath();
 			newFile = new File(file);
 			newFile.mkdirs();
 			file += File.separator + "em" + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".csv";
@@ -1175,7 +1175,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			File file = saveRestrictions();
 			args.add(file.getName());
 			UIUtil.runJailer(this, args, false, true, false, true, null, null /* dbConnectionDialog.getPassword() */, null, null, false, true, false);
-			BrowserLauncher.openURL(table == null? "render/index.html" : ("render/" + HtmlDataModelRenderer.toFileName(table)));
+			BrowserLauncher.openURL(Environment.newFile(table == null? "render/index.html" : ("render/" + HtmlDataModelRenderer.toFileName(table))).getPath());
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
 		}
@@ -1618,6 +1618,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 * @param args the command line arguments
 	 */
 	private static void start(final String args[]) {
+		Environment.init();
+
 		// turn off logging for prefuse library
 		try {
 			Logger.getLogger("prefuse").setLevel(Level.OFF);

@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.InfoBar;
 import net.sf.jailer.ui.UIUtil;
 
@@ -114,7 +115,7 @@ public class TipDialog extends javax.swing.JDialog {
 			return;
 		}
 		toldTips.add(tipId);
-		File dtma = new File(".dtma-" + tipId);
+		File dtma = Environment.newFile(".dtma-" + tipId);
 		if (!dtma.exists()) {
 			TipDialog tipDialog = new TipDialog(parent, tip);
 			tipDialog.setVisible(true);

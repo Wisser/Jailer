@@ -35,6 +35,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.CommandLineInstance;
 import net.sf.jailer.ui.DbConnectionDialog;
+import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.JComboBox;
 
 /**
@@ -241,7 +242,7 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 	 */
 	private static Map<String, Map<String, String>> restore() {
 		try {
-			File file = new File(MAPPINGS_FILE);
+			File file = Environment.newFile(MAPPINGS_FILE);
 			ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
 			@SuppressWarnings("unchecked")
 			Map<String, Map<String, String>> mappings = (Map<String, Map<String, String>>) in.readObject();
@@ -278,7 +279,7 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 	public static void store(Map<String, String> mapping, DbConnectionDialog connectionDialog) {
 		try {
 			Map<String, Map<String, String>> mappings = restore();
-			File file = new File(MAPPINGS_FILE);
+			File file = Environment.newFile(MAPPINGS_FILE);
 			file.delete();
 			mappings.put(connectionDialog.currentConnection.user + "@" + connectionDialog.currentConnection.url, mapping);
 			ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(file));

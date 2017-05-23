@@ -23,6 +23,7 @@ import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
+import java.io.File;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -222,7 +223,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		}
 		initSourceSchemaMapping(dataModel, fields, defaults);
 		
-		theSettings = new Settings(".exportdata.ui", fields);
+		theSettings = new Settings(Environment.newFile(".exportdata.ui").getPath(), fields);
 		
 		theSettings.restore(settingsContext);
 		for (JTextField field: defaults.keySet()) {
@@ -1596,8 +1597,9 @@ public class ExportDialog extends javax.swing.JDialog {
 							} else {
 								UIUtil.showException(this, "Error", new SqlException("Automatic creation of working-tables failed!\n" + hint + "\n\nCause: " + sqlEx.message + "", sqlEx.sqlStatement, null));
 							}
+						} else {
+							UIUtil.showException(this, "Error", e);
 						}
-						UIUtil.showException(this, "Error", e);
 					}
 				}
 			}
@@ -1688,14 +1690,14 @@ public class ExportDialog extends javax.swing.JDialog {
 		if (insert.getText().trim().length() > 0) {
 			args.add(0, "export");
 			args.add("-e");
-			args.add(insert.getText());
+			args.add(toFileName(insert.getText()));
 		} else {
 			args.add(0, "delete");
 		}
 		if (delete.isVisible() && delete.getText().trim().length() > 0) {
 			withDelete = true;
 			args.add("-d");
-			args.add(delete.getText().trim());
+			args.add(toFileName(delete.getText().trim()));
 		}
 		if (explain.isSelected()) {
 			args.add("-explain");
@@ -1829,6 +1831,13 @@ public class ExportDialog extends javax.swing.JDialog {
 				// ignore
 			}
 		}
+	}
+
+	private String toFileName(String f) {
+		if (!new File(f).isAbsolute()) {
+			return Environment.newFile(f).getPath();
+		}
+		return f;
 	}
 
 	private Set<String> getRelevantSchemas(boolean withDelete) {

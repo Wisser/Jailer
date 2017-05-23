@@ -31,7 +31,6 @@ import java.util.Set;
 
 import org.apache.log4j.Logger;
 
-import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
@@ -67,29 +66,6 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	 * The logger.
 	 */
 	private static final Logger _log = Logger.getLogger(HtmlDataModelRenderer.class);
-	
-	/**
-	 * The execution context.
-	 */
-	private ExecutionContext executionContext;
-	
-	/**
-	 * Constructor.
-	 * 
-	 * @param outputDir the directory to put the HTML-render in
-	 * @param maxDepth maximum depth of expansion on table render
-	 */
-	// TODO: remove
-	public HtmlDataModelRenderer(String outputDir, int maxDepth) {
-		this.outputFolder = outputDir;
-		this.maxDepth = maxDepth;
-	}
-	
-	/**
-	 * Constructor.
-	 */
-	public HtmlDataModelRenderer() {
-	}
 
 	/**
 	 * @return the outputDir
@@ -124,9 +100,9 @@ public class HtmlDataModelRenderer implements DataModelRenderer {
 	 * 
 	 * @param dataModel the data-model
 	 */
-	public void render(DataModel dataModel, ExecutionContext executionContext, List<String> restrictionFiles) {
-		this.executionContext = executionContext;
+	public void render(DataModel dataModel, List<String> restrictionFiles) {
 		try {
+			new File(outputFolder).mkdirs();
 			List<Table> tableList = new ArrayList<Table>(dataModel.getTables());
 			Collections.sort(tableList);
 			List<String> tablesColumn = new ArrayList<String>();

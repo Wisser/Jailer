@@ -92,6 +92,7 @@ import net.sf.jailer.ui.DataModelEditor;
 import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.DataModelManagerDialog;
 import net.sf.jailer.ui.DbConnectionDialog;
+import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
 import net.sf.jailer.ui.ImportDialog;
 import net.sf.jailer.ui.UIUtil;
@@ -1370,6 +1371,8 @@ public class DataBrowser extends javax.swing.JFrame {
 	 *            the command line arguments
 	 */
 	private static void start(final String args[]) {
+		Environment.init();
+
 		// turn off logging for prefuse library
 		try {
 			Logger.getLogger("prefuse").setLevel(Level.OFF);

@@ -95,6 +95,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.CommandLineInstance;
 import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.DbConnectionDialog;
+import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.UIUtil;
@@ -2139,7 +2140,7 @@ public abstract class Desktop extends JDesktopPane {
 			if (pFrame == null) {
 				pFrame = this;
 			}
-			String filename = ".tempsession-" + System.currentTimeMillis();
+			String filename = Environment.newFile(".tempsession-" + System.currentTimeMillis()).getPath();
 			storeSession(filename);
 			
 			DataModel newModel = new DataModel(schemamapping, executionContext, false);
@@ -2304,7 +2305,7 @@ public abstract class Desktop extends JDesktopPane {
 			fnProp = currentSessionFileName;
 		}
 
-		File startDir = new File("layout");
+		File startDir = Environment.newFile("layout");
 		Component pFrame = SwingUtilities.getWindowAncestor(this);
 		if (pFrame == null) {
 			pFrame = this;
@@ -2391,7 +2392,7 @@ public abstract class Desktop extends JDesktopPane {
 	 * Restores browser session.
 	 */
 	public void restoreSession(RowBrowser toBeAppended) {
-		File startDir = new File("layout");
+		File startDir = Environment.newFile("layout");
 		Component pFrame = SwingUtilities.getWindowAncestor(this);
 		if (pFrame == null) {
 			pFrame = this;

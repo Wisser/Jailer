@@ -306,7 +306,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private void store() {
 		if (currentModel != null) {
 			try {
-				File file = new File(MODEL_SELECTION_FILE);
+				File file = Environment.newFile(MODEL_SELECTION_FILE);
 				BufferedWriter out = new BufferedWriter(new FileWriter(file));
 				out.write(currentModel + "\n");
 				out.close();
@@ -322,7 +322,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private String restore() {
 		String selection = null;
 		try {
-			File file = new File(MODEL_SELECTION_FILE);
+			File file = Environment.newFile(MODEL_SELECTION_FILE);
 			BufferedReader in = new BufferedReader(new FileReader(file));
 			selection = (String) in.readLine();
 			in.close();

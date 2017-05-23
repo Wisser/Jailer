@@ -119,6 +119,10 @@ public class UIUtil {
 		String newStartDir = restoreCurrentDir(extension);
 		if (newStartDir != null) {
 			startDir = newStartDir;
+		} else {
+			if (!new File(startDir).isAbsolute()) {
+				startDir = Environment.newFile(startDir).getPath();
+			}
 		}
 
 		parent = SwingUtilities.getWindowAncestor(parent);
@@ -197,7 +201,7 @@ public class UIUtil {
 	/**
 	 * File to store current directory of file chooser.
 	 */
-	private final static File cdSettings = new File(".cdsettings");
+	private final static String cdSettingsName = ".cdsettings";
 
 	/**
 	 * Stores current directory of file chooser.
@@ -210,6 +214,7 @@ public class UIUtil {
 	@SuppressWarnings("unchecked")
 	private static void storeCurrentDir(String key, String currentDir) {
 		try {
+			File cdSettings = Environment.newFile(cdSettingsName);
 			Map<String, String> cd = new HashMap<String, String>();
 			if (cdSettings.exists()) {
 				try {
@@ -240,6 +245,7 @@ public class UIUtil {
 	 */
 	@SuppressWarnings("unchecked")
 	private static String restoreCurrentDir(String key) {
+		File cdSettings = Environment.newFile(cdSettingsName);
 		if (cdSettings.exists()) {
 			try {
 				ObjectInputStream in = new ObjectInputStream(new FileInputStream(cdSettings));
