@@ -1,4 +1,4 @@
-!define Version "7.0.1"
+!define Version "7.0.2"
 
 ; The name of the installer
 Name "Jailer ${Version}"
@@ -43,6 +43,10 @@ Section "Jailer"
 
   File /r "C:\tmp\jailer\*.*"
   
+  FileOpen $4 ".singleuser" w
+  FileWrite $4 "1"
+  FileClose $4
+
   ; Write the installation path into the registry
   WriteRegStr HKLM SOFTWARE\Jailer "Install_Dir" "$INSTDIR"
   
