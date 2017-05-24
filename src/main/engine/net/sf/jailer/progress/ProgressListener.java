@@ -60,6 +60,13 @@ public interface ProgressListener {
 	void exported(Table table, long rc);
 	
 	/**
+	 * Rows have been explained.
+	 * 
+	 * @param rc the number of rows
+	 */
+	void explained(long rc);
+	
+	/**
 	 * New stage has begun.
 	 * 
 	 * @param stage the stage

@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.subsetting;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.sql.ResultSet;
@@ -35,7 +36,6 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
-import net.sf.jailer.ui.Environment;
 import net.sf.jailer.util.CellContentConverter;
 import net.sf.jailer.util.Quoting;
 
@@ -71,7 +71,7 @@ public class ExplainTool {
 			}
 			succEqualsE.append("Succ.PRE_" + column.name + "=E." + column.name);
 		}
-		final FileWriter writer = new FileWriter(Environment.newFile("explain.log"));
+		final FileWriter writer = new FileWriter(newFile("explain.log"));
 		final RowIdSupport rowIdSupport = new RowIdSupport(graph.getDatamodel(), session.dbms, executionContext);
 		String selectLeafs = "Select type, " + graph.getUniversalPrimaryKey().columnList(null) + " From " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, session, executionContext) + " E Where E.r_entitygraph=" + graph.graphID +
 			" and not exists (Select * from " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, session, executionContext) + " Succ Where Succ.r_entitygraph=" + graph.graphID + " and Succ.PRE_TYPE=E.type and " + succEqualsE + ")";
@@ -92,6 +92,7 @@ public class ExplainTool {
 				try {
 					writer.append(path(graph, session, type, keys, graph.getDatamodel(), rowIdSupport, quoting, executionContext));
 					writer.append(".\n");
+					executionContext.getProgressListenerRegistry().fireExplained(1);
 				} catch (IOException e) {
 					throw new RuntimeException(e);
 				}
@@ -182,4 +183,16 @@ public class ExplainTool {
 		return sb.toString();
 	}
 	
+	private static File newFile(String name) {
+		File home = null;
+		if (new File(".singleuser").exists()) {
+			home = new File(System.getProperty("user.home"), ".jailer");
+			home.mkdirs();
+		}
+		if (home == null || new File(name).isAbsolute()) {
+			return new File(name);
+		}
+		return new File(home, name);
+	}
+
 }
