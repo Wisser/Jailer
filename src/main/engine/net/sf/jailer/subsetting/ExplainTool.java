@@ -74,7 +74,7 @@ public class ExplainTool {
 		final FileWriter writer = new FileWriter(newFile("explain.log"));
 		final RowIdSupport rowIdSupport = new RowIdSupport(graph.getDatamodel(), session.dbms, executionContext);
 		String selectLeafs = "Select type, " + graph.getUniversalPrimaryKey().columnList(null) + " From " + SQLDialect.dmlTableReference(EntityGraph.ENTITY, session, executionContext) + " E Where E.r_entitygraph=" + graph.graphID +
-			" order by E.orig_birthday";
+			" order by E.birthday, E.type";
 		session.executeQuery(selectLeafs, new Session.AbstractResultSetReader() {
 			public void readCurrentRow(ResultSet resultSet) throws SQLException {
 				int o = resultSet.getInt(1);
