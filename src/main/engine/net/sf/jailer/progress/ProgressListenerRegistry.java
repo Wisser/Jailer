@@ -77,4 +77,10 @@ public class ProgressListenerRegistry {
 		}
 	}
 
+	public synchronized void fireExplained(int rc) {
+		for (ProgressListener listener : progressListeners) {
+			listener.explained(rc);
+		}
+	}
+
 }

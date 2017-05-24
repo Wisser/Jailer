@@ -76,6 +76,7 @@ public class SingleStageProgressListener implements ProgressListener {
 	 */
 	private long exportedRows = 0;
 	private long collectedRows = 0;
+	private long explainedRows = 0;
 	private String currentStep = "";
 	private boolean isErrorStage = false;
 	private boolean stopClock;
@@ -157,6 +158,7 @@ public class SingleStageProgressListener implements ProgressListener {
 								progressTable.setTotalNumberOfCollectedRows(collectedRows);
 								progressPanel.collectedRowsLabel.setText("" + collectedRows);
 								progressPanel.exportedRowsLabel.setText("" + exportedRows);
+								progressPanel.explainedRowsLabel.setText("" + explainedRows);
 								progressPanel.stepLabel.setText(currentStep);
 								if (isErrorStage) {
 									progressPanel.stepLabel.setForeground(Color.RED);
@@ -373,6 +375,17 @@ public class SingleStageProgressListener implements ProgressListener {
 	@Override
 	public synchronized void exported(Table table, long rc) {
 		exportedRows += rc;
+	}
+
+	/**
+	 * Rows have been explained.
+	 *
+	 * @param rc
+	 *            the number of rows
+	 */
+	@Override
+	public synchronized void explained(long rc) {
+		explainedRows += rc;
 	}
 
 	/**

@@ -144,4 +144,8 @@ public class CollectedRowsCounter implements ProgressListener {
 	public void prepareExport() throws CancellationException {
 	}
 
+	@Override
+	public void explained(long rc) {
+	}
+
 }

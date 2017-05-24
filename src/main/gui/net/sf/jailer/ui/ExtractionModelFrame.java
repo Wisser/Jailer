@@ -1101,7 +1101,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 									"Continue Data Export?", dbConnectionDialog.getPassword(), null, null, true, false, true)) {
 									ProgressTable progressTable = new ProgressTable();
 									ProgressTable progressTableForDelete = new ProgressTable();
-									ProgressPanel progressPanel = new ProgressPanel(progressTable, progressTableForDelete, exportDialog.hasDeleteScript());
+									ProgressPanel progressPanel = new ProgressPanel(progressTable, progressTableForDelete, exportDialog.hasDeleteScript(), exportDialog.explain.isSelected());
 									boolean confirm = exportDialog.scriptFormat == ScriptFormat.INTRA_DATABASE && exportDialog.getConfirmExport();
 									ExportAndDeleteStageProgressListener progressListener = new ExportAndDeleteStageProgressListener(progressTable, progressTableForDelete, progressPanel, extractionModelEditor.dataModel, confirm, exportDialog.getTargetSchemaSet());
 									try {

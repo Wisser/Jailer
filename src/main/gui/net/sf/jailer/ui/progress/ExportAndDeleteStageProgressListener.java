@@ -104,6 +104,12 @@ public class ExportAndDeleteStageProgressListener implements ProgressListener {
 		currentProgressListener.prepareExport();
 	}
 
+	@Override
+	public void explained(long rc) {
+		exportProgressListener.explained(rc);
+		deleteProgressListener.explained(rc);
+	}
+
 	public void stop() {
 		exportProgressListener.stop();
 		deleteProgressListener.stop();
