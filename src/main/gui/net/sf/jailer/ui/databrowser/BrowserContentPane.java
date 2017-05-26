@@ -97,7 +97,6 @@ import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.InlineViewStyle;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
@@ -2572,7 +2571,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							}
 						} else {
 							CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, session.dbms);
-							Object o = cellContentConverter.getObject(resultSet, i);
+							Object o;
+							try {
+								o = cellContentConverter.getObject(resultSet, i);
+							} catch (Throwable e) {
+								o = "ERROR: " + e.getClass().getName() + ": " + e.getMessage();
+							}
 							boolean isPK = false;
 							if (pkColumnNames.isEmpty()) {
 								isPK = type != Types.BLOB && type != Types.CLOB && type != Types.DATALINK && type != Types.JAVA_OBJECT && type != Types.NCLOB

@@ -303,6 +303,15 @@ public class DDLCreator {
 						}
 					});
 				}
+				if (uptodate[0]) {
+					String testId = "ID:" + System.currentTimeMillis();
+					session.executeUpdate(
+							"INSERT INTO " + schema + SQLDialect.CONFIG_TABLE_ + "(jversion, jkey, jvalue) " +
+							"VALUES (" + JailerVersion.WORKING_TABLE_VERSION + ", '" + testId + "', 'ok')");
+					session.executeUpdate(
+							"DELETE FROM " + schema + SQLDialect.CONFIG_TABLE_ + " " +
+							"WHERE jversion=" + JailerVersion.WORKING_TABLE_VERSION + " and jkey='" + testId + "'");
+				}
 				return uptodate[0];
 			} catch (Exception e) {
 				return false;

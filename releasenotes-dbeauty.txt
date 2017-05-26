@@ -1,3 +1,7 @@
+3.2.5
+  - Fixed an NPE in MetaDataCache.
+  - Prevent exception if oracle.xdb.XMLTypeFactory is missing.
+
 3.2.4
   - SQLite fk detection bug has been fixed.
 
