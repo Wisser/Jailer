@@ -48,10 +48,11 @@ public class Environment {
 				copyIfNotExists("extractionmodel");
 				copyIfNotExists("layout");
 				copyIfNotExists(".cdsettings");
-				copyIfNotExists(".connections");
 				copyIfNotExists(".exportdata.ui");
 				copyIfNotExists(".selecteddatamodel");
-				
+				copyIfNotExists("demo-scott.h2.db");
+				copyIfNotExists("demo-sakila.h2.db");
+
 				Configuration.getInstance().setTempFileFolder(newFile("tmp").getPath());
 				HtmlDataModelRenderer renderer = Configuration.getInstance().getRenderer();
 				if (renderer != null) {
@@ -85,17 +86,18 @@ public class Environment {
 		}
 	}
 
-	private static void copyIfNotExists(String f) throws IOException {
+	private static boolean copyIfNotExists(String f) throws IOException {
 		File sFile = new File(f);
 		File dFile = new File(home, f);
 		
 		if (dFile.exists() || !sFile.exists()) {
-			return;
+			return false;
 		}
 		
 		Path sourcePath = sFile.toPath();
 		Path targetPath = dFile.toPath();
 		Files.walkFileTree(sourcePath, new CopyFileVisitor(targetPath));
+		return true;
 	}
 
 	static class CopyFileVisitor extends SimpleFileVisitor<Path> {
