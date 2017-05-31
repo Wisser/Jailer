@@ -196,7 +196,7 @@ public class DDLCreator {
 			PrintWriter pw = new PrintWriter(tmp);
 			pw.println(ddl);
 			pw.close();
-			new SqlScriptExecutor(session, 1).executeScript(tmp.getCanonicalPath());
+			new SqlScriptExecutor(session, 1).executeScript(tmp.getPath());
 			tmp.delete();
 		} else {
 			System.out.println(ddl);

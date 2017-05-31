@@ -1,3 +1,6 @@
+7.0.3
+  - Minor bug fixes.
+
 7.0.2
   - Fixed an NPE in MetaDataCache.
   - User's home directory is used for setup, configuration and log files.
