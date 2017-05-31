@@ -34,6 +34,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -42,6 +43,7 @@ import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.SwingUtilities;
@@ -52,6 +54,7 @@ import javax.swing.UIManager.LookAndFeelInfo;
 import net.sf.jailer.CommandLine;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.JailerVersion;
+import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.DMLTransformer;
 import net.sf.jailer.database.Session;
@@ -69,6 +72,7 @@ import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
 import net.sf.jailer.util.LayoutStorage;
+import net.sf.jailer.util.PrintUtil;
 
 /**
  * Main frame of Extraction-Model-Editor.
@@ -125,6 +129,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 */
 	public ExtractionModelFrame(String extractionModelFile, boolean isHorizonal) {
 		initComponents();
+		initSandbox();
 		initAnimationSteptime();
 		isHorizontalLayout = isHorizonal;
 		horizontalLayoutMenuItem.setSelected(isHorizontalLayout);
@@ -184,6 +189,37 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		});
 	}
 	
+	private void initSandbox() {
+		List<String> list = new ArrayList<String>();
+		try {
+			PrintUtil.loadTableList(list, ".sandbox");
+			if (!list.isEmpty()) {
+				JMenu sandBox = new JMenu("Sandbox");
+				jMenuBar2.add(sandBox);
+				for (final String item: list) {
+					JMenuItem menuItem = new JMenuItem(item.split(",")[0]);
+					sandBox.add(menuItem);
+					menuItem.addActionListener(new ActionListener() {
+						@Override
+						public void actionPerformed(ActionEvent e) {
+							try {
+								Class<?> c = Class.forName(item.split(",")[1]);
+								String tmpFileName = Configuration.getInstance().createTempFile().getPath();
+								extractionModelEditor.save(tmpFileName);
+								ExtractionModel extractionModel = new ExtractionModel(tmpFileName, new HashMap<String, String>(), new HashMap<String, String>(), executionContext);
+								c.getMethod("main", ExtractionModel.class).invoke(c.newInstance(), extractionModel);
+							} catch (Throwable t) {
+								UIUtil.showException(ExtractionModelFrame.this, "Error", t);
+							}
+						}
+					});
+				}
+			}
+		} catch (Throwable e) {
+			e.printStackTrace();
+		}
+	}
+
 	/**
 	 * Updates state of some menu items.
 	 */
@@ -200,7 +236,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			return "offline";
 		}
 	}
-	
+
 	private String getConnectivityStateToolTip() {
 		if (dbConnectionDialog != null && dbConnectionDialog.isConnected) {
 			return (dbConnectionDialog.currentConnection.url);
