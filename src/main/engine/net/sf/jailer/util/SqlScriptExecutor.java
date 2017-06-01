@@ -305,16 +305,19 @@ public class SqlScriptExecutor {
 					execute(new Runnable() {
 						public void run() {
 							boolean silent = session.getSilent();
-							session.setSilent(silent || finalTryMode || stmt.trim().toLowerCase().startsWith("drop"));
+							boolean startsWithDrop = stmt.trim().toLowerCase().startsWith("drop");
+							session.setSilent(silent || finalTryMode || startsWithDrop);
 							try {
 								if (stmt.trim().length() > 0) {
 									totalRowCount.addAndGet(session.execute(stmt));
 									linesRead.getAndIncrement();
-									count.getAndIncrement();
+									if (!startsWithDrop) {
+										count.getAndIncrement();
+									}
 								}
 							} catch (SQLException e) {
 								// drop may fail
-								if (!finalTryMode && !stmt.trim().toLowerCase().startsWith("drop")) {
+								if (!finalTryMode && !startsWithDrop) {
 									// fix for bug [2946477]
 									if (!stmt.trim().toUpperCase().contains("DROP TABLE JAILER_DUAL")) {
 										if (e instanceof SqlException) {
