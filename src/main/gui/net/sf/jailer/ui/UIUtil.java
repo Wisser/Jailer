@@ -76,6 +76,7 @@ import net.sf.jailer.ui.scrollmenu.JScrollC2PopupMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
+import net.sf.jailer.util.CycleFinder;
 
 /**
  * Some utility methods.
@@ -601,7 +602,7 @@ public class UIUtil {
 	 *            the exception
 	 */
 	public static void showException(Component parent, String title, Throwable t, Object context) {
-		if (t instanceof DataModel.NoPrimaryKeyException) {
+		if (t instanceof DataModel.NoPrimaryKeyException || t instanceof CycleFinder.CycleFoundException) {
 			context = EXCEPTION_CONTEXT_USER_ERROR;
 		}
 		t.printStackTrace();
