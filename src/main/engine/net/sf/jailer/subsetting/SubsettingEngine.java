@@ -824,7 +824,7 @@ public class SubsettingEngine {
 			} catch (Throwable t) {
 				_log.warn("cycle analysis failed: " + t.getMessage());
 			}
-			throw new RuntimeException(msg);
+			throw new CycleFinder.CycleFoundException(msg);
 		}
 		_log.info("file '" + sqlScriptFile + "' written.");
 	}

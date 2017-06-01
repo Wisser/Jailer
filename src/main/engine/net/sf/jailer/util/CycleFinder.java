@@ -267,4 +267,13 @@ public class CycleFinder {
 		return cycle;
 	}
 
+	@SuppressWarnings("serial")
+	public static class CycleFoundException extends RuntimeException {
+
+		public CycleFoundException(String msg) {
+			super(msg);
+		}
+		
+	}
+	
 }
