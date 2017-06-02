@@ -127,7 +127,9 @@ public class Jailer {
 			}
 			ExecutionContext executionContext = new ExecutionContext(commandLine);
 
-			executionContext.getProgressListenerRegistry().addProgressListener(progressListener);
+			if (progressListener != null) {
+				executionContext.getProgressListenerRegistry().addProgressListener(progressListener);
+			}
 			
 			String command = commandLine.arguments.get(0);
 			if (!"create-ddl".equalsIgnoreCase(command)) {
