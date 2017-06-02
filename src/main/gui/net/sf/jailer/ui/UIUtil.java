@@ -374,8 +374,8 @@ public class UIUtil {
 		final boolean[] exceptionShown = new boolean[1];
 		try {
 			try {
-				File exportLog = new File("export.log");
-				File sqlLog = new File("sql.log");
+				File exportLog = Environment.newFile("export.log");
+				File sqlLog = Environment.newFile("sql.log");
 				if (exportLog.exists()) {
 					FileOutputStream out = new FileOutputStream(exportLog);
 					out.close();
@@ -385,7 +385,7 @@ public class UIUtil {
 					out.close();
 				}
 			} catch (Exception e) {
-				UIUtil.showException(null, "Error", e, arglist);
+//				UIUtil.showException(null, "Error", e, arglist);
 			}
 			final boolean[] result = new boolean[] { false };
 			final Throwable[] exp = new Throwable[1];
