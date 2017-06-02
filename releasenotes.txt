@@ -1,4 +1,5 @@
 7.0.3
+  - Preventing NPE when trying to do an export via shell.
   - Minor bug fixes.
 
 7.0.2
