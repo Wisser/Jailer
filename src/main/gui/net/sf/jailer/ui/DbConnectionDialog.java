@@ -117,6 +117,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		setTitle((reason == null ? "" : (reason + " - ")) + "Connect.");
 		refresh();
 		setVisible(true);
+		if (currentConnection == null) {
+			isConnected = false;
+		}
 		return isConnected;
 	}
 	
@@ -286,11 +289,12 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		try {
 			int selectedRow = connectionsTable.getSelectedRow();
 			Object[][] data = initTableModel();
-			if (selectedRow >= 0) {
+			if (selectedRow >= 0 && selectedRow < connectionList.size()) {
 				connectionsTable.getSelectionModel().setSelectionInterval(selectedRow, selectedRow);
 				currentConnection = connectionList.get(selectedRow);
 			} else {
 				currentConnection = null;
+				isConnected = false;
 			}
 			for (int i = 0; i < connectionsTable.getColumnCount(); i++) {
 				TableColumn column = connectionsTable.getColumnModel().getColumn(i);
