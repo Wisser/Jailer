@@ -1,3 +1,7 @@
+3.2.6
+  - Fixed a bug concerning temporary-table support.
+  - Fixed connection leak in data browser.
+
 3.2.5
   - Fixed an NPE in MetaDataCache.
   - Prevent exception if oracle.xdb.XMLTypeFactory is missing.

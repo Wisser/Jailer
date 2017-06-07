@@ -1,5 +1,6 @@
 7.0.5
   - Fixed a bug concerning temporary-table support.
+  - Fixed connection leak in data browser.
 
 7.0.4
   - Preventing NPE when trying to do an export via shell.
