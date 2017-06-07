@@ -92,8 +92,8 @@ import net.sf.jailer.ui.DataModelEditor;
 import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.DataModelManagerDialog;
 import net.sf.jailer.ui.DbConnectionDialog;
-import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
+import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.ImportDialog;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
@@ -492,6 +492,14 @@ public class DataBrowser extends javax.swing.JFrame {
 	}
 
 	private void createSession(DbConnectionDialog dbConnectionDialog) throws Exception {
+		if (session != null) {
+			try {
+				session.shutDown();
+				session = null;
+			} catch (Exception e) {
+				// ignore
+			}
+		}
 		ConnectionInfo connection = dbConnectionDialog.currentConnection;
 		BasicDataSource dataSource = new BasicDataSource(connection.driverClass, connection.url, connection.user, connection.password, 0, dbConnectionDialog.currentJarURLs());
 		session = new Session(dataSource, dataSource.dbms);
