@@ -48,6 +48,7 @@ import org.apache.log4j.Logger;
 
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.database.SqlException;
 
 /**
  * Reads database meta data directly from meta data views.
@@ -221,7 +222,7 @@ public class MetaDataCache {
 		boolean wasSilent = session.getSilent();
 		session.setSilent(true);
 		try {
-			session.executeQuery(query, new Session.AbstractResultSetReader() {
+			long rc = session.executeQuery(query, new Session.AbstractResultSetReader() {
 				@Override
 				public void readCurrentRow(ResultSet resultSet) throws SQLException {
 					int numCol = getMetaData(resultSet).getColumnCount();
@@ -242,6 +243,9 @@ public class MetaDataCache {
 					rowList.add(row);
 				}
 			});
+			if (rc == 0 && session.dbms != DBMS.ORACLE) {
+				throw new SQLException("readMetaData");
+			}
 		} finally {
 			session.setSilent(wasSilent);
 		}
