@@ -134,28 +134,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 		}
 		
 		associations = new CsvFile(new File(DataModel.getAssociationsFile(executionContext)), assocFilter).getLines();
-		boolean isDemoModel = tables.size() > 0;
-		for (CsvFile.Line dt: tables) {
-			String lastV = null;
-			for (String v: dt.cells) {
-				if (v != null && v.trim().length() > 0) {
-					lastV = v.trim();
-				}
-			   }
-			if (lastV != null) {
-				if (!"Demo".equals(lastV)) {
-					isDemoModel = false;
-					break;
-				}
-			}
-		}
-		if (merge && isDemoModel) {
-			tables.clear();
-			associations.clear();
-			initiallyDirty = true;
-		} else {
-			PrintUtil.loadTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile(executionContext));
-		}
+		PrintUtil.loadTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile(executionContext));
 		int newTables = 0;
 		int newAssociations = 0;
 		
@@ -226,7 +205,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 		locationLabel.setToolTipText(modelpath);
 		
 		if (modelnameSuggestion != null) {
-			if (merge && isDemoModel || DataModel.DEFAULT_NAME.equals(modelname) || "Demo".equals(modelname)) {
+			if (DataModel.DEFAULT_NAME.equals(modelname) || "Demo".equals(modelname)) {
 				modelname = modelnameSuggestion;
 			}
 		}
