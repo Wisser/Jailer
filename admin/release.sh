@@ -20,6 +20,7 @@ chmod a+x *.sh
 rm -rf admin
 rm -rf docs
 rm -rf out
+rm DBeauty.html
 mv datamodel.def datamodel
 rm -rf datamodel.scr
 ls jailer.jar
