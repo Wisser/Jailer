@@ -1,4 +1,4 @@
-!define Version "7.0.2"
+!define Version "7.0.5"
 
 ; The name of the installer
 Name "Jailer ${Version}"
