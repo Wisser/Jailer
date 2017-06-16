@@ -190,7 +190,7 @@ public abstract class Desktop extends JDesktopPane {
 		this.queryBuilderDialog.sqlEditButton.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				addTableBrowser(null, 0, null, null, queryBuilderDialog.getSQL(), null, null, true);
+				addTableBrowser(null, null, 0, null, null, queryBuilderDialog.getSQL(), null, null, true);
 				queryBuilderDialog.setVisible(false);
 			}
 		});
@@ -377,6 +377,7 @@ public abstract class Desktop extends JDesktopPane {
 	 * 
 	 * @param parent
 	 *            parent browser
+	 * @param origParent 
 	 * @param parentRowIndex
 	 *            index of parent row in the parent's row browser, -1 for all
 	 *            rows
@@ -390,7 +391,7 @@ public abstract class Desktop extends JDesktopPane {
 	 * @param limit
 	 * @return new row-browser
 	 */
-	public synchronized RowBrowser addTableBrowser(final RowBrowser parent, int parentRowIndex, final Table table, final Association association,
+	public synchronized RowBrowser addTableBrowser(final RowBrowser parent, final RowBrowser origParent, int parentRowIndex, final Table table, final Association association,
 			String condition, Integer limit, Boolean selectDistinct, boolean reload) {
 		Set<String> titles = new HashSet<String>();
 		for (RowBrowser rb : tableBrowsers) {
@@ -491,8 +492,13 @@ public abstract class Desktop extends JDesktopPane {
 			}
 		});
 
-		final BrowserContentPane browserContentPane = new BrowserContentPane(datamodel.get(), table, condition, session, parent == null || parentRowIndex < 0 ? null
-				: parent.browserContentPane.rows.get(parentRowIndex), parent == null || parentRowIndex >= 0 ? null : parent.browserContentPane.rows,
+		Row row = null;
+		if (parent == null || parentRowIndex < 0) {
+			row = null;
+		} else if (origParent != null) {
+			row = origParent.browserContentPane.rows.get(parentRowIndex);
+		}
+		final BrowserContentPane browserContentPane = new BrowserContentPane(datamodel.get(), table, condition, session, row, parent == null || parentRowIndex >= 0 ? null : parent.browserContentPane.rows,
 				association, parentFrame, currentClosure, currentClosureRowIDs, limit, selectDistinct, reload, executionContext) {
 
 			@Override
@@ -512,7 +518,7 @@ public abstract class Desktop extends JDesktopPane {
 
 			@Override
 			protected void navigateTo(Association association, int rowIndex, Row row) {
-				addTableBrowser(tableBrowser, rowIndex, association.destination, association, "", null, null, true);
+				addTableBrowser(tableBrowser, tableBrowser, rowIndex, association.destination, association, "", null, null, true);
 			}
 
 			@Override
@@ -521,7 +527,7 @@ public abstract class Desktop extends JDesktopPane {
 				for (RowBrowser rb : tableBrowsers) {
 					if (rb.parent == tableBrowser) {
 						updateChildren(rb, rb.browserContentPane.rows);
-						if (reloadChildren && rb.browserContentPane.parentRow == null) {
+						if (reloadChildren /* && rb.browserContentPane.parentRow == null */) {
 							rb.browserContentPane.reloadRows();
 						}
 					}
@@ -1180,7 +1186,7 @@ public abstract class Desktop extends JDesktopPane {
 				Rectangle cellRect = new Rectangle();
 				boolean ignoreScrolling = false;
 				int i = 0;
-				if (tableBrowser.rowIndex >= 0) {
+				if (tableBrowser.rowIndex >= 0 && tableBrowser.parent.browserContentPane.rowsTable.getModel().getRowCount() > tableBrowser.rowIndex) {
 					i = tableBrowser.parent.browserContentPane.rowsTable.getRowSorter().convertRowIndexToView(tableBrowser.rowIndex);
 					cellRect = tableBrowser.parent.browserContentPane.rowsTable.getCellRect(i, 0, true);
 					if (tableBrowser.parent.browserContentPane.rows != null && tableBrowser.parent.browserContentPane.rows.size() == 1) {
@@ -2470,7 +2476,7 @@ public abstract class Desktop extends JDesktopPane {
 						}
 					}
 					if (add) {
-						rb = addTableBrowser(parentRB, -1, table, parentRB != null ? association : null, where, limit, selectDistinct, false);
+						rb = addTableBrowser(parentRB, parentRB, -1, table, parentRB != null ? association : null, where, limit, selectDistinct, false);
 						if (id.length() > 0) {
 							rbByID.put(id, rb);
 						}
@@ -2481,7 +2487,7 @@ public abstract class Desktop extends JDesktopPane {
 				}
 			} else {
 				if (toBeAppended == null) {
-					rb = addTableBrowser(null, 0, null, null, where, limit, selectDistinct, false);
+					rb = addTableBrowser(null, null, 0, null, null, where, limit, selectDistinct, false);
 					toBeLoaded.add(rb);
 				}
 			}
@@ -2684,7 +2690,7 @@ public abstract class Desktop extends JDesktopPane {
 				}
 			}
 
-			RowBrowser root = addTableBrowserSubTree(newDataBrowser, tableBrowser, null, cond.toString());
+			RowBrowser root = addTableBrowserSubTree(newDataBrowser, tableBrowser, null, null, cond.length() > 0? cond.toString() : null);
 			root.browserContentPane.reloadRows();
 			newDataBrowser.arrangeLayout();
 			try {
@@ -2698,7 +2704,7 @@ public abstract class Desktop extends JDesktopPane {
 		}
 	}
 
-	private RowBrowser addTableBrowserSubTree(DataBrowser newDataBrowser, RowBrowser tableBrowser, RowBrowser parent, String rootCond) {
+	private RowBrowser addTableBrowserSubTree(DataBrowser newDataBrowser, RowBrowser tableBrowser, RowBrowser parent, RowBrowser origParent, String rootCond) {
 		Object limitO = tableBrowser.browserContentPane.limitBox.getSelectedItem();
 		Integer limit = null;
 		if (limitO instanceof Integer) {
@@ -2706,18 +2712,18 @@ public abstract class Desktop extends JDesktopPane {
 		}
 		RowBrowser rb;
 		if (parent == null) {
-			rb = newDataBrowser.desktop.addTableBrowser(null, -1, tableBrowser.browserContentPane.table, null,
+			rb = newDataBrowser.desktop.addTableBrowser(null, null, -1, tableBrowser.browserContentPane.table, null,
 					rootCond == null ? tableBrowser.browserContentPane.getAndConditionText() : rootCond, limit,
 					tableBrowser.browserContentPane.selectDistinctCheckBox.isSelected(), false);
 		} else {
-			rb = newDataBrowser.desktop.addTableBrowser(parent, tableBrowser.rowIndex, tableBrowser.browserContentPane.table,
+			rb = newDataBrowser.desktop.addTableBrowser(parent, origParent, tableBrowser.rowIndex, tableBrowser.browserContentPane.table,
 					tableBrowser.browserContentPane.association, rootCond == null ? tableBrowser.browserContentPane.getAndConditionText() : rootCond, limit,
 					tableBrowser.browserContentPane.selectDistinctCheckBox.isSelected(), false);
 		}
 		rb.setHidden(tableBrowser.isHidden());
 
 		for (RowBrowser child : getChildBrowsers(tableBrowser, false)) {
-			addTableBrowserSubTree(newDataBrowser, child, rb, null);
+			addTableBrowserSubTree(newDataBrowser, child, rb, tableBrowser, null);
 		}
 		return rb;
 	}

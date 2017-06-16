@@ -982,6 +982,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param navigateFromAllRows 
 	 */
 	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows) {
+		if (table instanceof SqlStatementTable) {
+			return null;
+		}
+		
 		List<String> assList = new ArrayList<String>();
 		Map<String, Association> assMap = new HashMap<String, Association>();
 		for (Association a : table.associations) {
