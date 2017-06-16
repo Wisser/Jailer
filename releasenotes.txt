@@ -1,4 +1,5 @@
 7.0.6
+  - Data Browser will automatically reconnect if the connection is lost.
   - Minor bug fixes.
   
 7.0.5

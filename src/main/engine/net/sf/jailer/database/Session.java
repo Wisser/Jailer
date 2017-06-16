@@ -401,6 +401,58 @@ public class Session {
 	/**
 	 * Executes a SQL-Query (SELECT) with timeout.
 	 * 
+	 * @param theConnection connection to use
+	 * @param sqlQuery the query in SQL
+	 * @param reader the reader for the result
+	 * @param alternativeSQL query to be executed if sqlQuery fails
+	 * @param limit row limit, 0 for unlimited
+	 * @param context cancellation context
+	 * @param timeout the timeout in sec
+	 */
+	private long executeQuery(Connection theConnection, String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, int limit, int timeout) throws SQLException {
+		long rc = 0;
+		CancellationHandler.checkForCancellation(context);
+		Statement statement = theConnection.createStatement();
+		CancellationHandler.begin(statement, context);
+		ResultSet resultSet;
+		try {
+			if (timeout > 0) {
+				statement.setQueryTimeout(timeout);
+			}
+			resultSet = statement.executeQuery(sqlQuery);
+		} catch (SQLException e) {
+			if (alternativeSQL != null) {
+				_log.warn("query failed, using alternative query. Reason: " + e.getMessage());
+				_log.info(alternativeSQL);
+				CancellationHandler.checkForCancellation(context);
+				resultSet = statement.executeQuery(alternativeSQL);
+			} else {
+				throw e;
+			}
+		}
+		while (resultSet.next()) {
+			reader.readCurrentRow(resultSet);
+			++rc;
+			if (rc % 100 == 0) {
+				CancellationHandler.checkForCancellation(context);
+			}
+			if (limit > 0 && rc >= limit) {
+				break;
+			}
+		}
+		reader.close();
+		resultSet.close();
+		statement.close();
+		CancellationHandler.end(statement, context);
+		_log.info(rc + " row(s)");
+		return rc;
+	}
+
+	private ThreadLocal<Long> lastValidityCheckTS = new ThreadLocal<Long>();
+	
+	/**
+	 * Executes a SQL-Query (SELECT) with timeout.
+	 * 
 	 * @param sqlQuery the query in SQL
 	 * @param reader the reader for the result
 	 * @param alternativeSQL query to be executed if sqlQuery fails
@@ -410,43 +462,37 @@ public class Session {
 	 */
 	public long executeQuery(String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, int limit, int timeout) throws SQLException {
 		_log.info(sqlQuery);
-		long rc = 0;
 		try {
-			CancellationHandler.checkForCancellation(context);
-			Statement statement = connectionFactory.getConnection().createStatement();
-			CancellationHandler.begin(statement, context);
-			ResultSet resultSet;
 			try {
-				if (timeout > 0) {
-					statement.setQueryTimeout(timeout);
-				}
-				resultSet = statement.executeQuery(sqlQuery);
+				return executeQuery(connectionFactory.getConnection(), sqlQuery, reader, alternativeSQL, context, limit, timeout);
 			} catch (SQLException e) {
-				if (alternativeSQL != null) {
-					_log.warn("query failed, using alternative query. Reason: " + e.getMessage());
-					_log.info(alternativeSQL);
-					CancellationHandler.checkForCancellation(context);
-					resultSet = statement.executeQuery(alternativeSQL);
-				} else {
-					throw e;
+				boolean valid = true;
+				if (automaticReconnect) {
+					Long lvTS = lastValidityCheckTS.get();
+					if (lvTS == null || lvTS < System.currentTimeMillis() - 5 * 1000L) {
+						try {
+							if (!connectionFactory.getConnection().isValid(1)) {
+								valid = false;
+							}
+						} catch (Throwable t) {
+							// ignore
+						}
+						if (valid) {
+							lastValidityCheckTS.set(System.currentTimeMillis());
+						}
+					}
+				}
+				if (!valid) {
+					// reconnect
+					try {
+						connection.get().close();
+					} catch (Exception e2) {
+						// ignore
+					}
+					connection.set(null);
 				}
 			}
-			while (resultSet.next()) {
-				reader.readCurrentRow(resultSet);
-				++rc;
-				if (rc % 100 == 0) {
-					CancellationHandler.checkForCancellation(context);
-				}
-				if (limit > 0 && rc >= limit) {
-					break;
-				}
-			}
-			reader.close();
-			resultSet.close();
-			statement.close();
-			CancellationHandler.end(statement, context);
-			_log.info(rc + " row(s)");
-			return rc;
+			return executeQuery(connectionFactory.getConnection(), sqlQuery, reader, alternativeSQL, context, limit, timeout);
 		} catch (SQLException e) {
 			CancellationHandler.checkForCancellation(context);
 			if (!silent) {
@@ -691,9 +737,35 @@ public class Session {
 	 * @return DB meta data
 	 */
 	public DatabaseMetaData getMetaData() throws SQLException {
-		Connection connection = connectionFactory.getConnection();
+		if (automaticReconnect) {
+			boolean valid = true;
+			metaData = null;
+			Long lvTS = lastValidityCheckTS.get();
+			if (lvTS == null || lvTS < System.currentTimeMillis() - 5 * 1000L) {
+				try {
+					if (!connectionFactory.getConnection().isValid(1)) {
+						valid = false;
+					}
+				} catch (Throwable t) {
+					// ignore
+				}
+				if (valid) {
+					lastValidityCheckTS.set(System.currentTimeMillis());
+				}
+			}
+			if (!valid) {
+				// reconnect
+				try {
+					this.connection.get().close();
+				} catch (Exception e2) {
+					// ignore
+				}
+				this.connection.set(null);
+				metaData = null;
+			}
+		}
 		if (metaData == null) {
-			metaData = connection.getMetaData();
+			metaData = connectionFactory.getConnection().getMetaData();
 		}
 		return metaData;
 	}
@@ -845,6 +917,8 @@ public class Session {
 	
 	private Map<String, Object> sessionProperty = Collections.synchronizedMap(new HashMap<String, Object>());
 
+	private boolean automaticReconnect = false;
+
 	/**
 	 * Sets a session property.
 	 * 
@@ -865,6 +939,10 @@ public class Session {
 	 */
 	public Object getSessionProperty(Class<?> owner, String name) {
 		return sessionProperty.get(owner.getName() + "." + name);
+	}
+
+	public void enableAutomaticReconnect() {
+		automaticReconnect  = true;
 	}
 	
 }
