@@ -507,6 +507,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		dbConnectionDialog.addDbArgs(args);
 		session.setCliArguments(args);
 		session.setPassword(dbConnectionDialog.getPassword());
+		session.enableAutomaticReconnect();
 	}
 
 	protected void setConnection(DbConnectionDialog dbConnectionDialog) throws Exception {
