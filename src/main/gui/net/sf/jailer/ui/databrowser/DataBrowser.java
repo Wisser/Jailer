@@ -463,7 +463,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		setLocation(60, 50);
 		setSize(900, 640);
 		if (root != null) {
-			desktop.addTableBrowser(null, 0, root, null, condition, null, null, true);
+			desktop.addTableBrowser(null, null, 0, root, null, condition, null, null, true);
 		}
 		schemaNamePanel.addMouseListener(new java.awt.event.MouseAdapter() {
 			private boolean in = false;
@@ -1197,7 +1197,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	}// GEN-LAST:event_schemaMappingMenuItemActionPerformed
 
 	private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem3ActionPerformed
-		desktop.addTableBrowser(null, 0, null, null, "", null, null, true);
+		desktop.addTableBrowser(null, null, 0, null, null, "", null, null, true);
 	}// GEN-LAST:event_jMenuItem3ActionPerformed
 
 	private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem4ActionPerformed
@@ -1273,13 +1273,15 @@ public class DataBrowser extends javax.swing.JFrame {
 						if (rowBrowser != null) {
 							navigationTree.setSelectionRow(row);
 							JPopupMenu popup = rowBrowser.browserContentPane.createPopupMenu(null, -1, 0, 0, false);
-							JPopupMenu popup2 = rowBrowser.browserContentPane.createSqlPopupMenu(null, -1, 0, 0, true);
-							popup.add(new JSeparator());
-							for (Component c : popup2.getComponents()) {
-								popup.add(c);
+							if (popup != null) {
+								JPopupMenu popup2 = rowBrowser.browserContentPane.createSqlPopupMenu(null, -1, 0, 0, true);
+								popup.add(new JSeparator());
+								for (Component c : popup2.getComponents()) {
+									popup.add(c);
+								}
+								UIUtil.fit(popup);
+								popup.show(evt.getComponent(), evt.getX(), evt.getY());
 							}
-							UIUtil.fit(popup);
-							popup.show(evt.getComponent(), evt.getX(), evt.getY());
 						}
 					}
 				}
@@ -1309,7 +1311,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		new NewTableBrowser(this, datamodel.get(), offerAlternatives) {
 			@Override
 			void openTableBrowser(String tableName) {
-				desktop.addTableBrowser(null, 0, datamodel.get().getTableByDisplayName(tableName), null, "", null, null, true);
+				desktop.addTableBrowser(null, null, 0, datamodel.get().getTableByDisplayName(tableName), null, "", null, null, true);
 			}
 
 			@Override
@@ -1896,7 +1898,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			JInternalFrame currentSelection = desktop.getSelectedFrame();
 			for (AssociationModel a : selection) {
 				BrowserAssociationModel associationModel = (BrowserAssociationModel) a;
-				desktop.addTableBrowser(associationModel.getRowBrowser(), -1, associationModel.getAssociation().destination, associationModel.getAssociation(),
+				desktop.addTableBrowser(associationModel.getRowBrowser(), associationModel.getRowBrowser(), -1, associationModel.getAssociation().destination, associationModel.getAssociation(),
 						"", null, null, true);
 			}
 			if (currentSelection != null) {

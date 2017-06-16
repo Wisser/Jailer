@@ -1,3 +1,6 @@
+3.2.7
+  - Minor bug fixes.
+
 3.2.6
   - Fixed a bug concerning temporary-table support.
   - Fixed connection leak in data browser.
