@@ -36,16 +36,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
-import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -788,22 +784,22 @@ public class UIUtil {
 	}
 
 	private static void sendIssue(final String type, final String issue) {
-		new Thread(new Runnable() {
-			@Override
-			public void run() {
-				URL url;
-				try {
-					url = new URL("http://jailer.sf.net/issueReport.php?type=" + URLEncoder.encode(type, "UTF-8") + "&" + "issue=" + URLEncoder.encode(issue, "UTF-8"));
-					URLConnection con = url.openConnection();
-					InputStreamReader in = new InputStreamReader(con.getInputStream());
-					int c;
-					while ((c = in.read()) != -1) {
-					}
-				} catch (Throwable e) {
-					e.printStackTrace();
-				}
-			}
-		}).start();
+//		new Thread(new Runnable() {
+//			@Override
+//			public void run() {
+//				URL url;
+//				try {
+//					url = new URL("http://jailer.sf.net/issueReport.php?type=" + URLEncoder.encode(type, "UTF-8") + "&" + "issue=" + URLEncoder.encode(issue, "UTF-8"));
+//					URLConnection con = url.openConnection();
+//					InputStreamReader in = new InputStreamReader(con.getInputStream());
+//					int c;
+//					while ((c = in.read()) != -1) {
+//					}
+//				} catch (Throwable e) {
+//					e.printStackTrace();
+//				}
+//			}
+//		}).start();
 	}
 
 	public static void initSyntaxKit() {

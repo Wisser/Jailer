@@ -17,8 +17,6 @@ package net.sf.jailer.ui;
 
 import java.awt.Desktop;
 import java.awt.Window;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.net.URI;
 import java.net.URLEncoder;
 
@@ -41,32 +39,33 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 		this.sqlError = sqlError;
 		this.message = message;
 		initComponents();
+		sendButton.setVisible(false);
 		if (!sqlError) {
 			if (title != null) {
 				setTitle(title);
-				sendButton.setVisible(false);
+//				sendButton.setVisible(false);
 			} else {
 				setTitle("Internal Error");
-				sendButton.grabFocus();
-				KeyListener keyListener = new KeyListener() {
-					@Override
-					public void keyTyped(KeyEvent e) {
-						if (e.getKeyChar() == '\n') {
-							sendButtonActionPerformed(null);
-							setVisible(false);
-						}
-					}
-	
-					@Override
-					public void keyReleased(KeyEvent e) {
-					}
-	
-					@Override
-					public void keyPressed(KeyEvent arg0) {
-					}
-				};
-				sendButton.addKeyListener(keyListener);
-				jButton1.setVisible(false);
+//				sendButton.grabFocus();
+//				KeyListener keyListener = new KeyListener() {
+//					@Override
+//					public void keyTyped(KeyEvent e) {
+//						if (e.getKeyChar() == '\n') {
+//							sendButtonActionPerformed(null);
+//							setVisible(false);
+//						}
+//					}
+//	
+//					@Override
+//					public void keyReleased(KeyEvent e) {
+//					}
+//	
+//					@Override
+//					public void keyPressed(KeyEvent arg0) {
+//					}
+//				};
+//				sendButton.addKeyListener(keyListener);
+//				jButton1.setVisible(false);
 			}
 		}
 		int y = 1;
