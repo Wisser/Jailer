@@ -1,3 +1,7 @@
+7.1
+  - Small fixes for Java 9 compatibility.
+  - Feature Requests #41 "Don't return exit code 0 on error in jailer.sh" (https://sourceforge.net/p/jailer/feature-requests/41/ )
+
 7.0.7
   - Minor bug fixes.
 
