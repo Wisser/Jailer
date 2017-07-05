@@ -93,16 +93,21 @@ public class Jailer {
 			System.setProperty("db2.jcc.charsetDecoderEncoder", "3");
 		} catch (Exception e) {
 		}
+		boolean ok = true;
 		try {
 			jailerMain(args, new StringBuffer(), null);
-		} catch (Exception e) {
+		} catch (Throwable t) {
 			// Exception has already been logged
+			ok = false;
 		} finally {
 			try {
 				Runtime.getRuntime().removeShutdownHook(shutdownHook);
 			} catch (Exception e) {
 				// ignore
 			}
+		}
+		if (!ok) {
+			System.exit(1);
 		}
 	}
 
