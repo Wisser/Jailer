@@ -2451,7 +2451,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * Expands all node in associations tree.
 	 */
 	public void expand() {
-		graphView.expandAll(false, null);
+		graphView.expandAll(false, true);
 		expandPathsToVisibleTables();
 	}
 
@@ -2459,7 +2459,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * Expands all associations with visible tables in associations tree.
 	 */
 	public void expandAllVisibleTables() {
-		graphView.expandAll(true, null);
+		graphView.expandAll(true, true);
 		expandPathsToVisibleTables();
 	}
 	

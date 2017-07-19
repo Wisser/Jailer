@@ -34,6 +34,7 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -391,7 +392,7 @@ public class GraphicalDataModelView extends JPanel {
 								visualization.invalidateAll();
 								display.invalidate();
 							} else {
-								expandTable(theGraph, table, null, true);
+								expandTable(theGraph, table, null, true, null);
 								visualization.invalidateAll();
 								display.invalidate();
 							}
@@ -1139,8 +1140,8 @@ public class GraphicalDataModelView extends JPanel {
 					selectedAssociation = association;
 					modelEditor.select(association);
 					if (association != null) {
-						expandTable(theGraph, association.source, association, false);
-						expandTable(theGraph, association.destination, association, false);
+						expandTable(theGraph, association.source, association, false, null);
+						expandTable(theGraph, association.destination, association, false, null);
 					}
 					tablesOnPath.clear();
 					associationsOnPath.clear();
@@ -1160,8 +1161,8 @@ public class GraphicalDataModelView extends JPanel {
 								tablesOnPath.add(path.get(i).source.getName());
 								tablesOnPath.add(path.get(i).destination.getName());
 							}
-							expandTable(theGraph, path.get(i).source, path.get(i), false);
-							expandTable(theGraph, path.get(i).destination, path.get(i), false);
+							expandTable(theGraph, path.get(i).source, path.get(i), false, null);
+							expandTable(theGraph, path.get(i).destination, path.get(i), false, null);
 						}
 					}
 					invalidate();
@@ -1279,7 +1280,7 @@ public class GraphicalDataModelView extends JPanel {
 		}
 		
 		if (initiallyVisibleTables.isEmpty() && nAssociatedTables <= 10 && expandSubject) {
-			expandTable(g, table, null, false);
+			expandTable(g, table, null, false, null);
 		}
 		
 		return g;
@@ -1398,14 +1399,14 @@ public class GraphicalDataModelView extends JPanel {
 	 * @param g the graph
 	 * @param table the table node
 	 * @param toRender if not null, the only association to make visible
+	 * @param allowedTables 
 	 *  
 	 * @return list of newly rendered tables
 	 */
-	private List<Table> expandTable(final Graph g, final net.sf.jailer.datamodel.Table table, final Association toRender, boolean withLimit) {
+	private List<Table> expandTable(final Graph g, final net.sf.jailer.datamodel.Table table, final Association toRender, boolean withLimit, Set<Table> allowedTables) {
 		List<Table> result = new ArrayList<Table>();
 		if (table != null && (!expandedTables.contains(table) || toRender != null)) {
 			List<Table> toCheck = new ArrayList<Table>();
-			Set<Table> allowedTables = null;
 			Set<Table> tables = null;
 			if (withLimit) {
 				tables = new HashSet<Table>();
@@ -1433,13 +1434,13 @@ public class GraphicalDataModelView extends JPanel {
 						@Override
 						protected void showMore() {
 							modelEditor.clearMessageBox();
-							expandTable(g, table, toRender, true);
+							expandTable(g, table, toRender, true, null);
 						}
 	
 						@Override
 						protected void showAll() {
 							modelEditor.clearMessageBox();
-							expandTable(g, table, toRender, false);
+							expandTable(g, table, toRender, false, null);
 						}
 					});
 				}
@@ -1697,134 +1698,87 @@ public class GraphicalDataModelView extends JPanel {
 
 	/**
 	 * Expands all tables.
-	 * 
-	 * @param reachableTable if not <code>null</code>, expand only tables from which this table is reachable
 	 */
-	public void expandAll(boolean expandOnlyVisibleTables, Table reachableTable) {
+	public void expandAll(final boolean expandOnlyVisibleTables, boolean withLimit) {
 		modelEditor.captureLayout();
 		try {
-			Set<Table> onPath = new HashSet<Table>();
-			if (reachableTable != null) {
-				List<Table> toExpand = new ArrayList<Table>();
-				toExpand.addAll(tableNodes.keySet());
-				onPath.addAll(tableNodes.keySet());
-				while (!toExpand.isEmpty()) {
-					Table table = toExpand.remove(0);
-					for (Association association: table.associations) {
-						if (!association.isIgnored() && !onPath.contains(association.destination)) {
-							if (association.destination.closure(true).contains(reachableTable)) {
-								onPath.add(association.destination);
-								toExpand.add(association.destination);
-							}
-						}
-					}
-				}
-				for (;;) {
-					Set<Table> toRemove = new HashSet<Table>();
-					Set<Table> refTables = new HashSet<Table>();
-					Set<Table> toIgnore = new HashSet<Table>();
-					for (Table initTable: tableNodes.keySet()) {
-						toIgnore.addAll(initTable.closure(true));
-					}
-					toIgnore.removeAll(onPath);
-					for (Table table: onPath) {
-						/* if (!table.equals(reachableTable) && !tableNodes.containsKey(table)) */ {
-							refTables.clear();
-							for (Association association: table.associations) {
-								if (!association.destination.equals(table) && onPath.contains(association.destination)) {
-									refTables.add(association.destination);
-								}
-							}
-							boolean isIn = toIgnore.contains(table);
-							toIgnore.add(table);
-							for (Table toCheck: refTables) {
-								if (!toCheck.equals(reachableTable) && !tableNodes.containsKey(toCheck)) {
-									boolean reach = toCheck.closure(toIgnore, true).contains(reachableTable);
-									if (!reach) {
-										model.transpose();
-										for (Table initTable: tableNodes.keySet()) {
-											reach = toCheck.closure(toIgnore, true).contains(initTable);
-											if (reach) {
-												break;
-											}
-										}
-										model.transpose();
-									}
-									if (!reach) {
-										toRemove.add(toCheck);
-									}
-								}
-							}
-							if (!isIn) {
-								toIgnore.remove(table);
-							}
-						}
-					}
-					if (!toRemove.isEmpty()) {
-						onPath.removeAll(toRemove);
-						toIgnore.addAll(toRemove);
-						toRemove.clear();
-					} else {
-						break;
-					}
-				}
-			}
-			
-			boolean stop = false;
-			List<Table> toExpand = new ArrayList<Table>();
+			List<Table> toExpand = new LinkedList<Table>();
 			toExpand.addAll(tableNodes.keySet());
-			while (!stop) {
-				boolean askNow = false;
-				synchronized (visualization) {
-					boolean ask = tableNodes.size() <= EXPAND_LIMIT;
-					while (!toExpand.isEmpty()) {
-						Table table = toExpand.remove(0);
-						if (reachableTable != null) {
-							for (Association association: table.associations) {
-								if (onPath.contains(association.destination) && !tableNodes.containsKey(association.destination)) {
-								List<Table> tables = expandTable(theGraph, table, association, false);
-								if (!expandOnlyVisibleTables) {
-									toExpand.addAll(tables);
-								}
-							}
-						}
-	//						for (Association association: table.associations) {
-	//							if (!association.isIgnored() && !tableNodes.containsKey(association.destination)) {
-	//								if (association.destination.closure(true).contains(reachableTable)) {
-	//									List<Table> tables = expandTable(theGraph, table, association);
-	//									if (!expandOnlyVisibleTables) {
-	//										toExpand.addAll(tables);
-	//									}
-	//								}
-	//							}
-	//						}
-						} else {
-							List<Table> tables = expandTable(theGraph, table, null, false);
-							if (!expandOnlyVisibleTables) {
-								toExpand.addAll(tables);
-							}
-						}
-						if (ask && tableNodes.size() > EXPAND_LIMIT) {
-							askNow = true;
+			Set<Table> allowedTables = null;
+			int initialNumTabs = tableNodes.size();
+			int initialNumAllowedWOLimit = 0;
+			if (expandOnlyVisibleTables) {
+				initialNumAllowedWOLimit = retrieveAllowedTables(toExpand, Integer.MAX_VALUE).size();
+			}
+			synchronized (visualization) {
+				while (!toExpand.isEmpty()) {
+					List<Table> toExpandNext = new ArrayList<Table>();
+					if (withLimit) {
+						int limit = EXPAND_LIMIT - (tableNodes.size() - initialNumTabs);
+						if (limit <= 0) {
 							break;
 						}
+						allowedTables = retrieveAllowedTables(toExpand, limit);
 					}
-				}
-				if (askNow) {
-					int option = JOptionPane.showConfirmDialog(modelEditor.extractionModelFrame, "More than " + EXPAND_LIMIT + " visible tables!\nStop expansion?", "", JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.INFORMATION_MESSAGE);
-					if (JOptionPane.NO_OPTION != option) {
-						stop = true;
-						if (JOptionPane.CANCEL_OPTION == option) {
-							GraphicalDataModelView.this.modelEditor.undo();
+					while (!toExpand.isEmpty()) {
+						Table table = toExpand.remove(0);
+						List<Table> tables = expandTable(theGraph, table, null, false, allowedTables);
+						if (!expandOnlyVisibleTables) {
+							toExpandNext.addAll(tables);
 						}
 					}
-				} else {
-					stop = true;
+					toExpand.addAll(toExpandNext);
+				}
+				if (withLimit) {
+					int limit = EXPAND_LIMIT - (tableNodes.size() - initialNumTabs);
+					if (limit <= 0) {
+						int l = EXPAND_LIMIT;
+						int numAll = model.getTables().size() - tableNodes.size();
+						if (expandOnlyVisibleTables) {
+							numAll = initialNumAllowedWOLimit;
+						}
+						if (numAll > 0) {
+							modelEditor.addMessageBox(new ExpansionLimitMessage(l, numAll) {
+			
+								@Override
+								protected void showMore() {
+									modelEditor.clearMessageBox();
+									expandAll(expandOnlyVisibleTables, true);
+								}
+			
+								@Override
+								protected void showAll() {
+									modelEditor.clearMessageBox();
+									expandAll(expandOnlyVisibleTables, false);
+								}
+							});
+						}
+					}
+					allowedTables = retrieveAllowedTables(toExpand, limit);
 				}
 			}
 		} finally {
 			GraphicalDataModelView.this.modelEditor.checkLayoutStack();
 		}
+	}
+
+	private Set<Table> retrieveAllowedTables(List<Table> toExpand, int limit) {
+		Set<Table> allowedTables;
+		HashSet<Table> tables = new HashSet<Table>();
+		allowedTables = new HashSet<Table>();
+		for (Table table: toExpand) {
+			for (Association a: table.associations) {
+				if (isVisualizable(a) && !tableNodes.containsKey(a.destination)) {
+					tables.add(a.destination);
+				}
+			}
+		}
+		allowedTables.addAll(tables);
+		applyExpansionLimit(allowedTables, limit);
+		if (allowedTables.size() == tables.size() - 1) {
+			allowedTables.addAll(tables);
+		}
+		return allowedTables;
 	}
 	
 	/**
