@@ -1391,22 +1391,6 @@ public class DataBrowser extends javax.swing.JFrame {
 			e1.printStackTrace();
 		}
 		try {
-			Toolkit.getDefaultToolkit().getSystemEventQueue().push(new EventQueue() {
-				boolean shown = false;
-				protected void dispatchEvent(final AWTEvent event) {
-					try {
-			            super.dispatchEvent(event);
-			        } catch (Throwable t) {
-			        	if (!shown) {
-			        		shown = true;
-			        		UIUtil.showException(null, "Error", t);
-			        	}
-			        }
-				}
-			});
-		} catch (Exception e) {
-		}
-		try {
 			CommandLineInstance.init(args);
 		} catch (Exception e) {
 			UIUtil.showException(null, "Illegal arguments", e);

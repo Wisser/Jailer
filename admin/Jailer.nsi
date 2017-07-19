@@ -1,4 +1,4 @@
-!define Version "7.0.5"
+!define Version "7.1"
 
 ; The name of the installer
 Name "Jailer ${Version}"
@@ -66,7 +66,6 @@ Section "Start Menu Shortcuts"
   Delete "$SMPROGRAMS\Jailer\*.*"
   CreateShortcut "$SMPROGRAMS\Jailer\Jailer ${Version}  .lnk" "$INSTDIR\Jailer.exe" 
   CreateShortcut "$SMPROGRAMS\Jailer\Jailer ${Version} Data Browser.lnk" "$INSTDIR\JailerDataBrowser.exe" 
-  CreateShortcut "$SMPROGRAMS\Jailer\Work Folder.lnk" "$INSTDIR\" 
   CreateShortcut "$SMPROGRAMS\Jailer\Uninstall.lnk" "$INSTDIR\uninstall.exe" 
   
 SectionEnd
