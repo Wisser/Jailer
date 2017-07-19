@@ -31,10 +31,8 @@ import java.awt.geom.Point2D;
 import java.awt.geom.Rectangle2D;
 import java.awt.geom.RectangularShape;
 import java.awt.geom.RoundRectangle2D;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,7 +42,6 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.ui.UIUtil;
 import prefuse.Constants;
 import prefuse.render.AbstractShapeRenderer;
 import prefuse.render.ImageFactory;
@@ -80,7 +77,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 	
 	protected int m_horizBorder = 2;
 	protected int m_vertBorder  = 0;
-	protected int m_imageMargin = 2;
+	protected int m_imageMargin = 0;
 	protected int m_arcWidth    = 0;
 	protected int m_arcHeight   = 0;
 
@@ -95,6 +92,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 	protected Font    m_font; // temp font holder
 	protected Font    m_font_nic; // temp font holder
 	protected Font    m_font2; // temp font holder
+	protected Font    m_font3; // temp font holder
 	protected String    m_text; // label text
 	protected Dimension m_textDim = new Dimension(); // text width / height
 	protected Dimension m_headerDim = new Dimension(); // text width / height of header
@@ -270,6 +268,8 @@ public class TableRenderer extends AbstractShapeRenderer {
 		}
 		m_font2 = FontLib.getFont(m_font.getName(), m_font.getStyle(),
 				size*m_font.getSize() * 0.8);
+		m_font3 = FontLib.getFont(m_font.getName(), m_font.getStyle(),
+				size*m_font.getSize() * 0.8);
 		m_font_nic = FontLib.getFont(m_font.getName(), m_font.getStyle() | Font.ITALIC,
 				size*m_font.getSize());
 		
@@ -348,7 +348,11 @@ public class TableRenderer extends AbstractShapeRenderer {
 			if (i == null) {
 				continue;
 			}
-			ih = i.getHeight(null) * imgScale(i);
+			double ih2 = i.getHeight(null) * imgScale(i);
+			if (i == collapsedImage || i == collapsedRedImage) {
+				ih2 += th / 2.1;
+			}
+			ih = Math.max(ih, ih2);
 			iw += i.getWidth(null) * imgScale(i) + 2;
 		}
 		
@@ -442,7 +446,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 			if (graphicalDataModelView.tablesOnPath.contains(tableName)) {
 				fillColor = ColorLib.rgba(0.3f, 0.9f, 1.0f, 0.30f);
 			}
-			   paint(g, item, fillColor, shape, new BasicStroke(isSelected? 1 : 0), isSelected? RENDER_TYPE_DRAW_AND_FILL : RENDER_TYPE_FILL);
+			paint(g, item, fillColor, shape, new BasicStroke(isSelected? 1 : 0), isSelected? RENDER_TYPE_DRAW_AND_FILL : RENDER_TYPE_FILL);
 		}
 
 		// now render the image and text
@@ -459,6 +463,8 @@ public class TableRenderer extends AbstractShapeRenderer {
 		double y = shape.getMinY() + size*m_vertBorder;
 		
 		// render image
+		FontMetrics fontMetrics = DEFAULT_GRAPHICS.getFontMetrics(m_font);
+		FontMetrics fontMetrics2 = DEFAULT_GRAPHICS.getFontMetrics(m_font3);
 		for (Image i: img) {
 			if (i == null) {
 				continue;
@@ -520,6 +526,15 @@ public class TableRenderer extends AbstractShapeRenderer {
 			
 			m_transform.setTransform(size * imgScale(i),0,0,size * imgScale(i),ix,iy);
 			g.drawImage(i, m_transform, null);
+			
+			if (i == collapsedImage || i == collapsedRedImage) {
+				g.setFont(m_font3);
+				g.setPaint(ColorLib.getColor(i == collapsedImage? m_color : NOT_IN_CLOSURE_COLOR));
+				String tableName = item.getString("label");
+				Table table = model.getTable(tableName);
+				String count = "" + getCollapsedCount(table);
+				drawString(g, fontMetrics2, count, useInt, ix, iy + fontMetrics2.getHeight() / 1.7 + i.getHeight(null) * imgScale(i), (x - ix) * 0.9, Constants.CENTER);
+			}
 		}
 		
 		// render text
@@ -531,7 +546,7 @@ public class TableRenderer extends AbstractShapeRenderer {
 			} else {
 				g.setFont(m_font);
 			}
-			FontMetrics fm = DEFAULT_GRAPHICS.getFontMetrics(m_font);
+			FontMetrics fm = fontMetrics;
 
 			// compute available width
 			double tw;
@@ -970,20 +985,47 @@ public class TableRenderer extends AbstractShapeRenderer {
 	}
 
 	private Map<String, Image> collapsedImages = new HashMap<String, Image>();
+	private long collapsedImagesVersion = -1;
 	
 	private Image getCollapsedImage(Table table) {
+		if (collapsedImagesVersion != graphicalDataModelView.tableNodesVersion) {
+			collapsedImagesVersion = graphicalDataModelView.tableNodesVersion;
+			collapsedImages.clear();
+		}
+		
 		if (collapsedImages.containsKey(table.getName())) {
 			return collapsedImages.get(table.getName());
 		}
 		
-		Set<String> destNames = new HashSet<String>();
-		for (Association a: table.associations) {
-			destNames.add(a.destination.getName());
-		}
-		
-		Image image = destNames.size() > 20? collapsedRedImage : collapsedImage;
+		Image image = getCollapsedCount(table) > GraphicalDataModelView.EXPAND_SINGLE_TABLE_LIMIT? collapsedRedImage : collapsedImage;
 		collapsedImages.put(table.getName(), image);
 		return image;
+	}
+
+	private Map<String, Integer> collapsedCount = new HashMap<String, Integer>();
+	private long collapsedCountVersion = -1;
+	
+	private Integer getCollapsedCount(Table table) {
+		if (collapsedCountVersion != graphicalDataModelView.tableNodesVersion) {
+			collapsedCountVersion = graphicalDataModelView.tableNodesVersion;
+			collapsedCount.clear();
+		}
+
+		if (collapsedCount.containsKey(table.getName())) {
+			return collapsedCount.get(table.getName());
+		}
+		
+		Set<String> destNames = new HashSet<String>();
+		for (Association a: table.associations) {
+			if (!graphicalDataModelView.tableNodes.containsKey(a.destination)) {
+				if (graphicalDataModelView.isVisualizable(a)) {
+					destNames.add(a.destination.getName());
+				}
+			}
+		}
+		
+		collapsedCount.put(table.getName(), destNames.size());
+		return destNames.size();
 	}
 
 	/**

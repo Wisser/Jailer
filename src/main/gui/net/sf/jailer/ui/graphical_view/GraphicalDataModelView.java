@@ -53,6 +53,7 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.subsetting.ScriptFormat;
+import net.sf.jailer.ui.ExpansionLimitMessage;
 import net.sf.jailer.ui.ExtractionModelEditor;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;
@@ -106,9 +107,14 @@ import prefuse.visual.VisualItem;
 public class GraphicalDataModelView extends JPanel {
 
 	/**
-	 * Maximum number of tables to make visible during expansion.
+	 * Maximum number of tables to make visible during expansion ("expand all").
 	 */
-	private final int EXPAND_LIMIT = 50;
+	public static final int EXPAND_LIMIT = 20;
+	
+	/**
+	 * Maximum number of tables to make visible during expansion ("expand single table").
+	 */
+	public static final int EXPAND_SINGLE_TABLE_LIMIT = 10;
 	
 	/**
 	 * The selected association.
@@ -385,7 +391,7 @@ public class GraphicalDataModelView extends JPanel {
 								visualization.invalidateAll();
 								display.invalidate();
 							} else {
-								expandTable(theGraph, table);
+								expandTable(theGraph, table, null, true);
 								visualization.invalidateAll();
 								display.invalidate();
 							}
@@ -1096,12 +1102,13 @@ public class GraphicalDataModelView extends JPanel {
 	/**
 	 * Maps tables to their graph nodes.
 	 */
-	private Map<net.sf.jailer.datamodel.Table, Node> tableNodes = new HashMap<net.sf.jailer.datamodel.Table, Node>();
-
+	Map<net.sf.jailer.datamodel.Table, Node> tableNodes = Collections.synchronizedMap(new HashMap<net.sf.jailer.datamodel.Table, Node>());
+	long tableNodesVersion = 1;
+	
 	/**
 	 * Set of all tables which are currently expanded.
 	 */
-	Set<net.sf.jailer.datamodel.Table> expandedTables = new HashSet<net.sf.jailer.datamodel.Table>();
+	Set<net.sf.jailer.datamodel.Table> expandedTables = Collections.synchronizedSet(new HashSet<net.sf.jailer.datamodel.Table>());
 	
 	/**
 	 * Maps associations to their edges.
@@ -1132,8 +1139,8 @@ public class GraphicalDataModelView extends JPanel {
 					selectedAssociation = association;
 					modelEditor.select(association);
 					if (association != null) {
-						expandTable(theGraph, association.source, association);
-						expandTable(theGraph, association.destination, association);
+						expandTable(theGraph, association.source, association, false);
+						expandTable(theGraph, association.destination, association, false);
 					}
 					tablesOnPath.clear();
 					associationsOnPath.clear();
@@ -1153,8 +1160,8 @@ public class GraphicalDataModelView extends JPanel {
 								tablesOnPath.add(path.get(i).source.getName());
 								tablesOnPath.add(path.get(i).destination.getName());
 							}
-							expandTable(theGraph, path.get(i).source, path.get(i));
-							expandTable(theGraph, path.get(i).destination, path.get(i));
+							expandTable(theGraph, path.get(i).source, path.get(i), false);
+							expandTable(theGraph, path.get(i).destination, path.get(i), false);
 						}
 					}
 					invalidate();
@@ -1226,6 +1233,7 @@ public class GraphicalDataModelView extends JPanel {
 	 */
 	private Graph getModelGraph(DataModel model, Set<Table> initiallyVisibleTables, boolean expandSubject) {
 		tableNodes = new HashMap<net.sf.jailer.datamodel.Table, Node>();
+		++tableNodesVersion;
 		expandedTables = new HashSet<net.sf.jailer.datamodel.Table>();
 		renderedAssociations = new HashMap<Association, Edge>();
 		
@@ -1255,10 +1263,10 @@ public class GraphicalDataModelView extends JPanel {
 			showTable(g, t);
 		}
 		for (Table t: initiallyVisibleTables) {
-			addEdges(g, t, null, new ArrayList<Table>(), true);
+			addEdges(g, t, null, new ArrayList<Table>(), true, null);
 		}
 		if (!initiallyVisibleTables.isEmpty()) {
-			addEdges(g, table, null, new ArrayList<Table>(), true);
+			addEdges(g, table, null, new ArrayList<Table>(), true, null);
 		}
 		
 		int nAssociatedTables = 0;
@@ -1271,7 +1279,7 @@ public class GraphicalDataModelView extends JPanel {
 		}
 		
 		if (initiallyVisibleTables.isEmpty() && nAssociatedTables <= 10 && expandSubject) {
-			expandTable(g, table);
+			expandTable(g, table, null, false);
 		}
 		
 		return g;
@@ -1290,6 +1298,7 @@ public class GraphicalDataModelView extends JPanel {
 			String tooltip = tableRenderer.getToolTip(table);
 			n.setString("tooltip", tooltip);
 			tableNodes.put(table, n);
+			++tableNodesVersion;
 			return true;
 		}
 		return false;
@@ -1343,6 +1352,7 @@ public class GraphicalDataModelView extends JPanel {
 						g.removeNode(n);
 					}
 					tableNodes.remove(t);
+					++tableNodesVersion;
 					for (Association a: t.associations) {
 						expandedTables.remove(a.source);
 						expandedTables.remove(a.destination);
@@ -1355,7 +1365,7 @@ public class GraphicalDataModelView extends JPanel {
 					tablesToKeep.add(table);
 				}
 			}
-			checkForExpansion(theGraph, tablesToKeep);
+			checkForExpansion(theGraph, tablesToKeep, false);
 		}
 	}
 	
@@ -1387,31 +1397,74 @@ public class GraphicalDataModelView extends JPanel {
 	 * 
 	 * @param g the graph
 	 * @param table the table node
-	 * 
-	 * @return list of newly rendered tables
-	 */
-	private List<Table> expandTable(Graph g, net.sf.jailer.datamodel.Table table) {
-		return expandTable(g, table, null);
-	}
-
-	/**
-	 * Expands a node representing a table.
-	 * 
-	 * @param g the graph
-	 * @param table the table node
 	 * @param toRender if not null, the only association to make visible
 	 *  
 	 * @return list of newly rendered tables
 	 */
-	private List<Table> expandTable(Graph g, net.sf.jailer.datamodel.Table table, Association toRender) {
+	private List<Table> expandTable(final Graph g, final net.sf.jailer.datamodel.Table table, final Association toRender, boolean withLimit) {
 		List<Table> result = new ArrayList<Table>();
 		if (table != null && (!expandedTables.contains(table) || toRender != null)) {
 			List<Table> toCheck = new ArrayList<Table>();
-			result = addEdges(g, table, toRender, toCheck, false);
+			Set<Table> allowedTables = null;
+			Set<Table> tables = null;
+			if (withLimit) {
+				tables = new HashSet<Table>();
+				allowedTables = new HashSet<Table>();
+				for (Association a: table.associations) {
+					if (isVisualizable(a) && !tableNodes.containsKey(a.destination)) {
+						tables.add(a.destination);
+					}
+				}
+				allowedTables.addAll(tables);
+				applyExpansionLimit(allowedTables, EXPAND_SINGLE_TABLE_LIMIT);
+				if (allowedTables.size() == tables.size() - 1) {
+					allowedTables.addAll(tables);
+				}
+			}
+			result = addEdges(g, table, toRender, toCheck, false, allowedTables);
 			// expandedTables.add(table);
-			checkForExpansion(g, toCheck);
+			checkForExpansion(g, toCheck, false);
+			
+			if (withLimit) {
+				checkForExpansion(g, model.getTables(), true);
+				if (allowedTables.size() < tables.size()) {
+					modelEditor.addMessageBox(new ExpansionLimitMessage(EXPAND_SINGLE_TABLE_LIMIT, tables.size() - allowedTables.size()) {
+	
+						@Override
+						protected void showMore() {
+							modelEditor.clearMessageBox();
+							expandTable(g, table, toRender, true);
+						}
+	
+						@Override
+						protected void showAll() {
+							modelEditor.clearMessageBox();
+							expandTable(g, table, toRender, false);
+						}
+					});
+				}
+			}
 		}
+		
 		return result;
+	}
+
+	private void applyExpansionLimit(Set<Table> tables, int limit) {
+		List<Table> sorted = new ArrayList<Table>(tables);
+		Collections.sort(sorted, new Comparator<Table>() {
+			@Override
+			public int compare(Table o1, Table o2) {
+				int d = o2.associations.size() - o1.associations.size();
+				if (d == 0) {
+					return o2.getName().compareTo(o1.getName());
+				} else {
+					return d;
+				}
+			}
+		});
+		while (tables.size() > limit) {
+			tables.remove(sorted.remove(0));
+		}
 	}
 
 	/**
@@ -1420,20 +1473,22 @@ public class GraphicalDataModelView extends JPanel {
 	 * @param g the graph
 	 * @param toCheck set of tables to check
 	 */
-	private void checkForExpansion(Graph g, java.util.Collection<Table> toCheck) {
+	private void checkForExpansion(Graph g, java.util.Collection<Table> toCheck, boolean dontAddEdges) {
 		for (Table t: toCheck) {
 			if (!expandedTables.contains(t)) {
-				addEdges(g, t, null, new ArrayList<Table>(), true);
+				if (!dontAddEdges) {
+					addEdges(g, t, null, new ArrayList<Table>(), true, null);
+				}
 				boolean isExpanded = true;
 				for (Association a: t.associations) {
 					if (!isVisualizable(a)) {
 						continue;
 					}
-					if (a.source != t && !tableNodes.containsKey(a.source) && !toCheck.contains(a.source)) {
+					if (a.source != t && !tableNodes.containsKey(a.source) && (dontAddEdges || !toCheck.contains(a.source))) {
 						isExpanded = false;
 						break;
 					}
-					if (a.destination != t && !tableNodes.containsKey(a.destination) && !toCheck.contains(a.destination)) {
+					if (a.destination != t && !tableNodes.containsKey(a.destination) && (dontAddEdges || !toCheck.contains(a.destination))) {
 						isExpanded = false;
 						break;
 					}
@@ -1479,7 +1534,7 @@ public class GraphicalDataModelView extends JPanel {
 	 * 
 	 * @return list of newly rendered tables
 	 */
-	private List<Table> addEdges(Graph g, Table table, Association toRender, List<Table> toCheck, boolean visibleDestinationRequired) {
+	private List<Table> addEdges(Graph g, Table table, Association toRender, List<Table> toCheck, boolean visibleDestinationRequired, Set<Table> allowedTables) {
 		List<Table> result = new ArrayList<Table>();
 		toCheck.add(table);
 		for (Association a: table.associations) {
@@ -1490,6 +1545,9 @@ public class GraphicalDataModelView extends JPanel {
 				continue;
 			}
 			if (visibleDestinationRequired && !tableNodes.containsKey(a.destination)) {
+				continue;
+			}
+			if (allowedTables != null && !allowedTables.contains(a.destination)) {
 				continue;
 			}
 			if (!renderedAssociations.containsKey(a) && !renderedAssociations.containsKey(a.reversalAssociation)) {
@@ -1632,7 +1690,7 @@ public class GraphicalDataModelView extends JPanel {
 	 * @param association the association to check
 	 * @return true if association is visualizable
 	 */
-	private boolean isVisualizable(Association association) {
+	public boolean isVisualizable(Association association) {
 		return modelEditor.extractionModelFrame.showDisabledAssociations()
 			|| !association.isIgnored();
 	}
@@ -1724,7 +1782,7 @@ public class GraphicalDataModelView extends JPanel {
 						if (reachableTable != null) {
 							for (Association association: table.associations) {
 								if (onPath.contains(association.destination) && !tableNodes.containsKey(association.destination)) {
-								List<Table> tables = expandTable(theGraph, table, association);
+								List<Table> tables = expandTable(theGraph, table, association, false);
 								if (!expandOnlyVisibleTables) {
 									toExpand.addAll(tables);
 								}
@@ -1741,7 +1799,7 @@ public class GraphicalDataModelView extends JPanel {
 	//							}
 	//						}
 						} else {
-							List<Table> tables = expandTable(theGraph, table);
+							List<Table> tables = expandTable(theGraph, table, null, false);
 							if (!expandOnlyVisibleTables) {
 								toExpand.addAll(tables);
 							}
@@ -1776,7 +1834,7 @@ public class GraphicalDataModelView extends JPanel {
 		synchronized (visualization) {
 			hideTable(null);
 			checkForCollapsed(theGraph, tableNodes.keySet());
-			checkForExpansion(theGraph, tableNodes.keySet());
+			checkForExpansion(theGraph, tableNodes.keySet(), false);
 			visualization.invalidateAll();
 		}
 	}

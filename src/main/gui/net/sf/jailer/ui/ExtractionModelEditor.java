@@ -58,6 +58,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JList;
@@ -335,6 +336,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		layeredPane.removeAll();
 		layeredPane.setLayer(graphContainer, 1);
 		layeredPane.setLayer(toolBarPanel, 2);
+		layeredPane.setLayer(messagePanel, 2);
 		layeredPane.setLayout(new GridBagLayout());
 		GridBagConstraints gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 0;
@@ -351,6 +353,14 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		gridBagConstraints.weightx = 0;
 		gridBagConstraints.weighty = 0;
 		layeredPane.add(toolBarPanel, gridBagConstraints);
+		gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints.gridx = 0;
+		gridBagConstraints.gridy = 0;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+		gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+		gridBagConstraints.weightx = 0;
+		gridBagConstraints.weighty = 0;
+		layeredPane.add(messagePanel, gridBagConstraints);
 		
 		AssociationRenderer.COLOR_ASSOCIATION = associatedWith.getForeground();
 		AssociationRenderer.COLOR_DEPENDENCY = dependsOn.getForeground();
@@ -726,6 +736,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		} else {
 			graphView.resetExpandedState();
 		}
+		clearMessageBox();
 		validate();
 	}
 	
@@ -767,6 +778,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         toolBarPanel = new javax.swing.JPanel();
         leftButton = new javax.swing.JButton();
         graphContainer = new javax.swing.JPanel();
+        messagePanel = new javax.swing.JPanel();
         toolPanel = new javax.swing.JPanel();
         jPanel1 = new javax.swing.JPanel();
         editorPanel = new javax.swing.JPanel();
@@ -782,15 +794,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jPanel8 = new javax.swing.JPanel();
         jLabel7 = new javax.swing.JLabel();
         openSubjectConditionEditor = new javax.swing.JLabel();
-        subjectTable = new JComboBox();
+        subjectTable = new net.sf.jailer.ui.JComboBox();
         jPanel10 = new javax.swing.JPanel();
-        exportFormat = new JComboBox();
+        exportFormat = new net.sf.jailer.ui.JComboBox();
         exportButton = new javax.swing.JButton();
         openXmlSettings = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
         jPanel13 = new javax.swing.JPanel();
         jPanel6 = new javax.swing.JPanel();
-        rootTable = new JComboBox();
+        rootTable = new net.sf.jailer.ui.JComboBox();
         jPanel9 = new javax.swing.JPanel();
         resetFocus = new javax.swing.JButton();
         jPanel14 = new javax.swing.JPanel();
@@ -801,7 +813,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        aggregationCombobox = new JComboBox();
+        aggregationCombobox = new net.sf.jailer.ui.JComboBox();
         tagField = new javax.swing.JTextField();
         jPanel5 = new javax.swing.JPanel();
         xmlTagApply = new javax.swing.JButton();
@@ -852,6 +864,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         graphContainer.setLayout(new java.awt.BorderLayout());
         graphContainer.setBounds(0, 0, 0, 0);
         layeredPane.add(graphContainer, javax.swing.JLayeredPane.DEFAULT_LAYER);
+
+        messagePanel.setOpaque(false);
+        messagePanel.setBounds(0, 0, 10, 10);
+        layeredPane.add(messagePanel, javax.swing.JLayeredPane.PALETTE_LAYER);
 
         jSplitPane2.setTopComponent(layeredPane);
 
@@ -2146,6 +2162,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 */
 	public boolean select(Table table) {
 		try {
+			clearMessageBox();
 			captureLayout();
 			if (root != null) {
 				if (root.equals(table)) {
@@ -2257,6 +2274,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	public boolean select(Association association) {
 		if (!suppressRestrictionSelection) {
 			captureLayout();
+			clearMessageBox();
 			suppressRestrictionSelection = true;
 			try {
 				DefaultMutableTreeNode toSelect = null;
@@ -2743,17 +2761,33 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 		return false;
 	}
+
+	private JComponent messageBox;
 	
+	public void addMessageBox(JComponent messageBox) {
+		clearMessageBox();
+		this.messageBox = messageBox;
+		messagePanel.add(this.messageBox);
+		messagePanel.revalidate();
+	}
+
+	public void clearMessageBox() {
+		if (messageBox != null) {
+			messagePanel.remove(messageBox);
+			messageBox = null;
+		}
+	}
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton additionalSubjectsButton;
-    private JComboBox aggregationCombobox;
+    private net.sf.jailer.ui.JComboBox aggregationCombobox;
     private javax.swing.JLabel associatedWith;
     javax.swing.JTextField condition;
     public javax.swing.JLabel connectivityState;
     private javax.swing.JLabel dependsOn;
     private javax.swing.JPanel editorPanel;
     public javax.swing.JButton exportButton;
-    private JComboBox exportFormat;
+    private net.sf.jailer.ui.JComboBox exportFormat;
     private javax.swing.JPanel graphContainer;
     private javax.swing.JLabel hasDependent;
     private javax.swing.JLabel ignored;
@@ -2791,15 +2825,16 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JPanel legende1;
     private javax.swing.JPanel legende2;
     private javax.swing.JButton mapColumns;
+    private javax.swing.JPanel messagePanel;
     private javax.swing.JLabel modelName;
     private javax.swing.JLabel modelPath;
     private javax.swing.JLabel openSubjectConditionEditor;
     private javax.swing.JButton openXmlSettings;
     private javax.swing.JButton resetFocus;
     private javax.swing.JTable restrictionsTable;
-    private JComboBox rootTable;
+    private net.sf.jailer.ui.JComboBox rootTable;
     private javax.swing.JTabbedPane sketchTabbedPane;
-    private JComboBox subjectTable;
+    private net.sf.jailer.ui.JComboBox subjectTable;
     private javax.swing.JTextField tagField;
     private javax.swing.JPanel toolBarPanel;
     private javax.swing.JPanel toolPanel;
