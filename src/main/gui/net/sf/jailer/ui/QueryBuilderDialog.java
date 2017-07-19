@@ -523,6 +523,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
 					private static final long serialVersionUID = -6555670830339032571L;
 				};
+				AutoCompletion.enable(tableCB);
 				DefaultComboBoxModel aModel = new DefaultComboBoxModel();
 				aModel.addElement("");
 				Table lastTable = relationship.parent == rootRelationship ? subject

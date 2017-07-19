@@ -155,6 +155,8 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 		additionalSubjectListEditor.setModel(subjects);
 		initComponents();
 		
+		AutoCompletion.enable(detailsComboBox);
+		
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 1;
 		gridBagConstraints.gridy = 1;

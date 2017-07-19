@@ -59,6 +59,9 @@ public class AssociationEditor extends javax.swing.JDialog {
 		this.tables = tables;
 		this.associations = associations;
 		initComponents();
+		AutoCompletion.enable(destination);
+		AutoCompletion.enable(source);
+		
 		type.setRenderer(createTypeRenderer());
 		pack();
 		setLocation(parent.getLocation().x + parent.getSize().width/2 - getPreferredSize().width/2,

@@ -1,5 +1,6 @@
 7.1.1
   - Introduction of the "expansion limit" feature for improved navigation.  
+  - Searchable combo boxes.
 
 7.1
   - Small fixes for Java 9 compatibility.
