@@ -271,7 +271,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
 		boolean saveNeedsSave = needsSave;
 		initComponents();
-
+		
+		AutoCompletion.enable(rootTable);
+		AutoCompletion.enable(subjectTable);
+		
 		ItemListener aListener = new ItemListener() {
 			@Override
 			public void itemStateChanged(ItemEvent arg0) {

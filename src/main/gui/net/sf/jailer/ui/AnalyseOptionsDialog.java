@@ -53,6 +53,8 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 		super(parent, true);
 		initComponents();
 		
+		AutoCompletion.enable(schemaComboBox);
+		
 		List<Line> tables = new CsvFile(new File(DataModel.getTablesFile(CommandLineInstance.getExecutionContext()))).getLines();
 		for (Line table: tables) {
 			++numTables;

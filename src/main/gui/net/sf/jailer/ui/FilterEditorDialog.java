@@ -454,6 +454,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		this.parent = parent;
 		initComponents();
 		
+		AutoCompletion.enable(tableBox);
 		
 		final ListCellRenderer tableBoxRenderer = tableBox.getRenderer();
 		tableBox.setRenderer(new ListCellRenderer() {

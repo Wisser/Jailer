@@ -45,6 +45,9 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 		super(parent, true);
 		this.parent = parent;
 		initComponents();
+		
+		AutoCompletion.enable(tableCombobox);
+		
 		paramPanel.add(parameterSelector = new ParameterSelector(this, mappingField, parametersGetter));
 		tableCombobox.addActionListener(new ActionListener() {
 			 public void actionPerformed(java.awt.event.ActionEvent e) {
