@@ -110,7 +110,7 @@ public class GraphicalDataModelView extends JPanel {
 	/**
 	 * Maximum number of tables to make visible during expansion ("expand all").
 	 */
-	public static final int EXPAND_LIMIT = 20;
+	public static final int EXPAND_LIMIT = 10;
 	
 	/**
 	 * Maximum number of tables to make visible during expansion ("expand single table").
@@ -1909,7 +1909,11 @@ public class GraphicalDataModelView extends JPanel {
 	
 	public void setRestriction(final Association association, boolean ignore) {
 		setSelection(association);
-		modelEditor.restrictionEditor.ignore.setSelected(ignore);
+		if (ignore) {
+			modelEditor.restrictionEditor.ignore.setSelected(true);
+		} else {
+			modelEditor.restrictionEditor.restricted.setSelected(true);
+		}
 		modelEditor.onApply(false);
 	}
 
