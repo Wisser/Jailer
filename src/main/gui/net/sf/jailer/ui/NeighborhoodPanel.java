@@ -19,8 +19,6 @@ import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.awt.event.MouseWheelEvent;
@@ -112,7 +110,7 @@ public class NeighborhoodPanel extends javax.swing.JPanel {
 			length = 2;
 		}
 		
-		initTableList(dataModel, table, hideIgnored);
+		initTableList(dataModel, table, hideIgnored, graphView);
 		createTableLinks(dataModel, table, graphView, hideIgnored);
 		
 		upLabel.addMouseListener(new MouseEventHandler(jPanel2) {
@@ -174,7 +172,7 @@ public class NeighborhoodPanel extends javax.swing.JPanel {
 									SwingUtilities.invokeLater(new Runnable() {
 										@Override
 										public void run() {
-											initTableList(dataModel, table, hideIgnored);
+											initTableList(dataModel, table, hideIgnored, graphView);
 											createTableLinks(dataModel, table, graphView, hideIgnored);
 										}
 									});
@@ -189,7 +187,7 @@ public class NeighborhoodPanel extends javax.swing.JPanel {
 					protected void onLeftClick(MouseEvent e) {
 						if (!graphView.isTableVisible(t)) {
 							graphView.showTable(table, t);
-							initTableList(dataModel, table, hideIgnored);
+							initTableList(dataModel, table, hideIgnored, graphView);
 							createTableLinks(dataModel, table, graphView, hideIgnored);
 						}
 					}
@@ -213,13 +211,13 @@ public class NeighborhoodPanel extends javax.swing.JPanel {
     	}
 	}
 
-	private void initTableList(final DataModel dataModel, Table table, boolean hideIgnored) {
+	private void initTableList(final DataModel dataModel, Table table, boolean hideIgnored, GraphicalDataModelView graphView) {
 		Set<Table> destinations = new HashSet<Table>();
     	tabColor = new HashMap<Table, Color>();
     	
     	for (Association a: table.associations) {
     		if (!a.destination.equals(table)) {
-    			if (!a.isIgnored() || !hideIgnored) {
+    			if (!a.isIgnored() || !hideIgnored || graphView.isTableVisible(a.destination)) {
     				destinations.add(a.destination);
     				Color c;
     				if (a.isIgnored()) {

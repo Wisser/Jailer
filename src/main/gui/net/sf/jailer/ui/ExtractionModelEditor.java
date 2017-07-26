@@ -668,9 +668,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			((GridLayout) editorPanel.getLayout()).setRows(1);
 			if (ScriptFormat.XML.equals(scriptFormat)) {
 				editorPanel.add(xmlMappingPanel);
-				((GridLayout) editorPanel.getLayout()).setColumns(4);
-			} else {
 				((GridLayout) editorPanel.getLayout()).setColumns(3);
+			} else {
+				((GridLayout) editorPanel.getLayout()).setColumns(2);
 			}
 		} else {
 			jSplitPane1.setOrientation(JSplitPane.HORIZONTAL_SPLIT);
@@ -739,7 +739,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				gridBagConstraints.gridx = 0;
 				gridBagConstraints.gridy = 3;
 				gridBagConstraints.weightx = 1;
-				gridBagConstraints.weighty = 1;
+				gridBagConstraints.weighty = 0.6;
 				gridBagConstraints.fill = GridBagConstraints.BOTH;
 				gridBagConstraints.insets = new Insets(4, 0, 0, 0);
 				panel2.add(xmlMappingPanel, gridBagConstraints);
@@ -982,8 +982,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         editorPanel.setLayout(new java.awt.GridLayout(1, 4));
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Subject ", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Dialog", 1, 12), new java.awt.Color(86, 82, 125))); // NOI18N
-        jPanel3.setMaximumSize(new java.awt.Dimension(2147483647, 2147483647));
-        jPanel3.setMinimumSize(new java.awt.Dimension(158, 122));
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
         jLabel8.setText(" ");
@@ -1516,12 +1514,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				Object selection = node.getUserObject();
 				if (selection instanceof Association) {
 					initRestrictionEditor((Association) selection, node);
+					updateNeighborHolderPanel(((Association) selection).destination);
 				}
 				if (selection instanceof Table) {
 					initRestrictionEditor(null, null);
+					updateNeighborHolderPanel((Table) selection);
 				}
 			} else {
 				initRestrictionEditor(null, null);
+				updateNeighborHolderPanel(null);
 			}
 		} finally {
 			suppressRestrictionSelection = false;
@@ -2388,7 +2389,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 					startDir = "extractionmodel";
 				}
 			}
-			String newFile = UIUtil.choseFile(extractionModelFile == null? null : new File(extractionModelFile), startDir, (reason == null? "" : (reason + " - ")) + "Save Extraction Model", ".csv", this, true, false, false);
+			String newFile = UIUtil.choseFile(extractionModelFile == null? null : new File(extractionModelFile), startDir, (reason == null? "" : (reason + " - ")) + "Save Extraction Model", ".jm", this, true, false, false);
 			if (newFile == null) {
 				return false;
 			}
