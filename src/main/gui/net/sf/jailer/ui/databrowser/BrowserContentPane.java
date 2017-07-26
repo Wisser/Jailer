@@ -1437,7 +1437,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				file = Environment.newFile("extractionmodel" + File.separator + "by-example").getPath();
 				newFile = new File(file);
 				newFile.mkdirs();
-				file += File.separator + "SbE-" + (dataModel.getDisplayName(stable).replaceAll("[\"'\\[\\]]", "")) + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".csv";
+				file += File.separator + "SbE-" + (dataModel.getDisplayName(stable).replaceAll("[\"'\\[\\]]", "")) + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".jm";
 				newFile = new File(file);
 				if (!newFile.exists()) {
 					break;

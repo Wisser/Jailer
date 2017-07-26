@@ -1046,7 +1046,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			file = Environment.newFile("tmp").getPath();
 			newFile = new File(file);
 			newFile.mkdirs();
-			file += File.separator + "em" + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".csv";
+			file += File.separator + "em" + "-" + ts + (i > 1? "-" + Integer.toString(i) : "") + ".jm";
 			newFile = new File(file);
 			if (!newFile.exists()) {
 				break;
@@ -1245,13 +1245,13 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		File file;
 		String extractionModelFile = extractionModelEditor.extractionModelFile;
 		if (extractionModelFile == null) {
-			file = new File("tmp_restrictions.csv");
+			file = new File("tmp_restrictions.jm");
 		} else {
 			extractionModelFile = new File(extractionModelFile).getName();
-			if (extractionModelFile.toLowerCase().endsWith(".csv")) {
-				file = new File(extractionModelFile.substring(0, extractionModelFile.length() - 4) + "-restrictions.csv");
+			if (extractionModelFile.toLowerCase().endsWith(".jm")) {
+				file = new File(extractionModelFile.substring(0, extractionModelFile.length() - 4) + "-restrictions.jm");
 			} else {
-				file = new File(extractionModelFile + "-restrictions.csv");
+				file = new File(extractionModelFile + "-restrictions.jm");
 			}
 		}
 		extractionModelEditor.saveRestrictions(file);
@@ -1295,7 +1295,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	private void loadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadActionPerformed
 		if (saveIfNeeded("loading", true, true)) {
-			String modelFile = UIUtil.choseFile(null, "extractionmodel", "Load Extraction Model", ".csv", this, true, true, false);
+			String modelFile = UIUtil.choseFile(null, "extractionmodel", "Load Extraction Model", ".jm", this, false, true, false);
 			if (modelFile != null) {
 				load(modelFile);
 			}
