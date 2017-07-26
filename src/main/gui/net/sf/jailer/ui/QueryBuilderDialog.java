@@ -30,14 +30,18 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBox;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextField;
+import javax.swing.border.SoftBevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+
+import com.sun.java.swing.plaf.motif.MotifBorders.BevelBorder;
 
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
@@ -579,6 +583,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 				final JLabel minusLabel = new javax.swing.JLabel();
 				minusLabel.setText(null);
 				minusLabel.setIcon(minusImage);
+				minusLabel.setIconTextGap(0);
 				minusLabel.setToolTipText("remove this table from query");
 
 				gridBagConstraints = new java.awt.GridBagConstraints();
@@ -589,15 +594,15 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
 				gridBagConstraints.insets = new Insets(0, 4, 0, 0);
 
-				minusLabel.setEnabled(false);
+				minusLabel.setBorder(BorderFactory.createSoftBevelBorder(SoftBevelBorder.RAISED));
 				final JComboBox combobox = tableCB;
 				minusLabel.addMouseListener(new java.awt.event.MouseAdapter() {
 					public void mouseEntered(java.awt.event.MouseEvent evt) {
-						minusLabel.setEnabled(true);
+						minusLabel.setBorder(BorderFactory.createSoftBevelBorder(SoftBevelBorder.LOWERED));
 					}
 
 					public void mouseExited(java.awt.event.MouseEvent evt) {
-						minusLabel.setEnabled(false);
+						minusLabel.setBorder(BorderFactory.createSoftBevelBorder(SoftBevelBorder.RAISED));
 					}
 
 					public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -618,6 +623,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 					&& relationship != rootRelationship) {
 				final JLabel jlabel = new javax.swing.JLabel();
 				jlabel.setText(null);
+				jlabel.setIconTextGap(0);
 				jlabel.setIcon(joinImage);
 				jlabel.setToolTipText("join another table");
 
@@ -632,15 +638,15 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
 				final JComponent finalTCB = tableCB;
 				finalTCB.setVisible(false);
-				jlabel.setEnabled(false);
+				jlabel.setBorder(BorderFactory.createSoftBevelBorder(SoftBevelBorder.RAISED));
 
 				jlabel.addMouseListener(new java.awt.event.MouseAdapter() {
 					public void mouseEntered(java.awt.event.MouseEvent evt) {
-						jlabel.setEnabled(true);
+						jlabel.setBorder(BorderFactory.createSoftBevelBorder(SoftBevelBorder.LOWERED));
 					}
 
 					public void mouseExited(java.awt.event.MouseEvent evt) {
-						jlabel.setEnabled(false);
+						jlabel.setBorder(BorderFactory.createSoftBevelBorder(SoftBevelBorder.RAISED));
 					}
 
 					public void mouseClicked(java.awt.event.MouseEvent evt) {

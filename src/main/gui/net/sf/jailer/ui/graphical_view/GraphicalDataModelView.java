@@ -220,7 +220,7 @@ public class GraphicalDataModelView extends JPanel {
 		
 		final ShapeRenderer sr = new ShapeRenderer() {
 			protected Shape getRawShape(VisualItem item) {
-				item.setFillColor(ColorLib.rgb(220,210,0));
+				item.setFillColor(ColorLib.rgba(220,210,0,100));
 				double x = item.getX();
 				if ( Double.isNaN(x) || Double.isInfinite(x) )
 					x = 0;
@@ -1306,6 +1306,16 @@ public class GraphicalDataModelView extends JPanel {
 	}
 	
 	/**
+	 * Creates visible node for given table.
+	 */
+	public void showTable(Table source, Table destination) {
+		List<Table> toCheck = new ArrayList<Table>();
+		toCheck.add(destination);
+		addEdges(theGraph, source, null, toCheck, false, new HashSet<Table>(toCheck));
+		checkForExpansion(theGraph, model.getTables(), true);
+	}
+	
+	/**
 	 * Collapses a node representing a table.
 	 * 
 	 * @param g the graph
@@ -1733,7 +1743,15 @@ public class GraphicalDataModelView extends JPanel {
 					int limit = EXPAND_LIMIT - (tableNodes.size() - initialNumTabs);
 					if (limit <= 0) {
 						int l = EXPAND_LIMIT;
-						int numAll = model.getTables().size() - tableNodes.size();
+						int size = model.getTables().size();
+						if (root != null) {
+							if (!modelEditor.extractionModelFrame.showDisabledAssociations()) {
+								size = root.closure(true).size();
+							} else {
+								size = root.unrestrictedClosure(new HashSet<Table>()).size();
+							}
+						}
+						int numAll = size - tableNodes.size();
 						if (expandOnlyVisibleTables) {
 							numAll = initialNumAllowedWOLimit;
 						}
