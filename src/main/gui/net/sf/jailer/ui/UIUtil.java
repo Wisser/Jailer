@@ -145,14 +145,13 @@ public class UIUtil {
 		} else if (extension != null && extension.length() > 0) {
 			if (System.getProperty("os.name", "").toLowerCase().startsWith("windows")) {
 				fileChooser
-						.setFile("*" + extension + (extensionAlias != null? ";*" + extensionAlias : "") + (allowZip ? ";*" + extension + ".zip;" + extension + ".gz;" : ""));
+						.setFile("*" + extension + (allowZip ? ";*" + extension + ".zip;" + extension + ".gz;" : ""));
 			}
 		}
 		FilenameFilter filter = new FilenameFilter() {
 			@Override
 			public boolean accept(File dir, String name) {
 				return name.toLowerCase().endsWith(extension)
-						|| (extensionAlias != null && name.toLowerCase().endsWith(extensionAlias))
 						|| allowZip && name.toLowerCase().endsWith(extension + ".gz")
 						|| allowZip && name.toLowerCase().endsWith(extension + ".zip");
 			}
@@ -255,7 +254,11 @@ public class UIUtil {
 		if (cdSettings.exists()) {
 			try {
 				ObjectInputStream in = new ObjectInputStream(new FileInputStream(cdSettings));
-				String cd = ((Map<String, String>) in.readObject()).get(key);
+				Map<String, String> map = ((Map<String, String>) in.readObject());
+				String cd = map.get(key);
+				if (cd == null && ".jm".equals(key)) {
+					cd = map.get(".csv");
+				}
 				in.close();
 				return cd;
 			} catch (Exception e) {
