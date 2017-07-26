@@ -5,7 +5,7 @@ referentially intact row-sets from relational databases. It removes obsolete dat
 violating integrity. It is DBMS agnostic (by using JDBC), platform independent, and generates 
 DbUnit datasets, hierarchically structured XML, and topologically sorted SQL-DML.
 
-<img src="/docs/screenshot.png" width="800" />
+<img src="/docs/screenshot.png" width="850" />
 
 ## Features
 
