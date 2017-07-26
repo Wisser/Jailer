@@ -1,4 +1,4 @@
-7.1.1
+7.2
   - Introduction of the "expansion limit" feature for improved navigation.  
   - Searchable combo boxes.
 
