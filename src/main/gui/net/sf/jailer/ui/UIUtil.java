@@ -152,6 +152,7 @@ public class UIUtil {
 			@Override
 			public boolean accept(File dir, String name) {
 				return name.toLowerCase().endsWith(extension)
+						|| (!System.getProperty("os.name", "").toLowerCase().startsWith("windows") && extensionAlias != null && name.toLowerCase().endsWith(extensionAlias))
 						|| allowZip && name.toLowerCase().endsWith(extension + ".gz")
 						|| allowZip && name.toLowerCase().endsWith(extension + ".zip");
 			}
