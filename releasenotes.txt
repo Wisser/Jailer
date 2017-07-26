@@ -1,6 +1,7 @@
 7.2
   - Introduction of the "expansion limit" feature for improved navigation.  
   - Searchable combo boxes.
+  - Extensions of extraction model files have been changes from "csv" to "jm".
 
 7.1
   - Small fixes for Java 9 compatibility.
