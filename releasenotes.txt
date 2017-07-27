@@ -1,3 +1,6 @@
+7.2.1
+  - Fix for "#20 OutOfMemoryError: Java heap space - Reply" (https://sourceforge.net/p/jailer/bugs/20/ )
+
 7.2
   - Introduction of the "expansion limit" feature for improved navigation.  
   - Searchable combo boxes.
