@@ -145,7 +145,7 @@ public class UIUtil {
 		} else if (extension != null && extension.length() > 0) {
 			if (System.getProperty("os.name", "").toLowerCase().startsWith("windows")) {
 				fileChooser
-						.setFile("*" + extension + (allowZip ? ";*" + extension + ".zip;" + extension + ".gz;" : ""));
+						.setFile("*" + extension + (extensionAlias != null? ";*" + extensionAlias : "") + (allowZip ? ";*" + extension + ".zip;" + extension + ".gz;" : ""));
 			}
 		}
 		FilenameFilter filter = new FilenameFilter() {
