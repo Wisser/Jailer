@@ -158,6 +158,7 @@
         <avoidLeftJoin>false</avoidLeftJoin>
         <supportsSchemasInIndexDefinitions>false</supportsSchemasInIndexDefinitions>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <virtualColumnsQuery>SELECT sysobjects.name AS TableName, syscolumns.name AS ColumnName FROM syscolumns JOIN sysobjects ON syscolumns.id = sysobjects.id AND sysobjects.xtype = 'U' WHERE syscolumns.iscomputed = 1</virtualColumnsQuery>
         <nullableContraint>NULL</nullableContraint>
         <identifierQuoteString>"</identifierQuoteString>
     </dbms>
@@ -278,6 +279,7 @@
         <binaryPattern>x'%s'</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
+        <virtualColumnsQuery>SELECT TABLE_NAME, COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = '${SCHEMA}' AND EXTRA LIKE '%VIRTUAL%'</virtualColumnsQuery>
         <nullableContraint>NULL</nullableContraint>
         <identifierQuoteString>`</identifierQuoteString>
     </dbms>
@@ -772,7 +774,8 @@
         <binaryPattern>x'%s'</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
         <useInlineViewsInDataBrowser>false</useInlineViewsInDataBrowser>
-         <identifierQuoteString>"</identifierQuoteString>
+        <virtualColumnsQuery>SELECT TABLE_NAME, COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='${SCHEMA}' AND IS_COMPUTED</virtualColumnsQuery>
+        <identifierQuoteString>"</identifierQuoteString>
     </dbms>
     
 </configuration>
