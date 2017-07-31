@@ -1,3 +1,6 @@
+7.2.2
+  - Perfomance optimaziation.
+
 7.2.1
   - Fix for "#20 OutOfMemoryError: Java heap space - Reply" (https://sourceforge.net/p/jailer/bugs/20/ )
 

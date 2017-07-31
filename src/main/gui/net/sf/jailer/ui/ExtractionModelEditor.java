@@ -150,11 +150,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	Table root;
 
 	/**
-	 * Maps unnamed {@link Association}s to one {@link Association} having same source and destination.
-	 */
-	private Map<Association, Association> representant;
-	
-	/**
 	 * Maps {@link Association}s and Root-table to tree-nodes.
 	 */
 	private Map<ModelElement, DefaultMutableTreeNode> toNode;
@@ -1710,19 +1705,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				joinCondition = SqlUtil.reversRestrictionCondition(joinCondition);
 			}
 			boolean singleCondition = true;
-			for (Association represented: representant.keySet()) {
-				if (association.equals(representant.get(represented))) {
-					String jc = represented.getUnrestrictedJoinCondition();
-					if (represented.reversed) {
-						jc = SqlUtil.reversRestrictionCondition(jc);
-					}
-					if (singleCondition) {
-						joinCondition = "(" + joinCondition + ")";
-					}
-					singleCondition = false;
-					joinCondition += "\nor\n(" + jc + ")";
-				}
-			}
 			String shortJC = joinCondition;
 			if (shortJC.length() > 50) {
 				shortJC = shortJC.substring(0, 50) + "...";
@@ -1832,7 +1814,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * @param dontExclude don't exclude this association
 	 */
 	private TreeModel getModel(Association dontExclude) {
-		representant = new HashMap<Association, Association>();
 		toNode = new HashMap<ModelElement, DefaultMutableTreeNode>();
 		treeNodes = new ArrayList<DefaultMutableTreeNode>();
 
@@ -1854,39 +1835,29 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 		}
 
+		long t = System.currentTimeMillis();
+		long c = 0;
+		
 		while (!agenda.isEmpty()) {
-			Association a = agenda.get(0);
-			agenda.remove(0);
+			++c;
+			Association a = agenda.remove(0);
 			if (toNode.get(a) == null) {
-				Association rep = null;
-				for (ModelElement cand: toNode.keySet()) {
-					if (cand instanceof Association) {
-						Association candRep = (Association) cand;
-						if ((a.getName() == null || candRep.getName() == null)
-						 && a.source.equals(candRep.source) && a.destination.equals(candRep.destination)) {
-							rep = candRep;
-							break;
-						}
-					}
-				}
-				if (rep != null) {
-					representant.put(a, rep);
-				} else {
-					DefaultMutableTreeNode node = new DefaultMutableTreeNode(a);
-					treeNodes.add(node);
-					parent.get(a).add(node);
-					sort(parent.get(a));
-					toNode.put(a, node);
-					for (Association nextA: a.destination.associations) {
-						if (!parent.containsKey(nextA)) {
-							agenda.add(nextA);
-							parent.put(nextA, node);
-						}
+				DefaultMutableTreeNode node = new DefaultMutableTreeNode(a);
+				treeNodes.add(node);
+				parent.get(a).add(node);
+				sort(parent.get(a));
+				toNode.put(a, node);
+				for (Association nextA: a.destination.associations) {
+					if (!parent.containsKey(nextA)) {
+						agenda.add(nextA);
+						parent.put(nextA, node);
 					}
 				}
 			}
 		}
-	
+
+		System.err.println((t - System.currentTimeMillis()) + " " + c);
+
 		if (treeModel != null) {
 			treeModel.setRoot(root);
 		} else {
