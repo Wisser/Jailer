@@ -1835,11 +1835,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 		}
 
-		long t = System.currentTimeMillis();
-		long c = 0;
-		
 		while (!agenda.isEmpty()) {
-			++c;
 			Association a = agenda.remove(0);
 			if (toNode.get(a) == null) {
 				DefaultMutableTreeNode node = new DefaultMutableTreeNode(a);
@@ -1855,8 +1851,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				}
 			}
 		}
-
-		System.err.println((t - System.currentTimeMillis()) + " " + c);
 
 		if (treeModel != null) {
 			treeModel.setRoot(root);
