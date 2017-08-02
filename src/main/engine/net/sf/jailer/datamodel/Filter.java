@@ -57,6 +57,11 @@ public class Filter {
 	public static final String LITERAL_PREFIX = "literal:";
 
 	/**
+	 * Filter expression for exclusion of columns from export.
+	 */
+	public static final String EXCLUDED_VALUE = "excluded";
+
+	/**
 	 * Gets optional type of filter expression. Determines the type of the import-filter-mapping-table columns.
 	 * 
 	 * @return the type
