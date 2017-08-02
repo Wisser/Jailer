@@ -192,7 +192,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	/**
 	 * The graphical model view.
 	 */
-	GraphicalDataModelView graphView; 
+	public GraphicalDataModelView graphView; 
 	
 	public ScriptFormat scriptFormat = ScriptFormat.SQL;
 
@@ -2679,6 +2679,15 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	private Deque<Layout> undoStack = new ArrayDeque<Layout>();
 	
 	private int captureLevel = 0;
+	
+	public synchronized void incCaptureLevel() {
+		++captureLevel;
+	}
+		
+	public synchronized void decCaptureLevel() {
+		--captureLevel;
+	}
+		
 	public synchronized void captureLayout() {
 		try {
 			if (graphView != null && captureLevel == 0) {
