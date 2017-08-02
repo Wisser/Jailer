@@ -286,7 +286,9 @@ public class AssociationRenderer extends EdgeRenderer {
 		super.setBounds(item);
 		if (starBounds != null ) {
 			Rectangle2D bbox = (Rectangle2D)item.get(VisualItem.BOUNDS);
-			Rectangle2D.union(bbox, starBounds, bbox);
+			if (bbox != null) {
+				Rectangle2D.union(bbox, starBounds, bbox);
+			}
 		}
 	}
 
