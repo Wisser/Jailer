@@ -2723,7 +2723,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 		if (captureLevel == 0) {
 			if (!undoStack.isEmpty()) {
-				if (undoStack.peek().positions.keySet().equals(graphView.visibleItems())) {
+				if (undoStack.peek().positions.size() > 1400 || undoStack.peek().positions.keySet().equals(graphView.visibleItems())) {
 					undoStack.pop();
 					updateLeftButton();
 				}
@@ -2751,7 +2751,6 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				}
 				rootTableItemStateChangedSetRoot = false;
 				rootTable.setSelectedItem(dataModel.getDisplayName(layout.root));
-	//			graphView.setDisplayBounds(layout.bounds);
 			} finally {
 				--captureLevel;
 				rootTableItemStateChangedSetRoot = true;

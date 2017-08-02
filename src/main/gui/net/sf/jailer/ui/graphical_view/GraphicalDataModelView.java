@@ -1653,11 +1653,12 @@ public class GraphicalDataModelView extends JPanel {
 		 */
 		public void zoomToFit() {
 			Visualization vis = display.getVisualization();
-			Rectangle2D bounds = vis.getBounds(Visualization.ALL_ITEMS);
-			GraphicsLib.expand(bounds, 50 + (int)(1/display.getScale()));
-			DisplayLib.fitViewToBounds(display, bounds, duration);
+			synchronized (visualization) {
+				Rectangle2D bounds = vis.getBounds(Visualization.ALL_ITEMS);
+				GraphicsLib.expand(bounds, 50 + (int)(1/display.getScale()));
+				DisplayLib.fitViewToBounds(display, bounds, duration);
+			}
 		}
-		
 	}
 
 	/**
@@ -1802,7 +1803,6 @@ public class GraphicalDataModelView extends JPanel {
 							});
 						}
 					}
-					allowedTables = retrieveAllowedTables(toExpand, limit);
 				}
 			}
 		} finally {
