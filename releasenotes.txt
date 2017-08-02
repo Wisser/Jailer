@@ -1,5 +1,6 @@
 7.2.2
-  - Perfomance optimaziation.
+  - Performance optimization.
+  - new filter type allows to exclude columns from export.
 
 7.2.1
   - Fix for "#20 OutOfMemoryError: Java heap space - Reply" (https://sourceforge.net/p/jailer/bugs/20/ )

@@ -552,7 +552,9 @@ public class Table extends ModelElement implements Comparable<Table> {
 		ArrayList<Column> result = new ArrayList<Column>();
 		for (Column column: getColumns()) {
 			if (!column.isVirtualOrBlocked(session)) {
-				result.add(column);
+				if (column.getFilter() == null || !Filter.EXCLUDED_VALUE.equals(column.getFilter().getExpression())) {
+					result.add(column);
+				}
 			}
 		}
 		return result;
