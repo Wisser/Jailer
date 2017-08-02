@@ -1736,6 +1736,36 @@ public class GraphicalDataModelView extends JPanel {
 						if (!expandOnlyVisibleTables) {
 							toExpandNext.addAll(tables);
 						}
+						if (!withLimit) {
+							if (tableNodes.size() - initialNumTabs > 100) {
+								new Thread(new Runnable() {
+									@Override
+									public void run() {
+										try {
+											Thread.sleep(1000);
+										} catch (InterruptedException e) {
+											// ignore
+										}
+										SwingUtilities.invokeLater(new Runnable() {
+											@Override
+											public void run() {
+												if (modelEditor.graphView == GraphicalDataModelView.this) {
+													modelEditor.incCaptureLevel();
+													try {
+														expandAll(expandOnlyVisibleTables, false);
+													} finally {
+														modelEditor.decCaptureLevel();
+													}
+												}
+											}
+										});
+									}
+								}).start();
+								toExpand.clear();
+								toExpandNext.clear();
+								break;
+							}
+						}
 					}
 					toExpand.addAll(toExpandNext);
 				}
