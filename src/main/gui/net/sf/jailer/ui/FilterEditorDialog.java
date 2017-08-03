@@ -855,8 +855,9 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				label = new javax.swing.JLabel();
 				String type = c.toSQL(null).substring(c.name.length());
 				label.setToolTipText(type);
-				if (type.length() > 12) {
-					type = type.substring(0, 12) + "...";
+				int l = Math.max(Math.min(24 - c.name.length(), 14), 8);
+				if (type.length() > l) {
+					type = type.substring(0, l) + "..";
 				}
 				label.setText(" " + type + " ");
 				label.setForeground(Color.GRAY);
