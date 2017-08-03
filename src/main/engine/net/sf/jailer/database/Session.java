@@ -31,9 +31,12 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -939,6 +942,20 @@ public class Session {
 	 */
 	public Object getSessionProperty(Class<?> owner, String name) {
 		return sessionProperty.get(owner.getName() + "." + name);
+	}
+	
+	/**
+	 * Removes all session properties.
+	 * 
+	 * @param owner the class that owns the properties
+	 */
+	public void removeSessionProperties(Class<?> owner) {
+		Iterator<Map.Entry<String, Object>> i = sessionProperty.entrySet().iterator();
+		while (i.hasNext()) {
+			if (i.next().getKey().startsWith(owner.getName() + ".")) {
+				i.remove();
+			}
+		}
 	}
 
 	public void enableAutomaticReconnect() {

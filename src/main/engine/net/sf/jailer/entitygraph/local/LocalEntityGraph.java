@@ -960,7 +960,7 @@ public class LocalEntityGraph extends EntityGraph {
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
 		
-		for (Column c: table.getSelectionClause(localSession)) {
+		for (Column c: table.getSelectionClause()) {
 			if (!first) {
 				sb.append(", ");
 			}

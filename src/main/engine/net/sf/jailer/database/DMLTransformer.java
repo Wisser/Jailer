@@ -30,6 +30,7 @@ import java.sql.Timestamp;
 import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,6 +40,7 @@ import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
+import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Filter;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.subsetting.TransformerFactory;
@@ -162,6 +164,8 @@ public class DMLTransformer extends AbstractResultSetReader {
 	 */
 	private final ImportFilterTransformer importFilterTransformer;
 	
+	private final Set<String> primaryKeyColumnNames;
+
 	/**
 	 * Factory.
 	 */
@@ -247,7 +251,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 			}
 		}
 		this.session = session;
-		this.selectionClause = table.getSelectionClause(session);
+		this.selectionClause = table.getSelectionClause();
 		tableHasIdentityColumn = false;
 		if (targetDBMSConfiguration.isIdentityInserts()) {
 			for (Column c: table.getColumns()) {
@@ -256,6 +260,10 @@ public class DMLTransformer extends AbstractResultSetReader {
 					break;
 				}
 			}
+		}
+		this.primaryKeyColumnNames = new HashSet<String>();
+		for (Column c: table.getNonVirtualPKColumns(session)) {
+			this.primaryKeyColumnNames.add(c.name.toUpperCase());
 		}
 	}
 
@@ -341,9 +349,8 @@ public class DMLTransformer extends AbstractResultSetReader {
 				namedValues.append(cVal + " " + columnLabel[i]);
 			}
 			if (table.getUpsert() || upsertOnly) {
-				if (table.primaryKey.getColumns().isEmpty()) {
-					throw new RuntimeException("Unable to merge/upsert into table \"" + table.getName() + "\".\n" +
-							"No primary key.");
+				if (table.getNonVirtualPKColumns(session).isEmpty()) {
+					throw new DataModel.NoPrimaryKeyException(table);
 				}
 
 				Map<String, String> val = new HashMap<String, String>();
@@ -395,7 +402,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 				StringBuffer whereWOAlias = new StringBuffer("");
 				
 				// assemble 'where' for sub-select and update
-				for (Column pk: table.primaryKey.getColumns()) {
+				for (Column pk: table.getNonVirtualPKColumns(session)) {
 					if (!f) {
 						whereForTerminator.append(" and ");
 						where.append(" and ");
@@ -615,12 +622,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 	 * @return <code>true</code> if column is part of primary key
 	 */
 	private boolean isPrimaryKeyColumn(String column) {
-		for (Column c: table.primaryKey.getColumns()) {
-			if (c.name.equalsIgnoreCase(column)) {
-				return true;
-			}
-		}
-		return false;
+		return primaryKeyColumnNames.contains(column.toUpperCase());
 	}
 
 	/**
@@ -650,7 +652,7 @@ public class DMLTransformer extends AbstractResultSetReader {
 				}
 				boolean f = true;
 				StringBuffer where = new StringBuffer("");
-				for (Column pk: table.primaryKey.getColumns()) {
+				for (Column pk: table.getNonVirtualPKColumns(session)) {
 					if (!f) {
 						where.append(" and ");
 					}
