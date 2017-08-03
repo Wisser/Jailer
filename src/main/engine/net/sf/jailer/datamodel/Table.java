@@ -548,10 +548,10 @@ public class Table extends ModelElement implements Comparable<Table> {
 	 * @param session current session
 	 * @return all non-virtual columns of the table in the order in which they are selected
 	 */
-	public List<Column> getSelectionClause(Session session) {
+	public List<Column> getSelectionClause() {
 		ArrayList<Column> result = new ArrayList<Column>();
 		for (Column column: getColumns()) {
-			if (!column.isVirtualOrBlocked(session)) {
+			if (!column.isVirtual()) {
 				if (column.getFilter() == null || !Filter.EXCLUDED_VALUE.equals(column.getFilter().getExpression())) {
 					result.add(column);
 				}
@@ -564,5 +564,41 @@ public class Table extends ModelElement implements Comparable<Table> {
 		return excludeFromDeletion == null? defaultExcludeFromDeletion : excludeFromDeletion;
 	}
 
+	private static final String NON_VIRTUAL_COLUMNS_PROP_PREFIX = "nonVirtualColumns:";
+
+	public static void clearSessionProperties(Session session) {
+		session.removeSessionProperties(Table.class);
+	}
+	
+	/**
+	 * Gets non-virtual and non-filtered primary-key columns.
+	 * @param session the session
+	 * 
+	 * @return non-virtual and non-filtered primary-key columns
+	 */
+	public List<Column> getNonVirtualPKColumns(Session session) {
+		String propertyName = NON_VIRTUAL_COLUMNS_PROP_PREFIX + name;
+		@SuppressWarnings("unchecked")
+		List<Column> nonVirtualColumns = (List<Column>) session.getSessionProperty(Table.class, propertyName);
+		if (nonVirtualColumns == null) {
+			List<Column> pkColumns = primaryKey.getColumns();
+			nonVirtualColumns = new ArrayList<Column>(pkColumns.size());
+			for (Column pkColumn: pkColumns) {
+				for (Column column: columns) {
+					if (column.name.equals(pkColumn.name)) {
+						if (!column.isVirtual()) {
+							if (column.getFilter() == null || !Filter.EXCLUDED_VALUE.equals(column.getFilter().getExpression())) {
+								nonVirtualColumns.add(column);
+							}
+						}
+						break;
+					}
+				}
+			}
+			session.setSessionProperty(Table.class, propertyName, nonVirtualColumns);
+		}
+		return nonVirtualColumns;
+	}
+	
 }
 

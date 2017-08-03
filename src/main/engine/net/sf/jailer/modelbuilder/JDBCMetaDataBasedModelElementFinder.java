@@ -295,6 +295,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				if (typesWithLength.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
 					length = resultSet.getInt(7);
 				}
+				if (DBMS.MSSQL.equals(session.dbms) && sqlType != null && sqlType.equalsIgnoreCase("timestamp")) {
+					length = 0;
+				}
 				if (sqlType != null && sqlType.equalsIgnoreCase("uniqueidentifier")) {
 					length = 0;
 				}
@@ -675,6 +678,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			if (sqlType != null && sqlType.equalsIgnoreCase("uniqueidentifier")) {
 				length = 0;
 			}
+			if (DBMS.MSSQL.equals(session.dbms) && sqlType != null && sqlType.equalsIgnoreCase("timestamp")) {
+				length = 0;
+			}
 			if (type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR) {
 				precision = resultSet.getInt(9);
 				if (resultSet.wasNull() || precision == 0) {
@@ -689,14 +695,19 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			Column column = new Column(colName, sqlType, filterLength(length, resultSet.getString(6), type, session.dbms, resultSet.getInt(7)), precision);
 			column.isNullable = resultSet.getInt(11) == DatabaseMetaData.columnNullable;
 			Boolean isVirtual = null;
-			if (!Boolean.FALSE.equals(session.getSessionProperty(getClass(), "JDBC4Supported"))) {
-				try {
-					String virtual = resultSet.getString(24);
-					if (virtual != null) {
-						isVirtual = "YES".equalsIgnoreCase(virtual);
+			if (session.dbms.getExportBlocks().contains(sqlType)) {
+				isVirtual = true;
+			}
+			if (isVirtual == null) {
+				if (!Boolean.FALSE.equals(session.getSessionProperty(getClass(), "JDBC4Supported"))) {
+					try {
+						String virtual = resultSet.getString(24);
+						if (virtual != null) {
+							isVirtual = "YES".equalsIgnoreCase(virtual);
+						}
+					} catch (Exception e) {
+						session.setSessionProperty(getClass(), "JDBC4Supported", false);
 					}
-				} catch (Exception e) {
-					session.setSessionProperty(getClass(), "JDBC4Supported", false);
 				}
 			}
 			if (isVirtual == null) {

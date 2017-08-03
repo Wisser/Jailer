@@ -78,7 +78,7 @@ public class SQLDMLBuilder {
 			if (value == null) {
 				continue;
 			}
-			if (column.isVirtualOrBlocked(session)) {
+			if (column.isVirtual()) {
 				continue;
 			}
 			String name = quoting.requote(column.name);
@@ -138,7 +138,7 @@ public class SQLDMLBuilder {
 			if (value == null) {
 				continue;
 			}
-			if (column.isVirtualOrBlocked(session)) {
+			if (column.isVirtual()) {
 				continue;
 			}
 			String name = quoting.requote(column.name);

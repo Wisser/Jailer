@@ -1412,9 +1412,15 @@ public class SubsettingEngine {
 				executionContext.getProgressListenerRegistry().fireNewStage("delete", false, false);
 				executionContext.getProgressListenerRegistry().fireNewStage("delete-reduction", false, false);
 				setEntityGraph(exportedEntities);
+				List<Runnable> resetFilters = removeFilters(datamodel);
+				Table.clearSessionProperties(session);
 				deleteEntities(subjects, totalProgress, session);
 				datamodel.transpose();
 				writeEntities(deleteScriptFileName, ScriptType.DELETE, totalProgress, session, "writing delete-script");
+				for (Runnable rf: resetFilters) {
+					rf.run();
+				}
+				Table.clearSessionProperties(session);
 				exportedEntities.delete();
 				exportedEntities.shutDown();
 				setEntityGraph(entityGraph);
@@ -1512,8 +1518,7 @@ public class SubsettingEngine {
 		appendCommentHeader("Tabu-tables: " + new PrintUtil().tableSetAsString(tabuTables, "--                 "));
 		_log.info("Tabu-tables: " + new PrintUtil().tableSetAsString(tabuTables, null));
 		entityGraph.setDeleteMode(true);
-		List<Runnable> resetFilters = removeFilters(datamodel);
-
+		
 		final Map<Table, Long> removedEntities = new HashMap<Table, Long>();
 
 		// do not check tables in first step having exactly one 1:1 or 1:n
@@ -1644,9 +1649,6 @@ public class SubsettingEngine {
 		}
 		
 		appendCommentHeader("");
-		for (Runnable rf: resetFilters) {
-			rf.run();
-		}
 	}
 
 	/**

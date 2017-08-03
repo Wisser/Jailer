@@ -34,6 +34,7 @@ import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
+import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Filter;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.CellContentConverter;
@@ -118,6 +119,8 @@ public class UpdateTransformer extends AbstractResultSetReader {
 	 */
 	private final ExecutionContext executionContext;
 	
+	private final Set<String> primaryKeyColumnNames;
+
 	/**
 	 * Constructor.
 	 * 
@@ -143,7 +146,11 @@ public class UpdateTransformer extends AbstractResultSetReader {
 			}
 		}
 		this.session = session;
-		selectionClause = table.getSelectionClause(session);
+		selectionClause = table.getSelectionClause();
+		this.primaryKeyColumnNames = new HashSet<String>();
+		for (Column c: table.getNonVirtualPKColumns(session)) {
+			this.primaryKeyColumnNames.add(c.name.toUpperCase());
+		}
 	}
 
 	private final List<Column> selectionClause;
@@ -227,9 +234,8 @@ public class UpdateTransformer extends AbstractResultSetReader {
 				namedValues.append(cVal + " " + columnLabel[i]);
 			}
 
-			if (table.primaryKey.getColumns().isEmpty()) {
-				throw new RuntimeException("Unable to merge/upsert into table \"" + table.getName() + "\".\n" +
-						"No primary key.");
+			if (table.getNonVirtualPKColumns(session).isEmpty()) {
+				throw new DataModel.NoPrimaryKeyException(table);
 			}
 
 			Map<String, String> val = new HashMap<String, String>();
@@ -274,7 +280,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 			StringBuffer whereWOAlias = new StringBuffer("");
 			
 			// assemble 'where' for sub-select and update
-			for (Column pk: table.primaryKey.getColumns()) {
+			for (Column pk: table.getNonVirtualPKColumns(session)) {
 				if (!f) {
 					whereForTerminator.append(" and ");
 					where.append(" and ");
@@ -398,12 +404,7 @@ public class UpdateTransformer extends AbstractResultSetReader {
 	 * @return <code>true</code> if column is part of primary key
 	 */
 	private boolean isPrimaryKeyColumn(String column) {
-		for (Column c: table.primaryKey.getColumns()) {
-			if (c.name.equalsIgnoreCase(column)) {
-				return true;
-			}
-		}
-		return false;
+		return primaryKeyColumnNames.contains(column.toUpperCase());
 	}
 
 	/**

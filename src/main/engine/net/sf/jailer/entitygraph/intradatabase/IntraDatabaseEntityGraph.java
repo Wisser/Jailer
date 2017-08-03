@@ -485,7 +485,7 @@ public class IntraDatabaseEntityGraph extends RemoteEntityGraph {
 		StringBuilder sb = new StringBuilder();
 		boolean first = true;
 
-		for (Column c : table.getSelectionClause(session)) {
+		for (Column c : table.getSelectionClause()) {
 			if (!first) {
 				sb.append(", ");
 			}

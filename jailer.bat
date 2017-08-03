@@ -18,4 +18,4 @@ set CP=%CP%;%LIB%\jaxb-impl-2.3.0-b170127.1453.jar
 set CP=%CP%;%LIB%\jaxb-api-2.3.0-b170201.1204.jar
 set CP=%CP%;jailer.jar
 
-java -Xmx1024M -cp %CP% net.sf.jailer.Jailer %*
+java -Xmx1200M -cp %CP% net.sf.jailer.Jailer %*

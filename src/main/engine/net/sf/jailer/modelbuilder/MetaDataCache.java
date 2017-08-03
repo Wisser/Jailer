@@ -245,6 +245,7 @@ public class MetaDataCache {
 			if (rc == 0 && session.dbms != DBMS.ORACLE) {
 				throw new SQLException("Nothing found. Fall back to JDBC meta data.");
 			}
+			_log.info(rc + " rows read");
 		} finally {
 			session.setSilent(wasSilent);
 		}

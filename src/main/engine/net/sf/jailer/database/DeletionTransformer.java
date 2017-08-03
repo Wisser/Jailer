@@ -19,12 +19,14 @@ import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session.AbstractResultSetReader;
 import net.sf.jailer.database.Session.ResultSetReader;
 import net.sf.jailer.datamodel.Column;
+import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.subsetting.TransformerFactory;
 import net.sf.jailer.util.CellContentConverter;
@@ -142,9 +144,8 @@ public class DeletionTransformer extends AbstractResultSetReader {
 		this.session = session;
 		this.targetDBMSConfiguration = targetDBMSConfiguration;
 		
-		if (table.primaryKey.getColumns().isEmpty()) {
-			throw new RuntimeException("Unable to delete from table \"" + table.getName() + "\".\n" +
-					"No primary key.");
+		if (table.getNonVirtualPKColumns(session).isEmpty()) {
+			throw new DataModel.NoPrimaryKeyException(table);
 		}
 	}
 	
@@ -158,11 +159,12 @@ public class DeletionTransformer extends AbstractResultSetReader {
 			final SQLDialect currentDialect = targetDBMSConfiguration.getSqlDialect();
 			
 			CellContentConverter cellContentConverter = getCellContentConverter(resultSet, session, targetDBMSConfiguration);
+			List<Column> nonVirtualColumns = table.getNonVirtualPKColumns(session);
 			if (DBMS.SYBASE.equals(targetDBMSConfiguration) || (currentDialect != null && !currentDialect.isSupportsInClauseForDeletes())) {
 				String deleteHead = "Delete from " + qualifiedTableName(table) + " Where (";
 				boolean firstTime = true;
 				String item = "";
-				for (Column pkColumn: table.primaryKey.getColumns()) {
+				for (Column pkColumn: nonVirtualColumns) {
 					item += (firstTime? "" : " and ") + quoting.requote(pkColumn.name) + "="
 							+ cellContentConverter.toSql(cellContentConverter.getObject(resultSet, quoting.unquote(pkColumn.name)));
 					firstTime = false;
@@ -174,14 +176,14 @@ public class DeletionTransformer extends AbstractResultSetReader {
 			} else {
 				String deleteHead;
 				String item;
-				if (table.primaryKey.getColumns().size() == 1) {
-					deleteHead = "Delete from " + qualifiedTableName(table) + " Where " + quoting.requote(table.primaryKey.getColumns().get(0).name) + " in (";
-					item = cellContentConverter.toSql(cellContentConverter.getObject(resultSet, quoting.unquote(table.primaryKey.getColumns().get(0).name)));
+				if (nonVirtualColumns.size() == 1) {
+					deleteHead = "Delete from " + qualifiedTableName(table) + " Where " + quoting.requote(nonVirtualColumns.get(0).name) + " in (";
+					item = cellContentConverter.toSql(cellContentConverter.getObject(resultSet, quoting.unquote(nonVirtualColumns.get(0).name)));
 				} else {
 					deleteHead = "Delete from " + qualifiedTableName(table) + " Where (";
 					item = "(";
 					boolean firstTime = true;
-					for (Column pkColumn: table.primaryKey.getColumns()) {
+					for (Column pkColumn: nonVirtualColumns) {
 						deleteHead += (firstTime? "" : ", ") + quoting.requote(pkColumn.name);
 						item += (firstTime? "" : ", ") + cellContentConverter.toSql(cellContentConverter.getObject(resultSet, quoting.unquote(pkColumn.name)));
 						firstTime = false;
