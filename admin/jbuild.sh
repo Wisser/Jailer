@@ -1,3 +1,14 @@
+VER=`java -version 2>&1 | grep "java version" | awk '{print $3}' | tr -d \" | awk '{split($0, array, ".")} END{print array[2]}'`
+echo $VER
+if [ $VER = 7 ]; then
+    echo "Java version is 7"
+else
+    echo "Java version not 7"
+    exit 1
+fi
+
+
+
 cd
 cd jailergit/
 cd trunk/
