@@ -795,8 +795,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				applyAtCB.addItemListener(new java.awt.event.ItemListener() {
 					public void itemStateChanged(java.awt.event.ItemEvent evt) {
 						explicitlySetApplyAtPerColumn.put(c, applyAtCB.getSelectedIndex());
-						storeFilterExpressions();
-						refreshFilterPane();
+						apply();
 					}
 				});
 				gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1021,6 +1020,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 							textField.setEditable(true);
 							textField.setEnabled(true);
 						}
+						apply();
 					}
 				});
 				
@@ -1865,9 +1865,13 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	}//GEN-LAST:event_cancelButtonActionPerformed
 
 	private void applyButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_applyButtonActionPerformed
+		apply();
+	}//GEN-LAST:event_applyButtonActionPerformed
+
+	private void apply() {
 		storeFilterExpressions();
 		refreshFilterPane();
-	}//GEN-LAST:event_applyButtonActionPerformed
+	}
 
 	private void clauseDetailsSubjectComboBoxItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_clauseDetailsSubjectComboBoxItemStateChanged
 		if (evt.getItem() instanceof Subject) {
