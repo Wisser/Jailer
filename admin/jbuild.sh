@@ -10,8 +10,7 @@ fi
 
 
 cd
-cd jailergit/
-cd trunk/
+cd workspace/jailer-code/
 svn up
 sh admin/release.sh jailer_$1
 sh admin/release-dbeauty.sh dbeauty_$2
