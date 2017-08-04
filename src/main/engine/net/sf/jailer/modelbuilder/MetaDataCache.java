@@ -40,6 +40,7 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -182,7 +183,7 @@ public class MetaDataCache {
 				String table = (String) row[2];
 				List<Object[]> rowList = metaDataCache.cache.get(table);
 				if (rowList == null) {
-					rowList = new ArrayList<Object[]>();
+					rowList = new LinkedList<Object[]>();
 					metaDataCache.cache.put(table, rowList);
 				}
 				rowList.add(row);
@@ -236,7 +237,7 @@ public class MetaDataCache {
 					String table = (String) row[2];
 					List<Object[]> rowList = metaDataCache.cache.get(table);
 					if (rowList == null) {
-						rowList = new ArrayList<Object[]>();
+						rowList = new LinkedList<Object[]>();
 						metaDataCache.cache.put(table, rowList);
 					}
 					rowList.add(row);
