@@ -72,6 +72,7 @@ import net.sf.jailer.datamodel.filter_template.Clause.Predicate;
 import net.sf.jailer.datamodel.filter_template.Clause.Subject;
 import net.sf.jailer.datamodel.filter_template.FilterTemplate;
 import net.sf.jailer.ui.ParameterSelector.ParametersGetter;
+import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -667,6 +668,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	private FilterConditionEditor conditionEditor;
 	
 	private IdentityHashMap<Column, Integer> explicitlySetApplyAtPerColumn = new IdentityHashMap<Column, Integer>();
+	private IdentityHashMap<Column, Pair<String, Integer>> excludedPrevValue = new IdentityHashMap<Column, Pair<String, Integer>>();
 	
 	/**
 	 * Refreshes the filter pane.
@@ -1007,18 +1009,29 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				excluded.setToolTipText("Exclude this column from export.");
 				
 				excluded.addItemListener(new ItemListener() {
-					String prevValue = "";
 					@Override
 					public void itemStateChanged(ItemEvent e) {
 						if (excluded.isSelected()) {
-							prevValue = textField.getText();
+							String expr = "";
+							if (c.getFilter() != null || !textField.getText().equals(Filter.OLD_VALUE_PROP)) {
+								if (c.getFilter() == null || !c.getFilter().isDerived()) {
+									expr = textField.getText();
+								}
+							}
+							excludedPrevValue.put(c, new Pair<String, Integer>(expr, applyAtCB.getSelectedIndex()));
 							textField.setText(Filter.EXCLUDED_VALUE);
 							textField.setEditable(false);
 							textField.setEnabled(false);
 						} else {
-							textField.setText(prevValue);
+							Pair<String, Integer> pv = excludedPrevValue.get(c);
 							textField.setEditable(true);
 							textField.setEnabled(true);
+							if (pv != null) {
+								textField.setText(pv.a);
+								applyAtCB.setSelectedIndex(pv.b);
+							} else {
+								textField.setText("");
+							}
 						}
 						apply();
 					}

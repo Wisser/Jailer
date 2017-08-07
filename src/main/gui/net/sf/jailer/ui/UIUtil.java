@@ -151,8 +151,19 @@ public class UIUtil {
 			fileChooser.setFile(selectedFile.getName());
 		} else if (extension != null && extension.length() > 0) {
 			if (System.getProperty("os.name", "").toLowerCase().startsWith("windows")) {
-				fileChooser
-						.setFile("*" + extension + (extensionAlias != null? ";*" + extensionAlias : "") + (allowZip ? ";*" + ".zip;*" + ".gz" : ""));
+				// workaround: http://bugs.java.com/view_bug.do?bug_id=8021943
+				boolean set = true;
+				Matcher m = Pattern.compile("1.7.0_(\\d+).*").matcher(System.getProperty("java.version", ""));
+				if (m.matches()) {
+					try {
+						set = Integer.parseInt(m.group(1)) > 40;
+					} catch (NumberFormatException e) {
+						// ignore;
+					}
+				}
+				if (set) {
+					fileChooser.setFile("*" + extension + (extensionAlias != null? ";*" + extensionAlias : "") + (allowZip ? ";*" + ".zip;*" + ".gz" : ""));
+				}
 			}
 		}
 		FilenameFilter filter = new FilenameFilter() {
