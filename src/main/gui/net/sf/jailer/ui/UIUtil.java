@@ -312,10 +312,10 @@ public class UIUtil {
 			final boolean printCommandLine, boolean showExplainLogButton, final boolean closeOutputWindow,
 			String continueOnErrorQuestion, String password, final ProgressListener progressListener,
 			final ProgressPanel progressPanel, final boolean showExeptions, boolean fullSize,
-			boolean returnFalseOnError) {
+			boolean returnFalseOnError, ExecutionContext executionContext) {
 		return runJailer(ownerOfConsole, cliArgs, showLogfileButton, printCommandLine, showExplainLogButton,
 				closeOutputWindow, continueOnErrorQuestion, password, progressListener, progressPanel, showExeptions,
-				fullSize, false, returnFalseOnError, false);
+				fullSize, false, returnFalseOnError, false, executionContext);
 	}
 
 	/**
@@ -343,10 +343,10 @@ public class UIUtil {
 			final boolean printCommandLine, boolean showExplainLogButton, final boolean closeOutputWindow,
 			String continueOnErrorQuestion, String password, final ProgressListener progressListener,
 			final ProgressPanel progressPanel, final boolean showExeptions, boolean fullSize,
-			final boolean closeOutputWindowOnError, boolean returnFalseOnError, boolean throwException) {
+			final boolean closeOutputWindowOnError, boolean returnFalseOnError, boolean throwException, ExecutionContext executionContext) {
 		JDialog dialog = new JDialog(ownerOfConsole);
 		List<String> args = new ArrayList<String>(cliArgs);
-		final StringBuffer arglist = createCLIArgumentString(password, args);
+		final StringBuffer arglist = createCLIArgumentString(password, args, executionContext);
 		final String[] argsarray = new String[args.size()];
 		int i = 0;
 		for (String arg : args) {
@@ -559,9 +559,8 @@ public class UIUtil {
 		}
 	}
 
-	public static StringBuffer createCLIArgumentString(String password, List<String> args) {
+	public static StringBuffer createCLIArgumentString(String password, List<String> args, ExecutionContext executionContext) {
 		args.add("-datamodel");
-		ExecutionContext executionContext = CommandLineInstance.getExecutionContext();
 		args.add(executionContext.getQualifiedDatamodelFolder());
 		return createPlainCLIArguments(password, args);
 	}

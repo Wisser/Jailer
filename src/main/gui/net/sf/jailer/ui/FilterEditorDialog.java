@@ -97,7 +97,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	/**
 	 * The execution context.
 	 */
-	private final ExecutionContext executionContext = CommandLineInstance.getExecutionContext();
+	private final ExecutionContext executionContext;
 	
 	/**
 	 * Make {@link #refresh(Table)} reentrant.
@@ -452,8 +452,9 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	};
 	
 	/** Creates new form FilterEditor */
-	public FilterEditorDialog(ExtractionModelFrame parent, final ParameterSelector.ParametersGetter parametersGetter) {
+	public FilterEditorDialog(ExtractionModelFrame parent, final ParameterSelector.ParametersGetter parametersGetter, ExecutionContext executionContext) {
 		super(parent, true);
+		this.executionContext = executionContext;
 		this.conditionEditor = new FilterConditionEditor(parent, new ParameterSelector.ParametersGetter() {
 			@Override
 			public Set<String> getParameters() {

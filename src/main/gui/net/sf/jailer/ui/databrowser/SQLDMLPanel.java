@@ -27,6 +27,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.util.SqlScriptExecutor;
@@ -50,9 +51,12 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 	 */
 	private final Runnable afterExecution;
 	
+	private final ExecutionContext executionContext;
+	
 	/** Creates new form SQLPanel 
 	 * @param sql */
-	public SQLDMLPanel(String sql, Session session, Runnable afterExecution) {
+	public SQLDMLPanel(String sql, Session session, Runnable afterExecution, ExecutionContext executionContext) {
+		this.executionContext = executionContext;
 		this.session = session;
 		this.afterExecution = afterExecution;
 		initComponents();
@@ -335,7 +339,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 			args.add(sqlFile);
 			args.addAll(session.getCliArguments());
 			args.add("-transactional");
-			if (UIUtil.runJailer(SwingUtilities.getWindowAncestor(this), args, false, true, false, true, null, session.getPassword(), null, null, false, false, true)) {
+			if (UIUtil.runJailer(SwingUtilities.getWindowAncestor(this), args, false, true, false, true, null, session.getPassword(), null, null, false, false, true, executionContext)) {
 				statusLabel.setText("Executed " + SqlScriptExecutor.getLastStatementCount().a + " statements. " +
 						SqlScriptExecutor.getLastStatementCount().b + " rows affected");
 				statusLabel.setForeground(new Color(0, 100, 0));

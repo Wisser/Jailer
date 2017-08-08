@@ -27,6 +27,7 @@ import net.sf.jailer.database.WorkingTableScope;
 import net.sf.jailer.progress.ProgressListenerRegistry;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.util.CsvFile;
+import net.sf.jailer.util.LayoutStorage;
 
 /**
  * Execution context of import-/export commands.
@@ -84,7 +85,7 @@ public class ExecutionContext {
 	 * 
 	 * @param executionContext the command line
 	 */
-	public ExecutionContext(CommandLine commandLine) throws Exception {
+	public ExecutionContext(CommandLine commandLine) {
 		copyCommandLineFields(commandLine);
 	}
 
@@ -762,6 +763,16 @@ public class ExecutionContext {
 	 */
 	public ProgressListenerRegistry getProgressListenerRegistry() {
 		return progressListenerRegistry;
+	}
+
+	private LayoutStorage layoutStorage = new LayoutStorage();
+	
+	public LayoutStorage getLayoutStorage() {
+		return layoutStorage;
+	}
+
+	public void setLayoutStorage(LayoutStorage layoutStorage) {
+		this.layoutStorage = layoutStorage;
 	}
 
 	private void copyCommandLineFields(CommandLine commandLine) {

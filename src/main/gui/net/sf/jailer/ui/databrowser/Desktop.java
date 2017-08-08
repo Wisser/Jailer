@@ -92,7 +92,6 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.ui.CommandLineInstance;
 import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.Environment;
@@ -177,8 +176,8 @@ public abstract class Desktop extends JDesktopPane {
 	 * @param session
 	 *            DB-session
 	 */
-	public Desktop(Reference<DataModel> datamodel, Icon jailerIcon, Session session, DataBrowser parentFrame, DbConnectionDialog dbConnectionDialog) {
-		this.executionContext = CommandLineInstance.getExecutionContext();
+	public Desktop(Reference<DataModel> datamodel, Icon jailerIcon, Session session, DataBrowser parentFrame, DbConnectionDialog dbConnectionDialog, ExecutionContext executionContext) {
+		this.executionContext = executionContext;
 		this.parentFrame = parentFrame;
 		this.datamodel = datamodel;
 		this.jailerIcon = jailerIcon;
@@ -2231,7 +2230,7 @@ public abstract class Desktop extends JDesktopPane {
 				loadSchemaMapping = false;
 			}
 			if (!silent) {
-				SchemaMappingDialog schemaMappingDialog = new SchemaMappingDialog(parentFrame, datamodel.get(), dbConnectionDialog, session, mapping);
+				SchemaMappingDialog schemaMappingDialog = new SchemaMappingDialog(parentFrame, datamodel.get(), dbConnectionDialog, session, mapping, executionContext);
 				mapping = schemaMappingDialog.getMapping();
 			}
 			if (mapping != null) {

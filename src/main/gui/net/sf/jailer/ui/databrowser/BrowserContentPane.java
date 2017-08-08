@@ -1445,14 +1445,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			Map<String, Map<String, double[]>> positions = new TreeMap<String, Map<String,double[]>>();
 			collectPositions(positions);
-			String currentModelSubfolder = DataModelManager.getCurrentModelSubfolder();
+			String currentModelSubfolder = DataModelManager.getCurrentModelSubfolder(executionContext);
 			dataModel.save(file, stable, subjectCondition, ScriptFormat.SQL, restrictionDefinitions, positions, new ArrayList<ExtractionModel.AdditionalSubject>(), currentModelSubfolder);
 
 			if (DataBrowserContext.isStandAlone() && !doExport) {
 				parent.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 				JOptionPane.showMessageDialog(parent, "Jailer Extraction Model created:\n'" + file+ "'\n\nJailer Database Subsetter Tool can be found at http://jailer.sourceforge.net", "Jailer Extraction Model", JOptionPane.INFORMATION_MESSAGE);
 			} else {
-				ExtractionModelFrame extractionModelFrame = ExtractionModelFrame.createFrame(file, false, !doExport);
+				ExtractionModelFrame extractionModelFrame = ExtractionModelFrame.createFrame(file, false, !doExport, executionContext);
 				extractionModelFrame.setDbConnectionDialogClone(getDbConnectionDialog());
 				if (doExport) {
 					extractionModelFrame.openExportDialog(false, new Runnable() {
@@ -1712,7 +1712,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				public void run() {
 					reloadRows();
 				}
-			}));
+			}, executionContext));
 			d.pack();
 			d.setLocation(x - 50, y - 100);
 			d.setSize(700, Math.max(d.getHeight() + 20, 400));

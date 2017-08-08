@@ -104,7 +104,6 @@ import net.sf.jailer.ui.graphical_view.AssociationRenderer;
 import net.sf.jailer.ui.graphical_view.GraphicalDataModelView;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.util.CsvFile;
-import net.sf.jailer.util.LayoutStorage;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -216,7 +215,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	/**
 	 * The execution context.
 	 */
-	private final ExecutionContext executionContext = CommandLineInstance.getExecutionContext();
+	private final ExecutionContext executionContext;
 	
 	/** 
 	 * Creates new form ModelTree.
@@ -224,9 +223,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 * @param extractionModelFile file containing the model
 	 * @param extractionModelFrame the enclosing frame
 	 */
-	public ExtractionModelEditor(String extractionModelFile, ExtractionModelFrame extractionModelFrame, boolean horizontalLayout, String connectionState, String connectionStateToolTip) {
+	public ExtractionModelEditor(String extractionModelFile, ExtractionModelFrame extractionModelFrame, boolean horizontalLayout, String connectionState, String connectionStateToolTip, ExecutionContext executionContext) {
+		this.executionContext = executionContext;
 		this.extractionModelFrame = extractionModelFrame;
 		this.extractionModelFile = extractionModelFile;
+		extractionModelFrame.reload.setEnabled(false);
 		ParameterSelector.ParametersGetter parametersGetter = new ParameterSelector.ParametersGetter() {
 			@Override
 			public Set<String> getParameters() {
@@ -248,10 +249,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				needsSave = extractionModelFile != null;
 				dataModel = new DataModel(executionContext);
 				extractionModel = new ExtractionModel(dataModel, executionContext);
-				LayoutStorage.removeAll();
+				executionContext.getLayoutStorage().removeAll();
 			} else {
 				extractionModel = new ExtractionModel(extractionModelFile, new HashMap<String, String>(), new HashMap<String, String>(), executionContext);
-				LayoutStorage.restore(extractionModelFile);
+				executionContext.getLayoutStorage().restore(extractionModelFile);
 			}
 			subject = extractionModel.subject;
 			dataModel = extractionModel.dataModel;
@@ -325,9 +326,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		restrictionEditor = new RestrictionEditor();
 		
 		if (isHorizontalLayout ) {
-			graphView = new GraphicalDataModelView(dataModel, this, subject, true, 948, 379);
+			graphView = new GraphicalDataModelView(dataModel, this, subject, true, 948, 379, executionContext);
 		} else {
-			graphView = new GraphicalDataModelView(dataModel, this, subject, true, 648, 579);
+			graphView = new GraphicalDataModelView(dataModel, this, subject, true, 648, 579, executionContext);
 		}
 		graphContainer.add(graphView);
 
@@ -753,7 +754,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		if (full) {
 			graphView.close(storeLayout, removeLayout);
 			graphContainer.remove(graphView);
-			graphView = new GraphicalDataModelView(dataModel, this, root, expandRoot, graphView.display.getWidth(), graphView.display.getHeight());
+			graphView = new GraphicalDataModelView(dataModel, this, root, expandRoot, graphView.display.getWidth(), graphView.display.getHeight(), executionContext);
 			graphContainer.add(graphView);
 		} else {
 			graphView.resetExpandedState();
@@ -2359,6 +2360,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				return false;
 			}
 			extractionModelFile = newFile;
+			extractionModelFrame.reload.setEnabled(extractionModelFile != null && needsSave);
 		}
 		String file = extractionModelFile;
 		graphView.storeLayout();
@@ -2376,7 +2378,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			if (stable == null) {
 				return true;
 			}
-			String currentModelSubfolder = DataModelManager.getCurrentModelSubfolder();
+			String currentModelSubfolder = DataModelManager.getCurrentModelSubfolder(executionContext);
 			dataModel.save(fileName, stable, ConditionEditor.toMultiLine(condition.getText()), scriptFormat, currentRestrictionDefinitions, null, extractionModel.additionalSubjects, currentModelSubfolder);
 		} catch (Exception e) {
 			UIUtil.showException(this, "Could not save " + new File(fileName).getName(), e);
@@ -2694,7 +2696,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 				Layout layout = new Layout();
 				layout.root = root;
 //				layout.bounds = graphView.getDisplayBounds();
-				LayoutStorage.setTempStorage(layout.positions);
+				executionContext.getLayoutStorage().setTempStorage(layout.positions);
 				graphView.storeLayout();
 				
 				if (!undoStack.isEmpty()) {
@@ -2711,7 +2713,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			}
 		} finally {
 			if (captureLevel == 0) {
-				LayoutStorage.setTempStorage(null);
+				executionContext.getLayoutStorage().setTempStorage(null);
 			}
 			++captureLevel;
 		}
@@ -2736,7 +2738,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			Layout layout = undoStack.pop();
 			try {
 				++captureLevel;
-				LayoutStorage.setTempStorage(layout.positions);
+				executionContext.getLayoutStorage().setTempStorage(layout.positions);
 				Table table = layout.root;
 				if (table != null) {
 					root = table;
@@ -2754,7 +2756,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			} finally {
 				--captureLevel;
 				rootTableItemStateChangedSetRoot = true;
-				LayoutStorage.setTempStorage(null);
+				executionContext.getLayoutStorage().setTempStorage(null);
 			}
 		}
 		updateLeftButton();

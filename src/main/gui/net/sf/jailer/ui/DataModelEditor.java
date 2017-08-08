@@ -112,7 +112,7 @@ public class DataModelEditor extends javax.swing.JDialog {
 	/**
 	 * The execution context.
 	 */
-	private final ExecutionContext executionContext = CommandLineInstance.getExecutionContext();
+	private final ExecutionContext executionContext;
 	
 	/** 
 	 * Creates new form DataModelEditor.
@@ -121,8 +121,9 @@ public class DataModelEditor extends javax.swing.JDialog {
 	 * @param assocFilter 
 	 * @param tableFilter 
 	 */
-	public DataModelEditor(java.awt.Frame parent, boolean merge, boolean initiallyDirty, final Table toEdit, LineFilter tableFilter, LineFilter assocFilter, String modelname, String modelnameSuggestion) throws Exception {
+	public DataModelEditor(java.awt.Frame parent, boolean merge, boolean initiallyDirty, final Table toEdit, LineFilter tableFilter, LineFilter assocFilter, String modelname, String modelnameSuggestion, ExecutionContext executionContext) throws Exception {
 		super(parent, true);
+		this.executionContext = executionContext;
 		tables = new CsvFile(new File(DataModel.getTablesFile(executionContext)), tableFilter).getLines();
 
 		displayNames = new TreeMap<String, String>();
@@ -845,14 +846,14 @@ public class DataModelEditor extends javax.swing.JDialog {
 	 * Saves the model name.
 	 */
 	private void saveName() throws FileNotFoundException {
-		createNameFile(nameTextField.getText());
+		createNameFile(nameTextField.getText(), executionContext);
 	}
 
 	/**
 	 * Saves the model name.
 	 */
-	public static void createNameFile(String name) throws FileNotFoundException {
-		PrintWriter out = new PrintWriter(DataModel.getModelNameFile(CommandLineInstance.getExecutionContext()));
+	public static void createNameFile(String name, ExecutionContext executionContext) throws FileNotFoundException {
+		PrintWriter out = new PrintWriter(DataModel.getModelNameFile(executionContext));
 		out.println("# name; last modification");
 		out.println(CsvFile.encodeCell(name) + "; " + CsvFile.encodeCell(Long.toString(new Date().getTime())));
 		out.close();

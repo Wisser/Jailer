@@ -1,3 +1,6 @@
+3.4.2
+  - Added ability to open more than one model editor at a time.
+
 3.4.1
   - Fix for "#20 OutOfMemoryError: Java heap space - Reply" (https://sourceforge.net/p/jailer/bugs/20/ )
 

@@ -50,6 +50,7 @@ import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
@@ -59,7 +60,6 @@ import net.sf.jailer.ui.ExtractionModelEditor;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.scrollmenu.JScrollMenu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
-import net.sf.jailer.util.LayoutStorage;
 import prefuse.Display;
 import prefuse.Visualization;
 import prefuse.action.Action;
@@ -180,6 +180,7 @@ public class GraphicalDataModelView extends JPanel {
 
 	private NBodyForce force;
 	private volatile boolean layoutHasBeenSet = false;
+	private final ExecutionContext executionContext;
 	
 	/**
 	 * Constructor.
@@ -189,8 +190,9 @@ public class GraphicalDataModelView extends JPanel {
 	 * @param width
 	 * @param height initial size
 	 */
-	public GraphicalDataModelView(final DataModel model, ExtractionModelEditor modelEditor, Table subject, boolean expandSubject, int width, int height) {
+	public GraphicalDataModelView(final DataModel model, ExtractionModelEditor modelEditor, Table subject, boolean expandSubject, int width, int height, ExecutionContext executionContext) {
 		super(new BorderLayout());
+		this.executionContext = executionContext;
 		this.model = model;
 		this.modelEditor = modelEditor;
 		this.root = subject;
@@ -198,7 +200,7 @@ public class GraphicalDataModelView extends JPanel {
 		tableRenderer = new TableRenderer(model, this);
 		final Set<Table> initiallyVisibleTables = new HashSet<Table>();
 		if (subject != null) {
-			Map<String, double[]> positions = LayoutStorage.getPositions(subject.getName());
+			Map<String, double[]> positions = executionContext.getLayoutStorage().getPositions(subject.getName());
 			if (positions != null) {
 				for (String tn: positions.keySet()) {
 					Table table = model.getTable(tn);
@@ -451,7 +453,7 @@ public class GraphicalDataModelView extends JPanel {
 					VisualItem item = (VisualItem)items.next();
 					if (item.canGetString("label") ) {
 						String tableName = item.getString("label");
-						double[] pos = LayoutStorage.getPosition(root.getName(), tableName);
+						double[] pos = executionContext.getLayoutStorage().getPosition(root.getName(), tableName);
 						if (pos != null) {
 							if (bounds == null) {
 								bounds = new Rectangle2D.Double(pos[0], pos[1], 1, 1);
@@ -604,7 +606,7 @@ public class GraphicalDataModelView extends JPanel {
 		animate.add(layout);
 		layout.run();
 		if (root != null) {
-			final Map<String, double[]> posMap = LayoutStorage.getPositions(root.getName());
+			final Map<String, double[]> posMap = executionContext.getLayoutStorage().getPositions(root.getName());
 			Action a = new Action() {
 				boolean done = false;
 				@Override
@@ -662,7 +664,7 @@ public class GraphicalDataModelView extends JPanel {
 	public void storeLayout() {
 		if (root != null && layoutHasBeenSet) {
 			synchronized (visualization) {
-				LayoutStorage.removeAll(root.getName());
+				executionContext.getLayoutStorage().removeAll(root.getName());
 				Iterator items = visualization.items(BooleanLiteral.TRUE);
 				for (int m_visibleCount=0; items.hasNext(); ++m_visibleCount ) {
 					VisualItem item = (VisualItem)items.next();
@@ -670,11 +672,11 @@ public class GraphicalDataModelView extends JPanel {
 						String tableName;
 						tableName = item.getString("label");
 						if (tableName != null) {
-							LayoutStorage.setPosition(root.getName(), tableName, new double[] { item.getX(), item.getY(), item.isFixed()? 1.0:0.0 });
+							executionContext.getLayoutStorage().setPosition(root.getName(), tableName, new double[] { item.getX(), item.getY(), item.isFixed()? 1.0:0.0 });
 						}
 					}
 				}
-				LayoutStorage.checkSignificance(root.getName());
+				executionContext.getLayoutStorage().checkSignificance(root.getName());
 			}
 		}
 	}
@@ -1061,7 +1063,7 @@ public class GraphicalDataModelView extends JPanel {
 			storeLayout();
 		} else if (removeLayout) {
 			if (root != null) {
-				LayoutStorage.removeAll(root.getName());
+				executionContext.getLayoutStorage().removeAll(root.getName());
 			}
 		}
 		visualization.reset();
