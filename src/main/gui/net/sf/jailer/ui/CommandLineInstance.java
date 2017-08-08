@@ -34,26 +34,12 @@ public class CommandLineInstance {
 	private static CommandLine commandLine;
 	
 	/**
-	 * The singleton as {@link ExecutionContext}.
-	 */
-	private static ExecutionContext executionContext;
-	
-	/**
 	 * Gets the singleton.
 	 * 
 	 * @return the singleton
 	 */
 	public static CommandLine getInstance() {
 		return commandLine;
-	}
-
-	/**
-	 * Gets the singleton as Ex.
-	 * 
-	 * @return the singleton
-	 */
-	public static ExecutionContext getExecutionContext() {
-		return executionContext;
 	}
 
 	/**
@@ -64,7 +50,6 @@ public class CommandLineInstance {
 		if (!new File(commandLine.datamodelFolder).isAbsolute()) {
 			commandLine.datamodelFolder = Environment.newFile(commandLine.datamodelFolder).getPath();
 		}
-		executionContext = new ExecutionContext(commandLine);
 	}
 
 }

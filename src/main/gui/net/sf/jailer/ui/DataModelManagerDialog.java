@@ -46,6 +46,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.util.Pair;
@@ -77,6 +78,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	 */
 	private String currentModel;
 
+	private final ExecutionContext executionContext = new ExecutionContext(CommandLineInstance.getInstance());
+	
 	/** 
 	 * Creates new.
 	 */
@@ -90,7 +93,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				"Select a data model to work with.");
 		UIUtil.replace(infoBarLabel, infoBar);
 		
-		String modelpath = CommandLineInstance.getExecutionContext().getQualifiedDatamodelFolder();
+		String modelpath = executionContext.getQualifiedDatamodelFolder();
 		try {
 			modelpath = new File(modelpath).getAbsolutePath();
 		} catch (Throwable t) {
@@ -193,14 +196,14 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	}
 
 	private void loadModelList() {
-		DataModelManager.setCurrentModelSubfolder(null);
+		DataModelManager.setCurrentModelSubfolder(null, executionContext);
 		
 		modelList = new ArrayList<String>();
 		modelDetails = new HashMap<String, Pair<String,Long>>();
-		for (String mf: DataModelManager.getModelFolderNames()) {
+		for (String mf: DataModelManager.getModelFolderNames(executionContext)) {
 			String modelFolder = mf == null? "" : mf;
 			modelList.add(modelFolder);
-			modelDetails.put(modelFolder, DataModelManager.getModelDetails(mf));
+			modelDetails.put(modelFolder, DataModelManager.getModelDetails(mf, executionContext));
 		}
 		Collections.sort(modelList, new Comparator<String>() {
 			@Override
@@ -518,7 +521,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		if (currentModel != null) {
 			if (JOptionPane.showConfirmDialog(this, "Do you really want to delete Data Model \"" + modelDetails.get(currentModel).a + "\"?", "Delete", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE) == JOptionPane.YES_OPTION) {
 				modelList.remove(currentModel);
-				DataModelManager.deleteModel(currentModel);
+				DataModelManager.deleteModel(currentModel, executionContext);
 				dataModelsTable.getSelectionModel().clearSelection();
 				refresh();
 				store();
@@ -527,14 +530,14 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	}//GEN-LAST:event_deleteButtonActionPerformed
 
 	private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
-		DataModelManager.setCurrentModelSubfolder(null);
+		DataModelManager.setCurrentModelSubfolder(null, executionContext);
 		
 		NewDataModelDialog newDataModelDialog = new NewDataModelDialog(this, modelList);
 		
 		String newName = newDataModelDialog.getNameEntered();
 		if (newName != null) {
 			try {
-				DataModelManager.createNewModel(newName, newDataModelDialog.getFolderName());
+				DataModelManager.createNewModel(newName, newDataModelDialog.getFolderName(), executionContext);
 				loadModelList();
 				currentModel = newName;
 				refresh();
@@ -555,7 +558,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	}//GEN-LAST:event_editButtonActionPerformed
 
 	private void activateCurrentModel() {
-		DataModelManager.setCurrentModelSubfolder(currentModel.length() == 0? null : currentModel);
+		DataModelManager.setCurrentModelSubfolder(currentModel.length() == 0? null : currentModel, executionContext);
 	}
 
 	private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
@@ -571,14 +574,14 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			DbConnectionDialog dbConnectionDialog = new DbConnectionDialog(this, applicationName,
 					new InfoBar("Connect with Database", 
 							"Select a connection to the database to be analyzed, or create a new connection.\n" +
-							"New connections will be assigned to the datamodel \"" + modelDetails.get(currentModel).a + "\"."));
+							"New connections will be assigned to the datamodel \"" + modelDetails.get(currentModel).a + "\"."), executionContext);
 			if (dbConnectionDialog.connect("Analyze Database")) {
 				List<String> args = new ArrayList<String>();
 				args.add("build-model-wo-merge");
 				dbConnectionDialog.addDbArgs(args);
 				
-				DataModel dataModel = new DataModel(CommandLineInstance.getExecutionContext());
-				AnalyseOptionsDialog analyseOptionsDialog = new AnalyseOptionsDialog(this, dataModel);
+				DataModel dataModel = new DataModel(executionContext);
+				AnalyseOptionsDialog analyseOptionsDialog = new AnalyseOptionsDialog(this, dataModel, executionContext);
 				boolean[] isDefaultSchema = new boolean[1];
 				String[] defaultSchema = new String[1];
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
@@ -599,10 +602,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					}
 					analyseOptionsDialog.appendAnalyseCLIOptions(args);
 					ModelBuilder.assocFilter = analyseOptionsDialog.getAssociationLineFilter();
-					if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword(), null, null, false, true, false)) {
+					if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
 						ModelBuilder.assocFilter = null;
 						String modelname = dataModel.getName();
-						DataModelEditor dataModelEditor = new DataModelEditor(this, true, analyseOptionsDialog.isRemoving(), null, analyseOptionsDialog.getTableLineFilter(), analyseOptionsDialog.getAssociationLineFilter(), modelname, schema == null? dbConnectionDialog.getName() : schema);
+						DataModelEditor dataModelEditor = new DataModelEditor(this, true, analyseOptionsDialog.isRemoving(), null, analyseOptionsDialog.getTableLineFilter(), analyseOptionsDialog.getAssociationLineFilter(), modelname, schema == null? dbConnectionDialog.getName() : schema, executionContext);
 						if (dataModelEditor.dataModelHasChanged()) {
 							dataModelEditor.setVisible(true);
 						}
@@ -625,7 +628,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	 */
 	private void edit(String modelFolder) {
 		try {
-			DataModelEditor dataModelEditor = new DataModelEditor(this, false, false, null, null, null, modelDetails.get(modelFolder == null? "" : modelFolder).a, null);
+			DataModelEditor dataModelEditor = new DataModelEditor(this, false, false, null, null, null, modelDetails.get(modelFolder == null? "" : modelFolder).a, null, executionContext);
 			dataModelEditor.setVisible(true);
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
@@ -642,13 +645,13 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		hasSelectedModel = true;
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		store();
-		onSelect();
+		onSelect(executionContext);
 		setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		setVisible(false);
 		dispose();
 	}// GEN-LAST:event_okButtonActionPerformed
 
-	protected abstract void onSelect();
+	protected abstract void onSelect(ExecutionContext executionContext);
 
 	// Variables declaration - do not modify//GEN-BEGIN:variables
 	private javax.swing.JButton analyzeButton;

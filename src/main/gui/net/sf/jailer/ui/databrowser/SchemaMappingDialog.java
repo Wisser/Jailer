@@ -30,10 +30,10 @@ import java.util.TreeSet;
 
 import javax.swing.JLabel;
 
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.ui.CommandLineInstance;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.JComboBox;
@@ -52,7 +52,7 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 	/** Creates new form SchemaMappingDialog 
 	 * @param mapping 
 	 * @throws Exception */
-	public SchemaMappingDialog(java.awt.Frame parent, DataModel dataModel, DbConnectionDialog connectionDialog, Session session, Map<String, String> mapping) throws Exception {
+	public SchemaMappingDialog(java.awt.Frame parent, DataModel dataModel, DbConnectionDialog connectionDialog, Session session, Map<String, String> mapping, ExecutionContext executionContext) throws Exception {
 		super(parent, true);
 		initComponents();
 
@@ -62,7 +62,7 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 				windowAncestor.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			}
 			SortedSet<String> modelSchemas = new TreeSet<String>();
-			for (Table table: new DataModel(CommandLineInstance.getExecutionContext()).getTables()) {
+			for (Table table: new DataModel(executionContext).getTables()) {
 				modelSchemas.add(table.getSchema(DEFAULT));
 			}
 			SortedSet<String> dbSchemas = new TreeSet<String>(connectionDialog.getDBSchemas(new String[1]));

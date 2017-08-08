@@ -64,7 +64,11 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
 		
 		pack();
 		setSize(Math.max(400, getWidth()), getHeight());
-		setLocation(300, 100);
+		if (parent != null) {
+			setLocation(parent.getX() + 300, parent.getY() + 100);
+		} else {
+			setLocation(300, 100);
+		}
 		setVisible(true);
 	}
 

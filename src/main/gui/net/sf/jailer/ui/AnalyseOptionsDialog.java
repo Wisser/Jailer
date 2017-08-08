@@ -20,6 +20,7 @@ import java.util.List;
 
 import javax.swing.DefaultComboBoxModel;
 
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
@@ -43,26 +44,29 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 	private int numManTables = 0;
 	private int numManAssociations = 0;
 	
+	private final ExecutionContext executionContext;
+	
 	/**
 	 * true if user clicks OK button.
 	 */
 	private boolean ok;
 	
 	/** Creates new form AnalyseOptionsDialog */
-	public AnalyseOptionsDialog(java.awt.Frame parent, DataModel dataModel) throws Exception {
+	public AnalyseOptionsDialog(java.awt.Frame parent, DataModel dataModel, ExecutionContext executionContext) throws Exception {
 		super(parent, true);
+		this.executionContext = executionContext;
 		initComponents();
 		
 		AutoCompletion.enable(schemaComboBox);
 		
-		List<Line> tables = new CsvFile(new File(DataModel.getTablesFile(CommandLineInstance.getExecutionContext()))).getLines();
+		List<Line> tables = new CsvFile(new File(DataModel.getTablesFile(executionContext))).getLines();
 		for (Line table: tables) {
 			++numTables;
 			if (isManuallyEditedTable(table)) {
 				++numManTables;
 			}
 		}
-		List<Line> assocs = new CsvFile(new File(DataModel.getAssociationsFile(CommandLineInstance.getExecutionContext()))).getLines();
+		List<Line> assocs = new CsvFile(new File(DataModel.getAssociationsFile(executionContext))).getLines();
 		for (Line assoc: assocs) {
 			++numAssociations;
 			if (isManuallyEditedAssoc(assoc)) {

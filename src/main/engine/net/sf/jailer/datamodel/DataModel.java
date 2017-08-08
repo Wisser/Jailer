@@ -909,9 +909,9 @@ public class DataModel {
 		saveFilterTemplates(out);
 		out.println();
 		if (positions == null) {
-			LayoutStorage.store(out);
+			executionContext.getLayoutStorage().store(out);
 		} else {
-			LayoutStorage.store(out, positions);
+			executionContext.getLayoutStorage().store(out, positions);
 		}
 		
 		out.println();

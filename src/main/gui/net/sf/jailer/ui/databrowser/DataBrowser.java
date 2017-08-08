@@ -15,19 +15,16 @@
  */
 package net.sf.jailer.ui.databrowser;
 
-import java.awt.AWTEvent;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
-import java.awt.EventQueue;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Point;
 import java.awt.Rectangle;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
@@ -157,7 +154,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	public DataBrowser(DataModel datamodel, Table root, String condition, DbConnectionDialog dbConnectionDialog, boolean embedded, final ExecutionContext executionContext) throws Exception {
 		this.executionContext = executionContext;
 		this.datamodel = new Reference<DataModel>(datamodel);
-		this.dbConnectionDialog = dbConnectionDialog != null ? new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName()) : null;
+		this.dbConnectionDialog = dbConnectionDialog != null ? new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName(), executionContext) : null;
 		this.borderBrowser = new AssociationListUI("Resolve", "Resolve selected Associations", true) {
 			@Override
 			protected void applyAction(Collection<AssociationModel> selection) {
@@ -268,7 +265,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		if (dbConnectionDialog != null) {
 			createSession(dbConnectionDialog);
 		}
-		desktop = new Desktop(this.datamodel, jailerIcon, session, this, dbConnectionDialog) {
+		desktop = new Desktop(this.datamodel, jailerIcon, session, this, dbConnectionDialog, executionContext) {
 			@Override
 			public void openSchemaAnalyzer() {
 				updateDataModel();
@@ -512,7 +509,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 	protected void setConnection(DbConnectionDialog dbConnectionDialog) throws Exception {
 		if (dbConnectionDialog != null) {
-			dbConnectionDialog = new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName());
+			dbConnectionDialog = new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName(), executionContext);
 		}
 		this.dbConnectionDialog = dbConnectionDialog;
 		desktop.dbConnectionDialog = dbConnectionDialog;
@@ -598,532 +595,543 @@ public class DataBrowser extends javax.swing.JFrame {
 	// <editor-fold defaultstate="collapsed"
 	// <editor-fold defaultstate="collapsed"
 	// <editor-fold defaultstate="collapsed"
-	// <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-	private void initComponents() {
-		java.awt.GridBagConstraints gridBagConstraints;
-
-		jPanel1 = new javax.swing.JPanel();
-		jPanel11 = new javax.swing.JPanel();
-		legende1 = new javax.swing.JPanel();
-		modelName = new javax.swing.JLabel();
-		modelPath = new javax.swing.JLabel();
-		legende = new javax.swing.JPanel();
-		dependsOn = new javax.swing.JLabel();
-		hasDependent = new javax.swing.JLabel();
-		associatedWith = new javax.swing.JLabel();
-		ignored = new javax.swing.JLabel();
-		schemaNamePanel = new javax.swing.JPanel();
-		schemaName = new javax.swing.JLabel();
-		legende2 = new javax.swing.JPanel();
-		connectivityState = new javax.swing.JLabel();
-		jPanel2 = new javax.swing.JPanel();
-		jSplitPane1 = new javax.swing.JSplitPane();
-		jPanel3 = new javax.swing.JPanel();
-		jSplitPane2 = new javax.swing.JSplitPane();
-		jPanel4 = new javax.swing.JPanel();
-		navigationTreeScrollPane = new javax.swing.JScrollPane();
-		navigationTree = new javax.swing.JTree();
-		jLabel2 = new javax.swing.JLabel();
-		borderBrowserTitledPanel = new javax.swing.JPanel();
-		titleLabel = new javax.swing.JLabel();
-		borderBrowserPanel = new javax.swing.JPanel();
-		jPanel5 = new javax.swing.JPanel();
-		jScrollPane1 = new javax.swing.JScrollPane();
-		jInternalFrame1 = new javax.swing.JInternalFrame();
-		jLabel1 = new javax.swing.JLabel();
-		hiddenPanel = new javax.swing.JPanel();
-		menuBar = new javax.swing.JMenuBar();
-		jMenu1 = new javax.swing.JMenu();
-		jMenuItem1 = new javax.swing.JMenuItem();
-		jMenuItem3 = new javax.swing.JMenuItem();
-		jSeparator4 = new javax.swing.JPopupMenu.Separator();
-		storeSessionItem = new javax.swing.JMenuItem();
-		restoreSessionItem = new javax.swing.JMenuItem();
-		jSeparator2 = new javax.swing.JPopupMenu.Separator();
-		reconnectMenuItem = new javax.swing.JMenuItem();
-		jSeparator7 = new javax.swing.JPopupMenu.Separator();
-		cloaseAllMenuItem = new javax.swing.JMenuItem();
-		jSeparator3 = new javax.swing.JPopupMenu.Separator();
-		schemaMappingMenuItem = new javax.swing.JMenuItem();
-		menuTools = new javax.swing.JMenu();
-		analyseMenuItem = new javax.swing.JMenuItem();
-		dataModelEditorjMenuItem = new javax.swing.JMenuItem();
-		jMenu2 = new javax.swing.JMenu();
-		exportDataMenuItem = new javax.swing.JMenuItem();
-		dataImport = new javax.swing.JMenuItem();
-		jSeparator8 = new javax.swing.JPopupMenu.Separator();
-		createExtractionModelMenuItem = new javax.swing.JMenuItem();
-		menuWindow = new javax.swing.JMenu();
-		layoutMenuItem = new javax.swing.JMenuItem();
-		jSeparator5 = new javax.swing.JPopupMenu.Separator();
-		thumbnailLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
-		tinyLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
-		smallLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
-		mediumLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
-		largeLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
-		jSeparator1 = new javax.swing.JPopupMenu.Separator();
-		newWindowMenuItem = new javax.swing.JMenuItem();
-		jSeparator6 = new javax.swing.JPopupMenu.Separator();
-		view = new javax.swing.JMenu();
-		helpMenu = new javax.swing.JMenu();
-		jMenuItem4 = new javax.swing.JMenuItem();
-		helpForum = new javax.swing.JMenuItem();
-		aboutMenuItem = new javax.swing.JMenuItem();
-
-		jPanel1.setLayout(new java.awt.GridBagLayout());
-
-		jPanel11.setLayout(new java.awt.GridBagLayout());
-
-		legende1.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
-		legende1.setLayout(new java.awt.GridBagLayout());
-
-		modelName.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
-		modelName.setText("Data Model \"Demo\"");
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 12);
-		legende1.add(modelName, gridBagConstraints);
-
-		modelPath.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
-		modelPath.setForeground(java.awt.Color.gray);
-		modelPath.setText("/home/jailer/datamodel/");
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 2;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.weightx = 1.0;
-		legende1.add(modelPath, gridBagConstraints);
-
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
-		jPanel11.add(legende1, gridBagConstraints);
-
-		legende.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
-		legende.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
-
-		dependsOn.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
-		dependsOn.setForeground(new java.awt.Color(170, 0, 0));
-		dependsOn.setText(" depends on (has parent) ");
-		legende.add(dependsOn);
-
-		hasDependent.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
-		hasDependent.setForeground(new java.awt.Color(0, 112, 0));
-		hasDependent.setText("  has dependent (has child) ");
-		legende.add(hasDependent);
-
-		associatedWith.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
-		associatedWith.setForeground(new java.awt.Color(0, 100, 255));
-		associatedWith.setText("  associated with");
-		legende.add(associatedWith);
-
-		ignored.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
-		ignored.setForeground(new java.awt.Color(153, 153, 153));
-		ignored.setText("  disabled ");
-		legende.add(ignored);
-
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
-		jPanel11.add(legende, gridBagConstraints);
-
-		schemaNamePanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
-		schemaNamePanel.setLayout(new java.awt.GridBagLayout());
-
-		schemaName.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
-		schemaName.setText("Schema");
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 12);
-		schemaNamePanel.add(schemaName, gridBagConstraints);
-
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 2;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
-		jPanel11.add(schemaNamePanel, gridBagConstraints);
-
-		legende2.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
-		legende2.setLayout(new java.awt.GridBagLayout());
-
-		connectivityState.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
-		connectivityState.setText("offline");
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 6);
-		legende2.add(connectivityState, gridBagConstraints);
-
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 3;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
-		jPanel11.add(legende2, gridBagConstraints);
-
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 3;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.weightx = 1.0;
-		jPanel1.add(jPanel11, gridBagConstraints);
-
-		jPanel2.setLayout(new java.awt.GridBagLayout());
-
-		jSplitPane1.setDividerLocation(340);
-		jSplitPane1.setContinuousLayout(true);
-		jSplitPane1.setOneTouchExpandable(true);
-
-		jPanel3.setLayout(new java.awt.GridBagLayout());
-
-		jSplitPane2.setDividerLocation(350);
-		jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-		jSplitPane2.setResizeWeight(1.0);
-		jSplitPane2.setContinuousLayout(true);
-		jSplitPane2.setOneTouchExpandable(true);
-
-		jPanel4.setLayout(new java.awt.GridBagLayout());
-
-		navigationTree.addMouseListener(new java.awt.event.MouseAdapter() {
-			public void mouseClicked(java.awt.event.MouseEvent evt) {
-				navigationTreeMouseClicked(evt);
-			}
-		});
-		navigationTreeScrollPane.setViewportView(navigationTree);
-
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 2;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.weighty = 1.0;
-		jPanel4.add(navigationTreeScrollPane, gridBagConstraints);
-
-		jLabel2.setText(" Navigation Tree");
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-		jPanel4.add(jLabel2, gridBagConstraints);
-
-		jSplitPane2.setLeftComponent(jPanel4);
-
-		borderBrowserTitledPanel.setLayout(new java.awt.GridBagLayout());
-
-		titleLabel.setText(" ");
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-		borderBrowserTitledPanel.add(titleLabel, gridBagConstraints);
-
-		borderBrowserPanel.setLayout(new java.awt.BorderLayout());
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 2;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.weighty = 1.0;
-		borderBrowserTitledPanel.add(borderBrowserPanel, gridBagConstraints);
-
-		jSplitPane2.setRightComponent(borderBrowserTitledPanel);
-
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.weighty = 1.0;
-		jPanel3.add(jSplitPane2, gridBagConstraints);
-
-		jSplitPane1.setLeftComponent(jPanel3);
-
-		jPanel5.setLayout(new java.awt.BorderLayout());
-
-		jScrollPane1.setAutoscrolls(true);
-		jScrollPane1.setWheelScrollingEnabled(false);
-		jScrollPane1.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
-			public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
-				jScrollPane1MouseWheelMoved(evt);
-			}
-		});
-
-		jInternalFrame1.setVisible(true);
-
-		jLabel1.setText("jLabel1");
-		jInternalFrame1.getContentPane().add(jLabel1, java.awt.BorderLayout.CENTER);
-
-		jScrollPane1.setViewportView(jInternalFrame1);
-
-		jPanel5.add(jScrollPane1, java.awt.BorderLayout.CENTER);
-
-		hiddenPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Hidden"));
-		hiddenPanel.setLayout(new java.awt.GridBagLayout());
-		jPanel5.add(hiddenPanel, java.awt.BorderLayout.SOUTH);
-
-		jSplitPane1.setRightComponent(jPanel5);
-
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.weighty = 1.0;
-		jPanel2.add(jSplitPane1, gridBagConstraints);
-
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.weighty = 1.0;
-		jPanel1.add(jPanel2, gridBagConstraints);
-
-		getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
-
-		jMenu1.setText("File");
-
-		jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
-		jMenuItem1.setText("New Table Browser");
-		jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				jMenuItem1ActionPerformed(evt);
-			}
-		});
-		jMenu1.add(jMenuItem1);
-
-		jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
-		jMenuItem3.setText("New SQL Browser");
-		jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				jMenuItem3ActionPerformed(evt);
-			}
-		});
-		jMenu1.add(jMenuItem3);
-		jMenu1.add(jSeparator4);
-
-		storeSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
-		storeSessionItem.setText("Store Layout");
-		storeSessionItem.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				storeSessionItemActionPerformed(evt);
-			}
-		});
-		jMenu1.add(storeSessionItem);
-
-		restoreSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
-		restoreSessionItem.setText("Restore Layout");
-		restoreSessionItem.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				restoreSessionItemActionPerformed(evt);
-			}
-		});
-		jMenu1.add(restoreSessionItem);
-		jMenu1.add(jSeparator2);
-
-		reconnectMenuItem.setText("Reconnect...");
-		reconnectMenuItem.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				reconnectMenuItemActionPerformed(evt);
-			}
-		});
-		jMenu1.add(reconnectMenuItem);
-		jMenu1.add(jSeparator7);
-
-		cloaseAllMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
-		cloaseAllMenuItem.setText("Close All");
-		cloaseAllMenuItem.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				cloaseAllMenuItemActionPerformed(evt);
-			}
-		});
-		jMenu1.add(cloaseAllMenuItem);
-		jMenu1.add(jSeparator3);
-
-		schemaMappingMenuItem.setText("Schema Mapping");
-		schemaMappingMenuItem.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				schemaMappingMenuItemActionPerformed(evt);
-			}
-		});
-		jMenu1.add(schemaMappingMenuItem);
-
-		menuBar.add(jMenu1);
-
-		menuTools.setText("DataModel");
-
-		analyseMenuItem.setText("Analyse Database");
-		analyseMenuItem.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				analyseMenuItemActionPerformed(evt);
-			}
-		});
-		menuTools.add(analyseMenuItem);
-
-		dataModelEditorjMenuItem.setText("Data Model Editor");
-		dataModelEditorjMenuItem.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				dataModelEditorjMenuItemActionPerformed(evt);
-			}
-		});
-		menuTools.add(dataModelEditorjMenuItem);
-
-		menuBar.add(menuTools);
-
-		jMenu2.setText("Tools");
-
-		exportDataMenuItem.setText("Export Data");
-		exportDataMenuItem.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				exportDataMenuItemActionPerformed(evt);
-			}
-		});
-		jMenu2.add(exportDataMenuItem);
-
-		dataImport.setLabel("Import SQL Data");
-		dataImport.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				dataImportActionPerformed(evt);
-			}
-		});
-		jMenu2.add(dataImport);
-		jMenu2.add(jSeparator8);
-
-		createExtractionModelMenuItem.setText("Create Extraction Model");
-		createExtractionModelMenuItem.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				createExtractionModelMenuItemActionPerformed(evt);
-			}
-		});
-		jMenu2.add(createExtractionModelMenuItem);
-
-		menuBar.add(jMenu2);
-
-		menuWindow.setText("Window");
-
-		layoutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
-		layoutMenuItem.setText("Arrange Layout");
-		layoutMenuItem.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				layoutMenuItemActionPerformed(evt);
-			}
-		});
-		menuWindow.add(layoutMenuItem);
-		menuWindow.add(jSeparator5);
-
-		thumbnailLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_0, java.awt.event.InputEvent.CTRL_MASK));
-		thumbnailLayoutRadioButtonMenuItem.setText("Thumbnail Layout");
-		thumbnailLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				thumbnailLayoutRadioButtonMenuItemActionPerformed(evt);
-			}
-		});
-		menuWindow.add(thumbnailLayoutRadioButtonMenuItem);
-
-		tinyLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_1, java.awt.event.InputEvent.CTRL_MASK));
-		tinyLayoutRadioButtonMenuItem.setText("Tiny Layout");
-		tinyLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				tinyLayoutRadioButtonMenuItemActionPerformed(evt);
-			}
-		});
-		menuWindow.add(tinyLayoutRadioButtonMenuItem);
-
-		smallLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_2, java.awt.event.InputEvent.CTRL_MASK));
-		smallLayoutRadioButtonMenuItem.setText("Small Layout");
-		smallLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				smallLayoutRadioButtonMenuItemActionPerformed(evt);
-			}
-		});
-		menuWindow.add(smallLayoutRadioButtonMenuItem);
-
-		mediumLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_3, java.awt.event.InputEvent.CTRL_MASK));
-		mediumLayoutRadioButtonMenuItem.setText("Medium Layout");
-		mediumLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				mediumLayoutRadioButtonMenuItemActionPerformed(evt);
-			}
-		});
-		menuWindow.add(mediumLayoutRadioButtonMenuItem);
-
-		largeLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_4, java.awt.event.InputEvent.CTRL_MASK));
-		largeLayoutRadioButtonMenuItem.setText("Large Layout");
-		largeLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				largeLayoutRadioButtonMenuItemActionPerformed(evt);
-			}
-		});
-		menuWindow.add(largeLayoutRadioButtonMenuItem);
-		menuWindow.add(jSeparator1);
-
-		newWindowMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
-		newWindowMenuItem.setText("New Window");
-		newWindowMenuItem.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				newWindowMenuItemActionPerformed(evt);
-			}
-		});
-		menuWindow.add(newWindowMenuItem);
-		menuWindow.add(jSeparator6);
-
-		view.setText("Look&Feel");
-		menuWindow.add(view);
-
-		menuBar.add(menuWindow);
-
-		helpMenu.setText("Help");
-
-		jMenuItem4.setText("Manual");
-		jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				jMenuItem4ActionPerformed(evt);
-			}
-		});
-		helpMenu.add(jMenuItem4);
-
-		helpForum.setText("Forum");
-		helpForum.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				helpForumActionPerformed(evt);
-			}
-		});
-		helpMenu.add(helpForum);
-
-		aboutMenuItem.setText("About Jailer");
-		aboutMenuItem.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				aboutMenuItemActionPerformed(evt);
-			}
-		});
-		helpMenu.add(aboutMenuItem);
-
-		menuBar.add(helpMenu);
-
-		setJMenuBar(menuBar);
-
-		pack();
-	}// </editor-fold>//GEN-END:initComponents
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
+
+        jPanel1 = new javax.swing.JPanel();
+        jPanel11 = new javax.swing.JPanel();
+        legende1 = new javax.swing.JPanel();
+        modelName = new javax.swing.JLabel();
+        modelPath = new javax.swing.JLabel();
+        legende = new javax.swing.JPanel();
+        dependsOn = new javax.swing.JLabel();
+        hasDependent = new javax.swing.JLabel();
+        associatedWith = new javax.swing.JLabel();
+        ignored = new javax.swing.JLabel();
+        schemaNamePanel = new javax.swing.JPanel();
+        schemaName = new javax.swing.JLabel();
+        legende2 = new javax.swing.JPanel();
+        connectivityState = new javax.swing.JLabel();
+        jPanel2 = new javax.swing.JPanel();
+        jSplitPane1 = new javax.swing.JSplitPane();
+        jPanel3 = new javax.swing.JPanel();
+        jSplitPane2 = new javax.swing.JSplitPane();
+        jPanel4 = new javax.swing.JPanel();
+        navigationTreeScrollPane = new javax.swing.JScrollPane();
+        navigationTree = new javax.swing.JTree();
+        jLabel2 = new javax.swing.JLabel();
+        borderBrowserTitledPanel = new javax.swing.JPanel();
+        titleLabel = new javax.swing.JLabel();
+        borderBrowserPanel = new javax.swing.JPanel();
+        jPanel5 = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jInternalFrame1 = new javax.swing.JInternalFrame();
+        jLabel1 = new javax.swing.JLabel();
+        hiddenPanel = new javax.swing.JPanel();
+        menuBar = new javax.swing.JMenuBar();
+        jMenu1 = new javax.swing.JMenu();
+        newBrowserjMenuItem = new javax.swing.JMenuItem();
+        jSeparator9 = new javax.swing.JPopupMenu.Separator();
+        jMenuItem1 = new javax.swing.JMenuItem();
+        jMenuItem3 = new javax.swing.JMenuItem();
+        jSeparator4 = new javax.swing.JPopupMenu.Separator();
+        storeSessionItem = new javax.swing.JMenuItem();
+        restoreSessionItem = new javax.swing.JMenuItem();
+        jSeparator2 = new javax.swing.JPopupMenu.Separator();
+        reconnectMenuItem = new javax.swing.JMenuItem();
+        jSeparator7 = new javax.swing.JPopupMenu.Separator();
+        cloaseAllMenuItem = new javax.swing.JMenuItem();
+        jSeparator3 = new javax.swing.JPopupMenu.Separator();
+        schemaMappingMenuItem = new javax.swing.JMenuItem();
+        menuTools = new javax.swing.JMenu();
+        analyseMenuItem = new javax.swing.JMenuItem();
+        dataModelEditorjMenuItem = new javax.swing.JMenuItem();
+        jMenu2 = new javax.swing.JMenu();
+        exportDataMenuItem = new javax.swing.JMenuItem();
+        dataImport = new javax.swing.JMenuItem();
+        jSeparator8 = new javax.swing.JPopupMenu.Separator();
+        createExtractionModelMenuItem = new javax.swing.JMenuItem();
+        menuWindow = new javax.swing.JMenu();
+        layoutMenuItem = new javax.swing.JMenuItem();
+        jSeparator5 = new javax.swing.JPopupMenu.Separator();
+        thumbnailLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
+        tinyLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
+        smallLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
+        mediumLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
+        largeLayoutRadioButtonMenuItem = new javax.swing.JRadioButtonMenuItem();
+        jSeparator1 = new javax.swing.JPopupMenu.Separator();
+        newWindowMenuItem = new javax.swing.JMenuItem();
+        jSeparator6 = new javax.swing.JPopupMenu.Separator();
+        view = new javax.swing.JMenu();
+        helpMenu = new javax.swing.JMenu();
+        jMenuItem4 = new javax.swing.JMenuItem();
+        helpForum = new javax.swing.JMenuItem();
+        aboutMenuItem = new javax.swing.JMenuItem();
+
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        jPanel11.setLayout(new java.awt.GridBagLayout());
+
+        legende1.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        legende1.setLayout(new java.awt.GridBagLayout());
+
+        modelName.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        modelName.setText("Data Model \"Demo\"");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 12);
+        legende1.add(modelName, gridBagConstraints);
+
+        modelPath.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        modelPath.setForeground(java.awt.Color.gray);
+        modelPath.setText("/home/jailer/datamodel/");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        legende1.add(modelPath, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        jPanel11.add(legende1, gridBagConstraints);
+
+        legende.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        legende.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 0, 0));
+
+        dependsOn.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        dependsOn.setForeground(new java.awt.Color(170, 0, 0));
+        dependsOn.setText(" depends on (has parent) ");
+        legende.add(dependsOn);
+
+        hasDependent.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        hasDependent.setForeground(new java.awt.Color(0, 112, 0));
+        hasDependent.setText("  has dependent (has child) ");
+        legende.add(hasDependent);
+
+        associatedWith.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        associatedWith.setForeground(new java.awt.Color(0, 100, 255));
+        associatedWith.setText("  associated with");
+        legende.add(associatedWith);
+
+        ignored.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        ignored.setForeground(new java.awt.Color(153, 153, 153));
+        ignored.setText("  disabled ");
+        legende.add(ignored);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        jPanel11.add(legende, gridBagConstraints);
+
+        schemaNamePanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        schemaNamePanel.setLayout(new java.awt.GridBagLayout());
+
+        schemaName.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        schemaName.setText("Schema");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 12);
+        schemaNamePanel.add(schemaName, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
+        jPanel11.add(schemaNamePanel, gridBagConstraints);
+
+        legende2.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        legende2.setLayout(new java.awt.GridBagLayout());
+
+        connectivityState.setFont(new java.awt.Font("Dialog", 0, 12)); // NOI18N
+        connectivityState.setText("offline");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 6);
+        legende2.add(connectivityState, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        jPanel11.add(legende2, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        jPanel1.add(jPanel11, gridBagConstraints);
+
+        jPanel2.setLayout(new java.awt.GridBagLayout());
+
+        jSplitPane1.setDividerLocation(340);
+        jSplitPane1.setContinuousLayout(true);
+        jSplitPane1.setOneTouchExpandable(true);
+
+        jPanel3.setLayout(new java.awt.GridBagLayout());
+
+        jSplitPane2.setDividerLocation(350);
+        jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane2.setResizeWeight(1.0);
+        jSplitPane2.setContinuousLayout(true);
+        jSplitPane2.setOneTouchExpandable(true);
+
+        jPanel4.setLayout(new java.awt.GridBagLayout());
+
+        navigationTree.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                navigationTreeMouseClicked(evt);
+            }
+        });
+        navigationTreeScrollPane.setViewportView(navigationTree);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel4.add(navigationTreeScrollPane, gridBagConstraints);
+
+        jLabel2.setText(" Navigation Tree");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel4.add(jLabel2, gridBagConstraints);
+
+        jSplitPane2.setLeftComponent(jPanel4);
+
+        borderBrowserTitledPanel.setLayout(new java.awt.GridBagLayout());
+
+        titleLabel.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        borderBrowserTitledPanel.add(titleLabel, gridBagConstraints);
+
+        borderBrowserPanel.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        borderBrowserTitledPanel.add(borderBrowserPanel, gridBagConstraints);
+
+        jSplitPane2.setRightComponent(borderBrowserTitledPanel);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel3.add(jSplitPane2, gridBagConstraints);
+
+        jSplitPane1.setLeftComponent(jPanel3);
+
+        jPanel5.setLayout(new java.awt.BorderLayout());
+
+        jScrollPane1.setAutoscrolls(true);
+        jScrollPane1.setWheelScrollingEnabled(false);
+        jScrollPane1.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
+            public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
+                jScrollPane1MouseWheelMoved(evt);
+            }
+        });
+
+        jInternalFrame1.setVisible(true);
+
+        jLabel1.setText("jLabel1");
+        jInternalFrame1.getContentPane().add(jLabel1, java.awt.BorderLayout.CENTER);
+
+        jScrollPane1.setViewportView(jInternalFrame1);
+
+        jPanel5.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+
+        hiddenPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Hidden"));
+        hiddenPanel.setLayout(new java.awt.GridBagLayout());
+        jPanel5.add(hiddenPanel, java.awt.BorderLayout.SOUTH);
+
+        jSplitPane1.setRightComponent(jPanel5);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel2.add(jSplitPane1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(jPanel2, gridBagConstraints);
+
+        getContentPane().add(jPanel1, java.awt.BorderLayout.CENTER);
+
+        jMenu1.setText("File");
+
+        newBrowserjMenuItem.setText("New Data Browser");
+        newBrowserjMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newBrowserjMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(newBrowserjMenuItem);
+        jMenu1.add(jSeparator9);
+
+        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem1.setText("New Table Browser");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem1);
+
+        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem3.setText("New SQL Browser");
+        jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem3ActionPerformed(evt);
+            }
+        });
+        jMenu1.add(jMenuItem3);
+        jMenu1.add(jSeparator4);
+
+        storeSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_S, java.awt.event.InputEvent.CTRL_MASK));
+        storeSessionItem.setText("Store Layout");
+        storeSessionItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                storeSessionItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(storeSessionItem);
+
+        restoreSessionItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_R, java.awt.event.InputEvent.CTRL_MASK));
+        restoreSessionItem.setText("Restore Layout");
+        restoreSessionItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                restoreSessionItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(restoreSessionItem);
+        jMenu1.add(jSeparator2);
+
+        reconnectMenuItem.setText("Reconnect...");
+        reconnectMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                reconnectMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(reconnectMenuItem);
+        jMenu1.add(jSeparator7);
+
+        cloaseAllMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_F4, java.awt.event.InputEvent.SHIFT_MASK | java.awt.event.InputEvent.CTRL_MASK));
+        cloaseAllMenuItem.setText("Close All");
+        cloaseAllMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cloaseAllMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(cloaseAllMenuItem);
+        jMenu1.add(jSeparator3);
+
+        schemaMappingMenuItem.setText("Schema Mapping");
+        schemaMappingMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                schemaMappingMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu1.add(schemaMappingMenuItem);
+
+        menuBar.add(jMenu1);
+
+        menuTools.setText("DataModel");
+
+        analyseMenuItem.setText("Analyse Database");
+        analyseMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                analyseMenuItemActionPerformed(evt);
+            }
+        });
+        menuTools.add(analyseMenuItem);
+
+        dataModelEditorjMenuItem.setText("Data Model Editor");
+        dataModelEditorjMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dataModelEditorjMenuItemActionPerformed(evt);
+            }
+        });
+        menuTools.add(dataModelEditorjMenuItem);
+
+        menuBar.add(menuTools);
+
+        jMenu2.setText("Tools");
+
+        exportDataMenuItem.setText("Export Data");
+        exportDataMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exportDataMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu2.add(exportDataMenuItem);
+
+        dataImport.setLabel("Import SQL Data");
+        dataImport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                dataImportActionPerformed(evt);
+            }
+        });
+        jMenu2.add(dataImport);
+        jMenu2.add(jSeparator8);
+
+        createExtractionModelMenuItem.setText("Create Extraction Model");
+        createExtractionModelMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                createExtractionModelMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu2.add(createExtractionModelMenuItem);
+
+        menuBar.add(jMenu2);
+
+        menuWindow.setText("Window");
+
+        layoutMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_L, java.awt.event.InputEvent.CTRL_MASK));
+        layoutMenuItem.setText("Arrange Layout");
+        layoutMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                layoutMenuItemActionPerformed(evt);
+            }
+        });
+        menuWindow.add(layoutMenuItem);
+        menuWindow.add(jSeparator5);
+
+        thumbnailLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_0, java.awt.event.InputEvent.CTRL_MASK));
+        thumbnailLayoutRadioButtonMenuItem.setText("Thumbnail Layout");
+        thumbnailLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                thumbnailLayoutRadioButtonMenuItemActionPerformed(evt);
+            }
+        });
+        menuWindow.add(thumbnailLayoutRadioButtonMenuItem);
+
+        tinyLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_1, java.awt.event.InputEvent.CTRL_MASK));
+        tinyLayoutRadioButtonMenuItem.setText("Tiny Layout");
+        tinyLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                tinyLayoutRadioButtonMenuItemActionPerformed(evt);
+            }
+        });
+        menuWindow.add(tinyLayoutRadioButtonMenuItem);
+
+        smallLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_2, java.awt.event.InputEvent.CTRL_MASK));
+        smallLayoutRadioButtonMenuItem.setText("Small Layout");
+        smallLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                smallLayoutRadioButtonMenuItemActionPerformed(evt);
+            }
+        });
+        menuWindow.add(smallLayoutRadioButtonMenuItem);
+
+        mediumLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_3, java.awt.event.InputEvent.CTRL_MASK));
+        mediumLayoutRadioButtonMenuItem.setText("Medium Layout");
+        mediumLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                mediumLayoutRadioButtonMenuItemActionPerformed(evt);
+            }
+        });
+        menuWindow.add(mediumLayoutRadioButtonMenuItem);
+
+        largeLayoutRadioButtonMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_4, java.awt.event.InputEvent.CTRL_MASK));
+        largeLayoutRadioButtonMenuItem.setText("Large Layout");
+        largeLayoutRadioButtonMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                largeLayoutRadioButtonMenuItemActionPerformed(evt);
+            }
+        });
+        menuWindow.add(largeLayoutRadioButtonMenuItem);
+        menuWindow.add(jSeparator1);
+
+        newWindowMenuItem.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_N, java.awt.event.InputEvent.CTRL_MASK));
+        newWindowMenuItem.setText("New Window");
+        newWindowMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newWindowMenuItemActionPerformed(evt);
+            }
+        });
+        menuWindow.add(newWindowMenuItem);
+        menuWindow.add(jSeparator6);
+
+        view.setText("Look&Feel");
+        menuWindow.add(view);
+
+        menuBar.add(menuWindow);
+
+        helpMenu.setText("Help");
+
+        jMenuItem4.setText("Manual");
+        jMenuItem4.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem4ActionPerformed(evt);
+            }
+        });
+        helpMenu.add(jMenuItem4);
+
+        helpForum.setText("Forum");
+        helpForum.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                helpForumActionPerformed(evt);
+            }
+        });
+        helpMenu.add(helpForum);
+
+        aboutMenuItem.setText("About Jailer");
+        aboutMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                aboutMenuItemActionPerformed(evt);
+            }
+        });
+        helpMenu.add(aboutMenuItem);
+
+        menuBar.add(helpMenu);
+
+        setJMenuBar(menuBar);
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
 
 	private void exportDataMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportDataMenuItemActionPerformed
 		desktop.createExtractionModel(true);
@@ -1133,7 +1141,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		try {
 			String sqlFile = UIUtil.choseFile(null, ".", "Data Import", ".sql", this, false, true);
 			if (sqlFile != null) {
-				DbConnectionDialog dcd = new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName());
+				DbConnectionDialog dcd = new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName(), executionContext);
 				if (dcd.connect("Data Import")) {
 					List<String> args = new ArrayList<String>();
 					args.add("import");
@@ -1141,7 +1149,7 @@ public class DataBrowser extends javax.swing.JFrame {
 					dcd.addDbArgs(args);
 					ImportDialog importDialog = new ImportDialog(this, sqlFile, args, dbConnectionDialog.getPassword(), true);
 					if (importDialog.isOk) {
-						UIUtil.runJailer(this, args, false, true, false, false, null, dcd.getPassword(), null, null, false, true, false);
+						UIUtil.runJailer(this, args, false, true, false, false, null, dcd.getPassword(), null, null, false, true, false, executionContext);
 						if (desktop != null) {
 							desktop.updateMenu();
 							for (RowBrowser rb : desktop.getBrowsers()) {
@@ -1159,6 +1167,10 @@ public class DataBrowser extends javax.swing.JFrame {
 			UIUtil.showException(this, "Error", e, session);
 		}
 	}//GEN-LAST:event_dataImportActionPerformed
+
+    private void newBrowserjMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newBrowserjMenuItemActionPerformed
+    	createFrame();
+    }//GEN-LAST:event_newBrowserjMenuItemActionPerformed
 
 	private void newWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_newWindowMenuItemActionPerformed
 		try {
@@ -1396,14 +1408,13 @@ public class DataBrowser extends javax.swing.JFrame {
 			UIUtil.showException(null, "Illegal arguments", e);
 			return;
 		}
-		final ExecutionContext executionContext = CommandLineInstance.getExecutionContext();
 		try {
 			System.setProperty("db2.jcc.charsetDecoderEncoder", "3");
 		} catch (Exception e) {
 		}
 		try {
 			// create initial data-model files
-			File file = new File(DataModel.getDatamodelFolder(CommandLineInstance.getExecutionContext()));
+			File file = new File(DataModel.getDatamodelFolder(new ExecutionContext(CommandLineInstance.getInstance())));
 			if (!file.exists()) {
 				file.mkdir();
 			}
@@ -1431,25 +1442,10 @@ public class DataBrowser extends javax.swing.JFrame {
 //						initInterceptingEventQueue();
 //					} catch (Exception x) {
 //					}
-					DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(DataBrowserContext.getAppName(true)
-							+ " - Relational Data Browser") {
-						@Override
-						protected void onSelect() {
-							try {
-								final DataModel datamodel;
-								datamodel = new DataModel(CommandLineInstance.getExecutionContext());
-								openNewDataBrowser(datamodel, null, true, executionContext);
-							} catch (Exception e) {
-								UIUtil.showException(null, "Error", e);
-							}
-						}
-
-						private static final long serialVersionUID = 1L;
-					};
 					ToolTipManager.sharedInstance().setInitialDelay(400);
 					ToolTipManager.sharedInstance().setDismissDelay(20000);
 
-					dataModelManagerDialog.setVisible(true);
+					createFrame();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -1466,9 +1462,9 @@ public class DataBrowser extends javax.swing.JFrame {
 //		}
 		dataBrowser.setVisible(true);
 		if (dbConnectionDialog == null) {
-			dbConnectionDialog = new DbConnectionDialog(dataBrowser, DataBrowserContext.getAppName(), null);
+			dbConnectionDialog = new DbConnectionDialog(dataBrowser, DataBrowserContext.getAppName(), null, executionContext);
 		} else {
-			dbConnectionDialog = new DbConnectionDialog(dataBrowser, dbConnectionDialog, DataBrowserContext.getAppName());
+			dbConnectionDialog = new DbConnectionDialog(dataBrowser, dbConnectionDialog, DataBrowserContext.getAppName(), executionContext);
 		}
 		if (DataBrowserContext.isStandAlone()) {
 			dbConnectionDialog.setJdbcHelpURL("http://dbeauty.sourceforge.net/jdbc.html");
@@ -1500,13 +1496,32 @@ public class DataBrowser extends javax.swing.JFrame {
 		return dataBrowser;
 	}
 
+	private static void createFrame() {
+		DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(DataBrowserContext.getAppName(true)
+				+ " - Relational Data Browser") {
+			@Override
+			protected void onSelect(ExecutionContext executionContext) {
+				try {
+					final DataModel datamodel;
+					datamodel = new DataModel(executionContext);
+					openNewDataBrowser(datamodel, null, true, executionContext);
+				} catch (Exception e) {
+					UIUtil.showException(null, "Error", e);
+				}
+			}
+
+			private static final long serialVersionUID = 1L;
+		};
+		dataModelManagerDialog.setVisible(true);
+	}
+
 	/**
 	 * Opens the data model editor.
 	 */
 	private void openDataModelEditor() {
 		try {
 			String modelname = datamodel == null || datamodel.get() == null ? DataModel.DEFAULT_NAME : datamodel.get().getName();
-			DataModelEditor dataModelEditor = new DataModelEditor(this, false, false, null, null, null, modelname, null);
+			DataModelEditor dataModelEditor = new DataModelEditor(this, false, false, null, null, null, modelname, null, executionContext);
 			dataModelEditor.setVisible(true);
 			desktop.reloadDataModel(desktop.schemaMapping);
 			updateStatusBar();
@@ -1522,7 +1537,7 @@ public class DataBrowser extends javax.swing.JFrame {
 			args.add("build-model-wo-merge");
 			dbConnectionDialog.addDbArgs(args);
 
-			AnalyseOptionsDialog analyseOptionsDialog = new AnalyseOptionsDialog(this, datamodel == null ? null : datamodel.get());
+			AnalyseOptionsDialog analyseOptionsDialog = new AnalyseOptionsDialog(this, datamodel == null ? null : datamodel.get(), executionContext);
 			boolean[] isDefaultSchema = new boolean[1];
 			String[] defaultSchema = new String[1];
 			List<String> schemas;
@@ -1546,12 +1561,12 @@ public class DataBrowser extends javax.swing.JFrame {
 				if (DataBrowserContext.isStandAlone()) {
 					UIUtil.disableWarnings = true;
 				}
-				if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword(), null, null, false, true, false)) {
+				if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
 					ModelBuilder.assocFilter = null;
 					String modelname = datamodel == null || datamodel.get() == null ? DataModel.DEFAULT_NAME : datamodel.get().getName();
 					DataModelEditor dataModelEditor = new DataModelEditor(this, true, analyseOptionsDialog.isRemoving(), null,
 							analyseOptionsDialog.getTableLineFilter(), analyseOptionsDialog.getAssociationLineFilter(), modelname,
-							schema == null ? dbConnectionDialog.getName() : schema);
+							schema == null ? dbConnectionDialog.getName() : schema, executionContext);
 					if (dataModelEditor.dataModelHasChanged()) {
 						dataModelEditor.setVisible(true);
 					}
@@ -1569,75 +1584,77 @@ public class DataBrowser extends javax.swing.JFrame {
 		}
 	}
 
-	// Variables declaration - do not modify//GEN-BEGIN:variables
-	private javax.swing.JMenuItem aboutMenuItem;
-	private javax.swing.JMenuItem analyseMenuItem;
-	private javax.swing.JLabel associatedWith;
-	private javax.swing.JPanel borderBrowserPanel;
-	private javax.swing.JPanel borderBrowserTitledPanel;
-	private javax.swing.JMenuItem cloaseAllMenuItem;
-	public javax.swing.JLabel connectivityState;
-	private javax.swing.JMenuItem createExtractionModelMenuItem;
-	private javax.swing.JMenuItem dataImport;
-	private javax.swing.JMenuItem dataModelEditorjMenuItem;
-	private javax.swing.JLabel dependsOn;
-	private javax.swing.JMenuItem exportDataMenuItem;
-	private javax.swing.JLabel hasDependent;
-	private javax.swing.JMenuItem helpForum;
-	private javax.swing.JMenu helpMenu;
-	private javax.swing.JPanel hiddenPanel;
-	private javax.swing.JLabel ignored;
-	private javax.swing.JInternalFrame jInternalFrame1;
-	private javax.swing.JLabel jLabel1;
-	private javax.swing.JLabel jLabel2;
-	private javax.swing.JMenu jMenu1;
-	private javax.swing.JMenu jMenu2;
-	private javax.swing.JMenuItem jMenuItem1;
-	private javax.swing.JMenuItem jMenuItem3;
-	private javax.swing.JMenuItem jMenuItem4;
-	private javax.swing.JPanel jPanel1;
-	private javax.swing.JPanel jPanel11;
-	private javax.swing.JPanel jPanel2;
-	private javax.swing.JPanel jPanel3;
-	private javax.swing.JPanel jPanel4;
-	private javax.swing.JPanel jPanel5;
-	private javax.swing.JScrollPane jScrollPane1;
-	private javax.swing.JPopupMenu.Separator jSeparator1;
-	private javax.swing.JPopupMenu.Separator jSeparator2;
-	private javax.swing.JPopupMenu.Separator jSeparator3;
-	private javax.swing.JPopupMenu.Separator jSeparator4;
-	private javax.swing.JPopupMenu.Separator jSeparator5;
-	private javax.swing.JPopupMenu.Separator jSeparator6;
-	private javax.swing.JPopupMenu.Separator jSeparator7;
-	private javax.swing.JPopupMenu.Separator jSeparator8;
-	private javax.swing.JSplitPane jSplitPane1;
-	private javax.swing.JSplitPane jSplitPane2;
-	private javax.swing.JRadioButtonMenuItem largeLayoutRadioButtonMenuItem;
-	private javax.swing.JMenuItem layoutMenuItem;
-	private javax.swing.JPanel legende;
-	private javax.swing.JPanel legende1;
-	private javax.swing.JPanel legende2;
-	private javax.swing.JRadioButtonMenuItem mediumLayoutRadioButtonMenuItem;
-	private javax.swing.JMenuBar menuBar;
-	private javax.swing.JMenu menuTools;
-	private javax.swing.JMenu menuWindow;
-	private javax.swing.JLabel modelName;
-	private javax.swing.JLabel modelPath;
-	private javax.swing.JTree navigationTree;
-	private javax.swing.JScrollPane navigationTreeScrollPane;
-	private javax.swing.JMenuItem newWindowMenuItem;
-	private javax.swing.JMenuItem reconnectMenuItem;
-	private javax.swing.JMenuItem restoreSessionItem;
-	private javax.swing.JMenuItem schemaMappingMenuItem;
-	private javax.swing.JLabel schemaName;
-	private javax.swing.JPanel schemaNamePanel;
-	private javax.swing.JRadioButtonMenuItem smallLayoutRadioButtonMenuItem;
-	private javax.swing.JMenuItem storeSessionItem;
-	private javax.swing.JRadioButtonMenuItem thumbnailLayoutRadioButtonMenuItem;
-	private javax.swing.JRadioButtonMenuItem tinyLayoutRadioButtonMenuItem;
-	private javax.swing.JLabel titleLabel;
-	private javax.swing.JMenu view;
-	// End of variables declaration//GEN-END:variables
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JMenuItem aboutMenuItem;
+    private javax.swing.JMenuItem analyseMenuItem;
+    private javax.swing.JLabel associatedWith;
+    private javax.swing.JPanel borderBrowserPanel;
+    private javax.swing.JPanel borderBrowserTitledPanel;
+    private javax.swing.JMenuItem cloaseAllMenuItem;
+    public javax.swing.JLabel connectivityState;
+    private javax.swing.JMenuItem createExtractionModelMenuItem;
+    private javax.swing.JMenuItem dataImport;
+    private javax.swing.JMenuItem dataModelEditorjMenuItem;
+    private javax.swing.JLabel dependsOn;
+    private javax.swing.JMenuItem exportDataMenuItem;
+    private javax.swing.JLabel hasDependent;
+    private javax.swing.JMenuItem helpForum;
+    private javax.swing.JMenu helpMenu;
+    private javax.swing.JPanel hiddenPanel;
+    private javax.swing.JLabel ignored;
+    private javax.swing.JInternalFrame jInternalFrame1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JMenu jMenu1;
+    private javax.swing.JMenu jMenu2;
+    private javax.swing.JMenuItem jMenuItem1;
+    private javax.swing.JMenuItem jMenuItem3;
+    private javax.swing.JMenuItem jMenuItem4;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel11;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JPopupMenu.Separator jSeparator1;
+    private javax.swing.JPopupMenu.Separator jSeparator2;
+    private javax.swing.JPopupMenu.Separator jSeparator3;
+    private javax.swing.JPopupMenu.Separator jSeparator4;
+    private javax.swing.JPopupMenu.Separator jSeparator5;
+    private javax.swing.JPopupMenu.Separator jSeparator6;
+    private javax.swing.JPopupMenu.Separator jSeparator7;
+    private javax.swing.JPopupMenu.Separator jSeparator8;
+    private javax.swing.JPopupMenu.Separator jSeparator9;
+    private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JSplitPane jSplitPane2;
+    private javax.swing.JRadioButtonMenuItem largeLayoutRadioButtonMenuItem;
+    private javax.swing.JMenuItem layoutMenuItem;
+    private javax.swing.JPanel legende;
+    private javax.swing.JPanel legende1;
+    private javax.swing.JPanel legende2;
+    private javax.swing.JRadioButtonMenuItem mediumLayoutRadioButtonMenuItem;
+    private javax.swing.JMenuBar menuBar;
+    private javax.swing.JMenu menuTools;
+    private javax.swing.JMenu menuWindow;
+    private javax.swing.JLabel modelName;
+    private javax.swing.JLabel modelPath;
+    private javax.swing.JTree navigationTree;
+    private javax.swing.JScrollPane navigationTreeScrollPane;
+    private javax.swing.JMenuItem newBrowserjMenuItem;
+    private javax.swing.JMenuItem newWindowMenuItem;
+    private javax.swing.JMenuItem reconnectMenuItem;
+    private javax.swing.JMenuItem restoreSessionItem;
+    private javax.swing.JMenuItem schemaMappingMenuItem;
+    private javax.swing.JLabel schemaName;
+    private javax.swing.JPanel schemaNamePanel;
+    private javax.swing.JRadioButtonMenuItem smallLayoutRadioButtonMenuItem;
+    private javax.swing.JMenuItem storeSessionItem;
+    private javax.swing.JRadioButtonMenuItem thumbnailLayoutRadioButtonMenuItem;
+    private javax.swing.JRadioButtonMenuItem tinyLayoutRadioButtonMenuItem;
+    private javax.swing.JLabel titleLabel;
+    private javax.swing.JMenu view;
+    // End of variables declaration//GEN-END:variables
 
 	/**
 	 * Sets Look&Feel.
@@ -1669,7 +1686,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	private void askForDataModel() {
 		try {
 			if (datamodel.get().getTables().isEmpty()) {
-				switch (JOptionPane.showOptionDialog(this, "Data model \"" + DataModelManager.getModelDetails(DataModelManager.getCurrentModelSubfolder()).a
+				switch (JOptionPane.showOptionDialog(this, "Data model \"" + DataModelManager.getModelDetails(DataModelManager.getCurrentModelSubfolder(executionContext), executionContext).a
 						+ "\" is empty.", DataBrowserContext.getAppName(true), JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] {
 						"Analyze Database", "Data Model Editor" }, null)) {
 				case 0:
@@ -1679,7 +1696,7 @@ public class DataBrowser extends javax.swing.JFrame {
 					openDataModelEditor();
 					break;
 				}
-			} else if (!new File(DataModel.getColumnsFile(CommandLineInstance.getExecutionContext())).exists()) {
+			} else if (!new File(DataModel.getColumnsFile(executionContext)).exists()) {
 				switch (JOptionPane.showOptionDialog(this, "No column definition found.", DataBrowserContext.getAppName(true), JOptionPane.YES_NO_OPTION,
 						JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor" }, null)) {
 				case 0:

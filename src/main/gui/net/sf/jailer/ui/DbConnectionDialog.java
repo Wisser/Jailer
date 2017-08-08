@@ -47,6 +47,7 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
@@ -89,7 +90,13 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		 * Constructor.
 		 */
 		public ConnectionInfo() {
-			dataModelFolder = DataModelManager.getCurrentModelSubfolder();
+		}
+		
+		/**
+		 * Constructor.
+		 */
+		public ConnectionInfo(ExecutionContext executionContext) {
+			dataModelFolder = DataModelManager.getCurrentModelSubfolder(executionContext);
 		}
 	}
 
@@ -108,6 +115,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 */
 	private final java.awt.Frame parent;
 	
+	private final ExecutionContext executionContext;
+	
 	/**
 	 * Gets connection to DB.
 	 * 
@@ -124,11 +133,11 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}
 	
 	private final InfoBar infoBar;
-	private final String currentModelSubfolder = DataModelManager.getCurrentModelSubfolder();
+	private final String currentModelSubfolder;
 	
 	/** Creates new form DbConnectionDialog */
-	public DbConnectionDialog(java.awt.Frame parent, DbConnectionDialog other, String applicationName) {
-		this(parent, applicationName, other.infoBar == null? null : new InfoBar(other.infoBar));
+	public DbConnectionDialog(java.awt.Frame parent, DbConnectionDialog other, String applicationName, ExecutionContext executionContext) {
+		this(parent, applicationName, other.infoBar == null? null : new InfoBar(other.infoBar), executionContext);
 		this.isConnected = other.isConnected;
 		this.connectionList = other.connectionList;
 		if (other.currentConnection != null) {
@@ -145,17 +154,19 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	 * 
 	 * @param applicationName application name. Used to create the name of the demo database alias. 
 	 */
-	public DbConnectionDialog(java.awt.Frame parent, String applicationName, InfoBar infoBar) {
+	public DbConnectionDialog(java.awt.Frame parent, String applicationName, InfoBar infoBar, ExecutionContext executionContext) {
 		super(parent, true);
+		this.executionContext = executionContext;
 		this.parent = parent;
 		this.infoBar = infoBar;
+		this.currentModelSubfolder = DataModelManager.getCurrentModelSubfolder(executionContext);
 		loadConnectionList();
 		initComponents();
 
 		if (infoBar == null) {
 			infoBar = new InfoBar("Connect with Database", 
 					"Select a connection to the database, or create a new connection.\n" +
-					"New connections will be assigned to the datamodel \"" + DataModelManager.getModelDetails(DataModelManager.getCurrentModelSubfolder()).a + "\".");
+					"New connections will be assigned to the datamodel \"" + DataModelManager.getModelDetails(DataModelManager.getCurrentModelSubfolder(executionContext), executionContext).a + "\".");
 		}
 		
 		UIUtil.replace(infoBarLabel, infoBar);
@@ -258,7 +269,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		Object[][] data = new Object[connectionList.size()][];
 		int i = 0;
 		for (ConnectionInfo ci: connectionList) {
-			Pair<String, Long> modelDetails = DataModelManager.getModelDetails(ci.dataModelFolder);
+			Pair<String, Long> modelDetails = DataModelManager.getModelDetails(ci.dataModelFolder, executionContext);
 			data[i++] = new Object[] { ci.alias, ci.user, ci.url, modelDetails == null? "" : modelDetails.a };
 		}
 		DefaultTableModel tableModel = new DefaultTableModel(data, new String[] { "Alias", "User", "URL", "Data Model" }) {
@@ -398,7 +409,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 					in.close();
 					for (String name : settings.keySet()) {
 						if (settings.get(name).get("dbUser").trim().length() > 0) {
-							ConnectionInfo ci = new ConnectionInfo();
+							ConnectionInfo ci = new ConnectionInfo(executionContext);
 							ci.alias = name;
 							ci.driverClass = settings.get(name).get("driver");
 							ci.user = settings.get(name).get("dbUser");
@@ -415,7 +426,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			}
 		}
 		if (connectionList.size() == 0) {
-			ConnectionInfo ci = new ConnectionInfo();
+			ConnectionInfo ci = new ConnectionInfo(executionContext);
 			ci.alias = "Demo Scott";
 			ci.driverClass = "org.h2.Driver";
 			ci.jar1 = "lib" + File.separator + "h2-1.3.160.jar";
@@ -427,7 +438,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			store();
 		}
 		if (preV4) {
-			ConnectionInfo ci = new ConnectionInfo();
+			ConnectionInfo ci = new ConnectionInfo(executionContext);
 			ci.alias = "Demo Sakila";
 			ci.driverClass = "org.h2.Driver";
 			ci.jar1 = "lib" + File.separator + "h2-1.3.160.jar";
@@ -644,7 +655,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 						}
 					}
 					if (!found) {
-						ConnectionInfo ci = new ConnectionInfo();
+						ConnectionInfo ci = new ConnectionInfo(executionContext);
 						ci.alias = newAlias;
 						ci.driverClass = currentConnection.driverClass;
 						ci.jar1 = currentConnection.jar1;
@@ -678,7 +689,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	}//GEN-LAST:event_deleteButtonActionPerformed
 
 	private void newButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newButtonActionPerformed
-		ConnectionInfo ci = new ConnectionInfo();
+		ConnectionInfo ci = new ConnectionInfo(executionContext);
 		try {
 			CsvFile drivers = new CsvFile(new File("driverlist.csv"));
 			List<Line> lines = new ArrayList<Line>(drivers.getLines());

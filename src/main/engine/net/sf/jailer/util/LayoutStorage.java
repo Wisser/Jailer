@@ -35,7 +35,7 @@ public class LayoutStorage {
 	 * @param table table
 	 * @param position position: x, y, isFixed
 	 */
-	public static void setPosition(String rootTable, String table, double[] position) {
+	public void setPosition(String rootTable, String table, double[] position) {
 		if (rootTable == null) {
 			throw new RuntimeException("rootTable is null");
 		}
@@ -63,7 +63,7 @@ public class LayoutStorage {
 	 * 
 	 * @param rootTable root table for which the layout is
 	 */
-	public static void checkSignificance(String rootTable) {
+	public void checkSignificance(String rootTable) {
 		if (tempPosistions == null) {
 			Map<String, double[]> layout = tablePositions.get(rootTable);
 			if (!isSignificant(rootTable, layout)) {
@@ -81,7 +81,7 @@ public class LayoutStorage {
 	 * @param layout the layout
 	 * @return <code>true</code> if layout is significant
 	 */
-	private static boolean isSignificant(String rootTable, Map<String, double[]> layout) {
+	private boolean isSignificant(String rootTable, Map<String, double[]> layout) {
 		if (layout != null) {
 			for (String t: layout.keySet()) {
 				if (!t.equals(rootTable) && !"$ZOOMBOX".equals(t)) {
@@ -100,7 +100,7 @@ public class LayoutStorage {
 	 * @param rootTable the root table
 	 * @return file to store global layout in, <code>null</code> if the file cannot be created
 	 */
-	private static File getGlobalStorageFile(String rootTable) {
+	private File getGlobalStorageFile(String rootTable) {
 		// disabled in 5.3
 //		try {
 //			File dir = new File(GLOBAL_STORAGE);
@@ -129,7 +129,7 @@ public class LayoutStorage {
 	/**
 	 * If storage is disabled, no persistent layout is available.
 	 */
-	public volatile static boolean enabled = true;
+	public volatile boolean enabled = true;
 	
 	/**
 	 * Gets position.
@@ -138,7 +138,7 @@ public class LayoutStorage {
 	 * @param table table
 	 * @return position: x, y, isFixed
 	 */
-	public static double[] getPosition(String rootTable, String table) {
+	public double[] getPosition(String rootTable, String table) {
 		if (tempPosistions != null) {
 			double[] pos = tempPosistions.get(table);
 			return pos;
@@ -159,7 +159,7 @@ public class LayoutStorage {
 	 * @param root the root table
 	 * @return positions of all tables for a the root-table
 	 */
-	public static Map<String, double[]> getPositions(String root) {
+	public Map<String, double[]> getPositions(String root) {
 		if (tempPosistions != null) {
 			return tempPosistions;
 		}
@@ -175,7 +175,7 @@ public class LayoutStorage {
 	 * 
 	 * @param root the root table
 	 */
-	public static void removeAll(String root) {
+	public void removeAll(String root) {
 		if (tempPosistions == null) {
 			tablePositions.remove(root);
 		}
@@ -186,7 +186,7 @@ public class LayoutStorage {
 	 * 
 	 * @param root the root table
 	 */
-	public static void removeAll() {
+	public void removeAll() {
 		if (tempPosistions == null) {
 			tablePositions.clear();
 			globalTablePositions.clear();
@@ -198,7 +198,7 @@ public class LayoutStorage {
 	 * 
 	 * @param out the stream
 	 */
-	public static void store(PrintWriter out) {
+	public void store(PrintWriter out) {
 		store(out, tablePositions);
 		
 		try {
@@ -227,7 +227,7 @@ public class LayoutStorage {
 	 * 
 	 * @param rootTable
 	 */
-	private static void readGlobalLayout(String rootTable) {
+	private void readGlobalLayout(String rootTable) {
 		
 		// disabled in 5.3
 		
@@ -259,7 +259,7 @@ public class LayoutStorage {
 	 * 
 	 * @param out the stream
 	 */
-	public static void store(PrintWriter out, Map<String, Map<String, double[]>> positions) {
+	public void store(PrintWriter out, Map<String, Map<String, double[]>> positions) {
 		out.println(CsvFile.BLOCK_INDICATOR + "layout");
 		for (String root: positions.keySet()) {
 			Map<String, double[]> pos = positions.get(root);
@@ -275,7 +275,7 @@ public class LayoutStorage {
 	 *  
 	 * @param file the file
 	 */
-	public static void restore(String file) {
+	public void restore(String file) {
 		restore(file, true);
 	}
 
@@ -284,7 +284,7 @@ public class LayoutStorage {
 	 *  
 	 * @param file the file
 	 */
-	private static void restore(String file, boolean resetLayout) {
+	private void restore(String file, boolean resetLayout) {
 		if (resetLayout) {
 			tablePositions.clear();
 			globalTablePositions.clear();
@@ -317,19 +317,19 @@ public class LayoutStorage {
 	/**
 	 * Stores positions temporarily (for undo/redo).
 	 */
-	private static Map<String, double[]> tempPosistions = null;
+	private Map<String, double[]> tempPosistions = null;
 
 	/**
 	 * Stores positions per root-table (local).
 	 */
-	private static Map<String, Map<String, double[]>> tablePositions = Collections.synchronizedMap(new HashMap<String, Map<String,double[]>>());
+	private Map<String, Map<String, double[]>> tablePositions = Collections.synchronizedMap(new HashMap<String, Map<String,double[]>>());
 
 	/**
 	 * Stores positions per root-table (global).
 	 */
-	private static Map<String, Map<String, double[]>> globalTablePositions = Collections.synchronizedMap(new HashMap<String, Map<String,double[]>>());
+	private Map<String, Map<String, double[]>> globalTablePositions = Collections.synchronizedMap(new HashMap<String, Map<String,double[]>>());
 
-	public static void setTempStorage(Map<String, double[]> tmp) {
+	public void setTempStorage(Map<String, double[]> tmp) {
 		tempPosistions = tmp;
 	}
 

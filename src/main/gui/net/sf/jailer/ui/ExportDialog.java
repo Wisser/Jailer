@@ -46,6 +46,7 @@ import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.BasicDataSource;
 import net.sf.jailer.database.Session;
@@ -137,12 +138,14 @@ public class ExportDialog extends javax.swing.JDialog {
 	private String[] schemaComboboxModel;
 
 	private static boolean lastConfirmInsert = false;
+	private final ExecutionContext executionContext;
 	
 	/** Creates new form DbConnectionDialog 
 	 * @param showCmd 
 	 * @param args */
-	public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final Table subject, String subjectCondition, List<AdditionalSubject> additionalSubjects, Session session, List<String> initialArgs, String password, boolean showCmd, DbConnectionDialog dbConnectionDialog) {
+	public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final Table subject, String subjectCondition, List<AdditionalSubject> additionalSubjects, Session session, List<String> initialArgs, String password, boolean showCmd, DbConnectionDialog dbConnectionDialog, ExecutionContext executionContext) {
 		super(parent, true);
+		this.executionContext = executionContext;
 		this.subjectCondition = subjectCondition;
 		this.dataModel = dataModel;
 		this.subject = subject;
@@ -533,7 +536,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		if (System.getProperty("os.name", "").toLowerCase().startsWith("windows")) {
 			cmd = "jailer.bat";
 		}
-		cliArea.setText(cmd + UIUtil.createCLIArgumentString(password, args));
+		cliArea.setText(cmd + UIUtil.createCLIArgumentString(password, args, executionContext));
 		cliArea.setCaretPosition(0);
 		jScrollPane1.getViewport().setViewPosition(new Point(0,0));
 	}
@@ -1564,7 +1567,7 @@ public class ExportDialog extends javax.swing.JDialog {
 			ddlArgs.add("-working-table-schema");
 			ddlArgs.add(getWorkingTableSchema());
 		}
-		DDLCreator ddlCreator = new DDLCreator(CommandLineInstance.getExecutionContext());
+		DDLCreator ddlCreator = new DDLCreator(executionContext);
 		BasicDataSource dataSource;
 		String hint = 
 				"Possible solutions:\n" +
@@ -1584,7 +1587,7 @@ public class ExportDialog extends javax.swing.JDialog {
 						return UIUtil.runJailer(this, ddlArgs, false,
 							false, false, true,
 							null, dbConnectionDialog.getPassword(), null,
-							null, false, false, true, false, true);
+							null, false, false, true, false, true, executionContext);
 					} catch (Exception e) {
 						Throwable cause = e;
 						while (cause != null && !(cause instanceof SqlException) && cause.getCause() != null && cause.getCause() != cause) {

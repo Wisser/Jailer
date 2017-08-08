@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.Pair;
@@ -34,13 +35,13 @@ import net.sf.jailer.util.Pair;
  * @author Ralf Wisser
  */
 public class DataModelManager {
-
+	
 	/**
 	 * Gets names of all model folders. Including <code>null</code> for the
 	 * default model.
 	 */
-	public static List<String> getModelFolderNames() {
-		File dmFolder = new File(getBaseFolder());
+	public static List<String> getModelFolderNames(ExecutionContext executionContext) {
+		File dmFolder = new File(getBaseFolder(executionContext));
 		List<String> folders = new ArrayList<String>();
 		if (new File(dmFolder, DataModel.TABLE_CSV_FILE).exists()) {
 			folders.add(null);
@@ -58,8 +59,8 @@ public class DataModelManager {
 		return folders;
 	}
 
-	private static String getBaseFolder() {
-		return CommandLineInstance.getExecutionContext().getQualifiedDatamodelFolder();
+	private static String getBaseFolder(ExecutionContext executionContext) {
+		return executionContext.getQualifiedDatamodelFolder();
 	}
 
 	/**
@@ -68,8 +69,8 @@ public class DataModelManager {
 	 * @param modelFolder
 	 *            folder name, <code>null</code> for the default model
 	 */
-	public static boolean deleteModel(String modelFolder) {
-		String dir = getBaseFolder() + File.separator + (modelFolder != null ? modelFolder + File.separator : "");
+	public static boolean deleteModel(String modelFolder, ExecutionContext executionContext) {
+		String dir = getBaseFolder(executionContext) + File.separator + (modelFolder != null ? modelFolder + File.separator : "");
 		File nameFile = new File(dir + DataModel.TABLE_CSV_FILE);
 		try {
 			copyFile(nameFile, new File(dir + DataModel.TABLE_CSV_FILE + ".bak"));
@@ -80,7 +81,7 @@ public class DataModelManager {
 			return false;
 		}
 		if (modelFolder != null) {
-			nameFile.getParentFile().renameTo(new File(getBaseFolder() + File.separator + modelFolder + ".bak"));
+			nameFile.getParentFile().renameTo(new File(getBaseFolder(executionContext) + File.separator + modelFolder + ".bak"));
 		}
 		return true;
 	}
@@ -92,9 +93,9 @@ public class DataModelManager {
 	 * @param modelFolder
 	 *            folder name, <code>null</code> for the default model
 	 */
-	public static Pair<String, Long> getModelDetails(String modelFolder) {
+	public static Pair<String, Long> getModelDetails(String modelFolder, ExecutionContext executionContext) {
 		File nameFile = new File(
-				getBaseFolder() + File.separator + (modelFolder != null ? modelFolder + File.separator : "") + DataModel.MODELNAME_CSV_FILE);
+				getBaseFolder(executionContext) + File.separator + (modelFolder != null ? modelFolder + File.separator : "") + DataModel.MODELNAME_CSV_FILE);
 		String name = null;
 		Long lastModified = null;
 		try {
@@ -119,21 +120,14 @@ public class DataModelManager {
 		return new Pair<String, Long>(name, lastModified);
 	}
 
-	public static void main(String[] args) throws Exception {
-		CommandLineInstance.init(args);
-		for (String s : getModelFolderNames()) {
-			System.out.println(s + " -> " + getModelDetails(s));
-		}
-	}
-
 	/**
 	 * Sets folder of current data model.
 	 * 
 	 * @param modelFolder
 	 *            the folder, <code>null</code> for default model
 	 */
-	public static void setCurrentModelSubfolder(String modelFolder) {
-		CommandLineInstance.getExecutionContext().setCurrentModelSubfolder(modelFolder);
+	public static void setCurrentModelSubfolder(String modelFolder, ExecutionContext executionContext) {
+		executionContext.setCurrentModelSubfolder(modelFolder);
 	}
 
 	/**
@@ -141,8 +135,8 @@ public class DataModelManager {
 	 * 
 	 * @return modelFolder the folder, <code>null</code> for default model
 	 */
-	public static String getCurrentModelSubfolder() {
-		return CommandLineInstance.getExecutionContext().getCurrentModelSubfolder();
+	public static String getCurrentModelSubfolder(ExecutionContext executionContext) {
+		return executionContext.getCurrentModelSubfolder();
 	}
 
 	/**
@@ -154,9 +148,9 @@ public class DataModelManager {
 	 *            folder name
 	 * @throws IOException
 	 */
-	public static void createNewModel(String newName, String folderName) throws IOException {
-		setCurrentModelSubfolder(null);
-		File modelFolder = new File(getBaseFolder() + File.separator + folderName);
+	public static void createNewModel(String newName, String folderName, ExecutionContext executionContext) throws IOException {
+		setCurrentModelSubfolder(null, executionContext);
+		File modelFolder = new File(getBaseFolder(executionContext) + File.separator + folderName);
 		if (modelFolder.exists()) {
 			throw new IOException("Folder \"" + modelFolder.getAbsolutePath() + "\" already exists");
 		}
@@ -164,15 +158,15 @@ public class DataModelManager {
 			throw new IOException("Unable to create folder \"" + modelFolder.getAbsolutePath() + "\"");
 		}
 
-		setCurrentModelSubfolder(folderName);
+		setCurrentModelSubfolder(folderName, executionContext);
 
-		for (String file : new String[] { DataModel.getTablesFile(CommandLineInstance.getExecutionContext()), DataModel.getAssociationsFile(CommandLineInstance.getExecutionContext()), DataModel.getColumnsFile(CommandLineInstance.getExecutionContext()) }) {
+		for (String file : new String[] { DataModel.getTablesFile(executionContext), DataModel.getAssociationsFile(executionContext), DataModel.getColumnsFile(executionContext) }) {
 			File toCreate = new File(file);
 			BufferedWriter out = new BufferedWriter(new FileWriter(toCreate));
 			out.write(" ");
 			out.close();
 		}
-		DataModelEditor.createNameFile(newName);
+		DataModelEditor.createNameFile(newName, executionContext);
 	}
 
 	private static void copyFile(File in, File out) throws Exception {
