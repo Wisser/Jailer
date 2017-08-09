@@ -1,4 +1,4 @@
-7.2.3
+7.3
   - Added ability to open more than one model editor at a time.
 
 7.2.2

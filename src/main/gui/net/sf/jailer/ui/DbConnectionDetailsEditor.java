@@ -70,10 +70,10 @@ public class DbConnectionDetailsEditor extends javax.swing.JDialog {
 		if (forNew) {
 			UIUtil.replace(infoBarLabel, new InfoBar("New Connection",
 					"Enter connection credentials for the database.\n" +
-					"Replace placeholders (\"<...>\") with appropriate URL parameters."));
+					"Replace placeholders (\"<...>\") with appropriate URL parameters.", null));
 		} else {
 			UIUtil.replace(infoBarLabel, new InfoBar("Edit Connection",
-					"Edit connection credentials for the database."));
+					"Edit connection credentials for the database.", null));
 		}
 		setLocation(120, 170);
 		loadButton1.addActionListener(new java.awt.event.ActionListener() {

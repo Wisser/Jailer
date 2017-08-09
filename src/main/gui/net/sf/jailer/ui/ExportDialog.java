@@ -129,6 +129,7 @@ public class ExportDialog extends javax.swing.JDialog {
 	
 	private ParameterEditor parameterEditor;
 	private final List<String> initialArgs;
+	private final String user;
 	private final String password;
 	private final String subjectCondition;
 	private final String settingsContext;
@@ -138,18 +139,22 @@ public class ExportDialog extends javax.swing.JDialog {
 	private String[] schemaComboboxModel;
 
 	private static boolean lastConfirmInsert = false;
+	private final String extractionModelFileName;
 	private final ExecutionContext executionContext;
-	
+
+
 	/** Creates new form DbConnectionDialog 
 	 * @param showCmd 
 	 * @param args */
-	public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final Table subject, String subjectCondition, List<AdditionalSubject> additionalSubjects, Session session, List<String> initialArgs, String password, boolean showCmd, DbConnectionDialog dbConnectionDialog, ExecutionContext executionContext) {
+	public ExportDialog(java.awt.Frame parent, final DataModel dataModel, final Table subject, String subjectCondition, List<AdditionalSubject> additionalSubjects, Session session, List<String> initialArgs, String user, String password, boolean showCmd, DbConnectionDialog dbConnectionDialog, String extractionModelFileName, ExecutionContext executionContext) {
 		super(parent, true);
 		this.executionContext = executionContext;
+		this.extractionModelFileName = extractionModelFileName;
 		this.subjectCondition = subjectCondition;
 		this.dataModel = dataModel;
 		this.subject = subject;
 		this.initialArgs = new ArrayList<String>(initialArgs);
+		this.user = user;
 		this.password = password;
 		this.settingsContext = session.dbUrl;
 		this.sourceDBMS = session.dbms;
@@ -531,12 +536,15 @@ public class ExportDialog extends javax.swing.JDialog {
 		explain.setEnabled(!scopeLocal.isSelected());
 
 		List<String> args = new ArrayList<String>(initialArgs);
+		if (extractionModelFileName != null && args.size() > 0) {
+			args.set(0, extractionModelFileName);
+		}
 		fillCLIArgs(args);
 		String cmd = "sh jailer.sh";
 		if (System.getProperty("os.name", "").toLowerCase().startsWith("windows")) {
 			cmd = "jailer.bat";
 		}
-		cliArea.setText(cmd + UIUtil.createCLIArgumentString(password, args, executionContext));
+		cliArea.setText(cmd + UIUtil.createCLIArgumentString(user, password, args, executionContext));
 		cliArea.setCaretPosition(0);
 		jScrollPane1.getViewport().setViewPosition(new Point(0,0));
 	}
@@ -1586,7 +1594,7 @@ public class ExportDialog extends javax.swing.JDialog {
 					try {
 						return UIUtil.runJailer(this, ddlArgs, false,
 							false, false, true,
-							null, dbConnectionDialog.getPassword(), null,
+							null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null,
 							null, false, false, true, false, true, executionContext);
 					} catch (Exception e) {
 						Throwable cause = e;
@@ -1596,7 +1604,10 @@ public class ExportDialog extends javax.swing.JDialog {
 						if (cause instanceof SqlException) {
 							SqlException sqlEx = (SqlException) cause;
 							if (sqlEx.getInsufficientPrivileges()) {
-								JOptionPane.showMessageDialog(this, "Insufficient privileges to create working-tables!\n" + hint, "Insufficient privileges", JOptionPane.ERROR_MESSAGE);
+								if (0 == JOptionPane.showOptionDialog(this, "Insufficient privileges to create working-tables!\n" + hint, "Insufficient privileges", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Use local database", "Cancel" }, null)) {
+									scopeLocal.setSelected(true);
+									return true;
+								}							
 							} else {
 								UIUtil.showException(this, "Error", new SqlException("Automatic creation of working-tables failed!\n" + hint + "\n\nCause: " + sqlEx.message + "", sqlEx.sqlStatement, null));
 							}

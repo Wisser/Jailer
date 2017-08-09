@@ -310,11 +310,11 @@ public class UIUtil {
 	 */
 	public static boolean runJailer(Window ownerOfConsole, List<String> cliArgs, boolean showLogfileButton,
 			final boolean printCommandLine, boolean showExplainLogButton, final boolean closeOutputWindow,
-			String continueOnErrorQuestion, String password, final ProgressListener progressListener,
+			String continueOnErrorQuestion, String user, String password, final ProgressListener progressListener,
 			final ProgressPanel progressPanel, final boolean showExeptions, boolean fullSize,
 			boolean returnFalseOnError, ExecutionContext executionContext) {
 		return runJailer(ownerOfConsole, cliArgs, showLogfileButton, printCommandLine, showExplainLogButton,
-				closeOutputWindow, continueOnErrorQuestion, password, progressListener, progressPanel, showExeptions,
+				closeOutputWindow, continueOnErrorQuestion, user, password, progressListener, progressPanel, showExeptions,
 				fullSize, false, returnFalseOnError, false, executionContext);
 	}
 
@@ -341,12 +341,12 @@ public class UIUtil {
 	 */
 	public static boolean runJailer(Window ownerOfConsole, List<String> cliArgs, boolean showLogfileButton,
 			final boolean printCommandLine, boolean showExplainLogButton, final boolean closeOutputWindow,
-			String continueOnErrorQuestion, String password, final ProgressListener progressListener,
+			String continueOnErrorQuestion, String user, String password, final ProgressListener progressListener,
 			final ProgressPanel progressPanel, final boolean showExeptions, boolean fullSize,
 			final boolean closeOutputWindowOnError, boolean returnFalseOnError, boolean throwException, ExecutionContext executionContext) {
 		JDialog dialog = new JDialog(ownerOfConsole);
 		List<String> args = new ArrayList<String>(cliArgs);
-		final StringBuffer arglist = createCLIArgumentString(password, args, executionContext);
+		final StringBuffer arglist = createCLIArgumentString(user, password, args, executionContext);
 		final String[] argsarray = new String[args.size()];
 		int i = 0;
 		for (String arg : args) {
@@ -559,13 +559,13 @@ public class UIUtil {
 		}
 	}
 
-	public static StringBuffer createCLIArgumentString(String password, List<String> args, ExecutionContext executionContext) {
+	public static StringBuffer createCLIArgumentString(String user, String password, List<String> args, ExecutionContext executionContext) {
 		args.add("-datamodel");
 		args.add(executionContext.getQualifiedDatamodelFolder());
-		return createPlainCLIArguments(password, args);
+		return createPlainCLIArguments(user, password, args);
 	}
 
-	public static StringBuffer createPlainCLIArguments(String password, List<String> args) {
+	public static StringBuffer createPlainCLIArguments(String user, String password, List<String> args) {
 		final StringBuffer arglist = new StringBuffer();
 		int pwi = -1;
 		for (int i = args.size() - 1; i >= 0; --i) {

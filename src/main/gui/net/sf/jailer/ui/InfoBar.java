@@ -33,14 +33,17 @@ public class InfoBar extends JPanel {
 
 	private static final long serialVersionUID = -6737420167295938488L;
 	private final Font font = new JLabel().getFont();
-	private final Font big = new Font(font.getName(), font.getStyle() | Font.BOLD, (int) (font.getSize() * 1.2));
+	private final Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
+	private final Font big = new Font(font.getName(), font.getStyle() | Font.BOLD, (int) (font.getSize() * 1.3));
 	private final String titel;
 	private final String message;
+	private final String footer;
 	
 	/** Creates new form SqlErrorDialog */
-	public InfoBar(String titel, String message) {
+	public InfoBar(String titel, String message, String footer) {
 		this.titel = titel;
 		this.message = message;
+		this.footer = footer;
 		initComponents();
 		int y = 1;
 		if (titel != null) {
@@ -56,8 +59,20 @@ public class InfoBar extends JPanel {
 			gridBagConstraints.insets = new Insets(0, 0, 8, 0);
 			messagePanel.add(label, gridBagConstraints);
 		}
-		for (String line : message.trim().split("\n")) {
+		for (String line : message.split("\n")) {
 			JLabel label = new JLabel(line);
+			java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+			gridBagConstraints.gridx = 1;
+			gridBagConstraints.gridy = y++;
+			gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+			gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+			gridBagConstraints.weightx = 1.0;
+			gridBagConstraints.weighty = 0;
+			messagePanel.add(label, gridBagConstraints);
+		}
+		if (footer != null) {
+			JLabel label = new JLabel(footer);
+			label.setFont(bold);
 			java.awt.GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 			gridBagConstraints.gridx = 1;
 			gridBagConstraints.gridy = y++;
@@ -76,7 +91,7 @@ public class InfoBar extends JPanel {
 	}
 
 	public InfoBar(InfoBar infoBar) {
-		this(infoBar.titel, infoBar.message);
+		this(infoBar.titel, infoBar.message, infoBar.footer);
 		if (infoBar.iconLabel.getIcon() != null) {
 			setIcon(infoBar.iconLabel.getIcon());
 		}

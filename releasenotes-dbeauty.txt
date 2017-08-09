@@ -1,4 +1,4 @@
-3.4.2
+3.5
   - Added ability to open more than one model editor at a time.
 
 3.4.1

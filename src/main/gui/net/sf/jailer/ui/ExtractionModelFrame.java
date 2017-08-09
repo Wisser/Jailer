@@ -17,6 +17,7 @@ package net.sf.jailer.ui;
 
 import java.awt.CardLayout;
 import java.awt.Cursor;
+import java.awt.Frame;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.BufferedReader;
@@ -411,7 +412,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
         fileMenu.add(exportDisplay);
         fileMenu.add(jSeparator2);
 
-        connectDb.setText("Connect database");
+        connectDb.setText("Connect with database");
         connectDb.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 connectDbActionPerformed(evt);
@@ -861,11 +862,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 					args.add("import");
 					args.add(sqlFile);
 					dbConnectionDialog.addDbArgs(args);
-					ImportDialog importDialog = new ImportDialog(this, sqlFile, args, dbConnectionDialog.getPassword(), true);
+					ImportDialog importDialog = new ImportDialog(this, sqlFile, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), true);
 					if (importDialog.isOk) {
 						disconnect();
 						importDialog.fillCLIArgs(args);
-						UIUtil.runJailer(this, args, false, true, false, false, null, dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext);
+						UIUtil.runJailer(this, args, false, true, false, false, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext);
 					}
 				}
 			}
@@ -1017,7 +1018,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 						}
 						analyseOptionsDialog.appendAnalyseCLIOptions(args);
 						ModelBuilder.assocFilter = analyseOptionsDialog.getAssociationLineFilter();
-						if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
+						if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
 							ModelBuilder.assocFilter = null;
 							String modelname = extractionModelEditor.dataModel == null? DataModel.DEFAULT_NAME : extractionModelEditor.dataModel.getName();
 							DataModelEditor dataModelEditor = new DataModelEditor(this, true, analyseOptionsDialog.isRemoving(), null, analyseOptionsDialog.getTableLineFilter(), analyseOptionsDialog.getAssociationLineFilter(), modelname, schema == null? dbConnectionDialog.getName() : schema, executionContext);
@@ -1083,7 +1084,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				return;
 			}
 			
-			if (extractionModelEditor.extractionModelFile == null) {
+			if (extractionModelEditor.extractionModelFile == null || extractionModelEditor.needsSave) {
 				tmpFileName = createTempFileName();
 				if (!extractionModelEditor.save(tmpFileName)) {
 					tmpFileName = null;
@@ -1113,7 +1114,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 							extractionModelEditor.dataModel.checkForPrimaryKey(toCheck, false);
 						}
 
-						ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, executionContext);
+						ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, executionContext);
 						session.shutDown();
 						Session.closeTemporaryTableSession();
 						if (exportDialog.isOk()) {
@@ -1140,14 +1141,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 									"Automatic creation of working-tables failed!\n" +
 									"Please execute the Jailer-DDL manually (jailer_ddl.sql)\n" +
 									"or try another \"Working table schema\"\n\n" +
-									"Continue Data Export?", dbConnectionDialog.getPassword(), null, null, true, false, true, executionContext)) {
+									"Continue Data Export?", dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, true, false, true, executionContext)) {
 									ProgressTable progressTable = new ProgressTable();
 									ProgressTable progressTableForDelete = new ProgressTable();
 									ProgressPanel progressPanel = new ProgressPanel(progressTable, progressTableForDelete, exportDialog.hasDeleteScript(), exportDialog.explain.isSelected());
 									boolean confirm = exportDialog.scriptFormat == ScriptFormat.INTRA_DATABASE && exportDialog.getConfirmExport();
 									ExportAndDeleteStageProgressListener progressListener = new ExportAndDeleteStageProgressListener(progressTable, progressTableForDelete, progressPanel, extractionModelEditor.dataModel, confirm, exportDialog.getTargetSchemaSet());
 									try {
-										UIUtil.runJailer(this, args, true, true, exportDialog.explain.isSelected(), false /* !exportDialog.explain.isSelected() */, null, dbConnectionDialog.getPassword(), progressListener, progressPanel, true, true, false, executionContext);
+										UIUtil.runJailer(this, args, true, true, exportDialog.explain.isSelected(), false /* !exportDialog.explain.isSelected() */, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), progressListener, progressPanel, true, true, false, executionContext);
 									} finally {
 										progressListener.stop();
 									}
@@ -1216,7 +1217,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			args.add("render-datamodel");
 			File file = saveRestrictions();
 			args.add(file.getName());
-			UIUtil.runJailer(this, args, false, true, false, true, null, null /* dbConnectionDialog.getPassword() */, null, null, false, true, false, executionContext);
+			UIUtil.runJailer(this, args, false, true, false, true, null, null, null /* dbConnectionDialog.getPassword() */, null, null, false, true, false, executionContext);
 			BrowserLauncher.openURL(Environment.newFile(table == null? "render/index.html" : ("render/" + HtmlDataModelRenderer.toFileName(table))).getPath());
 		} catch (Exception e) {
 			UIUtil.showException(this, "Error", e);
@@ -1235,7 +1236,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 				args.add(to.getName());
 				File file = saveRestrictions();
 				args.add(file.getName());
-				UIUtil.runJailer(this, args, false, false, false, false, null, dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext);
+				UIUtil.runJailer(this, args, false, false, false, false, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext);
 			} catch (Exception e) {
 				UIUtil.showException(this, "Error", e);
 			}
@@ -1302,7 +1303,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	private void loadActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_loadActionPerformed
 		try {
 			String modelFile = UIUtil.choseFile(null, "extractionmodel", "Load Extraction Model", ".jm", this, false, true, false);
-			if (modelFile != null) {
+			if (modelFile != null && !toFront(modelFile)) {
 				String currentModelSubfolder = DataModelManager.getCurrentModelSubfolder(executionContext);
 				if (extractionModelEditor.extractionModelFile == null && !extractionModelEditor.needsSave
 						&& currentModelSubfolder != null && currentModelSubfolder.equals(ExtractionModel.loadDatamodelFolder(modelFile, executionContext))) {
@@ -1320,6 +1321,19 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			UIUtil.showException(this, "Error", t);
 		}
 	}//GEN-LAST:event_loadActionPerformed
+
+	private boolean toFront(String modelFile) {
+		for (Frame frame: Frame.getFrames()) {
+			if (frame instanceof ExtractionModelFrame && frame.isVisible()) {
+				ExtractionModelEditor em = ((ExtractionModelFrame) frame).extractionModelEditor;
+				if (em != null && em.extractionModelFile != null && em.extractionModelFile.equals(modelFile)) {
+					frame.toFront();
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 
 	/**
 	 * Loads an extraction model.
@@ -1763,7 +1777,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			extractionModelFrame.restrictedDependenciesView.refresh();
 		}
 	}
-		
+
 	public static ExtractionModelFrame createFrame(String file, boolean maximize, boolean visible, ExecutionContext executionContext) {
 		boolean isHorizonal = false;
 		try {
@@ -1783,7 +1797,15 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			} catch (Throwable t2) {
 			}
 		}
-		extractionModelFrame.setLocation(40, 40);
+		
+		int c = 0;
+		for (Frame frame: Frame.getFrames()) {
+			if (frame instanceof ExtractionModelFrame && frame.isVisible()) {
+				c = (c + 1) % 10;
+			}
+		}
+		
+		extractionModelFrame.setLocation(40 + c * 32, 40 + c * 32);
 		extractionModelFrame.setSize(1100, 640);
 		extractionModelFrame.setVisible(visible);
 //		if (maximize) {
@@ -1791,7 +1813,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 //		}
 		return extractionModelFrame;
 	}
-
+	
 	public static void createFrame(String file, final boolean withStartupWizzard) {
 		try {
 			final String finalFile = file;
