@@ -89,7 +89,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 		InfoBar infoBar = new InfoBar("Data Model Configuration", 
 				"A data model is a set of interrelated tables. Acquire information about tables by analyzing\n" +
-				"database schemas, or use the data model editor to manually define tables and associations.\n" +
+				"database schemas, or use the data model editor to manually define tables and associations.\n \n",
 				"Select a data model to work with.");
 		UIUtil.replace(infoBarLabel, infoBar);
 		
@@ -189,7 +189,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		
 		setLocation(80, 130);
 		pack();
-		setSize(Math.max(740, getWidth()), 360);
+		setSize(Math.max(740, getWidth()), 400);
 		refresh();
 		UIUtil.initPeer();
 		okButton.grabFocus();
@@ -574,7 +574,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			DbConnectionDialog dbConnectionDialog = new DbConnectionDialog(this, applicationName,
 					new InfoBar("Connect with Database", 
 							"Select a connection to the database to be analyzed, or create a new connection.\n" +
-							"New connections will be assigned to the datamodel \"" + modelDetails.get(currentModel).a + "\"."), executionContext);
+							"New connections will be assigned to the datamodel \"" + modelDetails.get(currentModel).a + "\".", null), executionContext);
 			if (dbConnectionDialog.connect("Analyze Database")) {
 				List<String> args = new ArrayList<String>();
 				args.add("build-model-wo-merge");
@@ -602,7 +602,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					}
 					analyseOptionsDialog.appendAnalyseCLIOptions(args);
 					ModelBuilder.assocFilter = analyseOptionsDialog.getAssociationLineFilter();
-					if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
+					if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
 						ModelBuilder.assocFilter = null;
 						String modelname = dataModel.getName();
 						DataModelEditor dataModelEditor = new DataModelEditor(this, true, analyseOptionsDialog.isRemoving(), null, analyseOptionsDialog.getTableLineFilter(), analyseOptionsDialog.getAssociationLineFilter(), modelname, schema == null? dbConnectionDialog.getName() : schema, executionContext);

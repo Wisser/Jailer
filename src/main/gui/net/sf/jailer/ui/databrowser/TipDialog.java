@@ -40,7 +40,7 @@ public class TipDialog extends javax.swing.JDialog {
 	public TipDialog(Window parent, String tip) {
 		super(parent, ModalityType.DOCUMENT_MODAL);
 		initComponents();
-		InfoBar infoBar = new InfoBar("Did you know?", tip);
+		InfoBar infoBar = new InfoBar("Did you know?", tip, null);
 		UIUtil.replace(infoBarLabel, infoBar);
 		pack();
 		setLocation(getParent().getX() + (getParent().getWidth() - getWidth()) / 2, getParent().getY() + (getParent().getHeight() - getHeight()) / 2);

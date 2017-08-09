@@ -19,6 +19,7 @@ import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
@@ -457,7 +458,14 @@ public class DataBrowser extends javax.swing.JFrame {
 		desktop.addMouseMotionListener(mia);
 		desktop.addMouseListener(mia);
 
-		setLocation(60, 50);
+		int c = 0;
+		for (Frame frame: Frame.getFrames()) {
+			if (frame instanceof DataBrowser && frame.isVisible()) {
+				c = (c + 1) % 10;
+			}
+		}
+		
+		setLocation(40 + c * 32, 40 + c * 32);
 		setSize(900, 640);
 		if (root != null) {
 			desktop.addTableBrowser(null, null, 0, root, null, condition, null, null, true);
@@ -516,9 +524,9 @@ public class DataBrowser extends javax.swing.JFrame {
 		if (dbConnectionDialog != null) {
 			ConnectionInfo connection = dbConnectionDialog.currentConnection;
 			if (connection != null) {
-				desktop.openSchemaMappingDialog(true);
 				createSession(dbConnectionDialog);
 				desktop.session = session;
+				desktop.openSchemaMappingDialog(true);
 				updateStatusBar();
 				if (desktop != null) {
 					desktop.updateMenu();
@@ -1147,9 +1155,9 @@ public class DataBrowser extends javax.swing.JFrame {
 					args.add("import");
 					args.add(sqlFile);
 					dcd.addDbArgs(args);
-					ImportDialog importDialog = new ImportDialog(this, sqlFile, args, dbConnectionDialog.getPassword(), true);
+					ImportDialog importDialog = new ImportDialog(this, sqlFile, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), true);
 					if (importDialog.isOk) {
-						UIUtil.runJailer(this, args, false, true, false, false, null, dcd.getPassword(), null, null, false, true, false, executionContext);
+						UIUtil.runJailer(this, args, false, true, false, false, null, dcd.getUser(), dcd.getPassword(), null, null, false, true, false, executionContext);
 						if (desktop != null) {
 							desktop.updateMenu();
 							for (RowBrowser rb : desktop.getBrowsers()) {
@@ -1561,7 +1569,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				if (DataBrowserContext.isStandAlone()) {
 					UIUtil.disableWarnings = true;
 				}
-				if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
+				if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
 					ModelBuilder.assocFilter = null;
 					String modelname = datamodel == null || datamodel.get() == null ? DataModel.DEFAULT_NAME : datamodel.get().getName();
 					DataModelEditor dataModelEditor = new DataModelEditor(this, true, analyseOptionsDialog.isRemoving(), null,

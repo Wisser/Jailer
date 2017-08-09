@@ -37,6 +37,7 @@ import net.sf.jailer.util.CancellationHandler;
 public class ImportDialog extends javax.swing.JDialog {
 
 	private final List<String> initialArgs;
+	private final String user;
 	private final String password;
 
 	private static int numThreads = 1;
@@ -48,9 +49,10 @@ public class ImportDialog extends javax.swing.JDialog {
 	 * @param args
 	 */
 	public ImportDialog(java.awt.Frame parent, String importFile,
-			List<String> initialArgs, String password, boolean showCmd) {
+			List<String> initialArgs, String user, String password, boolean showCmd) {
 		super(parent, true);
 		this.initialArgs = new ArrayList<String>(initialArgs);
+		this.user = user;
 		this.password = password;
 		initComponents();
 
@@ -118,7 +120,7 @@ public class ImportDialog extends javax.swing.JDialog {
 				.startsWith("windows")) {
 			cmd = "jailer.bat";
 		}
-		cliArea.setText(cmd + UIUtil.createPlainCLIArguments(password, args));
+		cliArea.setText(cmd + UIUtil.createPlainCLIArguments(user, password, args));
 		cliArea.setCaretPosition(0);
 		jScrollPane1.getViewport().setViewPosition(new Point(0, 0));
 	}

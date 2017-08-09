@@ -166,7 +166,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		if (infoBar == null) {
 			infoBar = new InfoBar("Connect with Database", 
 					"Select a connection to the database, or create a new connection.\n" +
-					"New connections will be assigned to the datamodel \"" + DataModelManager.getModelDetails(DataModelManager.getCurrentModelSubfolder(executionContext), executionContext).a + "\".");
+					"New connections will be assigned to the datamodel \"" + DataModelManager.getModelDetails(DataModelManager.getCurrentModelSubfolder(executionContext), executionContext).a + "\".", null);
 		}
 		
 		UIUtil.replace(infoBarLabel, infoBar);
@@ -924,6 +924,10 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 	private javax.swing.JScrollPane jScrollPane2;
 	private javax.swing.JButton newButton;
 	// End of variables declaration//GEN-END:variables
+
+	public String getUser() {
+		return currentConnection.user;
+	}
 
 	public String getPassword() {
 		return currentConnection.password;

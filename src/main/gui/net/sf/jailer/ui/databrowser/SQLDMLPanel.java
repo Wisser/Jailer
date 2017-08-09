@@ -339,7 +339,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 			args.add(sqlFile);
 			args.addAll(session.getCliArguments());
 			args.add("-transactional");
-			if (UIUtil.runJailer(SwingUtilities.getWindowAncestor(this), args, false, true, false, true, null, session.getPassword(), null, null, false, false, true, executionContext)) {
+			if (UIUtil.runJailer(SwingUtilities.getWindowAncestor(this), args, false, true, false, true, null, session.getSchema(), session.getPassword(), null, null, false, false, true, executionContext)) {
 				statusLabel.setText("Executed " + SqlScriptExecutor.getLastStatementCount().a + " statements. " +
 						SqlScriptExecutor.getLastStatementCount().b + " rows affected");
 				statusLabel.setForeground(new Color(0, 100, 0));
