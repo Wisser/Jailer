@@ -109,11 +109,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	private static final String PLAFSETTING = ".plaf2.ui";
 
 	/**
-	 * File in which orientation is stored.
-	 */
-	private static final String ORIENTATIONSETTING = ".orientation.ui";
-	
-	/**
 	 * The execution context.
 	 */
 	private final ExecutionContext executionContext;
@@ -940,30 +935,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			UIUtil.showException(this, "Error", e);
 		}
 	}
-	
-	/**
-	 * Stores orientation.
-	 */
-	private void storeOrientation() {
-		try {
-			try {
-				File file = Environment.newFile(ORIENTATIONSETTING);
-				file.delete();
-			} catch (Exception e) {
-			}
-			try {
-				File setting = Environment.newFile(ORIENTATIONSETTING);
-				PrintWriter out = new PrintWriter(setting);
-				out.println(isHorizontalLayout);
-				out.close();
-			} catch (Exception x) {
-			}
-		}
-		catch (Exception e) {
-			UIUtil.showException(this, "Error", e);
-		}
-	}
-	
+
 	private void openDataModelEditorActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openDataModelEditorActionPerformed
 		openDataModelEditor(null);
 	}//GEN-LAST:event_openDataModelEditorActionPerformed
@@ -1587,7 +1559,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		isHorizontalLayout = !isHorizontalLayout;
 		extractionModelEditor.setOrientation(isHorizontalLayout);
 		horizontalLayoutMenuItem.setSelected(isHorizontalLayout);
-		storeOrientation();
 		jMenuBar2.grabFocus();
 	}//GEN-LAST:event_horizontalLayoutMenuItemActionPerformed
 
@@ -1780,14 +1751,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 
 	public static ExtractionModelFrame createFrame(String file, boolean maximize, boolean visible, ExecutionContext executionContext) {
 		boolean isHorizonal = false;
-		try {
-			File setting = new File(ORIENTATIONSETTING);
-			BufferedReader in = new BufferedReader(new FileReader(setting));
-			String or = in.readLine();
-			in.close();
-			isHorizonal = Boolean.valueOf(or);
-		} catch (Exception x) {
-		}
 		ExtractionModelFrame extractionModelFrame = new ExtractionModelFrame(file, isHorizonal, executionContext);
 		try {
 			extractionModelFrame.setIconImage(new ImageIcon(extractionModelFrame.getClass().getResource("/net/sf/jailer/ui/resource/jailer.png")).getImage());
@@ -1844,8 +1807,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 										}
 										if (suw.newModelWithRestrictions) {
 											finalExtractionModelFrame.extractionModelEditor.ignoreAll(null);
-											finalExtractionModelFrame.extractionModelEditor.needsSave = false;
-											finalExtractionModelFrame.extractionModelEditor.extractionModelFrame.updateTitle(false);
+											finalExtractionModelFrame.extractionModelEditor.extractionModelFrame.updateTitle(finalExtractionModelFrame.extractionModelEditor.needsSave);
 										}
 									}
 								}
