@@ -231,7 +231,7 @@ public class Session {
 		this.scope = scope;
 		this.dbms = dbms;
 		this.dbUrl = (dataSource instanceof BasicDataSource)? ((BasicDataSource) dataSource).dbUrl : null;
-		this.schema = (dataSource instanceof BasicDataSource)? ((BasicDataSource) dataSource).dbUser : "";;
+		this.schema = (dataSource instanceof BasicDataSource)? ((BasicDataSource) dataSource).dbUser : "";
 		if (scope != null) {
 			closeTemporaryTableSession();
 			temporaryTableScope = scope;
