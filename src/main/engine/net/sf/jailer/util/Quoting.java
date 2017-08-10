@@ -87,7 +87,7 @@ public class Quoting {
 		quote = quoteString;
 		unquotedIdentifierInUpperCase = metaData.storesUpperCaseIdentifiers();
 		
-		if (session.dbUrl.toLowerCase().startsWith("jdbc:jtds:")) {
+		if (session.dbUrl != null && session.dbUrl.toLowerCase().startsWith("jdbc:jtds:")) {
 			// workaround for JTDS-bug
 			unquotedIdentifierInMixedCase = true;
 		} else {
