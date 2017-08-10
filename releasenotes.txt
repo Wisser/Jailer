@@ -1,5 +1,6 @@
 7.3
   - Added ability to open more than one model editor at a time.
+  - Issue #4 "NPE when using Weblogic Datasource" (https://github.com/Wisser/Jailer/issues/4 )
 
 7.2.2
   - Performance optimization.
