@@ -134,6 +134,7 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
+        tableComboBox.setMaximumRowCount(24);
         tableComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
