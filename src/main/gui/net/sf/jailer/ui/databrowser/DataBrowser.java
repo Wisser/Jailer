@@ -629,6 +629,7 @@ public class DataBrowser extends javax.swing.JFrame {
         navigationTreeScrollPane = new javax.swing.JScrollPane();
         navigationTree = new javax.swing.JTree();
         jLabel2 = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
         borderBrowserTitledPanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
         borderBrowserPanel = new javax.swing.JPanel();
@@ -819,6 +820,7 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -829,8 +831,21 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel4.add(jLabel2, gridBagConstraints);
+
+        jButton1.setText("New Table Browser");
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        jPanel4.add(jButton1, gridBagConstraints);
 
         jSplitPane2.setLeftComponent(jPanel4);
 
@@ -1179,6 +1194,10 @@ public class DataBrowser extends javax.swing.JFrame {
     private void newBrowserjMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newBrowserjMenuItemActionPerformed
     	createFrame();
     }//GEN-LAST:event_newBrowserjMenuItemActionPerformed
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    	openNewTableBrowser(false);
+    }//GEN-LAST:event_jButton1ActionPerformed
 
 	private void newWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_newWindowMenuItemActionPerformed
 		try {
@@ -1610,6 +1629,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenu helpMenu;
     private javax.swing.JPanel hiddenPanel;
     private javax.swing.JLabel ignored;
+    private javax.swing.JButton jButton1;
     private javax.swing.JInternalFrame jInternalFrame1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;

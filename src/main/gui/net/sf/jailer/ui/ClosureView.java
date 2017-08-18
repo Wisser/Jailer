@@ -31,6 +31,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
@@ -134,6 +135,20 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		initComponents();
 		
 		AutoCompletion.enable(searchComboBox);
+		searchComboBox.getEditor().getEditorComponent().addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if (e.getKeyChar() == '\n') {
+					findButtonActionPerformed(null);
+				}
+			}
+			@Override
+			public void keyReleased(KeyEvent e) {
+			}
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+			}
+		});
 		
 		columnsComboBox.setModel(new DefaultComboBoxModel<Integer>(new Integer[] { 
 				4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
