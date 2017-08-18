@@ -15,6 +15,8 @@
  */
 package net.sf.jailer.ui.databrowser;
 
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -41,6 +43,22 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
 		initComponents();
 
 		AutoCompletion.enable(tableComboBox);
+		tableComboBox.getEditor().getEditorComponent().addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if (e.getKeyChar() == '\n') {
+					if (okButton.isEnabled()) {
+						okButtonActionPerformed(null);
+					}
+				}
+			}
+			@Override
+			public void keyReleased(KeyEvent e) {
+			}
+			@Override
+			public void keyPressed(KeyEvent arg0) {
+			}
+		});
 		
 		analyzeButton.setVisible(DataBrowserContext.isSupportsDataModelUpdates());
 		
@@ -69,6 +87,9 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
 		} else {
 			setLocation(300, 100);
 		}
+		
+		tableComboBox.grabFocus();
+		
 		setVisible(true);
 	}
 
