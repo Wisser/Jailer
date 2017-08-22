@@ -577,6 +577,10 @@ public class Table extends ModelElement implements Comparable<Table> {
 	 * @return non-virtual and non-filtered primary-key columns
 	 */
 	public List<Column> getNonVirtualPKColumns(Session session) {
+		if (primaryKey == null) {
+			return new ArrayList<Column>();
+		}
+
 		String propertyName = NON_VIRTUAL_COLUMNS_PROP_PREFIX + name;
 		@SuppressWarnings("unchecked")
 		List<Column> nonVirtualColumns = (List<Column>) session.getSessionProperty(Table.class, propertyName);
