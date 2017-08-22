@@ -1,5 +1,5 @@
 7.3.1
-  - Bugfix: happened when using import-filters.
+  - Bugfix: NPE happened when using import-filters.
   - Minor GUI Improvements.
 
 7.3
