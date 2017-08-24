@@ -43,6 +43,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.DatabaseMetaData;
@@ -2637,6 +2638,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		public int blockNr;
 		public Object value;
 		public String toString() {
+			if (value instanceof Double) {
+				return SqlUtil.toString((Double) value);
+			}
+			if (value instanceof BigDecimal) {
+				return SqlUtil.toString((BigDecimal) value);
+			}
 			return String.valueOf(value);
 		}
 	}
