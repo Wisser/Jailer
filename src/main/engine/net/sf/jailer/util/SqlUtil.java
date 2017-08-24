@@ -15,14 +15,18 @@
  */
 package net.sf.jailer.util;
 
+import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.Types;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -358,6 +362,20 @@ public class SqlUtil {
 
 	public static final String LETTERS_AND_DIGITS = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_0123456789";
 
+	public static String toString(Double content) {
+		String s = content.toString();
+		if (s.contains("E")) {
+			DecimalFormat df = new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
+			df.setMaximumFractionDigits(340);
+			s = df.format(content);
+		}
+		return s;
+	}
+
+	public static String toString(BigDecimal content) {
+		return content.toPlainString();
+	}
+
 	/**
 	 * Maps SQL types from {@link java.sql.Types} to clear text types.
 	 */
@@ -383,5 +401,5 @@ public class SqlUtil {
 		SQL_TYPE.put(Types.NCLOB, "NCLOB");
 		SQL_TYPE.put(Types.BLOB, "BLOB");
 	}
-	
+
 }

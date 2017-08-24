@@ -1,3 +1,6 @@
+7.3.2
+  - Bugfix: Double To String conversion without exponential scientific notation.
+
 7.3.1
   - Bugfix: NPE happened when using import-filters.
   - Minor GUI Improvements.
