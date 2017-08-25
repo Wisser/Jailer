@@ -367,13 +367,32 @@ public class SqlUtil {
 		if (s.contains("E")) {
 			DecimalFormat df = new DecimalFormat("0", DecimalFormatSymbols.getInstance(Locale.ENGLISH));
 			df.setMaximumFractionDigits(340);
-			s = df.format(content);
+			s = remove0Tail(df.format(content));
 		}
 		return s;
 	}
 
 	public static String toString(BigDecimal content) {
-		return content.toPlainString();
+		return remove0Tail(content.toPlainString());
+	}
+
+	private static String remove0Tail(String s) {
+		if (s.contains(".")) {
+			int l = s.length();
+			while (l > 1) {
+				char last = s.charAt(l - 1);
+				if (last == '.') {
+					--l;
+					break;
+				} else if (last != '0') {
+					break;
+				} else {
+					--l;
+				}
+			}
+			s = s.substring(0, l);
+		}
+		return s;
 	}
 
 	/**
