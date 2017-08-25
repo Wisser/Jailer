@@ -1396,22 +1396,22 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 //				}
 //			}
 			
-			subjectCondition = root.needsAnchor? root.anchorWhereClause : root.whereClause;
+			subjectCondition = root.whereClause;
 			if (doExport && (getParentBrowser() != null || isLimitExceeded)) {
-				subjectCondition = root.whereClause;
+				subjectCondition = root.whereClause.replace('\r', ' ').replace('\n', ' ');
 				StringBuilder sb = new StringBuilder();
 				boolean f = true;
 				for (Row row: rows) {
 					if (f) {
 						f = false;
 					} else {
-						sb.append(" or \n");
+						sb.append(" or ");
 					}
 					sb.append("(" + row.rowId + ")");
 				}
 
 				if (subjectCondition != null && subjectCondition.trim().length() > 0) {
-					subjectCondition = "(" + subjectCondition + ")\nand\n(" + sb + ")";
+					subjectCondition = "(" + subjectCondition + ") and (" + sb + ")";
 				} else {
 					subjectCondition = sb.toString();
 				}

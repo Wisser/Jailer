@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.lang.reflect.Method;
-import java.math.BigDecimal;
 import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.NClob;
@@ -153,12 +152,6 @@ public class CellContentConverter {
 			if (content instanceof Boolean) {
 				content = Boolean.TRUE.equals(content)? "1" : "0";
 			}
-		}
-		if (content instanceof Double) {
-			return SqlUtil.toString((Double) content);
-		}
-		if (content instanceof BigDecimal) {
-			return SqlUtil.toString((BigDecimal) content);
 		}
 		return content.toString();
 	}

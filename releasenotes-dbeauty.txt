@@ -1,5 +1,5 @@
 3.5.2
-  - Bugfix: Double To String conversion without exponential scientific notation.
+  - Double To String conversion without exponential scientific notation.
 
 3.5.1
   - Minor GUI Improvements.
