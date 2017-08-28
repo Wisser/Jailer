@@ -548,7 +548,7 @@
         </sessionTemporaryTableManager>
         <identityInserts>false</identityInserts>
         <datePattern>''yyyy-MM-dd'''::date'</datePattern>
-        <timestampPattern>'to_timestamp('''yyyy-MM-dd HH.mm.ss'.${NANO}'', ''YYYY-MM-DD HH12.MI.SS.US'')'</timestampPattern>
+        <timestampPattern>'to_timestamp('''yyyy-MM-dd HH.mm.ss'.${NANO}'', ''YYYY-MM-DD HH24.MI.SS.US'')'</timestampPattern>
         <embeddedLobSizeLimit>3980</embeddedLobSizeLimit>
         <binaryPattern>E'\\x%s'</binaryPattern>
         <avoidLeftJoin>false</avoidLeftJoin>
