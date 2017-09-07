@@ -476,6 +476,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 //		});
 		initRestrictionEditor(null, null);
 		if (extractionModel.subject != null) {
+			subjectTable.setSelectedItem(null);
 			subjectTable.setSelectedItem(dataModel.getDisplayName(extractionModel.subject));
 		}
 		String cond = extractionModel.getCondition();
