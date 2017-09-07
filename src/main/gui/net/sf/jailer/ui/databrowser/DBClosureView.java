@@ -41,6 +41,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
@@ -79,7 +80,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 	/**
 	 * Number of tables in a closure-table's line.
 	 */
-	private int tablesPerLine = 8;
+	private static int tablesPerLine = 8;
 	
 	/**
 	 * Currently selected table (in closure-table).
@@ -190,7 +191,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 						x[1] = ((int) r.getCenterX());
 						y[1] = ((int) r.getCenterY());
 						int alpha = 60;
-						int lineWidth = 2;
+						int lineWidth = 1;
 						if (mainPathAsSet.contains(selectionInfo) && mainPathAsSet.contains(parent)) {
 							alpha = 100;
 							lineWidth = 3;
@@ -279,7 +280,14 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 					final Table table = getDataModel().getTableByDisplayName((String) value);
 					if (table != null) {
 						if (cellInfo.containsKey(value)) {
+							boolean wasSelected = cellInfo.get(value).selected && !mainPathAsSet.contains(cellInfo.get(value));
+							String prevSelectedTable = selectedTable;
 							selectTableCell(column, row);
+							if (wasSelected) {
+								if (prevSelectedTable != null && !prevSelectedTable.equals(selectedTable)) {
+									find(prevSelectedTable);
+								}
+							}
 						}
 					}
 				}
@@ -330,11 +338,15 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 					if (row == 0) {
 						((JLabel) render).setFont(bold);
 					}
-					if (cellInfo != null && selectedTable != null && mainPathAsSet.contains(cellInfo)) {
+					if (cellInfo != null && selectedTable != null) {
 						if (selectedTable.equals(value) || cellInfo.selected) {
-							onPath = true;
-							((JLabel) render).setFont(bold);
-							((JLabel) render).setBackground(new Color(255, 230, 200));
+							if (mainPathAsSet.contains(cellInfo)) {
+								onPath = true;
+								((JLabel) render).setFont(bold);
+								((JLabel) render).setBackground(new Color(255, 230, 200));
+							} else {
+								((JLabel) render).setFont(italic);
+							}
 						}
 					}
 					Table t = getDataModel().getTableByDisplayName((String) value);
@@ -424,21 +436,21 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 							}
 						}
 					} else {
-						Set<CellInfo> pathToVisibleTable = shortestPathToVisibleTable(getVisibleTables(), selectionInfo);
-						mainPath.clear();
-						for (CellInfo ci = selectionInfo; ci != null; ) {
-							CellInfo nextParent = null;
-							mainPath.add(ci);
-							for (CellInfo p: ci.parents) {
-								if (nextParent == null) {
-									nextParent = p;
-								}
-								if (pathToVisibleTable.contains(p)) {
-									nextParent = p;
-									break;
-								}
-							}
-							ci = nextParent;
+						Set<Table> visibleTables = getVisibleTables().keySet();
+						Set<Table> mainPathTables = new HashSet<Table>();
+						for (CellInfo ci: mainPath) {
+							mainPathTables.add(ci.table);
+						}
+						Set<CellInfo> pathToVisibleTable = shortestPathToVisibleTable(visibleTables, selectionInfo);
+						Set<CellInfo> pathToMainPathTable = shortestPathToVisibleTable(mainPathTables, selectionInfo);
+						List<CellInfo> pathVT = new ArrayList<CellInfo>();
+						int vtMaxRow = fillPath(selectionInfo, visibleTables, pathToVisibleTable, pathVT);
+						List<CellInfo> pathST = new ArrayList<CellInfo>();
+						int stMaxRow = fillPath(selectionInfo, mainPathTables, pathToMainPathTable, pathST);
+						if (vtMaxRow > stMaxRow) {
+							mainPath = pathVT;
+						} else {
+							mainPath = pathST;
 						}
 					}
 					mainPathAsSet = new HashSet<CellInfo>(mainPath);
@@ -446,15 +458,38 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 			}
 		}
 	}
+
+	private int fillPath(CellInfo selectionInfo, Set<Table> visibleTables, Set<CellInfo> pathToVisibleTable,
+			List<CellInfo> path) {
+		int maxRow = -1;
+		for (CellInfo ci = selectionInfo; ci != null; ) {
+			CellInfo nextParent = null;
+			path.add(ci);
+			for (CellInfo p: ci.parents) {
+				if (nextParent == null) {
+					nextParent = p;
+				}
+				if (pathToVisibleTable.contains(p) || visibleTables.contains(p.table)) {
+					nextParent = p;
+					if (maxRow < 0 && visibleTables.contains(p.table)) {
+						maxRow = p.row;
+					}
+					break;
+				}
+			}
+			ci = nextParent;
+		}
+		return maxRow;
+	}
 	
-	private Set<CellInfo> shortestPathToVisibleTable(Map<Table, RowBrowser> map, CellInfo root) {
+	private Set<CellInfo> shortestPathToVisibleTable(Set<Table> visibleTables, CellInfo root) {
 		Map<CellInfo, CellInfo> pred = new HashMap<CellInfo, CellInfo>();
-		LinkedList<CellInfo> next = new LinkedList<CellInfo>();
+		Queue<CellInfo> next = new LinkedList<CellInfo>();
 		Set<CellInfo> path = new HashSet<CellInfo>();
 		next.add(root);
 		while (!next.isEmpty()) {
-			CellInfo info = next.removeFirst();
-			if (map.containsKey(info.table)) {
+			CellInfo info = next.poll();
+			if (visibleTables.contains(info.table)) {
 				for (CellInfo ci = info; ci != null; ci = pred.get(ci)) {
 					path.add(ci);
 				}
