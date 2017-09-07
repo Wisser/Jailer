@@ -50,6 +50,7 @@ import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -94,6 +95,7 @@ import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.ImportDialog;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
 import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 
@@ -105,508 +107,555 @@ import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 @SuppressWarnings("serial")
 public class DataBrowser extends javax.swing.JFrame {
 
-	/**
-	 * The desktop.
-	 */
-	Desktop desktop;
+    /**
+     * The desktop.
+     */
+    Desktop desktop;
 
-	/**
-	 * Icon for the frame.
-	 */
-	private ImageIcon jailerIcon = null;
+    /**
+     * Icon for the frame.
+     */
+    private ImageIcon jailerIcon = null;
 
-	/**
-	 * The {@link DataModel}.
-	 */
-	private final Reference<DataModel> datamodel;
-	
-	/**
-	 * The DB connection dialog.
-	 */
-	private DbConnectionDialog dbConnectionDialog;
+    /**
+     * The {@link DataModel}.
+     */
+    private final Reference<DataModel> datamodel;
+    
+    /**
+     * The DB connection dialog.
+     */
+    private DbConnectionDialog dbConnectionDialog;
 
-	/**
-	 * Session.
-	 */
-	private Session session;
+    /**
+     * Session.
+     */
+    private Session session;
 
-	/**
-	 * The border browser.
-	 */
-	private final AssociationListUI borderBrowser;
+    /**
+     * The border browser.
+     */
+    private final AssociationListUI borderBrowser;
 
-	/**
-	 * The execution context.
-	 */
-	private final ExecutionContext executionContext;
-	
-	/**
-	 * Constructor.
-	 * 
-	 * @param datamodel
-	 *            the {@link DataModel}
-	 * @param root
-	 *            table to start browsing with
-	 * @param condition
-	 *            initial condition
-	 * @param dbConnectionDialog
-	 *            DB-connection dialog
-	 */
-	public DataBrowser(DataModel datamodel, Table root, String condition, DbConnectionDialog dbConnectionDialog, boolean embedded, final ExecutionContext executionContext) throws Exception {
-		this.executionContext = executionContext;
-		this.datamodel = new Reference<DataModel>(datamodel);
-		this.dbConnectionDialog = dbConnectionDialog != null ? new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName(), executionContext) : null;
-		this.borderBrowser = new AssociationListUI("Resolve", "Resolve selected Associations", true) {
-			@Override
-			protected void applyAction(Collection<AssociationModel> selection) {
-				resolveSelection(selection);
-			}
-		};
-		if (embedded) {
-			DataBrowserContext.setSupportsDataModelUpdates(false);
-		}
-		initComponents();
-		 
-		if (jScrollPane1.getVerticalScrollBar() != null) {
-			jScrollPane1.getVerticalScrollBar().setUnitIncrement(16);
-		}
-		if (jScrollPane1.getHorizontalScrollBar() != null) {
-			jScrollPane1.getHorizontalScrollBar().setUnitIncrement(16);
-		}
-		
-		hiddenPanel.setVisible(false);
-		borderBrowserPanel.add(borderBrowser, java.awt.BorderLayout.CENTER);
+    /**
+     * The execution context.
+     */
+    private final ExecutionContext executionContext;
+    
+    /**
+     * Constructor.
+     * 
+     * @param datamodel
+     *            the {@link DataModel}
+     * @param root
+     *            table to start browsing with
+     * @param condition
+     *            initial condition
+     * @param dbConnectionDialog
+     *            DB-connection dialog
+     */
+    public DataBrowser(final DataModel datamodel, final Table root, String condition, DbConnectionDialog dbConnectionDialog, boolean embedded, final ExecutionContext executionContext) throws Exception {
+        this.executionContext = executionContext;
+        this.datamodel = new Reference<DataModel>(datamodel);
+        this.dbConnectionDialog = dbConnectionDialog != null ? new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName(), executionContext) : null;
+        this.borderBrowser = new AssociationListUI("Resolve", "Resolve selected Associations", true) {
+            @Override
+            protected void applyAction(Collection<AssociationModel> selection) {
+                resolveSelection(selection);
+            }
+        };
+        if (embedded) {
+            DataBrowserContext.setSupportsDataModelUpdates(false);
+        }
+        initComponents();
+        
+        jLayeredPane1.removeAll();
+        jLayeredPane1.setLayout(new GridBagLayout());
+        jLayeredPane1.setLayer(layeredPaneContent, JLayeredPane.PALETTE_LAYER);
+        jLayeredPane1.setLayer(dummy, JLayeredPane.DEFAULT_LAYER);
+        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1;
+        gridBagConstraints.weighty = 1;
+        jLayeredPane1.add(layeredPaneContent, gridBagConstraints);
+        jLayeredPane1.add(dummy, gridBagConstraints);
+        
+        if (jScrollPane1.getVerticalScrollBar() != null) {
+            jScrollPane1.getVerticalScrollBar().setUnitIncrement(16);
+        }
+        if (jScrollPane1.getHorizontalScrollBar() != null) {
+            jScrollPane1.getHorizontalScrollBar().setUnitIncrement(16);
+        }
+        
+        hiddenPanel.setVisible(false);
+        borderBrowserPanel.add(borderBrowser, java.awt.BorderLayout.CENTER);
 
-		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 2;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
-		gridBagConstraints.weightx = 0;
-		gridBagConstraints.weighty = 0;
-		jPanel4.add(new JPanel() {
-			@Override
-			public Dimension getMinimumSize() {
-				return new Dimension(1, 300);
-			}
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+        gridBagConstraints.weightx = 0;
+        gridBagConstraints.weighty = 0;
+        jPanel4.add(new JPanel() {
+            @Override
+            public Dimension getMinimumSize() {
+                return new Dimension(1, 300);
+            }
 
-			private static final long serialVersionUID = -947582621664272477L;
-		}, gridBagConstraints);
+            private static final long serialVersionUID = -947582621664272477L;
+        }, gridBagConstraints);
 
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 2;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
-		gridBagConstraints.weightx = 0;
-		gridBagConstraints.weighty = 0;
-		borderBrowserTitledPanel.add(new JPanel() {
-			@Override
-			public Dimension getMinimumSize() {
-				return new Dimension(1, 180);
-			}
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+        gridBagConstraints.weightx = 0;
+        gridBagConstraints.weighty = 0;
+        borderBrowserTitledPanel.add(new JPanel() {
+            @Override
+            public Dimension getMinimumSize() {
+                return new Dimension(1, 180);
+            }
 
-			private static final long serialVersionUID = -947582621664272477L;
-		}, gridBagConstraints);
+            private static final long serialVersionUID = -947582621664272477L;
+        }, gridBagConstraints);
 
-		DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
-		renderer.setOpenIcon(null);
-		renderer.setLeafIcon(null);
-		renderer.setClosedIcon(null);
-		navigationTree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode("")));
+        DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
+        renderer.setOpenIcon(null);
+        renderer.setLeafIcon(null);
+        renderer.setClosedIcon(null);
+        navigationTree.setModel(new DefaultTreeModel(new DefaultMutableTreeNode("")));
 
-		navigationTree.setCellRenderer(renderer);
+        navigationTree.setCellRenderer(renderer);
 
-		ButtonGroup buttonGroup = new ButtonGroup();
+        ButtonGroup buttonGroup = new ButtonGroup();
 
-		buttonGroup.add(thumbnailLayoutRadioButtonMenuItem);
-		buttonGroup.add(tinyLayoutRadioButtonMenuItem);
-		buttonGroup.add(smallLayoutRadioButtonMenuItem);
-		buttonGroup.add(mediumLayoutRadioButtonMenuItem);
-		buttonGroup.add(largeLayoutRadioButtonMenuItem);
+        buttonGroup.add(thumbnailLayoutRadioButtonMenuItem);
+        buttonGroup.add(tinyLayoutRadioButtonMenuItem);
+        buttonGroup.add(smallLayoutRadioButtonMenuItem);
+        buttonGroup.add(mediumLayoutRadioButtonMenuItem);
+        buttonGroup.add(largeLayoutRadioButtonMenuItem);
 
-		mediumLayoutRadioButtonMenuItem.setSelected(true);
+        mediumLayoutRadioButtonMenuItem.setSelected(true);
 
-		setTitle(DataBrowserContext.getAppName(false));
-		if (embedded) {
-			menuTools.setVisible(false);
-		}
+        setTitle(DataBrowserContext.getAppName(false));
+        if (embedded) {
+            menuTools.setVisible(false);
+        }
 
-		if (DataBrowserContext.isStandAlone()) {
-			aboutMenuItem.setText("About " + DataBrowserContext.getAppName(true));
-		}
-		
-		// L&F can no longer be changed
-		jSeparator6.setVisible(false);
-		view.setVisible(false);
+        if (DataBrowserContext.isStandAlone()) {
+            aboutMenuItem.setText("About " + DataBrowserContext.getAppName(true));
+        }
+        
+        // L&F can no longer be changed
+        jSeparator6.setVisible(false);
+        view.setVisible(false);
 
-		try {
-			for (final LookAndFeelInfo lfInfo : UIManager.getInstalledLookAndFeels()) {
-				JMenuItem mItem = new JMenuItem();
-				mItem.setText(lfInfo.getName());
-				view.add(mItem);
-				mItem.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent arg0) {
-						setPLAF(lfInfo.getClassName());
-					}
-				});
-			}
-		} catch (Throwable t) {
-		}
+        try {
+            for (final LookAndFeelInfo lfInfo : UIManager.getInstalledLookAndFeels()) {
+                JMenuItem mItem = new JMenuItem();
+                mItem.setText(lfInfo.getName());
+                view.add(mItem);
+                mItem.addActionListener(new ActionListener() {
+                    public void actionPerformed(ActionEvent arg0) {
+                        setPLAF(lfInfo.getClassName());
+                    }
+                });
+            }
+        } catch (Throwable t) {
+        }
 
-		try {
-			setIconImage((jailerIcon = new ImageIcon(getClass().getResource("/net/sf/jailer/ui/resource/jailer.png"))).getImage());
-		} catch (Throwable t) {
-			try {
-				setIconImage((jailerIcon = new ImageIcon(getClass().getResource("/net/sf/jailer/ui/resource/jailer.gif"))).getImage());
-			} catch (Throwable t2) {
-			}
-		}
+        try {
+            setIconImage((jailerIcon = new ImageIcon(getClass().getResource("/net/sf/jailer/ui/resource/jailer.png"))).getImage());
+        } catch (Throwable t) {
+            try {
+                setIconImage((jailerIcon = new ImageIcon(getClass().getResource("/net/sf/jailer/ui/resource/jailer.gif"))).getImage());
+            } catch (Throwable t2) {
+            }
+        }
 
-		jailerIcon.setImage(jailerIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
+        jailerIcon.setImage(jailerIcon.getImage().getScaledInstance(16, 16, Image.SCALE_SMOOTH));
 
-		if (dbConnectionDialog != null) {
-			createSession(dbConnectionDialog);
-		}
-		desktop = new Desktop(this.datamodel, jailerIcon, session, this, dbConnectionDialog, executionContext) {
-			@Override
-			public void openSchemaAnalyzer() {
-				updateDataModel();
-			}
+        if (dbConnectionDialog != null) {
+            createSession(dbConnectionDialog);
+        }
+        desktop = new Desktop(this.datamodel, jailerIcon, session, this, dbConnectionDialog, executionContext) {
+            @Override
+            public void openSchemaAnalyzer() {
+                updateDataModel();
+            }
 
-			@Override
-			protected void updateMenu(boolean hasTableBrowser, boolean hasIFrame) {
-				storeSessionItem.setEnabled(hasIFrame);
-				exportDataMenuItem.setEnabled(hasTableBrowser);
-				createExtractionModelMenuItem.setEnabled(hasTableBrowser);
-				updateIFramesBar();
-				super.updateMenu(hasTableBrowser, hasIFrame);
-			}
+            @Override
+            protected void updateMenu(boolean hasTableBrowser, boolean hasIFrame) {
+                storeSessionItem.setEnabled(hasIFrame);
+                exportDataMenuItem.setEnabled(hasTableBrowser);
+                createExtractionModelMenuItem.setEnabled(hasTableBrowser);
+                updateIFramesBar();
+                super.updateMenu(hasTableBrowser, hasIFrame);
+            }
 
-			@Override
-			protected void updateMenu(LayoutMode layoutMode) {
-				if (layoutMode == Desktop.LayoutMode.TINY) {
-					tinyLayoutRadioButtonMenuItem.setSelected(true);
-				} else if (layoutMode == Desktop.LayoutMode.SMALL) {
-					smallLayoutRadioButtonMenuItem.setSelected(true);
-				} else if (layoutMode == Desktop.LayoutMode.MEDIUM) {
-					mediumLayoutRadioButtonMenuItem.setSelected(true);
-				} else if (layoutMode == Desktop.LayoutMode.LARGE) {
-					largeLayoutRadioButtonMenuItem.setSelected(true);
-				} else if (layoutMode == Desktop.LayoutMode.THUMBNAIL) {
-					thumbnailLayoutRadioButtonMenuItem.setSelected(true);
-				}
-			}
+            @Override
+            protected void updateMenu(LayoutMode layoutMode) {
+                if (layoutMode == Desktop.LayoutMode.TINY) {
+                    tinyLayoutRadioButtonMenuItem.setSelected(true);
+                } else if (layoutMode == Desktop.LayoutMode.SMALL) {
+                    smallLayoutRadioButtonMenuItem.setSelected(true);
+                } else if (layoutMode == Desktop.LayoutMode.MEDIUM) {
+                    mediumLayoutRadioButtonMenuItem.setSelected(true);
+                } else if (layoutMode == Desktop.LayoutMode.LARGE) {
+                    largeLayoutRadioButtonMenuItem.setSelected(true);
+                } else if (layoutMode == Desktop.LayoutMode.THUMBNAIL) {
+                    thumbnailLayoutRadioButtonMenuItem.setSelected(true);
+                }
+            }
 
-			@Override
-			protected DataBrowser openNewDataBrowser() {
-				try {
-					return DataBrowser.openNewDataBrowser(DataBrowser.this.datamodel.get(), dbConnectionDialog, false, executionContext);
-				} catch (Exception e) {
-					UIUtil.showException(this, "Error", e, session);
-					return null;
-				}
-			}
-		};
+            @Override
+            protected DataBrowser openNewDataBrowser() {
+                try {
+                    return DataBrowser.openNewDataBrowser(DataBrowser.this.datamodel.get(), dbConnectionDialog, false, executionContext);
+                } catch (Exception e) {
+                    UIUtil.showException(this, "Error", e, session);
+                    return null;
+                }
+            }
+        };
 
-		jScrollPane1.setViewportView(desktop);
-		addWindowListener(new WindowListener() {
-			@Override
-			public void windowOpened(WindowEvent e) {
-			}
+        jScrollPane1.setViewportView(desktop);
+        addWindowListener(new WindowListener() {
+            @Override
+            public void windowOpened(WindowEvent e) {
+            }
 
-			@Override
-			public void windowIconified(WindowEvent e) {
-			}
+            @Override
+            public void windowIconified(WindowEvent e) {
+            }
 
-			@Override
-			public void windowDeiconified(WindowEvent e) {
-			}
+            @Override
+            public void windowDeiconified(WindowEvent e) {
+            }
 
-			@Override
-			public void windowDeactivated(WindowEvent e) {
-			}
+            @Override
+            public void windowDeactivated(WindowEvent e) {
+            }
 
-			@Override
-			public void windowClosing(WindowEvent e) {
-				// desktop.stop();
-			}
+            @Override
+            public void windowClosing(WindowEvent e) {
+                // desktop.stop();
+            }
 
-			@Override
-			public void windowClosed(WindowEvent e) {
-				desktop.stop();
-				UIUtil.checkTermination();
-			}
+            @Override
+            public void windowClosed(WindowEvent e) {
+                desktop.stop();
+                UIUtil.checkTermination();
+            }
 
-			@Override
-			public void windowActivated(WindowEvent e) {
-			}
-		});
+            @Override
+            public void windowActivated(WindowEvent e) {
+            }
+        });
 
-		MouseInputAdapter mia = new MouseInputAdapter() {
-			int m_XDifference, m_YDifference;
-			Container c;
+        MouseInputAdapter mia = new MouseInputAdapter() {
+            int m_XDifference, m_YDifference;
+            Container c;
 
-			public void mouseDragged(MouseEvent e) {
-				if (e.getButton() == MouseEvent.BUTTON3) {
-					return;
-				}
-				c = desktop.getParent();
-				if (c instanceof JViewport) {
-					JViewport jv = (JViewport) c;
-					Point p = jv.getViewPosition();
-					int newX = p.x - (e.getX() - m_XDifference);
-					int newY = p.y - (e.getY() - m_YDifference);
-					int maxX = desktop.getWidth() - jv.getWidth();
-					int maxY = desktop.getHeight() - jv.getHeight();
-					if (newX < 0)
-						newX = 0;
-					if (newX > maxX)
-						newX = maxX;
-					if (newY < 0)
-						newY = 0;
-					if (newY > maxY)
-						newY = maxY;
-					jv.setViewPosition(new Point(newX, newY));
-				}
-			}
+            public void mouseDragged(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    return;
+                }
+                c = desktop.getParent();
+                if (c instanceof JViewport) {
+                    JViewport jv = (JViewport) c;
+                    Point p = jv.getViewPosition();
+                    int newX = p.x - (e.getX() - m_XDifference);
+                    int newY = p.y - (e.getY() - m_YDifference);
+                    int maxX = desktop.getWidth() - jv.getWidth();
+                    int maxY = desktop.getHeight() - jv.getHeight();
+                    if (newX < 0)
+                        newX = 0;
+                    if (newX > maxX)
+                        newX = maxX;
+                    if (newY < 0)
+                        newY = 0;
+                    if (newY > maxY)
+                        newY = maxY;
+                    jv.setViewPosition(new Point(newX, newY));
+                }
+            }
 
-			public void mousePressed(MouseEvent e) {
-				if (e.getButton() == MouseEvent.BUTTON3) {
-					return;
-				}
-				setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
-				m_XDifference = e.getX();
-				m_YDifference = e.getY();
-			}
+            public void mousePressed(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    return;
+                }
+                setCursor(Cursor.getPredefinedCursor(Cursor.MOVE_CURSOR));
+                m_XDifference = e.getX();
+                m_YDifference = e.getY();
+            }
 
-			public void mouseReleased(MouseEvent e) {
-				if (e.getButton() == MouseEvent.BUTTON3) {
-					return;
-				}
-				setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-			}
+            public void mouseReleased(MouseEvent e) {
+                if (e.getButton() == MouseEvent.BUTTON3) {
+                    return;
+                }
+                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
 
-			@Override
-			public void mouseClicked(MouseEvent e) {
-				if (e.getButton() != MouseEvent.BUTTON3) {
-					return;
-				}
-				JPopupMenu popup = new JPopupMenu();
-				JMenuItem i = new JMenuItem("Arrange Layout");
-				popup.add(i);
-				i.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						layoutMenuItemActionPerformed(e);
-					}
-				});
-				ButtonGroup group = new ButtonGroup();
-				popup.add(new JSeparator());
-				i = new JRadioButtonMenuItem("Thumbnail Layout");
-				i.setSelected(desktop.layoutMode == LayoutMode.THUMBNAIL);
-				group.add(i);
-				popup.add(i);
-				i.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						thumbnailLayoutRadioButtonMenuItemActionPerformed(e);
-					}
-				});
-				i = new JRadioButtonMenuItem("Tiny Layout");
-				i.setSelected(desktop.layoutMode == LayoutMode.TINY);
-				group.add(i);
-				popup.add(i);
-				i.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						tinyLayoutRadioButtonMenuItemActionPerformed(e);
-					}
-				});
-				i = new JRadioButtonMenuItem("Small Layout");
-				i.setSelected(desktop.layoutMode == LayoutMode.SMALL);
-				group.add(i);
-				popup.add(i);
-				i.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						smallLayoutRadioButtonMenuItemActionPerformed(e);
-					}
-				});
-				i = new JRadioButtonMenuItem("Medium Layout");
-				i.setSelected(desktop.layoutMode == LayoutMode.MEDIUM);
-				group.add(i);
-				popup.add(i);
-				i.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						mediumLayoutRadioButtonMenuItemActionPerformed(e);
-					}
-				});
-				i = new JRadioButtonMenuItem("Large Layout");
-				i.setSelected(desktop.layoutMode == LayoutMode.LARGE);
-				group.add(i);
-				popup.add(i);
-				i.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						largeLayoutRadioButtonMenuItemActionPerformed(e);
-					}
-				});
-				popup.show(desktop, e.getX(), e.getY());
-			}
-		};
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() != MouseEvent.BUTTON3) {
+                    return;
+                }
+                JPopupMenu popup = new JPopupMenu();
+                JMenuItem i = new JMenuItem("Arrange Layout");
+                popup.add(i);
+                i.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        layoutMenuItemActionPerformed(e);
+                    }
+                });
+                ButtonGroup group = new ButtonGroup();
+                popup.add(new JSeparator());
+                i = new JRadioButtonMenuItem("Thumbnail Layout");
+                i.setSelected(desktop.layoutMode == LayoutMode.THUMBNAIL);
+                group.add(i);
+                popup.add(i);
+                i.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        thumbnailLayoutRadioButtonMenuItemActionPerformed(e);
+                    }
+                });
+                i = new JRadioButtonMenuItem("Tiny Layout");
+                i.setSelected(desktop.layoutMode == LayoutMode.TINY);
+                group.add(i);
+                popup.add(i);
+                i.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        tinyLayoutRadioButtonMenuItemActionPerformed(e);
+                    }
+                });
+                i = new JRadioButtonMenuItem("Small Layout");
+                i.setSelected(desktop.layoutMode == LayoutMode.SMALL);
+                group.add(i);
+                popup.add(i);
+                i.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        smallLayoutRadioButtonMenuItemActionPerformed(e);
+                    }
+                });
+                i = new JRadioButtonMenuItem("Medium Layout");
+                i.setSelected(desktop.layoutMode == LayoutMode.MEDIUM);
+                group.add(i);
+                popup.add(i);
+                i.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        mediumLayoutRadioButtonMenuItemActionPerformed(e);
+                    }
+                });
+                i = new JRadioButtonMenuItem("Large Layout");
+                i.setSelected(desktop.layoutMode == LayoutMode.LARGE);
+                group.add(i);
+                popup.add(i);
+                i.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        largeLayoutRadioButtonMenuItemActionPerformed(e);
+                    }
+                });
+                popup.show(desktop, e.getX(), e.getY());
+            }
+        };
 
-		desktop.addMouseMotionListener(mia);
-		desktop.addMouseListener(mia);
+        desktop.addMouseMotionListener(mia);
+        desktop.addMouseListener(mia);
 
-		int c = 0;
-		for (Frame frame: Frame.getFrames()) {
-			if (frame instanceof DataBrowser && frame.isVisible()) {
-				c = (c + 1) % 10;
-			}
-		}
-		
-		setLocation(40 + c * 32, 40 + c * 32);
-		setSize(900, 640);
-		if (root != null) {
-			desktop.addTableBrowser(null, null, 0, root, null, condition, null, null, true);
-		}
-		schemaNamePanel.addMouseListener(new java.awt.event.MouseAdapter() {
-			private boolean in = false;
+        int c = 0;
+        for (Frame frame: Frame.getFrames()) {
+            if (frame instanceof DataBrowser && frame.isVisible()) {
+                c = (c + 1) % 10;
+            }
+        }
+        
+        setLocation(40 + c * 32, 40 + c * 32);
+        setSize(980, 770);
+        if (root != null) {
+            final RowBrowser rb = desktop.addTableBrowser(null, null, 0, root, null, condition, null, null, true);
+            if (rb != null && rb.internalFrame != null) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            rb.internalFrame.setSelected(true);
+                        } catch (PropertyVetoException e) {
+                            // ignore
+                        }
+                    }
+                });
+            }
+        }
+        schemaNamePanel.addMouseListener(new java.awt.event.MouseAdapter() {
+            private boolean in = false;
 
-			@Override
-			public void mousePressed(MouseEvent e) {
-				desktop.openSchemaMappingDialog(false);
-			}
+            @Override
+            public void mousePressed(MouseEvent e) {
+                desktop.openSchemaMappingDialog(false);
+            }
 
-			public void mouseEntered(java.awt.event.MouseEvent evt) {
-				in = true;
-				updateBorder();
-			}
+            public void mouseEntered(java.awt.event.MouseEvent evt) {
+                in = true;
+                updateBorder();
+            }
 
-			public void mouseExited(java.awt.event.MouseEvent evt) {
-				in = false;
-				updateBorder();
-			}
+            public void mouseExited(java.awt.event.MouseEvent evt) {
+                in = false;
+                updateBorder();
+            }
 
-			private void updateBorder() {
-				schemaNamePanel.setBorder(new javax.swing.border.SoftBevelBorder(in ? javax.swing.border.BevelBorder.LOWERED
-						: javax.swing.border.BevelBorder.RAISED));
-			}
-		});
-		updateStatusBar();
-	}
+            private void updateBorder() {
+                schemaNamePanel.setBorder(new javax.swing.border.SoftBevelBorder(in ? javax.swing.border.BevelBorder.LOWERED
+                        : javax.swing.border.BevelBorder.RAISED));
+            }
+        });
+        updateStatusBar();
+        updateClosureBrowser(null);
+        
+        TreeSelectionListener treeListener = new TreeSelectionListener() {
+            @Override
+            public void valueChanged(TreeSelectionEvent e) {
+                if (e.getPath() != null) {
+                    Object lastPathComponent = e.getPath().getLastPathComponent();
+                    if (lastPathComponent != null && lastPathComponent instanceof DefaultMutableTreeNode) {
+                        Object userObject = ((DefaultMutableTreeNode) lastPathComponent).getUserObject();
+                        if (userObject instanceof TreeNodeForRowBrowser) {
+                            updateClosureBrowser(((TreeNodeForRowBrowser) userObject).rowBrowser);
+                            return;
+                        }
+                    }
+                }
+            }
+        };
 
-	private void createSession(DbConnectionDialog dbConnectionDialog) throws Exception {
-		if (session != null) {
-			try {
-				session.shutDown();
-				session = null;
-			} catch (Exception e) {
-				// ignore
-			}
-		}
-		ConnectionInfo connection = dbConnectionDialog.currentConnection;
-		BasicDataSource dataSource = new BasicDataSource(connection.driverClass, connection.url, connection.user, connection.password, 0, dbConnectionDialog.currentJarURLs());
-		session = new Session(dataSource, dataSource.dbms);
-		List<String> args = new ArrayList<String>();
-		dbConnectionDialog.addDbArgs(args);
-		session.setCliArguments(args);
-		session.setPassword(dbConnectionDialog.getPassword());
-		session.enableAutomaticReconnect();
-	}
+        navigationTree.getSelectionModel().addTreeSelectionListener(treeListener);
+    }
 
-	protected void setConnection(DbConnectionDialog dbConnectionDialog) throws Exception {
-		if (dbConnectionDialog != null) {
-			dbConnectionDialog = new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName(), executionContext);
-		}
-		this.dbConnectionDialog = dbConnectionDialog;
-		desktop.dbConnectionDialog = dbConnectionDialog;
-		if (dbConnectionDialog != null) {
-			ConnectionInfo connection = dbConnectionDialog.currentConnection;
-			if (connection != null) {
-				createSession(dbConnectionDialog);
-				desktop.session = session;
-				desktop.openSchemaMappingDialog(true);
-				updateStatusBar();
-				if (desktop != null) {
-					desktop.updateMenu();
-					for (RowBrowser rb : desktop.getBrowsers()) {
-						rb.browserContentPane.session = session;
-						rb.browserContentPane.rows.clear();
-					}
-					for (RowBrowser rb : desktop.getRootBrowsers(false)) {
-						rb.browserContentPane.reloadRows();
-					}
-				}
-			}
-		}
-	}
+    private void createSession(DbConnectionDialog dbConnectionDialog) throws Exception {
+        if (session != null) {
+            try {
+                session.shutDown();
+                session = null;
+            } catch (Exception e) {
+                // ignore
+            }
+        }
+        ConnectionInfo connection = dbConnectionDialog.currentConnection;
+        BasicDataSource dataSource = new BasicDataSource(connection.driverClass, connection.url, connection.user, connection.password, 0, dbConnectionDialog.currentJarURLs());
+        session = new Session(dataSource, dataSource.dbms);
+        List<String> args = new ArrayList<String>();
+        dbConnectionDialog.addDbArgs(args);
+        session.setCliArguments(args);
+        session.setPassword(dbConnectionDialog.getPassword());
+        session.enableAutomaticReconnect();
+    }
 
-	public void updateStatusBar() {
-		final int MAX_LENGTH = 50;
-		ConnectionInfo connection = dbConnectionDialog != null ? dbConnectionDialog.currentConnection : null;
-		String dburl = connection != null ? (connection.url) : " ";
-		connectivityState.setToolTipText(dburl);
-		dburl = connection != null ? (connection.user + "@" + connection.alias) : " ";
-		if (dburl.length() > MAX_LENGTH) {
-			dburl = dburl.substring(0, MAX_LENGTH - 3) + "...";
-		}
-		connectivityState.setText(dburl);
-		DataModel dataModel = datamodel != null ? datamodel.get() : null;
-		String modelname = "Data Model \"" + (dataModel == null ? DataModel.DEFAULT_NAME : dataModel.getName()) + "\"";
-		String lastMod = dataModel == null ? "" : dataModel.getLastModifiedAsString();
-		if (lastMod.length() > 0) {
-			lastMod = " (" + lastMod + ")";
-		}
-		modelName.setText(modelname);
-		modelName.setToolTipText(modelname + lastMod);
+    protected void setConnection(DbConnectionDialog dbConnectionDialog) throws Exception {
+        if (dbConnectionDialog != null) {
+            dbConnectionDialog = new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName(), executionContext);
+        }
+        this.dbConnectionDialog = dbConnectionDialog;
+        desktop.dbConnectionDialog = dbConnectionDialog;
+        if (dbConnectionDialog != null) {
+            ConnectionInfo connection = dbConnectionDialog.currentConnection;
+            if (connection != null) {
+                createSession(dbConnectionDialog);
+                desktop.session = session;
+                desktop.openSchemaMappingDialog(true);
+                updateStatusBar();
+                if (desktop != null) {
+                    desktop.updateMenu();
+                    for (RowBrowser rb : desktop.getBrowsers()) {
+                        rb.browserContentPane.session = session;
+                        rb.browserContentPane.rows.clear();
+                    }
+                    for (RowBrowser rb : desktop.getRootBrowsers(false)) {
+                        rb.browserContentPane.reloadRows();
+                    }
+                }
+            }
+        }
+    }
 
-		String modelpath = executionContext.getQualifiedDatamodelFolder();
-		try {
-			modelpath = new File(modelpath).getAbsolutePath();
-		} catch (Throwable t) {
-			// use default modelpath
-		}
-		modelpath += File.separator;
-		modelPath.setToolTipText(modelpath);
-		if (modelpath.length() > MAX_LENGTH + 4) {
-			modelpath = modelpath.substring(0, MAX_LENGTH / 2) + "..." + modelpath.substring(modelpath.length() - MAX_LENGTH / 2);
-		}
-		modelPath.setText(modelpath);
+    public void updateStatusBar() {
+        final int MAX_LENGTH = 50;
+        ConnectionInfo connection = dbConnectionDialog != null ? dbConnectionDialog.currentConnection : null;
+        String dburl = connection != null ? (connection.url) : " ";
+        connectivityState.setToolTipText(dburl);
+        dburl = connection != null ? (connection.user + "@" + connection.alias) : " ";
+        if (dburl.length() > MAX_LENGTH) {
+            dburl = dburl.substring(0, MAX_LENGTH - 3) + "...";
+        }
+        connectivityState.setText(dburl);
+        DataModel dataModel = datamodel != null ? datamodel.get() : null;
+        String modelname = "Data Model \"" + (dataModel == null ? DataModel.DEFAULT_NAME : dataModel.getName()) + "\"";
+        String lastMod = dataModel == null ? "" : dataModel.getLastModifiedAsString();
+        if (lastMod.length() > 0) {
+            lastMod = " (" + lastMod + ")";
+        }
+        modelName.setText(modelname);
+        modelName.setToolTipText(modelname + lastMod);
 
-		String nonDefaultSchema = null;
-		if (desktop.schemaMapping != null) {
-			for (Map.Entry<String, String> e : desktop.schemaMapping.entrySet()) {
-				if (!e.getKey().equalsIgnoreCase(e.getValue())) {
-					nonDefaultSchema = e.getValue();
-					break;
-				}
-			}
-		}
-		schemaNamePanel.setVisible(nonDefaultSchema != null);
-		if (nonDefaultSchema != null) {
-			if (nonDefaultSchema.equals("")) {
-				schemaName.setText("Default Schema");
-			} else {
-				schemaName.setText("Schema " + nonDefaultSchema + "");
-			}
-			// schemaName.setToolTipText(schemaName.getText());
-		}
-	}
+        String modelpath = executionContext.getQualifiedDatamodelFolder();
+        try {
+            modelpath = new File(modelpath).getAbsolutePath();
+        } catch (Throwable t) {
+            // use default modelpath
+        }
+        modelpath += File.separator;
+        modelPath.setToolTipText(modelpath);
+        if (modelpath.length() > MAX_LENGTH + 4) {
+            modelpath = modelpath.substring(0, MAX_LENGTH / 2) + "..." + modelpath.substring(modelpath.length() - MAX_LENGTH / 2);
+        }
+        modelPath.setText(modelpath);
 
-	/**
-	 * This method is called from within the constructor to initialize the form.
-	 * WARNING: Do NOT modify this code. The content of this method is always
-	 * regenerated by the Form Editor.
-	 */
-	// <editor-fold defaultstate="collapsed"
-	// <editor-fold defaultstate="collapsed"
-	// <editor-fold defaultstate="collapsed"
-	// <editor-fold defaultstate="collapsed"
+        String nonDefaultSchema = null;
+        if (desktop.schemaMapping != null) {
+            for (Map.Entry<String, String> e : desktop.schemaMapping.entrySet()) {
+                if (!e.getKey().equalsIgnoreCase(e.getValue())) {
+                    nonDefaultSchema = e.getValue();
+                    break;
+                }
+            }
+        }
+        schemaNamePanel.setVisible(nonDefaultSchema != null);
+        if (nonDefaultSchema != null) {
+            if (nonDefaultSchema.equals("")) {
+                schemaName.setText("Default Schema");
+            } else {
+                schemaName.setText("Schema " + nonDefaultSchema + "");
+            }
+            // schemaName.setToolTipText(schemaName.getText());
+        }
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    // <editor-fold defaultstate="collapsed"
+    // <editor-fold defaultstate="collapsed"
+    // <editor-fold defaultstate="collapsed"
+    // <editor-fold defaultstate="collapsed"
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        dummy = new javax.swing.JPanel();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
         jPanel1 = new javax.swing.JPanel();
         jPanel11 = new javax.swing.JPanel();
         legende1 = new javax.swing.JPanel();
@@ -634,10 +683,13 @@ public class DataBrowser extends javax.swing.JFrame {
         titleLabel = new javax.swing.JLabel();
         borderBrowserPanel = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
+        jSplitPane3 = new javax.swing.JSplitPane();
+        jLayeredPane1 = new javax.swing.JLayeredPane();
+        layeredPaneContent = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jInternalFrame1 = new javax.swing.JInternalFrame();
-        jLabel1 = new javax.swing.JLabel();
         hiddenPanel = new javax.swing.JPanel();
+        closurePanel = new javax.swing.JPanel();
         menuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         newBrowserjMenuItem = new javax.swing.JMenuItem();
@@ -677,6 +729,21 @@ public class DataBrowser extends javax.swing.JFrame {
         jMenuItem4 = new javax.swing.JMenuItem();
         helpForum = new javax.swing.JMenuItem();
         aboutMenuItem = new javax.swing.JMenuItem();
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane3.setViewportView(jTable1);
+
+        dummy.add(jScrollPane3);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -880,7 +947,14 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jSplitPane1.setLeftComponent(jPanel3);
 
-        jPanel5.setLayout(new java.awt.BorderLayout());
+        jPanel5.setLayout(new java.awt.GridBagLayout());
+
+        jSplitPane3.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane3.setResizeWeight(1.0);
+        jSplitPane3.setContinuousLayout(true);
+        jSplitPane3.setOneTouchExpandable(true);
+
+        layeredPaneContent.setLayout(new java.awt.GridBagLayout());
 
         jScrollPane1.setAutoscrolls(true);
         jScrollPane1.setWheelScrollingEnabled(false);
@@ -891,17 +965,40 @@ public class DataBrowser extends javax.swing.JFrame {
         });
 
         jInternalFrame1.setVisible(true);
-
-        jLabel1.setText("jLabel1");
-        jInternalFrame1.getContentPane().add(jLabel1, java.awt.BorderLayout.CENTER);
-
         jScrollPane1.setViewportView(jInternalFrame1);
 
-        jPanel5.add(jScrollPane1, java.awt.BorderLayout.CENTER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        layeredPaneContent.add(jScrollPane1, gridBagConstraints);
 
         hiddenPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Hidden"));
         hiddenPanel.setLayout(new java.awt.GridBagLayout());
-        jPanel5.add(hiddenPanel, java.awt.BorderLayout.SOUTH);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        layeredPaneContent.add(hiddenPanel, gridBagConstraints);
+
+        layeredPaneContent.setBounds(0, 0, 24, 58);
+        jLayeredPane1.add(layeredPaneContent, javax.swing.JLayeredPane.PALETTE_LAYER);
+
+        jSplitPane3.setLeftComponent(jLayeredPane1);
+
+        closurePanel.setLayout(new java.awt.GridBagLayout());
+        jSplitPane3.setRightComponent(closurePanel);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel5.add(jSplitPane3, gridBagConstraints);
 
         jSplitPane1.setRightComponent(jPanel5);
 
@@ -1156,460 +1253,460 @@ public class DataBrowser extends javax.swing.JFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-	private void exportDataMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportDataMenuItemActionPerformed
-		desktop.createExtractionModel(true);
-	}//GEN-LAST:event_exportDataMenuItemActionPerformed
+    private void exportDataMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exportDataMenuItemActionPerformed
+        desktop.createExtractionModel(true);
+    }//GEN-LAST:event_exportDataMenuItemActionPerformed
 
-	private void dataImportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataImportActionPerformed
-		try {
-			String sqlFile = UIUtil.choseFile(null, ".", "Data Import", ".sql", this, false, true);
-			if (sqlFile != null) {
-				DbConnectionDialog dcd = new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName(), executionContext);
-				if (dcd.connect("Data Import")) {
-					List<String> args = new ArrayList<String>();
-					args.add("import");
-					args.add(sqlFile);
-					dcd.addDbArgs(args);
-					ImportDialog importDialog = new ImportDialog(this, sqlFile, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), true);
-					if (importDialog.isOk) {
-						UIUtil.runJailer(this, args, false, true, false, false, null, dcd.getUser(), dcd.getPassword(), null, null, false, true, false, executionContext);
-						if (desktop != null) {
-							desktop.updateMenu();
-							for (RowBrowser rb : desktop.getBrowsers()) {
-								rb.browserContentPane.session = session;
-								rb.browserContentPane.rows.clear();
-							}
-							for (RowBrowser rb : desktop.getRootBrowsers(false)) {
-								rb.browserContentPane.reloadRows();
-							}
-						}
-					}
-				}
-			}
-		} catch (Exception e) {
-			UIUtil.showException(this, "Error", e, session);
-		}
-	}//GEN-LAST:event_dataImportActionPerformed
+    private void dataImportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_dataImportActionPerformed
+        try {
+            String sqlFile = UIUtil.choseFile(null, ".", "Data Import", ".sql", this, false, true);
+            if (sqlFile != null) {
+                DbConnectionDialog dcd = new DbConnectionDialog(this, dbConnectionDialog, DataBrowserContext.getAppName(), executionContext);
+                if (dcd.connect("Data Import")) {
+                    List<String> args = new ArrayList<String>();
+                    args.add("import");
+                    args.add(sqlFile);
+                    dcd.addDbArgs(args);
+                    ImportDialog importDialog = new ImportDialog(this, sqlFile, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), true);
+                    if (importDialog.isOk) {
+                        UIUtil.runJailer(this, args, false, true, false, false, null, dcd.getUser(), dcd.getPassword(), null, null, false, true, false, executionContext);
+                        if (desktop != null) {
+                            desktop.updateMenu();
+                            for (RowBrowser rb : desktop.getBrowsers()) {
+                                rb.browserContentPane.session = session;
+                                rb.browserContentPane.rows.clear();
+                            }
+                            for (RowBrowser rb : desktop.getRootBrowsers(false)) {
+                                rb.browserContentPane.reloadRows();
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            UIUtil.showException(this, "Error", e, session);
+        }
+    }//GEN-LAST:event_dataImportActionPerformed
 
     private void newBrowserjMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_newBrowserjMenuItemActionPerformed
-    	createFrame();
+        createFrame();
     }//GEN-LAST:event_newBrowserjMenuItemActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-    	openNewTableBrowser(false);
+        openNewTableBrowser(false);
     }//GEN-LAST:event_jButton1ActionPerformed
 
-	private void newWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_newWindowMenuItemActionPerformed
-		try {
-			openNewDataBrowser(datamodel.get(), dbConnectionDialog, false, executionContext);
-		} catch (Exception e) {
-			UIUtil.showException(this, "Error", e, session);
-		}
-	}// GEN-LAST:event_newWindowMenuItemActionPerformed
+    private void newWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_newWindowMenuItemActionPerformed
+        try {
+            openNewDataBrowser(datamodel.get(), dbConnectionDialog, false, executionContext);
+        } catch (Exception e) {
+            UIUtil.showException(this, "Error", e, session);
+        }
+    }// GEN-LAST:event_newWindowMenuItemActionPerformed
 
-	private void reconnectMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_reconnectMenuItemActionPerformed
-		synchronized (this) {
-			if (dbConnectionDialog.connect("Reconnect")) {
-				try {
-					setConnection(dbConnectionDialog);
-				} catch (Exception e) {
-					UIUtil.showException(this, "Error", e, session);
-				}
-			}
-		}
-	}// GEN-LAST:event_reconnectMenuItemActionPerformed
+    private void reconnectMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_reconnectMenuItemActionPerformed
+        synchronized (this) {
+            if (dbConnectionDialog.connect("Reconnect")) {
+                try {
+                    setConnection(dbConnectionDialog);
+                } catch (Exception e) {
+                    UIUtil.showException(this, "Error", e, session);
+                }
+            }
+        }
+    }// GEN-LAST:event_reconnectMenuItemActionPerformed
 
-	private void thumbnailLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_thumbnailLayoutRadioButtonMenuItemActionPerformed
-		desktop.rescaleLayout(Desktop.LayoutMode.THUMBNAIL, null);
-		wheelzoomTip();
-	}// GEN-LAST:event_thumbnailLayoutRadioButtonMenuItemActionPerformed
+    private void thumbnailLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_thumbnailLayoutRadioButtonMenuItemActionPerformed
+        desktop.rescaleLayout(Desktop.LayoutMode.THUMBNAIL, null);
+        wheelzoomTip();
+    }// GEN-LAST:event_thumbnailLayoutRadioButtonMenuItemActionPerformed
 
-	private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem1ActionPerformed
-		openNewTableBrowser(false);
-	}// GEN-LAST:event_jMenuItem1ActionPerformed
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem1ActionPerformed
+        openNewTableBrowser(false);
+    }// GEN-LAST:event_jMenuItem1ActionPerformed
 
-	private void cloaseAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_cloaseAllMenuItemActionPerformed
-		desktop.closeAll();
-	}// GEN-LAST:event_cloaseAllMenuItemActionPerformed
+    private void cloaseAllMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_cloaseAllMenuItemActionPerformed
+        desktop.closeAll();
+    }// GEN-LAST:event_cloaseAllMenuItemActionPerformed
 
-	private void schemaMappingMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_schemaMappingMenuItemActionPerformed
-		desktop.openSchemaMappingDialog(false);
-	}// GEN-LAST:event_schemaMappingMenuItemActionPerformed
+    private void schemaMappingMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_schemaMappingMenuItemActionPerformed
+        desktop.openSchemaMappingDialog(false);
+    }// GEN-LAST:event_schemaMappingMenuItemActionPerformed
 
-	private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem3ActionPerformed
-		desktop.addTableBrowser(null, null, 0, null, null, "", null, null, true);
-	}// GEN-LAST:event_jMenuItem3ActionPerformed
+    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem3ActionPerformed
+        desktop.addTableBrowser(null, null, 0, null, null, "", null, null, true);
+    }// GEN-LAST:event_jMenuItem3ActionPerformed
 
-	private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem4ActionPerformed
-		try {
-			if (DataBrowserContext.isStandAlone()) {
-				BrowserLauncher.openURL(new URI("http://dbeauty.sourceforge.net"));
-			} else {
-				BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/doc/data-browsing.html"));
-			}
-		} catch (Exception e) {
-			UIUtil.showException(this, "Error", e, session);
-		}
-	}// GEN-LAST:event_jMenuItem4ActionPerformed
+    private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem4ActionPerformed
+        try {
+            if (DataBrowserContext.isStandAlone()) {
+                BrowserLauncher.openURL(new URI("http://dbeauty.sourceforge.net"));
+            } else {
+                BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/doc/data-browsing.html"));
+            }
+        } catch (Exception e) {
+            UIUtil.showException(this, "Error", e, session);
+        }
+    }// GEN-LAST:event_jMenuItem4ActionPerformed
 
-	private void createExtractionModelMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_createExtractionModelMenuItemActionPerformed
-		desktop.createExtractionModel(false);
-	}// GEN-LAST:event_createExtractionModelMenuItemActionPerformed
+    private void createExtractionModelMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_createExtractionModelMenuItemActionPerformed
+        desktop.createExtractionModel(false);
+    }// GEN-LAST:event_createExtractionModelMenuItemActionPerformed
 
-	private void storeSessionItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_storeSessionItemActionPerformed
-		desktop.storeSession();
-	}// GEN-LAST:event_storeSessionItemActionPerformed
+    private void storeSessionItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_storeSessionItemActionPerformed
+        desktop.storeSession();
+    }// GEN-LAST:event_storeSessionItemActionPerformed
 
-	private void restoreSessionItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_restoreSessionItemActionPerformed
-		desktop.restoreSession(null);
-	}// GEN-LAST:event_restoreSessionItemActionPerformed
+    private void restoreSessionItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_restoreSessionItemActionPerformed
+        desktop.restoreSession(null);
+    }// GEN-LAST:event_restoreSessionItemActionPerformed
 
-	private void tinyLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_tinyLayoutRadioButtonMenuItemActionPerformed
-		desktop.rescaleLayout(Desktop.LayoutMode.TINY, null);
-		wheelzoomTip();
-	}// GEN-LAST:event_tinyLayoutRadioButtonMenuItemActionPerformed
+    private void tinyLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_tinyLayoutRadioButtonMenuItemActionPerformed
+        desktop.rescaleLayout(Desktop.LayoutMode.TINY, null);
+        wheelzoomTip();
+    }// GEN-LAST:event_tinyLayoutRadioButtonMenuItemActionPerformed
 
-	private void wheelzoomTip() {
-		TipDialog.showTip(this, "WHEELZOOM", "While holding down the Ctrl-key you can use the mouse-wheel to zoom in or out.");
-	}
+    private void wheelzoomTip() {
+        TipDialog.showTip(this, "WHEELZOOM", "While holding down the Ctrl-key you can use the mouse-wheel to zoom in or out.");
+    }
 
-	private void smallLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_smallLayoutRadioButtonMenuItemActionPerformed
-		desktop.rescaleLayout(Desktop.LayoutMode.SMALL, null);
-		wheelzoomTip();
-	}// GEN-LAST:event_smallLayoutRadioButtonMenuItemActionPerformed
+    private void smallLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_smallLayoutRadioButtonMenuItemActionPerformed
+        desktop.rescaleLayout(Desktop.LayoutMode.SMALL, null);
+        wheelzoomTip();
+    }// GEN-LAST:event_smallLayoutRadioButtonMenuItemActionPerformed
 
-	private void mediumLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_mediumLayoutRadioButtonMenuItemActionPerformed
-		desktop.rescaleLayout(Desktop.LayoutMode.MEDIUM, null);
-		wheelzoomTip();
-	}// GEN-LAST:event_mediumLayoutRadioButtonMenuItemActionPerformed
+    private void mediumLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_mediumLayoutRadioButtonMenuItemActionPerformed
+        desktop.rescaleLayout(Desktop.LayoutMode.MEDIUM, null);
+        wheelzoomTip();
+    }// GEN-LAST:event_mediumLayoutRadioButtonMenuItemActionPerformed
 
-	private void largeLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_largeLayoutRadioButtonMenuItemActionPerformed
-		desktop.rescaleLayout(Desktop.LayoutMode.LARGE, null);
-		wheelzoomTip();
-	}// GEN-LAST:event_largeLayoutRadioButtonMenuItemActionPerformed
+    private void largeLayoutRadioButtonMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_largeLayoutRadioButtonMenuItemActionPerformed
+        desktop.rescaleLayout(Desktop.LayoutMode.LARGE, null);
+        wheelzoomTip();
+    }// GEN-LAST:event_largeLayoutRadioButtonMenuItemActionPerformed
 
-	private void navigationTreeMouseClicked(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_navigationTreeMouseClicked
-		if (evt.getButton() == MouseEvent.BUTTON3) {
-			if (evt.getClickCount() == 1) {
-				TreePath node = navigationTree.getPathForLocation(evt.getX(), evt.getY());
-				if (node == null) {
-					for (int x = navigationTree.getWidth(); x > 0; x -= 32) {
-						node = navigationTree.getPathForLocation(x, evt.getY());
-						if (node != null) {
-							break;
-						}
-					}
-				}
-				if (node != null) {
-					Object sel = node.getLastPathComponent();
-					if (sel instanceof DefaultMutableTreeNode) {
-						Object selNode = ((DefaultMutableTreeNode) sel).getUserObject();
-						RowBrowser rowBrowser = null;
-						int row = 0;
-						if (selNode instanceof TreeNodeForRowBrowser) {
-							rowBrowser = ((TreeNodeForRowBrowser) selNode).rowBrowser;
-							row = ((TreeNodeForRowBrowser) selNode).rowIndex;
-						}
-						if (rowBrowser != null) {
-							navigationTree.setSelectionRow(row);
-							JPopupMenu popup = rowBrowser.browserContentPane.createPopupMenu(null, -1, 0, 0, false);
-							if (popup != null) {
-								JPopupMenu popup2 = rowBrowser.browserContentPane.createSqlPopupMenu(null, -1, 0, 0, true);
-								popup.add(new JSeparator());
-								for (Component c : popup2.getComponents()) {
-									popup.add(c);
-								}
-								UIUtil.fit(popup);
-								popup.show(evt.getComponent(), evt.getX(), evt.getY());
-							}
-						}
-					}
-				}
-			}
-		}
-	}// GEN-LAST:event_navigationTreeMouseClicked
+    private void navigationTreeMouseClicked(java.awt.event.MouseEvent evt) {// GEN-FIRST:event_navigationTreeMouseClicked
+        if (evt.getButton() == MouseEvent.BUTTON3) {
+            if (evt.getClickCount() == 1) {
+                TreePath node = navigationTree.getPathForLocation(evt.getX(), evt.getY());
+                if (node == null) {
+                    for (int x = navigationTree.getWidth(); x > 0; x -= 32) {
+                        node = navigationTree.getPathForLocation(x, evt.getY());
+                        if (node != null) {
+                            break;
+                        }
+                    }
+                }
+                if (node != null) {
+                    Object sel = node.getLastPathComponent();
+                    if (sel instanceof DefaultMutableTreeNode) {
+                        Object selNode = ((DefaultMutableTreeNode) sel).getUserObject();
+                        RowBrowser rowBrowser = null;
+                        int row = 0;
+                        if (selNode instanceof TreeNodeForRowBrowser) {
+                            rowBrowser = ((TreeNodeForRowBrowser) selNode).rowBrowser;
+                            row = ((TreeNodeForRowBrowser) selNode).rowIndex;
+                        }
+                        if (rowBrowser != null) {
+                            navigationTree.setSelectionRow(row);
+                            JPopupMenu popup = rowBrowser.browserContentPane.createPopupMenu(null, -1, 0, 0, false);
+                            if (popup != null) {
+                                JPopupMenu popup2 = rowBrowser.browserContentPane.createSqlPopupMenu(null, -1, 0, 0, true);
+                                popup.add(new JSeparator());
+                                for (Component c : popup2.getComponents()) {
+                                    popup.add(c);
+                                }
+                                UIUtil.fit(popup);
+                                popup.show(evt.getComponent(), evt.getX(), evt.getY());
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }// GEN-LAST:event_navigationTreeMouseClicked
 
-	private void layoutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_layoutMenuItemActionPerformed
-		arrangeLayout();
-	}// GEN-LAST:event_layoutMenuItemActionPerformed
+    private void layoutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_layoutMenuItemActionPerformed
+        arrangeLayout();
+    }// GEN-LAST:event_layoutMenuItemActionPerformed
 
-	public void arrangeLayout() {
-		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-		try {
-			desktop.layoutBrowser();
-		} finally {
-			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-		}
-	}
+    public void arrangeLayout() {
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        try {
+            desktop.layoutBrowser();
+        } finally {
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+    }
 
-	private void jScrollPane1MouseWheelMoved(java.awt.event.MouseWheelEvent evt) {// GEN-FIRST:event_jScrollPane1MouseWheelMoved
-		desktop.onMouseWheelMoved(evt);
-		desktop.onMouseWheelMoved(evt, jScrollPane1);
-	}// GEN-LAST:event_jScrollPane1MouseWheelMoved
+    private void jScrollPane1MouseWheelMoved(java.awt.event.MouseWheelEvent evt) {// GEN-FIRST:event_jScrollPane1MouseWheelMoved
+        desktop.onMouseWheelMoved(evt);
+        desktop.onMouseWheelMoved(evt, jScrollPane1);
+    }// GEN-LAST:event_jScrollPane1MouseWheelMoved
 
-	private void openNewTableBrowser(boolean offerAlternatives) {
-		new NewTableBrowser(this, datamodel.get(), offerAlternatives) {
-			@Override
-			void openTableBrowser(String tableName) {
-				desktop.addTableBrowser(null, null, 0, datamodel.get().getTableByDisplayName(tableName), null, "", null, null, true);
-			}
+    private void openNewTableBrowser(boolean offerAlternatives) {
+        new NewTableBrowser(this, datamodel.get(), offerAlternatives) {
+            @Override
+            void openTableBrowser(String tableName) {
+                desktop.addTableBrowser(null, null, 0, datamodel.get().getTableByDisplayName(tableName), null, "", null, null, true);
+            }
 
-			@Override
-			void openDatabaseAnalyzer() {
-				updateDataModel();
-			}
+            @Override
+            void openDatabaseAnalyzer() {
+                updateDataModel();
+            }
 
-			@Override
-			void restoreSession() {
-				desktop.restoreSession(null);
-			}
-		};
-	}
+            @Override
+            void restoreSession() {
+                desktop.restoreSession(null);
+            }
+        };
+    }
 
-	private void helpForumActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_helpForumActionPerformed
-		try {
-			if (DataBrowserContext.isStandAlone()) {
-				BrowserLauncher.openURL(new URI("https://sourceforge.net/apps/phpbb/dbeauty/index.php"));
-			} else {
-				BrowserLauncher.openURL(new URI("https://sourceforge.net/forum/?group_id=197260"));
-			}
-		} catch (Exception e) {
-			UIUtil.showException(this, "Error", e, session);
-		}
-	}// GEN-LAST:event_helpForumActionPerformed
+    private void helpForumActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_helpForumActionPerformed
+        try {
+            if (DataBrowserContext.isStandAlone()) {
+                BrowserLauncher.openURL(new URI("https://sourceforge.net/apps/phpbb/dbeauty/index.php"));
+            } else {
+                BrowserLauncher.openURL(new URI("https://sourceforge.net/forum/?group_id=197260"));
+            }
+        } catch (Exception e) {
+            UIUtil.showException(this, "Error", e, session);
+        }
+    }// GEN-LAST:event_helpForumActionPerformed
 
-	private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem4ActionPerformed
-		About about = new About(this, true);
-		about.setTitle(DataBrowserContext.getAppName(false));
-		if (DataBrowserContext.isStandAlone()) {
-			about.homeTextField.setText("http://dbeauty.sourceforge.net");
-			about.forumTextField.setText("https://sourceforge.net/apps/phpbb/dbeauty/index.php");
-			about.nameLabel.setText(DataBrowserContext.getAppName(false));
-		}
-		about.pack();
-		about.setLocation(getLocation().x + (getSize().width - about.getPreferredSize().width) / 2,
-				getLocation().y + (getSize().height - about.getPreferredSize().height) / 2);
-		about.setVisible(true);
-	}// GEN-LAST:event_jMenuItem4ActionPerformed
+    private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem4ActionPerformed
+        About about = new About(this, true);
+        about.setTitle(DataBrowserContext.getAppName(false));
+        if (DataBrowserContext.isStandAlone()) {
+            about.homeTextField.setText("http://dbeauty.sourceforge.net");
+            about.forumTextField.setText("https://sourceforge.net/apps/phpbb/dbeauty/index.php");
+            about.nameLabel.setText(DataBrowserContext.getAppName(false));
+        }
+        about.pack();
+        about.setLocation(getLocation().x + (getSize().width - about.getPreferredSize().width) / 2,
+                getLocation().y + (getSize().height - about.getPreferredSize().height) / 2);
+        about.setVisible(true);
+    }// GEN-LAST:event_jMenuItem4ActionPerformed
 
-	private void analyseMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_analyseMenuItemActionPerformed
-		updateDataModel();
-	}// GEN-LAST:event_analyseMenuItemActionPerformed
+    private void analyseMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_analyseMenuItemActionPerformed
+        updateDataModel();
+    }// GEN-LAST:event_analyseMenuItemActionPerformed
 
-	private void dataModelEditorjMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_dataModelEditorjMenuItemActionPerformed
-		openDataModelEditor();
-	}// GEN-LAST:event_dataModelEditorjMenuItemActionPerformed
+    private void dataModelEditorjMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_dataModelEditorjMenuItemActionPerformed
+        openDataModelEditor();
+    }// GEN-LAST:event_dataModelEditorjMenuItemActionPerformed
 
-	/**
-	 * File in which plaf-setting is stored.
-	 */
-	private static final String PLAFSETTING = ".plaf2.ui";
+    /**
+     * File in which plaf-setting is stored.
+     */
+    private static final String PLAFSETTING = ".plaf2.ui";
 
-	/**
-	 * @param args the command line arguments
-	 */
-	public static void main(String args[]) {
-		try {
-			start(args);
-		} catch (Throwable t) {
-			UIUtil.showException(null, "Error", t);
-		}
-	}
-	
-	/**
-	 * @param args
-	 *            the command line arguments
-	 */
-	private static void start(final String args[]) {
-		Environment.init();
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        try {
+            start(args);
+        } catch (Throwable t) {
+            UIUtil.showException(null, "Error", t);
+        }
+    }
+    
+    /**
+     * @param args
+     *            the command line arguments
+     */
+    private static void start(final String args[]) {
+        Environment.init();
 
-		// turn off logging for prefuse library
-		try {
-			Logger.getLogger("prefuse").setLevel(Level.OFF);
-		} catch (Exception e1) {
-			e1.printStackTrace();
-		}
-		try {
-			CommandLineInstance.init(args);
-		} catch (Exception e) {
-			UIUtil.showException(null, "Illegal arguments", e);
-			return;
-		}
-		try {
-			System.setProperty("db2.jcc.charsetDecoderEncoder", "3");
-		} catch (Exception e) {
-		}
-		try {
-			// create initial data-model files
-			File file = new File(DataModel.getDatamodelFolder(new ExecutionContext(CommandLineInstance.getInstance())));
-			if (!file.exists()) {
-				file.mkdir();
-			}
-		} catch (Exception e) {
-		}
-		java.awt.EventQueue.invokeLater(new Runnable() {
-			public void run() {
-				UIUtil.initSyntaxKit();
-				try {
-					try {
-						// L&F can no longer be changed
+        // turn off logging for prefuse library
+        try {
+            Logger.getLogger("prefuse").setLevel(Level.OFF);
+        } catch (Exception e1) {
+            e1.printStackTrace();
+        }
+        try {
+            CommandLineInstance.init(args);
+        } catch (Exception e) {
+            UIUtil.showException(null, "Illegal arguments", e);
+            return;
+        }
+        try {
+            System.setProperty("db2.jcc.charsetDecoderEncoder", "3");
+        } catch (Exception e) {
+        }
+        try {
+            // create initial data-model files
+            File file = new File(DataModel.getDatamodelFolder(new ExecutionContext(CommandLineInstance.getInstance())));
+            if (!file.exists()) {
+                file.mkdir();
+            }
+        } catch (Exception e) {
+        }
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                UIUtil.initSyntaxKit();
+                try {
+                    try {
+                        // L&F can no longer be changed
 //						File plafSetting = new File(PLAFSETTING);
-						String plaf;
+                        String plaf;
 //						if (!plafSetting.exists()) {
-							plaf = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
+                            plaf = "com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel";
 //						} else {
 //							BufferedReader in = new BufferedReader(new FileReader(plafSetting));
 //							plaf = in.readLine();
 //							in.close();
 //						}
-						UIManager.setLookAndFeel(plaf);
-					} catch (Exception x) {
-					}
+                        UIManager.setLookAndFeel(plaf);
+                    } catch (Exception x) {
+                    }
 //					try {
 //						initInterceptingEventQueue();
 //					} catch (Exception x) {
 //					}
-					ToolTipManager.sharedInstance().setInitialDelay(400);
-					ToolTipManager.sharedInstance().setDismissDelay(20000);
+                    ToolTipManager.sharedInstance().setInitialDelay(400);
+                    ToolTipManager.sharedInstance().setDismissDelay(20000);
 
-					createFrame();
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		});
-	}
+                    createFrame();
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
 
-	private static DataBrowser openNewDataBrowser(DataModel datamodel, DbConnectionDialog dbConnectionDialog, boolean maximize, ExecutionContext executionContext) throws Exception {
-		boolean silent = dbConnectionDialog != null;
-		DataBrowser dataBrowser = new DataBrowser(datamodel, null, "", null, false, executionContext);
-		dataBrowser.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+    private static DataBrowser openNewDataBrowser(DataModel datamodel, DbConnectionDialog dbConnectionDialog, boolean maximize, ExecutionContext executionContext) throws Exception {
+        boolean silent = dbConnectionDialog != null;
+        DataBrowser dataBrowser = new DataBrowser(datamodel, null, "", null, false, executionContext);
+        dataBrowser.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 //		if (maximize) {
 //			dataBrowser.setExtendedState(JFrame.MAXIMIZED_BOTH);
 //		}
-		dataBrowser.setVisible(true);
-		if (dbConnectionDialog == null) {
-			dbConnectionDialog = new DbConnectionDialog(dataBrowser, DataBrowserContext.getAppName(), null, executionContext);
-		} else {
-			dbConnectionDialog = new DbConnectionDialog(dataBrowser, dbConnectionDialog, DataBrowserContext.getAppName(), executionContext);
-		}
-		if (DataBrowserContext.isStandAlone()) {
-			dbConnectionDialog.setJdbcHelpURL("http://dbeauty.sourceforge.net/jdbc.html");
-		}
-		if (dbConnectionDialog.isConnected || dbConnectionDialog.connect(DataBrowserContext.getAppName(true))) {
-			dataBrowser.setConnection(dbConnectionDialog);
-			dataBrowser.askForDataModel();
-			dataBrowser.desktop.openSchemaMappingDialog(true);
-			dataBrowser.updateStatusBar();
-			if (!silent) {
-				dataBrowser.openNewTableBrowser(true);
-			}
-		} else {
-			if (dbConnectionDialog.isConnected) {
-				dataBrowser.setConnection(dbConnectionDialog);
-			}
-			for (int i = 0; i < dataBrowser.menuBar.getMenuCount(); ++i) {
-				JMenu menu = dataBrowser.menuBar.getMenu(i);
-				if (menu != dataBrowser.helpMenu) {
-					for (int j = 0; j < menu.getItemCount(); ++j) {
-						JMenuItem item = menu.getItem(j);
-						if (item != null) {
-							item.setEnabled(false);
-						}
-					}
-				}
-			}
-		}
-		return dataBrowser;
-	}
+        dataBrowser.setVisible(true);
+        if (dbConnectionDialog == null) {
+            dbConnectionDialog = new DbConnectionDialog(dataBrowser, DataBrowserContext.getAppName(), null, executionContext);
+        } else {
+            dbConnectionDialog = new DbConnectionDialog(dataBrowser, dbConnectionDialog, DataBrowserContext.getAppName(), executionContext);
+        }
+        if (DataBrowserContext.isStandAlone()) {
+            dbConnectionDialog.setJdbcHelpURL("http://dbeauty.sourceforge.net/jdbc.html");
+        }
+        if (dbConnectionDialog.isConnected || dbConnectionDialog.connect(DataBrowserContext.getAppName(true))) {
+            dataBrowser.setConnection(dbConnectionDialog);
+            dataBrowser.askForDataModel();
+            dataBrowser.desktop.openSchemaMappingDialog(true);
+            dataBrowser.updateStatusBar();
+            if (!silent) {
+                dataBrowser.openNewTableBrowser(true);
+            }
+        } else {
+            if (dbConnectionDialog.isConnected) {
+                dataBrowser.setConnection(dbConnectionDialog);
+            }
+            for (int i = 0; i < dataBrowser.menuBar.getMenuCount(); ++i) {
+                JMenu menu = dataBrowser.menuBar.getMenu(i);
+                if (menu != dataBrowser.helpMenu) {
+                    for (int j = 0; j < menu.getItemCount(); ++j) {
+                        JMenuItem item = menu.getItem(j);
+                        if (item != null) {
+                            item.setEnabled(false);
+                        }
+                    }
+                }
+            }
+        }
+        return dataBrowser;
+    }
 
-	private static void createFrame() {
-		DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(DataBrowserContext.getAppName(true)
-				+ " - Relational Data Browser") {
-			@Override
-			protected void onSelect(ExecutionContext executionContext) {
-				try {
-					final DataModel datamodel;
-					datamodel = new DataModel(executionContext);
-					openNewDataBrowser(datamodel, null, true, executionContext);
-				} catch (Exception e) {
-					UIUtil.showException(null, "Error", e);
-				}
-			}
+    private static void createFrame() {
+        DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(DataBrowserContext.getAppName(true)
+                + " - Relational Data Browser") {
+            @Override
+            protected void onSelect(ExecutionContext executionContext) {
+                try {
+                    final DataModel datamodel;
+                    datamodel = new DataModel(executionContext);
+                    openNewDataBrowser(datamodel, null, true, executionContext);
+                } catch (Exception e) {
+                    UIUtil.showException(null, "Error", e);
+                }
+            }
 
-			private static final long serialVersionUID = 1L;
-		};
-		dataModelManagerDialog.setVisible(true);
-	}
+            private static final long serialVersionUID = 1L;
+        };
+        dataModelManagerDialog.setVisible(true);
+    }
 
-	/**
-	 * Opens the data model editor.
-	 */
-	private void openDataModelEditor() {
-		try {
-			String modelname = datamodel == null || datamodel.get() == null ? DataModel.DEFAULT_NAME : datamodel.get().getName();
-			DataModelEditor dataModelEditor = new DataModelEditor(this, false, false, null, null, null, modelname, null, executionContext);
-			dataModelEditor.setVisible(true);
-			desktop.reloadDataModel(desktop.schemaMapping);
-			updateStatusBar();
-			askForDataModel();
-		} catch (Exception e) {
-			UIUtil.showException(this, "Error", e, session);
-		}
-	}
+    /**
+     * Opens the data model editor.
+     */
+    private void openDataModelEditor() {
+        try {
+            String modelname = datamodel == null || datamodel.get() == null ? DataModel.DEFAULT_NAME : datamodel.get().getName();
+            DataModelEditor dataModelEditor = new DataModelEditor(this, false, false, null, null, null, modelname, null, executionContext);
+            dataModelEditor.setVisible(true);
+            desktop.reloadDataModel(desktop.schemaMapping);
+            updateStatusBar();
+            askForDataModel();
+        } catch (Exception e) {
+            UIUtil.showException(this, "Error", e, session);
+        }
+    }
 
-	private void updateDataModel() {
-		try {
-			List<String> args = new ArrayList<String>();
-			args.add("build-model-wo-merge");
-			dbConnectionDialog.addDbArgs(args);
+    private void updateDataModel() {
+        try {
+            List<String> args = new ArrayList<String>();
+            args.add("build-model-wo-merge");
+            dbConnectionDialog.addDbArgs(args);
 
-			AnalyseOptionsDialog analyseOptionsDialog = new AnalyseOptionsDialog(this, datamodel == null ? null : datamodel.get(), executionContext);
-			boolean[] isDefaultSchema = new boolean[1];
-			String[] defaultSchema = new String[1];
-			List<String> schemas;
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			try {
-				schemas = dbConnectionDialog.getDBSchemas(defaultSchema);
-			} finally {
-				setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-			}
-			if (analyseOptionsDialog.edit(schemas, defaultSchema[0], isDefaultSchema, dbConnectionDialog.currentConnection.user)) {
-				String schema = analyseOptionsDialog.getSelectedSchema();
-				if (schema != null) {
-					args.add("-schema");
-					args.add(schema);
-				}
-				if (!isDefaultSchema[0]) {
-					args.add("-qualifyNames");
-				}
-				analyseOptionsDialog.appendAnalyseCLIOptions(args);
-				ModelBuilder.assocFilter = analyseOptionsDialog.getAssociationLineFilter();
-				if (DataBrowserContext.isStandAlone()) {
-					UIUtil.disableWarnings = true;
-				}
-				if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
-					ModelBuilder.assocFilter = null;
-					String modelname = datamodel == null || datamodel.get() == null ? DataModel.DEFAULT_NAME : datamodel.get().getName();
-					DataModelEditor dataModelEditor = new DataModelEditor(this, true, analyseOptionsDialog.isRemoving(), null,
-							analyseOptionsDialog.getTableLineFilter(), analyseOptionsDialog.getAssociationLineFilter(), modelname,
-							schema == null ? dbConnectionDialog.getName() : schema, executionContext);
-					if (dataModelEditor.dataModelHasChanged()) {
-						dataModelEditor.setVisible(true);
-					}
-					desktop.reloadDataModel(desktop.schemaMapping);
-					updateStatusBar();
-					askForDataModel();
-				}
-			} else {
-				askForDataModel();
-			}
-		} catch (Exception e) {
-			UIUtil.showException(this, "Error", e, session);
-		} finally {
-			ModelBuilder.assocFilter = null;
-		}
-	}
+            AnalyseOptionsDialog analyseOptionsDialog = new AnalyseOptionsDialog(this, datamodel == null ? null : datamodel.get(), executionContext);
+            boolean[] isDefaultSchema = new boolean[1];
+            String[] defaultSchema = new String[1];
+            List<String> schemas;
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            try {
+                schemas = dbConnectionDialog.getDBSchemas(defaultSchema);
+            } finally {
+                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            }
+            if (analyseOptionsDialog.edit(schemas, defaultSchema[0], isDefaultSchema, dbConnectionDialog.currentConnection.user)) {
+                String schema = analyseOptionsDialog.getSelectedSchema();
+                if (schema != null) {
+                    args.add("-schema");
+                    args.add(schema);
+                }
+                if (!isDefaultSchema[0]) {
+                    args.add("-qualifyNames");
+                }
+                analyseOptionsDialog.appendAnalyseCLIOptions(args);
+                ModelBuilder.assocFilter = analyseOptionsDialog.getAssociationLineFilter();
+                if (DataBrowserContext.isStandAlone()) {
+                    UIUtil.disableWarnings = true;
+                }
+                if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
+                    ModelBuilder.assocFilter = null;
+                    String modelname = datamodel == null || datamodel.get() == null ? DataModel.DEFAULT_NAME : datamodel.get().getName();
+                    DataModelEditor dataModelEditor = new DataModelEditor(this, true, analyseOptionsDialog.isRemoving(), null,
+                            analyseOptionsDialog.getTableLineFilter(), analyseOptionsDialog.getAssociationLineFilter(), modelname,
+                            schema == null ? dbConnectionDialog.getName() : schema, executionContext);
+                    if (dataModelEditor.dataModelHasChanged()) {
+                        dataModelEditor.setVisible(true);
+                    }
+                    desktop.reloadDataModel(desktop.schemaMapping);
+                    updateStatusBar();
+                    askForDataModel();
+                }
+            } else {
+                askForDataModel();
+            }
+        } catch (Exception e) {
+            UIUtil.showException(this, "Error", e, session);
+        } finally {
+            ModelBuilder.assocFilter = null;
+        }
+    }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JMenuItem aboutMenuItem;
@@ -1618,11 +1715,13 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel borderBrowserPanel;
     private javax.swing.JPanel borderBrowserTitledPanel;
     private javax.swing.JMenuItem cloaseAllMenuItem;
+    private javax.swing.JPanel closurePanel;
     public javax.swing.JLabel connectivityState;
     private javax.swing.JMenuItem createExtractionModelMenuItem;
     private javax.swing.JMenuItem dataImport;
     private javax.swing.JMenuItem dataModelEditorjMenuItem;
     private javax.swing.JLabel dependsOn;
+    private javax.swing.JPanel dummy;
     private javax.swing.JMenuItem exportDataMenuItem;
     private javax.swing.JLabel hasDependent;
     private javax.swing.JMenuItem helpForum;
@@ -1631,8 +1730,8 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JLabel ignored;
     private javax.swing.JButton jButton1;
     private javax.swing.JInternalFrame jInternalFrame1;
-    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
     private javax.swing.JMenuItem jMenuItem1;
@@ -1645,6 +1744,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator2;
     private javax.swing.JPopupMenu.Separator jSeparator3;
@@ -1656,7 +1756,10 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator9;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
+    private javax.swing.JSplitPane jSplitPane3;
+    private javax.swing.JTable jTable1;
     private javax.swing.JRadioButtonMenuItem largeLayoutRadioButtonMenuItem;
+    private javax.swing.JPanel layeredPaneContent;
     private javax.swing.JMenuItem layoutMenuItem;
     private javax.swing.JPanel legende;
     private javax.swing.JPanel legende1;
@@ -1684,449 +1787,482 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenu view;
     // End of variables declaration//GEN-END:variables
 
-	/**
-	 * Sets Look&Feel.
-	 * 
-	 * @param plaf
-	 *            the l&f
-	 */
-	private void setPLAF(String plaf) {
-		try {
-			UIManager.setLookAndFeel(plaf);
-			SwingUtilities.updateComponentTreeUI(this);
-			try {
-				File file = new File(PLAFSETTING);
-				file.delete();
-			} catch (Exception e) {
-			}
-			try {
-				File plafSetting = new File(PLAFSETTING);
-				PrintWriter out = new PrintWriter(plafSetting);
-				out.println(plaf);
-				out.close();
-			} catch (Exception x) {
-			}
-		} catch (Exception e) {
-			UIUtil.showException(this, "Error", e);
-		}
-	}
+    /**
+     * Sets Look&Feel.
+     * 
+     * @param plaf
+     *            the l&f
+     */
+    private void setPLAF(String plaf) {
+        try {
+            UIManager.setLookAndFeel(plaf);
+            SwingUtilities.updateComponentTreeUI(this);
+            try {
+                File file = new File(PLAFSETTING);
+                file.delete();
+            } catch (Exception e) {
+            }
+            try {
+                File plafSetting = new File(PLAFSETTING);
+                PrintWriter out = new PrintWriter(plafSetting);
+                out.println(plaf);
+                out.close();
+            } catch (Exception x) {
+            }
+        } catch (Exception e) {
+            UIUtil.showException(this, "Error", e);
+        }
+    }
 
-	private void askForDataModel() {
-		try {
-			if (datamodel.get().getTables().isEmpty()) {
-				switch (JOptionPane.showOptionDialog(this, "Data model \"" + DataModelManager.getModelDetails(DataModelManager.getCurrentModelSubfolder(executionContext), executionContext).a
-						+ "\" is empty.", DataBrowserContext.getAppName(true), JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] {
-						"Analyze Database", "Data Model Editor" }, null)) {
-				case 0:
-					updateDataModel();
-					break;
-				case 1:
-					openDataModelEditor();
-					break;
-				}
-			} else if (!new File(DataModel.getColumnsFile(executionContext)).exists()) {
-				switch (JOptionPane.showOptionDialog(this, "No column definition found.", DataBrowserContext.getAppName(true), JOptionPane.YES_NO_OPTION,
-						JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor" }, null)) {
-				case 0:
-					updateDataModel();
-					break;
-				case 1:
-					openDataModelEditor();
-					break;
-				}
-			}
-		} catch (Exception e) {
-			UIUtil.showException(this, "Error", e, session);
-		}
-	}
+    private void askForDataModel() {
+        try {
+            if (datamodel.get().getTables().isEmpty()) {
+                switch (JOptionPane.showOptionDialog(this, "Data model \"" + DataModelManager.getModelDetails(DataModelManager.getCurrentModelSubfolder(executionContext), executionContext).a
+                        + "\" is empty.", DataBrowserContext.getAppName(true), JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] {
+                        "Analyze Database", "Data Model Editor" }, null)) {
+                case 0:
+                    updateDataModel();
+                    break;
+                case 1:
+                    openDataModelEditor();
+                    break;
+                }
+            } else if (!new File(DataModel.getColumnsFile(executionContext)).exists()) {
+                switch (JOptionPane.showOptionDialog(this, "No column definition found.", DataBrowserContext.getAppName(true), JOptionPane.YES_NO_OPTION,
+                        JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Analyze Database", "Data Model Editor" }, null)) {
+                case 0:
+                    updateDataModel();
+                    break;
+                case 1:
+                    openDataModelEditor();
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            UIUtil.showException(this, "Error", e, session);
+        }
+    }
 
-	private void updateIFramesBar() {
-		updateNavigationTree();
-		updateBorderBrowser();
-		updateHiddenPanel();
+    private void updateIFramesBar() {
+        updateNavigationTree();
+        updateBorderBrowser();
+        updateHiddenPanel();
 
-		// iFramesPanel is obsolete
-		return;
-	}
+        // iFramesPanel is obsolete
+        return;
+    }
 
-	private void updateHiddenPanel() {
-		if (desktop == null) {
-			return;
-		}
+    private void updateHiddenPanel() {
+        if (desktop == null) {
+            return;
+        }
 
-		hiddenPanel.removeAll();
-		hiddenPanel.setVisible(false);
+        hiddenPanel.removeAll();
+        hiddenPanel.setVisible(false);
 
-		int num = desktop.getAllFrames().length;
-		if (num == 0) {
-			jPanel1.revalidate();
-			return;
-		}
-		int COLUMNS = 7;
-		int y = 1;
+        int num = desktop.getAllFrames().length;
+        if (num == 0) {
+            jPanel1.revalidate();
+            return;
+        }
+        int COLUMNS = 7;
+        int y = 1;
 
-		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = y;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.anchor = GridBagConstraints.WEST;
-		gridBagConstraints.weightx = 1;
-		JPanel iFramesRowPanel = new JPanel();
-		iFramesRowPanel.setLayout(new GridBagLayout());
-		hiddenPanel.add(iFramesRowPanel, gridBagConstraints);
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = y;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1;
+        JPanel iFramesRowPanel = new JPanel();
+        iFramesRowPanel.setLayout(new GridBagLayout());
+        hiddenPanel.add(iFramesRowPanel, gridBagConstraints);
 
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = COLUMNS + 2;
-		gridBagConstraints.gridy = y;
-		gridBagConstraints.weightx = 1;
-		iFramesRowPanel.add(new JLabel(" "), gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = COLUMNS + 2;
+        gridBagConstraints.gridy = y;
+        gridBagConstraints.weightx = 1;
+        iFramesRowPanel.add(new JLabel(" "), gridBagConstraints);
 
-		int x = 1;
-		boolean visible = false;
-		for (final RowBrowser rb : desktop.getBrowsers()) {
-			if (!rb.isHidden()) {
-				continue;
-			}
-			visible = true;
-			if (++x > COLUMNS) {
-				x = 1;
-				++y;
-				gridBagConstraints = new java.awt.GridBagConstraints();
-				gridBagConstraints.gridx = 1;
-				gridBagConstraints.gridy = y;
-				gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-				gridBagConstraints.anchor = GridBagConstraints.WEST;
-				gridBagConstraints.weightx = 1;
-				iFramesRowPanel = new JPanel();
-				iFramesRowPanel.setLayout(new GridBagLayout());
-				hiddenPanel.add(iFramesRowPanel, gridBagConstraints);
-				gridBagConstraints = new java.awt.GridBagConstraints();
-				gridBagConstraints.gridx = COLUMNS + 2;
-				gridBagConstraints.gridy = y;
-				gridBagConstraints.weightx = 1;
-				iFramesRowPanel.add(new JLabel(" "), gridBagConstraints);
-			}
+        int x = 1;
+        boolean visible = false;
+        for (final RowBrowser rb : desktop.getBrowsers()) {
+            if (!rb.isHidden()) {
+                continue;
+            }
+            visible = true;
+            if (++x > COLUMNS) {
+                x = 1;
+                ++y;
+                gridBagConstraints = new java.awt.GridBagConstraints();
+                gridBagConstraints.gridx = 1;
+                gridBagConstraints.gridy = y;
+                gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+                gridBagConstraints.anchor = GridBagConstraints.WEST;
+                gridBagConstraints.weightx = 1;
+                iFramesRowPanel = new JPanel();
+                iFramesRowPanel.setLayout(new GridBagLayout());
+                hiddenPanel.add(iFramesRowPanel, gridBagConstraints);
+                gridBagConstraints = new java.awt.GridBagConstraints();
+                gridBagConstraints.gridx = COLUMNS + 2;
+                gridBagConstraints.gridy = y;
+                gridBagConstraints.weightx = 1;
+                iFramesRowPanel.add(new JLabel(" "), gridBagConstraints);
+            }
 
-			final JToggleButton toggleButton = new JToggleButton();
-			toggleButton.setText(rb.internalFrame.getTitle());
-			toggleButton.setSelected(false);
+            final JToggleButton toggleButton = new JToggleButton();
+            toggleButton.setText(rb.internalFrame.getTitle());
+            toggleButton.setSelected(false);
 
-			toggleButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					toggleButton.setSelected(true);
-					rb.setHidden(false);
-				}
-			});
-			gridBagConstraints = new java.awt.GridBagConstraints();
-			gridBagConstraints.gridx = x;
-			gridBagConstraints.gridy = y;
-			iFramesRowPanel.add(toggleButton, gridBagConstraints);
+            toggleButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent e) {
+                    toggleButton.setSelected(true);
+                    rb.setHidden(false);
+                }
+            });
+            gridBagConstraints = new java.awt.GridBagConstraints();
+            gridBagConstraints.gridx = x;
+            gridBagConstraints.gridy = y;
+            iFramesRowPanel.add(toggleButton, gridBagConstraints);
 
-			hiddenPanel.setVisible(visible);
-		}
+            hiddenPanel.setVisible(visible);
+        }
 
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 2;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.insets = new Insets(0, 0, 4, 0);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new Insets(0, 0, 4, 0);
 
-		jPanel1.revalidate();
-	}
+        jPanel1.revalidate();
+    }
 
-	private static final class BrowserAssociationModel extends DefaultAssociationModel {
-		private final RowBrowser rowBrowser;
+    private static final class BrowserAssociationModel extends DefaultAssociationModel {
+        private final RowBrowser rowBrowser;
 
-		public BrowserAssociationModel(RowBrowser rowBrowser, Association association) {
-			super(association);
-			this.rowBrowser = rowBrowser;
-		}
+        public BrowserAssociationModel(RowBrowser rowBrowser, Association association) {
+            super(association);
+            this.rowBrowser = rowBrowser;
+        }
 
-		@Override
-		public String getSourceName() {
-			return rowBrowser.internalFrame.getTitle();
-		}
+        @Override
+        public String getSourceName() {
+            return rowBrowser.internalFrame.getTitle();
+        }
 
-		@Override
-		public boolean equals(Object other) {
-			if (other instanceof BrowserAssociationModel) {
-				BrowserAssociationModel otherModel = (BrowserAssociationModel) other;
-				return rowBrowser == otherModel.rowBrowser && association == otherModel.association;
-			}
-			return false;
-		}
+        @Override
+        public boolean equals(Object other) {
+            if (other instanceof BrowserAssociationModel) {
+                BrowserAssociationModel otherModel = (BrowserAssociationModel) other;
+                return rowBrowser == otherModel.rowBrowser && association == otherModel.association;
+            }
+            return false;
+        }
 
-		@Override
-		public int hashCode() {
-			return rowBrowser.hashCode() + 3 * association.hashCode();
-		}
+        @Override
+        public int hashCode() {
+            return rowBrowser.hashCode() + 3 * association.hashCode();
+        }
 
-		public RowBrowser getRowBrowser() {
-			return rowBrowser;
-		}
+        public RowBrowser getRowBrowser() {
+            return rowBrowser;
+        }
 
-		public Association getAssociation() {
-			return association;
-		}
-	}
+        public Association getAssociation() {
+            return association;
+        }
+    }
 
-	private boolean disableBorderBrowserUpdates = false;
+    private boolean disableBorderBrowserUpdates = false;
 
-	private void updateBorderBrowser() {
-		if (disableBorderBrowserUpdates) {
-			return;
-		}
-		
-		try {
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			
-			Collection<AssociationModel> model = new ArrayList<AssociationModel>();
-			if (desktop != null) {
-				titleLabel.setText(" Related Rows");
-				List<RowBrowser> allChildren = new ArrayList<RowBrowser>();
-				for (RowBrowser rb : desktop.getBrowsers()) {
-					if (rb.internalFrame == desktop.getSelectedFrame() && !rb.isHidden()) {
-						allChildren.add(rb);
-						allChildren.addAll(collectChildren(rb));
-						titleLabel.setText(" Related Rows of Subtree " + rb.internalFrame.getTitle());
-						break;
+    private void updateBorderBrowser() {
+        if (disableBorderBrowserUpdates) {
+            return;
+        }
+        
+        try {
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            
+            Collection<AssociationModel> model = new ArrayList<AssociationModel>();
+            if (desktop != null) {
+                titleLabel.setText(" Related Rows");
+                List<RowBrowser> allChildren = new ArrayList<RowBrowser>();
+                for (RowBrowser rb : desktop.getBrowsers()) {
+                    if (rb.internalFrame == desktop.getSelectedFrame() && !rb.isHidden()) {
+                        allChildren.add(rb);
+                        allChildren.addAll(collectChildren(rb));
+                        titleLabel.setText(" Related Rows of Subtree " + rb.internalFrame.getTitle());
+                        break;
+                    }
+                }
+                for (RowBrowser rb : allChildren) {
+                    if (rb.browserContentPane.table != null) {
+                        Set<Association> associations = new HashSet<Association>(rb.browserContentPane.table.associations);
+                        for (RowBrowser c : desktop.getChildBrowsers(rb, false)) {
+                            if (c.browserContentPane.association != null) {
+                                associations.remove(c.browserContentPane.association);
+                            }
+                        }
+                        if (rb.browserContentPane.association != null && rb.parent != null) {
+                            if (allChildren.contains(rb.parent)) {
+                                associations.remove(rb.browserContentPane.association.reversalAssociation);
+                            }
+                        }
+                        for (Association association : associations) {
+                            model.add(new BrowserAssociationModel(rb, association));
+                        }
+                    }
+                }
+            }
+    
+            borderBrowser.setModel(model);
+        } finally {
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+        }
+    }
+
+    protected void resolveSelection(Collection<AssociationModel> selection) {
+        try {
+            setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            
+            disableBorderBrowserUpdates = true;
+            JInternalFrame currentSelection = desktop.getSelectedFrame();
+            for (AssociationModel a : selection) {
+                BrowserAssociationModel associationModel = (BrowserAssociationModel) a;
+                desktop.addTableBrowser(associationModel.getRowBrowser(), associationModel.getRowBrowser(), -1, associationModel.getAssociation().destination, associationModel.getAssociation(),
+                        "", null, null, true);
+            }
+            if (currentSelection != null) {
+                try {
+                    currentSelection.setSelected(true);
+                } catch (PropertyVetoException e) {
+                    // ignore
+                }
+            }
+        } finally {
+            setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+            disableBorderBrowserUpdates = false;
+            updateBorderBrowser();
+        }
+    }
+
+    private List<RowBrowser> collectChildren(RowBrowser rb) {
+        List<RowBrowser> result = new ArrayList<Desktop.RowBrowser>();
+        for (RowBrowser c : desktop.getChildBrowsers(rb, true)) {
+            result.add(c);
+        }
+        for (RowBrowser c : desktop.getChildBrowsers(rb, true)) {
+            result.addAll(collectChildren(c));
+        }
+        return result;
+    }
+
+    private Map<JInternalFrame, TreeNodeForRowBrowser> treeNodeByIFrame = new HashMap<JInternalFrame, DataBrowser.TreeNodeForRowBrowser>();
+    private TreeSelectionListener navigationTreeListener = null;
+
+    private class TreeNodeForRowBrowser {
+        public final RowBrowser rowBrowser;
+        public final int rowIndex;
+        private final String title;
+
+        public TreeNodeForRowBrowser(RowBrowser rowBrowser, int rowIndex) {
+            this.rowBrowser = rowBrowser;
+            this.rowIndex = rowIndex;
+            this.title = " " + rowBrowser.internalFrame.getTitle() + "  ";
+            treeNodeByIFrame.put(rowBrowser.internalFrame, this);
+        }
+
+        public String toString() {
+            return title;
+        }
+    }
+
+    private void updateNavigationTree() {
+        if (navigationTreeListener != null) {
+            navigationTree.getSelectionModel().removeTreeSelectionListener(navigationTreeListener);
+        }
+
+        ConnectionInfo connection = dbConnectionDialog != null ? dbConnectionDialog.currentConnection : null;
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode(connection != null ? " " + connection.alias : " ");
+
+        treeNodeByIFrame.clear();
+
+        int[] count = new int[1];
+        count[0] = 1;
+        if (desktop != null) {
+            for (RowBrowser rb : desktop.getRootBrowsers(true)) {
+                DefaultMutableTreeNode node = new DefaultMutableTreeNode(new TreeNodeForRowBrowser(rb, count[0]++));
+                root.add(node);
+                addChildNodes(node, rb, count);
+            }
+        }
+        DefaultTreeModel treeModel = new DefaultTreeModel(root);
+        navigationTree.setModel(treeModel);
+        for (int i = 0; i < count[0]; ++i) {
+            navigationTree.expandRow(i);
+        }
+        JInternalFrame activeFrame = desktop != null ? desktop.getSelectedFrame() : null;
+        if (activeFrame != null) {
+            TreeNodeForRowBrowser node = treeNodeByIFrame.get(activeFrame);
+            if (node != null) {
+                navigationTree.setSelectionRow(node.rowIndex);
+                Rectangle bounds = navigationTree.getRowBounds(node.rowIndex);
+                navigationTree.scrollRectToVisible(new Rectangle(bounds.x, bounds.y, 1, bounds.height));
+            }
+        }
+
+        navigationTreeListener = new TreeSelectionListener() {
+            @Override
+            public void valueChanged(TreeSelectionEvent e) {
+                if (e.getPath() != null) {
+                    Object lastPathComponent = e.getPath().getLastPathComponent();
+                    if (lastPathComponent != null && lastPathComponent instanceof DefaultMutableTreeNode) {
+                        Object userObject = ((DefaultMutableTreeNode) lastPathComponent).getUserObject();
+                        if (userObject instanceof TreeNodeForRowBrowser) {
+                            try {
+                                JInternalFrame iFrame = ((TreeNodeForRowBrowser) userObject).rowBrowser.internalFrame;
+                                desktop.scrollToCenter(iFrame);
+                                iFrame.setSelected(true);
+                                iFrame.grabFocus();
+                            } catch (PropertyVetoException e1) {
+                                // ignore
+                            }
+                            return;
+                        } else {
+                            openNewTableBrowser(false);
+                        }
+                    }
+                }
+                updateNavigationTree();
+            }
+        };
+
+        navigationTree.getSelectionModel().addTreeSelectionListener(navigationTreeListener);
+    }
+
+    private void addChildNodes(DefaultMutableTreeNode node, RowBrowser browser, int[] count) {
+        for (RowBrowser rb : desktop.getChildBrowsers(browser, true)) {
+            DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(new TreeNodeForRowBrowser(rb, count[0]++));
+            node.add(childNode);
+            addChildNodes(childNode, rb, count);
+        }
+    }
+
+    public JScrollPane getDesktopScrollPane() {
+        return jScrollPane1;
+    }
+
+    private DBClosureView closureView;
+    
+    protected void updateClosureBrowser(final RowBrowser rowBrowser) {
+        if (rowBrowser != null) {
+            if (rowBrowser.browserContentPane.table instanceof SqlStatementTable) {
+                updateClosureBrowser(null);
+                return;
+            }
+        }
+        closureView = new DBClosureView() {
+        	private RowBrowser closureRoot = rowBrowser;
+        	
+        	@Override
+            protected DataModel getDataModel() {
+                return DataBrowser.this.datamodel.get();
+            }
+
+            @Override
+            protected Table getRootTable() {
+                if (rowBrowser != null) {
+                    return rowBrowser.browserContentPane.table;
+                }
+                return null;
+            }
+
+            private Map<Table, RowBrowser> visibleTables = null;
+            private Map<Table, Integer> levels = null;
+            
+            @Override
+            protected Map<Table, RowBrowser> getVisibleTables() {
+                if (visibleTables == null) {
+                    visibleTables = new HashMap<Table, RowBrowser>();
+                    levels = new HashMap<Table, Integer>();
+                    if (rowBrowser != null) {
+                        collectVisibleTables(rowBrowser, 1);
+                    }
+                }
+                return visibleTables;
+            }
+
+            private void collectVisibleTables(RowBrowser rowBrowser, int level) {
+                Integer prevLevel = levels.get(rowBrowser.browserContentPane.table);
+                if (prevLevel == null || prevLevel < level) {
+                	visibleTables.put(rowBrowser.browserContentPane.table, rowBrowser);
+                	levels.put(rowBrowser.browserContentPane.table, level);
+                }
+                for (RowBrowser cb: rowBrowser.browserContentPane.getChildBrowsers()) {
+                    collectVisibleTables(cb, level + 1);
+                }
+            }
+
+            @Override
+            protected void repaintClosureView() {
+                jSplitPane3.repaint();
+                jSplitPane3.setDividerLocation(jSplitPane3.getDividerLocation() - 1);
+                jSplitPane3.setDividerLocation(jSplitPane3.getDividerLocation() + 1);
+            }
+
+            @Override
+            protected void expandTablePath(List<Table> path) {
+                int i;
+                i = 0;
+                while (i < path.size()) {
+                	if (getVisibleTables().containsKey(path.get(i))) {
+                		break;
+                	}
+                	++i;
+                }
+                if (i < path.size()) {
+                	while (i > 0) {
+                		Table table = path.get(i);
+                		Table to = path.get(i - 1);
+                		RowBrowser rb = getVisibleTables().get(table);
+                		Association association = null;
+                		// TODO
+                		for (Association a: table.associations) {
+                			if (a.destination == to) {
+                				association = a;
+                				break;
+                			}
+                		}
+                		if (association != null) {
+                			rb.browserContentPane.navigateTo(association, -1, null);
+                			visibleTables = null;
+                		} else {
+                			break;
+                		}
+                		--i;
+                	}
+                	try {
+						closureRoot.internalFrame.setSelected(true);
+					} catch (PropertyVetoException e) {
+						// ignore
 					}
-				}
-				for (RowBrowser rb : allChildren) {
-					if (rb.browserContentPane.table != null) {
-						Set<Association> associations = new HashSet<Association>(rb.browserContentPane.table.associations);
-						for (RowBrowser c : desktop.getChildBrowsers(rb, false)) {
-							if (c.browserContentPane.association != null) {
-								associations.remove(c.browserContentPane.association);
-							}
-						}
-						if (rb.browserContentPane.association != null && rb.parent != null) {
-							if (allChildren.contains(rb.parent)) {
-								associations.remove(rb.browserContentPane.association.reversalAssociation);
-							}
-						}
-						for (Association association : associations) {
-							model.add(new BrowserAssociationModel(rb, association));
-						}
-					}
-				}
-			}
-	
-			borderBrowser.setModel(model);
-		} finally {
-			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-		}
-	}
-
-	protected void resolveSelection(Collection<AssociationModel> selection) {
-		try {
-			setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			
-			disableBorderBrowserUpdates = true;
-			JInternalFrame currentSelection = desktop.getSelectedFrame();
-			for (AssociationModel a : selection) {
-				BrowserAssociationModel associationModel = (BrowserAssociationModel) a;
-				desktop.addTableBrowser(associationModel.getRowBrowser(), associationModel.getRowBrowser(), -1, associationModel.getAssociation().destination, associationModel.getAssociation(),
-						"", null, null, true);
-			}
-			if (currentSelection != null) {
-				try {
-					currentSelection.setSelected(true);
-				} catch (PropertyVetoException e) {
-					// ignore
-				}
-			}
-		} finally {
-			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-			disableBorderBrowserUpdates = false;
-			updateBorderBrowser();
-		}
-	}
-
-	private List<RowBrowser> collectChildren(RowBrowser rb) {
-		List<RowBrowser> result = new ArrayList<Desktop.RowBrowser>();
-		for (RowBrowser c : desktop.getChildBrowsers(rb, true)) {
-			result.add(c);
-		}
-		for (RowBrowser c : desktop.getChildBrowsers(rb, true)) {
-			result.addAll(collectChildren(c));
-		}
-		return result;
-	}
-
-	private Map<JInternalFrame, TreeNodeForRowBrowser> treeNodeByIFrame = new HashMap<JInternalFrame, DataBrowser.TreeNodeForRowBrowser>();
-	private TreeSelectionListener navigationTreeListener = null;
-
-	private class TreeNodeForRowBrowser {
-		public final RowBrowser rowBrowser;
-		public final int rowIndex;
-		private final String title;
-
-		public TreeNodeForRowBrowser(RowBrowser rowBrowser, int rowIndex) {
-			this.rowBrowser = rowBrowser;
-			this.rowIndex = rowIndex;
-			this.title = " " + rowBrowser.internalFrame.getTitle() + "  ";
-			treeNodeByIFrame.put(rowBrowser.internalFrame, this);
-		}
-
-		public String toString() {
-			return title;
-		}
-	}
-
-	private void updateNavigationTree() {
-		if (navigationTreeListener != null) {
-			navigationTree.getSelectionModel().removeTreeSelectionListener(navigationTreeListener);
-		}
-
-		ConnectionInfo connection = dbConnectionDialog != null ? dbConnectionDialog.currentConnection : null;
-		DefaultMutableTreeNode root = new DefaultMutableTreeNode(connection != null ? " " + connection.alias : " ");
-
-		treeNodeByIFrame.clear();
-
-		int[] count = new int[1];
-		count[0] = 1;
-		if (desktop != null) {
-			for (RowBrowser rb : desktop.getRootBrowsers(true)) {
-				DefaultMutableTreeNode node = new DefaultMutableTreeNode(new TreeNodeForRowBrowser(rb, count[0]++));
-				root.add(node);
-				addChildNodes(node, rb, count);
-			}
-		}
-		DefaultTreeModel treeModel = new DefaultTreeModel(root);
-		navigationTree.setModel(treeModel);
-		for (int i = 0; i < count[0]; ++i) {
-			navigationTree.expandRow(i);
-		}
-		JInternalFrame activeFrame = desktop != null ? desktop.getSelectedFrame() : null;
-		if (activeFrame != null) {
-			TreeNodeForRowBrowser node = treeNodeByIFrame.get(activeFrame);
-			if (node != null) {
-				navigationTree.setSelectionRow(node.rowIndex);
-				Rectangle bounds = navigationTree.getRowBounds(node.rowIndex);
-				navigationTree.scrollRectToVisible(new Rectangle(bounds.x, bounds.y, 1, bounds.height));
-			}
-		}
-
-		navigationTreeListener = new TreeSelectionListener() {
-			@Override
-			public void valueChanged(TreeSelectionEvent e) {
-				if (e.getPath() != null) {
-					Object lastPathComponent = e.getPath().getLastPathComponent();
-					if (lastPathComponent != null && lastPathComponent instanceof DefaultMutableTreeNode) {
-						Object userObject = ((DefaultMutableTreeNode) lastPathComponent).getUserObject();
-						if (userObject instanceof TreeNodeForRowBrowser) {
-							try {
-								JInternalFrame iFrame = ((TreeNodeForRowBrowser) userObject).rowBrowser.internalFrame;
-								desktop.scrollToCenter(iFrame);
-								iFrame.setSelected(true);
-								iFrame.grabFocus();
-							} catch (PropertyVetoException e1) {
-								// ignore
-							}
-							return;
-						} else {
-							openNewTableBrowser(false);
-						}
-					}
-				}
-				updateNavigationTree();
-			}
-		};
-
-		navigationTree.getSelectionModel().addTreeSelectionListener(navigationTreeListener);
-	}
-
-	private void addChildNodes(DefaultMutableTreeNode node, RowBrowser browser, int[] count) {
-		for (RowBrowser rb : desktop.getChildBrowsers(browser, true)) {
-			DefaultMutableTreeNode childNode = new DefaultMutableTreeNode(new TreeNodeForRowBrowser(rb, count[0]++));
-			node.add(childNode);
-			addChildNodes(childNode, rb, count);
-		}
-	}
-
-	public JScrollPane getDesktopScrollPane() {
-		return jScrollPane1;
-	}
-
-//	/**
-//	 * Keys form weak set of component to intercept mouse events to.
-//	 */
-//	private static final java.util.Map<Component, Void> componentsWithDisabledWheelScrollingWithCntrl = new java.util.WeakHashMap<Component, Void>();
-//
-//	/**
-//	 * Install event queue. Note, we can only do this once per 'app context'.
-//	 */
-//	private static void initInterceptingEventQueue() {
-//		EventQueue eventQueue = java.awt.Toolkit.getDefaultToolkit().getSystemEventQueue();
-//		eventQueue.push(new EventQueue() {
-//			@Override
-//			public void dispatchEvent(java.awt.AWTEvent awtEvent) {
-//				if (awtEvent instanceof MouseWheelEvent) {
-//					MouseWheelEvent event = (MouseWheelEvent) awtEvent;
-//					if (event.isControlDown()) {
-//						Object source = event.getSource();
-//						if (source instanceof Component) {
-//							// (If we were interested in heavyweights,
-//							// we would also check parents here.)
-//							if (isIntercept((Component) source, event.getX(), event.getY())) {
-//								// Swallow.
-//								return;
-//							}
-//						}
-//					}
-//				}
-//				// Dispatch as normal.
-//				super.dispatchEvent(awtEvent);
-//			}
-//		});
-//	}
-//
-//	/**
-//	 * Indicates whether event at location in component should be intercepted.
-//	 * 
-//	 * @param component
-//	 *            event source
-//	 * @param x
-//	 *            x position of event in {@code component} coordinates
-//	 * @param y
-//	 *            y position of event in {@code component} coordinates
-//	 */
-//	private static boolean isIntercept(Component component, int x, int y) {
-//		if (componentsWithDisabledWheelScrollingWithCntrl.containsKey(component)) {
-//			return true;
-//		}
-//		if (!(component instanceof Container)) {
-//			return false;
-//		}
-//		Container container = (Container) component;
-//		int num = container.getComponentCount();
-//		// Lightweight components should be on the bottom.
-//		for (boolean lightweight : new boolean[] { false, true }) {
-//			for (int ct = 0; ct < num; ++ct) {
-//				Component child = container.getComponent(ct);
-//				if (lightweight == child.isLightweight() && child.isVisible()) {
-//					int childX = x - child.getX();
-//					int childY = y - child.getY();
-//					if (child.contains(childX, childY)) {
-//						// Recurse to child.
-//						return isIntercept(child, childX, childY);
-//					}
-//				}
-//			}
-//		}
-//		// No kids yet.
-//		return false;
-//	}
-//
-//	/**
-//	 * Intercept mouse events to component, and components descendants. It is
-//	 * assumed that the component does not contain heavyweights.
-//	 */
-//	public static void disableWheelScrollingWithCntrl(Component component) {
-//		componentsWithDisabledWheelScrollingWithCntrl.put(component, (Void) null);
-//	}
+                	closureView.find(getDataModel().getDisplayName(path.get(0)));
+                }
+            }
+        };
+        Container cVContentPane = closureView.tablePanel;
+        closureView.dispose();
+        closurePanel.removeAll();
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1;
+        gridBagConstraints.weighty = 1;
+        closurePanel.add(cVContentPane, gridBagConstraints);
+        closureView.refresh();
+    }
 
 }
