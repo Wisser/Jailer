@@ -2247,6 +2247,22 @@ public class DataBrowser extends javax.swing.JFrame {
         		}
             }
 
+            protected void select(String selectedTable) {
+				 try {
+					 if (selectedTable != null) {
+						 RowBrowser rb = getVisibleTables().get(datamodel.get().getTableByDisplayName(selectedTable));
+						 if (rb != null) {
+							 JInternalFrame iFrame = rb.internalFrame;
+							 desktop.scrollToCenter(iFrame);
+							 iFrame.setSelected(true);
+							 iFrame.grabFocus();
+						 }
+					 }
+                } catch (PropertyVetoException e1) {
+                    // ignore
+                }
+			}
+
 			private Association[] openAssociationPathPanel(List<Table> path) {
 				final AssociationPathPanel assocPanel = new AssociationPathPanel(getDataModel(), path, dependsOn.getForeground(), hasDependent.getForeground(), associatedWith.getForeground(), ignored.getForeground());
 				if (!assocPanel.needToAsk) {

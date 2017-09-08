@@ -236,7 +236,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 					}
 					expandTablePath(path);
 				}
-			
+				
 				public void mouseClicked(final MouseEvent e) {
 					mouseReleased(e);
 				}
@@ -247,7 +247,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 					int row = closureTable.rowAtPoint(e.getPoint());
 					int column = closureTable.columnAtPoint(e.getPoint());
 					if (row < 0 || column < 0) return;
-					Object value = closureTable.getModel().getValueAt(row, column);
+					final Object value = closureTable.getModel().getValueAt(row, column);
 					if (value == null || !(value instanceof String)) return;
 					Table table = getDataModel().getTableByDisplayName((String) value);
 					if (table != null) {
@@ -268,18 +268,40 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 									}
 								});
 								menu.add(open);
+								menu.add(new JSeparator());
+								JMenuItem openAndSelect = new JMenuItem("Open Path to and Select " + getDataModel().getDisplayName(table));
+								openAndSelect.addActionListener(new ActionListener() {
+									@Override
+									public void actionPerformed(ActionEvent e) {
+										expandPath();
+										select(selectedTable);
+									}
+								});
+								menu.add(openAndSelect);
 								menu.show(e.getComponent(), e.getX(), e.getY());
 							}
 						} else {
+							JPopupMenu menu = new JPopupMenu();
+							JMenuItem select = new JMenuItem("Select " + getDataModel().getDisplayName(table));
+							select.addActionListener(new ActionListener() {
+								@Override
+								public void actionPerformed(ActionEvent e) {
+									select((String) value);
+								}
+							});
+							menu.add(select);
+							menu.addSeparator();
 							JPopupMenu popup = rb.browserContentPane.createPopupMenu(null, -1, 0, 0, false);
 							JPopupMenu popup2 = rb.browserContentPane.createSqlPopupMenu(null, -1, 0, 0, true);
 							popup.add(new JSeparator());
+							for (Component c : popup.getComponents()) {
+								menu.add(c);
+							}
 							for (Component c : popup2.getComponents()) {
-								popup.add(c);
+								menu.add(c);
 							}
 							UIUtil.fit(popup);
-							popup.show(e.getComponent(), e.getX(), e.getY());
-						
+							menu.show(e.getComponent(), e.getX(), e.getY());
 						}
 					}
 				}
@@ -983,6 +1005,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 	protected abstract void repaintClosureView();
 	protected abstract Map<Table, RowBrowser> getVisibleTables();
 	protected abstract void expandTablePath(List<Table> path);
+	protected abstract void select(String selectedTable);
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable closureTable;
