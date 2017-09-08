@@ -393,6 +393,8 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 							((JLabel) render).setForeground(new Color(0, 80, 160));
 						} else if (getVisibleTables().containsKey(t)) {
 							((JLabel) render).setFont(onPath? italicBold : italic);
+						}
+						if (getVisibleTables().containsKey(t)) {
 							((JLabel) render).setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED, Color.lightGray, Color.gray));
 						}
 					}

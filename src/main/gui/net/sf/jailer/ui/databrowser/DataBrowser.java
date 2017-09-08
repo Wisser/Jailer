@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
+import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
@@ -2223,33 +2224,61 @@ public class DataBrowser extends javax.swing.JFrame {
                 	}
                 	--i;
                 }
-            	while (i > 0) {
-            		Table table = path.get(i);
-            		Table to = path.get(i - 1);
-            		RowBrowser rb = getVisibleTables().get(table);
-            		Association association = null;
-            		// TODO
-            		for (Association a: table.associations) {
-            			if (a.destination == to) {
-            				association = a;
-            				break;
-            			}
-            		}
-            		if (association != null) {
-            			rb.browserContentPane.navigateTo(association, -1, null);
-            			visibleTables = null;
-            		} else {
-            			break;
-            		}
-            		--i;
-            	}
-            	try {
-					closureRoot.internalFrame.setSelected(true);
-				} catch (PropertyVetoException e) {
-					// ignore
-				}
-            	closureView.find(getDataModel().getDisplayName(path.get(0)));
+        		Association[] associations = openAssociationPathPanel(path.subList(0, i + 1));
+        		if (associations != null) {
+	            	while (i > 0) {
+	            		Table table = path.get(i);
+	            		RowBrowser rb = getVisibleTables().get(table);
+	            		Association association = associations[i - 1];
+	            		if (association != null) {
+	            			rb.browserContentPane.navigateTo(association, -1, null);
+	            			visibleTables = null;
+	            		} else {
+	            			break;
+	            		}
+	            		--i;
+	            	}
+	            	try {
+						closureRoot.internalFrame.setSelected(true);
+					} catch (PropertyVetoException e) {
+						// ignore
+					}
+	            	closureView.find(getDataModel().getDisplayName(path.get(0)));
+        		}
             }
+
+			private Association[] openAssociationPathPanel(List<Table> path) {
+				final AssociationPathPanel assocPanel = new AssociationPathPanel(getDataModel(), path, dependsOn.getForeground(), hasDependent.getForeground(), associatedWith.getForeground(), ignored.getForeground());
+				if (!assocPanel.needToAsk) {
+					return assocPanel.selectedAssociations;
+				}
+				final JDialog d = new JDialog(DataBrowser.this, "Open Path", true);
+				assocPanel.okButton.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						assocPanel.ok = true;
+						d.setVisible(false);
+					}
+				});
+				assocPanel.cancelButton.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						assocPanel.ok = false;
+						d.setVisible(false);
+					}
+				});
+				d.getContentPane().add(assocPanel);
+				d.pack();
+				d.setSize(600, Math.max(d.getHeight() + 20, 400));
+				d.setLocation(DataBrowser.this.getX() + (DataBrowser.this.getWidth() - d.getWidth()) / 2, Math.max(0, DataBrowser.this.getY() + (DataBrowser.this.getHeight() - d.getHeight()) / 2));
+				UIUtil.fit(d);
+				assocPanel.okButton.grabFocus();
+				d.setVisible(true);
+				if (assocPanel.ok) {
+					return assocPanel.selectedAssociations;
+				}
+				return null;
+			}
         };
         Container cVContentPane = closureView.tablePanel;
         closureView.dispose();
