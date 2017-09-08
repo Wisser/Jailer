@@ -151,6 +151,7 @@ public class AssociationPathPanel extends javax.swing.JPanel {
 							}
 						}
 					});
+	        		gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
 	        		pathPanel.add(comboBox, gridBagConstraints);
 	        	}
     		}
