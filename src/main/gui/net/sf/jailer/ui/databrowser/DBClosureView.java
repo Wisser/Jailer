@@ -41,6 +41,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
 import java.util.SortedMap;
@@ -96,10 +97,13 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 	 * Holds infos about a cell in the closure-table.
 	 */
 	private class CellInfo {
-		public int row, column;
+		public int row, column, level;
 		boolean ignored = false;
 		List<CellInfo> parents = new ArrayList<CellInfo>(4);
 		boolean selected;
+		CellInfo(int level) {
+			this.level = level;
+		}
 		void select() {
 			if (!selected) {
 				selected = true;
@@ -223,7 +227,11 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 
 		closureTable.addMouseListener(new MouseListener() {
 			
-			public void mouseClicked(final MouseEvent e) {
+			private Map<Integer, String> manuallySelected = new TreeMap<Integer, String>();
+			
+				public void mouseClicked(final MouseEvent e) {
+				}
+				public void mouseReleased(MouseEvent e) {
 				// context menu
 				if (SwingUtilities.isRightMouseButton(e)) {
 					int row = closureTable.rowAtPoint(e.getPoint());
@@ -280,13 +288,30 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 					final Table table = getDataModel().getTableByDisplayName((String) value);
 					if (table != null) {
 						if (cellInfo.containsKey(value)) {
-							boolean wasSelected = cellInfo.get(value).selected && !mainPathAsSet.contains(cellInfo.get(value));
 							String prevSelectedTable = selectedTable;
-							selectTableCell(column, row);
-							if (wasSelected) {
+							CellInfo selectedCellInfo = cellInfo.get(value);
+							if (selectedCellInfo.selected && !mainPathAsSet.contains(selectedCellInfo)) {
+								manuallySelected.put(selectedCellInfo.level, (String) value);
+								TreeMap<Integer, String> newMS = new TreeMap<Integer, String>(manuallySelected);
+								String lastFound = null;
+								for (Entry<Integer, String> ms: manuallySelected.entrySet()) {
+									find(ms.getValue());
+									if (selectedCellInfo.level < ms.getKey() && !mainPathAsSet.contains(selectedCellInfo)) {
+										manuallySelected = newMS;
+										if (lastFound != null) {
+											find(lastFound);
+										}
+										break;
+									}
+									newMS.put(ms.getKey(), ms.getValue());
+									lastFound = ms.getValue();
+								}
 								if (prevSelectedTable != null && !prevSelectedTable.equals(selectedTable)) {
 									find(prevSelectedTable);
 								}
+							} else if (!selectedCellInfo.selected) {
+								manuallySelected.clear();
+								selectTableCell(column, row);
 							}
 						}
 					}
@@ -298,8 +323,6 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 			public void mouseExited(MouseEvent e) {
 			}
 			public void mousePressed(MouseEvent e) {
-			}
-			public void mouseReleased(MouseEvent e) {
 			}
 		});
 		
@@ -346,6 +369,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 								((JLabel) render).setBackground(new Color(255, 230, 200));
 							} else {
 								((JLabel) render).setFont(italic);
+								((JLabel) render).setBackground(new Color(200, 200, 200, 140));
 							}
 						}
 					}
@@ -417,25 +441,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 				if (table != null) {
 					CellInfo selectionInfo = cellInfo.get(selectedTable);
 					selectionInfo.select();
-					if (prevTable == table) {
-						for (int i = 0; i < mainPath.size(); ++i) {
-							CellInfo ci = mainPath.get(i);
-							int nextP = -1;
-							for (int pi = 0; pi < ci.parents.size(); ++pi) {
-								if (mainPath.contains(ci.parents.get(pi))) {
-									nextP = (pi + 1) % ci.parents.size();
-									break;
-								}
-							}
-							if (nextP < 0) {
-								break;
-							}
-							mainPath.set(i + 1, ci.parents.get(nextP));
-							if (nextP > 0) {
-								break;
-							}
-						}
-					} else {
+					if (prevTable != table) {
 						Set<Table> visibleTables = getVisibleTables().keySet();
 						Set<Table> mainPathTables = new HashSet<Table>();
 						for (CellInfo ci: mainPath) {
@@ -447,7 +453,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 						int vtMaxRow = fillPath(selectionInfo, visibleTables, pathToVisibleTable, pathVT);
 						List<CellInfo> pathST = new ArrayList<CellInfo>();
 						int stMaxRow = fillPath(selectionInfo, mainPathTables, pathToMainPathTable, pathST);
-						if (vtMaxRow > stMaxRow) {
+						if (pathToMainPathTable.isEmpty()) { // (vtMaxRow > stMaxRow) {
 							mainPath = pathVT;
 						} else {
 							mainPath = pathST;
@@ -550,7 +556,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 			String displayName = getDataModel().getDisplayName(selectedTable);
 			currentLine.add(displayName);
 			visited.add(displayName);
-			CellInfo cellInfo = new CellInfo();
+			CellInfo cellInfo = new CellInfo(-1);
 			cellInfo.column = 1;
 			cellInfo.row = 0;
 			cellInfo.table = selectedTable;
@@ -624,7 +630,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 							if (!visited.contains(displayName)) {
 								nextLine.add(displayName);
 								visited.add(displayName);
-								CellInfo cellInfo = new CellInfo();
+								CellInfo cellInfo = new CellInfo(distance);
 								cellInfo.parents.add(cellInfoT);
 								cellInfo.table = association.destination;
 								if (association.isInsertDestinationBeforeSource()) {
@@ -662,7 +668,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 								cellInfoT = this.cellInfo.get(destName);
 								CellInfo cellInfo = this.cellInfo.get(displayName);
 								if (cellInfo == null) {
-									cellInfo = new CellInfo();
+									cellInfo = new CellInfo(distance);
 									cellInfo.table = table;
 									nextLine.add(displayName);
 									visited.add(displayName);

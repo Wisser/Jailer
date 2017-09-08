@@ -231,6 +231,8 @@ public abstract class ClosureView extends javax.swing.JDialog {
 
 		closureTable.addMouseListener(new MouseListener() {
 			public void mouseClicked(final MouseEvent e) {
+			}
+			public void mouseReleased(MouseEvent e) {
 				// context menu
 				if (SwingUtilities.isRightMouseButton(e)) {
 					int row = closureTable.rowAtPoint(e.getPoint());
@@ -348,8 +350,6 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			public void mouseExited(MouseEvent e) {
 			}
 			public void mousePressed(MouseEvent e) {
-			}
-			public void mouseReleased(MouseEvent e) {
 			}
 		});
 		
