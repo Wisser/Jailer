@@ -2215,41 +2215,40 @@ public class DataBrowser extends javax.swing.JFrame {
             @Override
             protected void expandTablePath(List<Table> path) {
                 int i;
-                i = 0;
-                while (i < path.size()) {
-                	if (getVisibleTables().containsKey(path.get(i))) {
+                i = path.size() - 1;
+                while (i >= 0) {
+                	if (!getVisibleTables().containsKey(path.get(i))) {
+                		++i;
                 		break;
                 	}
-                	++i;
+                	--i;
                 }
-                if (i < path.size()) {
-                	while (i > 0) {
-                		Table table = path.get(i);
-                		Table to = path.get(i - 1);
-                		RowBrowser rb = getVisibleTables().get(table);
-                		Association association = null;
-                		// TODO
-                		for (Association a: table.associations) {
-                			if (a.destination == to) {
-                				association = a;
-                				break;
-                			}
-                		}
-                		if (association != null) {
-                			rb.browserContentPane.navigateTo(association, -1, null);
-                			visibleTables = null;
-                		} else {
-                			break;
-                		}
-                		--i;
-                	}
-                	try {
-						closureRoot.internalFrame.setSelected(true);
-					} catch (PropertyVetoException e) {
-						// ignore
-					}
-                	closureView.find(getDataModel().getDisplayName(path.get(0)));
-                }
+            	while (i > 0) {
+            		Table table = path.get(i);
+            		Table to = path.get(i - 1);
+            		RowBrowser rb = getVisibleTables().get(table);
+            		Association association = null;
+            		// TODO
+            		for (Association a: table.associations) {
+            			if (a.destination == to) {
+            				association = a;
+            				break;
+            			}
+            		}
+            		if (association != null) {
+            			rb.browserContentPane.navigateTo(association, -1, null);
+            			visibleTables = null;
+            		} else {
+            			break;
+            		}
+            		--i;
+            	}
+            	try {
+					closureRoot.internalFrame.setSelected(true);
+				} catch (PropertyVetoException e) {
+					// ignore
+				}
+            	closureView.find(getDataModel().getDisplayName(path.get(0)));
             }
         };
         Container cVContentPane = closureView.tablePanel;
