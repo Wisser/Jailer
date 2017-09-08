@@ -228,9 +228,19 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 		closureTable.addMouseListener(new MouseListener() {
 			
 			private Map<Integer, String> manuallySelected = new TreeMap<Integer, String>();
+
+				private void expandPath() {
+					List<Table> path = new ArrayList<Table>();
+					for (CellInfo ci: mainPath) {
+						path.add(ci.table);
+					}
+					expandTablePath(path);
+				}
 			
 				public void mouseClicked(final MouseEvent e) {
+					mouseReleased(e);
 				}
+				
 				public void mouseReleased(MouseEvent e) {
 				// context menu
 				if (SwingUtilities.isRightMouseButton(e)) {
@@ -254,11 +264,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 								open.addActionListener(new ActionListener() {
 									@Override
 									public void actionPerformed(ActionEvent e) {
-										List<Table> path = new ArrayList<Table>();
-										for (CellInfo ci: mainPath) {
-											path.add(ci.table);
-										}
-										expandTablePath(path);
+										expandPath();
 									}
 								});
 								menu.add(open);
@@ -277,6 +283,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 						}
 					}
 				}
+
 				if (SwingUtilities.isLeftMouseButton(e)) {
 					Point position = e.getPoint();
 					int row = closureTable.rowAtPoint(position);
@@ -312,6 +319,15 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 							} else if (!selectedCellInfo.selected) {
 								manuallySelected.clear();
 								selectTableCell(column, row);
+							}
+						}
+						
+						if (e.getClickCount() > 1) {
+							RowBrowser rb = getVisibleTables().get(table);
+							if (rb == null) {
+								if (!mainPath.isEmpty()) {
+									expandPath();
+								}
 							}
 						}
 					}
