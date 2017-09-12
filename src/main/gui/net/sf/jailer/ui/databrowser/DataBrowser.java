@@ -484,7 +484,7 @@ public class DataBrowser extends javax.swing.JFrame {
         }
         
         setLocation(40 + c * 32, 40 + c * 32);
-        setSize(980, 770);
+        setSize(980, 790);
         if (root != null) {
             final RowBrowser rb = desktop.addTableBrowser(null, null, 0, root, null, condition, null, null, true);
             if (rb != null && rb.internalFrame != null) {
