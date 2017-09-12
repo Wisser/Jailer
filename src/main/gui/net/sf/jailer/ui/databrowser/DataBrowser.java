@@ -529,8 +529,8 @@ public class DataBrowser extends javax.swing.JFrame {
         TreeSelectionListener treeListener = new TreeSelectionListener() {
             @Override
             public void valueChanged(TreeSelectionEvent e) {
-                if (e.getPath() != null) {
-                    Object lastPathComponent = e.getPath().getLastPathComponent();
+                if (e.getNewLeadSelectionPath() != null) {
+                    Object lastPathComponent = e.getNewLeadSelectionPath().getLastPathComponent();
                     if (lastPathComponent != null && lastPathComponent instanceof DefaultMutableTreeNode) {
                         Object userObject = ((DefaultMutableTreeNode) lastPathComponent).getUserObject();
                         if (userObject instanceof TreeNodeForRowBrowser) {
@@ -538,6 +538,8 @@ public class DataBrowser extends javax.swing.JFrame {
                             return;
                         }
                     }
+                } else {
+                	updateClosureBrowser(null);
                 }
             }
         };
