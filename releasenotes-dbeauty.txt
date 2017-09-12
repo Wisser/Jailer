@@ -1,3 +1,6 @@
+3.6.1
+  - Minor GUI Improvements.
+
 3.6
   - Integrated ClosureView into DataBrowser.
   - Double To String conversion without exponential scientific notation.

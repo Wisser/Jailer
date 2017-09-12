@@ -2318,17 +2318,12 @@ public abstract class Desktop extends JDesktopPane {
 		String sFile = UIUtil.choseFile(fnProp == null ? null : new File(startDir, fnProp), startDir.getPath(), "Store Layout", ".dbl", pFrame, true, false);
 
 		if (sFile != null) {
-			File file = new File(sFile);
-			if (!file.exists() || JOptionPane.YES_OPTION == JOptionPane.showConfirmDialog(
-					pFrame, 
-					"The file '" + sFile + " already exists. Do you wont to replace the existing file?", "Store Layout", JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE)) {
-				try {
-					storeSession(sFile);
-				} catch (Throwable e) {
-					UIUtil.showException(this, "Error", e, session);
-				}
-				currentSessionFileName = sFile;
+			try {
+				storeSession(sFile);
+			} catch (Throwable e) {
+				UIUtil.showException(this, "Error", e, session);
 			}
+			currentSessionFileName = sFile;
 		}
 	}
 

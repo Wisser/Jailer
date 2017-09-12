@@ -51,6 +51,7 @@ import java.util.Vector;
 
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -122,7 +123,8 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 	private List<CellInfo> mainPath = new ArrayList<CellInfo>();
 	private HashSet<CellInfo> mainPathAsSet = new HashSet<CellInfo>();
 	private Set<Pair<String, String>> dependencies = new HashSet<Pair<String,String>>();
-	
+	private Set<Table> excludedFromPath = new HashSet<Table>();
+
 	/** Creates new form FindDialog 
 	 * @param rootTable */
 	public DBClosureView() {
@@ -249,18 +251,40 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 					if (row < 0 || column < 0) return;
 					final Object value = closureTable.getModel().getValueAt(row, column);
 					if (value == null || !(value instanceof String)) return;
-					Table table = getDataModel().getTableByDisplayName((String) value);
+					final Table table = getDataModel().getTableByDisplayName((String) value);
 					if (table != null) {
 						if (selectedTable == null || !selectedTable.equals(value)) {
-							if (cellInfo.containsKey(value)) {
+							if (cellInfo.containsKey(value) && !cellInfo.get(value).selected) {
 								selectTableCell(column, row);
 							}
 						}
+						JCheckBoxMenuItem exclude = new JCheckBoxMenuItem("Exclude " + getDataModel().getDisplayName(table) + " from Path");
+						exclude.setSelected(excludedFromPath.contains(table));
+						exclude.setEnabled(mainPath.contains(cellInfo.get(value)) || excludedFromPath.contains(table));
+						exclude.addActionListener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								if (!excludedFromPath.contains(table)) {
+									excludedFromPath.add(table);
+								} else {
+									excludedFromPath.remove(table);
+								}
+								mainPath.clear();
+								mainPathAsSet.clear();
+								refresh();
+								CellInfo ci = cellInfo.get(selectedTable);
+								if (ci != null) {
+									String st = selectedTable;
+									selectedTable = null;
+									select(st, ci);
+								}
+							}
+						});
 						RowBrowser rb = getVisibleTables().get(table);
 						if (rb == null) {
 							if (!mainPath.isEmpty()) {
 								JPopupMenu menu = new JPopupMenu();
-								JMenuItem open = new JMenuItem("Open Path to " + getDataModel().getDisplayName(table));
+								JMenuItem open = new JMenuItem("Open Path to " + selectedTable);
 								open.addActionListener(new ActionListener() {
 									@Override
 									public void actionPerformed(ActionEvent e) {
@@ -268,16 +292,17 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 									}
 								});
 								menu.add(open);
-								menu.add(new JSeparator());
-								JMenuItem openAndSelect = new JMenuItem("Open Path to and Select " + getDataModel().getDisplayName(table));
+								JMenuItem openAndSelect = new JMenuItem("Open Path to and Select " + selectedTable);
 								openAndSelect.addActionListener(new ActionListener() {
 									@Override
 									public void actionPerformed(ActionEvent e) {
 										expandPath();
-										select(selectedTable);
+										DBClosureView.this.select(selectedTable);
 									}
 								});
 								menu.add(openAndSelect);
+								menu.add(new JSeparator());
+								menu.add(exclude);
 								menu.show(e.getComponent(), e.getX(), e.getY());
 							}
 						} else {
@@ -286,10 +311,12 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 							select.addActionListener(new ActionListener() {
 								@Override
 								public void actionPerformed(ActionEvent e) {
-									select((String) value);
+									DBClosureView.this.select((String) value);
 								}
 							});
 							menu.add(select);
+							menu.addSeparator();
+							menu.add(exclude);
 							menu.addSeparator();
 							JPopupMenu popup = rb.browserContentPane.createPopupMenu(null, -1, 0, 0, false);
 							JPopupMenu popup2 = rb.browserContentPane.createSqlPopupMenu(null, -1, 0, 0, true);
@@ -321,23 +348,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 							CellInfo selectedCellInfo = cellInfo.get(value);
 							if (selectedCellInfo.selected && !mainPathAsSet.contains(selectedCellInfo)) {
 								manuallySelected.put(selectedCellInfo.level, (String) value);
-								TreeMap<Integer, String> newMS = new TreeMap<Integer, String>(manuallySelected);
-								String lastFound = null;
-								for (Entry<Integer, String> ms: manuallySelected.entrySet()) {
-									find(ms.getValue());
-									if (selectedCellInfo.level < ms.getKey() && !mainPathAsSet.contains(selectedCellInfo)) {
-										manuallySelected = newMS;
-										if (lastFound != null) {
-											find(lastFound);
-										}
-										break;
-									}
-									newMS.put(ms.getKey(), ms.getValue());
-									lastFound = ms.getValue();
-								}
-								if (prevSelectedTable != null && !prevSelectedTable.equals(selectedTable)) {
-									find(prevSelectedTable);
-								}
+								select(prevSelectedTable, selectedCellInfo);
 							} else if (!selectedCellInfo.selected) {
 								manuallySelected.clear();
 								selectTableCell(column, row);
@@ -355,7 +366,27 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 					}
 				}
 			}
-			
+
+			private void select(String toSelect, CellInfo selectedCellInfo) {
+				TreeMap<Integer, String> newMS = new TreeMap<Integer, String>(manuallySelected);
+				String lastFound = null;
+				for (Entry<Integer, String> ms: manuallySelected.entrySet()) {
+					find(ms.getValue());
+					if (selectedCellInfo.level < ms.getKey() && !mainPathAsSet.contains(selectedCellInfo)) {
+						manuallySelected = newMS;
+						if (lastFound != null) {
+						find(lastFound);
+						}
+						break;
+					}
+					newMS.put(ms.getKey(), ms.getValue());
+					lastFound = ms.getValue();
+				}
+				if (toSelect != null && !toSelect.equals(selectedTable)) {
+					find(toSelect);
+				}
+			}
+		
 			public void mouseEntered(MouseEvent e) {
 			}
 			public void mouseExited(MouseEvent e) {
@@ -431,6 +462,9 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 							((JLabel) render).setForeground(new Color(0, 80, 160));
 						} else if (getVisibleTables().containsKey(t)) {
 							((JLabel) render).setFont(onPath? italicBold : italic);
+						}
+						if (excludedFromPath.contains(t)) {
+							((JLabel) render).setForeground(new Color(180, 180, 180));
 						}
 						if (getVisibleTables().containsKey(t)) {
 							((JLabel) render).setBorder(BorderFactory.createBevelBorder(BevelBorder.RAISED, Color.lightGray, Color.gray));
@@ -664,24 +698,26 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 				Table table = getDataModel().getTableByDisplayName(t);
 				if (table != null) {
 					CellInfo cellInfoT = this.cellInfo.get(t);
-					for (Association association: table.associations) {
-						String displayName = getDataModel().getDisplayName(association.destination);
-						if (!association.isIgnored()) {
-							if (!visited.contains(displayName)) {
-								nextLine.add(displayName);
-								visited.add(displayName);
-								CellInfo cellInfo = new CellInfo(distance);
-								cellInfo.parents.add(cellInfoT);
-								cellInfo.table = association.destination;
-								if (association.isInsertDestinationBeforeSource()) {
-									dependencies.add(new Pair<String, String>(t, displayName));
-								}
-								this.cellInfo.put(displayName, cellInfo);
-							} else {
-								if (nextLine.contains(displayName)) {
-									this.cellInfo.get(displayName).parents.add(cellInfoT);
+					if (!excludedFromPath.contains(table)) {
+						for (Association association: table.associations) {
+							String displayName = getDataModel().getDisplayName(association.destination);
+							if (!association.isIgnored()) {
+								if (!visited.contains(displayName)) {
+									nextLine.add(displayName);
+									visited.add(displayName);
+									CellInfo cellInfo = new CellInfo(distance);
+									cellInfo.parents.add(cellInfoT);
+									cellInfo.table = association.destination;
 									if (association.isInsertDestinationBeforeSource()) {
 										dependencies.add(new Pair<String, String>(t, displayName));
+									}
+									this.cellInfo.put(displayName, cellInfo);
+								} else {
+									if (nextLine.contains(displayName)) {
+										this.cellInfo.get(displayName).parents.add(cellInfoT);
+										if (association.isInsertDestinationBeforeSource()) {
+											dependencies.add(new Pair<String, String>(t, displayName));
+										}
 									}
 								}
 							}

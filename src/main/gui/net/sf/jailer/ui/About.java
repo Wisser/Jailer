@@ -29,6 +29,7 @@ public class About extends javax.swing.JDialog {
 		super(parent, modal);
 		initComponents();
 		UIUtil.initPeer();
+                jButton1.grabFocus();
 	}
 	
 	/** 

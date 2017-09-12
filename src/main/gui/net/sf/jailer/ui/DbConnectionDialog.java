@@ -21,6 +21,8 @@ import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -212,6 +214,9 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 					@Override
 					public void valueChanged(ListSelectionEvent evt) {
 						refresh();
+						if (jButton1.isEnabled()) {
+							jButton1.grabFocus();
+						}
 					}
 				});
 		connectionsTable.addMouseListener(new MouseAdapter() {
@@ -226,6 +231,8 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 					if (jButton1.isEnabled()) {
 						connect();
 					}
+				} else if (jButton1.isEnabled()) {
+					jButton1.grabFocus();
 				}
 			}
 		});

@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 
 import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
@@ -62,6 +63,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 import javax.swing.JToggleButton;
 import javax.swing.JViewport;
+import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
@@ -951,7 +953,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
         jSplitPane3.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane3.setResizeWeight(1.0);
+        jSplitPane3.setResizeWeight(0.95);
         jSplitPane3.setContinuousLayout(true);
         jSplitPane3.setOneTouchExpandable(true);
 
@@ -1561,6 +1563,8 @@ public class DataBrowser extends javax.swing.JFrame {
 //							in.close();
 //						}
                         UIManager.setLookAndFeel(plaf);
+                        ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("pressed ENTER"), "pressed");
+                        ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("released ENTER"), "released");
                     } catch (Exception x) {
                     }
 //					try {
