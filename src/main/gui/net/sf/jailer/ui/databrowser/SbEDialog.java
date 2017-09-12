@@ -54,6 +54,11 @@ public class SbEDialog extends javax.swing.JDialog {
 			setLocation(getParent().getX() + (getParent().getWidth() - getWidth()) / 2, getParent().getY() + (getParent().getHeight() - getHeight()) / 2);
 		}
 		UIUtil.fit(this);
+		grabFocus();
+	}
+
+	void grabFocus() {
+		jButton1.grabFocus();
 	}
 
 	/** This method is called from within the constructor to

@@ -624,17 +624,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					Row row = rows.get(i);
 
 					if (lastMenu == null || !lastMenu.isVisible()) {
-						if (e.getButton() != MouseEvent.BUTTON1 || e.getClickCount() > 1) {
-							currentRowSelection = ri;
-							onRedraw();
-//							setCurrentRowSelection(ri);
-							Rectangle r = rowsTable.getCellRect(ri, 0, false);
-							int x = Math.max((int) e.getPoint().x, (int) r.getMinX());
-							int y = (int) r.getMaxY() - 2;
-							if (singleRowDetailsView != null) {
-								y = e.getY();
-							}
-							Point p = SwingUtilities.convertPoint(rowsTable, x, y, null);
+						currentRowSelection = ri;
+						onRedraw();
+						Rectangle r = rowsTable.getCellRect(ri, 0, false);
+						int x = Math.max((int) e.getPoint().x, (int) r.getMinX());
+						int y = (int) r.getMaxY() - 2;
+						if (singleRowDetailsView != null) {
+							y = e.getY();
+						}
+						Point p = SwingUtilities.convertPoint(rowsTable, x, y, null);
+						if (e.getButton() == MouseEvent.BUTTON1 && e.getClickCount() > 1) {
+							openDetailsView(i, p.x + getOwner().getX(), p.y + getOwner().getY());
+						} else if (e.getButton() != MouseEvent.BUTTON1) {
 							JPopupMenu popup;
 							popup = createPopupMenu(row, i, p.x + getOwner().getX(), p.y + getOwner().getY(), rows.size() == 1);
 							popup.show(rowsTable, x, y);
@@ -1060,28 +1061,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		
 		if (row != null) {
-			if (!(table instanceof SqlStatementTable)) {
-				popup.add(new JSeparator());
-			}
-
 			JMenuItem det = new JMenuItem("Details");
-			popup.add(det);
+			popup.insert(det, 0);
+			popup.insert(new JSeparator(), 1);
 			det.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), true);
-					d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter(), true, rowIdSupport) {
-						@Override
-						protected void onRowChanged(int row) {
-							setCurrentRowSelection(row);
-						}
-					});
-					d.pack();
-					d.setLocation(x, y);
-					d.setSize(400, d.getHeight() + 20);
-					UIUtil.fit(d);
-					d.setVisible(true);
-					setCurrentRowSelection(-1);
+					openDetailsView(rowIndex, x, y);
 				}
 			});
 
@@ -1103,7 +1089,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						&& currentSelectedRowCondition.equals(getAndConditionText())
 						&& rows.size() == 1) {
 					JMenuItem sr = new JMenuItem("Deselect Row");
-					popup.add(sr);
+					popup.insert(sr, 1);
 					sr.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
@@ -1114,7 +1100,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				} else {
 					JMenuItem sr = new JMenuItem("Select Row");
 					sr.setEnabled(rows.size() > 1);
-					popup.add(sr);
+					popup.insert(sr, 1);
 					sr.addActionListener(new ActionListener() {
 						@Override
 						public void actionPerformed(ActionEvent e) {
@@ -1370,6 +1356,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						sbEDialog.browserTree.getSelectionModel().clearSelection();
 					}
 				});
+				sbEDialog.grabFocus();
 				sbEDialog.setVisible(true);
 				
 				if (!sbEDialog.ok) {
@@ -2815,6 +2802,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				@Override
 				protected void onRowChanged(int row) {
 				}
+				@Override
+				protected void onClose() {
+				}
 			};
 			dtm = new DefaultTableModel(new String[] { "Single Row Details" }, 0) {
 				@Override
@@ -3582,11 +3572,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 
 	private void openDetails(final int x, final int y) {
-		JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), true);
+		final JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), true);
 		d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, 0, rowsTable.getRowSorter(), true, rowIdSupport) {
 			@Override
 			protected void onRowChanged(int row) {
 				setCurrentRowSelection(row);
+			}
+			@Override
+			protected void onClose() {
+				d.setVisible(false);
 			}
 		});
 		d.pack();
@@ -3611,6 +3605,26 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		currentClosureRowIDs.clear();
 		adjustGui();
 		reloadRows();
+	}
+
+	private void openDetailsView(final int rowIndex, final int x, final int y) {
+		final JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), true);
+		d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter(), true, rowIdSupport) {
+			@Override
+			protected void onRowChanged(int row) {
+				setCurrentRowSelection(row);
+			}
+			@Override
+			protected void onClose() {
+				d.setVisible(false);
+			}
+		});
+		d.pack();
+		d.setLocation(x, y);
+		d.setSize(400, d.getHeight() + 20);
+		UIUtil.fit(d);
+		d.setVisible(true);
+		setCurrentRowSelection(-1);
 	}
 
 	private static TableContentViewFilter tableContentViewFilter = TableContentViewFilter.create();
