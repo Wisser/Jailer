@@ -17,8 +17,6 @@ package net.sf.jailer.ui.databrowser;
 
 import java.awt.Color;
 import java.awt.Font;
-import java.awt.event.ContainerEvent;
-import java.awt.event.ContainerListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.math.BigDecimal;
@@ -142,17 +140,21 @@ public abstract class DetailsView extends javax.swing.JPanel {
 		jPanel1.removeAll();
 		int i = 0;
 		java.awt.GridBagConstraints gridBagConstraints;
-		List<Column> columns = new ArrayList<Column>(rowIdSupport.getColumns(table));
+		final List<Column> columns = rowIdSupport.getColumns(table);
+		List<Integer> columnIndex = new ArrayList<Integer>();
+		for (int j = 0; j < columns.size(); ++j) {
+			columnIndex.add(j);
+		}
 		if (sortColumns) {
-			Collections.sort(columns, new Comparator<Column>() {
+			Collections.sort(columnIndex, new Comparator<Integer>() {
 				@Override
-				public int compare(Column o1, Column o2) {
-					return o1.name.compareTo(o2.name);
+				public int compare(Integer o1, Integer o2) {
+					return columns.get(o1).name.compareTo(columns.get(o2).name);
 				}
 			});
 		}
 		while (i < columns.size()) {
-			Column c = columns.get(i);
+			Column c = columns.get(columnIndex.get(i));
 			JLabel l = new JLabel();
 			l.setText(" " + c.name + "  ");
 			l.setFont(nonbold);
@@ -172,7 +174,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			gridBagConstraints.weightx = 1;
 			gridBagConstraints.gridx = 1;
 			gridBagConstraints.gridy = i;
-			Object v = rows.get(rowSorter != null? rowSorter.convertRowIndexToModel(row) : row).values[i];
+			Object v = rows.get(rowSorter != null? rowSorter.convertRowIndexToModel(row) : row).values[columnIndex.get(i)];
 			if (v instanceof BigDecimal) {
 				v = SqlUtil.toString((BigDecimal) v);
 			} else if (v instanceof Double) {
