@@ -1385,7 +1385,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			
 			subjectCondition = root.whereClause;
 			if (doExport && (getParentBrowser() != null || isLimitExceeded)) {
-				subjectCondition = root.whereClause.replace('\r', ' ').replace('\n', ' ');
+				subjectCondition = root.whereClause;
+				if (subjectCondition != null) {
+					subjectCondition = subjectCondition.replace('\r', ' ').replace('\n', ' ');
+				}
 				StringBuilder sb = new StringBuilder();
 				boolean f = true;
 				for (Row row: rows) {
