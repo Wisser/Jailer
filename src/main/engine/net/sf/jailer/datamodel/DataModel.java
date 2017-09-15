@@ -49,11 +49,11 @@ import net.sf.jailer.datamodel.filter_template.Clause;
 import net.sf.jailer.datamodel.filter_template.FilterTemplate;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.extractionmodel.ExtractionModel.AdditionalSubject;
+import net.sf.jailer.modelbuilder.KnownIdentifierMap;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.LineFilter;
-import net.sf.jailer.util.LayoutStorage;
 import net.sf.jailer.util.PrintUtil;
 import net.sf.jailer.util.SqlUtil;
 
@@ -268,15 +268,25 @@ public class DataModel {
 	 * and builds the relational data model.
 	 */
 	public DataModel(PrimaryKeyFactory primaryKeyFactory, Map<String, String> sourceSchemaMapping, ExecutionContext executionContext) throws IOException {
-		this(null, null, sourceSchemaMapping, null, primaryKeyFactory, executionContext, false);
+		this(null, null, sourceSchemaMapping, null, primaryKeyFactory, executionContext, false, null);
 	}
 
 	/**
 	 * Reads in <code>table.csv</code> and <code>association.csv</code>
 	 * and builds the relational data model.
+	 * @param knownIdentifiers 
 	 */
 	public DataModel(ExecutionContext executionContext) throws IOException {
-		this(null, null, new PrimaryKeyFactory(), executionContext);
+		this(null, null, new HashMap<String, String>(), null, new PrimaryKeyFactory(), executionContext, false, null);
+	}
+
+	/**
+	 * Reads in <code>table.csv</code> and <code>association.csv</code>
+	 * and builds the relational data model.
+	 * @param knownIdentifiers 
+	 */
+	public DataModel(KnownIdentifierMap knownIdentifiers, ExecutionContext executionContext) throws IOException {
+		this(null, null, new HashMap<String, String>(), null, new PrimaryKeyFactory(), executionContext, false, knownIdentifiers);
 	}
 
 	/**
@@ -284,7 +294,7 @@ public class DataModel {
 	 * and builds the relational data model.
 	 */
 	public DataModel(Map<String, String> sourceSchemaMapping, ExecutionContext executionContext, boolean failOnMissingTables) throws IOException {
-		this(null, null, sourceSchemaMapping, null, new PrimaryKeyFactory(), executionContext, failOnMissingTables);
+		this(null, null, sourceSchemaMapping, null, new PrimaryKeyFactory(), executionContext, failOnMissingTables, null);
 	}
 
 	/**
@@ -295,7 +305,7 @@ public class DataModel {
 	 * @param additionalAssociationsFile association file to read too
 	 */
 	public DataModel(String additionalTablesFile, String additionalAssociationsFile, PrimaryKeyFactory primaryKeyFactory, ExecutionContext executionContext) throws IOException {
-		this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, primaryKeyFactory, executionContext, false);
+		this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, primaryKeyFactory, executionContext, false, null);
 	}
 
 	/**
@@ -306,7 +316,7 @@ public class DataModel {
 	 * @param additionalAssociationsFile association file to read too
 	 */
 	public DataModel(String additionalTablesFile, String additionalAssociationsFile, ExecutionContext executionContext) throws IOException {
-		this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, new PrimaryKeyFactory(), executionContext, false);
+		this(additionalTablesFile, additionalAssociationsFile, new HashMap<String, String>(), null, new PrimaryKeyFactory(), executionContext, false, null);
 	}
 
 	/**
@@ -317,7 +327,7 @@ public class DataModel {
 	 * @param additionalAssociationsFile association file to read too
 	 */
 	public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, ExecutionContext executionContext) throws IOException {
-		this(additionalTablesFile, additionalAssociationsFile, sourceSchemaMapping, assocFilter, new PrimaryKeyFactory(), executionContext, false);
+		this(additionalTablesFile, additionalAssociationsFile, sourceSchemaMapping, assocFilter, new PrimaryKeyFactory(), executionContext, false, null);
 	}
 
 	/**
@@ -329,6 +339,18 @@ public class DataModel {
 	 * @throws IOException 
 	 */
 	public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, PrimaryKeyFactory primaryKeyFactory, ExecutionContext executionContext, boolean failOnMissingTables) throws IOException {
+		this(additionalTablesFile, additionalAssociationsFile, sourceSchemaMapping, assocFilter, primaryKeyFactory, executionContext, failOnMissingTables, null);
+	}
+	
+	/**
+	 * Reads in <code>table.csv</code> and <code>association.csv</code>
+	 * and builds the relational data model.
+	 * 
+	 * @param additionalTablesFile table file to read too
+	 * @param additionalAssociationsFile association file to read too
+	 * @throws IOException 
+	 */
+	public DataModel(String additionalTablesFile, String additionalAssociationsFile, Map<String, String> sourceSchemaMapping, LineFilter assocFilter, PrimaryKeyFactory primaryKeyFactory, ExecutionContext executionContext, boolean failOnMissingTables, KnownIdentifierMap knownIdentifiers) throws IOException {
 		this.executionContext = executionContext;
 		this.primaryKeyFactory = primaryKeyFactory;
 		try {
@@ -352,18 +374,30 @@ public class DataModel {
 				int j;
 				for (j = 2; j < line.cells.size() && line.cells.get(j).toString().length() > 0; ++j) {
 					String col = line.cells.get(j).trim();
+					String newName = null;
+					if (knownIdentifiers != null) {
+						Column c = Column.parse(col);
+						newName = knownIdentifiers.getColumnName(line.cells.get(0), c.name);
+					}
 					try {
-						pk.add(Column.parse(col));
+						pk.add(Column.parse(newName, col));
 					} catch (Exception e) {
 						throw new RuntimeException("unable to load table '" + line.cells.get(0) + "'. " + line.location, e);
 					}
 				}
-				String mappedSchemaTableName = SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0));
+				String tabName = line.cells.get(0);
+				if (knownIdentifiers != null) {
+					String newName = knownIdentifiers.getTableName(tabName);
+					if (newName != null) {
+						tabName = newName;
+					}
+				}
+				String mappedSchemaTableName = SqlUtil.mappedSchema(sourceSchemaMapping, tabName);
 				Table table = new Table(mappedSchemaTableName, primaryKeyFactory.createPrimaryKey(pk), defaultUpsert, excludeFromDeletion.contains(mappedSchemaTableName));
 				table.setAuthor(line.cells.get(j + 1));
 				table.setOriginalName(line.cells.get(0));
 				if (tables.containsKey(mappedSchemaTableName)) {
-					if (additionalTablesFile == null) {
+					if (additionalTablesFile == null && knownIdentifiers == null) {
 						throw new RuntimeException("Duplicate table name '" + mappedSchemaTableName + "'");
 					}
 				}
@@ -380,8 +414,13 @@ public class DataModel {
 					List<Column> columns = new ArrayList<Column>();
 					for (int j = 1; j < line.cells.size() && line.cells.get(j).toString().length() > 0; ++j) {
 						String col = line.cells.get(j).trim();
+						String newName = null;
+						if (knownIdentifiers != null) {
+							Column c = Column.parse(col);
+							newName = knownIdentifiers.getColumnName(line.cells.get(0), c.name);
+						}
 						try {
-							columns.add(Column.parse(col));
+							columns.add(Column.parse(newName, col));
 						} catch (Exception e) {
 							// ignore
 						}
@@ -403,12 +442,26 @@ public class DataModel {
 				String location = line.location;
 				try {
 					String associationLoadFailedMessage = "Unable to load association from " + line.cells.get(0) + " to " + line.cells.get(1) + " on " + line.cells.get(4) + " because: ";
-					Table tableA = (Table) tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0)));
+					String aName = line.cells.get(0);
+					if (knownIdentifiers != null) {
+						aName = knownIdentifiers.getTableName(aName);
+						if (aName == null) {
+							aName = line.cells.get(0);
+						}
+					}
+					Table tableA = (Table) tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, aName));
 					if (tableA == null) {
 						 continue;
 //	                     throw new RuntimeException(associationLoadFailedMessage + "Table '" + line.cells.get(0) + "' not found");
 					}
-					Table tableB = (Table) tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(1)));
+					String bName = line.cells.get(1);
+					if (knownIdentifiers != null) {
+						bName = knownIdentifiers.getTableName(bName);
+						if (bName == null) {
+							bName = line.cells.get(1);
+						}
+					}
+					Table tableB = (Table) tables.get(SqlUtil.mappedSchema(sourceSchemaMapping, bName));
 					if (tableB == null) {
 						continue;
 //	                	throw new RuntimeException(associationLoadFailedMessage + "Table '" + line.cells.get(1) + "' not found");
@@ -419,7 +472,13 @@ public class DataModel {
 					if (cardinality == null) {
 						cardinality = Cardinality.MANY_TO_MANY;
 					}
-					String joinCondition = line.cells.get(4);
+					String joinCondition = null;
+					if (knownIdentifiers != null) {
+						joinCondition = knownIdentifiers.getCondition(line.cells.get(4));
+					}
+					if (joinCondition == null) {
+						joinCondition = line.cells.get(4);
+					}
 					String name = line.cells.get(5);
 					if ("".equals(name)) {
 						name = null;

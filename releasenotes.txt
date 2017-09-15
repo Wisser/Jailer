@@ -1,3 +1,7 @@
+7.4.2
+  - Improved data model merging.
+  - Added ability to change the data model base folder.
+
 7.4.1
   - Minor GUI Improvements.
 

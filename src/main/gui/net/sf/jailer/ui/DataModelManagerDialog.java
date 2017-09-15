@@ -19,6 +19,8 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Point;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.BufferedReader;
@@ -35,10 +37,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JOptionPane;
 import javax.swing.JTable;
+import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -49,6 +55,7 @@ import javax.swing.table.TableColumn;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.modelbuilder.ModelBuilder;
+import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.Pair;
 
 /**
@@ -74,9 +81,14 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private Map<String, Pair<String, Long>> modelDetails;
 
 	/**
-	 * Currently selected connection.
+	 * Currently selected model.
 	 */
 	private String currentModel;
+
+	/**
+	 * Model base folders.
+	 */
+	private List<String> baseFolders = new ArrayList<String>();;
 
 	private final ExecutionContext executionContext = new ExecutionContext(CommandLineInstance.getInstance());
 	
@@ -93,15 +105,6 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				"Select a data model to work with.");
 		UIUtil.replace(infoBarLabel, infoBar);
 		
-		String modelpath = executionContext.getQualifiedDatamodelFolder();
-		try {
-			modelpath = new File(modelpath).getAbsolutePath();
-		} catch (Throwable t) {
-			// use default modelpath
-		}
-		locationLabel.setText(modelpath);
-		locationLabel.setToolTipText(modelpath);
-		
 		try {
 			ImageIcon imageIcon = new ImageIcon(getClass().getResource("/net/sf/jailer/ui/resource/jailer.png"));
 			setIconImage(imageIcon.getImage());
@@ -114,6 +117,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			} catch (Throwable t2) {
 			}
 		}
+		
+		restore();
 		
 		loadModelList();
 		initTableModel();
@@ -174,7 +179,31 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 		});
 		
-		currentModel = restore();
+		locationComboBox.setModel(new DefaultComboBoxModel<String>(baseFolders.toArray(new String[0])));
+		locationComboBox.setSelectedItem(executionContext.getDatamodelFolder());
+		final ListCellRenderer<String> renderer = locationComboBox.getRenderer();
+		locationComboBox.setRenderer(new ListCellRenderer<String>() {
+			@Override
+			public Component getListCellRendererComponent(JList<? extends String> list, String value, int index,
+					boolean isSelected, boolean cellHasFocus) {
+				try {
+					value = new File(value).getAbsolutePath();
+				} catch (Exception e) {
+					// ignore
+				}
+				return renderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+			}
+		});
+		locationComboBox.addItemListener(new ItemListener() {
+			@Override
+			public void itemStateChanged(ItemEvent e) {
+				if (e.getItem() != null) {
+					executionContext.setDatamodelFolder((String) e.getItem());
+					loadModelList();
+					refresh();
+				}
+			}
+		});
 		
 		if (currentModel != null) {
 			int i = modelList.indexOf(currentModel);
@@ -312,6 +341,10 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				File file = Environment.newFile(MODEL_SELECTION_FILE);
 				BufferedWriter out = new BufferedWriter(new FileWriter(file));
 				out.write(currentModel + "\n");
+				out.write(executionContext.getDatamodelFolder() + "\n");
+				for (String bf: baseFolders) {
+					out.write(bf + "\n");
+				}
 				out.close();
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -322,17 +355,39 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	/**
 	 * Restores the selection.
 	 */
-	private String restore() {
-		String selection = null;
+	private void restore() {
+		currentModel = null;
+		String currentBaseFolder = null;
+		baseFolders.clear();
 		try {
 			File file = Environment.newFile(MODEL_SELECTION_FILE);
 			BufferedReader in = new BufferedReader(new FileReader(file));
-			selection = (String) in.readLine();
+			currentModel = in.readLine();
+			if (currentModel != null) {
+				currentBaseFolder = in.readLine();
+				if (currentBaseFolder != null) {
+					for (;;) {
+						String bf = in.readLine();
+						if (bf == null) {
+							break;
+						}
+						baseFolders.add(bf);
+					}
+				}
+			}
 			in.close();
 		} catch (Exception e) {
 			// ignore
 		}
-		return selection;
+		if (currentBaseFolder == null) {
+			currentBaseFolder = executionContext.getDatamodelFolder();
+		}
+		if (!baseFolders.contains(executionContext.getDatamodelFolder())) {
+			baseFolders.add(0, executionContext.getDatamodelFolder());
+		}
+		baseFolders.remove(currentBaseFolder);
+		baseFolders.add(0, currentBaseFolder);
+		executionContext.setDatamodelFolder(currentBaseFolder);
 	}
 	
 	/**
@@ -341,181 +396,202 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	 * regenerated by the Form Editor.
 	 */
 	// <editor-fold defaultstate="collapsed"
-	// <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
-	private void initComponents() {
-		java.awt.GridBagConstraints gridBagConstraints;
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+        java.awt.GridBagConstraints gridBagConstraints;
 
-		jPanel1 = new javax.swing.JPanel();
-		jPanel2 = new javax.swing.JPanel();
-		jPanel4 = new javax.swing.JPanel();
-		jLabel2 = new javax.swing.JLabel();
-		locationLabel = new javax.swing.JLabel();
-		jButton2 = new javax.swing.JButton();
-		okButton = new javax.swing.JButton();
-		jScrollPane2 = new javax.swing.JScrollPane();
-		dataModelsTable = new javax.swing.JTable();
-		jPanel3 = new javax.swing.JPanel();
-		newButton = new javax.swing.JButton();
-		editButton = new javax.swing.JButton();
-		analyzeButton = new javax.swing.JButton();
-		deleteButton = new javax.swing.JButton();
-		infoBarLabel = new javax.swing.JLabel();
+        jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        jPanel4 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        locationComboBox = new JComboBox();
+        browseButton = new javax.swing.JButton();
+        jSeparator1 = new javax.swing.JSeparator();
+        jButton2 = new javax.swing.JButton();
+        okButton = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        dataModelsTable = new javax.swing.JTable();
+        jPanel3 = new javax.swing.JPanel();
+        newButton = new javax.swing.JButton();
+        editButton = new javax.swing.JButton();
+        analyzeButton = new javax.swing.JButton();
+        deleteButton = new javax.swing.JButton();
+        infoBarLabel = new javax.swing.JLabel();
 
-		setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
-		setTitle("Connect with DB");
-		getContentPane().setLayout(new java.awt.CardLayout());
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Connect with DB");
+        getContentPane().setLayout(new java.awt.CardLayout());
 
-		jPanel1.setLayout(new java.awt.GridBagLayout());
+        jPanel1.setLayout(new java.awt.GridBagLayout());
 
-		jPanel2.setLayout(new java.awt.GridBagLayout());
+        jPanel2.setLayout(new java.awt.GridBagLayout());
 
-		jPanel4.setLayout(new java.awt.GridBagLayout());
+        jPanel4.setLayout(new java.awt.GridBagLayout());
 
-		jLabel2.setText(" Base Folder:  ");
-		jPanel4.add(jLabel2, new java.awt.GridBagConstraints());
+        jLabel2.setText(" Base Folder  ");
+        jPanel4.add(jLabel2, new java.awt.GridBagConstraints());
 
-		locationLabel.setText("jLabel3");
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-		gridBagConstraints.weightx = 1.0;
-		jPanel4.add(locationLabel, gridBagConstraints);
+        locationComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        jPanel4.add(locationComboBox, gridBagConstraints);
 
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 1.0;
-		jPanel2.add(jPanel4, gridBagConstraints);
+        browseButton.setText("Browse..");
+        browseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                browseButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        jPanel4.add(browseButton, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel4.add(jSeparator1, gridBagConstraints);
 
-		jButton2.setText(" Cancel ");
-		jButton2.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				jButton2ActionPerformed(evt);
-			}
-		});
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 2;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-		gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 4);
-		jPanel2.add(jButton2, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        jPanel2.add(jPanel4, gridBagConstraints);
 
-		okButton.setText(" OK ");
-		okButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				okButtonActionPerformed(evt);
-			}
-		});
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 1;
-		gridBagConstraints.gridy = 0;
-		gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
-		gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
-		jPanel2.add(okButton, gridBagConstraints);
+        jButton2.setText(" Cancel ");
+        jButton2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton2ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 4);
+        jPanel2.add(jButton2, gridBagConstraints);
 
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 100;
-		gridBagConstraints.gridwidth = 20;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 1.0;
-		jPanel1.add(jPanel2, gridBagConstraints);
+        okButton.setText(" OK ");
+        okButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                okButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHEAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 0, 4);
+        jPanel2.add(okButton, gridBagConstraints);
 
-		jScrollPane2.setBorder(javax.swing.BorderFactory.createTitledBorder("Data Models"));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 100;
+        gridBagConstraints.gridwidth = 20;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        jPanel1.add(jPanel2, gridBagConstraints);
 
-		dataModelsTable.setModel(new javax.swing.table.DefaultTableModel(
-			new Object [][] {
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null},
-				{null, null, null, null}
-			},
-			new String [] {
-				"Title 1", "Title 2", "Title 3", "Title 4"
-			}
-		));
-		jScrollPane2.setViewportView(dataModelsTable);
+        jScrollPane2.setBorder(javax.swing.BorderFactory.createTitledBorder("Data Models"));
 
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 20;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-		gridBagConstraints.weightx = 1.0;
-		gridBagConstraints.weighty = 1.0;
-		jPanel1.add(jScrollPane2, gridBagConstraints);
+        dataModelsTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane2.setViewportView(dataModelsTable);
 
-		jPanel3.setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(jScrollPane2, gridBagConstraints);
 
-		newButton.setText(" New ");
-		newButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				newButtonActionPerformed(evt);
-			}
-		});
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 10;
-		gridBagConstraints.gridy = 10;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.insets = new java.awt.Insets(16, 4, 2, 0);
-		jPanel3.add(newButton, gridBagConstraints);
+        jPanel3.setLayout(new java.awt.GridBagLayout());
 
-		editButton.setText(" Edit ");
-		editButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				editButtonActionPerformed(evt);
-			}
-		});
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 10;
-		gridBagConstraints.gridy = 11;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
-		jPanel3.add(editButton, gridBagConstraints);
+        newButton.setText(" New ");
+        newButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                newButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(16, 4, 2, 0);
+        jPanel3.add(newButton, gridBagConstraints);
 
-		analyzeButton.setText(" Analyze Database ");
-		analyzeButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				analyzeButtonActionPerformed(evt);
-			}
-		});
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 10;
-		gridBagConstraints.gridy = 30;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
-		jPanel3.add(analyzeButton, gridBagConstraints);
+        editButton.setText(" Edit ");
+        editButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                editButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 11;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
+        jPanel3.add(editButton, gridBagConstraints);
 
-		deleteButton.setText(" Delete ");
-		deleteButton.addActionListener(new java.awt.event.ActionListener() {
-			public void actionPerformed(java.awt.event.ActionEvent evt) {
-				deleteButtonActionPerformed(evt);
-			}
-		});
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 10;
-		gridBagConstraints.gridy = 31;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-		gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
-		jPanel3.add(deleteButton, gridBagConstraints);
+        analyzeButton.setText(" Analyze Database ");
+        analyzeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                analyzeButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 30;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
+        jPanel3.add(analyzeButton, gridBagConstraints);
 
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 10;
-		gridBagConstraints.gridy = 20;
-		gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-		jPanel1.add(jPanel3, gridBagConstraints);
+        deleteButton.setText(" Delete ");
+        deleteButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                deleteButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 31;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 2, 0);
+        jPanel3.add(deleteButton, gridBagConstraints);
 
-		infoBarLabel.setText("info bar");
-		gridBagConstraints = new java.awt.GridBagConstraints();
-		gridBagConstraints.gridx = 0;
-		gridBagConstraints.gridy = 1;
-		gridBagConstraints.gridwidth = 11;
-		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-		jPanel1.add(infoBarLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        jPanel1.add(jPanel3, gridBagConstraints);
 
-		getContentPane().add(jPanel1, "card2");
+        infoBarLabel.setText("info bar");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 11;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jPanel1.add(infoBarLabel, gridBagConstraints);
 
-		pack();
-	}// </editor-fold>//GEN-END:initComponents
+        getContentPane().add(jPanel1, "card2");
+
+        pack();
+    }// </editor-fold>//GEN-END:initComponents
 
 	private void deleteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deleteButtonActionPerformed
 		if (currentModel != null) {
@@ -587,6 +663,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				List<String> schemas;
 				try {
+					CancellationHandler.reset(null);
 					schemas = dbConnectionDialog.getDBSchemas(defaultSchema);
 				} finally {
 					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
@@ -623,6 +700,35 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 	}//GEN-LAST:event_analyzeButtonActionPerformed
 
+    private void browseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browseButtonActionPerformed
+       	String folder = choseFolder();
+       	if (folder != null) {
+       		executionContext.setDatamodelFolder(folder);
+       		baseFolders.remove(folder);
+       		baseFolders.add(0, folder);
+       		locationComboBox.setModel(new DefaultComboBoxModel<String>(baseFolders.toArray(new String[0])));
+    		locationComboBox.setSelectedItem(executionContext.getDatamodelFolder());
+			loadModelList();
+			refresh();
+			store();
+       	}
+    }//GEN-LAST:event_browseButtonActionPerformed
+
+	/**
+	 * Opens file chooser.
+	 */
+	public String choseFolder() {
+		
+		JFileChooser fc = new JFileChooser();
+		fc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+		fc.setDialogTitle("Base Folder");
+		int returnVal = fc.showOpenDialog(this);
+	    if (returnVal == JFileChooser.APPROVE_OPTION) {
+	    	return fc.getSelectedFile().getAbsolutePath();
+	    }
+		return null;
+	}
+
 	/**
 	 * Opens data model editor.
 	 */
@@ -653,23 +759,25 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 	protected abstract void onSelect(ExecutionContext executionContext);
 
-	// Variables declaration - do not modify//GEN-BEGIN:variables
-	private javax.swing.JButton analyzeButton;
-	private javax.swing.JTable dataModelsTable;
-	private javax.swing.JButton deleteButton;
-	private javax.swing.JButton editButton;
-	private javax.swing.JLabel infoBarLabel;
-	private javax.swing.JButton jButton2;
-	private javax.swing.JLabel jLabel2;
-	private javax.swing.JPanel jPanel1;
-	private javax.swing.JPanel jPanel2;
-	private javax.swing.JPanel jPanel3;
-	private javax.swing.JPanel jPanel4;
-	private javax.swing.JScrollPane jScrollPane2;
-	private javax.swing.JLabel locationLabel;
-	private javax.swing.JButton newButton;
-	private javax.swing.JButton okButton;
-	// End of variables declaration//GEN-END:variables
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton analyzeButton;
+    private javax.swing.JButton browseButton;
+    private javax.swing.JTable dataModelsTable;
+    private javax.swing.JButton deleteButton;
+    private javax.swing.JButton editButton;
+    private javax.swing.JLabel infoBarLabel;
+    private javax.swing.JButton jButton2;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JSeparator jSeparator1;
+    private JComboBox locationComboBox;
+    private javax.swing.JButton newButton;
+    private javax.swing.JButton okButton;
+    // End of variables declaration//GEN-END:variables
 
 	private static final long serialVersionUID = -3983034803834547687L;
 

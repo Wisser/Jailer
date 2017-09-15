@@ -101,6 +101,7 @@ import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
 import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
+import net.sf.jailer.util.CancellationHandler;
 
 /**
  * Data Browser Frame.
@@ -1674,6 +1675,7 @@ public class DataBrowser extends javax.swing.JFrame {
             List<String> schemas;
             setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
             try {
+				CancellationHandler.reset(null);
                 schemas = dbConnectionDialog.getDBSchemas(defaultSchema);
             } finally {
                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));

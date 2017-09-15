@@ -71,6 +71,7 @@ import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
+import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.PrintUtil;
 
 /**
@@ -977,6 +978,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					List<String> schemas;
 					try {
+						CancellationHandler.reset(null);
 						schemas = dbConnectionDialog.getDBSchemas(defaultSchema);
 					} finally {
 						setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
