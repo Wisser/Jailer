@@ -91,10 +91,12 @@ public class BasicDataSource implements DataSource {
 		this.dbUser = dbUser;
 		this.dbPassword = dbPassword;
 		this.maxPoolSize = maxPoolSize;
-		try {
-			loadDriver(jdbcDriver == null? null : new URL[] { jdbcDriver.toURI().toURL() });
-		} catch (MalformedURLException e) {
-			throw new RuntimeException(e);
+		if (jdbcDriver != null) {
+			try {
+				loadDriver(new URL[] { jdbcDriver.toURI().toURL() });
+			} catch (MalformedURLException e) {
+				throw new RuntimeException(e);
+			}
 		}
 		this.dbms = findDBMS();	
 	}
