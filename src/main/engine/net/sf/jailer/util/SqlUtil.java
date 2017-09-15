@@ -297,8 +297,8 @@ public class SqlUtil {
 	public static int getColumnType(ResultSet resultSet, ResultSetMetaData resultSetMetaData, String columnName, Map<String, Integer> typeCache) throws SQLException {
 		Integer type = typeCache.get(columnName);
 		if (type == null) {
+			type = Types.OTHER;
 			try {
-				type = Types.OTHER;
 				for (int i = resultSetMetaData.getColumnCount(); i > 0; --i) {
 					if (columnName.equalsIgnoreCase(resultSetMetaData.getColumnLabel(i))) {
 						type = resultSetMetaData.getColumnType(i);
