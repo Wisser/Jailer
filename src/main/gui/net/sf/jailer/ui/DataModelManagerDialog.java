@@ -19,6 +19,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Point;
+import java.awt.Rectangle;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -46,6 +47,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JTable;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
@@ -179,7 +181,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 		});
 		
-		locationComboBox.setModel(new DefaultComboBoxModel<String>(baseFolders.toArray(new String[0])));
+		updateLocationComboboxModel();
 		locationComboBox.setSelectedItem(executionContext.getDatamodelFolder());
 		final ListCellRenderer<String> renderer = locationComboBox.getRenderer();
 		locationComboBox.setRenderer(new ListCellRenderer<String>() {
@@ -222,6 +224,16 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		refresh();
 		UIUtil.initPeer();
 		okButton.grabFocus();
+	}
+
+	private void updateLocationComboboxModel() {
+		List<String> existingBaseFolders = new ArrayList<String>();
+		for (String bf: baseFolders) {
+			if (new File(bf).exists()) {
+				existingBaseFolders.add(bf);
+			}
+		}
+		locationComboBox.setModel(new DefaultComboBoxModel<String>(existingBaseFolders.toArray(new String[0])));
 	}
 
 	private void loadModelList() {
@@ -288,9 +300,16 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			Object[][] data = initTableModel();
 			currentModel = theModel;
 			if (currentModel != null) {
-				int i = modelList.indexOf(currentModel);
+				final int i = modelList.indexOf(currentModel);
 				if (i >= 0) {
 					dataModelsTable.getSelectionModel().setSelectionInterval(i, i);
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							Rectangle cellRect = dataModelsTable.getCellRect(i, 1, true);
+							dataModelsTable.scrollRectToVisible(cellRect);
+						}
+					});
 				} else {
 					dataModelsTable.getSelectionModel().clearSelection();
 					currentModel = null;
@@ -379,7 +398,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		} catch (Exception e) {
 			// ignore
 		}
-		if (currentBaseFolder == null) {
+		if (currentBaseFolder == null || !new File(currentBaseFolder).exists()) {
 			currentBaseFolder = executionContext.getDatamodelFolder();
 		}
 		if (!baseFolders.contains(executionContext.getDatamodelFolder())) {
@@ -706,7 +725,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
        		executionContext.setDatamodelFolder(folder);
        		baseFolders.remove(folder);
        		baseFolders.add(0, folder);
-       		locationComboBox.setModel(new DefaultComboBoxModel<String>(baseFolders.toArray(new String[0])));
+       		updateLocationComboboxModel();
     		locationComboBox.setSelectedItem(executionContext.getDatamodelFolder());
 			loadModelList();
 			refresh();
