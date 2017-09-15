@@ -21,6 +21,7 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -49,6 +50,7 @@ import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.JailerVersion;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.modelbuilder.KnownIdentifierMap;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
@@ -124,8 +126,43 @@ public class DataModelEditor extends javax.swing.JDialog {
 	public DataModelEditor(java.awt.Frame parent, boolean merge, boolean initiallyDirty, final Table toEdit, LineFilter tableFilter, LineFilter assocFilter, String modelname, String modelnameSuggestion, ExecutionContext executionContext) throws Exception {
 		super(parent, true);
 		this.executionContext = executionContext;
+		
+		KnownIdentifierMap knownIdentifierMap = createKnownIdentifierMap();
+		
+		int newTables = 0;
+		int newAssociations = 0;
+		
 		tables = new CsvFile(new File(DataModel.getTablesFile(executionContext)), tableFilter).getLines();
+		for (Iterator<CsvFile.Line> i = tables.iterator(); i.hasNext(); ) {
+			CsvFile.Line t = i.next();
+			if (t.cells.get(0).length() > 0) {
+				String newName = knownIdentifierMap.getTableName(t.cells.get(0));
+				if (newName != null && !newName.equals(t.cells.get(0))) {
+					i.remove();
+					--newTables;
+				}
+			}
+		}
+		associations = new CsvFile(new File(DataModel.getAssociationsFile(executionContext)), assocFilter).getLines();
+		for (Iterator<CsvFile.Line> i = associations.iterator(); i.hasNext(); ) {
+			CsvFile.Line t = i.next();
+			if (t.cells.get(0).length() > 0) {
+				String source = knownIdentifierMap.getTableName(t.cells.get(0));
+				String dest = knownIdentifierMap.getTableName(t.cells.get(1));
+				String cond = knownIdentifierMap.getCondition(t.cells.get(4));
+				if (source != null) {
+					t.cells.set(0, source);
+				}
+				if (dest != null) {
+					t.cells.set(1, dest);
+				}
+				if (cond != null) {
+					t.cells.set(4, cond);
+				}
+			}
+		}
 
+		PrintUtil.loadTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile(executionContext));
 		displayNames = new TreeMap<String, String>();
 		File dnFile = new File(DataModel.getDisplayNamesFile(executionContext));
 		if (dnFile.exists()) {
@@ -133,11 +170,6 @@ public class DataModelEditor extends javax.swing.JDialog {
 				displayNames.put(dnl.cells.get(0), dnl.cells.get(1));
 			}
 		}
-		
-		associations = new CsvFile(new File(DataModel.getAssociationsFile(executionContext)), assocFilter).getLines();
-		PrintUtil.loadTableList(excludeFromDeletion, DataModel.getExcludeFromDeletionFile(executionContext));
-		int newTables = 0;
-		int newAssociations = 0;
 		
 		File file = new File(DataModel.getColumnsFile(executionContext));
 		if (file.exists()) {
@@ -367,6 +399,29 @@ public class DataModelEditor extends javax.swing.JDialog {
 		}
 	}
 	
+	private KnownIdentifierMap createKnownIdentifierMap() throws IOException {
+		KnownIdentifierMap knownIdentifierMap = new KnownIdentifierMap();
+		File modelFinderTablesFile = new File(ModelBuilder.getModelBuilderTablesFilename(executionContext));
+		if (modelFinderTablesFile.exists()) {
+			List<CsvFile.Line> tablesFromModelFinder = new CsvFile(modelFinderTablesFile).getLines();
+			for (Iterator<CsvFile.Line> i = tablesFromModelFinder.iterator(); i.hasNext(); ) {
+				CsvFile.Line t = i.next();
+				knownIdentifierMap.putTableName(t.cells.get(0));
+			}
+		}
+		
+		File modelFinderAssociationsFile = new File(ModelBuilder.getModelBuilderAssociationsFilename(executionContext));
+		if (modelFinderAssociationsFile.exists()) {
+			List<CsvFile.Line> assocsFromModelFinder = new CsvFile(modelFinderAssociationsFile).getLines();
+			for (Iterator<CsvFile.Line> i = assocsFromModelFinder.iterator(); i.hasNext(); ) {
+				CsvFile.Line t = i.next();
+				knownIdentifierMap.putTableName(t.cells.get(4));
+			}
+		}
+		
+		return knownIdentifierMap;
+	}
+
 	/**
 	 * Marks data model as modified.
 	 */

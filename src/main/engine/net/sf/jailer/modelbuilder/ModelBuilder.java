@@ -175,7 +175,8 @@ public class ModelBuilder {
 
 		resetFiles(executionContext);
 
-		DataModel dataModel = new DataModel(executionContext);
+		KnownIdentifierMap knownIdentifiers = new KnownIdentifierMap();
+		
 		Collection<Table> tables = new ArrayList<Table>();
 		
 		ModelElementFinder finder = new JDBCMetaDataBasedModelElementFinder();
@@ -190,6 +191,7 @@ public class ModelBuilder {
 				iT.remove();
 			} else {
 				written.add(table);
+				knownIdentifiers.putTableName(table.getName());
 			}
 		}
 
@@ -218,13 +220,16 @@ public class ModelBuilder {
 					columnsDefinition.append(CsvFile.encodeCell(table.getName()) + "; ");
 					for (Column c: columns) {
 						columnsDefinition.append(CsvFile.encodeCell(c.toSQL(null) + (c.isIdentityColumn? " identity" : "") + (c.isVirtual? " virtual" : "") + (c.isNullable? " null" : "")) + "; ");
+						knownIdentifiers.putColumnName(table.getName(), c.name);
 					}
 					columnsDefinition.append("\n");
 				}
 			}
 		}
 		resetColumnsFile(columnsDefinition.toString(), executionContext);
-		
+
+		DataModel dataModel = new DataModel(knownIdentifiers, executionContext);
+
 		for (Table table: sortedTables) {
 			if (!isJailerTable(table, quoting) &&
 				!excludeTablesCSV.contains(new String[] { table.getName()}) && 
@@ -267,7 +272,7 @@ public class ModelBuilder {
 		resetTableFile(tableDefinitions, executionContext);
 
 		// re-read data model with new tables
-		dataModel = new DataModel(getModelBuilderTablesFilename(executionContext), getModelBuilderAssociationsFilename(executionContext), new HashMap<String, String>(), assocFilter, executionContext);
+		dataModel = new DataModel(getModelBuilderTablesFilename(executionContext), getModelBuilderAssociationsFilename(executionContext), new HashMap<String, String>(), assocFilter, new PrimaryKeyFactory(), executionContext, false, knownIdentifiers);
 
 		Collection<Association> associations = new ArrayList<Association>();
 		Map<Association, String[]> namingSuggestion = new HashMap<Association, String[]>();
@@ -283,7 +288,17 @@ public class ModelBuilder {
 					null,
 					association.getJoinCondition()
 					})) {
-				if (!contains(association, dataModel)) {
+				knownIdentifiers.putCondition(association.getUnrestrictedJoinCondition());
+			}
+		}
+		for (Association association: associations) {
+			if (!excludeAssociationsCSV.contains(new String[] { 
+					association.source.getName(),
+					association.destination.getName(),
+					null,
+					association.getJoinCondition()
+					})) {
+				if (!contains(association, dataModel, knownIdentifiers)) {
 					insert(association, dataModel);
 					associationsToWrite.add(association);
 				}
@@ -406,15 +421,24 @@ public class ModelBuilder {
 	 * 
 	 * @param association the association
 	 * @param dataModel the model
+	 * @param knownIdentifiers 
 	 * @return <code>true</code> iff association is already in model
 	 */
-	private static boolean contains(Association association, DataModel dataModel) {
+	private static boolean contains(Association association, DataModel dataModel, KnownIdentifierMap knownIdentifiers) {
 		for (Association a: association.source.associations) {
 			if (a.source.equals(association.source)) {
 				if (a.destination.equals(association.destination)) {
 					if (a.isInsertDestinationBeforeSource() || !association.isInsertDestinationBeforeSource()) {
 						if (a.isInsertSourceBeforeDestination() || !association.isInsertSourceBeforeDestination()) {
-							if (a.getJoinCondition().equals(association.getJoinCondition())) {
+							String jcA = knownIdentifiers.getCondition(a.getJoinCondition());
+							if (jcA == null) {
+								jcA = a.getJoinCondition();
+							}
+							String jcB = knownIdentifiers.getCondition(association.getJoinCondition());
+							if (jcB == null) {
+								jcB = association.getJoinCondition();
+							}
+							if (jcA.equals(jcB)) {
 								return true;
 							}
 						}

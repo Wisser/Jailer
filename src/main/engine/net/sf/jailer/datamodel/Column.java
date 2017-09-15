@@ -134,6 +134,17 @@ public class Column {
 	 * @return the column
 	 */
 	public static Column parse(String columnDeclaration) {
+		return parse(null, columnDeclaration);
+	}
+	
+	/**
+	 * Parses a column declaration in SQL syntax.
+	 * 
+	 * @param columnDeclaration the column declaration in SQL syntax
+	 * @param columnName (optional) name of column
+	 * @return the column
+	 */
+	public static Column parse(String columnName, String columnDeclaration) {
 		columnDeclaration = columnDeclaration.trim();
 		
 		// work-around for bug 2849047
@@ -217,7 +228,7 @@ public class Column {
 		if (quote != null) {
 			name = name.replace('\n', ' ');
 		}
-		Column column = new Column(name, type, size, precision);
+		Column column = new Column(columnName == null? name : columnName, type, size, precision);
 		column.isNullable = isNullable;
 		column.isIdentityColumn = isIdent;
 		column.isVirtual = isVirtual;
