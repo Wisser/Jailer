@@ -40,6 +40,7 @@ import net.sf.jailer.datamodel.filter_template.Clause;
 import net.sf.jailer.datamodel.filter_template.Clause.Predicate;
 import net.sf.jailer.datamodel.filter_template.Clause.Subject;
 import net.sf.jailer.datamodel.filter_template.FilterTemplate;
+import net.sf.jailer.modelbuilder.KnownIdentifierMap;
 import net.sf.jailer.restrictionmodel.RestrictionModel;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
@@ -196,7 +197,7 @@ public class ExtractionModel {
 		CsvFile.Line subjectLine = csv.get(0);
 		String location = subjectLine.location;
 		DataModel dataModel = new DataModel(sourceSchemaMapping, executionContext, true);
-		Table subject = dataModel.getTable(SqlUtil.mappedSchema(sourceSchemaMapping, subjectLine.cells.get(0)));
+		Table subject = getTable(dataModel, SqlUtil.mappedSchema(sourceSchemaMapping, subjectLine.cells.get(0)));
 		if (subject == null) {
 			String message = location + ": unknown subject table " + subjectLine.cells.get(0);
 			if (failOnMissingSubject) {
@@ -254,7 +255,7 @@ public class ExtractionModel {
 			location = subjectLine.location;
 			String name = upsert.cells.get(0);
 			String tag = upsert.cells.get(1);
-			Table table = dataModel.getTable(name);
+			Table table = getTable(dataModel, name);
 			if (table == null) {
 				_log.warn("unknown table '" + name + "'");
 			} else {
@@ -268,7 +269,7 @@ public class ExtractionModel {
 			location = subjectLine.location;
 			String name = excludesLine.cells.get(0);
 			String tag = excludesLine.cells.get(1);
-			Table table = dataModel.getTable(name);
+			Table table = getTable(dataModel, name);
 			if (table == null) {
 				_log.warn("unknown table '" + name + "'");
 			} else {
@@ -288,7 +289,7 @@ public class ExtractionModel {
 		for (CsvFile.Line xmLine: columnMappingFile) {
 			String name = xmLine.cells.get(0);
 			String mapping = xmLine.cells.get(1);
-			Table table = dataModel.getTable(SqlUtil.mappedSchema(sourceSchemaMapping, name));
+			Table table = getTable(dataModel, SqlUtil.mappedSchema(sourceSchemaMapping, name));
 			if (table == null) {
 				_log.warn("unknown table " + name);
 			} else {
@@ -302,7 +303,7 @@ public class ExtractionModel {
 			String name = xmLine.cells.get(0);
 			String column = xmLine.cells.get(1);
 			String filter = xmLine.cells.get(2);
-			Table table = dataModel.getTable(SqlUtil.mappedSchema(sourceSchemaMapping, name));
+			Table table = getTable(dataModel, SqlUtil.mappedSchema(sourceSchemaMapping, name));
 			if (table == null) {
 				_log.warn("unknown table " + name);
 			} else {
@@ -390,7 +391,7 @@ public class ExtractionModel {
 		// read additional subjects
 		List<CsvFile.Line> additionalSubsLines = new CsvFile(modelURL.openStream(), "additional subjects", csvLocation, null).getLines();
 		for (CsvFile.Line line: additionalSubsLines) {
-			Table additSubject = dataModel.getTable(SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0)));
+			Table additSubject = getTable(dataModel, SqlUtil.mappedSchema(sourceSchemaMapping, line.cells.get(0)));
 			if (additSubject != null) {
 				additionalSubjects.add(new AdditionalSubject(additSubject, line.cells.get(1)));
 			}
@@ -398,6 +399,25 @@ public class ExtractionModel {
 		
 		dataModel.deriveFilters();
 		disableUnknownChildren(new CsvFile(modelURL.openStream(), "known", csvLocation, null).getLines());
+	}
+
+	private KnownIdentifierMap knownIdentifierMap;
+	
+	private Table getTable(DataModel dataModel, String name) {
+		Table table = dataModel.getTable(name);
+		if (table == null) {
+			if (knownIdentifierMap == null) {
+				knownIdentifierMap = new KnownIdentifierMap();
+				for (Table t: dataModel.getTables()) {
+					knownIdentifierMap.putTableName(t.getName());
+				}
+			}
+			String known = knownIdentifierMap.getTableName(name);
+			if (known != null) {
+				table = dataModel.getTable(known);
+			}
+		}
+		return table;
 	}
 
 	private void disableUnknownChildren(List<Line> lines) {

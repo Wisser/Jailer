@@ -21,8 +21,6 @@ import java.awt.Cursor;
 import java.awt.Point;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -653,7 +651,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			int i = connectionList.indexOf(currentConnection);
 			if (i >= 0) {
 				for (int nr = 1; ; ++nr) {
-					String newAlias = "Copy of " + currentConnection.alias + (nr > 1? " (" + nr + ")" : "");
+					String newAlias = currentConnection.alias.replaceFirst("\\s*\\(\\d+\\)$", "") + (nr > 1? " (" + nr + ")" : "");
 					boolean found = false;
 					for (ConnectionInfo ci: connectionList) {
 						if (ci.alias.equals(newAlias)) {
@@ -670,10 +668,12 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 						ci.password = currentConnection.password;
 						ci.url = currentConnection.url;
 						ci.user = currentConnection.user;
-						connectionList.add(i + 1, ci);
-						connectionsTable.getSelectionModel().setSelectionInterval(i + 1, i + 1);
-						refresh();
-						store();
+						if (edit(ci, false)) {
+							connectionList.add(i + 1, ci);
+							connectionsTable.getSelectionModel().setSelectionInterval(i + 1, i + 1);
+							refresh();
+							store();
+						}
 						break;
 					}
 				}
