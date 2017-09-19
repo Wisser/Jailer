@@ -372,7 +372,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		return metaData.getPrimaryKeys(null, schema, table);
 	}
 
-	private ResultSet getTables(Session session, DatabaseMetaData metaData, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
+	public static ResultSet getTables(Session session, DatabaseMetaData metaData, String schemaPattern, String tableNamePattern, String[] types) throws SQLException {
 		if (DBMS.MySQL.equals(session.dbms)) {
 			 return metaData.getTables(schemaPattern, null, tableNamePattern, types);
 		}

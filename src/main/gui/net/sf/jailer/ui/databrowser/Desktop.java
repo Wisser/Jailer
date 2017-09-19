@@ -2154,6 +2154,8 @@ public abstract class Desktop extends JDesktopPane {
 			restoreSession(null, pFrame, filename);
 			File file = new File(filename);
 			file.delete();
+			
+			onNewDataModel();
 		} catch (Throwable e) {
 			UIUtil.showException(this, "Error", e, session);
 		}
@@ -2221,6 +2223,7 @@ public abstract class Desktop extends JDesktopPane {
 	private boolean loadSchemaMapping = true;
 
 	public abstract void openSchemaAnalyzer();
+	public abstract void onNewDataModel();
 
 	public void openSchemaMappingDialog(boolean silent) {
 		try {
