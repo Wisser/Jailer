@@ -125,7 +125,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		for (Table table: dataModel.getTables()) {
 			_log.info("find associations with " + table.getName());
 			try {
-				resultSet = getImportedKeys(session, metaData, quoting.unquote(table.getOriginalSchema(quoting.quote(defaultSchema))), quoting.unquote(table.getUnqualifiedName()));
+				resultSet = getImportedKeys(session, metaData, quoting.unquote(table.getOriginalSchema(quoting.quote(defaultSchema))), quoting.unquote(table.getUnqualifiedName()), true);
 			} catch (Exception e) {
 				_log.info("failed. " + e.getMessage());
 				continue;
@@ -176,17 +176,26 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		return associations;
 	}
 
-	private ResultSet getImportedKeys(Session session, DatabaseMetaData metaData, String schema, String table) throws SQLException {
-		final String NAME = "getImportedKeys " + schema;
-		MetaDataCache metaDataCache = (MetaDataCache) session.getSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME);
-		if (metaDataCache == null) {
-			metaDataCache = MetaDataCache.readImportedKeys(session, schema);
-			session.setSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME, metaDataCache);
+	public static ResultSet getImportedKeys(Session session, DatabaseMetaData metaData, String schema, String table, boolean withCaching) throws SQLException {
+		if (withCaching) {
+			final String NAME = "getImportedKeys " + schema;
+			MetaDataCache metaDataCache = (MetaDataCache) session.getSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME);
+			if (metaDataCache == null) {
+				metaDataCache = MetaDataCache.readImportedKeys(session, schema);
+				session.setSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME, metaDataCache);
+			}
+			ResultSet resultSet = metaDataCache.forTable(table);
+			if (resultSet != null) {
+				return resultSet;
+			}
 		}
-		ResultSet resultSet = metaDataCache.forTable(table);
-		if (resultSet != null) {
-			return resultSet;
+		if (DBMS.MySQL.equals(session.dbms)) {
+			return metaData.getImportedKeys(schema, null, table);
 		}
+		return metaData.getImportedKeys(null, schema, table);
+	}
+
+	public static ResultSet getExportedKeys(Session session, DatabaseMetaData metaData, String schema, String table) throws SQLException {
 		if (DBMS.MySQL.equals(session.dbms)) {
 			return metaData.getImportedKeys(schema, null, table);
 		}
@@ -249,7 +258,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		Map<String, Map<Integer, Column>> pkColumns = new HashMap<String, Map<Integer, Column>>();
 		for (String tableName: tableNames) {
 			Table tmp = new Table(tableName, null, false, false);
-			resultSet = getPrimaryKeys(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()));
+			resultSet = getPrimaryKeys(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), true);
 			Map<Integer, Column> pk = pkColumns.get(tableName);
 			if (pk == null) {
 				pk = new HashMap<Integer, Column>();
@@ -277,7 +286,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		for (String tableName: tableNames) {
 			Table tmp = new Table(tableName, null, false, false);
 			_log.info("getting columns for " + quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))) + "." + quoting.unquote(tmp.getUnqualifiedName()));
-			resultSet = getColumns(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), "%");
+			resultSet = getColumns(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), "%", true);
 			_log.info("done");
 			Map<Integer, Column> pk = pkColumns.get(tableName);
 			while (resultSet.next()) {
@@ -355,16 +364,18 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		return result;
 	}
 
-	private ResultSet getPrimaryKeys(Session session, DatabaseMetaData metaData, String schema, String table) throws SQLException {
-		final String NAME = "getPrimaryKeys " + schema;
-		MetaDataCache metaDataCache = (MetaDataCache) session.getSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME);
-		if (metaDataCache == null) {
-			metaDataCache = MetaDataCache.readPrimaryKeys(session, schema);
-			session.setSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME, metaDataCache);
-		}
-		ResultSet resultSet = metaDataCache.forTable(table);
-		if (resultSet != null) {
-			return resultSet;
+	public static ResultSet getPrimaryKeys(Session session, DatabaseMetaData metaData, String schema, String table, boolean withCaching) throws SQLException {
+		if (withCaching) {
+			final String NAME = "getPrimaryKeys " + schema;
+			MetaDataCache metaDataCache = (MetaDataCache) session.getSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME);
+			if (metaDataCache == null) {
+				metaDataCache = MetaDataCache.readPrimaryKeys(session, schema);
+				session.setSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME, metaDataCache);
+			}
+			ResultSet resultSet = metaDataCache.forTable(table);
+			if (resultSet != null) {
+				return resultSet;
+			}
 		}
 		if (DBMS.MySQL.equals(session.dbms)) {
 			return metaData.getPrimaryKeys(schema, null, table);
@@ -384,7 +395,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 */
 	private boolean findUniqueIndexBasedKey(DatabaseMetaData metaData, Quoting quoting, Session session, Table tmp, Map<Integer, Column> pk) {
 		try {
-			ResultSet resultSet = getColumns(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), "%");
+			ResultSet resultSet = getColumns(session, metaData, quoting.unquote(tmp.getOriginalSchema(quoting.quote(session.getIntrospectionSchema()))), quoting.unquote(tmp.getUnqualifiedName()), "%", true);
 			
 			List<String> nonNullColumns = new ArrayList<String>();
 			boolean hasNullable = false;
@@ -488,20 +499,34 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		}
 		return metaData.getIndexInfo(null, schema, table, unique, approximate);
 	}
+	
+	/**
+	 * Calls {@link DatabaseMetaData#getIndexInfo(String, String, String, boolean, boolean). Uses schemaPattern as catalogPattern on MySQL.
+	 * @param withCaching 
+	 */
+	public static ResultSet getIndexes(Session session, DatabaseMetaData metaData, String schemaPattern, String tableNamePattern) throws SQLException {
+		if (DBMS.MySQL.equals(session.dbms)) {
+			return metaData.getIndexInfo(schemaPattern, null, tableNamePattern, false, false);
+		}
+		return metaData.getIndexInfo(null, schemaPattern, tableNamePattern, false, false);
+	}
 
 	/**
 	 * Calls {@link DatabaseMetaData#getColumns(String, String, String, String)}. Uses schemaPattern as catalogPattern on MySQL.
+	 * @param withCaching 
 	 */
-	public static ResultSet getColumns(Session session, DatabaseMetaData metaData, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
-		final String NAME = "getColumns " + schemaPattern;
-		MetaDataCache metaDataCache = (MetaDataCache) session.getSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME);
-		if (metaDataCache == null) {
-			metaDataCache = MetaDataCache.readColumns(session, metaData, schemaPattern);
-			session.setSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME, metaDataCache);
-		}
-		ResultSet resultSet = metaDataCache.forTable(tableNamePattern);
-		if (resultSet != null) {
-			return resultSet;
+	public static ResultSet getColumns(Session session, DatabaseMetaData metaData, String schemaPattern, String tableNamePattern, String columnNamePattern, boolean withCaching) throws SQLException {
+		if (withCaching) {
+			final String NAME = "getColumns " + schemaPattern;
+			MetaDataCache metaDataCache = (MetaDataCache) session.getSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME);
+			if (metaDataCache == null) {
+				metaDataCache = MetaDataCache.readColumns(session, metaData, schemaPattern);
+				session.setSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME, metaDataCache);
+			}
+			ResultSet resultSet = metaDataCache.forTable(tableNamePattern);
+			if (resultSet != null) {
+				return resultSet;
+			}
 		}
 		if (DBMS.MySQL.equals(session.dbms)) {
 			return metaData.getColumns(schemaPattern, null, tableNamePattern, columnNamePattern);
@@ -643,7 +668,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		String schemaName = quoting.unquote(table.getOriginalSchema(defaultSchema));
 		String tableName = quoting.unquote(table.getUnqualifiedName());
 		_log.info("getting columns for " + table.getOriginalSchema(defaultSchema) + "." + tableName);
-		ResultSet resultSet = getColumns(session, metaData, schemaName, tableName, "%");
+		ResultSet resultSet = getColumns(session, metaData, schemaName, tableName, "%", true);
 		_log.info("done");
 		while (resultSet.next()) {
 			String colName = quoting.quote(resultSet.getString(4));

@@ -18,7 +18,6 @@ package net.sf.jailer.ui.databrowser;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
-import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -50,7 +49,6 @@ import javax.swing.ButtonGroup;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JDialog;
-import javax.swing.JEditorPane;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
@@ -103,6 +101,8 @@ import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
 import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
+import net.sf.jailer.ui.databrowser.metadata.MDTable;
+import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.util.CancellationHandler;
@@ -178,6 +178,9 @@ public class DataBrowser extends javax.swing.JFrame {
         }
         initComponents();
         
+        metaDataDetailsPanel = createMetaDataDetailsPanel(executionContext);
+        metaDataViewPanel.add(metaDataDetailsPanel);
+        
         jLayeredPane1.removeAll();
         jLayeredPane1.setLayout(new GridBagLayout());
         jLayeredPane1.setLayer(layeredPaneContent, JLayeredPane.PALETTE_LAYER);
@@ -222,14 +225,14 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
         gridBagConstraints.weightx = 0;
         gridBagConstraints.weighty = 0;
-        borderBrowserTitledPanel.add(new JPanel() {
-            @Override
-            public Dimension getMinimumSize() {
-                return new Dimension(1, 180);
-            }
-
-            private static final long serialVersionUID = -947582621664272477L;
-        }, gridBagConstraints);
+//        borderBrowserTitledPanel.add(new JPanel() {
+//            @Override
+//            public Dimension getMinimumSize() {
+//                return new Dimension(1, 180);
+//            }
+//
+//            private static final long serialVersionUID = -947582621664272477L;
+//        }, gridBagConstraints);
 
         DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer();
         renderer.setOpenIcon(null);
@@ -565,6 +568,15 @@ public class DataBrowser extends javax.swing.JFrame {
         navigationTree.getSelectionModel().addTreeSelectionListener(treeListener);
     }
 
+	private MetaDataDetailsPanel createMetaDataDetailsPanel(final ExecutionContext executionContext) {
+		return new MetaDataDetailsPanel(this.datamodel, session, this, executionContext) {
+			@Override
+			protected void analyseSchema(String schemaName) {
+				updateDataModel(schemaName);
+			}
+        };
+	}
+
     private void createSession(DbConnectionDialog dbConnectionDialog) throws Exception {
         if (session != null) {
             try {
@@ -700,6 +712,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jPanel3 = new javax.swing.JPanel();
         jSplitPane2 = new javax.swing.JSplitPane();
         jPanel4 = new javax.swing.JPanel();
+        jSplitPane4 = new javax.swing.JSplitPane();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel6 = new javax.swing.JPanel();
         navigationTreeScrollPane = new javax.swing.JScrollPane();
@@ -707,6 +720,22 @@ public class DataBrowser extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
         tablesPanel = new javax.swing.JPanel();
+        jPanel7 = new javax.swing.JPanel();
+        metaDataViewPanel = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        jLabel12 = new javax.swing.JLabel();
+        jLabel13 = new javax.swing.JLabel();
+        jLabel14 = new javax.swing.JLabel();
+        jLabel15 = new javax.swing.JLabel();
         borderBrowserTitledPanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
         borderBrowserPanel = new javax.swing.JPanel();
@@ -897,13 +926,17 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
-        jSplitPane2.setDividerLocation(350);
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane2.setResizeWeight(1.0);
+        jSplitPane2.setResizeWeight(0.8);
         jSplitPane2.setContinuousLayout(true);
         jSplitPane2.setOneTouchExpandable(true);
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
+
+        jSplitPane4.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane4.setResizeWeight(1.0);
+        jSplitPane4.setContinuousLayout(true);
+        jSplitPane4.setOneTouchExpandable(true);
 
         jPanel6.setLayout(new java.awt.GridBagLayout());
 
@@ -949,13 +982,113 @@ public class DataBrowser extends javax.swing.JFrame {
         tablesPanel.setLayout(new javax.swing.BoxLayout(tablesPanel, javax.swing.BoxLayout.LINE_AXIS));
         jTabbedPane1.addTab("Tables", tablesPanel);
 
+        jSplitPane4.setLeftComponent(jTabbedPane1);
+
+        jPanel7.setLayout(new java.awt.GridBagLayout());
+
+        metaDataViewPanel.setLayout(new javax.swing.BoxLayout(metaDataViewPanel, javax.swing.BoxLayout.LINE_AXIS));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 30;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel7.add(metaDataViewPanel, gridBagConstraints);
+
+        jLabel1.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        jPanel7.add(jLabel1, gridBagConstraints);
+
+        jLabel3.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        jPanel7.add(jLabel3, gridBagConstraints);
+
+        jLabel4.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        jPanel7.add(jLabel4, gridBagConstraints);
+
+        jLabel5.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        jPanel7.add(jLabel5, gridBagConstraints);
+
+        jLabel6.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        jPanel7.add(jLabel6, gridBagConstraints);
+
+        jLabel7.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        jPanel7.add(jLabel7, gridBagConstraints);
+
+        jLabel8.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 7;
+        jPanel7.add(jLabel8, gridBagConstraints);
+
+        jLabel9.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        jPanel7.add(jLabel9, gridBagConstraints);
+
+        jLabel10.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 10;
+        jPanel7.add(jLabel10, gridBagConstraints);
+
+        jLabel11.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 11;
+        jPanel7.add(jLabel11, gridBagConstraints);
+
+        jLabel12.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 12;
+        jPanel7.add(jLabel12, gridBagConstraints);
+
+        jLabel13.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 13;
+        jPanel7.add(jLabel13, gridBagConstraints);
+
+        jLabel14.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 14;
+        jPanel7.add(jLabel14, gridBagConstraints);
+
+        jLabel15.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 15;
+        jPanel7.add(jLabel15, gridBagConstraints);
+
+        jSplitPane4.setRightComponent(jPanel7);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        jPanel4.add(jTabbedPane1, gridBagConstraints);
+        jPanel4.add(jSplitPane4, gridBagConstraints);
 
         jSplitPane2.setLeftComponent(jPanel4);
 
@@ -1701,6 +1834,10 @@ public class DataBrowser extends javax.swing.JFrame {
     }
 
     private void updateDataModel() {
+    	updateDataModel(null);
+    }
+
+    private void updateDataModel(String schemaName) {
         try {
             List<String> args = new ArrayList<String>();
             args.add("build-model-wo-merge");
@@ -1717,7 +1854,7 @@ public class DataBrowser extends javax.swing.JFrame {
             } finally {
                 setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
             }
-            if (analyseOptionsDialog.edit(schemas, defaultSchema[0], isDefaultSchema, dbConnectionDialog.currentConnection.user)) {
+            if (analyseOptionsDialog.edit(schemas, schemaName == null? defaultSchema[0] : schemaName, isDefaultSchema, dbConnectionDialog.currentConnection.user)) {
                 String schema = analyseOptionsDialog.getSelectedSchema();
                 if (schema != null) {
                     args.add("-schema");
@@ -1776,7 +1913,21 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JLabel ignored;
     private javax.swing.JButton jButton1;
     private javax.swing.JInternalFrame jInternalFrame1;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
     private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
@@ -1790,6 +1941,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
+    private javax.swing.JPanel jPanel7;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JPopupMenu.Separator jSeparator1;
@@ -1804,6 +1956,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JSplitPane jSplitPane3;
+    private javax.swing.JSplitPane jSplitPane4;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JTable jTable1;
     private javax.swing.JRadioButtonMenuItem largeLayoutRadioButtonMenuItem;
@@ -1816,6 +1969,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuBar menuBar;
     private javax.swing.JMenu menuTools;
     private javax.swing.JMenu menuWindow;
+    private javax.swing.JPanel metaDataViewPanel;
     private javax.swing.JLabel modelName;
     private javax.swing.JLabel modelPath;
     private javax.swing.JTree navigationTree;
@@ -2158,6 +2312,14 @@ public class DataBrowser extends javax.swing.JFrame {
                 navigationTree.setSelectionRow(node.rowIndex);
                 Rectangle bounds = navigationTree.getRowBounds(node.rowIndex);
                 navigationTree.scrollRectToVisible(new Rectangle(bounds.x, bounds.y, 1, bounds.height));
+                for (RowBrowser rb : desktop.getRootBrowsers(true)) {
+                	if (rb.internalFrame == activeFrame) {
+                		if (rb.getMDTable() != null && metaDataPanel != null) {
+                			metaDataPanel.select(rb.getMDTable());
+                		}
+                		break;
+                	}
+                }
             }
         }
 
@@ -2375,7 +2537,7 @@ public class DataBrowser extends javax.swing.JFrame {
     	String alias = connection != null ? " " + connection.alias : " ";
 
     	tablesPanel.removeAll();
-		metaDataSource = new MetaDataSource(newSession, alias);
+		metaDataSource = new MetaDataSource(newSession, datamodel.get(), alias, executionContext);
 		metaDataPanel = new MetaDataPanel(metaDataSource, datamodel.get(), executionContext) {
 			@Override
 			protected void open(Table table) {
@@ -2404,22 +2566,19 @@ public class DataBrowser extends javax.swing.JFrame {
 				return false;
 			}
 			
-			private boolean selectNavTreeNode(Object root, String sql) {
+			private boolean selectNavTreeNode(Object root, MDTable mdTable) {
 				if (root instanceof DefaultMutableTreeNode) {
 					Object userObject = ((DefaultMutableTreeNode) root).getUserObject();
 	                if (userObject instanceof TreeNodeForRowBrowser) {
 	                    RowBrowser rowBrowser = ((TreeNodeForRowBrowser) userObject).rowBrowser;
-	                    if (rowBrowser.browserContentPane.table instanceof SqlStatementTable && rowBrowser.browserContentPane.sqlBrowserContentPane != null) {
-	                    	JEditorPane ep = rowBrowser.browserContentPane.sqlBrowserContentPane.sqlEditorPane;
-	                    	if (ep.getText().trim().equals(sql)) {
-	                    		navigationTree.getSelectionModel().setSelectionPath(new TreePath(((DefaultMutableTreeNode) root).getPath()));
-	                    		return true;
-	                    	}
+	                    if (mdTable.equals(rowBrowser.getMDTable())) {
+	                    	navigationTree.getSelectionModel().setSelectionPath(new TreePath(((DefaultMutableTreeNode) root).getPath()));
+	                    	return true;
 	                    }
 	                }
 	                int cc = ((DefaultMutableTreeNode) root).getChildCount();
 	                for (int i = 0; i < cc; ++i) {
-	                	if (selectNavTreeNode(((DefaultMutableTreeNode) root).getChildAt(i), sql)) {
+	                	if (selectNavTreeNode(((DefaultMutableTreeNode) root).getChildAt(i), mdTable)) {
 	                		return true;
 	                	}
 	                }
@@ -2429,23 +2588,44 @@ public class DataBrowser extends javax.swing.JFrame {
 
 			@Override
 			protected void analyseSchema(String schemaName) {
-				// TODO
+				updateDataModel(schemaName);
 			}
 
 			@Override
-			protected void open(String schemaName, String tableName) {
+			protected void open(MDTable mdTable) {
+				String schemaName = mdTable.getSchema().isDefaultSchema? null : mdTable.getSchema().getName();
+				String tableName = mdTable.getName();
 				try {
 					Quoting quoting = new Quoting(session);
 					String sql = "Select * From " + (schemaName == null? "" : quoting.quote(schemaName) + ".") + quoting.quote(tableName);
-					if (!selectNavTreeNode(navigationTree.getModel().getRoot(), sql)) {
-						desktop.addTableBrowser(null, null, 0, null, null, sql, null, null, true);
+					if (!selectNavTreeNode(navigationTree.getModel().getRoot(), mdTable)) {
+						RowBrowser rb = desktop.addTableBrowser(null, null, 0, null, null, sql, null, null, true);
+						if (rb != null) {
+							rb.setMDTable(mdTable);
+						}
 					}
 				} catch (SQLException e) {
 					UIUtil.showException(this, "Error", e);
 				}
 			}
+
+			@Override
+			protected void onTableSelect(MDTable mdTable) {
+				metaDataDetailsPanel.showMetaDataDetails(mdTable, metaDataSource.toTable(mdTable), datamodel.get());
+			}
+
+			@Override
+			protected void openNewTableBrowser() {
+				DataBrowser.this.openNewTableBrowser(false);
+			}
 		};
 		tablesPanel.add(metaDataPanel);
+		
+		metaDataViewPanel.remove(metaDataDetailsPanel);
+		metaDataDetailsPanel = createMetaDataDetailsPanel(executionContext);
+		metaDataViewPanel.add(metaDataDetailsPanel);
 	}
     
+	private MetaDataDetailsPanel metaDataDetailsPanel;
+	
 }

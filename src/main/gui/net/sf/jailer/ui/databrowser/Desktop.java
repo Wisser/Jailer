@@ -99,7 +99,9 @@ import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.RunnableWithPriority;
+import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
 import net.sf.jailer.ui.databrowser.TreeLayoutOptimizer.Node;
+import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
@@ -362,6 +364,16 @@ public abstract class Desktop extends JDesktopPane {
 		 */
 		public boolean isHidden() {
 			return hidden;
+		}
+
+		private MDTable mdTable;
+		
+		public MDTable getMDTable() {
+			return mdTable;
+		}
+		
+		public void setMDTable(MDTable mdTable) {
+			this.mdTable = mdTable;
 		}
 
 	};
@@ -787,6 +799,11 @@ public abstract class Desktop extends JDesktopPane {
 				Desktop.this.collectPositions(tableBrowser, positions);
 			}
 
+			@Override
+			protected boolean renderRowAsPK(Row theRow) {
+				return false;
+			}
+
 		};
 
 		Rectangle r = layout(parentRowIndex < 0, parent, association, browserContentPane, new ArrayList<RowBrowser>(), 0, -1);
@@ -947,14 +964,16 @@ public abstract class Desktop extends JDesktopPane {
 		thumbnail.addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				JPopupMenu popup = browserContentPane.createPopupMenu(null, -1, 0, 0, false);
-				JPopupMenu popup2 = browserContentPane.createSqlPopupMenu(null, -1, 0, 0, true);
-				popup.add(new JSeparator());
-				for (Component c : popup2.getComponents()) {
-					popup.add(c);
+				if (e.getButton() != MouseEvent.BUTTON1 && !(browserContentPane.table instanceof SqlStatementTable)) {
+					JPopupMenu popup = browserContentPane.createPopupMenu(null, -1, 0, 0, false);
+					JPopupMenu popup2 = browserContentPane.createSqlPopupMenu(null, -1, 0, 0, true);
+					popup.add(new JSeparator());
+					for (Component c : popup2.getComponents()) {
+						popup.add(c);
+					}
+					UIUtil.fit(popup);
+					popup.show(e.getComponent(), e.getX(), e.getY());
 				}
-				UIUtil.fit(popup);
-				popup.show(e.getComponent(), e.getX(), e.getY());
 			}
 		});
 
@@ -2140,6 +2159,14 @@ public abstract class Desktop extends JDesktopPane {
 	 * Reloads the data model and replaces the tables in all browser windows.
 	 */
 	public void reloadDataModel(Map<String, String> schemamapping, boolean forAll) throws Exception {
+		if (forAll) {
+			for (Desktop desktop : desktops) {
+				if (desktop != this) {
+					desktop.reloadDataModel(desktop.schemaMapping, false);
+				}
+			}
+		}
+
 		try {
 			Component pFrame = SwingUtilities.getWindowAncestor(this);
 			if (pFrame == null) {
@@ -2151,59 +2178,13 @@ public abstract class Desktop extends JDesktopPane {
 			DataModel newModel = new DataModel(schemamapping, executionContext, false);
 			datamodel.set(newModel);
 			
+			onNewDataModel();
+
 			restoreSession(null, pFrame, filename);
 			File file = new File(filename);
 			file.delete();
-			
-			onNewDataModel();
 		} catch (Throwable e) {
 			UIUtil.showException(this, "Error", e, session);
-		}
-		
-		
-//
-//		for (RowBrowser rb : tableBrowsers) {
-//			if (rb.browserContentPane != null) {
-//				rb.browserContentPane.dataModel = newModel;
-//				if (rb.browserContentPane.table != null && datamodel.get() != null) {
-//					Table oldTable = rb.browserContentPane.table;
-//					Table newTable = null;
-//					if (oldTable.getOriginalName() != null) {
-//						for (Table t : newModel.getTables()) {
-//							if (oldTable.getOriginalName().equals(t.getOriginalName())) {
-//								newTable = t;
-//								break;
-//							}
-//						}
-//					}
-//					if (newTable == null && oldTable.getName() != null) {
-//						newTable = newModel.getTableByDisplayName(datamodel.get().getDisplayName(oldTable));
-//					}
-//					if (newTable != null) {
-//						rb.browserContentPane.table = newTable;
-//					}
-//				}
-//				Association association = rb.browserContentPane.association;
-//				if (association != null && datamodel.get() != null) {
-//					Association newAssociation = newModel.namedAssociations.get(association.getName());
-//					if (newAssociation != null) {
-//						if (association.source.equals(newAssociation.source)) {
-//							if (association.destination.equals(newAssociation.destination)) {
-//								rb.browserContentPane.association = newAssociation;
-//							}
-//						}
-//					}
-//				}
-//			}
-//			updateChildren(rb, rb.browserContentPane.rows);
-//		}
-
-		if (forAll) {
-			for (Desktop desktop : desktops) {
-				if (desktop != this) {
-					desktop.reloadDataModel(desktop.schemaMapping, false);
-				}
-			}
 		}
 	}
 
@@ -2789,14 +2770,14 @@ public abstract class Desktop extends JDesktopPane {
 	/**
 	 * For concurrent reload of rows.
 	 */
-	private final PriorityBlockingQueue<RunnableWithPriority> runnableQueue = new PriorityBlockingQueue<RunnableWithPriority>(100,
-			new Comparator<RunnableWithPriority>() {
+	final PriorityBlockingQueue<RunnableWithPriority> runnableQueue = new PriorityBlockingQueue<RunnableWithPriority>(100,
+		new Comparator<RunnableWithPriority>() {
 
-				@Override
-				public int compare(RunnableWithPriority o1,	RunnableWithPriority o2) {
-					return o2.getPriority() - o1.getPriority();
-				}
-			});
+			@Override
+			public int compare(RunnableWithPriority o1,	RunnableWithPriority o2) {
+				return o2.getPriority() - o1.getPriority();
+			}
+		});
 
 	/**
 	 * Maximum number of concurrent DB connections.

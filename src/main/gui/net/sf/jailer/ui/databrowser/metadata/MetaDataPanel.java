@@ -17,17 +17,26 @@ package net.sf.jailer.ui.databrowser.metadata;
 
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Image;
+import java.awt.Rectangle;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.sql.SQLException;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 
+import javax.swing.ImageIcon;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JMenuItem;
+import javax.swing.JPanel;
+import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.event.TreeExpansionEvent;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
 import javax.swing.event.TreeWillExpandListener;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
@@ -35,14 +44,13 @@ import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.ExpandVetoException;
 import javax.swing.tree.MutableTreeNode;
 import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.util.Quoting;
 
 /**
  * Meta Data UI.
@@ -53,10 +61,6 @@ import net.sf.jailer.util.Quoting;
 public abstract class MetaDataPanel extends javax.swing.JPanel {
 
 	private final MetaDataSource metaDataSource;
-	private final Map<String, Table> tablePerUnquotedName = new HashMap<String, Table>();
-	private final Map<String, Table> tablePerUnquotedNameUC = new HashMap<String, Table>();
-	private final Map<MDTable, Table> mDTableToTable = new HashMap<MDTable, Table>();
-	private final Map<Table, MDTable> tableToMDTable = new HashMap<Table, MDTable>();
 	
 	private abstract class ExpandingMutableTreeNode extends DefaultMutableTreeNode {
 		
@@ -64,6 +68,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			super("loading...");
 		}
 		
+		protected abstract void expandImmediatelly();
 		protected abstract void expand();
 	}
 	
@@ -92,28 +97,62 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			}
 			@Override
 			public void mouseClicked(MouseEvent evt) {
+				final MDTable mdTable = findTable(evt);
+                if (evt.getButton() == MouseEvent.BUTTON3) {
+	                if (mdTable != null) {
+						JPopupMenu popup = new JPopupMenu();
+						JMenuItem open = new JMenuItem("Open");
+						popup.add(open);
+						open.addActionListener(new ActionListener() {
+		                    @Override
+		                    public void actionPerformed(ActionEvent e) {
+		                    	openTable(mdTable);
+		                    }
+						});
+						if (MetaDataPanel.this.metaDataSource.toTable(mdTable) == null) {
+							popup.addSeparator();
+							JMenuItem analyse = new JMenuItem("Analyse schema \""+ mdTable.getSchema().getName() + "\"");
+							popup.add(analyse);
+							analyse.addActionListener(new ActionListener() {
+			                    @Override
+			                    public void actionPerformed(ActionEvent e) {
+			                    	analyseSchema(mdTable.getSchema().getName());
+			                    }
+							});
+						}
+						popup.show(evt.getComponent(), evt.getX(), evt.getY());
+	                }
+				}
 				if (evt.getButton() == MouseEvent.BUTTON1) {
 		            if (evt.getClickCount() > 1) {
-		                TreePath node = metaDataTree.getPathForLocation(evt.getX(), evt.getY());
-		                if (node == null) {
-		                    for (int x = metaDataTree.getWidth(); x > 0; x -= 32) {
-		                        node = metaDataTree.getPathForLocation(x, evt.getY());
-		                        if (node != null) {
-		                            break;
-		                        }
-		                    }
-		                }
-		                if (node != null) {
-		                    Object sel = node.getLastPathComponent();
-		                    if (sel instanceof DefaultMutableTreeNode) {
-		                        Object selNode = ((DefaultMutableTreeNode) sel).getUserObject();
-		                        if (selNode instanceof MDTable) {
-		                        	open((MDTable) selNode);
-		                        }
-		                    }
+		                if (mdTable != null) {
+		                	openTable(mdTable);
 		                }
 		            }
 				}
+			}
+			private MDTable findTable(MouseEvent evt) {
+				MDTable mdTable = null;
+				TreePath node = metaDataTree.getPathForLocation(evt.getX(), evt.getY());
+				if (node == null) {
+				    for (int x = metaDataTree.getWidth(); x > 0; x -= 32) {
+				        node = metaDataTree.getPathForLocation(x, evt.getY());
+				        if (node != null) {
+				            break;
+				        }
+				    }
+				}
+				if (node != null) {
+				    Object sel = node.getLastPathComponent();
+				    if (sel instanceof DefaultMutableTreeNode) {
+				        Object selNode = ((DefaultMutableTreeNode) sel).getUserObject();
+				        if (selNode instanceof MDTable) {
+				        	mdTable = (MDTable) selNode;
+				        	metaDataTree.setSelectionPath(node);
+				        }
+				    }
+				}
+				return mdTable;
 			}
         });
         
@@ -133,24 +172,35 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			}
 		});
         
+        final ImageIcon finalScaledWarnIcon = getWarnIcon(this); 
+        
         DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
 			@Override
 			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
 					boolean leaf, int row, boolean hasFocus) {
 				Component comp = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
-				boolean italic = false;
+				boolean unknownTable = false;
 				if (value instanceof DefaultMutableTreeNode) {
 					Object uo = ((DefaultMutableTreeNode) value).getUserObject();
 					if (uo instanceof MDTable) {
-						if (toTable((MDTable) uo) == null) {
-							italic = true;
+						if (MetaDataPanel.this.metaDataSource.toTable((MDTable) uo) == null) {
+							unknownTable = true;
 						}
 					}
 				}
 				Font font = comp.getFont();
 				if (font != null) {
-					Font bold = new Font(font.getName(), italic? (font.getStyle() | Font.ITALIC) : (font.getStyle() & ~Font.ITALIC), font.getSize());
+					Font bold = new Font(font.getName(), unknownTable? (font.getStyle() | Font.ITALIC) : (font.getStyle() & ~Font.ITALIC), font.getSize());
 					comp.setFont(bold);
+				}
+				if (unknownTable) {
+					JPanel panel = new JPanel(new FlowLayout(0, 0, 0));
+					panel.add(comp);
+					JLabel label = new JLabel(finalScaledWarnIcon);
+					label.setOpaque(false);
+					panel.add(label);
+					panel.setOpaque(false);
+					return panel;
 				}
 				return comp;
 			}
@@ -161,44 +211,84 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         metaDataTree.setCellRenderer(renderer);
         metaDataTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
         
-        for (Table table: dataModel.getTables()) {
-        	tablePerUnquotedName.put(Quoting.unquotedTableName(table, executionContext), table);
-        	tablePerUnquotedNameUC.put(Quoting.unquotedTableName(table, executionContext).toUpperCase(Locale.ENGLISH), table);
-        }
-
+        metaDataTree.addTreeSelectionListener(new TreeSelectionListener() {
+			@Override
+			public void valueChanged(TreeSelectionEvent e) {
+				TreePath path = e.getNewLeadSelectionPath();
+				if (path != null) {
+					Object last = path.getLastPathComponent();
+					if (metaDataTree.getModel().getRoot() == last) {
+						 openNewTableBrowser();
+					}
+					if (last instanceof DefaultMutableTreeNode) {
+						Object uo = ((DefaultMutableTreeNode) last).getUserObject();
+						if (uo instanceof MDTable) {
+							onTableSelect((MDTable) uo);
+						}
+					}
+				}
+			}
+		});
+        
         updateTreeModel(metaDataSource);
     }
     
-	protected void open(MDTable mdTable) {
-		Table table = toTable(mdTable);
+	protected void openTable(MDTable mdTable) {
+		Table table = metaDataSource.toTable(mdTable);
 		if (table != null) {
 			open(table);
 		} else {
-			open(mdTable.getSchema().isDefaultSchema? null : mdTable.getSchema().getName(), mdTable.getName());
+			open(mdTable);
 		}
 	}
 
 	private void reset() {
 		metaDataSource.clear();
     	updateTreeModel(metaDataSource);
-    	mDTableToTable.clear();
 	}
 
 	public void select(Table table) {
-		MDTable mdTable = tableToMDTable.get(table);
+		MDTable mdTable = metaDataSource.toMDTable(table);
 		if (mdTable != null) {
 			TreePath path = find(metaDataTree.getModel().getRoot(), mdTable);
 			if (path != null) {
 				metaDataTree.expandPath(path);
 				metaDataTree.getSelectionModel().setSelectionPath(path);
+				scrollToNode(path);
 			}
 		}
 	}
 	
+	public void select(MDTable mdTable) {
+		if (mdTable != null) {
+			TreePath path = find(metaDataTree.getModel().getRoot(), mdTable);
+			if (path != null) {
+				metaDataTree.expandPath(path);
+				metaDataTree.getSelectionModel().setSelectionPath(path);
+				scrollToNode(path);
+			}
+		}
+	}
+
+	private void scrollToNode(TreePath path) {
+		Rectangle bounds = metaDataTree.getPathBounds(path);
+		metaDataTree.scrollRectToVisible(new Rectangle(bounds.x, bounds.y, 1, bounds.height));
+	}
+
+
 	private TreePath find(Object root, MDTable mdTable) {
 		if (root instanceof DefaultMutableTreeNode) {
 			Object userObject = ((DefaultMutableTreeNode) root).getUserObject();
-            if (userObject instanceof MDTable) {
+			if (userObject instanceof MDSchema) {
+				if (mdTable.getSchema().equals(userObject)) {
+					if (((DefaultMutableTreeNode) root).getChildCount() > 0) {
+						TreeNode firstChild = ((DefaultMutableTreeNode) root).getFirstChild();
+						if (firstChild instanceof ExpandingMutableTreeNode) {
+							((ExpandingMutableTreeNode) firstChild).expandImmediatelly();
+						}
+					}
+				}
+			} else if (userObject instanceof MDTable) {
             	if (userObject == mdTable) {
             		return new TreePath(((DefaultMutableTreeNode) root).getPath());
                 }
@@ -214,30 +304,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		return null;
 	}
 	
-    private Table toTable(MDTable mdTable) {
-    	if (mDTableToTable.containsKey(mdTable)) {
-    		return mDTableToTable.get(mdTable);
-    	}
-    	Table table = null;
-    	if (mdTable.getSchema().isDefaultSchema) {
-    		table = tablePerUnquotedName.get(mdTable.getName());
-    	}
-    	if (table == null) {
-    		table = tablePerUnquotedName.get(mdTable.getSchema().getName() + "." + mdTable.getName());
-    	}
-    	if (table == null) {
-        	if (mdTable.getSchema().isDefaultSchema) {
-        		table = tablePerUnquotedNameUC.get(mdTable.getName().toUpperCase(Locale.ENGLISH));
-        	}
-        	if (table == null) {
-        		table = tablePerUnquotedNameUC.get((mdTable.getSchema().getName() + "." + mdTable.getName()).toUpperCase(Locale.ENGLISH));
-        	}
-    	}
-    	mDTableToTable.put(mdTable, table);
-    	tableToMDTable.put(table, mdTable);
-    	return table;
-    }
-
 	private void updateTreeModel(MetaDataSource metaDataSource) {
 		DefaultMutableTreeNode root = new DefaultMutableTreeNode(metaDataSource.dataSourceName);
 		DefaultMutableTreeNode defaultSchema = null;
@@ -249,26 +315,31 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 				defaultSchema = schemaChild;
 			}
 			MutableTreeNode expandSchema = new ExpandingMutableTreeNode() {
+				private boolean expanded = false;
+				@Override
+				protected void expandImmediatelly() {
+					if (!expanded) {
+						for (MDTable table: schema.getTables()) {
+							DefaultMutableTreeNode tableChild = new DefaultMutableTreeNode(table);
+							schemaChild.add(tableChild);
+						}
+						schemaChild.remove(this);
+						TreeModel model = metaDataTree.getModel();
+						((DefaultTreeModel) model).nodeStructureChanged(schemaChild);
+					}
+					expanded = true;
+				}
 				@Override
 				protected void expand() {
-					final ExpandingMutableTreeNode expandingMutableTreeNodeThis = this;
 					SwingUtilities.invokeLater(new Runnable() {
 						@Override
 						public void run() {
 							try {
 								setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-								for (MDTable table: schema.getTables()) {
-									DefaultMutableTreeNode tableChild = new DefaultMutableTreeNode(table);
-									schemaChild.add(tableChild);
-								}
-							} catch (SQLException e) {
-								UIUtil.showException(null, "Error", e);
+								expandImmediatelly();
 				            } finally {
 				                setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 				            }
-							schemaChild.remove(expandingMutableTreeNodeThis);
-							TreeModel model = metaDataTree.getModel();
-							((DefaultTreeModel) model).nodeStructureChanged(schemaChild);
 						}
 					});
 				}
@@ -345,7 +416,37 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     protected abstract void open(Table table);
-    protected abstract void open(String schemaName, String tableName);
+    protected abstract void open(MDTable mdTable);
     protected abstract void analyseSchema(String schemaName);
-
+    protected abstract void onTableSelect(MDTable mdTable);
+	protected abstract void openNewTableBrowser();
+	
+    static private ImageIcon warnIcon;
+    static ImageIcon getWarnIcon(JComponent component) {
+    	if (warnIcon != null) {
+            ImageIcon scaledWarnIcon = warnIcon;
+            if (scaledWarnIcon != null) {
+            	int heigth = component.getFontMetrics(new JLabel("M").getFont()).getHeight();
+            	double s = heigth / (double) scaledWarnIcon.getIconHeight();
+            	try {
+            		return new ImageIcon(scaledWarnIcon.getImage().getScaledInstance((int)(scaledWarnIcon.getIconWidth() * s), (int)(scaledWarnIcon.getIconHeight() * s), Image.SCALE_SMOOTH));
+            	} catch (Exception e) {
+            		return null;
+            	}
+            }
+    	}
+    	return null;
+    }
+    static {
+		String dir = "/net/sf/jailer/ui/resource";
+		
+		// load images
+		try {
+			warnIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/wanr.png"));
+			
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+	
 }

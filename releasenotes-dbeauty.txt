@@ -1,6 +1,7 @@
 3.6.2
   - Improved data model merging.
   - Added ability to change the data model base folder.
+  - Metadata views.
 
 3.6.1
   - Minor GUI Improvements.

@@ -31,12 +31,10 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 
 import javax.sql.DataSource;
 
@@ -156,6 +154,15 @@ public class Session {
 		 * @throws SQLException 
 		 */
 		public void close() throws SQLException {
+		}
+
+		/**
+		 * Initializes the reader.
+		 * 
+		 * @param resultSet the result set to read.
+		 * @throws SQLException
+		 */
+		public void init(ResultSet resultSet) throws SQLException {
 		}
 		
 	}
@@ -432,6 +439,9 @@ public class Session {
 			} else {
 				throw e;
 			}
+		}
+		if (reader instanceof AbstractResultSetReader) {
+			((AbstractResultSetReader) reader).init(resultSet);
 		}
 		while (resultSet.next()) {
 			reader.readCurrentRow(resultSet);
@@ -743,18 +753,12 @@ public class Session {
 		if (automaticReconnect) {
 			boolean valid = true;
 			metaData = null;
-			Long lvTS = lastValidityCheckTS.get();
-			if (lvTS == null || lvTS < System.currentTimeMillis() - 5 * 1000L) {
-				try {
-					if (!connectionFactory.getConnection().isValid(1)) {
-						valid = false;
-					}
-				} catch (Throwable t) {
-					// ignore
+			try {
+				if (!connectionFactory.getConnection().isValid(0)) {
+					valid = false;
 				}
-				if (valid) {
-					lastValidityCheckTS.set(System.currentTimeMillis());
-				}
+			} catch (Throwable t) {
+				// ignore
 			}
 			if (!valid) {
 				// reconnect
@@ -764,7 +768,7 @@ public class Session {
 					// ignore
 				}
 				this.connection.set(null);
-				metaData = null;
+				metaData = connectionFactory.getConnection().getMetaData();
 			}
 		}
 		if (metaData == null) {

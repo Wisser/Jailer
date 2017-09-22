@@ -166,8 +166,9 @@ public class MetaDataCache {
 			Set<Integer> intIndex = new HashSet<Integer>(Arrays.asList(5, 7, 9, 10, 11, 14, 15, 16, 17, 22));
 
 			metaDataCache.cache = new HashMap<String, List<Object[]>>();
+			ResultSetMetaData rsMetaData = rs.getMetaData();
 			while (rs.next()) {
-				int numCol = rs.getMetaData().getColumnCount();
+				int numCol = rsMetaData.getColumnCount();
 				Object[] row = new Object[numCol];
 				for (int i = 1; i < numCol; ++i) {
 					if (i >= 22 && DBMS.MSSQL.equals(session.dbms)) {

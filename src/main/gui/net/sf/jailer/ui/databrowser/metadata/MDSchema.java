@@ -29,7 +29,7 @@ import java.util.List;
  */
 public class MDSchema extends MDObject {
 
-	final boolean isDefaultSchema;
+	public final boolean isDefaultSchema;
 	private List<MDTable> tables;
 	
 	/**
@@ -49,21 +49,25 @@ public class MDSchema extends MDObject {
 	 * 
 	 * @return tables of schema
 	 */
-	public synchronized List<MDTable> getTables() throws SQLException {
+	public synchronized List<MDTable> getTables() {
 		if (tables == null) {
-			tables = new ArrayList<MDTable>();
-			ResultSet rs = getMetaDataSource().readTables(getName());
-			while (rs.next()) {
-				String tableName = rs.getString(3);
-				tables.add(new MDTable(tableName, this));
-			}
-			rs.close();
-			Collections.sort(tables, new Comparator<MDTable>() {
-				@Override
-				public int compare(MDTable o1, MDTable o2) {
-					return o1.getName().compareTo(o2.getName());
+			try {
+				tables = new ArrayList<MDTable>();
+				ResultSet rs = getMetaDataSource().readTables(getName());
+				while (rs.next()) {
+					String tableName = rs.getString(3);
+					tables.add(new MDTable(tableName, this));
 				}
-			});
+				rs.close();
+				Collections.sort(tables, new Comparator<MDTable>() {
+					@Override
+					public int compare(MDTable o1, MDTable o2) {
+						return o1.getName().compareTo(o2.getName());
+					}
+				});
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
 		return tables;
 	}

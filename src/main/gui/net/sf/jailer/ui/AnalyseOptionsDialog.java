@@ -44,17 +44,15 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 	private int numManTables = 0;
 	private int numManAssociations = 0;
 	
-	private final ExecutionContext executionContext;
-	
 	/**
 	 * true if user clicks OK button.
 	 */
 	private boolean ok;
 	
-	/** Creates new form AnalyseOptionsDialog */
+	/** Creates new form AnalyseOptionsDialog 
+	 */
 	public AnalyseOptionsDialog(java.awt.Frame parent, DataModel dataModel, ExecutionContext executionContext) throws Exception {
 		super(parent, true);
-		this.executionContext = executionContext;
 		initComponents();
 		
 		AutoCompletion.enable(schemaComboBox);
