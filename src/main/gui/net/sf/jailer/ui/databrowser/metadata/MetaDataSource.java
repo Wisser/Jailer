@@ -18,10 +18,17 @@ package net.sf.jailer.ui.databrowser.metadata;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
+import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
+import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
+import net.sf.jailer.util.Quoting;
 
 /**
  * Meta Data Source.
@@ -49,11 +56,18 @@ public class MetaDataSource {
 	 * Constructor.
 	 * 
 	 * @param session the database session
+	 * @param dataModel the data model
 	 * @param dataSourceName name of the data source 
+	 * @param executionContext the execution context
 	 */
-	public MetaDataSource(Session session, String dataSourceName) {
+	public MetaDataSource(Session session, DataModel dataModel, String dataSourceName, ExecutionContext executionContext) {
 		this.session = session;
 		this.dataSourceName = dataSourceName;
+
+		for (Table table: dataModel.getTables()) {
+        	tablePerUnquotedName.put(Quoting.unquotedTableName(table, executionContext), table);
+        	tablePerUnquotedNameUC.put(Quoting.unquotedTableName(table, executionContext).toUpperCase(Locale.ENGLISH), table);
+        }
 		readSchemas();
 	}
 
@@ -93,7 +107,105 @@ public class MetaDataSource {
 	 */
 	public void clear() {
 		schemas.clear();
+    	mDTableToTable.clear();
+    	tableToMDTable.clear();
 		readSchemas();
 	}
+
+	/**
+	 * Gets the session
+	 * 
+	 * @return the session
+	 */
+	public Session getSession() {
+		return session;
+	}
+
+	private final Map<MDTable, Table> mDTableToTable = new HashMap<MDTable, Table>();
+	private final Map<Table, MDTable> tableToMDTable = new HashMap<Table, MDTable>();
+	private final Map<String, Table> tablePerUnquotedName = new HashMap<String, Table>();
+	private final Map<String, Table> tablePerUnquotedNameUC = new HashMap<String, Table>();
+
+    public Table toTable(MDTable mdTable) {
+    	if (mDTableToTable.containsKey(mdTable)) {
+    		return mDTableToTable.get(mdTable);
+    	}
+    	Table table = null;
+    	if (mdTable.getSchema().isDefaultSchema) {
+    		table = tablePerUnquotedName.get(mdTable.getName());
+    	}
+    	if (table == null) {
+    		table = tablePerUnquotedName.get(mdTable.getSchema().getName() + "." + mdTable.getName());
+    	}
+    	if (table == null) {
+        	if (mdTable.getSchema().isDefaultSchema) {
+        		table = tablePerUnquotedNameUC.get(mdTable.getName().toUpperCase(Locale.ENGLISH));
+        	}
+        	if (table == null) {
+        		table = tablePerUnquotedNameUC.get((mdTable.getSchema().getName() + "." + mdTable.getName()).toUpperCase(Locale.ENGLISH));
+        	}
+    	}
+    	if (table != null) {
+	    	mDTableToTable.put(mdTable, table);
+	    	tableToMDTable.put(table, mdTable);
+    	}
+    	return table;
+    }
+
+    public MDTable toMDTable(Table table) {
+    	if (tableToMDTable.containsKey(table)) {
+    		return tableToMDTable.get(table);
+    	}
+    	
+    	MDSchema defaultSchema = getDefaultSchema();
+    	MDTable mdTable = null;
+    	if (defaultSchema != null) {
+    		String schemaName = Quoting.staticUnquote(table.getSchema(defaultSchema.getName()));
+    		String schemaNameUC = schemaName.toUpperCase(Locale.ENGLISH);
+    		String tableName = Quoting.staticUnquote(table.getUnqualifiedName());
+    		String tableNameUC = tableName.toUpperCase(Locale.ENGLISH);
+    		
+    		MDSchema schemaExact = null;
+    		MDSchema schemaIC = null;
+    		for (MDSchema schema: getSchemas()) {
+    			if (schema.getName().equals(schemaName)) {
+    				schemaExact = schema;
+    				break;
+    			}
+    			if (schema.getName().toUpperCase(Locale.ENGLISH).equals(schemaNameUC)) {
+    				schemaIC = schema;
+    			}
+    		}
+    		List<MDTable> tables = null;
+    		if (schemaExact != null) {
+    			tables = schemaExact.getTables();
+    		} else if (schemaIC != null) {
+    			tables = schemaIC.getTables();
+    		}
+    		if (tables != null) {
+    			MDTable mdTableExact = null;
+    			MDTable mdTableIC = null;
+    			for (MDTable mdT: tables) {
+        			if (mdT.getName().equals(tableName)) {
+        				mdTableExact = mdT;
+        				break;
+        			}
+        			if (mdT.getName().toUpperCase(Locale.ENGLISH).equals(tableNameUC)) {
+        				mdTableIC = mdT;
+        			}
+    			}
+    			if (mdTableExact != null) {
+    				mdTable = mdTableExact;
+    			} else if (mdTableIC != null) {
+    				mdTable = mdTableIC;
+    			}
+    		}
+    	}
+    	if (mdTable != null) {
+    		mDTableToTable.put(mdTable, table);
+    		tableToMDTable.put(table, mdTable);
+    	}
+    	return mdTable;
+    }
 
 }

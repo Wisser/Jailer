@@ -299,7 +299,7 @@ public class BasicDataSource implements DataSource {
 		}
 		
 		final Connection finalCon = con;
-		return (Connection) Proxy.newProxyInstance(con.getClass().getClassLoader(), con.getClass().getInterfaces(), new InvocationHandler() {
+		return (Connection) Proxy.newProxyInstance(con.getClass().getClassLoader(), new Class[] { Connection.class } /* con.getClass().getInterfaces() */, new InvocationHandler() {
 			private volatile boolean valid = true;
 			@Override
 			public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {

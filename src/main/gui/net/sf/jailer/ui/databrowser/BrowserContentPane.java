@@ -69,6 +69,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
@@ -148,7 +149,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * Concurrently loads rows.
 	 */
-	final class LoadJob implements RunnableWithPriority {
+	public class LoadJob implements RunnableWithPriority {
 		private List<Row> rows = Collections.synchronizedList(new ArrayList<Row>());
 		private Throwable exception;
 		private boolean isCanceled;
@@ -156,12 +157,25 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		private final String andCond;
 		private final boolean selectDistinct;
 		private boolean finished;
-
+		private final ResultSet inputResultSet;
+		
 		public LoadJob(int limit, String andCond, boolean selectDistinct) {
 			this.andCond = andCond;
 			this.selectDistinct = selectDistinct;
+			this.inputResultSet = null;
 			synchronized (this) {
 				this.limit = limit;
+				finished = false;
+				isCanceled = false;
+			}
+		}
+
+		public LoadJob(ResultSet inputResultSet) {
+			this.andCond = "";
+			this.selectDistinct = false;
+			this.inputResultSet = inputResultSet;
+			synchronized (this) {
+				this.limit = Integer.MAX_VALUE;
 				finished = false;
 				isCanceled = false;
 			}
@@ -178,7 +192,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 			rowCountCache.clear();
 			try {
-				reloadRows(andCond, rows, this, l + 1, selectDistinct);
+				reloadRows(inputResultSet, andCond, rows, this, l + 1, selectDistinct);
 				CancellationHandler.checkForCancellation(this);
 				synchronized (this) {
 					finished = true;
@@ -562,7 +576,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				isSelected = currentRowSelection == row || currentRowSelection == -2;
 
 				Component render = defaultTableCellRenderer.getTableCellRendererComponent(table, value, isSelected, false, row, column);
-				
 				if (value instanceof Row) {
 					Row theRow = (Row) value;
 					Pair<BrowserContentPane, String> pair = new Pair<BrowserContentPane, String>(BrowserContentPane.this, theRow.rowId);
@@ -571,16 +584,23 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 
 				final RowSorter<?> rowSorter = rowsTable.getRowSorter();
+				boolean renderRowAsPK = false;
 				if (render instanceof JLabel) {
+					if (row < rows.size()) {
+						Row r = rows.get(rowSorter.convertRowIndexToModel(row));
+						if (r != null) {
+							renderRowAsPK = renderRowAsPK(r);
+						}
+					}
 					if (!isSelected) {
-						if (row < rows.size() && BrowserContentPane.this.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(BrowserContentPane.this, rows.get(rowSorter.convertRowIndexToModel(row)).rowId))) {
+						if (BrowserContentPane.this.currentClosureRowIDs != null && row < rows.size() && BrowserContentPane.this.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(BrowserContentPane.this, rows.get(rowSorter.convertRowIndexToModel(row)).rowId))) {
 							((JLabel) render).setBackground(BG3);
 						} else {
 							((JLabel) render).setBackground((row % 2 == 0) ? BG1 : BG2);
 						}
 					}
 					((JLabel) render).setForeground(
-							pkColumns.contains(rowsTable.convertColumnIndexToModel(column)) ? FG1 : 
+							renderRowAsPK || pkColumns.contains(rowsTable.convertColumnIndexToModel(column)) ? FG1 : 
 								fkColumns.contains(rowsTable.convertColumnIndexToModel(column)) ? FG2 : 
 										Color.BLACK);
 					boolean isNull = false;
@@ -638,18 +658,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						} else if (e.getButton() != MouseEvent.BUTTON1) {
 							JPopupMenu popup;
 							popup = createPopupMenu(row, i, p.x + getOwner().getX(), p.y + getOwner().getY(), rows.size() == 1);
-							popup.show(rowsTable, x, y);
-							popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
+							if (popup != null) {
+								popup.show(rowsTable, x, y);
+								popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
 	
-								@Override
-								public void propertyChange(PropertyChangeEvent evt) {
-									if (Boolean.FALSE.equals(evt.getNewValue())) {
-										currentRowSelection = -1;
-										onRedraw();
-//										setCurrentRowSelection(-1);
+									@Override
+									public void propertyChange(PropertyChangeEvent evt) {
+										if (Boolean.FALSE.equals(evt.getNewValue())) {
+											currentRowSelection = -1;
+											onRedraw();
+	//										setCurrentRowSelection(-1);
+										}
 									}
-								}
-							});
+								});
+							}
 							lastMenu = popup;
 						} else {
 							setCurrentRowSelection(ri);
@@ -851,6 +873,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 	}
 	
+	protected abstract boolean renderRowAsPK(Row theRow);
+
 	boolean isPending = false;
 	
 	void setPendingState(boolean pending, boolean propagate) {
@@ -1941,10 +1965,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param limit
 	 *            row number limit
 	 */
-	private void reloadRows(String andCond, final List<Row> rows, Object context, int limit, boolean selectDistinct) throws SQLException {
+	private void reloadRows(ResultSet inputResultSet, String andCond, final List<Row> rows, Object context, int limit, boolean selectDistinct) throws SQLException {
 		try {
 			session.setSilent(true);
-			reloadRows(andCond, rows, context, limit, selectDistinct, null);
+			reloadRows(inputResultSet, andCond, rows, context, limit, selectDistinct, null);
 			return;
 		} catch (SQLException e) {
 			Session._log.warn("failed, try another strategy (" +  e.getMessage() + ")");
@@ -1955,7 +1979,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (!(table instanceof SqlStatementTable)) {
 			existingColumnsLowerCase = findColumnsLowerCase(table, session);
 		}
-		reloadRows(andCond, rows, context, limit, selectDistinct, existingColumnsLowerCase);
+		reloadRows(inputResultSet, andCond, rows, context, limit, selectDistinct, existingColumnsLowerCase);
 	}
 	
 	/**
@@ -1972,7 +1996,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
 			String schema = quoting.unquote(table.getOriginalSchema(defaultSchema));
 			String tableName = quoting.unquote(table.getUnqualifiedName());
-			ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, metaData, schema, tableName, "%");
+			ResultSet resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, metaData, schema, tableName, "%", false);
 			while (resultSet.next()) {
 				String colName = resultSet.getString(4).toLowerCase();
 				columns.add(colName);
@@ -1986,7 +2010,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					schema = schema.toLowerCase();
 					tableName = tableName.toLowerCase();
 				}
-				resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, metaData, schema, tableName, "%");
+				resultSet = JDBCMetaDataBasedModelElementFinder.getColumns(session, metaData, schema, tableName, "%", false);
 				while (resultSet.next()) {
 					String colName = resultSet.getString(4).toLowerCase();
 					columns.add(colName);
@@ -2011,12 +2035,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param limit
 	 *            row number limit
 	 */
-	private void reloadRows(String andCond, final List<Row> rows, Object context, int limit, boolean selectDistinct, Set<String> existingColumnsLowerCase) throws SQLException {
+	private void reloadRows(ResultSet inputResultSet, String andCond, final List<Row> rows, Object context, int limit, boolean selectDistinct, Set<String> existingColumnsLowerCase) throws SQLException {
 		if (table instanceof SqlStatementTable) {
 			try {
 				session.setSilent(true);
 				Map<String, List<Row>> rowsMap = new HashMap<String, List<Row>>();
-				reloadRows(null, andCond, null, rowsMap, context, limit, false, null, existingColumnsLowerCase);
+				reloadRows(inputResultSet, null, andCond, null, rowsMap, context, limit, false, null, existingColumnsLowerCase);
 				if (rowsMap.get("") != null) {
 					rows.addAll(rowsMap.get(""));
 				}
@@ -2040,13 +2064,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		noDistinctRows = 0;
 		
 		if (association != null && rowIdSupport.getPrimaryKey(association.source).getColumns().isEmpty()) {
-			loadRowBlocks(null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 1, existingColumnsLowerCase);
+			loadRowBlocks(inputResultSet, null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 1, existingColumnsLowerCase);
 		} else {
 			if (useInlineViewForResolvingAssociation(session)) {
 				try {
 					InlineViewStyle inlineViewStyle = session.getInlineViewStyle();
 					if (inlineViewStyle != null) {
-						loadRowBlocks(inlineViewStyle, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 510, existingColumnsLowerCase);
+						loadRowBlocks(inputResultSet, inlineViewStyle, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 510, existingColumnsLowerCase);
 						return;
 					}
 				} catch (Exception e) {
@@ -2054,39 +2078,39 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 			try {
-				loadRowBlocks(null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 510, existingColumnsLowerCase);
+				loadRowBlocks(inputResultSet, null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 510, existingColumnsLowerCase);
 				return;
 			} catch (SQLException e) {
 				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 			}
 			try {
-				loadRowBlocks(null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 300, existingColumnsLowerCase);
+				loadRowBlocks(inputResultSet, null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 300, existingColumnsLowerCase);
 				return;
 			} catch (SQLException e) {
 				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 			}
 			try {
-				loadRowBlocks(null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 100, existingColumnsLowerCase);
+				loadRowBlocks(inputResultSet, null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 100, existingColumnsLowerCase);
 				return;
 			} catch (SQLException e) {
 				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 			}
 			try {
-				loadRowBlocks(null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 40, existingColumnsLowerCase);
+				loadRowBlocks(inputResultSet, null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 40, existingColumnsLowerCase);
 				return;
 			} catch (SQLException e) {
 				Session._log.warn("failed, try another blocking-size (" +  e.getMessage() + ")");
 			}
 		}
 		
-		loadRowBlocks(null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 1, existingColumnsLowerCase);
+		loadRowBlocks(inputResultSet, null, andCond, rows, context, limit, selectDistinct, pRows, rowSet, 1, existingColumnsLowerCase);
 	}
 
 	static boolean useInlineViewForResolvingAssociation(Session session) {
 		return session.dbms.isUseInlineViewsInDataBrowser();
 	}
 
-	private void loadRowBlocks(InlineViewStyle inlineViewStyle, String andCond, final List<Row> rows, Object context, int limit, boolean selectDistinct, List<Row> pRows,
+	private void loadRowBlocks(ResultSet inputResultSet, InlineViewStyle inlineViewStyle, String andCond, final List<Row> rows, Object context, int limit, boolean selectDistinct, List<Row> pRows,
 			Map<String, Row> rowSet, int NUM_PARENTS, Set<String> existingColumnsLowerCase) throws SQLException {
 		List<List<Row>> parentBlocks = new ArrayList<List<Row>>();
 		List<Row> currentBlock = new ArrayList<Row>();
@@ -2112,7 +2136,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (session.dbms.getSqlLimitSuffix() != null) {
 				try {
 					session.setSilent(true);
-					reloadRows(inlineViewStyle, andCond, pRowBlock, newBlockRows, context, limit, false, session.dbms.getSqlLimitSuffix(), existingColumnsLowerCase);
+					reloadRows(inputResultSet, inlineViewStyle, andCond, pRowBlock, newBlockRows, context, limit, false, session.dbms.getSqlLimitSuffix(), existingColumnsLowerCase);
 					loaded = true;
 				} catch (SQLException e) {
 					Session._log.warn("failed, try another limit-strategy (" +  e.getMessage() + ")");
@@ -2123,7 +2147,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (!loaded) {
 				try {
 					session.setSilent(true);
-					reloadRows(inlineViewStyle, andCond, pRowBlock, newBlockRows, context, limit, true, null, existingColumnsLowerCase);
+					reloadRows(inputResultSet, inlineViewStyle, andCond, pRowBlock, newBlockRows, context, limit, true, null, existingColumnsLowerCase);
 					loaded = true;
 				} catch (SQLException e) {
 					Session._log.warn("failed, try another limit-strategy (" +  e.getMessage() + ")");
@@ -2133,7 +2157,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (!loaded) {
 					try {
 						session.setSilent(true);
-						reloadRows(inlineViewStyle, andCond, pRowBlock, newBlockRows, context, limit, false, null, existingColumnsLowerCase);
+						reloadRows(inputResultSet, inlineViewStyle, andCond, pRowBlock, newBlockRows, context, limit, false, null, existingColumnsLowerCase);
 					} finally {
 						session.setSilent(false);
 					}
@@ -2207,9 +2231,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param rowCache 
 	 * @param allPRows 
 	 */
-	private void reloadRows(InlineViewStyle inlineViewStyle, String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, Object context, int limit, boolean useOLAPLimitation,
+	private void reloadRows(ResultSet inputResultSet, InlineViewStyle inlineViewStyle, String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, Object context, int limit, boolean useOLAPLimitation,
 			String sqlLimitSuffix, Set<String> existingColumnsLowerCase) throws SQLException {
-		reloadRows0(inlineViewStyle, andCond, parentRows, rows, context, parentRows == null? limit : Math.max(5000, limit), useOLAPLimitation, sqlLimitSuffix, existingColumnsLowerCase);
+		reloadRows0(inputResultSet, inlineViewStyle, andCond, parentRows, rows, context, parentRows == null? limit : Math.max(5000, limit), useOLAPLimitation, sqlLimitSuffix, existingColumnsLowerCase);
 	}
 
 	/**
@@ -2234,7 +2258,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param context
 	 *            cancellation context
 	 */
-	private void reloadRows0(InlineViewStyle inlineViewStyle, String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, Object context, int limit, boolean useOLAPLimitation,
+	private void reloadRows0(ResultSet inputResultSet, InlineViewStyle inlineViewStyle, String andCond, final List<Row> parentRows, final Map<String, List<Row>> rows, Object context, int limit, boolean useOLAPLimitation,
 			String sqlLimitSuffix, Set<String> existingColumnsLowerCase) throws SQLException {
 		String sql = "Select ";
 		final Quoting quoting = new Quoting(session);
@@ -2391,7 +2415,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		}
 		
-		if (sql.length() > 0) {
+		if (sql.length() > 0 || inputResultSet != null) {
 			final Map<Integer, Integer> pkPosToColumnPos = new HashMap<Integer, Integer>();
 			if (!(table instanceof SqlStatementTable)) {
 				List<Column> pks = rowIdSupport.getPrimaryKey(table).getColumns();
@@ -2406,19 +2430,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 				}
 			}
-			session.executeQuery(sql, new AbstractResultSetReader() {
-	
+			AbstractResultSetReader reader = new AbstractResultSetReader() {
 				Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
 				int rowNr = 0;
 				
 				@Override
-				public void readCurrentRow(ResultSet resultSet) throws SQLException {
-					if ((table instanceof SqlStatementTable) && rows.isEmpty()) {
+				public void init(ResultSet resultSet) throws SQLException {
+					if (table instanceof SqlStatementTable) {
 						for (int ci = 1; ci <= getMetaData(resultSet).getColumnCount(); ++ci) {
 							table.getColumns().add(new Column(getMetaData(resultSet).getColumnLabel(ci), getMetaData(resultSet).getColumnTypeName(ci), -1, -1));
 						}
 					}
-					
+				}
+				
+				@Override
+				public void readCurrentRow(ResultSet resultSet) throws SQLException {
 					int i = 1, vi = 0;
 					String parentRowId = "";
 					if (selectParentPK) {
@@ -2599,7 +2625,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					v[vi] = value;
 					return rowId;
 				}
-			}, null, context, limit);
+			};
+			if (inputResultSet != null) {
+				reader.init(inputResultSet);
+				while (inputResultSet.next()) {
+					reader.readCurrentRow(inputResultSet);
+				}
+				inputResultSet.close();
+			} 
+			else {
+				session.executeQuery(sql, reader, null, context, limit);
+			}
 		}
 	}
 
@@ -2607,6 +2643,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * True if row-limit is exceeded.
 	 */
 	private boolean isLimitExceeded = false;
+
+	/**
+	 * Show single row in special view?
+	 */
+	protected boolean noSingleRowDetailsView = false;
 	
 	/**
 	 * Parent having row-limit exceeded.
@@ -2686,12 +2727,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		DefaultTableModel dtm;
 		singleRowDetailsView = null;
 		int rn = 0;
-		if (rows.size() != 1) {
+		if (rows.size() != 1 || noSingleRowDetailsView) {
 			Map<String, Integer> columnNameMap = new HashMap<String, Integer>();
 			for (int i = 0; i < columns.size(); ++i) {
 				columnNameMap.put(columnNames[i], i);
 			}
-			dtm = new DefaultTableModel(columnNames, 0) {
+			String[] uqColumnNames = new String[columnNames.length];
+			for (int i = 0; i < uqColumnNames.length; ++i) {
+				if (columnNames[i] != null) {
+					uqColumnNames[i] = Quoting.staticUnquote(columnNames[i]);
+				}
+			}
+			dtm = new DefaultTableModel(uqColumnNames, 0) {
 				@Override
 				public boolean isCellEditable(int row, int column) {
 					return false;
@@ -3592,6 +3639,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		UIUtil.fit(d);
 		d.setVisible(true);
 		setCurrentRowSelection(-1);
+		onRedraw();
 	}
 
 	private void updateWhereField() {
@@ -3628,7 +3676,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		UIUtil.fit(d);
 		d.setVisible(true);
 		setCurrentRowSelection(-1);
-	}
+		onRedraw();
+		}
 
 	private static TableContentViewFilter tableContentViewFilter = TableContentViewFilter.create();
 	
@@ -3642,6 +3691,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	public JComponent getRowsTable() {
+		return rowsTableScrollPane;
+	}
+
+	public LoadJob newLoadJob(ResultSet resultSet) {
+		return new LoadJob(resultSet);
 	}
 
 }

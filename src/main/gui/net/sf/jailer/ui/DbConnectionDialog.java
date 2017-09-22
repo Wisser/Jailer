@@ -812,7 +812,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		URL[] urls;
 		try {
 			urls = ClasspathUtil.toURLArray(d1, d2);
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			UIUtil.showException(parent, "Error loading driver jars", e, UIUtil.EXCEPTION_CONTEXT_USER_ERROR);
 			return false;
 		}
@@ -822,7 +822,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			Connection con = dataSource.getConnection();
 			con.close();
 			return true;
-		} catch (Exception e) {
+		} catch (Throwable e) {
 			if (e.getCause() instanceof ClassNotFoundException) {
 				UIUtil.showException(parent, "Could not connect to DB", new ClassNotFoundException("JDBC driver class not found: '" + e.getMessage() + "'", e.getCause()), UIUtil.EXCEPTION_CONTEXT_USER_ERROR);
 			} else {

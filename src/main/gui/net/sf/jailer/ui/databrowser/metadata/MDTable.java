@@ -15,6 +15,19 @@
  */
 package net.sf.jailer.ui.databrowser.metadata;
 
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
+import net.sf.jailer.datamodel.Column;
+import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
+import net.sf.jailer.util.Quoting;
+
 /**
  * Information about a database table.
  * 
@@ -23,6 +36,8 @@ package net.sf.jailer.ui.databrowser.metadata;
 public class MDTable extends MDObject {
 
 	private final MDSchema schema;
+	private List<String> primaryKey;
+	private List<String> columns;
 	
 	/**
 	 * Constructor.
@@ -43,14 +58,69 @@ public class MDTable extends MDObject {
 	public MDSchema getSchema() {
 		return schema;
 	}
-	
+
 	/**
 	 * Gets columns of table
 	 * 
 	 * @return columns of table
 	 */
-//	public synchronized List<MDColumn> getColumns() {
-//		
-//	}
+	public List<String> getColumns() throws SQLException {
+		readColumns();
+		return columns;
+	}
+
+	/**
+	 * Gets primary key columns of table
+	 * 
+	 * @return primary key columns of table
+	 */
+	public List<String> getPrimaryKeyColumns() throws SQLException {
+		readColumns();
+		return primaryKey;
+	}
+
+	private synchronized void readColumns() throws SQLException {
+		if (columns == null) {
+			columns = new ArrayList<String>();
+			primaryKey = new ArrayList<String>();
+			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getColumns(getSchema().getMetaDataSource().getSession(), getSchema().getMetaDataSource().getSession().getMetaData(), getSchema().getName(), getName(), "%", false);
+			while (rs.next()) {
+				columns.add(rs.getString(4));
+			}
+			rs.close();
+			
+			rs = JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(getSchema().getMetaDataSource().getSession(), getSchema().getMetaDataSource().getSession().getMetaData(), getSchema().getName(), getName(), false);
+			while (rs.next()) {
+				primaryKey.add(rs.getString(4));
+			}
+			rs.close();
+		}
+	}
+
+	/**
+	 * Compares data model table with this table.
+	 * 
+	 * @param table the data model table
+	 * @return <code>true</code> iff table is uptodate
+	 */
+	public boolean isUptodate(Table table) {
+		Set<String> unquotedUCColumnNames = new HashSet<String>();
+		for (Column column: table.getColumns()) {
+			unquotedUCColumnNames.add(Quoting.staticUnquote(column.name).toUpperCase(Locale.ENGLISH));
+		}
+		try {
+			if (getColumns().size() != unquotedUCColumnNames.size()) {
+				return false;
+			}
+			for (String column: getColumns()) {
+				if (!unquotedUCColumnNames.contains(column.toUpperCase(Locale.ENGLISH))) {
+					return false;
+				}
+			}
+		} catch (SQLException e) {
+			return true;
+		}
+		return true;
+	}
 
 }
