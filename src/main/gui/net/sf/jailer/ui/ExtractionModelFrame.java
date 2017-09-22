@@ -1710,11 +1710,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
                     ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("released ENTER"), "released");
 				} catch (Exception x) {
 				}
-				try {
-					UIUtil.initSyntaxKit();
-				} catch(Throwable t) {
-					t.printStackTrace();
-				}
 				
 				String file = null;
 				try {

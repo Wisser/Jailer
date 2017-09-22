@@ -1722,7 +1722,6 @@ public class DataBrowser extends javax.swing.JFrame {
         }
         java.awt.EventQueue.invokeLater(new Runnable() {
             public void run() {
-                UIUtil.initSyntaxKit();
                 try {
                     try {
                         // L&F can no longer be changed
