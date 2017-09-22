@@ -60,7 +60,6 @@ import javax.swing.WindowConstants;
 
 import org.apache.log4j.Logger;
 
-import jsyntaxpane.DefaultSyntaxKit;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.Jailer;
 import net.sf.jailer.JailerVersion;
@@ -814,30 +813,6 @@ public class UIUtil {
 	}
 
 	private static void sendIssue(final String type, final String issue) {
-//		new Thread(new Runnable() {
-//			@Override
-//			public void run() {
-//				URL url;
-//				try {
-//					url = new URL("http://jailer.sf.net/issueReport.php?type=" + URLEncoder.encode(type, "UTF-8") + "&" + "issue=" + URLEncoder.encode(issue, "UTF-8"));
-//					URLConnection con = url.openConnection();
-//					InputStreamReader in = new InputStreamReader(con.getInputStream());
-//					int c;
-//					while ((c = in.read()) != -1) {
-//					}
-//				} catch (Throwable e) {
-//					e.printStackTrace();
-//				}
-//			}
-//		}).start();
-	}
-
-	public static void initSyntaxKit() {
-		try {
-			DefaultSyntaxKit.initKit();
-		} catch (Throwable e) {
-			e.printStackTrace();
-		}
 	}
 
 }

@@ -849,9 +849,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			sqlBrowserContentPane.editorPanel.add(limitBox, gridBagConstraints);
 			sqlBrowserContentPane.rowListPanel.add(cardPanel, java.awt.BorderLayout.CENTER);
 			cardPanel.setVisible(true);
-			sqlBrowserContentPane.sqlEditorPane.setContentType("text/sql");
 			sqlBrowserContentPane.sqlEditorPane.setText(condition);
 			sqlBrowserContentPane.sqlEditorPane.setCaretPosition(0);
+			sqlBrowserContentPane.sqlEditorPane.discardAllEdits();
+			
 			sqlBrowserContentPane.reloadButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent arg0) {
@@ -1706,7 +1707,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		try {
 			String LF = System.getProperty("line.separator", "\n");
 			String sqlString = sql.toString().trim() + LF;
-			if (sqlString.length() > 2L*1024L*1024L) {
+			if (sqlString.length() > 10L*1024L*1024L) {
 				if (1 == JOptionPane.showOptionDialog(this, "SQL Script is too long (" + (sqlString.length() / 1024) + " KB) to be edited.", "SQL Script too long", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Ok", "Save Script" }, "Save Script")) {
 					String fn = UIUtil.choseFile(null, ".", "Save SQL Script", ".sql", this, false, false, false);
 					if (fn != null) {

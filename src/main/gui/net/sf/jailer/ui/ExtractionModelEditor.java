@@ -59,7 +59,6 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
-import javax.swing.JEditorPane;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JMenuItem;
@@ -88,6 +87,9 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.AggregationSchema;
@@ -1892,11 +1894,12 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 	 */
 	private void addSketchTab(Table table) throws Exception {
 		JScrollPane tab = new JScrollPane();
-		JEditorPane xmlSketch = new JEditorPane();
+		RSyntaxTextArea xmlSketch = new RSyntaxTextArea();
 		
 		xmlSketch.setEditable(false);
 		tab.setViewportView(xmlSketch);
-		xmlSketch.setContentType("text/xml");
+		xmlSketch.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
+		xmlSketch.setCodeFoldingEnabled(true);
 
 		String tabName = null;
 		String sketch = "";
