@@ -92,6 +92,7 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.modelbuilder.KnownIdentifierMap;
 import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.Environment;
@@ -2407,6 +2408,10 @@ public abstract class Desktop extends JDesktopPane {
 		}
 		Collection<RowBrowser> toBeLoaded = new ArrayList<Desktop.RowBrowser>();
 		List<String> unknownTables = new ArrayList<String>();
+		KnownIdentifierMap knownTablesMap = new KnownIdentifierMap();
+		for (Table table: datamodel.get().getTables()) {
+			knownTablesMap.putTableName(table.getName());
+		}
 		for (CsvFile.Line l : lines) {
 			if (l.cells.get(0).equals("Layout")) {
 				try {
@@ -2430,6 +2435,12 @@ public abstract class Desktop extends JDesktopPane {
 			RowBrowser rb = null;
 			if ("T".equals(l.cells.get(9))) {
 				Table table = datamodel.get().getTable(l.cells.get(10));
+				if (table == null) {
+					String kt = knownTablesMap.getTableName(l.cells.get(10));
+					if (kt != null) {
+						table = datamodel.get().getTable(kt);
+					}
+				}
 				if (table == null) {
 					unknownTables.add(l.cells.get(10));
 				} else {

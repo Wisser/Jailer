@@ -256,14 +256,128 @@ public class MetaDataCache {
 	/**
 	 * Result set of meta data.
 	 */
-	private static class CachedResultSet implements ResultSet {
+	public static class CachedResultSet implements ResultSet {
 
 		private final List<Object[]> rowList;
 		private int index = -1;
 		private boolean wasNull;
+		private ResultSetMetaData resultSetMetaData;
 
 		public CachedResultSet(List<Object[]> rowList) {
 			this.rowList = rowList;
+		}
+
+		public CachedResultSet(ResultSet resultSet) throws SQLException {
+			this.rowList = new ArrayList<Object[]>();
+			ResultSetMetaData rmd = resultSet.getMetaData();
+			final int numCol = rmd.getColumnCount();
+			while (resultSet.next()) {
+				Object[] row = new Object[numCol];
+				for (int i = 1; i < numCol; ++i) {
+					row[i - 1] = resultSet.getObject(i);
+				}
+				rowList.add(row);
+			}
+			
+			final String[] names = new String[numCol];
+			for (int i = 1; i < numCol; ++i) {
+				names[i - 1] = rmd.getColumnName(i);
+			}
+			resultSetMetaData = new ResultSetMetaData() {
+				@Override
+				public <T> T unwrap(Class<T> iface) throws SQLException {
+					return null;
+				}
+				@Override
+				public boolean isWrapperFor(Class<?> iface) throws SQLException {
+					return false;
+				}
+				@Override
+				public boolean isWritable(int column) throws SQLException {
+					return false;
+				}
+				@Override
+				public boolean isSigned(int column) throws SQLException {
+					return false;
+				}
+				@Override
+				public boolean isSearchable(int column) throws SQLException {
+					return false;
+				}
+				@Override
+				public boolean isReadOnly(int column) throws SQLException {
+					return true;
+				}
+				@Override
+				public int isNullable(int column) throws SQLException {
+					return 0;
+				}
+				@Override
+				public boolean isDefinitelyWritable(int column) throws SQLException {
+					return false;
+				}
+				@Override
+				public boolean isCurrency(int column) throws SQLException {
+					return false;
+				}
+				@Override
+				public boolean isCaseSensitive(int column) throws SQLException {
+					return false;
+				}
+				@Override
+				public boolean isAutoIncrement(int column) throws SQLException {
+					return false;
+				}
+				@Override
+				public String getTableName(int column) throws SQLException {
+					return null;
+				}
+				@Override
+				public String getSchemaName(int column) throws SQLException {
+					return null;
+				}
+				@Override
+				public int getScale(int column) throws SQLException {
+					return 0;
+				}
+				@Override
+				public int getPrecision(int column) throws SQLException {
+					return 0;
+				}
+				@Override
+				public String getColumnTypeName(int column) throws SQLException {
+					return null;
+				}
+				
+				@Override
+				public int getColumnType(int column) throws SQLException {
+					return 0;
+				}
+				@Override
+				public String getColumnName(int column) throws SQLException {
+					return names[column - 1];
+				}
+				@Override
+				public String getColumnLabel(int column) throws SQLException {
+					return names[column - 1];
+				}
+				@Override
+				public int getColumnDisplaySize(int column) throws SQLException {
+					return 0;
+				}
+				@Override
+				public int getColumnCount() throws SQLException {
+					return numCol;
+				}
+				@Override
+				public String getColumnClassName(int column) throws SQLException {
+					return null;
+				}
+				@Override
+				public String getCatalogName(int column) throws SQLException {
+					return null;
+				}
+			};
 		}
 
 		@Override
@@ -638,9 +752,10 @@ public class MetaDataCache {
 
 		@Override
 		public ResultSetMetaData getMetaData() throws SQLException {
+			if (resultSetMetaData != null) {
+				return resultSetMetaData;
+			}
 			throw new UnsupportedOperationException();
-
-
 		}
 
 		@Override
