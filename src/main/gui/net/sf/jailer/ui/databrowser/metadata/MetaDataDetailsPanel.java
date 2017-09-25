@@ -16,6 +16,11 @@
 package net.sf.jailer.ui.databrowser.metadata;
 
 import java.awt.BorderLayout;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -27,6 +32,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -38,6 +44,7 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.modelbuilder.MetaDataCache.CachedResultSet;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
@@ -107,7 +114,36 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     		}
     		tableDetailsPanel.add(view);
     	} else {
-    		tableDetailsPanel.add(new JLabel("  Table \"" + mdTable.getName() + "\" is not part of the data model."));
+    		JButton analyseButton = new JButton("Analyse schema \"" + mdTable.getSchema().getName() + "\"");
+    		analyseButton.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					analyseSchema(mdTable.getSchema().getName());
+				}
+			});
+    		JPanel panel = new JPanel(new GridBagLayout());
+    		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+	        gridBagConstraints.gridx = 1;
+	        gridBagConstraints.gridy = 1;
+	        gridBagConstraints.gridwidth = 1;
+	        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+	        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+    		panel.add(new JLabel("  Table \"" + mdTable.getName() + "\""), gridBagConstraints);
+    		gridBagConstraints = new java.awt.GridBagConstraints();
+	        gridBagConstraints.gridx = 1;
+	        gridBagConstraints.gridy = 2;
+	        gridBagConstraints.gridwidth = 1;
+	        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+	        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+    		panel.add(new JLabel("  is not part of the data model."), gridBagConstraints);
+    		gridBagConstraints = new java.awt.GridBagConstraints();
+	        gridBagConstraints.gridx = 1;
+	        gridBagConstraints.gridy = 3;
+	        gridBagConstraints.gridwidth = 1;
+	        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+	        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+    		panel.add(analyseButton, gridBagConstraints);
+    		tableDetailsPanel.add(panel);
     	}
 		tabbedPane.repaint();
     	queue.clear();
@@ -123,147 +159,157 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 	    	panel.add(new JLabel(" loading..."));
 	    	tabbedPane.repaint();
 	    	try {
+		    	final int tableNameColumnIndex = 3;
+		    	final Set<String> pkNames = new HashSet<String>();
+				try {
+					pkNames.addAll(mdTable.getPrimaryKeyColumns());
+				} catch (SQLException e1) {
+				}
+		    	final BrowserContentPane rb = new BrowserContentPane(datamodel.get(), null, "", session, null, null,
+						null, null, new HashSet<Pair<BrowserContentPane, Row>>(), new HashSet<Pair<BrowserContentPane, String>>(), 0, false, false, executionContext) {
+		    		{
+		    			noSingleRowDetailsView = true;
+		    		}
+		    		@Override
+					protected void unhide() {
+					}
+					@Override
+					protected void showInNewWindow() {
+					}
+					@Override
+					protected void reloadDataModel() throws Exception {
+					}
+					@Override
+					protected void openSchemaMappingDialog() {
+					}
+					@Override
+					protected void openSchemaAnalyzer() {
+					}
+					@Override
+					protected void onRedraw() {
+						tabbedPane.repaint();
+					}
+					@Override
+					protected void onHide() {
+					}
+					@Override
+					protected void onContentChange(List<Row> rows, boolean reloadChildren) {
+					}
+					@Override
+					protected void navigateTo(Association association, int rowIndex, Row row) {
+					}
+					@Override
+					protected List<RowBrowser> getTableBrowser() {
+						return null;
+					}
+					@Override
+					protected PriorityBlockingQueue<RunnableWithPriority> getRunnableQueue() {
+						return null;
+					}
+					@Override
+					protected QueryBuilderPathSelector getQueryBuilderPathSelector() {
+						return null;
+					}
+					@Override
+					protected QueryBuilderDialog getQueryBuilderDialog() {
+						return null;
+					}
+					@Override
+					protected RowBrowser getParentBrowser() {
+						return null;
+					}
+					@Override
+					protected JFrame getOwner() {
+						return owner;
+					}
+					@Override
+					protected double getLayoutFactor() {
+						return 0;
+					}
+					@Override
+					protected DbConnectionDialog getDbConnectionDialog() {
+						return null;
+					}
+					@Override
+					protected List<RowBrowser> getChildBrowsers() {
+						return new ArrayList<RowBrowser>();
+					}
+					@Override
+					protected void findClosure(Row row, Set<Pair<BrowserContentPane, Row>> closure, boolean forward) {
+						Pair<BrowserContentPane, Row> thisRow = new Pair<BrowserContentPane, Row>(this, row);
+						if (!closure.contains(thisRow)) {
+							closure.add(thisRow);
+						}
+					}
+					@Override
+					protected void findClosure(Row row) {
+						Set<Pair<BrowserContentPane, Row>> rows = new HashSet<Pair<BrowserContentPane, Row>>();
+						findClosure(row, rows, false);
+						currentClosure.addAll(rows);
+						rows = new HashSet<Pair<BrowserContentPane, Row>>();
+						findClosure(row, rows, true);
+						currentClosure.addAll(rows);
+					}
+					@Override
+					protected Relationship createQBRelations(boolean withParents) {
+						return null;
+					}
+					@Override
+					protected List<Relationship> createQBChildrenRelations(RowBrowser tabu, boolean all) {
+						return null;
+					}
+					@Override
+					protected void collectPositions(Map<String, Map<String, double[]>> positions) {
+					}
+					@Override
+					protected void close() {
+					}
+					@Override
+					protected void beforeReload() {
+					}
+					@Override
+					protected void appendLayout() {
+					}
+					@Override
+					protected void adjustClosure(BrowserContentPane tabu) {
+					}
+					@Override
+					protected void addRowToRowLink(Row pRow, Row exRow) {
+					}
+					@Override
+					protected boolean renderRowAsPK(Row theRow) {
+						if (tableNameColumnIndex >= 0 && tableNameColumnIndex < theRow.values.length) {
+							return pkNames.contains(theRow.values[tableNameColumnIndex]);
+						}
+						return false;
+					}
+				};
+		    	
+				final CachedResultSet[] metaDataDetails = new CachedResultSet[1];
+				
 				queue.put(new Runnable() {
 					@Override
 					public void run() {
 				    	try {
-					    	final int tableNameColumnIndex = 3;
-					    	final Set<String> pkNames = new HashSet<String>(mdTable.getPrimaryKeyColumns());
-					    	final BrowserContentPane rb = new BrowserContentPane(datamodel.get(), null, "", session, null, null,
-									null, null, new HashSet<Pair<BrowserContentPane, Row>>(), new HashSet<Pair<BrowserContentPane, String>>(), 0, false, false, executionContext) {
-					    		{
-					    			noSingleRowDetailsView = true;
-					    		}
-					    		@Override
-								protected void unhide() {
-								}
-								@Override
-								protected void showInNewWindow() {
-								}
-								@Override
-								protected void reloadDataModel() throws Exception {
-								}
-								@Override
-								protected void openSchemaMappingDialog() {
-								}
-								@Override
-								protected void openSchemaAnalyzer() {
-								}
-								@Override
-								protected void onRedraw() {
-									tabbedPane.repaint();
-								}
-								@Override
-								protected void onHide() {
-								}
-								@Override
-								protected void onContentChange(List<Row> rows, boolean reloadChildren) {
-								}
-								@Override
-								protected void navigateTo(Association association, int rowIndex, Row row) {
-								}
-								@Override
-								protected List<RowBrowser> getTableBrowser() {
-									return null;
-								}
-								@Override
-								protected PriorityBlockingQueue<RunnableWithPriority> getRunnableQueue() {
-									return null;
-								}
-								@Override
-								protected QueryBuilderPathSelector getQueryBuilderPathSelector() {
-									return null;
-								}
-								@Override
-								protected QueryBuilderDialog getQueryBuilderDialog() {
-									return null;
-								}
-								@Override
-								protected RowBrowser getParentBrowser() {
-									return null;
-								}
-								@Override
-								protected JFrame getOwner() {
-									return owner;
-								}
-								@Override
-								protected double getLayoutFactor() {
-									return 0;
-								}
-								@Override
-								protected DbConnectionDialog getDbConnectionDialog() {
-									return null;
-								}
-								@Override
-								protected List<RowBrowser> getChildBrowsers() {
-									return new ArrayList<RowBrowser>();
-								}
-								@Override
-								protected void findClosure(Row row, Set<Pair<BrowserContentPane, Row>> closure, boolean forward) {
-									Pair<BrowserContentPane, Row> thisRow = new Pair<BrowserContentPane, Row>(this, row);
-									if (!closure.contains(thisRow)) {
-										closure.add(thisRow);
-									}
-								}
-								@Override
-								protected void findClosure(Row row) {
-									Set<Pair<BrowserContentPane, Row>> rows = new HashSet<Pair<BrowserContentPane, Row>>();
-									findClosure(row, rows, false);
-									currentClosure.addAll(rows);
-									rows = new HashSet<Pair<BrowserContentPane, Row>>();
-									findClosure(row, rows, true);
-									currentClosure.addAll(rows);
-								}
-								@Override
-								protected Relationship createQBRelations(boolean withParents) {
-									return null;
-								}
-								@Override
-								protected List<Relationship> createQBChildrenRelations(RowBrowser tabu, boolean all) {
-									return null;
-								}
-								@Override
-								protected void collectPositions(Map<String, Map<String, double[]>> positions) {
-								}
-								@Override
-								protected void close() {
-								}
-								@Override
-								protected void beforeReload() {
-								}
-								@Override
-								protected void appendLayout() {
-								}
-								@Override
-								protected void adjustClosure(BrowserContentPane tabu) {
-								}
-								@Override
-								protected void addRowToRowLink(Row pRow, Row exRow) {
-								}
-								@Override
-								protected boolean renderRowAsPK(Row theRow) {
-									if (tableNameColumnIndex >= 0 && tableNameColumnIndex < theRow.values.length) {
-										return pkNames.contains(theRow.values[tableNameColumnIndex]);
-									}
-									return false;
-								}
-							};
-					    	
-				    		LoadJob loadJob = rb.newLoadJob(mdd.readMetaDataDetails(session, mdTable));
-				    		loadJob.run();
-				    		SwingUtilities.invokeLater(new Runnable() {
-								@Override
-								public void run() {
-									panel.removeAll();
-									JComponent rTab = rb.getRowsTable();
-						        	panel.add(rTab);
-						        	tabbedPane.repaint();
-							    	detailsViews.put(cacheKey, rTab);
-								}
-							});
+				    		ResultSet rs = mdd.readMetaDataDetails(session, mdTable);
+				    		metaDataDetails[0] = new CachedResultSet(rs);
+				    		rs.close();
 						} catch (SQLException e) {
 							e.printStackTrace();
 						}
+					}
+				});
+				
+	    		SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						LoadJob loadJob = rb.newLoadJob(metaDataDetails[0]);
+			    		loadJob.run();
+						panel.removeAll();
+						JComponent rTab = rb.getRowsTable();
+			        	panel.add(rTab);
+			        	tabbedPane.repaint();
+				    	detailsViews.put(cacheKey, rTab);
 					}
 				});
 			} catch (InterruptedException e) {
