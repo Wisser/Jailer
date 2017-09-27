@@ -20,7 +20,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
+import net.sf.jailer.util.Quoting;
 
 /**
  * Information about a database schema.
@@ -71,4 +76,22 @@ public class MDSchema extends MDObject {
 		}
 		return tables;
 	}
+	
+	private final Map<String, MDTable> tablePerUnquotedNameUC = new HashMap<String, MDTable>();
+
+    /**
+     * Find table by name.
+     * 
+     * @param tableName table name
+     * @return table by name
+     */
+	public synchronized MDTable find(String tableName) {
+		if (tablePerUnquotedNameUC.isEmpty()) {
+			for (MDTable table: getTables()) {
+				tablePerUnquotedNameUC.put(Quoting.staticUnquote(table.getName().toUpperCase(Locale.ENGLISH)), table);
+			}
+		}
+		return tablePerUnquotedNameUC.get(Quoting.staticUnquote(tableName.toUpperCase(Locale.ENGLISH)));
+	}
+
 }

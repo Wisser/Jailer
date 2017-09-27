@@ -18,6 +18,9 @@ package net.sf.jailer.ui.databrowser.metadata;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import javax.swing.JTable;
+import javax.swing.table.TableColumnModel;
+
 import net.sf.jailer.database.Session;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 
@@ -32,10 +35,27 @@ public enum MetaDataDetails {
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
 			return JDBCMetaDataBasedModelElementFinder.getColumns(session, session.getMetaData(), mdTable.getSchema().getName(), mdTable.getName(), "%", false);
 		}
+		public void adjustRowsTable(JTable rowsTable) {
+			TableColumnModel columnModel = rowsTable.getColumnModel();
+			if (columnModel.getColumnCount() > 17) {
+				columnModel.moveColumn(3, 0);
+				columnModel.moveColumn(5, 1);
+				columnModel.moveColumn(17, 2);
+				columnModel.moveColumn(6 + 1, 3);
+				columnModel.moveColumn(8 + 1, 4);
+			}
+		}
 	},
 	PRIMARYKEY("Primary Key") {
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
 			return JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(session, session.getMetaData(), mdTable.getSchema().getName(), mdTable.getName(), false);
+		}
+		public void adjustRowsTable(JTable rowsTable) {
+			TableColumnModel columnModel = rowsTable.getColumnModel();
+			if (columnModel.getColumnCount() > 4) {
+				columnModel.moveColumn(3, 0);
+				columnModel.moveColumn(4, 1);
+			}
 		}
 	},
 	INDEXES("Indexes") {
@@ -61,5 +81,7 @@ public enum MetaDataDetails {
 	public final String name;
 	
 	public abstract ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException;
+	public void adjustRowsTable(JTable rowsTable) {
+	}
 
 }

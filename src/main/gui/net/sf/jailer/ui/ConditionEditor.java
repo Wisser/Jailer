@@ -18,6 +18,7 @@ package net.sf.jailer.ui;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,10 +30,14 @@ import javax.swing.JPopupMenu;
 import javax.swing.JScrollPane;
 import javax.swing.JSeparator;
 
+import org.fife.ui.autocomplete.AutoCompletion;
+
 import net.sf.jailer.datamodel.Column;
+import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
-import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithDataModelBasedCompletion;
+import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLCompletion;
 
 /**
  * Editor for multi-line SQL conditions with parameter support.
@@ -43,12 +48,13 @@ public class ConditionEditor extends javax.swing.JDialog {
 	
 	private boolean ok;
 	private ParameterSelector parameterSelector;
+	private DataModelBasedSQLCompletionProvider provider;
 	
 	/** Creates new form ConditionEditor */
-	public ConditionEditor(java.awt.Frame parent, ParameterSelector.ParametersGetter parametersGetter) {
+	public ConditionEditor(java.awt.Frame parent, ParameterSelector.ParametersGetter parametersGetter, DataModel dataModel) {
 		super(parent, true);
 		initComponents();
-		this.editorPane = new RSyntaxTextAreaWithDataModelBasedCompletion();
+		this.editorPane = new RSyntaxTextAreaWithSQLCompletion();
 		JScrollPane jScrollPane2 = new JScrollPane();
 		jScrollPane2.setViewportView(editorPane);
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -59,6 +65,15 @@ public class ConditionEditor extends javax.swing.JDialog {
 		gridBagConstraints.weighty = 1.0;
 		jPanel1.add(jScrollPane2, gridBagConstraints);
 		jScrollPane2.setViewportView(editorPane);
+		
+		if (dataModel != null) {
+			try {
+				provider = new DataModelBasedSQLCompletionProvider(null, dataModel);
+				AutoCompletion ac = new AutoCompletion(provider);
+				ac.install(editorPane);
+			} catch (SQLException e) {
+			}
+		}
 		
 		setLocation(400, 150);
 		setSize(600, 400);
@@ -161,6 +176,7 @@ public class ConditionEditor extends javax.swing.JDialog {
         jPanel3 = new javax.swing.JPanel();
         okButton = new javax.swing.JButton();
         cancelButton = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         getContentPane().setLayout(new java.awt.GridBagLayout());
@@ -272,6 +288,15 @@ public class ConditionEditor extends javax.swing.JDialog {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         jPanel1.add(jPanel3, gridBagConstraints);
 
+        jLabel2.setForeground(new java.awt.Color(128, 128, 128));
+        jLabel2.setText(" ctrl-space for code completion");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 20;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        jPanel1.add(jLabel2, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 10;
         gridBagConstraints.gridy = 10;
@@ -340,6 +365,15 @@ public class ConditionEditor extends javax.swing.JDialog {
 		if (parameterSelector != null) {
 			parameterSelector.updateParameters();
 		}
+		if (provider != null) {
+			provider.removeAliases();
+			if (table1 != null) {
+				provider.addAlias(table1alias, table1);
+			}
+			if (table2 != null) {
+				provider.addAlias(table2alias, table2);
+			}
+		}
 		editorPane.grabFocus();
 		setVisible(true);
 		return ok? editorPane.getText() : null;
@@ -396,6 +430,7 @@ public class ConditionEditor extends javax.swing.JDialog {
     public javax.swing.JPanel addOnPanel;
     private javax.swing.JButton cancelButton;
     private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
@@ -421,7 +456,7 @@ public class ConditionEditor extends javax.swing.JDialog {
 		}
 	}
 	
-	public final RSyntaxTextAreaWithDataModelBasedCompletion editorPane;
+	public final RSyntaxTextAreaWithSQLCompletion editorPane;
 	
 	private static final long serialVersionUID = -5169934807182707970L;
 }

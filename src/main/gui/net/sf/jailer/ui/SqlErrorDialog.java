@@ -28,6 +28,8 @@ import javax.swing.UIManager;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
+import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
+
 /**
  * Shows SQL-Exception.
  * 
@@ -46,6 +48,7 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 		sqlEditorPane.setEditable(false);
 		if (sqlError) {
 			this.sqlEditorPane.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
+			sql = new BasicFormatterImpl().format(sql);
 		}
 		initComponents();
 		

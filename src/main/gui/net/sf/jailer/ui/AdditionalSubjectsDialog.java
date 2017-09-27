@@ -180,7 +180,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
 				mouseClicked(e);
 			}
 			public void mouseClicked(java.awt.event.MouseEvent evt) {
-				ConditionEditor conditionEditor = new ConditionEditor(AdditionalSubjectsDialog.this.parent, parametersGetter);
+				ConditionEditor conditionEditor = new ConditionEditor(AdditionalSubjectsDialog.this.parent, parametersGetter, AdditionalSubjectsDialog.this.extractionModel.dataModel);
 				Object item = detailsComboBox.getSelectedItem();
 				conditionEditor.setTitle("");
 				Table table = null;

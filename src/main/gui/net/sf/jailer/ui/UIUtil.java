@@ -702,7 +702,7 @@ public class UIUtil {
 		}
 	}
 
-	public static void fit(JDialog d) {
+	public static void fit(Window d) {
 		try {
 			// Get the size of the screen
 			Dimension dim = Toolkit.getDefaultToolkit().getScreenSize();
