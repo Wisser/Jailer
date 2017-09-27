@@ -216,14 +216,23 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			public void valueChanged(TreeSelectionEvent e) {
 				TreePath path = e.getNewLeadSelectionPath();
 				if (path != null) {
-					Object last = path.getLastPathComponent();
+					final Object last = path.getLastPathComponent();
 					if (metaDataTree.getModel().getRoot() == last) {
 						 openNewTableBrowser();
 					}
 					if (last instanceof DefaultMutableTreeNode) {
-						Object uo = ((DefaultMutableTreeNode) last).getUserObject();
-						if (uo instanceof MDTable) {
-							onTableSelect((MDTable) uo);
+						final Object uo = ((DefaultMutableTreeNode) last).getUserObject();
+						if (uo instanceof MDSchema) {
+							onSchemaSelect((MDSchema) uo);
+						} else if (uo instanceof MDTable) {
+							SwingUtilities.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									if (metaDataTree.getSelectionPath() != null && metaDataTree.getSelectionPath().getLastPathComponent() == last) {
+										onTableSelect((MDTable) uo);
+									}
+								}
+							});
 						}
 					}
 				}
@@ -419,6 +428,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     protected abstract void open(MDTable mdTable);
     protected abstract void analyseSchema(String schemaName);
     protected abstract void onTableSelect(MDTable mdTable);
+    protected abstract void onSchemaSelect(MDSchema mdSchema);
 	protected abstract void openNewTableBrowser();
 	
     static private ImageIcon warnIcon;

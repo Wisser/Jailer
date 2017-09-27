@@ -109,6 +109,7 @@ public class MetaDataSource {
 		schemas.clear();
     	mDTableToTable.clear();
     	tableToMDTable.clear();
+    	schemaPerUnquotedNameUC.clear();
 		readSchemas();
 	}
 
@@ -125,6 +126,7 @@ public class MetaDataSource {
 	private final Map<Table, MDTable> tableToMDTable = new HashMap<Table, MDTable>();
 	private final Map<String, Table> tablePerUnquotedName = new HashMap<String, Table>();
 	private final Map<String, Table> tablePerUnquotedNameUC = new HashMap<String, Table>();
+	private final Map<String, MDSchema> schemaPerUnquotedNameUC = new HashMap<String, MDSchema>();
 
     public Table toTable(MDTable mdTable) {
     	if (mDTableToTable.containsKey(mdTable)) {
@@ -207,5 +209,20 @@ public class MetaDataSource {
     	}
     	return mdTable;
     }
+
+    /**
+     * Find schema by name.
+     * 
+     * @param schemaName schema name
+     * @return schema by name
+     */
+	public synchronized MDSchema find(String schemaName) {
+		if (schemaPerUnquotedNameUC.isEmpty()) {
+			for (MDSchema schema: getSchemas()) {
+				schemaPerUnquotedNameUC.put(Quoting.staticUnquote(schema.getName().toUpperCase(Locale.ENGLISH)), schema);
+			}
+		}
+		return schemaPerUnquotedNameUC.get(Quoting.staticUnquote(schemaName.toUpperCase(Locale.ENGLISH)));
+	}
 
 }

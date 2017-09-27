@@ -101,10 +101,12 @@ import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
 import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
+import net.sf.jailer.ui.databrowser.metadata.MDSchema;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
+import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.Quoting;
 
@@ -498,7 +500,10 @@ public class DataBrowser extends javax.swing.JFrame {
         }
         
         setLocation(40 + c * 32, 40 + c * 32);
-        setSize(980, 790);
+        setSize(980, 840);
+        
+        UIUtil.fit(this);
+        
         if (root != null) {
             final RowBrowser rb = desktop.addTableBrowser(null, null, 0, root, null, condition, null, null, true);
             if (rb != null && rb.internalFrame != null) {
@@ -740,6 +745,7 @@ public class DataBrowser extends javax.swing.JFrame {
         titleLabel = new javax.swing.JLabel();
         borderBrowserPanel = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
+        jTabbedPane2 = new javax.swing.JTabbedPane();
         jSplitPane3 = new javax.swing.JSplitPane();
         jLayeredPane1 = new javax.swing.JLayeredPane();
         layeredPaneContent = new javax.swing.JPanel();
@@ -747,6 +753,9 @@ public class DataBrowser extends javax.swing.JFrame {
         jInternalFrame1 = new javax.swing.JInternalFrame();
         hiddenPanel = new javax.swing.JPanel();
         closurePanel = new javax.swing.JPanel();
+        sqlConsoleContainerPanel = new javax.swing.JPanel();
+        jPanel8 = new javax.swing.JPanel();
+        jLabel16 = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         newBrowserjMenuItem = new javax.swing.JMenuItem();
@@ -1168,13 +1177,34 @@ public class DataBrowser extends javax.swing.JFrame {
         closurePanel.setLayout(new java.awt.GridBagLayout());
         jSplitPane3.setRightComponent(closurePanel);
 
+        jTabbedPane2.addTab("Desktop", jSplitPane3);
+
+        sqlConsoleContainerPanel.setLayout(new java.awt.BorderLayout());
+
+        jPanel8.setLayout(new java.awt.GridBagLayout());
+
+        jLabel16.setText("  SQL Console will be available in release 7.5");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel8.add(jLabel16, gridBagConstraints);
+
+        sqlConsoleContainerPanel.add(jPanel8, java.awt.BorderLayout.CENTER);
+
+        jTabbedPane2.addTab("SQL", sqlConsoleContainerPanel);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        jPanel5.add(jSplitPane3, gridBagConstraints);
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 0, 0);
+        jPanel5.add(jTabbedPane2, gridBagConstraints);
 
         jSplitPane1.setRightComponent(jPanel5);
 
@@ -1919,6 +1949,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -1941,6 +1972,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel5;
     private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
+    private javax.swing.JPanel jPanel8;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JScrollPane jScrollPane3;
     private javax.swing.JPopupMenu.Separator jSeparator1;
@@ -1957,6 +1989,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JSplitPane jSplitPane3;
     private javax.swing.JSplitPane jSplitPane4;
     private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JTabbedPane jTabbedPane2;
     private javax.swing.JTable jTable1;
     private javax.swing.JRadioButtonMenuItem largeLayoutRadioButtonMenuItem;
     private javax.swing.JPanel layeredPaneContent;
@@ -1981,6 +2014,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JLabel schemaName;
     private javax.swing.JPanel schemaNamePanel;
     private javax.swing.JRadioButtonMenuItem smallLayoutRadioButtonMenuItem;
+    private javax.swing.JPanel sqlConsoleContainerPanel;
     private javax.swing.JMenuItem storeSessionItem;
     private javax.swing.JPanel tablesPanel;
     private javax.swing.JRadioButtonMenuItem thumbnailLayoutRadioButtonMenuItem;
@@ -2614,6 +2648,11 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 
 			@Override
+			protected void onSchemaSelect(MDSchema mdSchema) {
+				metaDataDetailsPanel.clear();
+			}
+
+			@Override
 			protected void openNewTableBrowser() {
 				DataBrowser.this.openNewTableBrowser(false);
 			}
@@ -2623,8 +2662,25 @@ public class DataBrowser extends javax.swing.JFrame {
 		metaDataViewPanel.remove(metaDataDetailsPanel);
 		metaDataDetailsPanel = createMetaDataDetailsPanel(executionContext);
 		metaDataViewPanel.add(metaDataDetailsPanel);
+		
+		try {
+			if (sqlConsole == null) {
+				sqlConsole = new SQLConsole(session, metaDataSource);
+//				sqlConsoleContainerPanel.removeAll();
+//				sqlConsoleContainerPanel.add(sqlConsole);
+			} else {
+				sqlConsole.reset(session, metaDataSource);
+			}
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
 	}
     
 	private MetaDataDetailsPanel metaDataDetailsPanel;
+	private SQLConsole sqlConsole;
+
+	public MetaDataSource getMetaDataSource() {
+		return metaDataSource;
+	}
 	
 }

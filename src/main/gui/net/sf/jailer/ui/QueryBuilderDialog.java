@@ -25,6 +25,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,13 +43,19 @@ import javax.swing.border.SoftBevelBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.fife.ui.autocomplete.AutoCompletion;
+import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
+import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithDataModelBasedCompletion;
+import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
+import net.sf.jailer.ui.databrowser.sqlconsole.MetaDataBasedSQLCompletionProvider;
+import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLCompletion;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -61,7 +68,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 	/** Creates new form QueryBuilderDialog */
 	public QueryBuilderDialog(java.awt.Frame parent) {
 		super(parent, true);
-		this.sqlTextArea = new RSyntaxTextAreaWithDataModelBasedCompletion();
+		this.sqlTextArea = new RSyntaxTextAreaWithSQLCompletion();
 		initComponents();
 		JScrollPane jScrollPane2 = new JScrollPane();
 		jScrollPane2.setViewportView(sqlTextArea);
@@ -102,7 +109,30 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		setSize(Math.max(700, getWidth()), 500);
 		UIUtil.initPeer();
 	}
-
+	
+	private AutoCompletion autoCompletion = null;
+	
+	private void initAutoCompletion(DataModel dataModel, Session session, MetaDataSource metaDataSource) {
+		if (autoCompletion != null) {
+			autoCompletion.uninstall();
+			autoCompletion = null;
+		}
+		try {
+			CompletionProvider provider = null;
+			if (metaDataSource != null) {
+				provider = new MetaDataBasedSQLCompletionProvider(session, metaDataSource);
+			} else if (dataModel != null) {
+				provider = new DataModelBasedSQLCompletionProvider(session, dataModel);
+			}
+			
+			if (provider != null) {
+				AutoCompletion ac = new AutoCompletion(provider);
+				ac.install(sqlTextArea);
+			}
+		} catch (SQLException e1) {
+		}
+	}
+	
 	/**
 	 * This method is called from within the constructor to initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is always
@@ -528,7 +558,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 
 					private static final long serialVersionUID = -6555670830339032571L;
 				};
-				AutoCompletion.enable(tableCB);
+				net.sf.jailer.ui.AutoCompletion.enable(tableCB);
 				DefaultComboBoxModel aModel = new DefaultComboBoxModel();
 				aModel.addElement("");
 				Table lastTable = relationship.parent == rootRelationship ? subject
@@ -1098,11 +1128,12 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 	 */
 	public void buildQuery(Table table, boolean usePath,
 			boolean showJoinButton, List<Association> associationsOnPath,
-			List<String> whereClauses, DataModel datamodel) {
+			List<String> whereClauses, DataModel datamodel, Session session, MetaDataSource metaDataSource) {
 		this.associationsOnPath = associationsOnPath;
 		if (table == null) {
 			return;
 		}
+		initAutoCompletion(datamodel, session, metaDataSource);
 		sqlTextArea.setText("");
 		mlmTextField.setText("");
 		sqlTextArea.discardAllEdits();
@@ -1164,10 +1195,11 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 	 * @param root
 	 *            root relation
 	 */
-	public void buildQuery(Table table, Relationship root, DataModel datamodel) {
+	public void buildQuery(Table table, Relationship root, DataModel datamodel, Session session, MetaDataSource metaDataSource) {
 		if (table == null) {
 			return;
 		}
+		initAutoCompletion(datamodel, session, metaDataSource);
 		sqlTextArea.setText("");
 		mlmTextField.setText("");
 		this.datamodel = datamodel;

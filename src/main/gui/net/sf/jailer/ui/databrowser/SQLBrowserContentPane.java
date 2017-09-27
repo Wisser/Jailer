@@ -16,13 +16,21 @@
 package net.sf.jailer.ui.databrowser;
 
 import java.awt.GridBagConstraints;
+import java.sql.SQLException;
 
 import javax.swing.JInternalFrame;
 import javax.swing.JScrollPane;
 
+import org.fife.ui.autocomplete.AutoCompletion;
+import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
-import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithDataModelBasedCompletion;
+import net.sf.jailer.database.Session;
+import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
+import net.sf.jailer.ui.databrowser.sqlconsole.MetaDataBasedSQLCompletionProvider;
+import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLCompletion;
 
 /**
  * Content UI of a row browser frame in SQL mode (as {@link JInternalFrame}s). Contains a
@@ -34,9 +42,9 @@ import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithDataModelBasedCompleti
 public class SQLBrowserContentPane extends javax.swing.JPanel {
 
 	/** Creates new form SQLBrowserContentPane */
-	public SQLBrowserContentPane() {
+	public SQLBrowserContentPane(DataModel dataModel, Session session, MetaDataSource metaDataSource) {
 		initComponents();
-		this.sqlEditorPane = new RSyntaxTextAreaWithDataModelBasedCompletion() {
+		this.sqlEditorPane = new RSyntaxTextAreaWithSQLCompletion() {
 			protected void actionPerformed() {
 				super.actionPerformed();
 				reloadButton.doClick();
@@ -44,7 +52,22 @@ public class SQLBrowserContentPane extends javax.swing.JPanel {
 		};
 		JScrollPane jScrollPane1 = new JScrollPane();
 		jScrollPane1.setViewportView(sqlEditorPane);
-
+		
+		try {
+			CompletionProvider provider = null;
+			if (metaDataSource != null) {
+				provider = new MetaDataBasedSQLCompletionProvider(session, metaDataSource);
+			} else if (dataModel != null) {
+				provider = new DataModelBasedSQLCompletionProvider(session, dataModel);
+			}
+			
+			if (provider != null) {
+				AutoCompletion ac = new AutoCompletion(provider);
+				ac.install(sqlEditorPane);
+			}
+		} catch (SQLException e1) {
+		}
+		
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 1;
 		gridBagConstraints.gridy = 1;

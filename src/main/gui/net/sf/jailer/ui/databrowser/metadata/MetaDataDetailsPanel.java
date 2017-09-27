@@ -37,6 +37,7 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTable;
 import javax.swing.SwingUtilities;
 
 import net.sf.jailer.ExecutionContext;
@@ -104,7 +105,12 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
         thread.start();
     }
 
+	public void clear() {
+    	setVisible(false);
+	}
+
     public void showMetaDataDetails(final MDTable mdTable, Table table, DataModel dataModel) {
+    	setVisible(true);
     	tableDetailsPanel.removeAll();
     	if (table != null) {
     		JComponent view = tableDetailsViews.get(table);
@@ -283,6 +289,10 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 						}
 						return false;
 					}
+					@Override
+					protected MetaDataSource getMetaDataSource() {
+						return null;
+					}
 				};
 		    	
 				final CachedResultSet[] metaDataDetails = new CachedResultSet[1];
@@ -306,10 +316,17 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 						LoadJob loadJob = rb.newLoadJob(metaDataDetails[0]);
 			    		loadJob.run();
 						panel.removeAll();
-						JComponent rTab = rb.getRowsTable();
-			        	panel.add(rTab);
+			        	JComponent rTabContainer = rb.getRowsTableContainer();
+						panel.add(rTabContainer);
 			        	tabbedPane.repaint();
-				    	detailsViews.put(cacheKey, rTab);
+				    	detailsViews.put(cacheKey, rTabContainer);
+						final JTable rTab = rb.getRowsTable();
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+								mdd.adjustRowsTable(rTab);
+							}
+						});
 					}
 				});
 			} catch (InterruptedException e) {
@@ -348,4 +365,5 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
 
     protected abstract void analyseSchema(String schemaName);
+
 }

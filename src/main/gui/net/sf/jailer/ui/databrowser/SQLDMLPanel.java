@@ -34,7 +34,7 @@ import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithDataModelBasedCompletion;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLCompletion;
 import net.sf.jailer.util.SqlScriptExecutor;
 
 /**
@@ -66,7 +66,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 		this.afterExecution = afterExecution;
 		initComponents();
 		
-		this.sqlTextArea = new RSyntaxTextAreaWithDataModelBasedCompletion();
+		this.sqlTextArea = new RSyntaxTextAreaWithSQLCompletion();
 		JScrollPane jScrollPane1 = new JScrollPane();
 		jScrollPane1.setViewportView(sqlTextArea);
 		

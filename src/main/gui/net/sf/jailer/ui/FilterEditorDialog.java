@@ -109,7 +109,7 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		JCheckBox checkBox;
 
 		private FilterConditionEditor(Frame parent, ParametersGetter parametersGetter) {
-			super(parent, parametersGetter);
+			super(parent, parametersGetter, getDataModel());
 		}
 
 		public String edit(String condition, String table1label, String table1alias, Table table1, String table2label, String table2alias, Table table2, boolean addPseudoColumns, boolean withColumnsDropDown) {
@@ -450,12 +450,9 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		}
 
 	};
-	
-	/** Creates new form FilterEditor */
-	public FilterEditorDialog(ExtractionModelFrame parent, final ParameterSelector.ParametersGetter parametersGetter, ExecutionContext executionContext) {
-		super(parent, true);
-		this.executionContext = executionContext;
-		this.conditionEditor = new FilterConditionEditor(parent, new ParameterSelector.ParametersGetter() {
+
+	private FilterConditionEditor createConditionEditor() {
+		return new FilterConditionEditor(parent, new ParameterSelector.ParametersGetter() {
 			@Override
 			public Set<String> getParameters() {
 				Set<String> pSet = new TreeSet<String>(parametersGetter.getParameters());
@@ -463,7 +460,17 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 				return pSet;
 			}
 		});
+	}
+	
+	private final ParameterSelector.ParametersGetter parametersGetter;
+	
+	/** Creates new form FilterEditor */
+	public FilterEditorDialog(ExtractionModelFrame parent, final ParameterSelector.ParametersGetter parametersGetter, ExecutionContext executionContext) {
+		super(parent, true);
+		this.executionContext = executionContext;
+		this.parametersGetter = parametersGetter;
 		this.parent = parent;
+		this.conditionEditor = createConditionEditor();
 		initComponents();
 		
 		AutoCompletion.enable(tableBox);
@@ -551,7 +558,12 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 	 * @return current data model
 	 */
 	private DataModel getDataModel() {
-		return parent.extractionModelEditor.dataModel;
+		if (parent != null) {
+			if (parent.extractionModelEditor != null) {
+				return parent.extractionModelEditor.dataModel;
+			}
+		}
+		return null;
 	}
 
 	/**
@@ -571,6 +583,8 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 			isInitialized = true;
 		}
 
+		this.conditionEditor = createConditionEditor();
+		
 		templateList = new TemplateList();
 		templateList.setModel(getDataModel().getFilterTemplates());
 		

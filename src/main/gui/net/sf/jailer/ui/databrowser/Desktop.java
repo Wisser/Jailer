@@ -103,6 +103,7 @@ import net.sf.jailer.ui.databrowser.BrowserContentPane.RunnableWithPriority;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
 import net.sf.jailer.ui.databrowser.TreeLayoutOptimizer.Node;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
+import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
@@ -803,6 +804,11 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			protected boolean renderRowAsPK(Row theRow) {
 				return false;
+			}
+
+			@Override
+			protected MetaDataSource getMetaDataSource() {
+				return parentFrame.getMetaDataSource();
 			}
 
 		};
@@ -2024,6 +2030,7 @@ public abstract class Desktop extends JDesktopPane {
 				newBounds = new Rectangle((int) pBounds[0], (int) pBounds[1], (int) pBounds[2], (int) pBounds[3]);
 				rb.internalFrame.setBounds(newBounds);
 				rb.browserContentPane.adjustRowTableColumnsWidth();
+				rb.browserContentPane.sortColumnsCheckBox.setVisible(!LayoutMode.TINY.equals(layoutMode));
 				newPrecBounds.put(newBounds, pBounds);
 			}
 			precBounds = newPrecBounds;

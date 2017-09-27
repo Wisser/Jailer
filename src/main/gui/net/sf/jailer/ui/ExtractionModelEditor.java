@@ -558,9 +558,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		}
 		modelPath.setText(modelpath);
 		
-		subjectConditionEditor = new ConditionEditor(extractionModelFrame, parametersGetter);
+		subjectConditionEditor = new ConditionEditor(extractionModelFrame, parametersGetter, dataModel);
 		subjectConditionEditor.setTitle("Subject condition");
-		restrictionConditionEditor = new ConditionEditor(extractionModelFrame, parametersGetter);
+		restrictionConditionEditor = new ConditionEditor(extractionModelFrame, parametersGetter, dataModel);
 		restrictionConditionEditor.setTitle("Restriction");
 		openSubjectConditionEditor.setIcon(conditionEditorIcon);
 		openSubjectConditionEditor.setText(null);

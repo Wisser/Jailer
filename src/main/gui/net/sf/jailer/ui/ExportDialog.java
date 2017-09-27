@@ -340,7 +340,7 @@ public class ExportDialog extends javax.swing.JDialog {
 		preferredSize.width = 10;
 		where.setPreferredSize(preferredSize);
 		
-		final ConditionEditor subjectConditionEditor = new ConditionEditor(null, null);
+		final ConditionEditor subjectConditionEditor = new ConditionEditor(null, null, dataModel);
 		subjectConditionEditor.setTitle("Subject condition");
 		openWhereEditor.setIcon(conditionEditorIcon);
 		openWhereEditor.setText(null);
