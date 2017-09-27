@@ -158,9 +158,10 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 	    	panel.removeAll();
 	    	final Pair<MetaDataDetails, MDTable> cacheKey = new Pair<MetaDataDetails, MDTable>(mdd, mdTable);
 	    	if (detailsViews.containsKey(cacheKey)) {
-	    		panel.add(detailsViews.get(cacheKey));
-		    	tabbedPane.repaint();
-	    		continue;
+	    		JComponent comp = detailsViews.get(cacheKey);
+				panel.add(comp);
+				tabbedPane.repaint();
+				continue;
 	    	}
 	    	panel.add(new JLabel(" loading..."));
 	    	tabbedPane.repaint();
@@ -307,24 +308,24 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 						} catch (SQLException e) {
 							e.printStackTrace();
 						}
-					}
-				});
-				
-	    		SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-						LoadJob loadJob = rb.newLoadJob(metaDataDetails[0]);
-			    		loadJob.run();
-						panel.removeAll();
-			        	JComponent rTabContainer = rb.getRowsTableContainer();
-						panel.add(rTabContainer);
-			        	tabbedPane.repaint();
-				    	detailsViews.put(cacheKey, rTabContainer);
-						final JTable rTab = rb.getRowsTable();
-						SwingUtilities.invokeLater(new Runnable() {
+			    		SwingUtilities.invokeLater(new Runnable() {
 							@Override
 							public void run() {
-								mdd.adjustRowsTable(rTab);
+								LoadJob loadJob = rb.newLoadJob(metaDataDetails[0]);
+					    		loadJob.run();
+					        	JComponent rTabContainer = rb.getRowsTableContainer();
+						    	detailsViews.put(cacheKey, rTabContainer);
+								final JTable rTab = rb.getRowsTable();
+								SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+										mdd.adjustRowsTable(rTab);
+										panel.removeAll();
+							        	JComponent rTabContainer = rb.getRowsTableContainer();
+										panel.add(rTabContainer);
+							        	tabbedPane.repaint();
+									}
+								});
 							}
 						});
 					}
