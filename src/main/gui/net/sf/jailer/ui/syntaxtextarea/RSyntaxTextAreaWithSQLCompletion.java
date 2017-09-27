@@ -17,13 +17,19 @@ package net.sf.jailer.ui.syntaxtextarea;
 
 import java.awt.Color;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
 import javax.swing.InputMap;
+import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu;
+import javax.swing.JSeparator;
 import javax.swing.KeyStroke;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -44,6 +50,8 @@ import net.sf.jailer.util.Pair;
 @SuppressWarnings("serial")
 public class RSyntaxTextAreaWithSQLCompletion extends RSyntaxTextArea {
 	
+	private int end;
+
 	public RSyntaxTextAreaWithSQLCompletion() {
 		setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
 		
@@ -79,6 +87,77 @@ public class RSyntaxTextAreaWithSQLCompletion extends RSyntaxTextArea {
 	}
 
 	/**
+	 * Overridden to add menu items related to formatting
+	 *
+	 * @return the popup menu
+	 */
+	@Override
+	protected JPopupMenu createPopupMenu() {
+		JPopupMenu menu = super.createPopupMenu();
+
+		JMenuItem item = new JMenuItem("Format SQL");
+		item.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String currentStatement = getCurrentStatement(true);
+				Pattern pattern = Pattern.compile("(.*?)(;\\s*(\\n\\r?|$))", Pattern.DOTALL);
+				Matcher matcher = pattern.matcher(currentStatement);
+		        boolean result = matcher.find();
+		        if (result) {
+		            StringBuffer sb = new StringBuffer();
+		            do {
+		                matcher.appendReplacement(sb, Matcher.quoteReplacement(new BasicFormatterImpl().format(matcher.group(1))) + matcher.group(2));
+		                result = matcher.find();
+		            } while (result);
+		            matcher.appendTail(sb);
+					replaceCurrentStatement(sb.toString(), true);
+		        }
+			}
+		});
+		menu.add(item, 0);
+		menu.add(new JSeparator(), 1);
+		return menu;
+	}
+	
+	/**
+	 * Gets statement(s) at caret position.
+	 *
+	 * @param replacement the replacement
+	 * @param singleStatement <code>true</code> to replace only one statement
+	 */
+	public void replaceCurrentStatement(String replacement, boolean singleStatement) {
+		Pair<Integer, Integer> loc = getCurrentStatementLocation(singleStatement);
+		if (loc != null) {
+			try {
+				int from = loc.a;
+				int to = loc.b;
+				if (to >= getLineCount()) {
+					to = getLineCount() - 1;
+				}
+				int start = getLineStartOffset(from);
+				int end = getLineEndOffset(to);
+				replaceRange(replacement, start, end);
+			} catch (BadLocationException e) {
+				e.printStackTrace();
+			}
+		}
+	}
+
+	/**
+	 * Gets statement(s) at caret position.
+	 * 
+	 * @param singleStatement <code>true</code> to get only one statement
+	 * @return pair of start and end line number
+	 */
+	public String getCurrentStatement(boolean singleStatement) {
+		Pair<Integer, Integer> loc = getCurrentStatementLocation(singleStatement);
+		if (loc != null) {
+			return getText(loc.a, loc.b, true);
+		}
+		return "";
+	}
+
+	/**
 	 * Gets text between two lines.
 	 * 
 	 * @param complete if <code>false</code>, return text from start line to current caret position
@@ -98,7 +177,7 @@ public class RSyntaxTextAreaWithSQLCompletion extends RSyntaxTextArea {
 	}
 	
 	/**
-	 * Gets start- and end-line number of current caret position.
+	 * Gets start- and end-line number of statement(s) at caret position.
 	 * 
 	 * @param singleStatement <code>true</code> to get only one statement
 	 * @return pair of start and end line number
