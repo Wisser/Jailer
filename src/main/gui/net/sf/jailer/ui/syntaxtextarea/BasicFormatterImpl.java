@@ -86,7 +86,11 @@ public class BasicFormatterImpl {
 	static final String initial = "\n    ";
 
 	public String format(String source) {
-		return new FormatProcess( source ).perform();
+		try {
+			return new FormatProcess( source ).perform();
+		} catch (Throwable t) {
+			return source;
+		}
 	}
 
 	private static class FormatProcess {
@@ -122,11 +126,39 @@ public class BasicFormatterImpl {
 
 			result.append( initial );
 
+			String nextToken = null;
+			boolean lastWasWS = false;
 			while ( tokens.hasMoreTokens() ) {
-				token = tokens.nextToken();
+				token = nextToken == null? tokens.nextToken() : nextToken;
+				nextToken = null;
 				lcToken = token.toLowerCase();
 
-				if ( "'".equals( token ) ) {
+				if ("-".equals(token) && tokens.hasMoreTokens()) {
+					nextToken = tokens.nextToken();
+					if ("-".equals(nextToken)) {
+						token += nextToken;
+						nextToken = null;
+						String t;
+						if (tokens.hasMoreTokens())
+							do {
+								t = tokens.nextToken();
+								token += t;
+							}
+							while ( !"\n".equals( t ) && tokens.hasMoreTokens() ); // cannot handle single quotes
+					}
+				} else if ("/".equals(token) && tokens.hasMoreTokens()) {
+					nextToken = tokens.nextToken();
+					if ("*".equals(nextToken)) {
+						token += nextToken;
+						nextToken = null;
+						String t;
+						do {
+							t = tokens.nextToken();
+							token += t;
+						}
+						while ( (!token.endsWith("*/") || !"/".equals( t )) && tokens.hasMoreTokens() ); // cannot handle single quotes
+					}
+				} else if ( "'".equals( token ) ) {
 					String t;
 					do {
 						t = tokens.nextToken();
@@ -194,10 +226,22 @@ public class BasicFormatterImpl {
 					white();
 				}
 
+				else if (" ".equals(token)) {
+					if (result.length() == 0 || !" ".equals(result.substring(result.length() - 1, result.length()))) {
+						misc();
+					}
+				}
+				
 				else {
 					misc();
 				}
-
+				
+				if (" ".equals(token)) {
+					lastWasWS = true;
+				} else {
+					lastWasWS = false;
+				}
+				
 				if ( !isWhitespace( token ) ) {
 					lastToken = lcToken;
 				}
