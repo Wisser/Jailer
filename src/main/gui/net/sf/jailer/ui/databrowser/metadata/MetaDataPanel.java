@@ -222,14 +222,16 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 					}
 					if (last instanceof DefaultMutableTreeNode) {
 						final Object uo = ((DefaultMutableTreeNode) last).getUserObject();
-						if (uo instanceof MDSchema) {
-							onSchemaSelect((MDSchema) uo);
-						} else if (uo instanceof MDTable) {
+						if (uo instanceof MDTable) {
 							SwingUtilities.invokeLater(new Runnable() {
 								@Override
 								public void run() {
 									if (metaDataTree.getSelectionPath() != null && metaDataTree.getSelectionPath().getLastPathComponent() == last) {
-										onTableSelect((MDTable) uo);
+										if (uo instanceof MDSchema) {
+											onSchemaSelect((MDSchema) uo);
+										} else if (uo instanceof MDTable) {
+											onTableSelect((MDTable) uo);
+										}
 									}
 								}
 							});
