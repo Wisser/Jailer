@@ -153,6 +153,11 @@ public class DataBrowser extends javax.swing.JFrame {
      */
     private final ExecutionContext executionContext;
     
+	/**
+	 * Allowed row limits.
+	 */
+	public static final Integer[] ROW_LIMITS = new Integer[] { 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 20000, 50000, 70000, 100000 };
+
     /**
      * Constructor.
      * 
@@ -2665,7 +2670,7 @@ public class DataBrowser extends javax.swing.JFrame {
 		
 		try {
 			if (sqlConsole == null) {
-				sqlConsole = new SQLConsole(session, metaDataSource);
+				sqlConsole = new SQLConsole(session, metaDataSource, datamodel, executionContext);
 				sqlConsoleContainerPanel.removeAll();
 				sqlConsoleContainerPanel.add(sqlConsole);
 			} else {

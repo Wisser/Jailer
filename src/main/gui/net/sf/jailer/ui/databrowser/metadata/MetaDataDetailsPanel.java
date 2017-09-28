@@ -303,7 +303,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 					public void run() {
 				    	try {
 				    		ResultSet rs = mdd.readMetaDataDetails(session, mdTable);
-				    		metaDataDetails[0] = new CachedResultSet(rs);
+				    		metaDataDetails[0] = new CachedResultSet(rs, null);
 				    		rs.close();
 						} catch (SQLException e) {
 							e.printStackTrace();
