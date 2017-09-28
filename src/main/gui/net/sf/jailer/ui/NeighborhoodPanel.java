@@ -208,6 +208,7 @@ public class NeighborhoodPanel extends javax.swing.JPanel {
     	        jPanel1.add(jPanel, gridBagConstraints);
     		}
     		jPanel1.revalidate();
+    		jPanel1.repaint();
     	}
 	}
 
