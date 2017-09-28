@@ -55,7 +55,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.MetaDataBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
-import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLCompletion;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -68,7 +68,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 	/** Creates new form QueryBuilderDialog */
 	public QueryBuilderDialog(java.awt.Frame parent) {
 		super(parent, true);
-		this.sqlTextArea = new RSyntaxTextAreaWithSQLCompletion();
+		this.sqlTextArea = new RSyntaxTextAreaWithSQLSyntaxStyle();
 		initComponents();
 		JScrollPane jScrollPane2 = new JScrollPane();
 		jScrollPane2.setViewportView(sqlTextArea);

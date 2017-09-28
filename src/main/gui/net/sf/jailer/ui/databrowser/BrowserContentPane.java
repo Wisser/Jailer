@@ -1710,7 +1710,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			String LF = System.getProperty("line.separator", "\n");
 			String sqlString = sql.toString().trim() + LF;
 			if (sqlString.length() > 10L*1024L*1024L) {
-				if (1 == JOptionPane.showOptionDialog(this, "SQL Script is too long (" + (sqlString.length() / 1024) + " KB) to be edited.", "SQL Script too long", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Ok", "Save Script" }, "Save Script")) {
+				int o = JOptionPane.showOptionDialog(this, "SQL Script is large (" + (sqlString.length() / 1024) + " KB)", "SQL Script is large", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null, new Object[] { "Open", "Cancel", "Save Script" }, "Save Script");
+				if (o == 2) {
 					String fn = UIUtil.choseFile(null, ".", "Save SQL Script", ".sql", this, false, false, false);
 					if (fn != null) {
 						try {
@@ -1722,10 +1723,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 					}
 				}
-				return;
+				if (o != 0) {
+					return;
+				}
 			}
 			d = new JDialog(getOwner(), "SQL/DML - " + titel, true);
-			d.getContentPane().add(new SQLDMLPanel(sqlString, session, new Runnable() {
+			d.getContentPane().add(new SQLDMLPanel(sqlString, session, getMetaDataSource(), new Runnable() {
 				@Override
 				public void run() {
 					reloadRows();

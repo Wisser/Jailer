@@ -30,7 +30,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.MetaDataBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
-import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLCompletion;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 
 /**
  * Content UI of a row browser frame in SQL mode (as {@link JInternalFrame}s). Contains a
@@ -44,7 +44,7 @@ public class SQLBrowserContentPane extends javax.swing.JPanel {
 	/** Creates new form SQLBrowserContentPane */
 	public SQLBrowserContentPane(DataModel dataModel, Session session, MetaDataSource metaDataSource) {
 		initComponents();
-		this.sqlEditorPane = new RSyntaxTextAreaWithSQLCompletion() {
+		this.sqlEditorPane = new RSyntaxTextAreaWithSQLSyntaxStyle() {
 			protected void actionPerformed() {
 				super.actionPerformed();
 				reloadButton.doClick();

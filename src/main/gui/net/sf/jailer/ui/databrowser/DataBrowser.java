@@ -2666,8 +2666,8 @@ public class DataBrowser extends javax.swing.JFrame {
 		try {
 			if (sqlConsole == null) {
 				sqlConsole = new SQLConsole(session, metaDataSource);
-//				sqlConsoleContainerPanel.removeAll();
-//				sqlConsoleContainerPanel.add(sqlConsole);
+				sqlConsoleContainerPanel.removeAll();
+				sqlConsoleContainerPanel.add(sqlConsole);
 			} else {
 				sqlConsole.reset(session, metaDataSource);
 			}
