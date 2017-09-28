@@ -267,7 +267,11 @@ public class MetaDataCache {
 			this.rowList = rowList;
 		}
 
-		public CachedResultSet(ResultSet resultSet) throws SQLException {
+		public int getSize() {
+			return rowList.size();
+		}
+		
+		public CachedResultSet(ResultSet resultSet, Integer limit) throws SQLException {
 			this.rowList = new ArrayList<Object[]>();
 			ResultSetMetaData rmd = resultSet.getMetaData();
 			final int numCol = rmd.getColumnCount();
@@ -277,6 +281,9 @@ public class MetaDataCache {
 					row[i - 1] = resultSet.getObject(i);
 				}
 				rowList.add(row);
+				if (limit != null && rowList.size() >= limit) {
+					break;
+				}
 			}
 			
 			final String[] names = new String[numCol];
