@@ -12,7 +12,7 @@ import org.fife.ui.autocomplete.AutoCompletion;
 
 import net.sf.jailer.database.Session;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
-import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLCompletion;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.util.Pair;
 
 /**
@@ -25,7 +25,7 @@ public class SQLConsole extends javax.swing.JPanel {
 
 	private Session session;
 	MetaDataSource metaDataSource;
-	private RSyntaxTextAreaWithSQLCompletion editorPane;
+	private RSyntaxTextAreaWithSQLSyntaxStyle editorPane;
 	private final MetaDataBasedSQLCompletionProvider provider;
 
 	/**
@@ -36,7 +36,7 @@ public class SQLConsole extends javax.swing.JPanel {
 		this.metaDataSource = metaDataSource;
 		initComponents();
 
-		this.editorPane = new RSyntaxTextAreaWithSQLCompletion() {
+		this.editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle() {
 			@Override
 			protected void actionPerformed() {
 				Pair<Integer, Integer> loc = getCurrentStatementLocation(false);

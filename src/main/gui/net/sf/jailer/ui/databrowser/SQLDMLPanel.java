@@ -20,6 +20,7 @@ import java.awt.GridBagConstraints;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,12 +30,16 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
+import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.ui.UIUtil;
-import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLCompletion;
+import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
+import net.sf.jailer.ui.databrowser.sqlconsole.MetaDataBasedSQLCompletionProvider;
+import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
+import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.util.SqlScriptExecutor;
 
 /**
@@ -59,14 +64,22 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 	private final ExecutionContext executionContext;
 	
 	/** Creates new form SQLPanel 
-	 * @param sql */
-	public SQLDMLPanel(String sql, Session session, Runnable afterExecution, ExecutionContext executionContext) {
+	 * @param sql 
+	 * @param metaDataSource */
+	public SQLDMLPanel(String sql, Session session, MetaDataSource metaDataSource, Runnable afterExecution, ExecutionContext executionContext) {
 		this.executionContext = executionContext;
 		this.session = session;
 		this.afterExecution = afterExecution;
 		initComponents();
 		
-		this.sqlTextArea = new RSyntaxTextAreaWithSQLCompletion();
+		this.sqlTextArea = new RSyntaxTextAreaWithSQLSyntaxStyle();
+		try {
+			MetaDataBasedSQLCompletionProvider provider = new MetaDataBasedSQLCompletionProvider(session, metaDataSource);
+			AutoCompletion ac = new AutoCompletion(provider);
+			ac.install(sqlTextArea);
+		} catch (SQLException e) {
+		}
+		
 		JScrollPane jScrollPane1 = new JScrollPane();
 		jScrollPane1.setViewportView(sqlTextArea);
 		

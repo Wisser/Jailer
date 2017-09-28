@@ -293,6 +293,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 
     private void sortColumnsCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sortColumnsCheckBoxActionPerformed
 		updateColumnsTable.run();
+		repaint();
     }//GEN-LAST:event_sortColumnsCheckBoxActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
