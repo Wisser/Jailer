@@ -273,14 +273,14 @@ public class MetaDataCache {
 			final int numCol = rmd.getColumnCount();
 			while (resultSet.next()) {
 				Object[] row = new Object[numCol];
-				for (int i = 1; i < numCol; ++i) {
+				for (int i = 1; i <= numCol; ++i) {
 					row[i - 1] = resultSet.getObject(i);
 				}
 				rowList.add(row);
 			}
 			
 			final String[] names = new String[numCol];
-			for (int i = 1; i < numCol; ++i) {
+			for (int i = 1; i <= numCol; ++i) {
 				names[i - 1] = rmd.getColumnName(i);
 			}
 			resultSetMetaData = new ResultSetMetaData() {
