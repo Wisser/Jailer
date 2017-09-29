@@ -253,9 +253,28 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		}
 	}
 
-	private void reset() {
+	public void reset() {
+		MDTable selectedTable = null;
+		if (metaDataTree.getSelectionPath() != null) {
+			Object last = metaDataTree.getSelectionPath().getLastPathComponent();
+			if (last instanceof DefaultMutableTreeNode) {
+				final Object uo = ((DefaultMutableTreeNode) last).getUserObject();
+				if (uo instanceof MDTable) {
+					selectedTable = (MDTable) uo;
+				}
+			}
+		}
 		metaDataSource.clear();
     	updateTreeModel(metaDataSource);
+    	if (selectedTable != null) {
+    		MDSchema schema = metaDataSource.find(selectedTable.getSchema().getName());
+    		if (schema != null) {
+    			MDTable table = schema.find(selectedTable.getName());
+    			if (table != null) {
+    				select(table);
+    			}
+    		}
+    	}
 	}
 
 	public void select(Table table) {
@@ -403,6 +422,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         add(jLabel2, gridBagConstraints);
 
         refreshButton.setText("Refresh");
+        refreshButton.setToolTipText("Refresh Database Meta Data Cache");
         refreshButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 refreshButtonActionPerformed(evt);

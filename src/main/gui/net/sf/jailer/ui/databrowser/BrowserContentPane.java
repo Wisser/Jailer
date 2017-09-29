@@ -125,6 +125,7 @@ import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
+import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.scrollmenu.JScrollC2Menu;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.util.CancellationException;
@@ -1723,12 +1724,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 			d = new JDialog(getOwner(), "SQL/DML - " + titel, true);
-			d.getContentPane().add(new SQLDMLPanel(sqlString, session, getMetaDataSource(), new Runnable() {
+			d.getContentPane().add(new SQLDMLPanel(sqlString, getSqlConsole(), session, getMetaDataSource(), new Runnable() {
 				@Override
 				public void run() {
 					reloadRows();
 				}
-			}, executionContext));
+			}, d, executionContext));
 			d.pack();
 			d.setLocation(x - 50, y - 100);
 			d.setSize(700, Math.max(d.getHeight() + 20, 400));
@@ -1743,6 +1744,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		d.setVisible(true);
 	}
 	
+	protected abstract SQLConsole getSqlConsole();
+
 	protected void setCurrentRowSelection(int i) {
 		currentRowSelection = i;
 		if (i >= 0) {
@@ -3491,7 +3494,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     public javax.swing.JTable rowsTable;
     javax.swing.JScrollPane rowsTableScrollPane;
     javax.swing.JCheckBox selectDistinctCheckBox;
-    javax.swing.JCheckBox sortColumnsCheckBox;
+    public javax.swing.JCheckBox sortColumnsCheckBox;
     private javax.swing.JLabel sqlLabel1;
     private javax.swing.JPanel sqlPanel;
     private javax.swing.JLabel where;

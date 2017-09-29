@@ -55,6 +55,7 @@ import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.QueryBuilderPathSelector;
 import net.sf.jailer.ui.databrowser.Reference;
 import net.sf.jailer.ui.databrowser.Row;
+import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.util.Pair;
 
 /**
@@ -294,6 +295,10 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 					protected MetaDataSource getMetaDataSource() {
 						return null;
 					}
+					@Override
+					protected SQLConsole getSqlConsole() {
+						return null;
+					}
 				};
 		    	
 				final CachedResultSet[] metaDataDetails = new CachedResultSet[1];
@@ -303,7 +308,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 					public void run() {
 				    	try {
 				    		ResultSet rs = mdd.readMetaDataDetails(session, mdTable);
-				    		metaDataDetails[0] = new CachedResultSet(rs, null);
+				    		metaDataDetails[0] = new CachedResultSet(rs, null, null);
 				    		rs.close();
 						} catch (SQLException e) {
 							e.printStackTrace();

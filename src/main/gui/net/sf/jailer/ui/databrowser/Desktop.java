@@ -104,6 +104,7 @@ import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
 import net.sf.jailer.ui.databrowser.TreeLayoutOptimizer.Node;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
+import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CsvFile;
 import net.sf.jailer.util.CsvFile.Line;
@@ -809,6 +810,11 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			protected MetaDataSource getMetaDataSource() {
 				return parentFrame.getMetaDataSource();
+			}
+
+			@Override
+			protected SQLConsole getSqlConsole() {
+				return Desktop.this.getSqlConsole();
 			}
 
 		};
@@ -2725,6 +2731,7 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	protected abstract DataBrowser openNewDataBrowser();
+	protected abstract SQLConsole getSqlConsole();
 
 	/**
 	 * Scrolls an iFrame to the center of the desktop.

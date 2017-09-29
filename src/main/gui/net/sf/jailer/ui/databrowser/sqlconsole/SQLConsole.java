@@ -5,8 +5,11 @@
 package net.sf.jailer.ui.databrowser.sqlconsole;
 
 import java.awt.Color;
+import java.awt.FlowLayout;
 import java.awt.Frame;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -21,13 +24,20 @@ import java.util.concurrent.PriorityBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JScrollPane;
+import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 
 import org.fife.ui.autocomplete.AutoCompletion;
+import org.fife.ui.rtextarea.RTextScrollPane;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
@@ -47,7 +57,10 @@ import net.sf.jailer.ui.databrowser.Reference;
 import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.util.CancellationException;
+import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.Pair;
+import util.SmallButton;
 
 /**
  * SQL Console.
@@ -55,7 +68,7 @@ import net.sf.jailer.util.Pair;
  * @author Ralf Wisser
  */
 @SuppressWarnings("serial")
-public class SQLConsole extends javax.swing.JPanel {
+public abstract class SQLConsole extends javax.swing.JPanel {
 
 	private static final int MAX_TAB_COUNT = 10;
 	
@@ -81,25 +94,21 @@ public class SQLConsole extends javax.swing.JPanel {
 		this.editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle() {
 			@Override
 			protected void actionPerformed() {
-				Pair<Integer, Integer> loc = getCurrentStatementLocation(false);
-				if (loc != null) {
-					executeSQLBlock(getText(loc.a, loc.b, true), loc);
-				}
+				executeSelectedStatements();
 			}
 		};
 		provider = new MetaDataBasedSQLCompletionProvider(session, metaDataSource);
 		AutoCompletion ac = new AutoCompletion(provider);
 		ac.install(editorPane);
-		JScrollPane jScrollPane = new JScrollPane();
+		RTextScrollPane jScrollPane = new RTextScrollPane();
 		jScrollPane.setViewportView(editorPane);
 		consoleContainerPanel.add(jScrollPane);
-		jScrollPane.setViewportView(editorPane);
+		jScrollPane.setLineNumbersEnabled(true);
 		
 		limitComboBox.setModel(new DefaultComboBoxModel(DataBrowser.ROW_LIMITS));
 		limitComboBox.setSelectedItem(1000);
 		
-		statusLabel.setVisible(false);
-		statusScrollPane.setVisible(false);
+		resetStatus();
 
 		Thread thread = new Thread(new Runnable() {
 			@Override
@@ -117,6 +126,12 @@ public class SQLConsole extends javax.swing.JPanel {
         thread.start();
 	}
 
+	private void resetStatus() {
+		statusLabel.setVisible(false);
+		statusScrollPane.setVisible(false);
+		cancelButton.setEnabled(false);
+	}
+
 	/**
 	 * Executes a block of SQL statements (each statement separated by a ';' at the end of the line).
 	 * 
@@ -131,6 +146,7 @@ public class SQLConsole extends javax.swing.JPanel {
 				Pattern pattern = Pattern.compile("(.*?)(;\\s*(\\n\\r?|$))", Pattern.DOTALL);
 				Matcher matcher = pattern.matcher(sqlBlock);
 				boolean result = matcher.find();
+				StringBuffer sb = new StringBuffer();
 				if (result) {
 					do {
 						String sql = matcher.group(1);
@@ -140,11 +156,11 @@ public class SQLConsole extends javax.swing.JPanel {
 								break;
 							}
 						}
+						matcher.appendReplacement(sb, "");
 						result = matcher.find();
 					} while (result);
 				}
 				if (!status.failed) {
-					StringBuffer sb = new StringBuffer();
 					matcher.appendTail(sb);
 					String sql = sb.toString();
 					if (sql.trim().length() > 0) {
@@ -164,31 +180,72 @@ public class SQLConsole extends javax.swing.JPanel {
 	private void executeSQL(final String sql, Status status) {
 		Statement statement = null;
 		ResultSet resultSet = null;
+		final Status localStatus = new Status();
 		try {
+			status.running = true;
 			status.numStatements++;
+			localStatus.numStatements++;
+			status.updateView();
 			statement = session.getConnection().createStatement();
+			CancellationHandler.begin(statement, SQLConsole.this);
 			long startTime = System.currentTimeMillis();
 			if (statement.execute(sql)) {
 				resultSet = statement.getResultSet();
+				Integer limit = (Integer) limitComboBox.getSelectedItem();
 				final BrowserContentPane rb = new ResultContentPane(datamodel.get(), null, "", session, null, null,
-						null, null, new HashSet<Pair<BrowserContentPane, Row>>(), new HashSet<Pair<BrowserContentPane, String>>(), (Integer) limitComboBox.getSelectedItem(), false, false, executionContext);
-				final CachedResultSet metaDataDetails = new CachedResultSet(resultSet, (Integer) limitComboBox.getSelectedItem());
+						null, null, new HashSet<Pair<BrowserContentPane, Row>>(), new HashSet<Pair<BrowserContentPane, String>>(), limit, false, false, executionContext);
+				final CachedResultSet metaDataDetails = new CachedResultSet(resultSet, limit, SQLConsole.this);
 		    	resultSet.close();
-		    	status.timeInMS += (System.currentTimeMillis() - startTime);
+				long now = System.currentTimeMillis();
+		    	status.timeInMS += (now - startTime);
+		    	localStatus.timeInMS += (now - startTime);
 		    	status.numRowsRead += metaDataDetails.getSize();
-		    	status.updateView();
+		    	localStatus.numRowsRead += metaDataDetails.getSize();
+		    	if (metaDataDetails.getSize() >= limit) {
+		    		status.limitExceeded = true;
+		    		localStatus.limitExceeded = true;
+		    	}
+				status.running = false;
+				status.updateView();
 	    		SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
 						LoadJob loadJob = rb.newLoadJob(metaDataDetails);
 			    		loadJob.run();
 			        	JComponent rTabContainer = rb.getRowsTableContainer();
+			        	final TabContentPanel tabContentPanel = new TabContentPanel();
+			        	tabContentPanel.contentPanel.add(rTabContainer);
+			        	tabContentPanel.statusLabel.setText(localStatus.getText());
+			        	if (localStatus.limitExceeded) {
+			        		tabContentPanel.statusLabel.setForeground(Color.red);
+			        	}
+			        	rb.sortColumnsCheckBox.setVisible(true);
+			        	tabContentPanel.controlsPanel1.add(rb.sortColumnsCheckBox);
+			        	String stmt = sql.trim();
+			        	if (stmt.length() > 200) {
+			        		stmt = stmt.substring(0, 200) + "...";
+			        	}
+						tabContentPanel.statementLabel.setText(stmt);
+			        	tabContentPanel.statementLabel.setToolTipText(stmt);
+			        	tabContentPanel.reloadButton.addActionListener(new ActionListener() {
+							@Override
+							public void actionPerformed(ActionEvent e) {
+								jTabbedPane1.remove(tabContentPanel);
+								executeSQLBlock(sql, null);
+							}
+						});
+			        	rTabContainer = tabContentPanel;
 				    	String title = sql.trim();
-				    	final int MAXLENGTH = 20;
+				    	final int MAXLENGTH = 30;
 				    	if (title.length() > MAXLENGTH) {
-				    		title = title.substring(0, MAXLENGTH);
+				    		title = title.replaceFirst("^(?is)(\\bselect\\b).*?(\\bfrom\\b)(.*)$", "$1 ... $2$3");
 				    	}
-						jTabbedPane1.add(title, rTabContainer);
+				    	if (title.length() > MAXLENGTH) {
+							title = title.substring(0, MAXLENGTH) + "...";
+				    	}
+						jTabbedPane1.add(rTabContainer);
+						jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), getTitlePanel(jTabbedPane1, rTabContainer, title));
+
 						if (jTabbedPane1.getTabCount() > MAX_TAB_COUNT) {
 							jTabbedPane1.remove(0);
 						}
@@ -198,9 +255,19 @@ public class SQLConsole extends javax.swing.JPanel {
 				});
 			} else {
 		    	status.timeInMS += (System.currentTimeMillis() - startTime);
-		    	status.numRowsUpdated += statement.getUpdateCount();
+		    	int updateCount = statement.getUpdateCount();
+				status.numRowsUpdated += updateCount;
+				status.running = false;
 		    	status.updateView();
+		    	if (updateCount != 0) {
+		    		setDataHasChanged(true);
+		    	}
+		    	if (isDDLStatement(sql)) {
+		    		refreshMetaData();
+		    	}
 			}
+			CancellationHandler.end(statement, SQLConsole.this);
+			statement.close();
 		} catch (Throwable error) {
 			if (statement != null) {
 				try {
@@ -214,10 +281,30 @@ public class SQLConsole extends javax.swing.JPanel {
 				} catch (SQLException e) {
 				}
 			}
+			if (error instanceof CancellationException) {
+				CancellationHandler.reset(SQLConsole.this);
+				queue.clear();
+			}
 			status.failed = true;
 			status.error = error;
 			status.updateView();
 		}
+	}
+
+	private boolean isDDLStatement(String sql) {
+		return sql.trim().matches("^(?is)\\b(drop|create|alter|rename)\\b.*");
+	}
+
+	protected abstract void refreshMetaData();
+
+	private boolean dataHasChanged = false;
+	
+	public synchronized void setDataHasChanged(boolean b) {
+		dataHasChanged = b;		
+	}
+
+	public synchronized boolean getDataHasChanged() {
+		return dataHasChanged;		
 	}
 
 	/**
@@ -237,6 +324,7 @@ public class SQLConsole extends javax.swing.JPanel {
 	private class Status {
 		boolean failed;
 		boolean running;
+		boolean limitExceeded;
 		int numRowsRead;
 		int numRowsUpdated;
 		int numStatements;
@@ -248,19 +336,44 @@ public class SQLConsole extends javax.swing.JPanel {
 				@Override
 				public void run() {
 					statusLabel.setVisible(false);
+					cancelButton.setEnabled(false);
 					statusScrollPane.setVisible(false);
 					if (!failed) {
+						cancelButton.setEnabled(running);
 						statusLabel.setVisible(true);
-						statusLabel.setForeground(running? Color.GREEN : Color.black);
-						statusLabel.setText(String.format("Rows read: %d, Rows updated: %d, Elapsed time (sec): %f", numRowsRead, numRowsUpdated, timeInMS / 1000.0));
+						statusLabel.setForeground(running? new Color(0, 100, 0) : Color.BLACK);
+						statusLabel.setText(getText());
 					} else {
 						statusScrollPane.setVisible(true);
-						statusTextPane.setText(error.getMessage());
+						if (error instanceof CancellationException) {
+							statusTextPane.setText("Cancelled");
+						} else {
+							statusTextPane.setText(error.getMessage());
+						}
 						statusTextPane.setCaretPosition(0);
 					}
+					jPanel4.revalidate();
 					jPanel2.repaint();
 				}
 			});
+		}
+
+		private String getText() {
+			String text = "";
+			if (numStatements > 1) {
+				text += numStatements + " Statements. ";
+			}
+			if (numRowsRead > 0 || numRowsUpdated == 0) {
+				text += numRowsRead + " rows read";
+				if (limitExceeded) {
+					text += " (limit exceeded)";
+				}
+				text += ". ";
+			}
+			if (numRowsUpdated > 0 || numRowsRead == 0) {
+				text += numRowsUpdated + " rows updated. ";
+			}
+			return text + "Elapsed time: " + (timeInMS / 1000.0) + " sec";
 		}
 	}
 	
@@ -285,6 +398,7 @@ public class SQLConsole extends javax.swing.JPanel {
         jPanel5 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         limitComboBox = new javax.swing.JComboBox();
+        cancelButton = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
@@ -306,7 +420,7 @@ public class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
@@ -348,16 +462,27 @@ public class SQLConsole extends javax.swing.JPanel {
 
         jLabel1.setText("Row limit ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jPanel5.add(jLabel1, gridBagConstraints);
 
         limitComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 2;
         jPanel5.add(limitComboBox, gridBagConstraints);
+
+        cancelButton.setText("Cancel");
+        cancelButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        jPanel5.add(cancelButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -419,7 +544,13 @@ public class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void cancelButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cancelButtonActionPerformed
+        CancellationHandler.cancel(this);
+    }//GEN-LAST:event_cancelButtonActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton cancelButton;
     private javax.swing.JPanel consoleContainerPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -567,6 +698,72 @@ public class SQLConsole extends javax.swing.JPanel {
 		protected MetaDataSource getMetaDataSource() {
 			return null;
 		}
+		@Override
+		protected SQLConsole getSqlConsole() {
+			return SQLConsole.this;
+		}
 	};
+
+	private JPanel getTitlePanel(final JTabbedPane tabbedPane, final JComponent rTabContainer, String title) {
+		JPanel titlePanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 0, 0));
+		titlePanel.setOpaque(false);
+		JLabel titleLbl = new JLabel(title);
+		titleLbl.setBorder(BorderFactory.createEmptyBorder(0, 0, 0, 5));
+		titlePanel.add(titleLbl);
+		SmallButton closeButton = new SmallButton(closeIcon) {
+			@Override
+			protected void onClick() {
+				tabbedPane.remove(rTabContainer);
+			}
+		};
+		titlePanel.add(closeButton);
+
+		return titlePanel;
+	}
+	
+	public void grabFocus() {
+		editorPane.grabFocus();
+	}
+	
+	private Icon closeIcon;
+	{
+		String dir = "/net/sf/jailer/ui/resource";
+		
+		// load images
+		try {
+			closeIcon = new ImageIcon(getClass().getResource(dir + "/Close-16-1.png"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	/**
+	 * Appends a statement and eventually executes it.
+	 * 
+	 * @param sql the statement
+	 * @param execute execute the statement?
+	 */
+	public void appendStatement(String sql, boolean execute) {
+		String pre = "";
+		int lineCount = editorPane.getLineCount();
+		if (lineCount > 0 && editorPane.getDocument().getLength() > 0) {
+			pre = "\n";
+			if (editorPane.getText(lineCount - 1, lineCount - 1, true).trim().length() > 0) {
+				pre += "\n";
+			}
+		}
+		editorPane.append(pre + sql + "\n");
+		resetStatus();
+		if (execute) {
+			executeSelectedStatements();
+		}
+	}
+
+	private void executeSelectedStatements() {
+		Pair<Integer, Integer> loc = editorPane.getCurrentStatementLocation(false);
+		if (loc != null) {
+			executeSQLBlock(editorPane.getText(loc.a, loc.b, true), loc);
+		}
+	}
 	
 }

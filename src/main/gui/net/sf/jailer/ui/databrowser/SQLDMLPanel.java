@@ -24,6 +24,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JDialog;
 import javax.swing.JOptionPane;
 import javax.swing.JScrollPane;
 import javax.swing.SwingUtilities;
@@ -38,7 +39,7 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.MetaDataBasedSQLCompletionProvider;
-import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
+import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.util.SqlScriptExecutor;
 
@@ -62,14 +63,19 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 	private final Runnable afterExecution;
 	
 	private final ExecutionContext executionContext;
+	private final SQLConsole sqlConsole;
+	private final JDialog dialog;
 	
 	/** Creates new form SQLPanel 
 	 * @param sql 
-	 * @param metaDataSource */
-	public SQLDMLPanel(String sql, Session session, MetaDataSource metaDataSource, Runnable afterExecution, ExecutionContext executionContext) {
+	 * @param metaDataSource 
+	 * @param dialog */
+	public SQLDMLPanel(String sql, SQLConsole sqlConsole, Session session, MetaDataSource metaDataSource, Runnable afterExecution, JDialog dialog, ExecutionContext executionContext) {
 		this.executionContext = executionContext;
+		this.sqlConsole = sqlConsole;
 		this.session = session;
 		this.afterExecution = afterExecution;
+		this.dialog = dialog;
 		initComponents();
 		
 		this.sqlTextArea = new RSyntaxTextAreaWithSQLSyntaxStyle();
@@ -135,6 +141,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         mlmTextField = new javax.swing.JTextField();
         singleLineCheckBox = new javax.swing.JCheckBox();
+        sqlConsoleButton = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
 
@@ -192,8 +199,9 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 
         statusLabel.setText("jLabel1");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 8, 0, 0);
         jPanel2.add(statusLabel, gridBagConstraints);
@@ -232,6 +240,19 @@ public class SQLDMLPanel extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         jPanel2.add(jPanel4, gridBagConstraints);
+
+        sqlConsoleButton.setText("SQL Console");
+        sqlConsoleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                sqlConsoleButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        jPanel2.add(sqlConsoleButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -370,6 +391,11 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 		}
 	}//GEN-LAST:event_executeButtonActionPerformed
 
+    private void sqlConsoleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sqlConsoleButtonActionPerformed
+        sqlConsole.appendStatement(sqlTextArea.getText().trim().replaceAll("\\s*\\n", "\n"), false);
+        dialog.dispose();
+    }//GEN-LAST:event_sqlConsoleButtonActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton clipboardButton;
@@ -383,6 +409,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
     private javax.swing.JTextField mlmTextField;
     private javax.swing.JButton saveButton;
     private javax.swing.JCheckBox singleLineCheckBox;
+    private javax.swing.JButton sqlConsoleButton;
     private javax.swing.JLabel statusLabel;
     // End of variables declaration//GEN-END:variables
 
