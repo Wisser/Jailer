@@ -27,6 +27,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -343,6 +345,12 @@ public class DataBrowser extends javax.swing.JFrame {
 			@Override
 			public void onNewDataModel() {
 				onNewSession(session);
+			}
+
+			@Override
+			protected SQLConsole getSqlConsole() {
+				jTabbedPane2.setSelectedComponent(sqlConsoleContainerPanel);
+				return sqlConsole;
 			}
         };
 
@@ -1139,6 +1147,12 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
+        jTabbedPane2.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jTabbedPane2StateChanged(evt);
+            }
+        });
+
         jSplitPane3.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane3.setResizeWeight(0.95);
         jSplitPane3.setContinuousLayout(true);
@@ -1506,6 +1520,23 @@ public class DataBrowser extends javax.swing.JFrame {
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         openNewTableBrowser(false);
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void jTabbedPane2StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jTabbedPane2StateChanged
+        if (jTabbedPane2.getSelectedComponent() != sqlConsoleContainerPanel && sqlConsole != null) {
+        	if (sqlConsole.getDataHasChanged()) {
+        		try {
+					desktop.reloadRoots();
+				} catch (Exception e) {
+					UIUtil.showException(this, "Error", e);
+				}
+        		sqlConsole.setDataHasChanged(false);
+        	}
+        } else {
+        	if (sqlConsole != null) {
+        		sqlConsole.grabFocus();
+        	}
+        }
+    }//GEN-LAST:event_jTabbedPane2StateChanged
 
     private void newWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_newWindowMenuItemActionPerformed
         try {
@@ -2580,7 +2611,22 @@ public class DataBrowser extends javax.swing.JFrame {
 			@Override
 			protected void open(Table table) {
 				if (!selectNavTreeNode(navigationTree.getModel().getRoot(), table)) {
-					desktop.addTableBrowser(null, null, 0, table, null, "", null, null, true);
+					if (jTabbedPane2.getSelectedComponent() != sqlConsoleContainerPanel) {
+						desktop.addTableBrowser(null, null, 0, table, null, "", null, null, true);
+					}
+				}
+				try {
+					String tableName = table.getUnqualifiedName();
+					String schemaName = table.getSchema("");
+					Quoting quoting = new Quoting(session);
+					String sql = "Select * From " + (schemaName == null || schemaName.length() == 0? "" : quoting.quote(schemaName) + ".") + quoting.quote(tableName);
+					if (jTabbedPane2.getSelectedComponent() == sqlConsoleContainerPanel) {
+						jTabbedPane2.setSelectedComponent(sqlConsoleContainerPanel);
+						sqlConsole.grabFocus();
+						sqlConsole.appendStatement(sql, true);
+					}
+				} catch (SQLException e) {
+					UIUtil.showException(this, "Error", e);
 				}
 			}
 
@@ -2636,11 +2682,11 @@ public class DataBrowser extends javax.swing.JFrame {
 				try {
 					Quoting quoting = new Quoting(session);
 					String sql = "Select * From " + (schemaName == null? "" : quoting.quote(schemaName) + ".") + quoting.quote(tableName);
-					if (!selectNavTreeNode(navigationTree.getModel().getRoot(), mdTable)) {
-						RowBrowser rb = desktop.addTableBrowser(null, null, 0, null, null, sql, null, null, true);
-						if (rb != null) {
-							rb.setMDTable(mdTable);
-						}
+					if (!selectNavTreeNode(navigationTree.getModel().getRoot(), mdTable)
+						|| jTabbedPane2.getSelectedComponent() == sqlConsoleContainerPanel) {
+						jTabbedPane2.setSelectedComponent(sqlConsoleContainerPanel);
+						sqlConsole.grabFocus();
+						sqlConsole.appendStatement(sql, true);
 					}
 				} catch (SQLException e) {
 					UIUtil.showException(this, "Error", e);
@@ -2670,7 +2716,12 @@ public class DataBrowser extends javax.swing.JFrame {
 		
 		try {
 			if (sqlConsole == null) {
-				sqlConsole = new SQLConsole(session, metaDataSource, datamodel, executionContext);
+				sqlConsole = new SQLConsole(session, metaDataSource, datamodel, executionContext) {
+					@Override
+					protected void refreshMetaData() {
+						metaDataPanel.reset();
+					}
+				};
 				sqlConsoleContainerPanel.removeAll();
 				sqlConsoleContainerPanel.add(sqlConsole);
 			} else {
