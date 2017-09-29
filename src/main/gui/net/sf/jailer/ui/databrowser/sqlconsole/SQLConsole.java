@@ -235,10 +235,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							}
 						});
 			        	rTabContainer = tabContentPanel;
-				    	String title = sql.trim();
+				    	String title = sql.trim().replaceAll("\\s+", " ");
 				    	final int MAXLENGTH = 30;
 				    	if (title.length() > MAXLENGTH) {
-				    		title = title.replaceFirst("^(?is)(\\bselect\\b).*?(\\bfrom\\b)(.*)$", "$1 ... $2$3");
+				    		title = title.replaceFirst("^(?is)(\\bselect\\b).........*?(\\bfrom\\b)(.*)$", "$1 ... $2$3");
 				    	}
 				    	if (title.length() > MAXLENGTH) {
 							title = title.substring(0, MAXLENGTH) + "...";
