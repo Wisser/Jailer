@@ -1188,8 +1188,9 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.weightx = 1.0;
         layeredPaneContent.add(hiddenPanel, gridBagConstraints);
 
-        layeredPaneContent.setBounds(0, 0, 24, 58);
-        jLayeredPane1.add(layeredPaneContent, javax.swing.JLayeredPane.PALETTE_LAYER);
+        jLayeredPane1.setLayer(layeredPaneContent, javax.swing.JLayeredPane.PALETTE_LAYER);
+        jLayeredPane1.add(layeredPaneContent);
+        layeredPaneContent.setBounds(0, 0, 26, 57);
 
         jSplitPane3.setLeftComponent(jLayeredPane1);
 
@@ -1214,7 +1215,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         sqlConsoleContainerPanel.add(jPanel8, java.awt.BorderLayout.CENTER);
 
-        jTabbedPane2.addTab("SQL", sqlConsoleContainerPanel);
+        jTabbedPane2.addTab("SQL Console", sqlConsoleContainerPanel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
