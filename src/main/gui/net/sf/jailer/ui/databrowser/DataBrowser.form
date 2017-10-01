@@ -44,12 +44,14 @@
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="newBrowserjMenuItemActionPerformed"/>
               </Events>
             </MenuItem>
+            <MenuItem class="javax.swing.JPopupMenu$Separator" name="jSeparator9">
+            </MenuItem>
             <MenuItem class="javax.swing.JMenuItem" name="jMenuItem3">
               <Properties>
                 <Property name="accelerator" type="javax.swing.KeyStroke" editor="org.netbeans.modules.form.editors.KeyStrokeEditor">
-                  <KeyStroke key="Ctrl+Q"/>
+                  <KeyStroke key="Ctrl+T"/>
                 </Property>
-                <Property name="text" type="java.lang.String" value="New SQL Browser"/>
+                <Property name="text" type="java.lang.String" value="Open Table"/>
               </Properties>
               <Events>
                 <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jMenuItem3ActionPerformed"/>
@@ -638,7 +640,7 @@
                                         </Component>
                                         <Component class="javax.swing.JButton" name="jButton1">
                                           <Properties>
-                                            <Property name="text" type="java.lang.String" value="New Table Browser"/>
+                                            <Property name="text" type="java.lang.String" value="Open Table"/>
                                           </Properties>
                                           <Events>
                                             <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jButton1ActionPerformed"/>

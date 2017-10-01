@@ -27,8 +27,6 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -771,6 +769,7 @@ public class DataBrowser extends javax.swing.JFrame {
         menuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         newBrowserjMenuItem = new javax.swing.JMenuItem();
+        jSeparator9 = new javax.swing.JPopupMenu.Separator();
         jMenuItem3 = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
         storeSessionItem = new javax.swing.JMenuItem();
@@ -984,7 +983,7 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel6.add(jLabel2, gridBagConstraints);
 
-        jButton1.setText("New Table Browser");
+        jButton1.setText("Open Table");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -1241,9 +1240,10 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         jMenu1.add(newBrowserjMenuItem);
+        jMenu1.add(jSeparator9);
 
-        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
-        jMenuItem3.setText("New SQL Browser");
+        jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
+        jMenuItem3.setText("Open Table");
         jMenuItem3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jMenuItem3ActionPerformed(evt);
@@ -1495,7 +1495,7 @@ public class DataBrowser extends javax.swing.JFrame {
     }//GEN-LAST:event_newBrowserjMenuItemActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        openNewTableBrowser(false);
+        openNewTableBrowser(true);
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void jTabbedPane2StateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_jTabbedPane2StateChanged
@@ -1540,7 +1540,7 @@ public class DataBrowser extends javax.swing.JFrame {
         wheelzoomTip();
     }// GEN-LAST:event_thumbnailLayoutRadioButtonMenuItemActionPerformed
 
-    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem1ActionPerformed
+    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem1ActionPerformed
         openNewTableBrowser(false);
     }// GEN-LAST:event_jMenuItem1ActionPerformed
 
@@ -1551,10 +1551,6 @@ public class DataBrowser extends javax.swing.JFrame {
     private void schemaMappingMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_schemaMappingMenuItemActionPerformed
         desktop.openSchemaMappingDialog(false);
     }// GEN-LAST:event_schemaMappingMenuItemActionPerformed
-
-    private void jMenuItem3ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem3ActionPerformed
-        desktop.addTableBrowser(null, null, 0, null, null, "", null, null, true);
-    }// GEN-LAST:event_jMenuItem3ActionPerformed
 
     private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem4ActionPerformed
         try {
@@ -1798,7 +1794,6 @@ public class DataBrowser extends javax.swing.JFrame {
     }
 
     private static DataBrowser openNewDataBrowser(DataModel datamodel, DbConnectionDialog dbConnectionDialog, boolean maximize, ExecutionContext executionContext) throws Exception {
-        boolean silent = dbConnectionDialog != null;
         DataBrowser dataBrowser = new DataBrowser(datamodel, null, "", null, false, executionContext);
         dataBrowser.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 //		if (maximize) {
@@ -1818,9 +1813,6 @@ public class DataBrowser extends javax.swing.JFrame {
             dataBrowser.askForDataModel();
             dataBrowser.desktop.openSchemaMappingDialog(true);
             dataBrowser.updateStatusBar();
-            if (!silent) {
-                dataBrowser.openNewTableBrowser(true);
-            }
         } else {
             if (dbConnectionDialog.isConnected) {
                 dataBrowser.setConnection(dbConnectionDialog);
@@ -1996,6 +1988,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator6;
     private javax.swing.JPopupMenu.Separator jSeparator7;
     private javax.swing.JPopupMenu.Separator jSeparator8;
+    private javax.swing.JPopupMenu.Separator jSeparator9;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JSplitPane jSplitPane3;

@@ -58,7 +58,10 @@
                 </Container>
                 <Component class="javax.swing.JLabel" name="statusLabel">
                   <Properties>
-                    <Property name="text" type="java.lang.String" value="jLabel2"/>
+                    <Property name="foreground" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+                      <Color blue="80" green="80" id="gray" palette="1" red="80" type="palette"/>
+                    </Property>
+                    <Property name="text" type="java.lang.String" value=" ctrl-space for code completion"/>
                   </Properties>
                   <Constraints>
                     <Constraint layoutClass="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout" value="org.netbeans.modules.form.compat2.layouts.DesignGridBagLayout$GridBagConstraintsDescription">

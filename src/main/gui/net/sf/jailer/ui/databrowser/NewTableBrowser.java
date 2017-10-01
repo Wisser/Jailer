@@ -60,7 +60,7 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
 			}
 		});
 		
-		analyzeButton.setVisible(DataBrowserContext.isSupportsDataModelUpdates());
+		analyzeButton.setVisible(false /* DataBrowserContext.isSupportsDataModelUpdates() */);
 		
 		if (offerAlternatives) {
 			setTitle(DataBrowserContext.getAppName(true));
