@@ -51,6 +51,7 @@ import javax.swing.tree.TreeSelectionModel;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.modelbuilder.ModelBuilder;
 
 /**
  * Meta Data UI.
@@ -180,11 +181,15 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 					boolean leaf, int row, boolean hasFocus) {
 				Component comp = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 				boolean unknownTable = false;
+				boolean isJailerTable = false;
 				if (value instanceof DefaultMutableTreeNode) {
 					Object uo = ((DefaultMutableTreeNode) value).getUserObject();
 					if (uo instanceof MDTable) {
 						if (MetaDataPanel.this.metaDataSource.toTable((MDTable) uo) == null) {
 							unknownTable = true;
+						}
+						if (ModelBuilder.isJailerTable(((MDTable) uo).getName())) {
+							isJailerTable = true;
 						}
 					}
 				}
@@ -193,7 +198,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 					Font bold = new Font(font.getName(), unknownTable? (font.getStyle() | Font.ITALIC) : (font.getStyle() & ~Font.ITALIC), font.getSize());
 					comp.setFont(bold);
 				}
-				if (unknownTable) {
+				if (unknownTable && !isJailerTable) {
 					JPanel panel = new JPanel(new FlowLayout(0, 0, 0));
 					panel.add(comp);
 					JLabel label = new JLabel(finalScaledWarnIcon);

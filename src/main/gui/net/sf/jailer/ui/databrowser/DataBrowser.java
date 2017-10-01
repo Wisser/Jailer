@@ -768,12 +768,9 @@ public class DataBrowser extends javax.swing.JFrame {
         closurePanel = new javax.swing.JPanel();
         sqlConsoleContainerPanel = new javax.swing.JPanel();
         jPanel8 = new javax.swing.JPanel();
-        jLabel16 = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         newBrowserjMenuItem = new javax.swing.JMenuItem();
-        jSeparator9 = new javax.swing.JPopupMenu.Separator();
-        jMenuItem1 = new javax.swing.JMenuItem();
         jMenuItem3 = new javax.swing.JMenuItem();
         jSeparator4 = new javax.swing.JPopupMenu.Separator();
         storeSessionItem = new javax.swing.JMenuItem();
@@ -1202,17 +1199,6 @@ public class DataBrowser extends javax.swing.JFrame {
         sqlConsoleContainerPanel.setLayout(new java.awt.BorderLayout());
 
         jPanel8.setLayout(new java.awt.GridBagLayout());
-
-        jLabel16.setText("  SQL Console will be available in release 7.5");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel8.add(jLabel16, gridBagConstraints);
-
         sqlConsoleContainerPanel.add(jPanel8, java.awt.BorderLayout.CENTER);
 
         jTabbedPane2.addTab("SQL Console", sqlConsoleContainerPanel);
@@ -1255,16 +1241,6 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         jMenu1.add(newBrowserjMenuItem);
-        jMenu1.add(jSeparator9);
-
-        jMenuItem1.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_T, java.awt.event.InputEvent.CTRL_MASK));
-        jMenuItem1.setText("New Table Browser");
-        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jMenuItem1ActionPerformed(evt);
-            }
-        });
-        jMenu1.add(jMenuItem1);
 
         jMenuItem3.setAccelerator(javax.swing.KeyStroke.getKeyStroke(java.awt.event.KeyEvent.VK_Q, java.awt.event.InputEvent.CTRL_MASK));
         jMenuItem3.setText("New SQL Browser");
@@ -1855,7 +1831,9 @@ public class DataBrowser extends javax.swing.JFrame {
                     for (int j = 0; j < menu.getItemCount(); ++j) {
                         JMenuItem item = menu.getItem(j);
                         if (item != null) {
-                            item.setEnabled(false);
+                        	if (item != dataBrowser.reconnectMenuItem && item != dataBrowser.newBrowserjMenuItem) {
+                        		item.setEnabled(false);
+                        	}
                         }
                     }
                 }
@@ -1986,7 +1964,6 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
-    private javax.swing.JLabel jLabel16;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -1998,7 +1975,6 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JMenu jMenu1;
     private javax.swing.JMenu jMenu2;
-    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JMenuItem jMenuItem3;
     private javax.swing.JMenuItem jMenuItem4;
     private javax.swing.JPanel jPanel1;
@@ -2020,7 +1996,6 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator6;
     private javax.swing.JPopupMenu.Separator jSeparator7;
     private javax.swing.JPopupMenu.Separator jSeparator8;
-    private javax.swing.JPopupMenu.Separator jSeparator9;
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JSplitPane jSplitPane3;

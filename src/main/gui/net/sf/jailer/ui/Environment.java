@@ -23,6 +23,7 @@ import java.nio.file.Path;
 import java.nio.file.SimpleFileVisitor;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Enumeration;
+import java.util.Locale;
 
 import org.apache.log4j.Appender;
 import org.apache.log4j.FileAppender;
@@ -40,6 +41,7 @@ public class Environment {
 	private static File home = null;
 	
 	public static void init() {
+		Locale.setDefault(Locale.ENGLISH);
 		if (new File(".singleuser").exists()) {
 			home = new File(System.getProperty("user.home"), ".jailer");
 			home.mkdirs();
