@@ -109,6 +109,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		limitComboBox.setSelectedItem(1000);
 		
 		resetStatus();
+		statusLabel.setVisible(true);
 
 		Thread thread = new Thread(new Runnable() {
 			@Override
@@ -426,7 +427,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         jPanel2.add(consoleContainerPanel, gridBagConstraints);
 
-        statusLabel.setText("jLabel2");
+        statusLabel.setForeground(java.awt.Color.gray);
+        statusLabel.setText(" ctrl-space for code completion");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
