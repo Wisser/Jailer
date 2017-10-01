@@ -32,6 +32,7 @@ import javax.swing.JPanel;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -56,7 +57,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 		        Font font = new JLabel("L").getFont();
 				tableNameLabel.setFont(new Font(font.getName(), font.getStyle(), (int)(font.getSize() * 1.2)));
 		
-				if (mdTable != null && !mdTable.isUptodate(table)) {
+				if (mdTable != null && !mdTable.isUptodate(table) && !ModelBuilder.isJailerTable(table.getUnqualifiedName())) {
 					warnLabel.setIcon(MetaDataPanel.getWarnIcon(TableDetailsView.this));
 					analyseButton.setText("Analyse schema \"" + mdTable.getSchema().getName() + "\"");
 					analyseButton.addActionListener(new ActionListener() {

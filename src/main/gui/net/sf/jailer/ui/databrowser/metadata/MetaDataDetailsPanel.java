@@ -45,6 +45,7 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.modelbuilder.MetaDataCache.CachedResultSet;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.QueryBuilderDialog;
@@ -120,7 +121,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     			tableDetailsViews.put(table, view);
     		}
     		tableDetailsPanel.add(view);
-    	} else {
+    	} else if (!ModelBuilder.isJailerTable(mdTable.getName())) {
     		JButton analyseButton = new JButton("Analyse schema \"" + mdTable.getSchema().getName() + "\"");
     		analyseButton.addActionListener(new ActionListener() {
 				@Override

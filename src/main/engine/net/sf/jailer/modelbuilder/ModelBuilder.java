@@ -417,6 +417,19 @@ public class ModelBuilder {
 	}
 	
 	/**
+	 * Checks if table is one of Jailers working tables.
+	 * 
+	 * @param table the table to check
+	 * @return <code>true</code> if table is one of Jailers working tables
+	 */
+	public static boolean isJailerTable(String table) {
+		String tName = Quoting.staticUnquote(table.toUpperCase());
+		return SqlUtil.JAILER_TABLES.contains(tName)
+			|| tName.startsWith(ImportFilterManager.MAPPINGTABLE_NAME_PREFIX)
+			|| (tName.endsWith("_T") && SqlUtil.JAILER_TABLES.contains(tName.substring(0, tName.length() - 2)));
+	}
+
+	/**
 	 * Checks if an association is already in a model.
 	 * 
 	 * @param association the association

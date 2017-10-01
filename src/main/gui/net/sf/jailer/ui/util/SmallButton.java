@@ -1,4 +1,4 @@
-package util;
+package net.sf.jailer.ui.util;
 
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
