@@ -44,9 +44,9 @@ public class SQLBrowserContentPane extends javax.swing.JPanel {
 	/** Creates new form SQLBrowserContentPane */
 	public SQLBrowserContentPane(DataModel dataModel, Session session, MetaDataSource metaDataSource) {
 		initComponents();
-		this.sqlEditorPane = new RSyntaxTextAreaWithSQLSyntaxStyle() {
-			protected void actionPerformed() {
-				super.actionPerformed();
+		this.sqlEditorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(false) {
+			protected void runBlock() {
+				super.runBlock();
 				reloadButton.doClick();
 			}
 		};
