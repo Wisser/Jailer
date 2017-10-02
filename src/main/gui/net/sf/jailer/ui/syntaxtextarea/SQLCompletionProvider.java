@@ -356,7 +356,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	public static void main(String[] args) throws Exception {
 		String statement =
 				"Select '1(', '2' (Select x from y) from table1 /* comment -- \n"
-				+ "123 */ , tabel2 -- xy\n"
+				+ "123 */ , tabel2 -- xy\n" 
 				+ ", table3 /* comment 2 \n ... \n*/, table4";
 		System.out.println(reduceStatement(statement, 43));
 	}
