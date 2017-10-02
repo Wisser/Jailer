@@ -7,9 +7,13 @@ package net.sf.jailer.ui.databrowser.sqlconsole;
 import java.awt.Color;
 import java.awt.FlowLayout;
 import java.awt.Frame;
+import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -32,9 +36,9 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
+import javax.swing.text.BadLocationException;
 
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.rtextarea.RTextScrollPane;
@@ -55,6 +59,7 @@ import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.QueryBuilderPathSelector;
 import net.sf.jailer.ui.databrowser.Reference;
 import net.sf.jailer.ui.databrowser.Row;
+import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.util.SmallButton;
@@ -70,7 +75,7 @@ import net.sf.jailer.util.Pair;
 @SuppressWarnings("serial")
 public abstract class SQLConsole extends javax.swing.JPanel {
 
-	private static final int MAX_TAB_COUNT = 10;
+	private static final int MAX_TAB_COUNT = 8;
 	
 	private Session session;
 	MetaDataSource metaDataSource;
@@ -91,10 +96,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		this.executionContext = executionContext;
 		initComponents();
 
-		this.editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle() {
+		this.editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(true) {
 			@Override
-			protected void actionPerformed() {
+			protected void runBlock() {
 				executeSelectedStatements();
+			}
+			@Override
+			protected void runAll() {
+				executeAllStatements();
 			}
 		};
 		provider = new MetaDataBasedSQLCompletionProvider(session, metaDataSource);
@@ -104,6 +113,19 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		jScrollPane.setViewportView(editorPane);
 		consoleContainerPanel.add(jScrollPane);
 		jScrollPane.setLineNumbersEnabled(true);
+
+		runSQLButton.setAction(editorPane.runBlock);
+		runnAllButton.setAction(editorPane.runAll);
+		
+		runSQLButton.setIcon(getScaledIcon(this, runIcon));
+		runnAllButton.setIcon(getScaledIcon(this, runAllIcon));
+		runSQLButton.setToolTipText(runSQLButton.getText() + " - Ctrl-Enter");
+		runnAllButton.setToolTipText(runnAllButton.getText() + " - Alt-Enter");
+		runSQLButton.setText("");
+		runnAllButton.setText(null);
+		runnAllButton.setMargin(new Insets(0, 0, 0, 0));
+				
+		cancelButton.setIcon(getScaledIcon(this, cancelIcon));
 		
 		limitComboBox.setModel(new DefaultComboBoxModel(DataBrowser.ROW_LIMITS));
 		limitComboBox.setSelectedItem(1000);
@@ -139,11 +161,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	 * @param sqlBlock the sql block
 	 * @param location location of the block in the console
 	 */
-	protected void executeSQLBlock(final String sqlBlock, Pair<Integer, Integer> location) {
+	protected void executeSQLBlock(final String sqlBlock, final Pair<Integer, Integer> location) {
 		queue.add(new Runnable() {
 			@Override
 			public void run() {
 				Status status = new Status();
+				status.location = location;
 				Pattern pattern = Pattern.compile("(.*?)(;\\s*(\\n\\r?|$))", Pattern.DOTALL);
 				Matcher matcher = pattern.matcher(sqlBlock);
 				boolean result = matcher.find();
@@ -190,7 +213,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			statement = session.getConnection().createStatement();
 			CancellationHandler.begin(statement, SQLConsole.this);
 			long startTime = System.currentTimeMillis();
-			if (statement.execute(sql)) {
+			if (statement.execute(sql.replaceFirst("(?is)(;\\s*)+$", ""))) {
 				resultSet = statement.getResultSet();
 				Integer limit = (Integer) limitComboBox.getSelectedItem();
 				final BrowserContentPane rb = new ResultContentPane(datamodel.get(), null, "", session, null, null,
@@ -264,12 +287,17 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		    		setDataHasChanged(true);
 		    	}
 		    	if (isDDLStatement(sql)) {
-		    		refreshMetaData();
+		    		status.withDDL = true;
 		    	}
 			}
 			CancellationHandler.end(statement, SQLConsole.this);
 			statement.close();
 		} catch (Throwable error) {
+			try {
+				CancellationHandler.checkForCancellation(SQLConsole.this);
+			} catch (CancellationException e) {
+				error = e;
+			}
 			if (statement != null) {
 				try {
 					statement.close();
@@ -323,6 +351,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	}
 
 	private class Status {
+		public boolean withDDL;
 		boolean failed;
 		boolean running;
 		boolean limitExceeded;
@@ -331,6 +360,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		int numStatements;
 		long timeInMS;
 		Throwable error;
+		Pair<Integer, Integer> location;
 
 		private void updateView() {
 			SwingUtilities.invokeLater(new Runnable() {
@@ -348,13 +378,40 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						statusScrollPane.setVisible(true);
 						if (error instanceof CancellationException) {
 							statusTextPane.setText("Cancelled");
-						} else {
+						} else if (error instanceof SQLException) {
 							statusTextPane.setText(error.getMessage());
+						} else {
+							StringWriter sw = new StringWriter();
+							PrintWriter pw = new PrintWriter(sw);
+							error.printStackTrace(pw);
+							String sStackTrace = sw.toString(); // stack trace as a string
+							statusTextPane.setText(sStackTrace);
 						}
 						statusTextPane.setCaretPosition(0);
 					}
+					Color hl = null;
+					if (failed) {
+						hl = new Color(255, 230, 230);
+					} else if (!running) {
+						hl = new Color(230, 255, 230);
+					}
+					if (location != null && hl != null) {
+						editorPane.removeAllLineHighlights();
+						try {
+							for (int i = location.a; i <= location.b; ++i) {
+								editorPane.addLineHighlight(i, hl);
+							}
+						} catch (BadLocationException e) {
+						}
+					}
+					
 					jPanel4.revalidate();
 					jPanel2.repaint();
+					
+					if (withDDL && !running) {
+						withDDL = false;
+						refreshMetaData();
+					}
 				}
 			});
 		}
@@ -400,6 +457,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         limitComboBox = new javax.swing.JComboBox();
         cancelButton = new javax.swing.JButton();
+        jLabel4 = new javax.swing.JLabel();
+        runSQLButton = new javax.swing.JButton();
+        runnAllButton = new javax.swing.JButton();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
@@ -464,14 +524,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         jLabel1.setText("Row limit ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 13;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         jPanel5.add(jLabel1, gridBagConstraints);
 
         limitComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridx = 14;
         gridBagConstraints.gridy = 2;
         jPanel5.add(limitComboBox, gridBagConstraints);
 
@@ -482,14 +542,35 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 12;
         gridBagConstraints.gridy = 2;
         jPanel5.add(cancelButton, gridBagConstraints);
 
+        jLabel4.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 10;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.weightx = 1.0;
+        jPanel5.add(jLabel4, gridBagConstraints);
+
+        runSQLButton.setText("Run SQL");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        jPanel5.add(runSQLButton, gridBagConstraints);
+
+        runnAllButton.setText("Run all");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 6;
+        gridBagConstraints.gridy = 2;
+        jPanel5.add(runnAllButton, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.weightx = 1.0;
         jPanel2.add(jPanel5, gridBagConstraints);
 
         jLabel2.setText(" ");
@@ -557,6 +638,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
@@ -568,6 +650,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JTabbedPane jTabbedPane1;
     private javax.swing.JComboBox limitComboBox;
+    private javax.swing.JButton runSQLButton;
+    private javax.swing.JButton runnAllButton;
     private javax.swing.JLabel statusLabel;
     private javax.swing.JScrollPane statusScrollPane;
     private javax.swing.JTextPane statusTextPane;
@@ -754,18 +838,55 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				pre += "\n";
 			}
 		}
-		editorPane.append(pre + sql + "\n");
+		editorPane.append(pre + (sql.replaceFirst("(?is)(;\\s*)+$", "").trim()) + "\n");
 		resetStatus();
+		editorPane.setCaretPosition(editorPane.getDocument().getLength());
 		if (execute) {
 			executeSelectedStatements();
 		}
 	}
 
 	private void executeSelectedStatements() {
-		Pair<Integer, Integer> loc = editorPane.getCurrentStatementLocation(false);
+		Pair<Integer, Integer> loc = editorPane.getCurrentStatementLocation();
 		if (loc != null) {
 			executeSQLBlock(editorPane.getText(loc.a, loc.b, true), loc);
 		}
 	}
+
+	private void executeAllStatements() {
+		if (editorPane.getLineCount() > 0) {
+			Pair<Integer, Integer> loc = new Pair<Integer, Integer>(0, editorPane.getLineCount() - 1);
+			executeSQLBlock(editorPane.getText(loc.a, loc.b, true), loc);
+		}
+	}
 	
+	static private ImageIcon runIcon;
+    static private ImageIcon runAllIcon;
+    static private ImageIcon cancelIcon;
+    static ImageIcon getScaledIcon(JComponent component, ImageIcon scaledIcon) {
+    	if (scaledIcon != null) {
+            if (scaledIcon != null) {
+            	int heigth = component.getFontMetrics(new JLabel("M").getFont()).getHeight();
+            	double s = heigth / (double) scaledIcon.getIconHeight();
+            	try {
+            		return new ImageIcon(scaledIcon.getImage().getScaledInstance((int)(scaledIcon.getIconWidth() * s), (int)(scaledIcon.getIconHeight() * s), Image.SCALE_SMOOTH));
+            	} catch (Exception e) {
+            		return null;
+            	}
+            }
+    	}
+    	return null;
+    }
+    static {
+		String dir = "/net/sf/jailer/ui/resource";
+		
+		// load images
+		try {
+			runIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/run.png"));
+			runAllIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/runall.png"));
+			cancelIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/Cancel.png"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
 }
