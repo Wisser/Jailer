@@ -23,6 +23,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -332,6 +333,49 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 			} while (result);
 		}
 		matcher.appendTail(sb);
+		
+		int level = 0;
+		int myLevel = 0;
+		int myStart = 0;
+		Stack<Integer> ordPos = new Stack<Integer>();
+		Map<Integer, Integer> endPerOrdPos = new HashMap<Integer, Integer>();
+		for (int i = 0; i < sb.length(); ++i) {
+			char c = sb.charAt(i);
+			if (c == '(') {
+				++level;
+				ordPos.push(i);
+			} else if (c == ')') {
+				--level;
+				if (!ordPos.isEmpty()) {
+					int start = ordPos.pop();
+					endPerOrdPos.put(start, i);
+				}
+			}
+			if (i == caretPos) {
+				myLevel = level;
+				myStart = ordPos.isEmpty()? 0 : ordPos.peek();
+			}
+		}
+		
+		int l = 0;
+		ordPos = new Stack<Integer>();
+		for (int i = 0; i < sb.length(); ++i) {
+			char c = sb.charAt(i);
+			if (c == '(') {
+				++l;
+				ordPos.push(i);
+			} else if (c == ')') {
+				--l;
+				if (!ordPos.isEmpty()) {
+					ordPos.pop();
+				}
+			} else {
+				if (l > myLevel || l == myLevel && !ordPos.isEmpty() && !ordPos.peek().equals(myStart)) {
+					sb.setCharAt(i, ' ');
+				}
+			}
+		}
+		
 		String reduced = sb.toString();
 		return reduced;
 	}
@@ -357,8 +401,11 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		String statement =
 				"Select '1(', '2' (Select x from y) from table1 /* comment -- \n"
 				+ "123 */ , tabel2 -- xy\n" 
-				+ ", table3 /* comment 2 \n ... \n*/, table4";
+				+ ", table3 /* comment 2 \n ... \n*/, table4, (select sub from sub)";
+		System.out.println(reduceStatement(statement, 20));
 		System.out.println(reduceStatement(statement, 43));
+		System.out.println(reduceStatement("1(2(3(4)-3)-2)-1)))", 6));
+		System.out.println(reduceStatement("1(2(3(4)-3)-2)-1 1(2(3(4)-3)-2)-1)))", 2));
 	}
 	
 };
