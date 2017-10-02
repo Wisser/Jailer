@@ -68,6 +68,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.MouseInputAdapter;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -184,6 +186,13 @@ public class DataBrowser extends javax.swing.JFrame {
             DataBrowserContext.setSupportsDataModelUpdates(false);
         }
         initComponents();
+        
+        detailsAndBorderBrowserTabbedPane.addChangeListener(new ChangeListener() {
+			@Override
+			public void stateChanged(ChangeEvent e) {
+				updateBorderBrowser();
+			}
+		});
         
         metaDataDetailsPanel = createMetaDataDetailsPanel(executionContext);
         metaDataViewPanel.add(metaDataDetailsPanel);
@@ -726,7 +735,17 @@ public class DataBrowser extends javax.swing.JFrame {
         jPanel2 = new javax.swing.JPanel();
         jSplitPane1 = new javax.swing.JSplitPane();
         jPanel3 = new javax.swing.JPanel();
-        jSplitPane2 = new javax.swing.JSplitPane();
+        jPanel5 = new javax.swing.JPanel();
+        jTabbedPane2 = new javax.swing.JTabbedPane();
+        jSplitPane3 = new javax.swing.JSplitPane();
+        jLayeredPane1 = new javax.swing.JLayeredPane();
+        layeredPaneContent = new javax.swing.JPanel();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jInternalFrame1 = new javax.swing.JInternalFrame();
+        hiddenPanel = new javax.swing.JPanel();
+        closurePanel = new javax.swing.JPanel();
+        sqlConsoleContainerPanel = new javax.swing.JPanel();
+        jPanel8 = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         jSplitPane4 = new javax.swing.JSplitPane();
         jTabbedPane1 = new javax.swing.JTabbedPane();
@@ -736,6 +755,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jLabel2 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
         tablesPanel = new javax.swing.JPanel();
+        detailsAndBorderBrowserTabbedPane = new javax.swing.JTabbedPane();
         jPanel7 = new javax.swing.JPanel();
         metaDataViewPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
@@ -752,20 +772,19 @@ public class DataBrowser extends javax.swing.JFrame {
         jLabel13 = new javax.swing.JLabel();
         jLabel14 = new javax.swing.JLabel();
         jLabel15 = new javax.swing.JLabel();
-        borderBrowserTitledPanel = new javax.swing.JPanel();
-        titleLabel = new javax.swing.JLabel();
+        jLabel16 = new javax.swing.JLabel();
+        jLabel17 = new javax.swing.JLabel();
+        jLabel18 = new javax.swing.JLabel();
+        jLabel19 = new javax.swing.JLabel();
+        jLabel20 = new javax.swing.JLabel();
+        jLabel21 = new javax.swing.JLabel();
+        jLabel22 = new javax.swing.JLabel();
+        jLabel23 = new javax.swing.JLabel();
+        jLabel24 = new javax.swing.JLabel();
+        jLabel25 = new javax.swing.JLabel();
+        borderBrowserTabPane = new javax.swing.JPanel();
         borderBrowserPanel = new javax.swing.JPanel();
-        jPanel5 = new javax.swing.JPanel();
-        jTabbedPane2 = new javax.swing.JTabbedPane();
-        jSplitPane3 = new javax.swing.JSplitPane();
-        jLayeredPane1 = new javax.swing.JLayeredPane();
-        layeredPaneContent = new javax.swing.JPanel();
-        jScrollPane1 = new javax.swing.JScrollPane();
-        jInternalFrame1 = new javax.swing.JInternalFrame();
-        hiddenPanel = new javax.swing.JPanel();
-        closurePanel = new javax.swing.JPanel();
-        sqlConsoleContainerPanel = new javax.swing.JPanel();
-        jPanel8 = new javax.swing.JPanel();
+        titleLabel = new javax.swing.JLabel();
         menuBar = new javax.swing.JMenuBar();
         jMenu1 = new javax.swing.JMenu();
         newBrowserjMenuItem = new javax.swing.JMenuItem();
@@ -943,16 +962,85 @@ public class DataBrowser extends javax.swing.JFrame {
         jSplitPane1.setOneTouchExpandable(true);
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
+        jSplitPane1.setLeftComponent(jPanel3);
 
-        jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane2.setResizeWeight(0.8);
-        jSplitPane2.setContinuousLayout(true);
-        jSplitPane2.setOneTouchExpandable(true);
+        jPanel5.setLayout(new java.awt.GridBagLayout());
+
+        jTabbedPane2.addChangeListener(new javax.swing.event.ChangeListener() {
+            public void stateChanged(javax.swing.event.ChangeEvent evt) {
+                jTabbedPane2StateChanged(evt);
+            }
+        });
+
+        jSplitPane3.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane3.setResizeWeight(0.95);
+        jSplitPane3.setContinuousLayout(true);
+        jSplitPane3.setOneTouchExpandable(true);
+
+        layeredPaneContent.setLayout(new java.awt.GridBagLayout());
+
+        jScrollPane1.setAutoscrolls(true);
+        jScrollPane1.setWheelScrollingEnabled(false);
+        jScrollPane1.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
+            public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
+                jScrollPane1MouseWheelMoved(evt);
+            }
+        });
+
+        jInternalFrame1.setVisible(true);
+        jScrollPane1.setViewportView(jInternalFrame1);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        layeredPaneContent.add(jScrollPane1, gridBagConstraints);
+
+        hiddenPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Hidden"));
+        hiddenPanel.setLayout(new java.awt.GridBagLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        layeredPaneContent.add(hiddenPanel, gridBagConstraints);
+
+        jLayeredPane1.setLayer(layeredPaneContent, javax.swing.JLayeredPane.PALETTE_LAYER);
+        jLayeredPane1.add(layeredPaneContent);
+        layeredPaneContent.setBounds(0, 0, 24, 58);
+
+        jSplitPane3.setLeftComponent(jLayeredPane1);
+
+        closurePanel.setLayout(new java.awt.GridBagLayout());
+        jSplitPane3.setRightComponent(closurePanel);
+
+        jTabbedPane2.addTab("Desktop", jSplitPane3);
+
+        sqlConsoleContainerPanel.setLayout(new java.awt.BorderLayout());
+
+        jPanel8.setLayout(new java.awt.GridBagLayout());
+        sqlConsoleContainerPanel.add(jPanel8, java.awt.BorderLayout.CENTER);
+
+        jTabbedPane2.addTab("SQL Console", sqlConsoleContainerPanel);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(1, 0, 0, 0);
+        jPanel5.add(jTabbedPane2, gridBagConstraints);
+
+        jSplitPane1.setRightComponent(jPanel5);
 
         jPanel4.setLayout(new java.awt.GridBagLayout());
 
         jSplitPane4.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane4.setResizeWeight(1.0);
+        jSplitPane4.setToolTipText("");
         jSplitPane4.setContinuousLayout(true);
         jSplitPane4.setOneTouchExpandable(true);
 
@@ -1098,7 +1186,91 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.gridy = 15;
         jPanel7.add(jLabel15, gridBagConstraints);
 
-        jSplitPane4.setRightComponent(jPanel7);
+        jLabel16.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 16;
+        jPanel7.add(jLabel16, gridBagConstraints);
+
+        jLabel17.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 17;
+        jPanel7.add(jLabel17, gridBagConstraints);
+
+        jLabel18.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 18;
+        jPanel7.add(jLabel18, gridBagConstraints);
+
+        jLabel19.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 19;
+        jPanel7.add(jLabel19, gridBagConstraints);
+
+        jLabel20.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 20;
+        jPanel7.add(jLabel20, gridBagConstraints);
+
+        jLabel21.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 21;
+        jPanel7.add(jLabel21, gridBagConstraints);
+
+        jLabel22.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 22;
+        jPanel7.add(jLabel22, gridBagConstraints);
+
+        jLabel23.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 23;
+        jPanel7.add(jLabel23, gridBagConstraints);
+
+        jLabel24.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 24;
+        jPanel7.add(jLabel24, gridBagConstraints);
+
+        jLabel25.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 25;
+        jPanel7.add(jLabel25, gridBagConstraints);
+
+        detailsAndBorderBrowserTabbedPane.addTab("Details", jPanel7);
+
+        borderBrowserTabPane.setLayout(new java.awt.GridBagLayout());
+
+        borderBrowserPanel.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        borderBrowserTabPane.add(borderBrowserPanel, gridBagConstraints);
+
+        titleLabel.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
+        borderBrowserTabPane.add(titleLabel, gridBagConstraints);
+
+        detailsAndBorderBrowserTabbedPane.addTab("Closure Border", borderBrowserTabPane);
+
+        jSplitPane4.setRightComponent(detailsAndBorderBrowserTabbedPane);
+        detailsAndBorderBrowserTabbedPane.getAccessibleContext().setAccessibleName("Closure Border");
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1108,110 +1280,7 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.weighty = 1.0;
         jPanel4.add(jSplitPane4, gridBagConstraints);
 
-        jSplitPane2.setLeftComponent(jPanel4);
-
-        borderBrowserTitledPanel.setLayout(new java.awt.GridBagLayout());
-
-        titleLabel.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.insets = new java.awt.Insets(6, 0, 0, 0);
-        borderBrowserTitledPanel.add(titleLabel, gridBagConstraints);
-
-        borderBrowserPanel.setLayout(new java.awt.BorderLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        borderBrowserTitledPanel.add(borderBrowserPanel, gridBagConstraints);
-
-        jSplitPane2.setRightComponent(borderBrowserTitledPanel);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel3.add(jSplitPane2, gridBagConstraints);
-
-        jSplitPane1.setLeftComponent(jPanel3);
-
-        jPanel5.setLayout(new java.awt.GridBagLayout());
-
-        jTabbedPane2.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                jTabbedPane2StateChanged(evt);
-            }
-        });
-
-        jSplitPane3.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane3.setResizeWeight(0.95);
-        jSplitPane3.setContinuousLayout(true);
-        jSplitPane3.setOneTouchExpandable(true);
-
-        layeredPaneContent.setLayout(new java.awt.GridBagLayout());
-
-        jScrollPane1.setAutoscrolls(true);
-        jScrollPane1.setWheelScrollingEnabled(false);
-        jScrollPane1.addMouseWheelListener(new java.awt.event.MouseWheelListener() {
-            public void mouseWheelMoved(java.awt.event.MouseWheelEvent evt) {
-                jScrollPane1MouseWheelMoved(evt);
-            }
-        });
-
-        jInternalFrame1.setVisible(true);
-        jScrollPane1.setViewportView(jInternalFrame1);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        layeredPaneContent.add(jScrollPane1, gridBagConstraints);
-
-        hiddenPanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Hidden"));
-        hiddenPanel.setLayout(new java.awt.GridBagLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        layeredPaneContent.add(hiddenPanel, gridBagConstraints);
-
-        jLayeredPane1.setLayer(layeredPaneContent, javax.swing.JLayeredPane.PALETTE_LAYER);
-        jLayeredPane1.add(layeredPaneContent);
-        layeredPaneContent.setBounds(0, 0, 26, 57);
-
-        jSplitPane3.setLeftComponent(jLayeredPane1);
-
-        closurePanel.setLayout(new java.awt.GridBagLayout());
-        jSplitPane3.setRightComponent(closurePanel);
-
-        jTabbedPane2.addTab("Desktop", jSplitPane3);
-
-        sqlConsoleContainerPanel.setLayout(new java.awt.BorderLayout());
-
-        jPanel8.setLayout(new java.awt.GridBagLayout());
-        sqlConsoleContainerPanel.add(jPanel8, java.awt.BorderLayout.CENTER);
-
-        jTabbedPane2.addTab("SQL Console", sqlConsoleContainerPanel);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(1, 0, 0, 0);
-        jPanel5.add(jTabbedPane2, gridBagConstraints);
-
-        jSplitPane1.setRightComponent(jPanel5);
+        jSplitPane1.setLeftComponent(jPanel4);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1932,7 +2001,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem analyseMenuItem;
     private javax.swing.JLabel associatedWith;
     private javax.swing.JPanel borderBrowserPanel;
-    private javax.swing.JPanel borderBrowserTitledPanel;
+    private javax.swing.JPanel borderBrowserTabPane;
     private javax.swing.JMenuItem cloaseAllMenuItem;
     private javax.swing.JPanel closurePanel;
     public javax.swing.JLabel connectivityState;
@@ -1940,6 +2009,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem dataImport;
     private javax.swing.JMenuItem dataModelEditorjMenuItem;
     private javax.swing.JLabel dependsOn;
+    private javax.swing.JTabbedPane detailsAndBorderBrowserTabbedPane;
     private javax.swing.JPanel dummy;
     private javax.swing.JMenuItem exportDataMenuItem;
     private javax.swing.JLabel hasDependent;
@@ -1956,7 +2026,17 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel13;
     private javax.swing.JLabel jLabel14;
     private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel20;
+    private javax.swing.JLabel jLabel21;
+    private javax.swing.JLabel jLabel22;
+    private javax.swing.JLabel jLabel23;
+    private javax.swing.JLabel jLabel24;
+    private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
@@ -1990,7 +2070,6 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator8;
     private javax.swing.JPopupMenu.Separator jSeparator9;
     private javax.swing.JSplitPane jSplitPane1;
-    private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JSplitPane jSplitPane3;
     private javax.swing.JSplitPane jSplitPane4;
     private javax.swing.JTabbedPane jTabbedPane1;
@@ -2219,7 +2298,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private boolean disableBorderBrowserUpdates = false;
 
     private void updateBorderBrowser() {
-        if (disableBorderBrowserUpdates) {
+        if (disableBorderBrowserUpdates || detailsAndBorderBrowserTabbedPane.getSelectedComponent() != borderBrowserTabPane) {
             return;
         }
         try {
