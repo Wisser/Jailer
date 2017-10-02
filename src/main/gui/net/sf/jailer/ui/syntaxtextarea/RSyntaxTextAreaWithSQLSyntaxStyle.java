@@ -64,40 +64,74 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 
 	private FindDialog findDialog;
 	private ReplaceDialog replaceDialog;
-
-	public RSyntaxTextAreaWithSQLSyntaxStyle() {
+	private final boolean withExecuteActions;
+	
+	/**
+	 * Key stokes.
+	 */
+	public static KeyStroke KS_RUN_BLOCK = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
+	public static KeyStroke KS_RUN_ALL = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.ALT_DOWN_MASK);
+	
+	/**
+	 * Actions.
+	 */
+	public final Action runBlock;
+	public final Action runAll;
+	
+	public RSyntaxTextAreaWithSQLSyntaxStyle(boolean withExecuteActions) {
+		this.withExecuteActions = withExecuteActions;
 		setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
-		Action action = new AbstractAction() {
+		runBlock = new AbstractAction("Run selected SQL") {
+			{
+				putValue(ACCELERATOR_KEY, KS_RUN_BLOCK);
+				InputMap im = getInputMap();
+				im.put(KS_RUN_BLOCK, this);
+				ActionMap am = getActionMap();
+				am.put(this, this);
+			}
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				RSyntaxTextAreaWithSQLSyntaxStyle.this.actionPerformed();
+				RSyntaxTextAreaWithSQLSyntaxStyle.this.runBlock();
 			}
 		};
 
-		KeyStroke ks = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
+		runAll = new AbstractAction("Run all SQL") {
+			{
+				putValue(ACCELERATOR_KEY, KS_RUN_ALL);
+				InputMap im = getInputMap();
+				im.put(KS_RUN_ALL, this);
+				ActionMap am = getActionMap();
+				am.put(this, this);
+			}
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				RSyntaxTextAreaWithSQLSyntaxStyle.this.runAll();
+			}
+		};
+
 		InputMap im = getInputMap();
-		im.put(ks, action);
+		im.put(KS_RUN_BLOCK, runBlock);
 		ActionMap am = getActionMap();
-		am.put(action, action);
+		am.put(runBlock, runBlock);
+
+		im = getInputMap();
+		im.put(KS_RUN_ALL, runAll);
+		am = getActionMap();
+		am.put(runAll, runAll);
 
 		setMarkOccurrences(true);
 
 		addCaretListener(new CaretListener() {
 			@Override
 			public void caretUpdate(CaretEvent e) {
-				try {
-					removeAllLineHighlights();
-					Pair<Integer, Integer> loc = getCurrentStatementLocation(false);
-					for (int l = loc.a; l < loc.b; ++l) {
-						addLineHighlight(l, new Color(240, 250, 255));
-					}
-				} catch (BadLocationException e1) {
-					e1.printStackTrace();
-				}
+				updateMenuItemState();
 			}
 		});
+	
+		setHighlightCurrentLine(false);
 		
 		createPopupMenu();
+		updateMenuItemState();
 	}
 
 	/**
@@ -115,7 +149,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			public void actionPerformed(ActionEvent e) {
 				String currentStatement = getCurrentStatement(true);
 				Pattern pattern = Pattern.compile("(.*?)(;\\s*(\\n\\r?|$))", Pattern.DOTALL);
-				Matcher matcher = pattern.matcher(currentStatement);
+				Matcher matcher = pattern.matcher(currentStatement + ";");
 				boolean result = matcher.find();
 				if (result) {
 					StringBuffer sb = new StringBuffer();
@@ -126,7 +160,13 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 						result = matcher.find();
 					} while (result);
 					matcher.appendTail(sb);
-					replaceCurrentStatement(sb.toString(), true);
+					if (sb.length() > 0) {
+						sb.setLength(sb.length() - 1);
+					}
+					pattern = Pattern.compile(".*?[^;](\\s*)$", Pattern.DOTALL);
+					matcher = pattern.matcher(currentStatement);
+					String tail = matcher.matches()? matcher.group(1) : "";
+					replaceCurrentStatement(sb.toString() + tail, true);
 				}
 			}
 		});
@@ -137,6 +177,14 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		menu.add(new JMenuItem(new ShowReplaceDialogAction()), 1);
 		menu.add(new JSeparator(), 2);
 
+		if (withExecuteActions) {
+			item = new JMenuItem(runBlock);
+			menu.add(item, 0);
+			item = new JMenuItem(runAll);
+			menu.add(item, 1);
+			menu.add(new JSeparator(), 2);
+		}
+		
 		return menu;
 	}
 
@@ -201,6 +249,39 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		}
 		return txt.toString();
 	}
+	
+	/**
+	 * Does the text have any non-WS characters?
+	 */
+	public boolean isTextEmpty(int from, int to) {
+		Segment txt = new Segment();
+		try {
+			if (to >= getLineCount()) {
+				to = getLineCount() - 1;
+			}
+			for (int i = from; i <= to; ++i) {
+				int off = getLineStartOffset(i);
+				getDocument().getText(off, getLineEndOffset(to) - off, txt);
+				if (txt.toString().trim().length() > 0) {
+					return false;
+				}
+			}
+		} catch (BadLocationException e) {
+			return false;
+		}
+		return true;
+	}
+	
+	/**
+	 * Gets start- and end-line number of statement(s) at caret position.
+	 * 
+	 * @param singleStatement
+	 *            <code>true</code> to get only one statement
+	 * @return pair of start and end line number
+	 */
+	public Pair<Integer, Integer> getCurrentStatementLocation() {
+		return getCurrentStatementLocation(getCaret().getDot() != getCaret().getMark());
+	}
 
 	/**
 	 * Gets start- and end-line number of statement(s) at caret position.
@@ -232,10 +313,19 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 				Segment txt = new Segment();
 				getDocument().getText(endOff, getLineEndOffset(end) - endOff, txt);
 				String sLine = txt.toString().trim();
-				if (sLine.length() == 0 || (singleStatement && sLine.endsWith(";"))) {
+				if (sLine.length() == 0) {
+					if (end > start) {
+						--end;
+					}
+					break;
+				}
+				if (singleStatement && sLine.endsWith(";")) {
 					break;
 				}
 				++end;
+			}
+			if (end == lineCount && end > 0) {
+				--end;
 			}
 			return new Pair<Integer, Integer>(start, end);
 		} catch (BadLocationException e) {
@@ -339,7 +429,10 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		}
 	}
 
-	protected void actionPerformed() {
+	protected void runBlock() {
+	}
+	
+	protected void runAll() {
 	}
 
 	private void initDialogs() {
@@ -361,5 +454,19 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			SearchContext context = findDialog.getSearchContext();
 			replaceDialog.setSearchContext(context);
 			}
+	}
+
+	private void updateMenuItemState() {
+		try {
+			removeAllLineHighlights();
+			Pair<Integer, Integer> loc = getCurrentStatementLocation();
+			runBlock.setEnabled(loc != null && !isTextEmpty(loc.a, loc.b));
+			runAll.setEnabled(RSyntaxTextAreaWithSQLSyntaxStyle.this.getDocument().getLength() > 0);
+			for (int l = loc.a; l <= loc.b; ++l) {
+				addLineHighlight(l, new Color(235, 240, 255));
+			}
+		} catch (BadLocationException e1) {
+			e1.printStackTrace();
+		}
 	}
 }

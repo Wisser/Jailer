@@ -78,7 +78,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 		this.dialog = dialog;
 		initComponents();
 		
-		this.sqlTextArea = new RSyntaxTextAreaWithSQLSyntaxStyle();
+		this.sqlTextArea = new RSyntaxTextAreaWithSQLSyntaxStyle(false);
 		try {
 			MetaDataBasedSQLCompletionProvider provider = new MetaDataBasedSQLCompletionProvider(session, metaDataSource);
 			AutoCompletion ac = new AutoCompletion(provider);

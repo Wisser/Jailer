@@ -155,9 +155,9 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		Pair<Integer, Integer> loc = ((RSyntaxTextAreaWithSQLSyntaxStyle) comp)
 				.getCurrentStatementLocation(true);
 		String line = ((RSyntaxTextAreaWithSQLSyntaxStyle) comp).getText(loc.a, loc.b, true);
-		String linBeforeCaret = ((RSyntaxTextAreaWithSQLSyntaxStyle) comp).getText(loc.a, loc.b, false);
+		String lineBeforeCaret = ((RSyntaxTextAreaWithSQLSyntaxStyle) comp).getText(loc.a, loc.b, false);
 
-		return retrieveCompletions(line, linBeforeCaret);
+		return retrieveCompletions(line, lineBeforeCaret);
 	}
 
 	private List<Completion> retrieveCompletions(String line, String beforeCaret) {
@@ -315,6 +315,27 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		return newCompletions;
 	}
 
+	private static String reduceStatement(String statement, int caretPos) {
+		Pattern pattern = Pattern.compile("('([^']*'))|(/\\*.*?\\*/)|(\\-\\-.*?(\n|$))", Pattern.DOTALL);
+		Matcher matcher = pattern.matcher(statement);
+		boolean result = matcher.find();
+		StringBuffer sb = new StringBuffer();
+		if (result) {
+			do {
+				int l = matcher.group(0).length();
+				matcher.appendReplacement(sb, "");
+				while (l > 0) {
+					--l;
+					sb.append(' ');
+				}
+				result = matcher.find();
+			} while (result);
+		}
+		matcher.appendTail(sb);
+		String reduced = sb.toString();
+		return reduced;
+	}
+
 	private static String reIdentifier = "(?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+)";
 	private static String re = ".*?(?:(" + reIdentifier + ")\\s*\\.\\s*)(" + reIdentifier + ")\\s*\\.\\s*[\"'`]?\\w*$";
 	private static String reTableOnly = ".*?(" + reIdentifier + ")\\s*\\.\\s*[\"'`]?\\w*$";
@@ -331,4 +352,13 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	protected abstract String getSchemaName(SCHEMA schema);
 	protected abstract List<SCHEMA> getSchemas(SOURCE metaDataSource);
 
+
+	public static void main(String[] args) throws Exception {
+		String statement =
+				"Select '1(', '2' (Select x from y) from table1 /* comment -- \n"
+				+ "123 */ , tabel2 -- xy\n"
+				+ ", table3 /* comment 2 \n ... \n*/, table4";
+		System.out.println(reduceStatement(statement, 43));
+	}
+	
 };

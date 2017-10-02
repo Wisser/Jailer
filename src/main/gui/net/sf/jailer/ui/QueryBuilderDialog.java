@@ -68,7 +68,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 	/** Creates new form QueryBuilderDialog */
 	public QueryBuilderDialog(java.awt.Frame parent) {
 		super(parent, true);
-		this.sqlTextArea = new RSyntaxTextAreaWithSQLSyntaxStyle();
+		this.sqlTextArea = new RSyntaxTextAreaWithSQLSyntaxStyle(false);
 		initComponents();
 		JScrollPane jScrollPane2 = new JScrollPane();
 		jScrollPane2.setViewportView(sqlTextArea);
@@ -174,7 +174,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         getContentPane().add(relationshipsPanel, gridBagConstraints);
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1), "SQL Query", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("DejaVu Sans", 0, 12), new java.awt.Color(86, 82, 125))); // NOI18N
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1), "SQL Query", 0, 0, new java.awt.Font("DejaVu Sans", 0, 12), new java.awt.Color(86, 82, 125))); // NOI18N
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
@@ -271,7 +271,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         jPanel2.add(clipboardButton, gridBagConstraints);
 
-        sqlEditButton.setText(" Execute ");
+        sqlEditButton.setText("SQL Console");
         sqlEditButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 sqlEditButtonActionPerformed(evt);
