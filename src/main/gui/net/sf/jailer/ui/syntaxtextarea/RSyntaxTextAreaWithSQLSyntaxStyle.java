@@ -458,17 +458,19 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	}
 
 	public void updateMenuItemState() {
-		updateMenuItemState(true);
+		updateMenuItemState(true, true);
 	}
 	
-	protected void updateMenuItemState(boolean allowRun) {
+	public void updateMenuItemState(boolean allowRun, boolean setLineHighlights) {
 		try {
-			removeAllLineHighlights();
 			Pair<Integer, Integer> loc = getCurrentStatementLocation();
 			runBlock.setEnabled(allowRun && loc != null && !isTextEmpty(loc.a, loc.b));
 			runAll.setEnabled(allowRun && RSyntaxTextAreaWithSQLSyntaxStyle.this.getDocument().getLength() > 0);
-			for (int l = loc.a; l <= loc.b; ++l) {
-				addLineHighlight(l, new Color(235, 240, 255));
+			if (allowRun && setLineHighlights) {
+				removeAllLineHighlights();
+				for (int l = loc.a; l <= loc.b; ++l) {
+					addLineHighlight(l, new Color(235, 240, 255));
+				}
 			}
 		} catch (BadLocationException e1) {
 			e1.printStackTrace();
