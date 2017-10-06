@@ -129,7 +129,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			}
 			@Override
 			public void updateMenuItemState() {
-				updateMenuItemState(!running.get());
+				updateMenuItemState(!running.get(), !running.get());
 			}
 		};
 
@@ -277,13 +277,16 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 					editorPane.updateMenuItemState();
 					Status status = new Status();
 					status.location = location;
+					status.linesExecuted = 0;
+					status.linesExecuting = 0;
 					try {
-						Pattern pattern = Pattern.compile("(.*?)(;\\s*(\\n\\r?|$))", Pattern.DOTALL);
+						Pattern pattern = Pattern.compile("(.*?)(?:(;\\s*(\\n\\r?|$))|(\\n\\r?([ \\t\\r]*\\n\\r?)+))", Pattern.DOTALL);
 						Matcher matcher = pattern.matcher(sqlBlock);
 						boolean result = matcher.find();
 						StringBuffer sb = new StringBuffer();
 						if (result) {
 							do {
+								status.linesExecuting += countLines(matcher.group(1));
 								String sql = matcher.group(1);
 								if (sql.trim().length() > 0) {
 									executeSQL(sql, status);
@@ -291,6 +294,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 										break;
 									}
 								}
+								status.linesExecuted += countLines(matcher.group()) - 1;
+								status.linesExecuting = status.linesExecuted;
 								matcher.appendReplacement(sb, "");
 								result = matcher.find();
 							} while (result);
@@ -299,14 +304,28 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							matcher.appendTail(sb);
 							String sql = sb.toString();
 							if (sql.trim().length() > 0) {
+								status.linesExecuting += countLines(sql);
 								executeSQL(sql, status);
+								if (!status.failed) {
+									status.linesExecuted = status.linesExecuting;
+								}
 							}
 						}
 						storeHistory();
 					} finally {
 						running.set(false);
-						editorPane.updateMenuItemState();
+						editorPane.updateMenuItemState(true, false);
 					}
+				}
+
+				private int countLines(String line) {
+					int lines = 1;
+					for (int i = 0; i < line.length(); ++i) {
+						if (line.charAt(i) == '\n') {
+							++lines;
+						}
+					}
+					return lines;
 				}
 			});
 		}
@@ -463,6 +482,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	}
 
 	private class Status {
+		protected int linesExecuting;
+		protected int linesExecuted;
 		public boolean withDDL;
 		boolean failed;
 		boolean running;
@@ -503,18 +524,28 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						}
 						statusTextPane.setCaretPosition(0);
 					}
-					Color hl = null;
-					if (failed) {
-						hl = new Color(255, 230, 230);
-					} else if (!running) {
-						hl = new Color(230, 255, 230);
-					} else {
-						hl = new Color(255, 255, 200);
-					}
-					if (location != null && hl != null) {
+					Color failedColor = new Color(255, 170, 170);
+					Color okColor = new Color(210, 255, 210);
+					Color pendingColor = new Color(235, 235, 255);
+					Color runningColor = new Color(255, 255, 210);
+					if (location != null) {
 						editorPane.removeAllLineHighlights();
 						try {
 							for (int i = location.a; i <= location.b; ++i) {
+								Color hl;
+								if (i < linesExecuted + location.a) {
+									hl = okColor;
+								} else if (i >= linesExecuting + location.a) {
+									hl = pendingColor;
+								} else {
+									if (failed) {
+										hl = failedColor;
+									} else if (running){
+										hl = runningColor;
+									} else {
+										hl = pendingColor;
+									}
+								}
 								editorPane.addLineHighlight(i, hl);
 							}
 						} catch (BadLocationException e) {
@@ -569,24 +600,24 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         jPanel1 = new javax.swing.JPanel();
         jSplitPane1 = new javax.swing.JSplitPane();
+        jSplitPane2 = new javax.swing.JSplitPane();
         jPanel2 = new javax.swing.JPanel();
         consoleContainerPanel = new javax.swing.JPanel();
+        jPanel5 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        limitComboBox = new javax.swing.JComboBox();
+        cancelButton = new javax.swing.JButton();
+        runSQLButton = new javax.swing.JButton();
+        runnAllButton = new javax.swing.JButton();
+        historyComboBox = new javax.swing.JComboBox<>();
+        jPanel6 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
         statusLabel = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         statusScrollPane = new javax.swing.JScrollPane();
         statusTextPane = new javax.swing.JTextPane();
-        jPanel5 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        limitComboBox = new JComboBox();
-        cancelButton = new javax.swing.JButton();
-        runSQLButton = new javax.swing.JButton();
-        runnAllButton = new javax.swing.JButton();
-        historyComboBox = new JComboBox<>();
-        jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
 
@@ -596,6 +627,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane1.setResizeWeight(0.5);
+
+        jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane2.setResizeWeight(1.0);
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
@@ -608,39 +642,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         jPanel2.add(consoleContainerPanel, gridBagConstraints);
-
-        statusLabel.setForeground(java.awt.Color.gray);
-        statusLabel.setText(" ctrl-space for code completion");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel2.add(statusLabel, gridBagConstraints);
-
-        jPanel4.setLayout(new java.awt.GridBagLayout());
-
-        statusTextPane.setEditable(false);
-        statusTextPane.setForeground(java.awt.Color.red);
-        statusScrollPane.setViewportView(statusTextPane);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 40;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel4.add(statusScrollPane, gridBagConstraints);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridheight = 20;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        jPanel2.add(jPanel4, gridBagConstraints);
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
@@ -700,37 +701,68 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel2.add(jPanel5, gridBagConstraints);
 
-        jLabel2.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        jPanel2.add(jLabel2, gridBagConstraints);
+        jSplitPane2.setLeftComponent(jPanel2);
+
+        jPanel6.setLayout(new java.awt.GridBagLayout());
 
         jLabel3.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        jPanel2.add(jLabel3, gridBagConstraints);
-
-        jLabel5.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 4;
-        jPanel2.add(jLabel5, gridBagConstraints);
+        jPanel6.add(jLabel3, gridBagConstraints);
 
         jLabel6.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
-        jPanel2.add(jLabel6, gridBagConstraints);
+        jPanel6.add(jLabel6, gridBagConstraints);
 
         jLabel7.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 6;
-        jPanel2.add(jLabel7, gridBagConstraints);
+        jPanel6.add(jLabel7, gridBagConstraints);
 
-        jSplitPane1.setLeftComponent(jPanel2);
+        statusLabel.setForeground(java.awt.Color.gray);
+        statusLabel.setText(" ctrl-space for code completion");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 20;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel6.add(statusLabel, gridBagConstraints);
+
+        jPanel4.setLayout(new java.awt.GridBagLayout());
+
+        statusTextPane.setEditable(false);
+        statusTextPane.setForeground(java.awt.Color.red);
+        statusScrollPane.setViewportView(statusTextPane);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 40;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel4.add(statusScrollPane, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridheight = 20;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel6.add(jPanel4, gridBagConstraints);
+
+        jSplitPane2.setRightComponent(jPanel6);
+
+        jSplitPane1.setLeftComponent(jSplitPane2);
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Result"));
         jPanel3.setLayout(new java.awt.BorderLayout());
@@ -762,11 +794,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JPanel consoleContainerPanel;
-    private JComboBox<String> historyComboBox;
+    private javax.swing.JComboBox<String> historyComboBox;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
@@ -774,9 +804,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
     private javax.swing.JSplitPane jSplitPane1;
+    private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private JComboBox limitComboBox;
+    private javax.swing.JComboBox limitComboBox;
     private javax.swing.JButton runSQLButton;
     private javax.swing.JButton runnAllButton;
     private javax.swing.JLabel statusLabel;
