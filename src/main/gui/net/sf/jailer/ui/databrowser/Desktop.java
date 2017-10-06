@@ -195,7 +195,7 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// addTableBrowser(null, null, 0, null, null, queryBuilderDialog.getSQL(), null, null, true);
-				getSqlConsole().appendStatement(queryBuilderDialog.getSQL(), true);
+				getSqlConsole(true).appendStatement(queryBuilderDialog.getSQL(), true);
 				queryBuilderDialog.setVisible(false);
 			}
 		});
@@ -814,8 +814,8 @@ public abstract class Desktop extends JDesktopPane {
 			}
 
 			@Override
-			protected SQLConsole getSqlConsole() {
-				return Desktop.this.getSqlConsole();
+			protected SQLConsole getSqlConsole(boolean switchToConsole) {
+				return Desktop.this.getSqlConsole(switchToConsole);
 			}
 
 		};
@@ -2732,7 +2732,7 @@ public abstract class Desktop extends JDesktopPane {
 	}
 
 	protected abstract DataBrowser openNewDataBrowser();
-	protected abstract SQLConsole getSqlConsole();
+	protected abstract SQLConsole getSqlConsole(boolean switchToConsole);
 
 	/**
 	 * Scrolls an iFrame to the center of the desktop.

@@ -8,6 +8,7 @@ import java.util.Locale;
 import java.util.Map;
 
 import net.sf.jailer.database.Session;
+import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
@@ -77,6 +78,17 @@ public class DataModelBasedSQLCompletionProvider extends SQLCompletionProvider<D
 	@Override
 	protected List<String> getSchemas(DataModel metaDataSource) {
 		return new ArrayList<String>(tablesPerSchema.keySet());
+	}
+
+	@Override
+	protected List<Association> getAssociations(Table source, Table destination) {
+		List<Association> result = new ArrayList<Association>();
+		for (Association association: source.associations) {
+			if (association.destination == destination || destination == null) {
+				result.add(association);
+			}
+		}
+		return result;
 	}
 
 }

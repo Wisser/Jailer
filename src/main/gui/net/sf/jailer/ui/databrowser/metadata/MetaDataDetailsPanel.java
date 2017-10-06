@@ -45,8 +45,8 @@ import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.modelbuilder.MetaDataCache.CachedResultSet;
+import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
@@ -70,7 +70,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 	private final Session session;
 	private final ExecutionContext executionContext;
 	private final JFrame owner;
-	private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
+	private final List<BlockingQueue<Runnable>> queues = new ArrayList<BlockingQueue<Runnable>>();
 	private final Map<MetaDataDetails, JPanel> detailsPanels = new HashMap<MetaDataDetails, JPanel>();
 	private final Map<Pair<MetaDataDetails, MDTable>, JComponent> detailsViews = new HashMap<Pair<MetaDataDetails, MDTable>, JComponent>();
 	private final Map<Table, JComponent> tableDetailsViews = new HashMap<Table, JComponent>();
@@ -91,20 +91,23 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
         	tabbedPane.addTab(mdd.name, panel);
         }
         
-        Thread thread = new Thread(new Runnable() {
-			@Override
-			public void run() {
-				for (;;) {
-					try {
-						queue.take().run();
-					} catch (Throwable t) {
-						t.printStackTrace();
+        for (int i = 0; i < 2; ++i) {
+        	final LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
+	        queues.add(queue);
+        	Thread thread = new Thread(new Runnable() {
+				@Override
+				public void run() {
+					for (;;) {
+						try {
+							queue.take().run();
+						} catch (Throwable t) {
+						}
 					}
 				}
-			}
-		});
-        thread.setDaemon(true);
-        thread.start();
+			});
+	        thread.setDaemon(true);
+	        thread.start();
+        }
     }
 
 	public void clear() {
@@ -154,7 +157,9 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     		tableDetailsPanel.add(panel);
     	}
 		tabbedPane.repaint();
-    	queue.clear();
+    	for (BlockingQueue<Runnable> queue: queues) {
+    		queue.clear();
+    	}
     	for (final MetaDataDetails mdd: MetaDataDetails.values()) {
 	    	final JPanel panel = detailsPanels.get(mdd);
 	    	panel.removeAll();
@@ -297,20 +302,22 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 						return null;
 					}
 					@Override
-					protected SQLConsole getSqlConsole() {
+					protected SQLConsole getSqlConsole(boolean switchToConsole) {
 						return null;
 					}
 				};
 		    	
 				final CachedResultSet[] metaDataDetails = new CachedResultSet[1];
 				
-				queue.put(new Runnable() {
+				queues.get(mdd.queueIndex).put(new Runnable() {
 					@Override
 					public void run() {
 				    	try {
-				    		ResultSet rs = mdd.readMetaDataDetails(session, mdTable);
-				    		metaDataDetails[0] = new CachedResultSet(rs, null, null);
-				    		rs.close();
+				    		synchronized (session.getMetaData()) {
+					    		ResultSet rs = mdd.readMetaDataDetails(session, mdTable);
+					    		metaDataDetails[0] = new CachedResultSet(rs, null, session, null);
+					    		rs.close();
+				    		}
 						} catch (SQLException e) {
 							e.printStackTrace();
 						}

@@ -31,7 +31,7 @@ import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
  */
 public enum MetaDataDetails {
 	
-	COLUMNS("Columns") {
+	COLUMNS("Columns", 0) {
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
 			return JDBCMetaDataBasedModelElementFinder.getColumns(session, session.getMetaData(), mdTable.getSchema().getName(), mdTable.getName(), "%", false);
 		}
@@ -46,7 +46,7 @@ public enum MetaDataDetails {
 			}
 		}
 	},
-	PRIMARYKEY("Primary Key") {
+	PRIMARYKEY("Primary Key", 0) {
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
 			return JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(session, session.getMetaData(), mdTable.getSchema().getName(), mdTable.getName(), false);
 		}
@@ -58,27 +58,29 @@ public enum MetaDataDetails {
 			}
 		}
 	},
-	INDEXES("Indexes") {
+	INDEXES("Indexes", 0) {
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
 			return JDBCMetaDataBasedModelElementFinder.getIndexes(session, session.getMetaData(), mdTable.getSchema().getName(), mdTable.getName());
 		}
 	},
-	EXPORTEDKEY("Exported Keys") {
+	EXPORTEDKEY("Exported Keys", 1) {
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
 			return JDBCMetaDataBasedModelElementFinder.getExportedKeys(session, session.getMetaData(), mdTable.getSchema().getName(), mdTable.getName());
 		}
 	},
-	IMPORTEDKEY("Imported Keys") {
+	IMPORTEDKEY("Imported Keys", 1) {
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
 			return JDBCMetaDataBasedModelElementFinder.getImportedKeys(session, session.getMetaData(), mdTable.getSchema().getName(), mdTable.getName(), false);
 		}
 	};
 	
-	MetaDataDetails(String name) {
+	MetaDataDetails(String name, int queueIndex) {
 		this.name = name;
+		this.queueIndex = queueIndex;
 	}
 	
 	public final String name;
+	public final int queueIndex;
 	
 	public abstract ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException;
 	public void adjustRowsTable(JTable rowsTable) {

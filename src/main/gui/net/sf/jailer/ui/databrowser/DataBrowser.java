@@ -355,8 +355,10 @@ public class DataBrowser extends javax.swing.JFrame {
 			}
 
 			@Override
-			protected SQLConsole getSqlConsole() {
-				jTabbedPane2.setSelectedComponent(sqlConsoleContainerPanel);
+			protected SQLConsole getSqlConsole(boolean switchToConsole) {
+				if (switchToConsole) {
+					jTabbedPane2.setSelectedComponent(sqlConsoleContainerPanel);
+				}
 				return sqlConsole;
 			}
         };
@@ -749,7 +751,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jPanel4 = new javax.swing.JPanel();
         jSplitPane4 = new javax.swing.JSplitPane();
         jTabbedPane1 = new javax.swing.JTabbedPane();
-        jPanel6 = new javax.swing.JPanel();
+        navigationPanel = new javax.swing.JPanel();
         navigationTreeScrollPane = new javax.swing.JScrollPane();
         navigationTree = new javax.swing.JTree();
         jLabel2 = new javax.swing.JLabel();
@@ -1044,7 +1046,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jSplitPane4.setContinuousLayout(true);
         jSplitPane4.setOneTouchExpandable(true);
 
-        jPanel6.setLayout(new java.awt.GridBagLayout());
+        navigationPanel.setLayout(new java.awt.GridBagLayout());
 
         navigationTree.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -1060,7 +1062,7 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        jPanel6.add(navigationTreeScrollPane, gridBagConstraints);
+        navigationPanel.add(navigationTreeScrollPane, gridBagConstraints);
 
         jLabel2.setText(" Navigation Tree");
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1069,7 +1071,7 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        jPanel6.add(jLabel2, gridBagConstraints);
+        navigationPanel.add(jLabel2, gridBagConstraints);
 
         jButton1.setText("Open Table");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
@@ -1081,9 +1083,9 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        jPanel6.add(jButton1, gridBagConstraints);
+        navigationPanel.add(jButton1, gridBagConstraints);
 
-        jTabbedPane1.addTab("Navigation", jPanel6);
+        jTabbedPane1.addTab("Navigation", navigationPanel);
 
         tablesPanel.setLayout(new javax.swing.BoxLayout(tablesPanel, javax.swing.BoxLayout.LINE_AXIS));
         jTabbedPane1.addTab("Tables", tablesPanel);
@@ -1577,8 +1579,10 @@ public class DataBrowser extends javax.swing.JFrame {
 				}
         		sqlConsole.setDataHasChanged(false);
         	}
+    		jTabbedPane1.setSelectedComponent(navigationPanel);
         } else {
         	if (sqlConsole != null) {
+        		jTabbedPane1.setSelectedComponent(tablesPanel);
         		sqlConsole.grabFocus();
         	}
         }
@@ -2055,7 +2059,6 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
-    private javax.swing.JPanel jPanel6;
     private javax.swing.JPanel jPanel7;
     private javax.swing.JPanel jPanel8;
     private javax.swing.JScrollPane jScrollPane1;
@@ -2088,6 +2091,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPanel metaDataViewPanel;
     private javax.swing.JLabel modelName;
     private javax.swing.JLabel modelPath;
+    private javax.swing.JPanel navigationPanel;
     private javax.swing.JTree navigationTree;
     private javax.swing.JScrollPane navigationTreeScrollPane;
     private javax.swing.JMenuItem newBrowserjMenuItem;
@@ -2664,10 +2668,19 @@ public class DataBrowser extends javax.swing.JFrame {
 					}
 				}
 				try {
-					String tableName = table.getUnqualifiedName();
-					String schemaName = table.getSchema("");
+					String sql;
 					Quoting quoting = new Quoting(session);
-					String sql = "Select * From " + (schemaName == null || schemaName.length() == 0? "" : quoting.quote(schemaName) + ".") + quoting.quote(tableName);
+					MDTable mdTable = metaDataSource.toMDTable(table);
+					String tableName;
+					String schemaName;
+					if (mdTable != null) {
+						tableName = mdTable.getName();
+						schemaName = mdTable.getSchema().isDefaultSchema? "": mdTable.getSchema().getName();
+					} else {
+						tableName = table.getUnqualifiedName();
+						schemaName = table.getSchema("");
+					}
+					sql = "Select * From " + (schemaName == null || schemaName.length() == 0? "" : quoting.quote(schemaName) + ".") + quoting.quote(tableName);
 					if (jTabbedPane2.getSelectedComponent() == sqlConsoleContainerPanel) {
 						jTabbedPane2.setSelectedComponent(sqlConsoleContainerPanel);
 						sqlConsole.grabFocus();

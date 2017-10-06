@@ -1,10 +1,13 @@
 package net.sf.jailer.ui.databrowser.sqlconsole;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import net.sf.jailer.database.Session;
+import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.databrowser.metadata.MDSchema;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
@@ -58,6 +61,34 @@ public class MetaDataBasedSQLCompletionProvider extends SQLCompletionProvider<Me
 	@Override
 	protected List<MDSchema> getSchemas(MetaDataSource metaDataSource) {
 		return metaDataSource.getSchemas();
+	}
+	
+	@Override
+	protected List<Association> getAssociations(MDTable mdSource, MDTable mdDestination) {
+		List<Association> result = new ArrayList<Association>();
+
+		Table source = null;
+		Table destination = null;
+		
+		if (mdSource != null) {
+			source = metaDataSource.toTable(mdSource);
+			if (source == null) {
+				return result;
+			}
+		}
+		if (mdDestination != null) {
+			destination = metaDataSource.toTable(mdDestination);
+			if (destination == null) {
+				return result;
+			}
+		}
+		
+		for (Association association: source.associations) {
+			if (association.destination == destination || destination == null) {
+				result.add(association);
+			}
+		}
+		return result;
 	}
 
 }

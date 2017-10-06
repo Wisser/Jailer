@@ -387,6 +387,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         	TreePath path = new TreePath(new Object[] { root, defaultSchema });
 			metaDataTree.expandPath(path);
 	        metaDataTree.getSelectionModel().setSelectionPath(path);
+	        scrollToNode(path);
         }
 	}
 

@@ -50,6 +50,7 @@ import org.apache.log4j.Logger;
 import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.util.CancellationHandler;
+import net.sf.jailer.util.CellContentConverter;
 
 /**
  * Reads database meta data directly from meta data views.
@@ -272,14 +273,15 @@ public class MetaDataCache {
 			return rowList.size();
 		}
 		
-		public CachedResultSet(ResultSet resultSet, Integer limit, Object cancellationContext) throws SQLException {
+		public CachedResultSet(ResultSet resultSet, Integer limit, Session session, Object cancellationContext) throws SQLException {
 			this.rowList = new ArrayList<Object[]>();
 			ResultSetMetaData rmd = resultSet.getMetaData();
+			CellContentConverter cellContentConverter = new CellContentConverter(rmd, session, session.dbms);
 			final int numCol = rmd.getColumnCount();
 			while (resultSet.next()) {
 				Object[] row = new Object[numCol];
 				for (int i = 1; i <= numCol; ++i) {
-					row[i - 1] = resultSet.getObject(i);
+					row[i - 1] = cellContentConverter.getObject(resultSet, i);
 				}
 				rowList.add(row);
 				if (limit != null && rowList.size() >= limit) {
