@@ -81,6 +81,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	public RSyntaxTextAreaWithSQLSyntaxStyle(boolean withExecuteActions) {
 		this.withExecuteActions = withExecuteActions;
 		setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
+		setAutoIndentEnabled(true);
 		runBlock = new AbstractAction("Run selected SQL") {
 			{
 				putValue(ACCELERATOR_KEY, KS_RUN_BLOCK);
@@ -456,12 +457,16 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			}
 	}
 
-	private void updateMenuItemState() {
+	public void updateMenuItemState() {
+		updateMenuItemState(true);
+	}
+	
+	protected void updateMenuItemState(boolean allowRun) {
 		try {
 			removeAllLineHighlights();
 			Pair<Integer, Integer> loc = getCurrentStatementLocation();
-			runBlock.setEnabled(loc != null && !isTextEmpty(loc.a, loc.b));
-			runAll.setEnabled(RSyntaxTextAreaWithSQLSyntaxStyle.this.getDocument().getLength() > 0);
+			runBlock.setEnabled(allowRun && loc != null && !isTextEmpty(loc.a, loc.b));
+			runAll.setEnabled(allowRun && RSyntaxTextAreaWithSQLSyntaxStyle.this.getDocument().getLength() > 0);
 			for (int l = loc.a; l <= loc.b; ++l) {
 				addLineHighlight(l, new Color(235, 240, 255));
 			}

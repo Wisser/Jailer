@@ -1724,12 +1724,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 			d = new JDialog(getOwner(), "SQL/DML - " + titel, true);
-			d.getContentPane().add(new SQLDMLPanel(sqlString, getSqlConsole(), session, getMetaDataSource(), new Runnable() {
-				@Override
-				public void run() {
-					reloadRows();
-				}
-			}, d, executionContext));
+			d.getContentPane().add(new SQLDMLPanel(sqlString, getSqlConsole(false), session, getMetaDataSource(), 
+					new Runnable() {
+						@Override
+						public void run() {
+							reloadRows();
+						}
+					}, 
+					new Runnable() {
+						@Override
+						public void run() {
+							getSqlConsole(true);
+						}
+					},
+					d, executionContext));
 			d.pack();
 			d.setLocation(x - 50, y - 100);
 			d.setSize(700, Math.max(d.getHeight() + 20, 400));
@@ -1744,7 +1752,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		d.setVisible(true);
 	}
 	
-	protected abstract SQLConsole getSqlConsole();
+	protected abstract SQLConsole getSqlConsole(boolean switchToConsole);
 
 	protected void setCurrentRowSelection(int i) {
 		currentRowSelection = i;

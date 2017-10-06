@@ -750,29 +750,35 @@ public class Session {
 	 * @return DB meta data
 	 */
 	public DatabaseMetaData getMetaData() throws SQLException {
-		if (automaticReconnect) {
-			boolean valid = true;
-			metaData = null;
-			try {
-				if (!connectionFactory.getConnection().isValid(0)) {
-					valid = false;
-				}
-			} catch (Throwable t) {
-				// ignore
-			}
-			if (!valid) {
-				// reconnect
-				try {
-					this.connection.get().close();
-				} catch (Exception e2) {
-					// ignore
-				}
-				this.connection.set(null);
-				metaData = connectionFactory.getConnection().getMetaData();
-			}
-		}
 		if (metaData == null) {
-			metaData = connectionFactory.getConnection().getMetaData();
+			try {
+				metaData = connectionFactory.getConnection().getMetaData();
+				if (automaticReconnect) {
+					metaData.getIdentifierQuoteString();
+				}
+			} catch (Exception e) {
+				if (automaticReconnect) {
+					boolean valid = true;
+					metaData = null;
+					try {
+						if (!connectionFactory.getConnection().isValid(0)) {
+							valid = false;
+						}
+					} catch (Throwable t) {
+						// ignore
+					}
+					if (!valid) {
+						// reconnect
+						try {
+							this.connection.get().close();
+						} catch (Exception e2) {
+							// ignore
+						}
+						this.connection.set(null);
+						metaData = connectionFactory.getConnection().getMetaData();
+					}
+				}
+			}
 		}
 		return metaData;
 	}

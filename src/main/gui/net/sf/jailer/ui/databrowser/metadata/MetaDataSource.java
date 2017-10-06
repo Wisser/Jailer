@@ -72,10 +72,17 @@ public class MetaDataSource {
 	}
 
 	private void readSchemas() {
-		List<String> sList = JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchema());
-		String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
-		for (String s: sList) {
-			schemas.add(new MDSchema(s, s.equals(defaultSchema), this));
+		Object md = new Object();
+		try {
+			md = session.getMetaData();
+		} catch (SQLException e) {
+		}
+		synchronized (md) {
+			List<String> sList = JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchema());
+			String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
+			for (String s: sList) {
+				schemas.add(new MDSchema(s, s.equals(defaultSchema), this));
+			}
 		}
 	}
 

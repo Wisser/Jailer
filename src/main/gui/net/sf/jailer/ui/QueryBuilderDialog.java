@@ -174,7 +174,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         getContentPane().add(relationshipsPanel, gridBagConstraints);
 
-        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1), "SQL Query", 0, 0, new java.awt.Font("DejaVu Sans", 0, 12), new java.awt.Color(86, 82, 125))); // NOI18N
+        jPanel1.setBorder(javax.swing.BorderFactory.createTitledBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1), "SQL Query", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("DejaVu Sans", 0, 12), new java.awt.Color(86, 82, 125))); // NOI18N
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
@@ -201,9 +201,9 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 4, 2, 2);
         jPanel2.add(joinAWithBButton, gridBagConstraints);
@@ -218,7 +218,6 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         jPanel2.add(saveButton, gridBagConstraints);
 
@@ -278,24 +277,24 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         jPanel2.add(sqlEditButton, gridBagConstraints);
 
-        cancelButton.setText("Cancel");
+        cancelButton.setText("Close");
         cancelButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cancelButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 5;
+        gridBagConstraints.gridx = 6;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(2, 0, 2, 2);
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         jPanel2.add(cancelButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1181,6 +1180,9 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 				/ 2, getParent().getY()
 				+ (getParent().getHeight() - getHeight()) / 2);
 		UIUtil.fit(this);
+		if (sqlEditButton.isVisible()) {
+			sqlEditButton.grabFocus();
+		}
 		setVisible(true);
 	}
 
@@ -1239,6 +1241,9 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 				+ (getParent().getHeight() - getHeight()) / 2);
 		UIUtil.fit(this);
 		distinctCheckBox.setSelected(distinct);
+		if (sqlEditButton.isVisible()) {
+			sqlEditButton.grabFocus();
+		}
 		setVisible(true);
 	}
 

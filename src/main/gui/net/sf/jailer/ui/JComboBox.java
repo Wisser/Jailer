@@ -23,7 +23,7 @@ import java.awt.Dimension;
  * 
  * @author Ralf Wisser
  */
-public class JComboBox extends javax.swing.JComboBox {
+public class JComboBox<T> extends javax.swing.JComboBox<T> {
 	private static final long serialVersionUID = 1404824459186814788L;
 	private boolean layingOut = false;
 

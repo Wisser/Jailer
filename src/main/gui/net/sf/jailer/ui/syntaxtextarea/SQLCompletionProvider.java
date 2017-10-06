@@ -15,14 +15,17 @@
  */
 package net.sf.jailer.ui.syntaxtextarea;
 
+import java.awt.Color;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -38,8 +41,11 @@ import org.fife.ui.autocomplete.DefaultCompletionProvider;
 import org.fife.ui.autocomplete.ShorthandCompletion;
 
 import net.sf.jailer.database.Session;
+import net.sf.jailer.datamodel.Association;
+import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
+import net.sf.jailer.util.SqlUtil;
 
 /**
  * Auto completions for SQL statements.
@@ -48,9 +54,10 @@ import net.sf.jailer.util.Quoting;
  */
 public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends DefaultCompletionProvider {
 
-	private SOURCE metaDataSource;
+	protected SOURCE metaDataSource;
 	private Quoting quoting;
-	private Map<String, TABLE> alias = new HashMap<String, TABLE>();
+	private Map<String, TABLE> userDefinedAliases = new HashMap<String, TABLE>();
+	private Map<String, TABLE> aliases = new HashMap<String, TABLE>();
 
 	/**
 	 * @param session
@@ -68,14 +75,14 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	 * @param table the table
 	 */
 	public void addAlias(String name, TABLE table) {
-		alias.put(Quoting.staticUnquote(name).toUpperCase(Locale.ENGLISH), table);
+		userDefinedAliases.put(Quoting.staticUnquote(name).toUpperCase(Locale.ENGLISH), table);
 	}
 
 	/**
 	 * Removes all aliases.
 	 */
 	public void removeAliases() {
-		alias.clear();
+		userDefinedAliases.clear();
 	}
 
 	/**
@@ -135,24 +142,27 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		String text = getAlreadyEnteredText(comp);
 
 		if (text!=null) {
-			List<Completion> potentialCompletions = new ArrayList<Completion>();
+			List<SQLCompletion> potentialCompletions = new ArrayList<SQLCompletion>();
 			potentialCompletions = getPotentialCompletions(comp);
-			List<Completion> compl = new ArrayList<Completion>(potentialCompletions); 
-			for (Iterator<Completion> i = compl.iterator(); i.hasNext();) {
-				Completion completion = i.next();
-				if (completion instanceof ColumnCompletion) {
-					if (!((ColumnCompletion<TABLE>) completion).matches(text)) {
-						i.remove();
-					}
+			List<SQLCompletion> matched = new ArrayList<SQLCompletion>(); 
+			for (Iterator<SQLCompletion> i = potentialCompletions.iterator(); i.hasNext();) {
+				SQLCompletion completion = i.next();
+				if (completion.matches(text)) {
+					matched.add(completion);
 				}
 			}
 
+			SQLCompletion.initShortDescriptions(matched);
+			List<Completion> compl = new ArrayList<Completion>();
+			for (SQLCompletion c: matched) {
+				compl.add(c);
+			}
 			return compl;
 		}
 		return new ArrayList<Completion>();
 	}
 
-	private List<Completion> getPotentialCompletions(JTextComponent comp) {
+	private List<SQLCompletion> getPotentialCompletions(JTextComponent comp) {
 		Pair<Integer, Integer> loc = ((RSyntaxTextAreaWithSQLSyntaxStyle) comp)
 				.getCurrentStatementLocation(true);
 		String line = ((RSyntaxTextAreaWithSQLSyntaxStyle) comp).getText(loc.a, loc.b, true);
@@ -161,29 +171,53 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		return retrieveCompletions(line, lineBeforeCaret);
 	}
 
-	private List<Completion> retrieveCompletions(String line, String beforeCaret) {
-		for (ContextRetriever<TABLE, SOURCE> contextRetriever : contextRetrievers) {
-			List<Completion> compl = contextRetriever.retrieveContext(line, beforeCaret, metaDataSource);
-			if (compl != null) {
-				return compl;
+	private List<SQLCompletion> retrieveCompletions(String line, String beforeCaret) {
+		int pos = beforeCaret.length();
+		String afterCaret = null;
+		if (pos > 0) {
+			line = reduceStatement(line, pos - 1);
+			if (pos < line.length()) {
+				beforeCaret = line.substring(0, pos);
+				afterCaret = line.substring(pos, line.length());
 			}
 		}
-		return Collections.emptyList();
+		aliases.clear();
+		aliases.putAll(findAliases(afterCaret != null? beforeCaret + "=" + afterCaret : line));
+		aliases.putAll(userDefinedAliases);
+		Clause clause = Clause.currentClouse(beforeCaret);
+		List<SQLCompletion> result = new ArrayList<SQLCompletion>();
+		withOnCompletions = false;
+		for (CompletionRetriever<TABLE, SOURCE> completionRetriever: completionRetrievers) {
+			List<SQLCompletion> compl = completionRetriever.retrieveCompletion(line, beforeCaret, clause, metaDataSource);
+			if (compl != null) {
+				result.addAll(compl);
+			}
+		}
+		return result;
 	}
 
-	private static class ColumnCompletion<TABLE> extends ShorthandCompletion {
-		private final boolean isAlias;
+	public static class SQLCompletion extends ShorthandCompletion {
+		
+		private final String context;
+		public final Color color;
+		public final String tooltip;
+		
+		private static final Color COLOR_SCHEMA = new Color(145, 50, 0);
+		private static final Color COLOR_TABLE = new Color(0, 40, 90);
+		private static final Color COLOR_COLUMN = new Color(0, 55, 0);
+		private static final Color COLOR_KEYWORD = Color.BLUE;
 
-		public ColumnCompletion(CompletionProvider provider, String inputText, String replacementText, String description) {
-			this(provider, inputText, replacementText, description, false);
+		public SQLCompletion(CompletionProvider provider, String inputText, String replacementText, String context, Color color, String tooltip) {
+			super(provider, inputText, replacementText);
+			this.context = context != null && context.length() > 0? context : null;
+			this.color = color;
+			this.tooltip = tooltip;
+		}
+
+		public SQLCompletion(CompletionProvider provider, String inputText, String replacementText, String context, Color color) {
+			this(provider, inputText, replacementText, context, color, null);
 		}
 		
-		public ColumnCompletion(CompletionProvider provider, String inputText, String replacementText, String description, boolean isAlias) {
-			super(provider, inputText, replacementText);
-			this.setShortDescription(description);
-			this.isAlias = isAlias;
-		}
-
 		public boolean matches(String inputText) {
 			return stripQuote(getInputText()).toUpperCase(Locale.ENGLISH).startsWith(stripQuote(inputText).toUpperCase(Locale.ENGLISH));
 		}
@@ -198,66 +232,164 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 			return text;
 		}
 
-		@Override
-		public int compareTo(Completion c2) {
-			boolean c2IsAlias = false;
-			if (c2 instanceof ColumnCompletion) {
-				c2IsAlias = ((ColumnCompletion) c2).isAlias;
+		private static void initShortDescriptions(List<SQLCompletion> completions) {
+			for (SQLCompletion completion: completions) {
+				if (completion.context != null) {
+					completion.setShortDescription(completion.context);
+				}
 			}
-			if (isAlias == c2IsAlias) {
-				return super.compareTo(c2);
-			}
-			return isAlias? -1 : 1;
+		}
+
+		public String getContext() {
+			return context;
 		}
 	}
 
-	private interface ContextRetriever<TABLE, SOURCE> {
-		List<Completion> retrieveContext(String line, String beforeCaret, SOURCE metaDataSource);
+	private interface CompletionRetriever<TABLE, SOURCE> {
+		List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clausem, SOURCE metaDataSource);
 	}
 
-	private List<ContextRetriever<TABLE, SOURCE>> contextRetrievers = new ArrayList<ContextRetriever<TABLE, SOURCE>>();
+	private List<CompletionRetriever<TABLE, SOURCE>> completionRetrievers = new ArrayList<CompletionRetriever<TABLE, SOURCE>>();
+	boolean withOnCompletions = false;
 
 	{
-		contextRetrievers.add(new ContextRetriever<TABLE, SOURCE>() {
+		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
 			@Override
-			public List<Completion> retrieveContext(String line, String beforeCaret, SOURCE metaDataSource) {
-				Matcher matcher = schemaTableAttributePattern.matcher(beforeCaret);
-
+			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource) {
+				if (!(clause == Clause.FROM || clause == Clause.JOIN || clause == Clause.INTO)) {
+					return null;
+				}
+				
+				List<SQLCompletion> result = new ArrayList<SQLCompletion>();
+				boolean notDotWord = false;
+				
+				if (clause != Clause.INTO) {
+					String withoutOnClauses = beforeCaret.replaceAll("(?is)\\bon\\b.*?\\bjoin\\b", " join");
+					Pattern pattern = Pattern.compile(
+							".*?"
+							+ "(?:" + reIdentifier + "\\s*\\.\\s*)?"
+							+ "(?:" + reIdentifier + "\\s+)?"
+							+ "(?:as\\s+)?"
+							+ "(" + reIdentifier + ")\\s*"
+							+ "(?:\\b(?:left|right|inner|outer)\\b\\s*)*\\bjoin\\b\\s*"
+							+ "(?:" + reIdentifier + "\\s*\\.\\s*)?"
+							+ "(?:" + reIdentifier + "\\s+)?"
+							+ "(?:as\\s+)?"
+							+ "(" + reIdentifier + ")\\s*"
+							+ "$", Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
+					Matcher matcher = pattern.matcher(withoutOnClauses);
+	
+					if (matcher.matches() && !"join".equalsIgnoreCase(matcher.group(1)) && !"join".equalsIgnoreCase(matcher.group(2))) {
+						withOnCompletions = true;
+						TABLE source = findAlias(matcher.group(1));
+						TABLE destination = findAlias(matcher.group(2));
+						if (source != null && destination != null) {
+							List<Association> associations = getAssociations(source, destination);
+							for (Association a: associations) {
+								String cond = a.getUnrestrictedJoinCondition();
+								if (a.reversed) {
+									cond = SqlUtil.reversRestrictionCondition(cond);
+								}
+								cond = SqlUtil.replaceAliases(cond, matcher.group(1), matcher.group(2));
+								Color color = null;
+								if (a.isInsertDestinationBeforeSource()) {
+									color = new Color(100, 0, 0);
+								} else if (a.isInsertSourceBeforeDestination()) {
+									color = new Color(0, 100, 0);
+								} else {
+									color = Color.BLUE;
+								}
+								result.add(new SQLCompletion(SQLCompletionProvider.this, "on " + cond, "on " + cond + " ", a.getName(), color, cond));
+							}
+						}
+						return result;
+					}
+					
+					pattern = Pattern.compile(".*?(" + reIdentifier + ")\\s*(\\b(left|right|inner|outer)\\b\\s*)*\\bjoin\\b\\s+$", Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
+					matcher = pattern.matcher(withoutOnClauses);
+	
+					if (matcher.matches()) {
+						TABLE table = findAlias(matcher.group(1));
+						if (table != null) {
+							List<Association> associations = getAssociations(table, null);
+							Set<String> destSet = new HashSet<String>();
+							for (Association a: associations) {
+								String schemaName = a.destination.getSchema("");
+								SCHEMA schema = schemaName.isEmpty()? getDefaultSchema(metaDataSource) : findSchema(metaDataSource, schemaName);
+								if (schema != null) {
+									TABLE dest = findTable(schema, a.destination.getUnqualifiedName());
+									if (dest != null) {
+										String qualifiedName = "";
+										if (!schemaName.isEmpty()) {
+											qualifiedName = (quoting == null? getSchemaName(schema) : quoting.quote(getSchemaName(schema))) + ".";
+										}
+										qualifiedName += (quoting == null? getTableName(dest) : quoting.quote(getTableName(dest)));
+										destSet.add(qualifiedName);
+									}
+								}
+							}
+							for (String dest: destSet) {
+								result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(dest), dest + " ", null, SQLCompletion.COLOR_TABLE));
+							}
+						}
+						return result;
+					}
+					
+					matcher = identWSPattern.matcher(beforeCaret);
+					if (matcher.matches() && !"from".equalsIgnoreCase(matcher.group(1))) {
+						notDotWord = true;
+						result.addAll(keywordCompletion("Join", "Left Join", "Right Join"));
+					}
+				}
+				
+				Matcher matcher = identDotOnlyPattern.matcher(beforeCaret);
 				if (matcher.matches()) {
-					// System.out.println(": " + matcher.group(1) + " " +
-					// matcher.group(2));
-					TABLE context = null;
-
 					SCHEMA schema = findSchema(metaDataSource, matcher.group(1));
 					if (schema != null) {
-						context = findTable(schema, matcher.group(2));
+						result.addAll(schemaCompletions(schema));
 					}
-					return tableCompletions(context);
+				} else if (!notDotWord) {
+					// all tables in default schema
+					SCHEMA schema = getDefaultSchema(metaDataSource);
+					if (schema != null) {
+						result.addAll(schemaCompletions(schema));
+						if (result != null) {
+							for (SCHEMA s: getSchemas(metaDataSource)) {
+								if (!s.equals(schema)) {
+									result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(getSchemaName(s)), quoting == null? getSchemaName(s) : quoting.quote(getSchemaName(s)), 
+										null, SQLCompletion.COLOR_SCHEMA));
+								}
+							}
+						}
+					}
 				}
-				return null;
+				
+				return result;
 			}
 		});
-		contextRetrievers.add(new ContextRetriever<TABLE, SOURCE>() {
+		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
 			@Override
-			public List<Completion> retrieveContext(String line, String beforeCaret, SOURCE metaDataSource) {
-				Matcher matcher = tableAttributePattern.matcher(beforeCaret);
+			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource) {
+				if (!(clause != Clause.FROM && clause != Clause.JOIN)) {
+					return null;
+				}
+				
+				Matcher matcher = identDotOnlyPattern.matcher(beforeCaret);
 
 				if (matcher.matches()) {
 					TABLE context = null;
-					List<Completion> result = null;
+					List<SQLCompletion> result = null;
 					
 					SCHEMA schema = getDefaultSchema(metaDataSource);
+					String aliasName = matcher.group(1);
 					if (schema != null) {
-						context = alias.get(Quoting.staticUnquote(matcher.group(1)).toUpperCase(Locale.ENGLISH));
-						if (context == null) {
-							context = findTable(schema, matcher.group(1));
-						}
+						context = findAlias(aliasName);
 						if (context != null) {
 							result = tableCompletions(context);
 						}
 					}
 					if (result == null) {
-						schema = findSchema(metaDataSource, matcher.group(1));
+						schema = findSchema(metaDataSource, aliasName);
 						if (schema != null) {
 							result = schemaCompletions(schema);
 						}
@@ -267,50 +399,104 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 				return null;
 			}
 		});
-		contextRetrievers.add(new ContextRetriever<TABLE, SOURCE>() {
+		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
 			@Override
-			public List<Completion> retrieveContext(String line, String beforeCaret, SOURCE metaDataSource) {
-				// all tables in default schema
-				List<Completion> result = null;
+			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource) {
+				if (!(clause != Clause.FROM && clause != Clause.JOIN)) {
+					return null;
+				}
 				
-				SCHEMA schema = getDefaultSchema(metaDataSource);
-				if (schema != null) {
-					result = schemaCompletions(schema);
-					if (result != null) {
-						for (String a: alias.keySet()) {
-							result.add(new ColumnCompletion<TABLE>(SQLCompletionProvider.this, a, a, null, true));
+				Matcher matcher = identDotOnlyPattern.matcher(beforeCaret);
+
+				if (!matcher.matches()) {
+					List<SQLCompletion> result = new ArrayList<SQLCompletion>();
+					
+					SCHEMA schema = getDefaultSchema(metaDataSource);
+					if (schema != null) {
+						Map<String, Integer> colCount = new HashMap<String, Integer>();
+						for (Entry<String, TABLE> entry: aliases.entrySet()) {
+							result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(entry.getKey()), entry.getKey(), null, SQLCompletion.COLOR_TABLE));
+							for (String c: getColumns(entry.getValue())) {
+								if (!colCount.containsKey(c)) {
+									colCount.put(c, 1);
+								} else {
+									colCount.put(c, colCount.get(c) + 1);
+								}
+							}
 						}
-						for (SCHEMA s: getSchemas(metaDataSource)) {
-							if (!s.equals(schema)) {
-								result.add(new ColumnCompletion<TABLE>(SQLCompletionProvider.this, Quoting.staticUnquote(getSchemaName(s)), quoting == null? getSchemaName(s) : quoting.quote(getSchemaName(s)), 
-									null));
+						for (Entry<String, TABLE> entry: aliases.entrySet()) {
+							for (String c: getColumns(entry.getValue())) {
+								if (colCount.get(c) > 1) {
+									result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(c), entry.getKey() + "." + c, entry.getKey(), SQLCompletion.COLOR_COLUMN));
+								} else {
+									result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(c), c, entry.getKey(), SQLCompletion.COLOR_COLUMN));
+								}	
 							}
 						}
 					}
+					return result;
 				}
-				return result;
+				return null;
+			}
+		});
+		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
+			@Override
+			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource) {
+				if (clause == null) {
+					return keywordCompletion("Select", "Insert", "Delete");
+				} else {
+					switch (clause) {
+					case FROM: return keywordCompletion("Where");
+					case GROUP: return keywordCompletion("Having");
+					case HAVING: return null;
+					case INTO: return keywordCompletion("Values", "Select");
+					case JOIN: 
+						if (!withOnCompletions) {
+							return keywordCompletion("Where", "Group by");
+						}
+						break;
+					case ON: return keywordCompletion("Where", "Group by");
+					case ORDER: return null;
+					case SELECT: return keywordCompletion("From");
+					case WHERE: return keywordCompletion("Group by", "Order by");
+					default:
+						break;
+					}
+				}
+				return null;
 			}
 		});
 	}
 
-	private List<Completion> tableCompletions(TABLE context) {
-		List<Completion> newCompletions = new ArrayList<Completion>();
+	private List<SQLCompletion> tableCompletions(TABLE context) {
+		List<SQLCompletion> newCompletions = new ArrayList<SQLCompletion>();
 		if (context != null) {
 			for (String column: getColumns(context)) {
-				newCompletions.add(new ColumnCompletion<TABLE>(this, Quoting.staticUnquote(column), quoting == null? column : quoting.quote(column), 
-						null)); // getTableName(context)));
+				newCompletions.add(new SQLCompletion(this, Quoting.staticUnquote(column), quoting == null? column : quoting.quote(column), 
+						getTableName(context), SQLCompletion.COLOR_COLUMN));
 			}
 		}
 		return newCompletions;
 	}
 
-	private List<Completion> schemaCompletions(SCHEMA schema) {
-		List<Completion> newCompletions = new ArrayList<Completion>();
+	private List<SQLCompletion> keywordCompletion(String... keywords) {
+		List<SQLCompletion> newCompletions = new ArrayList<SQLCompletion>();
+		for (String keyword: keywords) {
+			newCompletions.add(new SQLCompletion(this, keyword, keyword + " ", null, SQLCompletion.COLOR_KEYWORD));
+		}
+		return newCompletions;
+	}
+
+	private List<SQLCompletion> schemaCompletions(SCHEMA schema) {
+		List<SQLCompletion> newCompletions = new ArrayList<SQLCompletion>();
 		if (schema != null) {
 //			SCHEMA defaultSchema = getDefaultSchema(metaDataSource);
 			for (TABLE table: getTables(schema)) {
-				newCompletions.add(new ColumnCompletion<TABLE>(this, Quoting.staticUnquote(getTableName(table)), quoting == null? getTableName(table) : quoting.quote(getTableName(table)),
-					null)); // schema.equals(defaultSchema)? null : getSchemaName(schema)));
+				String tableName = getTableName(table);
+				if (!ModelBuilder.isJailerTable(tableName)) {
+					newCompletions.add(new SQLCompletion(this, Quoting.staticUnquote(tableName), quoting == null? tableName : quoting.quote(tableName),
+							getSchemaName(schema), SQLCompletion.COLOR_TABLE));
+				}
 			}
 		}
 		return newCompletions;
@@ -334,43 +520,35 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		}
 		matcher.appendTail(sb);
 		
-		int level = 0;
-		int myLevel = 0;
-		int myStart = 0;
+		Set<Integer> myStarts = new HashSet<Integer>();
 		Stack<Integer> ordPos = new Stack<Integer>();
 		Map<Integer, Integer> endPerOrdPos = new HashMap<Integer, Integer>();
 		for (int i = 0; i < sb.length(); ++i) {
 			char c = sb.charAt(i);
 			if (c == '(') {
-				++level;
 				ordPos.push(i);
 			} else if (c == ')') {
-				--level;
 				if (!ordPos.isEmpty()) {
 					int start = ordPos.pop();
 					endPerOrdPos.put(start, i);
 				}
 			}
 			if (i == caretPos) {
-				myLevel = level;
-				myStart = ordPos.isEmpty()? 0 : ordPos.peek();
+				myStarts.addAll(ordPos);
 			}
 		}
 		
-		int l = 0;
 		ordPos = new Stack<Integer>();
 		for (int i = 0; i < sb.length(); ++i) {
 			char c = sb.charAt(i);
 			if (c == '(') {
-				++l;
 				ordPos.push(i);
 			} else if (c == ')') {
-				--l;
 				if (!ordPos.isEmpty()) {
 					ordPos.pop();
 				}
 			} else {
-				if (l > myLevel || l == myLevel && !ordPos.isEmpty() && !ordPos.peek().equals(myStart)) {
+				if (!ordPos.isEmpty() && !myStarts.contains(ordPos.peek())) {
 					sb.setCharAt(i, ' ');
 				}
 			}
@@ -380,12 +558,182 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		return reduced;
 	}
 
-	private static String reIdentifier = "(?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+)";
-	private static String re = ".*?(?:(" + reIdentifier + ")\\s*\\.\\s*)(" + reIdentifier + ")\\s*\\.\\s*[\"'`]?\\w*$";
-	private static String reTableOnly = ".*?(" + reIdentifier + ")\\s*\\.\\s*[\"'`]?\\w*$";
+	private Map<String, TABLE> findAliases(String statement) {
+		Map<String, TABLE> aliases = new HashMap<String, TABLE>();
+		Pattern pattern = Pattern.compile("(?:\\bas\\b)|(" + reClauseKW + ")|(,|\\(|\\)|=|<|>|!|\\b(?:on|where|left|right|full|inner|outer|join|and|or|not|\\.)\\b)|(" + reIdentifier + ")", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
+		Matcher matcher = pattern.matcher(statement + ")");
+		boolean inFrom = false;
+		int level = 0;
+		Map<String, Integer> levelPerAlias = new HashMap<String, Integer>();
+		Stack<String> tokenStack = new Stack<String>();
+		boolean result = matcher.find();
+		if (result) {
+			do {
+				String clause = matcher.group(1);
+				String keyword = matcher.group(2);
+				String identifier = matcher.group(3);
+				
+				if (clause != null) {
+					if (!"from".equalsIgnoreCase(clause)) {
+						keyword = clause;
+					}
+				}
+				
+				if (keyword != null) {
+					if ("(".equals(keyword)) {
+						++level;
+					} else if (")".equals(keyword)) {
+						--level;
+					}
+				}
+				boolean clear = false;
+				if (inFrom) {
+					if (keyword != null) {
+						if (keyword.equals(".")) {
+							tokenStack.push(keyword);
+						} else {
+							clear = true;
+						}
+					} else if (identifier != null) {
+						tokenStack.push(identifier);
+					}
+					if (!clear && !tokenStack.isEmpty() && !".".equals(tokenStack.peek())) {
+						ArrayList<String> tokens = new ArrayList<String>(tokenStack);
+						String schema = null;
+						String table = null;
+						String alias = null;
+						if (tokens.size() >= 4) {
+							if (tokens.get(tokens.size() - 3).equals(".")) {
+								alias = tokens.get(tokens.size() - 1);
+								table = tokens.get(tokens.size() - 2);
+								schema = tokens.get(tokens.size() - 4);
+							}
+						} else if (tokens.size() >= 2) {
+							if (!tokens.get(tokens.size() - 2).equals(".")) {
+								alias = tokens.get(tokens.size() - 1);
+								table = tokens.get(tokens.size() - 2);
+								schema = null;
+							}
+						}
+						if (alias != null && table != null) {
+							SCHEMA mdSchema = null;
+							if (schema != null) {
+								mdSchema = findSchema(metaDataSource, schema);
+							} else {
+								mdSchema = getDefaultSchema(metaDataSource);
+							}
+							if (mdSchema != null) {
+								TABLE mdTable = findTable(mdSchema, table);
+								if (mdTable != null) {
+									Integer prevLevel = levelPerAlias.get(alias);
+									if (prevLevel == null || prevLevel < level) {
+										aliases.put(alias, mdTable);
+										levelPerAlias.put(alias, level);
+										tokenStack.clear();
+									}
+								}
+							}
+						}
+					}
+					if (clear) {
+						ArrayList<String> tokens = new ArrayList<String>(tokenStack);
+						String schema = null;
+						String table = null;
+						String alias = null;
+						if (tokens.size() >= 3) {
+							if (tokens.get(tokens.size() - 2).equals(".")) {
+								table = tokens.get(tokens.size() - 1);
+								alias = table;
+								schema = tokens.get(tokens.size() - 3);
+							}
+						} else if (tokens.size() >= 1) {
+							if (!tokens.get(tokens.size() - 1).equals(".")) {
+								table = tokens.get(tokens.size() - 1);
+								alias = table;
+								schema = null;
+							}
+						}
+						if (alias != null && table != null) {
+							SCHEMA mdSchema = null;
+							if (schema != null) {
+								mdSchema = findSchema(metaDataSource, schema);
+							} else {
+								mdSchema = getDefaultSchema(metaDataSource);
+							}
+							if (mdSchema != null) {
+								TABLE mdTable = findTable(mdSchema, table);
+								if (mdTable != null) {
+									Integer prevLevel = levelPerAlias.get(alias);
+									if (prevLevel == null || prevLevel < level) {
+										aliases.put(alias, mdTable);
+										levelPerAlias.put(alias, level);
+									}
+								}
+							}
+						}
+						tokenStack.clear();
+					}
+				}
+				if (clause != null) {
+					inFrom = "from".equalsIgnoreCase(clause);
+					clear = true;
+				}
+				result = matcher.find();
+			} while (result);
+		}
+		return aliases;
+	}
 
-	private static Pattern schemaTableAttributePattern = Pattern.compile(re, Pattern.DOTALL);
-	private static Pattern tableAttributePattern = Pattern.compile(reTableOnly, Pattern.DOTALL);
+	private enum Clause {
+		SELECT("select"),
+		FROM("from"),
+		WHERE("where"),
+		GROUP("group"),
+		HAVING("having"),
+		JOIN("join"),
+		ORDER("order"),
+		INTO("into"),
+		ON("on");
+		
+		private final String name;
+
+		Clause(String name) {
+			this.name = name;
+		}
+
+		public static Clause currentClouse(String sql) {
+			Pattern pattern = Pattern.compile(".*\\b(select|from|where|group|having|order|join|on|into)\\b.*?$", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
+			Matcher matcher = pattern.matcher(sql);
+			if (matcher.matches()) {
+				for (Clause clause: values()) {
+					if (clause.name.equalsIgnoreCase(matcher.group(1))) {
+						return clause;
+					}
+				}
+			}
+			return null;
+		}
+	};
+
+	private static String reIdentifier = "(?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+)";
+	private static String reIdentDotOnly = ".*?(" + reIdentifier + ")\\s*\\.\\s*[\"'`]?\\w*$";
+	private static String reClauseKW = "\\b(?:select|from|where|group|having)\\b";
+	private static String reIdentWSPattern = ".*?(" + reIdentifier + ")\\s+$";
+	
+	private static Pattern identDotOnlyPattern = Pattern.compile(reIdentDotOnly, Pattern.DOTALL);
+	private static Pattern identWSPattern = Pattern.compile(reIdentWSPattern, Pattern.DOTALL);
+
+	private TABLE findAlias(String aliasName) {
+		TABLE context;
+		context = null;
+		for (Entry<String, TABLE> entry: aliases.entrySet()) {
+			if (Quoting.staticUnquote(entry.getKey()).toUpperCase(Locale.ENGLISH).equals(Quoting.staticUnquote(aliasName).toUpperCase(Locale.ENGLISH))) {
+				context = entry.getValue();
+				break;
+			}
+		}
+		return context;
+	}
 
 	protected abstract List<String> getColumns(TABLE table);
 	protected abstract SCHEMA getDefaultSchema(SOURCE metaDataSource);
@@ -395,17 +743,6 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	protected abstract List<TABLE> getTables(SCHEMA schema);
 	protected abstract String getSchemaName(SCHEMA schema);
 	protected abstract List<SCHEMA> getSchemas(SOURCE metaDataSource);
+	protected abstract List<Association> getAssociations(TABLE source, TABLE destination);
 
-
-	public static void main(String[] args) throws Exception {
-		String statement =
-				"Select '1(', '2' (Select x from y) from table1 /* comment -- \n"
-				+ "123 */ , tabel2 -- xy\n" 
-				+ ", table3 /* comment 2 \n ... \n*/, table4, (select sub from sub)";
-		System.out.println(reduceStatement(statement, 20));
-		System.out.println(reduceStatement(statement, 43));
-		System.out.println(reduceStatement("1(2(3(4)-3)-2)-1)))", 6));
-		System.out.println(reduceStatement("1(2(3(4)-3)-2)-1 1(2(3(4)-3)-2)-1)))", 2));
-	}
-	
 };

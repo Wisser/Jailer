@@ -223,7 +223,7 @@ public class CellContentConverter {
 			try {
 				type = resultSetMetaData.getColumnType(i);
 				if (DBMS.ORACLE.equals(configuration)) {
-					if (type == Types.DATE) {
+					if (type == Types.DATE || type == -102 || type == -101 /* TIMESTAMPTZ */) {
 						type = Types.TIMESTAMP;
 					}
 				 }

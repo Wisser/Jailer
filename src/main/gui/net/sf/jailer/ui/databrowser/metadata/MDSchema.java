@@ -24,6 +24,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import net.sf.jailer.util.Quoting;
 
@@ -36,7 +38,8 @@ public class MDSchema extends MDObject {
 
 	public final boolean isDefaultSchema;
 	private List<MDTable> tables;
-	
+	private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
+
 	/**
 	 * Constructor.
 	 * 
@@ -47,6 +50,21 @@ public class MDSchema extends MDObject {
 	public MDSchema(String name, boolean isDefaultSchema, MetaDataSource metaDataSource) {
 		super(name, metaDataSource);
 		this.isDefaultSchema = isDefaultSchema;
+
+		Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				for (;;) {
+					try {
+						queue.take().run();
+					} catch (Throwable t) {
+						t.printStackTrace();
+					}
+				}
+			}
+		});
+        thread.setDaemon(true);
+        thread.start();
 	}
 	
 	/**
@@ -58,12 +76,24 @@ public class MDSchema extends MDObject {
 		if (tables == null) {
 			try {
 				tables = new ArrayList<MDTable>();
-				ResultSet rs = getMetaDataSource().readTables(getName());
-				while (rs.next()) {
-					String tableName = rs.getString(3);
-					tables.add(new MDTable(tableName, this));
-				}
-				rs.close();
+	    		synchronized (getMetaDataSource().getSession().getMetaData()) {
+					ResultSet rs = getMetaDataSource().readTables(getName());
+					while (rs.next()) {
+						String tableName = rs.getString(3);
+						final MDTable table = new MDTable(tableName, this);
+						tables.add(table);
+						queue.add(new Runnable() {
+							@Override
+							public void run() {
+								try {
+									table.getColumns();
+								} catch (SQLException e) {
+								}
+							}
+						});
+					}
+					rs.close();
+	    		}
 				Collections.sort(tables, new Comparator<MDTable>() {
 					@Override
 					public int compare(MDTable o1, MDTable o2) {

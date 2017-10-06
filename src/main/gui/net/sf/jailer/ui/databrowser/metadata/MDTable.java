@@ -83,17 +83,19 @@ public class MDTable extends MDObject {
 		if (columns == null) {
 			columns = new ArrayList<String>();
 			primaryKey = new ArrayList<String>();
-			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getColumns(getSchema().getMetaDataSource().getSession(), getSchema().getMetaDataSource().getSession().getMetaData(), getSchema().getName(), getName(), "%", false);
-			while (rs.next()) {
-				columns.add(rs.getString(4));
-			}
-			rs.close();
-			
-			rs = JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(getSchema().getMetaDataSource().getSession(), getSchema().getMetaDataSource().getSession().getMetaData(), getSchema().getName(), getName(), false);
-			while (rs.next()) {
-				primaryKey.add(rs.getString(4));
-			}
-			rs.close();
+    		synchronized (getMetaDataSource().getSession().getMetaData()) {
+				ResultSet rs = JDBCMetaDataBasedModelElementFinder.getColumns(getSchema().getMetaDataSource().getSession(), getSchema().getMetaDataSource().getSession().getMetaData(), getSchema().getName(), getName(), "%", false);
+				while (rs.next()) {
+					columns.add(rs.getString(4));
+				}
+				rs.close();
+				
+				rs = JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(getSchema().getMetaDataSource().getSession(), getSchema().getMetaDataSource().getSession().getMetaData(), getSchema().getName(), getName(), false);
+				while (rs.next()) {
+					primaryKey.add(rs.getString(4));
+				}
+				rs.close();
+    		}
 		}
 	}
 

@@ -61,6 +61,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 	 * To be done after execution of the script.
 	 */
 	private final Runnable afterExecution;
+	private final Runnable switchToConsole;
 	
 	private final ExecutionContext executionContext;
 	private final SQLConsole sqlConsole;
@@ -70,9 +71,10 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 	 * @param sql 
 	 * @param metaDataSource 
 	 * @param dialog */
-	public SQLDMLPanel(String sql, SQLConsole sqlConsole, Session session, MetaDataSource metaDataSource, Runnable afterExecution, JDialog dialog, ExecutionContext executionContext) {
+	public SQLDMLPanel(String sql, SQLConsole sqlConsole, Session session, MetaDataSource metaDataSource, Runnable afterExecution, Runnable switchToConsole, JDialog dialog, ExecutionContext executionContext) {
 		this.executionContext = executionContext;
 		this.sqlConsole = sqlConsole;
+		this.switchToConsole = switchToConsole;
 		this.session = session;
 		this.afterExecution = afterExecution;
 		this.dialog = dialog;
@@ -98,9 +100,6 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 		jPanel1.add(jScrollPane1, gridBagConstraints);
 		
 		statusLabel.setText("");
-//		if (sql.length() < 30000) {
-//			sqlTextArea.setContentType("text/sql");
-//		}
 		sqlTextArea.setText(sql);
 		sqlTextArea.select(0, 0);
 		
@@ -116,6 +115,13 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 			@Override
 			public void removeUpdate(DocumentEvent e) {
 				appendMLM(mlmTextField.getText());
+			}
+		});
+		
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				sqlConsoleButton.grabFocus();
 			}
 		});
 	}
@@ -142,6 +148,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
         mlmTextField = new javax.swing.JTextField();
         singleLineCheckBox = new javax.swing.JCheckBox();
         sqlConsoleButton = new javax.swing.JButton();
+        closeButton = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
 
@@ -164,10 +171,9 @@ public class SQLDMLPanel extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         jPanel2.add(saveButton, gridBagConstraints);
 
@@ -178,7 +184,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         jPanel2.add(clipboardButton, gridBagConstraints);
@@ -190,10 +196,9 @@ public class SQLDMLPanel extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
         jPanel2.add(executeButton, gridBagConstraints);
 
@@ -237,7 +242,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         jPanel2.add(jPanel4, gridBagConstraints);
 
@@ -248,11 +253,25 @@ public class SQLDMLPanel extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
+        jPanel2.add(sqlConsoleButton, gridBagConstraints);
+
+        closeButton.setText("Close");
+        closeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                closeButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(2, 2, 2, 2);
-        jPanel2.add(sqlConsoleButton, gridBagConstraints);
+        jPanel2.add(closeButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -392,14 +411,20 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 	}//GEN-LAST:event_executeButtonActionPerformed
 
     private void sqlConsoleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sqlConsoleButtonActionPerformed
-        sqlConsole.appendStatement(sqlTextArea.getText().trim().replaceAll("\\s*\\n", "\n"), false);
+        switchToConsole.run();
+    	sqlConsole.appendStatement(sqlTextArea.getText().trim().replaceAll("\\s*\\n", "\n"), false);
         dialog.dispose();
     }//GEN-LAST:event_sqlConsoleButtonActionPerformed
+
+    private void closeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeButtonActionPerformed
+    	dialog.dispose();
+    }//GEN-LAST:event_closeButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton clipboardButton;
     private javax.swing.JButton clipboardSingleLineButton;
+    private javax.swing.JButton closeButton;
     private javax.swing.JButton executeButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
