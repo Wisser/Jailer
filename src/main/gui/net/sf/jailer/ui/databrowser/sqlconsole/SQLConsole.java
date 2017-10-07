@@ -66,6 +66,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.MetaDataCache.CachedResultSet;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.Environment;
+import net.sf.jailer.ui.JComboBox;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
@@ -280,6 +281,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 					status.location = location;
 					status.linesExecuted = 0;
 					status.linesExecuting = 0;
+					status.running = true;
 					try {
 						Pattern pattern = Pattern.compile("(.*?)(?:(;\\s*(\\n\\r?|$))|(\\n\\r?([ \\t\\r]*\\n\\r?)+))", Pattern.DOTALL);
 						Matcher matcher = pattern.matcher(sqlBlock);
@@ -312,8 +314,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								}
 							}
 						}
-						storeHistory();
+						if (status.numStatements <= 7) {
+							storeHistory();
+						} else {
+							restoreHistory();
+						}
 					} finally {
+						status.running = false;
 						running.set(false);
 						status.updateView(true);
 			    		editorPane.updateMenuItemState(true, false);
@@ -344,7 +351,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		ResultSet resultSet = null;
 		final Status localStatus = new Status();
 		try {
-			status.running = true;
 			status.numStatements++;
 			localStatus.numStatements++;
 			status.updateView(false);
@@ -367,7 +373,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		    		status.limitExceeded = true;
 		    		localStatus.limitExceeded = true;
 		    	}
-				status.running = false;
 				status.updateView(false);
 	    		SwingUtilities.invokeLater(new Runnable() {
 					@Override
@@ -413,7 +418,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		    	status.timeInMS += (System.currentTimeMillis() - startTime);
 		    	int updateCount = statement.getUpdateCount();
 				status.numRowsUpdated += updateCount;
-				status.running = false;
 		    	status.updateView(false);
 		    	if (updateCount != 0) {
 		    		setDataHasChanged(true);
@@ -617,11 +621,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         consoleContainerPanel = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        limitComboBox = new javax.swing.JComboBox();
+        limitComboBox = new JComboBox();
         cancelButton = new javax.swing.JButton();
         runSQLButton = new javax.swing.JButton();
         runnAllButton = new javax.swing.JButton();
-        historyComboBox = new javax.swing.JComboBox<>();
+        historyComboBox = new JComboBox<>();
         jPanel6 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
@@ -806,7 +810,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JPanel consoleContainerPanel;
-    private javax.swing.JComboBox<String> historyComboBox;
+    private JComboBox<String> historyComboBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel6;
@@ -820,7 +824,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JComboBox limitComboBox;
+    private JComboBox limitComboBox;
     private javax.swing.JButton runSQLButton;
     private javax.swing.JButton runnAllButton;
     private javax.swing.JLabel statusLabel;
@@ -1042,6 +1046,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			File file = Environment.newFile(HISTORY_FILE);
 			if (file.exists()) {
 				BufferedReader in = new BufferedReader(new FileReader(file));
+				history.clear();
 				String line;
 				while ((line = in.readLine()) != null) {
 					String[] lines = CsvFile.decodeLine(line.trim());
