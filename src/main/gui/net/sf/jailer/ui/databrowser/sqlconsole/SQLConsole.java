@@ -146,7 +146,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				 Component c = super.getListCellRendererComponent(list, shortValue, index, isSelected, cellHasFocus);
 				 if (c instanceof JLabel) {
 					 if (value instanceof String && value.toString().length() > 0) {
-						 ((JLabel) c).setToolTipText("<html>" + (value.toString().trim().replace("\n", "<br>").replace(" ", "&nbsp;").replace("\t", "&nbsp;")));
+						 ((JLabel) c).setToolTipText("<html>" + (value.toString().trim().replace("\n", "<br>").replace(" ", "&nbsp;").replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")));
 					 } else {
 						 ((JLabel) c).setToolTipText(null);
 					 }
