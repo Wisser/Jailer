@@ -256,7 +256,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
 			@Override
 			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource) {
-				if (!(clause == Clause.FROM || clause == Clause.JOIN || clause == Clause.INTO)) {
+				if (!(clause == Clause.FROM || clause == Clause.UPDATE || clause == Clause.JOIN || clause == Clause.INTO)) {
 					return null;
 				}
 				
@@ -336,7 +336,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 					}
 					
 					matcher = identWSPattern.matcher(beforeCaret);
-					if (matcher.matches() && !"from".equalsIgnoreCase(matcher.group(1))) {
+					if (matcher.matches() && !"from".equalsIgnoreCase(matcher.group(1)) && !"update".equalsIgnoreCase(matcher.group(1))) {
 						notDotWord = true;
 						result.addAll(keywordCompletion("Join", "Left Join", "Right Join"));
 					}
@@ -370,7 +370,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
 			@Override
 			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource) {
-				if (!(clause != Clause.FROM && clause != Clause.JOIN)) {
+				if (!(clause != Clause.FROM && clause != Clause.UPDATE && clause != Clause.JOIN)) {
 					return null;
 				}
 				
@@ -402,7 +402,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
 			@Override
 			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource) {
-				if (!(clause != Clause.FROM && clause != Clause.JOIN)) {
+				if (!(clause != Clause.FROM && clause != Clause.UPDATE && clause != Clause.JOIN)) {
 					return null;
 				}
 				
@@ -447,6 +447,8 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 				} else {
 					switch (clause) {
 					case FROM: return keywordCompletion("Where");
+					case UPDATE: return keywordCompletion("set");
+					case SET: return keywordCompletion("Where");
 					case GROUP: return keywordCompletion("Having");
 					case HAVING: return null;
 					case INTO: return keywordCompletion("Values", "Select");
@@ -459,8 +461,6 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 					case ORDER: return null;
 					case SELECT: return keywordCompletion("From");
 					case WHERE: return keywordCompletion("Group by", "Order by");
-					default:
-						break;
 					}
 				}
 				return null;
@@ -574,7 +574,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 				String identifier = matcher.group(3);
 				
 				if (clause != null) {
-					if (!"from".equalsIgnoreCase(clause)) {
+					if (!"from".equalsIgnoreCase(clause) && !"update".equalsIgnoreCase(clause)) {
 						keyword = clause;
 					}
 				}
@@ -675,7 +675,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 					}
 				}
 				if (clause != null) {
-					inFrom = "from".equalsIgnoreCase(clause);
+					inFrom = "from".equalsIgnoreCase(clause) || "update".equalsIgnoreCase(clause);
 					clear = true;
 				}
 				result = matcher.find();
@@ -693,6 +693,8 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		JOIN("join"),
 		ORDER("order"),
 		INTO("into"),
+		UPDATE("update"),
+		SET("set"),
 		ON("on");
 		
 		private final String name;
@@ -702,7 +704,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		}
 
 		public static Clause currentClouse(String sql) {
-			Pattern pattern = Pattern.compile(".*\\b(select|from|where|group|having|order|join|on|into)\\b.*?$", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
+			Pattern pattern = Pattern.compile(".*\\b(select|from|where|group|having|order|join|on|update|set|into)\\b.*?$", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
 			Matcher matcher = pattern.matcher(sql);
 			if (matcher.matches()) {
 				for (Clause clause: values()) {
@@ -717,7 +719,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 
 	private static String reIdentifier = "(?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+)";
 	private static String reIdentDotOnly = ".*?(" + reIdentifier + ")\\s*\\.\\s*[\"'`]?\\w*$";
-	private static String reClauseKW = "\\b(?:select|from|where|group|having)\\b";
+	private static String reClauseKW = "\\b(?:select|from|update|where|group|having)\\b";
 	private static String reIdentWSPattern = ".*?(" + reIdentifier + ")\\s+$";
 	
 	private static Pattern identDotOnlyPattern = Pattern.compile(reIdentDotOnly, Pattern.DOTALL);

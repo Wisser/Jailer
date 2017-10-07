@@ -23,6 +23,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -65,19 +66,19 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	private FindDialog findDialog;
 	private ReplaceDialog replaceDialog;
 	private final boolean withExecuteActions;
-	
+
 	/**
 	 * Key stokes.
 	 */
 	public static KeyStroke KS_RUN_BLOCK = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
 	public static KeyStroke KS_RUN_ALL = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.ALT_DOWN_MASK);
-	
+
 	/**
 	 * Actions.
 	 */
 	public final Action runBlock;
 	public final Action runAll;
-	
+
 	public RSyntaxTextAreaWithSQLSyntaxStyle(boolean withExecuteActions) {
 		this.withExecuteActions = withExecuteActions;
 		setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
@@ -90,6 +91,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 				ActionMap am = getActionMap();
 				am.put(this, this);
 			}
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				RSyntaxTextAreaWithSQLSyntaxStyle.this.runBlock();
@@ -104,6 +106,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 				ActionMap am = getActionMap();
 				am.put(this, this);
 			}
+
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				RSyntaxTextAreaWithSQLSyntaxStyle.this.runAll();
@@ -128,9 +131,9 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 				updateMenuItemState();
 			}
 		});
-	
+
 		setHighlightCurrentLine(false);
-		
+
 		createPopupMenu();
 		updateMenuItemState();
 	}
@@ -166,7 +169,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 					}
 					pattern = Pattern.compile(".*?[^;](\\s*)$", Pattern.DOTALL);
 					matcher = pattern.matcher(currentStatement);
-					String tail = matcher.matches()? matcher.group(1) : "";
+					String tail = matcher.matches() ? matcher.group(1) : "";
 					replaceCurrentStatement(sb.toString() + tail, true);
 				}
 			}
@@ -185,7 +188,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			menu.add(item, 1);
 			menu.add(new JSeparator(), 2);
 		}
-		
+
 		return menu;
 	}
 
@@ -250,7 +253,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		}
 		return txt.toString();
 	}
-	
+
 	/**
 	 * Does the text have any non-WS characters?
 	 */
@@ -272,7 +275,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		}
 		return true;
 	}
-	
+
 	/**
 	 * Gets start- and end-line number of statement(s) at caret position.
 	 * 
@@ -432,7 +435,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 
 	protected void runBlock() {
 	}
-	
+
 	protected void runAll() {
 	}
 
@@ -449,31 +452,61 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 				findDialog = new FindDialog((Frame) null, this);
 				replaceDialog = new ReplaceDialog((Frame) null, this);
 			}
-		
+
 			// This ties the properties of the two dialogs together (match case,
 			// regex, etc.).
 			SearchContext context = findDialog.getSearchContext();
 			replaceDialog.setSearchContext(context);
-			}
+		}
 	}
 
 	public void updateMenuItemState() {
 		updateMenuItemState(true, true);
 	}
-	
+
 	public void updateMenuItemState(boolean allowRun, boolean setLineHighlights) {
-		try {
-			Pair<Integer, Integer> loc = getCurrentStatementLocation();
-			runBlock.setEnabled(allowRun && loc != null && !isTextEmpty(loc.a, loc.b));
-			runAll.setEnabled(allowRun && RSyntaxTextAreaWithSQLSyntaxStyle.this.getDocument().getLength() > 0);
-			if (allowRun && setLineHighlights) {
+		Pair<Integer, Integer> loc = getCurrentStatementLocation();
+		runBlock.setEnabled(allowRun && loc != null && !isTextEmpty(loc.a, loc.b));
+		runAll.setEnabled(allowRun && RSyntaxTextAreaWithSQLSyntaxStyle.this.getDocument().getLength() > 0);
+		if (allowRun && setLineHighlights) {
+			if (!pending.get()) {
 				removeAllLineHighlights();
 				for (int l = loc.a; l <= loc.b; ++l) {
-					addLineHighlight(l, new Color(235, 240, 255));
+					try {
+						addLineHighlight(l, new Color(235, 240, 255));
+					} catch (BadLocationException e) {
+						e.printStackTrace();
+					}
+				}
+				if (loc.b - loc.a > 10000) {
+					stopped.set(false);
+					pending.set(true);
+					new Thread(new Runnable() {
+						@Override
+						public void run() {
+							try {
+								Thread.sleep(2000);
+							} catch (InterruptedException e) {
+							}
+							pending.set(false);
+							if (!stopped.get()) {
+								SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+										updateMenuItemState(true, true);
+									}
+								});
+							}
+						}
+					}).start();
+				} else {
+					stopped.set(true);
 				}
 			}
-		} catch (BadLocationException e1) {
-			e1.printStackTrace();
 		}
 	}
+
+	private final AtomicBoolean stopped = new AtomicBoolean(false);
+	private final AtomicBoolean pending = new AtomicBoolean(false);
+
 }
