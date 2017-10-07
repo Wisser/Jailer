@@ -66,7 +66,6 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.MetaDataCache.CachedResultSet;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.Environment;
-import net.sf.jailer.ui.JComboBox;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
@@ -106,6 +105,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	private final ExecutionContext executionContext;
 	private final List<String> history = new ArrayList<String>();
 	private final AtomicBoolean running = new AtomicBoolean(false);
+	private final AtomicBoolean updatingStatus = new AtomicBoolean(false);
 	
 	/**
 	 * Creates new form SQLConsole
@@ -274,6 +274,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				@Override
 				public void run() {
 					running.set(true);
+					updatingStatus.set(false);
 					editorPane.updateMenuItemState();
 					Status status = new Status();
 					status.location = location;
@@ -314,7 +315,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						storeHistory();
 					} finally {
 						running.set(false);
-						editorPane.updateMenuItemState(true, false);
+						status.updateView(true);
+			    		editorPane.updateMenuItemState(true, false);
 					}
 				}
 
@@ -345,7 +347,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			status.running = true;
 			status.numStatements++;
 			localStatus.numStatements++;
-			status.updateView();
+			status.updateView(false);
 			statement = session.getConnection().createStatement();
 			CancellationHandler.begin(statement, SQLConsole.this);
 			long startTime = System.currentTimeMillis();
@@ -366,7 +368,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		    		localStatus.limitExceeded = true;
 		    	}
 				status.running = false;
-				status.updateView();
+				status.updateView(false);
 	    		SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
@@ -412,7 +414,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		    	int updateCount = statement.getUpdateCount();
 				status.numRowsUpdated += updateCount;
 				status.running = false;
-		    	status.updateView();
+		    	status.updateView(false);
 		    	if (updateCount != 0) {
 		    		setDataHasChanged(true);
 		    	}
@@ -447,7 +449,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			}
 			status.failed = true;
 			status.error = error;
-			status.updateView();
+			status.updateView(false);
 		}
 	}
 
@@ -495,72 +497,82 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		Throwable error;
 		Pair<Integer, Integer> location;
 
-		private void updateView() {
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					Font font = new JLabel("X").getFont();
-					statusLabel.setFont(new Font(font.getName(), font.getStyle(), (font.getSize() * 13) / 10));
-					statusLabel.setVisible(false);
-					cancelButton.setEnabled(false);
-					statusScrollPane.setVisible(false);
-					if (!failed) {
-						cancelButton.setEnabled(running);
-						statusLabel.setVisible(true);
-						statusLabel.setForeground(running? new Color(0, 100, 0) : Color.BLACK);
-						statusLabel.setText(getText());
-					} else {
-						statusScrollPane.setVisible(true);
-						if (error instanceof CancellationException) {
-							statusTextPane.setText("Cancelled");
-						} else if (error instanceof SQLException) {
-							statusTextPane.setText(error.getMessage());
-						} else {
-							StringWriter sw = new StringWriter();
-							PrintWriter pw = new PrintWriter(sw);
-							error.printStackTrace(pw);
-							String sStackTrace = sw.toString(); // stack trace as a string
-							statusTextPane.setText(sStackTrace);
-						}
-						statusTextPane.setCaretPosition(0);
-					}
-					Color failedColor = new Color(255, 170, 170);
-					Color okColor = new Color(210, 255, 210);
-					Color pendingColor = new Color(235, 235, 255);
-					Color runningColor = new Color(255, 255, 210);
-					if (location != null) {
-						editorPane.removeAllLineHighlights();
+		private synchronized void updateView(boolean force) {
+			if (force || !updatingStatus.get()) {
+				updatingStatus.set(true);
+				
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
 						try {
-							for (int i = location.a; i <= location.b; ++i) {
-								Color hl;
-								if (i < linesExecuted + location.a) {
-									hl = okColor;
-								} else if (i >= linesExecuting + location.a) {
-									hl = pendingColor;
+							synchronized (Status.this) {
+								Font font = new JLabel("X").getFont();
+								statusLabel.setFont(new Font(font.getName(), font.getStyle(), (font.getSize() * 13) / 10));
+								statusLabel.setVisible(false);
+								cancelButton.setEnabled(false);
+								statusScrollPane.setVisible(false);
+								if (!failed) {
+									cancelButton.setEnabled(running);
+									statusLabel.setVisible(true);
+									statusLabel.setForeground(running? new Color(0, 100, 0) : Color.BLACK);
+									statusLabel.setText(getText());
 								} else {
-									if (failed) {
-										hl = failedColor;
-									} else if (running){
-										hl = runningColor;
+									statusScrollPane.setVisible(true);
+									if (error instanceof CancellationException) {
+										statusTextPane.setText("Cancelled");
+									} else if (error instanceof SQLException) {
+										statusTextPane.setText(error.getMessage());
 									} else {
-										hl = pendingColor;
+										StringWriter sw = new StringWriter();
+										PrintWriter pw = new PrintWriter(sw);
+										error.printStackTrace(pw);
+										String sStackTrace = sw.toString(); // stack trace as a string
+										statusTextPane.setText(sStackTrace);
 									}
+									statusTextPane.setCaretPosition(0);
 								}
-								editorPane.addLineHighlight(i, hl);
 							}
-						} catch (BadLocationException e) {
+							Color failedColor = new Color(255, 170, 170);
+							Color okColor = new Color(210, 255, 210);
+							Color pendingColor = new Color(235, 235, 255);
+							Color runningColor = new Color(255, 255, 210);
+							if (location != null) {
+								editorPane.removeAllLineHighlights();
+								try {
+									for (int i = location.a; i <= location.b; ++i) {
+										Color hl;
+										if (i < linesExecuted + location.a) {
+											hl = okColor;
+										} else if (i >= linesExecuting + location.a) {
+											hl = pendingColor;
+										} else {
+											if (failed) {
+												hl = failedColor;
+											} else if (running){
+												hl = runningColor;
+											} else {
+												hl = pendingColor;
+											}
+										}
+										editorPane.addLineHighlight(i, hl);
+									}
+								} catch (BadLocationException e) {
+								}
+							}
+							
+							jPanel4.revalidate();
+							jPanel2.repaint();
+							
+							if (withDDL && !running) {
+								withDDL = false;
+								refreshMetaData();
+							}
+						} finally {
+							updatingStatus.set(false);
 						}
 					}
-					
-					jPanel4.revalidate();
-					jPanel2.repaint();
-					
-					if (withDDL && !running) {
-						withDDL = false;
-						refreshMetaData();
-					}
-				}
-			});
+				});
+			}
 		}
 
 		private String getText() {
