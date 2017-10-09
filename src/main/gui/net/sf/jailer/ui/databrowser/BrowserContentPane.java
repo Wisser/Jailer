@@ -2944,6 +2944,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	public void adjustRowTableColumnsWidth() {
 		DefaultTableModel dtm = (DefaultTableModel) rowsTable.getModel();
+		int MAXLINES = 2000;
+		if (rowsTable.getColumnCount() > 0) {
+			MAXLINES = Math.max(10 * MAXLINES / rowsTable.getColumnCount(), 10);
+		}
 		for (int i = 0; i < rowsTable.getColumnCount(); i++) {
 			TableColumn column = rowsTable.getColumnModel().getColumn(i);
 			int width = ((int) (Desktop.BROWSERTABLE_DEFAULT_WIDTH * getLayoutFactor()) - 18) / rowsTable.getColumnCount();
@@ -2957,7 +2961,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				if (singleRowDetailsView == null) {
 					width = Math.min(width, 400);
 				}
-				if (line > 2000) {
+				if (line > MAXLINES) {
 					break;
 				}
 			}

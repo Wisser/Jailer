@@ -276,9 +276,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	 */
 	protected void executeSQLBlock(final String sqlBlock, final Pair<Integer, Integer> location) {
 		if (!running.get()) {
-			int lineStartOffset;
+			int lineStartOffset = -1;
 			try {
-				lineStartOffset = editorPane.getLineStartOffset(location.a);
+				if (location != null) {
+					lineStartOffset = editorPane.getLineStartOffset(location.a);
+				}
 			} catch (BadLocationException e) {
 				lineStartOffset = -1;
 			}
@@ -418,16 +420,18 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			        	rb.sortColumnsCheckBox.setVisible(true);
 			        	tabContentPanel.controlsPanel1.add(rb.sortColumnsCheckBox);
 			        	String stmt = sql.trim();
+			        	tabContentPanel.statementLabel.setToolTipText(UIUtil.toHTML(sql, 160));
 			        	if (stmt.length() > 200) {
 			        		stmt = stmt.substring(0, 200) + "...";
 			        	}
 						tabContentPanel.statementLabel.setText(stmt);
-			        	tabContentPanel.statementLabel.setToolTipText(stmt);
 			        	tabContentPanel.reloadButton.addActionListener(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
-								jTabbedPane1.remove(tabContentPanel);
-								executeSQLBlock(sql, null);
+								if (!running.get()) {
+									jTabbedPane1.remove(tabContentPanel);
+									executeSQLBlock(sql, null);
+								}
 							}
 						});
 			        	rTabContainer = tabContentPanel;
