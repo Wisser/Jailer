@@ -880,17 +880,19 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         toolBarPanel.setBackground(new java.awt.Color(255, 255, 255));
         toolBarPanel.setOpaque(false);
         toolBarPanel.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0));
+        layeredPane.setLayer(toolBarPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
+        layeredPane.add(toolBarPanel);
         toolBarPanel.setBounds(0, 0, 0, 0);
-        layeredPane.add(toolBarPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
 
         graphContainer.setLayout(new java.awt.BorderLayout());
+        layeredPane.add(graphContainer);
         graphContainer.setBounds(0, 0, 0, 0);
-        layeredPane.add(graphContainer, javax.swing.JLayeredPane.DEFAULT_LAYER);
 
         inspectorHolder.setOpaque(false);
         inspectorHolder.setLayout(new java.awt.GridBagLayout());
+        layeredPane.setLayer(inspectorHolder, javax.swing.JLayeredPane.PALETTE_LAYER);
+        layeredPane.add(inspectorHolder);
         inspectorHolder.setBounds(0, 0, 0, 0);
-        layeredPane.add(inspectorHolder, javax.swing.JLayeredPane.PALETTE_LAYER);
 
         focusPanel.setForeground(new java.awt.Color(86, 82, 125));
         focusPanel.setOpaque(false);
@@ -940,8 +942,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         focusPanel.add(leftButton, gridBagConstraints);
 
+        layeredPane.setLayer(focusPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
+        layeredPane.add(focusPanel);
         focusPanel.setBounds(0, 0, 154, 29);
-        layeredPane.add(focusPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
 
         rightBorderPanel.setOpaque(false);
         rightBorderPanel.setLayout(new java.awt.GridBagLayout());
@@ -961,12 +964,13 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         rightBorderPanel.add(neighborHolderPanel, gridBagConstraints);
 
+        layeredPane.setLayer(rightBorderPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
+        layeredPane.add(rightBorderPanel);
         rightBorderPanel.setBounds(0, 0, 10, 10);
-        layeredPane.add(rightBorderPanel, javax.swing.JLayeredPane.PALETTE_LAYER);
 
         jSplitPane2.setTopComponent(layeredPane);
 
-        toolPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Closure", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, null, new java.awt.Color(82, 86, 125)));
+        toolPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Closure", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Tahoma", 0, 11), new java.awt.Color(82, 86, 125))); // NOI18N
         toolPanel.setLayout(new java.awt.BorderLayout());
         jSplitPane2.setBottomComponent(toolPanel);
 
@@ -2840,7 +2844,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JPanel jpanel;
-    private javax.swing.JLayeredPane layeredPane;
+    javax.swing.JLayeredPane layeredPane;
     private javax.swing.JButton leftButton;
     private javax.swing.JPanel legende;
     private javax.swing.JPanel legende1;
@@ -2855,9 +2859,9 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JButton resetFocus;
     private javax.swing.JTable restrictionsTable;
     private javax.swing.JPanel rightBorderPanel;
-    private JComboBox rootTable;
+    JComboBox rootTable;
     private javax.swing.JTabbedPane sketchTabbedPane;
-    private JComboBox subjectTable;
+    JComboBox subjectTable;
     private javax.swing.JTextField tagField;
     private javax.swing.JPanel toolBarPanel;
     private javax.swing.JPanel toolPanel;
