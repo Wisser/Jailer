@@ -1,3 +1,6 @@
+3.7.
+  - Full featured SQL Console with code completion and syntax highlighting.
+
 3.6.2
   - Improved data model merging.
   - Added ability to change the data model base folder.

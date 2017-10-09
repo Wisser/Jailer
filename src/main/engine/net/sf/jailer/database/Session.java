@@ -461,8 +461,6 @@ public class Session {
 		return rc;
 	}
 
-	private ThreadLocal<Long> lastValidityCheckTS = new ThreadLocal<Long>();
-	
 	/**
 	 * Executes a SQL-Query (SELECT) with timeout.
 	 * 
@@ -476,35 +474,6 @@ public class Session {
 	public long executeQuery(String sqlQuery, ResultSetReader reader, String alternativeSQL, Object context, int limit, int timeout) throws SQLException {
 		_log.info(sqlQuery);
 		try {
-			try {
-				return executeQuery(connectionFactory.getConnection(), sqlQuery, reader, alternativeSQL, context, limit, timeout);
-			} catch (SQLException e) {
-				boolean valid = true;
-				if (automaticReconnect) {
-					Long lvTS = lastValidityCheckTS.get();
-					if (lvTS == null || lvTS < System.currentTimeMillis() - 5 * 1000L) {
-						try {
-							if (!connectionFactory.getConnection().isValid(1)) {
-								valid = false;
-							}
-						} catch (Throwable t) {
-							// ignore
-						}
-						if (valid) {
-							lastValidityCheckTS.set(System.currentTimeMillis());
-						}
-					}
-				}
-				if (!valid) {
-					// reconnect
-					try {
-						connection.get().close();
-					} catch (Exception e2) {
-						// ignore
-					}
-					connection.set(null);
-				}
-			}
 			return executeQuery(connectionFactory.getConnection(), sqlQuery, reader, alternativeSQL, context, limit, timeout);
 		} catch (SQLException e) {
 			CancellationHandler.checkForCancellation(context);
@@ -751,34 +720,7 @@ public class Session {
 	 */
 	public DatabaseMetaData getMetaData() throws SQLException {
 		if (metaData == null) {
-			try {
-				metaData = connectionFactory.getConnection().getMetaData();
-				if (automaticReconnect) {
-					metaData.getIdentifierQuoteString();
-				}
-			} catch (Exception e) {
-				if (automaticReconnect) {
-					boolean valid = true;
-					metaData = null;
-					try {
-						if (!connectionFactory.getConnection().isValid(0)) {
-							valid = false;
-						}
-					} catch (Throwable t) {
-						// ignore
-					}
-					if (!valid) {
-						// reconnect
-						try {
-							this.connection.get().close();
-						} catch (Exception e2) {
-							// ignore
-						}
-						this.connection.set(null);
-						metaData = connectionFactory.getConnection().getMetaData();
-					}
-				}
-			}
+			metaData = connectionFactory.getConnection().getMetaData();
 		}
 		return metaData;
 	}
@@ -930,8 +872,6 @@ public class Session {
 	
 	private Map<String, Object> sessionProperty = Collections.synchronizedMap(new HashMap<String, Object>());
 
-	private boolean automaticReconnect = false;
-
 	/**
 	 * Sets a session property.
 	 * 
@@ -968,8 +908,4 @@ public class Session {
 		}
 	}
 
-	public void enableAutomaticReconnect() {
-		automaticReconnect  = true;
-	}
-	
 }

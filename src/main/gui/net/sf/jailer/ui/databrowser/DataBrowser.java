@@ -620,7 +620,6 @@ public class DataBrowser extends javax.swing.JFrame {
         dbConnectionDialog.addDbArgs(args);
         session.setCliArguments(args);
         session.setPassword(dbConnectionDialog.getPassword());
-        session.enableAutomaticReconnect();
         onNewSession(session);
     }
 

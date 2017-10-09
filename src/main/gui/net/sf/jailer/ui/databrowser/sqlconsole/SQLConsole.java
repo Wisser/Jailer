@@ -22,9 +22,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.sql.CallableStatement;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -59,6 +62,7 @@ import org.fife.ui.autocomplete.Util;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
@@ -69,6 +73,7 @@ import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.JComboBox;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
+import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.LoadJob;
 import net.sf.jailer.ui.databrowser.DataBrowser;
@@ -146,7 +151,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				 Component c = super.getListCellRendererComponent(list, shortValue, index, isSelected, cellHasFocus);
 				 if (c instanceof JLabel) {
 					 if (value instanceof String && value.toString().length() > 0) {
-						 ((JLabel) c).setToolTipText("<html>" + (value.toString().trim().replace("\n", "<br>").replace(" ", "&nbsp;").replace("\t", "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;")));
+						 ((JLabel) c).setToolTipText(UIUtil.toHTML(value.toString(), 160));
 					 } else {
 						 ((JLabel) c).setToolTipText(null);
 					 }
@@ -271,17 +276,30 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	 */
 	protected void executeSQLBlock(final String sqlBlock, final Pair<Integer, Integer> location) {
 		if (!running.get()) {
+			int lineStartOffset;
+			try {
+				lineStartOffset = editorPane.getLineStartOffset(location.a);
+			} catch (BadLocationException e) {
+				lineStartOffset = -1;
+			}
+			final int finalLineStartOffset = lineStartOffset;
 			queue.add(new Runnable() {
 				@Override
 				public void run() {
 					running.set(true);
 					updatingStatus.set(false);
-					editorPane.updateMenuItemState();
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+							editorPane.updateMenuItemState();
+						}
+					});
 					Status status = new Status();
 					status.location = location;
 					status.linesExecuted = 0;
 					status.linesExecuting = 0;
 					status.running = true;
+					int lineStartOffset = finalLineStartOffset;
 					try {
 						Pattern pattern = Pattern.compile("(.*?)(?:(;\\s*(\\n\\r?|$))|(\\n\\r?([ \\t\\r]*\\n\\r?)+))", Pattern.DOTALL);
 						Matcher matcher = pattern.matcher(sqlBlock);
@@ -292,10 +310,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								status.linesExecuting += countLines(matcher.group(1));
 								String sql = matcher.group(1);
 								if (sql.trim().length() > 0) {
-									executeSQL(sql, status);
+									executeSQL(sql, status, lineStartOffset);
 									if (status.failed) {
 										break;
 									}
+								}
+								if (lineStartOffset >= 0) {
+									lineStartOffset += matcher.group().length();
 								}
 								status.linesExecuted += countLines(matcher.group()) - 1;
 								status.linesExecuting = status.linesExecuted;
@@ -308,7 +329,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							String sql = sb.toString();
 							if (sql.trim().length() > 0) {
 								status.linesExecuting += countLines(sql);
-								executeSQL(sql, status);
+								executeSQL(sql, status, lineStartOffset);
 								if (!status.failed) {
 									status.linesExecuted = status.linesExecuting;
 								}
@@ -323,7 +344,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						status.running = false;
 						running.set(false);
 						status.updateView(true);
-			    		editorPane.updateMenuItemState(true, false);
+						SwingUtilities.invokeLater(new Runnable() {
+							@Override
+							public void run() {
+					    		editorPane.updateMenuItemState(true, false);
+							}
+						});
 					}
 				}
 
@@ -345,11 +371,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	 * 
 	 * @param sql the statement
 	 * @param status the status to update
+	 * @param statementStartOffset 
 	 */
-	private void executeSQL(final String sql, Status status) {
+	private void executeSQL(final String sql, Status status, int statementStartOffset) {
 		Statement statement = null;
 		ResultSet resultSet = null;
 		final Status localStatus = new Status();
+		String sqlStatement = null;
 		try {
 			status.numStatements++;
 			localStatus.numStatements++;
@@ -357,7 +385,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			statement = session.getConnection().createStatement();
 			CancellationHandler.begin(statement, SQLConsole.this);
 			long startTime = System.currentTimeMillis();
-			if (statement.execute(sql.replaceFirst("(?is)(;\\s*)+$", ""))) {
+			sqlStatement = sql.replaceFirst("(?is)(;\\s*)+$", "");
+			if (statement.execute(sqlStatement)) {
 				resultSet = statement.getResultSet();
 				Integer limit = (Integer) limitComboBox.getSelectedItem();
 				final BrowserContentPane rb = new ResultContentPane(datamodel.get(), null, "", session, null, null,
@@ -447,6 +476,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				} catch (SQLException e) {
 				}
 			}
+			if (error instanceof SQLException && sqlStatement != null && statementStartOffset >= 0) {
+				int pos = retrieveErrorPos(sqlStatement, error.getMessage());
+				if (pos >= 0) {
+					status.errorPosition  = statementStartOffset + pos;
+				}
+			}
+			
 			if (error instanceof CancellationException) {
 				CancellationHandler.reset(SQLConsole.this);
 				queue.clear();
@@ -488,6 +524,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	}
 
 	private class Status {
+		public int errorPosition = -1;
 		protected int linesExecuting;
 		protected int linesExecuted;
 		public boolean withDDL;
@@ -525,7 +562,17 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 									if (error instanceof CancellationException) {
 										statusTextPane.setText("Cancelled");
 									} else if (error instanceof SQLException) {
-										statusTextPane.setText(error.getMessage());
+										String pos = "";
+										if (errorPosition >= 0) {
+											try {
+												int line = editorPane.getLineOfOffset(errorPosition);
+												int col = errorPosition - editorPane.getLineStartOffset(line);
+												pos = "Error at line " + (line + 1) + ", column " + col + ": ";
+												editorPane.setCaretPosition(errorPosition);
+											} catch (BadLocationException e) {
+											}
+										}
+										statusTextPane.setText(pos + error.getMessage());
 									} else {
 										StringWriter sw = new StringWriter();
 										PrintWriter pw = new PrintWriter(sw);
@@ -1106,6 +1153,35 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				history.remove(history.size() - 1);
 			}
 		}
+	}
+
+	private int retrieveErrorPos(String sqlStatement, CharSequence errorMessage) {
+		if (DBMS.ORACLE.equals(session.dbms)) {
+			String statement = "declare "
+					+ "l_theCursor integer default dbms_sql.open_cursor;" + "begin      " + "    begin     "
+					+ "      dbms_sql.parse(  l_theCursor, ?, dbms_sql.native );"
+					+ "      exception when others then ? := dbms_sql.last_error_position;" + "    end;"
+					+ "    dbms_sql.close_cursor( l_theCursor );" + "end;";
+
+			try {
+				Connection connection = session.getConnection();
+				CallableStatement cStmt = connection.prepareCall(statement);
+				cStmt.registerOutParameter(2, Types.INTEGER);
+				cStmt.setString(1, sqlStatement);
+
+				cStmt.execute();
+
+				return cStmt.getInt(2);
+			} catch (Exception e) {
+			}
+		} else if (DBMS.POSTGRESQL.equals(session.dbms)) {
+			Pattern pattern = Pattern.compile("\\n\\s*Position: ([0-9]+)");
+			Matcher matcher = pattern.matcher(errorMessage);
+			if (matcher.find()) {
+				return Integer.parseInt(matcher.group(1)) - 1;
+			}
+		}
+		return -1;
 	}
 
 	static private ImageIcon runIcon;
