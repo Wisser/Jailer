@@ -33,6 +33,7 @@ import javax.swing.event.DocumentListener;
 
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rtextarea.RTextScrollPane;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
@@ -88,7 +89,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 		} catch (SQLException e) {
 		}
 		
-		JScrollPane jScrollPane1 = new JScrollPane();
+		RTextScrollPane jScrollPane1 = new RTextScrollPane();
 		jScrollPane1.setViewportView(sqlTextArea);
 		
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
@@ -99,6 +100,8 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 		gridBagConstraints.weighty = 1.0;
 		jPanel1.add(jScrollPane1, gridBagConstraints);
 		
+		jScrollPane1.setLineNumbersEnabled(true);
+
 		statusLabel.setText("");
 		sqlTextArea.setText(sql);
 		sqlTextArea.select(0, 0);

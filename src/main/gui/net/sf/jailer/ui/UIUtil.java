@@ -815,4 +815,28 @@ public class UIUtil {
 	private static void sendIssue(final String type, final String issue) {
 	}
 
+	public static String toHTML(String plainText, int maxLineLength) {
+		plainText = plainText.trim();
+		if (maxLineLength > 0) {
+			StringBuilder sb = new StringBuilder();
+			for (String line: plainText.split("\n")) {
+				if (line.length() > maxLineLength) {
+					sb.append(line.substring(0, maxLineLength) + "...");
+				} else {
+					sb.append(line);
+				}
+				sb.append("\n");
+			}
+			plainText = sb.toString();
+		}
+		return "<html>" + 
+				plainText
+				.replace("&", "&amp;")
+				.replace("<", "&lt;")
+				.replace(">", "&gt;")
+				.replace("\n", "<br>")
+				.replace(" ", "&nbsp;")
+				.replace("\t","&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
+	}
+	
 }

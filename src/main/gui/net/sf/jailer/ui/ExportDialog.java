@@ -269,15 +269,21 @@ public class ExportDialog extends javax.swing.JDialog {
 			additSubsLabelTitel.setVisible(false);
 		} else {
 			StringBuilder sb = new StringBuilder();
+			int ll = 0;
 			for (AdditionalSubject as: additionalSubjects) {
 				if (sb.length() > 0) {
 					sb.append(", ");
 				}
 				sb.append(as.getSubject().getName());
+				ll += as.getSubject().getName().length();
+				if (ll > 120) {
+					ll = 0;
+					sb.append("\n");
+				}
 			}
 			final int MAX = 60;
 			if (sb.length() > MAX) {
-				additSubsLabel.setToolTipText(sb.toString());
+				additSubsLabel.setToolTipText(UIUtil.toHTML(sb.toString(), 0));
 				additSubsLabel.setText(sb.toString().substring(0, MAX) + "...");
 			} else {
 				additSubsLabel.setText(sb.toString());

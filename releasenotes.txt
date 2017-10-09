@@ -1,5 +1,5 @@
 7.5
-  - SQL Console.
+  - Full featured SQL Console with code completion and syntax highlighting.
   - Bugfix #22 "Oracle TIMESTAMP export TIMESTAMP(6) WITH TIME ZONE as oracle.sql.TIMESTAMPTZ@1d314263" (https://sourceforge.net/p/jailer/bugs/22/ )
 
 7.4.2

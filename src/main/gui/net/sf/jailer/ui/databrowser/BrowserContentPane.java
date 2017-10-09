@@ -3704,7 +3704,22 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private void updateWhereField() {
 		if (association != null) {
 			where.setText(parentRow == null ? (parentRows != null && parentRows.size() > 0? parentRows.get(0).rowId + (parentRows.size() > 1? " or ..." : "") : "") : parentRow.rowId);
-			where.setToolTipText(where.getText());
+			if (parentRow == null && parentRows != null && parentRows.size() > 0) {
+				StringBuilder sb = new StringBuilder();
+				for (int i = 0; i < parentRows.size(); ++i) {
+					if (i > 0) {
+						sb.append(" or\n");
+					}
+					sb.append(parentRows.get(i).rowId);
+					if (i > 50) {
+						sb.append("\n...");
+						break;
+					}
+				}
+				where.setToolTipText(UIUtil.toHTML(sb.toString(), 0));
+			} else {
+				where.setToolTipText(where.getText());
+			}
 		}
 	}
 
