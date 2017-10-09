@@ -6,9 +6,11 @@ package net.sf.jailer.ui.databrowser.sqlconsole;
 
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.GridBagConstraints;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Window;
@@ -124,6 +126,16 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		this.executionContext = executionContext;
 		initComponents();
 
+		historyComboBox.setMaximumRowCount(25);
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 16);
+        jPanel5.add(historyComboBox, gridBagConstraints);
+		
 		this.editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(true) {
 			@Override
 			protected void runBlock() {
@@ -672,11 +684,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         consoleContainerPanel = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        limitComboBox = new JComboBox();
+        limitComboBox = new javax.swing.JComboBox();
         cancelButton = new javax.swing.JButton();
         runSQLButton = new javax.swing.JButton();
         runnAllButton = new javax.swing.JButton();
-        historyComboBox = new JComboBox<>();
         jPanel6 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
@@ -748,17 +759,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
         jPanel5.add(runnAllButton, gridBagConstraints);
-
-        historyComboBox.setMaximumRowCount(25);
-        historyComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 16);
-        jPanel5.add(historyComboBox, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -861,7 +861,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JPanel consoleContainerPanel;
-    private JComboBox<String> historyComboBox;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel6;
@@ -875,7 +874,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private JComboBox limitComboBox;
+    private javax.swing.JComboBox limitComboBox;
     private javax.swing.JButton runSQLButton;
     private javax.swing.JButton runnAllButton;
     private javax.swing.JLabel statusLabel;
@@ -1091,7 +1090,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 	private final String HISTORY_FILE = ".history";
 	private final String LF = System.getProperty("line.separator", "\n");
-		
+	private final JComboBox historyComboBox = new JComboBox() {
+		@Override
+		public java.awt.Dimension getMinimumSize() {
+			Dimension s = super.getMinimumSize();
+			return new Dimension(Math.min(80, s.width), s.height);
+		}
+	};
+	
 	private synchronized void restoreHistory() {
 		try {
 			File file = Environment.newFile(HISTORY_FILE);
