@@ -41,6 +41,7 @@ import java.util.logging.Logger;
 
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -70,6 +71,7 @@ import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.databrowser.DataBrowser;
+import net.sf.jailer.ui.graphical_view.GraphicalDataModelView;
 import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.PrintUtil;
@@ -1831,6 +1833,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 */
 	public void markDirty() {
 		extractionModelEditor.markDirty();
+	}
+
+	public JComponent getGraphViewContainer() {
+		return extractionModelEditor.layeredPane;
+	}
+
+	public void select(Table table) {
+		extractionModelEditor.subjectTable.setSelectedItem(extractionModelEditor.dataModel.getDisplayName(table));
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
