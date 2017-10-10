@@ -139,6 +139,10 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 	}
 
 	public boolean edit(List<String> schemas, String defaultSchema, boolean[] isDefaultSchema, String currentUser) {
+		return edit(schemas, defaultSchema, null, isDefaultSchema, currentUser);
+	}
+
+	public boolean edit(List<String> schemas, String defaultSchema, String initiallySelectedSchema, boolean[] isDefaultSchema, String currentUser) {
 		isDefaultSchema[0] = false;
 		if (schemas.size() == 1) {
 			if (schemas.get(0).equalsIgnoreCase(currentUser)) {
@@ -152,7 +156,9 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 		} else {
 			DefaultComboBoxModel model = new DefaultComboBoxModel(schemas.toArray());
 			schemaComboBox.setModel(model);
-			if (defaultSchema != null) {
+			if (initiallySelectedSchema != null) {
+				schemaComboBox.setSelectedItem(initiallySelectedSchema);
+			} else if (defaultSchema != null) {
 				schemaComboBox.setSelectedItem(defaultSchema);
 			}
 		}

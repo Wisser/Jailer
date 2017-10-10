@@ -689,7 +689,8 @@ public class GraphicalDataModelView extends JPanel {
 	 */
 	public JPopupMenu createPopupMenu(final Table table, boolean withNavigation) {
 		JPopupMenu popup = new JScrollPopupMenu();
-
+		boolean withModifications = modelEditor.getAdditionalPopupMenuItems().isEmpty();
+			
 		JMenu navigateTo = null;
 		
 		if (withNavigation) {
@@ -799,13 +800,7 @@ public class GraphicalDataModelView extends JPanel {
 		JMenuItem toggleDetails = new JMenuItem(showDetails(table)? "Hide Details" : "Show Details");
 		toggleDetails.addActionListener(new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
-				if (reversedShowDetailsTables.contains(table)) {
-					reversedShowDetailsTables.remove(table);
-				} else {
-					reversedShowDetailsTables.add(table);
-				}
-				visualization.invalidateAll();
-				display.invalidate();
+				toggleShowDetails(table);
 			}
 		});
 		JMenuItem mapColumns = new JMenuItem("XML Column Mapping");
@@ -871,134 +866,149 @@ public class GraphicalDataModelView extends JPanel {
 		popup.add(toggleDetails);
 		popup.add(new JSeparator());
 		popup.add(hide);
-		popup.add(selectAsRoot);
+		if (withModifications){
+			popup.add(selectAsRoot);
+		}
 		if (navigateTo != null) {
 			popup.add(navigateTo);
 		}
-		popup.add(dataBrowser);
+		if (withModifications){
+			popup.add(dataBrowser);
+		}
 //		popup.add(findTable);
 //		popup.add(select);
-		popup.add(new JSeparator());
-		popup.add(restrictAll);
-		popup.add(removeRestrictions);
-		popup.add(filterEditor);
-		popup.add(mapColumns);
+		if (withModifications){
+			popup.add(new JSeparator());
+			popup.add(restrictAll);
+			popup.add(removeRestrictions);
+			popup.add(filterEditor);
+			popup.add(mapColumns);
+		}
 		popup.add(new JSeparator());
 //		popup.add(shortestPath);
 		popup.add(zoomToFit);
-		popup.add(new JSeparator());
-		popup.add(queryBuilder);
-		popup.add(htmlRender);
+		if (withModifications){
+			popup.add(new JSeparator());
+			popup.add(queryBuilder);
+			popup.add(htmlRender);
 		
-		popup.add(new JSeparator());
-		JMenu insertModeMenu = new JMenu("Export Mode");
-		popup.add(insertModeMenu);
-		JRadioButtonMenuItem insert = new JRadioButtonMenuItem("Insert");
-		insert.addActionListener(new ActionListener () {
-			public void actionPerformed(ActionEvent e) {
-				if (!Boolean.FALSE.equals(table.upsert)) {
-					table.upsert = false;
-					visualization.invalidateAll();
-					display.invalidate();
-					modelEditor.markDirty();
+			popup.add(new JSeparator());
+			JMenu insertModeMenu = new JMenu("Export Mode");
+			popup.add(insertModeMenu);
+			JRadioButtonMenuItem insert = new JRadioButtonMenuItem("Insert");
+			insert.addActionListener(new ActionListener () {
+				public void actionPerformed(ActionEvent e) {
+					if (!Boolean.FALSE.equals(table.upsert)) {
+						table.upsert = false;
+						visualization.invalidateAll();
+						display.invalidate();
+						modelEditor.markDirty();
+					}
 				}
-			}
-		});
-		insertModeMenu.add(insert);
-		JRadioButtonMenuItem upsert = new JRadioButtonMenuItem("Upsert/Merge");
-		insertModeMenu.add(upsert);
-		upsert.addActionListener(new ActionListener () {
-			public void actionPerformed(ActionEvent e) {
-				if (!Boolean.TRUE.equals(table.upsert)) {
-					table.upsert = true;
-					visualization.invalidateAll();
-					display.invalidate();
-					modelEditor.markDirty();
+			});
+			insertModeMenu.add(insert);
+			JRadioButtonMenuItem upsert = new JRadioButtonMenuItem("Upsert/Merge");
+			insertModeMenu.add(upsert);
+			upsert.addActionListener(new ActionListener () {
+				public void actionPerformed(ActionEvent e) {
+					if (!Boolean.TRUE.equals(table.upsert)) {
+						table.upsert = true;
+						visualization.invalidateAll();
+						display.invalidate();
+						modelEditor.markDirty();
+					}
 				}
-			}
-		});
-		JRadioButtonMenuItem deflt = new JRadioButtonMenuItem("Data model default (" + ((table.defaultUpsert? "Upsert" : "Insert") + ")"));
-		insertModeMenu.add(deflt);
-		deflt.addActionListener(new ActionListener () {
-			public void actionPerformed(ActionEvent e) {
-				if (table.upsert != null) {
-					table.upsert = null;
-					visualization.invalidateAll();
-					display.invalidate();
-					modelEditor.markDirty();
+			});
+			JRadioButtonMenuItem deflt = new JRadioButtonMenuItem("Data model default (" + ((table.defaultUpsert? "Upsert" : "Insert") + ")"));
+			insertModeMenu.add(deflt);
+			deflt.addActionListener(new ActionListener () {
+				public void actionPerformed(ActionEvent e) {
+					if (table.upsert != null) {
+						table.upsert = null;
+						visualization.invalidateAll();
+						display.invalidate();
+						modelEditor.markDirty();
+					}
 				}
+			});
+			ButtonGroup bt = new ButtonGroup();
+			bt.add(insert);
+			bt.add(upsert);
+			bt.add(deflt);
+			
+			if (table.upsert == null) {
+				deflt.setSelected(true);
 			}
-		});
-		ButtonGroup bt = new ButtonGroup();
-		bt.add(insert);
-		bt.add(upsert);
-		bt.add(deflt);
-		
-		if (table.upsert == null) {
-			deflt.setSelected(true);
+			
+			if (Boolean.TRUE.equals(table.upsert)) {
+				upsert.setSelected(true);
+			}
+			
+			if (Boolean.FALSE.equals(table.upsert)) {
+				insert.setSelected(true);
+			}
+			
+			JMenu excludeMenu = new JMenu("Exclude from Deletion");
+			popup.add(excludeMenu);
+			JRadioButtonMenuItem yes = new JRadioButtonMenuItem("Yes");
+			yes.addActionListener(new ActionListener () {
+				public void actionPerformed(ActionEvent e) {
+					if (!Boolean.TRUE.equals(table.excludeFromDeletion)) {
+						table.excludeFromDeletion = true;
+						visualization.invalidateAll();
+						display.invalidate();
+						modelEditor.markDirty();
+					}
+				}
+			});
+			excludeMenu.add(yes);
+			JRadioButtonMenuItem no = new JRadioButtonMenuItem("No");
+			excludeMenu.add(no);
+			no.addActionListener(new ActionListener () {
+				public void actionPerformed(ActionEvent e) {
+					if (!Boolean.FALSE.equals(table.excludeFromDeletion)) {
+						table.excludeFromDeletion = false;
+						visualization.invalidateAll();
+						display.invalidate();
+						modelEditor.markDirty();
+					}
+				}
+			});
+			deflt = new JRadioButtonMenuItem("Data model default (" + ((table.defaultExcludeFromDeletion? "Yes" : "No") + ")"));
+			excludeMenu.add(deflt);
+			deflt.addActionListener(new ActionListener () {
+				public void actionPerformed(ActionEvent e) {
+					if (table.excludeFromDeletion != null) {
+						table.excludeFromDeletion = null;
+						visualization.invalidateAll();
+						display.invalidate();
+						modelEditor.markDirty();
+					}
+				}
+			});
+			bt = new ButtonGroup();
+			bt.add(yes);
+			bt.add(no);
+			bt.add(deflt);
+			
+			if (table.excludeFromDeletion == null) {
+				deflt.setSelected(true);
+			}
+			
+			if (Boolean.TRUE.equals(table.excludeFromDeletion)) {
+				yes.setSelected(true);
+			}
+			
+			if (Boolean.FALSE.equals(table.excludeFromDeletion)) {
+				no.setSelected(true);
+			}
 		}
 		
-		if (Boolean.TRUE.equals(table.upsert)) {
-			upsert.setSelected(true);
-		}
-		
-		if (Boolean.FALSE.equals(table.upsert)) {
-			insert.setSelected(true);
-		}
-		
-		JMenu excludeMenu = new JMenu("Exclude from Deletion");
-		popup.add(excludeMenu);
-		JRadioButtonMenuItem yes = new JRadioButtonMenuItem("Yes");
-		yes.addActionListener(new ActionListener () {
-			public void actionPerformed(ActionEvent e) {
-				if (!Boolean.TRUE.equals(table.excludeFromDeletion)) {
-					table.excludeFromDeletion = true;
-					visualization.invalidateAll();
-					display.invalidate();
-					modelEditor.markDirty();
-				}
+		if (!modelEditor.getAdditionalPopupMenuItems().isEmpty()) {
+			popup.addSeparator();
+			for (JMenuItem item: modelEditor.getAdditionalPopupMenuItems()) {
+				popup.add(item);
 			}
-		});
-		excludeMenu.add(yes);
-		JRadioButtonMenuItem no = new JRadioButtonMenuItem("No");
-		excludeMenu.add(no);
-		no.addActionListener(new ActionListener () {
-			public void actionPerformed(ActionEvent e) {
-				if (!Boolean.FALSE.equals(table.excludeFromDeletion)) {
-					table.excludeFromDeletion = false;
-					visualization.invalidateAll();
-					display.invalidate();
-					modelEditor.markDirty();
-				}
-			}
-		});
-		deflt = new JRadioButtonMenuItem("Data model default (" + ((table.defaultExcludeFromDeletion? "Yes" : "No") + ")"));
-		excludeMenu.add(deflt);
-		deflt.addActionListener(new ActionListener () {
-			public void actionPerformed(ActionEvent e) {
-				if (table.excludeFromDeletion != null) {
-					table.excludeFromDeletion = null;
-					visualization.invalidateAll();
-					display.invalidate();
-					modelEditor.markDirty();
-				}
-			}
-		});
-		bt = new ButtonGroup();
-		bt.add(yes);
-		bt.add(no);
-		bt.add(deflt);
-		
-		if (table.excludeFromDeletion == null) {
-			deflt.setSelected(true);
-		}
-		
-		if (Boolean.TRUE.equals(table.excludeFromDeletion)) {
-			yes.setSelected(true);
-		}
-		
-		if (Boolean.FALSE.equals(table.excludeFromDeletion)) {
-			no.setSelected(true);
 		}
 		
 		return popup;
@@ -1012,6 +1022,7 @@ public class GraphicalDataModelView extends JPanel {
 	 */
 	public JPopupMenu createPopupMenu(final Association association) {
 		JPopupMenu popup = new JPopupMenu();
+		boolean withModifications = modelEditor.getAdditionalPopupMenuItems().isEmpty();
 		
 		JMenuItem disable = new JMenuItem("Disable Association");
 		disable.addActionListener(new ActionListener () {
@@ -1035,9 +1046,11 @@ public class GraphicalDataModelView extends JPanel {
 		disable.setEnabled(!association.isIgnored());
 		enable.setEnabled(association.isRestricted());
 		
-		popup.add(disable);
-		popup.add(enable);
-		popup.add(new JSeparator());
+		if (withModifications) {
+			popup.add(disable);
+			popup.add(enable);
+			popup.add(new JSeparator());
+		}
 		popup.add(zoomToFit);
 
 		return popup;
@@ -1075,6 +1088,13 @@ public class GraphicalDataModelView extends JPanel {
 	 */
 	public void zoomToFit() {
 		zoomToFitControl.zoomToFit();
+	}
+
+	/**
+	 * Zooms to fit.
+	 */
+	public void zoomToFit(long duration) {
+		zoomToFitControl.zoomToFit(duration);
 	}
 
 	/**
@@ -1649,16 +1669,23 @@ public class GraphicalDataModelView extends JPanel {
 			}
 			super.itemClicked(item, e);
 		}
-
+		
 		/**
 		 * Zooms to fit.
 		 */
 		public void zoomToFit() {
+			zoomToFit(duration);
+		}
+
+		/**
+		 * Zooms to fit.
+		 */
+		public void zoomToFit(long dur) {
 			Visualization vis = display.getVisualization();
 			synchronized (visualization) {
 				Rectangle2D bounds = vis.getBounds(Visualization.ALL_ITEMS);
 				GraphicsLib.expand(bounds, 50 + (int)(1/display.getScale()));
-				DisplayLib.fitViewToBounds(display, bounds, duration);
+				DisplayLib.fitViewToBounds(display, bounds, dur);
 			}
 		}
 	}
@@ -1983,6 +2010,16 @@ public class GraphicalDataModelView extends JPanel {
 			}
 		}
 		return result;
+	}
+
+	public void toggleShowDetails(final Table table) {
+		if (reversedShowDetailsTables.contains(table)) {
+			reversedShowDetailsTables.remove(table);
+		} else {
+			reversedShowDetailsTables.add(table);
+		}
+		visualization.invalidateAll();
+		display.invalidate();
 	}
 
 	private static final long serialVersionUID = -5938101712807557555L;

@@ -315,30 +315,33 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 					status.running = true;
 					int lineStartOffset = finalLineStartOffset;
 					try {
-						Pattern pattern = Pattern.compile("(.*?)(?:(;\\s*(\\n\\r?|$))|(\\n\\r?([ \\t\\r]*\\n\\r?)+))", Pattern.DOTALL);
+						Pattern pattern = Pattern.compile("(?:(;\\s*(\\n\\r?|$))|(\\n\\r?([ \\t\\r]*\\n\\r?)+))", Pattern.DOTALL);
 						Matcher matcher = pattern.matcher(sqlBlock);
 						boolean result = matcher.find();
 						StringBuffer sb = new StringBuffer();
 						if (result) {
 							do {
-								status.linesExecuting += countLines(matcher.group(1));
-								String sql = matcher.group(1);
+								sb.setLength(0);
+								matcher.appendReplacement(sb, "$1");
+								String sql = sb.toString();
+								String pureSql = sql.replaceFirst(";\\s*$", "");
+								status.linesExecuting += countLines(pureSql);
 								if (sql.trim().length() > 0) {
-									executeSQL(sql, status, lineStartOffset);
+									executeSQL(pureSql, status, lineStartOffset);
 									if (status.failed) {
 										break;
 									}
 								}
 								if (lineStartOffset >= 0) {
-									lineStartOffset += matcher.group().length();
+									lineStartOffset += sql.length();
 								}
-								status.linesExecuted += countLines(matcher.group()) - 1;
+								status.linesExecuted += countLines(sql) - 1;
 								status.linesExecuting = status.linesExecuted;
-								matcher.appendReplacement(sb, "");
 								result = matcher.find();
 							} while (result);
 						}
 						if (!status.failed) {
+							sb.setLength(0);
 							matcher.appendTail(sb);
 							String sql = sb.toString();
 							if (sql.trim().length() > 0) {

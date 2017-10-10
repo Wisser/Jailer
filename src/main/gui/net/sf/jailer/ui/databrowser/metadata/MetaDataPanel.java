@@ -112,7 +112,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 						});
 						if (MetaDataPanel.this.metaDataSource.toTable(mdTable) == null) {
 							popup.addSeparator();
-							JMenuItem analyse = new JMenuItem("Analyse schema \""+ mdTable.getSchema().getName() + "\"");
+							JMenuItem analyse = new JMenuItem("Analyse schema \""+ mdTable.getSchema().getUnquotedName() + "\"");
 							popup.add(analyse);
 							analyse.addActionListener(new ActionListener() {
 			                    @Override
@@ -125,8 +125,8 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	                }
 				}
 				if (evt.getButton() == MouseEvent.BUTTON1) {
-		            if (evt.getClickCount() > 1) {
-		                if (mdTable != null) {
+				    if (mdTable != null) {
+			            if (evt.getClickCount() > 1) {
 		                	openTable(mdTable);
 		                }
 		            }
@@ -188,7 +188,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 						if (MetaDataPanel.this.metaDataSource.toTable((MDTable) uo) == null) {
 							unknownTable = true;
 						}
-						if (ModelBuilder.isJailerTable(((MDTable) uo).getName())) {
+						if (ModelBuilder.isJailerTable(((MDTable) uo).getUnquotedName())) {
 							isJailerTable = true;
 						}
 					}
@@ -228,6 +228,10 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 					if (last instanceof DefaultMutableTreeNode) {
 						final Object uo = ((DefaultMutableTreeNode) last).getUserObject();
 						if (uo instanceof MDTable) {
+				            Table table = MetaDataPanel.this.metaDataSource.toTable((MDTable) uo);
+				            if (table != null) {
+				            	updateDataModelView(table);
+				            }
 							SwingUtilities.invokeLater(new Runnable() {
 								@Override
 								public void run() {
@@ -458,7 +462,8 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     protected abstract void onTableSelect(MDTable mdTable);
     protected abstract void onSchemaSelect(MDSchema mdSchema);
 	protected abstract void openNewTableBrowser();
-	
+	protected abstract void updateDataModelView(Table table);
+
     static private ImageIcon warnIcon;
     static ImageIcon getWarnIcon(JComponent component) {
     	if (warnIcon != null) {

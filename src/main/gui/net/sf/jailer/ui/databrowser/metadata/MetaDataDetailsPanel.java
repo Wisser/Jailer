@@ -70,7 +70,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 	private final Session session;
 	private final ExecutionContext executionContext;
 	private final JFrame owner;
-	private final List<BlockingQueue<Runnable>> queues = new ArrayList<BlockingQueue<Runnable>>();
+	private static final List<BlockingQueue<Runnable>> queues = new ArrayList<BlockingQueue<Runnable>>();
 	private final Map<MetaDataDetails, JPanel> detailsPanels = new HashMap<MetaDataDetails, JPanel>();
 	private final Map<Pair<MetaDataDetails, MDTable>, JComponent> detailsViews = new HashMap<Pair<MetaDataDetails, MDTable>, JComponent>();
 	private final Map<Table, JComponent> tableDetailsViews = new HashMap<Table, JComponent>();
@@ -90,7 +90,9 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
         	detailsPanels.put(mdd, panel);
         	tabbedPane.addTab(mdd.name, panel);
         }
-        
+    }
+    
+    static {
         for (int i = 0; i < 2; ++i) {
         	final LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
 	        queues.add(queue);
@@ -124,8 +126,8 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     			tableDetailsViews.put(table, view);
     		}
     		tableDetailsPanel.add(view);
-    	} else if (!ModelBuilder.isJailerTable(mdTable.getName())) {
-    		JButton analyseButton = new JButton("Analyse schema \"" + mdTable.getSchema().getName() + "\"");
+    	} else if (!ModelBuilder.isJailerTable(mdTable.getUnquotedName())) {
+    		JButton analyseButton = new JButton("Analyse schema \"" + mdTable.getSchema().getUnquotedName() + "\"");
     		analyseButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
@@ -139,7 +141,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 	        gridBagConstraints.gridwidth = 1;
 	        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
 	        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-    		panel.add(new JLabel("  Table \"" + mdTable.getName() + "\""), gridBagConstraints);
+    		panel.add(new JLabel("  Table \"" + mdTable.getUnquotedName() + "\""), gridBagConstraints);
     		gridBagConstraints = new java.awt.GridBagConstraints();
 	        gridBagConstraints.gridx = 1;
 	        gridBagConstraints.gridy = 2;

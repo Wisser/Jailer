@@ -72,17 +72,35 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	 */
 	public static KeyStroke KS_RUN_BLOCK = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
 	public static KeyStroke KS_RUN_ALL = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.ALT_DOWN_MASK);
+	public static KeyStroke KS_FORMAT = KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.SHIFT_DOWN_MASK|InputEvent.CTRL_DOWN_MASK);
 
 	/**
 	 * Actions.
 	 */
 	public final Action runBlock;
 	public final Action runAll;
+	public final Action formatSQL;
 
 	public RSyntaxTextAreaWithSQLSyntaxStyle(boolean withExecuteActions) {
 		this.withExecuteActions = withExecuteActions;
 		setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
 		setAutoIndentEnabled(true);
+		
+		formatSQL = new AbstractAction("Format SQL") {
+			{
+				putValue(ACCELERATOR_KEY, KS_FORMAT);
+				InputMap im = getInputMap();
+				im.put(KS_FORMAT, this);
+				ActionMap am = getActionMap();
+				am.put(this, this);
+			}
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				formatSQL();
+			}
+		};
+
 		runBlock = new AbstractAction("Run selected SQL") {
 			{
 				putValue(ACCELERATOR_KEY, KS_RUN_BLOCK);
@@ -139,7 +157,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	}
 
 	/**
-	 * Overridden to add menu items related to formatting
+	 * Overridden to add menu items related to formatting.
 	 *
 	 * @return the popup menu
 	 */
@@ -147,31 +165,11 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	protected JPopupMenu createPopupMenu() {
 		JPopupMenu menu = super.createPopupMenu();
 
-		JMenuItem item = new JMenuItem("Format SQL");
+		JMenuItem item = new JMenuItem(formatSQL);
 		item.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				String currentStatement = getCurrentStatement(true);
-				Pattern pattern = Pattern.compile("(.*?)(;\\s*(\\n\\r?|$))", Pattern.DOTALL);
-				Matcher matcher = pattern.matcher(currentStatement + ";");
-				boolean result = matcher.find();
-				if (result) {
-					StringBuffer sb = new StringBuffer();
-					do {
-						matcher.appendReplacement(sb,
-								Matcher.quoteReplacement(new BasicFormatterImpl().format(matcher.group(1)))
-										+ matcher.group(2));
-						result = matcher.find();
-					} while (result);
-					matcher.appendTail(sb);
-					if (sb.length() > 0) {
-						sb.setLength(sb.length() - 1);
-					}
-					pattern = Pattern.compile(".*?[^;](\\s*)$", Pattern.DOTALL);
-					matcher = pattern.matcher(currentStatement);
-					String tail = matcher.matches() ? matcher.group(1) : "";
-					replaceCurrentStatement(sb.toString() + tail, true);
-				}
+				formatSQL();
 			}
 		});
 		menu.add(item, 0);
@@ -201,7 +199,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	 *            <code>true</code> to replace only one statement
 	 */
 	public void replaceCurrentStatement(String replacement, boolean singleStatement) {
-		Pair<Integer, Integer> loc = getCurrentStatementLocation(singleStatement);
+		Pair<Integer, Integer> loc = getCurrentStatementLocation(singleStatement, false);
 		if (loc != null) {
 			try {
 				int from = loc.a;
@@ -226,7 +224,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	 * @return pair of start and end line number
 	 */
 	public String getCurrentStatement(boolean singleStatement) {
-		Pair<Integer, Integer> loc = getCurrentStatementLocation(singleStatement);
+		Pair<Integer, Integer> loc = getCurrentStatementLocation(singleStatement, false);
 		if (loc != null) {
 			return getText(loc.a, loc.b, true);
 		}
@@ -284,7 +282,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	 * @return pair of start and end line number
 	 */
 	public Pair<Integer, Integer> getCurrentStatementLocation() {
-		return getCurrentStatementLocation(getCaret().getDot() != getCaret().getMark());
+		return getCurrentStatementLocation(getCaret().getDot() != getCaret().getMark(), false);
 	}
 
 	/**
@@ -294,7 +292,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	 *            <code>true</code> to get only one statement
 	 * @return pair of start and end line number
 	 */
-	public Pair<Integer, Integer> getCurrentStatementLocation(boolean singleStatement) {
+	public Pair<Integer, Integer> getCurrentStatementLocation(boolean singleStatement, boolean currentLineMayBeEmpty) {
 		try {
 			int y = getLineOfOffset(Math.min(getCaret().getDot(), getCaret().getMark()));
 			int start = y;
@@ -317,7 +315,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 				Segment txt = new Segment();
 				getDocument().getText(endOff, getLineEndOffset(end) - endOff, txt);
 				String sLine = txt.toString().trim();
-				if (sLine.length() == 0) {
+				if (sLine.length() == 0 && !(currentLineMayBeEmpty && end == y)) {
 					if (end > start) {
 						--end;
 					}
@@ -503,6 +501,33 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 					stopped.set(true);
 				}
 			}
+		}
+	}
+
+	/**
+	 * Formats SQL statement at caret position.
+	 */
+	private void formatSQL() {
+		String currentStatement = getCurrentStatement(true);
+		Pattern pattern = Pattern.compile("(.*?)(;\\s*(\\n\\r?|$))", Pattern.DOTALL);
+		Matcher matcher = pattern.matcher(currentStatement + ";");
+		boolean result = matcher.find();
+		if (result) {
+			StringBuffer sb = new StringBuffer();
+			do {
+				matcher.appendReplacement(sb,
+						Matcher.quoteReplacement(new BasicFormatterImpl().format(matcher.group(1)))
+								+ matcher.group(2));
+				result = matcher.find();
+			} while (result);
+			matcher.appendTail(sb);
+			if (sb.length() > 0) {
+				sb.setLength(sb.length() - 1);
+			}
+			pattern = Pattern.compile(".*?[^;](\\s*)$", Pattern.DOTALL);
+			matcher = pattern.matcher(currentStatement);
+			String tail = matcher.matches() ? matcher.group(1) : "";
+			replaceCurrentStatement(sb.toString() + tail, true);
 		}
 	}
 

@@ -83,10 +83,11 @@ public class MDTable extends MDObject {
 		if (columns == null) {
 			columns = new ArrayList<String>();
 			primaryKey = new ArrayList<String>();
-    		synchronized (getMetaDataSource().getSession().getMetaData()) {
-				ResultSet rs = JDBCMetaDataBasedModelElementFinder.getColumns(getSchema().getMetaDataSource().getSession(), getSchema().getMetaDataSource().getSession().getMetaData(), getSchema().getName(), getName(), "%", false);
+    		MetaDataSource metaDataSource = getMetaDataSource();
+			synchronized (metaDataSource.getSession().getMetaData()) {
+    			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getColumns(getSchema().getMetaDataSource().getSession(), getSchema().getMetaDataSource().getSession().getMetaData(), Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), "%", false);
 				while (rs.next()) {
-					columns.add(rs.getString(4));
+					columns.add(metaDataSource.getQuoting().quote(rs.getString(4)));
 				}
 				rs.close();
 				

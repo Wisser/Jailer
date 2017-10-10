@@ -38,7 +38,7 @@ public class MDSchema extends MDObject {
 
 	public final boolean isDefaultSchema;
 	private List<MDTable> tables;
-	private final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
+	private static final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
 
 	/**
 	 * Constructor.
@@ -50,7 +50,9 @@ public class MDSchema extends MDObject {
 	public MDSchema(String name, boolean isDefaultSchema, MetaDataSource metaDataSource) {
 		super(name, metaDataSource);
 		this.isDefaultSchema = isDefaultSchema;
-
+	}
+	
+	static {
 		Thread thread = new Thread(new Runnable() {
 			@Override
 			public void run() {
@@ -58,7 +60,6 @@ public class MDSchema extends MDObject {
 					try {
 						queue.take().run();
 					} catch (Throwable t) {
-						t.printStackTrace();
 					}
 				}
 			}
@@ -76,10 +77,11 @@ public class MDSchema extends MDObject {
 		if (tables == null) {
 			try {
 				tables = new ArrayList<MDTable>();
-	    		synchronized (getMetaDataSource().getSession().getMetaData()) {
-					ResultSet rs = getMetaDataSource().readTables(getName());
+	    		MetaDataSource metaDataSource = getMetaDataSource();
+				synchronized (metaDataSource.getSession().getMetaData()) {
+					ResultSet rs = metaDataSource.readTables(getName());
 					while (rs.next()) {
-						String tableName = rs.getString(3);
+						String tableName = metaDataSource.getQuoting().quote(rs.getString(3));
 						final MDTable table = new MDTable(tableName, this);
 						tables.add(table);
 						queue.add(new Runnable() {
