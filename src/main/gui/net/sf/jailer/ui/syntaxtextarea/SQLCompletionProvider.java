@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -57,7 +58,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	protected SOURCE metaDataSource;
 	private Quoting quoting;
 	private Map<String, TABLE> userDefinedAliases = new HashMap<String, TABLE>();
-	private Map<String, TABLE> aliases = new HashMap<String, TABLE>();
+	private Map<String, TABLE> aliases = new LinkedHashMap<String, TABLE>();
 
 	/**
 	 * @param session
@@ -125,13 +126,22 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		}
 
 		int segEnd = seg.offset + len;
+		
 		start = segEnd - 1;
 		char ch = start >= 0? seg.array[start] : ' ';
-		while (start>=seg.offset && (Character.isLetterOrDigit(ch) || ch=='_'|| ch=='"' || ch=='`')) {
+		while (start>=seg.offset && Character.isWhitespace(ch)) {
 			start--;
 			ch = start >= 0? seg.array[start] : ' ';
 		}
-		start++;
+		if (ch != '*') {
+			start = segEnd - 1;
+			ch = start >= 0? seg.array[start] : ' ';
+			while (start>=seg.offset && (Character.isLetterOrDigit(ch) || ch=='_'|| ch=='"' || ch=='`')) {
+				start--;
+				ch = start >= 0? seg.array[start] : ' ';
+			}
+			start++;
+		}
 
 		len = segEnd - start;
 		return len==0 ? EMPTY_STRING : new String(seg.array, start, len);
@@ -164,7 +174,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 
 	private List<SQLCompletion> getPotentialCompletions(JTextComponent comp) {
 		Pair<Integer, Integer> loc = ((RSyntaxTextAreaWithSQLSyntaxStyle) comp)
-				.getCurrentStatementLocation(true);
+				.getCurrentStatementLocation(true, true);
 		String line = ((RSyntaxTextAreaWithSQLSyntaxStyle) comp).getText(loc.a, loc.b, true);
 		String lineBeforeCaret = ((RSyntaxTextAreaWithSQLSyntaxStyle) comp).getText(loc.a, loc.b, false);
 
@@ -219,6 +229,10 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		}
 		
 		public boolean matches(String inputText) {
+			if ("*".equals(getInputText())) {
+				String input = inputText.trim();
+				return input.equals("*") || input.isEmpty();
+			}
 			return stripQuote(getInputText()).toUpperCase(Locale.ENGLISH).startsWith(stripQuote(inputText).toUpperCase(Locale.ENGLISH));
 		}
 
@@ -256,7 +270,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
 			@Override
 			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource) {
-				if (!(clause == Clause.FROM || clause == Clause.UPDATE || clause == Clause.JOIN || clause == Clause.INTO)) {
+				if (!(clause == Clause.FROM || clause == Clause.ON || clause == Clause.UPDATE || clause == Clause.JOIN || clause == Clause.INTO)) {
 					return null;
 				}
 				
@@ -267,15 +281,16 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 					String withoutOnClauses = beforeCaret.replaceAll("(?is)\\bon\\b.*?\\bjoin\\b", " join");
 					Pattern pattern = Pattern.compile(
 							".*?"
-							+ "(?:" + reIdentifier + "\\s*\\.\\s*)?"
-							+ "(?:" + reIdentifier + "\\s+)?"
+							+ "(?:(?:" + reIdentifier + ")\\s*\\.\\s*)?"
+							+ "(?:(?:" + reIdentifier + ")\\s+)?"
 							+ "(?:as\\s+)?"
+							+ "(?!\\b(?:left|right|inner|outer|left\\s+outer|right\\s+outer)\\b)"
 							+ "(" + reIdentifier + ")\\s*"
 							+ "(?:\\b(?:left|right|inner|outer)\\b\\s*)*\\bjoin\\b\\s*"
-							+ "(?:" + reIdentifier + "\\s*\\.\\s*)?"
-							+ "(?:" + reIdentifier + "\\s+)?"
+							+ "(?:(?:" + reIdentifier + ")\\s*\\.\\s*)?"
+							+ "(?:(?:" + reIdentifier + ")\\s+)?"
 							+ "(?:as\\s+)?"
-							+ "(" + reIdentifier + ")\\s*"
+							+ "(" + reIdentifier + ")\\s+"
 							+ "$", Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
 					Matcher matcher = pattern.matcher(withoutOnClauses);
 	
@@ -305,7 +320,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 						return result;
 					}
 					
-					pattern = Pattern.compile(".*?(" + reIdentifier + ")\\s*(\\b(left|right|inner|outer)\\b\\s*)*\\bjoin\\b\\s+$", Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
+					pattern = Pattern.compile(".*?(" + reIdentifier + ")\\s*(\\b(left|right|inner|outer)\\b\\s*)*\\bjoin\\b\\s*\\w*$", Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
 					matcher = pattern.matcher(withoutOnClauses);
 	
 					if (matcher.matches()) {
@@ -335,10 +350,10 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 						return result;
 					}
 					
-					matcher = identWSPattern.matcher(beforeCaret);
+					matcher = identWSWordPattern.matcher(beforeCaret);
 					if (matcher.matches() && !"from".equalsIgnoreCase(matcher.group(1)) && !"update".equalsIgnoreCase(matcher.group(1))) {
 						notDotWord = true;
-						result.addAll(keywordCompletion("Join", "Left Join", "Right Join"));
+						result.addAll(keywordCompletion("Join", "Left Join"));
 					}
 				}
 				
@@ -348,7 +363,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 					if (schema != null) {
 						result.addAll(schemaCompletions(schema));
 					}
-				} else if (!notDotWord) {
+				} else if (!notDotWord && clause != Clause.ON) {
 					// all tables in default schema
 					SCHEMA schema = getDefaultSchema(metaDataSource);
 					if (schema != null) {
@@ -405,12 +420,78 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 				if (!(clause != Clause.FROM && clause != Clause.UPDATE && clause != Clause.JOIN)) {
 					return null;
 				}
+				List<SQLCompletion> result = new ArrayList<SQLCompletion>();
+				
+				if (clause == Clause.SELECT) {
+					Pattern pattern = Pattern.compile(".*?(\\bselect\\b|,|(" + reIdentifier + ")\\.)\\s*\\*?\\s*$", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
+					Matcher matcher = pattern.matcher(beforeCaret);
+	
+					if (matcher.matches()) {
+						List<TABLE> tables = new ArrayList<TABLE>(); 
+						List<String> tableNames = new ArrayList<String>(); 
+						String alias = matcher.group(2);
+						if (alias != null) {
+							TABLE table = findAlias(alias);
+							if (table != null) {
+								tables.add(table);
+							}
+						} else {
+							for (Entry<String, TABLE> entry: aliases.entrySet()) {
+								tables.add(entry.getValue());
+								tableNames.add(entry.getKey());
+							}
+						}
+						if (!tables.isEmpty()) {
+							Map<String, Integer> count = new HashMap<String, Integer>();
+							for (TABLE table: tables) {
+								for (String column: getColumns(table)) {
+									String unquotedColumn = Quoting.staticUnquote(column).toUpperCase(Locale.ENGLISH);
+									if (count.containsKey(unquotedColumn)) {
+										count.put(unquotedColumn, count.get(unquotedColumn) + 1);
+									} else {
+										count.put(unquotedColumn, 1);
+									}
+								}
+							}
+							for (String key: new HashSet<String>(count.keySet())) {
+								if (count.get(key) == 1) {
+									count.remove(key);
+								} else {
+									count.put(key, 1);
+								}
+							}
+							StringBuilder sb = new StringBuilder();
+							for (int i = 0; i < tables.size(); ++i) {
+								TABLE table = tables.get(i);
+								for (String column: getColumns(table)) {
+									String prefix = "";
+									String unquotedColumn = Quoting.staticUnquote(column).toUpperCase(Locale.ENGLISH);
+									if (count.containsKey(unquotedColumn)) {
+										int nr = count.get(unquotedColumn);
+										prefix = "_" + nr;
+										count.put(unquotedColumn, nr + 1);
+									}
+									if (sb.length() > 0) {
+										sb.append(", ");
+									}
+									if (alias != null) {
+										if (sb.length() > 0) {
+											sb.append(alias + ".");
+										}
+									} else {
+										sb.append(tableNames.get(i) + ".");
+									}
+									sb.append(column + " as " + column + prefix);
+								}
+							}
+							result.add(new SQLCompletion(SQLCompletionProvider.this, "*", sb.toString() + " ", sb.toString(), SQLCompletion.COLOR_COLUMN));
+						}
+					}
+				}
 				
 				Matcher matcher = identDotOnlyPattern.matcher(beforeCaret);
 
 				if (!matcher.matches()) {
-					List<SQLCompletion> result = new ArrayList<SQLCompletion>();
-					
 					SCHEMA schema = getDefaultSchema(metaDataSource);
 					if (schema != null) {
 						Map<String, Integer> colCount = new HashMap<String, Integer>();
@@ -434,9 +515,8 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 							}
 						}
 					}
-					return result;
 				}
-				return null;
+				return result;
 			}
 		});
 		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
@@ -490,7 +570,6 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	private List<SQLCompletion> schemaCompletions(SCHEMA schema) {
 		List<SQLCompletion> newCompletions = new ArrayList<SQLCompletion>();
 		if (schema != null) {
-//			SCHEMA defaultSchema = getDefaultSchema(metaDataSource);
 			for (TABLE table: getTables(schema)) {
 				String tableName = getTableName(table);
 				if (!ModelBuilder.isJailerTable(tableName)) {
@@ -559,8 +638,8 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	}
 
 	private Map<String, TABLE> findAliases(String statement) {
-		Map<String, TABLE> aliases = new HashMap<String, TABLE>();
-		Pattern pattern = Pattern.compile("(?:\\bas\\b)|(" + reClauseKW + ")|(,|\\(|\\)|=|<|>|!|\\b(?:on|where|left|right|full|inner|outer|join|and|or|not|\\.)\\b)|(" + reIdentifier + ")", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
+		Map<String, TABLE> aliases = new LinkedHashMap<String, TABLE>();
+		Pattern pattern = Pattern.compile("(?:\\bas\\b)|(" + reClauseKW + ")|(,|\\(|\\)|=|<|>|!|\\.|\\b(?:on|where|left|right|full|inner|outer|join|and|or|not)\\b)|(" + reIdentifier + ")", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
 		Matcher matcher = pattern.matcher(statement + ")");
 		boolean inFrom = false;
 		int level = 0;
@@ -720,10 +799,10 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	private static String reIdentifier = "(?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+)";
 	private static String reIdentDotOnly = ".*?(" + reIdentifier + ")\\s*\\.\\s*[\"'`]?\\w*$";
 	private static String reClauseKW = "\\b(?:select|from|update|where|group|having)\\b";
-	private static String reIdentWSPattern = ".*?(" + reIdentifier + ")\\s+$";
+	private static String reIdentWSWordPattern = ".*?(" + reIdentifier + ")\\s+\\w*$";
 	
 	private static Pattern identDotOnlyPattern = Pattern.compile(reIdentDotOnly, Pattern.DOTALL);
-	private static Pattern identWSPattern = Pattern.compile(reIdentWSPattern, Pattern.DOTALL);
+	private static Pattern identWSWordPattern = Pattern.compile(reIdentWSWordPattern, Pattern.DOTALL);
 
 	private TABLE findAlias(String aliasName) {
 		TABLE context;

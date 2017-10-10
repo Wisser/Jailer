@@ -1,5 +1,10 @@
 package net.sf.jailer.ui.databrowser.sqlconsole;
 
+import java.awt.Dimension;
+import java.awt.GridBagConstraints;
+
+import javax.swing.JLabel;
+
 public class TabContentPanel extends javax.swing.JPanel {
 
     /**
@@ -7,6 +12,18 @@ public class TabContentPanel extends javax.swing.JPanel {
      */
     public TabContentPanel() {
         initComponents();
+        statementLabel = new JLabel() {
+        	@Override
+        	public Dimension getMinimumSize() {
+				return new Dimension(8, super.getMaximumSize().height);
+        	}
+        };
+        statementLabel.setText("jLabel1");
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        add(statementLabel, gridBagConstraints);
     }
 
     /**
@@ -24,7 +41,6 @@ public class TabContentPanel extends javax.swing.JPanel {
         panel = new javax.swing.JPanel();
         controlsPanel1 = new javax.swing.JPanel();
         reloadButton = new javax.swing.JButton();
-        statementLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -65,20 +81,13 @@ public class TabContentPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         add(panel, gridBagConstraints);
-
-        statementLabel.setText("jLabel1");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        add(statementLabel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JPanel contentPanel;
     public javax.swing.JPanel controlsPanel1;
     public javax.swing.JPanel panel;
     public javax.swing.JButton reloadButton;
-    public javax.swing.JLabel statementLabel;
     public javax.swing.JLabel statusLabel;
     // End of variables declaration//GEN-END:variables
+    public javax.swing.JLabel statementLabel;
 }

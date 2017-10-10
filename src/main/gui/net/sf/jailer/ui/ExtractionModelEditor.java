@@ -2319,6 +2319,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			NeighborhoodPanel neighborhoodPanel = new NeighborhoodPanel(dataModel, table, graphView, extractionModelFrame.hideIgnored(), dependsOn.getForeground(), hasDependent.getForeground(), associatedWith.getForeground(), ignored.getForeground());
 			neighborHolderPanel.add(neighborhoodPanel);
 		}
+		layeredPane.validate();
 	}
 
 	/**
@@ -2802,6 +2803,26 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 			messageBox = null;
 		}
 	}
+	
+	private List<JMenuItem> additionalPopupMenuItems = new ArrayList<JMenuItem>();
+
+	/**
+	 * Adds additional popup menu items.
+	 * 
+	 * @param items additional popup menu items
+	 */
+	public void addAdditionalPopupMenuItems(List<JMenuItem> items) {
+		additionalPopupMenuItems.addAll(items);
+	}
+	
+	/**
+	 * Gets additional popup menu items.
+	 * 
+	 * @return additional popup menu items
+	 */
+	public List<JMenuItem> getAdditionalPopupMenuItems() {
+		return additionalPopupMenuItems;
+	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton additionalSubjectsButton;
@@ -2814,11 +2835,11 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     public javax.swing.JButton exportButton;
     private JComboBox exportFormat;
     private javax.swing.JPanel focusLabelPanel;
-    private javax.swing.JPanel focusPanel;
+    javax.swing.JPanel focusPanel;
     private javax.swing.JPanel graphContainer;
     private javax.swing.JLabel hasDependent;
     private javax.swing.JLabel ignored;
-    private javax.swing.JPanel inspectorHolder;
+    javax.swing.JPanel inspectorHolder;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -2863,7 +2884,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
     private javax.swing.JTabbedPane sketchTabbedPane;
     JComboBox subjectTable;
     private javax.swing.JTextField tagField;
-    private javax.swing.JPanel toolBarPanel;
+    javax.swing.JPanel toolBarPanel;
     private javax.swing.JPanel toolPanel;
     private javax.swing.JTree tree;
     private javax.swing.JPanel xmlMappingPanel;

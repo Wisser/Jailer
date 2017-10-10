@@ -43,6 +43,11 @@ public class MetaDataSource {
 	private final Session session;
 	
 	/**
+	 * For identifier quoting.
+	 */
+	private final Quoting quoting;
+	
+	/**
 	 * Name of the data source.
 	 */
 	final String dataSourceName;
@@ -58,12 +63,13 @@ public class MetaDataSource {
 	 * @param session the database session
 	 * @param dataModel the data model
 	 * @param dataSourceName name of the data source 
-	 * @param executionContext the execution context
+	 * @param executionContext the execution context 
 	 */
-	public MetaDataSource(Session session, DataModel dataModel, String dataSourceName, ExecutionContext executionContext) {
+	public MetaDataSource(Session session, DataModel dataModel, String dataSourceName, ExecutionContext executionContext) throws SQLException {
 		this.session = session;
 		this.dataSourceName = dataSourceName;
-
+		this.quoting = new Quoting(session);
+		
 		for (Table table: dataModel.getTables()) {
         	tablePerUnquotedName.put(Quoting.unquotedTableName(table, executionContext), table);
         	tablePerUnquotedNameUC.put(Quoting.unquotedTableName(table, executionContext).toUpperCase(Locale.ENGLISH), table);
@@ -78,8 +84,11 @@ public class MetaDataSource {
 		} catch (SQLException e) {
 		}
 		synchronized (md) {
-			List<String> sList = JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchema());
-			String defaultSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
+			List<String> sList = new ArrayList<String>();
+			for (String schema: JDBCMetaDataBasedModelElementFinder.getSchemas(session, session.getSchema())) {
+				sList.add(quoting.quote(schema));
+			}
+			String defaultSchema = quoting.quote(JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema()));
 			for (String s: sList) {
 				schemas.add(new MDSchema(s, s.equals(defaultSchema), this));
 			}
@@ -87,7 +96,7 @@ public class MetaDataSource {
 	}
 
 	ResultSet readTables(String schemaPattern) throws SQLException {
-		return JDBCMetaDataBasedModelElementFinder.getTables(session, session.getMetaData(), schemaPattern, "%", new String[] { "TABLE" });
+		return JDBCMetaDataBasedModelElementFinder.getTables(session, session.getMetaData(), Quoting.staticUnquote(schemaPattern), "%", new String[] { "TABLE" });
 	}
 	
 	/**
@@ -129,6 +138,15 @@ public class MetaDataSource {
 		return session;
 	}
 
+	/**
+	 * Gets the quoting.
+	 * 
+	 * @return the quoting
+	 */
+	public Quoting getQuoting() {
+		return quoting;
+	}
+
 	private final Map<MDTable, Table> mDTableToTable = new HashMap<MDTable, Table>();
 	private final Map<Table, MDTable> tableToMDTable = new HashMap<Table, MDTable>();
 	private final Map<String, Table> tablePerUnquotedName = new HashMap<String, Table>();
@@ -141,17 +159,17 @@ public class MetaDataSource {
     	}
     	Table table = null;
     	if (mdTable.getSchema().isDefaultSchema) {
-    		table = tablePerUnquotedName.get(mdTable.getName());
+    		table = tablePerUnquotedName.get(mdTable.getUnquotedName());
     	}
     	if (table == null) {
-    		table = tablePerUnquotedName.get(mdTable.getSchema().getName() + "." + mdTable.getName());
+    		table = tablePerUnquotedName.get(mdTable.getSchema().getUnquotedName() + "." + mdTable.getUnquotedName());
     	}
     	if (table == null) {
         	if (mdTable.getSchema().isDefaultSchema) {
-        		table = tablePerUnquotedNameUC.get(mdTable.getName().toUpperCase(Locale.ENGLISH));
+        		table = tablePerUnquotedNameUC.get(mdTable.getUnquotedName().toUpperCase(Locale.ENGLISH));
         	}
         	if (table == null) {
-        		table = tablePerUnquotedNameUC.get((mdTable.getSchema().getName() + "." + mdTable.getName()).toUpperCase(Locale.ENGLISH));
+        		table = tablePerUnquotedNameUC.get((mdTable.getSchema().getUnquotedName() + "." + mdTable.getUnquotedName()).toUpperCase(Locale.ENGLISH));
         	}
     	}
     	if (table != null) {

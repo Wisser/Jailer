@@ -15,6 +15,8 @@
  */
 package net.sf.jailer.ui.databrowser.metadata;
 
+import net.sf.jailer.util.Quoting;
+
 /**
  * Information about a database object.
  * 
@@ -42,6 +44,15 @@ public class MDObject {
 	 */
 	public String getName() {
 		return name;
+	}
+
+	/**
+	 * Gets the unquoted name.
+	 * 
+	 * @return the unquoted name
+	 */
+	public String getUnquotedName() {
+		return Quoting.staticUnquote(name);
 	}
 
 	/**

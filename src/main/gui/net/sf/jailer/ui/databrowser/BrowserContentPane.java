@@ -2955,15 +2955,38 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			Component comp = rowsTable.getDefaultRenderer(String.class).getTableCellRendererComponent(rowsTable, column.getHeaderValue(), false, false, 0, i);
 			width = Math.max(width, comp.getPreferredSize().width);
 
-			for (int line = 0; line < rowsTable.getRowCount(); ++line) {
+			int line = 0;
+			for (; line < rowsTable.getRowCount(); ++line) {
 				comp = rowsTable.getCellRenderer(line, i).getTableCellRendererComponent(rowsTable, dtm.getValueAt(line, i), false, false, line, i);
 				width = Math.max(width, comp.getPreferredSize().width + (singleRowDetailsView == null ? 16 : 0));
-				if (singleRowDetailsView == null) {
-					width = Math.min(width, 400);
-				}
 				if (line > MAXLINES) {
 					break;
 				}
+			}
+			Object maxValue = null;
+			int maxValueLength = 0;
+			for (; line < rowsTable.getRowCount(); ++line) {
+				Object value = dtm.getValueAt(line, i);
+				if (value != null) {
+					int valueLength = value.toString().length();
+					if (maxValue == null || maxValueLength < valueLength) {
+						maxValue = value;
+						maxValueLength = valueLength;
+					}
+				}
+				if (line > 2 * MAXLINES) {
+					break;
+				}
+			}
+			if (maxValue != null) {
+				comp = rowsTable.getCellRenderer(line, i).getTableCellRendererComponent(rowsTable, maxValue, false, false, line, i);
+				int maxValueWidth = comp.getPreferredSize().width + (singleRowDetailsView == null ? 16 : 0);
+				if (maxValueWidth > width) {
+					width = maxValueWidth;
+				}
+			}
+			if (singleRowDetailsView == null) {
+				width = Math.min(width, 400);
 			}
 
 			column.setPreferredWidth(width);

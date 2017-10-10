@@ -30,6 +30,7 @@ import java.io.PrintWriter;
 import java.net.URI;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashMap;
@@ -71,7 +72,6 @@ import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.render.HtmlDataModelRenderer;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.databrowser.DataBrowser;
-import net.sf.jailer.ui.graphical_view.GraphicalDataModelView;
 import net.sf.jailer.ui.progress.ExportAndDeleteStageProgressListener;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.PrintUtil;
@@ -1835,12 +1835,26 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		extractionModelEditor.markDirty();
 	}
 
-	public JComponent getGraphViewContainer() {
+	public JComponent tearOutGraphViewContainer() {
+		extractionModelEditor.layeredPane.remove(extractionModelEditor.inspectorHolder);
+		extractionModelEditor.focusPanel.setVisible(false);
+		extractionModelEditor.layeredPane.remove(extractionModelEditor.toolBarPanel);
+		extractionModelEditor.addAdditionalPopupMenuItems(
+				Arrays.asList(collapseAll, expandAll, expandAllVisible, refresh));
 		return extractionModelEditor.layeredPane;
 	}
 
-	public void select(Table table) {
+	public void select(final Table table) {
 		extractionModelEditor.subjectTable.setSelectedItem(extractionModelEditor.dataModel.getDisplayName(table));
+		extractionModelEditor.graphView.updateTableDetailsMode();
+		extractionModelEditor.graphView.toggleShowDetails(table);
+		extractionModelEditor.graphView.selectTable(table);
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				extractionModelEditor.graphView.zoomToFit(0);
+			}
+		});
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

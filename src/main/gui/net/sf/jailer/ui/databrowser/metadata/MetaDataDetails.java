@@ -23,6 +23,7 @@ import javax.swing.table.TableColumnModel;
 
 import net.sf.jailer.database.Session;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
+import net.sf.jailer.util.Quoting;
 
 /**
  * Meta Data Details.
@@ -33,7 +34,7 @@ public enum MetaDataDetails {
 	
 	COLUMNS("Columns", 0) {
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
-			return JDBCMetaDataBasedModelElementFinder.getColumns(session, session.getMetaData(), mdTable.getSchema().getName(), mdTable.getName(), "%", false);
+			return JDBCMetaDataBasedModelElementFinder.getColumns(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), "%", false);
 		}
 		public void adjustRowsTable(JTable rowsTable) {
 			TableColumnModel columnModel = rowsTable.getColumnModel();
@@ -48,7 +49,7 @@ public enum MetaDataDetails {
 	},
 	PRIMARYKEY("Primary Key", 0) {
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
-			return JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(session, session.getMetaData(), mdTable.getSchema().getName(), mdTable.getName(), false);
+			return JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), false);
 		}
 		public void adjustRowsTable(JTable rowsTable) {
 			TableColumnModel columnModel = rowsTable.getColumnModel();
@@ -60,17 +61,17 @@ public enum MetaDataDetails {
 	},
 	INDEXES("Indexes", 0) {
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
-			return JDBCMetaDataBasedModelElementFinder.getIndexes(session, session.getMetaData(), mdTable.getSchema().getName(), mdTable.getName());
+			return JDBCMetaDataBasedModelElementFinder.getIndexes(session, session.getMetaData(),Quoting.staticUnquote( mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()));
 		}
 	},
 	EXPORTEDKEY("Exported Keys", 1) {
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
-			return JDBCMetaDataBasedModelElementFinder.getExportedKeys(session, session.getMetaData(), mdTable.getSchema().getName(), mdTable.getName());
+			return JDBCMetaDataBasedModelElementFinder.getExportedKeys(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()));
 		}
 	},
 	IMPORTEDKEY("Imported Keys", 1) {
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
-			return JDBCMetaDataBasedModelElementFinder.getImportedKeys(session, session.getMetaData(), mdTable.getSchema().getName(), mdTable.getName(), false);
+			return JDBCMetaDataBasedModelElementFinder.getImportedKeys(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), false);
 		}
 	};
 	
