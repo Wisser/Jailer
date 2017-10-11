@@ -127,7 +127,7 @@ public class Quoting {
 					"IN", "INDICATOR", "INITIALLY", "INNER", "INOUT", "INPUT",
 					"INSENSITIVE", "INSERT", "INT", "INTEGER", "INTERSECT",
 					"INTERVAL", "INTO", "IS", "ISOLATION", "JOIN", "KEY",
-					"LANGUAGE", "LAST", "LEADING", "LEAVE", "LEFT", "LEVEL",
+					"LAST", "LEADING", "LEAVE", "LEFT", "LEVEL",
 					"LIKE", "LOCAL", "LOOP", "LOWER", "MATCH", "MAX", "MIN",
 					"MINUTE", "MODULE", "MONTH", "NAMES", "NATIONAL", "NATURAL",
 					"NCHAR", "NEXT", "NO", "NOT", "NULL", "NULLIF", "NUMERIC",
