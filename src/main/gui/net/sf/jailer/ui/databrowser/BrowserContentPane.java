@@ -29,6 +29,7 @@ import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -2974,7 +2975,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						maxValueLength = valueLength;
 					}
 				}
-				if (line > 2 * MAXLINES) {
+				if (line > 4 * MAXLINES) {
 					break;
 				}
 			}
@@ -3527,7 +3528,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JPanel relatedRowsPanel;
     private javax.swing.JLabel rowsCount;
     public javax.swing.JTable rowsTable;
-    javax.swing.JScrollPane rowsTableScrollPane;
+    protected javax.swing.JScrollPane rowsTableScrollPane;
     javax.swing.JCheckBox selectDistinctCheckBox;
     public javax.swing.JCheckBox sortColumnsCheckBox;
     private javax.swing.JLabel sqlLabel1;
@@ -3759,7 +3760,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		reloadRows();
 	}
 
-	private void openDetailsView(final int rowIndex, final int x, final int y) {
+	private void openDetailsView(int rowIndex, int x, int y) {
 		final JDialog d = new JDialog(getOwner(), (table instanceof SqlStatementTable)? "" : dataModel.getDisplayName(table), true);
 		d.getContentPane().add(new DetailsView(rows, rowsTable.getRowCount(), dataModel, table, rowIndex, rowsTable.getRowSorter(), true, rowIdSupport) {
 			@Override
@@ -3774,7 +3775,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		d.pack();
 		d.setLocation(x, y);
 		d.setSize(400, d.getHeight() + 20);
+		int h = d.getHeight();
 		UIUtil.fit(d);
+		if (d.getHeight() < 400 && h > 400) {
+			y = Math.max(y + d.getHeight() - 400, 20);
+			d.pack();
+			d.setLocation(x, y);
+			d.setSize(400, d.getHeight() + 20);
+			UIUtil.fit(d);
+		}
 		d.setVisible(true);
 		setCurrentRowSelection(-1);
 		onRedraw();
