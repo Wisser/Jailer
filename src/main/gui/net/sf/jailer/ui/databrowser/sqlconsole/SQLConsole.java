@@ -163,7 +163,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				 Component c = super.getListCellRendererComponent(list, shortValue, index, isSelected, cellHasFocus);
 				 if (c instanceof JLabel) {
 					 if (value instanceof String && value.toString().length() > 0) {
-						 ((JLabel) c).setToolTipText(UIUtil.toHTML(value.toString(), 160));
+						 ((JLabel) c).setToolTipText(UIUtil.toHTML(value.toString(), 100));
 					 } else {
 						 ((JLabel) c).setToolTipText(null);
 					 }
@@ -435,11 +435,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			        	rb.sortColumnsCheckBox.setVisible(true);
 			        	tabContentPanel.controlsPanel1.add(rb.sortColumnsCheckBox);
 			        	String stmt = sql.trim();
-			        	tabContentPanel.statementLabel.setToolTipText(UIUtil.toHTML(sql, 160));
+			        	tabContentPanel.statementLabel.setToolTipText(UIUtil.toHTML(sql, 100));
 			        	if (stmt.length() > 200) {
 			        		stmt = stmt.substring(0, 200) + "...";
 			        	}
-						tabContentPanel.statementLabel.setText(stmt);
+						tabContentPanel.statementLabel.setText(stmt.replaceAll("\\s+", " "));
 			        	tabContentPanel.reloadButton.addActionListener(new ActionListener() {
 							@Override
 							public void actionPerformed(ActionEvent e) {
