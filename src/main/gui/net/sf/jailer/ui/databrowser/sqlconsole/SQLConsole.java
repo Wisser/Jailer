@@ -411,11 +411,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				final CachedResultSet metaDataDetails = new CachedResultSet(resultSet, limit, session, SQLConsole.this);
 		    	resultSet.close();
 				long now = System.currentTimeMillis();
+				status.hasSelected = true;
 		    	status.timeInMS += (now - startTime);
 		    	localStatus.timeInMS += (now - startTime);
 		    	status.numRowsRead += metaDataDetails.getSize();
 		    	localStatus.numRowsRead += metaDataDetails.getSize();
-		    	if (metaDataDetails.getSize() >= limit) {
+				localStatus.hasSelected = true;
+				if (metaDataDetails.getSize() >= limit) {
 		    		status.limitExceeded = true;
 		    		localStatus.limitExceeded = true;
 		    	}
@@ -467,6 +469,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		    	int updateCount = statement.getUpdateCount();
 				status.numRowsUpdated += updateCount;
 		    	status.updateView(false);
+				status.hasUpdated = true;
 		    	if (updateCount != 0) {
 		    		setDataHasChanged(true);
 		    	}
@@ -553,6 +556,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		int numRowsRead;
 		int numRowsUpdated;
 		int numStatements;
+		boolean hasSelected = false;
+		boolean hasUpdated = false;
 		long timeInMS;
 		Throwable error;
 		Pair<Integer, Integer> location;
@@ -656,14 +661,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			if (numStatements > 1) {
 				text += numStatements + " Statements. ";
 			}
-			if (numRowsRead > 0 || numRowsUpdated == 0) {
+			if (hasSelected) {
 				text += numRowsRead + " rows read";
 				if (limitExceeded) {
 					text += " (limit exceeded)";
 				}
 				text += ". ";
 			}
-			if (numRowsUpdated > 0 || numRowsRead == 0) {
+			if (hasUpdated) {
 				text += numRowsUpdated + " rows updated. ";
 			}
 			return text + "Elapsed time: " + (timeInMS / 1000.0) + " sec";
@@ -834,7 +839,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         jSplitPane1.setLeftComponent(jSplitPane2);
 
-        jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Result"));
         jPanel3.setLayout(new java.awt.BorderLayout());
         jPanel3.add(jTabbedPane1, java.awt.BorderLayout.CENTER);
 
