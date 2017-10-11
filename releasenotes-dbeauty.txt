@@ -1,5 +1,6 @@
 3.7.
-  - Full featured SQL Console with code completion and syntax highlighting.
+  - Full featured SQL Console with code completion, syntax highlighting
+    and database schema visualization.
 
 3.6.2
   - Improved data model merging.

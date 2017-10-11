@@ -185,6 +185,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 						null, null, new HashSet<Pair<BrowserContentPane, Row>>(), new HashSet<Pair<BrowserContentPane, String>>(), 0, false, false, executionContext) {
 		    		{
 		    			noSingleRowDetailsView = true;
+		    			rowsTableScrollPane.setWheelScrollingEnabled(true);
 		    		}
 		    		@Override
 					protected void unhide() {
