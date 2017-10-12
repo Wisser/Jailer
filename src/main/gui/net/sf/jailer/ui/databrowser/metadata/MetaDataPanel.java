@@ -17,15 +17,24 @@ package net.sf.jailer.ui.databrowser.metadata;
 
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
+import java.awt.Frame;
+import java.awt.GridBagConstraints;
 import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Vector;
 
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
@@ -52,6 +61,9 @@ import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.ModelBuilder;
+import net.sf.jailer.ui.AutoCompletion;
+import net.sf.jailer.ui.JComboBox;
+import net.sf.jailer.ui.StringSearchPanel;
 
 /**
  * Meta Data UI.
@@ -62,6 +74,8 @@ import net.sf.jailer.modelbuilder.ModelBuilder;
 public abstract class MetaDataPanel extends javax.swing.JPanel {
 
 	private final MetaDataSource metaDataSource;
+	private final JComboBox<String> tablesComboBox;
+	private final DataModel dataModel;
 	
 	private abstract class ExpandingMutableTreeNode extends DefaultMutableTreeNode {
 		
@@ -79,9 +93,41 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
      * @param metaDataSource the meta data source
      * @param dataModel the data mmodel
      */
-    public MetaDataPanel(MetaDataSource metaDataSource, DataModel dataModel, ExecutionContext executionContext) {
+    public MetaDataPanel(Frame parent, MetaDataSource metaDataSource, final DataModel dataModel, ExecutionContext executionContext) {
     	this.metaDataSource = metaDataSource;
+    	this.dataModel = dataModel;
         initComponents();
+        
+        tablesComboBox = new JComboBox<String>() {
+        	@Override
+        	public Dimension getMinimumSize() {
+				return new Dimension(40, super.getMinimumSize().height);
+        	}
+        };
+        tablesComboBox.setMaximumRowCount(20);
+        updateTablesCombobox();
+        AutoCompletion.enable(tablesComboBox);
+        
+		tablesComboBox.grabFocus();
+		
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1;
+        add(tablesComboBox, gridBagConstraints);
+        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+        gridBagConstraints.weightx = 0;
+        add(StringSearchPanel.createSearchButton(parent, tablesComboBox, "Select Table", new Runnable() {
+			@Override
+			public void run() {
+				onSelectTable();
+			}
+		}), gridBagConstraints);
         
         metaDataTree.addMouseListener(new MouseListener() {
 			@Override
@@ -253,6 +299,18 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         updateTreeModel(metaDataSource);
     }
     
+	private void updateTablesCombobox() {
+		List<String> tables = new ArrayList<String>();
+		
+		for (Table table: dataModel.getTables()) {
+			tables.add(dataModel.getDisplayName(table));
+		}
+		Collections.sort(tables);
+		ComboBoxModel model = new DefaultComboBoxModel(new Vector(tables));
+			
+		tablesComboBox.setModel(model);
+	}
+
 	protected void openTable(MDTable mdTable) {
 		Table table = metaDataSource.toTable(mdTable);
 		if (table != null) {
@@ -406,8 +464,8 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
         jScrollPane1 = new javax.swing.JScrollPane();
         metaDataTree = new javax.swing.JTree();
-        jLabel2 = new javax.swing.JLabel();
         refreshButton = new javax.swing.JButton();
+        refreshButton1 = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -416,20 +474,11 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         add(jScrollPane1, gridBagConstraints);
-
-        jLabel2.setText(" Tables");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        add(jLabel2, gridBagConstraints);
 
         refreshButton.setText("Refresh");
         refreshButton.setToolTipText("Refresh Database Meta Data Cache");
@@ -439,21 +488,39 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         add(refreshButton, gridBagConstraints);
+
+        refreshButton1.setText("Select");
+        refreshButton1.setToolTipText("Choose the selecetd table in the tables tree");
+        refreshButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                refreshButton1ActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
+        add(refreshButton1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
     	reset();
     }//GEN-LAST:event_refreshButtonActionPerformed
 
+    private void refreshButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButton1ActionPerformed
+		onSelectTable();
+    }//GEN-LAST:event_refreshButton1ActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTree metaDataTree;
     private javax.swing.JButton refreshButton;
+    private javax.swing.JButton refreshButton1;
     // End of variables declaration//GEN-END:variables
 
     protected abstract void open(Table table);
@@ -464,7 +531,22 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	protected abstract void openNewTableBrowser();
 	protected abstract void updateDataModelView(Table table);
 
-    static private ImageIcon warnIcon;
+    public void onSelectTable() {
+		Object item = tablesComboBox.getSelectedItem();
+		if (item != null) {
+			Table table = dataModel.getTableByDisplayName(item.toString());
+			if (table != null) {
+				MDTable mdTable = metaDataSource.toMDTable(table);
+				if (mdTable != null) {
+					select(mdTable);
+				} else {
+					select(table);
+				}
+			}
+		}
+	}
+
+	static private ImageIcon warnIcon;
     static ImageIcon getWarnIcon(JComponent component) {
     	if (warnIcon != null) {
             ImageIcon scaledWarnIcon = warnIcon;

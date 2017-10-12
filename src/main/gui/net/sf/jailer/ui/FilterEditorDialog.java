@@ -474,7 +474,14 @@ public class FilterEditorDialog extends javax.swing.JDialog {
 		initComponents();
 		
 		AutoCompletion.enable(tableBox);
-		
+		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
+        jPanel5.add(StringSearchPanel.createSearchButton(parent, tableBox, "Find Table", null), gridBagConstraints);
+        
 		final ListCellRenderer tableBoxRenderer = tableBox.getRenderer();
 		tableBox.setRenderer(new ListCellRenderer() {
 			@Override
@@ -1770,11 +1777,11 @@ public class FilterEditorDialog extends javax.swing.JDialog {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.ipadx = 40;
-        gridBagConstraints.insets = new java.awt.Insets(4, 4, 4, 2);
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 4, 0);
         jPanel5.add(tableBox, gridBagConstraints);
 
         jLabel2.setForeground(java.awt.Color.gray);
