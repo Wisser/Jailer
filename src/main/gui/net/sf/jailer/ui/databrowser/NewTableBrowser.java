@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui.databrowser;
 
+import java.awt.GridBagConstraints;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ import javax.swing.DefaultComboBoxModel;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.AutoCompletion;
+import net.sf.jailer.ui.StringSearchPanel;
 
 /**
  * Dialog for selecting the table for a new table browser.
@@ -60,6 +62,19 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
 			}
 		});
 		
+		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 0;
+        gridBagConstraints.insets = new java.awt.Insets(6, 0, 4, 0);
+        jPanel2.add(StringSearchPanel.createSearchButton(parent, tableComboBox, "Open Table", new Runnable() {
+			@Override
+			public void run() {
+				okButtonActionPerformed(null);
+			}
+		}), gridBagConstraints);
+        
 		analyzeButton.setVisible(false /* DataBrowserContext.isSupportsDataModelUpdates() */);
 		
 		if (offerAlternatives) {
@@ -158,7 +173,7 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
         tableComboBox.setMaximumRowCount(24);
         tableComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.weightx = 1.0;

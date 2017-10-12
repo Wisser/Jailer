@@ -18,6 +18,7 @@ package net.sf.jailer.ui.databrowser;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Cursor;
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -37,15 +38,19 @@ import java.net.URI;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.Vector;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.swing.ButtonGroup;
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JComponent;
@@ -91,6 +96,7 @@ import net.sf.jailer.ui.AnalyseOptionsDialog;
 import net.sf.jailer.ui.AssociationListUI;
 import net.sf.jailer.ui.AssociationListUI.AssociationModel;
 import net.sf.jailer.ui.AssociationListUI.DefaultAssociationModel;
+import net.sf.jailer.ui.AutoCompletion;
 import net.sf.jailer.ui.BrowserLauncher;
 import net.sf.jailer.ui.CommandLineInstance;
 import net.sf.jailer.ui.DataModelEditor;
@@ -101,6 +107,8 @@ import net.sf.jailer.ui.DbConnectionDialog.ConnectionInfo;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.ImportDialog;
+import net.sf.jailer.ui.JComboBox;
+import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
 import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
@@ -156,6 +164,8 @@ public class DataBrowser extends javax.swing.JFrame {
      * The execution context.
      */
     private final ExecutionContext executionContext;
+
+    private final JComboBox<String> tablesComboBox; 
     
 	/**
 	 * Allowed row limits.
@@ -188,7 +198,38 @@ public class DataBrowser extends javax.swing.JFrame {
             DataBrowserContext.setSupportsDataModelUpdates(false);
         }
         initComponents();
-
+        
+        tablesComboBox = new JComboBox<String>() {
+        	@Override
+        	public Dimension getMinimumSize() {
+				return new Dimension(40, super.getMinimumSize().height);
+        	}
+        };
+        tablesComboBox.setMaximumRowCount(20);
+        updateNavigationCombobox();
+        AutoCompletion.enable(tablesComboBox);
+        
+		tablesComboBox.grabFocus();
+		
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1;
+        navigationPanel.add(tablesComboBox, gridBagConstraints);
+        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
+        gridBagConstraints.weightx = 0;
+        navigationPanel.add(StringSearchPanel.createSearchButton(this, tablesComboBox, "Open Table Browser", new Runnable() {
+			@Override
+			public void run() {
+				jButton1ActionPerformed(null);
+			}
+		}), gridBagConstraints);
+        
         detailsAndBorderBrowserTabbedPane.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
@@ -205,7 +246,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jLayeredPane1.setLayout(new GridBagLayout());
         jLayeredPane1.setLayer(layeredPaneContent, JLayeredPane.PALETTE_LAYER);
         jLayeredPane1.setLayer(dummy, JLayeredPane.DEFAULT_LAYER);
-        GridBagConstraints gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -600,6 +641,18 @@ public class DataBrowser extends javax.swing.JFrame {
         navigationTree.getSelectionModel().addTreeSelectionListener(treeListener);
     }
 
+	public void updateNavigationCombobox() {
+		List<String> tables = new ArrayList<String>();
+		
+		for (Table table: datamodel.get().getTables()) {
+			tables.add(datamodel.get().getDisplayName(table));
+		}
+		Collections.sort(tables);
+		ComboBoxModel model = new DefaultComboBoxModel(new Vector(tables));
+			
+		tablesComboBox.setModel(model);
+	}
+
 	private MetaDataDetailsPanel createMetaDataDetailsPanel(final ExecutionContext executionContext) {
 		return new MetaDataDetailsPanel(this.datamodel, session, this, executionContext) {
 			@Override
@@ -758,7 +811,6 @@ public class DataBrowser extends javax.swing.JFrame {
         navigationPanel = new javax.swing.JPanel();
         navigationTreeScrollPane = new javax.swing.JScrollPane();
         navigationTree = new javax.swing.JTree();
-        jLabel2 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
         tablesPanel = new javax.swing.JPanel();
         detailsAndBorderBrowserTabbedPane = new javax.swing.JTabbedPane();
@@ -1066,31 +1118,24 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         navigationPanel.add(navigationTreeScrollPane, gridBagConstraints);
 
-        jLabel2.setText(" Navigation Tree");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        navigationPanel.add(jLabel2, gridBagConstraints);
-
-        jButton1.setText("Open Table");
+        jButton1.setText("Open");
+        jButton1.setToolTipText("Open table browser for the selected table");
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         navigationPanel.add(jButton1, gridBagConstraints);
 
         tableTreesTabbedPane.addTab("Navigation", navigationPanel);
@@ -1590,7 +1635,10 @@ public class DataBrowser extends javax.swing.JFrame {
     }//GEN-LAST:event_newBrowserjMenuItemActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        openNewTableBrowser(true);
+    	if (tablesComboBox.getSelectedItem() != null) {
+    		String tableName = tablesComboBox.getSelectedItem().toString();
+    		desktop.addTableBrowser(null, null, 0, datamodel.get().getTableByDisplayName(tableName), null, "", null, null, true);
+    	}
     }//GEN-LAST:event_jButton1ActionPerformed
 
     private void workbenchTabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_workbenchTabbedPaneStateChanged
@@ -2067,7 +2115,6 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel17;
     private javax.swing.JLabel jLabel18;
     private javax.swing.JLabel jLabel19;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
@@ -2591,7 +2638,7 @@ public class DataBrowser extends javax.swing.JFrame {
                 return;
             }
         }
-        closureView = new DBClosureView() {
+        closureView = new DBClosureView(this) {
         	private RowBrowser closureRoot = rowBrowser;
         	
         	@Override
@@ -2749,14 +2796,16 @@ public class DataBrowser extends javax.swing.JFrame {
     private void onNewSession(Session newSession) {
     	ConnectionInfo connection = dbConnectionDialog != null ? dbConnectionDialog.currentConnection : null;
     	String alias = connection != null ? " " + connection.alias : " ";
-
+    	
+    	updateNavigationCombobox();
+    	
     	tablesPanel.removeAll();
 		try {
 			metaDataSource = new MetaDataSource(newSession, datamodel.get(), alias, executionContext);
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
-		metaDataPanel = new MetaDataPanel(metaDataSource, datamodel.get(), executionContext) {
+		metaDataPanel = new MetaDataPanel(this, metaDataSource, datamodel.get(), executionContext) {
 			@Override
 			protected void open(Table table) {
 				if (!selectNavTreeNode(navigationTree.getModel().getRoot(), table)) {
