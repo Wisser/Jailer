@@ -53,6 +53,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -223,13 +224,18 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
         gridBagConstraints.weightx = 0;
-        navigationPanel.add(StringSearchPanel.createSearchButton(this, tablesComboBox, "Open Table Browser", new Runnable() {
+        JButton searchButton = StringSearchPanel.createSearchButton(this, tablesComboBox, "Open Table Browser", new Runnable() {
 			@Override
 			public void run() {
-				jButton1ActionPerformed(null);
+				openTableButtonActionPerformed(null);
 			}
-		}), gridBagConstraints);
+		});
+		navigationPanel.add(searchButton, gridBagConstraints);
         
+		tablesComboBox.setVisible(false);
+		openTableButton.setVisible(false);
+		searchButton.setText("Open Table");
+		
         detailsAndBorderBrowserTabbedPane.addChangeListener(new ChangeListener() {
 			@Override
 			public void stateChanged(ChangeEvent e) {
@@ -811,7 +817,7 @@ public class DataBrowser extends javax.swing.JFrame {
         navigationPanel = new javax.swing.JPanel();
         navigationTreeScrollPane = new javax.swing.JScrollPane();
         navigationTree = new javax.swing.JTree();
-        jButton1 = new javax.swing.JButton();
+        openTableButton = new javax.swing.JButton();
         tablesPanel = new javax.swing.JPanel();
         detailsAndBorderBrowserTabbedPane = new javax.swing.JTabbedPane();
         jPanel7 = new javax.swing.JPanel();
@@ -1071,7 +1077,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jLayeredPane1.setLayer(layeredPaneContent, javax.swing.JLayeredPane.PALETTE_LAYER);
         jLayeredPane1.add(layeredPaneContent);
-        layeredPaneContent.setBounds(0, 0, 24, 58);
+        layeredPaneContent.setBounds(0, 0, 26, 57);
 
         jSplitPane3.setLeftComponent(jLayeredPane1);
 
@@ -1124,11 +1130,11 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.weighty = 1.0;
         navigationPanel.add(navigationTreeScrollPane, gridBagConstraints);
 
-        jButton1.setText("Open");
-        jButton1.setToolTipText("Open table browser for the selected table");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
+        openTableButton.setText("Open");
+        openTableButton.setToolTipText("Open table browser for the selected table");
+        openTableButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
+                openTableButtonActionPerformed(evt);
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -1136,7 +1142,7 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
-        navigationPanel.add(jButton1, gridBagConstraints);
+        navigationPanel.add(openTableButton, gridBagConstraints);
 
         tableTreesTabbedPane.addTab("Navigation", navigationPanel);
 
@@ -1634,12 +1640,12 @@ public class DataBrowser extends javax.swing.JFrame {
         createFrame();
     }//GEN-LAST:event_newBrowserjMenuItemActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+    private void openTableButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_openTableButtonActionPerformed
     	if (tablesComboBox.getSelectedItem() != null) {
     		String tableName = tablesComboBox.getSelectedItem().toString();
     		desktop.addTableBrowser(null, null, 0, datamodel.get().getTableByDisplayName(tableName), null, "", null, null, true);
     	}
-    }//GEN-LAST:event_jButton1ActionPerformed
+    }//GEN-LAST:event_openTableButtonActionPerformed
 
     private void workbenchTabbedPaneStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_workbenchTabbedPaneStateChanged
         if (workbenchTabbedPane.getSelectedComponent() != sqlConsoleContainerPanel && sqlConsole != null) {
@@ -2102,7 +2108,6 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenu helpMenu;
     private javax.swing.JPanel hiddenPanel;
     private javax.swing.JLabel ignored;
-    private javax.swing.JButton jButton1;
     private javax.swing.JInternalFrame jInternalFrame1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
@@ -2176,6 +2181,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JScrollPane navigationTreeScrollPane;
     private javax.swing.JMenuItem newBrowserjMenuItem;
     private javax.swing.JMenuItem newWindowMenuItem;
+    private javax.swing.JButton openTableButton;
     private javax.swing.JMenuItem reconnectMenuItem;
     private javax.swing.JMenuItem restoreSessionItem;
     private javax.swing.JMenuItem schemaMappingMenuItem;
