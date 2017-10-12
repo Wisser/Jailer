@@ -542,9 +542,14 @@ public class DMLTransformer extends AbstractResultSetReader {
 					insertStatementBuilder.append(insertSchema, item, " Union all ", ";\n");
 				} else if (DBMS.ORACLE.equals(targetDBMSConfiguration) && maxBodySize > 1) {
 					String insertSchema = "Insert into " + qualifiedTableName(table) + "(" + labelCSL + ") ";
-					String item = "\n Select " + valueList + " From DUAL";
-					if (!insertStatementBuilder.isAppendable(insertSchema, item)) {
+					if (!insertStatementBuilder.isAppendable(insertSchema)) {
 						writeToScriptFile(insertStatementBuilder.build(), true);
+					}
+					String item;
+					if (insertStatementBuilder.isEmpty()) {
+						item = "\n Select " + namedValues + " From DUAL";	
+					} else {
+						item = "\n Select " + valueList + " From DUAL";
 					}
 					insertStatementBuilder.append(insertSchema, item, " Union all ", ";\n");
 				} else if (DBMS.SQLITE.equals(targetDBMSConfiguration) && maxBodySize > 1) {
