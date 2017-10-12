@@ -36,6 +36,7 @@ import java.util.Vector;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.ImageIcon;
+import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
@@ -122,13 +123,18 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
         gridBagConstraints.weightx = 0;
-        add(StringSearchPanel.createSearchButton(parent, tablesComboBox, "Select Table", new Runnable() {
+        JButton searchButton = StringSearchPanel.createSearchButton(parent, tablesComboBox, "Select Table", new Runnable() {
 			@Override
 			public void run() {
 				onSelectTable();
 			}
-		}), gridBagConstraints);
+		});
+		add(searchButton, gridBagConstraints);
         
+		tablesComboBox.setVisible(false);
+		refreshButton1.setVisible(false);
+		searchButton.setText("Select Table");
+		
         metaDataTree.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
