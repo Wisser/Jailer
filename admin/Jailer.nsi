@@ -1,4 +1,4 @@
-!define Version "7.1"
+!define Version "7.5.1"
 
 ; The name of the installer
 Name "Jailer ${Version}"
@@ -72,8 +72,8 @@ SectionEnd
 
 Section "Desktop Shortcuts"
 
-  CreateShortcut "$DESKTOP\Jailer ${Version}.lnk" "$INSTDIR\Jailer.exe" 
-  CreateShortcut "$DESKTOP\Jailer ${Version} Data Browser.lnk" "$INSTDIR\JailerDataBrowser.exe" 
+  CreateShortcut "$DESKTOP\Jailer.lnk" "$INSTDIR\Jailer.exe" 
+  CreateShortcut "$DESKTOP\Jailer Data Browser.lnk" "$INSTDIR\JailerDataBrowser.exe" 
   
 SectionEnd
 

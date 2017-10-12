@@ -1164,7 +1164,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 	private synchronized void appendHistory(String sql) {
 		sql = sql.trim();
-		if (!sql.isEmpty()) {
+		if (!sql.isEmpty() && sql.length() < 100000) {
 			history.remove(sql);
 			history.add(0, sql);
 			if (history.size() > MAX_HISTORY_SIZE) {

@@ -1,3 +1,6 @@
+7.5.1
+  - https://github.com/Wisser/Jailer/pull/5 "Include the column names in the first statement to avoid ORA-00918: column ambiguously defined"
+
 7.5
   - Full featured SQL Console with code completion, syntax highlighting
     and database schema visualization.
