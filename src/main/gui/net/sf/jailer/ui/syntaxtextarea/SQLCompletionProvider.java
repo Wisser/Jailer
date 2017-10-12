@@ -153,7 +153,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 
 		if (text!=null) {
 			List<SQLCompletion> potentialCompletions = new ArrayList<SQLCompletion>();
-			potentialCompletions = getPotentialCompletions(comp);
+			potentialCompletions = getPotentialCompletions(comp, text);
 			List<SQLCompletion> matched = new ArrayList<SQLCompletion>(); 
 			for (Iterator<SQLCompletion> i = potentialCompletions.iterator(); i.hasNext();) {
 				SQLCompletion completion = i.next();
@@ -172,16 +172,21 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		return new ArrayList<Completion>();
 	}
 
-	private List<SQLCompletion> getPotentialCompletions(JTextComponent comp) {
+	private List<SQLCompletion> getPotentialCompletions(JTextComponent comp, String alreadyEnteredText) {
 		Pair<Integer, Integer> loc = ((RSyntaxTextAreaWithSQLSyntaxStyle) comp)
 				.getCurrentStatementLocation(true, true);
 		String line = ((RSyntaxTextAreaWithSQLSyntaxStyle) comp).getText(loc.a, loc.b, true);
 		String lineBeforeCaret = ((RSyntaxTextAreaWithSQLSyntaxStyle) comp).getText(loc.a, loc.b, false);
 
-		return retrieveCompletions(line, lineBeforeCaret);
+		int l = comp.getCaret().getDot() - alreadyEnteredText.length() - ((RSyntaxTextAreaWithSQLSyntaxStyle) comp).getLineStartOffsetOfCurrentLine();
+		StringBuilder sb = new StringBuilder("\n");
+		for (int i = 0; i < l; ++i) {
+			sb.append(" ");
+		}
+		return retrieveCompletions(line, lineBeforeCaret, sb.toString());
 	}
 
-	private List<SQLCompletion> retrieveCompletions(String line, String beforeCaret) {
+	private List<SQLCompletion> retrieveCompletions(String line, String beforeCaret, String indent) {
 		int pos = beforeCaret.length();
 		String afterCaret = null;
 		if (pos > 0) {
@@ -198,7 +203,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		List<SQLCompletion> result = new ArrayList<SQLCompletion>();
 		withOnCompletions = false;
 		for (CompletionRetriever<TABLE, SOURCE> completionRetriever: completionRetrievers) {
-			List<SQLCompletion> compl = completionRetriever.retrieveCompletion(line, beforeCaret, clause, metaDataSource);
+			List<SQLCompletion> compl = completionRetriever.retrieveCompletion(line, beforeCaret, clause, metaDataSource, indent);
 			if (compl != null) {
 				result.addAll(compl);
 			}
@@ -260,7 +265,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	}
 
 	private interface CompletionRetriever<TABLE, SOURCE> {
-		List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clausem, SOURCE metaDataSource);
+		List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clausem, SOURCE metaDataSource, String indent);
 	}
 
 	private List<CompletionRetriever<TABLE, SOURCE>> completionRetrievers = new ArrayList<CompletionRetriever<TABLE, SOURCE>>();
@@ -269,7 +274,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	{
 		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
 			@Override
-			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource) {
+			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent) {
 				if (!(clause == Clause.FROM || clause == Clause.ON || clause == Clause.UPDATE || clause == Clause.JOIN || clause == Clause.INTO)) {
 					return null;
 				}
@@ -384,7 +389,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		});
 		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
 			@Override
-			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource) {
+			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent) {
 				if (!(clause != Clause.FROM && clause != Clause.UPDATE && clause != Clause.JOIN)) {
 					return null;
 				}
@@ -416,7 +421,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		});
 		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
 			@Override
-			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource) {
+			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent) {
 				if (!(clause != Clause.FROM && clause != Clause.UPDATE && clause != Clause.JOIN)) {
 					return null;
 				}
@@ -431,6 +436,9 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 						List<String> tableNames = new ArrayList<String>(); 
 						String alias = matcher.group(2);
 						if (alias != null) {
+							if (indent.length() > alias.length() + 1) {
+								indent = indent.substring(0, indent.length() - alias.length() - 1);
+							}
 							TABLE table = findAlias(alias);
 							if (table != null) {
 								tables.add(table);
@@ -460,31 +468,11 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 									count.put(key, 1);
 								}
 							}
-							StringBuilder sb = new StringBuilder();
-							for (int i = 0; i < tables.size(); ++i) {
-								TABLE table = tables.get(i);
-								for (String column: getColumns(table)) {
-									String prefix = "";
-									String unquotedColumn = Quoting.staticUnquote(column).toUpperCase(Locale.ENGLISH);
-									if (count.containsKey(unquotedColumn)) {
-										int nr = count.get(unquotedColumn);
-										prefix = "_" + nr;
-										count.put(unquotedColumn, nr + 1);
-									}
-									if (sb.length() > 0) {
-										sb.append(", ");
-									}
-									if (alias != null) {
-										if (sb.length() > 0) {
-											sb.append(alias + ".");
-										}
-									} else {
-										sb.append(tableNames.get(i) + ".");
-									}
-									sb.append(column + " as " + column + prefix);
-								}
+							String replacement = createStarReplacement(tables, tableNames, alias, count, "");
+							if (replacement.length() > 60 && indent.length() < 60) {
+								replacement  = createStarReplacement(tables, tableNames, alias, count, indent);
 							}
-							result.add(new SQLCompletion(SQLCompletionProvider.this, "*", sb.toString() + " ", sb.toString(), SQLCompletion.COLOR_COLUMN));
+							result.add(new SQLCompletion(SQLCompletionProvider.this, "*", replacement + " ", replacement, SQLCompletion.COLOR_COLUMN));
 						}
 					}
 				}
@@ -518,10 +506,43 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 				}
 				return result;
 			}
+
+			public String createStarReplacement(List<TABLE> tables, List<String> tableNames, String alias,
+					Map<String, Integer> count, String indent) {
+				StringBuilder sb = new StringBuilder();
+				for (int i = 0; i < tables.size(); ++i) {
+					TABLE table = tables.get(i);
+					for (String column: getColumns(table)) {
+						String prefix = "";
+						String unquotedColumn = Quoting.staticUnquote(column).toUpperCase(Locale.ENGLISH);
+						if (count.containsKey(unquotedColumn)) {
+							int nr = count.get(unquotedColumn);
+							prefix = "_" + nr;
+							count.put(unquotedColumn, nr + 1);
+						}
+						if (sb.length() > 0) {
+							sb.append(", " + indent);
+						}
+						if (alias != null) {
+							if (sb.length() > 0) {
+								sb.append(alias + ".");
+							}
+						} else {
+							sb.append(tableNames.get(i) + ".");
+						}
+						sb.append(column + " as " + column + prefix);
+					}
+				}
+				if (indent.length() > 2) {
+					sb.append(indent.substring(0, indent.length() - 2));
+				}
+				String replacement = sb.toString();
+				return replacement;
+			}
 		});
 		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
 			@Override
-			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource) {
+			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent) {
 				if (clause == null) {
 					return keywordCompletion("Select", "Insert", "Delete");
 				} else {

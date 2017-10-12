@@ -1,4 +1,4 @@
-!define Version "3.7"
+!define Version "3.7.1"
 
 ; The name of the installer
 Name "DBeauty ${Version}"
@@ -64,14 +64,14 @@ Section "Start Menu Shortcuts"
 
   CreateDirectory "$SMPROGRAMS\DBeauty"
   Delete "$SMPROGRAMS\DBeauty\*.*"
-  CreateShortcut "$SMPROGRAMS\DBeauty\DBeauty ${Version}  .lnk" "$INSTDIR\DBeauty.exe" 
+  CreateShortcut "$SMPROGRAMS\DBeauty\DBeauty ${Version}  .lnk" "$INSTDIR\dbeauty.exe" 
   CreateShortcut "$SMPROGRAMS\DBeauty\Uninstall.lnk" "$INSTDIR\uninstall.exe" 
   
 SectionEnd
 
 Section "Desktop Shortcuts"
 
-  CreateShortcut "$DESKTOP\DBeauty.lnk" "$INSTDIR\DBeauty.exe"  
+  CreateShortcut "$DESKTOP\DBeauty.lnk" "$INSTDIR\dbeauty.exe"  
   
 SectionEnd
 

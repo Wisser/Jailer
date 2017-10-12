@@ -27,7 +27,7 @@ ls jailer.jar
 
 mv jailerDataBrowser.sh dbeauty.sh
 mv jailerDataBrowser.bat dbeauty.bat
-mv jailerDataBrowser.exe dbeauty.exe
+mv JailerDataBrowser.exe dbeauty.exe
 rm -rf jailerGUI.*
 rm -rf jailer.sh jailer.bat Demo.csv domainmodel example Jailer.exe README releasenotes.txt Jailer.html
 mv README-dbeauty README
