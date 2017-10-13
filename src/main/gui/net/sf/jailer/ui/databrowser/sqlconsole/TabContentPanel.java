@@ -15,7 +15,7 @@ public class TabContentPanel extends javax.swing.JPanel {
         statementLabel = new JLabel() {
         	@Override
         	public Dimension getMinimumSize() {
-				return new Dimension(8, super.getMaximumSize().height);
+				return new Dimension(8, super.getMinimumSize().height);
         	}
         };
         statementLabel.setText("jLabel1");

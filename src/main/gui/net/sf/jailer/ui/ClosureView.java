@@ -24,6 +24,7 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
@@ -149,6 +150,15 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			public void keyPressed(KeyEvent arg0) {
 			}
 		});
+		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        tablePanel.add(StringSearchPanel.createSearchButton(extractionModelEditor.extractionModelFrame, searchComboBox, "Find Table", new Runnable() {
+			@Override
+			public void run() {
+				findButtonActionPerformed(null);
+			}
+		}), gridBagConstraints);
 		
 		columnsComboBox.setModel(new DefaultComboBoxModel<Integer>(new Integer[] { 
 				4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
@@ -1231,6 +1241,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         tablePanel.add(findButton, gridBagConstraints);
 
         tablePane.add(tablePanel);

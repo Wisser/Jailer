@@ -272,6 +272,10 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		
 		AutoCompletion.enable(rootTable);
 		AutoCompletion.enable(subjectTable);
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        jPanel3.add(StringSearchPanel.createSearchButton(extractionModelFrame, subjectTable, "Find Table", null), gridBagConstraints);
 		
 		ItemListener aListener = new ItemListener() {
 			@Override
@@ -339,7 +343,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		layeredPane.setLayer(toolBarPanel, 2);
 		layeredPane.setLayer(messagePanel, 2);
 		layeredPane.setLayout(new GridBagLayout());
-		GridBagConstraints gridBagConstraints = new GridBagConstraints();
+		gridBagConstraints = new GridBagConstraints();
 		gridBagConstraints.gridx = 0;
 		gridBagConstraints.gridy = 0;
 		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
@@ -1010,7 +1014,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 
         jLabel5.setText(" as T ");
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 0;
         jPanel3.add(jLabel5, gridBagConstraints);
 
@@ -1032,6 +1036,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 7;
+        gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel3.add(additionalSubjectsButton, gridBagConstraints);
 
@@ -1044,7 +1049,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
         jPanel3.add(jPanel7, gridBagConstraints);
@@ -1073,7 +1078,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
             }
         });
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 0;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
@@ -1115,7 +1120,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 8;
-        gridBagConstraints.gridwidth = 2;
+        gridBagConstraints.gridwidth = 3;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
         jPanel3.add(jPanel10, gridBagConstraints);

@@ -22,6 +22,7 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
+import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
@@ -52,6 +53,7 @@ import java.util.Vector;
 import javax.swing.BorderFactory;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
@@ -68,6 +70,7 @@ import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.AutoCompletion;
 import net.sf.jailer.ui.JComboBox;
+import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.util.Pair;
@@ -124,11 +127,13 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 	private HashSet<CellInfo> mainPathAsSet = new HashSet<CellInfo>();
 	private Set<Pair<String, String>> dependencies = new HashSet<Pair<String,String>>();
 	private Set<Table> excludedFromPath = new HashSet<Table>();
-
+	private final JFrame parent;
+	
 	/** Creates new form FindDialog 
 	 * @param rootTable */
-	public DBClosureView() {
+	public DBClosureView(JFrame parent) {
 		super();
+		this.parent = parent;
 		initComponents();
 		
 		AutoCompletion.enable(searchComboBox);
@@ -146,6 +151,15 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 			public void keyPressed(KeyEvent arg0) {
 			}
 		});
+		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 20;
+        tablePanel.add(StringSearchPanel.createSearchButton(parent, searchComboBox, "Find Table", new Runnable() {
+			@Override
+			public void run() {
+				findButtonActionPerformed(null);
+			}
+		}), gridBagConstraints);
 		
 		columnsComboBox.setModel(new DefaultComboBoxModel<Integer>(new Integer[] { 
 				4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20
@@ -866,9 +880,9 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         tablePanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         closureTable = new javax.swing.JTable();
-        searchComboBox = new JComboBox();
+        searchComboBox = new javax.swing.JComboBox();
         jLabel7 = new javax.swing.JLabel();
-        columnsComboBox = new JComboBox();
+        columnsComboBox = new javax.swing.JComboBox();
         findButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -947,7 +961,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         gridBagConstraints.gridy = 20;
         tablePanel.add(columnsComboBox, gridBagConstraints);
 
-        findButton.setText("Search");
+        findButton.setText("Find");
         findButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 findButtonActionPerformed(evt);
@@ -957,6 +971,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 20;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         tablePanel.add(findButton, gridBagConstraints);
 
         jLabel1.setText(" ");
@@ -1045,7 +1060,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable closureTable;
-    private JComboBox columnsComboBox;
+    private javax.swing.JComboBox columnsComboBox;
     public javax.swing.JPanel contentPanel;
     private javax.swing.JButton findButton;
     private javax.swing.JLabel jLabel1;
@@ -1058,7 +1073,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
-    private JComboBox searchComboBox;
+    private javax.swing.JComboBox searchComboBox;
     public javax.swing.JPanel tablePanel;
     // End of variables declaration//GEN-END:variables
 	
