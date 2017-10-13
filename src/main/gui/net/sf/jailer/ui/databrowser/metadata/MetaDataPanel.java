@@ -263,7 +263,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 						isView = ((MDTable) uo).isView();
 					}
 				}
-				Component comp = super.getTreeCellRendererComponent(tree, value + (isDirty? " !" : "  "), sel, expanded, leaf, row, hasFocus);
+				Component comp = super.getTreeCellRendererComponent(tree, value + (unknownTable? "" : (isDirty? " !" : "  ")), sel, expanded, leaf, row, hasFocus);
 				Font font = comp.getFont();
 				if (font != null) {
 					Font bold = new Font(font.getName(), unknownTable || isDirty? (font.getStyle() | Font.ITALIC) : (font.getStyle() & ~Font.ITALIC), font.getSize());
