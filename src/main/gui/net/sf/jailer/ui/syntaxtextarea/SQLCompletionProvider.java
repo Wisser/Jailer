@@ -275,7 +275,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
 			@Override
 			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent) {
-				if (!(clause == Clause.FROM || clause == Clause.ON || clause == Clause.UPDATE || clause == Clause.JOIN || clause == Clause.INTO)) {
+				if (!(clause == Clause.FROM || clause == Clause.TABLE || clause == Clause.ON || clause == Clause.UPDATE || clause == Clause.JOIN || clause == Clause.INTO)) {
 					return null;
 				}
 				
@@ -356,7 +356,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 					}
 					
 					matcher = identWSWordPattern.matcher(beforeCaret);
-					if (matcher.matches() && !"from".equalsIgnoreCase(matcher.group(1)) && !"update".equalsIgnoreCase(matcher.group(1))) {
+					if (matcher.matches() && !"from".equalsIgnoreCase(matcher.group(1)) && !"table".equalsIgnoreCase(matcher.group(1)) && !"update".equalsIgnoreCase(matcher.group(1))) {
 						notDotWord = true;
 						result.addAll(keywordCompletion("Join", "Left Join"));
 					}
@@ -390,7 +390,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
 			@Override
 			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent) {
-				if (!(clause != Clause.FROM && clause != Clause.UPDATE && clause != Clause.JOIN)) {
+				if (!(clause != Clause.FROM && clause != Clause.TABLE && clause != Clause.UPDATE && clause != Clause.JOIN)) {
 					return null;
 				}
 				
@@ -422,7 +422,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
 			@Override
 			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent) {
-				if (!(clause != Clause.FROM && clause != Clause.UPDATE && clause != Clause.JOIN)) {
+				if (!(clause != Clause.FROM && clause != Clause.TABLE && clause != Clause.UPDATE && clause != Clause.JOIN)) {
 					return null;
 				}
 				List<SQLCompletion> result = new ArrayList<SQLCompletion>();
@@ -795,7 +795,8 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		INTO("into"),
 		UPDATE("update"),
 		SET("set"),
-		ON("on");
+		ON("on"),
+		TABLE("table");
 		
 		private final String name;
 
@@ -804,7 +805,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		}
 
 		public static Clause currentClouse(String sql) {
-			Pattern pattern = Pattern.compile(".*\\b(select|from|where|group|having|order|join|on|update|set|into)\\b.*?$", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
+			Pattern pattern = Pattern.compile(".*\\b(select|from|where|group|having|order|join|on|update|set|into|table)\\b.*?$", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
 			Matcher matcher = pattern.matcher(sql);
 			if (matcher.matches()) {
 				for (Clause clause: values()) {

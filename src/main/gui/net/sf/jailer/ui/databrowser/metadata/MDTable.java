@@ -38,6 +38,7 @@ public class MDTable extends MDObject {
 	private final MDSchema schema;
 	private List<String> primaryKey;
 	private List<String> columns;
+	private final boolean isView;
 	
 	/**
 	 * Constructor.
@@ -45,8 +46,9 @@ public class MDTable extends MDObject {
 	 * @param name table name
 	 * @param schema the tables schema
 	 */
-	public MDTable(String name, MDSchema schema) {
+	public MDTable(String name, MDSchema schema, boolean isView) {
 		super(name, schema.getMetaDataSource());
+		this.isView = isView;
 		this.schema = schema;
 	}
 
@@ -116,7 +118,7 @@ public class MDTable extends MDObject {
 				return false;
 			}
 			for (String column: getColumns()) {
-				if (!unquotedUCColumnNames.contains(column.toUpperCase(Locale.ENGLISH))) {
+				if (!unquotedUCColumnNames.contains(Quoting.staticUnquote(column).toUpperCase(Locale.ENGLISH))) {
 					return false;
 				}
 			}
@@ -124,6 +126,14 @@ public class MDTable extends MDObject {
 			return true;
 		}
 		return true;
+	}
+
+	public boolean isView() {
+		return isView;
+	}
+
+	public boolean isLoaded() {
+		return columns != null;
 	}
 
 }

@@ -53,17 +53,21 @@ public class TableDetailsView extends javax.swing.JPanel {
         updateColumnsTable = new Runnable() {
 			@Override
 			public void run() {
-		        tableNameLabel.setText(dataModel.getDisplayName(table));
+		        String typeLabel = "";
+		        if (mdTable != null && mdTable.isView()) {
+		        	typeLabel = "View ";
+		        }
+				tableNameLabel.setText(typeLabel + dataModel.getDisplayName(table));
 		        Font font = new JLabel("L").getFont();
 				tableNameLabel.setFont(new Font(font.getName(), font.getStyle(), (int)(font.getSize() * 1.2)));
 		
 				if (mdTable != null && !mdTable.isUptodate(table) && !ModelBuilder.isJailerTable(table.getUnqualifiedName())) {
-					warnLabel.setIcon(MetaDataPanel.getWarnIcon(TableDetailsView.this));
+					warnLabel.setIcon(MetaDataPanel.getScaledIcon(TableDetailsView.this, MetaDataPanel.warnIcon));
 					analyseButton.setText("Analyse schema \"" + mdTable.getSchema().getUnquotedName() + "\"");
 					analyseButton.addActionListener(new ActionListener() {
 		                @Override
 		                public void actionPerformed(ActionEvent e) {
-		                	metaDataDetailsPanel.analyseSchema(mdTable.getSchema().getName());
+		                	metaDataDetailsPanel.analyseSchema(mdTable.getSchema().getName(), mdTable.isView());
 		                }
 					});
 				} else {

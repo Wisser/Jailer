@@ -82,7 +82,7 @@ public class MDSchema extends MDObject {
 					ResultSet rs = metaDataSource.readTables(getName());
 					while (rs.next()) {
 						String tableName = metaDataSource.getQuoting().quote(rs.getString(3));
-						final MDTable table = new MDTable(tableName, this);
+						final MDTable table = new MDTable(tableName, this, "VIEW".equalsIgnoreCase(rs.getString(4)));
 						tables.add(table);
 						queue.add(new Runnable() {
 							@Override
