@@ -40,6 +40,8 @@ import javax.swing.JList;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 
@@ -60,7 +62,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		button.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				owner.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				button.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
@@ -68,14 +70,14 @@ public class StringSearchPanel extends javax.swing.JPanel {
 							Point location = button.getLocationOnScreen();
 							StringSearchPanel searchPanel = new StringSearchPanel((DefaultComboBoxModel<String>) comboBox.getModel());
 							String result = searchPanel.find(owner, titel, location.x, location.y);
-							if (result != null) {
+							if (result != null && !result.equals(searchPanel.showAllLabel)) {
 								comboBox.setSelectedItem(result);
 								if (onSuccess != null) {
 									onSuccess.run();
 								}
 							}
 				        } finally {
-				            owner.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				        	button.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 				        }
 					}
 				});
@@ -104,6 +106,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 		return result;
 	}
 	
+	private final int MAX_LIST_LENGTH = 100;
+	private boolean showAll = false;
+	private String showAllLabel;
+	
 	private void updateList() {
 		DefaultListModel<String> matches = new DefaultListModel<String>();
 		String searchText = searchTextField.getText().trim().toUpperCase(Locale.ENGLISH);
@@ -113,6 +119,11 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			if (!item.isEmpty()) {
 				if (searchText.isEmpty() || item.toUpperCase(Locale.ENGLISH).contains(searchText)) {
 					matches.addElement(item);
+					if (!showAll && matches.getSize() > MAX_LIST_LENGTH) {
+						showAllLabel = "show all ...";
+						matches.addElement(showAllLabel);
+						break;
+					}
 				}
 			}
 		}
@@ -172,6 +183,15 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			}
 		});
 		
+		searchList.addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				if (showAllLabel != null && showAllLabel.equals(searchList.getSelectedValue())) {
+					showAll = true;
+					updateList();
+				}
+			}
+		});
 		searchList.addMouseListener(new MouseListener() {
 			@Override
 			public void mouseReleased(MouseEvent e) {
@@ -197,6 +217,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
 			@Override
 			public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected,
 					boolean cellHasFocus) {
+				if (value.equals(showAllLabel)) {
+					return super.getListCellRendererComponent(list, "<html><font color=\"#ff0000\">" + value + "</font>", index, isSelected, cellHasFocus);
+				}
 				String search = searchTextField.getText().trim().toUpperCase(Locale.ENGLISH);
 				int i = value.toString().trim().toUpperCase(Locale.ENGLISH).indexOf(search);
 				String item = value.toString();

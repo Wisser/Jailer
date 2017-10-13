@@ -1,4 +1,8 @@
-3.7.
+3.7.1
+  - Improved table search feature.
+  - Minor GUI improvements.
+
+3.7
   - Full featured SQL Console with code completion, syntax highlighting
     and database schema visualization.
 

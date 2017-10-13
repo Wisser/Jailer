@@ -138,6 +138,10 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 		return false;
 	}
 
+	public void setInitiallyWithViews(boolean withViews) {
+		analyseViews.setSelected(withViews);
+	}
+
 	public boolean edit(List<String> schemas, String defaultSchema, boolean[] isDefaultSchema, String currentUser) {
 		return edit(schemas, defaultSchema, null, isDefaultSchema, currentUser);
 	}

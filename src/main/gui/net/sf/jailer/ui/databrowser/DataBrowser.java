@@ -662,8 +662,8 @@ public class DataBrowser extends javax.swing.JFrame {
 	private MetaDataDetailsPanel createMetaDataDetailsPanel(final ExecutionContext executionContext) {
 		return new MetaDataDetailsPanel(this.datamodel, session, this, executionContext) {
 			@Override
-			protected void analyseSchema(String schemaName) {
-				updateDataModel(schemaName);
+			protected void analyseSchema(String schemaName, boolean withViews) {
+				updateDataModel(schemaName, withViews);
 			}
         };
 	}
@@ -2027,16 +2027,17 @@ public class DataBrowser extends javax.swing.JFrame {
     }
 
     private void updateDataModel() {
-    	updateDataModel(null);
+    	updateDataModel(null, false);
     }
 
-    private void updateDataModel(String schemaName) {
+    private void updateDataModel(String schemaName, boolean withViews) {
         try {
             List<String> args = new ArrayList<String>();
             args.add("build-model-wo-merge");
             dbConnectionDialog.addDbArgs(args);
 
             AnalyseOptionsDialog analyseOptionsDialog = new AnalyseOptionsDialog(this, datamodel == null ? null : datamodel.get(), executionContext);
+            analyseOptionsDialog.setInitiallyWithViews(withViews);
             boolean[] isDefaultSchema = new boolean[1];
             String[] defaultSchema = new String[1];
             List<String> schemas;
@@ -2885,7 +2886,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
 			@Override
 			protected void analyseSchema(String schemaName) {
-				updateDataModel(schemaName);
+				updateDataModel(schemaName, false);
 			}
 
 			@Override

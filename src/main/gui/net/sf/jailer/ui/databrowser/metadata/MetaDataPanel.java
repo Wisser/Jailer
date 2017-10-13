@@ -30,7 +30,9 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Vector;
 
 import javax.swing.ComboBoxModel;
@@ -40,6 +42,7 @@ import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
@@ -77,6 +80,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	private final MetaDataSource metaDataSource;
 	private final JComboBox<String> tablesComboBox;
 	private final DataModel dataModel;
+	private final Frame parent;
 	
 	private abstract class ExpandingMutableTreeNode extends DefaultMutableTreeNode {
 		
@@ -97,6 +101,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     public MetaDataPanel(Frame parent, MetaDataSource metaDataSource, final DataModel dataModel, ExecutionContext executionContext) {
     	this.metaDataSource = metaDataSource;
     	this.dataModel = dataModel;
+    	this.parent = parent;
         initComponents();
         
         tablesComboBox = new JComboBox<String>() {
@@ -225,40 +230,65 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			}
 		});
         
-        final ImageIcon finalScaledWarnIcon = getWarnIcon(this); 
+        final ImageIcon finalScaledWarnIcon = getScaledIcon(this, warnIcon); 
+        final ImageIcon finalScaledViewIcon = getScaledIcon(this, viewIcon); 
         
         DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
+            Map<MDTable, Boolean> dirtyTables = new HashMap<MDTable, Boolean>();
 			@Override
 			public Component getTreeCellRendererComponent(JTree tree, Object value, boolean sel, boolean expanded,
 					boolean leaf, int row, boolean hasFocus) {
-				Component comp = super.getTreeCellRendererComponent(tree, value, sel, expanded, leaf, row, hasFocus);
 				boolean unknownTable = false;
 				boolean isJailerTable = false;
+				boolean isView = false;
+				Boolean isDirty = false;
 				if (value instanceof DefaultMutableTreeNode) {
 					Object uo = ((DefaultMutableTreeNode) value).getUserObject();
 					if (uo instanceof MDTable) {
-						if (MetaDataPanel.this.metaDataSource.toTable((MDTable) uo) == null) {
+						Table table = MetaDataPanel.this.metaDataSource.toTable((MDTable) uo);
+						if (table == null) {
 							unknownTable = true;
+						} else {
+							if (((MDTable) uo).isLoaded()) {
+								isDirty = dirtyTables.get((MDTable) uo);
+								if (isDirty == null) {
+									isDirty = !((MDTable) uo).isUptodate(table);
+									dirtyTables.put(((MDTable) uo), isDirty);
+								}
+							}
 						}
 						if (ModelBuilder.isJailerTable(((MDTable) uo).getUnquotedName())) {
 							isJailerTable = true;
 						}
+						isView = ((MDTable) uo).isView();
 					}
 				}
+				Component comp = super.getTreeCellRendererComponent(tree, value + (isDirty? " !" : "  "), sel, expanded, leaf, row, hasFocus);
 				Font font = comp.getFont();
 				if (font != null) {
-					Font bold = new Font(font.getName(), unknownTable? (font.getStyle() | Font.ITALIC) : (font.getStyle() & ~Font.ITALIC), font.getSize());
+					Font bold = new Font(font.getName(), unknownTable || isDirty? (font.getStyle() | Font.ITALIC) : (font.getStyle() & ~Font.ITALIC), font.getSize());
 					comp.setFont(bold);
 				}
-				if (unknownTable && !isJailerTable) {
+				if (isView) {
 					JPanel panel = new JPanel(new FlowLayout(0, 0, 0));
 					panel.add(comp);
-					JLabel label = new JLabel(finalScaledWarnIcon);
+					JLabel label = new JLabel(finalScaledViewIcon);
+					label.setText(" ");
 					label.setOpaque(false);
 					panel.add(label);
 					panel.setOpaque(false);
-					return panel;
+					comp = panel;
 				}
+				JPanel panel = new JPanel(new FlowLayout(0, 0, 0));
+				panel.add(comp);
+				JLabel label = new JLabel("");
+				if (unknownTable && !isJailerTable) {
+					label.setIcon(finalScaledWarnIcon);
+				}
+				label.setOpaque(false);
+				panel.add(label);
+				panel.setOpaque(false);
+				comp = panel;
 				return comp;
 			}
         };
@@ -327,27 +357,37 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	}
 
 	public void reset() {
-		MDTable selectedTable = null;
-		if (metaDataTree.getSelectionPath() != null) {
-			Object last = metaDataTree.getSelectionPath().getLastPathComponent();
-			if (last instanceof DefaultMutableTreeNode) {
-				final Object uo = ((DefaultMutableTreeNode) last).getUserObject();
-				if (uo instanceof MDTable) {
-					selectedTable = (MDTable) uo;
+			refreshButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+			SwingUtilities.invokeLater(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						MDTable selectedTable = null;
+						if (metaDataTree.getSelectionPath() != null) {
+							Object last = metaDataTree.getSelectionPath().getLastPathComponent();
+							if (last instanceof DefaultMutableTreeNode) {
+								final Object uo = ((DefaultMutableTreeNode) last).getUserObject();
+								if (uo instanceof MDTable) {
+									selectedTable = (MDTable) uo;
+								}
+							}
+						}
+						metaDataSource.clear();
+				    	updateTreeModel(metaDataSource);
+				    	if (selectedTable != null) {
+				    		MDSchema schema = metaDataSource.find(selectedTable.getSchema().getName());
+				    		if (schema != null) {
+				    			MDTable table = schema.find(selectedTable.getName());
+				    			if (table != null) {
+				    				select(table);
+				    			}
+				    		}
+				    	}
+					} finally {
+						refreshButton.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+					}
 				}
-			}
-		}
-		metaDataSource.clear();
-    	updateTreeModel(metaDataSource);
-    	if (selectedTable != null) {
-    		MDSchema schema = metaDataSource.find(selectedTable.getSchema().getName());
-    		if (schema != null) {
-    			MDTable table = schema.find(selectedTable.getName());
-    			if (table != null) {
-    				select(table);
-    			}
-    		}
-    	}
+			});
 	}
 
 	public void select(Table table) {
@@ -546,21 +586,25 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 				if (mdTable != null) {
 					select(mdTable);
 				} else {
-					select(table);
+					JOptionPane.showMessageDialog(parent, "Table \"" + dataModel.getDisplayName(table) + "\" does not exist in the database");
 				}
 			}
 		}
 	}
 
-	static private ImageIcon warnIcon;
-    static ImageIcon getWarnIcon(JComponent component) {
-    	if (warnIcon != null) {
-            ImageIcon scaledWarnIcon = warnIcon;
-            if (scaledWarnIcon != null) {
+	static ImageIcon warnIcon;
+	static ImageIcon viewIcon;
+    static ImageIcon getScaledIcon(JComponent component, ImageIcon icon) {
+    	if (icon != null) {
+            ImageIcon scaledIcon = icon;
+            if (scaledIcon != null) {
             	int heigth = component.getFontMetrics(new JLabel("M").getFont()).getHeight();
-            	double s = heigth / (double) scaledWarnIcon.getIconHeight();
+            	double s = heigth / (double) scaledIcon.getIconHeight();
+            	if (icon == viewIcon) {
+            		s *= 0.8;
+            	}
             	try {
-            		return new ImageIcon(scaledWarnIcon.getImage().getScaledInstance((int)(scaledWarnIcon.getIconWidth() * s), (int)(scaledWarnIcon.getIconHeight() * s), Image.SCALE_SMOOTH));
+            		return new ImageIcon(scaledIcon.getImage().getScaledInstance((int)(scaledIcon.getIconWidth() * s), (int)(scaledIcon.getIconHeight() * s), Image.SCALE_SMOOTH));
             	} catch (Exception e) {
             		return null;
             	}
@@ -574,7 +618,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		// load images
 		try {
 			warnIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/wanr.png"));
-			
+			viewIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/view.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

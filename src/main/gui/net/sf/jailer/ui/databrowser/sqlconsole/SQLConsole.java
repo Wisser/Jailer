@@ -686,7 +686,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         jPanel1 = new javax.swing.JPanel();
-        jSplitPane1 = new javax.swing.JSplitPane();
         jSplitPane2 = new javax.swing.JSplitPane();
         jPanel2 = new javax.swing.JPanel();
         consoleContainerPanel = new javax.swing.JPanel();
@@ -696,6 +695,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         cancelButton = new javax.swing.JButton();
         runSQLButton = new javax.swing.JButton();
         runnAllButton = new javax.swing.JButton();
+        jSplitPane1 = new javax.swing.JSplitPane();
         jPanel6 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
@@ -711,11 +711,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane1.setResizeWeight(0.5);
-
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane2.setResizeWeight(1.0);
+        jSplitPane2.setResizeWeight(0.5);
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
@@ -778,6 +775,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         jSplitPane2.setLeftComponent(jPanel2);
 
+        jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane1.setToolTipText("");
+
         jPanel6.setLayout(new java.awt.GridBagLayout());
 
         jLabel3.setText(" ");
@@ -835,14 +835,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         jPanel6.add(jPanel4, gridBagConstraints);
 
-        jSplitPane2.setRightComponent(jPanel6);
-
-        jSplitPane1.setLeftComponent(jSplitPane2);
+        jSplitPane1.setLeftComponent(jPanel6);
 
         jPanel3.setLayout(new java.awt.BorderLayout());
         jPanel3.add(jTabbedPane1, java.awt.BorderLayout.CENTER);
 
         jSplitPane1.setRightComponent(jPanel3);
+
+        jSplitPane2.setRightComponent(jSplitPane1);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -850,7 +850,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        jPanel1.add(jSplitPane1, gridBagConstraints);
+        jPanel1.add(jSplitPane2, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
