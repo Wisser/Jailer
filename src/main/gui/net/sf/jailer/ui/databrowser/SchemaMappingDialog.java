@@ -19,9 +19,7 @@ import java.awt.Cursor;
 import java.awt.GridBagConstraints;
 import java.awt.Window;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.Map;
 import java.util.SortedSet;
@@ -241,16 +239,17 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 	 * @return all persisted schema mappings
 	 */
 	private static Map<String, Map<String, String>> restore() {
-		try {
-			File file = Environment.newFile(MAPPINGS_FILE);
-			ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
-			@SuppressWarnings("unchecked")
-			Map<String, Map<String, String>> mappings = (Map<String, Map<String, String>>) in.readObject();
-			in.close();
-			return mappings;
-		} catch (Exception e) {
+		// temporarily disabled
+//		try {
+//			File file = Environment.newFile(MAPPINGS_FILE);
+//			ObjectInputStream in = new ObjectInputStream(new FileInputStream(file));
+//			@SuppressWarnings("unchecked")
+//			Map<String, Map<String, String>> mappings = (Map<String, Map<String, String>>) in.readObject();
+//			in.close();
+//			return mappings;
+//		} catch (Exception e) {
 			return new TreeMap<String, Map<String,String>>();
-		}
+//		}
 	}
 
 	/**

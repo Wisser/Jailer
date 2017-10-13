@@ -71,12 +71,27 @@ public class MetaDataSource {
 		this.quoting = new Quoting(session);
 		
 		for (Table table: dataModel.getTables()) {
-        	tablePerUnquotedName.put(Quoting.unquotedTableName(table, executionContext), table);
-        	tablePerUnquotedNameUC.put(Quoting.unquotedTableName(table, executionContext).toUpperCase(Locale.ENGLISH), table);
+        	tablePerUnquotedName.put(unquotedTableName(table), table);
+        	tablePerUnquotedNameUC.put(unquotedTableName(table).toUpperCase(Locale.ENGLISH), table);
         }
 		readSchemas();
 	}
 
+	/**
+	 * Gets unquoted qualified table name.
+	 * 
+	 * @param t
+	 *            the table
+	 * @return unquoted qualified name of t
+	 */
+	private String unquotedTableName(Table t) {
+		String schema = t.getSchema("");
+		if (schema.length() == 0) {
+			return Quoting.staticUnquote(t.getUnqualifiedName());
+		}
+		return Quoting.staticUnquote(schema) + "." + Quoting.staticUnquote(t.getUnqualifiedName());
+	}
+	
 	private void readSchemas() {
 		Object md = new Object();
 		try {
