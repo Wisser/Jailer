@@ -153,12 +153,17 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        tablePanel.add(StringSearchPanel.createSearchButton(extractionModelEditor.extractionModelFrame, searchComboBox, "Find Table", new Runnable() {
+        JButton searchButton = StringSearchPanel.createSearchButton(extractionModelEditor.extractionModelFrame, searchComboBox, "Find Table", new Runnable() {
 			@Override
 			public void run() {
 				findButtonActionPerformed(null);
 			}
-		}), gridBagConstraints);
+		});
+		tablePanel.add(searchButton, gridBagConstraints);
+        
+        searchComboBox.setVisible(false);
+        findButton.setVisible(false);
+        searchButton.setText("Find Table");
 		
 		columnsComboBox.setModel(new DefaultComboBoxModel<Integer>(new Integer[] { 
 				4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20

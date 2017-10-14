@@ -199,6 +199,7 @@ public class DataBrowser extends javax.swing.JFrame {
             DataBrowserContext.setSupportsDataModelUpdates(false);
         }
         initComponents();
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         
         tablesComboBox = new JComboBox<String>() {
         	@Override

@@ -838,6 +838,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jSplitPane1.setLeftComponent(jPanel6);
 
         jPanel3.setLayout(new java.awt.BorderLayout());
+
+        jTabbedPane1.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
         jPanel3.add(jTabbedPane1, java.awt.BorderLayout.CENTER);
 
         jSplitPane1.setRightComponent(jPanel3);

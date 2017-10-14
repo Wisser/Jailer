@@ -137,6 +137,8 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		updateTitle(extractionModelEditor.needsSave);
 		dbConnectionDialog = new DbConnectionDialog(this, JailerVersion.APPLICATION_NAME, null, executionContext);
 
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
+
 		// L&F can no longer be changed
 		view.setVisible(false);
 		
