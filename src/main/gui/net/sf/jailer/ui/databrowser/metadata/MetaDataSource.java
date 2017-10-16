@@ -111,7 +111,7 @@ public class MetaDataSource {
 	}
 
 	ResultSet readTables(String schemaPattern) throws SQLException {
-		return JDBCMetaDataBasedModelElementFinder.getTables(session, session.getMetaData(), Quoting.staticUnquote(schemaPattern), "%", new String[] { "TABLE", "VIEW" });
+		return JDBCMetaDataBasedModelElementFinder.getTables(session, session.getMetaData(), Quoting.staticUnquote(schemaPattern), "%", new String[] { "TABLE", "VIEW" /* , "SYNONYM" */ });
 	}
 	
 	/**

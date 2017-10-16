@@ -80,6 +80,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	private final MetaDataSource metaDataSource;
 	private final JComboBox<String> tablesComboBox;
 	private final DataModel dataModel;
+	private final MetaDataDetailsPanel metaDataDetailsPanel;
 	private final Frame parent;
 	
 	private abstract class ExpandingMutableTreeNode extends DefaultMutableTreeNode {
@@ -98,9 +99,10 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
      * @param metaDataSource the meta data source
      * @param dataModel the data mmodel
      */
-    public MetaDataPanel(Frame parent, MetaDataSource metaDataSource, final DataModel dataModel, ExecutionContext executionContext) {
+    public MetaDataPanel(Frame parent, MetaDataSource metaDataSource, MetaDataDetailsPanel metaDataDetailsPanel, final DataModel dataModel, ExecutionContext executionContext) {
     	this.metaDataSource = metaDataSource;
     	this.dataModel = dataModel;
+    	this.metaDataDetailsPanel = metaDataDetailsPanel;
     	this.parent = parent;
         initComponents();
         
@@ -232,6 +234,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         
         final ImageIcon finalScaledWarnIcon = getScaledIcon(this, warnIcon); 
         final ImageIcon finalScaledViewIcon = getScaledIcon(this, viewIcon); 
+        final ImageIcon finalScaledSynonymIcon = getScaledIcon(this, synonymIcon); 
         
         DefaultTreeCellRenderer renderer = new DefaultTreeCellRenderer() {
             Map<MDTable, Boolean> dirtyTables = new HashMap<MDTable, Boolean>();
@@ -241,6 +244,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 				boolean unknownTable = false;
 				boolean isJailerTable = false;
 				boolean isView = false;
+				boolean isSynonym = false;
 				Boolean isDirty = false;
 				if (value instanceof DefaultMutableTreeNode) {
 					Object uo = ((DefaultMutableTreeNode) value).getUserObject();
@@ -261,6 +265,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 							isJailerTable = true;
 						}
 						isView = ((MDTable) uo).isView();
+						isSynonym = ((MDTable) uo).isSynonym();
 					}
 				}
 				Component comp = super.getTreeCellRendererComponent(tree, value + (unknownTable? "" : (isDirty? " !" : "  ")), sel, expanded, leaf, row, hasFocus);
@@ -269,10 +274,13 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 					Font bold = new Font(font.getName(), unknownTable || isDirty? (font.getStyle() | Font.ITALIC) : (font.getStyle() & ~Font.ITALIC), font.getSize());
 					comp.setFont(bold);
 				}
-				if (isView) {
+				if (isJailerTable) {
+					comp.setEnabled(false);
+				}
+				if (isView || isSynonym) {
 					JPanel panel = new JPanel(new FlowLayout(0, 0, 0));
 					panel.add(comp);
-					JLabel label = new JLabel(finalScaledViewIcon);
+					JLabel label = new JLabel(isView? finalScaledViewIcon : finalScaledSynonymIcon);
 					label.setText(" ");
 					label.setOpaque(false);
 					panel.add(label);
@@ -373,6 +381,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 							}
 						}
 						metaDataSource.clear();
+						metaDataDetailsPanel.reset();
 				    	updateTreeModel(metaDataSource);
 				    	if (selectedTable != null) {
 				    		MDSchema schema = metaDataSource.find(selectedTable.getSchema().getName());
@@ -594,6 +603,8 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
 	static ImageIcon warnIcon;
 	static ImageIcon viewIcon;
+	static ImageIcon synonymIcon;
+	
     static ImageIcon getScaledIcon(JComponent component, ImageIcon icon) {
     	if (icon != null) {
             ImageIcon scaledIcon = icon;
@@ -619,6 +630,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		try {
 			warnIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/wanr.png"));
 			viewIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/view.png"));
+			synonymIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/right.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

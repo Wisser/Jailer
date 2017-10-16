@@ -21,6 +21,8 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.Image;
 import java.awt.Insets;
+import java.awt.event.ComponentEvent;
+import java.awt.event.ComponentListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.FileWriter;
@@ -609,7 +611,31 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 					}
 				});
 				relationshipsPanel.add(tableCB, gridBagConstraints);
-
+				gridBagConstraints = new java.awt.GridBagConstraints();
+				gridBagConstraints.gridx = 1;
+				gridBagConstraints.gridy = y;
+				gridBagConstraints.fill = GridBagConstraints.HORIZONTAL;
+				gridBagConstraints.weightx = 0.0;
+				gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+				final JLabel joinLabel = new JLabel("  Join");
+				tableCB.addComponentListener(new ComponentListener() {
+					@Override
+					public void componentShown(ComponentEvent e) {
+						joinLabel.setVisible(true);
+					}
+					@Override
+					public void componentResized(ComponentEvent e) {
+					}
+					@Override
+					public void componentMoved(ComponentEvent e) {
+					}
+					@Override
+					public void componentHidden(ComponentEvent e) {
+						joinLabel.setVisible(false);
+					}
+				});
+				relationshipsPanel.add(joinLabel, gridBagConstraints);
+				
 				final JLabel minusLabel = new javax.swing.JLabel();
 				minusLabel.setText(null);
 				minusLabel.setIcon(minusImage);
@@ -1127,7 +1153,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 	 */
 	public void buildQuery(Table table, boolean usePath,
 			boolean showJoinButton, List<Association> associationsOnPath,
-			List<String> whereClauses, DataModel datamodel, Session session, MetaDataSource metaDataSource) {
+			List<String> whereClauses, DataModel datamodel, Session session, MetaDataSource metaDataSource, boolean openSQLConsole) {
 		this.associationsOnPath = associationsOnPath;
 		if (table == null) {
 			return;
@@ -1183,7 +1209,12 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		if (sqlEditButton.isVisible()) {
 			sqlEditButton.grabFocus();
 		}
-		setVisible(true);
+		if (openSQLConsole) {
+			sqlEditButton.doClick();
+		}
+		else {
+			setVisible(true);
+		}
 	}
 
 	/**
@@ -1196,8 +1227,9 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 	 *            selected path
 	 * @param root
 	 *            root relation
+	 * @param openSQLConsole 
 	 */
-	public void buildQuery(Table table, Relationship root, DataModel datamodel, Session session, MetaDataSource metaDataSource) {
+	public void buildQuery(Table table, Relationship root, DataModel datamodel, Session session, MetaDataSource metaDataSource, boolean openSQLConsole) {
 		if (table == null) {
 			return;
 		}
@@ -1244,7 +1276,12 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 		if (sqlEditButton.isVisible()) {
 			sqlEditButton.grabFocus();
 		}
-		setVisible(true);
+		if (openSQLConsole) {
+			sqlEditButton.doClick();
+		}
+		else {
+			setVisible(true);
+		}
 	}
 
 	private List<Association> associationsOnPath;

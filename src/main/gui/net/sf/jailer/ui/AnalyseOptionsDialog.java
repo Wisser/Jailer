@@ -142,6 +142,10 @@ public class AnalyseOptionsDialog extends javax.swing.JDialog {
 		analyseViews.setSelected(withViews);
 	}
 
+	public void setInitiallyWithSynonyms(boolean withSynonyms) {
+		analyseSynonyms.setSelected(withSynonyms);
+	}
+
 	public boolean edit(List<String> schemas, String defaultSchema, boolean[] isDefaultSchema, String currentUser) {
 		return edit(schemas, defaultSchema, null, isDefaultSchema, currentUser);
 	}

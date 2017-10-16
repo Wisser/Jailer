@@ -199,7 +199,6 @@ public class DataBrowser extends javax.swing.JFrame {
             DataBrowserContext.setSupportsDataModelUpdates(false);
         }
         initComponents();
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
         
         tablesComboBox = new JComboBox<String>() {
         	@Override
@@ -663,8 +662,8 @@ public class DataBrowser extends javax.swing.JFrame {
 	private MetaDataDetailsPanel createMetaDataDetailsPanel(final ExecutionContext executionContext) {
 		return new MetaDataDetailsPanel(this.datamodel, session, this, executionContext) {
 			@Override
-			protected void analyseSchema(String schemaName, boolean withViews) {
-				updateDataModel(schemaName, withViews);
+			protected void analyseSchema(String schemaName, boolean withViews, boolean withSynonyms) {
+				updateDataModel(schemaName, withViews, withSynonyms);
 			}
         };
 	}
@@ -1956,6 +1955,8 @@ public class DataBrowser extends javax.swing.JFrame {
 //			dataBrowser.setExtendedState(JFrame.MAXIMIZED_BOTH);
 //		}
         dataBrowser.setVisible(true);
+        dataBrowser.setExtendedState(JFrame.MAXIMIZED_BOTH);
+
         if (dbConnectionDialog == null) {
             dbConnectionDialog = new DbConnectionDialog(dataBrowser, DataBrowserContext.getAppName(), null, executionContext);
         } else {
@@ -2028,10 +2029,10 @@ public class DataBrowser extends javax.swing.JFrame {
     }
 
     private void updateDataModel() {
-    	updateDataModel(null, false);
+    	updateDataModel(null, false, false);
     }
 
-    private void updateDataModel(String schemaName, boolean withViews) {
+    private void updateDataModel(String schemaName, boolean withViews, boolean withSynonyms) {
         try {
             List<String> args = new ArrayList<String>();
             args.add("build-model-wo-merge");
@@ -2039,6 +2040,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
             AnalyseOptionsDialog analyseOptionsDialog = new AnalyseOptionsDialog(this, datamodel == null ? null : datamodel.get(), executionContext);
             analyseOptionsDialog.setInitiallyWithViews(withViews);
+            analyseOptionsDialog.setInitiallyWithSynonyms(withSynonyms);
             boolean[] isDefaultSchema = new boolean[1];
             String[] defaultSchema = new String[1];
             List<String> schemas;
@@ -2805,150 +2807,157 @@ public class DataBrowser extends javax.swing.JFrame {
     	ConnectionInfo connection = dbConnectionDialog != null ? dbConnectionDialog.currentConnection : null;
     	String alias = connection != null ? " " + connection.alias : " ";
     	
-    	updateNavigationCombobox();
-    	
-    	tablesPanel.removeAll();
-		try {
-			metaDataSource = new MetaDataSource(newSession, datamodel.get(), alias, executionContext);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
-		metaDataPanel = new MetaDataPanel(this, metaDataSource, datamodel.get(), executionContext) {
-			@Override
-			protected void open(Table table) {
-				if (!selectNavTreeNode(navigationTree.getModel().getRoot(), table)) {
-					if (workbenchTabbedPane.getSelectedComponent() != sqlConsoleContainerPanel) {
-						desktop.addTableBrowser(null, null, 0, table, null, "", null, null, true);
-					}
-				}
-				try {
-					String sql;
-					Quoting quoting = new Quoting(session);
-					MDTable mdTable = metaDataSource.toMDTable(table);
-					String tableName;
-					String schemaName;
-					if (mdTable != null) {
-						tableName = mdTable.getName();
-						schemaName = mdTable.getSchema().isDefaultSchema? "": mdTable.getSchema().getName();
-					} else {
-						tableName = table.getUnqualifiedName();
-						schemaName = table.getSchema("");
-					}
-					sql = "Select * From " + (schemaName == null || schemaName.length() == 0? "" : quoting.quote(schemaName) + ".") + quoting.quote(tableName);
-					if (workbenchTabbedPane.getSelectedComponent() == sqlConsoleContainerPanel) {
-						workbenchTabbedPane.setSelectedComponent(sqlConsoleContainerPanel);
-						sqlConsole.grabFocus();
-						sqlConsole.appendStatement(sql, true);
-					}
-				} catch (SQLException e) {
-					UIUtil.showException(this, "Error", e);
-				}
+    	setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+    	try {
+	    	updateNavigationCombobox();
+	    	
+	    	tablesPanel.removeAll();
+			try {
+				metaDataSource = new MetaDataSource(newSession, datamodel.get(), alias, executionContext);
+			} catch (SQLException e) {
+				throw new RuntimeException(e);
 			}
 
-			private boolean selectNavTreeNode(Object root, Table table) {
-				if (root instanceof DefaultMutableTreeNode) {
-					Object userObject = ((DefaultMutableTreeNode) root).getUserObject();
-	                if (userObject instanceof TreeNodeForRowBrowser) {
-	                    RowBrowser rowBrowser = ((TreeNodeForRowBrowser) userObject).rowBrowser;
-	                    if (table.equals(rowBrowser.browserContentPane.table)) {
-	                    	navigationTree.getSelectionModel().setSelectionPath(new TreePath(((DefaultMutableTreeNode) root).getPath()));
-	                    	return true;
-	                    }
-	                }
-	                int cc = ((DefaultMutableTreeNode) root).getChildCount();
-	                for (int i = 0; i < cc; ++i) {
-	                	if (selectNavTreeNode(((DefaultMutableTreeNode) root).getChildAt(i), table)) {
-	                		return true;
-	                	}
-	                }
-				}
-				return false;
-			}
+			metaDataViewPanel.remove(metaDataDetailsPanel);
+			metaDataDetailsPanel = createMetaDataDetailsPanel(executionContext);
+			metaDataViewPanel.add(metaDataDetailsPanel);
 			
-			private boolean selectNavTreeNode(Object root, MDTable mdTable) {
-				if (root instanceof DefaultMutableTreeNode) {
-					Object userObject = ((DefaultMutableTreeNode) root).getUserObject();
-	                if (userObject instanceof TreeNodeForRowBrowser) {
-	                    RowBrowser rowBrowser = ((TreeNodeForRowBrowser) userObject).rowBrowser;
-	                    if (mdTable.equals(rowBrowser.getMDTable())) {
-	                    	navigationTree.getSelectionModel().setSelectionPath(new TreePath(((DefaultMutableTreeNode) root).getPath()));
-	                    	return true;
-	                    }
-	                }
-	                int cc = ((DefaultMutableTreeNode) root).getChildCount();
-	                for (int i = 0; i < cc; ++i) {
-	                	if (selectNavTreeNode(((DefaultMutableTreeNode) root).getChildAt(i), mdTable)) {
-	                		return true;
-	                	}
-	                }
-				}
-				return false;
-			}
-
-			@Override
-			protected void analyseSchema(String schemaName) {
-				updateDataModel(schemaName, false);
-			}
-
-			@Override
-			protected void open(MDTable mdTable) {
-				String schemaName = mdTable.getSchema().isDefaultSchema? null : mdTable.getSchema().getName();
-				String tableName = mdTable.getName();
-				try {
-					Quoting quoting = new Quoting(session);
-					String sql = "Select * From " + (schemaName == null? "" : quoting.quote(schemaName) + ".") + quoting.quote(tableName);
-					if (!selectNavTreeNode(navigationTree.getModel().getRoot(), mdTable)
-						|| workbenchTabbedPane.getSelectedComponent() == sqlConsoleContainerPanel) {
-						workbenchTabbedPane.setSelectedComponent(sqlConsoleContainerPanel);
-						sqlConsole.grabFocus();
-						sqlConsole.appendStatement(sql, true);
+			metaDataPanel = new MetaDataPanel(this, metaDataSource, metaDataDetailsPanel, datamodel.get(), executionContext) {
+				@Override
+				protected void open(Table table) {
+					if (!selectNavTreeNode(navigationTree.getModel().getRoot(), table)) {
+						if (workbenchTabbedPane.getSelectedComponent() != sqlConsoleContainerPanel) {
+							desktop.addTableBrowser(null, null, 0, table, null, "", null, null, true);
+						}
 					}
-				} catch (SQLException e) {
-					UIUtil.showException(this, "Error", e);
-				}
-			}
-
-			@Override
-			protected void onTableSelect(MDTable mdTable) {
-				metaDataDetailsPanel.showMetaDataDetails(mdTable, metaDataSource.toTable(mdTable), datamodel.get());
-			}
-
-			@Override
-			protected void onSchemaSelect(MDSchema mdSchema) {
-				metaDataDetailsPanel.clear();
-			}
-
-			@Override
-			protected void openNewTableBrowser() {
-				DataBrowser.this.openNewTableBrowser(false);
-			}
-
-			@Override
-			protected void updateDataModelView(Table table) {
-				DataBrowser.this.updateDataModelView(table);
-			}
-		};
-		tablesPanel.add(metaDataPanel);
-		
-		metaDataViewPanel.remove(metaDataDetailsPanel);
-		metaDataDetailsPanel = createMetaDataDetailsPanel(executionContext);
-		metaDataViewPanel.add(metaDataDetailsPanel);
-		
-		try {
-			if (sqlConsole == null) {
-				sqlConsole = new SQLConsole(session, metaDataSource, datamodel, executionContext) {
-					@Override
-					protected void refreshMetaData() {
-						metaDataPanel.reset();
+					try {
+						String sql;
+						Quoting quoting = new Quoting(session);
+						MDTable mdTable = metaDataSource.toMDTable(table);
+						String tableName;
+						String schemaName;
+						if (mdTable != null) {
+							tableName = mdTable.getName();
+							schemaName = mdTable.getSchema().isDefaultSchema? "": mdTable.getSchema().getName();
+						} else {
+							tableName = table.getUnqualifiedName();
+							schemaName = table.getSchema("");
+						}
+						sql = "Select * From " + (schemaName == null || schemaName.length() == 0? "" : quoting.quote(schemaName) + ".") + quoting.quote(tableName);
+						if (workbenchTabbedPane.getSelectedComponent() == sqlConsoleContainerPanel) {
+							workbenchTabbedPane.setSelectedComponent(sqlConsoleContainerPanel);
+							sqlConsole.grabFocus();
+							sqlConsole.appendStatement(sql, true);
+						}
+					} catch (SQLException e) {
+						UIUtil.showException(this, "Error", e);
 					}
-				};
-				sqlConsoleContainerPanel.removeAll();
-				sqlConsoleContainerPanel.add(sqlConsole);
-			} else {
-				sqlConsole.reset(session, metaDataSource);
+				}
+	
+				private boolean selectNavTreeNode(Object root, Table table) {
+					if (root instanceof DefaultMutableTreeNode) {
+						Object userObject = ((DefaultMutableTreeNode) root).getUserObject();
+		                if (userObject instanceof TreeNodeForRowBrowser) {
+		                    RowBrowser rowBrowser = ((TreeNodeForRowBrowser) userObject).rowBrowser;
+		                    if (table.equals(rowBrowser.browserContentPane.table)) {
+		                    	navigationTree.getSelectionModel().setSelectionPath(new TreePath(((DefaultMutableTreeNode) root).getPath()));
+		                    	return true;
+		                    }
+		                }
+		                int cc = ((DefaultMutableTreeNode) root).getChildCount();
+		                for (int i = 0; i < cc; ++i) {
+		                	if (selectNavTreeNode(((DefaultMutableTreeNode) root).getChildAt(i), table)) {
+		                		return true;
+		                	}
+		                }
+					}
+					return false;
+				}
+				
+				private boolean selectNavTreeNode(Object root, MDTable mdTable) {
+					if (root instanceof DefaultMutableTreeNode) {
+						Object userObject = ((DefaultMutableTreeNode) root).getUserObject();
+		                if (userObject instanceof TreeNodeForRowBrowser) {
+		                    RowBrowser rowBrowser = ((TreeNodeForRowBrowser) userObject).rowBrowser;
+		                    if (mdTable.equals(rowBrowser.getMDTable())) {
+		                    	navigationTree.getSelectionModel().setSelectionPath(new TreePath(((DefaultMutableTreeNode) root).getPath()));
+		                    	return true;
+		                    }
+		                }
+		                int cc = ((DefaultMutableTreeNode) root).getChildCount();
+		                for (int i = 0; i < cc; ++i) {
+		                	if (selectNavTreeNode(((DefaultMutableTreeNode) root).getChildAt(i), mdTable)) {
+		                		return true;
+		                	}
+		                }
+					}
+					return false;
+				}
+	
+				@Override
+				protected void analyseSchema(String schemaName) {
+					updateDataModel(schemaName, false, false);
+				}
+	
+				@Override
+				protected void open(MDTable mdTable) {
+					String schemaName = mdTable.getSchema().isDefaultSchema? null : mdTable.getSchema().getName();
+					String tableName = mdTable.getName();
+					try {
+						Quoting quoting = new Quoting(session);
+						String sql = "Select * From " + (schemaName == null? "" : quoting.quote(schemaName) + ".") + quoting.quote(tableName);
+						if (!selectNavTreeNode(navigationTree.getModel().getRoot(), mdTable)
+							|| workbenchTabbedPane.getSelectedComponent() == sqlConsoleContainerPanel) {
+							workbenchTabbedPane.setSelectedComponent(sqlConsoleContainerPanel);
+							sqlConsole.grabFocus();
+							sqlConsole.appendStatement(sql, true);
+						}
+					} catch (SQLException e) {
+						UIUtil.showException(this, "Error", e);
+					}
+				}
+	
+				@Override
+				protected void onTableSelect(MDTable mdTable) {
+					metaDataDetailsPanel.showMetaDataDetails(mdTable, metaDataSource.toTable(mdTable), datamodel.get());
+				}
+	
+				@Override
+				protected void onSchemaSelect(MDSchema mdSchema) {
+					metaDataDetailsPanel.clear();
+				}
+	
+				@Override
+				protected void openNewTableBrowser() {
+					DataBrowser.this.openNewTableBrowser(false);
+				}
+	
+				@Override
+				protected void updateDataModelView(Table table) {
+					DataBrowser.this.updateDataModelView(table);
+				}
+			};
+			tablesPanel.add(metaDataPanel);
+			
+			try {
+				if (sqlConsole == null) {
+					sqlConsole = new SQLConsole(session, metaDataSource, datamodel, executionContext) {
+						@Override
+						protected void refreshMetaData() {
+							metaDataPanel.reset();
+						}
+					};
+					sqlConsoleContainerPanel.removeAll();
+					sqlConsoleContainerPanel.add(sqlConsole);
+				} else {
+					sqlConsole.reset(session, metaDataSource);
+				}
+			} catch (SQLException e) {
+				e.printStackTrace();
 			}
-		} catch (SQLException e) {
-			e.printStackTrace();
+    	}
+		finally {
+			setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		}
 	}
     

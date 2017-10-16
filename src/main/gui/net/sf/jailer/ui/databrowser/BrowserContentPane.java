@@ -1105,7 +1105,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					public void actionPerformed(ActionEvent e) {
 						List<String> whereClauses = new ArrayList<String>();
 						whereClauses.add(SqlUtil.replaceAliases(row.rowId, "A", "A"));
-						getQueryBuilderDialog().buildQuery(table, true, false, new ArrayList<Association>(), whereClauses, dataModel, session, getMetaDataSource());
+						getQueryBuilderDialog().buildQuery(table, true, false, new ArrayList<Association>(), whereClauses, dataModel, session, getMetaDataSource(), false);
+					}
+				});
+
+				JMenuItem sqlConsole = new JMenuItem("SQL Console");
+				popup.add(sqlConsole);
+				sqlConsole.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						List<String> whereClauses = new ArrayList<String>();
+						whereClauses.add(SqlUtil.replaceAliases(row.rowId, "A", "A"));
+						getQueryBuilderDialog().buildQuery(table, true, false, new ArrayList<Association>(), whereClauses, dataModel, session, getMetaDataSource(), true);
 					}
 				});
 
@@ -1178,48 +1189,23 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 */
 	public JPopupMenu createSqlPopupMenu(final Row parentrow, final int rowIndex, final int x, final int y, boolean forNavTree) {
 		JPopupMenu popup = new JPopupMenu();
-		JMenuItem qb = new JMenuItem("Open Query Builder");
+		
+		JMenuItem qb = new JMenuItem("Query Builder");
 		popup.add(qb);
 		qb.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				openQueryBuilder();
+				openQueryBuilder(false);
 			}
 		});
-		
-		popup.add(new JSeparator());
-		JMenuItem exportData = new JMenuItem("Export Data");
-		popup.add(exportData);
-		exportData.addActionListener(new ActionListener() {
+		JMenuItem sqlConsole = new JMenuItem("SQL Console");
+		popup.add(sqlConsole);
+		sqlConsole.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				openExtractionModelEditor(true);
+				openQueryBuilder(true);
 			}
 		});
-
-		JMenuItem extractionModel = new JMenuItem("Create Extraction Model");
-		popup.add(extractionModel);
-		extractionModel.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				openExtractionModelEditor(false);
-			}
-		});
-
-		popup.add(new JSeparator());
-		
-		if (!forNavTree) {
-			JMenuItem det = new JMenuItem("Details");
-			popup.add(det);
-			det.setEnabled(rows.size() > 0);
-			det.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					openDetails(x, y);
-				}
-			});
-		}
-//		popup.add(new JSeparator());
 		JMenu sqlDml = new JMenu("SQL/DML");
 		popup.add(sqlDml);
 		JMenuItem insertNewRow = new JMenuItem("Insert New Row");
@@ -1258,9 +1244,40 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		insert.setEnabled(rows.size() > 0);
 		update.setEnabled(rows.size() > 0);
 		delete.setEnabled(rows.size() > 0);
-		
+
+		popup.add(new JSeparator());
+		JMenuItem exportData = new JMenuItem("Export Data");
+		popup.add(exportData);
+		exportData.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				openExtractionModelEditor(true);
+			}
+		});
+
+		JMenuItem extractionModel = new JMenuItem("Create Extraction Model");
+		popup.add(extractionModel);
+		extractionModel.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				openExtractionModelEditor(false);
+			}
+		});
+
 		popup.add(new JSeparator());
 		
+		if (!forNavTree) {
+			JMenuItem det = new JMenuItem("Details");
+			popup.add(det);
+			det.setEnabled(rows.size() > 0);
+			det.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					openDetails(x, y);
+				}
+			});
+		}
+//		popup.add(new JSeparator());
 		JMenuItem snw = new JMenuItem("Show in New Window");
 		popup.add(snw);
 		snw.addActionListener(new ActionListener() {
@@ -3481,10 +3498,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		reloadRows();
 	}// GEN-LAST:event_limitBoxItemStateChanged
 
-	private void openQueryBuilder() {
+	private void openQueryBuilder(boolean openSQLConsole) {
 		QueryBuilderDialog.Relationship root = createQBRelations(true);
 		root.selectColumns = true;
-		getQueryBuilderDialog().buildQuery(table, root, dataModel, session, getMetaDataSource());
+		getQueryBuilderDialog().buildQuery(table, root, dataModel, session, getMetaDataSource(), openSQLConsole);
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

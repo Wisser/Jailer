@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -57,7 +58,18 @@ public class ConditionEditor extends javax.swing.JDialog {
 		this.editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(false);
 		JScrollPane jScrollPane2 = new JScrollPane();
 		jScrollPane2.setViewportView(editorPane);
+		
 		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+		gridBagConstraints.gridx = 10;
+		gridBagConstraints.gridy = 9;
+		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+		gridBagConstraints.weightx = 1.0;
+		gridBagConstraints.weighty = 0;
+		JLabel where = new JLabel(" Where");
+		where.setForeground(new Color(0, 0, 255));
+		jPanel1.add(where, gridBagConstraints);
+		
+		gridBagConstraints = new java.awt.GridBagConstraints();
 		gridBagConstraints.gridx = 10;
 		gridBagConstraints.gridy = 10;
 		gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;

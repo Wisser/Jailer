@@ -197,9 +197,9 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 
 	public static ResultSet getExportedKeys(Session session, DatabaseMetaData metaData, String schema, String table) throws SQLException {
 		if (DBMS.MySQL.equals(session.dbms)) {
-			return metaData.getImportedKeys(schema, null, table);
+			return metaData.getExportedKeys(schema, null, table);
 		}
-		return metaData.getImportedKeys(null, schema, table);
+		return metaData.getExportedKeys(null, schema, table);
 	}
 
 	/**

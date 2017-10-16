@@ -322,9 +322,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						if (result) {
 							do {
 								sb.setLength(0);
-								matcher.appendReplacement(sb, "$1");
+								matcher.appendReplacement(sb, "");
+								String pureSql = sb.toString();
+								sb.append(matcher.group());
 								String sql = sb.toString();
-								String pureSql = sql.replaceFirst(";\\s*$", "");
 								status.linesExecuting += countLines(pureSql);
 								if (sql.trim().length() > 0) {
 									executeSQL(pureSql, status, lineStartOffset);
@@ -345,7 +346,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							matcher.appendTail(sb);
 							String sql = sb.toString();
 							if (sql.trim().length() > 0) {
-								status.linesExecuting += countLines(sql);
+								status.linesExecuting += countLines(sql) - 1;
 								executeSQL(sql, status, lineStartOffset);
 								if (!status.failed) {
 									status.linesExecuted = status.linesExecuting;
@@ -776,7 +777,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jSplitPane2.setLeftComponent(jPanel2);
 
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane1.setToolTipText("");
 
         jPanel6.setLayout(new java.awt.GridBagLayout());
 

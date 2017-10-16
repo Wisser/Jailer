@@ -183,10 +183,15 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		for (int i = 0; i < l; ++i) {
 			sb.append(" ");
 		}
-		return retrieveCompletions(line, lineBeforeCaret, sb.toString());
+		boolean isCaretAtEOL = false;
+		try {
+			isCaretAtEOL = ((RSyntaxTextAreaWithSQLSyntaxStyle) comp).getText(comp.getCaret().getDot(), ((RSyntaxTextAreaWithSQLSyntaxStyle) comp).getLineEndOffsetOfCurrentLine() - comp.getCaret().getDot()).trim().isEmpty();
+		} catch (BadLocationException e) {
+		}
+		return retrieveCompletions(line, lineBeforeCaret, sb.toString(), isCaretAtEOL);
 	}
 
-	private List<SQLCompletion> retrieveCompletions(String line, String beforeCaret, String indent) {
+	private List<SQLCompletion> retrieveCompletions(String line, String beforeCaret, String indent, boolean isCaretAtEOL) {
 		int pos = beforeCaret.length();
 		String afterCaret = null;
 		if (pos > 0) {
@@ -203,7 +208,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		List<SQLCompletion> result = new ArrayList<SQLCompletion>();
 		withOnCompletions = false;
 		for (CompletionRetriever<TABLE, SOURCE> completionRetriever: completionRetrievers) {
-			List<SQLCompletion> compl = completionRetriever.retrieveCompletion(line, beforeCaret, clause, metaDataSource, indent);
+			List<SQLCompletion> compl = completionRetriever.retrieveCompletion(line, beforeCaret, clause, metaDataSource, indent, isCaretAtEOL);
 			if (compl != null) {
 				result.addAll(compl);
 			}
@@ -265,7 +270,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	}
 
 	private interface CompletionRetriever<TABLE, SOURCE> {
-		List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clausem, SOURCE metaDataSource, String indent);
+		List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clausem, SOURCE metaDataSource, String indent, boolean isCaretAtEOL);
 	}
 
 	private List<CompletionRetriever<TABLE, SOURCE>> completionRetrievers = new ArrayList<CompletionRetriever<TABLE, SOURCE>>();
@@ -274,7 +279,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	{
 		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
 			@Override
-			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent) {
+			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent, boolean isCaretAtEOL) {
 				if (!(clause == Clause.FROM || clause == Clause.TABLE || clause == Clause.ON || clause == Clause.UPDATE || clause == Clause.JOIN || clause == Clause.INTO)) {
 					return null;
 				}
@@ -284,6 +289,12 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 				
 				if (clause != Clause.INTO) {
 					String withoutOnClauses = beforeCaret.replaceAll("(?is)\\bon\\b.*?\\bjoin\\b", " join");
+					String removeLastOn = withoutOnClauses.replaceAll("(?is)(?:\\bon\\b)\\s+$", "");
+					boolean endsWithOn = false;
+					if (!removeLastOn.equals(withoutOnClauses)) {
+						endsWithOn = true;
+						withoutOnClauses = removeLastOn;
+					}
 					Pattern pattern = Pattern.compile(
 							".*?"
 							+ "(?:(?:" + reIdentifier + ")\\s*\\.\\s*)?"
@@ -319,7 +330,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 								} else {
 									color = Color.BLUE;
 								}
-								result.add(new SQLCompletion(SQLCompletionProvider.this, "on " + cond, "on " + cond + " ", a.getName(), color, cond));
+								result.add(new SQLCompletion(SQLCompletionProvider.this, (endsWithOn? "" : "on ") + cond, (endsWithOn? "" : "on ") + cond + " ", a.getName(), color, cond));
 							}
 						}
 						return result;
@@ -389,7 +400,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		});
 		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
 			@Override
-			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent) {
+			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent, boolean isCaretAtEOL) {
 				if (!(clause != Clause.FROM && clause != Clause.TABLE && clause != Clause.UPDATE && clause != Clause.JOIN)) {
 					return null;
 				}
@@ -421,7 +432,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		});
 		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
 			@Override
-			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent) {
+			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent, boolean isCaretAtEOL) {
 				if (!(clause != Clause.FROM && clause != Clause.TABLE && clause != Clause.UPDATE && clause != Clause.JOIN)) {
 					return null;
 				}
@@ -468,9 +479,9 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 									count.put(key, 1);
 								}
 							}
-							String replacement = createStarReplacement(tables, tableNames, alias, count, "");
+							String replacement = createStarReplacement(tables, tableNames, alias, count, "", isCaretAtEOL);
 							if (replacement.length() > 60 && indent.length() < 60) {
-								replacement  = createStarReplacement(tables, tableNames, alias, count, indent);
+								replacement  = createStarReplacement(tables, tableNames, alias, count, indent, isCaretAtEOL);
 							}
 							result.add(new SQLCompletion(SQLCompletionProvider.this, "*", replacement + " ", replacement, SQLCompletion.COLOR_COLUMN));
 						}
@@ -508,7 +519,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 			}
 
 			public String createStarReplacement(List<TABLE> tables, List<String> tableNames, String alias,
-					Map<String, Integer> count, String indent) {
+					Map<String, Integer> count, String indent, boolean isCaretAtEOL) {
 				StringBuilder sb = new StringBuilder();
 				for (int i = 0; i < tables.size(); ++i) {
 					TABLE table = tables.get(i);
@@ -533,7 +544,9 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 						sb.append(column + " as " + column + prefix);
 					}
 				}
-				if (indent.length() > 2) {
+				if (isCaretAtEOL) {
+					sb.append(" ");
+				} else if (indent.length() > 2) {
 					sb.append(indent.substring(0, indent.length() - 2));
 				}
 				String replacement = sb.toString();
@@ -542,7 +555,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		});
 		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
 			@Override
-			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent) {
+			public List<SQLCompletion> retrieveCompletion(String line, String beforeCaret, Clause clause, SOURCE metaDataSource, String indent, boolean isCaretAtEOL) {
 				if (clause == null) {
 					return keywordCompletion("Select", "Insert", "Delete");
 				} else {
@@ -562,6 +575,8 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 					case ORDER: return null;
 					case SELECT: return keywordCompletion("From");
 					case WHERE: return keywordCompletion("Group by", "Order by");
+					default:
+						break;
 					}
 				}
 				return null;
