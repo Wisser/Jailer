@@ -373,6 +373,8 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 
         jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.LINE_AXIS));
 
+        tabbedPane.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
+
         tableDetailsPanel.setLayout(new java.awt.BorderLayout());
         tabbedPane.addTab("Table", tableDetailsPanel);
 

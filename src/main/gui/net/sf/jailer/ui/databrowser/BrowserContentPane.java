@@ -29,7 +29,6 @@ import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
@@ -785,7 +784,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
-						popup = createSqlPopupMenu(BrowserContentPane.this.parentRow, 0, 300, 300, false);
+						Point loc = sqlPanel.getLocationOnScreen();
+						popup = createSqlPopupMenu(BrowserContentPane.this.parentRow, 0, (int) loc.getX(), (int) loc.getY(), false);
 						setCurrentRowSelection(-2);
 						popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
 							@Override
@@ -3794,8 +3794,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		d.setSize(400, d.getHeight() + 20);
 		int h = d.getHeight();
 		UIUtil.fit(d);
-		if (d.getHeight() < 400 && h > 400) {
-			y = Math.max(y + d.getHeight() - 400, 20);
+		if (d.getHeight() < h) {
+			y = Math.max(y - Math.min(h - d.getHeight(), Math.max(400 - d.getHeight(), 0)), 20);
 			d.pack();
 			d.setLocation(x, y);
 			d.setSize(400, d.getHeight() + 20);
