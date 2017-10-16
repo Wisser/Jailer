@@ -1,5 +1,5 @@
 3.7.1
-  - Improved table search feature.
+  - Table search feature.
   - Minor GUI improvements.
 
 3.7

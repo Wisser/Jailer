@@ -80,9 +80,18 @@ public class MDSchema extends MDObject {
 	    		MetaDataSource metaDataSource = getMetaDataSource();
 				synchronized (metaDataSource.getSession().getMetaData()) {
 					ResultSet rs = metaDataSource.readTables(getName());
+					queue.add(new Runnable() {
+						@Override
+						public void run() {
+							try {
+								Thread.sleep(1000);
+							} catch (InterruptedException e) {
+							}
+						}
+					});
 					while (rs.next()) {
 						String tableName = metaDataSource.getQuoting().quote(rs.getString(3));
-						final MDTable table = new MDTable(tableName, this, "VIEW".equalsIgnoreCase(rs.getString(4)));
+						final MDTable table = new MDTable(tableName, this, "VIEW".equalsIgnoreCase(rs.getString(4)), "SYNONYM".equalsIgnoreCase(rs.getString(4)));
 						tables.add(table);
 						queue.add(new Runnable() {
 							@Override

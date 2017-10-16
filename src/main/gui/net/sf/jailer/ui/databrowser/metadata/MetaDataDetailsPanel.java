@@ -116,6 +116,11 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     	setVisible(false);
 	}
 
+	public void reset() {
+		detailsViews.clear();
+		tableDetailsViews.clear();
+	}
+
     public void showMetaDataDetails(final MDTable mdTable, Table table, DataModel dataModel) {
     	setVisible(true);
     	tableDetailsPanel.removeAll();
@@ -131,7 +136,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     		analyseButton.addActionListener(new ActionListener() {
 				@Override
 				public void actionPerformed(ActionEvent e) {
-					analyseSchema(mdTable.getSchema().getName(), mdTable.isView());
+					analyseSchema(mdTable.getSchema().getName(), mdTable.isView(), mdTable.isSynonym());
 				}
 			});
     		JPanel panel = new JPanel(new GridBagLayout());
@@ -381,6 +386,6 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     private javax.swing.JPanel tableDetailsPanel;
     // End of variables declaration//GEN-END:variables
 
-    protected abstract void analyseSchema(String schemaName, boolean withViews);
+    protected abstract void analyseSchema(String schemaName, boolean withViews, boolean withSynonyms);
 
 }

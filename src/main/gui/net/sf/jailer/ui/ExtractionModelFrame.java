@@ -137,8 +137,6 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		updateTitle(extractionModelEditor.needsSave);
 		dbConnectionDialog = new DbConnectionDialog(this, JailerVersion.APPLICATION_NAME, null, executionContext);
 
-        setExtendedState(JFrame.MAXIMIZED_BOTH);
-
 		// L&F can no longer be changed
 		view.setVisible(false);
 		
@@ -1776,9 +1774,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		extractionModelFrame.setLocation(40 + c * 32, 40 + c * 32);
 		extractionModelFrame.setSize(1100, 640);
 		extractionModelFrame.setVisible(visible);
-//		if (maximize) {
-//			extractionModelFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
-//		}
+		extractionModelFrame.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		return extractionModelFrame;
 	}
 	

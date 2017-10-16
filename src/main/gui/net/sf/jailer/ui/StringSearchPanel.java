@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Frame;
@@ -220,14 +221,25 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				if (value.equals(showAllLabel)) {
 					return super.getListCellRendererComponent(list, "<html><font color=\"#ff0000\">" + value + "</font>", index, isSelected, cellHasFocus);
 				}
+				Color bgColor = Color.WHITE;
+				Color fgColor = Color.BLACK;
+				String hlColor = "#0505ff";
+				if (isSelected) {
+					bgColor = new Color(0, 0, 155);
+					fgColor = Color.WHITE;
+					hlColor = "#bbbbff";
+				}
 				String search = searchTextField.getText().trim().toUpperCase(Locale.ENGLISH);
 				int i = value.toString().trim().toUpperCase(Locale.ENGLISH).indexOf(search);
 				String item = value.toString();
 				if (i >= 0) {
-					item = item.substring(0, i) + "<b><i>" + item.substring(i, i + search.length()) + "</i></b>" + item.substring(i + search.length());
+					item = item.substring(0, i) + "<b><i><font color=\"" + hlColor + "\">" + item.substring(i, i + search.length()) + "</font></i></b>" + item.substring(i + search.length());
 				}
 				String html = "<html>" + item;
-				return super.getListCellRendererComponent(list, html, index, isSelected, cellHasFocus);
+				Component render = super.getListCellRendererComponent(list, html, index, false, cellHasFocus);
+				render.setBackground(bgColor);
+				render.setForeground(fgColor);
+				return render;
 			}
 			
 		});

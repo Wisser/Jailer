@@ -39,6 +39,7 @@ public class MDTable extends MDObject {
 	private List<String> primaryKey;
 	private List<String> columns;
 	private final boolean isView;
+	private final boolean isSynonym;
 	
 	/**
 	 * Constructor.
@@ -46,9 +47,10 @@ public class MDTable extends MDObject {
 	 * @param name table name
 	 * @param schema the tables schema
 	 */
-	public MDTable(String name, MDSchema schema, boolean isView) {
+	public MDTable(String name, MDSchema schema, boolean isView, boolean isSynonym) {
 		super(name, schema.getMetaDataSource());
 		this.isView = isView;
+		this.isSynonym = isSynonym;
 		this.schema = schema;
 	}
 
@@ -130,6 +132,10 @@ public class MDTable extends MDObject {
 
 	public boolean isView() {
 		return isView;
+	}
+
+	public boolean isSynonym() {
+		return isSynonym;
 	}
 
 	public boolean isLoaded() {

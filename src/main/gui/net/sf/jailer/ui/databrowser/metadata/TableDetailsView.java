@@ -54,8 +54,12 @@ public class TableDetailsView extends javax.swing.JPanel {
 			@Override
 			public void run() {
 		        String typeLabel = "";
-		        if (mdTable != null && mdTable.isView()) {
-		        	typeLabel = "View ";
+		        if (mdTable != null) {
+		        	if (mdTable.isView()) {
+		        		typeLabel = "View ";
+		        	} else if (mdTable.isSynonym()) {
+		        		typeLabel = "Synonym ";
+		        	}
 		        }
 				tableNameLabel.setText(typeLabel + dataModel.getDisplayName(table));
 		        Font font = new JLabel("L").getFont();
@@ -67,7 +71,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 					analyseButton.addActionListener(new ActionListener() {
 		                @Override
 		                public void actionPerformed(ActionEvent e) {
-		                	metaDataDetailsPanel.analyseSchema(mdTable.getSchema().getName(), mdTable.isView());
+		                	metaDataDetailsPanel.analyseSchema(mdTable.getSchema().getName(), mdTable.isView(), mdTable.isSynonym());
 		                }
 					});
 				} else {

@@ -32,6 +32,7 @@ import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.JComboBox;
@@ -43,7 +44,7 @@ import net.sf.jailer.ui.JComboBox;
  */
 public class SchemaMappingDialog extends javax.swing.JDialog {
 	private static final long serialVersionUID = 1L;
-	private static final String DEFAULT = "<default>";
+	private String defaultSchemaName = "<default>";
 	private boolean ok = false;
 	private Map<String, JComboBox> comboboxes = new TreeMap<String, JComboBox>();
 	
@@ -59,12 +60,16 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 			if (windowAncestor != null) {
 				windowAncestor.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 			}
+			String defSchema = JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema());
+			if (!defSchema.isEmpty()) {
+				defaultSchemaName = defSchema;
+			}
 			SortedSet<String> modelSchemas = new TreeSet<String>();
 			for (Table table: new DataModel(executionContext).getTables()) {
-				modelSchemas.add(table.getSchema(DEFAULT));
+				modelSchemas.add(table.getSchema(defaultSchemaName));
 			}
 			SortedSet<String> dbSchemas = new TreeSet<String>(connectionDialog.getDBSchemas(new String[1]));
-			dbSchemas.add(DEFAULT);
+			dbSchemas.add(defaultSchemaName);
 			int y = 1;
 			for (String schema: modelSchemas) {
 				GridBagConstraints gridBagConstraints;
@@ -75,7 +80,7 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 				gridBagConstraints.gridy = y;
 				getContentPane().add(comboBox, gridBagConstraints);
 				String v = mapping.containsKey(schema)? mapping.get(schema) : schema;
-				if (schema.equals(DEFAULT)) {
+				if (schema.equals(defaultSchemaName)) {
 					v = mapping.containsKey("")? mapping.get("") : schema;
 				}
 				if (dbSchemas.contains(v)) {
@@ -85,7 +90,7 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 				} else if (dbSchemas.contains(v.toLowerCase())) {
 					comboBox.setSelectedItem(v.toLowerCase());
 				} else {
-					comboBox.setSelectedItem(DEFAULT);
+					comboBox.setSelectedItem(defaultSchemaName);
 				}
 				
 				comboboxes.put(schema, comboBox);
@@ -221,10 +226,10 @@ public class SchemaMappingDialog extends javax.swing.JDialog {
 			Map<String, String> mapping = new TreeMap<String, String>();
 			for (Map.Entry<String, JComboBox> e: comboboxes.entrySet()) {
 				String selection = (String) e.getValue().getSelectedItem();
-				if (selection == DEFAULT) {
+				if (defaultSchemaName.equals(selection)) {
 					selection = "";
 				}
-				mapping.put(e.getKey() == DEFAULT? "" : e.getKey(), selection);
+				mapping.put(defaultSchemaName.equals(e.getKey())? "" : e.getKey(), selection);
 			}
 			return mapping;
 		}
