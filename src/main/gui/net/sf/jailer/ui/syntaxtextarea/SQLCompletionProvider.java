@@ -31,6 +31,7 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.JComponent;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Element;
@@ -147,10 +148,15 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		return len==0 ? EMPTY_STRING : new String(seg.array, start, len);
 	}
 	
+	private long timeOut;
+	private JComponent waitCursorSubject;
+	private final int COLUMN_LOADING_TIMEOUT = 7000;
+	
 	@Override
 	protected List<Completion> getCompletionsImpl(JTextComponent comp) {
+		timeOut = System.currentTimeMillis() + COLUMN_LOADING_TIMEOUT;
+		waitCursorSubject = comp;
 		String text = getAlreadyEnteredText(comp);
-
 		if (text!=null) {
 			List<SQLCompletion> potentialCompletions = new ArrayList<SQLCompletion>();
 			potentialCompletions = getPotentialCompletions(comp, text);
@@ -460,10 +466,17 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 								tableNames.add(entry.getKey());
 							}
 						}
+						boolean timedOut = false;
 						if (!tables.isEmpty()) {
 							Map<String, Integer> count = new HashMap<String, Integer>();
 							for (TABLE table: tables) {
-								for (String column: getColumns(table)) {
+								List<String> tableColumns = getAndWaitForColumns(table);
+								if (tableColumns.isEmpty()) {
+									// time out, no completion
+									timedOut = true;
+									break;
+								}
+								for (String column: tableColumns) {
 									String unquotedColumn = Quoting.staticUnquote(column).toUpperCase(Locale.ENGLISH);
 									if (count.containsKey(unquotedColumn)) {
 										count.put(unquotedColumn, count.get(unquotedColumn) + 1);
@@ -479,11 +492,13 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 									count.put(key, 1);
 								}
 							}
-							String replacement = createStarReplacement(tables, tableNames, alias, count, "", isCaretAtEOL);
-							if (replacement.length() > 60 && indent.length() < 60) {
-								replacement  = createStarReplacement(tables, tableNames, alias, count, indent, isCaretAtEOL);
+							if (!timedOut) {
+								String replacement = createStarReplacement(tables, tableNames, alias, count, "", isCaretAtEOL);
+								if (replacement.length() > 60 && indent.length() < 60) {
+									replacement  = createStarReplacement(tables, tableNames, alias, count, indent, isCaretAtEOL);
+								}
+								result.add(new SQLCompletion(SQLCompletionProvider.this, "*", replacement + " ", replacement, SQLCompletion.COLOR_COLUMN));
 							}
-							result.add(new SQLCompletion(SQLCompletionProvider.this, "*", replacement + " ", replacement, SQLCompletion.COLOR_COLUMN));
 						}
 					}
 				}
@@ -496,7 +511,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 						Map<String, Integer> colCount = new HashMap<String, Integer>();
 						for (Entry<String, TABLE> entry: aliases.entrySet()) {
 							result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(entry.getKey()), entry.getKey(), null, SQLCompletion.COLOR_TABLE));
-							for (String c: getColumns(entry.getValue())) {
+							for (String c: getAndWaitForColumns(entry.getValue())) {
 								if (!colCount.containsKey(c)) {
 									colCount.put(c, 1);
 								} else {
@@ -505,7 +520,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 							}
 						}
 						for (Entry<String, TABLE> entry: aliases.entrySet()) {
-							for (String c: getColumns(entry.getValue())) {
+							for (String c: getAndWaitForColumns(entry.getValue())) {
 								if (colCount.get(c) > 1) {
 									result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(c), entry.getKey() + "." + c, entry.getKey(), SQLCompletion.COLOR_COLUMN));
 								} else {
@@ -523,7 +538,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 				StringBuilder sb = new StringBuilder();
 				for (int i = 0; i < tables.size(); ++i) {
 					TABLE table = tables.get(i);
-					for (String column: getColumns(table)) {
+					for (String column: getAndWaitForColumns(table)) {
 						String prefix = "";
 						String unquotedColumn = Quoting.staticUnquote(column).toUpperCase(Locale.ENGLISH);
 						if (count.containsKey(unquotedColumn)) {
@@ -587,7 +602,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	private List<SQLCompletion> tableCompletions(TABLE context) {
 		List<SQLCompletion> newCompletions = new ArrayList<SQLCompletion>();
 		if (context != null) {
-			for (String column: getColumns(context)) {
+			for (String column: getAndWaitForColumns(context)) {
 				newCompletions.add(new SQLCompletion(this, Quoting.staticUnquote(column), quoting == null? column : quoting.quote(column), 
 						getTableName(context), SQLCompletion.COLOR_COLUMN));
 			}
@@ -853,7 +868,11 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		return context;
 	}
 
-	protected abstract List<String> getColumns(TABLE table);
+	public List<String> getAndWaitForColumns(TABLE table) {
+		return getColumns(table, timeOut, waitCursorSubject);
+	}
+
+	protected abstract List<String> getColumns(TABLE table, long timeOut, JComponent waitCursorSubject);
 	protected abstract SCHEMA getDefaultSchema(SOURCE metaDataSource);
 	protected abstract SCHEMA findSchema(SOURCE metaDataSource, String name);
 	protected abstract TABLE findTable(SCHEMA schema, String name);

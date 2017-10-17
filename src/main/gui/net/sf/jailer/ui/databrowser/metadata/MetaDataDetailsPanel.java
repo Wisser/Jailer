@@ -23,6 +23,7 @@ import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -127,8 +128,11 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     	if (table != null) {
     		JComponent view = tableDetailsViews.get(table);
     		if (view == null) {
-    			view = new TableDetailsView(table, mdTable, this, dataModel);
-    			tableDetailsViews.put(table, view);
+    			TableDetailsView tdv = new TableDetailsView(table, mdTable, this, dataModel);
+    			view = tdv;
+    			if (tdv.isCacheable()) {
+    				tableDetailsViews.put(table, view);
+    			}
     		}
     		tableDetailsPanel.add(view);
     	} else if (!ModelBuilder.isJailerTable(mdTable.getUnquotedName())) {
@@ -181,11 +185,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 	    	tabbedPane.repaint();
 	    	try {
 		    	final int tableNameColumnIndex = 3;
-		    	final Set<String> pkNames = new HashSet<String>();
-				try {
-					pkNames.addAll(mdTable.getPrimaryKeyColumns());
-				} catch (SQLException e1) {
-				}
+		    	final Set<String> pkNames = Collections.synchronizedSet(new HashSet<String>());
 		    	final BrowserContentPane rb = new BrowserContentPane(datamodel.get(), null, "", session, null, null,
 						null, null, new HashSet<Pair<BrowserContentPane, Row>>(), new HashSet<Pair<BrowserContentPane, String>>(), 0, false, false, executionContext) {
 		    		{
@@ -320,6 +320,10 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 				queues.get(mdd.queueIndex).put(new Runnable() {
 					@Override
 					public void run() {
+						try {
+							pkNames.addAll(mdTable.getPrimaryKeyColumns());
+						} catch (SQLException e1) {
+						}
 				    	try {
 				    		synchronized (session.getMetaData()) {
 					    		ResultSet rs = mdd.readMetaDataDetails(session, mdTable);

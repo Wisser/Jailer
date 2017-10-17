@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
+import javax.swing.JComponent;
+
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Column;
@@ -37,7 +39,7 @@ public class DataModelBasedSQLCompletionProvider extends SQLCompletionProvider<D
 	}
 
 	@Override
-	protected List<String> getColumns(Table table) {
+	protected List<String> getColumns(Table table, long timeOut, JComponent waitCursorSubject) {
 		ArrayList<String> columns = new ArrayList<String>();
 		for (Column column: table.getColumns()) {
 			columns.add(column.name);
