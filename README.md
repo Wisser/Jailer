@@ -1,9 +1,13 @@
-# Database Subsetting Tool
+# Jailer Database Tool
 
-Jailer is a tool for database subsetting, schema and data browsing. It exports consistent, 
-referentially intact row-sets from relational databases. It removes obsolete data without 
-violating integrity. It is DBMS agnostic (by using JDBC), platform independent, and generates 
-DbUnit datasets, hierarchically structured XML, and topologically sorted SQL-DML.
+Jailer is a tool for database subsetting and relational data browsing. 
+
+ - The Subsetter exports consistent, referentially intact row-sets from relational databases,
+   generates topologically sorted SQL-DML, DbUnit datasets and hierarchically structured XML.
+
+ - The Data Browser allows bidirectional navigation through the database 
+   by following foreign-key-based or user-defined relationships.
+
 
 <img src="/docs/screenshot.png" width="850" />
 
@@ -18,6 +22,7 @@ DbUnit datasets, hierarchically structured XML, and topologically sorted SQL-DML
 
 ## News
 
+ - 2017-10-15   SQL Console with code completion, syntax highlighting and database metadata visualization.
  - 2017-05-10   New API provides programmatic access to the data export and import functionality. http://jailer.sourceforge.net/api.html
  - 2017-03-30 	Improved filter management. Support for import-filters and literal-filters.
  - 2017-01-27 	Referential cycles can now be exported by deferring the insert of nullable foreign keys.
