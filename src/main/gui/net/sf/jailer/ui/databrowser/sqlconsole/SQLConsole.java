@@ -346,7 +346,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							matcher.appendTail(sb);
 							String sql = sb.toString();
 							if (sql.trim().length() > 0) {
-								status.linesExecuting += countLines(sql) - 1;
+								status.linesExecuting += countLines(sql);
 								executeSQL(sql, status, lineStartOffset);
 								if (!status.failed) {
 									status.linesExecuted = status.linesExecuting;
@@ -619,7 +619,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 										Color hl;
 										if (i < linesExecuted + location.a) {
 											hl = okColor;
-										} else if (i >= linesExecuting + location.a) {
+										} else if (i > linesExecuting + location.a) {
 											hl = pendingColor;
 										} else {
 											if (failed) {
