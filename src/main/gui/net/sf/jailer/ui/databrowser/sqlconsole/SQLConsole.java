@@ -337,6 +337,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 									lineStartOffset += sql.length();
 								}
 								status.linesExecuted += countLines(sql) - 1;
+								String terminator = matcher.group(1);
+								if (terminator != null && !terminator.contains("\n")) { // ';' without nl
+									status.linesExecuted++;
+								}
 								status.linesExecuting = status.linesExecuted;
 								result = matcher.find();
 							} while (result);
@@ -619,7 +623,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 										Color hl;
 										if (i < linesExecuted + location.a) {
 											hl = okColor;
-										} else if (i > linesExecuting + location.a) {
+										} else if (i >= linesExecuting + location.a) {
 											hl = pendingColor;
 										} else {
 											if (failed) {
