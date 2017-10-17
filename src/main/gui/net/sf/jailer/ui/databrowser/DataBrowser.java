@@ -2018,6 +2018,7 @@ public class DataBrowser extends javax.swing.JFrame {
             String modelname = datamodel == null || datamodel.get() == null ? DataModel.DEFAULT_NAME : datamodel.get().getName();
             DataModelEditor dataModelEditor = new DataModelEditor(this, false, false, null, null, null, modelname, null, executionContext);
             dataModelEditor.setVisible(true);
+            removeMetaDataSource(session);
             desktop.reloadDataModel(desktop.schemaMapping);
             dataModelViewFrame = null;
             updateDataModelView(null);
@@ -2074,6 +2075,7 @@ public class DataBrowser extends javax.swing.JFrame {
                     if (dataModelEditor.dataModelHasChanged()) {
                         dataModelEditor.setVisible(true);
                     }
+                    removeMetaDataSource(session);
                     desktop.reloadDataModel(desktop.schemaMapping);
                     dataModelViewFrame = null;
                     updateDataModelView(null);
@@ -2804,6 +2806,10 @@ public class DataBrowser extends javax.swing.JFrame {
     	return (MetaDataSource) session.getSessionProperty(DataBrowser.class, "MetaDataSource");
     }
     
+    private void removeMetaDataSource(Session session) {
+    	session.setSessionProperty(DataBrowser.class, "removeMetaDataSource", Boolean.TRUE);
+    }
+    
     private MetaDataPanel metaDataPanel;
     
     private void onNewSession(Session newSession) {
@@ -2818,7 +2824,8 @@ public class DataBrowser extends javax.swing.JFrame {
 			MetaDataSource metaDataSource;
 			try {
 				metaDataSource = getMetaDataSource(newSession);
-				if (metaDataSource == null) {
+				if (metaDataSource == null || Boolean.TRUE.equals(session.getSessionProperty(DataBrowser.class, "removeMetaDataSource"))) {
+					session.setSessionProperty(DataBrowser.class, "removeMetaDataSource", null);
 					metaDataSource = new MetaDataSource(newSession, datamodel.get(), alias, executionContext);
 					newSession.setSessionProperty(DataBrowser.class, "MetaDataSource", metaDataSource);
 				}
@@ -2927,7 +2934,8 @@ public class DataBrowser extends javax.swing.JFrame {
 	
 				@Override
 				protected void onTableSelect(MDTable mdTable) {
-					metaDataDetailsPanel.showMetaDataDetails(mdTable, getMetaDataSource(session).toTable(mdTable), datamodel.get());
+					metaDataDetailsPanel
+						.showMetaDataDetails(mdTable, getMetaDataSource(session).toTable(mdTable), datamodel.get());
 				}
 	
 				@Override
