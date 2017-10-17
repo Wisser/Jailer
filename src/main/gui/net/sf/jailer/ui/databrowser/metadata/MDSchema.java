@@ -104,7 +104,7 @@ public class MDSchema extends MDObject {
 						});
 					}
 					rs.close();
-	    		}
+				}
 				Collections.sort(tables, new Comparator<MDTable>() {
 					@Override
 					public int compare(MDTable o1, MDTable o2) {
@@ -117,7 +117,7 @@ public class MDSchema extends MDObject {
 		}
 		return tables;
 	}
-	
+
 	private final Map<String, MDTable> tablePerUnquotedNameUC = new HashMap<String, MDTable>();
 
     /**
