@@ -2800,7 +2800,10 @@ public class DataBrowser extends javax.swing.JFrame {
         closureView.refresh();
     }
 
-    private MetaDataSource metaDataSource;
+    private MetaDataSource getMetaDataSource(Session session) {
+    	return (MetaDataSource) session.getSessionProperty(DataBrowser.class, "MetaDataSource");
+    }
+    
     private MetaDataPanel metaDataPanel;
     
     private void onNewSession(Session newSession) {
@@ -2812,8 +2815,13 @@ public class DataBrowser extends javax.swing.JFrame {
 	    	updateNavigationCombobox();
 	    	
 	    	tablesPanel.removeAll();
+			MetaDataSource metaDataSource;
 			try {
-				metaDataSource = new MetaDataSource(newSession, datamodel.get(), alias, executionContext);
+				metaDataSource = getMetaDataSource(newSession);
+				if (metaDataSource == null) {
+					metaDataSource = new MetaDataSource(newSession, datamodel.get(), alias, executionContext);
+					newSession.setSessionProperty(DataBrowser.class, "MetaDataSource", metaDataSource);
+				}
 			} catch (SQLException e) {
 				throw new RuntimeException(e);
 			}
@@ -2833,7 +2841,7 @@ public class DataBrowser extends javax.swing.JFrame {
 					try {
 						String sql;
 						Quoting quoting = new Quoting(session);
-						MDTable mdTable = metaDataSource.toMDTable(table);
+						MDTable mdTable = getMetaDataSource(session).toMDTable(table);
 						String tableName;
 						String schemaName;
 						if (mdTable != null) {
@@ -2919,7 +2927,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	
 				@Override
 				protected void onTableSelect(MDTable mdTable) {
-					metaDataDetailsPanel.showMetaDataDetails(mdTable, metaDataSource.toTable(mdTable), datamodel.get());
+					metaDataDetailsPanel.showMetaDataDetails(mdTable, getMetaDataSource(session).toTable(mdTable), datamodel.get());
 				}
 	
 				@Override
@@ -2965,7 +2973,7 @@ public class DataBrowser extends javax.swing.JFrame {
 	private SQLConsole sqlConsole;
 
 	public MetaDataSource getMetaDataSource() {
-		return metaDataSource;
+		return getMetaDataSource(session);
 	}
 	
 }
