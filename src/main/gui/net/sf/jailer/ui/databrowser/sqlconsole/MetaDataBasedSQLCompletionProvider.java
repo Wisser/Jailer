@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import javax.swing.JComponent;
+
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.Table;
@@ -20,9 +22,9 @@ public class MetaDataBasedSQLCompletionProvider extends SQLCompletionProvider<Me
 	}
 
 	@Override
-	protected List<String> getColumns(MDTable table) {
+	protected List<String> getColumns(MDTable table, long timeOut, JComponent waitCursorSubject) {
 		try {
-			return table.getColumns();
+			return table.getColumns(timeOut, waitCursorSubject);
 		} catch (SQLException e) {
 			return Collections.emptyList();
 		}

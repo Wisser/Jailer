@@ -44,8 +44,9 @@ import net.sf.jailer.util.Quoting;
 public class TableDetailsView extends javax.swing.JPanel {
 
 	private final Runnable updateColumnsTable;
+	private boolean cacheable = true;
 	
-    /**
+	/**
      * Creates new form TableDetailsView
      */
     public TableDetailsView(final Table table, final MDTable mdTable, final MetaDataDetailsPanel metaDataDetailsPanel, final DataModel dataModel) {
@@ -65,7 +66,16 @@ public class TableDetailsView extends javax.swing.JPanel {
 		        Font font = new JLabel("L").getFont();
 				tableNameLabel.setFont(new Font(font.getName(), font.getStyle(), (int)(font.getSize() * 1.2)));
 		
-				if (mdTable != null && !mdTable.isUptodate(table) && !ModelBuilder.isJailerTable(table.getUnqualifiedName())) {
+				boolean mdTableIsUpTodate = true;
+				if (mdTable != null) {
+					if (!mdTable.isLoaded()) {
+						cacheable = false;
+					} else {
+						mdTableIsUpTodate = mdTable.isUptodate(table);
+					}
+				}
+						
+				if (mdTable != null && !mdTableIsUpTodate && !ModelBuilder.isJailerTable(table.getUnqualifiedName())) {
 					warnLabel.setIcon(MetaDataPanel.getScaledIcon(TableDetailsView.this, MetaDataPanel.warnIcon));
 					analyseButton.setText("Analyse schema \"" + mdTable.getSchema().getUnquotedName() + "\"");
 					analyseButton.addActionListener(new ActionListener() {
@@ -173,6 +183,10 @@ public class TableDetailsView extends javax.swing.JPanel {
 		};
 		updateColumnsTable.run();
     }
+
+    public boolean isCacheable() {
+		return cacheable;
+	}
 
     /**
      * This method is called from within the constructor to initialize the form.

@@ -15,6 +15,7 @@
  */
 package net.sf.jailer.ui.databrowser.metadata;
 
+import java.awt.Cursor;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -22,6 +23,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import javax.swing.JComponent;
 
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
@@ -38,6 +44,7 @@ public class MDTable extends MDObject {
 	private final MDSchema schema;
 	private List<String> primaryKey;
 	private List<String> columns;
+	private AtomicBoolean loading = new AtomicBoolean(false);
 	private final boolean isView;
 	private final boolean isSynonym;
 	
@@ -71,6 +78,43 @@ public class MDTable extends MDObject {
 	public List<String> getColumns() throws SQLException {
 		readColumns();
 		return columns;
+	}
+
+	/**
+	 * Gets columns of table. Waits until a given timeout and sets the wait cursor.
+	 * 
+	 * @return columns of table
+	 */
+	public List<String> getColumns(long timeOut, JComponent waitCursorSubject) throws SQLException {
+		if (isLoaded()) {
+			return getColumns();
+		}
+		waitCursorSubject.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		try {
+			loading.set(true);
+			queue.add(new Runnable() {
+				@Override
+				public void run() {
+					try {
+						getColumns();
+					} catch (SQLException e) {
+					}
+					loading.set(false);
+				}
+			});
+			while (loading.get() && System.currentTimeMillis() < timeOut) {
+				try {
+					Thread.sleep(100);
+				} catch (InterruptedException e) {
+				}
+			}
+		} finally {
+			waitCursorSubject.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+		}
+		if (loading.get()) {
+			return new ArrayList<String>();
+		}
+		return getColumns();
 	}
 
 	/**
@@ -140,6 +184,24 @@ public class MDTable extends MDObject {
 
 	public boolean isLoaded() {
 		return columns != null;
+	}
+
+	private static final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
+
+	static {
+		Thread thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				for (;;) {
+					try {
+						queue.take().run();
+					} catch (Throwable t) {
+					}
+				}
+			}
+		});
+        thread.setDaemon(true);
+        thread.start();
 	}
 
 }

@@ -1,4 +1,4 @@
-7.5.1
+7.5.2
   - https://github.com/Wisser/Jailer/pull/5 "Include the column names in the first statement to avoid ORA-00918: column ambiguously defined"
   - Table search feature.
   - Minor GUI improvements.
