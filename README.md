@@ -4,7 +4,6 @@ Jailer is a tool for database subsetting and relational data browsing.
 
  - The Subsetter exports consistent, referentially intact row-sets from relational databases,
    generates topologically sorted SQL-DML, DbUnit datasets and hierarchically structured XML.
-
  - The Data Browser allows bidirectional navigation through the database 
    by following foreign-key-based or user-defined relationships.
 
@@ -16,10 +15,11 @@ Jailer is a tool for database subsetting and relational data browsing.
  - Exports consistent and referentially intact row-sets from your productive database
    and imports the data into your development and test environment.
  - Improves database performance by removing and archiving obsolete data without violating integrity.
- - Generates hierarchically structured XML, topologically sorted SQL-DML and DbUnit datasets.
+ - Generates topologically sorted SQL-DML, hierarchically structured XML and DbUnit datasets.
  - Data Browsing. Navigate bidirectionally through the database by following foreign-key-based or user-defined relationships.
- - Open Source. Entirely written in Java. Platform independent. DBMS agnostic.
+ - SQL Console with code completion, syntax highlighting and database metadata visualization.
 
+ 
 ## News
 
  - 2017-10-15   SQL Console with code completion, syntax highlighting and database metadata visualization.
@@ -38,24 +38,21 @@ Jailer is a tool for database subsetting and relational data browsing.
  - 2007-06-05 	Tutorial for Jailer now available.
 
 
-# Installation
+## Installation
 
-Unzip the file "jailer_<N>.zip".
+Use the installer "Jailer-Install-<N>.exe" or unzip the file "jailer_<N>.zip".
 
-- Database Subsetter
+ - Database Subsetter
+    - On windows platform execute "Jailer.exe". You can also start "jailerGUI.bat".
+    - On Unix/Linux platform execute the script "jailerGUI.sh" or use "java -jar jailer.jar"
 
-On windows platform execute "Jailer.exe". You can also start "jailerGUI.bat".
-On Unix/Linux platform execute the script "jailerGUI.sh" or use "java -jar jailer.jar"
 
-
-- Data Browser
-
-On windows platform execute "jailerDataBrowser.exe", or "jailerDataBrowser.bat"
-On Unix/Linux platform execute the script "jailerDataBrowser.sh"
+ - Data Browser
+    - On windows platform execute "jailerDataBrowser.exe", or "jailerDataBrowser.bat"
+    - On Unix/Linux platform execute the script "jailerDataBrowser.sh"
 
 
 
-
-- Home:    http://jailer.sourceforge.net/
-- Forum:   https://sourceforge.net/p/jailer/discussion/
-- Support: rwisser@users.sourceforge.net
+ - Home:    http://jailer.sourceforge.net/ or https://github.com/Wisser/Jailer
+ - Forum:   https://sourceforge.net/p/jailer/discussion/
+ - Support: rwisser@users.sourceforge.net
