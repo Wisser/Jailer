@@ -229,18 +229,18 @@ public class StringSearchPanel extends javax.swing.JPanel {
 					return super.getListCellRendererComponent(list, "<html><font color=\"#ff0000\">" + value + "</font>", index, isSelected, cellHasFocus);
 				}
 				Color bgColor = Color.WHITE;
-				Color fgColor = Color.BLACK;
-				String hlColor = "#0505ff";
+				Color fgColor = new Color(0, 0, 0);
+				String hlColor = "#050aff";
 				if (isSelected) {
-					bgColor = new Color(0, 0, 155);
+					bgColor = new Color(0, 0, 145);
 					fgColor = Color.WHITE;
-					hlColor = "#bbbbff";
+					hlColor = "#ff9999";
 				}
 				String search = searchTextField.getText().trim().toUpperCase(Locale.ENGLISH);
 				int i = value.toString().trim().toUpperCase(Locale.ENGLISH).indexOf(search);
 				String item = value.toString();
 				if (i >= 0) {
-					item = item.substring(0, i) + "<b><i><font color=\"" + hlColor + "\">" + item.substring(i, i + search.length()) + "</font></i></b>" + item.substring(i + search.length());
+					item = item.substring(0, i) + "<b><font color=\"" + hlColor + "\">" + item.substring(i, i + search.length()) + "</font></b>" + item.substring(i + search.length());
 				}
 				String html = "<html>" + item;
 				Component render = super.getListCellRendererComponent(list, html, index, false, cellHasFocus);

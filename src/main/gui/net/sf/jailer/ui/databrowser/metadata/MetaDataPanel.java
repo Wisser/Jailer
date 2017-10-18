@@ -115,7 +115,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         	}
         };
         tablesComboBox.setMaximumRowCount(20);
-        updateTablesCombobox();
         AutoCompletion.enable(tablesComboBox);
         
 		tablesComboBox.grabFocus();
@@ -362,7 +361,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		for (MDSchema schema: metaDataSource.getSchemas()) {
 			if (schema.isLoaded()) {
 				for (MDTable table: schema.getTables()) {
-					if (metaDataSource.toTable(table) == null) {
+					if (metaDataSource.toTable(table) == null && !ModelBuilder.isJailerTable(table.getName())) {
 						String name;
 						if (!schema.isDefaultSchema) {
 							name = schema.getName() + "." + table.getName();
