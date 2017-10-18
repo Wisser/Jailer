@@ -31,6 +31,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -711,7 +712,7 @@ public class Session {
 	/**
 	 * Cached Database Meta Data.
 	 */
-	private DatabaseMetaData metaData = null;
+	private Map<Connection, DatabaseMetaData> metaData = Collections.synchronizedMap(new IdentityHashMap<Connection, DatabaseMetaData>());
 	
 	/**
 	 * Gets DB meta data.
@@ -719,10 +720,13 @@ public class Session {
 	 * @return DB meta data
 	 */
 	public DatabaseMetaData getMetaData() throws SQLException {
-		if (metaData == null) {
-			metaData = connectionFactory.getConnection().getMetaData();
+		Connection con = connectionFactory.getConnection();
+		DatabaseMetaData mData = metaData.get(con);
+		if (mData == null) {
+			mData = con.getMetaData();
+			metaData.put(con, mData);
 		}
-		return metaData;
+		return mData;
 	}
 
 	/**

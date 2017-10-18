@@ -271,7 +271,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
         java.awt.GridBagConstraints gridBagConstraints;
 
         detailsPanel = new javax.swing.JPanel();
-        detailsComboBox = new javax.swing.JComboBox();
+        detailsComboBox = new net.sf.jailer.ui.JComboBox();
         detailsLabel = new javax.swing.JLabel();
         detailsCondtition = new javax.swing.JTextField();
         detailsWhere = new javax.swing.JLabel();
@@ -449,7 +449,7 @@ public class AdditionalSubjectsDialog extends javax.swing.JDialog {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton addAllButton;
     private javax.swing.JButton cancelButton;
-    private javax.swing.JComboBox detailsComboBox;
+    private net.sf.jailer.ui.JComboBox detailsComboBox;
     private javax.swing.JTextField detailsCondtition;
     private javax.swing.JLabel detailsLabel;
     private javax.swing.JPanel detailsPanel;

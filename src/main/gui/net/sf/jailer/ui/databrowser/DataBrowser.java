@@ -2825,10 +2825,12 @@ public class DataBrowser extends javax.swing.JFrame {
 			try {
 				metaDataSource = getMetaDataSource(newSession);
 				if (metaDataSource == null || Boolean.TRUE.equals(session.getSessionProperty(DataBrowser.class, "removeMetaDataSource"))) {
-					session.setSessionProperty(DataBrowser.class, "removeMetaDataSource", null);
 					metaDataSource = new MetaDataSource(newSession, datamodel.get(), alias, executionContext);
-					newSession.setSessionProperty(DataBrowser.class, "MetaDataSource", metaDataSource);
+				} else {
+					metaDataSource = new MetaDataSource(metaDataSource, datamodel.get());
 				}
+				session.setSessionProperty(DataBrowser.class, "removeMetaDataSource", null);
+				newSession.setSessionProperty(DataBrowser.class, "MetaDataSource", metaDataSource);
 			} catch (SQLException e) {
 				throw new RuntimeException(e);
 			}

@@ -467,7 +467,7 @@ public class ImportDialog extends javax.swing.JDialog {
 	private javax.swing.JScrollPane jScrollPane2;
 	private javax.swing.JButton okButton;
 	private javax.swing.JLabel placeholder1;
-	private javax.swing.JComboBox threadComboBox;
+	private net.sf.jailer.ui.JComboBox threadComboBox;
 	private javax.swing.JCheckBox transactionalCheckBox;
 	// End of variables declaration//GEN-END:variables
 

@@ -70,7 +70,6 @@ import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.AutoCompletion;
-import net.sf.jailer.ui.JComboBox;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
@@ -886,9 +885,9 @@ public abstract class DBClosureView extends javax.swing.JDialog {
         tablePanel = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         closureTable = new javax.swing.JTable();
-        searchComboBox = new javax.swing.JComboBox();
+        searchComboBox = new net.sf.jailer.ui.JComboBox();
         jLabel7 = new javax.swing.JLabel();
-        columnsComboBox = new javax.swing.JComboBox();
+        columnsComboBox = new net.sf.jailer.ui.JComboBox();
         findButton = new javax.swing.JButton();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -1066,7 +1065,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTable closureTable;
-    private javax.swing.JComboBox columnsComboBox;
+    private net.sf.jailer.ui.JComboBox columnsComboBox;
     public javax.swing.JPanel contentPanel;
     private javax.swing.JButton findButton;
     private javax.swing.JLabel jLabel1;
@@ -1079,7 +1078,7 @@ public abstract class DBClosureView extends javax.swing.JDialog {
     private javax.swing.JLabel jLabel8;
     private javax.swing.JLabel jLabel9;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JComboBox searchComboBox;
+    private net.sf.jailer.ui.JComboBox searchComboBox;
     public javax.swing.JPanel tablePanel;
     // End of variables declaration//GEN-END:variables
 	
