@@ -3026,7 +3026,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         where = new javax.swing.JLabel();
         jPanel7 = new javax.swing.JPanel();
         loadButton = new javax.swing.JButton();
-        andCondition = new javax.swing.JComboBox();
+        andCondition = new net.sf.jailer.ui.JComboBox();
         onPanel = new javax.swing.JPanel();
         on = new javax.swing.JLabel();
         joinPanel = new javax.swing.JPanel();
@@ -3061,7 +3061,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         fetchLabel = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
-        limitBox = new javax.swing.JComboBox();
+        limitBox = new net.sf.jailer.ui.JComboBox();
         relatedRowsPanel = new javax.swing.JPanel();
         relatedRowsLabel = new javax.swing.JLabel();
         jPanel9 = new javax.swing.JPanel();
@@ -3505,7 +3505,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    javax.swing.JComboBox andCondition;
+    net.sf.jailer.ui.JComboBox andCondition;
     private javax.swing.JLabel andLabel;
     private javax.swing.JButton cancelLoadButton;
     private javax.swing.JPanel cardPanel;
@@ -3535,7 +3535,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel9;
     private javax.swing.JLabel join;
     private javax.swing.JPanel joinPanel;
-    javax.swing.JComboBox limitBox;
+    net.sf.jailer.ui.JComboBox limitBox;
     private javax.swing.JButton loadButton;
     private javax.swing.JLabel on;
     private javax.swing.JPanel onPanel;

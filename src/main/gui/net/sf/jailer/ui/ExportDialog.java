@@ -1951,7 +1951,7 @@ public class ExportDialog extends javax.swing.JDialog {
 	public javax.swing.JCheckBox explain;
 	private javax.swing.JLabel exportLabel;
 	private javax.swing.JPanel iFMTPanel;
-	private javax.swing.JComboBox iFMTableSchemaComboBox;
+	private net.sf.jailer.ui.JComboBox iFMTableSchemaComboBox;
 	private javax.swing.JTextField insert;
 	private javax.swing.JButton jButton1;
 	private javax.swing.JLabel jLabel1;
@@ -2003,7 +2003,7 @@ public class ExportDialog extends javax.swing.JDialog {
 	private javax.swing.JCheckBox sortedCheckBox;
 	public javax.swing.JPanel sourceSchemaMappingPanel;
 	private javax.swing.JLabel subjectTable;
-	private javax.swing.JComboBox targetDBMSComboBox;
+	private net.sf.jailer.ui.JComboBox targetDBMSComboBox;
 	private javax.swing.JLabel targetDBMSLabel;
 	private javax.swing.JTextField threads;
 	private javax.swing.JLabel toLabel;
@@ -2011,7 +2011,7 @@ public class ExportDialog extends javax.swing.JDialog {
 	private javax.swing.JCheckBox upsertCheckbox;
 	public javax.swing.JCheckBox useRowIds;
 	private javax.swing.JTextField where;
-	private javax.swing.JComboBox workingTableSchemaComboBox;
+	private net.sf.jailer.ui.JComboBox workingTableSchemaComboBox;
 	// End of variables declaration//GEN-END:variables
 	
 	private Icon loadIcon;

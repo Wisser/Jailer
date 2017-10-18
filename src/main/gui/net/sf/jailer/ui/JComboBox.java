@@ -16,6 +16,7 @@
 package net.sf.jailer.ui;
 
 import java.awt.Dimension;
+import java.util.Vector;
 
 /**
  * Workaround for Swing bug 4618607.
@@ -26,6 +27,13 @@ import java.awt.Dimension;
 public class JComboBox<T> extends javax.swing.JComboBox<T> {
 	private static final long serialVersionUID = 1404824459186814788L;
 	private boolean layingOut = false;
+
+	public JComboBox(Vector<T> model) {
+		super(model);
+	}
+
+	public JComboBox() {
+	}
 
 	public void doLayout() {
 		try {

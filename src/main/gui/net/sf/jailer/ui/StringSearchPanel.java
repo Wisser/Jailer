@@ -57,6 +57,10 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	private String result;
 	
 	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final String titel, final Runnable onSuccess) {
+		return createSearchButton(owner, comboBox, titel, onSuccess, null);
+	}
+	
+	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final String titel, final Runnable onSuccess, final Runnable prepare) {
 		final JButton button = new JButton();
 		button.setIcon(getScaledIcon(button, icon));
 		button.setToolTipText("Find Table");
@@ -68,6 +72,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
 					@Override
 					public void run() {
 				        try {
+				        	if (prepare != null) {
+				        		prepare.run();
+				        	}
 							Point location = button.getLocationOnScreen();
 							StringSearchPanel searchPanel = new StringSearchPanel((DefaultComboBoxModel<String>) comboBox.getModel());
 							String result = searchPanel.find(owner, titel, location.x, location.y);

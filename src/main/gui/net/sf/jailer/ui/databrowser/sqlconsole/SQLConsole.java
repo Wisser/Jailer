@@ -696,7 +696,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         consoleContainerPanel = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        limitComboBox = new javax.swing.JComboBox();
+        limitComboBox = new net.sf.jailer.ui.JComboBox();
         cancelButton = new javax.swing.JButton();
         runSQLButton = new javax.swing.JButton();
         runnAllButton = new javax.swing.JButton();
@@ -887,7 +887,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JComboBox limitComboBox;
+    private net.sf.jailer.ui.JComboBox limitComboBox;
     private javax.swing.JButton runSQLButton;
     private javax.swing.JButton runnAllButton;
     private javax.swing.JLabel statusLabel;

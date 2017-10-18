@@ -122,7 +122,7 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
         analyzeButton = new javax.swing.JButton();
         restoreSessionButton = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
-        tableComboBox = new javax.swing.JComboBox();
+        tableComboBox = new net.sf.jailer.ui.JComboBox();
         jLabel1 = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
@@ -230,7 +230,7 @@ public abstract class NewTableBrowser extends javax.swing.JDialog {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JButton okButton;
     private javax.swing.JButton restoreSessionButton;
-    private javax.swing.JComboBox tableComboBox;
+    private net.sf.jailer.ui.JComboBox tableComboBox;
     // End of variables declaration//GEN-END:variables
 
 }

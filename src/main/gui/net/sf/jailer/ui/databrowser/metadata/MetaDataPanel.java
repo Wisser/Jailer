@@ -31,8 +31,10 @@ import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.Vector;
 
 import javax.swing.ComboBoxModel;
@@ -134,6 +136,11 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			@Override
 			public void run() {
 				onSelectTable();
+			}
+		}, new Runnable() {
+			@Override
+			public void run() {
+				updateTablesCombobox();
 			}
 		});
 		add(searchButton, gridBagConstraints);
@@ -343,12 +350,32 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         updateTreeModel(metaDataSource);
     }
     
+    private Map<String, MDTable> tablesComboboxMDTablePerName = new HashMap<String, MDTable>();
+    
 	private void updateTablesCombobox() {
-		List<String> tables = new ArrayList<String>();
+		Set<String> tableSet = new HashSet<String>();
 		
 		for (Table table: dataModel.getTables()) {
-			tables.add(dataModel.getDisplayName(table));
+			String displayName = dataModel.getDisplayName(table);
+			tableSet.add(displayName);
 		}
+		for (MDSchema schema: metaDataSource.getSchemas()) {
+			if (schema.isLoaded()) {
+				for (MDTable table: schema.getTables()) {
+					if (metaDataSource.toTable(table) == null) {
+						String name;
+						if (!schema.isDefaultSchema) {
+							name = schema.getName() + "." + table.getName();
+						} else {
+							name = table.getName();
+						}
+						tableSet.add(name);
+						tablesComboboxMDTablePerName.put(name, table);
+					}
+				}
+			}
+		}
+		List<String> tables = new ArrayList<String>(tableSet);
 		Collections.sort(tables);
 		ComboBoxModel model = new DefaultComboBoxModel(new Vector(tables));
 			
@@ -596,6 +623,11 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 					select(mdTable);
 				} else {
 					JOptionPane.showMessageDialog(parent, "Table \"" + dataModel.getDisplayName(table) + "\" does not exist in the database");
+				}
+			} else {
+				MDTable mdTable = tablesComboboxMDTablePerName.get(item);
+				if (mdTable != null) {
+					select(mdTable);
 				}
 			}
 		}

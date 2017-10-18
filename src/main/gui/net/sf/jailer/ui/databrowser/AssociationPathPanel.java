@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import javax.swing.JComboBox;
+import net.sf.jailer.ui.JComboBox;
 import javax.swing.JLabel;
 
 import net.sf.jailer.datamodel.Association;

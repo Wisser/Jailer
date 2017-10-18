@@ -140,7 +140,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 
         jPanel1 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        tableCombobox = new javax.swing.JComboBox();
+        tableCombobox = new net.sf.jailer.ui.JComboBox();
         jLabel2 = new javax.swing.JLabel();
         jPanel2 = new javax.swing.JPanel();
         formatButton = new javax.swing.JButton();
@@ -283,7 +283,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
     private javax.swing.JButton okButton;
     private javax.swing.JPanel paramPanel;
     private javax.swing.JButton resetButton;
-    private javax.swing.JComboBox tableCombobox;
+    private net.sf.jailer.ui.JComboBox tableCombobox;
     // End of variables declaration//GEN-END:variables
 
     private final RSyntaxTextArea mappingField;

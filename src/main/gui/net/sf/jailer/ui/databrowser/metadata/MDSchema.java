@@ -24,6 +24,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -39,7 +40,8 @@ public class MDSchema extends MDObject {
 	public final boolean isDefaultSchema;
 	private List<MDTable> tables;
 	private static final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
-
+	private boolean valid = true;
+	
 	/**
 	 * Constructor.
 	 * 
@@ -80,30 +82,27 @@ public class MDSchema extends MDObject {
 	    		MetaDataSource metaDataSource = getMetaDataSource();
 				synchronized (metaDataSource.getSession().getMetaData()) {
 					ResultSet rs = metaDataSource.readTables(getName());
-					queue.add(new Runnable() {
-						@Override
-						public void run() {
-							try {
-								Thread.sleep(1000);
-							} catch (InterruptedException e) {
-							}
-						}
-					});
+					Map<String, Runnable> loadJobs = new TreeMap<String, Runnable>();
 					while (rs.next()) {
 						String tableName = metaDataSource.getQuoting().quote(rs.getString(3));
 						final MDTable table = new MDTable(tableName, this, "VIEW".equalsIgnoreCase(rs.getString(4)), "SYNONYM".equalsIgnoreCase(rs.getString(4)));
 						tables.add(table);
-						queue.add(new Runnable() {
+						loadJobs.put(tableName, new Runnable() {
 							@Override
 							public void run() {
-								try {
-									table.getColumns();
-								} catch (SQLException e) {
+								if (valid) {
+									try {
+										table.getColumns();
+									} catch (SQLException e) {
+									}
 								}
 							}
 						});
 					}
 					rs.close();
+					for (Runnable loadJob: loadJobs.values()) {
+						queue.add(loadJob);
+					}
 				}
 				Collections.sort(tables, new Comparator<MDTable>() {
 					@Override
@@ -116,6 +115,10 @@ public class MDSchema extends MDObject {
 			}
 		}
 		return tables;
+	}
+
+	public boolean isLoaded() {
+		return tables != null;
 	}
 
 	private final Map<String, MDTable> tablePerUnquotedNameUC = new HashMap<String, MDTable>();
@@ -133,6 +136,10 @@ public class MDSchema extends MDObject {
 			}
 		}
 		return tablePerUnquotedNameUC.get(Quoting.staticUnquote(tableName.toUpperCase(Locale.ENGLISH)));
+	}
+
+	public synchronized void setValid(boolean valid) {
+		this.valid = valid;
 	}
 
 }
