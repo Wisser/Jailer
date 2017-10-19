@@ -30,6 +30,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -84,6 +85,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	private final DataModel dataModel;
 	private final MetaDataDetailsPanel metaDataDetailsPanel;
 	private final Frame parent;
+	private final JButton searchButton;
 	
 	private abstract class ExpandingMutableTreeNode extends DefaultMutableTreeNode {
 		
@@ -131,7 +133,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.NONE;
         gridBagConstraints.weightx = 0;
-        JButton searchButton = StringSearchPanel.createSearchButton(parent, tablesComboBox, "Select Table", new Runnable() {
+        searchButton = StringSearchPanel.createSearchButton(parent, tablesComboBox, "Select Table", new Runnable() {
 			@Override
 			public void run() {
 				onSelectTable();
@@ -319,7 +321,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 				if (path != null) {
 					final Object last = path.getLastPathComponent();
 					if (metaDataTree.getModel().getRoot() == last) {
-						 openNewTableBrowser();
+//						 searchButton.doClick();
 					}
 					if (last instanceof DefaultMutableTreeNode) {
 						final Object uo = ((DefaultMutableTreeNode) last).getUserObject();
@@ -355,13 +357,15 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		Set<String> tableSet = new HashSet<String>();
 		
 		for (Table table: dataModel.getTables()) {
-			String displayName = dataModel.getDisplayName(table);
-			tableSet.add(displayName);
+			if (metaDataSource.toMDTable(table) == null) {
+				String displayName = dataModel.getDisplayName(table);
+				tableSet.add(displayName);
+			}
 		}
 		for (MDSchema schema: metaDataSource.getSchemas()) {
 			if (schema.isLoaded()) {
 				for (MDTable table: schema.getTables()) {
-					if (metaDataSource.toTable(table) == null && !ModelBuilder.isJailerTable(table.getName())) {
+					if (!ModelBuilder.isJailerTable(table.getName())) {
 						String name;
 						if (!schema.isDefaultSchema) {
 							name = schema.getName() + "." + table.getName();
@@ -375,7 +379,12 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			}
 		}
 		List<String> tables = new ArrayList<String>(tableSet);
-		Collections.sort(tables);
+		Collections.sort(tables, new Comparator<String>() {
+			@Override
+			public int compare(String o1, String o2) {
+				return o1.compareToIgnoreCase(o2);
+			}
+		});
 		ComboBoxModel model = new DefaultComboBoxModel(new Vector(tables));
 			
 		tablesComboBox.setModel(model);

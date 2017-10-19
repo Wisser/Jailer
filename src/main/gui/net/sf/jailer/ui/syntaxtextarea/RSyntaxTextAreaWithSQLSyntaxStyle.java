@@ -15,7 +15,6 @@
  */
 package net.sf.jailer.ui.syntaxtextarea;
 
-import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.Window;
@@ -30,6 +29,7 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -49,10 +49,12 @@ import org.fife.rsta.ui.search.SearchEvent;
 import org.fife.rsta.ui.search.SearchListener;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
+import org.fife.ui.rtextarea.Gutter;
 import org.fife.ui.rtextarea.SearchContext;
 import org.fife.ui.rtextarea.SearchEngine;
 import org.fife.ui.rtextarea.SearchResult;
 
+import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.util.Pair;
 
 /**
@@ -150,8 +152,9 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			}
 		});
 
-		setHighlightCurrentLine(false);
-
+		setHighlightCurrentLine(true);
+		setFadeCurrentLineHighlight(true);
+		
 		createPopupMenu();
 		updateMenuItemState();
 	}
@@ -469,13 +472,25 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		if (allowRun && setLineHighlights) {
 			if (!pending.get()) {
 				removeAllLineHighlights();
-				for (int l = loc.a; l <= loc.b; ++l) {
+				setHighlightCurrentLine(true);
+				if (gutter != null) {
+					gutter.removeAllTrackingIcons();
 					try {
-						addLineHighlight(l, new Color(235, 240, 255));
+						if (loc.a != loc.b || !getText(loc.a, loc.b, true).trim().isEmpty()) {
+							for (int l = loc.a; l <= loc.b; ++l) {
+								gutter.addLineTrackingIcon(l, icon);
+							}
+						}
 					} catch (BadLocationException e) {
-						e.printStackTrace();
 					}
 				}
+//				for (int l = loc.a; l <= loc.b; ++l) {
+//					try {
+//						addLineHighlight(l, new Color(235, 255, 245));
+//					} catch (BadLocationException e) {
+//						e.printStackTrace();
+//					}
+//				}
 				if (loc.b - loc.a > 10000) {
 					stopped.set(false);
 					pending.set(true);
@@ -533,5 +548,22 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 
 	private final AtomicBoolean stopped = new AtomicBoolean(false);
 	private final AtomicBoolean pending = new AtomicBoolean(false);
+	private Gutter gutter;
+
+	public void setGutter(Gutter gutter) {
+		this.gutter = gutter;
+	}
+
+	private static ImageIcon icon;
+    static {
+		String dir = "/net/sf/jailer/ui/resource";
+		
+		// load images
+		try {
+			icon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsole.png"));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+    }
 
 }

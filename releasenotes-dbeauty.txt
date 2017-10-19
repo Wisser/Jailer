@@ -1,3 +1,6 @@
+3.7.3
+  - Performance and GUI improvements.
+
 3.7.2
   - Table search feature.
   - Minor GUI improvements.

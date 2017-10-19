@@ -45,6 +45,7 @@ public class MDTable extends MDObject {
 	private List<String> primaryKey;
 	private List<String> columns;
 	private AtomicBoolean loading = new AtomicBoolean(false);
+	private AtomicBoolean loaded = new AtomicBoolean(false);
 	private final boolean isView;
 	private final boolean isSynonym;
 	
@@ -131,19 +132,23 @@ public class MDTable extends MDObject {
 		if (columns == null) {
 			columns = new ArrayList<String>();
 			primaryKey = new ArrayList<String>();
-    		MetaDataSource metaDataSource = getMetaDataSource();
-			synchronized (metaDataSource.getSession().getMetaData()) {
-    			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getColumns(getSchema().getMetaDataSource().getSession(), getSchema().getMetaDataSource().getSession().getMetaData(), Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), "%", false);
-				while (rs.next()) {
-					columns.add(metaDataSource.getQuoting().quote(rs.getString(4)));
-				}
-				rs.close();
-				
-				rs = JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(getSchema().getMetaDataSource().getSession(), getSchema().getMetaDataSource().getSession().getMetaData(), getSchema().getName(), getName(), false);
-				while (rs.next()) {
-					primaryKey.add(rs.getString(4));
-				}
-				rs.close();
+    		try {
+				MetaDataSource metaDataSource = getMetaDataSource();
+				synchronized (metaDataSource.getSession().getMetaData()) {
+	    			ResultSet rs = JDBCMetaDataBasedModelElementFinder.getColumns(getSchema().getMetaDataSource().getSession(), getSchema().getMetaDataSource().getSession().getMetaData(), Quoting.staticUnquote(getSchema().getName()), Quoting.staticUnquote(getName()), "%", false);
+					while (rs.next()) {
+						columns.add(metaDataSource.getQuoting().quote(rs.getString(4)));
+					}
+					rs.close();
+					
+					rs = JDBCMetaDataBasedModelElementFinder.getPrimaryKeys(getSchema().getMetaDataSource().getSession(), getSchema().getMetaDataSource().getSession().getMetaData(), getSchema().getName(), getName(), false);
+					while (rs.next()) {
+						primaryKey.add(rs.getString(4));
+					}
+					rs.close();
+	    		}
+    		} finally {
+    			loaded.set(true);
     		}
 		}
 	}
@@ -183,7 +188,7 @@ public class MDTable extends MDObject {
 	}
 
 	public boolean isLoaded() {
-		return columns != null;
+		return loaded.get();
 	}
 
 	private static final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
