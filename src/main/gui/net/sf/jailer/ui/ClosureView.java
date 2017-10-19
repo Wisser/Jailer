@@ -24,7 +24,6 @@ import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
-import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
 import java.awt.event.ActionEvent;
@@ -104,10 +103,13 @@ public abstract class ClosureView extends javax.swing.JDialog {
 	 * Holds infos about a cell in the closure-table.
 	 */
 	private class CellInfo {
-		public int row, column;
+		public int row, column, level;
 		boolean ignored = false;
 		Set<CellInfo> parents = new HashSet<CellInfo>(4);
 		boolean selected;
+		CellInfo(int level) {
+            this.level = level;
+        }
 		void select() {
 			if (!selected) {
 				selected = true;
@@ -393,7 +395,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 					((JLabel) render).setFont(normal);
 					String text = ((JLabel) render).getText();
 					if (!"".equals(text)) {
-						((JLabel) render).setToolTipText(text);
+						((JLabel) render).setToolTipText(toolTip(text, cellInfo));
 					} else {
 						((JLabel) render).setToolTipText(null);
 					}
@@ -442,6 +444,61 @@ public abstract class ClosureView extends javax.swing.JDialog {
 		setLocation(100, 100);
 		setSize(500, 500);
 		setAlwaysOnTop(true);
+	}
+
+	protected String toolTip(String tableName, CellInfo theCellInfo) {
+        if (theCellInfo == null || theCellInfo.table == null|| theCellInfo.level >= Integer.MAX_VALUE / 2) {
+            return tableName;
+        }
+        Set<String> nb_up = new TreeSet<String>();
+        Set<String> nb_same = new TreeSet<String>();
+        Set<String> nb_down = new TreeSet<String>();
+        for (Association a: theCellInfo.table.associations) {
+            Table dest = a.destination;
+            String destName = getDataModel().getDisplayName(dest);
+            CellInfo destInfo = cellInfo.get(destName);
+            if (destInfo != null) {
+	            int dif = destInfo.level - theCellInfo.level;
+	            if (dif == -1) {
+	                nb_up.add(destName);
+	            } else if (dif == 0) {
+	                nb_same.add(destName);
+	            } else if (dif == 1) {
+	                nb_down.add(destName);
+	            }
+            }
+        }
+        nb_same.add("<b>" + tableName + "</b>");
+        int maxWidth = 6;
+        String sep = "";
+        if (nb_up.size() > maxWidth || nb_same.size() > maxWidth || nb_down.size() > maxWidth) {
+        	sep = "<tr><td></td></tr>";
+        }
+        String tip = "<html>"
+        	+ "<table cellspacing=0 cellpadding=0>"
+        	+ tipJoin(nb_up, theCellInfo.level - 1)
+        	+ sep
+        	+ tipJoin(nb_same, theCellInfo.level)
+        	+ sep
+        	+ tipJoin(nb_down, theCellInfo.level + 1)
+        	+ "</table>";
+        return tip;
+    }
+
+    private String tipJoin(Set<String> tipList, int level) {
+    	StringBuilder sb = new StringBuilder();
+    	int w = 0;
+    	for (String tip: tipList) {
+    		if (++w > 6) {
+    			w = 0;
+    			sb.append("</tr><tr><td></td>");
+    		}
+    		sb.append("<td>&nbsp;" + tip + "&nbsp;</td>");
+    	}
+    	if (sb.length() == 0) {
+    		return "";
+    	}
+    	return "<tr><td>&nbsp;&nbsp;" + (level + 1) + "&nbsp;</td>" + sb.toString() + "</tr>";
 	}
 
 	protected SortedMap<String, Association> sortedNamed(List<Association> aList) {
@@ -594,7 +651,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 			String displayName = getDataModel().getDisplayName(selectedTable);
 			currentLine.add(displayName);
 			visited.add(displayName);
-			CellInfo cellInfo = new CellInfo();
+			CellInfo cellInfo = new CellInfo(-1);
 			cellInfo.column = 1;
 			cellInfo.row = 0;
 			cellInfo.table = selectedTable;
@@ -668,7 +725,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 							if (!visited.contains(displayName)) {
 								nextLine.add(displayName);
 								visited.add(displayName);
-								CellInfo cellInfo = new CellInfo();
+								CellInfo cellInfo = new CellInfo(distance);
 								cellInfo.parents.add(cellInfoT);
 								cellInfo.table = association.destination;
 								if (association.isInsertDestinationBeforeSource()) {
@@ -706,7 +763,7 @@ public abstract class ClosureView extends javax.swing.JDialog {
 								cellInfoT = this.cellInfo.get(destName);
 								CellInfo cellInfo = this.cellInfo.get(displayName);
 								if (cellInfo == null) {
-									cellInfo = new CellInfo();
+									cellInfo = new CellInfo(distance);
 									cellInfo.table = table;
 									nextLine.add(displayName);
 									visited.add(displayName);

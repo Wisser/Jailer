@@ -224,8 +224,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		});
 		RTextScrollPane jScrollPane = new RTextScrollPane();
 		jScrollPane.setViewportView(editorPane);
+		editorPane.setGutter(jScrollPane.getGutter());
 		consoleContainerPanel.add(jScrollPane);
 		jScrollPane.setLineNumbersEnabled(true);
+		jScrollPane.setIconRowHeaderEnabled(true);
 
 		runSQLButton.setAction(editorPane.runBlock);
 		runnAllButton.setAction(editorPane.runAll);
@@ -618,6 +620,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							Color runningColor = new Color(255, 255, 210);
 							if (location != null) {
 								editorPane.removeAllLineHighlights();
+								editorPane.setHighlightCurrentLine(false);
 								try {
 									for (int i = location.a; i <= location.b; ++i) {
 										Color hl;
