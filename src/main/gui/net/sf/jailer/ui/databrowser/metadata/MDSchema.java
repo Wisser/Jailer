@@ -27,6 +27,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.sf.jailer.util.Quoting;
 
@@ -41,6 +42,7 @@ public class MDSchema extends MDObject {
 	private List<MDTable> tables;
 	private static final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
 	private boolean valid = true;
+	private AtomicBoolean loaded = new AtomicBoolean(false);
 	
 	/**
 	 * Constructor.
@@ -112,13 +114,15 @@ public class MDSchema extends MDObject {
 				});
 			} catch (SQLException e) {
 				e.printStackTrace();
+			} finally {
+				loaded.set(true);
 			}
 		}
 		return tables;
 	}
 
 	public boolean isLoaded() {
-		return tables != null;
+		return loaded.get();
 	}
 
 	private final Map<String, MDTable> tablePerUnquotedNameUC = new HashMap<String, MDTable>();
