@@ -55,7 +55,12 @@ public class ConditionEditor extends javax.swing.JDialog {
 	public ConditionEditor(java.awt.Frame parent, ParameterSelector.ParametersGetter parametersGetter, DataModel dataModel) {
 		super(parent, true);
 		initComponents();
-		this.editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(false);
+		this.editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(false) {
+			protected void runBlock() {
+				super.runBlock();
+				okButtonActionPerformed(null);
+			}
+		};
 		JScrollPane jScrollPane2 = new JScrollPane();
 		jScrollPane2.setViewportView(editorPane);
 		

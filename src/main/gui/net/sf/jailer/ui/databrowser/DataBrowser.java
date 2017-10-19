@@ -863,7 +863,6 @@ public class DataBrowser extends javax.swing.JFrame {
         reconnectMenuItem = new javax.swing.JMenuItem();
         jSeparator7 = new javax.swing.JPopupMenu.Separator();
         cloaseAllMenuItem = new javax.swing.JMenuItem();
-        jSeparator3 = new javax.swing.JPopupMenu.Separator();
         schemaMappingMenuItem = new javax.swing.JMenuItem();
         menuTools = new javax.swing.JMenu();
         analyseMenuItem = new javax.swing.JMenuItem();
@@ -1077,7 +1076,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jLayeredPane1.setLayer(layeredPaneContent, javax.swing.JLayeredPane.PALETTE_LAYER);
         jLayeredPane1.add(layeredPaneContent);
-        layeredPaneContent.setBounds(0, 0, 26, 57);
+        layeredPaneContent.setBounds(0, 0, 24, 58);
 
         jSplitPane3.setLeftComponent(jLayeredPane1);
 
@@ -1425,7 +1424,6 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         jMenu1.add(cloaseAllMenuItem);
-        jMenu1.add(jSeparator3);
 
         schemaMappingMenuItem.setText("Schema Mapping");
         schemaMappingMenuItem.addActionListener(new java.awt.event.ActionListener() {
@@ -2158,7 +2156,6 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator10;
     private javax.swing.JPopupMenu.Separator jSeparator2;
-    private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
     private javax.swing.JPopupMenu.Separator jSeparator6;
