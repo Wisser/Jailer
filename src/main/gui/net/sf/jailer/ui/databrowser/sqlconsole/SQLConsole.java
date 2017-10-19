@@ -614,7 +614,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 									statusTextPane.setCaretPosition(0);
 								}
 							}
-							Color failedColor = new Color(255, 170, 170);
+							Color failedColor = new Color(255, 200, 200);
 							Color okColor = new Color(210, 255, 210);
 							Color pendingColor = new Color(235, 235, 255);
 							Color runningColor = new Color(255, 255, 210);
