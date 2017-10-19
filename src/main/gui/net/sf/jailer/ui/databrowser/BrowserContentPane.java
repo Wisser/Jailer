@@ -2902,7 +2902,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				protected void onClose() {
 				}
 			};
-			dtm = new DefaultTableModel(new String[] { "Single Row Details" }, 0) {
+			singleRowDetailsView.setSortColumns(sortColumnsCheckBox.isSelected());
+	        dtm = new DefaultTableModel(new String[] { "Single Row Details" }, 0) {
 				@Override
 				public boolean isCellEditable(int row, int column) {
 					return false;

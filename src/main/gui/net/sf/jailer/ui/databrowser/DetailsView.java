@@ -330,4 +330,9 @@ public abstract class DetailsView extends javax.swing.JPanel {
     private javax.swing.JCheckBox sortCheckBox;
     // End of variables declaration//GEN-END:variables
 
+	public void setSortColumns(boolean selected) {
+		sortColumns = selected;
+    	setCurrentRow(currentRow, showSpinner);
+	}
+
 }
