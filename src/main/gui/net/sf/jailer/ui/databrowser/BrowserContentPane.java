@@ -2922,7 +2922,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			TableColumnModel cm = rowsTable.getColumnModel();
 			for (int a = 0; a < rowsTable.getColumnCount(); ++a) {
 				for (int b = a + 1; b < rowsTable.getColumnCount(); ++b) {
-					if (cm.getColumn(a).getHeaderValue().toString().compareTo(cm.getColumn(b).getHeaderValue().toString()) > 0) {
+					if (cm.getColumn(a).getHeaderValue().toString().compareToIgnoreCase(cm.getColumn(b).getHeaderValue().toString()) > 0) {
 						cm.moveColumn(b, a);
 					}
 				}

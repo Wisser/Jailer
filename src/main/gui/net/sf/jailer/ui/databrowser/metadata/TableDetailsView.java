@@ -95,7 +95,7 @@ public class TableDetailsView extends javax.swing.JPanel {
 					Collections.sort(columns, new Comparator<Column>() {
 						@Override
 						public int compare(Column o1, Column o2) {
-							return o1.name.compareTo(o2.name);
+							return o1.name.compareToIgnoreCase(o2.name);
 						}
 					});
 				}
