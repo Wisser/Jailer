@@ -88,6 +88,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		this.withExecuteActions = withExecuteActions;
 		setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
 		setAutoIndentEnabled(true);
+		setTabsEmulated(true);
 		
 		formatSQL = new AbstractAction("Format SQL") {
 			{
