@@ -288,12 +288,16 @@ public class Quoting {
 			String q = identifier.substring(0, 1);
 			if (identifier.endsWith(q)) {
 				char c = q.charAt(0);
-				if (q.equals(qu) || c == '"' || c == '\'' || c == '\u00B4' || c == '`') {
+				if (q.equals(qu) || isPotentialIdentifierQuote(c)) {
 					return true;
 				}
 			}
 		}
 		return false;
+	}
+
+	public static boolean isPotentialIdentifierQuote(char c) {
+		return c == '"' || c == '\'' || c == '\u00B4' || c == '`';
 	}
 
 	/**

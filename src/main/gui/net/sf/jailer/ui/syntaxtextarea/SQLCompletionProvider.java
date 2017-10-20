@@ -536,28 +536,51 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 			public String createStarReplacement(List<TABLE> tables, List<String> tableNames, String alias,
 					Map<String, Integer> countMap, String indent, boolean isCaretAtEOL) {
 				Map<String, Integer> count = new HashMap<String, Integer>(countMap);
+				Set<String> allColumnNames = new HashSet<String>();
+				for (int i = 0; i < tables.size(); ++i) {
+					TABLE table = tables.get(i);
+					for (String column: getAndWaitForColumns(table)) {
+						allColumnNames.add(Quoting.staticUnquote(column).toUpperCase(Locale.ENGLISH));
+					}
+				}
 				StringBuilder sb = new StringBuilder();
 				for (int i = 0; i < tables.size(); ++i) {
 					TABLE table = tables.get(i);
 					for (String column: getAndWaitForColumns(table)) {
-						String prefix = "";
-						String unquotedColumn = Quoting.staticUnquote(column).toUpperCase(Locale.ENGLISH);
-						if (count.containsKey(unquotedColumn)) {
-							int nr = count.get(unquotedColumn);
-							prefix = "_" + nr;
-							count.put(unquotedColumn, nr + 1);
-						}
-						if (sb.length() > 0) {
-							sb.append(", " + indent);
-						}
-						if (alias != null) {
-							if (sb.length() > 0) {
-								sb.append(alias + ".");
+						for (;;) {
+							String suffix = "";
+							String unquotedColumn = Quoting.staticUnquote(column).toUpperCase(Locale.ENGLISH);
+							if (count.containsKey(unquotedColumn)) {
+								int nr = count.get(unquotedColumn);
+								suffix = "_" + nr;
+								count.put(unquotedColumn, nr + 1);
 							}
-						} else {
-							sb.append(tableNames.get(i) + ".");
+							String columnWithSuffix;
+							if (suffix.isEmpty() || column.isEmpty() || column.charAt(0) != column.charAt(column.length() - 1) || !Quoting.isPotentialIdentifierQuote(column.charAt(0))) {
+								columnWithSuffix = column + suffix;
+							} else {
+								columnWithSuffix = column.substring(0, column.length() - 1) + suffix + column.charAt(column.length() - 1);
+							}
+							String unquotedColumnWithSuffix = Quoting.staticUnquote(columnWithSuffix).toUpperCase(Locale.ENGLISH);
+							if (!suffix.isEmpty()) {
+								if (allColumnNames.contains(unquotedColumnWithSuffix)) {
+									continue;
+								}
+							}
+							if (sb.length() > 0) {
+								sb.append(", " + indent);
+							}
+							if (alias != null) {
+								if (sb.length() > 0) {
+									sb.append(alias + ".");
+								}
+							} else {
+								sb.append(tableNames.get(i) + ".");
+							}
+							sb.append(column + " as " + columnWithSuffix);
+							allColumnNames.add(unquotedColumnWithSuffix);
+							break;
 						}
-						sb.append(column + " as " + column + prefix);
 					}
 				}
 				if (isCaretAtEOL) {
