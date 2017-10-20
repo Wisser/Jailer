@@ -114,6 +114,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	private final List<String> history = new ArrayList<String>();
 	private final AtomicBoolean running = new AtomicBoolean(false);
 	private final AtomicBoolean updatingStatus = new AtomicBoolean(false);
+	private final ImageIcon scaledCancelIcon;
 	
 	/**
 	 * Creates new form SQLConsole
@@ -241,7 +242,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		runnAllButton.setToolTipText(runnAllButton.getText() + " - Alt-Enter");
 		runnAllButton.setMargin(new Insets(0, 0, 0, 0));
 				
-		cancelButton.setIcon(getScaledIcon(this, cancelIcon));
+		scaledCancelIcon = getScaledIcon(this, cancelIcon);
+		cancelButton.setIcon(scaledCancelIcon);
 		
 		limitComboBox.setModel(new DefaultComboBoxModel(DataBrowser.ROW_LIMITS));
 		limitComboBox.setSelectedItem(1000);
@@ -594,14 +596,20 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 										statusTextPane.setText("Cancelled");
 									} else if (error instanceof SQLException) {
 										String pos = "";
+										int errorLine = -1;
 										if (errorPosition >= 0) {
 											try {
-												int line = editorPane.getLineOfOffset(errorPosition);
-												int col = errorPosition - editorPane.getLineStartOffset(line);
-												pos = "Error at line " + (line + 1) + ", column " + col + ": ";
+												errorLine = editorPane.getLineOfOffset(errorPosition);
+												int col = errorPosition - editorPane.getLineStartOffset(errorLine);
+												pos = "Error at line " + (errorLine + 1) + ", column " + col + ": ";
 												editorPane.setCaretPosition(errorPosition);
 											} catch (BadLocationException e) {
 											}
+										} else if (location != null) {
+											errorLine = location.a;
+										}
+										if (errorLine >= 0) {
+											editorPane.setLineTrackingIcon(errorLine, scaledCancelIcon);
 										}
 										statusTextPane.setText(pos + error.getMessage());
 									} else {

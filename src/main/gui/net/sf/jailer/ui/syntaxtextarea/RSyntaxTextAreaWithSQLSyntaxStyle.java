@@ -29,6 +29,7 @@ import java.util.regex.Pattern;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.ActionMap;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 import javax.swing.InputMap;
 import javax.swing.JMenuItem;
@@ -553,7 +554,17 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	public void setGutter(Gutter gutter) {
 		this.gutter = gutter;
 	}
-
+	
+	public void setLineTrackingIcon(int line, Icon theIcon) {
+		if (gutter != null) {
+			try {
+				gutter.removeAllTrackingIcons();
+				gutter.addLineTrackingIcon(line, theIcon);
+			} catch (BadLocationException e) {
+			}
+		}
+	}
+	
 	private static ImageIcon icon;
     static {
 		String dir = "/net/sf/jailer/ui/resource";

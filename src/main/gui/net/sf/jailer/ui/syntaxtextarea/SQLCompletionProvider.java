@@ -210,7 +210,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		aliases.clear();
 		aliases.putAll(findAliases(afterCaret != null? beforeCaret + "=" + afterCaret : line));
 		aliases.putAll(userDefinedAliases);
-		Clause clause = Clause.currentClouse(beforeCaret);
+		Clause clause = currentClause(beforeCaret);
 		List<SQLCompletion> result = new ArrayList<SQLCompletion>();
 		withOnCompletions = false;
 		for (CompletionRetriever<TABLE, SOURCE> completionRetriever: completionRetrievers) {
@@ -521,7 +521,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 						}
 						for (Entry<String, TABLE> entry: aliases.entrySet()) {
 							for (String c: getAndWaitForColumns(entry.getValue())) {
-								if (colCount.get(c) > 1) {
+								if (colCount.get(c) > 1 || defaultClause != null) {
 									result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(c), entry.getKey() + "." + c, entry.getKey(), SQLCompletion.COLOR_COLUMN));
 								} else {
 									result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(c), c, entry.getKey(), SQLCompletion.COLOR_COLUMN));
@@ -534,7 +534,8 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 			}
 
 			public String createStarReplacement(List<TABLE> tables, List<String> tableNames, String alias,
-					Map<String, Integer> count, String indent, boolean isCaretAtEOL) {
+					Map<String, Integer> countMap, String indent, boolean isCaretAtEOL) {
+				Map<String, Integer> count = new HashMap<String, Integer>(countMap);
 				StringBuilder sb = new StringBuilder();
 				for (int i = 0; i < tables.size(); ++i) {
 					TABLE table = tables.get(i);
@@ -589,7 +590,10 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 					case ON: return keywordCompletion("Where", "Group by");
 					case ORDER: return null;
 					case SELECT: return keywordCompletion("From");
-					case WHERE: return keywordCompletion("Group by", "Order by");
+					case WHERE: 
+						if (defaultClause != Clause.WHERE) {
+							return keywordCompletion("Group by", "Order by");
+						}
 					default:
 						break;
 					}
@@ -814,7 +818,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		return aliases;
 	}
 
-	private enum Clause {
+	public enum Clause {
 		SELECT("select"),
 		FROM("from"),
 		WHERE("where"),
@@ -833,20 +837,20 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		Clause(String name) {
 			this.name = name;
 		}
+	};
 
-		public static Clause currentClouse(String sql) {
-			Pattern pattern = Pattern.compile(".*\\b(select|from|where|group|having|order|join|on|update|set|into|table)\\b.*?$", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
-			Matcher matcher = pattern.matcher(sql);
-			if (matcher.matches()) {
-				for (Clause clause: values()) {
-					if (clause.name.equalsIgnoreCase(matcher.group(1))) {
-						return clause;
-					}
+	private Clause currentClause(String sql) {
+		Pattern pattern = Pattern.compile(".*\\b(select|from|where|group|having|order|join|on|update|set|into|table)\\b.*?$", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
+		Matcher matcher = pattern.matcher(sql);
+		if (matcher.matches()) {
+			for (Clause clause: Clause.values()) {
+				if (clause.name.equalsIgnoreCase(matcher.group(1))) {
+					return clause;
 				}
 			}
-			return null;
 		}
-	};
+		return defaultClause;
+	}
 
 	private static String reIdentifier = "(?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+)";
 	private static String reIdentDotOnly = ".*?(" + reIdentifier + ")\\s*\\.\\s*[\"'`]?\\w*$";
@@ -870,6 +874,12 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 
 	public List<String> getAndWaitForColumns(TABLE table) {
 		return getColumns(table, timeOut, waitCursorSubject);
+	}
+
+	private Clause defaultClause = null;
+	
+	public void setDefaultClause(Clause clause) {
+		this.defaultClause = clause;
 	}
 
 	protected abstract List<String> getColumns(TABLE table, long timeOut, JComponent waitCursorSubject);

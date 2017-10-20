@@ -39,6 +39,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
 
 /**
  * Editor for multi-line SQL conditions with parameter support.
@@ -86,6 +87,7 @@ public class ConditionEditor extends javax.swing.JDialog {
 		if (dataModel != null) {
 			try {
 				provider = new DataModelBasedSQLCompletionProvider(null, dataModel);
+				provider.setDefaultClause(SQLCompletionProvider.Clause.WHERE);
 				AutoCompletion ac = new AutoCompletion(provider);
 				ac.install(editorPane);
 			} catch (SQLException e) {

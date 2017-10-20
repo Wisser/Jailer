@@ -925,11 +925,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		if (this.association == null) {
 			joinPanel.setVisible(false);
 			onPanel.setVisible(false);
-			wherePanel.setVisible(false);
 			
 			jLabel1.setText(" ");
 			jLabel4.setText(" ");
-			jLabel9.setText(" ");
 			
 			jLabel6.setVisible(false);
 			dropB.setVisible(false);
@@ -946,7 +944,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			updateWhereField();
 			join.setToolTipText(join.getText());
 			on.setToolTipText(on.getText());
-			where.setToolTipText(where.getText());
 		}
 	}
 
@@ -3023,11 +3020,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        wherePanel = new javax.swing.JPanel();
-        where = new javax.swing.JLabel();
         jPanel7 = new javax.swing.JPanel();
         loadButton = new javax.swing.JButton();
-        andCondition = new net.sf.jailer.ui.JComboBox();
+        andCondition = new javax.swing.JComboBox();
         onPanel = new javax.swing.JPanel();
         on = new javax.swing.JLabel();
         joinPanel = new javax.swing.JPanel();
@@ -3056,13 +3051,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jLabel11 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        jLabel9 = new javax.swing.JLabel();
         andLabel = new javax.swing.JLabel();
         openEditorLabel = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         fetchLabel = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
-        limitBox = new net.sf.jailer.ui.JComboBox();
+        limitBox = new javax.swing.JComboBox();
         relatedRowsPanel = new javax.swing.JPanel();
         relatedRowsLabel = new javax.swing.JLabel();
         jPanel9 = new javax.swing.JPanel();
@@ -3072,22 +3066,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         dropB = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
-
-        wherePanel.setMinimumSize(new java.awt.Dimension(66, 17));
-        wherePanel.setLayout(new java.awt.BorderLayout());
-
-        where.setFont(new java.awt.Font("DejaVu Sans", 0, 13)); // NOI18N
-        where.setText("jLabel3");
-        wherePanel.add(where, java.awt.BorderLayout.CENTER);
-
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 4;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = 4;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        add(wherePanel, gridBagConstraints);
 
         jPanel7.setLayout(new java.awt.GridBagLayout());
 
@@ -3363,17 +3341,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(jLabel4, gridBagConstraints);
 
-        jLabel9.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
-        jLabel9.setText(" Where ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 7;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        add(jLabel9, gridBagConstraints);
-
         andLabel.setFont(new java.awt.Font("DejaVu Sans", 1, 13)); // NOI18N
-        andLabel.setText(" And  ");
+        andLabel.setText(" Where ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 8;
@@ -3506,7 +3475,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    net.sf.jailer.ui.JComboBox andCondition;
+    javax.swing.JComboBox andCondition;
     private javax.swing.JLabel andLabel;
     private javax.swing.JButton cancelLoadButton;
     private javax.swing.JPanel cardPanel;
@@ -3523,7 +3492,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel8;
-    private javax.swing.JLabel jLabel9;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
     private javax.swing.JPanel jPanel2;
@@ -3536,7 +3504,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel9;
     private javax.swing.JLabel join;
     private javax.swing.JPanel joinPanel;
-    net.sf.jailer.ui.JComboBox limitBox;
+    javax.swing.JComboBox limitBox;
     private javax.swing.JButton loadButton;
     private javax.swing.JLabel on;
     private javax.swing.JPanel onPanel;
@@ -3551,8 +3519,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     public javax.swing.JCheckBox sortColumnsCheckBox;
     private javax.swing.JLabel sqlLabel1;
     private javax.swing.JPanel sqlPanel;
-    private javax.swing.JLabel where;
-    private javax.swing.JPanel wherePanel;
     // End of variables declaration//GEN-END:variables
 
 	private ConditionEditor andConditionEditor;
@@ -3749,7 +3715,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private void updateWhereField() {
 		if (association != null) {
-			where.setText(parentRow == null ? (parentRows != null && parentRows.size() > 0? parentRows.get(0).rowId + (parentRows.size() > 1? " or ..." : "") : "") : parentRow.rowId);
 			if (parentRow == null && parentRows != null && parentRows.size() > 0) {
 				StringBuilder sb = new StringBuilder();
 				for (int i = 0; i < parentRows.size(); ++i) {
@@ -3762,9 +3727,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						break;
 					}
 				}
-				where.setToolTipText(UIUtil.toHTML(sb.toString(), 0));
+				String currentCond = getAndConditionText().trim();
+				String toolTip;
+				if (currentCond.length() > 0) {
+					toolTip = currentCond + "\nand (\n" + sb + ")";
+				} else {
+					toolTip = sb.toString();
+				}
+				andLabel.setToolTipText(UIUtil.toHTML(toolTip, 0));
 			} else {
-				where.setToolTipText(where.getText());
+				andLabel.setToolTipText(null);
 			}
 		}
 	}
