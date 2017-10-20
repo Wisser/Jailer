@@ -3372,7 +3372,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         add(fetchLabel, gridBagConstraints);
 
         jPanel3.setLayout(new javax.swing.BoxLayout(jPanel3, javax.swing.BoxLayout.LINE_AXIS));
@@ -3390,7 +3389,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 0);
         add(jPanel3, gridBagConstraints);
 
         relatedRowsPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
@@ -3404,7 +3402,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridy = 9;
         gridBagConstraints.gridwidth = 4;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 4, 2);
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 2);
         add(relatedRowsPanel, gridBagConstraints);
 
         jPanel9.setLayout(new java.awt.GridBagLayout());
@@ -3738,6 +3736,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			} else {
 				andLabel.setToolTipText(null);
 			}
+		} else {
+			andLabel.setToolTipText(null);
 		}
 	}
 
