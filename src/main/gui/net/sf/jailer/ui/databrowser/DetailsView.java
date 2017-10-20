@@ -41,6 +41,7 @@ import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -149,7 +150,7 @@ public abstract class DetailsView extends javax.swing.JPanel {
 			Collections.sort(columnIndex, new Comparator<Integer>() {
 				@Override
 				public int compare(Integer o1, Integer o2) {
-					return columns.get(o1).name.compareTo(columns.get(o2).name);
+					return Quoting.staticUnquote(columns.get(o1).name).compareTo(Quoting.staticUnquote(columns.get(o2).name));
 				}
 			});
 		}
