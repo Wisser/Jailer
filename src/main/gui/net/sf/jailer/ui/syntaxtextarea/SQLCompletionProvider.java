@@ -552,7 +552,13 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 							String unquotedColumn = Quoting.staticUnquote(column).toUpperCase(Locale.ENGLISH);
 							if (count.containsKey(unquotedColumn)) {
 								int nr = count.get(unquotedColumn);
-								suffix = "_" + nr;
+								if (nr != 1) {
+									if (nr > 1) {
+										suffix = "_" + (nr - 1);
+									} else {
+										suffix = "_" + nr;
+									}
+								}
 								count.put(unquotedColumn, nr + 1);
 							}
 							String columnWithSuffix;
@@ -577,7 +583,11 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 							} else {
 								sb.append(tableNames.get(i) + ".");
 							}
-							sb.append(column + " as " + columnWithSuffix);
+							if (column.equals(columnWithSuffix)) {
+								sb.append(column);
+							} else {
+								sb.append(column + " as " + columnWithSuffix);
+							}
 							allColumnNames.add(unquotedColumnWithSuffix);
 							break;
 						}
