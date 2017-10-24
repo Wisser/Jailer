@@ -168,12 +168,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		}
 
-		public LoadJob(ResultSet inputResultSet) {
+		public LoadJob(ResultSet inputResultSet, int limit) {
 			this.andCond = "";
 			this.selectDistinct = false;
 			this.inputResultSet = inputResultSet;
 			synchronized (this) {
-				this.limit = Integer.MAX_VALUE;
+				this.limit = limit;
 				finished = false;
 				isCanceled = false;
 			}
@@ -827,45 +827,45 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		updateTableModel(0, false);
 		
-		if (this.table instanceof SqlStatementTable) {
-			sqlBrowserContentPane = new SQLBrowserContentPane(dataModel, session, getMetaDataSource());
-			removeAll();
-			GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-			gridBagConstraints.gridx = 1;
-			gridBagConstraints.gridy = 1;
-			gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-			gridBagConstraints.weightx = 1.0;
-			gridBagConstraints.weighty = 1.0;
-			add(sqlBrowserContentPane, gridBagConstraints);
-			gridBagConstraints = new java.awt.GridBagConstraints();
-			gridBagConstraints.gridx = 2;
-			gridBagConstraints.gridy = 5;
-			gridBagConstraints.gridwidth = 2;
-			gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-			gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-			gridBagConstraints.weightx = 0;
-			gridBagConstraints.weighty = 0;
-			sqlBrowserContentPane.editorPanel.add(limitBox, gridBagConstraints);
-			sqlBrowserContentPane.rowListPanel.add(cardPanel, java.awt.BorderLayout.CENTER);
-			cardPanel.setVisible(true);
-			sqlBrowserContentPane.sqlEditorPane.setText(condition);
-			sqlBrowserContentPane.sqlEditorPane.setCaretPosition(0);
-			sqlBrowserContentPane.sqlEditorPane.discardAllEdits();
-			
-			sqlBrowserContentPane.reloadButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent arg0) {
-					reloadRows();
-				}
-			});
-			sqlBrowserContentPane.detailsButton.setEnabled(false);
-			sqlBrowserContentPane.detailsButton.addActionListener(new ActionListener() {
-				@Override
-				public void actionPerformed(ActionEvent e) {
-					openDetails(300, 300);
-				}
-			});
-		}
+//		if (this.table instanceof SqlStatementTable || statementForReloading != null) {
+//			sqlBrowserContentPane = new SQLBrowserContentPane(dataModel, session, getMetaDataSource());
+//			removeAll();
+//			GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+//			gridBagConstraints.gridx = 1;
+//			gridBagConstraints.gridy = 1;
+//			gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+//			gridBagConstraints.weightx = 1.0;
+//			gridBagConstraints.weighty = 1.0;
+//			add(sqlBrowserContentPane, gridBagConstraints);
+//			gridBagConstraints = new java.awt.GridBagConstraints();
+//			gridBagConstraints.gridx = 2;
+//			gridBagConstraints.gridy = 5;
+//			gridBagConstraints.gridwidth = 2;
+//			gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+//			gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+//			gridBagConstraints.weightx = 0;
+//			gridBagConstraints.weighty = 0;
+//			sqlBrowserContentPane.editorPanel.add(limitBox, gridBagConstraints);
+//			sqlBrowserContentPane.rowListPanel.add(cardPanel, java.awt.BorderLayout.CENTER);
+//			cardPanel.setVisible(true);
+//			sqlBrowserContentPane.sqlEditorPane.setText(condition);
+//			sqlBrowserContentPane.sqlEditorPane.setCaretPosition(0);
+//			sqlBrowserContentPane.sqlEditorPane.discardAllEdits();
+//			
+//			sqlBrowserContentPane.reloadButton.addActionListener(new ActionListener() {
+//				@Override
+//				public void actionPerformed(ActionEvent arg0) {
+//					reloadRows();
+//				}
+//			});
+//			sqlBrowserContentPane.detailsButton.setEnabled(false);
+//			sqlBrowserContentPane.detailsButton.addActionListener(new ActionListener() {
+//				@Override
+//				public void actionPerformed(ActionEvent e) {
+//					openDetails(300, 300);
+//				}
+//			});
+//		}
 		
 		suppressReload = false;
 		if (reload) {
@@ -1174,7 +1174,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						openSQLDialog("Delete Row " + rowName, x, y, SQLDMLBuilder.buildDelete(table, row, true, session));
 					}
 				});
-				popup.add(sql);
+				if (getQueryBuilderDialog() == null) {
+					popup.removeAll();
+					popup.add(insert);
+					popup.add(update);
+					popup.add(delete);
+				} else {
+					popup.add(sql);
+				}
 			}
 		}
 		return popup;
@@ -1974,7 +1981,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			if (limitBox.getSelectedItem() instanceof Integer) {
 				limit = (Integer) limitBox.getSelectedItem();
 			}
-			LoadJob reloadJob = new LoadJob(limit, (table instanceof SqlStatementTable)? sqlBrowserContentPane.sqlEditorPane.getText() : getAndConditionText(), selectDistinctCheckBox.isSelected());
+			LoadJob reloadJob;
+			if (statementForReloading != null) {
+				reloadJob = new LoadJob(limit, statementForReloading, false);
+			} else {
+				reloadJob = new LoadJob(limit, (table instanceof SqlStatementTable)? sqlBrowserContentPane.sqlEditorPane.getText() : getAndConditionText(), selectDistinctCheckBox.isSelected());
+			}
 			synchronized (this) {
 				currentLoadJob = reloadJob;
 			}
@@ -2003,7 +2015,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			session.setSilent(false);
 		}
 		Set<String> existingColumnsLowerCase = null;
-		if (!(table instanceof SqlStatementTable)) {
+		if (!(table instanceof SqlStatementTable) && statementForReloading == null) {
 			existingColumnsLowerCase = findColumnsLowerCase(table, session);
 		}
 		reloadRows(inputResultSet, andCond, rows, context, limit, selectDistinct, existingColumnsLowerCase);
@@ -2063,7 +2075,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 *            row number limit
 	 */
 	private void reloadRows(ResultSet inputResultSet, String andCond, final List<Row> rows, Object context, int limit, boolean selectDistinct, Set<String> existingColumnsLowerCase) throws SQLException {
-		if (table instanceof SqlStatementTable) {
+		if (table instanceof SqlStatementTable || statementForReloading != null) {
 			try {
 				session.setSilent(true);
 				Map<String, List<Row>> rowsMap = new HashMap<String, List<Row>>();
@@ -2294,9 +2306,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		final boolean selectParentPK = association != null && parentRows != null && parentRows.size() > 1;
 		final Set<Integer> unknownColumnIndexes = new HashSet<Integer>();
 		
-		if (table instanceof SqlStatementTable) {
+		if (table instanceof SqlStatementTable || statementForReloading != null) {
 			sql = andCond;
-			table.setColumns(new ArrayList<Column>());
+			if (!(table instanceof SqlStatementTable)) {
+				for (Column pk: rowIdSupport.getPrimaryKey(table).getColumns()) {
+					pkColumnNames.add(quoting.requote(pk.name));
+				}
+			} else {
+				table.setColumns(new ArrayList<Column>());
+			}
 		} else {
 			String olapPrefix = "Select ";
 			String olapSuffix = ") S Where S." + ROWNUMBERALIAS + " <= " + limit;
@@ -2444,7 +2462,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		if (sql.length() > 0 || inputResultSet != null) {
 			final Map<Integer, Integer> pkPosToColumnPos = new HashMap<Integer, Integer>();
-			if (!(table instanceof SqlStatementTable)) {
+			if (!(table instanceof SqlStatementTable) && statementForReloading == null) {
 				List<Column> pks = rowIdSupport.getPrimaryKey(table).getColumns();
 				List<Column> columns = rowIdSupport.getColumns(table);
 				for (int i = 0; i < columns.size(); ++i) {
@@ -3503,7 +3521,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JLabel join;
     private javax.swing.JPanel joinPanel;
     javax.swing.JComboBox limitBox;
-    private javax.swing.JButton loadButton;
+    public javax.swing.JButton loadButton;
     private javax.swing.JLabel on;
     private javax.swing.JPanel onPanel;
     private javax.swing.JLabel openEditorLabel;
@@ -3793,16 +3811,26 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 	}
 
+	public void resetRowsTableContainer() {
+		cardPanel.setVisible(true);
+	}
+
 	public JComponent getRowsTableContainer() {
-		return rowsTableScrollPane;
+		return cardPanel;
 	}
 
 	public JTable getRowsTable() {
 		return rowsTable;
 	}
 
-	public LoadJob newLoadJob(ResultSet resultSet) {
-		return new LoadJob(resultSet);
+	public LoadJob newLoadJob(ResultSet resultSet, Integer limit) {
+		return new LoadJob(resultSet, limit == null? Integer.MAX_VALUE : limit);
+	}
+	
+	private String statementForReloading;
+
+	public synchronized void setStatementForReloading(String statementForReloading) {
+		this.statementForReloading = statementForReloading;
 	}
 
 }

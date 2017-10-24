@@ -336,7 +336,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 			    		SwingUtilities.invokeLater(new Runnable() {
 							@Override
 							public void run() {
-								LoadJob loadJob = rb.newLoadJob(metaDataDetails[0]);
+								LoadJob loadJob = rb.newLoadJob(metaDataDetails[0], null);
 					    		loadJob.run();
 					        	JComponent rTabContainer = rb.getRowsTableContainer();
 						    	detailsViews.put(cacheKey, rTabContainer);
@@ -348,7 +348,8 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 										panel.removeAll();
 							        	JComponent rTabContainer = rb.getRowsTableContainer();
 										panel.add(rTabContainer);
-							        	tabbedPane.repaint();
+										rb.resetRowsTableContainer();
+										tabbedPane.repaint();
 									}
 								});
 							}

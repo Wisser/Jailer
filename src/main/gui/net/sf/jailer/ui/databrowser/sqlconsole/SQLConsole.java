@@ -14,8 +14,6 @@ import java.awt.GridBagConstraints;
 import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Window;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.BufferedReader;
@@ -79,6 +77,7 @@ import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.LoadJob;
 import net.sf.jailer.ui.databrowser.DataBrowser;
+import net.sf.jailer.ui.databrowser.Desktop;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.QueryBuilderPathSelector;
 import net.sf.jailer.ui.databrowser.Reference;
@@ -414,8 +413,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			sqlStatement = sql.replaceFirst("(?is)(;\\s*)+$", "");
 			if (statement.execute(sqlStatement)) {
 				resultSet = statement.getResultSet();
-				Integer limit = (Integer) limitComboBox.getSelectedItem();
-				final BrowserContentPane rb = new ResultContentPane(datamodel.get(), null, "", session, null, null,
+				final Integer limit = (Integer) limitComboBox.getSelectedItem();
+				final Table resultType = QueryTypeAnalyser.getType(sqlStatement, metaDataSource);
+				final BrowserContentPane rb = new ResultContentPane(datamodel.get(), resultType, "", session, null, null,
 						null, null, new HashSet<Pair<BrowserContentPane, Row>>(), new HashSet<Pair<BrowserContentPane, String>>(), limit, false, false, executionContext);
 				final CachedResultSet metaDataDetails = new CachedResultSet(resultSet, limit, session, SQLConsole.this);
 		    	resultSet.close();
@@ -426,40 +426,42 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		    	status.numRowsRead += metaDataDetails.getSize();
 		    	localStatus.numRowsRead += metaDataDetails.getSize();
 				localStatus.hasSelected = true;
-				if (metaDataDetails.getSize() >= limit) {
+				if (metaDataDetails.getSize() > limit) {
 		    		status.limitExceeded = true;
 		    		localStatus.limitExceeded = true;
 		    	}
 				status.updateView(false);
+				rb.setStatementForReloading(sqlStatement);
 	    		SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
-						LoadJob loadJob = rb.newLoadJob(metaDataDetails);
+						LoadJob loadJob = rb.newLoadJob(metaDataDetails, limit);
 			    		loadJob.run();
 			        	JComponent rTabContainer = rb.getRowsTableContainer();
 			        	final TabContentPanel tabContentPanel = new TabContentPanel();
 			        	tabContentPanel.contentPanel.add(rTabContainer);
-			        	tabContentPanel.statusLabel.setText(localStatus.getText());
-			        	if (localStatus.limitExceeded) {
-			        		tabContentPanel.statusLabel.setForeground(Color.red);
-			        	}
+//			        	tabContentPanel.statusLabel.setText(localStatus.getText());
+//			        	if (localStatus.limitExceeded) {
+//			        		tabContentPanel.statusLabel.setForeground(Color.red);
+//			        	}
 			        	rb.sortColumnsCheckBox.setVisible(true);
 			        	tabContentPanel.controlsPanel1.add(rb.sortColumnsCheckBox);
+			        	tabContentPanel.controlsPanel1.add(rb.loadButton);
 			        	String stmt = sql.trim();
 			        	tabContentPanel.statementLabel.setToolTipText(UIUtil.toHTML(sql, 100));
 			        	if (stmt.length() > 200) {
 			        		stmt = stmt.substring(0, 200) + "...";
 			        	}
 						tabContentPanel.statementLabel.setText(stmt.replaceAll("\\s+", " "));
-			        	tabContentPanel.reloadButton.addActionListener(new ActionListener() {
-							@Override
-							public void actionPerformed(ActionEvent e) {
-								if (!running.get()) {
-									jTabbedPane1.remove(tabContentPanel);
-									executeSQLBlock(sql, null);
-								}
-							}
-						});
+//			        	tabContentPanel.reloadButton.addActionListener(new ActionListener() {
+//							@Override
+//							public void actionPerformed(ActionEvent e) {
+//								if (!running.get()) {
+//									jTabbedPane1.remove(tabContentPanel);
+//									executeSQLBlock(sql, null);
+//								}
+//							}
+//						});
 			        	rTabContainer = tabContentPanel;
 			        	final int MAXLENGTH = 30;
 			        	String title = shortSQL(sql, MAXLENGTH);
@@ -470,6 +472,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							jTabbedPane1.remove(0);
 						}
 						jTabbedPane1.setSelectedIndex(jTabbedPane1.getTabCount() - 1);
+			        	rb.resetRowsTableContainer();
 				    	jTabbedPane1.repaint();
 					}
 				});
@@ -678,7 +681,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				text += numStatements + " Statements. ";
 			}
 			if (hasSelected) {
-				text += numRowsRead + " rows read";
+				text += (limitExceeded? numRowsRead - 1 : numRowsRead) + " rows read";
 				if (limitExceeded) {
 					text += " (limit exceeded)";
 				}
@@ -950,7 +953,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		}
 		@Override
 		protected PriorityBlockingQueue<RunnableWithPriority> getRunnableQueue() {
-			return null;
+			return Desktop.runnableQueue;
 		}
 		@Override
 		protected QueryBuilderPathSelector getQueryBuilderPathSelector() {

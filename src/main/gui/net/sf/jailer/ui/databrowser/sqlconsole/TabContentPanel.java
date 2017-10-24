@@ -21,9 +21,10 @@ public class TabContentPanel extends javax.swing.JPanel {
         statementLabel.setText("jLabel1");
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        add(statementLabel, gridBagConstraints);
+        panel.add(statementLabel, gridBagConstraints);
     }
 
     /**
@@ -37,10 +38,8 @@ public class TabContentPanel extends javax.swing.JPanel {
         java.awt.GridBagConstraints gridBagConstraints;
 
         contentPanel = new javax.swing.JPanel();
-        statusLabel = new javax.swing.JLabel();
         panel = new javax.swing.JPanel();
         controlsPanel1 = new javax.swing.JPanel();
-        reloadButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -54,41 +53,24 @@ public class TabContentPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         add(contentPanel, gridBagConstraints);
 
-        statusLabel.setText("jLabel1");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        add(statusLabel, gridBagConstraints);
-
         panel.setLayout(new java.awt.GridBagLayout());
-
-        controlsPanel1.setLayout(new java.awt.BorderLayout());
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         panel.add(controlsPanel1, gridBagConstraints);
-
-        reloadButton.setText("Reload");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 3;
-        gridBagConstraints.gridy = 1;
-        panel.add(reloadButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         add(panel, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public javax.swing.JPanel contentPanel;
     public javax.swing.JPanel controlsPanel1;
     public javax.swing.JPanel panel;
-    public javax.swing.JButton reloadButton;
-    public javax.swing.JLabel statusLabel;
     // End of variables declaration//GEN-END:variables
     public javax.swing.JLabel statementLabel;
 }
