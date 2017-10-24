@@ -73,14 +73,19 @@ public class SQLDMLBuilder {
 		boolean f = true;
 		int i = 0;
 		CellContentConverter cellContentConverter = new CellContentConverter(null, session, session.dbms);
+		Set<String> usedColumns = new HashSet<String>();
 		for (Column column : table.getColumns()) {
 			String value = getSQLLiteral(row.values[i++], cellContentConverter);
 			if (value == null) {
 				continue;
 			}
-			if (column.isVirtual()) {
+			if (column.name == null || column.isVirtual()) {
 				continue;
 			}
+			if (usedColumns.contains(column.name)) {
+				continue;
+			}
+			usedColumns.add(column.name);
 			String name = quoting.requote(column.name);
 			sql += (f? "" : ", " + LF + "    ") + name + " = " + value + comment(withComments, column, false);
 			f = false;
@@ -149,15 +154,20 @@ public class SQLDMLBuilder {
 		String values = "";
 		boolean f = true;
 		int i = 0;
+		Set<String> usedColumns = new HashSet<String>();
 		CellContentConverter cellContentConverter = new CellContentConverter(null, session, session.dbms);
 		for (Column column : table.getColumns()) {
 			String value = getSQLLiteral(row.values[i++], cellContentConverter);
 			if (value == null) {
 				continue;
 			}
-			if (column.isVirtual()) {
+			if (column.name == null || column.isVirtual()) {
 				continue;
 			}
+			if (usedColumns.contains(column.name)) {
+				continue;
+			}
+			usedColumns.add(column.name);
 			String name = quoting.requote(column.name);
 			sql += (f? "" : ", " + LF + "    ") + name + comment(withComments, column, false);
 			values += (f? "" : ", " + LF + "    ") + value + comment(withComments, column, true);

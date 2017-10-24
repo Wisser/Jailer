@@ -637,7 +637,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			@Override
 			public void mousePressed(MouseEvent e) {
 				int ri = rowsTable.rowAtPoint(e.getPoint());
-				if (ri >= 0) {
+				if (ri >= 0 && !rows.isEmpty()) {
 					int i = rowsTable.getRowSorter().convertRowIndexToModel(ri);
 					Row row = rows.get(i);
 
@@ -879,7 +879,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	
 	void setPendingState(boolean pending, boolean propagate) {
 		isPending = pending;
-		((CardLayout) pendingNonpendingPanel.getLayout()).show(pendingNonpendingPanel, pending? "pending" : "nonpending");
+		((CardLayout) pendingNonpendingPanel.getLayout()).show(pendingNonpendingPanel, "nonpending");
+		if (pending) {
+			updateMode("pending");
+		}
 		if (propagate) {
 			for (RowBrowser child: getChildBrowsers()) {
 				child.browserContentPane.setPendingState(pending, propagate);
@@ -1006,7 +1009,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 */
 	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows) {
 		if (table instanceof SqlStatementTable) {
-			return null;
+			JPopupMenu jPopupMenu = new JPopupMenu();
+			JMenuItem update = new JMenuItem("Update");
+			jPopupMenu.add(update);
+			update.setEnabled(false);
+			JMenuItem delete = new JMenuItem("Delete");
+			jPopupMenu.add(delete);
+			delete.setEnabled(false);
+			JMenuItem insert = new JMenuItem("Insert");
+			jPopupMenu.add(insert);
+			insert.setEnabled(false);
+			return jPopupMenu;
 		}
 		
 		List<String> assList = new ArrayList<String>();
@@ -1150,14 +1163,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				
 				JMenu sql = new JMenu("SQL/DML");
 				final String rowName = dataModel.getDisplayName(table) + "(" + SqlUtil.replaceAliases(row.rowId, null, null) + ")";
-				JMenuItem insert = new JMenuItem("Insert");
-				sql.add(insert);
-				insert.addActionListener(new ActionListener() {
-					@Override
-					public void actionPerformed(ActionEvent e) {
-						openSQLDialog("Insert Row " + rowName, x, y, SQLDMLBuilder.buildInsert(table, row, true, session));
-					}
-				});
 				JMenuItem update = new JMenuItem("Update");
 				sql.add(update);
 				update.addActionListener(new ActionListener() {
@@ -1172,6 +1177,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					@Override
 					public void actionPerformed(ActionEvent e) {
 						openSQLDialog("Delete Row " + rowName, x, y, SQLDMLBuilder.buildDelete(table, row, true, session));
+					}
+				});
+				JMenuItem insert = new JMenuItem("Insert");
+				sql.add(insert);
+				insert.addActionListener(new ActionListener() {
+					@Override
+					public void actionPerformed(ActionEvent e) {
+						openSQLDialog("Insert Row " + rowName, x, y, SQLDMLBuilder.buildInsert(table, row, true, session));
 					}
 				});
 				if (getQueryBuilderDialog() == null) {
@@ -3051,16 +3064,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jLabel5 = new javax.swing.JLabel();
         pendingNonpendingPanel = new javax.swing.JPanel();
         cardPanel = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        jLabel2 = new javax.swing.JLabel();
-        cancelLoadButton = new javax.swing.JButton();
-        jPanel1 = new javax.swing.JPanel();
+        tablePanel = new javax.swing.JPanel();
+        jLayeredPane1 = new javax.swing.JLayeredPane();
         rowsTableScrollPane = new javax.swing.JScrollPane();
         rowsTable = new javax.swing.JTable();
         jPanel6 = new javax.swing.JPanel();
         sortColumnsCheckBox = new javax.swing.JCheckBox();
         rowsCount = new javax.swing.JLabel();
         selectDistinctCheckBox = new javax.swing.JCheckBox();
+        loadingPanel = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        loadingLabel = new javax.swing.JLabel();
+        cancelLoadButton = new javax.swing.JButton();
+        jLabel2 = new javax.swing.JLabel();
         jPanel5 = new javax.swing.JPanel();
         jLabel10 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
@@ -3188,36 +3204,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         cardPanel.setLayout(new java.awt.CardLayout());
 
-        jPanel2.setLayout(new java.awt.GridBagLayout());
+        tablePanel.setLayout(new java.awt.GridBagLayout());
 
-        jLabel2.setFont(new java.awt.Font("DejaVu Sans", 1, 14)); // NOI18N
-        jLabel2.setForeground(new java.awt.Color(141, 16, 16));
-        jLabel2.setText("loading...");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(8, 8, 8, 0);
-        jPanel2.add(jLabel2, gridBagConstraints);
-
-        cancelLoadButton.setText("Cancel");
-        cancelLoadButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                cancelLoadButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        jPanel2.add(cancelLoadButton, gridBagConstraints);
-
-        cardPanel.add(jPanel2, "loading");
-
-        jPanel1.setLayout(new java.awt.GridBagLayout());
+        jLayeredPane1.setLayout(new java.awt.GridBagLayout());
 
         rowsTableScrollPane.setWheelScrollingEnabled(false);
 
@@ -3242,7 +3231,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        jPanel1.add(rowsTableScrollPane, gridBagConstraints);
+        jLayeredPane1.add(rowsTableScrollPane, gridBagConstraints);
 
         jPanel6.setLayout(new java.awt.GridBagLayout());
 
@@ -3279,9 +3268,73 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
-        jPanel1.add(jPanel6, gridBagConstraints);
+        jLayeredPane1.add(jPanel6, gridBagConstraints);
 
-        cardPanel.add(jPanel1, "table");
+        loadingPanel.setOpaque(false);
+        loadingPanel.setLayout(new java.awt.GridBagLayout());
+
+        jPanel1.setBackground(new Color(255,255,255,150));
+        jPanel1.setLayout(new java.awt.GridBagLayout());
+
+        loadingLabel.setFont(new java.awt.Font("DejaVu Sans", 1, 14)); // NOI18N
+        loadingLabel.setForeground(new java.awt.Color(141, 16, 16));
+        loadingLabel.setText("loading...     ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(8, 8, 8, 0);
+        jPanel1.add(loadingLabel, gridBagConstraints);
+
+        cancelLoadButton.setText("Cancel");
+        cancelLoadButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cancelLoadButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(cancelLoadButton, gridBagConstraints);
+
+        jLabel2.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.weightx = 1.0;
+        jPanel1.add(jLabel2, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 4, 2, 4);
+        loadingPanel.add(jPanel1, gridBagConstraints);
+
+        jLayeredPane1.setLayer(loadingPanel, javax.swing.JLayeredPane.MODAL_LAYER);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        jLayeredPane1.add(loadingPanel, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        tablePanel.add(jLayeredPane1, gridBagConstraints);
+
+        cardPanel.add(tablePanel, "table");
 
         jPanel5.setLayout(new java.awt.GridBagLayout());
 
@@ -3508,9 +3561,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel8;
+    private javax.swing.JLayeredPane jLayeredPane1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel10;
-    private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel jPanel5;
@@ -3522,6 +3575,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JPanel joinPanel;
     javax.swing.JComboBox limitBox;
     public javax.swing.JButton loadButton;
+    private javax.swing.JLabel loadingLabel;
+    private javax.swing.JPanel loadingPanel;
     private javax.swing.JLabel on;
     private javax.swing.JPanel onPanel;
     private javax.swing.JLabel openEditorLabel;
@@ -3535,6 +3590,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     public javax.swing.JCheckBox sortColumnsCheckBox;
     private javax.swing.JLabel sqlLabel1;
     private javax.swing.JPanel sqlPanel;
+    private javax.swing.JPanel tablePanel;
     // End of variables declaration//GEN-END:variables
 
 	private ConditionEditor andConditionEditor;
@@ -3576,8 +3632,23 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
 	private void updateMode(String mode) {
+		if ("table".equals(mode)) {
+			loadingPanel.setVisible(false);
+			rowsTable.setEnabled(true);
+		} else if ("loading".equals(mode)) {
+			mode = "table";
+			loadingPanel.setVisible(true);
+			loadingLabel.setText("loading...");
+			cancelLoadButton.setVisible(true);
+			rowsTable.setEnabled(false);
+		} else if ("pending".equals(mode)) {
+			mode = "table";
+			loadingPanel.setVisible(true);
+			loadingLabel.setText("pending...");
+			cancelLoadButton.setVisible(false);
+			rowsTable.setEnabled(false);
+		}
 		((CardLayout) cardPanel.getLayout()).show(cardPanel, mode);
-//		relatedRowsPanel.setVisible("table".equals(mode) && rows.size() >= 1);
 	}
 
 	/**
