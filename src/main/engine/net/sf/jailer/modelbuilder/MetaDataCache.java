@@ -284,7 +284,7 @@ public class MetaDataCache {
 					row[i - 1] = cellContentConverter.getObject(resultSet, i);
 				}
 				rowList.add(row);
-				if (limit != null && rowList.size() >= limit) {
+				if (limit != null && rowList.size() > limit) {
 					break;
 				}
 				if (cancellationContext != null) {

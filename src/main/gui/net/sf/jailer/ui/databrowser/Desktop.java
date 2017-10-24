@@ -2796,7 +2796,7 @@ public abstract class Desktop extends JDesktopPane {
 	/**
 	 * For concurrent reload of rows.
 	 */
-	final PriorityBlockingQueue<RunnableWithPriority> runnableQueue = new PriorityBlockingQueue<RunnableWithPriority>(100,
+	public static final PriorityBlockingQueue<RunnableWithPriority> runnableQueue = new PriorityBlockingQueue<RunnableWithPriority>(100,
 		new Comparator<RunnableWithPriority>() {
 
 			@Override
@@ -2809,7 +2809,7 @@ public abstract class Desktop extends JDesktopPane {
 	 * Maximum number of concurrent DB connections.
 	 */
 	private static final int MAX_CONCURRENT_CONNECTIONS = 6;
-	{
+	static {
 		// initialize listeners for #runnableQueue
 		for (int i = 0; i < MAX_CONCURRENT_CONNECTIONS; ++i) {
 			Thread t = new Thread(new Runnable() {

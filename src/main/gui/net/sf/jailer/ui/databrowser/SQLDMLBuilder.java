@@ -91,7 +91,24 @@ public class SQLDMLBuilder {
 	
 	private static String comment(boolean withComments, Column column, boolean withName) {
 		if (withComments) {
-			return "   /* " + (withName? column.toSQL(null) : (column.toSQL(null).substring(column.name.length())).trim()) + " */";
+			String content;
+			
+			if (withName) {
+				if (column.type == null) {
+					content = column.name;
+				} else {
+					content = column.toSQL(null);
+				}
+			} else {
+				if (column.type == null) {
+					content = "";
+				} else {
+					content = column.toSQL(null).substring(column.name.length()).trim();
+				}
+			}
+			if (!content.isEmpty()) {
+				return "   /* " + content + " */";
+			}
 		}
 		return "";
 	}
