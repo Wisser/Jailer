@@ -2604,7 +2604,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						};
 					} else {
 						int type = SqlUtil.getColumnType(resultSet, getMetaData(resultSet), i, typeCache);
-						if (type == Types.BLOB || type == Types.CLOB || type == Types.NCLOB || type == Types.SQLXML) {
+						Object lob = null;
+						if (type == 0) {
+							lob = resultSet.getObject(i);
+						}
+						if (type == Types.BLOB || type == Types.CLOB || type == Types.NCLOB || type == Types.SQLXML
+							|| (type == 0 &&
+								(lob instanceof Blob || lob instanceof Clob || lob instanceof SQLXML)
+								)) {
 							Object object = resultSet.getObject(i);
 							if (object == null || resultSet.wasNull()) {
 								value = null;
@@ -2654,7 +2661,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 										public String toString() {
 											return "<XML>";
 										}
-									};e.printStackTrace();
+									};
+									e.printStackTrace();
 								}
 							}
 						} else {
@@ -2834,11 +2842,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				@Override
 				public void setValueAt(Object aValue, int row, int column) {
 					String text = aValue.toString();
-					Object content = browserContentCellEditor.textToContent(row, column, text);
-					if (content != BrowserContentCellEditor.INVALID) {
-						Row theRow = null;
-						if (row < rows.size()) {
-							theRow = rows.get(row);
+					Row theRow = null;
+					if (row < rows.size()) {
+						theRow = rows.get(row);
+						Object content = browserContentCellEditor.textToContent(row, column, text, theRow.values[column]);
+						if (content != BrowserContentCellEditor.INVALID) {
 							if (!browserContentCellEditor.cellContentToText(row, column, theRow.values[column]).equals(text)) {
 								Object oldContent = theRow.values[column];
 								theRow.values[column] = content;

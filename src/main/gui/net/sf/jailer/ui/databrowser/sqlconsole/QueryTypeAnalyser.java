@@ -684,6 +684,9 @@ public class QueryTypeAnalyser {
 	}
 
 	private static Table createTable(MDTable theTable, List<String> columnNames, MetaDataSource metaDataSource) throws SQLException {
+		if (theTable.getPrimaryKeyColumns().isEmpty()) {
+			return null;
+		}
 		for (String pk: theTable.getPrimaryKeyColumns()) {
 			if (!columnNames.contains(pk)) {
 				return null;
