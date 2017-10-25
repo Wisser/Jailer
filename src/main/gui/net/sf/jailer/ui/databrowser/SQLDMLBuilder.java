@@ -21,7 +21,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
@@ -62,7 +61,21 @@ public class SQLDMLBuilder {
 	 * @param session current DB session
 	 * @return update statement for row
 	 */
-	public static String buildUpdate(Table table, Row row, boolean withComments, Session session) {
+	public static String buildUpdate(Table table, Row theRow, boolean withComments, Session session) {
+		return buildUpdate(table, theRow, withComments, -1, session);
+	}
+	
+
+	/**
+	 * Build Update statements for a given column.
+	 * 
+	 * @param table the table
+	 * @param row row to be updated
+	 * @param columnToUpdate the column to update
+	 * @param session current DB session
+	 * @return update statement for row
+	 */
+	public static String buildUpdate(Table table, Row row, boolean withComments, int columnToUpdate, Session session) {
 		Quoting quoting;
 		try {
 			quoting = new Quoting(session);
@@ -76,6 +89,9 @@ public class SQLDMLBuilder {
 		Set<String> usedColumns = new HashSet<String>();
 		for (Column column : table.getColumns()) {
 			String value = getSQLLiteral(row.values[i++], cellContentConverter);
+			if (columnToUpdate != i - 1 && columnToUpdate >= 0) {
+				continue;
+			}
 			if (value == null) {
 				continue;
 			}
@@ -240,5 +256,5 @@ public class SQLDMLBuilder {
 	}
 	
 	private static final String LF = System.getProperty("line.separator", "\n");
-	
+
 }

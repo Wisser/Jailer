@@ -72,8 +72,10 @@ public class MetaDataCache {
 	/**
 	 * Reads primary keys.
 	 * 
-	 * @param session the session
-	 * @param schema name of the schema
+	 * @param session
+	 *            the session
+	 * @param schema
+	 *            name of the schema
 	 * @return cache
 	 */
 	public static MetaDataCache readPrimaryKeys(Session session, String schema) {
@@ -83,7 +85,7 @@ public class MetaDataCache {
 		}
 
 		_log.info("reading primary keys...");
-		
+
 		MetaDataCache metaDataCache = new MetaDataCache();
 		try {
 			Set<Integer> intIndex = new HashSet<Integer>(Arrays.asList(5));
@@ -98,8 +100,10 @@ public class MetaDataCache {
 	/**
 	 * Reads index infos.
 	 * 
-	 * @param session the session
-	 * @param schema name of the schema
+	 * @param session
+	 *            the session
+	 * @param schema
+	 *            name of the schema
 	 * @return cache
 	 */
 	public static MetaDataCache readIndexInfo(Session session, String schema) {
@@ -109,7 +113,7 @@ public class MetaDataCache {
 		}
 
 		_log.info("reading index info...");
-		
+
 		MetaDataCache metaDataCache = new MetaDataCache();
 		try {
 			Set<Integer> intIndex = new HashSet<Integer>(Arrays.asList(4));
@@ -124,8 +128,10 @@ public class MetaDataCache {
 	/**
 	 * Reads imported keys (FKs).
 	 * 
-	 * @param session the session
-	 * @param schema name of the schema
+	 * @param session
+	 *            the session
+	 * @param schema
+	 *            name of the schema
 	 * @return cache
 	 */
 	public static MetaDataCache readImportedKeys(Session session, String schema) {
@@ -135,7 +141,7 @@ public class MetaDataCache {
 		}
 
 		_log.info("reading imported keys...");
-		
+
 		MetaDataCache metaDataCache = new MetaDataCache();
 		try {
 			Set<Integer> intIndex = new HashSet<Integer>(Arrays.asList(9, 10, 11, 14));
@@ -150,13 +156,15 @@ public class MetaDataCache {
 	/**
 	 * Reads column infos.
 	 * 
-	 * @param session the session
-	 * @param schema name of the schema
+	 * @param session
+	 *            the session
+	 * @param schema
+	 *            name of the schema
 	 * @return cache
 	 */
 	public static MetaDataCache readColumns(Session session, DatabaseMetaData metaData, String schema) {
 		_log.info("reading columns...");
-		
+
 		MetaDataCache metaDataCache = new MetaDataCache();
 		ResultSet rs;
 		try {
@@ -191,9 +199,9 @@ public class MetaDataCache {
 				}
 				rowList.add(row);
 			}
-			
+
 			rs.close();
-			
+
 			if (metaDataCache.cache.isEmpty()) {
 				metaDataCache.cache = null;
 			}
@@ -220,7 +228,8 @@ public class MetaDataCache {
 	/**
 	 * Reads meta data.
 	 */
-	private static void readMetaData(final MetaDataCache metaDataCache, Session session, String query, final Set<Integer> intIndex) throws SQLException {
+	private static void readMetaData(final MetaDataCache metaDataCache, Session session, String query,
+			final Set<Integer> intIndex) throws SQLException {
 		metaDataCache.cache = new HashMap<String, List<Object[]>>();
 		boolean wasSilent = session.getSilent();
 		session.setSilent(true);
@@ -254,7 +263,134 @@ public class MetaDataCache {
 			session.setSilent(wasSilent);
 		}
 	}
-	
+
+	public static class MDCResultSetMetaData implements ResultSetMetaData {
+		private final int numCol;
+		private final String[] names;
+		public final int[] types;
+
+		public MDCResultSetMetaData(int numCol, String[] names, int[] types) {
+			this.numCol = numCol;
+			this.names = names;
+			this.types = types;
+		}
+
+		@Override
+		public <T> T unwrap(Class<T> iface) throws SQLException {
+			return null;
+		}
+
+		@Override
+		public boolean isWrapperFor(Class<?> iface) throws SQLException {
+			return false;
+		}
+
+		@Override
+		public boolean isWritable(int column) throws SQLException {
+			return false;
+		}
+
+		@Override
+		public boolean isSigned(int column) throws SQLException {
+			return false;
+		}
+
+		@Override
+		public boolean isSearchable(int column) throws SQLException {
+			return false;
+		}
+
+		@Override
+		public boolean isReadOnly(int column) throws SQLException {
+			return true;
+		}
+
+		@Override
+		public int isNullable(int column) throws SQLException {
+			return 0;
+		}
+
+		@Override
+		public boolean isDefinitelyWritable(int column) throws SQLException {
+			return false;
+		}
+
+		@Override
+		public boolean isCurrency(int column) throws SQLException {
+			return false;
+		}
+
+		@Override
+		public boolean isCaseSensitive(int column) throws SQLException {
+			return false;
+		}
+
+		@Override
+		public boolean isAutoIncrement(int column) throws SQLException {
+			return false;
+		}
+
+		@Override
+		public String getTableName(int column) throws SQLException {
+			return null;
+		}
+
+		@Override
+		public String getSchemaName(int column) throws SQLException {
+			return null;
+		}
+
+		@Override
+		public int getScale(int column) throws SQLException {
+			return 0;
+		}
+
+		@Override
+		public int getPrecision(int column) throws SQLException {
+			return 0;
+		}
+
+		@Override
+		public String getColumnTypeName(int column) throws SQLException {
+			return null;
+		}
+
+		@Override
+		public int getColumnType(int column) throws SQLException {
+			return 0;
+		}
+
+		@Override
+		public String getColumnName(int column) throws SQLException {
+			return names[column - 1];
+		}
+
+		@Override
+		public String getColumnLabel(int column) throws SQLException {
+			return names[column - 1];
+		}
+
+		@Override
+		public int getColumnDisplaySize(int column) throws SQLException {
+			return 0;
+		}
+
+		@Override
+		public int getColumnCount() throws SQLException {
+			return numCol;
+		}
+
+		@Override
+		public String getColumnClassName(int column) throws SQLException {
+			return null;
+		}
+
+		@Override
+		public String getCatalogName(int column) throws SQLException {
+			return null;
+		}
+	}
+
 	/**
 	 * Result set of meta data.
 	 */
@@ -272,8 +408,9 @@ public class MetaDataCache {
 		public int getSize() {
 			return rowList.size();
 		}
-		
-		public CachedResultSet(ResultSet resultSet, Integer limit, Session session, Object cancellationContext) throws SQLException {
+
+		public CachedResultSet(ResultSet resultSet, Integer limit, Session session, Object cancellationContext)
+				throws SQLException {
 			this.rowList = new ArrayList<Object[]>();
 			ResultSetMetaData rmd = resultSet.getMetaData();
 			CellContentConverter cellContentConverter = new CellContentConverter(rmd, session, session.dbms);
@@ -291,106 +428,14 @@ public class MetaDataCache {
 					CancellationHandler.checkForCancellation(cancellationContext);
 				}
 			}
-			
+
 			final String[] names = new String[numCol];
+			final int[] types = new int[numCol];
 			for (int i = 1; i <= numCol; ++i) {
 				names[i - 1] = rmd.getColumnName(i);
+				types[i - 1] = rmd.getColumnType(i);
 			}
-			resultSetMetaData = new ResultSetMetaData() {
-				@Override
-				public <T> T unwrap(Class<T> iface) throws SQLException {
-					return null;
-				}
-				@Override
-				public boolean isWrapperFor(Class<?> iface) throws SQLException {
-					return false;
-				}
-				@Override
-				public boolean isWritable(int column) throws SQLException {
-					return false;
-				}
-				@Override
-				public boolean isSigned(int column) throws SQLException {
-					return false;
-				}
-				@Override
-				public boolean isSearchable(int column) throws SQLException {
-					return false;
-				}
-				@Override
-				public boolean isReadOnly(int column) throws SQLException {
-					return true;
-				}
-				@Override
-				public int isNullable(int column) throws SQLException {
-					return 0;
-				}
-				@Override
-				public boolean isDefinitelyWritable(int column) throws SQLException {
-					return false;
-				}
-				@Override
-				public boolean isCurrency(int column) throws SQLException {
-					return false;
-				}
-				@Override
-				public boolean isCaseSensitive(int column) throws SQLException {
-					return false;
-				}
-				@Override
-				public boolean isAutoIncrement(int column) throws SQLException {
-					return false;
-				}
-				@Override
-				public String getTableName(int column) throws SQLException {
-					return null;
-				}
-				@Override
-				public String getSchemaName(int column) throws SQLException {
-					return null;
-				}
-				@Override
-				public int getScale(int column) throws SQLException {
-					return 0;
-				}
-				@Override
-				public int getPrecision(int column) throws SQLException {
-					return 0;
-				}
-				@Override
-				public String getColumnTypeName(int column) throws SQLException {
-					return null;
-				}
-				
-				@Override
-				public int getColumnType(int column) throws SQLException {
-					return 0;
-				}
-				@Override
-				public String getColumnName(int column) throws SQLException {
-					return names[column - 1];
-				}
-				@Override
-				public String getColumnLabel(int column) throws SQLException {
-					return names[column - 1];
-				}
-				@Override
-				public int getColumnDisplaySize(int column) throws SQLException {
-					return 0;
-				}
-				@Override
-				public int getColumnCount() throws SQLException {
-					return numCol;
-				}
-				@Override
-				public String getColumnClassName(int column) throws SQLException {
-					return null;
-				}
-				@Override
-				public String getCatalogName(int column) throws SQLException {
-					return null;
-				}
-			};
+			resultSetMetaData = new MDCResultSetMetaData(numCol, names, types);
 		}
 
 		@Override
@@ -429,7 +474,6 @@ public class MetaDataCache {
 		public boolean wasNull() throws SQLException {
 			return wasNull;
 		}
-		
 
 		@Override
 		public boolean next() throws SQLException {
@@ -440,8 +484,7 @@ public class MetaDataCache {
 		@Override
 		public void close() throws SQLException {
 		}
-		
-		
+
 		@Override
 		public boolean isWrapperFor(Class<?> iface) throws SQLException {
 			throw new UnsupportedOperationException();
@@ -494,13 +537,11 @@ public class MetaDataCache {
 		public int findColumn(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public boolean first() throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -508,13 +549,11 @@ public class MetaDataCache {
 		public Array getArray(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public Array getArray(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -522,13 +561,11 @@ public class MetaDataCache {
 		public InputStream getAsciiStream(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public InputStream getAsciiStream(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -536,13 +573,11 @@ public class MetaDataCache {
 		public BigDecimal getBigDecimal(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public BigDecimal getBigDecimal(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -550,13 +585,11 @@ public class MetaDataCache {
 		public BigDecimal getBigDecimal(int columnIndex, int scale) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public BigDecimal getBigDecimal(String columnLabel, int scale) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -564,13 +597,11 @@ public class MetaDataCache {
 		public InputStream getBinaryStream(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public InputStream getBinaryStream(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -578,13 +609,11 @@ public class MetaDataCache {
 		public Blob getBlob(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public Blob getBlob(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -592,13 +621,11 @@ public class MetaDataCache {
 		public boolean getBoolean(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public byte getByte(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -606,13 +633,11 @@ public class MetaDataCache {
 		public byte getByte(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public byte[] getBytes(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -620,13 +645,11 @@ public class MetaDataCache {
 		public byte[] getBytes(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public Reader getCharacterStream(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -634,13 +657,11 @@ public class MetaDataCache {
 		public Reader getCharacterStream(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public Clob getClob(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -648,13 +669,11 @@ public class MetaDataCache {
 		public Clob getClob(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public int getConcurrency() throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -662,13 +681,11 @@ public class MetaDataCache {
 		public String getCursorName() throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public Date getDate(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -676,13 +693,11 @@ public class MetaDataCache {
 		public Date getDate(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public Date getDate(int columnIndex, Calendar cal) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -690,13 +705,11 @@ public class MetaDataCache {
 		public Date getDate(String columnLabel, Calendar cal) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public double getDouble(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -704,13 +717,11 @@ public class MetaDataCache {
 		public double getDouble(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public int getFetchDirection() throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -718,13 +729,11 @@ public class MetaDataCache {
 		public int getFetchSize() throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public float getFloat(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -732,13 +741,11 @@ public class MetaDataCache {
 		public float getFloat(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public int getHoldability() throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -746,20 +753,17 @@ public class MetaDataCache {
 		public int getInt(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public long getLong(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public long getLong(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -775,13 +779,11 @@ public class MetaDataCache {
 		public Reader getNCharacterStream(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public Reader getNCharacterStream(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -789,13 +791,11 @@ public class MetaDataCache {
 		public NClob getNClob(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public NClob getNClob(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -803,13 +803,11 @@ public class MetaDataCache {
 		public String getNString(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public String getNString(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -817,13 +815,11 @@ public class MetaDataCache {
 		public Object getObject(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public Object getObject(int columnIndex, Map<String, Class<?>> map) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -831,13 +827,11 @@ public class MetaDataCache {
 		public Object getObject(String columnLabel, Map<String, Class<?>> map) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -845,13 +839,11 @@ public class MetaDataCache {
 		public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public Ref getRef(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -859,13 +851,11 @@ public class MetaDataCache {
 		public Ref getRef(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public int getRow() throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -873,13 +863,11 @@ public class MetaDataCache {
 		public RowId getRowId(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public RowId getRowId(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -887,13 +875,11 @@ public class MetaDataCache {
 		public SQLXML getSQLXML(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public SQLXML getSQLXML(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -901,13 +887,11 @@ public class MetaDataCache {
 		public short getShort(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public short getShort(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -915,13 +899,11 @@ public class MetaDataCache {
 		public Statement getStatement() throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public String getString(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -929,13 +911,11 @@ public class MetaDataCache {
 		public Time getTime(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public Time getTime(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -943,13 +923,11 @@ public class MetaDataCache {
 		public Time getTime(int columnIndex, Calendar cal) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public Time getTime(String columnLabel, Calendar cal) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -957,13 +935,11 @@ public class MetaDataCache {
 		public Timestamp getTimestamp(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public Timestamp getTimestamp(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -971,13 +947,11 @@ public class MetaDataCache {
 		public Timestamp getTimestamp(int columnIndex, Calendar cal) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public Timestamp getTimestamp(String columnLabel, Calendar cal) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -985,13 +959,11 @@ public class MetaDataCache {
 		public int getType() throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public URL getURL(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -999,13 +971,11 @@ public class MetaDataCache {
 		public URL getURL(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public InputStream getUnicodeStream(int columnIndex) throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -1013,13 +983,11 @@ public class MetaDataCache {
 		public InputStream getUnicodeStream(String columnLabel) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public SQLWarning getWarnings() throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -1033,13 +1001,11 @@ public class MetaDataCache {
 		public boolean isAfterLast() throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public boolean isBeforeFirst() throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -1047,13 +1013,11 @@ public class MetaDataCache {
 		public boolean isClosed() throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public boolean isFirst() throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -1061,13 +1025,11 @@ public class MetaDataCache {
 		public boolean isLast() throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public boolean last() throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -1087,7 +1049,6 @@ public class MetaDataCache {
 		public boolean previous() throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
@@ -1100,13 +1061,11 @@ public class MetaDataCache {
 		public boolean relative(int rows) throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public boolean rowDeleted() throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -1114,13 +1073,11 @@ public class MetaDataCache {
 		public boolean rowInserted() throws SQLException {
 			throw new UnsupportedOperationException();
 
-
 		}
 
 		@Override
 		public boolean rowUpdated() throws SQLException {
 			throw new UnsupportedOperationException();
-
 
 		}
 
@@ -1633,7 +1590,6 @@ public class MetaDataCache {
 			throw new UnsupportedOperationException();
 
 		}
-
 	}
 
 }
