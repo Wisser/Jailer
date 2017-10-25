@@ -48,6 +48,7 @@ import java.sql.Blob;
 import java.sql.Clob;
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
+import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.SQLXML;
 import java.sql.Types;
@@ -66,9 +67,11 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.PriorityBlockingQueue;
 
+import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -83,8 +86,10 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTree;
 import javax.swing.RowSorter;
+import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
+import javax.swing.border.LineBorder;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -114,6 +119,7 @@ import net.sf.jailer.datamodel.RowIdSupport;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.extractionmodel.ExtractionModel;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
+import net.sf.jailer.modelbuilder.MetaDataCache.MDCResultSetMetaData;
 import net.sf.jailer.subsetting.ScriptFormat;
 import net.sf.jailer.ui.ConditionEditor;
 import net.sf.jailer.ui.DataModelManager;
@@ -343,6 +349,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	List<Row> rows = new ArrayList<Row>();
 
 	/**
+	 * For in-place editing.
+	 */
+	private BrowserContentCellEditor browserContentCellEditor = new BrowserContentCellEditor(new int[0]);
+	
+	/**
 	 * Cache for association row count.
 	 */
 	private final Map<Pair<String, Association>, Pair<Long, Long>> rowCountCache = 
@@ -376,6 +387,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private Set<Integer> fkColumns = new HashSet<Integer>();
 
 	/**
+	 * Edit mode?
+	 */
+	private boolean isEditMode = false;
+
+	/**
 	 * DB session.
 	 */
 	Session session;
@@ -404,7 +420,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	/**
 	 * And-condition-combobox model.
 	 */
-	private final DefaultComboBoxModel andCondModel = new DefaultComboBoxModel();
+	private final DefaultComboBoxModel<Object> andCondModel = new DefaultComboBoxModel<Object>();
 	
 	static class SqlStatementTable extends Table {
 		public SqlStatementTable(String name, PrimaryKey primaryKey, boolean defaultUpsert) {
@@ -561,6 +577,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 			final Color BG1 = new Color(255, 255, 255);
 			final Color BG2 = new Color(230, 255, 255);
+			final Color BG1_EM = new Color(255, 255, 236);
+			final Color BG2_EM = new Color(230, 255, 236);
 			final Color BG3 = new Color(190, 195, 255);
 			final Color FG1 = new Color(155, 0, 0);
 			final Color FG2 = new Color(0, 0, 255);
@@ -584,8 +602,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				final RowSorter<?> rowSorter = rowsTable.getRowSorter();
 				boolean renderRowAsPK = false;
 				if (render instanceof JLabel) {
+					Row r = null;
+					int rowIndex = row;
 					if (row < rows.size()) {
-						Row r = rows.get(rowSorter.convertRowIndexToModel(row));
+						rowIndex = rowSorter.convertRowIndexToModel(row);
+						r = rows.get(rowIndex);
 						if (r != null) {
 							renderRowAsPK = renderRowAsPK(r);
 						}
@@ -594,7 +615,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						if (BrowserContentPane.this.currentClosureRowIDs != null && row < rows.size() && BrowserContentPane.this.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(BrowserContentPane.this, rows.get(rowSorter.convertRowIndexToModel(row)).rowId))) {
 							((JLabel) render).setBackground(BG3);
 						} else {
-							((JLabel) render).setBackground((row % 2 == 0) ? BG1 : BG2);
+							if (isEditMode && r != null && browserContentCellEditor.isEditable(rowIndex, column, r.values[column])) {
+								((JLabel) render).setBackground((row % 2 == 0) ? BG1_EM : BG2_EM);
+							} else {
+								((JLabel) render).setBackground((row % 2 == 0) ? BG1 : BG2);
+							}
 						}
 					}
 					((JLabel) render).setForeground(
@@ -826,47 +851,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			selectDistinctCheckBox.setSelected(selectDistinct);
 		}
 		updateTableModel(0, false);
-		
-//		if (this.table instanceof SqlStatementTable || statementForReloading != null) {
-//			sqlBrowserContentPane = new SQLBrowserContentPane(dataModel, session, getMetaDataSource());
-//			removeAll();
-//			GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
-//			gridBagConstraints.gridx = 1;
-//			gridBagConstraints.gridy = 1;
-//			gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-//			gridBagConstraints.weightx = 1.0;
-//			gridBagConstraints.weighty = 1.0;
-//			add(sqlBrowserContentPane, gridBagConstraints);
-//			gridBagConstraints = new java.awt.GridBagConstraints();
-//			gridBagConstraints.gridx = 2;
-//			gridBagConstraints.gridy = 5;
-//			gridBagConstraints.gridwidth = 2;
-//			gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-//			gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-//			gridBagConstraints.weightx = 0;
-//			gridBagConstraints.weighty = 0;
-//			sqlBrowserContentPane.editorPanel.add(limitBox, gridBagConstraints);
-//			sqlBrowserContentPane.rowListPanel.add(cardPanel, java.awt.BorderLayout.CENTER);
-//			cardPanel.setVisible(true);
-//			sqlBrowserContentPane.sqlEditorPane.setText(condition);
-//			sqlBrowserContentPane.sqlEditorPane.setCaretPosition(0);
-//			sqlBrowserContentPane.sqlEditorPane.discardAllEdits();
-//			
-//			sqlBrowserContentPane.reloadButton.addActionListener(new ActionListener() {
-//				@Override
-//				public void actionPerformed(ActionEvent arg0) {
-//					reloadRows();
-//				}
-//			});
-//			sqlBrowserContentPane.detailsButton.setEnabled(false);
-//			sqlBrowserContentPane.detailsButton.addActionListener(new ActionListener() {
-//				@Override
-//				public void actionPerformed(ActionEvent e) {
-//					openDetails(300, 300);
-//				}
-//			});
-//		}
-		
+
 		suppressReload = false;
 		if (reload) {
 			reloadRows();
@@ -1197,6 +1182,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 		}
+		
+		popup.addSeparator();
+		JCheckBoxMenuItem editMode = new JCheckBoxMenuItem("Edit Mode");
+		editMode.setSelected(isEditMode);
+		editMode.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setEditMode(!isEditMode);
+				updateTableModel();
+			}
+		});
+		popup.add(editMode);
+		
 		return popup;
 	}
 
@@ -2494,11 +2492,22 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				
 				@Override
 				public void init(ResultSet resultSet) throws SQLException {
+					ResultSetMetaData metaData = getMetaData(resultSet);
+					int columnCount = metaData.getColumnCount();
 					if (table instanceof SqlStatementTable) {
-						for (int ci = 1; ci <= getMetaData(resultSet).getColumnCount(); ++ci) {
-							table.getColumns().add(new Column(getMetaData(resultSet).getColumnLabel(ci), getMetaData(resultSet).getColumnTypeName(ci), -1, -1));
+						for (int ci = 1; ci <= columnCount; ++ci) {
+							table.getColumns().add(new Column(metaData.getColumnLabel(ci), metaData.getColumnTypeName(ci), -1, -1));
 						}
 					}
+					int[] columnTypes = new int[columnCount];
+					for (int ci = 1; ci <= columnCount; ++ci) {
+						if (metaData instanceof MDCResultSetMetaData) {
+							columnTypes[ci - 1] = ((MDCResultSetMetaData) metaData).types[ci - 1];
+						} else {
+							columnTypes[ci - 1] = metaData.getColumnType(ci);
+						}
+					}
+					browserContentCellEditor = new BrowserContentCellEditor(columnTypes);
 				}
 				
 				@Override
@@ -2801,7 +2810,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		DefaultTableModel dtm;
 		singleRowDetailsView = null;
 		int rn = 0;
-		if (rows.size() != 1 || noSingleRowDetailsView) {
+		if (rows.size() != 1 || isEditMode || noSingleRowDetailsView) {
 			Map<String, Integer> columnNameMap = new HashMap<String, Integer>();
 			for (int i = 0; i < columns.size(); ++i) {
 				columnNameMap.put(columnNames[i], i);
@@ -2815,7 +2824,59 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			dtm = new DefaultTableModel(uqColumnNames, 0) {
 				@Override
 				public boolean isCellEditable(int row, int column) {
-					return false;
+					Row r = null;
+					if (row < rows.size()) {
+						r = rows.get(row);
+					}
+					return isEditMode && r != null && browserContentCellEditor.isEditable(row, column, r.values[column]);
+				}
+
+				@Override
+				public void setValueAt(Object aValue, int row, int column) {
+					String text = aValue.toString();
+					Object content = browserContentCellEditor.textToContent(row, column, text);
+					if (content != BrowserContentCellEditor.INVALID) {
+						Row theRow = null;
+						if (row < rows.size()) {
+							theRow = rows.get(row);
+							if (!browserContentCellEditor.cellContentToText(row, column, theRow.values[column]).equals(text)) {
+								Object oldContent = theRow.values[column];
+								theRow.values[column] = content;
+								final String updateStatement = SQLDMLBuilder.buildUpdate(table, theRow, false, column, session);
+								theRow.values[column] = oldContent;
+								updateMode("updating");
+								
+								getRunnableQueue().add(new RunnableWithPriority() {
+									private Exception exception;
+									
+									@Override
+									public void run() {
+										try {
+											session.execute(updateStatement);
+										} catch (Exception e) {
+											exception = e;
+										}
+										SwingUtilities.invokeLater(new Runnable() {
+											@Override
+											public void run() {
+												if (exception != null) {
+													UIUtil.showException(BrowserContentPane.this, "Error", exception);
+													updateMode("table");
+												} else {
+													reloadRows();
+												}
+											}
+										});
+									}
+									
+									@Override
+									public int getPriority() {
+										return 50;
+									}
+								});
+							}
+						}
+					}
 				}
 			};
 			
@@ -2869,6 +2930,29 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					break;
 				}
 			}
+			
+			//set the editor as default on every column
+			JTextField textField = new JTextField();
+		    textField.setBorder(new LineBorder(Color.black));
+			DefaultCellEditor anEditor = new DefaultCellEditor(textField) {
+				@Override
+				public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
+					if (row < rows.size()) {
+						Row r = rows.get(rowsTable.getRowSorter().convertRowIndexToModel(row));
+						if (r != null) {
+							value = browserContentCellEditor.cellContentToText(row, column, r.values[column]);
+						}
+					}
+					return super.getTableCellEditorComponent(table, value, isSelected, row, column);
+				}
+			};
+			anEditor.setClickCountToStart(1);
+			for (int i = 0; i < rowsTable.getColumnCount(); i++) {
+			   rowsTable.setDefaultEditor(rowsTable.getColumnClass(i), anEditor);
+		    }
+			
+			List<? extends SortKey> sortKeys = new ArrayList(rowsTable.getRowSorter().getSortKeys());
+			
 			rowsTable.setModel(dtm);
 			rowsTable.setRowHeight(initialRowHeight);
 
@@ -2921,6 +3005,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			};
 			rowsTable.setRowSorter(sorter);
+			try {
+				rowsTable.getRowSorter().setSortKeys(sortKeys);
+			} catch (Exception e) {
+				// ignore
+			}
 		} else {
 			singleRowDetailsView = new DetailsView(Collections.singletonList(rows.get(0)), 1, dataModel, BrowserContentPane.this.table, 0, null, false, rowIdSupport) {
 				@Override
@@ -3053,7 +3142,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         jPanel7 = new javax.swing.JPanel();
         loadButton = new javax.swing.JButton();
-        andCondition = new javax.swing.JComboBox();
+        andCondition = new javax.swing.JComboBox<Object>();
         onPanel = new javax.swing.JPanel();
         on = new javax.swing.JLabel();
         joinPanel = new javax.swing.JPanel();
@@ -3115,7 +3204,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel7.add(loadButton, gridBagConstraints);
 
         andCondition.setEditable(true);
-        andCondition.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        andCondition.setModel(new javax.swing.DefaultComboBoxModel<Object>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -3544,7 +3633,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    javax.swing.JComboBox andCondition;
+    javax.swing.JComboBox<Object> andCondition;
     private javax.swing.JLabel andLabel;
     private javax.swing.JButton cancelLoadButton;
     private javax.swing.JPanel cardPanel;
@@ -3645,6 +3734,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			mode = "table";
 			loadingPanel.setVisible(true);
 			loadingLabel.setText("pending...");
+			cancelLoadButton.setVisible(false);
+			rowsTable.setEnabled(false);
+		} else if ("updating".equals(mode)) {
+			mode = "table";
+			loadingPanel.setVisible(true);
+			loadingLabel.setText("updating...");
 			cancelLoadButton.setVisible(false);
 			rowsTable.setEnabled(false);
 		}
@@ -3896,6 +3991,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	public LoadJob newLoadJob(ResultSet resultSet, Integer limit) {
 		return new LoadJob(resultSet, limit == null? Integer.MAX_VALUE : limit);
+	}
+	
+	public boolean isEditMode() {
+		return isEditMode;
+	}
+
+	public void setEditMode(boolean isEditMode) {
+		this.isEditMode = isEditMode;
 	}
 	
 	private String statementForReloading;
