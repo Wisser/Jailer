@@ -103,7 +103,7 @@ public class SQLDMLBuilder {
 			}
 			usedColumns.add(column.name);
 			String name = quoting.requote(column.name);
-			sql += (f? "" : ", " + LF + "    ") + name + " = " + value + comment(withComments, column, false);
+			sql += (f? "" : ", " + LF + "    ") + name + "=" + value + comment(withComments, column, false);
 			f = false;
 		}
 		sql += " " + LF + "Where " + SqlUtil.replaceAliases(row.rowId, null, null);
