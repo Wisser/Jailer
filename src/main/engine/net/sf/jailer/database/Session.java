@@ -689,18 +689,27 @@ public class Session {
 	 * @param sql the SQL-Statement
 	 */
 	public long execute(String sql) throws SQLException {
+		return execute(sql, null);
+	}
+
+	/**
+	 * Executes a SQL-Statement without returning any result.
+	 * 
+	 * @param sql the SQL-Statement
+	 */
+	public long execute(String sql, Object cancellationContext) throws SQLException {
 		_log.info(sql);
 		long rc = 0;
 		try {
-			CancellationHandler.checkForCancellation(null);
+			CancellationHandler.checkForCancellation(cancellationContext);
 			Statement statement = connectionFactory.getConnection().createStatement();
-			CancellationHandler.begin(statement, null);
+			CancellationHandler.begin(statement, cancellationContext);
 			rc = statement.executeUpdate(sql);
 			statement.close();
-			CancellationHandler.end(statement, null);
+			CancellationHandler.end(statement, cancellationContext);
 			_log.info("" + rc + " row(s)");
 		} catch (SQLException e) {
-			CancellationHandler.checkForCancellation(null);
+			CancellationHandler.checkForCancellation(cancellationContext);
 			if (!silent) {
 				_log.error("Error executing statement", e);
 			}

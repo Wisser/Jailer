@@ -19,12 +19,13 @@ import java.math.BigDecimal;
 import java.sql.Timestamp;
 import java.sql.Types;
 import java.text.ParseException;
-import java.text.ParsePosition;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
+import net.sf.jailer.datamodel.Column;
+import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -84,7 +85,7 @@ public class BrowserContentCellEditor {
 		},
 		DATE {
 			SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-			SimpleDateFormat timeStampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss:SSS");
+			SimpleDateFormat timeStampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
 		
 			@Override
 			String cellContentToText(int columnType, Object content) {
@@ -162,12 +163,20 @@ public class BrowserContentCellEditor {
 	/**
 	 * Is given cell editable?
 	 * 
+	 * @param table the table 
 	 * @param row row number
 	 * @param column column number
 	 * @param content cell content
 	 */
-	public boolean isEditable(int row, int column, Object content) {
+	public boolean isEditable(Table table, int row, int column, Object content) {
 		if (column < 0 || column >= columnTypes.length) {
+			return false;
+		}
+		if (table == null || table.getColumns().size() <= column) {
+			return false;
+		}
+		Column theColumn = table.getColumns().get(column);
+		if (theColumn.name == null || theColumn.isVirtual()) {
 			return false;
 		}
 		Converter converter = converterPerType.get(columnTypes[column]);

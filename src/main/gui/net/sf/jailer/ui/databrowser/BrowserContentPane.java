@@ -611,11 +611,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							renderRowAsPK = renderRowAsPK(r);
 						}
 					}
+					int convertedColumnIndex = rowsTable.convertColumnIndexToModel(column);
 					if (!isSelected) {
 						if (BrowserContentPane.this.currentClosureRowIDs != null && row < rows.size() && BrowserContentPane.this.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(BrowserContentPane.this, rows.get(rowSorter.convertRowIndexToModel(row)).rowId))) {
 							((JLabel) render).setBackground(BG3);
 						} else {
-							if (isEditMode && r != null && browserContentCellEditor.isEditable(rowIndex, column, r.values[column])) {
+							if (isEditMode && r != null && browserContentCellEditor.isEditable(BrowserContentPane.this.table, rowIndex, convertedColumnIndex, r.values[convertedColumnIndex])) {
 								((JLabel) render).setBackground((row % 2 == 0) ? BG1_EM : BG2_EM);
 							} else {
 								((JLabel) render).setBackground((row % 2 == 0) ? BG1 : BG2);
@@ -623,8 +624,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 					}
 					((JLabel) render).setForeground(
-							renderRowAsPK || pkColumns.contains(rowsTable.convertColumnIndexToModel(column)) ? FG1 : 
-								fkColumns.contains(rowsTable.convertColumnIndexToModel(column)) ? FG2 : 
+							renderRowAsPK || pkColumns.contains(convertedColumnIndex) ? FG1 : 
+								fkColumns.contains(convertedColumnIndex) ? FG2 : 
 										Color.BLACK);
 					boolean isNull = false;
 					if (((JLabel) render).getText() == NULL || ((JLabel) render).getText() == UNKNOWN) {
@@ -752,7 +753,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				openEditorLabel.setIcon(conditionEditorIcon);
 			}
 		});
-		relatedRowsLabel.setIcon(dropDownIcon);
+		relatedRowsLabel.setIcon(UIUtil.scaleIcon(this, relatedRowsIcon));
 		relatedRowsPanel.addMouseListener(new java.awt.event.MouseAdapter() {
 			private JPopupMenu popup;
 			private boolean in = false;
@@ -1004,6 +1005,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			JMenuItem insert = new JMenuItem("Insert");
 			jPopupMenu.add(insert);
 			insert.setEnabled(false);
+			jPopupMenu.addSeparator();
+			JMenuItem editMode = new JMenuItem("Edit Mode");
+			jPopupMenu.add(editMode);
+			editMode.setEnabled(false);
 			return jPopupMenu;
 		}
 		
@@ -1181,19 +1186,18 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					popup.add(sql);
 				}
 			}
+			popup.addSeparator();
+			JCheckBoxMenuItem editMode = new JCheckBoxMenuItem("Edit Mode");
+			editMode.setSelected(isEditMode);
+			editMode.addActionListener(new ActionListener() {
+				@Override
+				public void actionPerformed(ActionEvent e) {
+					setEditMode(!isEditMode);
+					updateTableModel();
+				}
+			});
+			popup.add(editMode);
 		}
-		
-		popup.addSeparator();
-		JCheckBoxMenuItem editMode = new JCheckBoxMenuItem("Edit Mode");
-		editMode.setSelected(isEditMode);
-		editMode.addActionListener(new ActionListener() {
-			@Override
-			public void actionPerformed(ActionEvent e) {
-				setEditMode(!isEditMode);
-				updateTableModel();
-			}
-		});
-		popup.add(editMode);
 		
 		return popup;
 	}
@@ -2316,6 +2320,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		final Set<String> parentPkColumnNames = new HashSet<String>();
 		final boolean selectParentPK = association != null && parentRows != null && parentRows.size() > 1;
 		final Set<Integer> unknownColumnIndexes = new HashSet<Integer>();
+		int numParentPKColumns = 0;
 		
 		if (table instanceof SqlStatementTable || statementForReloading != null) {
 			sql = andCond;
@@ -2342,6 +2347,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					String name = quoting.requote(column.name);
 					sql += (!f ? ", " : "") + "B." + name + " AS B" + i;
 					olapPrefix += (!f ? ", " : "") + "S.B" + i;
+					++numParentPKColumns;
 					++i;
 					++colI;
 					f = false;
@@ -2486,6 +2492,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 				}
 			}
+			final int finalNumParentPKColumns = numParentPKColumns;
 			AbstractResultSetReader reader = new AbstractResultSetReader() {
 				Map<Integer, Integer> typeCache = new HashMap<Integer, Integer>();
 				int rowNr = 0;
@@ -2500,11 +2507,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						}
 					}
 					int[] columnTypes = new int[columnCount];
-					for (int ci = 1; ci <= columnCount; ++ci) {
+					for (int ci = 1 + finalNumParentPKColumns; ci <= columnCount; ++ci) {
 						if (metaData instanceof MDCResultSetMetaData) {
-							columnTypes[ci - 1] = ((MDCResultSetMetaData) metaData).types[ci - 1];
+							columnTypes[ci - 1 - finalNumParentPKColumns] = ((MDCResultSetMetaData) metaData).types[ci - 1];
 						} else {
-							columnTypes[ci - 1] = metaData.getColumnType(ci);
+							columnTypes[ci - 1 - finalNumParentPKColumns] = metaData.getColumnType(ci);
 						}
 					}
 					browserContentCellEditor = new BrowserContentCellEditor(columnTypes);
@@ -2836,7 +2843,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					if (row < rows.size()) {
 						r = rows.get(row);
 					}
-					return isEditMode && r != null && browserContentCellEditor.isEditable(row, column, r.values[column]);
+					return isEditMode && r != null && browserContentCellEditor.isEditable(table, row, column, r.values[column]);
 				}
 
 				@Override
@@ -2859,15 +2866,26 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 									
 									@Override
 									public void run() {
+										final Object context = new Object();
+										ActionListener listener = new ActionListener() {
+											@Override
+											public void actionPerformed(ActionEvent e) {
+												CancellationHandler.cancel(context);
+											}
+										};
+										cancelLoadButton.addActionListener(listener);
 										try {
-											session.execute(updateStatement);
+											session.execute(updateStatement, context);
 										} catch (Exception e) {
 											exception = e;
+										} finally {
+											CancellationHandler.reset(context);
+											cancelLoadButton.removeActionListener(listener);
 										}
 										SwingUtilities.invokeLater(new Runnable() {
 											@Override
 											public void run() {
-												if (exception != null) {
+												if (exception != null && !(exception instanceof CancellationException)) {
 													UIUtil.showException(BrowserContentPane.this, "Error", exception);
 													updateMode("table");
 												} else {
@@ -2947,8 +2965,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				public Component getTableCellEditorComponent(JTable table, Object value, boolean isSelected, int row, int column) {
 					if (row < rows.size()) {
 						Row r = rows.get(rowsTable.getRowSorter().convertRowIndexToModel(row));
+						int convertedColumnIndex = rowsTable.convertColumnIndexToModel(column);
 						if (r != null) {
-							value = browserContentCellEditor.cellContentToText(row, column, r.values[column]);
+							value = browserContentCellEditor.cellContentToText(row, convertedColumnIndex, r.values[convertedColumnIndex]);
 						}
 					}
 					return super.getTableCellEditorComponent(table, value, isSelected, row, column);
@@ -3748,7 +3767,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			mode = "table";
 			loadingPanel.setVisible(true);
 			loadingLabel.setText("updating...");
-			cancelLoadButton.setVisible(false);
+			cancelLoadButton.setVisible(true);
 			rowsTable.setEnabled(false);
 		}
 		((CardLayout) cardPanel.getLayout()).show(cardPanel, mode);
@@ -3974,12 +3993,14 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	private static TableContentViewFilter tableContentViewFilter = TableContentViewFilter.create();
 	
 	private Icon dropDownIcon;
+	private ImageIcon relatedRowsIcon;
 	{
 		String dir = "/net/sf/jailer/ui/resource";
 		
 		// load images
 		try {
 			dropDownIcon = new ImageIcon(getClass().getResource(dir + "/dropdown.png"));
+			relatedRowsIcon = new ImageIcon(getClass().getResource(dir + "/right.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

@@ -54,6 +54,8 @@ public class TabContentPanel extends javax.swing.JPanel {
         add(contentPanel, gridBagConstraints);
 
         panel.setLayout(new java.awt.GridBagLayout());
+
+        controlsPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;

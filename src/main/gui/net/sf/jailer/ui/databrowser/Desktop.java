@@ -1885,7 +1885,7 @@ public abstract class Desktop extends JDesktopPane {
 	private final DataBrowser parentFrame;
 
 	public static enum LayoutMode {
-		THUMBNAIL(0.22), TINY(0.569), SMALL(0.75), MEDIUM(1.0), LARGE(1.4);
+		THUMBNAIL(0.22), TINY(0.57), SMALL(0.75), MEDIUM(1.0), LARGE(1.4);
 
 		public final double factor;
 

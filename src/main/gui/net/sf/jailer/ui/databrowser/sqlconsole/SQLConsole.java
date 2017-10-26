@@ -11,7 +11,6 @@ import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
-import java.awt.Image;
 import java.awt.Insets;
 import java.awt.Window;
 import java.awt.event.ItemEvent;
@@ -235,13 +234,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		runSQLButton.setText("Run");
 		runnAllButton.setText("Run all");
 
-		runSQLButton.setIcon(getScaledIcon(this, runIcon));
-		runnAllButton.setIcon(getScaledIcon(this, runAllIcon));
+		runSQLButton.setIcon(UIUtil.scaleIcon(this, runIcon));
+		runnAllButton.setIcon(UIUtil.scaleIcon(this, runAllIcon));
 		runSQLButton.setToolTipText(runSQLButton.getText() + " - Ctrl-Enter");
 		runnAllButton.setToolTipText(runnAllButton.getText() + " - Alt-Enter");
 		runnAllButton.setMargin(new Insets(0, 0, 0, 0));
 				
-		scaledCancelIcon = getScaledIcon(this, cancelIcon);
+		scaledCancelIcon = UIUtil.scaleIcon(this, cancelIcon);
 		cancelButton.setIcon(scaledCancelIcon);
 		
 		limitComboBox.setModel(new DefaultComboBoxModel(DataBrowser.ROW_LIMITS));
@@ -447,7 +446,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			        	rb.sortColumnsCheckBox.setVisible(true);
 			        	tabContentPanel.controlsPanel1.add(rb.sortColumnsCheckBox);
 			        	tabContentPanel.controlsPanel1.add(rb.loadButton);
-			        	String stmt = sql.trim();
+			        	rb.loadButton.setIcon(UIUtil.scaleIcon(SQLConsole.this, runIcon));
+			    		String stmt = sql.trim();
 			        	tabContentPanel.statementLabel.setToolTipText(UIUtil.toHTML(sql, 100));
 			        	if (stmt.length() > 200) {
 			        		stmt = stmt.substring(0, 200) + "...";
@@ -1225,20 +1225,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	static private ImageIcon runIcon;
     static private ImageIcon runAllIcon;
     static private ImageIcon cancelIcon;
-    static ImageIcon getScaledIcon(JComponent component, ImageIcon scaledIcon) {
-    	if (scaledIcon != null) {
-            if (scaledIcon != null) {
-            	int heigth = component.getFontMetrics(new JLabel("M").getFont()).getHeight();
-            	double s = heigth / (double) scaledIcon.getIconHeight();
-            	try {
-            		return new ImageIcon(scaledIcon.getImage().getScaledInstance((int)(scaledIcon.getIconWidth() * s), (int)(scaledIcon.getIconHeight() * s), Image.SCALE_SMOOTH));
-            	} catch (Exception e) {
-            		return null;
-            	}
-            }
-    	}
-    	return null;
-    }
+
     static {
 		String dir = "/net/sf/jailer/ui/resource";
 		

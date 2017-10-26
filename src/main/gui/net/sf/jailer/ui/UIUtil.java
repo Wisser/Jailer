@@ -23,6 +23,7 @@ import java.awt.FileDialog;
 import java.awt.Frame;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Image;
 import java.awt.Toolkit;
 import java.awt.Window;
 import java.awt.event.KeyEvent;
@@ -49,9 +50,11 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
@@ -640,7 +643,7 @@ public class UIUtil {
             String message = ((SqlException) t).message;
             String sql = ((SqlException) t).sqlStatement;
             new SqlErrorDialog(parent == null ? null : SwingUtilities.getWindowAncestor(parent),
-                    lineWrap(message, 120).toString(), lineWrap(sql, 120).toString(), true, null);
+                    lineWrap(message, 120).toString(), sql, true, null);
             return;
         }
         String message = t.getMessage();
@@ -845,4 +848,19 @@ public class UIUtil {
                 .replace("\t","&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;");
     }
     
+    public static ImageIcon scaleIcon(JComponent component, ImageIcon icon) {
+    	if (icon != null) {
+            if (icon != null) {
+            	int heigth = component.getFontMetrics(new JLabel("M").getFont()).getHeight();
+            	double s = heigth / (double) icon.getIconHeight();
+            	try {
+            		return new ImageIcon(icon.getImage().getScaledInstance((int)(icon.getIconWidth() * s), (int)(icon.getIconHeight() * s), Image.SCALE_SMOOTH));
+            	} catch (Exception e) {
+            		return null;
+            	}
+            }
+    	}
+    	return null;
+    }
+
 }
