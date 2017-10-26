@@ -19,7 +19,6 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.Frame;
-import java.awt.Image;
 import java.awt.Point;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -34,9 +33,7 @@ import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
-import javax.swing.JComponent;
 import javax.swing.JDialog;
-import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -62,7 +59,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	
 	public static JButton createSearchButton(final Frame owner, final javax.swing.JComboBox comboBox, final String titel, final Runnable onSuccess, final Runnable prepare) {
 		final JButton button = new JButton();
-		button.setIcon(getScaledIcon(button, icon));
+		button.setIcon(UIUtil.scaleIcon(button, icon));
 		button.setToolTipText("Find Table");
 		button.addActionListener(new ActionListener() {
 			@Override
@@ -342,20 +339,6 @@ public class StringSearchPanel extends javax.swing.JPanel {
     // End of variables declaration//GEN-END:variables
     
     static private ImageIcon icon;
-    static ImageIcon getScaledIcon(JComponent component, ImageIcon scaledIcon) {
-    	if (scaledIcon != null) {
-            if (scaledIcon != null) {
-            	int heigth = component.getFontMetrics(new JLabel("M").getFont()).getHeight();
-            	double s = heigth / (double) scaledIcon.getIconHeight();
-            	try {
-            		return new ImageIcon(scaledIcon.getImage().getScaledInstance((int)(scaledIcon.getIconWidth() * s), (int)(scaledIcon.getIconHeight() * s), Image.SCALE_SMOOTH));
-            	} catch (Exception e) {
-            		return null;
-            	}
-            }
-    	}
-    	return null;
-    }
     static {
 		String dir = "/net/sf/jailer/ui/resource";
 		
