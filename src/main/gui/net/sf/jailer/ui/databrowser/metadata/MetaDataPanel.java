@@ -138,12 +138,12 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 			public void run() {
 				onSelectTable();
 			}
-		}, new Runnable() {
+		}, new StringSearchPanel.Prepare() {
 			@Override
-			public void run() {
-				updateTablesCombobox();
+			public void prepare(Set<MDSchema> selectedSchemas) {
+				updateTablesCombobox(selectedSchemas);
 			}
-		});
+		}, metaDataSource, dataModel);
 		add(searchButton, gridBagConstraints);
         
 		tablesComboBox.setVisible(false);
@@ -353,16 +353,25 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     
     private Map<String, MDTable> tablesComboboxMDTablePerName = new HashMap<String, MDTable>();
     
-	private void updateTablesCombobox() {
+	private void updateTablesCombobox(Set<MDSchema> selectedSchemas) {
 		Set<String> tableSet = new HashSet<String>();
 		
 		for (Table table: dataModel.getTables()) {
 			if (metaDataSource.toMDTable(table) == null) {
-				String displayName = dataModel.getDisplayName(table);
-				tableSet.add(displayName);
+				String schemaName = table.getSchema("");
+				MDSchema schema;
+				if (schemaName.isEmpty()) {
+					schema = metaDataSource.getDefaultSchema();
+				} else {
+					schema = metaDataSource.find(schemaName);
+				}
+				if (schema != null && selectedSchemas.contains(schema)) {
+					String displayName = dataModel.getDisplayName(table);
+					tableSet.add(displayName);
+				}
 			}
 		}
-		for (MDSchema schema: metaDataSource.getSchemas()) {
+		for (MDSchema schema: selectedSchemas) {
 			if (schema.isLoaded()) {
 				for (MDTable table: schema.getTables()) {
 					if (!ModelBuilder.isJailerTable(table.getName())) {
@@ -400,38 +409,38 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	}
 
 	public void reset() {
-			refreshButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			SwingUtilities.invokeLater(new Runnable() {
-				@Override
-				public void run() {
-					try {
-						MDTable selectedTable = null;
-						if (metaDataTree.getSelectionPath() != null) {
-							Object last = metaDataTree.getSelectionPath().getLastPathComponent();
-							if (last instanceof DefaultMutableTreeNode) {
-								final Object uo = ((DefaultMutableTreeNode) last).getUserObject();
-								if (uo instanceof MDTable) {
-									selectedTable = (MDTable) uo;
-								}
+		refreshButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				try {
+					MDTable selectedTable = null;
+					if (metaDataTree.getSelectionPath() != null) {
+						Object last = metaDataTree.getSelectionPath().getLastPathComponent();
+						if (last instanceof DefaultMutableTreeNode) {
+							final Object uo = ((DefaultMutableTreeNode) last).getUserObject();
+							if (uo instanceof MDTable) {
+								selectedTable = (MDTable) uo;
 							}
 						}
-						metaDataSource.clear();
-						metaDataDetailsPanel.reset();
-				    	updateTreeModel(metaDataSource);
-				    	if (selectedTable != null) {
-				    		MDSchema schema = metaDataSource.find(selectedTable.getSchema().getName());
-				    		if (schema != null) {
-				    			MDTable table = schema.find(selectedTable.getName());
-				    			if (table != null) {
-				    				select(table);
-				    			}
-				    		}
-				    	}
-					} finally {
-						refreshButton.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 					}
+					metaDataSource.clear();
+					metaDataDetailsPanel.reset();
+					updateTreeModel(metaDataSource);
+					if (selectedTable != null) {
+						MDSchema schema = metaDataSource.find(selectedTable.getSchema().getName());
+						if (schema != null) {
+							MDTable table = schema.find(selectedTable.getName());
+							if (table != null) {
+								select(table);
+							}
+						}
+					}
+				} finally {
+					refreshButton.setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 				}
-			});
+			}
+		});
 	}
 
 	public void select(Table table) {

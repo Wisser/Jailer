@@ -40,7 +40,8 @@ public class MDSchema extends MDObject {
 
 	public final boolean isDefaultSchema;
 	private List<MDTable> tables;
-	private static final BlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
+	private static final BlockingQueue<Runnable> loadTableColumnsQueue = new LinkedBlockingQueue<Runnable>();
+	private static final BlockingQueue<Runnable> loadTablesQueue = new LinkedBlockingQueue<Runnable>();
 	private boolean valid = true;
 	private AtomicBoolean loaded = new AtomicBoolean(false);
 	
@@ -62,7 +63,21 @@ public class MDSchema extends MDObject {
 			public void run() {
 				for (;;) {
 					try {
-						queue.take().run();
+						loadTableColumnsQueue.take().run();
+					} catch (Throwable t) {
+					}
+				}
+			}
+		});
+        thread.setDaemon(true);
+        thread.start();
+
+        thread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				for (;;) {
+					try {
+						loadTablesQueue.take().run();
 					} catch (Throwable t) {
 					}
 				}
@@ -77,7 +92,16 @@ public class MDSchema extends MDObject {
 	 * 
 	 * @return tables of schema
 	 */
-	public synchronized List<MDTable> getTables() {
+	public List<MDTable> getTables() {
+		return getTables(true);
+	}
+
+	/**
+	 * Gets tables of schema
+	 * 
+	 * @return tables of schema
+	 */
+	public synchronized List<MDTable> getTables(boolean loadTableColumns) {
 		if (tables == null) {
 			try {
 				tables = new ArrayList<MDTable>();
@@ -89,21 +113,23 @@ public class MDSchema extends MDObject {
 						String tableName = metaDataSource.getQuoting().quote(rs.getString(3));
 						final MDTable table = new MDTable(tableName, this, "VIEW".equalsIgnoreCase(rs.getString(4)), "SYNONYM".equalsIgnoreCase(rs.getString(4)));
 						tables.add(table);
-						loadJobs.put(tableName, new Runnable() {
-							@Override
-							public void run() {
-								if (valid) {
-									try {
-										table.getColumns();
-									} catch (SQLException e) {
+						if (loadTableColumns) {
+							loadJobs.put(tableName, new Runnable() {
+								@Override
+								public void run() {
+									if (valid) {
+										try {
+											table.getColumns();
+										} catch (SQLException e) {
+										}
 									}
 								}
-							}
-						});
+							});
+						}
 					}
 					rs.close();
 					for (Runnable loadJob: loadJobs.values()) {
-						queue.add(loadJob);
+						loadTableColumnsQueue.add(loadJob);
 					}
 				}
 				Collections.sort(tables, new Comparator<MDTable>() {
@@ -121,8 +147,23 @@ public class MDSchema extends MDObject {
 		return tables;
 	}
 
+	/**
+	 * Have the tables of the schema been loaded?
+	 */
 	public boolean isLoaded() {
 		return loaded.get();
+	}
+	
+	/**
+	 * Asynchronously loads the tables.
+	 */
+	public void loadTables() {
+		loadTablesQueue.add(new Runnable() {
+			@Override
+			public void run() {
+				getTables(false);
+			}
+		});
 	}
 
 	private final Map<String, MDTable> tablePerUnquotedNameUC = new HashMap<String, MDTable>();

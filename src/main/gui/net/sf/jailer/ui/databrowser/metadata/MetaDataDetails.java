@@ -19,7 +19,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import javax.swing.JTable;
+import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
 
 import net.sf.jailer.database.Session;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
@@ -61,7 +63,20 @@ public enum MetaDataDetails {
 	},
 	INDEXES("Indexes", 0) {
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
-			return JDBCMetaDataBasedModelElementFinder.getIndexes(session, session.getMetaData(),Quoting.staticUnquote( mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()));
+			return JDBCMetaDataBasedModelElementFinder.getIndexes(session, session.getMetaData(), Quoting.staticUnquote( mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()));
+		}
+		public void adjustRowsTable(JTable rowsTable) {
+			TableModel dm = rowsTable.getModel();
+			if (dm instanceof DefaultTableModel) {
+				DefaultTableModel tm = (DefaultTableModel) dm;
+				if (tm.getRowCount() > 0) {
+					Object columnName = tm.getValueAt(0, 8);
+					if (columnName == null || !(columnName instanceof String) && "null".equals(columnName.toString())) {
+						// remove first row with COLUMN_NAME == null (ORACLE)
+						tm.removeRow(0);
+					}
+				}
+			}
 		}
 	},
 	EXPORTEDKEY("Exported Keys", 1) {
