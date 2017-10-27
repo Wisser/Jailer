@@ -1818,18 +1818,19 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	
 	private JPopupMenu createNavigationMenu(JPopupMenu popup, final Row row, final int rowIndex, List<String> assList, Map<String, Association> assMap,
 			String title, String prefix, final boolean navigateFromAllRows, final int rowCountPriority, final AllNonEmptyItem allNonEmptyItem, final Object context) {
-		JMenu nav = new JScrollC2Menu(title);
+		JScrollC2Menu nav = new JScrollC2Menu(title);
+		
 		if (prefix.equals("1")) {
-			nav.setForeground(new java.awt.Color(170, 0, 0));
+			nav.setIcon(UIUtil.scaleIcon(this, redDotIcon));
 		}
 		if (prefix.equals("2")) {
-			nav.setForeground(new java.awt.Color(0, 112, 0));
+			nav.setIcon(UIUtil.scaleIcon(this, greenDotIcon));
 		}
 		if (prefix.equals("3")) {
-			nav.setForeground(new java.awt.Color(0, 100, 255));
+			nav.setIcon(UIUtil.scaleIcon(this, blueDotIcon));
 		}
 		if (prefix.equals("4")) {
-			nav.setForeground(new java.awt.Color(153, 153, 153));
+			nav.setIcon(UIUtil.scaleIcon(this, greyDotIcon));
 		}
 		JMenu current = nav;
 		
@@ -3256,7 +3257,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 6;
-        gridBagConstraints.gridwidth = 4;
+        gridBagConstraints.gridwidth = 5;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -3284,6 +3285,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
         gridBagConstraints.gridy = 5;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHWEST;
         gridBagConstraints.weightx = 1.0;
@@ -3996,6 +3998,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	
 	private Icon dropDownIcon;
 	private ImageIcon relatedRowsIcon;
+	private ImageIcon redDotIcon;
+	private ImageIcon blueDotIcon;
+	private ImageIcon greenDotIcon;
+	private ImageIcon greyDotIcon;
 	{
 		String dir = "/net/sf/jailer/ui/resource";
 		
@@ -4003,6 +4009,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		try {
 			dropDownIcon = new ImageIcon(getClass().getResource(dir + "/dropdown.png"));
 			relatedRowsIcon = new ImageIcon(getClass().getResource(dir + "/right.png"));
+			redDotIcon = new ImageIcon(getClass().getResource(dir + "/reddot.gif"));
+			blueDotIcon = new ImageIcon(getClass().getResource(dir + "/bluedot.gif"));
+			greenDotIcon = new ImageIcon(getClass().getResource(dir + "/greendot.gif"));
+			greyDotIcon = new ImageIcon(getClass().getResource(dir + "/greydot.gif"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
