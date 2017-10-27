@@ -586,7 +586,11 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="relatedRowsLabel">
           <Properties>
+            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
+              <Color blue="ff" green="f0" red="e0" type="rgb"/>
+            </Property>
             <Property name="text" type="java.lang.String" value=" Related Rows "/>
+            <Property name="opaque" type="boolean" value="true"/>
           </Properties>
         </Component>
       </SubComponents>

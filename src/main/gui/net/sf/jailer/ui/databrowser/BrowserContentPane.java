@@ -3169,7 +3169,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
         jPanel7 = new javax.swing.JPanel();
         loadButton = new javax.swing.JButton();
-        andCondition = new javax.swing.JComboBox<Object>();
+        andCondition = new javax.swing.JComboBox();
         onPanel = new javax.swing.JPanel();
         on = new javax.swing.JLabel();
         joinPanel = new javax.swing.JPanel();
@@ -3231,7 +3231,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         jPanel7.add(loadButton, gridBagConstraints);
 
         andCondition.setEditable(true);
-        andCondition.setModel(new javax.swing.DefaultComboBoxModel<Object>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        andCondition.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
@@ -3581,7 +3581,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         relatedRowsPanel.setBorder(new javax.swing.border.SoftBevelBorder(javax.swing.border.BevelBorder.RAISED));
         relatedRowsPanel.setLayout(new javax.swing.BoxLayout(relatedRowsPanel, javax.swing.BoxLayout.LINE_AXIS));
 
+        relatedRowsLabel.setBackground(new java.awt.Color(224, 240, 255));
         relatedRowsLabel.setText(" Related Rows ");
+        relatedRowsLabel.setOpaque(true);
         relatedRowsPanel.add(relatedRowsLabel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -3660,7 +3662,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	}
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    javax.swing.JComboBox<Object> andCondition;
+    javax.swing.JComboBox andCondition;
     private javax.swing.JLabel andLabel;
     private javax.swing.JButton cancelLoadButton;
     private javax.swing.JPanel cardPanel;
