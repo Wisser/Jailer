@@ -413,9 +413,24 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			if (statement.execute(sqlStatement)) {
 				resultSet = statement.getResultSet();
 				final Integer limit = (Integer) limitComboBox.getSelectedItem();
-				final Table resultType = QueryTypeAnalyser.getType(sqlStatement, metaDataSource);
+				final List<Table> resultTypes = QueryTypeAnalyser.getType(sqlStatement, metaDataSource);
+				Table resultType = null;
+				if (resultTypes != null && !resultTypes.isEmpty()) {
+					if (resultTypes.size() == 1) {
+						resultType = resultTypes.get(0);
+					}
+					int columnCount = resultSet.getMetaData().getColumnCount();
+					for (Table table: resultTypes) {
+						while (table.getColumns().size() < columnCount) {
+							table.getColumns().add(new net.sf.jailer.datamodel.Column(null, "", 0, -1));
+						}
+					}
+				}
 				final BrowserContentPane rb = new ResultContentPane(datamodel.get(), resultType, "", session, null, null,
 						null, null, new HashSet<Pair<BrowserContentPane, Row>>(), new HashSet<Pair<BrowserContentPane, String>>(), limit, false, false, executionContext);
+				if (resultTypes != null && resultTypes.size() > 1) {
+					rb.setResultSetType(resultTypes);
+				}
 				final CachedResultSet metaDataDetails = new CachedResultSet(resultSet, limit, session, SQLConsole.this);
 		    	resultSet.close();
 				long now = System.currentTimeMillis();
