@@ -18,9 +18,11 @@ package net.sf.jailer.ui.databrowser.sqlconsole;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import net.sf.jailer.datamodel.PrimaryKey;
 import net.sf.jailer.datamodel.PrimaryKeyFactory;
@@ -28,8 +30,8 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.databrowser.metadata.MDSchema;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
+import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
-import net.sf.jsqlparser.JSQLParserException;
 import net.sf.jsqlparser.expression.AllComparisonExpression;
 import net.sf.jsqlparser.expression.AnalyticExpression;
 import net.sf.jsqlparser.expression.AnyComparisonExpression;
@@ -94,6 +96,7 @@ import net.sf.jsqlparser.parser.CCJSqlParserUtil;
 import net.sf.jsqlparser.schema.Column;
 import net.sf.jsqlparser.statement.Commit;
 import net.sf.jsqlparser.statement.SetStatement;
+import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.StatementVisitor;
 import net.sf.jsqlparser.statement.Statements;
 import net.sf.jsqlparser.statement.alter.Alter;
@@ -110,6 +113,7 @@ import net.sf.jsqlparser.statement.replace.Replace;
 import net.sf.jsqlparser.statement.select.AllColumns;
 import net.sf.jsqlparser.statement.select.AllTableColumns;
 import net.sf.jsqlparser.statement.select.FromItemVisitor;
+import net.sf.jsqlparser.statement.select.Join;
 import net.sf.jsqlparser.statement.select.LateralSubSelect;
 import net.sf.jsqlparser.statement.select.PlainSelect;
 import net.sf.jsqlparser.statement.select.Select;
@@ -137,28 +141,24 @@ public class QueryTypeAnalyser {
 	@SuppressWarnings("serial")
 	private static class QueryTooComplexException extends RuntimeException {
 	};
-	
+
 	/**
 	 * Parses a SQL query and tries to find out the type.
 	 * 
 	 * @param sqlSelect the query
 	 * @return the type or <code>null</code>
 	 */
-	public static Table getType(String sqlSelect, final MetaDataSource metaDataSource) {
+	public static List<Table> getType(String sqlSelect, final MetaDataSource metaDataSource) {
 		net.sf.jsqlparser.statement.Statement st;
-		final Table[] result = new Table[1];
 		try {
 			st = CCJSqlParserUtil.parse(sqlSelect);
-			st.accept(new StatementVisitor() {
-				@Override
-				public void visit(Upsert upsert) {
-					throw new QueryTooComplexException();					
-				}
-				
+			final LinkedHashMap<String, MDTable> fromClause = analyseFromClause(st, metaDataSource);
+			final List<Pair<String	, String>> selectClause = new ArrayList<Pair<String, String>>();
+			st.accept(new DefaultStatementVisitor() {
 				@Override
 				public void visit(Select select) {
 					select.getSelectBody().accept(new SelectVisitor() {
-						
+
 						@Override
 						public void visit(WithItem withItem) {
 							throw new QueryTooComplexException();
@@ -171,42 +171,166 @@ public class QueryTypeAnalyser {
 						
 						@Override
 						public void visit(PlainSelect plainSelect) {
-							final List<MDTable> tables = new ArrayList<MDTable>();
-							if (plainSelect.getFromItem() != null) {
-								if (plainSelect.getJoins() != null) {
-									throw new QueryTooComplexException();
+							for (SelectItem si: plainSelect.getSelectItems()) {
+								final boolean stop[] = new boolean[] { false };
+								
+								si.accept(new SelectItemVisitor() {
+									@Override
+									public void visit(SelectExpressionItem selectExpressionItem) {
+										final boolean noSubexpression[] = new boolean[] { true };
+										final Column column[] = new Column[1];
+										
+										selectExpressionItem.getExpression().accept(createExpressionVisitor(noSubexpression, column));
+
+										if (noSubexpression[0] && column[0] != null) {
+											String alias = null;
+											if (column[0].getTable() != null) {
+												if (column[0].getTable().getAlias() != null) {
+													alias = column[0].getTable().getAlias().getName();
+												} else {
+													alias = column[0].getTable().getName();
+												}
+											}
+											Pair<String, String> col;
+											try {
+												col = findColumn(alias, column[0].getColumnName(), fromClause);
+											} catch (SQLException e) {
+												throw new QueryTooComplexException();
+											}
+											selectClause.add(col);
+										} else {
+											selectClause.add(null);
+										}
+									}
+									
+									@Override
+									public void visit(AllTableColumns allTableColumns) {
+										String tableName = allTableColumns.getTable().getName();
+										String tableAlias = null;
+										if (tableName != null) {
+											tableAlias = findTable(tableName, fromClause);
+										}
+										if (tableAlias == null) {
+											throw new QueryTooComplexException();
+										}
+										MDTable mdTable = fromClause.get(tableAlias);
+										try {
+											for (String col: mdTable.getColumns()) {
+												selectClause.add(new Pair<String, String>(tableAlias, col));
+											}
+										} catch (SQLException e) {
+											throw new QueryTooComplexException();
+										}
+									}
+
+									@Override
+									public void visit(AllColumns allColumns) {
+										for (Entry<String, MDTable> e: fromClause.entrySet()) {
+											MDTable mdTable = e.getValue();
+											if (mdTable == null) {
+												stop[0] = true;
+												break;
+											}
+											try {
+												for (String col: mdTable.getColumns()) {
+													selectClause.add(new Pair<String, String>(e.getKey(), col));
+												}
+											} catch (SQLException e2) {
+												throw new QueryTooComplexException();
+											}
+										}
+									}
+								});
+								if (stop[0]) {
+									break;
 								}
-								plainSelect.getFromItem().accept(new FromItemVisitor() {
-									@Override
-									public void visit(TableFunction tableFunction) {
-										throw new QueryTooComplexException();
-									}
-									
-									@Override
-									public void visit(ValuesList valuesList) {
-										throw new QueryTooComplexException();
-									}
-									
-									@Override
-									public void visit(LateralSubSelect lateralSubSelect) {
-										throw new QueryTooComplexException();
-									}
-									
-									@Override
-									public void visit(SubJoin subjoin) {
-										throw new QueryTooComplexException();
-									}
-									
-									@Override
-									public void visit(SubSelect subSelect) {
-										throw new QueryTooComplexException();
-									}
-									
-									@Override
-									public void visit(net.sf.jsqlparser.schema.Table tableName) {
-										String schema = tableName.getSchemaName();
-										String name = tableName.getName();
-																				
+							}
+						}
+					});
+				}
+			});
+
+			List<Table> result = new ArrayList<Table>();
+			for (String tableAlias: fromClause.keySet()) {
+				MDTable theTable = fromClause.get(tableAlias);
+				if (theTable != null) {
+					List<String> columnNames = new ArrayList<String>();
+					for (Pair<String, String> e: selectClause) {
+						if (e.a.equals(tableAlias)) {
+							columnNames.add(e.b);
+						} else {
+							columnNames.add(null);
+						}
+					}
+					Table table = createTable(theTable, columnNames, metaDataSource);
+					if (table != null) {
+						result.add(table);
+					}
+				}
+			}
+
+			return result;
+		} catch (Exception e) {
+		}
+		return null;
+	}
+
+	private static LinkedHashMap<String, MDTable> analyseFromClause(Statement st, final MetaDataSource metaDataSource) {
+		final LinkedHashMap<String, MDTable> result = new LinkedHashMap<String, MDTable>();
+		
+		st.accept(new DefaultStatementVisitor() {
+			private int unknownTableCounter = 0;
+			@Override
+			public void visit(Select select) {
+				select.getSelectBody().accept(new SelectVisitor() {
+
+					@Override
+					public void visit(WithItem withItem) {
+					}
+					
+					@Override
+					public void visit(SetOperationList setOpList) {
+					}
+					
+					@Override
+					public void visit(PlainSelect plainSelect) {
+						if (plainSelect.getFromItem() != null) {
+							FromItemVisitor fromItemVisitor = new FromItemVisitor() {
+								private void unknownTable() {
+									result.put("-unknown-" + (unknownTableCounter++), null);
+								}
+								@Override
+								public void visit(TableFunction tableFunction) {
+									unknownTable();
+								}
+								
+								@Override
+								public void visit(ValuesList valuesList) {
+									unknownTable();
+								}
+								
+								@Override
+								public void visit(LateralSubSelect lateralSubSelect) {
+									unknownTable();
+								}
+								
+								@Override
+								public void visit(SubJoin subjoin) {
+									unknownTable();
+								}
+								
+								@Override
+								public void visit(SubSelect subSelect) {
+									unknownTable();
+								}
+								
+								@Override
+								public void visit(net.sf.jsqlparser.schema.Table tableName) {
+									String schema = tableName.getSchemaName();
+									String name = tableName.getName();
+									if (tableName.getPivot() != null) {
+										unknownTable();
+									} else {
 										MDSchema mdSchema;
 										if (schema == null) {
 											mdSchema = metaDataSource.getDefaultSchema();
@@ -216,471 +340,27 @@ public class QueryTypeAnalyser {
 										if (mdSchema != null) {
 											MDTable mdTable = mdSchema.find(name);
 											if (mdTable != null) {
-												if (!tables.isEmpty()) {
-													throw new QueryTooComplexException();
-												}
-												tables.add(mdTable);
+												result.put(tableName.getAlias() != null? tableName.getAlias().getName() : mdTable.getName(), mdTable);
 											} else {
-												throw new QueryTooComplexException();
+												unknownTable();
 											}
 										}
-									}
-								});
-							}
-							
-							if (tables.size() != 1) {
-								throw new QueryTooComplexException();
-							}
-							
-							final MDTable theTable = tables.get(0);
-							final List<String> columnNames = new ArrayList<String>();
-							
-							for (SelectItem si: plainSelect.getSelectItems()) {
-								si.accept(new SelectItemVisitor() {
-									
-									@Override
-									public void visit(SelectExpressionItem selectExpressionItem) {
-										final boolean noSubexpression[] = new boolean[] { true };
-										final String columnName[] = new String[1];
-										
-										selectExpressionItem.getExpression().accept(new ExpressionVisitor() {
-
-											@Override
-											public void visit(Column tableColumn) {
-												columnName[0] = tableColumn.getColumnName();
-											}
-											
-											@Override
-											public void visit(NotExpression aThis) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(DateTimeLiteralExpression literal) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(TimeKeyExpression timeKeyExpression) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(OracleHint hint) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(RowConstructor rowConstructor) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(MySQLGroupConcat groupConcat) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(KeepExpression aexpr) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(NumericBind bind) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(UserVariable var) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(RegExpMySQLOperator regExpMySQLOperator) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(JsonOperator jsonExpr) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(JsonExpression jsonExpr) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(RegExpMatchOperator rexpr) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(OracleHierarchicalExpression oexpr) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(IntervalExpression iexpr) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(ExtractExpression eexpr) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(WithinGroupExpression wgexpr) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(AnalyticExpression aexpr) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(Modulo modulo) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(CastExpression cast) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(BitwiseXor bitwiseXor) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(BitwiseOr bitwiseOr) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(BitwiseAnd bitwiseAnd) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(Matches matches) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(Concat concat) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(AnyComparisonExpression anyComparisonExpression) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(AllComparisonExpression allComparisonExpression) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(ExistsExpression existsExpression) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(WhenClause whenClause) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(CaseExpression caseExpression) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(SubSelect subSelect) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(NotEqualsTo notEqualsTo) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(MinorThanEquals minorThanEquals) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(MinorThan minorThan) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(LikeExpression likeExpression) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(IsNullExpression isNullExpression) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(InExpression inExpression) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(GreaterThanEquals greaterThanEquals) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(GreaterThan greaterThan) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(EqualsTo equalsTo) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(Between between) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(OrExpression orExpression) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(AndExpression andExpression) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(Subtraction subtraction) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(Multiplication multiplication) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(Division division) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(Addition addition) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(StringValue stringValue) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(Parenthesis parenthesis) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(TimestampValue timestampValue) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(TimeValue timeValue) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(DateValue dateValue) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(HexValue hexValue) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(LongValue longValue) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(DoubleValue doubleValue) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(JdbcNamedParameter jdbcNamedParameter) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(JdbcParameter jdbcParameter) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(SignedExpression signedExpression) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(Function function) {
-												noSubexpression[0] = false;
-											}
-											
-											@Override
-											public void visit(NullValue nullValue) {
-												noSubexpression[0] = false;
-											}
-										});
-									
-										if (noSubexpression[0] && columnName[0] != null) {
-											columnNames.add(columnName[0]);
-										} else {
-											columnNames.add(null);
-										}
-									}
-									
-									@Override
-									public void visit(AllTableColumns allTableColumns) {
-										try {
-											columnNames.addAll(theTable.getColumns());
-										} catch (SQLException e) {
-											throw new QueryTooComplexException();
-										}
-									}
-									
-									@Override
-									public void visit(AllColumns allColumns) {
-										try {
-											columnNames.addAll(theTable.getColumns());
-										} catch (SQLException e) {
-											throw new QueryTooComplexException();
-										}
-									}
-								});
-							}
-							
-							Map<String, String> ucColumnNames = new HashMap<String, String>();
-							try {
-								for (String col: theTable.getColumns()) {
-									ucColumnNames.put(Quoting.staticUnquote(col.toUpperCase(Locale.ENGLISH)), col);
-								}
-								for (int i = 0; i < columnNames.size(); ++i) {
-									String colName = columnNames.get(i);
-									if (colName != null) {
-										columnNames.set(i, ucColumnNames.get(Quoting.staticUnquote(colName.toUpperCase(Locale.ENGLISH))));
 									}
 								}
-								result[0] = createTable(theTable, columnNames, metaDataSource);
-							} catch (SQLException e) {
-								throw new QueryTooComplexException();
+							};
+							plainSelect.getFromItem().accept(fromItemVisitor);
+							if (plainSelect.getJoins() != null) {
+								for (Join join: plainSelect.getJoins()) {
+									join.getRightItem().accept(fromItemVisitor);
+								}
 							}
 						}
-					});
-				}
-				
-				@Override
-				public void visit(Merge merge) {
-					throw new QueryTooComplexException();
-				}
-				
-				@Override
-				public void visit(SetStatement set) {
-					throw new QueryTooComplexException();
-				}
-				
-				@Override
-				public void visit(Execute execute) {
-					throw new QueryTooComplexException();
-				}
-				
-				@Override
-				public void visit(Statements stmts) {
-					throw new QueryTooComplexException();
-				}
-				
-				@Override
-				public void visit(Alter alter) {
-					throw new QueryTooComplexException();
-				}
-				
-				@Override
-				public void visit(AlterView alterView) {
-					throw new QueryTooComplexException();
-				}
-				
-				@Override
-				public void visit(CreateView createView) {
-					throw new QueryTooComplexException();
-				}
-				
-				@Override
-				public void visit(CreateTable createTable) {
-					throw new QueryTooComplexException();
-				}
-				
-				@Override
-				public void visit(CreateIndex createIndex) {
-					throw new QueryTooComplexException();
-				}
-				
-				@Override
-				public void visit(Truncate truncate) {
-					throw new QueryTooComplexException();
-				}
-				
-				@Override
-				public void visit(Drop drop) {
-					throw new QueryTooComplexException();
-				}
-				
-				@Override
-				public void visit(Replace replace) {
-					throw new QueryTooComplexException();
-				}
-				
-				@Override
-				public void visit(Insert insert) {
-					throw new QueryTooComplexException();
-				}
-				
-				@Override
-				public void visit(Update update) {
-					throw new QueryTooComplexException();
-				}
-				
-				@Override
-				public void visit(Delete delete) {
-					throw new QueryTooComplexException();
-				}
-				
-				@Override
-				public void visit(Commit commit) {
-					throw new QueryTooComplexException();
-				}
-			});
-		} catch (JSQLParserException e) {
-		} catch (QueryTooComplexException e) {
-		}
-		return result[0];
+					}
+				});
+			}
+		});
+
+		return result;
 	}
 
 	private static Table createTable(MDTable theTable, List<String> columnNames, MetaDataSource metaDataSource) throws SQLException {
@@ -708,4 +388,443 @@ public class QueryTypeAnalyser {
 		return table;
 	}
 
+	private static Pair<String, String> findColumn(String alias, String columnName, LinkedHashMap<String, MDTable> fromClause) throws SQLException {
+		for (boolean strict: new boolean[] { false, true }) {
+			for (Entry<String, MDTable> e: fromClause.entrySet()) {
+				if (alias == null || idEquals(e.getKey(), alias, strict)) {
+					if (e.getValue() != null) {
+						for (String column: e.getValue().getColumns()) {
+							if (idEquals(column, columnName, strict)) {
+								return new Pair<String, String>(e.getKey(), column);
+							}
+						}
+					}
+				}
+			}
+		}
+		return null;
+	}
+
+	private static String findTable(String tableName, LinkedHashMap<String, MDTable> fromClause) {
+		for (boolean strict: new boolean[] { false, true }) {
+			for (Entry<String, MDTable> e: fromClause.entrySet()) {
+				if (idEquals(e.getKey(), tableName, strict)) {
+					return e.getKey();
+				}
+			}
+		}
+		return null;
+	}
+
+	private static boolean idEquals(String a, String b, boolean strict) {
+		if (strict) {
+			return a.equals(b);
+		}
+		return Quoting.staticUnquote(a).toUpperCase(Locale.ENGLISH).equals(Quoting.staticUnquote(b).toUpperCase(Locale.ENGLISH));
+	}
+
+	private static ExpressionVisitor createExpressionVisitor(final boolean[] noSubexpression, final Column[] column) {
+		return new ExpressionVisitor() {
+
+			@Override
+			public void visit(Column tableColumn) {
+				column[0] = tableColumn;
+			}
+			
+			@Override
+			public void visit(NotExpression aThis) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(DateTimeLiteralExpression literal) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(TimeKeyExpression timeKeyExpression) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(OracleHint hint) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(RowConstructor rowConstructor) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(MySQLGroupConcat groupConcat) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(KeepExpression aexpr) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(NumericBind bind) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(UserVariable var) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(RegExpMySQLOperator regExpMySQLOperator) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(JsonOperator jsonExpr) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(JsonExpression jsonExpr) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(RegExpMatchOperator rexpr) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(OracleHierarchicalExpression oexpr) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(IntervalExpression iexpr) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(ExtractExpression eexpr) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(WithinGroupExpression wgexpr) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(AnalyticExpression aexpr) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(Modulo modulo) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(CastExpression cast) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(BitwiseXor bitwiseXor) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(BitwiseOr bitwiseOr) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(BitwiseAnd bitwiseAnd) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(Matches matches) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(Concat concat) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(AnyComparisonExpression anyComparisonExpression) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(AllComparisonExpression allComparisonExpression) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(ExistsExpression existsExpression) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(WhenClause whenClause) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(CaseExpression caseExpression) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(SubSelect subSelect) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(NotEqualsTo notEqualsTo) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(MinorThanEquals minorThanEquals) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(MinorThan minorThan) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(LikeExpression likeExpression) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(IsNullExpression isNullExpression) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(InExpression inExpression) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(GreaterThanEquals greaterThanEquals) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(GreaterThan greaterThan) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(EqualsTo equalsTo) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(Between between) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(OrExpression orExpression) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(AndExpression andExpression) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(Subtraction subtraction) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(Multiplication multiplication) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(Division division) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(Addition addition) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(StringValue stringValue) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(Parenthesis parenthesis) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(TimestampValue timestampValue) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(TimeValue timeValue) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(DateValue dateValue) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(HexValue hexValue) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(LongValue longValue) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(DoubleValue doubleValue) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(JdbcNamedParameter jdbcNamedParameter) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(JdbcParameter jdbcParameter) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(SignedExpression signedExpression) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(Function function) {
+				noSubexpression[0] = false;
+			}
+			
+			@Override
+			public void visit(NullValue nullValue) {
+				noSubexpression[0] = false;
+			}
+		};
+	}
+
+	private static class DefaultStatementVisitor implements StatementVisitor {
+
+		@Override
+		public void visit(Commit commit) {
+			throw new QueryTooComplexException();
+		}
+
+		@Override
+		public void visit(Delete delete) {
+			throw new QueryTooComplexException();
+		}
+
+		@Override
+		public void visit(Update update) {
+			throw new QueryTooComplexException();
+		}
+
+		@Override
+		public void visit(Insert insert) {
+			throw new QueryTooComplexException();
+		}
+
+		@Override
+		public void visit(Replace replace) {
+			throw new QueryTooComplexException();
+		}
+
+		@Override
+		public void visit(Drop drop) {
+			throw new QueryTooComplexException();
+		}
+
+		@Override
+		public void visit(Truncate truncate) {
+			throw new QueryTooComplexException();
+		}
+
+		@Override
+		public void visit(CreateIndex createIndex) {
+			throw new QueryTooComplexException();
+		}
+
+		@Override
+		public void visit(CreateTable createTable) {
+			throw new QueryTooComplexException();
+		}
+
+		@Override
+		public void visit(CreateView createView) {
+			throw new QueryTooComplexException();
+		}
+
+		@Override
+		public void visit(AlterView alterView) {
+			throw new QueryTooComplexException();
+		}
+
+		@Override
+		public void visit(Alter alter) {
+			throw new QueryTooComplexException();
+		}
+
+		@Override
+		public void visit(Statements stmts) {
+			throw new QueryTooComplexException();
+		}
+
+		@Override
+		public void visit(Execute execute) {
+			throw new QueryTooComplexException();
+		}
+
+		@Override
+		public void visit(SetStatement set) {
+			throw new QueryTooComplexException();
+		}
+
+		@Override
+		public void visit(Merge merge) {
+			throw new QueryTooComplexException();
+		}
+
+		@Override
+		public void visit(Select select) {
+			throw new QueryTooComplexException();
+		}
+
+		@Override
+		public void visit(Upsert upsert) {
+			throw new QueryTooComplexException();
+		}
+		
+	}
+	
 }

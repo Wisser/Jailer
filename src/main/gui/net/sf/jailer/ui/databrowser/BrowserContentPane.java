@@ -616,7 +616,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						if (BrowserContentPane.this.currentClosureRowIDs != null && row < rows.size() && BrowserContentPane.this.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(BrowserContentPane.this, rows.get(rowSorter.convertRowIndexToModel(row)).rowId))) {
 							((JLabel) render).setBackground(BG3);
 						} else {
-							if (isEditMode && r != null && browserContentCellEditor.isEditable(BrowserContentPane.this.table, rowIndex, convertedColumnIndex, r.values[convertedColumnIndex])) {
+							Table type = getResultSetTypeForColumn(convertedColumnIndex);
+							if (isEditMode && r != null && browserContentCellEditor.isEditable(type, rowIndex, convertedColumnIndex, r.values[convertedColumnIndex])) {
 								((JLabel) render).setBackground((row % 2 == 0) ? BG1_EM : BG2_EM);
 							} else {
 								((JLabel) render).setBackground((row % 2 == 0) ? BG1 : BG2);
@@ -994,7 +995,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * @param navigateFromAllRows 
 	 */
 	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows) {
-		if (table instanceof SqlStatementTable) {
+		if (table instanceof SqlStatementTable && resultSetType == null) {
 			JPopupMenu jPopupMenu = new JPopupMenu();
 			JMenuItem update = new JMenuItem("Update");
 			jPopupMenu.add(update);
@@ -1095,7 +1096,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			});
 
-			if (!(table instanceof SqlStatementTable)) {
+			if (!(table instanceof SqlStatementTable) || resultSetType != null) {
 				popup.add(new JSeparator());
 
 				JMenuItem qb = new JMenuItem("Query Builder");
@@ -1152,7 +1153,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 				
 				JMenu sql = new JMenu("SQL/DML");
-				final String rowName = dataModel.getDisplayName(table) + "(" + SqlUtil.replaceAliases(row.rowId, null, null) + ")";
+				final String rowName = !(table instanceof SqlStatementTable)? dataModel.getDisplayName(table) + "(" + SqlUtil.replaceAliases(row.rowId, null, null) + ")" : "";
 				JMenuItem update = new JMenuItem("Update");
 				sql.add(update);
 				update.addActionListener(new ActionListener() {
@@ -1177,8 +1178,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						openSQLDialog("Insert Row " + rowName, x, y, SQLDMLBuilder.buildInsert(table, row, true, session));
 					}
 				});
+				insert.setEnabled(resultSetType == null);
+				update.setEnabled(resultSetType == null);
+				delete.setEnabled(resultSetType == null);
 				if (getQueryBuilderDialog() == null) {
 					popup.removeAll();
+					popup.add(det);
+					popup.addSeparator();
 					popup.add(insert);
 					popup.add(update);
 					popup.add(delete);
@@ -2549,7 +2555,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					String rowId = "";
 					String[] primaryKey = null;
 					PrimaryKey primaryKeys = rowIdSupport.getPrimaryKey(table);
-					if (primaryKeys != null) {
+					if (primaryKeys != null && resultSetType == null) {
 						int pkPos = 0;
 						primaryKey = new String[primaryKeys.getColumns().size()];
 						for (Column column : primaryKeys.getColumns()) {
@@ -2844,7 +2850,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					if (row < rows.size()) {
 						r = rows.get(row);
 					}
-					return isEditMode && r != null && browserContentCellEditor.isEditable(table, row, column, r.values[column]);
+					Table type = getResultSetTypeForColumn(column);
+					return isEditMode && r != null && browserContentCellEditor.isEditable(type, row, column, r.values[column]);
 				}
 
 				@Override
@@ -2856,9 +2863,13 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						Object content = browserContentCellEditor.textToContent(row, column, text, theRow.values[column]);
 						if (content != BrowserContentCellEditor.INVALID) {
 							if (!browserContentCellEditor.cellContentToText(row, column, theRow.values[column]).equals(text)) {
+								Table type = getResultSetTypeForColumn(column);
+								if (resultSetType != null) {
+									theRow = createRowWithNewID(theRow, type);
+								}
 								Object oldContent = theRow.values[column];
 								theRow.values[column] = content;
-								final String updateStatement = SQLDMLBuilder.buildUpdate(table, theRow, false, column, session);
+								final String updateStatement = SQLDMLBuilder.buildUpdate(type, theRow, false, column, session);
 								theRow.values[column] = oldContent;
 								updateMode("updating");
 								
@@ -3104,6 +3115,27 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		
 		isLimitExceeded = limitExceeded;
+	}
+
+	protected Row createRowWithNewID(Row theRow, Table type) {
+		CellContentConverter cellContentConverter = new CellContentConverter(null, session, session.dbms);
+		String rowId = "";
+		PrimaryKey primaryKeys = type.primaryKey;
+		for (Column pkColumn : primaryKeys.getColumns()) {
+			List<Column> cols = type.getColumns();
+			int colSize = cols.size();
+			for (int i = 0; i < colSize; ++i) {
+				Column column = cols.get(i);
+				if (column != null && pkColumn.name.equals(column.name)) {
+					if (rowId.length() > 0) {
+						rowId += " and ";
+					}
+					rowId += pkColumn.name + "=" + cellContentConverter.toSql(theRow.values[i]);
+					break;
+				}
+			}
+		}
+		return new Row(rowId, theRow.primaryKey, theRow.values);
 	}
 
 	public void adjustRowTableColumnsWidth() {
@@ -4048,4 +4080,46 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		this.statementForReloading = statementForReloading;
 	}
 
+	/**
+	 * Type of result set for in-place editing of query result.
+	 */
+	private List<Table> resultSetType;
+	
+	/**
+	 * Sets type of result set for in-place editing of query result.
+	 * 
+	 * @param resultSetType the type
+	 */
+	public void setResultSetType(List<Table> resultSetType) {
+		this.resultSetType = resultSetType;
+	}
+	
+	/**
+	 * Gets a table from {@link #resultSetType} where a given column is defined.
+	 * 
+	 * @param column the column
+	 * @return suitable table for column or {@link #table}
+	 */
+	private Table getResultSetTypeForColumn(int column) {
+		if (resultSetType == null) {
+			return table;
+		}
+		if (typePerColumn.containsKey(column)) {
+			return typePerColumn.get(column);
+		}
+		for (Table type: resultSetType) {
+			if (type.getColumns().size() > column) {
+				Column col = type.getColumns().get(column);
+				if (col != null && col.name != null) {
+					typePerColumn.put(column, type);
+					return type;
+				}
+			}
+		}
+		typePerColumn.put(column, table);
+		return table;
+	}
+
+	private Map<Integer, Table> typePerColumn = new HashMap<Integer, Table>();
+	
 }

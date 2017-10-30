@@ -1,3 +1,8 @@
+3.7.4
+  - In-place editing of query results.
+  - Improved table search feature.
+  - Minor GUI improvements.
+
 3.7.3
   - Performance and GUI improvements.
 
