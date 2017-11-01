@@ -20,7 +20,6 @@ import java.io.FileNotFoundException;
 import java.sql.SQLException;
 import java.util.UUID;
 
-import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.configuration.Configuration;
 import net.sf.jailer.util.ClasspathUtil;
 

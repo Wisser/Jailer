@@ -873,11 +873,28 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	};
 
 	private Clause currentClause(String sql) {
-		Pattern pattern = Pattern.compile(".*\\b(select|from|where|group|having|order|join|on|update|set|into|table)\\b.*?$", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
+		Pattern pattern = Pattern.compile(".*\\b(select|from|where|group|having|order|join|on|update|set|into|table)\\b(.*?)$", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
 		Matcher matcher = pattern.matcher(sql);
 		if (matcher.matches()) {
 			for (Clause clause: Clause.values()) {
 				if (clause.name.equalsIgnoreCase(matcher.group(1))) {
+					if (clause == Clause.ON) {
+						String rest = matcher.group(2);
+						int level = 0;
+						for (int i = 0; i < rest.length(); ++i) {
+							char c = rest.charAt(i);
+							if (c == '(') {
+								++level;
+							} else if (c == ')') {
+								--level;
+							} else if (c == ',') {
+								if (level == 0) {
+									clause = Clause.FROM;
+									break;
+								}
+							}
+						}
+					}
 					return clause;
 				}
 			}

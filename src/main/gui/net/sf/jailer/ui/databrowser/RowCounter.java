@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.database.InlineViewStyle;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;

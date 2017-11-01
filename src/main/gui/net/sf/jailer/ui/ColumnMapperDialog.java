@@ -23,13 +23,13 @@ import java.util.Vector;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JScrollPane;
 
-import net.sf.jailer.datamodel.DataModel;
-import net.sf.jailer.datamodel.Table;
-import net.sf.jailer.xml.XmlUtil;
-
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 import org.w3c.dom.Document;
+
+import net.sf.jailer.datamodel.DataModel;
+import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.xml.XmlUtil;
 
 /**
  * XML Column Mapping Dialog.

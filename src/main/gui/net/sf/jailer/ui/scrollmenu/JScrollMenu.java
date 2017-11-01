@@ -1,5 +1,8 @@
 package net.sf.jailer.ui.scrollmenu;
 
+import java.awt.Component;
+import java.awt.ComponentOrientation;
+
 import javax.swing.Action;
 import javax.swing.JButton;
 import javax.swing.JMenu;
@@ -9,8 +12,6 @@ import javax.swing.MenuElement;
 import javax.swing.UIManager;
 import javax.swing.plaf.MenuItemUI;
 import javax.swing.plaf.PopupMenuUI;
-import java.awt.Component;
-import java.awt.ComponentOrientation;
 
 /**
  * http://stackoverflow.com/questions/9288350/adding-vertical-scroll-to-a-jpopupmenu

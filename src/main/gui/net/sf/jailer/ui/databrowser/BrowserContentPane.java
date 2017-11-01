@@ -104,6 +104,8 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 
+import net.coderazzi.filters.gui.AutoChoices;
+import net.coderazzi.filters.gui.TableFilterHeader;
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.InlineViewStyle;
 import net.sf.jailer.database.Session;
@@ -719,6 +721,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 
+		TableFilterHeader filterHeader = new TableFilterHeader(rowsTable, AutoChoices.ENABLED);
+		
 		andConditionEditor = new ConditionEditor(parentFrame, null, dataModel);
 		openEditorLabel.setIcon(conditionEditorIcon);
 		openEditorLabel.setText(null);
