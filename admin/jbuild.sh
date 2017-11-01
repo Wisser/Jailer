@@ -10,7 +10,7 @@ fi
 
 
 cd
-cd workspace/jailer-code/
+cd workspace/jailer/jailer-code/
 svn up
 sh admin/release.sh jailer_$1
 sh admin/release-dbeauty.sh dbeauty_$2
