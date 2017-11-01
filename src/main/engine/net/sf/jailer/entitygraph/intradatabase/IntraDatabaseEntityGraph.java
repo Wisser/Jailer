@@ -44,7 +44,6 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.entitygraph.EntityGraph;
 import net.sf.jailer.entitygraph.remote.RemoteEntityGraph;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
-import net.sf.jailer.progress.ProgressListenerRegistry;
 import net.sf.jailer.util.JobManager;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlScriptExecutor;

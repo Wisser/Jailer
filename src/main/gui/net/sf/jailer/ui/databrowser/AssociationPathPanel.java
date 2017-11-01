@@ -26,12 +26,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Vector;
 
-import net.sf.jailer.ui.JComboBox;
 import javax.swing.JLabel;
 
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.ui.JComboBox;
 import net.sf.jailer.util.SqlUtil;
 
 /**

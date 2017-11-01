@@ -18,7 +18,6 @@ package net.sf.jailer.database;
 import java.sql.SQLException;
 
 import net.sf.jailer.ExecutionContext;
-import net.sf.jailer.configuration.DBMS;
 import net.sf.jailer.util.Quoting;
 
 /**

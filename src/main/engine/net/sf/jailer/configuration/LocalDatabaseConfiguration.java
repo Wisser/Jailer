@@ -15,8 +15,6 @@
  */
 package net.sf.jailer.configuration;
 
-import javax.xml.bind.annotation.XmlType;
-
 /**
  * Configuration of the local database.
  * 

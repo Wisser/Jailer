@@ -19,14 +19,13 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.jailer.database.BasicDataSource;
-import net.sf.jailer.database.Session;
-import net.sf.jailer.ui.CommandLineInstance;
-import net.sf.jailer.util.SqlScriptExecutor;
-
 import org.dbunit.dataset.IDataSet;
 import org.dbunit.dataset.xml.FlatXmlDataSet;
 import org.dbunit.operation.DatabaseOperation;
+
+import net.sf.jailer.database.BasicDataSource;
+import net.sf.jailer.database.Session;
+import net.sf.jailer.util.SqlScriptExecutor;
 
 
 /**

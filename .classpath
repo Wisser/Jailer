@@ -12,5 +12,7 @@
 	<classpathentry kind="lib" path="lib/args4j.jar"/>
 	<classpathentry kind="lib" path="config"/>
 	<classpathentry kind="lib" path="lib/jsqlparser-1.1.jar"/>
+	<classpathentry kind="lib" path="lib/miglayout-swing-5.1-20171030.230039-939.jar"/>
+	<classpathentry kind="lib" path="lib/tablefilter-swing-5.3.1.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
