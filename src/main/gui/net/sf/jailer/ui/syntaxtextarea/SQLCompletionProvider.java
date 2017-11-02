@@ -617,7 +617,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 					case INTO: return keywordCompletion("Values", "Select");
 					case JOIN: 
 						if (!withOnCompletions) {
-							return keywordCompletion("Where", "Group by");
+//							return keywordCompletion("Where", "Group by");
 						}
 						break;
 					case ON: return keywordCompletion("Where", "Group by");
