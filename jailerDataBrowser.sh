@@ -24,6 +24,7 @@ CP=$CP:$LIB/jaxb-core-2.3.0-b170127.1453.jar
 CP=$CP:$LIB/jaxb-impl-2.3.0-b170127.1453.jar
 CP=$CP:$LIB/jaxb-api-2.3.0-b170201.1204.jar
 CP=$CP:$LIB/jsqlparser-1.1.jar
+CP=$CP:$LIB/tablefilter-swing-5.3.1.jar
 CP=$CP:jailer.jar
 
 # echo $CP
