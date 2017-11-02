@@ -433,6 +433,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				}
 				final CachedResultSet metaDataDetails = new CachedResultSet(resultSet, limit, session, SQLConsole.this);
 		    	resultSet.close();
+				rb.setTableFilterEnabled(metaDataDetails.getSize() > 10);
 				long now = System.currentTimeMillis();
 				status.hasSelected = true;
 		    	status.timeInMS += (now - startTime);
