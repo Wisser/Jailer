@@ -426,6 +426,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 	private boolean isTableFilterEnabled = false;
 	
+	public void setTableFilterEnabled(boolean isTableFilterEnabled) {
+		this.isTableFilterEnabled = isTableFilterEnabled;
+	}
+
 	static class SqlStatementTable extends Table {
 		public SqlStatementTable(String name, PrimaryKey primaryKey, boolean defaultUpsert) {
 			super(name, primaryKey, defaultUpsert, false);
@@ -2868,8 +2872,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		DefaultTableModel dtm;
 		singleRowDetailsView = null;
+		boolean noFilter = true;
 		int rn = 0;
 		if (rows.size() != 1 || isEditMode || noSingleRowDetailsView) {
+			noFilter = false;
 			Map<String, Integer> columnNameMap = new HashMap<String, Integer>();
 			for (int i = 0; i < columns.size(); ++i) {
 				columnNameMap.put(columnNames[i], i);
@@ -3166,7 +3172,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			sqlBrowserContentPane.detailsButton.setEnabled(!rows.isEmpty());
 		}
 		
-		if (isTableFilterEnabled) {
+		if (isTableFilterEnabled && !noFilter) {
 			if (filterHeader == null) {
 				filterHeader = new TableFilterHeader();
 				filterHeader.setAutoChoices(AutoChoices.ENABLED);
