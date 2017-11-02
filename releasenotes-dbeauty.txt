@@ -1,8 +1,8 @@
 3.7.4
-  - In-place editing of query results.
-  - Column filtering in data browser.
-  - Improved table search feature.
-  - Minor GUI improvements.
+   - data browser improvements
+	  - In-place editing of query results.
+	  - Column filtering in data browser.
+	  - Improved table search feature.
 
 3.7.3
   - Performance and GUI improvements.
