@@ -86,7 +86,7 @@ public class MetaDataBasedSQLCompletionProvider extends SQLCompletionProvider<Me
 		}
 		
 		for (Association association: source.associations) {
-			if (association.destination == destination || destination == null) {
+			if (association.destination.equals(destination) || destination == null) {
 				result.add(association);
 			}
 		}

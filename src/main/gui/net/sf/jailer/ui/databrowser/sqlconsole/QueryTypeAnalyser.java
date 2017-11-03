@@ -17,9 +17,12 @@ package net.sf.jailer.ui.databrowser.sqlconsole;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Map.Entry;
 
 import net.sf.jailer.datamodel.PrimaryKey;
@@ -150,7 +153,8 @@ public class QueryTypeAnalyser {
 		net.sf.jsqlparser.statement.Statement st;
 		try {
 			st = CCJSqlParserUtil.parse(sqlSelect);
-			final LinkedHashMap<String, MDTable> fromClause = analyseFromClause(st, metaDataSource);
+			Map<Pair<String, String>, Collection<Pair<String, String>>> equivs = new HashMap<Pair<String,String>, Collection<Pair<String,String>>>();
+			final LinkedHashMap<String, MDTable> fromClause = analyseFromClause(st, equivs, metaDataSource);
 			final List<Pair<String	, String>> selectClause = new ArrayList<Pair<String, String>>();
 			st.accept(new DefaultStatementVisitor() {
 				@Override
@@ -260,20 +264,19 @@ public class QueryTypeAnalyser {
 							columnNames.add(null);
 						}
 					}
-					Table table = createTable(theTable, columnNames, metaDataSource);
+					Table table = createTable(theTable, tableAlias, columnNames, selectClause, equivs, metaDataSource);
 					if (table != null) {
 						result.add(table);
 					}
 				}
 			}
-
 			return result;
 		} catch (Exception e) {
 		}
 		return null;
 	}
 
-	private static LinkedHashMap<String, MDTable> analyseFromClause(Statement st, final MetaDataSource metaDataSource) {
+	private static LinkedHashMap<String, MDTable> analyseFromClause(Statement st, final Map<Pair<String, String>, Collection<Pair<String, String>>> equivs, final MetaDataSource metaDataSource) {
 		final LinkedHashMap<String, MDTable> result = new LinkedHashMap<String, MDTable>();
 		
 		st.accept(new DefaultStatementVisitor() {
@@ -292,6 +295,7 @@ public class QueryTypeAnalyser {
 					
 					@Override
 					public void visit(PlainSelect plainSelect) {
+						ExpressionAnalyzer expressionAnalyzer = new ExpressionAnalyzer(result);
 						if (plainSelect.getFromItem() != null) {
 							FromItemVisitor fromItemVisitor = new FromItemVisitor() {
 								private void unknownTable() {
@@ -351,8 +355,17 @@ public class QueryTypeAnalyser {
 								for (Join join: plainSelect.getJoins()) {
 									join.getRightItem().accept(fromItemVisitor);
 								}
+								for (Join join: plainSelect.getJoins()) {
+									expressionAnalyzer.setOuterJoinExpression(join.isOuter() || join.isLeft() || join.isRight());
+									join.getOnExpression().accept(expressionAnalyzer);
+								}
 							}
 						}
+						if (plainSelect.getWhere() != null) {
+							expressionAnalyzer.setOuterJoinExpression(false);
+							plainSelect.getWhere().accept(expressionAnalyzer);
+						}
+						equivs.putAll(expressionAnalyzer.getEquivs());
 					}
 				});
 			}
@@ -361,13 +374,30 @@ public class QueryTypeAnalyser {
 		return result;
 	}
 
-	private static Table createTable(MDTable theTable, List<String> columnNames, MetaDataSource metaDataSource) throws SQLException {
+	private static Table createTable(MDTable theTable, String tableAlias, List<String> columnNames, List<Pair<String, String>> selectClause, Map<Pair<String, String>, Collection<Pair<String, String>>> equivs, MetaDataSource metaDataSource) throws SQLException {
 		if (theTable.getPrimaryKeyColumns().isEmpty()) {
 			return null;
 		}
 		for (String pk: theTable.getPrimaryKeyColumns()) {
 			if (!columnNames.contains(pk)) {
-				return null;
+				boolean ok = false;
+				Collection<Pair<String, String>> eq = equivs.get(new Pair<String, String>(tableAlias, pk));
+				if (eq != null) {
+					int i = 0;
+					for (Pair<String, String> e: selectClause) {
+						if (columnNames.get(i) == null) {
+							if (eq.contains(e)) {
+								columnNames.set(i, e.b);
+								ok = true;
+								break;
+							}
+						}
+						++i;
+					}
+				}
+				if (!ok) {
+					return null;
+				}
 			}
 		}
 		String schemaName = theTable.getSchema().isDefaultSchema? null : theTable.getSchema().getName();
@@ -414,7 +444,7 @@ public class QueryTypeAnalyser {
 		return null;
 	}
 
-	private static boolean idEquals(String a, String b, boolean strict) {
+	static boolean idEquals(String a, String b, boolean strict) {
 		if (strict) {
 			return a.equals(b);
 		}

@@ -587,7 +587,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final Color BG2 = new Color(230, 255, 255);
 			final Color BG1_EM = new Color(255, 255, 236);
 			final Color BG2_EM = new Color(230, 255, 236);
-			final Color BG3 = new Color(190, 195, 255);
+			final Color BG3 = new Color(180, 205, 255);
+			final Color BG4 = new Color(30, 200, 255);
 			final Color FG1 = new Color(155, 0, 0);
 			final Color FG2 = new Color(0, 0, 255);
 			final Font font = new JLabel().getFont();
@@ -621,16 +622,20 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					}
 					int convertedColumnIndex = rowsTable.convertColumnIndexToModel(column);
 					if (!isSelected) {
-						if (BrowserContentPane.this.currentClosureRowIDs != null && row < rows.size() && BrowserContentPane.this.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(BrowserContentPane.this, rows.get(rowSorter.convertRowIndexToModel(row)).rowId))) {
+						if (BrowserContentPane.this.getQueryBuilderDialog() != null && // SQL Console
+							BrowserContentPane.this.currentClosureRowIDs != null && row < rows.size() && BrowserContentPane.this.currentClosureRowIDs.contains(new Pair<BrowserContentPane, String>(BrowserContentPane.this, rows.get(rowSorter.convertRowIndexToModel(row)).rowId))) {
 							((JLabel) render).setBackground(BG3);
 						} else {
 							Table type = getResultSetTypeForColumn(convertedColumnIndex);
-							if (isEditMode && r != null && browserContentCellEditor.isEditable(type, rowIndex, convertedColumnIndex, r.values[convertedColumnIndex])) {
+							if (isEditMode && r != null && browserContentCellEditor.isEditable(type, rowIndex, convertedColumnIndex, r.values[convertedColumnIndex])
+									&& isPKComplete(type, r)) {
 								((JLabel) render).setBackground((row % 2 == 0) ? BG1_EM : BG2_EM);
 							} else {
 								((JLabel) render).setBackground((row % 2 == 0) ? BG1 : BG2);
 							}
 						}
+					} else {
+						((JLabel) render).setBackground(BG4);
 					}
 					((JLabel) render).setForeground(
 							renderRowAsPK || pkColumns.contains(convertedColumnIndex) ? FG1 : 
@@ -708,7 +713,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							lastMenu = popup;
 						} else {
 							setCurrentRowSelection(ri);
-							setCurrentRowSelection(-1);
+							if (getQueryBuilderDialog() != null) { // !SQL Console
+								setCurrentRowSelection(-1);
+							}
 						}
 					}
 				}
@@ -1860,6 +1867,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 //			toAdjust.add(getParentBrowser());
 //		}
 		
+		rowsTable.repaint();
 		adjustClosure(this);
 	}
 	
@@ -2894,7 +2902,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						r = rows.get(row);
 					}
 					Table type = getResultSetTypeForColumn(column);
-					return isEditMode && r != null && browserContentCellEditor.isEditable(type, row, column, r.values[column]);
+					return isEditMode && r != null && browserContentCellEditor.isEditable(type, row, column, r.values[column]) && isPKComplete(type, r);
 				}
 
 				@Override
@@ -4229,6 +4237,44 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		return table;
 	}
 
+	private boolean isPKComplete(Table type, Row r) {
+		if (type.primaryKey == null) {
+			return false;
+		}
+		int[] indexes = pkColumnIndexes.get(type);
+		if (indexes == null) {
+			indexes = new int[type.primaryKey.getColumns().size()];
+			int ii = 0;
+			for (Column pk: type.primaryKey.getColumns()) {
+				Integer index = null;
+				int i = 0;
+				for (Column c: type.getColumns()) {
+					if (c.name != null && c.name.equals(pk.name)) {
+						index = i;
+						break;
+					}
+					++i;
+				}
+				if (index == null) {
+					return false;
+				}
+				indexes[ii++] = index;
+			}
+			pkColumnIndexes.put(type, indexes);
+		}
+		for (int i: indexes) {
+			if (i >= r.values.length) {
+				return false;
+			}
+			Object content = r.values[i];
+			if (content == null || content instanceof TableModelItem && ((TableModelItem) content).value == null) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	private Map<Integer, Table> typePerColumn = new HashMap<Integer, Table>();
+	private Map<Table, int[]> pkColumnIndexes = new HashMap<Table, int[]>();
 	
 }
