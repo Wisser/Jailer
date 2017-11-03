@@ -134,7 +134,8 @@ public class BrowserContentCellEditor {
 		converterPerType.put(Types.NUMERIC, Converter.DECMAL);
 		converterPerType.put(Types.SMALLINT, Converter.DECMAL);
 		converterPerType.put(Types.TINYINT, Converter.DECMAL);
-
+		converterPerType.put(Types.BIGINT, Converter.DECMAL);
+		
 		converterPerType.put(Types.CHAR, Converter.CHAR);
 		converterPerType.put(Types.NCHAR, Converter.CHAR);
 		converterPerType.put(Types.LONGNVARCHAR, Converter.CHAR);

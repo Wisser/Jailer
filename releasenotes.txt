@@ -1,4 +1,4 @@
-7.5.4
+7.5.5
   - data browser improvements
 	  - In-place editing of query results.
 	  - Column filtering in data browser.
