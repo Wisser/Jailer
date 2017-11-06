@@ -1,3 +1,6 @@
+3.7.6
+  - Minor GUI improvements.
+
 3.7.5
    - data browser improvements
 	  - In-place editing of query results.

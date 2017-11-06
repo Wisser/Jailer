@@ -70,7 +70,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 	/** Creates new form QueryBuilderDialog */
 	public QueryBuilderDialog(java.awt.Frame parent) {
 		super(parent, true);
-		this.sqlTextArea = new RSyntaxTextAreaWithSQLSyntaxStyle(false) {
+		this.sqlTextArea = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false) {
 			protected void runBlock() {
 				super.runBlock();
 				if (sqlEditButton.isVisible()) {

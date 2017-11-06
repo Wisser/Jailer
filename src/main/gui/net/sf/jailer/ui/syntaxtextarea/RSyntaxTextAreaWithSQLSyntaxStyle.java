@@ -55,6 +55,7 @@ import org.fife.ui.rtextarea.SearchContext;
 import org.fife.ui.rtextarea.SearchEngine;
 import org.fife.ui.rtextarea.SearchResult;
 
+import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.util.Pair;
 
@@ -76,6 +77,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	public static KeyStroke KS_RUN_BLOCK = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
 	public static KeyStroke KS_RUN_ALL = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.ALT_DOWN_MASK);
 	public static KeyStroke KS_FORMAT = KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.SHIFT_DOWN_MASK|InputEvent.CTRL_DOWN_MASK);
+	public static KeyStroke KS_SELECTTABLE = KeyStroke.getKeyStroke(KeyEvent.VK_F3, 0);
 
 	/**
 	 * Actions.
@@ -83,8 +85,9 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	public final Action runBlock;
 	public final Action runAll;
 	public final Action formatSQL;
-
-	public RSyntaxTextAreaWithSQLSyntaxStyle(boolean withExecuteActions) {
+	private final Action selectTableAction;
+	
+	public RSyntaxTextAreaWithSQLSyntaxStyle(boolean withExecuteActions, boolean withSelectTableAction) {
 		this.withExecuteActions = withExecuteActions;
 		setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
 		setAutoIndentEnabled(true);
@@ -134,6 +137,24 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 				RSyntaxTextAreaWithSQLSyntaxStyle.this.runAll();
 			}
 		};
+		
+		selectTableAction = withSelectTableAction? new AbstractAction("Select Table") {
+			{
+				putValue(ACCELERATOR_KEY, KS_SELECTTABLE);
+				InputMap im = getInputMap();
+				im.put(KS_SELECTTABLE, this);
+				ActionMap am = getActionMap();
+				am.put(this, this);
+			}
+
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				MDTable selectedTable = getSelectedTable();
+				if (selectedTable != null) {
+					RSyntaxTextAreaWithSQLSyntaxStyle.this.selectTable(selectedTable);
+				}
+			}
+		} : null;
 
 		InputMap im = getInputMap();
 		im.put(KS_RUN_BLOCK, runBlock);
@@ -144,13 +165,23 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		im.put(KS_RUN_ALL, runAll);
 		am = getActionMap();
 		am.put(runAll, runAll);
-
+		
+		if (selectTableAction != null) {
+			im = getInputMap();
+			im.put(KS_SELECTTABLE, selectTableAction);
+			am = getActionMap();
+			am.put(selectTableAction, selectTableAction);
+		}
+		
 		setMarkOccurrences(true);
 
 		addCaretListener(new CaretListener() {
 			@Override
 			public void caretUpdate(CaretEvent e) {
 				updateMenuItemState();
+				if (selectTableAction != null) {
+					selectTableAction.setEnabled(true);
+				}
 			}
 		});
 
@@ -159,6 +190,28 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		
 		createPopupMenu();
 		updateMenuItemState();
+	}
+
+
+	protected MDTable getSelectedTable() {
+		return null;
+	}
+	
+	protected void selectTable(MDTable mdTable) {
+	}
+
+	/**
+	 * Overridden to toggle the enabled state of various menu items.
+	 */
+	@Override
+	protected void configurePopupMenu(JPopupMenu popupMenu) {
+		if (selectTableAction != null) {
+			try {
+				selectTableAction.setEnabled(getSelectedTable() != null);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	/**
@@ -178,7 +231,10 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			}
 		});
 		menu.add(item, 0);
-		menu.add(new JSeparator(), 1);
+		if (selectTableAction != null) {
+			menu.add(new JMenuItem(selectTableAction), 1);
+		}
+		menu.add(new JSeparator(), 2);
 
 		menu.add(new JMenuItem(new ShowFindDialogAction()), 0);
 		menu.add(new JMenuItem(new ShowReplaceDialogAction()), 1);

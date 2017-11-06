@@ -52,6 +52,8 @@ import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
+import javax.swing.text.Segment;
 
 import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.BasicCompletion;
@@ -81,6 +83,8 @@ import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
 import net.sf.jailer.ui.databrowser.QueryBuilderPathSelector;
 import net.sf.jailer.ui.databrowser.Reference;
 import net.sf.jailer.ui.databrowser.Row;
+import net.sf.jailer.ui.databrowser.metadata.MDSchema;
+import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
@@ -118,7 +122,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	 * Creates new form SQLConsole
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public SQLConsole(Session session, MetaDataSource metaDataSource, Reference<DataModel> datamodel, ExecutionContext executionContext) throws SQLException {
+	public SQLConsole(Session session, final MetaDataSource metaDataSource, Reference<DataModel> datamodel, ExecutionContext executionContext) throws SQLException {
 		this.session = session;
 		this.metaDataSource = metaDataSource;
 		this.datamodel = datamodel;
@@ -135,7 +139,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 16);
         jPanel5.add(historyComboBox, gridBagConstraints);
 		
-		this.editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(true) {
+		this.editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(true, true) {
 			@Override
 			protected void runBlock() {
 				executeSelectedStatements();
@@ -147,6 +151,54 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			@Override
 			public void updateMenuItemState() {
 				updateMenuItemState(!running.get(), !running.get());
+			}
+			@Override
+			protected void selectTable(MDTable mdTable) {
+				SQLConsole.this.selectTable(mdTable);
+			}
+			@Override
+			protected MDTable getSelectedTable() {		
+				Document doc = getDocument();
+
+				int dot = getCaretPosition();
+				int start = getLineStartOffsetOfCurrentLine();
+				int lineEndOffsetOfCurrentLine = getLineEndOffsetOfCurrentLine();
+				int len = lineEndOffsetOfCurrentLine - start;
+				Segment seg = new Segment();
+				try {
+					doc.getText(start, len, seg);
+				} catch (BadLocationException ble) {
+					ble.printStackTrace();
+					return null;
+				}
+
+				start = dot - getLineStartOffsetOfCurrentLine();
+				String segment = seg.toString();
+				char ch = start < segment.length()? segment.charAt(start) : ' ';
+				while (start<segment.length() && (Character.isLetterOrDigit(ch) || ch == '"' || ch == '`'|| ch == '_')) {
+					start++;
+					ch = start < segment.length()? segment.charAt(start) : ' ';
+				}
+				
+				String line = seg.toString().substring(0, start);
+
+				String reIdentifier = "(?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+)";
+
+				Pattern pattern = Pattern.compile("(?:(" + reIdentifier + ")\\s*\\.\\s*)?(" + reIdentifier + ")$");
+				Matcher matcher = pattern.matcher(line);
+				if (matcher.find()) {
+					MDSchema schema;
+					if (matcher.group(1) != null) {
+						schema = metaDataSource.find(matcher.group(1));
+						if (schema == null) {
+							return null;
+						}
+					} else {
+						schema = metaDataSource.getDefaultSchema();
+					}
+					return schema.find(matcher.group(2));
+				}
+				return null;
 			}
 		};
 
@@ -287,8 +339,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	 * 
 	 * @param sqlBlock the sql block
 	 * @param location location of the block in the console
+	 * @param emptyLineSeparatesStatements 
 	 */
-	protected void executeSQLBlock(final String sqlBlock, final Pair<Integer, Integer> location) {
+	protected void executeSQLBlock(final String sqlBlock, final Pair<Integer, Integer> location, final boolean emptyLineSeparatesStatements) {
 		if (!running.get()) {
 			int lineStartOffset = -1;
 			try {
@@ -317,7 +370,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 					status.running = true;
 					int lineStartOffset = finalLineStartOffset;
 					try {
-						Pattern pattern = Pattern.compile("(?:(;\\s*(\\n\\r?|$))|(\\n\\r?([ \\t\\r]*\\n\\r?)+))", Pattern.DOTALL);
+						Pattern pattern;
+						if (emptyLineSeparatesStatements) {
+							pattern = Pattern.compile("(?:(;\\s*(\\n\\r?|$))|(\\n\\r?([ \\t\\r]*\\n\\r?)+))", Pattern.DOTALL);
+						} else {
+							pattern = Pattern.compile("(?:(;\\s*(\\n\\r?|$)))", Pattern.DOTALL);
+						}
 						Matcher matcher = pattern.matcher(sqlBlock);
 						boolean result = matcher.find();
 						StringBuffer sb = new StringBuffer();
@@ -495,7 +553,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			} else {
 		    	status.timeInMS += (System.currentTimeMillis() - startTime);
 		    	int updateCount = statement.getUpdateCount();
-				status.numRowsUpdated += updateCount;
+				if (updateCount >= 0) {
+					status.numRowsUpdated += updateCount;
+				}
 		    	status.updateView(false);
 				status.hasUpdated = true;
 		    	if (updateCount != 0) {
@@ -548,7 +608,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	}
 
 	protected abstract void refreshMetaData();
-
+	protected abstract void selectTable(MDTable mdTable);
+	
 	private boolean dataHasChanged = false;
 	
 	public synchronized void setDataHasChanged(boolean b) {
@@ -1107,7 +1168,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				pre += "\n";
 			}
 		}
-		editorPane.append(pre + (sql.replaceFirst("(?is)(;\\s*)+$", "").trim()) + "\n");
+		editorPane.append(pre + (sql.replaceFirst("(?is)(;\\s*)+$", "").trim()) + ";\n");
 		editorPane.setCaretPosition(editorPane.getDocument().getLength());
 		editorPane.grabFocus();
 		if (!running.get()) {
@@ -1121,14 +1182,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	private void executeSelectedStatements() {
 		Pair<Integer, Integer> loc = editorPane.getCurrentStatementLocation();
 		if (loc != null) {
-			executeSQLBlock(editorPane.getText(loc.a, loc.b, true), loc);
+			executeSQLBlock(editorPane.getText(loc.a, loc.b, true), loc, editorPane.getCaret().getDot() == editorPane.getCaret().getMark());
 		}
 	}
 
 	private void executeAllStatements() {
 		if (editorPane.getLineCount() > 0) {
 			Pair<Integer, Integer> loc = new Pair<Integer, Integer>(0, editorPane.getLineCount() - 1);
-			executeSQLBlock(editorPane.getText(loc.a, loc.b, true), loc);
+			executeSQLBlock(editorPane.getText(loc.a, loc.b, true), loc, false);
 		}
 	}
 

@@ -26,6 +26,8 @@ import java.awt.Image;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.ArrayList;
@@ -149,6 +151,31 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		tablesComboBox.setVisible(false);
 		refreshButton1.setVisible(false);
 		searchButton.setText("Select Table");
+		
+		metaDataTree.addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+				if (e.getKeyChar() == '\n') {
+					if (metaDataTree.getSelectionPath() != null) {
+						Object last = metaDataTree.getSelectionPath().getLastPathComponent();
+						if (last instanceof DefaultMutableTreeNode) {
+							final Object uo = ((DefaultMutableTreeNode) last).getUserObject();
+							if (uo instanceof MDTable) {
+								openTable((MDTable) uo);
+							}
+						}
+					}
+				}
+			}
+			
+			@Override
+			public void keyReleased(KeyEvent e) {
+			}
+			
+			@Override
+			public void keyPressed(KeyEvent e) {
+			}
+		});
 		
         metaDataTree.addMouseListener(new MouseListener() {
 			@Override

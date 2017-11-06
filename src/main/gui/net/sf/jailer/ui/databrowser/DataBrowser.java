@@ -2961,6 +2961,10 @@ public class DataBrowser extends javax.swing.JFrame {
 						protected void refreshMetaData() {
 							metaDataPanel.reset();
 						}
+						@Override
+						protected void selectTable(MDTable mdTable) {
+							metaDataPanel.select(mdTable);
+						}
 					};
 					sqlConsoleContainerPanel.removeAll();
 					sqlConsoleContainerPanel.add(sqlConsole);
