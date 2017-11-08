@@ -122,7 +122,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	 * Creates new form SQLConsole
 	 */
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public SQLConsole(Session session, final MetaDataSource metaDataSource, Reference<DataModel> datamodel, ExecutionContext executionContext) throws SQLException {
+	public SQLConsole(Session session, MetaDataSource metaDataSource, Reference<DataModel> datamodel, ExecutionContext executionContext) throws SQLException {
 		this.session = session;
 		this.metaDataSource = metaDataSource;
 		this.datamodel = datamodel;
@@ -189,12 +189,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				if (matcher.find()) {
 					MDSchema schema;
 					if (matcher.group(1) != null) {
-						schema = metaDataSource.find(matcher.group(1));
+						schema = SQLConsole.this.metaDataSource.find(matcher.group(1));
 						if (schema == null) {
 							return null;
 						}
 					} else {
-						schema = metaDataSource.getDefaultSchema();
+						schema = SQLConsole.this.metaDataSource.getDefaultSchema();
 					}
 					return schema.find(matcher.group(2));
 				}
@@ -376,6 +376,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						} else {
 							pattern = Pattern.compile("(?:(;\\s*(\\n\\r?|$)))", Pattern.DOTALL);
 						}
+						
 						Matcher matcher = pattern.matcher(sqlBlock);
 						boolean result = matcher.find();
 						StringBuffer sb = new StringBuffer();
@@ -408,7 +409,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						if (!status.failed) {
 							sb.setLength(0);
 							matcher.appendTail(sb);
-							String sql = sb.toString();
+							String sbToString = sb.toString();
+							String sql = sbToString;
 							if (sql.trim().length() > 0) {
 								status.linesExecuting += countLines(sql);
 								executeSQL(sql, status, lineStartOffset);
@@ -513,10 +515,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			        	JComponent rTabContainer = rb.getRowsTableContainer();
 			        	final TabContentPanel tabContentPanel = new TabContentPanel();
 			        	tabContentPanel.contentPanel.add(rTabContainer);
-//			        	tabContentPanel.statusLabel.setText(localStatus.getText());
-//			        	if (localStatus.limitExceeded) {
-//			        		tabContentPanel.statusLabel.setForeground(Color.red);
-//			        	}
 			        	rb.sortColumnsCheckBox.setVisible(true);
 			        	tabContentPanel.controlsPanel1.add(rb.sortColumnsCheckBox);
 			        	tabContentPanel.controlsPanel1.add(rb.loadButton);
@@ -527,15 +525,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			        		stmt = stmt.substring(0, 200) + "...";
 			        	}
 						tabContentPanel.statementLabel.setText(stmt.replaceAll("\\s+", " "));
-//			        	tabContentPanel.reloadButton.addActionListener(new ActionListener() {
-//							@Override
-//							public void actionPerformed(ActionEvent e) {
-//								if (!running.get()) {
-//									jTabbedPane1.remove(tabContentPanel);
-//									executeSQLBlock(sql, null);
-//								}
-//							}
-//						});
 			        	rTabContainer = tabContentPanel;
 			        	final int MAXLENGTH = 30;
 			        	String title = shortSQL(sql, MAXLENGTH);
@@ -586,19 +575,25 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				} catch (SQLException e) {
 				}
 			}
-			if (error instanceof SQLException && sqlStatement != null && statementStartOffset >= 0) {
-				int pos = retrieveErrorPos(sqlStatement, error.getMessage());
-				if (pos >= 0) {
-					status.errorPosition  = statementStartOffset + pos;
+			if (!isCommentOnly(sqlStatement)) {
+				if (error instanceof SQLException && sqlStatement != null && statementStartOffset >= 0) {
+					int pos = retrieveErrorPos(sqlStatement, error.getMessage());
+					if (pos >= 0) {
+						status.errorPosition = statementStartOffset + pos;
+						status.errorPositionIsKnown = true;
+					} else {
+						status.errorPosition = statementStartOffset;
+						status.errorPositionIsKnown = false;
+					}
 				}
+				
+				if (error instanceof CancellationException) {
+					CancellationHandler.reset(SQLConsole.this);
+					queue.clear();
+				}
+				status.failed = true;
+				status.error = error;
 			}
-			
-			if (error instanceof CancellationException) {
-				CancellationHandler.reset(SQLConsole.this);
-				queue.clear();
-			}
-			status.failed = true;
-			status.error = error;
 			status.updateView(false);
 		}
 	}
@@ -636,6 +631,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 	private class Status {
 		public int errorPosition = -1;
+		public boolean errorPositionIsKnown = false;
 		protected int linesExecuting;
 		protected int linesExecuted;
 		public boolean withDDL;
@@ -677,16 +673,16 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 									} else if (error instanceof SQLException) {
 										String pos = "";
 										int errorLine = -1;
-										if (errorPosition >= 0) {
-											try {
+										try {
+											if (errorPositionIsKnown) {
 												errorLine = editorPane.getLineOfOffset(errorPosition);
 												int col = errorPosition - editorPane.getLineStartOffset(errorLine);
 												pos = "Error at line " + (errorLine + 1) + ", column " + col + ": ";
 												editorPane.setCaretPosition(errorPosition);
-											} catch (BadLocationException e) {
+											} else if (location != null) {
+												errorLine = location.a;
 											}
-										} else if (location != null) {
-											errorLine = location.a;
+										} catch (BadLocationException e) {
 										}
 										if (errorLine >= 0) {
 											editorPane.setLineTrackingIcon(errorLine, scaledCancelIcon);
@@ -1168,7 +1164,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				pre += "\n";
 			}
 		}
-		editorPane.append(pre + (sql.replaceFirst("(?is)(;\\s*)+$", "").trim()) + ";\n");
+		sql = sql.replaceAll("\\s*\\n", "\n").trim();
+		if (!sql.endsWith(";")) {
+			sql += ";";
+		}
+		editorPane.append(pre + sql + "\n");
 		editorPane.setCaretPosition(editorPane.getDocument().getLength());
 		editorPane.grabFocus();
 		if (!running.get()) {
@@ -1193,6 +1193,73 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		}
 	}
 
+	private boolean isCommentOnly(String statement) {
+		Pattern pattern = Pattern.compile("('([^']*'))|(/\\*.*?\\*/)|(\\-\\-.*?(\n|$))", Pattern.DOTALL);
+		Matcher matcher = pattern.matcher(statement);
+		boolean result = matcher.find();
+		StringBuffer sb = new StringBuffer();
+		if (result) {
+			do {
+				if (matcher.group(1) == null) {
+					matcher.appendReplacement(sb, "");
+				} else {
+					matcher.appendReplacement(sb, "$0");
+				}
+				result = matcher.find();
+			} while (result);
+		}
+		matcher.appendTail(sb);
+		return sb.toString().trim().isEmpty();
+	}
+
+//	private String replaceSemicolonInComments(String sqlBlock, char commentSemicolon, char bsN, char bsR) {
+//		Pattern pattern = Pattern.compile("(')|(/\\*)|(\\*/)|(\\-\\-)|(\\n)|(;(\\s*\\n))", Pattern.DOTALL);
+//		Matcher matcher = pattern.matcher(sqlBlock);
+//		boolean result = matcher.find();
+//		StringBuffer sb = new StringBuffer();
+//		boolean inLiteral = false;
+//		boolean inMLComment = false;
+//		boolean inSLComment = false;
+//		if (result) {
+//			do {
+//				boolean appended = false;
+//				if (matcher.group(1) != null) {
+//					if (!inMLComment && !inSLComment) {
+//						inLiteral = !inLiteral;
+//					}
+//				} else if (matcher.group(2) != null) {
+//					if (!inLiteral && !inSLComment && !inMLComment) {
+//						inMLComment = true;
+//					}
+//				} else if (matcher.group(3) != null) {
+//					if (!inLiteral && !inSLComment && inMLComment) {
+//						inMLComment = false;
+//					}
+//				} else if (matcher.group(4) != null) {
+//					if (!inLiteral && !inMLComment) {
+//						inSLComment = true;
+//					}
+//				} else if (matcher.group(5) != null) {
+//					if (inSLComment && !inLiteral && !inMLComment) {
+//						inSLComment = false;
+//					}
+//				} else if (matcher.group(6) != null) {
+//					if (inSLComment || inMLComment) {
+//						inSLComment = false;
+//						matcher.appendReplacement(sb, Matcher.quoteReplacement(commentSemicolon + (matcher.group(7).replace('\n', bsN).replace('\r', bsR))));
+//						appended = true;
+//					}
+//				}
+//				if (!appended) {
+//					matcher.appendReplacement(sb, "$0");
+//				}
+//				result = matcher.find();
+//			} while (result);
+//		}
+//		matcher.appendTail(sb);
+//		return sb.toString();
+//	}
+	
 	private final String HISTORY_FILE = ".history";
 	private final String LF = System.getProperty("line.separator", "\n");
 	private final JComboBox historyComboBox = new JComboBox() {

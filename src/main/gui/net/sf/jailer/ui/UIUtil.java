@@ -849,17 +849,15 @@ public class UIUtil {
     }
     
     public static ImageIcon scaleIcon(JComponent component, ImageIcon icon) {
-    	if (icon != null) {
-            if (icon != null) {
-            	int heigth = component.getFontMetrics(new JLabel("M").getFont()).getHeight();
-            	double s = heigth / (double) icon.getIconHeight();
-            	try {
-            		return new ImageIcon(icon.getImage().getScaledInstance((int)(icon.getIconWidth() * s), (int)(icon.getIconHeight() * s), Image.SCALE_SMOOTH));
-            	} catch (Exception e) {
-            		return null;
-            	}
-            }
-    	}
+        if (icon != null) {
+        	int heigth = component.getFontMetrics(new JLabel("M").getFont()).getHeight();
+        	double s = heigth / (double) icon.getIconHeight();
+        	try {
+        		return new ImageIcon(icon.getImage().getScaledInstance((int)(icon.getIconWidth() * s), (int)(icon.getIconHeight() * s), Image.SCALE_SMOOTH));
+        	} catch (Exception e) {
+        		return null;
+        	}
+        }
     	return null;
     }
 
