@@ -1345,9 +1345,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 					+ "      exception when others then ? := dbms_sql.last_error_position;" + "    end;"
 					+ "    dbms_sql.close_cursor( l_theCursor );" + "end;";
 
+			CallableStatement cStmt = null;
 			try {
 				Connection connection = session.getConnection();
-				CallableStatement cStmt = connection.prepareCall(statement);
+				cStmt = connection.prepareCall(statement);
 				cStmt.registerOutParameter(2, Types.INTEGER);
 				cStmt.setString(1, sqlStatement);
 
@@ -1355,6 +1356,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 				return cStmt.getInt(2);
 			} catch (Exception e) {
+			} finally {
+				if (cStmt != null) {
+					try {
+						cStmt.close();
+					} catch (SQLException e) {
+					}
+				}
 			}
 		} else if (DBMS.POSTGRESQL.equals(session.dbms)) {
 			Pattern pattern = Pattern.compile("\\n\\s*Position: ([0-9]+)");

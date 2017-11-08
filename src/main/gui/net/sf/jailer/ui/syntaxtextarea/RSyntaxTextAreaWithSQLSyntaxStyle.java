@@ -252,6 +252,12 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	}
 
 	/**
+	 * Folding is not supported.
+	 */
+	protected void appendFoldingMenu(JPopupMenu popup) {
+	}
+
+	/**
 	 * Gets statement(s) at caret position.
 	 *
 	 * @param replacement
