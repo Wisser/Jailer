@@ -362,6 +362,20 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 										}
 										qualifiedName += (quoting == null? getTableName(dest) : quoting.quote(getTableName(dest)));
 										destSet.add(qualifiedName);
+										String cond = a.getUnrestrictedJoinCondition();
+										if (a.reversed) {
+											cond = SqlUtil.reversRestrictionCondition(cond);
+										}
+										cond = SqlUtil.replaceAliases(cond, matcher.group(1), getTableName(dest));
+										Color color = null;
+										if (a.isInsertDestinationBeforeSource()) {
+											color = new Color(100, 0, 0);
+										} else if (a.isInsertSourceBeforeDestination()) {
+											color = new Color(0, 100, 0);
+										} else {
+											color = Color.BLUE;
+										}
+										result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(qualifiedName) + " on " + cond, qualifiedName + " on " + cond + " ", a.getName(), color, cond));
 									}
 								}
 							}

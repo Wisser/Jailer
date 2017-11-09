@@ -421,7 +421,7 @@ public class SQLDMLPanel extends javax.swing.JPanel {
 
     private void sqlConsoleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_sqlConsoleButtonActionPerformed
         switchToConsole.run();
-    	sqlConsole.appendStatement(sqlTextArea.getText(), false);
+    	sqlConsole.appendStatement(sqlTextArea.getText(), false, true);
         dialog.dispose();
     }//GEN-LAST:event_sqlConsoleButtonActionPerformed
 

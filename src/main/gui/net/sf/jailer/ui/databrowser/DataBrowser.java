@@ -833,19 +833,6 @@ public class DataBrowser extends javax.swing.JFrame {
         jLabel10 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
         jLabel12 = new javax.swing.JLabel();
-        jLabel13 = new javax.swing.JLabel();
-        jLabel14 = new javax.swing.JLabel();
-        jLabel15 = new javax.swing.JLabel();
-        jLabel16 = new javax.swing.JLabel();
-        jLabel17 = new javax.swing.JLabel();
-        jLabel18 = new javax.swing.JLabel();
-        jLabel19 = new javax.swing.JLabel();
-        jLabel20 = new javax.swing.JLabel();
-        jLabel21 = new javax.swing.JLabel();
-        jLabel22 = new javax.swing.JLabel();
-        jLabel23 = new javax.swing.JLabel();
-        jLabel24 = new javax.swing.JLabel();
-        jLabel25 = new javax.swing.JLabel();
         borderBrowserTabPane = new javax.swing.JPanel();
         borderBrowserPanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
@@ -1227,84 +1214,6 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 12;
         jPanel7.add(jLabel12, gridBagConstraints);
-
-        jLabel13.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 13;
-        jPanel7.add(jLabel13, gridBagConstraints);
-
-        jLabel14.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 14;
-        jPanel7.add(jLabel14, gridBagConstraints);
-
-        jLabel15.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 15;
-        jPanel7.add(jLabel15, gridBagConstraints);
-
-        jLabel16.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 16;
-        jPanel7.add(jLabel16, gridBagConstraints);
-
-        jLabel17.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 17;
-        jPanel7.add(jLabel17, gridBagConstraints);
-
-        jLabel18.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 18;
-        jPanel7.add(jLabel18, gridBagConstraints);
-
-        jLabel19.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 19;
-        jPanel7.add(jLabel19, gridBagConstraints);
-
-        jLabel20.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 20;
-        jPanel7.add(jLabel20, gridBagConstraints);
-
-        jLabel21.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 21;
-        jPanel7.add(jLabel21, gridBagConstraints);
-
-        jLabel22.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 22;
-        jPanel7.add(jLabel22, gridBagConstraints);
-
-        jLabel23.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 23;
-        jPanel7.add(jLabel23, gridBagConstraints);
-
-        jLabel24.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 24;
-        jPanel7.add(jLabel24, gridBagConstraints);
-
-        jLabel25.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 25;
-        jPanel7.add(jLabel25, gridBagConstraints);
 
         detailsAndBorderBrowserTabbedPane.addTab("Details", jPanel7);
 
@@ -2117,19 +2026,6 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
     private javax.swing.JLabel jLabel12;
-    private javax.swing.JLabel jLabel13;
-    private javax.swing.JLabel jLabel14;
-    private javax.swing.JLabel jLabel15;
-    private javax.swing.JLabel jLabel16;
-    private javax.swing.JLabel jLabel17;
-    private javax.swing.JLabel jLabel18;
-    private javax.swing.JLabel jLabel19;
-    private javax.swing.JLabel jLabel20;
-    private javax.swing.JLabel jLabel21;
-    private javax.swing.JLabel jLabel22;
-    private javax.swing.JLabel jLabel23;
-    private javax.swing.JLabel jLabel24;
-    private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -2818,11 +2714,13 @@ public class DataBrowser extends javax.swing.JFrame {
 	    	updateNavigationCombobox();
 	    	
 	    	tablesPanel.removeAll();
+	    	metaDataPanel = (MetaDataPanel) session.getSessionProperty(getClass(), "metaDataPanel");
 			MetaDataSource metaDataSource;
 			try {
 				metaDataSource = getMetaDataSource(newSession);
 				if (metaDataSource == null || Boolean.TRUE.equals(session.getSessionProperty(DataBrowser.class, "removeMetaDataSource"))) {
 					metaDataSource = new MetaDataSource(newSession, datamodel.get(), alias, executionContext);
+					metaDataPanel = null;
 				} else {
 					metaDataSource = new MetaDataSource(metaDataSource, datamodel.get());
 				}
@@ -2836,122 +2734,125 @@ public class DataBrowser extends javax.swing.JFrame {
 			metaDataDetailsPanel = createMetaDataDetailsPanel(executionContext);
 			metaDataViewPanel.add(metaDataDetailsPanel);
 			
-			metaDataPanel = new MetaDataPanel(this, metaDataSource, metaDataDetailsPanel, datamodel.get(), executionContext) {
-				@Override
-				protected void open(Table table) {
-					if (!selectNavTreeNode(navigationTree.getModel().getRoot(), table)) {
-						if (workbenchTabbedPane.getSelectedComponent() != sqlConsoleContainerPanel) {
-							desktop.addTableBrowser(null, null, 0, table, null, "", null, null, true);
+			if (metaDataPanel == null) {
+				metaDataPanel = new MetaDataPanel(this, metaDataSource, metaDataDetailsPanel, datamodel.get(), executionContext) {
+					@Override
+					protected void open(Table table) {
+						if (!selectNavTreeNode(navigationTree.getModel().getRoot(), table)) {
+							if (workbenchTabbedPane.getSelectedComponent() != sqlConsoleContainerPanel) {
+								desktop.addTableBrowser(null, null, 0, table, null, "", null, null, true);
+							}
+						}
+						try {
+							String sql;
+							Quoting quoting = new Quoting(session);
+							MDTable mdTable = getMetaDataSource(session).toMDTable(table);
+							String tableName;
+							String schemaName;
+							if (mdTable != null) {
+								tableName = mdTable.getName();
+								schemaName = mdTable.getSchema().isDefaultSchema? "": mdTable.getSchema().getName();
+							} else {
+								tableName = table.getUnqualifiedName();
+								schemaName = table.getSchema("");
+							}
+							sql = "Select * From " + (schemaName == null || schemaName.length() == 0? "" : quoting.quote(schemaName) + ".") + quoting.quote(tableName);
+							if (workbenchTabbedPane.getSelectedComponent() == sqlConsoleContainerPanel) {
+								workbenchTabbedPane.setSelectedComponent(sqlConsoleContainerPanel);
+								sqlConsole.grabFocus();
+								sqlConsole.appendStatement(sql, true, true);
+							}
+						} catch (SQLException e) {
+							UIUtil.showException(this, "Error", e);
 						}
 					}
-					try {
-						String sql;
-						Quoting quoting = new Quoting(session);
-						MDTable mdTable = getMetaDataSource(session).toMDTable(table);
-						String tableName;
-						String schemaName;
-						if (mdTable != null) {
-							tableName = mdTable.getName();
-							schemaName = mdTable.getSchema().isDefaultSchema? "": mdTable.getSchema().getName();
-						} else {
-							tableName = table.getUnqualifiedName();
-							schemaName = table.getSchema("");
+		
+					private boolean selectNavTreeNode(Object root, Table table) {
+						if (root instanceof DefaultMutableTreeNode) {
+							Object userObject = ((DefaultMutableTreeNode) root).getUserObject();
+			                if (userObject instanceof TreeNodeForRowBrowser) {
+			                    RowBrowser rowBrowser = ((TreeNodeForRowBrowser) userObject).rowBrowser;
+			                    if (table.equals(rowBrowser.browserContentPane.table)) {
+			                    	navigationTree.getSelectionModel().setSelectionPath(new TreePath(((DefaultMutableTreeNode) root).getPath()));
+			                    	return true;
+			                    }
+			                }
+			                int cc = ((DefaultMutableTreeNode) root).getChildCount();
+			                for (int i = 0; i < cc; ++i) {
+			                	if (selectNavTreeNode(((DefaultMutableTreeNode) root).getChildAt(i), table)) {
+			                		return true;
+			                	}
+			                }
 						}
-						sql = "Select * From " + (schemaName == null || schemaName.length() == 0? "" : quoting.quote(schemaName) + ".") + quoting.quote(tableName);
-						if (workbenchTabbedPane.getSelectedComponent() == sqlConsoleContainerPanel) {
-							workbenchTabbedPane.setSelectedComponent(sqlConsoleContainerPanel);
-							sqlConsole.grabFocus();
-							sqlConsole.appendStatement(sql, true);
+						return false;
+					}
+					
+					private boolean selectNavTreeNode(Object root, MDTable mdTable) {
+						if (root instanceof DefaultMutableTreeNode) {
+							Object userObject = ((DefaultMutableTreeNode) root).getUserObject();
+			                if (userObject instanceof TreeNodeForRowBrowser) {
+			                    RowBrowser rowBrowser = ((TreeNodeForRowBrowser) userObject).rowBrowser;
+			                    if (mdTable.equals(rowBrowser.getMDTable())) {
+			                    	navigationTree.getSelectionModel().setSelectionPath(new TreePath(((DefaultMutableTreeNode) root).getPath()));
+			                    	return true;
+			                    }
+			                }
+			                int cc = ((DefaultMutableTreeNode) root).getChildCount();
+			                for (int i = 0; i < cc; ++i) {
+			                	if (selectNavTreeNode(((DefaultMutableTreeNode) root).getChildAt(i), mdTable)) {
+			                		return true;
+			                	}
+			                }
 						}
-					} catch (SQLException e) {
-						UIUtil.showException(this, "Error", e);
+						return false;
 					}
-				}
-	
-				private boolean selectNavTreeNode(Object root, Table table) {
-					if (root instanceof DefaultMutableTreeNode) {
-						Object userObject = ((DefaultMutableTreeNode) root).getUserObject();
-		                if (userObject instanceof TreeNodeForRowBrowser) {
-		                    RowBrowser rowBrowser = ((TreeNodeForRowBrowser) userObject).rowBrowser;
-		                    if (table.equals(rowBrowser.browserContentPane.table)) {
-		                    	navigationTree.getSelectionModel().setSelectionPath(new TreePath(((DefaultMutableTreeNode) root).getPath()));
-		                    	return true;
-		                    }
-		                }
-		                int cc = ((DefaultMutableTreeNode) root).getChildCount();
-		                for (int i = 0; i < cc; ++i) {
-		                	if (selectNavTreeNode(((DefaultMutableTreeNode) root).getChildAt(i), table)) {
-		                		return true;
-		                	}
-		                }
+		
+					@Override
+					protected void analyseSchema(String schemaName) {
+						updateDataModel(schemaName, false, false);
 					}
-					return false;
-				}
-				
-				private boolean selectNavTreeNode(Object root, MDTable mdTable) {
-					if (root instanceof DefaultMutableTreeNode) {
-						Object userObject = ((DefaultMutableTreeNode) root).getUserObject();
-		                if (userObject instanceof TreeNodeForRowBrowser) {
-		                    RowBrowser rowBrowser = ((TreeNodeForRowBrowser) userObject).rowBrowser;
-		                    if (mdTable.equals(rowBrowser.getMDTable())) {
-		                    	navigationTree.getSelectionModel().setSelectionPath(new TreePath(((DefaultMutableTreeNode) root).getPath()));
-		                    	return true;
-		                    }
-		                }
-		                int cc = ((DefaultMutableTreeNode) root).getChildCount();
-		                for (int i = 0; i < cc; ++i) {
-		                	if (selectNavTreeNode(((DefaultMutableTreeNode) root).getChildAt(i), mdTable)) {
-		                		return true;
-		                	}
-		                }
-					}
-					return false;
-				}
-	
-				@Override
-				protected void analyseSchema(String schemaName) {
-					updateDataModel(schemaName, false, false);
-				}
-	
-				@Override
-				protected void open(MDTable mdTable) {
-					String schemaName = mdTable.getSchema().isDefaultSchema? null : mdTable.getSchema().getName();
-					String tableName = mdTable.getName();
-					try {
-						Quoting quoting = new Quoting(session);
-						String sql = "Select * From " + (schemaName == null? "" : quoting.quote(schemaName) + ".") + quoting.quote(tableName);
-						if (!selectNavTreeNode(navigationTree.getModel().getRoot(), mdTable)
-							|| workbenchTabbedPane.getSelectedComponent() == sqlConsoleContainerPanel) {
-							workbenchTabbedPane.setSelectedComponent(sqlConsoleContainerPanel);
-							sqlConsole.grabFocus();
-							sqlConsole.appendStatement(sql, true);
+		
+					@Override
+					protected void open(MDTable mdTable) {
+						String schemaName = mdTable.getSchema().isDefaultSchema? null : mdTable.getSchema().getName();
+						String tableName = mdTable.getName();
+						try {
+							Quoting quoting = new Quoting(session);
+							String sql = "Select * From " + (schemaName == null? "" : quoting.quote(schemaName) + ".") + quoting.quote(tableName);
+							if (!selectNavTreeNode(navigationTree.getModel().getRoot(), mdTable)
+								|| workbenchTabbedPane.getSelectedComponent() == sqlConsoleContainerPanel) {
+								workbenchTabbedPane.setSelectedComponent(sqlConsoleContainerPanel);
+								sqlConsole.grabFocus();
+								sqlConsole.appendStatement(sql, true, true);
+							}
+						} catch (SQLException e) {
+							UIUtil.showException(this, "Error", e);
 						}
-					} catch (SQLException e) {
-						UIUtil.showException(this, "Error", e);
 					}
-				}
-	
-				@Override
-				protected void onTableSelect(MDTable mdTable) {
-					metaDataDetailsPanel
-						.showMetaDataDetails(mdTable, getMetaDataSource(session).toTable(mdTable), datamodel.get());
-				}
-	
-				@Override
-				protected void onSchemaSelect(MDSchema mdSchema) {
-					metaDataDetailsPanel.clear();
-				}
-	
-				@Override
-				protected void openNewTableBrowser() {
-					DataBrowser.this.openNewTableBrowser(false);
-				}
-	
-				@Override
-				protected void updateDataModelView(Table table) {
-					DataBrowser.this.updateDataModelView(table);
-				}
-			};
+		
+					@Override
+					protected void onTableSelect(MDTable mdTable) {
+						metaDataDetailsPanel
+							.showMetaDataDetails(mdTable, getMetaDataSource(session).toTable(mdTable), datamodel.get());
+					}
+		
+					@Override
+					protected void onSchemaSelect(MDSchema mdSchema) {
+						metaDataDetailsPanel.clear();
+					}
+		
+					@Override
+					protected void openNewTableBrowser() {
+						DataBrowser.this.openNewTableBrowser(false);
+					}
+		
+					@Override
+					protected void updateDataModelView(Table table) {
+						DataBrowser.this.updateDataModelView(table);
+					}
+				};
+			}
+	    	session.setSessionProperty(getClass(), "metaDataPanel", metaDataPanel);
 			tablesPanel.add(metaDataPanel);
 			
 			try {

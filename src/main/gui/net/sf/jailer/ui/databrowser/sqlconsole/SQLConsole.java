@@ -1155,7 +1155,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	 * @param sql the statement
 	 * @param execute execute the statement?
 	 */
-	public void appendStatement(String sql, boolean execute) {
+	public void appendStatement(String sql, boolean execute, boolean appendSemicolon) {
 		String pre = "";
 		int lineCount = editorPane.getLineCount();
 		if (lineCount > 0 && editorPane.getDocument().getLength() > 0) {
@@ -1165,7 +1165,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			}
 		}
 		sql = sql.replaceAll("\\s*\\n", "\n").trim();
-		if (!sql.endsWith(";")) {
+		if (appendSemicolon && !sql.endsWith(";")) {
 			sql += ";";
 		}
 		editorPane.append(pre + sql + "\n");
@@ -1309,7 +1309,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		@Override
 		public void itemStateChanged(ItemEvent e) {
 			if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() != null && historyComboBox.getSelectedIndex() > 0) {
-				appendStatement(e.getItem().toString(), false);
+				appendStatement(e.getItem().toString(), false, true);
 				historyComboBox.setSelectedIndex(0);
 			}
 		}
