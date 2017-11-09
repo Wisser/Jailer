@@ -195,7 +195,7 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				// addTableBrowser(null, null, 0, null, null, queryBuilderDialog.getSQL(), null, null, true);
-				getSqlConsole(true).appendStatement(queryBuilderDialog.getSQL(), true);
+				getSqlConsole(true).appendStatement(queryBuilderDialog.getSQL(), true, false);
 				queryBuilderDialog.setVisible(false);
 			}
 		});

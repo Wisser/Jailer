@@ -165,7 +165,7 @@ public class MDTable extends MDObject {
 			unquotedUCColumnNames.add(Quoting.staticUnquote(column.name).toUpperCase(Locale.ENGLISH));
 		}
 		try {
-			if (getColumns().size() != unquotedUCColumnNames.size()) {
+			if (getColumns().size() != table.getColumns().size()) {
 				return false;
 			}
 			for (String column: getColumns()) {
