@@ -770,52 +770,56 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 		relatedRowsLabel.setIcon(UIUtil.scaleIcon(this, relatedRowsIcon));
-		relatedRowsPanel.addMouseListener(new java.awt.event.MouseAdapter() {
-			private JPopupMenu popup;
-			private boolean in = false;
-
-			@Override
-			public void mousePressed(MouseEvent e) {
-				loadButton.grabFocus();
-				SwingUtilities.invokeLater(new Runnable() {
-					@Override
-					public void run() {
-		//				if (rows.size() == 1) {
-		//					popup = createPopupMenu(rows.get(0), 0, 0, 0);
-		//				} else {
-							popup = createPopupMenu(null, -1, 0, 0, false);
-		//				}
-						setCurrentRowSelection(-2);
-						popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
-							@Override
-							public void propertyChange(PropertyChangeEvent evt) {
-								if (Boolean.FALSE.equals(evt.getNewValue())) {
-									popup = null;
-									updateBorder();
-									setCurrentRowSelection(-1);
+		if (createPopupMenu(null, -1, 0, 0, false).getComponentCount() == 0) {
+			relatedRowsLabel.setEnabled(false);
+		} else {
+			relatedRowsPanel.addMouseListener(new java.awt.event.MouseAdapter() {
+				private JPopupMenu popup;
+				private boolean in = false;
+	
+				@Override
+				public void mousePressed(MouseEvent e) {
+					loadButton.grabFocus();
+					SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+			//				if (rows.size() == 1) {
+			//					popup = createPopupMenu(rows.get(0), 0, 0, 0);
+			//				} else {
+								popup = createPopupMenu(null, -1, 0, 0, false);
+			//				}
+							setCurrentRowSelection(-2);
+							popup.addPropertyChangeListener("visible", new PropertyChangeListener() {
+								@Override
+								public void propertyChange(PropertyChangeEvent evt) {
+									if (Boolean.FALSE.equals(evt.getNewValue())) {
+										popup = null;
+										updateBorder();
+										setCurrentRowSelection(-1);
+									}
 								}
-							}
-						});
-						popup.show(relatedRowsPanel, 0, relatedRowsPanel.getHeight());
-					}
-				});
-			}
-
-			public void mouseEntered(java.awt.event.MouseEvent evt) {
-				in = true;
-				updateBorder();
-			}
-
-			public void mouseExited(java.awt.event.MouseEvent evt) {
-				in = false;
-				updateBorder();
-			}
-
-			private void updateBorder() {
-				relatedRowsPanel.setBorder(new javax.swing.border.SoftBevelBorder((in || popup != null) ? javax.swing.border.BevelBorder.LOWERED
-						: javax.swing.border.BevelBorder.RAISED));
-			}
-		});
+							});
+							popup.show(relatedRowsPanel, 0, relatedRowsPanel.getHeight());
+						}
+					});
+				}
+	
+				public void mouseEntered(java.awt.event.MouseEvent evt) {
+					in = true;
+					updateBorder();
+				}
+	
+				public void mouseExited(java.awt.event.MouseEvent evt) {
+					in = false;
+					updateBorder();
+				}
+	
+				private void updateBorder() {
+					relatedRowsPanel.setBorder(new javax.swing.border.SoftBevelBorder((in || popup != null) ? javax.swing.border.BevelBorder.LOWERED
+							: javax.swing.border.BevelBorder.RAISED));
+				}
+			});
+		}
 		sqlPanel.addMouseListener(new java.awt.event.MouseAdapter() {
 			private JPopupMenu popup;
 			private boolean in = false;
