@@ -2832,7 +2832,7 @@ public class DataBrowser extends javax.swing.JFrame {
 							if (workbenchTabbedPane.getSelectedComponent() == sqlConsoleContainerPanel) {
 								workbenchTabbedPane.setSelectedComponent(sqlConsoleContainerPanel);
 								sqlConsole.grabFocus();
-								sqlConsole.appendStatement(sql, true, true);
+								sqlConsole.appendStatement(sql, true, false);
 							}
 						} catch (SQLException e) {
 							UIUtil.showException(this, "Error", e);
@@ -2895,7 +2895,7 @@ public class DataBrowser extends javax.swing.JFrame {
 								|| workbenchTabbedPane.getSelectedComponent() == sqlConsoleContainerPanel) {
 								workbenchTabbedPane.setSelectedComponent(sqlConsoleContainerPanel);
 								sqlConsole.grabFocus();
-								sqlConsole.appendStatement(sql, true, true);
+								sqlConsole.appendStatement(sql, true, false);
 							}
 						} catch (SQLException e) {
 							UIUtil.showException(this, "Error", e);
