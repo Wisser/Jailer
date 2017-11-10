@@ -22,6 +22,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -266,7 +268,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	 *            <code>true</code> to replace only one statement
 	 */
 	public void replaceCurrentStatement(String replacement, boolean singleStatement) {
-		Pair<Integer, Integer> loc = getCurrentStatementLocation(singleStatement, false);
+		Pair<Integer, Integer> loc = getCurrentStatementLocation(singleStatement, false, null);
 		if (loc != null) {
 			try {
 				int from = loc.a;
@@ -291,7 +293,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	 * @return pair of start and end line number
 	 */
 	public String getCurrentStatement(boolean singleStatement) {
-		Pair<Integer, Integer> loc = getCurrentStatementLocation(singleStatement, false);
+		Pair<Integer, Integer> loc = getCurrentStatementLocation(singleStatement, false, null);
 		if (loc != null) {
 			return getText(loc.a, loc.b, true);
 		}
@@ -344,38 +346,42 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	/**
 	 * Gets start- and end-line number of statement(s) at caret position.
 	 * 
-	 * @param singleStatement
-	 *            <code>true</code> to get only one statement
+	 * @param eosLines if not <code>null</code>, put end-of-statement line numbers into
 	 * @return pair of start and end line number
 	 */
-	public Pair<Integer, Integer> getCurrentStatementLocation() {
-		return getCurrentStatementLocation(getCaret().getDot() != getCaret().getMark(), false);
+	public Pair<Integer, Integer> getCurrentStatementLocation(Set<Integer> eosLines) {
+		return getCurrentStatementLocation(getCaret().getDot() != getCaret().getMark(), false, eosLines);
 	}
 
 	/**
 	 * Gets start- and end-line number of statement(s) at caret position.
 	 * 
-	 * @param singleStatement
-	 *            <code>true</code> to get only one statement
+	 * @param singleStatement <code>true</code> to get only one statement
+	 * @param eosLines if not <code>null</code>, put end-of-statement line numbers into
 	 * @return pair of start and end line number
 	 */
-	public Pair<Integer, Integer> getCurrentStatementLocation(boolean singleStatement, boolean currentLineMayBeEmpty) {
+	public Pair<Integer, Integer> getCurrentStatementLocation(boolean singleStatement, boolean currentLineMayBeEmpty, Set<Integer> eosLines) {
 		try {
 			int y = getLineOfOffset(Math.min(getCaret().getDot(), getCaret().getMark()));
+			int caretBegin = y;
 			int start = y;
-			// if (getText(start, start, true).trim().length() > 0) {
 			while (start > 0) {
 				int startM1Off = getLineStartOffset(start - 1);
 				Segment txt = new Segment();
 				getDocument().getText(startM1Off, getLineEndOffset(start - 1) - startM1Off, txt);
 				String sLine = txt.toString().trim();
-				if (sLine.length() == 0 || (singleStatement && sLine.endsWith(";"))) {
+				boolean endsWithSemicolon = sLine.endsWith(";");
+				if (endsWithSemicolon && eosLines != null) {
+					eosLines.add(start - 1);
+				}
+				if (sLine.length() == 0 || (singleStatement && endsWithSemicolon)) {
 					break;
 				}
 				--start;
 			}
 			// }
 			int end = getLineOfOffset(Math.max(getCaret().getDot(), getCaret().getMark()));
+			int caretEnd = end;
 			int lineCount = getLineCount();
 			while (end < lineCount) {
 				int endOff = getLineStartOffset(end);
@@ -388,13 +394,31 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 					}
 					break;
 				}
-				if (singleStatement && sLine.endsWith(";")) {
+				boolean endsWithSemicolon = sLine.endsWith(";");
+				if (endsWithSemicolon && eosLines != null) {
+					eosLines.add(end);
+				}
+				if (singleStatement && endsWithSemicolon) {
 					break;
 				}
 				++end;
 			}
 			if (end == lineCount && end > 0) {
 				--end;
+			}
+			int l = caretBegin;
+			if (eosLines != null) {
+				while (l < caretEnd && l < lineCount) {
+					int lOff = getLineStartOffset(l);
+					Segment txt = new Segment();
+					getDocument().getText(lOff, getLineEndOffset(l) - lOff, txt);
+					String sLine = txt.toString().trim();
+					boolean endsWithSemicolon = sLine.endsWith(";");
+					if (endsWithSemicolon) {
+						eosLines.add(l);
+					}
+					++l;
+				}
 			}
 			return new Pair<Integer, Integer>(start, end);
 		} catch (BadLocationException e) {
@@ -530,7 +554,8 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	}
 
 	public void updateMenuItemState(boolean allowRun, boolean setLineHighlights) {
-		Pair<Integer, Integer> loc = getCurrentStatementLocation();
+		Set<Integer> eosLines = new HashSet<Integer>();
+		Pair<Integer, Integer> loc = getCurrentStatementLocation(eosLines);
 		runBlock.setEnabled(allowRun && loc != null && !isTextEmpty(loc.a, loc.b));
 		runAll.setEnabled(allowRun && RSyntaxTextAreaWithSQLSyntaxStyle.this.getDocument().getLength() > 0);
 		if (allowRun && setLineHighlights) {
@@ -542,7 +567,17 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 					try {
 						if (loc.a != loc.b || !getText(loc.a, loc.b, true).trim().isEmpty()) {
 							for (int l = loc.a; l <= loc.b; ++l) {
-								gutter.addLineTrackingIcon(l, icon);
+								ImageIcon theIcon;
+								boolean beginn = l == loc.a || eosLines.contains(l - 1);
+								boolean end = l == loc.b || eosLines.contains(l);
+								if (beginn) {
+									theIcon = end? iconBeginEnd : iconBegin;
+								} else if (end) {
+									theIcon = iconEnd;
+								} else {
+									theIcon = icon;
+								}
+								gutter.addLineTrackingIcon(l, theIcon);
 							}
 						}
 					} catch (BadLocationException e) {
@@ -629,12 +664,18 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	}
 	
 	private static ImageIcon icon;
+	private static ImageIcon iconBegin;
+	private static ImageIcon iconBeginEnd;
+	private static ImageIcon iconEnd;
     static {
 		String dir = "/net/sf/jailer/ui/resource";
 		
 		// load images
 		try {
 			icon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsole.png"));
+			iconBegin = new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebegin.png"));
+			iconBeginEnd = new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginend.png"));
+			iconEnd = new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsoleend.png"));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

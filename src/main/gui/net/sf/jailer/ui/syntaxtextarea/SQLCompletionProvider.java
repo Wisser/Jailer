@@ -180,7 +180,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 
 	private List<SQLCompletion> getPotentialCompletions(JTextComponent comp, String alreadyEnteredText) {
 		Pair<Integer, Integer> loc = ((RSyntaxTextAreaWithSQLSyntaxStyle) comp)
-				.getCurrentStatementLocation(true, true);
+				.getCurrentStatementLocation(true, true, null);
 		String line = ((RSyntaxTextAreaWithSQLSyntaxStyle) comp).getText(loc.a, loc.b, true);
 		String lineBeforeCaret = ((RSyntaxTextAreaWithSQLSyntaxStyle) comp).getText(loc.a, loc.b, false);
 

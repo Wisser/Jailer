@@ -1180,7 +1180,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	}
 
 	private void executeSelectedStatements() {
-		Pair<Integer, Integer> loc = editorPane.getCurrentStatementLocation();
+		Pair<Integer, Integer> loc = editorPane.getCurrentStatementLocation(null);
 		if (loc != null) {
 			executeSQLBlock(editorPane.getText(loc.a, loc.b, true), loc, editorPane.getCaret().getDot() == editorPane.getCaret().getMark());
 		}
@@ -1309,7 +1309,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		@Override
 		public void itemStateChanged(ItemEvent e) {
 			if (e.getStateChange() == ItemEvent.SELECTED && e.getItem() != null && historyComboBox.getSelectedIndex() > 0) {
-				appendStatement(e.getItem().toString(), false, true);
+				appendStatement(e.getItem().toString(), false, false);
 				historyComboBox.setSelectedIndex(0);
 			}
 		}
