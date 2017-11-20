@@ -1,4 +1,4 @@
-3.7.6
+3.7.7
   - Minor GUI improvements.
 
 3.7.5
