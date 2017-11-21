@@ -16,7 +16,9 @@
 package net.sf.jailer.ui.syntaxtextarea;
 
 import java.awt.Dialog;
+import java.awt.Font;
 import java.awt.Frame;
+import java.awt.Image;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -94,6 +96,17 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
 		setAutoIndentEnabled(true);
 		setTabsEmulated(true);
+		
+		// load images
+		try {
+			String dir = "/net/sf/jailer/ui/resource";
+			icon = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsole.png")));
+    	    iconBegin = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebegin.png")));
+			iconBeginEnd = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginend.png")));
+			iconEnd = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsoleend.png")));
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 		
 		formatSQL = new AbstractAction("Format SQL") {
 			{
@@ -194,6 +207,10 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		updateMenuItemState();
 	}
 
+	private ImageIcon scaleToLineHeight(ImageIcon imageIcon) {
+		double s = getLineHeight() / (double) imageIcon.getIconHeight();
+		return new ImageIcon(imageIcon.getImage().getScaledInstance((int)(imageIcon.getIconWidth()), (int)(imageIcon.getIconHeight() * s), Image.SCALE_SMOOTH));
+	}
 
 	protected MDTable getSelectedTable() {
 		return null;
@@ -663,22 +680,9 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		}
 	}
 	
-	private static ImageIcon icon;
-	private static ImageIcon iconBegin;
-	private static ImageIcon iconBeginEnd;
-	private static ImageIcon iconEnd;
-    static {
-		String dir = "/net/sf/jailer/ui/resource";
-		
-		// load images
-		try {
-			icon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsole.png"));
-			iconBegin = new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebegin.png"));
-			iconBeginEnd = new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginend.png"));
-			iconEnd = new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsoleend.png"));
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-    }
+	private ImageIcon icon;
+	private ImageIcon iconBegin;
+	private ImageIcon iconBeginEnd;
+	private ImageIcon iconEnd;
 
 }
