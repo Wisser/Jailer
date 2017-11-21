@@ -783,7 +783,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         consoleContainerPanel = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
-        limitComboBox = new net.sf.jailer.ui.JComboBox();
+        limitComboBox = new javax.swing.JComboBox();
         cancelButton = new javax.swing.JButton();
         runSQLButton = new javax.swing.JButton();
         runnAllButton = new javax.swing.JButton();
@@ -796,6 +796,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jPanel4 = new javax.swing.JPanel();
         statusScrollPane = new javax.swing.JScrollPane();
         statusTextPane = new javax.swing.JTextPane();
+        jLabel4 = new javax.swing.JLabel();
         jPanel3 = new javax.swing.JPanel();
         jTabbedPane1 = new javax.swing.JTabbedPane();
 
@@ -926,6 +927,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         jPanel6.add(jPanel4, gridBagConstraints);
 
+        jLabel4.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        jPanel6.add(jLabel4, gridBagConstraints);
+
         jSplitPane1.setLeftComponent(jPanel6);
 
         jPanel3.setLayout(new java.awt.BorderLayout());
@@ -963,6 +970,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JPanel consoleContainerPanel;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
@@ -974,7 +982,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JSplitPane jSplitPane2;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private net.sf.jailer.ui.JComboBox limitComboBox;
+    private javax.swing.JComboBox limitComboBox;
     private javax.swing.JButton runSQLButton;
     private javax.swing.JButton runnAllButton;
     private javax.swing.JLabel statusLabel;
