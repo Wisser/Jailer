@@ -636,7 +636,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 						break;
 					case ON: return keywordCompletion("Where", "Group by");
 					case ORDER: return null;
-					case SELECT: return keywordCompletion("From");
+					case SELECT: return keywordCompletion("from");
 					case WHERE: 
 						if (defaultClause != Clause.WHERE) {
 							return keywordCompletion("Group by", "Order by");

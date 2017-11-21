@@ -16,7 +16,6 @@
 package net.sf.jailer.ui.syntaxtextarea;
 
 import java.awt.Dialog;
-import java.awt.Font;
 import java.awt.Frame;
 import java.awt.Image;
 import java.awt.Window;
@@ -209,7 +208,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 
 	private ImageIcon scaleToLineHeight(ImageIcon imageIcon) {
 		double s = getLineHeight() / (double) imageIcon.getIconHeight();
-		return new ImageIcon(imageIcon.getImage().getScaledInstance((int)(imageIcon.getIconWidth()), (int)(imageIcon.getIconHeight() * s), Image.SCALE_SMOOTH));
+		return new ImageIcon(imageIcon.getImage().getScaledInstance((int)(imageIcon.getIconWidth()), (int)(imageIcon.getIconHeight() * s + 0.5), Image.SCALE_SMOOTH));
 	}
 
 	protected MDTable getSelectedTable() {
