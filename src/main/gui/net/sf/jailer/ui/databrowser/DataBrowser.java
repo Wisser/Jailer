@@ -324,10 +324,6 @@ public class DataBrowser extends javax.swing.JFrame {
             menuTools.setVisible(false);
         }
 
-        if (DataBrowserContext.isStandAlone()) {
-            aboutMenuItem.setText("About " + DataBrowserContext.getAppName(true));
-        }
-        
         // L&F can no longer be changed
         jSeparator6.setVisible(false);
         view.setVisible(false);
@@ -1679,11 +1675,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
     private void jMenuItem4ActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem4ActionPerformed
         try {
-            if (DataBrowserContext.isStandAlone()) {
-                BrowserLauncher.openURL(new URI("http://dbeauty.sourceforge.net"));
-            } else {
-                BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/doc/data-browsing.html"));
-            }
+            BrowserLauncher.openURL(new URI("http://jailer.sourceforge.net/doc/data-browsing.html"));
         } catch (Exception e) {
             UIUtil.showException(this, "Error", e, session);
         }
@@ -1805,11 +1797,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
     private void helpForumActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_helpForumActionPerformed
         try {
-            if (DataBrowserContext.isStandAlone()) {
-                BrowserLauncher.openURL(new URI("https://sourceforge.net/apps/phpbb/dbeauty/index.php"));
-            } else {
-                BrowserLauncher.openURL(new URI("https://sourceforge.net/forum/?group_id=197260"));
-            }
+            BrowserLauncher.openURL(new URI("https://sourceforge.net/forum/?group_id=197260"));
         } catch (Exception e) {
             UIUtil.showException(this, "Error", e, session);
         }
@@ -1818,11 +1806,6 @@ public class DataBrowser extends javax.swing.JFrame {
     private void aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_jMenuItem4ActionPerformed
         About about = new About(this, true);
         about.setTitle(DataBrowserContext.getAppName(false));
-        if (DataBrowserContext.isStandAlone()) {
-            about.homeTextField.setText("http://dbeauty.sourceforge.net");
-            about.forumTextField.setText("https://sourceforge.net/apps/phpbb/dbeauty/index.php");
-            about.nameLabel.setText(DataBrowserContext.getAppName(false));
-        }
         about.pack();
         about.setLocation(getLocation().x + (getSize().width - about.getPreferredSize().width) / 2,
                 getLocation().y + (getSize().height - about.getPreferredSize().height) / 2);
@@ -1932,9 +1915,6 @@ public class DataBrowser extends javax.swing.JFrame {
         } else {
             dbConnectionDialog = new DbConnectionDialog(dataBrowser, dbConnectionDialog, DataBrowserContext.getAppName(), executionContext);
         }
-        if (DataBrowserContext.isStandAlone()) {
-            dbConnectionDialog.setJdbcHelpURL("http://dbeauty.sourceforge.net/jdbc.html");
-        }
         if (dbConnectionDialog.isConnected || dbConnectionDialog.connect(DataBrowserContext.getAppName(true))) {
             dataBrowser.setConnection(dbConnectionDialog);
             dataBrowser.askForDataModel();
@@ -2033,9 +2013,6 @@ public class DataBrowser extends javax.swing.JFrame {
                 }
                 analyseOptionsDialog.appendAnalyseCLIOptions(args);
                 ModelBuilder.assocFilter = analyseOptionsDialog.getAssociationLineFilter();
-                if (DataBrowserContext.isStandAlone()) {
-                    UIUtil.disableWarnings = true;
-                }
                 if (UIUtil.runJailer(this, args, false, true, false, true, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, false, true, false, executionContext)) {
                     ModelBuilder.assocFilter = null;
                     String modelname = datamodel == null || datamodel.get() == null ? DataModel.DEFAULT_NAME : datamodel.get().getName();
