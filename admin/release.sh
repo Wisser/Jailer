@@ -20,12 +20,6 @@ chmod a+x *.sh
 rm -rf admin
 rm -rf docs
 rm -rf out
-rm DBeauty.html
-mv datamodel.def datamodel
-rm -rf datamodel.scr
-ls jailer.jar
-
-rm -rf README-dbeauty releasenotes-dbeauty.txt
 
 cd ..
 rm $1.zip

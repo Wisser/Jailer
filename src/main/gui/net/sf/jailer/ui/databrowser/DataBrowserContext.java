@@ -15,8 +15,6 @@
  */
 package net.sf.jailer.ui.databrowser;
 
-import java.io.File;
-
 import net.sf.jailer.JailerVersion;
 
 /**
@@ -26,11 +24,7 @@ import net.sf.jailer.JailerVersion;
  */
 public class DataBrowserContext {
 
-	private static String STANDALONE_APP_NAME = "DBeauty";
-	private static String STANDALONE_APP_VERSION = "3.7.7";
-	
 	private static boolean supportsDataModelUpdates = true;
-	private static Boolean standAlone = null;
 
 	public static synchronized boolean isSupportsDataModelUpdates() {
 		return supportsDataModelUpdates;
@@ -41,29 +35,11 @@ public class DataBrowserContext {
 		DataBrowserContext.supportsDataModelUpdates = supportsDataModelUpdates;
 	}
 
-	public static synchronized boolean isStandAlone() {
-		if (standAlone == null) {
-			try {
-				File samf = new File(".standalone");
-				standAlone = samf.exists();
-			} catch (Throwable e) {
-				standAlone = false;
-			}
-		}
-		return standAlone;
-	}
-
 	public static String getAppName(boolean shortName) {
-		if (isStandAlone()) {
-			return STANDALONE_APP_NAME + " " + STANDALONE_APP_VERSION + (shortName? "" : " - Relational Data Browser");
-		}
 		return JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + (shortName? "" : " - Relational Data Browser");
 	}
 	
 	public static String getAppName() {
-		if (isStandAlone()) {
-			return STANDALONE_APP_NAME;
-		}
 		return JailerVersion.APPLICATION_NAME;
 	}
 	
