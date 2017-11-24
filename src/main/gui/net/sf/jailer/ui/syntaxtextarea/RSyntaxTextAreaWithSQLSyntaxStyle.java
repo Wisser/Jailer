@@ -57,6 +57,7 @@ import org.fife.ui.rtextarea.Gutter;
 import org.fife.ui.rtextarea.SearchContext;
 import org.fife.ui.rtextarea.SearchEngine;
 import org.fife.ui.rtextarea.SearchResult;
+import org.junit.matchers.Each;
 
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
@@ -422,6 +423,12 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 				if (endsWithSemicolon && eosLines != null) {
 					eosLines.add(start - 1);
 				}
+				if (sLine.length() == 0) {
+					if (eosLines != null) {
+						eosLines.add(start - 2);
+						eosLines.add(-start);
+					}
+				}
 				if (sLine.length() == 0 || (singleStatement && endsWithSemicolon)) {
 					break;
 				}
@@ -446,6 +453,12 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 				if (endsWithSemicolon && eosLines != null) {
 					eosLines.add(end);
 				}
+				if (sLine.length() == 0) {
+					if (eosLines != null) {
+						eosLines.add(end - 1);
+						eosLines.add(-end - 1);
+					}
+				}
 				if (singleStatement && endsWithSemicolon) {
 					break;
 				}
@@ -464,6 +477,12 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 					boolean endsWithSemicolon = sLine.endsWith(";");
 					if (endsWithSemicolon) {
 						eosLines.add(l);
+					}
+					if (sLine.length() == 0) {
+						if (eosLines != null) {
+							eosLines.add(l - 1);
+							eosLines.add(-l - 1);
+						}
 					}
 					++l;
 				}
@@ -621,11 +640,18 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 				if (gutter != null) {
 					gutter.removeAllTrackingIcons();
 					try {
+						boolean el = false;
 						if (loc.a != loc.b || !getText(loc.a, loc.b, true).trim().isEmpty()) {
 							for (int l = loc.a; l <= loc.b; ++l) {
+								if (eosLines.contains(-l - 1)) {
+									// empty line
+									el = true;
+									continue;
+								}
 								ImageIcon theIcon;
-								boolean beginn = l == loc.a || eosLines.contains(l - 1);
+								boolean beginn = l == loc.a || eosLines.contains(l - 1) || el;
 								boolean end = l == loc.b || eosLines.contains(l);
+								el = false;
 								if (beginn) {
 									theIcon = end? iconBeginEnd : iconBegin;
 								} else if (end) {
