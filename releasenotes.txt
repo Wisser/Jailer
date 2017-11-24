@@ -1,3 +1,6 @@
+7.5.8
+  - SQLConsole: added ability to execute SQL fragments.
+
 7.5.7
   - Minor GUI improvements.
 

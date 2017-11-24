@@ -103,6 +103,10 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
     	    iconBegin = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebegin.png")));
 			iconBeginEnd = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginend.png")));
 			iconEnd = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsoleend.png")));
+			iconf = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolef.png")));
+    	    iconBeginf = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginf.png")));
+			iconBeginEndf = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsolebeginendf.png")));
+			iconEndf = scaleToLineHeight(new ImageIcon(MetaDataPanel.class.getResource(dir + "/sqlconsoleendf.png")));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -276,7 +280,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	}
 
 	/**
-	 * Gets statement(s) at caret position.
+	 * Replaces statement(s) at caret position.
 	 *
 	 * @param replacement
 	 *            the replacement
@@ -357,6 +361,34 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			return false;
 		}
 		return true;
+	}
+
+	/**
+	 * Gets start- and end-line number of statement fragment at caret position, if any.
+	 * 
+	 * @return pair of (start and end line number) and (begin- end-offset)
+	 */
+	public Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> getCurrentStatementFragmentLocation() {
+		int begin = Math.min(getCaret().getDot(), getCaret().getMark());
+		int end = Math.max(getCaret().getDot(), getCaret().getMark());
+		if (begin == end || end - begin > 1000000) {
+			return null;
+		}
+		Segment txt = new Segment();
+		try {
+			getDocument().getText(begin, end - begin, txt);
+			Pattern pattern = Pattern.compile("(\\n\\s*\\n)|(;\\s*(\\n\\r?|$))", Pattern.DOTALL);
+			Matcher matcher = pattern.matcher(txt);
+			if (!matcher.find()) {
+				return new Pair<Pair<Integer, Integer>, Pair<Integer, Integer>>(
+						new Pair<Integer, Integer>(getLineOfOffset(begin), getLineOfOffset(end)),
+						new Pair<Integer, Integer>(begin, end)
+						);
+			}
+		} catch (BadLocationException e) {
+			return null;
+		}
+		return null;
 	}
 
 	/**
@@ -571,7 +603,15 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 
 	public void updateMenuItemState(boolean allowRun, boolean setLineHighlights) {
 		Set<Integer> eosLines = new HashSet<Integer>();
-		Pair<Integer, Integer> loc = getCurrentStatementLocation(eosLines);
+		Pair<Integer, Integer> loc;
+		Pair<Integer, Integer> locFragmentOffset = null;
+		Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> locFragment = getCurrentStatementFragmentLocation();
+		if (locFragment != null) {
+			loc = locFragment.a;
+			locFragmentOffset = locFragment.b;
+		} else {
+			loc = getCurrentStatementLocation(eosLines);
+		}
 		runBlock.setEnabled(allowRun && loc != null && !isTextEmpty(loc.a, loc.b));
 		runAll.setEnabled(allowRun && RSyntaxTextAreaWithSQLSyntaxStyle.this.getDocument().getLength() > 0);
 		if (allowRun && setLineHighlights) {
@@ -593,19 +633,26 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 								} else {
 									theIcon = icon;
 								}
+								if (locFragmentOffset != null) {
+									if (theIcon == icon) {
+										theIcon = iconf;
+									}
+									if (theIcon == iconBegin) {
+										theIcon = iconBeginf;
+									}
+									if (theIcon == iconBeginEnd) {
+										theIcon = iconBeginEndf;
+									}
+									if (theIcon == iconEnd) {
+										theIcon = iconEndf;
+									}
+								}
 								gutter.addLineTrackingIcon(l, theIcon);
 							}
 						}
 					} catch (BadLocationException e) {
 					}
 				}
-//				for (int l = loc.a; l <= loc.b; ++l) {
-//					try {
-//						addLineHighlight(l, new Color(235, 255, 245));
-//					} catch (BadLocationException e) {
-//						e.printStackTrace();
-//					}
-//				}
 				if (loc.b - loc.a > 10000) {
 					stopped.set(false);
 					pending.set(true);
@@ -683,5 +730,9 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	private ImageIcon iconBegin;
 	private ImageIcon iconBeginEnd;
 	private ImageIcon iconEnd;
+	private ImageIcon iconf;
+	private ImageIcon iconBeginf;
+	private ImageIcon iconBeginEndf;
+	private ImageIcon iconEndf;
 
 }
