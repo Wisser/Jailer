@@ -340,8 +340,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	 * @param sqlBlock the sql block
 	 * @param location location of the block in the console
 	 * @param emptyLineSeparatesStatements 
+	 * @param locFragmentOffset location of statement fragment, if any
 	 */
-	protected void executeSQLBlock(final String sqlBlock, final Pair<Integer, Integer> location, final boolean emptyLineSeparatesStatements) {
+	protected void executeSQLBlock(final String sqlBlock, final Pair<Integer, Integer> location, final boolean emptyLineSeparatesStatements, final Pair<Integer, Integer> locFragmentOffset) {
 		if (!running.get()) {
 			int lineStartOffset = -1;
 			try {
@@ -380,17 +381,33 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						Matcher matcher = pattern.matcher(sqlBlock);
 						boolean result = matcher.find();
 						StringBuffer sb = new StringBuffer();
-						if (result) {
+						if (result || locFragmentOffset != null) {
 							do {
-								sb.setLength(0);
-								matcher.appendReplacement(sb, "");
-								String pureSql = sb.toString();
-								sb.append(matcher.group());
-								String sql = sb.toString();
+								String sql;
+								String pureSql;
+								if (locFragmentOffset != null) {
+									sql = sqlBlock;
+									pureSql = sqlBlock;
+								} else {
+									sb.setLength(0);
+									matcher.appendReplacement(sb, "");
+									pureSql = sb.toString();
+									sb.append(matcher.group());
+									sql = sb.toString();
+								}
 								status.linesExecuting += countLines(pureSql);
 								if (sql.trim().length() > 0) {
 									executeSQL(pureSql, status, lineStartOffset);
 									if (status.failed) {
+										if (locFragmentOffset != null) {
+											status.sqlFragment = sql;
+											if (status.errorPositionIsKnown) {
+												try {
+													status.errorPosition += locFragmentOffset.a - editorPane.getLineStartOffset(editorPane.getLineOfOffset(locFragmentOffset.a));
+												} catch (BadLocationException e) {
+												}
+											}
+										}
 										break;
 									}
 								}
@@ -398,6 +415,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 									lineStartOffset += sql.length();
 								}
 								status.linesExecuted += countLines(sql) - 1;
+								if (locFragmentOffset != null) {
+									break;
+								}
 								String terminator = matcher.group(1);
 								if (terminator != null && !terminator.contains("\n")) { // ';' without nl
 									status.linesExecuted++;
@@ -406,7 +426,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								result = matcher.find();
 							} while (result);
 						}
-						if (!status.failed) {
+						if (!status.failed && locFragmentOffset == null) {
 							sb.setLength(0);
 							matcher.appendTail(sb);
 							String sbToString = sb.toString();
@@ -645,6 +665,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		boolean hasUpdated = false;
 		long timeInMS;
 		Throwable error;
+		String sqlFragment;
 		Pair<Integer, Integer> location;
 
 		private synchronized void updateView(boolean force) {
@@ -687,7 +708,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 										if (errorLine >= 0) {
 											editorPane.setLineTrackingIcon(errorLine, scaledCancelIcon);
 										}
-										statusTextPane.setText(pos + error.getMessage());
+										statusTextPane.setText(pos + error.getMessage()
+												+ (sqlFragment == null? "" : 
+													"\nSQL: \"" + (sqlFragment.trim()) + "\""));
 									} else {
 										StringWriter sw = new StringWriter();
 										PrintWriter pw = new PrintWriter(sw);
@@ -1188,16 +1211,32 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	}
 
 	private void executeSelectedStatements() {
-		Pair<Integer, Integer> loc = editorPane.getCurrentStatementLocation(null);
+		String sql;
+		Pair<Integer, Integer> loc = null;
+		Pair<Integer, Integer> locFragmentOffset = null;
+		Pair<Pair<Integer, Integer>, Pair<Integer, Integer>> locFragment = editorPane.getCurrentStatementFragmentLocation();
+		if (locFragment != null) {
+			loc = locFragment.a;
+			locFragmentOffset = locFragment.b;
+			try {
+				sql = editorPane.getDocument().getText(locFragmentOffset.a, locFragmentOffset.b - locFragmentOffset.a);
+			} catch (BadLocationException e) {
+				e.printStackTrace();
+				return;
+			}
+		} else {
+			loc = editorPane.getCurrentStatementLocation(null);
+			sql = editorPane.getText(loc.a, loc.b, true);
+		}
 		if (loc != null) {
-			executeSQLBlock(editorPane.getText(loc.a, loc.b, true), loc, editorPane.getCaret().getDot() == editorPane.getCaret().getMark());
+			executeSQLBlock(sql, loc, true, locFragmentOffset);
 		}
 	}
 
 	private void executeAllStatements() {
 		if (editorPane.getLineCount() > 0) {
 			Pair<Integer, Integer> loc = new Pair<Integer, Integer>(0, editorPane.getLineCount() - 1);
-			executeSQLBlock(editorPane.getText(loc.a, loc.b, true), loc, false);
+			executeSQLBlock(editorPane.getText(loc.a, loc.b, true), loc, true, null);
 		}
 	}
 
