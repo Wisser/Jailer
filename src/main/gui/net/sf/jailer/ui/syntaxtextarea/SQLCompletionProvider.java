@@ -212,7 +212,6 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		aliases.putAll(userDefinedAliases);
 		Clause clause = currentClause(beforeCaret);
 		List<SQLCompletion> result = new ArrayList<SQLCompletion>();
-		withOnCompletions = false;
 		for (CompletionRetriever<TABLE, SOURCE> completionRetriever: completionRetrievers) {
 			List<SQLCompletion> compl = completionRetriever.retrieveCompletion(line, beforeCaret, clause, metaDataSource, indent, isCaretAtEOL);
 			if (compl != null) {
@@ -280,8 +279,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	}
 
 	private List<CompletionRetriever<TABLE, SOURCE>> completionRetrievers = new ArrayList<CompletionRetriever<TABLE, SOURCE>>();
-	boolean withOnCompletions = false;
-
+	
 	{
 		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
 			@Override
@@ -316,8 +314,9 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 							+ "$", Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
 					Matcher matcher = pattern.matcher(withoutOnClauses);
 	
+					boolean matchesJoinPattern = false;
 					if (matcher.matches() && !"join".equalsIgnoreCase(matcher.group(1)) && !"join".equalsIgnoreCase(matcher.group(2))) {
-						withOnCompletions = true;
+						matchesJoinPattern = true;
 						TABLE source = findAlias(matcher.group(1));
 						TABLE destination = findAlias(matcher.group(2));
 						if (source != null && destination != null) {
@@ -339,13 +338,16 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 								result.add(new SQLCompletion(SQLCompletionProvider.this, (endsWithOn? "" : "on ") + cond, (endsWithOn? "" : "on ") + cond + " ", a.getName(), color, cond));
 							}
 						}
-						return result;
+						if (!result.isEmpty()) {
+							return result;
+						}
 					}
 					
 					pattern = Pattern.compile(".*?(" + reIdentifier + ")\\s*(\\b(left|right|inner|outer)\\b\\s*)*\\bjoin\\b\\s*\\w*$", Pattern.CASE_INSENSITIVE|Pattern.DOTALL);
 					matcher = pattern.matcher(withoutOnClauses);
-	
+
 					if (matcher.matches()) {
+						matchesJoinPattern = true;
 						TABLE table = findAlias(matcher.group(1));
 						if (table != null) {
 							List<Association> associations = getAssociations(table, null);
@@ -383,13 +385,17 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 								result.add(new SQLCompletion(SQLCompletionProvider.this, Quoting.staticUnquote(dest), dest + " ", null, SQLCompletion.COLOR_TABLE));
 							}
 						}
-						return result;
+						if (!result.isEmpty()) {
+							return result;
+						}
 					}
 					
 					matcher = identWSWordPattern.matcher(beforeCaret);
 					if (matcher.matches() && !"from".equalsIgnoreCase(matcher.group(1)) && !"table".equalsIgnoreCase(matcher.group(1)) && !"update".equalsIgnoreCase(matcher.group(1))) {
-						notDotWord = true;
-						result.addAll(keywordCompletion("Join", "Left Join"));
+						if (!matchesJoinPattern) {
+							notDotWord = true;
+							result.addAll(keywordCompletion("Join", "Left Join"));
+						}
 					}
 				}
 				
@@ -630,9 +636,6 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 					case HAVING: return null;
 					case INTO: return keywordCompletion("Values", "Select");
 					case JOIN: 
-						if (!withOnCompletions) {
-//							return keywordCompletion("Where", "Group by");
-						}
 						break;
 					case ON: return keywordCompletion("Where", "Group by");
 					case ORDER: return null;
