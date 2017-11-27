@@ -194,7 +194,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 										.setBackground((row % 2 == 0) ? BG1
 												: BG2);
 							} else {
-								((JLabel) render).setBackground(new Color(160, 160, 255));
+								((JLabel) render).setBackground(new Color(160, 200, 255));
 							}
 							boolean inContext = isAssignedToDataModel(row);
 							if (inContext) {
@@ -203,6 +203,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 								((JLabel) render).setForeground(Color.gray);
 							}
 						}
+						((JLabel) render).setToolTipText(String.valueOf(value));
 						return render;
 					}
 				});
@@ -327,7 +328,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 									 getTableCellRendererComponent(
 											 connectionsTable, data[line][i],
 										 false, false, line, i);
-					width = Math.max(width, comp.getPreferredSize().width);
+					width = Math.max(width, Math.min(250, comp.getPreferredSize().width));
 				}
 				
 				column.setPreferredWidth(width);
