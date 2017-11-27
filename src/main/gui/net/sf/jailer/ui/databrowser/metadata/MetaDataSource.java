@@ -74,21 +74,6 @@ public class MetaDataSource {
 		readSchemas();
 	}
 
-	/**
-	 * Copy constructor.
-	 * 
-	 * @param metaDataSource to copy
-	 * @param dataModel different data model
-	 */
-	public MetaDataSource(MetaDataSource metaDataSource, DataModel dataModel) throws SQLException {
-		this.session = metaDataSource.session;
-		this.dataSourceName = metaDataSource.dataSourceName;
-		this.quoting = metaDataSource.quoting;
-		this.schemas = metaDataSource.schemas;
-		
-		initTableMapping(dataModel);
-	}
-
 	private void initTableMapping(DataModel dataModel) {
 		for (Table table: dataModel.getTables()) {
         	tablePerUnquotedName.put(unquotedTableName(table), table);
