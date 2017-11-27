@@ -2770,8 +2770,6 @@ public class DataBrowser extends javax.swing.JFrame {
 				if (metaDataSource == null || Boolean.TRUE.equals(session.getSessionProperty(DataBrowser.class, "removeMetaDataSource"))) {
 					metaDataSource = new MetaDataSource(newSession, datamodel.get(), alias, executionContext);
 					metaDataPanel = null;
-				} else {
-					metaDataSource = new MetaDataSource(metaDataSource, datamodel.get());
 				}
 				session.setSessionProperty(DataBrowser.class, "removeMetaDataSource", null);
 				newSession.setSessionProperty(DataBrowser.class, "MetaDataSource", metaDataSource);
