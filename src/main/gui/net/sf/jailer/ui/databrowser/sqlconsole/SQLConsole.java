@@ -416,6 +416,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								}
 								status.linesExecuted += countLines(sql) - 1;
 								if (locFragmentOffset != null) {
+									pattern = Pattern.compile("(\\n\\s*)$", Pattern.DOTALL);
+									matcher = pattern.matcher(sql);
+									if (!matcher.find()) {
+										status.linesExecuted++;
+									}
 									break;
 								}
 								String terminator = matcher.group(1);
@@ -1223,6 +1228,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			} catch (BadLocationException e) {
 				e.printStackTrace();
 				return;
+			}
+			if (loc.a < loc.b) {
+				Pattern pattern = Pattern.compile("(\\n\\s*)$", Pattern.DOTALL);
+				Matcher matcher = pattern.matcher(sql);
+				if (matcher.find()) {
+					loc = new Pair<Integer, Integer>(loc.a, loc.b - 1);
+				}
 			}
 		} else {
 			loc = editorPane.getCurrentStatementLocation(null);

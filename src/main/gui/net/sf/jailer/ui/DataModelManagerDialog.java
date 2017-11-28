@@ -96,6 +96,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 	private final ExecutionContext executionContext = new ExecutionContext(CommandLineInstance.getInstance());
 	
 	private DbConnectionDialog dbConnectionDialog;
+	private InfoBar infoBarConnection; 
 	
 	/** 
 	 * Creates new.
@@ -110,7 +111,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				"Select a data model to work with.");
 		UIUtil.replace(infoBarLabel, infoBar);
 		
-		InfoBar infoBarConnection = new InfoBar("Database Connection", 
+		infoBarConnection = new InfoBar("Database Connection", 
 				"Select a connection to the database.\n" +
 				"\n \n \n",
 				"Select a database to work with.");
@@ -130,23 +131,11 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 			}
 		}
 		
-		dbConnectionDialog = new DbConnectionDialog(null, JailerVersion.APPLICATION_NAME, infoBarConnection, executionContext, false) {
-			@Override
-			protected void onConnect(ConnectionInfo currentConnection) {
-				DataModelManager.setCurrentModelSubfolder(currentConnection.dataModelFolder, executionContext);
-				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-				onSelect(dbConnectionDialog, executionContext);
-				setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
-				DataModelManagerDialog.this.setVisible(false);
-				DataModelManagerDialog.this.dispose();
-			}			
-		};
-		connectionDialogPanel.add(dbConnectionDialog.mainPanel);		
-		
 		restore();
 		
 		loadModelList();
 		initTableModel();
+		initConnectionDialog();
 		
 		final TableCellRenderer defaultTableCellRenderer = dataModelsTable
 				.getDefaultRenderer(String.class);
@@ -184,7 +173,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 						} else {
 							currentModel = null;
 						}
-						refresh();
+						refreshButtons();
 					}
 				});
 		dataModelsTable.addMouseListener(new MouseAdapter() {
@@ -200,7 +189,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 					} else {
 						currentModel = null;
 					}
-					refresh();
+					refreshButtons();
 					if (currentModel != null) {
 						okButtonActionPerformed(null);
 					}
@@ -253,6 +242,31 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		okButton.grabFocus();
 	}
 
+	private void initConnectionDialog() {
+		dbConnectionDialog = new DbConnectionDialog(null, JailerVersion.APPLICATION_NAME, infoBarConnection, executionContext, false) {
+			@Override
+			protected boolean isAssignedToDataModel(String dataModelFolder) {
+				return modelList.contains(dataModelFolder);
+			}
+			@Override
+			protected void onConnect(ConnectionInfo currentConnection) {
+				if (!modelList.contains(currentConnection.dataModelFolder)) {
+					JOptionPane.showMessageDialog(DataModelManagerDialog.this,
+							"Data Model \"" + currentConnection.dataModelFolder + "\" does not exist.\n");
+				} else {
+					DataModelManager.setCurrentModelSubfolder(currentConnection.dataModelFolder, executionContext);
+					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+					onSelect(dbConnectionDialog, executionContext);
+					setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+					DataModelManagerDialog.this.setVisible(false);
+					DataModelManagerDialog.this.dispose();
+				}
+			}
+		};
+		connectionDialogPanel.removeAll();
+		connectionDialogPanel.add(dbConnectionDialog.mainPanel);
+	}
+	
 	private void updateLocationComboboxModel() {
 		List<String> existingBaseFolders = new ArrayList<String>();
 		for (String bf: baseFolders) {
@@ -364,13 +378,18 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				
 				column.setPreferredWidth(width);
 			}
-			editButton.setEnabled(currentModel != null);
-			deleteButton.setEnabled(currentModel != null);
-			okButton.setEnabled(currentModel != null);
-			analyzeButton.setEnabled(currentModel != null);
+			refreshButtons();
+			initConnectionDialog();
 		} finally {
 			inRefresh = false;
 		}
+	}
+
+	private void refreshButtons() {
+		editButton.setEnabled(currentModel != null);
+		deleteButton.setEnabled(currentModel != null);
+		okButton.setEnabled(currentModel != null);
+		analyzeButton.setEnabled(currentModel != null);
 	}
 	
 	/**

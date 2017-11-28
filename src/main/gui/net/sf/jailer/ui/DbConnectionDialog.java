@@ -222,7 +222,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 							if (row >= 0 && row < connectionList.size()) {
 								selectedRowIndex = rowSorter.convertRowIndexToModel(row);
 							}
-							boolean inContext = !DbConnectionDialog.this.dataModelAware || isAssignedToDataModel(selectedRowIndex);
+							boolean inContext = isAssignedToDataModel(selectedRowIndex);
 							if (inContext) {
 								((JLabel) render).setForeground(Color.black);
 							} else {
@@ -373,7 +373,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			editButton.setEnabled(currentConnection != null);
 			deleteButton.setEnabled(currentConnection != null);
 			copy.setEnabled(currentConnection != null);
-			jButton1.setEnabled(currentConnection != null && selectedRowIndex >= 0 && selectedRowIndex < connectionList.size() && (!dataModelAware || isAssignedToDataModel(selectedRowIndex)));
+			jButton1.setEnabled(currentConnection != null && selectedRowIndex >= 0 && selectedRowIndex < connectionList.size() && isAssignedToDataModel(selectedRowIndex));
 		} finally {
 			inRefresh = false;
 		}
@@ -510,6 +510,12 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 						if (c1 && !c2) return -1;
 						if (!c1 && c2) return 1;
 					}
+				} else {
+					boolean c1 = isAssignedToDataModel(o1.dataModelFolder);
+					boolean c2 = isAssignedToDataModel(o2.dataModelFolder);
+					
+					if (c1 && !c2) return -1;
+					if (!c1 && c2) return 1;
 				}
 				return o1.alias.compareToIgnoreCase(o2.alias);
 			}
@@ -999,8 +1005,12 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 			return false;
 		}
 		String rowFN = connectionList.get(row).dataModelFolder;
+		return isAssignedToDataModel(rowFN);
+	}
+
+	protected boolean isAssignedToDataModel(String dataModelFolder) {
 		String fn = currentModelSubfolder;
-		return fn == null && rowFN == null || (fn != null && fn.equals(rowFN));
+		return fn == null && dataModelFolder == null || (fn != null && fn.equals(dataModelFolder));
 	}
 
 	private static final long serialVersionUID = -3983034803834547687L;
