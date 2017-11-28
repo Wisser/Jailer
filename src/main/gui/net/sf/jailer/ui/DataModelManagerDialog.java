@@ -55,6 +55,7 @@ import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.JailerVersion;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.util.CancellationHandler;
@@ -94,6 +95,8 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 
 	private final ExecutionContext executionContext = new ExecutionContext(CommandLineInstance.getInstance());
 	
+	private DbConnectionDialog dbConnectionDialog;
+	
 	/** 
 	 * Creates new.
 	 */
@@ -107,18 +110,38 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 				"Select a data model to work with.");
 		UIUtil.replace(infoBarLabel, infoBar);
 		
+		InfoBar infoBarConnection = new InfoBar("Database Connection", 
+				"Select a connection to the database.\n" +
+				"\n \n \n",
+				"Select a database to work with.");
+		
 		try {
 			ImageIcon imageIcon = new ImageIcon(getClass().getResource("/net/sf/jailer/ui/resource/jailer.png"));
 			setIconImage(imageIcon.getImage());
 			infoBar.setIcon(imageIcon);
+			infoBarConnection.setIcon(imageIcon);
 		} catch (Throwable t) {
 			try {
 				ImageIcon imageIcon = new ImageIcon(getClass().getResource("/net/sf/jailer/ui/resource/jailer.gif"));
 				setIconImage(imageIcon.getImage());
 				infoBar.setIcon(imageIcon);
+				infoBarConnection.setIcon(imageIcon);
 			} catch (Throwable t2) {
 			}
 		}
+		
+		dbConnectionDialog = new DbConnectionDialog(null, JailerVersion.APPLICATION_NAME, infoBarConnection, executionContext, false) {
+			@Override
+			protected void onConnect(ConnectionInfo currentConnection) {
+				DataModelManager.setCurrentModelSubfolder(currentConnection.dataModelFolder, executionContext);
+				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				onSelect(dbConnectionDialog, executionContext);
+				setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
+				DataModelManagerDialog.this.setVisible(false);
+				DataModelManagerDialog.this.dispose();
+			}			
+		};
+		connectionDialogPanel.add(dbConnectionDialog.mainPanel);		
 		
 		restore();
 		
@@ -136,13 +159,17 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 							boolean hasFocus, int row, int column) {
 						Component render = defaultTableCellRenderer
 								.getTableCellRendererComponent(table, value,
-										isSelected, hasFocus, row, column);
-						if (render instanceof JLabel && !isSelected) {
+										false, hasFocus, row, column);
+						if (render instanceof JLabel) {
 							final Color BG1 = new Color(255, 255, 255);
 							final Color BG2 = new Color(230, 255, 255);
-							((JLabel) render)
+							if (!isSelected) {
+								((JLabel) render)
 									.setBackground((row % 2 == 0) ? BG1
 											: BG2);
+							} else {
+								((JLabel) render).setBackground(new Color(160, 200, 255));
+							}
 						}
 						return render;
 					}
@@ -220,7 +247,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		
 		setLocation(80, 130);
 		pack();
-		setSize(Math.max(740, getWidth()), 400);
+		setSize(Math.max(740, getWidth()), 450);
 		refresh();
 		UIUtil.initPeer();
 		okButton.grabFocus();
@@ -249,7 +276,7 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		Collections.sort(modelList, new Comparator<String>() {
 			@Override
 			public int compare(String o1, String o2) {
-				return modelDetails.get(o1).a.compareTo(modelDetails.get(o2).a);
+				return modelDetails.get(o1).a.compareToIgnoreCase(modelDetails.get(o2).a);
 			}
 		});
 	}
@@ -419,11 +446,12 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jPanel4 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        locationComboBox = new JComboBox();
+        locationComboBox = new javax.swing.JComboBox();
         browseButton = new javax.swing.JButton();
         jSeparator1 = new javax.swing.JSeparator();
         jButton2 = new javax.swing.JButton();
@@ -436,10 +464,12 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         analyzeButton = new javax.swing.JButton();
         deleteButton = new javax.swing.JButton();
         infoBarLabel = new javax.swing.JLabel();
+        jPanel5 = new javax.swing.JPanel();
+        connectionDialogPanel = new javax.swing.JPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
         setTitle("Connect with DB");
-        getContentPane().setLayout(new java.awt.CardLayout());
+        getContentPane().setLayout(new java.awt.GridBagLayout());
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -607,7 +637,28 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         jPanel1.add(infoBarLabel, gridBagConstraints);
 
-        getContentPane().add(jPanel1, "card2");
+        jTabbedPane1.addTab("Data Model", jPanel1);
+
+        jPanel5.setLayout(new java.awt.GridBagLayout());
+
+        connectionDialogPanel.setLayout(new java.awt.BorderLayout());
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 10;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel5.add(connectionDialogPanel, gridBagConstraints);
+
+        jTabbedPane1.addTab("Connection", jPanel5);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        getContentPane().add(jTabbedPane1, gridBagConstraints);
 
         pack();
     }// </editor-fold>//GEN-END:initComponents
@@ -770,17 +821,18 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
 		hasSelectedModel = true;
 		setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 		store();
-		onSelect(executionContext);
+		onSelect(null, executionContext);
 		setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 		setVisible(false);
 		dispose();
 	}// GEN-LAST:event_okButtonActionPerformed
 
-	protected abstract void onSelect(ExecutionContext executionContext);
+	protected abstract void onSelect(DbConnectionDialog dbConnectionDialog, ExecutionContext executionContext);
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton analyzeButton;
     private javax.swing.JButton browseButton;
+    private javax.swing.JPanel connectionDialogPanel;
     private javax.swing.JTable dataModelsTable;
     private javax.swing.JButton deleteButton;
     private javax.swing.JButton editButton;
@@ -791,9 +843,11 @@ public abstract class DataModelManagerDialog extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JSeparator jSeparator1;
-    private JComboBox locationComboBox;
+    private javax.swing.JTabbedPane jTabbedPane1;
+    private javax.swing.JComboBox locationComboBox;
     private javax.swing.JButton newButton;
     private javax.swing.JButton okButton;
     // End of variables declaration//GEN-END:variables
