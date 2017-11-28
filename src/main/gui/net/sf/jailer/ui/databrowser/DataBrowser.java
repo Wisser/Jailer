@@ -1923,6 +1923,8 @@ public class DataBrowser extends javax.swing.JFrame {
         } else {
             if (dbConnectionDialog.isConnected) {
                 dataBrowser.setConnection(dbConnectionDialog);
+            } else {
+            	dataBrowser.dbConnectionDialog = dbConnectionDialog;
             }
             for (int i = 0; i < dataBrowser.menuBar.getMenuCount(); ++i) {
                 JMenu menu = dataBrowser.menuBar.getMenu(i);
@@ -1945,11 +1947,11 @@ public class DataBrowser extends javax.swing.JFrame {
         DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(DataBrowserContext.getAppName(true)
                 + " - Relational Data Browser") {
             @Override
-            protected void onSelect(ExecutionContext executionContext) {
+            protected void onSelect(DbConnectionDialog connectionDialog, ExecutionContext executionContext) {
                 try {
                     final DataModel datamodel;
                     datamodel = new DataModel(executionContext);
-                    openNewDataBrowser(datamodel, null, true, executionContext);
+                    openNewDataBrowser(datamodel, connectionDialog, true, executionContext);
                 } catch (Exception e) {
                     UIUtil.showException(null, "Error", e);
                 }
@@ -2400,7 +2402,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				try {
 					setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 					if (dataModelViewFrame == null) {
-						dataModelViewFrame = ExtractionModelFrame.createFrame(null, false, false, executionContext);
+						dataModelViewFrame = ExtractionModelFrame.createFrame(null, false, false, null, executionContext);
 						JComponent graphViewContainer = dataModelViewFrame.tearOutGraphViewContainer();
 						dataModelPanel.removeAll();
 						dataModelPanel.add(graphViewContainer);

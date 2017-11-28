@@ -117,7 +117,7 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 * The execution context.
 	 */
 	private final ExecutionContext executionContext;
-	
+
 	/**
 	 *  Creates new form ExtractionModelFrame.
 	 *  
@@ -125,6 +125,16 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 	 *  @param isHorizonal 
 	 */
 	public ExtractionModelFrame(String extractionModelFile, boolean isHorizonal, ExecutionContext executionContext) {
+		this(extractionModelFile, isHorizonal, null, executionContext);
+	}
+
+	/**
+	 *  Creates new form ExtractionModelFrame.
+	 *  
+	 *  @param extractionModelFile file containing the model, <code>null</code> for new model
+	 *  @param isHorizonal 
+	 */
+	public ExtractionModelFrame(String extractionModelFile, boolean isHorizonal, DbConnectionDialog initDbConnectionDialog, ExecutionContext executionContext) {
 		this.executionContext = executionContext;
 		initComponents();
 		initSandbox();
@@ -135,7 +145,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		extractionModelEditor.extractionModelFile = extractionModelFile;
 		pack();
 		updateTitle(extractionModelEditor.needsSave);
-		dbConnectionDialog = new DbConnectionDialog(this, JailerVersion.APPLICATION_NAME, null, executionContext);
+		if (initDbConnectionDialog != null) {
+			dbConnectionDialog = new DbConnectionDialog(this, initDbConnectionDialog, JailerVersion.APPLICATION_NAME, executionContext);
+		} else {
+			dbConnectionDialog = new DbConnectionDialog(this, JailerVersion.APPLICATION_NAME, null, executionContext);
+		}
 
 		// L&F can no longer be changed
 		view.setVisible(false);
@@ -1752,9 +1766,9 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 		}
 	}
 
-	public static ExtractionModelFrame createFrame(String file, boolean maximize, boolean visible, ExecutionContext executionContext) {
+	public static ExtractionModelFrame createFrame(String file, boolean maximize, boolean visible, DbConnectionDialog connectionDialog, ExecutionContext executionContext) {
 		boolean isHorizonal = false;
-		ExtractionModelFrame extractionModelFrame = new ExtractionModelFrame(file, isHorizonal, executionContext);
+		ExtractionModelFrame extractionModelFrame = new ExtractionModelFrame(file, isHorizonal, connectionDialog, executionContext);
 		try {
 			extractionModelFrame.setIconImage(new ImageIcon(extractionModelFrame.getClass().getResource("/net/sf/jailer/ui/resource/jailer.png")).getImage());
 		} catch (Throwable t) {
@@ -1784,14 +1798,14 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 			if (file != null && new File(file).exists()) {
 				ExecutionContext executionContext = new ExecutionContext(CommandLineInstance.getInstance());
 				DataModelManager.setCurrentModelSubfolder(ExtractionModel.loadDatamodelFolder(file, executionContext), executionContext);
-				createFrame(finalFile, true, true, executionContext);
+				createFrame(finalFile, true, true, null, executionContext);
 			} else {
 				DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(JailerVersion.APPLICATION_NAME + " " + JailerVersion.VERSION + " - Database Subsetting Tool") {
 					@Override
-					protected void onSelect(ExecutionContext executionContext) {
+					protected void onSelect(DbConnectionDialog connectionDialog, ExecutionContext executionContext) {
 						ExtractionModelFrame extractionModelFrame = null;
 						try {
-							extractionModelFrame = createFrame(finalFile, true, true, executionContext);
+							extractionModelFrame = createFrame(finalFile, true, true, connectionDialog, executionContext);
 							final ExtractionModelFrame finalExtractionModelFrame = extractionModelFrame;
 							SwingUtilities.invokeLater(new Runnable() {
 								@Override

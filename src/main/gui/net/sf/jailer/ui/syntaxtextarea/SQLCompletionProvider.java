@@ -18,6 +18,7 @@ package net.sf.jailer.ui.syntaxtextarea;
 import java.awt.Color;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -60,7 +61,8 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	private Quoting quoting;
 	private Map<String, TABLE> userDefinedAliases = new HashMap<String, TABLE>();
 	private Map<String, TABLE> aliases = new LinkedHashMap<String, TABLE>();
-
+	private Map<String, TABLE> aliasesTopLevel = new LinkedHashMap<String, TABLE>();
+	
 	/**
 	 * @param session
 	 *            the session
@@ -208,8 +210,10 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 			}
 		}
 		aliases.clear();
-		aliases.putAll(findAliases(afterCaret != null? beforeCaret + "=" + afterCaret : line));
+		aliasesTopLevel.clear();
+		aliases.putAll(findAliases(afterCaret != null? beforeCaret + "=" + afterCaret : line, aliasesTopLevel));
 		aliases.putAll(userDefinedAliases);
+		aliasesTopLevel.putAll(userDefinedAliases);
 		Clause clause = currentClause(beforeCaret);
 		List<SQLCompletion> result = new ArrayList<SQLCompletion>();
 		for (CompletionRetriever<TABLE, SOURCE> completionRetriever: completionRetrievers) {
@@ -406,6 +410,42 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 						result.addAll(schemaCompletions(schema));
 					}
 				} else if (!notDotWord && clause != Clause.ON) {
+					if (clause == Clause.INTO) {
+						String reIdentIntoPattern = ".*?(?:(" + reIdentifier + ")\\s*\\.\\s*)?(" + reIdentifier + ")(\\s*\\(?\\s*)$";
+						Pattern identIntoPattern = Pattern.compile(reIdentIntoPattern, Pattern.DOTALL);
+
+						matcher = identIntoPattern.matcher(beforeCaret);
+						if (matcher.matches()) {
+							if (matcher.group(3) != null || matcher.group(3).length() > 0) {
+								String schema = matcher.group(1);
+								String table = matcher.group(2);
+								SCHEMA mdSchema = null;
+								if (schema != null) {
+									mdSchema = findSchema(metaDataSource, schema);
+								} else {
+									mdSchema = getDefaultSchema(metaDataSource);
+								}
+								if (mdSchema != null) {
+									TABLE mdTable = findTable(mdSchema, table);
+									if (mdTable != null) {
+										Map<String, Integer> countMap = new HashMap<String, Integer>();
+										countMap.put(getTableName(mdTable), 1);
+										String intoList = createStarReplacement(Collections.singletonList(mdTable), Collections.singletonList(getTableName(mdTable)), null, countMap, "", true).trim();
+										if (intoList.length() > 100 && indent.length() < 60) {
+											intoList = createStarReplacement(Collections.singletonList(mdTable), Collections.singletonList(getTableName(mdTable)), null, countMap, indent, true).trim();
+										}
+										if (matcher.group(3) == null || !matcher.group(3).contains("(")) {
+											intoList = "(" + intoList;
+										}
+										intoList += ") ";
+										result.add(new SQLCompletion(SQLCompletionProvider.this, intoList, intoList, intoList, SQLCompletion.COLOR_COLUMN));
+										return result;
+									}
+								}
+							}
+						}
+					}
+					
 					// all tables in default schema
 					SCHEMA schema = getDefaultSchema(metaDataSource);
 					if (schema != null) {
@@ -481,7 +521,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 								tables.add(table);
 							}
 						} else {
-							for (Entry<String, TABLE> entry: aliases.entrySet()) {
+							for (Entry<String, TABLE> entry: aliasesTopLevel.entrySet()) {
 								tables.add(entry.getValue());
 								tableNames.add(entry.getKey());
 							}
@@ -552,75 +592,6 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 				}
 				return result;
 			}
-
-			public String createStarReplacement(List<TABLE> tables, List<String> tableNames, String alias,
-					Map<String, Integer> countMap, String indent, boolean isCaretAtEOL) {
-				Map<String, Integer> count = new HashMap<String, Integer>(countMap);
-				Set<String> allColumnNames = new HashSet<String>();
-				for (int i = 0; i < tables.size(); ++i) {
-					TABLE table = tables.get(i);
-					for (String column: getAndWaitForColumns(table)) {
-						allColumnNames.add(Quoting.staticUnquote(column).toUpperCase(Locale.ENGLISH));
-					}
-				}
-				StringBuilder sb = new StringBuilder();
-				for (int i = 0; i < tables.size(); ++i) {
-					TABLE table = tables.get(i);
-					for (String column: getAndWaitForColumns(table)) {
-						for (;;) {
-							String suffix = "";
-							String unquotedColumn = Quoting.staticUnquote(column).toUpperCase(Locale.ENGLISH);
-							if (count.containsKey(unquotedColumn)) {
-								int nr = count.get(unquotedColumn);
-								if (nr != 1) {
-									if (nr > 1) {
-										suffix = "_" + (nr - 1);
-									} else {
-										suffix = "_" + nr;
-									}
-								}
-								count.put(unquotedColumn, nr + 1);
-							}
-							String columnWithSuffix;
-							if (suffix.isEmpty() || column.isEmpty() || column.charAt(0) != column.charAt(column.length() - 1) || !Quoting.isPotentialIdentifierQuote(column.charAt(0))) {
-								columnWithSuffix = column + suffix;
-							} else {
-								columnWithSuffix = column.substring(0, column.length() - 1) + suffix + column.charAt(column.length() - 1);
-							}
-							String unquotedColumnWithSuffix = Quoting.staticUnquote(columnWithSuffix).toUpperCase(Locale.ENGLISH);
-							if (!suffix.isEmpty()) {
-								if (allColumnNames.contains(unquotedColumnWithSuffix)) {
-									continue;
-								}
-							}
-							if (sb.length() > 0) {
-								sb.append(", " + indent);
-							}
-							if (alias != null) {
-								if (sb.length() > 0) {
-									sb.append(alias + ".");
-								}
-							} else {
-								sb.append(tableNames.get(i) + ".");
-							}
-							if (column.equals(columnWithSuffix)) {
-								sb.append(column);
-							} else {
-								sb.append(column + " as " + columnWithSuffix);
-							}
-							allColumnNames.add(unquotedColumnWithSuffix);
-							break;
-						}
-					}
-				}
-				if (isCaretAtEOL) {
-					sb.append(" ");
-				} else if (indent.length() > 2) {
-					sb.append(indent.substring(0, indent.length() - 2));
-				}
-				String replacement = sb.toString();
-				return replacement;
-			}
 		});
 		completionRetrievers.add(new CompletionRetriever<TABLE, SOURCE>() {
 			@Override
@@ -652,7 +623,78 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 			}
 		});
 	}
-
+	
+	public String createStarReplacement(List<TABLE> tables, List<String> tableNames, String alias,
+			Map<String, Integer> countMap, String indent, boolean isCaretAtEOL) {
+		Map<String, Integer> count = new HashMap<String, Integer>(countMap);
+		Set<String> allColumnNames = new HashSet<String>();
+		for (int i = 0; i < tables.size(); ++i) {
+			TABLE table = tables.get(i);
+			for (String column: getAndWaitForColumns(table)) {
+				allColumnNames.add(Quoting.staticUnquote(column).toUpperCase(Locale.ENGLISH));
+			}
+		}
+		StringBuilder sb = new StringBuilder();
+		for (int i = 0; i < tables.size(); ++i) {
+			TABLE table = tables.get(i);
+			for (String column: getAndWaitForColumns(table)) {
+				for (;;) {
+					String suffix = "";
+					String unquotedColumn = Quoting.staticUnquote(column).toUpperCase(Locale.ENGLISH);
+					if (count.containsKey(unquotedColumn)) {
+						int nr = count.get(unquotedColumn);
+						if (nr != 1) {
+							if (nr > 1) {
+								suffix = "_" + (nr - 1);
+							} else {
+								suffix = "_" + nr;
+							}
+						}
+						count.put(unquotedColumn, nr + 1);
+					}
+					String columnWithSuffix;
+					if (suffix.isEmpty() || column.isEmpty() || column.charAt(0) != column.charAt(column.length() - 1) || !Quoting.isPotentialIdentifierQuote(column.charAt(0))) {
+						columnWithSuffix = column + suffix;
+					} else {
+						columnWithSuffix = column.substring(0, column.length() - 1) + suffix + column.charAt(column.length() - 1);
+					}
+					String unquotedColumnWithSuffix = Quoting.staticUnquote(columnWithSuffix).toUpperCase(Locale.ENGLISH);
+					if (!suffix.isEmpty()) {
+						if (allColumnNames.contains(unquotedColumnWithSuffix)) {
+							continue;
+						}
+					}
+					if (sb.length() > 0) {
+						sb.append(", " + indent);
+					}
+					if (alias != null) {
+						if (sb.length() > 0) {
+							sb.append(alias + ".");
+						}
+					} else {
+						if (tableNames.size() > 1) {
+							sb.append(tableNames.get(i) + ".");
+						}
+					}
+					if (column.equals(columnWithSuffix)) {
+						sb.append(column);
+					} else {
+						sb.append(column + " as " + columnWithSuffix);
+					}
+					allColumnNames.add(unquotedColumnWithSuffix);
+					break;
+				}
+			}
+		}
+		if (isCaretAtEOL) {
+			sb.append(" ");
+		} else if (indent.length() > 2) {
+			sb.append(indent.substring(0, indent.length() - 2));
+		}
+		String replacement = sb.toString();
+		return replacement;
+	}
+	
 	private List<SQLCompletion> tableCompletions(TABLE context) {
 		List<SQLCompletion> newCompletions = new ArrayList<SQLCompletion>();
 		if (context != null) {
@@ -742,7 +784,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		return reduced;
 	}
 
-	private Map<String, TABLE> findAliases(String statement) {
+	private Map<String, TABLE> findAliases(String statement, Map<String, TABLE> aliasesOnTopLevel) {
 		Map<String, TABLE> aliases = new LinkedHashMap<String, TABLE>();
 		Pattern pattern = Pattern.compile("(?:\\bas\\b)|(" + reClauseKW + ")|(,|\\(|\\)|=|<|>|!|\\.|\\b(?:on|where|left|right|full|inner|outer|join|and|or|not)\\b)|(" + reIdentifier + ")", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
 		Matcher matcher = pattern.matcher(statement + ")");
@@ -763,13 +805,6 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 					}
 				}
 				
-				if (keyword != null) {
-					if ("(".equals(keyword)) {
-						++level;
-					} else if (")".equals(keyword)) {
-						--level;
-					}
-				}
 				boolean clear = false;
 				if (inFrom) {
 					if (keyword != null) {
@@ -862,8 +897,26 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 					inFrom = "from".equalsIgnoreCase(clause) || "update".equalsIgnoreCase(clause);
 					clear = true;
 				}
+				if (keyword != null) {
+					if ("(".equals(keyword)) {
+						++level;
+					} else if (")".equals(keyword)) {
+						--level;
+					}
+				}
 				result = matcher.find();
 			} while (result);
+		}
+		int maxLevel = 0;
+		for (Integer l: levelPerAlias.values()) {
+			if (l > maxLevel) {
+				maxLevel = l;
+			}
+		}
+		for (Entry<String, Integer> e: levelPerAlias.entrySet()) {
+			if (e.getValue() == maxLevel) {
+				aliasesOnTopLevel.put(e.getKey(), aliases.get(e.getKey()));
+			}
 		}
 		return aliases;
 	}
