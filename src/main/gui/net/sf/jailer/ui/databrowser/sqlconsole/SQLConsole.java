@@ -55,11 +55,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Segment;
 
-import org.fife.ui.autocomplete.AutoCompletion;
-import org.fife.ui.autocomplete.BasicCompletion;
-import org.fife.ui.autocomplete.Completion;
-import org.fife.ui.autocomplete.CompletionCellRenderer;
-import org.fife.ui.autocomplete.Util;
 import org.fife.ui.rtextarea.RTextScrollPane;
 
 import net.sf.jailer.ExecutionContext;
@@ -88,7 +83,7 @@ import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
-import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
+import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
@@ -225,54 +220,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		restoreHistory();
 		
 		provider = new MetaDataBasedSQLCompletionProvider(session, metaDataSource);
-		AutoCompletion ac = new AutoCompletion(provider);
-		ac.install(editorPane);
-		
-		ac.setListCellRenderer(new CompletionCellRenderer() {
-			@Override
-			public Component getListCellRendererComponent(JList list, Object value, int index, boolean selected,
-					boolean hasFocus) {
-				Component c = super.getListCellRendererComponent(list, value, index, selected, hasFocus);
-				if (c instanceof JLabel && value instanceof SQLCompletionProvider.SQLCompletion) {
-					((JLabel) c).setToolTipText(((SQLCompletionProvider.SQLCompletion) value).tooltip);
-				}
-				return c;
-			}
+		new SQLAutoCompletion(provider, editorPane);
 
-			protected void prepareForOtherCompletion(JList list,
-				Completion c, int index, boolean selected, boolean hasFocus) {
-
-				Color color = null;
-				if (c instanceof SQLCompletionProvider.SQLCompletion) {
-					color = ((SQLCompletionProvider.SQLCompletion) c).color;
-				}
-				
-				StringBuilder sb = new StringBuilder("<html><nobr>");
-				if (!selected && color != null) {
-					sb.append("<font color='").append(Util.getHexString(color)).append("'>");
-				}
-				sb.append(c.getInputText());
-				if (!selected && color != null) {
-					sb.append("</font>");
-				}
-
-				if (c instanceof BasicCompletion) {
-					String definition = ((BasicCompletion)c).getShortDescription();
-					if (definition!=null) {
-						sb.append(" - ");
-						if (!selected) {
-							sb.append("<font color='").append(Util.getHexString(Color.gray)).append("'>");
-						}
-						sb.append(definition);
-						if (!selected) {
-							sb.append("</font>");
-						}
-					}
-				}
-				
-				setText(sb.toString());
-			}
-		});
 		RTextScrollPane jScrollPane = new RTextScrollPane();
 		jScrollPane.setViewportView(editorPane);
 		editorPane.setGutter(jScrollPane.getGutter());

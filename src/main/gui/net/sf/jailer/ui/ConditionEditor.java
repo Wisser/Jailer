@@ -39,6 +39,7 @@ import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
 
 /**
@@ -88,8 +89,7 @@ public class ConditionEditor extends javax.swing.JDialog {
 			try {
 				provider = new DataModelBasedSQLCompletionProvider(null, dataModel);
 				provider.setDefaultClause(SQLCompletionProvider.Clause.WHERE);
-				AutoCompletion ac = new AutoCompletion(provider);
-				ac.install(editorPane);
+				new SQLAutoCompletion(provider, editorPane);
 			} catch (SQLException e) {
 			}
 		}
