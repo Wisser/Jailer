@@ -54,7 +54,6 @@ import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.databrowser.BrowserContentPane;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.LoadJob;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
-import net.sf.jailer.ui.databrowser.QueryBuilderPathSelector;
 import net.sf.jailer.ui.databrowser.Reference;
 import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
@@ -226,10 +225,6 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 					}
 					@Override
 					protected PriorityBlockingQueue<RunnableWithPriority> getRunnableQueue() {
-						return null;
-					}
-					@Override
-					protected QueryBuilderPathSelector getQueryBuilderPathSelector() {
 						return null;
 					}
 					@Override

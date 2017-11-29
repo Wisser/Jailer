@@ -9,8 +9,6 @@ svn checkout --username=rwisser https://svn.code.sf.net/p/jailer/code/trunk
 cd ..
 mv $1.co/trunk/* jailer
 cd jailer
-sed "s/new javax.swing.JComboBox()/new net.sf.jailer.ui.JComboBox()/g" src/main/gui/net/sf/jailer/ui/*.java --in-place
-sed "s/new javax.swing.JComboBox()/new net.sf.jailer.ui.JComboBox()/g" src/main/gui/net/sf/jailer/ui/databrowser/*.java --in-place
 find -iname ".svn" -exec rm -rf '{}' \;
 
 ant package
