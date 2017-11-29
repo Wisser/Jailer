@@ -58,6 +58,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.MetaDataBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 import net.sf.jailer.util.SqlUtil;
 
 /**
@@ -135,8 +136,7 @@ public class QueryBuilderDialog extends javax.swing.JDialog {
 			}
 			
 			if (provider != null) {
-				AutoCompletion ac = new AutoCompletion(provider);
-				ac.install(sqlTextArea);
+				autoCompletion = new SQLAutoCompletion(provider, sqlTextArea);
 			}
 		} catch (SQLException e1) {
 		}

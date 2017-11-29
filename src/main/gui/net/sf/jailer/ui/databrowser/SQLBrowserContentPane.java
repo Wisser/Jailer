@@ -21,7 +21,6 @@ import java.sql.SQLException;
 import javax.swing.JInternalFrame;
 import javax.swing.JScrollPane;
 
-import org.fife.ui.autocomplete.AutoCompletion;
 import org.fife.ui.autocomplete.CompletionProvider;
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
 
@@ -31,6 +30,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.MetaDataBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.DataModelBasedSQLCompletionProvider;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
+import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
 
 /**
  * Content UI of a row browser frame in SQL mode (as {@link JInternalFrame}s). Contains a
@@ -62,8 +62,7 @@ public class SQLBrowserContentPane extends javax.swing.JPanel {
 			}
 			
 			if (provider != null) {
-				AutoCompletion ac = new AutoCompletion(provider);
-				ac.install(sqlEditorPane);
+				new SQLAutoCompletion(provider, sqlEditorPane);
 			}
 		} catch (SQLException e1) {
 		}
