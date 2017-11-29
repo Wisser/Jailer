@@ -75,7 +75,6 @@ import net.sf.jailer.ui.databrowser.BrowserContentPane.LoadJob;
 import net.sf.jailer.ui.databrowser.DataBrowser;
 import net.sf.jailer.ui.databrowser.Desktop;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
-import net.sf.jailer.ui.databrowser.QueryBuilderPathSelector;
 import net.sf.jailer.ui.databrowser.Reference;
 import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.databrowser.metadata.MDSchema;
@@ -1012,10 +1011,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		@Override
 		protected PriorityBlockingQueue<RunnableWithPriority> getRunnableQueue() {
 			return Desktop.runnableQueue;
-		}
-		@Override
-		protected QueryBuilderPathSelector getQueryBuilderPathSelector() {
-			return null;
 		}
 		@Override
 		protected QueryBuilderDialog getQueryBuilderDialog() {

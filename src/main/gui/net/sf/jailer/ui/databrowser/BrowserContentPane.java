@@ -4022,7 +4022,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	protected abstract void findClosure(Row row, Set<Pair<BrowserContentPane, Row>> closure, boolean forward);
 
 	protected abstract QueryBuilderDialog getQueryBuilderDialog();
-	protected abstract QueryBuilderPathSelector getQueryBuilderPathSelector();
 
 	protected abstract void openSchemaMappingDialog();
 	protected abstract void openSchemaAnalyzer();

@@ -167,7 +167,6 @@ public abstract class Desktop extends JDesktopPane {
 	private Set<Pair<BrowserContentPane, String>> currentClosureRowIDs = new HashSet<Pair<BrowserContentPane, String>>();
 
 	private final QueryBuilderDialog queryBuilderDialog;
-	private final QueryBuilderPathSelector queryBuilderPathSelector;
 
 	private Method getPreciseWheelRotation; 
 	
@@ -187,7 +186,6 @@ public abstract class Desktop extends JDesktopPane {
 		this.datamodel = datamodel;
 		this.jailerIcon = jailerIcon;
 		this.queryBuilderDialog = new QueryBuilderDialog(parentFrame);
-		this.queryBuilderPathSelector = new QueryBuilderPathSelector(parentFrame, true);
 		this.dbConnectionDialog = dbConnectionDialog;
 
 		this.queryBuilderDialog.sqlEditButton.setVisible(true);
@@ -524,11 +522,6 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			protected QueryBuilderDialog getQueryBuilderDialog() {
 				return queryBuilderDialog;
-			}
-
-			@Override
-			protected QueryBuilderPathSelector getQueryBuilderPathSelector() {
-				return queryBuilderPathSelector;
 			}
 
 			@Override
