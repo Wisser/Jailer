@@ -423,69 +423,107 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 				if (endsWithSemicolon && eosLines != null) {
 					eosLines.add(start - 1);
 				}
-				if (sLine.length() == 0) {
+				if (sLine.length() == 0 && !singleStatement) {
 					if (eosLines != null) {
 						eosLines.add(start - 2);
 						eosLines.add(-start);
 					}
 				}
-				if (sLine.length() == 0 || (singleStatement && endsWithSemicolon)) {
+				if ((!singleStatement && sLine.length() == 0) || (singleStatement && endsWithSemicolon)) {
 					break;
 				}
 				--start;
 			}
-			// }
+			
 			int end = getLineOfOffset(Math.max(getCaret().getDot(), getCaret().getMark()));
 			int caretEnd = end;
 			int lineCount = getLineCount();
-			while (end < lineCount) {
-				int endOff = getLineStartOffset(end);
+			
+			int l = caretBegin;
+			boolean eosSeen = false;
+			while (l < caretEnd && l < lineCount) {
+				int lOff = getLineStartOffset(l);
 				Segment txt = new Segment();
-				getDocument().getText(endOff, getLineEndOffset(end) - endOff, txt);
+				getDocument().getText(lOff, getLineEndOffset(l) - lOff, txt);
 				String sLine = txt.toString().trim();
-				if (sLine.length() == 0 && !(currentLineMayBeEmpty && end == y)) {
-					if (end > start) {
-						--end;
-					}
-					break;
-				}
 				boolean endsWithSemicolon = sLine.endsWith(";");
-				if (endsWithSemicolon && eosLines != null) {
-					eosLines.add(end);
-				}
-				if (sLine.length() == 0) {
+				if (endsWithSemicolon) {
 					if (eosLines != null) {
-						eosLines.add(end - 1);
-						eosLines.add(-end - 1);
+						eosLines.add(l);
+					}
+					eosSeen = true;
+				} else if (sLine.length() > 0) {
+					eosSeen = false;
+				}
+				if (sLine.length() == 0 && !singleStatement) {
+					if (eosLines != null) {
+						eosLines.add(l - 1);
+						eosLines.add(-l - 1);
 					}
 				}
-				if (singleStatement && endsWithSemicolon) {
-					break;
+				++l;
+			}
+
+			if (!eosSeen) {
+				while (end < lineCount) {
+					int endOff = getLineStartOffset(end);
+					Segment txt = new Segment();
+					getDocument().getText(endOff, getLineEndOffset(end) - endOff, txt);
+					String sLine = txt.toString().trim();
+					if ((!singleStatement && sLine.length() == 0) && !(currentLineMayBeEmpty && end == y)) {
+						if (end > start) {
+							--end;
+						}
+						break;
+					}
+					boolean endsWithSemicolon = sLine.endsWith(";");
+					if (endsWithSemicolon && eosLines != null) {
+						eosLines.add(end);
+					}
+					if (sLine.length() == 0 && !singleStatement) {
+						if (eosLines != null) {
+							eosLines.add(end - 1);
+							eosLines.add(-end - 1);
+						}
+					}
+					if (singleStatement && endsWithSemicolon) {
+						break;
+					}
+					++end;
 				}
-				++end;
 			}
 			if (end == lineCount && end > 0) {
 				--end;
 			}
-			int l = caretBegin;
-			if (eosLines != null) {
-				while (l < caretEnd && l < lineCount) {
-					int lOff = getLineStartOffset(l);
-					Segment txt = new Segment();
-					getDocument().getText(lOff, getLineEndOffset(l) - lOff, txt);
-					String sLine = txt.toString().trim();
-					boolean endsWithSemicolon = sLine.endsWith(";");
-					if (endsWithSemicolon) {
-						eosLines.add(l);
+			l = start;
+			boolean inStatement = false;
+			boolean nonEmptyLineSeen = false;
+			while (l <= end && l < lineCount) {
+				int lOff = getLineStartOffset(l);
+				Segment txt = new Segment();
+				getDocument().getText(lOff, getLineEndOffset(l) - lOff, txt);
+				String sLine = txt.toString().trim();
+				boolean endsWithSemicolon = sLine.endsWith(";");
+				if (sLine.length() > 0) {
+					nonEmptyLineSeen = true;
+				}
+				if (!nonEmptyLineSeen) {
+					if (l + 1 < lineCount) {
+						start = l + 1;
 					}
-					if (sLine.length() == 0) {
+				}
+				if (endsWithSemicolon) {
+					inStatement = false;
+				} else if (sLine.length() == 0) {
+					if (!inStatement) {
 						if (eosLines != null) {
-							eosLines.add(l - 1);
 							eosLines.add(-l - 1);
 						}
 					}
-					++l;
+				} else {
+					inStatement = true;
 				}
+				++l;
 			}
 			return new Pair<Integer, Integer>(start, end);
 		} catch (BadLocationException e) {

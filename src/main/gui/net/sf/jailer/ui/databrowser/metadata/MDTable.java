@@ -16,8 +16,12 @@
 package net.sf.jailer.ui.databrowser.metadata;
 
 import java.awt.Cursor;
+import java.sql.CallableStatement;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -29,6 +33,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import javax.swing.JComponent;
 
+import net.sf.jailer.configuration.DBMS;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Column;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
@@ -48,6 +54,9 @@ public class MDTable extends MDObject {
 	private AtomicBoolean loaded = new AtomicBoolean(false);
 	private final boolean isView;
 	private final boolean isSynonym;
+
+	// DDL of the table or <code>null</code>, if no DDL is available
+	private String ddl;
 	
 	/**
 	 * Constructor.
@@ -209,4 +218,70 @@ public class MDTable extends MDObject {
         thread.start();
 	}
 
+	/**
+	 * Gets DDL of the table.
+	 * 
+	 * @return DDL of the table or <code>null</code>, if no DDL is available
+	 * @throws InterruptedException 
+	 */
+	public synchronized String getDDL() {
+		if (!ddlLoaded.get()) {
+			Session session = getSchema().getMetaDataSource().getSession();
+
+			String statement = session.dbms.getDdlCall();
+
+			if (statement != null) {
+				CallableStatement cStmt = null;
+				try {
+					Connection connection = session.getConnection();
+					cStmt = connection.prepareCall(statement.replace("${type}", isView? "VIEW" : "TABLE").replace("${table}", Quoting.staticUnquote(getName())).replace("${schema}", Quoting.staticUnquote(getSchema().getName())));
+					cStmt.registerOutParameter(1, Types.VARCHAR);
+					cStmt.execute();
+					ddl = cStmt.getString(1).trim();
+				} catch (Exception e) {
+					// TODO
+					e.printStackTrace();
+				} finally {
+					if (cStmt != null) {
+						try {
+							cStmt.close();
+						} catch (SQLException e) {
+						}
+					}
+				}
+			}		
+			statement = session.dbms.getDdlQuery();
+			if (statement != null) {
+				Statement cStmt = null;
+				try {
+					Connection connection = session.getConnection();
+					cStmt = connection.createStatement();
+					ResultSet rs = cStmt.executeQuery(statement.replace("${type}", isView? "VIEW" : "TABLE").replace("${table}", Quoting.staticUnquote(getName())).replace("${schema}", Quoting.staticUnquote(getSchema().getName())));
+					if (rs.next()) {
+						ddl = rs.getString(session.dbms.equals(DBMS.MySQL)? 2 : 1).trim();
+					}
+					rs.close();
+				} catch (Exception e) {
+					// TODO
+					e.printStackTrace();
+				} finally {
+					if (cStmt != null) {
+						try {
+							cStmt.close();
+						} catch (SQLException e) {
+						}
+					}
+				}
+			}		
+		}
+		ddlLoaded.set(true);
+		return ddl;
+	}
+
+	public boolean isDDLLoaded() {
+		return ddlLoaded.get();
+	}
+	
+	private AtomicBoolean ddlLoaded = new AtomicBoolean(false);
+	
 }

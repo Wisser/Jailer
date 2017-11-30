@@ -107,6 +107,7 @@
         <primaryKeysQuery>SELECT null, c_src.OWNER, c_src.TABLE_NAME, c_src.COLUMN_NAME, c_src.POSITION, c_list.CONSTRAINT_NAME FROM ALL_CONSTRAINTS c_list, ALL_CONS_COLUMNS c_src WHERE c_list.CONSTRAINT_NAME   = c_src.CONSTRAINT_NAME  AND  c_list.OWNER             = c_src.OWNER  AND  c_list.CONSTRAINT_TYPE = 'P'  AND  c_list.CONSTRAINT_NAME not like 'BIN$%'  AND  c_src.OWNER      = '${SCHEMA}'  ORDER BY c_src.POSITION</primaryKeysQuery>
         <indexInfoQuery>SELECT null, c_src.OWNER, c_src.TABLE_NAME, 0, null, c_list.CONSTRAINT_NAME, null, null, c_src.COLUMN_NAME FROM ALL_CONSTRAINTS c_list, ALL_CONS_COLUMNS c_src WHERE c_list.CONSTRAINT_NAME   = c_src.CONSTRAINT_NAME  AND  c_list.OWNER             = c_src.OWNER  AND  c_list.CONSTRAINT_TYPE = 'U'  AND  c_list.CONSTRAINT_NAME not like 'BIN$%'  AND  c_src.OWNER      = '${SCHEMA}'</indexInfoQuery>
         <identifierQuoteString>"</identifierQuoteString>
+        <ddlCall>begin ? := dbms_metadata.get_ddl('${type}', '${table}', '${schema}'); end;</ddlCall>
     </dbms>
     
     <!-- for MS SQL Server -->
@@ -300,6 +301,7 @@
 -->
         <nullableContraint>NULL</nullableContraint>
         <identifierQuoteString>`</identifierQuoteString>
+        <ddlQuery>SHOW CREATE ${type} `${schema}`.`${table}`</ddlQuery>
     </dbms>
     
     <!-- for DB2 LUW -->

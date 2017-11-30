@@ -113,6 +113,8 @@ public class DBMS {
 		this.transactionTemporaryTableManager = other.transactionTemporaryTableManager;
 		this.jdbcProperties = other.jdbcProperties;
 		this.nullableContraint = other.nullableContraint;
+		this.ddlQuery = other.ddlQuery;
+		this.ddlCall = other.ddlCall;
 	}
 
 	/**
@@ -201,7 +203,45 @@ public class DBMS {
 	private Integer varcharLengthLimit = null;
 
 	private String tableProperties = "";
+	
+	/**
+	 * DB-Query to get DDL of a table
+	 */
+	private String ddlQuery;
 
+	/**
+	 * DB-Call to get DDL of a table
+	 */
+	private String ddlCall;
+
+	/**
+	 * DB-Query to get DDL of a table
+	 */
+	public String getDdlQuery() {
+		return ddlQuery;
+	}
+
+	/**
+	 * DB-Query to get DDL of a table
+	 */
+	public void setDdlQuery(String ddlQuery) {
+		this.ddlQuery = ddlQuery;
+	}
+
+	/**
+	 * DB-Call to get DDL of a table
+	 */
+	public String getDdlCall() {
+		return ddlCall;
+	}
+
+	/**
+	 * DB-Call to get DDL of a table
+	 */
+	public void setDdlCall(String ddlCall) {
+		this.ddlCall = ddlCall;
+	}
+	
 	/**
 	 * Maps characters to escape sequences according to {@link #stringLiteralEscapeSequences}.
 	 */
