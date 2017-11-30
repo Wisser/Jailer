@@ -49,7 +49,7 @@ public class ColumnMapperDialog extends javax.swing.JDialog {
 		super(parent, true);
 		this.parent = parent;
 		this.mappingField = new RSyntaxTextArea();
-		mappingField.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
+		mappingField.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
 		mappingField.setCodeFoldingEnabled(true);
 
 		initComponents();

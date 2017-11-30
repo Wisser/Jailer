@@ -1907,7 +1907,7 @@ public class ExtractionModelEditor extends javax.swing.JPanel {
 		
 		xmlSketch.setEditable(false);
 		tab.setViewportView(xmlSketch);
-		xmlSketch.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
+		xmlSketch.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_XML);
 		xmlSketch.setCodeFoldingEnabled(true);
 
 		String tabName = null;

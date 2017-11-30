@@ -38,8 +38,12 @@ import javax.swing.JComponent;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.SwingUtilities;
+
+import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
+import org.fife.ui.rsyntaxtextarea.SyntaxConstants;
 
 import net.sf.jailer.ExecutionContext;
 import net.sf.jailer.database.Session;
@@ -72,6 +76,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 	private final JFrame owner;
 	private static final List<BlockingQueue<Runnable>> queues = new ArrayList<BlockingQueue<Runnable>>();
 	private final Map<MetaDataDetails, JPanel> detailsPanels = new HashMap<MetaDataDetails, JPanel>();
+	private final JPanel ddlPanel;
 	private final Map<Pair<MetaDataDetails, MDTable>, JComponent> detailsViews = new HashMap<Pair<MetaDataDetails, MDTable>, JComponent>();
 	private final Map<Table, JComponent> tableDetailsViews = new HashMap<Table, JComponent>();
 	
@@ -85,15 +90,21 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
     	this.executionContext = executionContext;
         initComponents();
         
+    	ddlPanel = new JPanel(new BorderLayout());
         for (MetaDataDetails mdd: MetaDataDetails.values()) {
         	JPanel panel = new JPanel(new BorderLayout());
         	detailsPanels.put(mdd, panel);
         	tabbedPane.addTab(mdd.name, panel);
+        	if (tabbedPane.getTabCount() == 2) {
+        		if (session != null && (session.dbms.getDdlCall() != null || session.dbms.getDdlQuery() != null)) {
+        			tabbedPane.addTab("DDL", ddlPanel);
+        		}
+        	}
         }
     }
     
     static {
-        for (int i = 0; i < 2; ++i) {
+        for (int i = 0; i < 3; ++i) {
         	final LinkedBlockingQueue<Runnable> queue = new LinkedBlockingQueue<Runnable>();
 	        queues.add(queue);
         	Thread thread = new Thread(new Runnable() {
@@ -355,8 +366,50 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 				// ignore
 			}
     	}
+
+    	// DDL
+    	final JPanel panel = ddlPanel;
+		final Runnable doRun = new Runnable() {
+			@Override
+			public void run() {
+				final String ddl = mdTable.getDDL();
+		    	panel.removeAll();
+		    	if (ddl == null) {
+		    		panel.add(new JLabel(" DDL not available"));
+		    	} else {
+		    		JScrollPane tab = new JScrollPane();
+		    		RSyntaxTextArea area = new RSyntaxTextArea();
+		    		
+		    		area.setEditable(false);
+		    		tab.setViewportView(area);
+		    		area.setSyntaxEditingStyle(SyntaxConstants.SYNTAX_STYLE_SQL);
+		    		area.setText(ddl);
+		    		area.setCaretPosition(0);
+		    		panel.add(tab);
+		    	}
+		    	tabbedPane.repaint();
+			}
+		};
+    	panel.removeAll();
+    	if (mdTable.isDDLLoaded()) {
+    		doRun.run();
+    	} else {
+	    	panel.add(new JLabel(" loading..."));
+	    	tabbedPane.repaint();
+	    	try {
+				queues.get(2).put(new Runnable() {
+					@Override
+					public void run() {
+						mdTable.getDDL();
+						SwingUtilities.invokeLater(doRun);
+					}
+				});
+			} catch (InterruptedException e) {
+				// ignore
+			}
+    	}
     }
-    
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
