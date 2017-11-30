@@ -545,8 +545,8 @@ public class Subsetter {
 	}
 
 	/**
-	 * Gets parameters
-	 * TODO
+	 * Gets parameters.
+	 * 
 	 * @return parameters
 	 */
 	public Map<String, String> getParameters() {
@@ -563,22 +563,26 @@ public class Subsetter {
 		executionContext.setParameter(name, value);
 	}
 
+	/**
+	 * Gets schema map for destination database.
+	 * 
+	 * @return schema map
+	 */
 	public Map<String, String> getSchemaMapping() {
 		return executionContext.getSchemaMapping();
 	}
 
 	/**
-	 * Sets source schema map
-	 * TODO
-	 * @param rawsourceschemamapping
-	 *            source schema map
+	 * Sets schema map for destination database.
+	 * 
+	 * @param schemaMapping schema map
 	 */
 	public void setSchemaMapping(Map<String, String> schemaMapping) {
 		executionContext.setSchemaMapping(schemaMapping);
 	}
 
 	/**
-	 * TODO
+	 * Sets schema map for source database.
 	 * 
 	 * @param sourceSchemaMapping the sourceSchemaMapping to set
 	 */
@@ -586,6 +590,11 @@ public class Subsetter {
 		executionContext.setSourceSchemaMapping(sourceSchemaMapping);
 	}
 
+	/**
+	 * Gets schema map for source database.
+	 * 
+	 * @return the sourceSchemaMapping to set
+	 */
 	public Map<String, String> getSourceSchemaMapping() {
 		return executionContext.getSourceSchemaMapping();
 	}

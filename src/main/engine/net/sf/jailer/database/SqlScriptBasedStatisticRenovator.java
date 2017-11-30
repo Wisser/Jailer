@@ -63,7 +63,6 @@ public class SqlScriptBasedStatisticRenovator implements StatisticRenovator {
 	 * 
 	 * @param scriptFileName name of SQL-script file
 	 */
-	// TODO remove
 	public SqlScriptBasedStatisticRenovator(String scriptFileName) {
 		this.scriptFileName = scriptFileName;
 	}

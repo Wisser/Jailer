@@ -239,8 +239,7 @@ public class MDTable extends MDObject {
 					cStmt.execute();
 					ddl = cStmt.getString(1).trim();
 				} catch (Exception e) {
-					// TODO
-					e.printStackTrace();
+					// ignore
 				} finally {
 					if (cStmt != null) {
 						try {
@@ -262,8 +261,7 @@ public class MDTable extends MDObject {
 					}
 					rs.close();
 				} catch (Exception e) {
-					// TODO
-					e.printStackTrace();
+					// ignore
 				} finally {
 					if (cStmt != null) {
 						try {
