@@ -63,12 +63,12 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	/**
 	 * Set of sql types (uppercase) not listed in {@link Types} which needs a length argument.
 	 */
-	private final Set<String> typesWithLength = new HashSet<String>();
-	{
-		typesWithLength.add("NVARCHAR2");
-		typesWithLength.add("NVARCHAR");
-		typesWithLength.add("NCHAR");
-		typesWithLength.add("RAW");
+	public static final Set<String> TYPES_WITH_LENGTH = new HashSet<String>();
+	static {
+		TYPES_WITH_LENGTH.add("NVARCHAR2");
+		TYPES_WITH_LENGTH.add("NVARCHAR");
+		TYPES_WITH_LENGTH.add("NCHAR");
+		TYPES_WITH_LENGTH.add("RAW");
 	}
 
 	/**
@@ -301,7 +301,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 						throw new RuntimeException("unknown SQL type: " + type);
 					}
 				}
-				if (typesWithLength.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
+				if (TYPES_WITH_LENGTH.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
 					length = resultSet.getInt(7);
 				}
 				if (DBMS.MSSQL.equals(session.dbms) && sqlType != null && sqlType.equalsIgnoreCase("timestamp")) {
@@ -692,7 +692,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 					// throw new RuntimeException("unknown SQL type: " + type);
 				}
 			}
-			if (typesWithLength.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
+			if (TYPES_WITH_LENGTH.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
 				length = resultSet.getInt(7);
 				if (type == Types.VARCHAR) {
 					if (session.dbms.getVarcharLengthLimit() != null) {
@@ -772,15 +772,16 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	}
 
 	/**
-	 * Filter the length attribute of a column in a DBMS specific way.
+	 * Filters the length attribute of a column in a DBMS specific way.
 	 * 
 	 * @param length the length as given from driver
 	 * @param the type name
 	 * @param type the sql type
 	 * @param dbms the DBMS
+	 * 
 	 * @return filtered length
 	 */
-	private int filterLength(int length, String typeName, int type, DBMS dbms, int origLength) {
+	public static int filterLength(int length, String typeName, int type, DBMS dbms, int origLength) {
 		if (length > 0) {
 			if (DBMS.POSTGRESQL.equals(dbms)) {
 				if (type == Types.VARCHAR && length >= 10485760) {
