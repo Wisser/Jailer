@@ -96,9 +96,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
         	detailsPanels.put(mdd, panel);
         	tabbedPane.addTab(mdd.name, panel);
         	if (tabbedPane.getTabCount() == 2) {
-        		if (session != null && (session.dbms.getDdlCall() != null || session.dbms.getDdlQuery() != null)) {
-        			tabbedPane.addTab("DDL", ddlPanel);
-        		}
+        		tabbedPane.addTab("DDL", ddlPanel);
         	}
         }
     }

@@ -648,14 +648,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 										String pos = "";
 										int errorLine = -1;
 										try {
+											errorLine = editorPane.getLineOfOffset(errorPosition);
 											if (errorPositionIsKnown) {
-												errorLine = editorPane.getLineOfOffset(errorPosition);
 												int col = errorPosition - editorPane.getLineStartOffset(errorLine);
 												pos = "Error at line " + (errorLine + 1) + ", column " + col + ": ";
-												editorPane.setCaretPosition(errorPosition);
-											} else if (location != null) {
-												errorLine = location.a;
 											}
+											editorPane.setCaretPosition(errorPosition);
+											editorPane.grabFocus();
 										} catch (BadLocationException e) {
 										}
 										if (errorLine >= 0) {
@@ -1191,7 +1190,23 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 	private void executeAllStatements() {
 		if (editorPane.getLineCount() > 0) {
-			Pair<Integer, Integer> loc = new Pair<Integer, Integer>(0, editorPane.getLineCount() - 1);
+			int start = 0;
+			
+			try {
+				while (start < editorPane.getLineCount()) {
+					Segment txt = new Segment();
+					int sOff = editorPane.getLineStartOffset(start);
+					editorPane.getDocument().getText(sOff, editorPane.getLineEndOffset(start) - sOff, txt);
+					String sLine = txt.toString().trim();
+					if (sLine.length() > 0) {
+						break;
+					}
+					++start;
+				}
+			} catch (BadLocationException e) {
+				// ignore
+			}
+			Pair<Integer, Integer> loc = new Pair<Integer, Integer>(start, editorPane.getLineCount() - 1);
 			executeSQLBlock(editorPane.getText(loc.a, loc.b, true), loc, false, null);
 		}
 	}
