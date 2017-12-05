@@ -729,22 +729,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	}
 
 	private static String reduceStatement(String statement, int caretPos) {
-		Pattern pattern = Pattern.compile("('([^']*'))|(/\\*.*?\\*/)|(\\-\\-.*?(\n|$))", Pattern.DOTALL);
-		Matcher matcher = pattern.matcher(statement);
-		boolean result = matcher.find();
-		StringBuffer sb = new StringBuffer();
-		if (result) {
-			do {
-				int l = matcher.group(0).length();
-				matcher.appendReplacement(sb, "");
-				while (l > 0) {
-					--l;
-					sb.append(' ');
-				}
-				result = matcher.find();
-			} while (result);
-		}
-		matcher.appendTail(sb);
+		StringBuilder sb = new StringBuilder(removeCommentsAndLiterals(statement));
 		
 		Set<Integer> myStarts = new HashSet<Integer>();
 		Stack<Integer> ordPos = new Stack<Integer>();
@@ -782,6 +767,33 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		
 		String reduced = sb.toString();
 		return reduced;
+	}
+
+	/**
+	 * Removes comments and literals from SQL statement.
+	 * 
+	 * @param statement the statement
+	 * 
+	 * @return statement the statement without comments and literals
+	 */
+	public static String removeCommentsAndLiterals(String statement) {
+		Pattern pattern = Pattern.compile("('([^']*'))|(/\\*.*?\\*/)|(\\-\\-.*?(\n|$))", Pattern.DOTALL);
+		Matcher matcher = pattern.matcher(statement);
+		boolean result = matcher.find();
+		StringBuffer sb = new StringBuffer();
+		if (result) {
+			do {
+				int l = matcher.group(0).length();
+				matcher.appendReplacement(sb, "");
+				while (l > 0) {
+					--l;
+					sb.append(' ');
+				}
+				result = matcher.find();
+			} while (result);
+		}
+		matcher.appendTail(sb);
+		return sb.toString();
 	}
 
 	public Map<String, TABLE> findAliases(String statement, Map<String, TABLE> aliasesOnTopLevel, List<Pair<TABLE, String>> allTables) {

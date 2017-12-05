@@ -28,7 +28,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -86,6 +85,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
+import net.sf.jailer.ui.syntaxtextarea.SQLCompletionProvider;
 import net.sf.jailer.ui.util.SmallButton;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
@@ -297,7 +297,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			
 			updateOutline(sql);
 			
-			if (sql.length() > 100000) { // TODO
+			if (sql.length() > 100000) {
 				stopped.set(false);
 				pending.set(true);
 				new Thread(new Runnable() {
@@ -632,7 +632,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 	private void updateOutline(String sql) {
 		List<Pair<MDTable, String>> allTables = new ArrayList<Pair<MDTable, String>>();
-		provider.findAliases(sql, null, allTables);
+		provider.findAliases(SQLCompletionProvider.removeCommentsAndLiterals(sql), null, allTables);
 		setOutlineTables(allTables);
 	}
 
