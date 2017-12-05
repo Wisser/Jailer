@@ -182,7 +182,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 
 	private List<SQLCompletion> getPotentialCompletions(JTextComponent comp, String alreadyEnteredText) {
 		Pair<Integer, Integer> loc = ((RSyntaxTextAreaWithSQLSyntaxStyle) comp)
-				.getCurrentStatementLocation(true, true, null);
+				.getCurrentStatementLocation(true, true, null, false);
 		String line = ((RSyntaxTextAreaWithSQLSyntaxStyle) comp).getText(loc.a, loc.b, true);
 		String lineBeforeCaret = ((RSyntaxTextAreaWithSQLSyntaxStyle) comp).getText(loc.a, loc.b, false);
 
@@ -211,7 +211,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		}
 		aliases.clear();
 		aliasesTopLevel.clear();
-		aliases.putAll(findAliases(afterCaret != null? beforeCaret + "=" + afterCaret : line, aliasesTopLevel));
+		aliases.putAll(findAliases(afterCaret != null? beforeCaret + "=" + afterCaret : line, aliasesTopLevel, null));
 		aliases.putAll(userDefinedAliases);
 		aliasesTopLevel.putAll(userDefinedAliases);
 		Clause clause = currentClause(beforeCaret);
@@ -784,7 +784,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		return reduced;
 	}
 
-	private Map<String, TABLE> findAliases(String statement, Map<String, TABLE> aliasesOnTopLevel) {
+	public Map<String, TABLE> findAliases(String statement, Map<String, TABLE> aliasesOnTopLevel, List<Pair<TABLE, String>> allTables) {
 		Map<String, TABLE> aliases = new LinkedHashMap<String, TABLE>();
 		Pattern pattern = Pattern.compile("(?:\\bas\\b)|(" + reClauseKW + ")|(,|\\(|\\)|=|<|>|!|\\.|\\b(?:on|where|left|right|full|inner|outer|join|and|or|not)\\b)|(" + reIdentifier + ")", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
 		Matcher matcher = pattern.matcher(statement + ")");
@@ -844,6 +844,9 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 							if (mdSchema != null) {
 								TABLE mdTable = findTable(mdSchema, table);
 								if (mdTable != null) {
+									if (allTables != null) {
+										allTables.add(new Pair<TABLE, String>(mdTable, alias));
+									}
 									Integer prevLevel = levelPerAlias.get(alias);
 									if (prevLevel == null || prevLevel < level) {
 										aliases.put(alias, mdTable);
@@ -882,6 +885,9 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 							if (mdSchema != null) {
 								TABLE mdTable = findTable(mdSchema, table);
 								if (mdTable != null) {
+									if (allTables != null) {
+										allTables.add(new Pair<TABLE, String>(mdTable, null));
+									}
 									Integer prevLevel = levelPerAlias.get(alias);
 									if (prevLevel == null || prevLevel < level) {
 										aliases.put(alias, mdTable);
@@ -915,7 +921,9 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		}
 		for (Entry<String, Integer> e: levelPerAlias.entrySet()) {
 			if (e.getValue() == maxLevel) {
-				aliasesOnTopLevel.put(e.getKey(), aliases.get(e.getKey()));
+				if (aliasesOnTopLevel != null) {
+					aliasesOnTopLevel.put(e.getKey(), aliases.get(e.getKey()));
+				}
 			}
 		}
 		return aliases;

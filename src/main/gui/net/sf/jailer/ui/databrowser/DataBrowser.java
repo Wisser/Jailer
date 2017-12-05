@@ -121,6 +121,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.util.CancellationHandler;
+import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -835,9 +836,6 @@ public class DataBrowser extends javax.swing.JFrame {
         jLabel20 = new javax.swing.JLabel();
         jLabel21 = new javax.swing.JLabel();
         jLabel22 = new javax.swing.JLabel();
-        jLabel23 = new javax.swing.JLabel();
-        jLabel24 = new javax.swing.JLabel();
-        jLabel25 = new javax.swing.JLabel();
         borderBrowserTabPane = new javax.swing.JPanel();
         borderBrowserPanel = new javax.swing.JPanel();
         titleLabel = new javax.swing.JLabel();
@@ -1255,24 +1253,6 @@ public class DataBrowser extends javax.swing.JFrame {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 22;
         jPanel7.add(jLabel22, gridBagConstraints);
-
-        jLabel23.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 23;
-        jPanel7.add(jLabel23, gridBagConstraints);
-
-        jLabel24.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 24;
-        jPanel7.add(jLabel24, gridBagConstraints);
-
-        jLabel25.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 25;
-        jPanel7.add(jLabel25, gridBagConstraints);
 
         detailsAndBorderBrowserTabbedPane.addTab("Details", jPanel7);
 
@@ -2074,9 +2054,6 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel20;
     private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
-    private javax.swing.JLabel jLabel23;
-    private javax.swing.JLabel jLabel24;
-    private javax.swing.JLabel jLabel25;
     private javax.swing.JLabel jLabel26;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -2914,6 +2891,10 @@ public class DataBrowser extends javax.swing.JFrame {
 						@Override
 						protected void selectTable(MDTable mdTable) {
 							metaDataPanel.select(mdTable);
+						}
+						@Override
+						protected void setOutlineTables(List<Pair<MDTable, String>> outlineTables) {
+							metaDataPanel.setOutline(outlineTables);
 						}
 					};
 					sqlConsoleContainerPanel.removeAll();
