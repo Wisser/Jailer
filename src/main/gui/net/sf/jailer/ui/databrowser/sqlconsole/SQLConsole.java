@@ -82,6 +82,7 @@ import net.sf.jailer.ui.databrowser.Row;
 import net.sf.jailer.ui.databrowser.metadata.MDSchema;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
+import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.syntaxtextarea.RSyntaxTextAreaWithSQLSyntaxStyle;
 import net.sf.jailer.ui.syntaxtextarea.SQLAutoCompletion;
@@ -295,7 +296,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 			}
 			prevSql = sql;
 			
-			updateOutline(sql);
+			try {
+				updateOutline(sql, editorPane.getLineStartOffset(loc.a));
+			} catch (BadLocationException e1) {
+				// ignore
+				return;
+			}
 			
 			if (sql.length() > 100000) {
 				stopped.set(false);
@@ -630,10 +636,19 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		}
 	}
 
-	private void updateOutline(String sql) {
-		List<Pair<MDTable, String>> allTables = new ArrayList<Pair<MDTable, String>>();
-		provider.findAliases(SQLCompletionProvider.removeCommentsAndLiterals(sql), null, allTables);
-		setOutlineTables(allTables);
+	public void setCaretPosition(int position) {
+		editorPane.setCaretPosition(position);
+		grabFocus();
+	}
+
+	private void updateOutline(String sql, int startPosition) {
+		List<OutlineInfo> outlineInfos = new ArrayList<OutlineInfo>();
+		provider.findAliases(SQLCompletionProvider.removeCommentsAndLiterals(sql), null, outlineInfos);
+		List<OutlineInfo> relocatedOutlineInfos = new ArrayList<OutlineInfo>();
+		for (OutlineInfo info: outlineInfos) {
+			relocatedOutlineInfos.add(new OutlineInfo(info.mdTable, info.alias, info.level, info.position + startPosition, info.scopeDescriptor));
+		}
+		setOutlineTables(relocatedOutlineInfos);
 	}
 
 	private boolean isDDLStatement(String sql) {
@@ -642,7 +657,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 	protected abstract void refreshMetaData();
 	protected abstract void selectTable(MDTable mdTable);
-	protected abstract void setOutlineTables(List<Pair<MDTable, String>> outlineTables);
+	protected abstract void setOutlineTables(List<OutlineInfo> outlineTables);
 	
 	private boolean dataHasChanged = false;
 	
