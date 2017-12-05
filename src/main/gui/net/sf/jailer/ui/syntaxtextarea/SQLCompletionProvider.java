@@ -46,6 +46,8 @@ import org.fife.ui.autocomplete.ShorthandCompletion;
 import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.Association;
 import net.sf.jailer.modelbuilder.ModelBuilder;
+import net.sf.jailer.ui.databrowser.metadata.MDTable;
+import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
@@ -796,7 +798,21 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		return sb.toString();
 	}
 
-	public Map<String, TABLE> findAliases(String statement, Map<String, TABLE> aliasesOnTopLevel, List<Pair<TABLE, String>> allTables) {
+	public Map<String, TABLE> findAliases(String statement, Map<String, TABLE> aliasesOnTopLevel, List<OutlineInfo> outlineInfos) {
+		Map<String, String> scopeDescriptionPerLastKeyword = new HashMap<String, String>();
+		
+		scopeDescriptionPerLastKeyword.put("select", "Subselect");
+		scopeDescriptionPerLastKeyword.put("from", "From");
+		scopeDescriptionPerLastKeyword.put("exists", "Exists");
+		scopeDescriptionPerLastKeyword.put("in", "In");
+		scopeDescriptionPerLastKeyword.put("with", "With");
+		scopeDescriptionPerLastKeyword.put("where", "Where");
+		scopeDescriptionPerLastKeyword.put("group", "Group by");
+		scopeDescriptionPerLastKeyword.put("having", "Having");
+		scopeDescriptionPerLastKeyword.put("update", "Update");
+		scopeDescriptionPerLastKeyword.put("into", "Into");
+		scopeDescriptionPerLastKeyword.put("delete", "delete");
+
 		Map<String, TABLE> aliases = new LinkedHashMap<String, TABLE>();
 		Pattern pattern = Pattern.compile("(?:\\bas\\b)|(" + reClauseKW + ")|(,|\\(|\\)|=|<|>|!|\\.|\\b(?:on|where|left|right|full|inner|outer|join|and|or|not)\\b)|(" + reIdentifier + ")", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
 		Matcher matcher = pattern.matcher(statement + ")");
@@ -804,16 +820,26 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		int level = 0;
 		Map<String, Integer> levelPerAlias = new HashMap<String, Integer>();
 		Stack<String> tokenStack = new Stack<String>();
+		Stack<Integer> tokenPosStack = new Stack<Integer>();
+		Stack<OutlineInfo> scopeDescriptionStack = new Stack<OutlineInfo>();
+		String lastScopeDescription = null;
 		boolean result = matcher.find();
 		if (result) {
 			do {
 				String clause = matcher.group(1);
 				String keyword = matcher.group(2);
 				String identifier = matcher.group(3);
-				
+
 				if (clause != null) {
 					if (!"from".equalsIgnoreCase(clause) && !"update".equalsIgnoreCase(clause)) {
 						keyword = clause;
+					}
+				}
+				
+				if (clause != null) {
+					String scopeDescription = scopeDescriptionPerLastKeyword.get(clause.toLowerCase());
+					if (scopeDescription !=  null) {
+						lastScopeDescription = scopeDescription;
 					}
 				}
 				
@@ -822,11 +848,13 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 					if (keyword != null) {
 						if (keyword.equals(".")) {
 							tokenStack.push(keyword);
+							tokenPosStack.push(matcher.start());
 						} else {
 							clear = true;
 						}
 					} else if (identifier != null) {
 						tokenStack.push(identifier);
+						tokenPosStack.push(matcher.start());
 					}
 					if (!clear && !tokenStack.isEmpty() && !".".equals(tokenStack.peek())) {
 						ArrayList<String> tokens = new ArrayList<String>(tokenStack);
@@ -856,8 +884,10 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 							if (mdSchema != null) {
 								TABLE mdTable = findTable(mdSchema, table);
 								if (mdTable != null) {
-									if (allTables != null) {
-										allTables.add(new Pair<TABLE, String>(mdTable, alias));
+									if (outlineInfos != null && mdTable instanceof MDTable) {
+										outlineInfos.addAll(scopeDescriptionStack);
+										scopeDescriptionStack.clear();
+										outlineInfos.add(new OutlineInfo((MDTable) mdTable, alias, level, tokenPosStack.peek(), null));
 									}
 									Integer prevLevel = levelPerAlias.get(alias);
 									if (prevLevel == null || prevLevel < level) {
@@ -897,8 +927,12 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 							if (mdSchema != null) {
 								TABLE mdTable = findTable(mdSchema, table);
 								if (mdTable != null) {
-									if (allTables != null) {
-										allTables.add(new Pair<TABLE, String>(mdTable, null));
+									if (outlineInfos != null) {
+										if (outlineInfos != null && mdTable instanceof MDTable) {
+											outlineInfos.addAll(scopeDescriptionStack);
+											scopeDescriptionStack.clear();
+											outlineInfos.add(new OutlineInfo((MDTable) mdTable, null, level, tokenPosStack.peek(), null));
+										}
 									}
 									Integer prevLevel = levelPerAlias.get(alias);
 									if (prevLevel == null || prevLevel < level) {
@@ -909,6 +943,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 							}
 						}
 						tokenStack.clear();
+						tokenPosStack.clear();
 					}
 				}
 				if (clause != null) {
@@ -917,9 +952,17 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 				}
 				if (keyword != null) {
 					if ("(".equals(keyword)) {
+						if (outlineInfos != null) {
+							scopeDescriptionStack.push(new OutlineInfo(null, null, level, matcher.end(), lastScopeDescription == null? "Table" : lastScopeDescription));
+						}
 						++level;
 					} else if (")".equals(keyword)) {
 						--level;
+						if (!scopeDescriptionStack.isEmpty()) {
+							lastScopeDescription = scopeDescriptionStack.pop().scopeDescriptor;
+						} else {
+							lastScopeDescription = null;
+						}
 					}
 				}
 				result = matcher.find();
@@ -994,7 +1037,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 
 	private static String reIdentifier = "(?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+)";
 	private static String reIdentDotOnly = ".*?(" + reIdentifier + ")\\s*\\.\\s*[\"'`]?\\w*$";
-	private static String reClauseKW = "\\b(?:select|from|update|where|group|having)\\b";
+	private static String reClauseKW = "\\b(?:select|from|update|where|group|having|with|in|exists|into|delete)\\b";
 	private static String reIdentWSWordPattern = ".*?(" + reIdentifier + ")\\s+\\w*$";
 	
 	private static Pattern identDotOnlyPattern = Pattern.compile(reIdentDotOnly, Pattern.DOTALL);

@@ -118,6 +118,7 @@ import net.sf.jailer.ui.databrowser.metadata.MDSchema;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
+import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.util.CancellationHandler;
@@ -2876,6 +2877,11 @@ public class DataBrowser extends javax.swing.JFrame {
 					protected void updateDataModelView(Table table) {
 						DataBrowser.this.updateDataModelView(table);
 					}
+
+					@Override
+					protected void setCaretPosition(int position) {
+						sqlConsole.setCaretPosition(position);
+					}
 				};
 			}
 	    	session.setSessionProperty(getClass(), "metaDataPanel", metaDataPanel);
@@ -2893,7 +2899,7 @@ public class DataBrowser extends javax.swing.JFrame {
 							metaDataPanel.select(mdTable);
 						}
 						@Override
-						protected void setOutlineTables(List<Pair<MDTable, String>> outlineTables) {
+						protected void setOutlineTables(List<OutlineInfo> outlineTables) {
 							metaDataPanel.setOutline(outlineTables);
 						}
 					};
