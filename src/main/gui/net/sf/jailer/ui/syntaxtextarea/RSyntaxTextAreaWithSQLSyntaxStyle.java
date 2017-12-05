@@ -57,7 +57,6 @@ import org.fife.ui.rtextarea.Gutter;
 import org.fife.ui.rtextarea.SearchContext;
 import org.fife.ui.rtextarea.SearchEngine;
 import org.fife.ui.rtextarea.SearchResult;
-import org.junit.matchers.Each;
 
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
@@ -289,7 +288,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	 *            <code>true</code> to replace only one statement
 	 */
 	public void replaceCurrentStatement(String replacement, boolean singleStatement) {
-		Pair<Integer, Integer> loc = getCurrentStatementLocation(singleStatement, false, null);
+		Pair<Integer, Integer> loc = getCurrentStatementLocation(singleStatement, false, null, false);
 		if (loc != null) {
 			try {
 				int from = loc.a;
@@ -314,7 +313,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	 * @return pair of start and end line number
 	 */
 	public String getCurrentStatement(boolean singleStatement) {
-		Pair<Integer, Integer> loc = getCurrentStatementLocation(singleStatement, false, null);
+		Pair<Integer, Integer> loc = getCurrentStatementLocation(singleStatement, false, null, false);
 		if (loc != null) {
 			return getText(loc.a, loc.b, true);
 		}
@@ -399,7 +398,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	 * @return pair of start and end line number
 	 */
 	public Pair<Integer, Integer> getCurrentStatementLocation(Set<Integer> eosLines) {
-		return getCurrentStatementLocation(getCaret().getDot() != getCaret().getMark(), false, eosLines);
+		return getCurrentStatementLocation(getCaret().getDot() != getCaret().getMark(), false, eosLines, false);
 	}
 
 	/**
@@ -409,7 +408,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	 * @param eosLines if not <code>null</code>, put end-of-statement line numbers into
 	 * @return pair of start and end line number
 	 */
-	public Pair<Integer, Integer> getCurrentStatementLocation(boolean singleStatement, boolean currentLineMayBeEmpty, Set<Integer> eosLines) {
+	public Pair<Integer, Integer> getCurrentStatementLocation(boolean singleStatement, boolean currentLineMayBeEmpty, Set<Integer> eosLines, boolean startAtLineAbove) {
 		try {
 			int y = getLineOfOffset(Math.min(getCaret().getDot(), getCaret().getMark()));
 			int caretBegin = y;
@@ -429,8 +428,10 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 						eosLines.add(-start);
 					}
 				}
-				if ((!singleStatement && sLine.length() == 0) || (singleStatement && endsWithSemicolon)) {
-					break;
+				if ((/*!singleStatement &&*/ sLine.length() == 0) || (singleStatement && endsWithSemicolon)) {
+					if (start != y || !startAtLineAbove || !endsWithSemicolon) {
+						break;
+					}
 				}
 				--start;
 			}
@@ -470,7 +471,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 					Segment txt = new Segment();
 					getDocument().getText(endOff, getLineEndOffset(end) - endOff, txt);
 					String sLine = txt.toString().trim();
-					if ((!singleStatement && sLine.length() == 0) && !(currentLineMayBeEmpty && end == y)) {
+					if ((/*!singleStatement &&*/ sLine.length() == 0) && !(currentLineMayBeEmpty && end == y)) {
 						if (end > start) {
 							--end;
 						}

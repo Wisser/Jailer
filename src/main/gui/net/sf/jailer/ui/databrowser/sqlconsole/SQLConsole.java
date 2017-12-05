@@ -28,6 +28,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -51,6 +52,8 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
+import javax.swing.event.CaretEvent;
+import javax.swing.event.CaretListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Segment;
@@ -248,6 +251,13 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		
 		resetStatus();
 		statusLabel.setVisible(true);
+		
+		editorPane.addCaretListener(new CaretListener() {
+			@Override
+			public void caretUpdate(CaretEvent e) {
+				updateOutline();
+			}
+		});
 
 		Thread thread = new Thread(new Runnable() {
 			@Override
@@ -263,6 +273,55 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		});
         thread.setDaemon(true);
         thread.start();
+	}
+
+	private AtomicBoolean pending = new AtomicBoolean(false);
+	private AtomicBoolean stopped = new AtomicBoolean(false);
+	private String prevSql = null;
+	
+	/**
+	 * Update of outline of statement under carret.
+	 */
+	private void updateOutline() {
+		if (!pending.get()) {
+			Pair<Integer, Integer> loc = editorPane.getCurrentStatementLocation(true, true, null, false);
+			String sql = editorPane.getText(loc.a, loc.b, true);
+			if (sql.trim().isEmpty()) {
+				loc = editorPane.getCurrentStatementLocation(true, true, null, true);
+				sql = editorPane.getText(loc.a, loc.b, true);
+			}
+			if (sql.equals(prevSql)) {
+				return;
+			}
+			prevSql = sql;
+			
+			updateOutline(sql);
+			
+			if (sql.length() > 100000) { // TODO
+				stopped.set(false);
+				pending.set(true);
+				new Thread(new Runnable() {
+					@Override
+					public void run() {
+						try {
+							Thread.sleep(2000);
+						} catch (InterruptedException e) {
+						}
+						pending.set(false);
+						if (!stopped.get()) {
+							SwingUtilities.invokeLater(new Runnable() {
+								@Override
+								public void run() {
+									updateOutline();
+								}
+							});
+						}
+					}
+				}).start();
+			} else {
+				stopped.set(true);
+			}
+		}
 	}
 
 	protected String shortSQL(String sql, int maxLength) {
@@ -571,12 +630,19 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		}
 	}
 
+	private void updateOutline(String sql) {
+		List<Pair<MDTable, String>> allTables = new ArrayList<Pair<MDTable, String>>();
+		provider.findAliases(sql, null, allTables);
+		setOutlineTables(allTables);
+	}
+
 	private boolean isDDLStatement(String sql) {
 		return sql.trim().matches("^(?is)\\b(drop|create|alter|rename)\\b.*");
 	}
 
 	protected abstract void refreshMetaData();
 	protected abstract void selectTable(MDTable mdTable);
+	protected abstract void setOutlineTables(List<Pair<MDTable, String>> outlineTables);
 	
 	private boolean dataHasChanged = false;
 	

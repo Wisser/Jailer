@@ -42,16 +42,21 @@ import java.util.Vector;
 
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.DefaultListModel;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JTree;
+import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeExpansionEvent;
 import javax.swing.event.TreeSelectionEvent;
 import javax.swing.event.TreeSelectionListener;
@@ -73,6 +78,7 @@ import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.AutoCompletion;
 import net.sf.jailer.ui.JComboBox;
 import net.sf.jailer.ui.StringSearchPanel;
+import net.sf.jailer.util.Pair;
 
 /**
  * Meta Data UI.
@@ -105,12 +111,40 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
      * @param metaDataSource the meta data source
      * @param dataModel the data mmodel
      */
-    public MetaDataPanel(Frame parent, MetaDataSource metaDataSource, MetaDataDetailsPanel metaDataDetailsPanel, final DataModel dataModel, ExecutionContext executionContext) {
+    @SuppressWarnings({ "rawtypes", "unchecked" })
+	public MetaDataPanel(Frame parent, MetaDataSource metaDataSource, MetaDataDetailsPanel metaDataDetailsPanel, final DataModel dataModel, ExecutionContext executionContext) {
     	this.metaDataSource = metaDataSource;
     	this.dataModel = dataModel;
     	this.metaDataDetailsPanel = metaDataDetailsPanel;
     	this.parent = parent;
         initComponents();
+        
+        hideOutline();
+
+        final ListCellRenderer olRenderer = outlineList.getCellRenderer();
+        outlineList.setCellRenderer(new ListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+					boolean cellHasFocus) {
+				if (value instanceof Pair) {
+					value = outlineTableRender((Pair<MDTable, String>) value);
+				}
+				return olRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+			}
+		});
+        
+        outlineList.addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				Object value = outlineList.getSelectedValue();
+				if (!inSelectOutlineTable && value instanceof Pair) {
+					MDTable mdTable = ((Pair<MDTable, String>) value).a;
+					inSelectOutlineTable = true;
+					select(mdTable);
+					inSelectOutlineTable = false;
+				}
+			}
+		});
         
         tablesComboBox = new JComboBox<String>() {
         	@Override
@@ -146,7 +180,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 				updateTablesCombobox(selectedSchemas);
 			}
 		}, metaDataSource, dataModel);
-		add(searchButton, gridBagConstraints);
+		jPanel1.add(searchButton, gridBagConstraints);
         
 		tablesComboBox.setVisible(false);
 		refreshButton1.setVisible(false);
@@ -353,6 +387,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 					if (last instanceof DefaultMutableTreeNode) {
 						final Object uo = ((DefaultMutableTreeNode) last).getUserObject();
 						if (uo instanceof MDTable) {
+							selectOutlineTable((MDTable) uo);
 				            Table table = MetaDataPanel.this.metaDataSource.toTable((MDTable) uo);
 				            if (table != null) {
 				            	updateDataModelView(table);
@@ -376,9 +411,15 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		});
         
         updateTreeModel(metaDataSource);
+
+        Font font = outlineLabel.getFont();
+		if (font != null) {
+			Font bold = new Font(font.getName(), font.getStyle() | Font.BOLD, font.getSize());
+			outlineLabel.setFont(bold);
+		}
     }
     
-    private Map<String, MDTable> tablesComboboxMDTablePerName = new HashMap<String, MDTable>();
+	private Map<String, MDTable> tablesComboboxMDTablePerName = new HashMap<String, MDTable>();
     
 	private void updateTablesCombobox(Set<MDSchema> selectedSchemas) {
 		Set<String> tableSet = new HashSet<String>();
@@ -437,6 +478,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
 	public void reset() {
 		refreshButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+		setOutline(new ArrayList<Pair<MDTable, String>>());
 		SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -476,12 +518,14 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	
 	public void select(MDTable mdTable) {
 		if (mdTable != null) {
-			selectSchema(mdTable.getSchema());
 			TreePath path = find(metaDataTree.getModel().getRoot(), mdTable);
 			if (path != null) {
+				selectSchema(mdTable.getSchema(), false);
 				metaDataTree.expandPath(path);
 				metaDataTree.getSelectionModel().setSelectionPath(path);
 				scrollToNode(path);
+			} else {
+				selectSchema(mdTable.getSchema());
 			}
 		}
 	}
@@ -567,13 +611,19 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 	}
 
     public void selectSchema(MDSchema mdSchema) {
+    	selectSchema(mdSchema, true);
+    }
+
+    public void selectSchema(MDSchema mdSchema, boolean scrollToNode) {
     	if (mdSchema != null) {
     		DefaultMutableTreeNode node = treeNodePerSchema.get(mdSchema);
     		if (node != null) {
 	        	TreePath path = new TreePath(new Object[] { root, node });
 				metaDataTree.expandPath(path);
 		        metaDataTree.getSelectionModel().setSelectionPath(path);
-		        scrollToNode(path);
+		        if (scrollToNode) {
+		        	scrollToNode(path);
+		        }
     		}
         }
 	}
@@ -587,12 +637,29 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         metaDataTree = new javax.swing.JTree();
         refreshButton = new javax.swing.JButton();
         refreshButton1 = new javax.swing.JButton();
+        jPanel2 = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        outlineList = new javax.swing.JList();
+        outlineLabel = new javax.swing.JLabel();
+        jSeparator1 = new javax.swing.JSeparator();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
+
+        jPanel1.setLayout(new java.awt.GridBagLayout());
 
         jScrollPane1.setViewportView(metaDataTree);
 
@@ -603,7 +670,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        add(jScrollPane1, gridBagConstraints);
+        jPanel1.add(jScrollPane1, gridBagConstraints);
 
         refreshButton.setText("Refresh");
         refreshButton.setToolTipText("Refresh Database Meta Data Cache");
@@ -616,7 +683,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         gridBagConstraints.gridx = 5;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        add(refreshButton, gridBagConstraints);
+        jPanel1.add(refreshButton, gridBagConstraints);
 
         refreshButton1.setText("Select");
         refreshButton1.setToolTipText("Choose the selecetd table in the tables tree");
@@ -630,7 +697,110 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 1;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
-        add(refreshButton1, gridBagConstraints);
+        jPanel1.add(refreshButton1, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(jPanel1, gridBagConstraints);
+
+        jPanel2.setLayout(new java.awt.GridBagLayout());
+
+        outlineList.setModel(new javax.swing.AbstractListModel() {
+            String[] strings = { "Item 1", "Item 2", "Item 3", "Item 4", "Item 5" };
+            public int getSize() { return strings.length; }
+            public Object getElementAt(int i) { return strings[i]; }
+        });
+        outlineList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
+        jScrollPane2.setViewportView(outlineList);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel2.add(jScrollPane2, gridBagConstraints);
+
+        outlineLabel.setText(" Outline");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        jPanel2.add(outlineLabel, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        jPanel2.add(jSeparator1, gridBagConstraints);
+
+        jPanel3.setLayout(new java.awt.GridBagLayout());
+
+        jLabel1.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        jPanel3.add(jLabel1, gridBagConstraints);
+
+        jLabel2.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        jPanel3.add(jLabel2, gridBagConstraints);
+
+        jLabel3.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 3;
+        jPanel3.add(jLabel3, gridBagConstraints);
+
+        jLabel4.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 4;
+        jPanel3.add(jLabel4, gridBagConstraints);
+
+        jLabel5.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        jPanel3.add(jLabel5, gridBagConstraints);
+
+        jLabel6.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        jPanel3.add(jLabel6, gridBagConstraints);
+
+        jLabel7.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 7;
+        jPanel3.add(jLabel7, gridBagConstraints);
+
+        jLabel8.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 8;
+        jPanel3.add(jLabel8, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridheight = 2;
+        jPanel2.add(jPanel3, gridBagConstraints);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
+        add(jPanel2, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
@@ -641,9 +811,92 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		onSelectTable();
     }//GEN-LAST:event_refreshButton1ActionPerformed
 
+	private List<Pair<MDTable, String>> outlineTables = new ArrayList<Pair<MDTable, String>>();
+	private boolean inSelectOutlineTable = false;
+	
+    private void showOutline() {
+    	jPanel2.setVisible(true);
+    	SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+		    	TreePath path = metaDataTree.getSelectionPath();
+		    	if (path != null) {
+					Rectangle bounds = metaDataTree.getPathBounds(path);
+					metaDataTree.scrollRectToVisible(new Rectangle(bounds.x, bounds.y, 1, bounds.height));
+		    	}
+			}
+		});
+	}
+
+	private void hideOutline() {
+    	jPanel2.setVisible(false);
+	}
+
+	private String outlineTableRender(Pair<MDTable, String> mdTable) {
+		String render;
+		if (mdTable.a.getSchema().isDefaultSchema) {
+			render = mdTable.a.getName();
+		} else {
+			render = mdTable.a.getSchema().getName() + "." + mdTable.a.getName();
+		}
+		String alias = mdTable.b;
+		if (alias != null) {
+			return "<html>" + render + " <font color=\"#0000ff\">as</font> " + alias;
+		}
+		return render;
+	}
+	
+	public void setOutline(List<Pair<MDTable, String>> outlineTables) {
+		this.outlineTables = new ArrayList<Pair<MDTable, String>>(outlineTables);
+		DefaultListModel model = new DefaultListModel();
+		for (Pair<MDTable, String> mdTable: outlineTables) {
+			model.addElement(mdTable);
+		}
+		outlineList.setModel(model);
+		if (outlineTables.isEmpty()) {
+			hideOutline();
+		} else {
+			showOutline();
+		}
+	}
+
+	private void selectOutlineTable(MDTable mdTable) {
+		if (!inSelectOutlineTable) {
+			inSelectOutlineTable = true;
+			boolean found = false;
+			for (Pair<MDTable, String> value: outlineTables) {
+				if (mdTable.equals(value.a)) {
+					outlineList.setSelectedValue(value, true);
+					found = true;
+					break;
+				}
+			}
+			if (!found) {
+				outlineList.clearSelection();
+			}
+			inSelectOutlineTable = false;
+		}
+	}
+
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTree metaDataTree;
+    private javax.swing.JLabel outlineLabel;
+    private javax.swing.JList outlineList;
     private javax.swing.JButton refreshButton;
     private javax.swing.JButton refreshButton1;
     // End of variables declaration//GEN-END:variables
