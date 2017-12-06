@@ -130,7 +130,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                     value = outlineTableRender((OutlineInfo) value, isSelected);
                 }
                 Component render = olRenderer.getListCellRendererComponent(list, value, index, false, cellHasFocus);
-                render.setBackground(isSelected? new Color(220, 220, 255) : Color.WHITE);
+                render.setBackground(isSelected? new Color(220, 220, 255) : index == indexOfInfoAtCaret? new Color(255, 255, 170) : Color.WHITE);
                 return render;
             }
         });
@@ -509,7 +509,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
     public void reset() {
         refreshButton.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-        setOutline(new ArrayList<OutlineInfo>());
+        setOutline(new ArrayList<OutlineInfo>(), -1);
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
@@ -866,7 +866,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private String outlineTableRender(OutlineInfo info, boolean selected) {
         String render = "<font color=\"#000000\">";
         if (info.scopeDescriptor != null) {
-            render = "&nbsp;<font color=\"#0000ff\">" + info.scopeDescriptor + "</font>";
+            render = "<font color=\"#0000ff\">" + info.scopeDescriptor + "</font>";
         } else if (info.mdTable != null) {
             if (info.mdTable.getSchema().isDefaultSchema) {
                 render += info.mdTable.getName();
@@ -879,20 +879,22 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             }
             render += "</font>";
         }
-        if (info.scopeDescriptor != null) {
-        	render = "-&nbsp;" + render;
-        } else {
-        	render = "&nbsp;&nbsp;" + render;
+        String indent = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+		if (info.scopeDescriptor == null) {
+        	render = indent + render;
         }
         for (int i = 0; i < info.level; ++i) {
-        	render = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;" + render;
+        	render = indent + render;
         }
         render = "<html>" + render;
         return render;
     }
     
-    public void setOutline(List<OutlineInfo> outlineTables) {
+    private int indexOfInfoAtCaret = -1;
+    
+    public void setOutline(List<OutlineInfo> outlineTables, int indexOfInfoAtCaret) {
         this.outlineTables = new ArrayList<OutlineInfo>(outlineTables);
+        this.indexOfInfoAtCaret = indexOfInfoAtCaret;
         DefaultListModel model = new DefaultListModel();
         for (OutlineInfo info: outlineTables) {
             model.addElement(info);
@@ -902,6 +904,12 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             hideOutline();
         } else {
             showOutline();
+            if (indexOfInfoAtCaret >= 0) {
+            	Rectangle aRect = outlineList.getCellBounds(indexOfInfoAtCaret, indexOfInfoAtCaret);
+            	if (aRect != null) {
+            		outlineList.scrollRectToVisible(aRect);
+            	}
+            }
         }
     }
 
@@ -927,7 +935,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     public static class OutlineInfo {
         public final MDTable mdTable;
         public final String alias;
-        public final int level;
+        public int level;
         public final int position;
         public final String scopeDescriptor;
 

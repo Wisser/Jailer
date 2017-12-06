@@ -32,6 +32,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -256,7 +257,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		editorPane.addCaretListener(new CaretListener() {
 			@Override
 			public void caretUpdate(CaretEvent e) {
-				updateOutline();
+				updateOutline(false);
 			}
 		});
 
@@ -283,7 +284,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	/**
 	 * Update of outline of statement under carret.
 	 */
-	private void updateOutline() {
+	private void updateOutline(boolean checkPrevSql) {
 		if (!pending.get()) {
 			Pair<Integer, Integer> loc = editorPane.getCurrentStatementLocation(true, true, null, false);
 			String sql = editorPane.getText(loc.a, loc.b, true);
@@ -291,7 +292,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				loc = editorPane.getCurrentStatementLocation(true, true, null, true);
 				sql = editorPane.getText(loc.a, loc.b, true);
 			}
-			if (sql.equals(prevSql)) {
+			if (checkPrevSql && sql.equals(prevSql)) {
 				return;
 			}
 			prevSql = sql;
@@ -318,7 +319,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							SwingUtilities.invokeLater(new Runnable() {
 								@Override
 								public void run() {
-									updateOutline();
+									updateOutline(true);
 								}
 							});
 						}
@@ -645,10 +646,29 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		List<OutlineInfo> outlineInfos = new ArrayList<OutlineInfo>();
 		provider.findAliases(SQLCompletionProvider.removeCommentsAndLiterals(sql), null, outlineInfos);
 		List<OutlineInfo> relocatedOutlineInfos = new ArrayList<OutlineInfo>();
+		int indexOfInfoAtCaret = -1;
+		int caretPos = editorPane.getCaretPosition();
+		TreeSet<Integer> levels = new TreeSet<Integer>();
 		for (OutlineInfo info: outlineInfos) {
+			if (info.position + startPosition <= caretPos) {
+				indexOfInfoAtCaret = relocatedOutlineInfos.size();
+			}
 			relocatedOutlineInfos.add(new OutlineInfo(info.mdTable, info.alias, info.level, info.position + startPosition, info.scopeDescriptor));
+			levels.add(info.level);
 		}
-		setOutlineTables(relocatedOutlineInfos);
+		if (!levels.isEmpty()) {
+			int maxLevel = levels.last();
+			for (int i = maxLevel; i >= 0; --i) {
+				if (!levels.contains(i)) {
+					for (OutlineInfo info: relocatedOutlineInfos) {
+						if (info.level > i) {
+							--info.level;
+						}
+					}
+				}
+			}
+		}
+		setOutlineTables(relocatedOutlineInfos, indexOfInfoAtCaret);
 	}
 
 	private boolean isDDLStatement(String sql) {
@@ -657,7 +677,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
 	protected abstract void refreshMetaData();
 	protected abstract void selectTable(MDTable mdTable);
-	protected abstract void setOutlineTables(List<OutlineInfo> outlineTables);
+	protected abstract void setOutlineTables(List<OutlineInfo> outlineTables, int indexOfInfoAtCaret);
 	
 	private boolean dataHasChanged = false;
 	

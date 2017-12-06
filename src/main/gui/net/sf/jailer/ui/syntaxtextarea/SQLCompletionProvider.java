@@ -801,28 +801,28 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	public Map<String, TABLE> findAliases(String statement, Map<String, TABLE> aliasesOnTopLevel, List<OutlineInfo> outlineInfos) {
 		Map<String, String> scopeDescriptionPerLastKeyword = new HashMap<String, String>();
 		
-		scopeDescriptionPerLastKeyword.put("select", "Subselect");
-		scopeDescriptionPerLastKeyword.put("from", "From");
-		scopeDescriptionPerLastKeyword.put("exists", "Exists");
-		scopeDescriptionPerLastKeyword.put("in", "In");
+		scopeDescriptionPerLastKeyword.put("select", "Select");
+		scopeDescriptionPerLastKeyword.put("from", "from");
 		scopeDescriptionPerLastKeyword.put("with", "With");
 		scopeDescriptionPerLastKeyword.put("where", "Where");
 		scopeDescriptionPerLastKeyword.put("group", "Group by");
+		scopeDescriptionPerLastKeyword.put("order", "Order by");
 		scopeDescriptionPerLastKeyword.put("having", "Having");
 		scopeDescriptionPerLastKeyword.put("update", "Update");
-		scopeDescriptionPerLastKeyword.put("into", "Into");
-		scopeDescriptionPerLastKeyword.put("delete", "delete");
+		scopeDescriptionPerLastKeyword.put("into", "into");
+		scopeDescriptionPerLastKeyword.put("delete", "Delete");
+		scopeDescriptionPerLastKeyword.put("union", "Union");
 
 		Map<String, TABLE> aliases = new LinkedHashMap<String, TABLE>();
-		Pattern pattern = Pattern.compile("(?:\\bas\\b)|(" + reClauseKW + ")|(,|\\(|\\)|=|<|>|!|\\.|\\b(?:on|where|left|right|full|inner|outer|join|and|or|not)\\b)|(" + reIdentifier + ")", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
+		Pattern pattern = Pattern.compile("(?:\\bas\\b)|(" + reClauseKW + ")|(,|\\(|\\)|=|<|>|!|\\.|\\b(?:on|where|left|right|full|inner|outer|join|and|or|not|set)\\b)|(" + reIdentifier + ")", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
 		Matcher matcher = pattern.matcher(statement + ")");
 		boolean inFrom = false;
 		int level = 0;
 		Map<String, Integer> levelPerAlias = new HashMap<String, Integer>();
 		Stack<String> tokenStack = new Stack<String>();
 		Stack<Integer> tokenPosStack = new Stack<Integer>();
-		Stack<OutlineInfo> scopeDescriptionStack = new Stack<OutlineInfo>();
-		String lastScopeDescription = null;
+//		Stack<OutlineInfo> scopeDescriptionStack = new Stack<OutlineInfo>();
+		int nextInsertPos = -1;
 		boolean result = matcher.find();
 		if (result) {
 			do {
@@ -838,8 +838,17 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 				
 				if (clause != null) {
 					String scopeDescription = scopeDescriptionPerLastKeyword.get(clause.toLowerCase());
-					if (scopeDescription !=  null) {
-						lastScopeDescription = scopeDescription;
+					if (scopeDescription != null) {
+						if (outlineInfos != null) {
+							int pos = matcher.end();
+							if (!outlineInfos.isEmpty() && "from".equalsIgnoreCase(scopeDescription) && "Select".equalsIgnoreCase(outlineInfos.get(outlineInfos.size() - 1).scopeDescriptor)) {
+								pos = outlineInfos.get(outlineInfos.size() - 1).position;
+								outlineInfos.remove(outlineInfos.size() - 1);
+								scopeDescription = "Select " + scopeDescription;								
+							}
+							nextInsertPos = tokenStack.isEmpty()? -1 : outlineInfos.size();
+							outlineInfos.add(new OutlineInfo(null, null, level, pos, scopeDescription));
+						}
 					}
 				}
 				
@@ -885,9 +894,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 								TABLE mdTable = findTable(mdSchema, table);
 								if (mdTable != null) {
 									if (outlineInfos != null && mdTable instanceof MDTable) {
-										outlineInfos.addAll(scopeDescriptionStack);
-										scopeDescriptionStack.clear();
-										outlineInfos.add(new OutlineInfo((MDTable) mdTable, alias, level, tokenPosStack.peek(), null));
+										outlineInfos.add(nextInsertPos >= 0? nextInsertPos : outlineInfos.size(), new OutlineInfo((MDTable) mdTable, alias, level, tokenPosStack.peek(), null));
 									}
 									Integer prevLevel = levelPerAlias.get(alias);
 									if (prevLevel == null || prevLevel < level) {
@@ -929,9 +936,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 								if (mdTable != null) {
 									if (outlineInfos != null) {
 										if (outlineInfos != null && mdTable instanceof MDTable) {
-											outlineInfos.addAll(scopeDescriptionStack);
-											scopeDescriptionStack.clear();
-											outlineInfos.add(new OutlineInfo((MDTable) mdTable, null, level, tokenPosStack.peek(), null));
+											outlineInfos.add(nextInsertPos >= 0? nextInsertPos : outlineInfos.size(), new OutlineInfo((MDTable) mdTable, null, level, tokenPosStack.peek(), null));
 										}
 									}
 									Integer prevLevel = levelPerAlias.get(alias);
@@ -952,17 +957,10 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 				}
 				if (keyword != null) {
 					if ("(".equals(keyword)) {
-						if (outlineInfos != null) {
-							scopeDescriptionStack.push(new OutlineInfo(null, null, level, matcher.end(), lastScopeDescription == null? "Table" : lastScopeDescription));
-						}
 						++level;
 					} else if (")".equals(keyword)) {
 						--level;
-						if (!scopeDescriptionStack.isEmpty()) {
-							lastScopeDescription = scopeDescriptionStack.pop().scopeDescriptor;
-						} else {
-							lastScopeDescription = null;
-						}
+						nextInsertPos = -1;
 					}
 				}
 				result = matcher.find();
@@ -980,6 +978,13 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 					aliasesOnTopLevel.put(e.getKey(), aliases.get(e.getKey()));
 				}
 			}
+		}
+		final int MAX_OUTLINE_INFOS = 300;
+		if (outlineInfos != null && outlineInfos.size() > MAX_OUTLINE_INFOS) {
+			ArrayList<OutlineInfo> reducedOutlineInfos = new ArrayList<OutlineInfo>(outlineInfos.subList(0, MAX_OUTLINE_INFOS));
+			reducedOutlineInfos.add(new OutlineInfo(null, null, 0, 0, "more..."));
+			outlineInfos.clear();
+			outlineInfos.addAll(reducedOutlineInfos);
 		}
 		return aliases;
 	}
@@ -1037,7 +1042,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 
 	private static String reIdentifier = "(?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+)";
 	private static String reIdentDotOnly = ".*?(" + reIdentifier + ")\\s*\\.\\s*[\"'`]?\\w*$";
-	private static String reClauseKW = "\\b(?:select|from|update|where|group|having|with|in|exists|into|delete)\\b";
+	private static String reClauseKW = "\\b(?:select|from|update|where|group|having|with|in|exists|into|delete|insert|order|union)\\b";
 	private static String reIdentWSWordPattern = ".*?(" + reIdentifier + ")\\s+\\w*$";
 	
 	private static Pattern identDotOnlyPattern = Pattern.compile(reIdentDotOnly, Pattern.DOTALL);
