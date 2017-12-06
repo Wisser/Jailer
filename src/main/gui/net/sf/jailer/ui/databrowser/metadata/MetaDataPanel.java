@@ -120,7 +120,8 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         initComponents();
         
         hideOutline();
-
+        lastDividerLocation = -1;
+        
         final ListCellRenderer olRenderer = outlineList.getCellRenderer();
         outlineList.setCellRenderer(new ListCellRenderer() {
             @Override
@@ -668,27 +669,28 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        splitPane = new javax.swing.JSplitPane();
         jPanel1 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         metaDataTree = new javax.swing.JTree();
         refreshButton = new javax.swing.JButton();
         refreshButton1 = new javax.swing.JButton();
         jPanel2 = new javax.swing.JPanel();
-        jScrollPane2 = new javax.swing.JScrollPane();
+        outlineScrollPane = new javax.swing.JScrollPane();
         outlineList = new javax.swing.JList();
         outlineLabel = new javax.swing.JLabel();
-        jSeparator1 = new javax.swing.JSeparator();
-        jPanel3 = new javax.swing.JPanel();
+        placeholderPanel = new javax.swing.JPanel();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
-        jLabel8 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
+
+        splitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        splitPane.setResizeWeight(1.0);
+        splitPane.setOneTouchExpandable(true);
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
@@ -730,13 +732,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
         jPanel1.add(refreshButton1, gridBagConstraints);
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(jPanel1, gridBagConstraints);
+        splitPane.setLeftComponent(jPanel1);
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
@@ -746,7 +742,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             public Object getElementAt(int i) { return strings[i]; }
         });
         outlineList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
-        jScrollPane2.setViewportView(outlineList);
+        outlineScrollPane.setViewportView(outlineList);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -754,84 +750,65 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        jPanel2.add(jScrollPane2, gridBagConstraints);
+        jPanel2.add(outlineScrollPane, gridBagConstraints);
 
         outlineLabel.setText(" Outline");
+        outlineLabel.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+        gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
         jPanel2.add(outlineLabel, gridBagConstraints);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        jPanel2.add(jSeparator1, gridBagConstraints);
 
-        jPanel3.setLayout(new java.awt.GridBagLayout());
+        placeholderPanel.setLayout(new java.awt.GridBagLayout());
 
         jLabel1.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
-        jPanel3.add(jLabel1, gridBagConstraints);
+        placeholderPanel.add(jLabel1, gridBagConstraints);
 
         jLabel2.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
-        jPanel3.add(jLabel2, gridBagConstraints);
+        placeholderPanel.add(jLabel2, gridBagConstraints);
 
         jLabel3.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 3;
-        jPanel3.add(jLabel3, gridBagConstraints);
+        placeholderPanel.add(jLabel3, gridBagConstraints);
 
         jLabel4.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 4;
-        jPanel3.add(jLabel4, gridBagConstraints);
+        placeholderPanel.add(jLabel4, gridBagConstraints);
 
         jLabel5.setText(" ");
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 5;
-        jPanel3.add(jLabel5, gridBagConstraints);
-
-        jLabel6.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
-        jPanel3.add(jLabel6, gridBagConstraints);
-
-        jLabel7.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
-        jPanel3.add(jLabel7, gridBagConstraints);
-
-        jLabel8.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 8;
-        jPanel3.add(jLabel8, gridBagConstraints);
+        placeholderPanel.add(jLabel5, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridheight = 2;
-        jPanel2.add(jPanel3, gridBagConstraints);
+        gridBagConstraints.gridy = 2;
+        jPanel2.add(placeholderPanel, gridBagConstraints);
+
+        splitPane.setRightComponent(jPanel2);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
+        gridBagConstraints.gridy = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(4, 0, 0, 0);
-        add(jPanel2, gridBagConstraints);
+        gridBagConstraints.weighty = 1.0;
+        add(splitPane, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void refreshButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_refreshButtonActionPerformed
@@ -844,23 +821,37 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
     private List<OutlineInfo> outlineTables = new ArrayList<OutlineInfo>();
     private boolean inSelectOutlineTable = false;
+	private boolean isOutlineVisible = true;
+	private int lastDividerLocation;
     
     private void showOutline() {
-        jPanel2.setVisible(true);
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                TreePath path = metaDataTree.getSelectionPath();
-                if (path != null) {
-                    Rectangle bounds = metaDataTree.getPathBounds(path);
-                    metaDataTree.scrollRectToVisible(new Rectangle(bounds.x, bounds.y, 1, bounds.height));
-                }
-            }
-        });
+    	if (!isOutlineVisible) {
+    		outlineScrollPane.setVisible(true);
+    		placeholderPanel.setVisible(true);
+    		splitPane.setDividerLocation(Math.min(lastDividerLocation, splitPane.getHeight() - 80));
+    		SwingUtilities.invokeLater(new Runnable() {
+	            @Override
+	            public void run() {
+	                TreePath path = metaDataTree.getSelectionPath();
+	                if (path != null) {
+	                    Rectangle bounds = metaDataTree.getPathBounds(path);
+	                    metaDataTree.scrollRectToVisible(new Rectangle(bounds.x, bounds.y, 1, bounds.height));
+	                }
+	            }
+	        });
+    		jPanel2.repaint();
+    		isOutlineVisible = true;
+    	}
     }
 
     private void hideOutline() {
-        jPanel2.setVisible(false);
+    	if (isOutlineVisible) {
+    		isOutlineVisible = false;
+    		outlineScrollPane.setVisible(false);
+    		placeholderPanel.setVisible(false);
+    		lastDividerLocation = splitPane.getDividerLocation();
+    		splitPane.setDividerLocation(splitPane.getHeight() - 32);
+    	}
     }
 
     private String outlineTableRender(OutlineInfo info, boolean selected) {
@@ -889,9 +880,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         render = "<html>" + render;
         return render;
     }
-    
+
     private int indexOfInfoAtCaret = -1;
-    
+
     public void setOutline(List<OutlineInfo> outlineTables, int indexOfInfoAtCaret) {
         this.outlineTables = new ArrayList<OutlineInfo>(outlineTables);
         this.indexOfInfoAtCaret = indexOfInfoAtCaret;
@@ -954,20 +945,17 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
-    private javax.swing.JLabel jLabel8;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JSeparator jSeparator1;
     private javax.swing.JTree metaDataTree;
     private javax.swing.JLabel outlineLabel;
     private javax.swing.JList outlineList;
+    private javax.swing.JScrollPane outlineScrollPane;
+    private javax.swing.JPanel placeholderPanel;
     private javax.swing.JButton refreshButton;
     private javax.swing.JButton refreshButton1;
+    private javax.swing.JSplitPane splitPane;
     // End of variables declaration//GEN-END:variables
 
     protected abstract void open(Table table);
