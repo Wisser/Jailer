@@ -719,11 +719,11 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 						ci.url = currentConnection.url;
 						ci.user = currentConnection.user;
 						if (edit(ci, false)) {
+							connectionList.add(i + 1, ci);
+							refresh();
 							RowSorter<?> rowSorter = connectionsTable.getRowSorter();
 							int selectedRowIndex = rowSorter.convertRowIndexToView(i + 1);
-							connectionList.add(i + 1, ci);
 							connectionsTable.getSelectionModel().setSelectionInterval(selectedRowIndex, selectedRowIndex);
-							refresh();
 							store();
 						}
 						break;

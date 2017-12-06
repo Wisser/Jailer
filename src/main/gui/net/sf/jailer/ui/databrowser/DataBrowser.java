@@ -2899,8 +2899,8 @@ public class DataBrowser extends javax.swing.JFrame {
 							metaDataPanel.select(mdTable);
 						}
 						@Override
-						protected void setOutlineTables(List<OutlineInfo> outlineTables) {
-							metaDataPanel.setOutline(outlineTables);
+						protected void setOutlineTables(List<OutlineInfo> outlineTables, int indexOfInfoAtCaret) {
+							metaDataPanel.setOutline(outlineTables, indexOfInfoAtCaret);
 						}
 					};
 					sqlConsoleContainerPanel.removeAll();
