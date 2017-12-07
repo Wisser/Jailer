@@ -884,6 +884,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         jSplitPane2.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane2.setResizeWeight(0.5);
+        jSplitPane2.setOneTouchExpandable(true);
 
         jPanel2.setLayout(new java.awt.GridBagLayout());
 
@@ -947,6 +948,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         jSplitPane2.setLeftComponent(jPanel2);
 
         jSplitPane1.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        jSplitPane1.setOneTouchExpandable(true);
 
         jPanel6.setLayout(new java.awt.GridBagLayout());
 
