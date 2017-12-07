@@ -1026,6 +1026,20 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                 --endIndex;
                 outlineInfos.add(endIndex, new OutlineInfo(null, null, infoLevel, pos, description));
             }
+        } else if (outlineInfos != null && endIndex > 1 
+                && "select".equalsIgnoreCase(outlineInfos.get(endIndex - 2).scopeDescriptor) 
+                && "from".equalsIgnoreCase(outlineInfos.get(endIndex - 1).scopeDescriptor)) {
+        	int infoLevel = outlineInfos.get(endIndex - 1).level;
+            if (infoLevel == outlineInfos.get(endIndex - 2).level) {
+            	int pos = outlineInfos.get(endIndex - 2).position;
+            	if (outlineInfos.get(endIndex - 1).position - pos <= 160) {
+                    outlineInfos.remove(endIndex - 1);
+                    --endIndex;
+                    outlineInfos.remove(endIndex - 1);
+                    --endIndex;
+                    outlineInfos.add(endIndex, new OutlineInfo(null, null, infoLevel, pos, "Select from"));
+            	}
+            }
         }
     }
 
