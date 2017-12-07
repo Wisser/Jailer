@@ -280,6 +280,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 	private AtomicBoolean pending = new AtomicBoolean(false);
 	private AtomicBoolean stopped = new AtomicBoolean(false);
 	private String prevSql = null;
+	private int prevCaretPos;
 	
 	/**
 	 * Update of outline of statement under carret.
@@ -292,10 +293,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 				loc = editorPane.getCurrentStatementLocation(true, true, null, true);
 				sql = editorPane.getText(loc.a, loc.b, true);
 			}
-			if (checkPrevSql && sql.equals(prevSql)) {
+			if (checkPrevSql && sql.equals(prevSql) && editorPane.getCaretPosition() == prevCaretPos) {
 				return;
 			}
 			prevSql = sql;
+			prevCaretPos = editorPane.getCaretPosition();
 			
 			try {
 				updateOutline(sql, editorPane.getLineStartOffset(loc.a));
@@ -650,7 +652,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 		int caretPos = editorPane.getCaretPosition();
 		TreeSet<Integer> levels = new TreeSet<Integer>();
 		for (OutlineInfo info: outlineInfos) {
-			if (info.position + startPosition <= caretPos) {
+			if (info.position + startPosition <= caretPos || indexOfInfoAtCaret < 0) {
 				indexOfInfoAtCaret = relocatedOutlineInfos.size();
 			}
 			relocatedOutlineInfos.add(new OutlineInfo(info.mdTable, info.alias, info.level, info.position + startPosition, info.scopeDescriptor));
