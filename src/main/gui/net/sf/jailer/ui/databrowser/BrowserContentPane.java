@@ -1502,7 +1502,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 //			}
 			
 			subjectCondition = root.whereClause;
-			if (doExport && (getParentBrowser() != null || isLimitExceeded)) {
+			if (doExport && (getParentBrowser() != null /* || isLimitExceeded */)) {
 				subjectCondition = root.whereClause;
 				if (subjectCondition != null) {
 					subjectCondition = subjectCondition.replace('\r', ' ').replace('\n', ' ');
