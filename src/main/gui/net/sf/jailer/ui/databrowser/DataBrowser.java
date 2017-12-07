@@ -1098,7 +1098,6 @@ public class DataBrowser extends javax.swing.JFrame {
 
         jSplitPane4.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
         jSplitPane4.setResizeWeight(1.0);
-        jSplitPane4.setToolTipText("");
         jSplitPane4.setContinuousLayout(true);
         jSplitPane4.setOneTouchExpandable(true);
 
