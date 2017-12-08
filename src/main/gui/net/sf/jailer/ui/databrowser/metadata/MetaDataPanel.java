@@ -127,11 +127,16 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
                     boolean cellHasFocus) {
+            	String tooltip = null;
                 if (value instanceof OutlineInfo) {
+                    tooltip = ((OutlineInfo) value).tooltip;
                     value = outlineTableRender((OutlineInfo) value, isSelected);
                 }
                 Component render = olRenderer.getListCellRendererComponent(list, value, index, false, cellHasFocus);
-                render.setBackground(isSelected? new Color(220, 220, 255) : index == indexOfInfoAtCaret? new Color(255, 255, 170) : Color.WHITE);
+                render.setBackground(isSelected? new Color(240, 240, 255) : index == indexOfInfoAtCaret? new Color(255, 255, 170) : Color.WHITE);
+                if (render instanceof JLabel) {
+                	((JLabel) render).setToolTipText(tooltip);
+                }
                 return render;
             }
         });
@@ -685,6 +690,8 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -795,6 +802,18 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 5;
         placeholderPanel.add(jLabel5, gridBagConstraints);
 
+        jLabel6.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 6;
+        placeholderPanel.add(jLabel6, gridBagConstraints);
+
+        jLabel7.setText(" ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 7;
+        placeholderPanel.add(jLabel7, gridBagConstraints);
+
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -856,26 +875,39 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
     private String outlineTableRender(OutlineInfo info, boolean selected) {
         String render = "<font color=\"#000000\">";
-        if (info.scopeDescriptor != null) {
-            render = "<font color=\"#0000ff\">" + info.scopeDescriptor + "</font>";
-        } else if (info.mdTable != null) {
-            if (info.mdTable.getSchema().isDefaultSchema) {
-                render += info.mdTable.getName();
-            } else {
-                render += info.mdTable.getSchema().getName() + "." + info.mdTable.getName();
-            }
+        if (info.mdTable != null || info.isCTE) {
+        	if (info.isCTE) {
+        		render = info.scopeDescriptor;
+        	} else {
+	            if (info.mdTable.getSchema().isDefaultSchema) {
+	                render += info.mdTable.getName();
+	            } else {
+	                render += info.mdTable.getSchema().getName() + "." + info.mdTable.getName();
+	            }
+        	}
             String alias = info.alias;
             if (alias != null) {
-                render += " <font color=\"#0000ff\">as</font> " + alias;
+            	if (!render.isEmpty()) {
+            		render += " ";
+            	}
+                render += "<font color=\"#0000dd\"><b>as</b></font> " + alias;
             }
             render += "</font>";
+        } else if (info.scopeDescriptor != null) {
+            render = "<font color=\"#0000dd\"><b>" + info.scopeDescriptor + "</b></font>";
         }
+        
         String indent = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
-		if (info.scopeDescriptor == null) {
+        if (info.isCTE && "".equals(info.alias)) {
+        	render = "&nbsp;&nbsp;&nbsp;" + render;
+        } else if (info.scopeDescriptor == null || info.isCTE) {
         	render = indent + render;
         }
         for (int i = 0; i < info.level; ++i) {
         	render = indent + render;
+        }
+        if (info.context != null) {
+        	render += "<font color=\"#aa3333\">&nbsp;&nbsp;" + info.context + "</font>";
         }
         render = "<html>" + render;
         return render;
@@ -929,7 +961,13 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         public int level;
         public final int position;
         public final String scopeDescriptor;
-
+        public boolean withContext = false;
+        public int contextPosition;
+        public String context;
+        public String tooltip;
+		public int contextEnd = 0;
+		public boolean isCTE;
+        
         public OutlineInfo(MDTable mdTable, String alias, int level, int position, String scopeDescriptor) {
             this.mdTable = mdTable;
             this.alias = alias;
@@ -945,6 +983,8 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;

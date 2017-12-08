@@ -806,8 +806,8 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         scopeDescriptionPerLastKeyword.put("from", "from");
         scopeDescriptionPerLastKeyword.put("with", "With");
         scopeDescriptionPerLastKeyword.put("where", "Where");
-        scopeDescriptionPerLastKeyword.put("group", "Group by");
-        scopeDescriptionPerLastKeyword.put("order", "Order by");
+        scopeDescriptionPerLastKeyword.put("group", "Group");
+        scopeDescriptionPerLastKeyword.put("order", "Order");
         scopeDescriptionPerLastKeyword.put("having", "Having");
         scopeDescriptionPerLastKeyword.put("update", "Update");
         scopeDescriptionPerLastKeyword.put("into", "into");
@@ -816,17 +816,34 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         scopeDescriptionPerLastKeyword.put("union", "Union");
         scopeDescriptionPerLastKeyword.put("values", "Values");
         scopeDescriptionPerLastKeyword.put("merge", "Merge");
-
+        
+        HashSet<String> scopesWithContext = new HashSet<String>();
+        scopesWithContext.add("select");
+        scopesWithContext.add("where");
+        scopesWithContext.add("group");
+        scopesWithContext.add("order");
+        scopesWithContext.add("having");
+        scopesWithContext.add("values");
+        
         Map<String, TABLE> aliases = new LinkedHashMap<String, TABLE>();
         Pattern pattern = Pattern.compile("(?:\\bas\\b)|(" + reClauseKW + ")|(,|\\(|\\)|=|<|>|!|\\.|\\b(?:on|where|left|right|full|inner|outer|join|and|or|not|set)\\b)|(" + reIdentifier + ")", Pattern.DOTALL|Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(statement + ")");
         boolean inFrom = false;
+        boolean inWith = false;
+        boolean cteExpected = false;
+        boolean isSubselect = false;
+        boolean wasSubselect = false;
         int level = 0;
+        boolean isNewScope = true;
         Map<String, Integer> levelPerAlias = new HashMap<String, Integer>();
         Stack<String> tokenStack = new Stack<String>();
         Stack<Integer> tokenPosStack = new Stack<Integer>();
-//		Stack<OutlineInfo> scopeDescriptionStack = new Stack<OutlineInfo>();
+		Stack<Boolean> inWithStack = new Stack<Boolean>();
+		Stack<Boolean> isSubselectStack = new Stack<Boolean>();
+		Stack<Boolean> inFromStack = new Stack<Boolean>();
+		Set<String> ctes = new HashSet<String>();
         int nextInsertPos = -1;
+        int scopeBeginn = 0;
         boolean result = matcher.find();
         if (result) {
             do {
@@ -835,22 +852,68 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                 String identifier = matcher.group(3);
 
                 if (clause != null) {
-                    if (!"from".equalsIgnoreCase(clause) && !"update".equalsIgnoreCase(clause)) {
+                    if (!"from".equalsIgnoreCase(clause) && !"update".equalsIgnoreCase(clause) && !"into".equalsIgnoreCase(clause)) {
                         keyword = clause;
                     }
                 }
                 
-                if (clause != null) {
-                    String scopeDescription = scopeDescriptionPerLastKeyword.get(clause.toLowerCase());
+				if (isNewScope && "select".equalsIgnoreCase(keyword)) {
+                	isSubselect = true;
+                	if (outlineInfos != null && outlineInfos.size() > 0) {
+                		OutlineInfo info = outlineInfos.get(outlineInfos.size() - 1);
+                		if (info.withContext) {
+                			if (info.contextEnd <= 0 || info.contextEnd > scopeBeginn) {
+                				info.contextEnd = scopeBeginn;
+                			}
+                		}
+                	}
+                } else if (keyword != null || clause != null || identifier != null) {
+                	isNewScope = false;
+                }
+
+                if (clause != null && outlineInfos != null) {
+                    String clauseLC = clause.toLowerCase();
+					String scopeDescription = scopeDescriptionPerLastKeyword.get(clauseLC);
                     if (scopeDescription != null) {
-                        if (outlineInfos != null) {
-                            int pos = matcher.start();
-                            nextInsertPos = tokenStack.isEmpty()? -1 : outlineInfos.size();
-                            outlineInfos.add(new OutlineInfo(null, null, level, pos, scopeDescription));
-                        }
+                        int pos = matcher.start();
+                        nextInsertPos = tokenStack.isEmpty()? -1 : outlineInfos.size();
+                        OutlineInfo info = new OutlineInfo(null, null, level, pos, scopeDescription);
+                        info.withContext = scopesWithContext.contains(clauseLC);
+                        info.contextPosition = matcher.end();
+						outlineInfos.add(info);
                     }
                 }
                 
+                if (wasSubselect && identifier != null) {
+                	if (outlineInfos != null) {
+                        int pos = matcher.start();
+                        nextInsertPos = tokenStack.isEmpty()? -1 : outlineInfos.size();
+                        OutlineInfo info = new OutlineInfo(null, identifier, level, pos, "");
+                        info.isCTE = true;
+						outlineInfos.add(info);
+                	}
+                }
+
+                if (inWith && outlineInfos != null) {
+                	if (",".equals(keyword)) {
+                		cteExpected = true;
+                	} else {
+                		if (cteExpected && identifier != null) {
+                			ctes.add(Quoting.staticUnquote(identifier).toUpperCase(Locale.ENGLISH));
+                            int pos = matcher.start();
+                            nextInsertPos = tokenStack.isEmpty()? -1 : outlineInfos.size();
+                            OutlineInfo info = new OutlineInfo(null, "", level, pos, identifier);
+                            info.isCTE = true;
+                            outlineInfos.add(info);
+                		}
+                		cteExpected = false;
+                	}
+                }
+                if ("with".equalsIgnoreCase(keyword)) {
+                	inWith = true;
+                	cteExpected = true;
+                }
+
                 boolean clear = false;
                 if (inFrom) {
                     if (keyword != null) {
@@ -869,16 +932,19 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                         String schema = null;
                         String table = null;
                         String alias = null;
+                        int pos = 0;
                         if (tokens.size() >= 4) {
                             if (tokens.get(tokens.size() - 3).equals(".")) {
                                 alias = tokens.get(tokens.size() - 1);
                                 table = tokens.get(tokens.size() - 2);
                                 schema = tokens.get(tokens.size() - 4);
+                                pos = tokenPosStack.get(tokenPosStack.size() - 4);
                             }
                         } else if (tokens.size() >= 2) {
                             if (!tokens.get(tokens.size() - 2).equals(".")) {
                                 alias = tokens.get(tokens.size() - 1);
                                 table = tokens.get(tokens.size() - 2);
+                                pos = tokenPosStack.get(tokenPosStack.size() - 2);
                                 schema = null;
                             }
                         }
@@ -891,10 +957,13 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                             }
                             if (mdSchema != null) {
                                 TABLE mdTable = findTable(mdSchema, table);
-                                if (mdTable != null || "dual".equalsIgnoreCase(table)) {
+                                if (mdTable != null || "dual".equalsIgnoreCase(table) || ctes.contains(Quoting.staticUnquote(table).toUpperCase(Locale.ENGLISH))) {
                                     if (outlineInfos != null && (mdTable == null || mdTable instanceof MDTable)) {
-                                        outlineInfos.add(nextInsertPos >= 0? nextInsertPos : outlineInfos.size(), new OutlineInfo((MDTable) mdTable, alias, level, tokenPosStack.peek(), mdTable == null? table : null));
+                                    	OutlineInfo info = new OutlineInfo((MDTable) mdTable, alias, level, pos, mdTable == null? table : null);
+                                    	info.isCTE = mdTable == null;
+                                        outlineInfos.add(nextInsertPos >= 0? nextInsertPos : outlineInfos.size(), info);
                                         mergeOutlineInfos(outlineInfos, (nextInsertPos >= 0? nextInsertPos : outlineInfos.size()) + 1);
+                                        tokenStack.clear();
                                     }
                                     if (mdTable != null) {
 	                                    Integer prevLevel = levelPerAlias.get(alias);
@@ -913,15 +982,18 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                         String schema = null;
                         String table = null;
                         String alias = null;
+                        int pos = 0;
                         if (tokens.size() >= 3) {
                             if (tokens.get(tokens.size() - 2).equals(".")) {
                                 table = tokens.get(tokens.size() - 1);
                                 alias = table;
                                 schema = tokens.get(tokens.size() - 3);
+                                pos = tokenPosStack.get(tokenPosStack.size() - 3);
                             }
                         } else if (tokens.size() >= 1) {
                             if (!tokens.get(tokens.size() - 1).equals(".")) {
                                 table = tokens.get(tokens.size() - 1);
+                                pos = tokenPosStack.get(tokenPosStack.size() - 1);
                                 alias = table;
                                 schema = null;
                             }
@@ -935,11 +1007,14 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                             }
                             if (mdSchema != null) {
                                 TABLE mdTable = findTable(mdSchema, table);
-                                if (mdTable != null || "dual".equalsIgnoreCase(table)) {
+                                if (mdTable != null || "dual".equalsIgnoreCase(table) || ctes.contains(Quoting.staticUnquote(table).toUpperCase(Locale.ENGLISH))) {
                                     if (outlineInfos != null) {
                                         if (outlineInfos != null && (mdTable == null || mdTable instanceof MDTable)) {
-                                            outlineInfos.add(nextInsertPos >= 0? nextInsertPos : outlineInfos.size(), new OutlineInfo((MDTable) mdTable, null, level, tokenPosStack.peek(), mdTable == null? table : null));
+                                            OutlineInfo info = new OutlineInfo((MDTable) mdTable, null, level, pos, mdTable == null? table : null);
+                                            info.isCTE = mdTable == null;
+											outlineInfos.add(nextInsertPos >= 0? nextInsertPos : outlineInfos.size(), info);
                                             mergeOutlineInfos(outlineInfos, (nextInsertPos >= 0? nextInsertPos : outlineInfos.size()) + 1);
+	                                        tokenStack.clear();
                                         }
                                     }
                                     if (mdTable != null) {
@@ -947,6 +1022,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 	                                    if (prevLevel == null || prevLevel < level) {
 	                                        aliases.put(alias, mdTable);
 	                                        levelPerAlias.put(alias, level);
+	                                        tokenStack.clear();
 	                                    }
                                     }
                                 }
@@ -957,18 +1033,53 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                     }
                 }
                 if (clause != null) {
-                    inFrom = "from".equalsIgnoreCase(clause) || "update".equalsIgnoreCase(clause);
+                    inFrom = "from".equalsIgnoreCase(clause) || "update".equalsIgnoreCase(clause) || "into".equalsIgnoreCase(clause);
+                    inWith = "with".equalsIgnoreCase(clause);
                     clear = true;
+                }
+                if (keyword != null || clause != null || identifier != null) {
+                	wasSubselect = false;
                 }
                 if (keyword != null) {
                     if ("(".equals(keyword)) {
                         ++level;
+                        inWithStack.push(inWith);
+                        inFromStack.push(inFrom);
+                        isSubselectStack.push(isSubselect);
+                        inWith = false;
+                        inFrom = false;
+                        isSubselect = false;
+                        isNewScope = true;
+                        scopeBeginn = matcher.start();
                     } else if (")".equals(keyword)) {
                         --level;
+                        wasSubselect = isSubselect;
+                        inWith = false;
+                        inFrom = false;
+                        isSubselect = false;
+                        if (!inWithStack.isEmpty()) {
+                        	inWith = inWithStack.pop();
+                        }
+                        if (!inFromStack.isEmpty()) {
+                        	inFrom = inFromStack.pop();
+                        }
+                        if (!isSubselectStack.isEmpty()) {
+                        	isSubselect = isSubselectStack.pop();
+                        }
                         nextInsertPos = -1;
+                        if (outlineInfos != null) {
+	                        if (outlineInfos.size() > 0) {
+	                        	OutlineInfo info = outlineInfos.get(outlineInfos.size() - 1);
+	                        	if (info.level > level) {
+	                        		if (info.contextEnd == 0) {
+	                        			info.contextEnd = matcher.start();
+	                        		}
+	                        	}
+	                        }
+                        }
                     }
                 }
-                
+
                 if (outlineInfos != null) {
                     mergeOutlineInfos(outlineInfos, outlineInfos.size());
                     
@@ -1009,6 +1120,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
             if (infoLevel == outlineInfos.get(endIndex - 2).level) {
                 int pos;
                 String description;
+                /*
                 if (endIndex > 2
                         && "select".equalsIgnoreCase(outlineInfos.get(endIndex - 3).scopeDescriptor)
                         && infoLevel == outlineInfos.get(endIndex - 3).level) {
@@ -1017,16 +1129,17 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                     outlineInfos.remove(endIndex - 1);
                     --endIndex;
                 } else {
-                    pos = outlineInfos.get(endIndex - 2).position;
+                */
+                	pos = outlineInfos.get(endIndex - 2).position;
                     description = "from " + outlineInfos.get(endIndex - 1).scopeDescriptor;
-                }
+                // }
                 outlineInfos.remove(endIndex - 1);
                 --endIndex;
                 outlineInfos.remove(endIndex - 1);
                 --endIndex;
                 outlineInfos.add(endIndex, new OutlineInfo(null, null, infoLevel, pos, description));
             }
-        } else if (outlineInfos != null && endIndex > 1 
+        } /* else if (outlineInfos != null && endIndex > 1 
                 && "select".equalsIgnoreCase(outlineInfos.get(endIndex - 2).scopeDescriptor) 
                 && "from".equalsIgnoreCase(outlineInfos.get(endIndex - 1).scopeDescriptor)) {
         	int infoLevel = outlineInfos.get(endIndex - 1).level;
@@ -1040,7 +1153,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                     outlineInfos.add(endIndex, new OutlineInfo(null, null, infoLevel, pos, "Select from"));
             	}
             }
-        }
+        } */
     }
 
     public enum Clause {

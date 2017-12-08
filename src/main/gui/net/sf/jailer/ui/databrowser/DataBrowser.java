@@ -1135,7 +1135,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
         tableTreesTabbedPane.addTab("Navigation", navigationPanel);
 
-        tablesPanel.setLayout(new javax.swing.BoxLayout(tablesPanel, javax.swing.BoxLayout.LINE_AXIS));
+        tablesPanel.setLayout(new java.awt.BorderLayout());
         tableTreesTabbedPane.addTab("Tables", tablesPanel);
 
         jSplitPane4.setLeftComponent(tableTreesTabbedPane);
@@ -1864,6 +1864,10 @@ public class DataBrowser extends javax.swing.JFrame {
                         UIManager.setLookAndFeel(plaf);
                         ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("pressed ENTER"), "pressed");
                         ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("released ENTER"), "released");
+                        Object dSize = UIManager.get("SplitPane.dividerSize");
+                        if (new Integer(10).equals(dSize)) {
+                        	UIManager.put("SplitPane.dividerSize", new Integer(14));
+                        }
                     } catch (Exception x) {
                     }
 //					try {
@@ -2884,7 +2888,7 @@ public class DataBrowser extends javax.swing.JFrame {
 				};
 			}
 	    	session.setSessionProperty(getClass(), "metaDataPanel", metaDataPanel);
-			tablesPanel.add(metaDataPanel);
+			tablesPanel.add(metaDataPanel, java.awt.BorderLayout.CENTER);
 			
 			try {
 				if (sqlConsole == null) {
