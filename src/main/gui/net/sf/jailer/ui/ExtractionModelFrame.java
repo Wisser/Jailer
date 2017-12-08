@@ -1724,7 +1724,11 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 					customizeNimbus();
                     ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("pressed ENTER"), "pressed");
                     ((InputMap) UIManager.get("Button.focusInputMap")).put(KeyStroke.getKeyStroke("released ENTER"), "released");
-				} catch (Exception x) {
+                    Object dSize = UIManager.get("SplitPane.dividerSize");
+                    if (new Integer(10).equals(dSize)) {
+                    	UIManager.put("SplitPane.dividerSize", new Integer(14));
+                    }
+                } catch (Exception x) {
 				}
 				
 				String file = null;
