@@ -10,9 +10,6 @@ cd ..
 mv 1.co/jailer-code/* jailer
 cd jailer
 
-find . -iname "*.htm" -exec sed "s|class=\"spacer\" .*width=\"100%\"> *<br>|class=\"spacer\" width=\"100%\">|g" '{}' --in-place  \;
-find . -iname "*.html" -exec sed "s|class=\"spacer\" .*width=\"100%\"> *<br>|class=\"spacer\" width=\"100%\">|g" '{}' --in-place  \;
-
 cp home.htm index.html
 find -iname ".svn" -exec rm -rf '{}' \;
 find -iname ".cvs*" -exec rm -rf '{}' \;
