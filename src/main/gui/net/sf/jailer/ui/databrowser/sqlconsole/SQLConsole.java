@@ -1435,7 +1435,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        historyComboBox.setModel(historyComboboxModel());
+        SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+		        historyComboBox.setModel(historyComboboxModel());
+			}
+		});
     }
 
     private synchronized void storeHistory() {
@@ -1449,7 +1454,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        historyComboBox.setModel(historyComboboxModel());
+        SwingUtilities.invokeLater(new Runnable() {
+			@Override
+			public void run() {
+				historyComboBox.setModel(historyComboboxModel());
+			}
+		});
     }
 
     private final ItemListener historyCBItemListener = new ItemListener() {
