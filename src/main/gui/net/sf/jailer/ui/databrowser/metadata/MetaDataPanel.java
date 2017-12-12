@@ -22,8 +22,12 @@ import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
 import java.awt.Frame;
+import java.awt.GradientPaint;
+import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.GridBagConstraints;
 import java.awt.Image;
+import java.awt.Insets;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -56,6 +60,8 @@ import javax.swing.JPopupMenu;
 import javax.swing.JTree;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
+import javax.swing.border.Border;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TreeExpansionEvent;
@@ -128,14 +134,60 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
                     boolean cellHasFocus) {
             	String tooltip = null;
+            	boolean withSeparator = false;
+            	double level = 0;
                 if (value instanceof OutlineInfo) {
                     tooltip = ((OutlineInfo) value).tooltip;
+                    withSeparator = ((OutlineInfo) value).withSeparator;
+                    level = ((OutlineInfo) value).level;
+                    if (((OutlineInfo) value).isCTE) {
+                    	level += 0.5;
+                    }
                     value = outlineTableRender((OutlineInfo) value, isSelected);
                 }
                 Component render = olRenderer.getListCellRendererComponent(list, value, index, false, cellHasFocus);
                 render.setBackground(isSelected? new Color(240, 240, 255) : index == indexOfInfoAtCaret? new Color(255, 255, 170) : Color.WHITE);
                 if (render instanceof JLabel) {
                 	((JLabel) render).setToolTipText(tooltip);
+                	
+                	if (withSeparator) {
+                		final Border border = ((JLabel) render).getBorder() == null? new EmptyBorder(0, 0, 0, 0) : ((JLabel) render).getBorder();
+						final Color bg = ((JLabel) render).getBackground();
+						final int ind = (int) (level * 22);
+						final int SEP_LENGTH = 300;
+                		((JLabel) render).setBorder(new Border() {
+							@Override
+							public void paintBorder(Component c, Graphics g, int x, int y, int width, int height) {
+								border.paintBorder(c, g, x, y, width, height);
+								if (g instanceof Graphics2D) {
+									Graphics2D g2d = (Graphics2D) g;
+									Color color = new Color(100, 100, 255);
+									int ofs = 50;
+									GradientPaint paint = new GradientPaint(
+										x + ind - 20, 0, bg==null ? Color.WHITE : bg,
+										x + ind + ofs, 0, color);
+									g2d.setPaint(paint);
+									g2d.fillRect(x + ind - 20, 0, ofs + 20, 1);
+									if (ind + ofs < SEP_LENGTH) {
+										paint = new GradientPaint(
+												x + ind + ofs, 0, color,
+												x + SEP_LENGTH, 0, bg==null ? Color.WHITE : bg);
+										g2d.setPaint(paint);
+										g2d.fillRect(x + ind + ofs, 0, SEP_LENGTH, 1);
+									}
+								}
+							}
+							@Override
+							public Insets getBorderInsets(Component c) {
+								return border.getBorderInsets(c);
+							}
+							@Override
+							public boolean isBorderOpaque() {
+								return border.isBorderOpaque();
+							}
+                		});
+                	}
+                	
                 }
                 return render;
             }
@@ -689,9 +741,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
-        jLabel5 = new javax.swing.JLabel();
-        jLabel6 = new javax.swing.JLabel();
-        jLabel7 = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -796,24 +845,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         gridBagConstraints.gridy = 4;
         placeholderPanel.add(jLabel4, gridBagConstraints);
 
-        jLabel5.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 5;
-        placeholderPanel.add(jLabel5, gridBagConstraints);
-
-        jLabel6.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 6;
-        placeholderPanel.add(jLabel6, gridBagConstraints);
-
-        jLabel7.setText(" ");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 7;
-        placeholderPanel.add(jLabel7, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 2;
@@ -848,6 +879,13 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     		outlineScrollPane.setVisible(true);
     		placeholderPanel.setVisible(true);
     		splitPane.setDividerLocation(Math.min(lastDividerLocation, splitPane.getHeight() - 80));
+    		if (lastDividerLocation == -1) {
+	        	final int PREFERRED_HEIGHT = 250;
+	        	int prefHeight = Math.min(PREFERRED_HEIGHT, (int) (splitPane.getHeight() * 0.4));
+	        	if (prefHeight > outlineScrollPane.getHeight()) {
+	        		splitPane.setDividerLocation(splitPane.getHeight() - prefHeight);
+	        	}
+    		}
     		SwingUtilities.invokeLater(new Runnable() {
 	            @Override
 	            public void run() {
@@ -900,7 +938,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         String indent = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
         if (info.isCTE && "".equals(info.alias)) {
         	render = "&nbsp;&nbsp;&nbsp;" + render;
-        } else if (info.scopeDescriptor == null || info.isCTE) {
+        } else if (info.scopeDescriptor == null || (info.isCTE && !"".equals(info.scopeDescriptor))) {
         	render = indent + render;
         }
         for (int i = 0; i < info.level; ++i) {
@@ -956,7 +994,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 
     
     public static class OutlineInfo {
-        public final MDTable mdTable;
+		public final MDTable mdTable;
         public final String alias;
         public int level;
         public final int position;
@@ -967,6 +1005,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         public String tooltip;
 		public int contextEnd = 0;
 		public boolean isCTE;
+		public boolean isBegin;
+		public boolean isEnd;
+        public boolean withSeparator;
         
         public OutlineInfo(MDTable mdTable, String alias, int level, int position, String scopeDescriptor) {
             this.mdTable = mdTable;
@@ -982,9 +1023,6 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
-    private javax.swing.JLabel jLabel5;
-    private javax.swing.JLabel jLabel6;
-    private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
