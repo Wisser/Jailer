@@ -28,11 +28,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.sql.Types;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -302,7 +302,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             try {
                 updateOutline(sql, editorPane.getLineStartOffset(loc.a));
             } catch (Exception e1) {
-                // ignore
+                e1.printStackTrace();
                 return;
             }
             
@@ -527,14 +527,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         }
                     }
                 }
-                final BrowserContentPane rb = new ResultContentPane(datamodel.get(), resultType, "", session, null, null,
-                        null, null, new HashSet<Pair<BrowserContentPane, Row>>(), new HashSet<Pair<BrowserContentPane, String>>(), limit, false, false, executionContext);
-                if (resultTypes != null && resultTypes.size() > 1) {
-                    rb.setResultSetType(resultTypes);
-                }
                 final CachedResultSet metaDataDetails = new CachedResultSet(resultSet, limit, session, SQLConsole.this);
                 resultSet.close();
-                rb.setTableFilterEnabled(metaDataDetails.getSize() > 10);
                 long now = System.currentTimeMillis();
                 status.hasSelected = true;
                 status.timeInMS += (now - startTime);
@@ -547,10 +541,19 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     localStatus.limitExceeded = true;
                 }
                 status.updateView(false);
-                rb.setStatementForReloading(sqlStatement);
+                final String finalSqlStatement = sqlStatement;
+                final Table finalResultType = resultType;
+                
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
+                        final BrowserContentPane rb = new ResultContentPane(datamodel.get(), finalResultType, "", session, null, null,
+                                null, null, new HashSet<Pair<BrowserContentPane, Row>>(), new HashSet<Pair<BrowserContentPane, String>>(), limit, false, false, executionContext);
+                        if (resultTypes != null && resultTypes.size() > 1) {
+                            rb.setResultSetType(resultTypes);
+                        }
+                        rb.setTableFilterEnabled(metaDataDetails.getSize() > 10);
+                        rb.setStatementForReloading(finalSqlStatement);
                         LoadJob loadJob = rb.newLoadJob(metaDataDetails, limit);
                         loadJob.run();
                         JComponent rTabContainer = rb.getRowsTableContainer();
@@ -649,12 +652,16 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         final int MAX_TOOLTIP_LENGTH = 100;
         List<OutlineInfo> outlineInfos = new ArrayList<OutlineInfo>();
         provider.findAliases(SQLCompletionProvider.removeCommentsAndLiterals(sql), null, outlineInfos);
+        adjustLevels(outlineInfos);
         List<OutlineInfo> relocatedOutlineInfos = new ArrayList<OutlineInfo>();
         int indexOfInfoAtCaret = -1;
         int caretPos = editorPane.getCaretPosition();
-        TreeSet<Integer> levels = new TreeSet<Integer>();
+        OutlineInfo predInfo = null;
         for (int i = 0; i < outlineInfos.size(); ++i) {
             OutlineInfo info = outlineInfos.get(i);
+        	if (info.isBegin || info.isEnd) {
+        		continue;
+        	}
             if (info.position + startPosition <= caretPos || indexOfInfoAtCaret < 0) {
                 indexOfInfoAtCaret = relocatedOutlineInfos.size();
             }
@@ -679,25 +686,66 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 rlInfo.context = UIUtil.toHTML(context, 0);
                 rlInfo.tooltip = UIUtil.toHTML(sql.substring(info.position, ttEnd), MAX_TOOLTIP_LENGTH);
             }
+            rlInfo.withSeparator = info.withSeparator || predInfo != null && predInfo.level + (predInfo.mdTable != null? 1 : 0) == info.level && i > 0 && outlineInfos.get(i - 1).isBegin;
             relocatedOutlineInfos.add(rlInfo);
-            levels.add(info.level);
-        }
-        if (!levels.isEmpty()) {
-            int maxLevel = levels.last();
-            for (int i = maxLevel; i >= 0; --i) {
-                if (!levels.contains(i)) {
-                    for (OutlineInfo info: relocatedOutlineInfos) {
-                        if (info.level > i) {
-                            --info.level;
-                        }
-                    }
-                }
-            }
+            predInfo = info;
         }
         setOutlineTables(relocatedOutlineInfos, indexOfInfoAtCaret);
     }
 
-    private boolean isDDLStatement(String sql) {
+    private void adjustLevels(List<OutlineInfo> outlineInfos) {
+    	if (outlineInfos.size() > 0) {
+    		int lastLevel = outlineInfos.get(outlineInfos.size() - 1).level;
+    		for (int level = lastLevel - 1; level >= 0; --level) {
+    			OutlineInfo info = new OutlineInfo(null, null, level, 0, "");
+    			info.isEnd = true;
+				outlineInfos.add(info);
+    		}
+    	}
+		Map<Integer, Integer> lastBegin = new HashMap<Integer, Integer>();
+		List<Pair<Integer, Integer>> pairs = new ArrayList<Pair<Integer, Integer>>();
+		Map<Integer, Pair<Integer, Integer>> pairsPerEnd = new HashMap<Integer, Pair<Integer, Integer>>();
+		for (int i = 0; i < outlineInfos.size(); ++i) {
+            OutlineInfo info = outlineInfos.get(i);
+            if (info.isBegin) {
+            	lastBegin.put(info.level, i);
+            } else if (info.isEnd) {
+            	if (lastBegin.containsKey(info.level)) {
+            		Pair<Integer, Integer> pair = new Pair<Integer, Integer>(lastBegin.get(info.level), i);
+					pairs.add(pair);
+					pairsPerEnd.put(i, pair);
+            	}
+            }
+		}
+		for (int i = pairs.size() - 1; i > 0; --i) {
+            Pair<Integer, Integer> thePair = pairs.get(i);
+			boolean ok = false;
+			int findA = thePair.a + 1;
+            Pair<Integer, Integer> pair = pairsPerEnd.get(thePair.b - 1);;
+            while (pair != null) {
+    			if (findA == pair.a) {
+    				ok = true;
+    				break;
+    			}
+    			if (findA > pair.a) {
+    				break;
+    			}
+    			Pair<Integer, Integer> predPair = pairsPerEnd.get(pair.a - 1);
+            	if (predPair != null && pair.a - 1 != predPair.b) {
+            		break;
+            	}
+        		pair = predPair;
+            }
+            
+            if (ok) {
+        		for (int j = thePair.a; j < thePair.b; ++j) {
+        			outlineInfos.get(j).level--; 
+        		}
+			}
+		}
+	}
+
+	private boolean isDDLStatement(String sql) {
         return sql.trim().matches("^(?is)\\b(drop|create|alter|rename)\\b.*");
     }
 

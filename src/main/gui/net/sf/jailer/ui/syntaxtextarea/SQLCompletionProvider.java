@@ -831,6 +831,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         boolean inFrom = false;
         boolean inWith = false;
         boolean cteExpected = false;
+        boolean firstCTE = true;
         boolean isSubselect = false;
         boolean wasSubselect = false;
         int level = 0;
@@ -844,12 +845,17 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 		Set<String> ctes = new HashSet<String>();
         int nextInsertPos = -1;
         int scopeBeginn = 0;
+        int beginEndCount = 0;
         boolean result = matcher.find();
+        StringBuffer head = new StringBuffer();
         if (result) {
             do {
                 String clause = matcher.group(1);
                 String keyword = matcher.group(2);
                 String identifier = matcher.group(3);
+
+                head.setLength(0);
+        		matcher.appendReplacement(head, "");
 
                 if (clause != null) {
                     if (!"from".equalsIgnoreCase(clause) && !"update".equalsIgnoreCase(clause) && !"into".equalsIgnoreCase(clause)) {
@@ -886,17 +892,25 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                 
                 if (wasSubselect && identifier != null) {
                 	if (outlineInfos != null) {
-                        int pos = matcher.start();
-                        nextInsertPos = tokenStack.isEmpty()? -1 : outlineInfos.size();
-                        OutlineInfo info = new OutlineInfo(null, identifier, level, pos, "");
-                        info.isCTE = true;
-						outlineInfos.add(info);
+                		if (head.toString().trim().isEmpty()) {
+	                        int pos = matcher.start();
+	                        nextInsertPos = tokenStack.isEmpty()? -1 : outlineInfos.size();
+	                        OutlineInfo info = new OutlineInfo(null, identifier, level, pos, "");
+	                        info.isCTE = true;
+	                        if (outlineInfos.size() > 0 && outlineInfos.get(outlineInfos.size() - 1).isEnd) {
+	                        	outlineInfos.add(outlineInfos.size() - 1, info);
+	                        	info.level++;
+	                        } else {
+	                        	outlineInfos.add(info);
+	                        }
+                		}
                 	}
                 }
 
                 if (inWith && outlineInfos != null) {
                 	if (",".equals(keyword)) {
                 		cteExpected = true;
+                		firstCTE = false;
                 	} else {
                 		if (cteExpected && identifier != null) {
                 			ctes.add(Quoting.staticUnquote(identifier).toUpperCase(Locale.ENGLISH));
@@ -904,6 +918,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                             nextInsertPos = tokenStack.isEmpty()? -1 : outlineInfos.size();
                             OutlineInfo info = new OutlineInfo(null, "", level, pos, identifier);
                             info.isCTE = true;
+                            info.withSeparator = !firstCTE;
                             outlineInfos.add(info);
                 		}
                 		cteExpected = false;
@@ -912,6 +927,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                 if ("with".equalsIgnoreCase(keyword)) {
                 	inWith = true;
                 	cteExpected = true;
+                	firstCTE = true;
                 }
 
                 boolean clear = false;
@@ -1043,6 +1059,12 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                 if (keyword != null) {
                     if ("(".equals(keyword)) {
                         ++level;
+                        if (outlineInfos != null) {
+                        	OutlineInfo info = new OutlineInfo(null, null, level, matcher.start(), keyword);
+                        	info.isBegin = true;
+							outlineInfos.add(info);
+							++beginEndCount;
+                        }
                         inWithStack.push(inWith);
                         inFromStack.push(inFrom);
                         isSubselectStack.push(isSubselect);
@@ -1052,6 +1074,17 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                         isNewScope = true;
                         scopeBeginn = matcher.start();
                     } else if (")".equals(keyword)) {
+                        if (outlineInfos != null) {
+                        	if (outlineInfos.size() > 0 && outlineInfos.get(outlineInfos.size() - 1).isBegin) {
+    							outlineInfos.remove(outlineInfos.size() - 1);
+                        		--beginEndCount;
+                        	} else {
+	                        	OutlineInfo info = new OutlineInfo(null, null, level, matcher.start(), keyword);
+	                        	info.isEnd = true;
+								outlineInfos.add(info);
+								++beginEndCount;
+                        	}
+                        }
                         --level;
                         wasSubselect = isSubselect;
                         inWith = false;
@@ -1083,7 +1116,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                 if (outlineInfos != null) {
                     mergeOutlineInfos(outlineInfos, outlineInfos.size());
                     
-                    if (outlineInfos.size() > MAX_OUTLINE_INFOS) {
+                    if (outlineInfos.size() - beginEndCount > MAX_OUTLINE_INFOS) {
                         ArrayList<OutlineInfo> reducedOutlineInfos = new ArrayList<OutlineInfo>(outlineInfos.subList(0, MAX_OUTLINE_INFOS));
                         reducedOutlineInfos.add(new OutlineInfo(null, null, 0, reducedOutlineInfos.get(reducedOutlineInfos.size() - 1).position, "more..."));
                         outlineInfos.clear();
