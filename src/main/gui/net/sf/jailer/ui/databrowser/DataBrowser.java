@@ -2786,7 +2786,7 @@ public class DataBrowser extends javax.swing.JFrame {
 								tableName = table.getUnqualifiedName();
 								schemaName = table.getSchema("");
 							}
-							sql = "Select * from " + (schemaName == null || schemaName.length() == 0? "" : quoting.quote(schemaName) + ".") + quoting.quote(tableName);
+							sql = "Select * From " + (schemaName == null || schemaName.length() == 0? "" : quoting.quote(schemaName) + ".") + quoting.quote(tableName);
 							if (workbenchTabbedPane.getSelectedComponent() == sqlConsoleContainerPanel) {
 								workbenchTabbedPane.setSelectedComponent(sqlConsoleContainerPanel);
 								sqlConsole.grabFocus();
@@ -2848,7 +2848,7 @@ public class DataBrowser extends javax.swing.JFrame {
 						String tableName = mdTable.getName();
 						try {
 							Quoting quoting = new Quoting(session);
-							String sql = "Select * from " + (schemaName == null? "" : quoting.quote(schemaName) + ".") + quoting.quote(tableName);
+							String sql = "Select * From " + (schemaName == null? "" : quoting.quote(schemaName) + ".") + quoting.quote(tableName);
 							if (!selectNavTreeNode(navigationTree.getModel().getRoot(), mdTable)
 								|| workbenchTabbedPane.getSelectedComponent() == sqlConsoleContainerPanel) {
 								workbenchTabbedPane.setSelectedComponent(sqlConsoleContainerPanel);
