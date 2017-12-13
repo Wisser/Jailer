@@ -649,7 +649,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
     private void updateOutline(String sql, int startPosition) {
         final int MAX_CONTEXT_LENGTH = 100;
-        final int MAX_TOOLTIP_LENGTH = 100;
+        final int MAX_TOOLTIP_LENGTH = 200;
         List<OutlineInfo> outlineInfos = new ArrayList<OutlineInfo>();
         provider.findAliases(SQLCompletionProvider.removeCommentsAndLiterals(sql), null, outlineInfos);
         adjustLevels(outlineInfos);
@@ -679,12 +679,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                     cEnd = Math.min(cEnd, info.contextEnd);
                     ttEnd = Math.min(ttEnd, info.contextEnd);
                 }
-                String context = sql.substring(cStart, cEnd).trim().replaceAll("\\s+", " ");
-                if (context.length() > MAX_CONTEXT_LENGTH) {
-                    context = context.substring(0, MAX_CONTEXT_LENGTH) + "...";
+                if (cStart < cEnd) {
+	                String context = sql.substring(cStart, cEnd).trim().replaceAll("\\s+", " ");
+	                if (context.length() > MAX_CONTEXT_LENGTH) {
+	                    context = context.substring(0, MAX_CONTEXT_LENGTH) + "...";
+	                }
+	                rlInfo.context = UIUtil.toHTML(context, 0);
+	                rlInfo.tooltip = UIUtil.toHTML(sql.substring(info.position, ttEnd), MAX_TOOLTIP_LENGTH);
                 }
-                rlInfo.context = UIUtil.toHTML(context, 0);
-                rlInfo.tooltip = UIUtil.toHTML(sql.substring(info.position, ttEnd), MAX_TOOLTIP_LENGTH);
             }
             rlInfo.withSeparator = info.withSeparator || predInfo != null && predInfo.level + (predInfo.mdTable != null? 1 : 0) == info.level && i > 0 && outlineInfos.get(i - 1).isBegin;
             relocatedOutlineInfos.add(rlInfo);

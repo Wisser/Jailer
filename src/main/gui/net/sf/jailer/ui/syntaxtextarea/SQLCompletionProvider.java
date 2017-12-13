@@ -803,11 +803,11 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         Map<String, String> scopeDescriptionPerLastKeyword = new HashMap<String, String>();
         
         scopeDescriptionPerLastKeyword.put("select", "Select");
-        scopeDescriptionPerLastKeyword.put("from", "from");
+        scopeDescriptionPerLastKeyword.put("from", "From");
         scopeDescriptionPerLastKeyword.put("with", "With");
         scopeDescriptionPerLastKeyword.put("where", "Where");
-        scopeDescriptionPerLastKeyword.put("group", "Group");
-        scopeDescriptionPerLastKeyword.put("order", "Order");
+        scopeDescriptionPerLastKeyword.put("group", "Group by");
+        scopeDescriptionPerLastKeyword.put("order", "Order by");
         scopeDescriptionPerLastKeyword.put("having", "Having");
         scopeDescriptionPerLastKeyword.put("update", "Update");
         scopeDescriptionPerLastKeyword.put("into", "into");
@@ -851,6 +851,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         if (result) {
             do {
                 String clause = matcher.group(1);
+                String clauseLC = clause == null? null : clause.toLowerCase();
                 String keyword = matcher.group(2);
                 String identifier = matcher.group(3);
 
@@ -858,7 +859,15 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
         		matcher.appendReplacement(head, "");
 
                 if (clause != null) {
-                    if (!"from".equalsIgnoreCase(clause) && !"update".equalsIgnoreCase(clause) && !"into".equalsIgnoreCase(clause)) {
+                	// remove "by"
+                	if (clauseLC.startsWith("order")) {
+                		clauseLC = "order";
+                		clause = clauseLC;
+                	} else if (clause.startsWith("group")) {
+                		clauseLC = "group";
+                		clause = clauseLC;
+                	} 
+                    if (!"from".equals(clauseLC) && !"update".equals(clauseLC) && !"into".equals(clauseLC)) {
                         keyword = clause;
                     }
                 }
@@ -878,21 +887,22 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                 }
 
                 if (clause != null && outlineInfos != null) {
-                    String clauseLC = clause.toLowerCase();
 					String scopeDescription = scopeDescriptionPerLastKeyword.get(clauseLC);
                     if (scopeDescription != null) {
-                        int pos = matcher.start();
-                        nextInsertPos = tokenStack.isEmpty()? -1 : outlineInfos.size();
-                        OutlineInfo info = new OutlineInfo(null, null, level, pos, scopeDescription);
-                        info.withContext = scopesWithContext.contains(clauseLC);
-                        info.contextPosition = matcher.end();
-						outlineInfos.add(info);
+                    	if (isSubselect || (!"group".equals(clauseLC) && !"order".equals(clauseLC))) {
+	                        int pos = matcher.start();
+	                        nextInsertPos = tokenStack.isEmpty()? -1 : outlineInfos.size();
+	                        OutlineInfo info = new OutlineInfo(null, null, level, pos, scopeDescription);
+	                        info.withContext = scopesWithContext.contains(clauseLC);
+	                        info.contextPosition = matcher.end();
+							outlineInfos.add(info);
+                    	}
                     }
                 }
                 
                 if (wasSubselect && identifier != null) {
                 	if (outlineInfos != null) {
-                		if (head.toString().trim().isEmpty()) {
+                		if (inFrom && head.toString().trim().isEmpty()) {
 	                        int pos = matcher.start();
 	                        nextInsertPos = tokenStack.isEmpty()? -1 : outlineInfos.size();
 	                        OutlineInfo info = new OutlineInfo(null, identifier, level, pos, "");
@@ -1075,6 +1085,14 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                         scopeBeginn = matcher.start();
                     } else if (")".equals(keyword)) {
                         if (outlineInfos != null) {
+	                        if (outlineInfos.size() > 0) {
+	                        	OutlineInfo info = outlineInfos.get(outlineInfos.size() - 1);
+	                        	if (info.level > level - 1) {
+	                        		if (info.contextEnd == 0) {
+	                        			info.contextEnd = matcher.start();
+	                        		}
+	                        	}
+	                        }
                         	if (outlineInfos.size() > 0 && outlineInfos.get(outlineInfos.size() - 1).isBegin) {
     							outlineInfos.remove(outlineInfos.size() - 1);
                         		--beginEndCount;
@@ -1100,16 +1118,6 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                         	isSubselect = isSubselectStack.pop();
                         }
                         nextInsertPos = -1;
-                        if (outlineInfos != null) {
-	                        if (outlineInfos.size() > 0) {
-	                        	OutlineInfo info = outlineInfos.get(outlineInfos.size() - 1);
-	                        	if (info.level > level) {
-	                        		if (info.contextEnd == 0) {
-	                        			info.contextEnd = matcher.start();
-	                        		}
-	                        	}
-	                        }
-                        }
                     }
                 }
 
@@ -1242,7 +1250,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 
     private static String reIdentifier = "(?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+)";
     private static String reIdentDotOnly = ".*?(" + reIdentifier + ")\\s*\\.\\s*[\"'`]?\\w*$";
-    private static String reClauseKW = "\\b(?:select|from|update|where|group|having|with|in|exists|into|delete|insert|order|union|values|merge)\\b";
+    private static String reClauseKW = "\\b(?:select|from|update|where|(?:group\\s+by)|having|with|in|exists|into|delete|insert|(?:order\\s+by)|union|values|merge)\\b";
     private static String reIdentWSWordPattern = ".*?(" + reIdentifier + ")\\s+\\w*$";
     
     private static Pattern identDotOnlyPattern = Pattern.compile(reIdentDotOnly, Pattern.DOTALL);
