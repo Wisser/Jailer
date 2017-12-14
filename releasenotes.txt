@@ -1,4 +1,4 @@
-7.5.9
+7.5.10
   - SQLConsole: added outline-view for SQL statements.
 
 7.5.8
