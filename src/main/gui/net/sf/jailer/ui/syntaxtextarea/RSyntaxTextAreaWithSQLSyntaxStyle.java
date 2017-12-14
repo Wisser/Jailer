@@ -23,7 +23,9 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
@@ -533,6 +535,20 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		}
 	}
 
+	private List<CaretListener> listenerList = new ArrayList<CaretListener>();
+
+	@Override
+	public void addCaretListener(CaretListener caretListener) {
+		listenerList.add(caretListener);
+		super.addCaretListener(caretListener);
+	}
+
+	@Override
+	public void removeCaretListener(CaretListener caretListener) {
+		listenerList.remove(caretListener);
+		super.removeCaretListener(caretListener);
+	}
+	
 	/**
 	 * Listens for events from our search dialogs and actually does the dirty
 	 * work.
@@ -562,8 +578,24 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			}
 			break;
 		case REPLACE_ALL:
-			result = SearchEngine.replaceAll(this, context);
-			JOptionPane.showMessageDialog(null, result.getCount() + " occurrences replaced.");
+			for (CaretListener l: listenerList) {
+				super.removeCaretListener(l);
+			}
+			try {
+				result = SearchEngine.replaceAll(this, context);
+				JOptionPane.showMessageDialog(null, result.getCount() + " occurrences replaced.");
+			} finally {
+				for (CaretListener l: listenerList) {
+					super.addCaretListener(l);
+				}
+				int cPos = getCaretPosition();
+				if (cPos > 0) {
+					setCaretPosition(cPos - 1);
+				} else if (getDocument().getLength() > cPos - 1) {
+					setCaretPosition(cPos + 1);
+				}
+				setCaretPosition(cPos);
+			}
 			break;
 		}
 
