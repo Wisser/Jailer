@@ -548,7 +548,50 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 		listenerList.remove(caretListener);
 		super.removeCaretListener(caretListener);
 	}
-	
+
+	private void runWithoutCaretEvents(Runnable runnable) {
+		ArrayList<CaretListener> removedListener = new ArrayList<CaretListener>(listenerList);
+		for (CaretListener l: listenerList) {
+			super.removeCaretListener(l);
+		}
+		listenerList.clear();
+		try {
+			runnable.run();
+		} finally {
+			for (CaretListener l: removedListener) {
+				addCaretListener(l);
+			}
+			// force caret event
+			int cPos = getCaretPosition();
+			if (cPos > 0) {
+				setCaretPosition(cPos - 1);
+			} else if (getDocument().getLength() > cPos) {
+				setCaretPosition(cPos + 1);
+			}
+			setCaretPosition(cPos);
+		}
+	}
+
+	@Override
+	public void undoLastAction() {
+		runWithoutCaretEvents(new Runnable() {
+			@Override
+			public void run() {
+				RSyntaxTextAreaWithSQLSyntaxStyle.super.undoLastAction();
+			}
+		});
+	}
+
+	@Override
+	public void redoLastAction() {
+		runWithoutCaretEvents(new Runnable() {
+			@Override
+			public void run() {
+				RSyntaxTextAreaWithSQLSyntaxStyle.super.redoLastAction();
+			}
+		});
+	}
+
 	/**
 	 * Listens for events from our search dialogs and actually does the dirty
 	 * work.
@@ -557,7 +600,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	public void searchEvent(SearchEvent e) {
 
 		SearchEvent.Type type = e.getType();
-		SearchContext context = e.getSearchContext();
+		final SearchContext context = e.getSearchContext();
 		SearchResult result = null;
 
 		switch (type) {
@@ -578,24 +621,15 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			}
 			break;
 		case REPLACE_ALL:
-			for (CaretListener l: listenerList) {
-				super.removeCaretListener(l);
-			}
-			try {
-				result = SearchEngine.replaceAll(this, context);
-				JOptionPane.showMessageDialog(null, result.getCount() + " occurrences replaced.");
-			} finally {
-				for (CaretListener l: listenerList) {
-					super.addCaretListener(l);
+			final SearchResult[] resultBag = new SearchResult[1];
+			runWithoutCaretEvents(new Runnable() {
+				@Override
+				public void run() {
+					resultBag[0] = SearchEngine.replaceAll(RSyntaxTextAreaWithSQLSyntaxStyle.this, context);
 				}
-				int cPos = getCaretPosition();
-				if (cPos > 0) {
-					setCaretPosition(cPos - 1);
-				} else if (getDocument().getLength() > cPos - 1) {
-					setCaretPosition(cPos + 1);
-				}
-				setCaretPosition(cPos);
-			}
+			});
+			result = resultBag[0];
+			JOptionPane.showMessageDialog(null, result.getCount() + " occurrences replaced.");
 			break;
 		}
 
