@@ -200,6 +200,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 return null;
             }
         };
+        editorPane.beginAtomicEdit();
+        editorPane.setText(" ");
+        editorPane.setCaretPosition(0);
+        editorPane.endAtomicEdit();
 
         historyComboBox.setRenderer(new DefaultListCellRenderer() {
              public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -667,6 +671,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             }
             OutlineInfo rlInfo = new OutlineInfo(info.mdTable, info.alias, info.level, info.position + startPosition, info.scopeDescriptor);
             rlInfo.isCTE = info.isCTE;
+            rlInfo.rowCount = info.rowCount;
             if (info.withContext) {
                 int cStart = info.contextPosition;
                 int cEnd = sql.length();
