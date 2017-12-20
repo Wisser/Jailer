@@ -988,7 +988,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                                     	OutlineInfo info = new OutlineInfo((MDTable) mdTable, alias, level, pos, mdTable == null? table : null);
                                     	info.isCTE = mdTable == null;
                                         outlineInfos.add(nextInsertPos >= 0? nextInsertPos : outlineInfos.size(), info);
-                                        mergeOutlineInfos(outlineInfos, (nextInsertPos >= 0? nextInsertPos : outlineInfos.size()) + 1);
+                                        mergeOutlineInfos(outlineInfos, (nextInsertPos >= 0? nextInsertPos : (outlineInfos.size() - 1)) + 1);
                                         tokenStack.clear();
                                     }
                                     if (mdTable != null) {
@@ -1039,7 +1039,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                                             OutlineInfo info = new OutlineInfo((MDTable) mdTable, null, level, pos, mdTable == null? table : null);
                                             info.isCTE = mdTable == null;
 											outlineInfos.add(nextInsertPos >= 0? nextInsertPos : outlineInfos.size(), info);
-                                            mergeOutlineInfos(outlineInfos, (nextInsertPos >= 0? nextInsertPos : outlineInfos.size()) + 1);
+                                            mergeOutlineInfos(outlineInfos, (nextInsertPos >= 0? nextInsertPos : (outlineInfos.size() - 1)) + 1);
 	                                        tokenStack.clear();
                                         }
                                     }
@@ -1154,47 +1154,88 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
 
     public void mergeOutlineInfos(List<OutlineInfo> outlineInfos, int endIndex) {
         // merge "select from dual"
-        if (outlineInfos != null && endIndex > 1 
+        if (outlineInfos != null && endIndex >= 2 
                 && "from".equalsIgnoreCase(outlineInfos.get(endIndex - 2).scopeDescriptor) 
                 && "dual".equalsIgnoreCase(outlineInfos.get(endIndex - 1).scopeDescriptor)) {
             int infoLevel = outlineInfos.get(endIndex - 1).level;
             if (infoLevel == outlineInfos.get(endIndex - 2).level) {
                 int pos;
                 String description;
-                /*
-                if (endIndex > 2
-                        && "select".equalsIgnoreCase(outlineInfos.get(endIndex - 3).scopeDescriptor)
-                        && infoLevel == outlineInfos.get(endIndex - 3).level) {
-                    pos = outlineInfos.get(endIndex - 3).position;
-                    description = "Select from " + outlineInfos.get(endIndex - 1).scopeDescriptor;
-                    outlineInfos.remove(endIndex - 1);
-                    --endIndex;
-                } else {
-                */
-                	pos = outlineInfos.get(endIndex - 2).position;
-                    description = "from " + outlineInfos.get(endIndex - 1).scopeDescriptor;
-                // }
+                pos = outlineInfos.get(endIndex - 2).position;
+                description = "from " + outlineInfos.get(endIndex - 1).scopeDescriptor;
                 outlineInfos.remove(endIndex - 1);
                 --endIndex;
                 outlineInfos.remove(endIndex - 1);
                 --endIndex;
-                outlineInfos.add(endIndex, new OutlineInfo(null, null, infoLevel, pos, description));
+                outlineInfos.add(endIndex++, new OutlineInfo(null, null, infoLevel, pos, description));
             }
-        } /* else if (outlineInfos != null && endIndex > 1 
+        }
+        
+        // merge "select from dual union select from dual"
+        if (outlineInfos != null && endIndex >= 5
+                && "select".equalsIgnoreCase(outlineInfos.get(endIndex - 5).scopeDescriptor) 
+                && "from dual".equalsIgnoreCase(outlineInfos.get(endIndex - 4).scopeDescriptor)
+                && "union".equalsIgnoreCase(outlineInfos.get(endIndex - 3).scopeDescriptor) 
                 && "select".equalsIgnoreCase(outlineInfos.get(endIndex - 2).scopeDescriptor) 
-                && "from".equalsIgnoreCase(outlineInfos.get(endIndex - 1).scopeDescriptor)) {
-        	int infoLevel = outlineInfos.get(endIndex - 1).level;
-            if (infoLevel == outlineInfos.get(endIndex - 2).level) {
-            	int pos = outlineInfos.get(endIndex - 2).position;
-            	if (outlineInfos.get(endIndex - 1).position - pos <= 160) {
-                    outlineInfos.remove(endIndex - 1);
-                    --endIndex;
-                    outlineInfos.remove(endIndex - 1);
-                    --endIndex;
-                    outlineInfos.add(endIndex, new OutlineInfo(null, null, infoLevel, pos, "Select from"));
-            	}
+                && "from dual".equalsIgnoreCase(outlineInfos.get(endIndex - 1).scopeDescriptor)) {
+            int infoLevel = outlineInfos.get(endIndex - 1).level;
+            if (infoLevel == outlineInfos.get(endIndex - 2).level
+            	&& infoLevel == outlineInfos.get(endIndex - 3).level
+            	&& infoLevel == outlineInfos.get(endIndex - 4).level
+            	&& infoLevel == outlineInfos.get(endIndex - 5).level
+        		) {
+                int pos;
+                String description;
+                pos = outlineInfos.get(endIndex - 5).position;
+                description = "Select " + outlineInfos.get(endIndex - 1).scopeDescriptor;
+                OutlineInfo info = new OutlineInfo(null, null, infoLevel, pos, description);
+                info.rowCount = 2;
+                info.contextPosition = outlineInfos.get(endIndex - 5).contextPosition;
+                info.withContext = outlineInfos.get(endIndex - 5).withContext;
+                outlineInfos.remove(endIndex - 1);
+                --endIndex;
+                outlineInfos.remove(endIndex - 1);
+                --endIndex;
+                outlineInfos.remove(endIndex - 1);
+                --endIndex;
+                outlineInfos.remove(endIndex - 1);
+                --endIndex;
+                outlineInfos.remove(endIndex - 1);
+                --endIndex;
+				outlineInfos.add(endIndex++, info);
             }
-        } */
+        }
+        
+        // merge "select from dual (n rows) union select from dual"
+        if (outlineInfos != null && endIndex >= 4
+                && "select from dual".equalsIgnoreCase(outlineInfos.get(endIndex - 4).scopeDescriptor) 
+                && "union".equalsIgnoreCase(outlineInfos.get(endIndex - 3).scopeDescriptor) 
+                && "select".equalsIgnoreCase(outlineInfos.get(endIndex - 2).scopeDescriptor) 
+                && "from dual".equalsIgnoreCase(outlineInfos.get(endIndex - 1).scopeDescriptor)) {
+            int infoLevel = outlineInfos.get(endIndex - 1).level;
+            if (infoLevel == outlineInfos.get(endIndex - 2).level
+            	&& infoLevel == outlineInfos.get(endIndex - 3).level
+            	&& infoLevel == outlineInfos.get(endIndex - 4).level
+        		) {
+                int pos;
+                String description;
+                pos = outlineInfos.get(endIndex - 4).position;
+                description = outlineInfos.get(endIndex - 4).scopeDescriptor;
+                OutlineInfo info = new OutlineInfo(null, null, infoLevel, pos, description);
+                info.rowCount = outlineInfos.get(endIndex - 4).rowCount + 1;
+                info.contextPosition = outlineInfos.get(endIndex - 4).contextPosition;
+                info.withContext = outlineInfos.get(endIndex - 4).withContext;
+                outlineInfos.remove(endIndex - 1);
+                --endIndex;
+                outlineInfos.remove(endIndex - 1);
+                --endIndex;
+                outlineInfos.remove(endIndex - 1);
+                --endIndex;
+                outlineInfos.remove(endIndex - 1);
+                --endIndex;
+				outlineInfos.add(endIndex++, info);
+            }
+        }
     }
 
     public enum Clause {

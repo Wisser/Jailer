@@ -932,7 +932,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
             }
             render += "</font>";
         } else if (info.scopeDescriptor != null) {
-            render = "<font color=\"#0000dd\"><b>" + info.scopeDescriptor + "</b></font>";
+            render = "<font color=\"#0000dd\"><b>" + info.scopeDescriptor + "</b>" + (info.rowCount > 1? " <i>(" + info.rowCount + " rows)</i>" : "") + "</font>";
         }
         
         String indent = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
@@ -1008,6 +1008,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
 		public boolean isBegin;
 		public boolean isEnd;
         public boolean withSeparator;
+		public int rowCount;
         
         public OutlineInfo(MDTable mdTable, String alias, int level, int position, String scopeDescriptor) {
             this.mdTable = mdTable;
