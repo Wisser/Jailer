@@ -1,5 +1,6 @@
 7.5.11
   - Minor GUI Improvements and bug fixes.
+  - Constraint checking tool.
 
 7.5.10
   - SQLConsole: added outline-view for SQL statements.
