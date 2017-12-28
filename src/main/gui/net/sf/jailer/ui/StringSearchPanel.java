@@ -58,6 +58,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 
+import org.fife.rsta.ui.EscapableDialog;
+
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
 import net.sf.jailer.ui.databrowser.metadata.MDSchema;
@@ -118,7 +120,8 @@ public class StringSearchPanel extends javax.swing.JPanel {
 	}
 	
 	public String find(Frame owner, String titel, int x, int y) {
-		dialog = new JDialog(owner, titel, true);
+		dialog = new EscapableDialog(owner, titel, true) {
+		};
 		dialog.getContentPane().add(this);
 		dialog.pack();
 		dialog.setLocation(x, y);

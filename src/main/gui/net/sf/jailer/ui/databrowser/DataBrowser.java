@@ -111,6 +111,7 @@ import net.sf.jailer.ui.ImportDialog;
 import net.sf.jailer.ui.JComboBox;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
+import net.sf.jailer.ui.constraintcheck.ConstraintChecker;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
 import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
@@ -121,6 +122,7 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataPanel.OutlineInfo;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
+import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
@@ -800,7 +802,7 @@ public class DataBrowser extends javax.swing.JFrame {
         jPanel3 = new javax.swing.JPanel();
         jPanel5 = new javax.swing.JPanel();
         workbenchTabbedPane = new javax.swing.JTabbedPane();
-        jSplitPane3 = new javax.swing.JSplitPane();
+        desktopSplitPane = new javax.swing.JSplitPane();
         jLayeredPane1 = new javax.swing.JLayeredPane();
         layeredPaneContent = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -865,6 +867,8 @@ public class DataBrowser extends javax.swing.JFrame {
         dataImport = new javax.swing.JMenuItem();
         jSeparator8 = new javax.swing.JPopupMenu.Separator();
         createExtractionModelMenuItem = new javax.swing.JMenuItem();
+        jSeparator3 = new javax.swing.JPopupMenu.Separator();
+        consistencyCheckMenuItem = new javax.swing.JMenuItem();
         menuWindow = new javax.swing.JMenu();
         layoutMenuItem = new javax.swing.JMenuItem();
         jSeparator5 = new javax.swing.JPopupMenu.Separator();
@@ -1030,10 +1034,10 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
 
-        jSplitPane3.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
-        jSplitPane3.setResizeWeight(0.95);
-        jSplitPane3.setContinuousLayout(true);
-        jSplitPane3.setOneTouchExpandable(true);
+        desktopSplitPane.setOrientation(javax.swing.JSplitPane.VERTICAL_SPLIT);
+        desktopSplitPane.setResizeWeight(0.95);
+        desktopSplitPane.setContinuousLayout(true);
+        desktopSplitPane.setOneTouchExpandable(true);
 
         layeredPaneContent.setLayout(new java.awt.GridBagLayout());
 
@@ -1069,12 +1073,12 @@ public class DataBrowser extends javax.swing.JFrame {
         jLayeredPane1.add(layeredPaneContent);
         layeredPaneContent.setBounds(0, 0, 24, 58);
 
-        jSplitPane3.setLeftComponent(jLayeredPane1);
+        desktopSplitPane.setLeftComponent(jLayeredPane1);
 
         closurePanel.setLayout(new java.awt.GridBagLayout());
-        jSplitPane3.setRightComponent(closurePanel);
+        desktopSplitPane.setRightComponent(closurePanel);
 
-        workbenchTabbedPane.addTab("Desktop", jSplitPane3);
+        workbenchTabbedPane.addTab("Desktop", desktopSplitPane);
 
         sqlConsoleContainerPanel.setLayout(new java.awt.BorderLayout());
 
@@ -1438,6 +1442,15 @@ public class DataBrowser extends javax.swing.JFrame {
             }
         });
         jMenu2.add(createExtractionModelMenuItem);
+        jMenu2.add(jSeparator3);
+
+        consistencyCheckMenuItem.setText("Check Consistency");
+        consistencyCheckMenuItem.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                consistencyCheckMenuItemActionPerformed(evt);
+            }
+        });
+        jMenu2.add(consistencyCheckMenuItem);
 
         menuBar.add(jMenu2);
 
@@ -1615,6 +1628,22 @@ public class DataBrowser extends javax.swing.JFrame {
     private void showDataModelMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_showDataModelMenuItemActionPerformed
     	detailsAndBorderBrowserTabbedPane.setSelectedComponent(dataModelPanel);
     }//GEN-LAST:event_showDataModelMenuItemActionPerformed
+
+    private void consistencyCheckMenuItemActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_consistencyCheckMenuItemActionPerformed
+       	new ConstraintChecker(this, datamodel.get(), session) {
+			@Override
+			protected void openTableBrowser(Table source, String where) {
+				workbenchTabbedPane.setSelectedComponent(desktopSplitPane);
+	    		desktop.addTableBrowser(null, null, 0, source, null, new BasicFormatterImpl().format(where), null, null, true);
+			}
+
+			@Override
+			protected void appendSQLConsole(String text) {
+				sqlConsole.appendStatement(text, false);
+				workbenchTabbedPane.setSelectedComponent(sqlConsoleContainerPanel);
+			}
+       	};
+    }//GEN-LAST:event_consistencyCheckMenuItemActionPerformed
 
     private void newWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_newWindowMenuItemActionPerformed
         try {
@@ -2034,11 +2063,13 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JMenuItem cloaseAllMenuItem;
     private javax.swing.JPanel closurePanel;
     public javax.swing.JLabel connectivityState;
+    private javax.swing.JMenuItem consistencyCheckMenuItem;
     private javax.swing.JMenuItem createExtractionModelMenuItem;
     private javax.swing.JMenuItem dataImport;
     private javax.swing.JMenuItem dataModelEditorjMenuItem;
     private javax.swing.JPanel dataModelPanel;
     private javax.swing.JLabel dependsOn;
+    private javax.swing.JSplitPane desktopSplitPane;
     private javax.swing.JTabbedPane detailsAndBorderBrowserTabbedPane;
     private javax.swing.JPanel dummy;
     private javax.swing.JMenuItem exportDataMenuItem;
@@ -2084,6 +2115,7 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator1;
     private javax.swing.JPopupMenu.Separator jSeparator10;
     private javax.swing.JPopupMenu.Separator jSeparator2;
+    private javax.swing.JPopupMenu.Separator jSeparator3;
     private javax.swing.JPopupMenu.Separator jSeparator4;
     private javax.swing.JPopupMenu.Separator jSeparator5;
     private javax.swing.JPopupMenu.Separator jSeparator6;
@@ -2091,7 +2123,6 @@ public class DataBrowser extends javax.swing.JFrame {
     private javax.swing.JPopupMenu.Separator jSeparator8;
     private javax.swing.JPopupMenu.Separator jSeparator9;
     private javax.swing.JSplitPane jSplitPane1;
-    private javax.swing.JSplitPane jSplitPane3;
     private javax.swing.JSplitPane jSplitPane4;
     private javax.swing.JTable jTable1;
     private javax.swing.JRadioButtonMenuItem largeLayoutRadioButtonMenuItem;
@@ -2619,9 +2650,9 @@ public class DataBrowser extends javax.swing.JFrame {
 
             @Override
             protected void repaintClosureView() {
-                jSplitPane3.repaint();
-                jSplitPane3.setDividerLocation(jSplitPane3.getDividerLocation() - 1);
-                jSplitPane3.setDividerLocation(jSplitPane3.getDividerLocation() + 1);
+                desktopSplitPane.repaint();
+                desktopSplitPane.setDividerLocation(desktopSplitPane.getDividerLocation() - 1);
+                desktopSplitPane.setDividerLocation(desktopSplitPane.getDividerLocation() + 1);
             }
 
             @Override
