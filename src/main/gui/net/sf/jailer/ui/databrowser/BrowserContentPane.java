@@ -132,6 +132,7 @@ import net.sf.jailer.ui.DataModelManager;
 import net.sf.jailer.ui.DbConnectionDialog;
 import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.ExtractionModelFrame;
+import net.sf.jailer.ui.JComboBox;
 import net.sf.jailer.ui.QueryBuilderDialog;
 import net.sf.jailer.ui.QueryBuilderDialog.Relationship;
 import net.sf.jailer.ui.UIUtil;
@@ -486,7 +487,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 		
 		initComponents();
-		
+		andCondition = new JComboBox();
+		andCondition.setEditable(true);
+		GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
+        jPanel7.add(andCondition, gridBagConstraints);
+        
 		setPendingState(false, false);
 		
 		dropA.setText(null);
@@ -3367,9 +3376,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        andCondition = new javax.swing.JComboBox();
         jPanel7 = new javax.swing.JPanel();
         loadButton = new javax.swing.JButton();
-        andCondition = new javax.swing.JComboBox();
         onPanel = new javax.swing.JPanel();
         on = new javax.swing.JLabel();
         joinPanel = new javax.swing.JPanel();
@@ -3415,6 +3424,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         dropA = new javax.swing.JLabel();
         dropB = new javax.swing.JLabel();
 
+        andCondition.setEditable(true);
+        andCondition.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
         setLayout(new java.awt.GridBagLayout());
 
         jPanel7.setLayout(new java.awt.GridBagLayout());
@@ -3429,15 +3441,6 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         jPanel7.add(loadButton, gridBagConstraints);
-
-        andCondition.setEditable(true);
-        andCondition.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        jPanel7.add(andCondition, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 4;
