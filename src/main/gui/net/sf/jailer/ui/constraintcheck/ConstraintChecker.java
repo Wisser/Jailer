@@ -14,19 +14,14 @@ import java.awt.event.WindowListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import javax.swing.DefaultCellEditor;
-import javax.swing.DefaultComboBoxModel;
-import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
-import javax.swing.JPopupMenu;
 import javax.swing.JTable;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
@@ -34,6 +29,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
+import javax.swing.table.TableColumn;
 
 import org.fife.rsta.ui.EscapableDialog;
 import org.fife.ui.rtextarea.RTextScrollPane;
@@ -55,8 +51,6 @@ import net.sf.jailer.util.SqlUtil;
  */
 public abstract class ConstraintChecker extends javax.swing.JPanel {
 
-	private static final Object FIX_SET_NULL = "Set Reference = null";
-	private static final Object FIX_DELETE = "Delete Child";
 	private int numChecks;
 	private int numChecksDone;
 	private int numErrors;
@@ -88,24 +82,12 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         fixesBorderPanel.setVisible(false);
         
 		problemsTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-		problemsModel = new DefaultTableModel(new String[] { "Child", "Parent", "Problem", "Fix" }, 0) {
+		problemsModel = new DefaultTableModel(new String[] { "Child", "Parent", "Problem" }, 0) {
 			@Override
 			public boolean isCellEditable(int row, int column) {
-				return column == 3;
-			}
-
-			@Override
-			public void setValueAt(Object aValue, int row, int column) {
-				super.setValueAt(aValue, row, column);
-				updateFixes();
+				return false;
 			}
 		};
-		JComboBox fixField = new net.sf.jailer.ui.JComboBox();
-	    // fixField.setBorder(new LineBorder(Color.black));
-		fixField.setModel(new DefaultComboBoxModel(new Object[] { FIX_SET_NULL, FIX_DELETE, "" }));
-		DefaultCellEditor anEditor = new DefaultCellEditor(fixField);
-		anEditor.setClickCountToStart(1);
-		problemsTable.setDefaultEditor(problemsTable.getColumnClass(3), anEditor);
 		problemsTable.setModel(problemsModel);
 		final TableCellRenderer defaultTableCellRenderer = problemsTable.getDefaultRenderer(String.class);
 		problemsTable.setDefaultRenderer(Object.class, new TableCellRenderer() {
@@ -156,8 +138,6 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 			}
 		});
 		problemsTable.addMouseListener(new MouseListener() {
-			private JPopupMenu lastMenu;
-
 			@Override
 			public void mouseReleased(MouseEvent e) {
 			}
@@ -198,29 +178,6 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 		
 		List<Runnable> checks = new ArrayList<Runnable>();
 		for (Table table: dataModel.getSortedTables()) {
-			
-			// TODO
-			Map<String, Integer> rlCount = new HashMap<String, Integer>();
-			
-			boolean skip = false;
-			for (final Association a: table.associations) {
-				if (a.isInsertDestinationBeforeSource()) {
-					Map<Column, Column> mapping = a.createSourceToDestinationKeyMapping();
-					for (Column e: mapping.keySet()) {
-						if (!rlCount.containsKey(e.name)) {
-							rlCount.put(e.name, 1);
-						} else {
-							if (!e.name.equalsIgnoreCase("rzmandant")) {
-								skip  = true;
-							}
-						}
-					}
-				}
-			}
-			if (skip) {
-				continue;
-			}
-			
 			for (final Association a: table.associations) {
 				if (a.isInsertDestinationBeforeSource()) {
 					Map<Column, Column> mapping = a.createSourceToDestinationKeyMapping();
@@ -245,8 +202,8 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 						f = true;
 						for (Entry<Column, Column> e: mapping.entrySet()) {
 							if (!f) {
-								sql.append(" and ");  // TODO " or "
-								where.append(" and ");  // TODO " or "
+								sql.append(" or ");
+								where.append(" or ");
 							}
 							f = false;
 							sql.append("A." + e.getKey().name + " is not null and B." + e.getValue().name + " is null");
@@ -262,7 +219,6 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 								ref = c.name;
 							}
 						}
-						final String referenceColumn = ref;
 						checks.add(new Runnable() {
 							@Override
 							public void run() {
@@ -277,9 +233,9 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 										public void close() throws SQLException {
 										}
 									}, null, context, 0);
-									addResult(a, count[0], checkQuery, null, finalWhere, referenceColumn);
+									addResult(a, count[0], checkQuery, null, finalWhere);
 								} catch (SQLException e) {
-									addResult(a, 0, checkQuery, e, null, null);
+									addResult(a, 0, checkQuery, e, null);
 								}
 							}
 						});
@@ -333,35 +289,17 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 		dialog.setVisible(true);
     }
 
-	protected void updateFixes() {
-		editorPane.setText("");
-		for (int i = 0; i < problemsModel.getRowCount(); ++i) {
-			Object fix = problemsModel.getValueAt(i, 3);
-			Problem problem = problems.get(i);
-			if (problem.source != null && problem.where != null) {
-				String suffix = " (!intentionally invalid);\n";
-				if (FIX_DELETE.equals(fix)) {
-					editorPane.append("Delete from " + problem.source.getName() + " A where " + problem.where + suffix);
-				} else if (FIX_SET_NULL.equals(fix)) {
-					editorPane.append("Update " + problem.source.getName() + " A set " + problem.referenceColumn + " = null where " + problem.where + suffix);
-				}
-			}
-		}
-		sqlConsoleButton.setEnabled(editorPane.getText().length() > 0);
-	}
-
 	private static class Problem {
 		Table source;
     	Table destination;
     	Association association;
     	String where;
-    	String referenceColumn;
     	String description;
     }
     
     private List<Problem> problems = new ArrayList<Problem>();
     
-    private void addResult(final Association a, final long count, final String checkQuery, final SQLException exception, final String where, final String referenceColumn) {
+    private void addResult(final Association a, final long count, final String checkQuery, final SQLException exception, final String where) {
     	SwingUtilities.invokeLater(new Runnable() {
 			@Override
 			public void run() {
@@ -372,10 +310,10 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 					problem.destination = a.destination;
 					problem.association = a;
 					problem.where = where;
-					problem.referenceColumn = referenceColumn;
 					problem.description = exception != null? exception.getMessage() : (count + " invalid references");
 					problems.add(problem);
 					problemsModel.addRow(new Object[] { problem.source.getName(), problem.destination.getName(), problem.description });
+					adjustTableColumnsWidth();
 				}
 		    	++numChecksDone;
 		    	progressLabel.setText(numChecksDone + " of " + numChecks);
@@ -727,7 +665,26 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         thread.start();
     }
 
-    protected abstract void openTableBrowser(Table source, String where);
+	public void adjustTableColumnsWidth() {
+		DefaultTableModel dtm = (DefaultTableModel) problemsTable.getModel();
+		for (int i = 0; i < problemsTable.getColumnCount(); i++) {
+			TableColumn column = problemsTable.getColumnModel().getColumn(i);
+			Component comp = problemsTable.getDefaultRenderer(String.class).getTableCellRendererComponent(problemsTable, column.getHeaderValue(), false, false, 0, i);
+			int width = problemsTable.getWidth() / 3;
+			if (i < 2) {
+				width = Math.max(width, comp.getPreferredSize().width);
+	
+				int line = 0;
+				for (; line < problemsTable.getRowCount(); ++line) {
+					comp = problemsTable.getCellRenderer(line, i).getTableCellRendererComponent(problemsTable, dtm.getValueAt(line, i), false, false, line, i);
+					width = Math.max(width, comp.getPreferredSize().width);
+				}
+			}
+			column.setPreferredWidth(width);
+		}
+	}
+
+	protected abstract void openTableBrowser(Table source, String where);
     protected abstract void appendSQLConsole(String text);
     
 }
