@@ -77,6 +77,7 @@ import javax.swing.JDialog;
 import javax.swing.JFrame;
 import javax.swing.JInternalFrame;
 import javax.swing.JLabel;
+import javax.swing.JList;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
@@ -85,11 +86,14 @@ import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.ListCellRenderer;
 import javax.swing.RowSorter;
 import javax.swing.RowSorter.SortKey;
 import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
 import javax.swing.event.TreeSelectionEvent;
@@ -518,6 +522,53 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			});
 		}
 		
+		final ListCellRenderer acRenderer = andCondition.getRenderer();
+		andCondition.setRenderer(new ListCellRenderer() {
+			@Override
+			public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected,
+					boolean cellHasFocus) {
+				Component render = acRenderer.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+				if (render instanceof JLabel) {
+					if (value != null && value.toString().trim().length() > 0) {
+						String tooltip = ConditionEditor.toMultiLine(value.toString());
+						((JLabel) render).setToolTipText(UIUtil.toHTML(tooltip, 500));
+					} else {
+						((JLabel) render).setToolTipText(null);
+					}
+				}
+				return render;
+			}
+		});
+		if (andCondition.getEditor() != null && (andCondition.getEditor().getEditorComponent() instanceof JTextField)) {
+			JTextField f = ((JTextField) andCondition.getEditor().getEditorComponent());
+			f.getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					updateTooltip();
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					updateTooltip();
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					updateTooltip();
+				}
+				private void updateTooltip() {
+					if (andCondition.getEditor() != null && (andCondition.getEditor().getEditorComponent() instanceof JTextField)) {
+						JTextField f = ((JTextField) andCondition.getEditor().getEditorComponent());
+						String value = f.getText();
+						if (value != null && value.toString().trim().length() > 0) {
+							String tooltip = ConditionEditor.toMultiLine(value.toString());
+							andCondition.setToolTipText(UIUtil.toHTML(tooltip, 500));
+						} else {
+							andCondition.setToolTipText(null);
+						}
+					}
+				};
+			});
+		}
+
 		andCondModel.addElement("");
 		andCondition.setModel(andCondModel);
 

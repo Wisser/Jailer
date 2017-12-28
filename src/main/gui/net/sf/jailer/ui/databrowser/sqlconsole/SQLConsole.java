@@ -200,10 +200,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 return null;
             }
         };
-        editorPane.beginAtomicEdit();
-        editorPane.setText(" ");
-        editorPane.setCaretPosition(0);
-        editorPane.endAtomicEdit();
 
         historyComboBox.setRenderer(new DefaultListCellRenderer() {
              public Component getListCellRendererComponent(JList<?> list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
@@ -647,8 +643,10 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     }
 
     public void setCaretPosition(int position) {
-        editorPane.setCaretPosition(position);
-        grabFocus();
+    	if (editorPane.getDocument().getLength() >= position) {
+    		editorPane.setCaretPosition(position);
+    		grabFocus();
+    	}
     }
 
     private void updateOutline(String sql, int startPosition) {
