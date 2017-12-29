@@ -212,12 +212,6 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 						
 						final String checkQuery = sql.toString();
 						final String finalWhere = where.toString();
-						String ref = null;
-						for (Column c: mapping.keySet()) {
-							if (!c.name.equalsIgnoreCase("rzmandant")) {
-								ref = c.name;
-							}
-						}
 						checks.add(new Runnable() {
 							@Override
 							public void run() {
