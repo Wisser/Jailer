@@ -632,7 +632,7 @@ public abstract class Desktop extends JDesktopPane {
 			@Override
 			protected QueryBuilderDialog.Relationship createQBRelations(boolean withParents) {
 				QueryBuilderDialog.Relationship root = new QueryBuilderDialog.Relationship();
-				root.whereClause = ConditionEditor.toMultiLine(getAndConditionText().trim()).replaceAll("(\r|\n)+", " ");
+				root.whereClause = ConditionEditor.toMultiLine(getAndConditionText().trim()); // .replaceAll("(\r|\n)+", " ");
 				if (root.whereClause.length() == 0) {
 					root.whereClause = null;
 				}

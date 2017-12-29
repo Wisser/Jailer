@@ -182,11 +182,10 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 				if (a.isInsertDestinationBeforeSource()) {
 					Map<Column, Column> mapping = a.createSourceToDestinationKeyMapping();
 					if (!mapping.isEmpty()) {
-						System.err.println(table.getName() + " " + mapping);
 						StringBuilder sql = new StringBuilder("Select count(*) from ");
 						StringBuilder where = new StringBuilder("not exists(Select * from ");
-						sql.append(a.source.getName() + " A left join " + a.destination.getName() + " B on ");
-						where.append(a.destination.getName() + " B where ");
+						sql.append(a.source.getName() + " A left join " + a.destination.getName() + " P on ");
+						where.append(a.destination.getName() + " P where ");
 						boolean f = true;
 						for (Entry<Column, Column> e: mapping.entrySet()) {
 							if (!f) {
@@ -194,19 +193,19 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 								where.append(" and ");
 							}
 							f = false;
-							sql.append("A." + e.getKey().name + " = B." + e.getValue().name);
-							where.append("A." + e.getKey().name + " = B." + e.getValue().name);
+							sql.append("A." + e.getKey().name + " = P." + e.getValue().name);
+							where.append("A." + e.getKey().name + " = P." + e.getValue().name);
 						}
 						sql.append(" Where ");
 						where.append(") and (");
 						f = true;
 						for (Entry<Column, Column> e: mapping.entrySet()) {
 							if (!f) {
-								sql.append(" or ");
-								where.append(" or ");
+								sql.append(" and ");
+								where.append(" and ");
 							}
 							f = false;
-							sql.append("A." + e.getKey().name + " is not null and B." + e.getValue().name + " is null");
+							sql.append("A." + e.getKey().name + " is not null and P." + e.getValue().name + " is null");
 							where.append("A." + e.getKey().name + " is not null");
 						}
 						where.append(")");
