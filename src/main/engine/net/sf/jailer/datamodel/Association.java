@@ -478,7 +478,7 @@ public class Association extends ModelElement {
 	 *         represents an equi-join
 	 */
 	public Map<Column, Column> createSourceToDestinationKeyMapping() {
-		String[] equations = getUnrestrictedJoinCondition().trim().replaceAll("\\(|\\)", " ")
+		String[] equations = getUnrestrictedJoinCondition().replaceAll("\\(|\\)", " ").trim()
 				.split("\\s*\\b(a|A)(n|N)(d|D)\\b\\s*");
 		Map<Column, Column> mapping = new HashMap<Column, Column>();
 		for (String equation: equations) {
