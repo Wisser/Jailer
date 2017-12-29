@@ -80,7 +80,7 @@ public class AssociationPathPanel extends javax.swing.JPanel {
         		final List<Association> associations = new ArrayList<Association>();
 	    		Table to = path.get(i - 1);
 	    		for (Association a: table.associations) {
-	    			if (a.destination == to) {
+	    			if (a.destination.equals(to)) {
 	    				associations.add(a);
 	    				Color c;
 	    				if (a.isIgnored()) {

@@ -124,7 +124,6 @@ import net.sf.jailer.ui.databrowser.metadata.MetaDataSource;
 import net.sf.jailer.ui.databrowser.sqlconsole.SQLConsole;
 import net.sf.jailer.ui.syntaxtextarea.BasicFormatterImpl;
 import net.sf.jailer.util.CancellationHandler;
-import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 
 /**
@@ -393,7 +392,7 @@ public class DataBrowser extends javax.swing.JFrame {
             @Override
             protected DataBrowser openNewDataBrowser() {
                 try {
-                    return DataBrowser.openNewDataBrowser(DataBrowser.this.datamodel.get(), dbConnectionDialog, false, executionContext);
+                    return DataBrowser.openNewDataBrowser(DataBrowser.this.datamodel.get(), dbConnectionDialog, false, executionContext, null);
                 } catch (Exception e) {
                     UIUtil.showException(this, "Error", e, session);
                     return null;
@@ -1647,7 +1646,7 @@ public class DataBrowser extends javax.swing.JFrame {
 
     private void newWindowMenuItemActionPerformed(java.awt.event.ActionEvent evt) {// GEN-FIRST:event_newWindowMenuItemActionPerformed
         try {
-            openNewDataBrowser(datamodel.get(), dbConnectionDialog, false, executionContext);
+            openNewDataBrowser(datamodel.get(), dbConnectionDialog, false, executionContext, null);
         } catch (Exception e) {
             UIUtil.showException(this, "Error", e, session);
         }
@@ -1914,8 +1913,8 @@ public class DataBrowser extends javax.swing.JFrame {
         });
     }
 
-    private static DataBrowser openNewDataBrowser(DataModel datamodel, DbConnectionDialog dbConnectionDialog, boolean maximize, ExecutionContext executionContext) throws Exception {
-        DataBrowser dataBrowser = new DataBrowser(datamodel, null, "", null, false, executionContext);
+    private static DataBrowser openNewDataBrowser(DataModel datamodel, DbConnectionDialog dbConnectionDialog, boolean maximize, ExecutionContext executionContext, DataBrowser theDataBrowser) throws Exception {
+        DataBrowser dataBrowser = theDataBrowser != null? theDataBrowser : new DataBrowser(datamodel, null, "", null, false, executionContext);
         dataBrowser.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 //		if (maximize) {
 //			dataBrowser.setExtendedState(JFrame.MAXIMIZED_BOTH);
@@ -1960,17 +1959,26 @@ public class DataBrowser extends javax.swing.JFrame {
         DataModelManagerDialog dataModelManagerDialog = new DataModelManagerDialog(DataBrowserContext.getAppName(true)
                 + " - Relational Data Browser") {
             @Override
-            protected void onSelect(DbConnectionDialog connectionDialog, ExecutionContext executionContext) {
+            protected void onSelect(final DbConnectionDialog connectionDialog, final ExecutionContext executionContext) {
                 try {
                     final DataModel datamodel;
                     datamodel = new DataModel(executionContext);
-                    openNewDataBrowser(datamodel, connectionDialog, true, executionContext);
+                	final DataBrowser databrowser = new DataBrowser(datamodel, null, "", null, false, executionContext);
+                    SwingUtilities.invokeLater(new Runnable() {
+						@Override
+						public void run() {
+			                try {
+								openNewDataBrowser(datamodel, connectionDialog, true, executionContext, databrowser);
+			                } catch (Exception e) {
+			                    UIUtil.showException(null, "Error", e);
+			                }
+						}
+					});
                 } catch (Exception e) {
                     UIUtil.showException(null, "Error", e);
                 }
             }
-
-            private static final long serialVersionUID = 1L;
+			private static final long serialVersionUID = 1L;
         };
         dataModelManagerDialog.setVisible(true);
     }
