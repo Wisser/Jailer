@@ -106,12 +106,12 @@ public class KnownIdentifierMap {
 	private Pattern columnComparisionPattern = Pattern.compile("(A|a|B|b)( *\\. *)((?:[\"][^\"]+[\"])|(?:[`][^`]+[`])|(?:['][^']+['])|(?:[\\w]+))");
 
 	private String normalizeCondition(String condition) {
-		Matcher m = columnComparisionPattern.matcher(condition);
+		Matcher m = columnComparisionPattern.matcher(condition.replaceAll("\\)|\\(", ""));
         boolean result = m.find();
         if (result) {
             StringBuffer sb = new StringBuffer();
             do {
-                m.appendReplacement(sb, Matcher.quoteReplacement(m.group(1).toUpperCase(Locale.ENGLISH) + m.group(2) +  Quoting.staticUnquote(m.group(3)).toUpperCase(Locale.ENGLISH)));
+                m.appendReplacement(sb, Matcher.quoteReplacement(m.group(1).toUpperCase(Locale.ENGLISH) + m.group(2) + Quoting.staticUnquote(m.group(3)).toUpperCase(Locale.ENGLISH)));
                 result = m.find();
             } while (result);
             m.appendTail(sb);
