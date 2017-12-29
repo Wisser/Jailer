@@ -148,15 +148,15 @@ public class Column {
 		columnDeclaration = columnDeclaration.trim();
 		
 		// work-around for bug 2849047
-		String normalizedcolumnDeclaration = columnDeclaration.replaceFirst("(\\(\\))? +[iI][dD][eE][nN][tT][iI][tT][yY]", "");
+		String normalizedcolumnDeclaration = PATTERN_IDENTITY.matcher(columnDeclaration).replaceFirst("");
 		if (!normalizedcolumnDeclaration.equals(columnDeclaration)) {
 			columnDeclaration = normalizedcolumnDeclaration + " identity";
 		}
-		normalizedcolumnDeclaration = columnDeclaration.replaceFirst("(\\(\\))? +[vV][iI][rR][tT][uU][aA][lL]", "");
+		normalizedcolumnDeclaration = PATTERN_VIRTUAL.matcher(columnDeclaration).replaceFirst("");
 		if (!normalizedcolumnDeclaration.equals(columnDeclaration)) {
 			columnDeclaration = normalizedcolumnDeclaration + " virtual";
 		}
-		normalizedcolumnDeclaration = columnDeclaration.replaceFirst("(\\(\\))? +[nN][uU][lL][lL]", "");
+		normalizedcolumnDeclaration = PATTERN_NULL.matcher(columnDeclaration).replaceFirst("");
 		if (!normalizedcolumnDeclaration.equals(columnDeclaration)) {
 			columnDeclaration = normalizedcolumnDeclaration + " null";
 		}
@@ -293,5 +293,9 @@ public class Column {
 	public boolean isVirtual() {
 		return isVirtual;
 	}
+
+	private static final Pattern PATTERN_VIRTUAL = Pattern.compile("(\\(\\))? +[vV][iI][rR][tT][uU][aA][lL]");
+	private static final Pattern PATTERN_IDENTITY = Pattern.compile("(\\(\\))? +[iI][dD][eE][nN][tT][iI][tT][yY]");
+	private static final Pattern PATTERN_NULL = Pattern.compile("(\\(\\))? +[nN][uU][lL][lL]");
 
 }
