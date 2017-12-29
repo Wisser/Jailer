@@ -385,7 +385,7 @@ public class Association extends ModelElement {
 		if (joinCondition == null) {
 			joinCondition = condition;
 		} else {
-			joinCondition = "(" + joinCondition + ") and (" + condition + ")";
+			joinCondition = joinCondition + " and " + condition;
 		}
 	}
 
