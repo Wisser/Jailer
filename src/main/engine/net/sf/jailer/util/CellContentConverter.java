@@ -115,6 +115,9 @@ public class CellContentConverter {
 		if (content instanceof HStoreWrapper) {
 			return "'" + targetConfiguration.convertToStringLiteral(content.toString()) + "'::hstore";
 		}
+		if (content instanceof JSonWrapper) {
+			return "'" + targetConfiguration.convertToStringLiteral(content.toString()) + "'::json";
+		}
 		if (content instanceof byte[]) {
 			byte[] data = (byte[]) content;
 			StringBuilder hex = new StringBuilder((data.length + 1) * 2);
@@ -189,10 +192,21 @@ public class CellContentConverter {
 	}
 	
 	private static final int TYPE_HSTORE = 10500;
+	private static final int TYPE_JSON = 10501;
 	
 	static class HStoreWrapper {
 		private final String value;
 		public HStoreWrapper(String value) {
+			this.value = value;
+		}
+		public String toString() {
+			return value;
+		}
+	}
+
+	static class JSonWrapper {
+		private final String value;
+		public JSonWrapper(String value) {
 			this.value = value;
 		}
 		public String toString() {
@@ -231,6 +245,9 @@ public class CellContentConverter {
 					String typeName = resultSetMetaData.getColumnTypeName(i);
 					if ("hstore".equalsIgnoreCase(typeName)) {
 						type = TYPE_HSTORE;
+					}
+					if ("json".equalsIgnoreCase(typeName)) {
+						type = TYPE_JSON;
 					}
 				 }
 				 // workaround for JDTS bug
@@ -291,6 +308,8 @@ public class CellContentConverter {
 		if (DBMS.POSTGRESQL.equals(configuration)) {
 			if (type == TYPE_HSTORE) {
 				return new HStoreWrapper(resultSet.getString(i));
+			} else if (type == TYPE_JSON) {
+				return new JSonWrapper(resultSet.getString(i));
 			} else if (object instanceof Boolean) {
 				String typeName = resultSetMetaData.getColumnTypeName(i);
 				if (typeName != null && typeName.toLowerCase().equals("bit")) {
