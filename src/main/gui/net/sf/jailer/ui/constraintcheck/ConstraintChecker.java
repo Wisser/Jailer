@@ -56,6 +56,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 	private int numErrors;
 	private Object context = new Object();
 	private RSyntaxTextAreaWithSQLSyntaxStyle editorPane;
+	private RSyntaxTextAreaWithSQLSyntaxStyle checksPane;
 	private DefaultTableModel problemsModel;
 	private JDialog dialog;
 	
@@ -72,6 +73,13 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         jScrollPane.setViewportView(editorPane);
         fixesPanel.add(jScrollPane);
         jScrollPane.setLineNumbersEnabled(true);
+
+        checksPane = new RSyntaxTextAreaWithSQLSyntaxStyle(false, false);
+        checksPane.setEditable(false);
+        RTextScrollPane jScrollPane2 = new RTextScrollPane();
+        jScrollPane2.setViewportView(checksPane);
+        checksTabPanel.add(jScrollPane2);
+        jScrollPane2.setLineNumbersEnabled(true);
 
         statusLabel.setVisible(false);
         childLabel.setVisible(false);
@@ -245,6 +253,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 				SwingUtilities.invokeLater(new Runnable() {
 					@Override
 					public void run() {
+						progressLabel.setVisible(false);
 						statusLabel.setVisible(true);
 						if (numErrors > 0) {
 							statusLabel.setText(numErrors + " problems");
@@ -315,6 +324,10 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 		    		jProgressBar1.setForeground(Color.red);
 		    		progressLabel.setForeground(Color.red);
 		    	}
+		    	checksPane.append(checkQuery + ";\n");
+		    	if (numErrors == 1) {
+		    		tabbedPane.setSelectedComponent(problemsTabPanel);
+		    	}
 			}
 		});
 	}
@@ -332,11 +345,15 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         jProgressBar1 = new javax.swing.JProgressBar();
         progressLabel = new javax.swing.JLabel();
+        statusLabel = new javax.swing.JLabel();
+        closeButton = new javax.swing.JButton();
+        tabbedPane = new javax.swing.JTabbedPane();
+        checksTabPanel = new javax.swing.JPanel();
+        problemsTabPanel = new javax.swing.JPanel();
         jPanel3 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         problemsTable = new javax.swing.JTable();
-        statusLabel = new javax.swing.JLabel();
         fixesBorderPanel = new javax.swing.JPanel();
         fixesPanel = new javax.swing.JPanel();
         sqlConsoleButton = new javax.swing.JButton();
@@ -353,7 +370,6 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         conditionLabel = new javax.swing.JLabel();
         problemLabel = new javax.swing.JLabel();
         dummyLabel = new javax.swing.JLabel();
-        closeButton = new javax.swing.JButton();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -373,6 +389,31 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.gridy = 0;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         jPanel1.add(progressLabel, gridBagConstraints);
+
+        statusLabel.setForeground(new java.awt.Color(0, 105, 0));
+        statusLabel.setText("Database is consistent");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 0;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        jPanel1.add(statusLabel, gridBagConstraints);
+
+        closeButton.setText("Close");
+        closeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                closeButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 100;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
+        jPanel1.add(closeButton, gridBagConstraints);
+
+        checksTabPanel.setLayout(new java.awt.BorderLayout());
+        tabbedPane.addTab("Checks", checksTabPanel);
+
+        problemsTabPanel.setLayout(new java.awt.GridBagLayout());
 
         jPanel3.setLayout(new java.awt.GridBagLayout());
 
@@ -397,14 +438,6 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         jPanel2.add(jScrollPane1, gridBagConstraints);
-
-        statusLabel.setForeground(new java.awt.Color(0, 105, 0));
-        statusLabel.setText("Database is consistent");
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        jPanel2.add(statusLabel, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -452,7 +485,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
-        jPanel1.add(jPanel3, gridBagConstraints);
+        problemsTabPanel.add(jPanel3, gridBagConstraints);
 
         jPanel7.setLayout(new java.awt.GridBagLayout());
 
@@ -567,24 +600,22 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         jPanel7.add(jPanel5, gridBagConstraints);
 
-        closeButton.setText("Close");
-        closeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                closeButtonActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTHEAST;
-        jPanel7.add(closeButton, gridBagConstraints);
-
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 50;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
-        jPanel1.add(jPanel7, gridBagConstraints);
+        problemsTabPanel.add(jPanel7, gridBagConstraints);
+
+        tabbedPane.addTab("Problems", problemsTabPanel);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 5;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        jPanel1.add(tabbedPane, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -614,6 +645,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
     }//GEN-LAST:event_viewButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel checksTabPanel;
     private javax.swing.JLabel childLabel;
     private javax.swing.JButton closeButton;
     private javax.swing.JLabel conditionLabel;
@@ -634,10 +666,12 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel parentLabel;
     private javax.swing.JLabel problemLabel;
+    private javax.swing.JPanel problemsTabPanel;
     private javax.swing.JTable problemsTable;
     private javax.swing.JLabel progressLabel;
     private javax.swing.JButton sqlConsoleButton;
     private javax.swing.JLabel statusLabel;
+    private javax.swing.JTabbedPane tabbedPane;
     private javax.swing.JButton viewButton;
     // End of variables declaration//GEN-END:variables
 
