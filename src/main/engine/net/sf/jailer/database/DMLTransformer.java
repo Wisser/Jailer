@@ -366,10 +366,6 @@ public class DMLTransformer extends AbstractResultSetReader {
 						content = null;
 					}
 					String cVal = convertToSql(cellContentConverter, resultSet, i, content);
-					if (DBMS.POSTGRESQL.equals(targetDBMSConfiguration) && (content instanceof Date || content instanceof Timestamp)) {
-						// explicit cast needed
-						cVal = "timestamp " + cVal;
-					}
 					if (DBMS.POSTGRESQL.equals(targetDBMSConfiguration)) {
 						// explicit cast needed
 						int mdColumnType = getMetaData(resultSet).getColumnType(i);
