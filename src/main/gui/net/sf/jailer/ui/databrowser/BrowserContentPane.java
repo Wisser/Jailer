@@ -144,6 +144,7 @@ import net.sf.jailer.ui.scrollmenu.JScrollPopupMenu;
 import net.sf.jailer.util.CancellationException;
 import net.sf.jailer.util.CancellationHandler;
 import net.sf.jailer.util.CellContentConverter;
+import net.sf.jailer.util.CellContentConverter.PObjectWrapper;
 import net.sf.jailer.util.Pair;
 import net.sf.jailer.util.Quoting;
 import net.sf.jailer.util.SqlUtil;
@@ -3054,6 +3055,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				Object[] rowData = new Object[columns.size()];
 				for (int i = 0; i < columns.size(); ++i) {
 					rowData[i] = row.values[i];
+					if (rowData[i] instanceof PObjectWrapper) {
+						rowData[i] = ((PObjectWrapper) rowData[i]).getValue();
+					}
 					if (rowData[i] == null) {
 						rowData[i] = NULL;
 					} else if (rowData[i] instanceof UnknownValue) {
