@@ -863,7 +863,7 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                 	if (clauseLC.startsWith("order")) {
                 		clauseLC = "order";
                 		clause = clauseLC;
-                	} else if (clause.startsWith("group")) {
+                	} else if (clauseLC.startsWith("group")) {
                 		clauseLC = "group";
                 		clause = clauseLC;
                 	} 
@@ -1104,6 +1104,9 @@ public abstract class SQLCompletionProvider<SOURCE, SCHEMA, TABLE> extends Defau
                         	}
                         }
                         --level;
+                        if (level == 0) {
+                        	isNewScope = true;
+                        }
                         wasSubselect = isSubselect;
                         inWith = false;
                         inFrom = false;
