@@ -28,9 +28,13 @@ import java.sql.SQLException;
 import java.sql.Time;
 import java.sql.Timestamp;
 import java.sql.Types;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 import net.sf.jailer.configuration.DBMS;
@@ -112,11 +116,11 @@ public class CellContentConverter {
 		if (content instanceof String) {
 			return "'" + targetConfiguration.convertToStringLiteral((String) content) + "'";
 		}
-		if (content instanceof HStoreWrapper) {
-			return "'" + targetConfiguration.convertToStringLiteral(content.toString()) + "'::hstore";
-		}
-		if (content instanceof JSonWrapper) {
-			return "'" + targetConfiguration.convertToStringLiteral(content.toString()) + "'::json";
+		if (content instanceof PObjectWrapper) {
+			if (((PObjectWrapper) content).getValue() == null) {
+				return "null";
+			}
+			return "'" + targetConfiguration.convertToStringLiteral(content.toString()) + "'::" + ((PObjectWrapper) content).getType();
 		}
 		if (content instanceof byte[]) {
 			byte[] data = (byte[]) content;
@@ -191,23 +195,24 @@ public class CellContentConverter {
 		return nanosString;
 	}
 	
-	private static final int TYPE_HSTORE = 10500;
-	private static final int TYPE_JSON = 10501;
+	private static final int TYPE_POBJECT = 10500;
+	private static Set<String> POSTGRES_EXTENSIONS = new HashSet<String>();
+	static {
+		POSTGRES_EXTENSIONS.addAll(Arrays.asList("hstore", "json"));
+	}
 	
-	static class HStoreWrapper {
+	public static class PObjectWrapper {
 		private final String value;
-		public HStoreWrapper(String value) {
+		private final String type;
+		public PObjectWrapper(String value, String type) {
 			this.value = value;
+			this.type = type;
 		}
-		public String toString() {
+		public String getValue() {
 			return value;
 		}
-	}
-
-	static class JSonWrapper {
-		private final String value;
-		public JSonWrapper(String value) {
-			this.value = value;
+		public String getType() {
+			return type;
 		}
 		public String toString() {
 			return value;
@@ -243,11 +248,8 @@ public class CellContentConverter {
 				 }
 				 if (DBMS.POSTGRESQL.equals(configuration)) {
 					String typeName = resultSetMetaData.getColumnTypeName(i);
-					if ("hstore".equalsIgnoreCase(typeName)) {
-						type = TYPE_HSTORE;
-					}
-					if ("json".equalsIgnoreCase(typeName)) {
-						type = TYPE_JSON;
+					if (isPostgresObjectType(typeName) || type == Types.ARRAY) {
+						type = TYPE_POBJECT;
 					}
 				 }
 				 // workaround for JDTS bug
@@ -306,10 +308,8 @@ public class CellContentConverter {
 			}
 		}
 		if (DBMS.POSTGRESQL.equals(configuration)) {
-			if (type == TYPE_HSTORE) {
-				return new HStoreWrapper(resultSet.getString(i));
-			} else if (type == TYPE_JSON) {
-				return new JSonWrapper(resultSet.getString(i));
+			if (type == TYPE_POBJECT) {
+				return new PObjectWrapper(resultSet.getString(i), resultSetMetaData.getColumnTypeName(i));
 			} else if (object instanceof Boolean) {
 				String typeName = resultSetMetaData.getColumnTypeName(i);
 				if (typeName != null && typeName.toLowerCase().equals("bit")) {
@@ -325,6 +325,17 @@ public class CellContentConverter {
 		return object;
 	};
 	
+	private boolean isPostgresObjectType(String columnTypeName) {
+		if (columnTypeName == null) {
+			return false;
+		}
+		int i = columnTypeName.lastIndexOf('.');
+		if (i >= 0) {
+			columnTypeName = columnTypeName.substring(i + 1);
+		}
+		return POSTGRES_EXTENSIONS.contains(Quoting.staticUnquote(columnTypeName.toLowerCase(Locale.ENGLISH)));
+	}
+
 	/**
 	 * Gets object from result-set.
 	 * 
