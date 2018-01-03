@@ -945,7 +945,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
         	render = indent + render;
         }
         if (info.context != null) {
-        	render += "<font color=\"#aa3333\">&nbsp;&nbsp;" + info.context + "</font>";
+        	render += "<font color=\"#dd9999\">&nbsp;&nbsp;" + info.context + "</font>";
         }
         render = "<html>" + render;
         return render;
