@@ -14,9 +14,11 @@ import java.awt.event.WindowListener;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import javax.swing.JDialog;
@@ -185,6 +187,7 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 		UIUtil.fit(dialog);
 		
 		List<Runnable> checks = new ArrayList<Runnable>();
+		final Set<Table> nonExisting = new HashSet<Table>();
 		for (Table table: dataModel.getSortedTables()) {
 			for (final Association a: table.associations) {
 				if (a.isInsertDestinationBeforeSource()) {
@@ -236,7 +239,31 @@ public abstract class ConstraintChecker extends javax.swing.JPanel {
 									}, null, context, 0);
 									addResult(a, count[0], checkQuery, null, finalWhere);
 								} catch (SQLException e) {
-									addResult(a, 0, checkQuery, e, null);
+									if (!tableExists(a.source)) {
+										addResult(a, 0, checkQuery, nonExisting.contains(a.source)? null : new SQLException("\"" + a.source.getName() + "\" does not exist"), null);
+										nonExisting.add(a.source);
+									} else if (!tableExists(a.destination)) {
+										addResult(a, 0, checkQuery, nonExisting.contains(a.destination)? null : new SQLException("\"" + a.destination.getName() + "\" does not exist"), null);
+										nonExisting.add(a.destination);
+									} else {
+										addResult(a, 0, checkQuery, e, null);
+									}
+								}
+							}
+
+							private boolean tableExists(Table table) {
+								try {
+									session.executeQuery("Select 1 from " + table.getName() + " Where 1=0", new ResultSetReader() {
+										@Override
+										public void readCurrentRow(ResultSet resultSet) throws SQLException {
+										}
+										@Override
+										public void close() throws SQLException {
+										}
+									}, null, context, 0);
+									return true;
+								} catch (SQLException e) {
+									return false;
 								}
 							}
 						});
