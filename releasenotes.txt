@@ -1,3 +1,7 @@
+7.6.1
+  - JDBC driver updates.
+  - Minor GUI Improvements and bug fixes.
+
 7.6.0
   - Constraint checking tool.
   - Fix for "#23 Bugs when exporting timestamps and JSON ", https://sourceforge.net/p/jailer/bugs/23/
