@@ -2393,12 +2393,15 @@ public abstract class Desktop extends JDesktopPane {
 		
 		if (sFile != null) {
 			try {
+				setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				restoreSession(toBeAppended, pFrame, sFile);
 				if (toBeAppended == null) {
 					currentSessionFileName = sFile;
 				}
 			} catch (Throwable e) {
 				UIUtil.showException(this, "Error", e, session);
+			} finally {
+				setCursor(Cursor.getPredefinedCursor(Cursor.DEFAULT_CURSOR));
 			}
 		}
 	}
