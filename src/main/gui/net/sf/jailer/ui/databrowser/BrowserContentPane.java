@@ -29,10 +29,15 @@ import java.awt.GridBagConstraints;
 import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.RenderingHints;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.InputEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.beans.PropertyChangeEvent;
@@ -67,10 +72,15 @@ import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.concurrent.PriorityBlockingQueue;
 
+import javax.swing.AbstractAction;
+import javax.swing.Action;
+import javax.swing.ActionMap;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.InputMap;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
@@ -86,6 +96,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.KeyStroke;
 import javax.swing.ListCellRenderer;
 import javax.swing.RowSorter;
 import javax.swing.RowSorter.SortKey;
@@ -425,6 +436,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 	protected static final int MAXLOBLENGTH = 2000;
 
+	private final KeyStroke KS_CNTRL_C = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
+
 	/**
 	 * And-condition-combobox model.
 	 */
@@ -632,6 +645,17 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		};
 
+		InputMap im = rowsTable.getInputMap();
+		im.put(KS_CNTRL_C, this);
+		ActionMap am = getActionMap();
+		Action a = new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				copyToClipboard();
+			}
+		};
+		am.put(this, a);
+		
 		rowsTable.setAutoCreateRowSorter(true);
 		rowsTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
 		rowsTableScrollPane.setViewportView(rowsTable);
@@ -659,6 +683,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			final Font italicBold = new Font(nonbold.getName(), nonbold.getStyle() | Font.ITALIC | Font.BOLD, nonbold.getSize());
 
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
+				boolean cellSelected = isSelected; 
+				
 				isSelected = currentRowSelection == row || currentRowSelection == -2;
 
 				Component render = defaultTableCellRenderer.getTableCellRendererComponent(table, value, isSelected, false, row, column);
@@ -681,6 +707,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							renderRowAsPK = renderRowAsPK(r);
 						}
 					}
+					((JLabel) render).setBorder(cellSelected? BorderFactory.createLoweredSoftBevelBorder() : null);
 					int convertedColumnIndex = rowsTable.convertColumnIndexToModel(column);
 					if (!isSelected) {
 						if (BrowserContentPane.this.getQueryBuilderDialog() != null && // SQL Console
@@ -721,10 +748,10 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				return render;
 			}
 		});
-		rowsTable.setRowSelectionAllowed(false);
-		rowsTable.setColumnSelectionAllowed(false);
-		rowsTable.setCellSelectionEnabled(false);
-		rowsTable.setEnabled(false);
+		rowsTable.setRowSelectionAllowed(true);
+		rowsTable.setColumnSelectionAllowed(true);
+		rowsTable.setCellSelectionEnabled(true);
+		rowsTable.setEnabled(true);
 		
 		rowsTableScrollPane.getVerticalScrollBar().setUnitIncrement(32);
 		
@@ -1084,6 +1111,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				updateTableModel();
 			}
 		});
+		JMenuItem copyTCB = new JMenuItem("Copy to Clipboard");
+		copyTCB.setAccelerator(KS_CNTRL_C);
+		copyTCB.setEnabled(rowsTable.getSelectedColumnCount() > 0);
+		copyTCB.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				copyToClipboard();
+			}
+		});
 		
 		if (table instanceof SqlStatementTable && resultSetType == null) {
 			JPopupMenu jPopupMenu = new JPopupMenu();
@@ -1096,6 +1132,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			JMenuItem insert = new JMenuItem("Insert");
 			jPopupMenu.add(insert);
 			insert.setEnabled(false);
+			jPopupMenu.addSeparator();
+			jPopupMenu.add(copyTCB);
 			jPopupMenu.addSeparator();
 			jPopupMenu.add(tableFilter);
 			JMenuItem editMode = new JMenuItem("Edit Mode");
@@ -1283,6 +1321,8 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					popup.add(sql);
 				}
 			}
+			popup.addSeparator();
+			popup.add(copyTCB);
 			popup.addSeparator();
 			popup.add(tableFilter);
 			JCheckBoxMenuItem editMode = new JCheckBoxMenuItem("Edit Mode");
@@ -4328,6 +4368,26 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		}
 		return true;
+	}
+
+	public void copyToClipboard() {
+		String nl = System.getProperty("line.separator", "\n");
+		StringBuilder sb = new StringBuilder();
+		for (int row: rowsTable.getSelectedRows()) {
+			boolean f = true;
+			for (int col: rowsTable.getSelectedColumns()) {
+				String value = String.valueOf(rowsTable.getModel().getValueAt(row, col));
+				if (!f) {
+					sb.append("\t");
+				}
+				f = false;
+				sb.append(value);
+			}
+			sb.append(nl);
+		}
+		StringSelection selection = new StringSelection(sb.toString());
+	    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+	    clipboard.setContents(selection, selection);
 	}
 
 	private Map<Integer, Table> typePerColumn = new HashMap<Integer, Table>();
