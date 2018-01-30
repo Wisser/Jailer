@@ -21,6 +21,13 @@ import java.awt.GridBagConstraints;
 import java.awt.Insets;
 
 import javax.swing.JLabel;
+import javax.swing.JTable;
+import javax.swing.RowSorter;
+import javax.swing.table.TableColumnModel;
+import javax.swing.table.TableModel;
+
+import net.sf.jailer.ui.databrowser.BrowserContentPane;
+import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 
 public class TabContentPanel extends javax.swing.JPanel {
 
@@ -51,6 +58,55 @@ public class TabContentPanel extends javax.swing.JPanel {
         panel.add(statementLabel, gridBagConstraints);
     }
 
+    public void updateTextView(JTable rowsTable) {
+    	TableColumnModel cm = rowsTable.getColumnModel();
+    	TableModel rDm = rowsTable.getModel();
+    	RowSorter<? extends TableModel> sorter = rowsTable.getRowSorter();
+    	String[][] cell = new String[rDm.getRowCount() + 1][];
+    	int[] maxLength = new int[rDm.getColumnCount()];
+		for (int y = -1; y < rDm.getRowCount(); ++y) {
+			cell[y + 1] = new String[rDm.getColumnCount()];
+			for (int x = 0; x < rDm.getColumnCount(); ++x) {
+				int mx = cm.getColumn(x).getModelIndex();
+				Object value;
+				if (y < 0) {
+					value = rDm.getColumnName(mx);
+				} else {
+					value = rDm.getValueAt(sorter.convertRowIndexToModel(y), mx);
+				}
+				if (value instanceof TableModelItem) {
+					value = ((TableModelItem) value).value;
+				}
+				String cellContent = value == BrowserContentPane.NULL || value == null? "" : value.toString();
+				cell[y + 1][x] = cellContent;
+				maxLength[x] = Math.max(cellContent.length(), maxLength[x]);
+			}
+		}
+		String nl = System.getProperty("line.separator", "\n");
+		StringBuilder sb = new StringBuilder();
+		for (int y = 0; y < cell.length; ++y) {
+			if (y == 1) {
+				for (int x = 0; x < cell[y].length; ++x) {
+					for (int i = 3 + maxLength[x]; i > 0; --i) {
+						sb.append("-");
+					}
+				}
+				sb.append(nl);
+			}
+			for (int x = 0; x < cell[y].length; ++x) {
+				sb.append(cell[y][x]);
+				for (int i = 3 + maxLength[x] - cell[y][x].length(); i > 0; --i) {
+					sb.append(" ");
+				}
+			}
+			sb.append(nl);
+		}
+
+		jTextArea.setText(sb.toString());
+		jTextArea.setCaretPosition(0);
+		jTextArea.setEditable(false);
+	}
+
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -68,6 +124,9 @@ public class TabContentPanel extends javax.swing.JPanel {
         contentPanel = new javax.swing.JPanel();
         columnsPanel = new javax.swing.JPanel();
         columnsScrollPane = new javax.swing.JScrollPane();
+        textTabPanel = new javax.swing.JPanel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jTextArea = new javax.swing.JTextArea();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -90,6 +149,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 
         tabbedPane.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
 
+        contentPanel.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
         contentPanel.setLayout(new java.awt.BorderLayout());
         tabbedPane.addTab("Rows", contentPanel);
 
@@ -97,6 +157,26 @@ public class TabContentPanel extends javax.swing.JPanel {
         columnsPanel.add(columnsScrollPane, java.awt.BorderLayout.CENTER);
 
         tabbedPane.addTab("Columns", columnsPanel);
+
+        textTabPanel.setLayout(new java.awt.GridBagLayout());
+
+        jScrollPane2.setEnabled(false);
+        jScrollPane2.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
+
+        jTextArea.setColumns(20);
+        jTextArea.setFont(new java.awt.Font("Monospaced", 0, 12)); // NOI18N
+        jTextArea.setRows(5);
+        jScrollPane2.setViewportView(jTextArea);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        textTabPanel.add(jScrollPane2, gridBagConstraints);
+
+        tabbedPane.addTab("Text", textTabPanel);
 
         jPanel1.add(tabbedPane, java.awt.BorderLayout.CENTER);
 
@@ -115,8 +195,11 @@ public class TabContentPanel extends javax.swing.JPanel {
     public javax.swing.JPanel contentPanel;
     public javax.swing.JPanel controlsPanel1;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JTextArea jTextArea;
     public javax.swing.JPanel panel;
     public javax.swing.JTabbedPane tabbedPane;
+    public javax.swing.JPanel textTabPanel;
     // End of variables declaration//GEN-END:variables
     public javax.swing.JLabel statementLabel;
 }

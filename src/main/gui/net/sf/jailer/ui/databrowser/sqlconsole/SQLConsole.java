@@ -62,8 +62,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
-import javax.swing.RowSorter.SortKey;
-import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
@@ -627,6 +625,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 						if (tabContentPanel.tabbedPane.getSelectedComponent() == tabContentPanel.columnsPanel) {
 							columnsTable = new ColumnsTable(rb.rowsTable);
 							tabContentPanel.columnsScrollPane.setViewportView(columnsTable);
+						}
+						if (tabContentPanel.tabbedPane.getSelectedComponent() == tabContentPanel.textTabPanel) {
+							tabContentPanel.updateTextView(rb.rowsTable);
 						}
 					}
                 });
