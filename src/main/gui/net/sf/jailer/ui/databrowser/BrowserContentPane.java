@@ -442,7 +442,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 */
 	private static final String ROWNUMBERALIAS = "RN";
 
-	protected static final String NULL = "null";
+	public static final String NULL = "null";
 	protected static final String UNKNOWN = "- unknown column -";
 		
 	protected static final int MAXLOBLENGTH = 2000;

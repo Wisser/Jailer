@@ -23,14 +23,11 @@ import java.util.Vector;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.RowSorter;
-import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
-
-import net.sf.jailer.ui.ConditionEditor;
 
 /**
  * "Column view" of a query result table.
