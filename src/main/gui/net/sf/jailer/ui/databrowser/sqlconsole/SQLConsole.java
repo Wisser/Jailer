@@ -578,13 +578,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         tabContentPanel.controlsPanel1.add(rb.sortColumnsCheckBox);
                         rb.sortColumnsCheckBox.addActionListener(new java.awt.event.ActionListener() {
                             public void actionPerformed(java.awt.event.ActionEvent evt) {
-								if (columnsTable != null) {
-									List keys = new ArrayList();
-									if (rb.sortColumnsCheckBox.isSelected()) {
-										keys.add(new SortKey(0, SortOrder.ASCENDING));
+                            	SwingUtilities.invokeLater(new Runnable() {
+									@Override
+									public void run() {
+		                            	updateColumnsAndTextView(rb, tabContentPanel);
 									}
-									columnsTable.getRowSorter().setSortKeys(keys);
-								}
+                            	});
                             }
                         });
                         tabContentPanel.controlsPanel1.add(rb.loadButton);
@@ -627,11 +626,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 							final TabContentPanel tabContentPanel) {
 						if (tabContentPanel.tabbedPane.getSelectedComponent() == tabContentPanel.columnsPanel) {
 							columnsTable = new ColumnsTable(rb.rowsTable);
-							List keys = new ArrayList();
-							if (rb.sortColumnsCheckBox.isSelected()) {
-								keys.add(new SortKey(0, SortOrder.ASCENDING));
-							}
-							columnsTable.getRowSorter().setSortKeys(keys);
 							tabContentPanel.columnsScrollPane.setViewportView(columnsTable);
 						}
 					}

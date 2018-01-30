@@ -27,6 +27,7 @@ import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
 import net.sf.jailer.ui.ConditionEditor;
@@ -58,16 +59,17 @@ public class ColumnsTable extends JTable {
 				return false;
 			}
 		};
+		TableColumnModel cm = rowsTable.getColumnModel();
 		for (int x = 0; x < rDm.getColumnCount(); ++x) {
-			cDm.setValueAt(rDm.getColumnName(x), x, 0);
+			int mx = cm.getColumn(x).getModelIndex();
+			cDm.setValueAt(rDm.getColumnName(mx), x, 0);
 			for (int y = 0; y < rDm.getRowCount(); ++y) {
-				cDm.setValueAt(rDm.getValueAt(sorter.convertRowIndexToModel(y), x), x, y + 1);
+				cDm.setValueAt(rDm.getValueAt(sorter.convertRowIndexToModel(y), mx), x, y + 1);
 				if (y > MAX_ROWS) {
 					break;
 				}
 			}
 		}
-		setAutoCreateRowSorter(true);
 		setShowGrid(false);
 		setAutoResizeMode(JTable.AUTO_RESIZE_OFF);
 		setModel(cDm);
@@ -79,8 +81,6 @@ public class ColumnsTable extends JTable {
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 					boolean hasFocus, int row, int column) {
-//				RowSorter<? extends TableModel> rowSorter = getRowSorter();
-//				column = rowSorter.convertRowIndexToModel(column);
 				Component render = rowsTable.getCellRenderer(column, row).getTableCellRendererComponent(ColumnsTable.this, value, false, hasFocus, column + 1, row);
 				if (render instanceof JLabel) {
 					if (column == 0) {
