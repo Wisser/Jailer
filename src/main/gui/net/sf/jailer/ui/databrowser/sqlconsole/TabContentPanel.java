@@ -1,7 +1,24 @@
+/*
+ * Copyright 2007 - 2017 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package net.sf.jailer.ui.databrowser.sqlconsole;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
+import java.awt.Insets;
 
 import javax.swing.JLabel;
 
@@ -10,7 +27,7 @@ public class TabContentPanel extends javax.swing.JPanel {
     /**
      * Creates new form TabContentPanel
      */
-    public TabContentPanel() {
+    public TabContentPanel(JLabel rowsCount) {
         initComponents();
         statementLabel = new JLabel() {
         	@Override
@@ -18,9 +35,16 @@ public class TabContentPanel extends javax.swing.JPanel {
 				return new Dimension(8, super.getMinimumSize().height);
         	}
         };
-        statementLabel.setText("jLabel1");
+        statementLabel.setForeground(new Color(0, 0, 180));
         GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.insets = new Insets(0, 0, 0, 10);
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        panel.add(rowsCount, gridBagConstraints);
+        
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 1;
         gridBagConstraints.weightx = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
@@ -37,42 +61,62 @@ public class TabContentPanel extends javax.swing.JPanel {
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
-        contentPanel = new javax.swing.JPanel();
         panel = new javax.swing.JPanel();
         controlsPanel1 = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
+        tabbedPane = new javax.swing.JTabbedPane();
+        contentPanel = new javax.swing.JPanel();
+        columnsPanel = new javax.swing.JPanel();
+        columnsScrollPane = new javax.swing.JScrollPane();
 
         setLayout(new java.awt.GridBagLayout());
-
-        contentPanel.setLayout(new java.awt.BorderLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        add(contentPanel, gridBagConstraints);
 
         panel.setLayout(new java.awt.GridBagLayout());
 
         controlsPanel1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.CENTER, 5, 0));
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 1;
         panel.add(controlsPanel1, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.gridheight = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.insets = new java.awt.Insets(0, 4, 0, 0);
         add(panel, gridBagConstraints);
+
+        jPanel1.setLayout(new java.awt.BorderLayout());
+
+        tabbedPane.setTabPlacement(javax.swing.JTabbedPane.BOTTOM);
+
+        contentPanel.setLayout(new java.awt.BorderLayout());
+        tabbedPane.addTab("Rows", contentPanel);
+
+        columnsPanel.setLayout(new java.awt.BorderLayout());
+        columnsPanel.add(columnsScrollPane, java.awt.BorderLayout.CENTER);
+
+        tabbedPane.addTab("Columns", columnsPanel);
+
+        jPanel1.add(tabbedPane, java.awt.BorderLayout.CENTER);
+
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 3;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        add(jPanel1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    public javax.swing.JPanel columnsPanel;
+    public javax.swing.JScrollPane columnsScrollPane;
     public javax.swing.JPanel contentPanel;
     public javax.swing.JPanel controlsPanel1;
+    private javax.swing.JPanel jPanel1;
     public javax.swing.JPanel panel;
+    public javax.swing.JTabbedPane tabbedPane;
     // End of variables declaration//GEN-END:variables
     public javax.swing.JLabel statementLabel;
 }

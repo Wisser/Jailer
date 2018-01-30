@@ -1,6 +1,17 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Copyright 2007 - 2017 the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 package net.sf.jailer.ui.databrowser.sqlconsole;
 
@@ -51,9 +62,13 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.RowSorter.SortKey;
+import javax.swing.SortOrder;
 import javax.swing.SwingUtilities;
 import javax.swing.event.CaretEvent;
 import javax.swing.event.CaretListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.Segment;
@@ -557,12 +572,29 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         LoadJob loadJob = rb.newLoadJob(metaDataDetails, limit);
                         loadJob.run();
                         JComponent rTabContainer = rb.getRowsTableContainer();
-                        final TabContentPanel tabContentPanel = new TabContentPanel();
+                        final TabContentPanel tabContentPanel = new TabContentPanel(rb.rowsCount);
                         tabContentPanel.contentPanel.add(rTabContainer);
                         rb.sortColumnsCheckBox.setVisible(true);
                         tabContentPanel.controlsPanel1.add(rb.sortColumnsCheckBox);
+                        rb.sortColumnsCheckBox.addActionListener(new java.awt.event.ActionListener() {
+                            public void actionPerformed(java.awt.event.ActionEvent evt) {
+								if (columnsTable != null) {
+									List keys = new ArrayList();
+									if (rb.sortColumnsCheckBox.isSelected()) {
+										keys.add(new SortKey(0, SortOrder.ASCENDING));
+									}
+									columnsTable.getRowSorter().setSortKeys(keys);
+								}
+                            }
+                        });
                         tabContentPanel.controlsPanel1.add(rb.loadButton);
                         rb.loadButton.setIcon(UIUtil.scaleIcon(SQLConsole.this, runIcon));
+                        rb.setOnReloadAction(new Runnable() {
+							@Override
+							public void run() {
+								updateColumnsAndTextView(rb, tabContentPanel);
+							}
+						});
                         String stmt = sql.trim();
                         tabContentPanel.statementLabel.setToolTipText(UIUtil.toHTML(sql, 100));
                         if (stmt.length() > 200) {
@@ -572,6 +604,12 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         rTabContainer = tabContentPanel;
                         final int MAXLENGTH = 30;
                         String title = shortSQL(sql, MAXLENGTH);
+                        tabContentPanel.tabbedPane.addChangeListener(new ChangeListener() {
+							@Override
+							public void stateChanged(ChangeEvent e) {
+								updateColumnsAndTextView(rb, tabContentPanel);
+							}
+						});
                         jTabbedPane1.add(rTabContainer);
                         jTabbedPane1.setTabComponentAt(jTabbedPane1.indexOfComponent(rTabContainer), getTitlePanel(jTabbedPane1, rTabContainer, title));
 
@@ -582,6 +620,21 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         rb.resetRowsTableContainer();
                         jTabbedPane1.repaint();
                     }
+
+                    private ColumnsTable columnsTable; 
+                    
+					public void updateColumnsAndTextView(final BrowserContentPane rb,
+							final TabContentPanel tabContentPanel) {
+						if (tabContentPanel.tabbedPane.getSelectedComponent() == tabContentPanel.columnsPanel) {
+							columnsTable = new ColumnsTable(rb.rowsTable);
+							List keys = new ArrayList();
+							if (rb.sortColumnsCheckBox.isSelected()) {
+								keys.add(new SortKey(0, SortOrder.ASCENDING));
+							}
+							columnsTable.getRowSorter().setSortKeys(keys);
+							tabContentPanel.columnsScrollPane.setViewportView(columnsTable);
+						}
+					}
                 });
             } else {
                 status.timeInMS += (System.currentTimeMillis() - startTime);

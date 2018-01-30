@@ -323,10 +323,21 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	
 	private Runnable reloadAction;
 	
-	public void setOnReloadAction(Runnable runnable) {
-		reloadAction = runnable;
+	public void setOnReloadAction(final Runnable runnable) {
+		if (reloadAction == null) {
+			reloadAction = runnable;
+		} else {
+			final Runnable prevReloadAction = reloadAction;
+			reloadAction = new Runnable() {
+				@Override
+				public void run() {
+					prevReloadAction.run();
+					runnable.run();
+				}
+			};
+		}
 	}
-	
+
 	/**
 	 * Current LoadJob.
 	 */
@@ -436,7 +447,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 	protected static final int MAXLOBLENGTH = 2000;
 
-	private final KeyStroke KS_CNTRL_C = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
+	private final KeyStroke KS_CNTRL_C = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
 
 	/**
 	 * And-condition-combobox model.
@@ -646,15 +657,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		};
 
 		InputMap im = rowsTable.getInputMap();
-		im.put(KS_CNTRL_C, this);
-		ActionMap am = getActionMap();
+		Object key = "copyClipboard";
+		im.put(KS_CNTRL_C, key);
+		ActionMap am = rowsTable.getActionMap();
 		Action a = new AbstractAction() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				copyToClipboard();
 			}
 		};
-		am.put(this, a);
+		am.put(key, a);
 		
 		rowsTable.setAutoCreateRowSorter(true);
 		rowsTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
@@ -685,8 +697,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
 				boolean cellSelected = isSelected; 
 				
+				if (table.getSelectedColumnCount() <= 1 && table.getSelectedRowCount() <= 1) {
+					cellSelected = false;
+				}
+				
 				isSelected = currentRowSelection == row || currentRowSelection == -2;
 
+				if (table != rowsTable) {
+					isSelected = false;
+				}
+				
 				Component render = defaultTableCellRenderer.getTableCellRendererComponent(table, value, isSelected, false, row, column);
 				if (value instanceof Row) {
 					Row theRow = (Row) value;
@@ -707,7 +727,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							renderRowAsPK = renderRowAsPK(r);
 						}
 					}
-					((JLabel) render).setBorder(cellSelected? BorderFactory.createLoweredSoftBevelBorder() : null);
+					((JLabel) render).setBorder(cellSelected? BorderFactory.createEtchedBorder() : null);
 					int convertedColumnIndex = rowsTable.convertColumnIndexToModel(column);
 					if (!isSelected) {
 						if (BrowserContentPane.this.getQueryBuilderDialog() != null && // SQL Console
@@ -715,7 +735,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 							((JLabel) render).setBackground(BG3);
 						} else {
 							Table type = getResultSetTypeForColumn(convertedColumnIndex);
-							if (isEditMode && r != null && browserContentCellEditor.isEditable(type, rowIndex, convertedColumnIndex, r.values[convertedColumnIndex])
+							if (isEditMode && table == rowsTable && r != null && browserContentCellEditor.isEditable(type, rowIndex, convertedColumnIndex, r.values[convertedColumnIndex])
 									&& isPKComplete(type, r)) {
 								((JLabel) render).setBackground((row % 2 == 0) ? BG1_EM : BG2_EM);
 							} else {
@@ -736,10 +756,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						isNull = true;
 					}
 					try {
+						((JLabel) render).setToolTipText(null);
 						if (isNull) {
 							((JLabel) render).setFont(highlightedRows.contains(rowSorter.convertRowIndexToModel(row)) ? italicBold : italic);
 						} else {
 							((JLabel) render).setFont(highlightedRows.contains(rowSorter.convertRowIndexToModel(row)) ? bold : nonbold);
+							String text = ((JLabel) render).getText();
+							if (text.length() > 50) {
+								((JLabel) render).setToolTipText(text);
+							}
 						}
 					} catch (Exception e) {
 						// ignore
@@ -3369,7 +3394,11 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			int width = ((int) (Desktop.BROWSERTABLE_DEFAULT_WIDTH * getLayoutFactor()) - 18) / rowsTable.getColumnCount();
 
 			Component comp = rowsTable.getDefaultRenderer(String.class).getTableCellRendererComponent(rowsTable, column.getHeaderValue(), false, false, 0, i);
-			width = Math.max(width, comp.getPreferredSize().width);
+			int pw = comp.getPreferredSize().width;
+			if (pw < 100) {
+				pw = (pw * 130) / 100 + 10;
+			}
+			width = Math.max(width, pw);
 
 			int line = 0;
 			for (; line < rowsTable.getRowCount(); ++line) {
@@ -3949,7 +3978,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
     private javax.swing.JPanel pendingNonpendingPanel;
     private javax.swing.JLabel relatedRowsLabel;
     private javax.swing.JPanel relatedRowsPanel;
-    private javax.swing.JLabel rowsCount;
+    public javax.swing.JLabel rowsCount;
     public javax.swing.JTable rowsTable;
     protected javax.swing.JScrollPane rowsTableScrollPane;
     javax.swing.JCheckBox selectDistinctCheckBox;
@@ -4363,7 +4392,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				return false;
 			}
 			Object content = r.values[i];
-			if (content == null || content instanceof TableModelItem && ((TableModelItem) content).value == null) {
+			if (content == null || content instanceof TableModelItem && (((TableModelItem) content).value == NULL || ((TableModelItem) content).value == null)) {
 				return false;
 			}
 		}
@@ -4376,12 +4405,29 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		for (int row: rowsTable.getSelectedRows()) {
 			boolean f = true;
 			for (int col: rowsTable.getSelectedColumns()) {
-				String value = String.valueOf(rowsTable.getModel().getValueAt(row, col));
-				if (!f) {
-					sb.append("\t");
+				Object value = rowsTable.getModel().getValueAt(row, col);
+				if (value instanceof Row) {
+					Object[] values = ((Row) value).values;
+					for (Object v: values) {
+						if (v instanceof TableModelItem) {
+							v = ((TableModelItem) v).value;
+						}
+						if (!f) {
+							sb.append("\t");
+						}
+						f = false;
+						sb.append(v == NULL || v == null? "" : v);
+					}
+				} else {
+					if (value instanceof TableModelItem) {
+						value = ((TableModelItem) value).value;
+					}
+					if (!f) {
+						sb.append("\t");
+					}
+					f = false;
+					sb.append(value == NULL || value == null? "" : value);
 				}
-				f = false;
-				sb.append(value);
 			}
 			sb.append(nl);
 		}
