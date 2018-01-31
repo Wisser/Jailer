@@ -56,7 +56,7 @@ public class Session {
 	/**
 	 * Hold a connection for each thread.
 	 */
-	private ThreadLocal<Connection> connection = new ThreadLocal<Connection>();
+	protected ThreadLocal<Connection> connection = new ThreadLocal<Connection>();
 	
 	/**
 	 * Holds all connections.
@@ -176,14 +176,14 @@ public class Session {
 	/**
 	 * Connection factory.
 	 */
-	private interface ConnectionFactory {
+	public interface ConnectionFactory {
 		Connection getConnection() throws SQLException;
 	};
 	
 	/**
 	 * Connection factory.
 	 */
-	private final ConnectionFactory connectionFactory;
+	protected final ConnectionFactory connectionFactory;
 
 	/**
 	 * The DB schema name (empty string if unknown).
@@ -209,7 +209,6 @@ public class Session {
 	 * Constructor.
 	 * 
 	 * @param dataSource the data source
-	 * @param schema the schema
 	 * @param dbms the DBMS
 	 */
 	public Session(DataSource dataSource, DBMS dbms) throws SQLException {
@@ -312,6 +311,10 @@ public class Session {
 			}
 		};
 		// fail fast
+		init();
+	}
+
+	protected void init() throws SQLException {
 		Connection connection = connectionFactory.getConnection();
 		logDriverInfo(connection);
 	}

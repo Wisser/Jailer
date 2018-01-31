@@ -447,7 +447,12 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 	protected static final int MAXLOBLENGTH = 2000;
 
-	private final KeyStroke KS_CNTRL_C = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
+	private static final KeyStroke KS_COPY_TO_CLIPBOARD = KeyStroke.getKeyStroke(KeyEvent.VK_C, InputEvent.CTRL_DOWN_MASK);
+	private static final KeyStroke KS_SQLCONSOLE = KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, InputEvent.CTRL_DOWN_MASK);
+	private static final KeyStroke KS_QUERYBUILDER = KeyStroke.getKeyStroke(KeyEvent.VK_Q, InputEvent.CTRL_DOWN_MASK);
+	private static final KeyStroke KS_FILTER = KeyStroke.getKeyStroke(KeyEvent.VK_F, InputEvent.CTRL_DOWN_MASK);
+	private static final KeyStroke KS_EDIT = KeyStroke.getKeyStroke(KeyEvent.VK_E, InputEvent.CTRL_DOWN_MASK);
+	private static final KeyStroke KS_DETAILS = KeyStroke.getKeyStroke(KeyEvent.VK_D, InputEvent.CTRL_DOWN_MASK);
 
 	/**
 	 * And-condition-combobox model.
@@ -658,7 +663,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 
 		InputMap im = rowsTable.getInputMap();
 		Object key = "copyClipboard";
-		im.put(KS_CNTRL_C, key);
+		im.put(KS_COPY_TO_CLIPBOARD, key);
 		ActionMap am = rowsTable.getActionMap();
 		Action a = new AbstractAction() {
 			@Override
@@ -668,6 +673,56 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		};
 		am.put(key, a);
 		
+		registerAccelerator(KS_SQLCONSOLE, new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				rowsTable.grabFocus();
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						openQueryBuilder(true);
+					}
+				});
+			}
+		});
+		registerAccelerator(KS_QUERYBUILDER, new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				rowsTable.grabFocus();
+				SwingUtilities.invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						openQueryBuilder(false);
+					}
+				});
+			}
+		});
+		registerAccelerator(KS_FILTER, new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				isTableFilterEnabled = !isTableFilterEnabled;
+				updateTableModel();
+			}
+		});
+		registerAccelerator(KS_EDIT, new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setEditMode(!isEditMode);
+				updateTableModel();
+			}
+		});
+		registerAccelerator(KS_DETAILS, new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				Point loc = SwingUtilities.convertPoint(
+						BrowserContentPane.this,
+						0, 0,
+						SwingUtilities.getWindowAncestor(BrowserContentPane.this) 
+						);
+				openDetails(loc.x, loc.y);
+			}
+		});
+
 		rowsTable.setAutoCreateRowSorter(true);
 		rowsTable.setAutoResizeMode(javax.swing.JTable.AUTO_RESIZE_OFF);
 		rowsTableScrollPane.setViewportView(rowsTable);
@@ -707,7 +762,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 					isSelected = false;
 				}
 				
-				Component render = defaultTableCellRenderer.getTableCellRendererComponent(table, value, isSelected, false, row, column);
+				Component render = defaultTableCellRenderer.getTableCellRendererComponent(rowsTable, value, isSelected, false, row, column);
 				if (value instanceof Row) {
 					Row theRow = (Row) value;
 					Pair<BrowserContentPane, String> pair = new Pair<BrowserContentPane, String>(BrowserContentPane.this, theRow.rowId);
@@ -992,10 +1047,31 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 	}
 	
+	private void registerAccelerator(KeyStroke ks, AbstractAction a) {
+		registerAccelerator(ks, a, this);
+		registerAccelerator(ks, a, rowsTable);
+		registerAccelerator(ks, a, loadButton);
+		registerAccelerator(ks, a, sqlLabel1);
+		registerAccelerator(ks, a, relatedRowsLabel);
+		registerAccelerator(ks, a, andCondition);
+		Component editor = andCondition.getEditor().getEditorComponent();
+		if (editor instanceof JComponent) {
+			registerAccelerator(ks, a, (JComponent) editor);
+		}
+		registerAccelerator(ks, a, limitBox);
+	}
+
+	private void registerAccelerator(KeyStroke ks, AbstractAction a, JComponent comp) {
+		InputMap im = comp.getInputMap();
+		im.put(ks, a);
+		ActionMap am = comp.getActionMap();
+		am.put(a, a);
+	}
+
 	protected abstract boolean renderRowAsPK(Row theRow);
 
 	boolean isPending = false;
-	
+
 	void setPendingState(boolean pending, boolean propagate) {
 		isPending = pending;
 		((CardLayout) pendingNonpendingPanel.getLayout()).show(pendingNonpendingPanel, "nonpending");
@@ -1128,6 +1204,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 */
 	public JPopupMenu createPopupMenu(final Row row, final int rowIndex, final int x, final int y, boolean navigateFromAllRows) {
 		JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
+		tableFilter.setAccelerator(KS_FILTER);
 		tableFilter.setSelected(isTableFilterEnabled);
 		tableFilter.addActionListener(new ActionListener() {
 			@Override
@@ -1137,7 +1214,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 		JMenuItem copyTCB = new JMenuItem("Copy to Clipboard");
-		copyTCB.setAccelerator(KS_CNTRL_C);
+		copyTCB.setAccelerator(KS_COPY_TO_CLIPBOARD);
 		copyTCB.setEnabled(rowsTable.getSelectedColumnCount() > 0);
 		copyTCB.addActionListener(new ActionListener() {
 			@Override
@@ -1162,6 +1239,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			jPopupMenu.addSeparator();
 			jPopupMenu.add(tableFilter);
 			JMenuItem editMode = new JMenuItem("Edit Mode");
+			editMode.setAccelerator(KS_EDIT);
 			jPopupMenu.add(editMode);
 			editMode.setEnabled(false);
 			return jPopupMenu;
@@ -1241,6 +1319,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		if (row != null) {
 			JMenuItem det = new JMenuItem("Details");
+			det.setAccelerator(KS_DETAILS);
 			popup.insert(det, 0);
 			popup.insert(new JSeparator(), 1);
 			det.addActionListener(new ActionListener() {
@@ -1254,6 +1333,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				popup.add(new JSeparator());
 
 				JMenuItem qb = new JMenuItem("Query Builder");
+				qb.setAccelerator(KS_QUERYBUILDER);
 				popup.add(qb);
 				qb.addActionListener(new ActionListener() {
 					@Override
@@ -1265,6 +1345,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				});
 
 				JMenuItem sqlConsole = new JMenuItem("SQL Console");
+				sqlConsole.setAccelerator(KS_SQLCONSOLE);
 				popup.add(sqlConsole);
 				sqlConsole.addActionListener(new ActionListener() {
 					@Override
@@ -1351,6 +1432,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			popup.addSeparator();
 			popup.add(tableFilter);
 			JCheckBoxMenuItem editMode = new JCheckBoxMenuItem("Edit Mode");
+			editMode.setAccelerator(KS_EDIT);
 			editMode.setSelected(isEditMode);
 			editMode.addActionListener(new ActionListener() {
 				@Override
@@ -1373,6 +1455,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		JPopupMenu popup = new JPopupMenu();
 		
 		JMenuItem qb = new JMenuItem("Query Builder");
+		qb.setAccelerator(KS_QUERYBUILDER);
 		popup.add(qb);
 		qb.addActionListener(new ActionListener() {
 			@Override
@@ -1381,6 +1464,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 			}
 		});
 		JMenuItem sqlConsole = new JMenuItem("SQL Console");
+		sqlConsole.setAccelerator(KS_SQLCONSOLE);
 		popup.add(sqlConsole);
 		sqlConsole.addActionListener(new ActionListener() {
 			@Override
@@ -1450,6 +1534,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		if (!forNavTree) {
 			JMenuItem det = new JMenuItem("Details");
+			det.setAccelerator(KS_DETAILS);
 			popup.add(det);
 			det.setEnabled(rows.size() > 0);
 			det.addActionListener(new ActionListener() {
@@ -1479,6 +1564,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		
 		popup.add(new JSeparator());
 		JMenuItem tableFilter = new JCheckBoxMenuItem("Table Filter");
+		tableFilter.setAccelerator(KS_FILTER);
 		tableFilter.setSelected(isTableFilterEnabled);
 		tableFilter.addActionListener(new ActionListener() {
 			@Override
@@ -1489,6 +1575,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		});
 		popup.add(tableFilter);
 		JCheckBoxMenuItem editMode = new JCheckBoxMenuItem("Edit Mode");
+		editMode.setAccelerator(KS_EDIT);
 		editMode.setSelected(isEditMode);
 		editMode.addActionListener(new ActionListener() {
 			@Override

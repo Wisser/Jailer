@@ -17,12 +17,20 @@ package net.sf.jailer.ui;
 
 import java.awt.Desktop;
 import java.awt.Window;
+import java.awt.event.ActionEvent;
+import java.awt.event.KeyEvent;
 import java.net.URI;
 import java.net.URLEncoder;
 
+import javax.swing.AbstractAction;
+import javax.swing.ActionMap;
 import javax.swing.Icon;
+import javax.swing.InputMap;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
+import javax.swing.JRootPane;
 import javax.swing.JScrollPane;
+import javax.swing.KeyStroke;
 import javax.swing.UIManager;
 
 import org.fife.ui.rsyntaxtextarea.RSyntaxTextArea;
@@ -60,29 +68,8 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 		if (!sqlError) {
 			if (title != null) {
 				setTitle(title);
-//				sendButton.setVisible(false);
 			} else {
 				setTitle("Internal Error");
-//				sendButton.grabFocus();
-//				KeyListener keyListener = new KeyListener() {
-//					@Override
-//					public void keyTyped(KeyEvent e) {
-//						if (e.getKeyChar() == '\n') {
-//							sendButtonActionPerformed(null);
-//							setVisible(false);
-//						}
-//					}
-//	
-//					@Override
-//					public void keyReleased(KeyEvent e) {
-//					}
-//	
-//					@Override
-//					public void keyPressed(KeyEvent arg0) {
-//					}
-//				};
-//				sendButton.addKeyListener(keyListener);
-//				jButton1.setVisible(false);
 			}
 		}
 		int y = 1;
@@ -118,6 +105,21 @@ public class SqlErrorDialog extends javax.swing.JDialog {
 			setLocation(getParent().getX() + (getParent().getWidth() - getWidth()) / 2,
 					getParent().getY() + (getParent().getHeight() - getHeight()) / 2);
 		}
+
+		JRootPane rootPane = getRootPane();
+		InputMap im = rootPane.getInputMap(
+								JComponent.WHEN_IN_FOCUSED_WINDOW);
+		ActionMap actionMap = rootPane.getActionMap();
+		KeyStroke ks = KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0);
+
+		im.put(ks, ks);
+   		actionMap.put(ks, new AbstractAction() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				setVisible(false);
+			}
+		});
+		
 		UIUtil.fit(this);
 		setVisible(true);
 	}
