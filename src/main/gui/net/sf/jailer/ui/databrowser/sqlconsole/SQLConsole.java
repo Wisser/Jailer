@@ -44,6 +44,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -129,7 +130,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     private final AtomicBoolean running = new AtomicBoolean(false);
     private final AtomicBoolean updatingStatus = new AtomicBoolean(false);
     private final ImageIcon scaledCancelIcon;
-    
+    private final ImageIcon scaledExplainIcon;
+	
     /**
      * Creates new form SQLConsole
      */
@@ -151,10 +153,20 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 16);
         jPanel5.add(historyComboBox, gridBagConstraints);
         
+        explainButton.setVisible(canExplain());
+        
         this.editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(true, true) {
+			@Override
+			protected boolean canExplain() {
+				return SQLConsole.this.canExplain();
+			}
             @Override
             protected void runBlock() {
-                executeSelectedStatements();
+                executeSelectedStatements(false);
+            }
+            @Override
+            protected void explainBlock() {
+                executeSelectedStatements(true);
             }
             @Override
             protected void runAll() {
@@ -248,6 +260,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 
         runSQLButton.setAction(editorPane.runBlock);
         runnAllButton.setAction(editorPane.runAll);
+        explainButton.setAction(editorPane.explain);
 
         runSQLButton.setText("Run");
         runnAllButton.setText("Run all");
@@ -260,6 +273,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 
         scaledCancelIcon = UIUtil.scaleIcon(this, cancelIcon);
         cancelButton.setIcon(scaledCancelIcon);
+        
+        scaledExplainIcon = UIUtil.scaleIcon(this, explainIcon);
+        explainButton.setIcon(scaledExplainIcon);
         
         limitComboBox.setModel(new DefaultComboBoxModel(DataBrowser.ROW_LIMITS));
         limitComboBox.setSelectedItem(1000);
@@ -289,7 +305,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         thread.setDaemon(true);
         thread.start();
     }
-
+    
+    private boolean canExplain() {
+		return DBMS.ORACLE.equals(SQLConsole.this.metaDataSource.getSession().dbms);
+	}
+    
     private AtomicBoolean pending = new AtomicBoolean(false);
     private AtomicBoolean stopped = new AtomicBoolean(false);
     private String prevSql = null;
@@ -370,8 +390,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
      * @param location location of the block in the console
      * @param emptyLineSeparatesStatements 
      * @param locFragmentOffset location of statement fragment, if any
+     * @param explain 
      */
-    protected void executeSQLBlock(final String sqlBlock, final Pair<Integer, Integer> location, final boolean emptyLineSeparatesStatements, final Pair<Integer, Integer> locFragmentOffset) {
+    protected void executeSQLBlock(final String sqlBlock, final Pair<Integer, Integer> location, final boolean emptyLineSeparatesStatements, final Pair<Integer, Integer> locFragmentOffset, final boolean explain) {
         if (!running.get()) {
             int lineStartOffset = -1;
             try {
@@ -426,7 +447,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                                 }
                                 status.linesExecuting += countLines(pureSql);
                                 if (sql.trim().length() > 0) {
-                                    executeSQL(pureSql, status, lineStartOffset);
+                                    executeSQL(pureSql, status, lineStartOffset, explain);
                                     if (status.failed) {
                                         if (locFragmentOffset != null) {
                                             status.sqlFragment = sql;
@@ -467,7 +488,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                             String sql = sbToString;
                             if (sql.trim().length() > 0) {
                                 status.linesExecuting += countLines(sql);
-                                executeSQL(sql, status, lineStartOffset);
+                                executeSQL(sql, status, lineStartOffset, explain);
                                 if (!status.failed) {
                                     status.linesExecuted = status.linesExecuting;
                                 }
@@ -510,8 +531,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
      * @param sql the statement
      * @param status the status to update
      * @param statementStartOffset 
+     * @param explain 
      */
-    private void executeSQL(final String sql, Status status, int statementStartOffset) {
+    private void executeSQL(final String sql, Status status, int statementStartOffset, final boolean explain) {
         Statement statement = null;
         ResultSet resultSet = null;
         final Status localStatus = new Status();
@@ -524,10 +546,24 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             CancellationHandler.begin(statement, SQLConsole.this);
             long startTime = System.currentTimeMillis();
             sqlStatement = sql.replaceFirst("(?is)(;\\s*)+$", "");
-            if (statement.execute(sqlStatement)) {
+            boolean hasResultSet;
+            if (explain) {
+            	// TODO delete old plans
+            	String stmtId = UUID.randomUUID().toString().replaceAll("-", "");
+            	if (stmtId.length() > 30) {
+            		stmtId = stmtId.substring(0,  30);
+            	}
+            	statement.execute("explain plan set statement_id = '" + stmtId + "' for " + sqlStatement);
+            	statement.close();
+                statement = session.getConnection().createStatement();
+            	hasResultSet = statement.execute("select * from table(dbms_xplan.display(NULL, '" + stmtId + "'))");
+            } else {
+            	hasResultSet = statement.execute(sqlStatement);
+            }
+            if (hasResultSet) {
                 resultSet = statement.getResultSet();
                 final Integer limit = (Integer) limitComboBox.getSelectedItem();
-                final List<Table> resultTypes = QueryTypeAnalyser.getType(sqlStatement, metaDataSource);
+                final List<Table> resultTypes = explain? null : QueryTypeAnalyser.getType(sqlStatement, metaDataSource);
                 Table resultType = null;
                 if (resultTypes != null && !resultTypes.isEmpty()) {
                     if (resultTypes.size() == 1) {
@@ -570,7 +606,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                         LoadJob loadJob = rb.newLoadJob(metaDataDetails, limit);
                         loadJob.run();
                         JComponent rTabContainer = rb.getRowsTableContainer();
-                        final TabContentPanel tabContentPanel = new TabContentPanel(rb.rowsCount);
+                        final TabContentPanel tabContentPanel = new TabContentPanel(rb.rowsCount, explain);
                         tabContentPanel.contentPanel.add(rTabContainer);
                         rb.sortColumnsCheckBox.setVisible(true);
                         tabContentPanel.controlsPanel1.add(rb.sortColumnsCheckBox);
@@ -592,15 +628,20 @@ public abstract class SQLConsole extends javax.swing.JPanel {
 								updateColumnsAndTextView(rb, tabContentPanel);
 							}
 						});
-                        String stmt = sql.trim();
-                        tabContentPanel.statementLabel.setToolTipText(UIUtil.toHTML(sql, 100));
+                        String sqlE = sql.trim();
+                        if (explain) {
+                        	sqlE = "Explain Plan for " + sqlE;
+                        }
+                        String stmt = sqlE;
+                        
+                        tabContentPanel.statementLabel.setToolTipText(UIUtil.toHTML(sqlE, 100));
                         if (stmt.length() > 200) {
                             stmt = stmt.substring(0, 200) + "...";
                         }
                         tabContentPanel.statementLabel.setText(stmt.replaceAll("\\s+", " "));
                         rTabContainer = tabContentPanel;
                         final int MAXLENGTH = 30;
-                        String title = shortSQL(sql, MAXLENGTH);
+                        String title = shortSQL(sqlE, MAXLENGTH);
                         tabContentPanel.tabbedPane.addChangeListener(new ChangeListener() {
 							@Override
 							public void stateChanged(ChangeEvent e) {
@@ -648,7 +689,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             }
             CancellationHandler.end(statement, SQLConsole.this);
             statement.close();
-            appendHistory(sql);
+            if (!explain) {
+            	appendHistory(sql);
+            }
         } catch (Throwable error) {
             try {
                 CancellationHandler.checkForCancellation(SQLConsole.this);
@@ -828,6 +871,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         this.session = session;
         this.metaDataSource = metaDataSource;
         provider.reset(session, metaDataSource);
+        explainButton.setVisible(canExplain());
     }
 
     private class Status {
@@ -990,6 +1034,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         cancelButton = new javax.swing.JButton();
         runSQLButton = new javax.swing.JButton();
         runnAllButton = new javax.swing.JButton();
+        explainButton = new javax.swing.JButton();
         jSplitPane1 = new javax.swing.JSplitPane();
         jPanel6 = new javax.swing.JPanel();
         jLabel3 = new javax.swing.JLabel();
@@ -1059,8 +1104,14 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
         gridBagConstraints.gridy = 2;
-        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
         jPanel5.add(runnAllButton, gridBagConstraints);
+
+        explainButton.setText("Explain");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 8);
+        jPanel5.add(explainButton, gridBagConstraints);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -1173,6 +1224,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;
     private javax.swing.JPanel consoleContainerPanel;
+    private javax.swing.JButton explainButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
@@ -1385,11 +1437,11 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             resetStatus();
         }
         if (execute) {
-            executeSelectedStatements();
+            executeSelectedStatements(false);
         }
     }
 
-    private void executeSelectedStatements() {
+    private void executeSelectedStatements(boolean explain) {
         String sql;
         Pair<Integer, Integer> loc = null;
         Pair<Integer, Integer> locFragmentOffset = null;
@@ -1415,7 +1467,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             sql = editorPane.getText(loc.a, loc.b, true);
         }
         if (loc != null) {
-            executeSQLBlock(sql, loc, editorPane.getCaret().getDot() == editorPane.getCaret().getMark(), locFragmentOffset);
+            executeSQLBlock(sql, loc, editorPane.getCaret().getDot() == editorPane.getCaret().getMark(), locFragmentOffset, explain);
         }
     }
 
@@ -1438,7 +1490,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 // ignore
             }
             Pair<Integer, Integer> loc = new Pair<Integer, Integer>(start, editorPane.getLineCount() - 1);
-            executeSQLBlock(editorPane.getText(loc.a, loc.b, true), loc, false, null);
+            executeSQLBlock(editorPane.getText(loc.a, loc.b, true), loc, false, null, false);
         }
     }
 
@@ -1636,6 +1688,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     static private ImageIcon runIcon;
     static private ImageIcon runAllIcon;
     static private ImageIcon cancelIcon;
+    static private ImageIcon explainIcon;
 
     static {
         String dir = "/net/sf/jailer/ui/resource";
@@ -1645,6 +1698,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             runIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/run.png"));
             runAllIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/runall.png"));
             cancelIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/Cancel.png"));
+            explainIcon = new ImageIcon(MetaDataPanel.class.getResource(dir + "/explain.png"));
         } catch (Exception e) {
             e.printStackTrace();
         }

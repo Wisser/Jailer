@@ -89,6 +89,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	 */
 	public final Action runBlock;
 	public final Action runAll;
+	public final Action explain;
 	public final Action formatSQL;
 	private final Action selectTableAction;
 	
@@ -140,6 +141,13 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				RSyntaxTextAreaWithSQLSyntaxStyle.this.runBlock();
+			}
+		};
+		
+		explain = new AbstractAction("Explain Plan") {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				RSyntaxTextAreaWithSQLSyntaxStyle.this.explainBlock();
 			}
 		};
 
@@ -224,6 +232,10 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	protected void selectTable(MDTable mdTable) {
 	}
 
+	protected boolean canExplain() {
+		return false;
+	}
+
 	/**
 	 * Overridden to toggle the enabled state of various menu items.
 	 */
@@ -269,7 +281,9 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			menu.add(item, 0);
 			item = new JMenuItem(runAll);
 			menu.add(item, 1);
-			menu.add(new JSeparator(), 2);
+			item = new JMenuItem(explain);
+			menu.add(item, 2);
+			menu.add(new JSeparator(), 3);
 		}
 
 		return menu;
@@ -697,6 +711,9 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 	protected void runBlock() {
 	}
 
+	protected void explainBlock() {
+	}
+
 	protected void runAll() {
 	}
 
@@ -737,6 +754,7 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			loc = getCurrentStatementLocation(eosLines);
 		}
 		runBlock.setEnabled(allowRun && loc != null && !isTextEmpty(loc.a, loc.b));
+		explain.setEnabled(canExplain() && allowRun && loc != null && !isTextEmpty(loc.a, loc.b));
 		runAll.setEnabled(allowRun && RSyntaxTextAreaWithSQLSyntaxStyle.this.getDocument().getLength() > 0);
 		if (allowRun && setLineHighlights) {
 			if (!pending.get()) {

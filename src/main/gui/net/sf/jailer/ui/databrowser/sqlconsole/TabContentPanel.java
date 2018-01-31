@@ -46,7 +46,7 @@ public class TabContentPanel extends javax.swing.JPanel {
     /**
      * Creates new form TabContentPanel
      */
-    public TabContentPanel(JLabel rowsCount) {
+    public TabContentPanel(JLabel rowsCount, boolean explain) {
         initComponents();
         statementLabel = new JLabel() {
         	@Override
@@ -101,6 +101,17 @@ public class TabContentPanel extends javax.swing.JPanel {
 					}
 				}
 			});
+		}
+		
+		if (explain) {
+			tabbedPane.remove(contentPanel);
+			tabbedPane.remove(columnsPanel);
+			jLabel1.setVisible(false);
+			headerCheckBox.setVisible(false);
+			copyCBButton.setVisible(false);
+			columnSeparatorComboBox.setVisible(false);
+			controlsPanel1.setVisible(false);
+			rowsCount.setVisible(false);
 		}
     }
 
