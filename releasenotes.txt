@@ -1,6 +1,7 @@
 7.6.2
   - Added "Columns" and "Text" views to SQLConsole.
   - Added "Copy toClipboard" context menu item.
+  - New feature "Explain Plan" in SQLConsole.
 
 7.6.1
   - JDBC driver updates.
