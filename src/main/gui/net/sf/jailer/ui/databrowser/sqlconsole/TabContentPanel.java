@@ -16,13 +16,22 @@
 package net.sf.jailer.ui.databrowser.sqlconsole;
 
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.Insets;
+import java.awt.Toolkit;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 
+import javax.swing.ComboBoxModel;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.JTextField;
 import javax.swing.RowSorter;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
 
@@ -31,6 +40,9 @@ import net.sf.jailer.ui.databrowser.BrowserContentPane.TableModelItem;
 
 public class TabContentPanel extends javax.swing.JPanel {
 
+	private final String SEPARATOR_TAB = "Tab Character";
+	private final String SEPARATOR_SPACE = "Space";
+	
     /**
      * Creates new form TabContentPanel
      */
@@ -56,15 +68,60 @@ public class TabContentPanel extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         panel.add(statementLabel, gridBagConstraints);
+        
+        ComboBoxModel<String> sepModel = new DefaultComboBoxModel<String>(
+        		new String[] {
+        				"",
+        				";",
+        				",",
+        				"|",
+        				"!",
+        				SEPARATOR_TAB,
+        				SEPARATOR_SPACE
+        		});
+		columnSeparatorComboBox.setModel(sepModel);
+		Component ec = columnSeparatorComboBox.getEditor().getEditorComponent();
+		if (ec instanceof JTextField) {
+			((JTextField) ec).getDocument().addDocumentListener(new DocumentListener() {
+				@Override
+				public void removeUpdate(DocumentEvent e) {
+					update();
+				}
+				@Override
+				public void insertUpdate(DocumentEvent e) {
+					update();
+				}
+				@Override
+				public void changedUpdate(DocumentEvent e) {
+					update();
+				}
+				private void update() {
+					if (theRowsTable != null) {
+						updateTextView(theRowsTable);
+					}
+				}
+			});
+		}
     }
 
+    private JTable theRowsTable = null;
+    
     public void updateTextView(JTable rowsTable) {
+    	theRowsTable = rowsTable;
+		Object sep = columnSeparatorComboBox.getEditor().getItem();
+		if ("".equals(sep)) {
+			sep = null;
+		} else if (SEPARATOR_SPACE.equals(sep)) {
+			sep = " ";
+		} else if (SEPARATOR_TAB.equals(sep)) {
+			sep = "\t";
+		}
     	TableColumnModel cm = rowsTable.getColumnModel();
     	TableModel rDm = rowsTable.getModel();
     	RowSorter<? extends TableModel> sorter = rowsTable.getRowSorter();
-    	String[][] cell = new String[rDm.getRowCount() + 1][];
+    	String[][] cell = new String[sorter.getViewRowCount() + 1][];
     	int[] maxLength = new int[rDm.getColumnCount()];
-		for (int y = -1; y < rDm.getRowCount(); ++y) {
+		for (int y = -1; y < sorter.getViewRowCount(); ++y) {
 			cell[y + 1] = new String[rDm.getColumnCount()];
 			for (int x = 0; x < rDm.getColumnCount(); ++x) {
 				int mx = cm.getColumn(x).getModelIndex();
@@ -78,14 +135,35 @@ public class TabContentPanel extends javax.swing.JPanel {
 					value = ((TableModelItem) value).value;
 				}
 				String cellContent = value == BrowserContentPane.NULL || value == null? "" : value.toString();
+				if (sep != null) {
+					if (cellContent.contains(sep.toString()) || cellContent.indexOf("\n") >= 0 || cellContent.indexOf("\r") >= 0 || cellContent.indexOf("\"") >= 0) {
+						cellContent = "\"" + (cellContent.replaceAll("\"", "\"\"")) + "\"";
+					}
+				}
 				cell[y + 1][x] = cellContent;
 				maxLength[x] = Math.max(cellContent.length(), maxLength[x]);
 			}
 		}
+		boolean incHeader = headerCheckBox.isSelected();
 		String nl = System.getProperty("line.separator", "\n");
 		StringBuilder sb = new StringBuilder();
 		for (int y = 0; y < cell.length; ++y) {
-			if (y == 1) {
+			if (y == 0 && !incHeader) {
+				continue;
+			}
+			for (int x = 0; x < cell[y].length; ++x) {
+				sb.append(cell[y][x]);
+				if (sep != null) {
+					if (x < cell[y].length - 1)
+					sb.append(sep);
+				} else {
+					for (int i = 3 + maxLength[x] - cell[y][x].length(); i > 0; --i) {
+						sb.append(" ");
+					}
+				}
+			}
+			sb.append(nl);
+			if (y == 0 && sep == null && incHeader) {
 				for (int x = 0; x < cell[y].length; ++x) {
 					for (int i = 3 + maxLength[x]; i > 0; --i) {
 						sb.append("-");
@@ -93,13 +171,6 @@ public class TabContentPanel extends javax.swing.JPanel {
 				}
 				sb.append(nl);
 			}
-			for (int x = 0; x < cell[y].length; ++x) {
-				sb.append(cell[y][x]);
-				for (int i = 3 + maxLength[x] - cell[y][x].length(); i > 0; --i) {
-					sb.append(" ");
-				}
-			}
-			sb.append(nl);
 		}
 
 		jTextArea.setText(sb.toString());
@@ -127,6 +198,10 @@ public class TabContentPanel extends javax.swing.JPanel {
         textTabPanel = new javax.swing.JPanel();
         jScrollPane2 = new javax.swing.JScrollPane();
         jTextArea = new javax.swing.JTextArea();
+        columnSeparatorComboBox = new javax.swing.JComboBox<>();
+        copyCBButton = new javax.swing.JButton();
+        jLabel1 = new javax.swing.JLabel();
+        headerCheckBox = new javax.swing.JCheckBox();
 
         setLayout(new java.awt.GridBagLayout());
 
@@ -171,10 +246,52 @@ public class TabContentPanel extends javax.swing.JPanel {
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 1;
+        gridBagConstraints.gridwidth = 4;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.weighty = 1.0;
         textTabPanel.add(jScrollPane2, gridBagConstraints);
+
+        columnSeparatorComboBox.setEditable(true);
+        columnSeparatorComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 2;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 4);
+        textTabPanel.add(columnSeparatorComboBox, gridBagConstraints);
+
+        copyCBButton.setText("Copy to Clipboard");
+        copyCBButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                copyCBButtonActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 4;
+        gridBagConstraints.gridy = 2;
+        textTabPanel.add(copyCBButton, gridBagConstraints);
+
+        jLabel1.setText("Column Separator ");
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
+        textTabPanel.add(jLabel1, gridBagConstraints);
+
+        headerCheckBox.setSelected(true);
+        headerCheckBox.setText("Include Header");
+        headerCheckBox.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                headerCheckBoxActionPerformed(evt);
+            }
+        });
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 3;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        gridBagConstraints.weightx = 1.0;
+        textTabPanel.add(headerCheckBox, gridBagConstraints);
 
         tabbedPane.addTab("Text", textTabPanel);
 
@@ -189,11 +306,28 @@ public class TabContentPanel extends javax.swing.JPanel {
         gridBagConstraints.weighty = 1.0;
         add(jPanel1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void copyCBButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_copyCBButtonActionPerformed
+    	StringSelection selection = new StringSelection(jTextArea.getText());
+	    Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+	    clipboard.setContents(selection, selection);
+    }//GEN-LAST:event_copyCBButtonActionPerformed
+
+    private void headerCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_headerCheckBoxActionPerformed
+    	if (theRowsTable != null) {
+			updateTextView(theRowsTable);
+		}
+    }//GEN-LAST:event_headerCheckBoxActionPerformed
+
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<String> columnSeparatorComboBox;
     public javax.swing.JPanel columnsPanel;
     public javax.swing.JScrollPane columnsScrollPane;
     public javax.swing.JPanel contentPanel;
     public javax.swing.JPanel controlsPanel1;
+    private javax.swing.JButton copyCBButton;
+    private javax.swing.JCheckBox headerCheckBox;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane2;
     private javax.swing.JTextArea jTextArea;

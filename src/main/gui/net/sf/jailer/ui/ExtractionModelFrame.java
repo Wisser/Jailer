@@ -1091,58 +1091,60 @@ public class ExtractionModelFrame extends javax.swing.JFrame {
 						dbConnectionDialog.addDbArgs(args);
 						Session.closeTemporaryTableSession();
 						BasicDataSource dataSource = new BasicDataSource(dbConnectionDialog.currentConnection.driverClass, dbConnectionDialog.currentConnection.url, dbConnectionDialog.currentConnection.user, dbConnectionDialog.getPassword(), 0, dbConnectionDialog.currentJarURLs()); 
-						Session session = new Session(dataSource, dataSource.dbms);
+						Session session = SessionForUI.createSession(dataSource, dataSource.dbms, this);
 
-						if (extractionModelEditor.dataModel != null && session.dbms.getRowidName() == null) {
-							Set<Table> toCheck = new HashSet<Table>();
-							if (extractionModelEditor.extractionModel != null) {
-								if (extractionModelEditor.extractionModel.additionalSubjects != null) {
-									for (AdditionalSubject as: extractionModelEditor.extractionModel.additionalSubjects) {
-										toCheck.add(as.getSubject());
+						if (session != null) {
+							if (extractionModelEditor.dataModel != null && session.dbms.getRowidName() == null) {
+								Set<Table> toCheck = new HashSet<Table>();
+								if (extractionModelEditor.extractionModel != null) {
+									if (extractionModelEditor.extractionModel.additionalSubjects != null) {
+										for (AdditionalSubject as: extractionModelEditor.extractionModel.additionalSubjects) {
+											toCheck.add(as.getSubject());
+										}
 									}
 								}
+								toCheck.add(extractionModelEditor.subject);
+								extractionModelEditor.dataModel.checkForPrimaryKey(toCheck, false);
 							}
-							toCheck.add(extractionModelEditor.subject);
-							extractionModelEditor.dataModel.checkForPrimaryKey(toCheck, false);
-						}
-
-						ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, executionContext);
-						session.shutDown();
-						Session.closeTemporaryTableSession();
-						if (exportDialog.isOk()) {
-							exportDialog.fillCLIArgs(args);
-							List<String> ddlArgs = new ArrayList<String>();
-							ddlArgs.add("create-ddl");
-							dbConnectionDialog.addDbArgs(ddlArgs);
-							if (!exportDialog.isUseRowId()) {
-								ddlArgs.add("-no-rowid");
-							}
-							if (exportDialog.getWorkingTableSchema() != null) {
-								ddlArgs.add("-working-table-schema");
-								ddlArgs.add(exportDialog.getWorkingTableSchema());
-							}
-							DMLTransformer.numberOfExportedLOBs = 0;
-							DDLCreator ddlCreator = new DDLCreator(executionContext);
-							dataSource = new BasicDataSource(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), 0, dbConnectionDialog.currentJarURLs());
-							String tableInConflict = ddlCreator.getTableInConflict(dataSource, dataSource.dbms);
-							if (tableInConflict != null && exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL)) {
-								JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);
-							}
-							else {
-								if (!exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL) || ddlCreator.isUptodate(dataSource, dataSource.dbms, exportDialog.isUseRowId(), exportDialog.getWorkingTableSchema()) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
-									"Automatic creation of working-tables failed!\n" +
-									"Please execute the Jailer-DDL manually (jailer_ddl.sql)\n" +
-									"or try another \"Working table schema\"\n\n" +
-									"Continue Data Export?", dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, true, false, true, executionContext)) {
-									ProgressTable progressTable = new ProgressTable();
-									ProgressTable progressTableForDelete = new ProgressTable();
-									ProgressPanel progressPanel = new ProgressPanel(progressTable, progressTableForDelete, exportDialog.hasDeleteScript(), exportDialog.explain.isSelected());
-									boolean confirm = exportDialog.scriptFormat == ScriptFormat.INTRA_DATABASE && exportDialog.getConfirmExport();
-									ExportAndDeleteStageProgressListener progressListener = new ExportAndDeleteStageProgressListener(progressTable, progressTableForDelete, progressPanel, extractionModelEditor.dataModel, confirm, exportDialog.getTargetSchemaSet());
-									try {
-										UIUtil.runJailer(this, args, true, true, exportDialog.explain.isSelected(), false /* !exportDialog.explain.isSelected() */, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), progressListener, progressPanel, true, true, false, executionContext);
-									} finally {
-										progressListener.stop();
+	
+							ExportDialog exportDialog = new ExportDialog(this, extractionModelEditor.dataModel, extractionModelEditor.getSubject(), extractionModelEditor.getSubjectCondition(), extractionModelEditor.extractionModel.additionalSubjects, session, args, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), checkRI, dbConnectionDialog, extractionModelEditor.extractionModelFile, executionContext);
+							session.shutDown();
+							Session.closeTemporaryTableSession();
+							if (exportDialog.isOk()) {
+								exportDialog.fillCLIArgs(args);
+								List<String> ddlArgs = new ArrayList<String>();
+								ddlArgs.add("create-ddl");
+								dbConnectionDialog.addDbArgs(ddlArgs);
+								if (!exportDialog.isUseRowId()) {
+									ddlArgs.add("-no-rowid");
+								}
+								if (exportDialog.getWorkingTableSchema() != null) {
+									ddlArgs.add("-working-table-schema");
+									ddlArgs.add(exportDialog.getWorkingTableSchema());
+								}
+								DMLTransformer.numberOfExportedLOBs = 0;
+								DDLCreator ddlCreator = new DDLCreator(executionContext);
+								dataSource = new BasicDataSource(ddlArgs.get(1), ddlArgs.get(2), ddlArgs.get(3), ddlArgs.get(4), 0, dbConnectionDialog.currentJarURLs());
+								String tableInConflict = ddlCreator.getTableInConflict(dataSource, dataSource.dbms);
+								if (tableInConflict != null && exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL)) {
+									JOptionPane.showMessageDialog(this, "Can't drop table '" + tableInConflict + "' as it is not created by Jailer.\nDrop or rename this table first.", "Error", JOptionPane.ERROR_MESSAGE);
+								}
+								else {
+									if (!exportDialog.getTemporaryTableScope().equals(WorkingTableScope.GLOBAL) || ddlCreator.isUptodate(dataSource, dataSource.dbms, exportDialog.isUseRowId(), exportDialog.getWorkingTableSchema()) || UIUtil.runJailer(this, ddlArgs, true, true, false, true, 
+										"Automatic creation of working-tables failed!\n" +
+										"Please execute the Jailer-DDL manually (jailer_ddl.sql)\n" +
+										"or try another \"Working table schema\"\n\n" +
+										"Continue Data Export?", dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), null, null, true, false, true, executionContext)) {
+										ProgressTable progressTable = new ProgressTable();
+										ProgressTable progressTableForDelete = new ProgressTable();
+										ProgressPanel progressPanel = new ProgressPanel(progressTable, progressTableForDelete, exportDialog.hasDeleteScript(), exportDialog.explain.isSelected());
+										boolean confirm = exportDialog.scriptFormat == ScriptFormat.INTRA_DATABASE && exportDialog.getConfirmExport();
+										ExportAndDeleteStageProgressListener progressListener = new ExportAndDeleteStageProgressListener(progressTable, progressTableForDelete, progressPanel, extractionModelEditor.dataModel, confirm, exportDialog.getTargetSchemaSet());
+										try {
+											UIUtil.runJailer(this, args, true, true, exportDialog.explain.isSelected(), false /* !exportDialog.explain.isSelected() */, null, dbConnectionDialog.getUser(), dbConnectionDialog.getPassword(), progressListener, progressPanel, true, true, false, executionContext);
+										} finally {
+											progressListener.stop();
+										}
 									}
 								}
 							}

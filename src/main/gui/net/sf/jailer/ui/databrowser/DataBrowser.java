@@ -109,6 +109,7 @@ import net.sf.jailer.ui.Environment;
 import net.sf.jailer.ui.ExtractionModelFrame;
 import net.sf.jailer.ui.ImportDialog;
 import net.sf.jailer.ui.JComboBox;
+import net.sf.jailer.ui.SessionForUI;
 import net.sf.jailer.ui.StringSearchPanel;
 import net.sf.jailer.ui.UIUtil;
 import net.sf.jailer.ui.constraintcheck.ConstraintChecker;
@@ -678,12 +679,14 @@ public class DataBrowser extends javax.swing.JFrame {
         }
         ConnectionInfo connection = dbConnectionDialog.currentConnection;
         BasicDataSource dataSource = new BasicDataSource(connection.driverClass, connection.url, connection.user, connection.password, 0, dbConnectionDialog.currentJarURLs());
-        session = new Session(dataSource, dataSource.dbms);
-        List<String> args = new ArrayList<String>();
-        dbConnectionDialog.addDbArgs(args);
-        session.setCliArguments(args);
-        session.setPassword(dbConnectionDialog.getPassword());
-        onNewSession(session);
+        session = SessionForUI.createSession(dataSource, dataSource.dbms, this);
+        if (session != null) {
+	        List<String> args = new ArrayList<String>();
+	        dbConnectionDialog.addDbArgs(args);
+	        session.setCliArguments(args);
+	        session.setPassword(dbConnectionDialog.getPassword());
+	        onNewSession(session);
+        }
     }
 
 	protected void setConnection(DbConnectionDialog dbConnectionDialog) throws Exception {
@@ -696,19 +699,21 @@ public class DataBrowser extends javax.swing.JFrame {
             ConnectionInfo connection = dbConnectionDialog.currentConnection;
             if (connection != null) {
                 createSession(dbConnectionDialog);
-                desktop.session = session;
-                onNewSession(session);
-                desktop.openSchemaMappingDialog(true);
-                updateStatusBar();
-                if (desktop != null) {
-                    desktop.updateMenu();
-                    for (RowBrowser rb : desktop.getBrowsers()) {
-                        rb.browserContentPane.session = session;
-                        rb.browserContentPane.rows.clear();
-                    }
-                    for (RowBrowser rb : desktop.getRootBrowsers(false)) {
-                        rb.browserContentPane.reloadRows();
-                    }
+                if (session != null) {
+	                desktop.session = session;
+	                onNewSession(session);
+	                desktop.openSchemaMappingDialog(true);
+	                updateStatusBar();
+	                if (desktop != null) {
+	                    desktop.updateMenu();
+	                    for (RowBrowser rb : desktop.getBrowsers()) {
+	                        rb.browserContentPane.session = session;
+	                        rb.browserContentPane.rows.clear();
+	                    }
+	                    for (RowBrowser rb : desktop.getRootBrowsers(false)) {
+	                        rb.browserContentPane.reloadRows();
+	                    }
+	                }
                 }
             }
         }
@@ -1929,9 +1934,11 @@ public class DataBrowser extends javax.swing.JFrame {
         }
         if (dbConnectionDialog.isConnected || dbConnectionDialog.connect(DataBrowserContext.getAppName(true))) {
             dataBrowser.setConnection(dbConnectionDialog);
-            dataBrowser.askForDataModel();
-            dataBrowser.desktop.openSchemaMappingDialog(true);
-            dataBrowser.updateStatusBar();
+            if (dataBrowser.session != null) {
+	            dataBrowser.askForDataModel();
+	            dataBrowser.desktop.openSchemaMappingDialog(true);
+	            dataBrowser.updateStatusBar();
+            }
         } else {
             if (dbConnectionDialog.isConnected) {
                 dataBrowser.setConnection(dbConnectionDialog);

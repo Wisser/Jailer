@@ -1203,6 +1203,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 boolean reload, ExecutionContext executionContext) {
             super(dataModel, table, condition, session, parentRow, parentRows, association, parentFrame, currentClosure,
                     currentClosureRowIDs, limit, selectDistinct, reload, executionContext);
+            noSingleRowDetailsView = true;
             rowsTableScrollPane.setWheelScrollingEnabled(true);
         }
         @Override

@@ -43,9 +43,9 @@ public class ColumnsTable extends JTable {
 		RowSorter<? extends TableModel> sorter = rowsTable.getRowSorter();
 		Vector cNames = new Vector();
 		cNames.add("Column");
-		for (int i = 0; i < rDm.getRowCount(); ++i) {
+		for (int i = 0; i < sorter.getViewRowCount(); ++i) {
 			if (i > MAX_ROWS) {
-				cNames.add("Row " + (i + 1) + " (" + (rDm.getRowCount() - i - 1) + " more)");
+				cNames.add("Row " + (i + 1) + " (" + (sorter.getViewRowCount() - i - 1) + " more)");
 				break;
 			}
 			cNames.add("Row " + (i + 1));
@@ -60,7 +60,7 @@ public class ColumnsTable extends JTable {
 		for (int x = 0; x < rDm.getColumnCount(); ++x) {
 			int mx = cm.getColumn(x).getModelIndex();
 			cDm.setValueAt(rDm.getColumnName(mx), x, 0);
-			for (int y = 0; y < rDm.getRowCount(); ++y) {
+			for (int y = 0; y < sorter.getViewRowCount(); ++y) {
 				cDm.setValueAt(rDm.getValueAt(sorter.convertRowIndexToModel(y), mx), x, y + 1);
 				if (y > MAX_ROWS) {
 					break;
@@ -78,7 +78,11 @@ public class ColumnsTable extends JTable {
 			@Override
 			public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected,
 					boolean hasFocus, int row, int column) {
-				Component render = rowsTable.getCellRenderer(column, row).getTableCellRendererComponent(ColumnsTable.this, value, false, hasFocus, column + 1, row);
+				int dmColumn = column;
+				if (dmColumn  > 0) {
+					--dmColumn;
+				}
+				Component render = rowsTable.getCellRenderer(dmColumn, row).getTableCellRendererComponent(ColumnsTable.this, value, false, hasFocus, dmColumn, row);
 				if (render instanceof JLabel) {
 					if (column == 0) {
 						((JLabel) render).setFont(italic);

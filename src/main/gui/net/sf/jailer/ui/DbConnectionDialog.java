@@ -18,7 +18,9 @@ package net.sf.jailer.ui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
+import java.awt.Frame;
 import java.awt.Point;
+import java.awt.Window;
 import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.MouseAdapter;
@@ -843,7 +845,7 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 		}
 		try {
 			root.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
-			if (testConnection(this, currentConnection)) {
+			if (testConnection(mainPanel, currentConnection)) {
 				isConnected = true;
 				onConnect(currentConnection);
 			}
@@ -879,9 +881,13 @@ public class DbConnectionDialog extends javax.swing.JDialog {
 
 		try {
 			BasicDataSource dataSource = new BasicDataSource(ci.driverClass, ci.url, ci.user, ci.password, 0, urls);
-			Connection con = dataSource.getConnection();
-			con.close();
-			return true;
+			Window w = parent instanceof Window? (Window) parent : SwingUtilities.getWindowAncestor(parent);
+			SessionForUI session = SessionForUI.createSession(dataSource, dataSource.dbms, w);
+			if (session != null) {
+				session.shutDown();
+				return true;
+			}
+			return false;
 		} catch (Throwable e) {
 			if (e.getCause() instanceof ClassNotFoundException) {
 				UIUtil.showException(parent, "Could not connect to DB", new ClassNotFoundException("JDBC driver class not found: '" + e.getMessage() + "'", e.getCause()), UIUtil.EXCEPTION_CONTEXT_USER_ERROR);
