@@ -1860,7 +1860,7 @@ public abstract class Desktop extends JDesktopPane {
 			rb.browserContentPane.cancelLoadJob(false);
 		}
 		if (session != null) {
-			new Thread(new Runnable() {
+			Thread thread = new Thread(new Runnable() {
 				@Override
 				public void run() {
 					try {
@@ -1871,7 +1871,9 @@ public abstract class Desktop extends JDesktopPane {
 						// exception already has been logged
 					}
 				}
-			}).start();
+			});
+			thread.setDaemon(true);
+			thread.start();
 		}
 	}
 

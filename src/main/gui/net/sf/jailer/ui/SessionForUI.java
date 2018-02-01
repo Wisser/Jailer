@@ -52,7 +52,7 @@ public class SessionForUI extends Session {
 		final AtomicReference<Throwable> exception = new AtomicReference<Throwable>();
 		session.connectionDialog = new JDialog(w, "Connecting");
 		session.connectionDialog.setModal(true);
-		new Thread(new Runnable() {
+		Thread thread = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
@@ -76,7 +76,9 @@ public class SessionForUI extends Session {
 					}
 				});
 			}
-		}).start();
+		});
+		thread.setDaemon(true);
+		thread.start();
 		final Point los = w.getLocationOnScreen();
 		session.connectionDialog.getContentPane().add(session.connectingPanel);
 		session.connectionDialog.pack();
@@ -135,7 +137,7 @@ public class SessionForUI extends Session {
 	 */
 	@Override
 	public void shutDown() throws SQLException {
-		new Thread(new Runnable() {
+		Thread thread = new Thread(new Runnable() {
 			@Override
 			public void run() {
 				try {
@@ -144,7 +146,9 @@ public class SessionForUI extends Session {
 					e.printStackTrace();
 				}
 			}
-		}).start();
+		});
+		thread.setDaemon(true);
+		thread.start();
 	}
 
 }

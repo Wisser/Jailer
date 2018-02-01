@@ -575,15 +575,19 @@ public class RSyntaxTextAreaWithSQLSyntaxStyle extends RSyntaxTextArea implement
 			for (CaretListener l: removedListener) {
 				addCaretListener(l);
 			}
-			// force caret event
-			int cPos = getCaretPosition();
-			if (cPos > 0) {
-				setCaretPosition(cPos - 1);
-			} else if (getDocument().getLength() > cPos) {
-				setCaretPosition(cPos + 1);
-			}
-			setCaretPosition(cPos);
+			forceCaretEvent();
 		}
+	}
+
+	public void forceCaretEvent() {
+		// force caret event
+		int cPos = getCaretPosition();
+		if (cPos > 0) {
+			setCaretPosition(cPos - 1);
+		} else if (getDocument().getLength() > cPos) {
+			setCaretPosition(cPos + 1);
+		}
+		setCaretPosition(cPos);
 	}
 
 	@Override

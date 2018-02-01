@@ -176,7 +176,7 @@ public class TabContentPanel extends javax.swing.JPanel {
 			sb.append(nl);
 			if (y == 0 && sep == null && incHeader) {
 				for (int x = 0; x < cell[y].length; ++x) {
-					for (int i = 3 + maxLength[x]; i > 0; --i) {
+					for (int i = (x > 0? 3 : 0) + maxLength[x]; i > 0; --i) {
 						sb.append("-");
 					}
 				}

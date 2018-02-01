@@ -92,7 +92,7 @@ public class CancellationHandler {
 			final List<Statement> toBeCanceled = new ArrayList<Statement>(currentStatements.get(context == null? DEFAULT_CONTEXT : context));
 			currentStatements.remove(context == null? DEFAULT_CONTEXT : context);
 			for (final Statement statement: toBeCanceled) {
-				new Thread(new Runnable() {
+				Thread thread = new Thread(new Runnable() {
 					@Override
 					public void run() {
 						try {
@@ -101,7 +101,9 @@ public class CancellationHandler {
 							// ignore
 						}
 					}
-				}).start();
+				});
+				thread.setDaemon(true);
+				thread.start();
 			}
 		}
 	}

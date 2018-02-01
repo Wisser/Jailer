@@ -105,7 +105,7 @@ public class SingleStageProgressListener implements ProgressListener {
 		this.targetSchemaSet = targetSchemaSet;
 		this.forExportStage = forExportStage;
 		this.stopClock = !forExportStage;
-		new Thread(new Runnable() {
+		Thread thread = new Thread(new Runnable() {
 
 			@Override
 			public void run() {
@@ -179,7 +179,9 @@ public class SingleStageProgressListener implements ProgressListener {
 					}
 				});
 			}
-		}).start();
+		});
+		thread.setDaemon(true);
+		thread.start();
 	}
 
 	/**
