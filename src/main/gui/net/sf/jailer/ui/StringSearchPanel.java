@@ -418,7 +418,7 @@ public class StringSearchPanel extends javax.swing.JPanel {
 				
 				if (!toLoad.isEmpty()) {
 					final JDialog loadingDialog = new JDialog(dialog, "Loading", true);
-					new Thread(new Runnable() {
+					Thread thread = new Thread(new Runnable() {
 						@Override
 						public void run() {
 							cancelLoading.set(false);
@@ -457,7 +457,9 @@ public class StringSearchPanel extends javax.swing.JPanel {
 								}
 							});
 						}
-					}).start();
+					});
+					thread.setDaemon(true);
+					thread.start();
 					loadingDialog.getContentPane().add(loadingPanel);
 					loadingDialog.pack();
 					Point los = dialog.getLocationOnScreen();

@@ -108,8 +108,11 @@
         <indexInfoQuery>SELECT null, c_src.OWNER, c_src.TABLE_NAME, 0, null, c_list.CONSTRAINT_NAME, null, null, c_src.COLUMN_NAME FROM ALL_CONSTRAINTS c_list, ALL_CONS_COLUMNS c_src WHERE c_list.CONSTRAINT_NAME   = c_src.CONSTRAINT_NAME  AND  c_list.OWNER             = c_src.OWNER  AND  c_list.CONSTRAINT_TYPE = 'U'  AND  c_list.CONSTRAINT_NAME not like 'BIN$%'  AND  c_src.OWNER      = '${SCHEMA}'</indexInfoQuery>
         <identifierQuoteString>"</identifierQuoteString>
         <ddlCall>begin ? := dbms_metadata.get_ddl('${type}', '${table}', '${schema}'); end;</ddlCall>
+        <explainPrepare>explain plan set statement_id = '%2$s' for %1$s</explainPrepare>
+        <explainQuery>select * from table(dbms_xplan.display(NULL, '%2$s'))</explainQuery>
+        <explainCleanup></explainCleanup>
     </dbms>
-    
+
     <!-- for MS SQL Server -->
     <dbms>
         <id>MSSQL</id>
@@ -176,6 +179,9 @@
 -->
         <nullableContraint>NULL</nullableContraint>
         <identifierQuoteString>"</identifierQuoteString>
+        <explainPrepare>SET SHOWPLAN_ALL ON</explainPrepare>
+        <explainQuery>%1$s</explainQuery>
+        <explainCleanup>SET SHOWPLAN_ALL OFF</explainCleanup>
     </dbms>
     
     <!-- for MySQL -->
@@ -302,8 +308,11 @@
         <nullableContraint>NULL</nullableContraint>
         <identifierQuoteString>`</identifierQuoteString>
         <ddlQuery>SHOW CREATE ${type} `${schema}`.`${table}`</ddlQuery>
+        <explainPrepare></explainPrepare>
+        <explainQuery>explain %1$s</explainQuery>
+        <explainCleanup></explainCleanup>
     </dbms>
-    
+
     <!-- for DB2 LUW -->
     <dbms>
         <id>DB2</id>
@@ -557,6 +566,9 @@
         <supportsSchemasInIndexDefinitions>false</supportsSchemasInIndexDefinitions>
         <useInlineViewsInDataBrowser>true</useInlineViewsInDataBrowser>
         <identifierQuoteString>"</identifierQuoteString>
+        <explainPrepare></explainPrepare>
+        <explainQuery>explain %1$s</explainQuery>
+        <explainCleanup></explainCleanup>
     </dbms>
     
     <!-- for Cloudscape -->
@@ -805,6 +817,9 @@
         <useInlineViewsInDataBrowser>false</useInlineViewsInDataBrowser>
         <virtualColumnsQuery>SELECT TABLE_NAME, COLUMN_NAME from INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='${SCHEMA}' AND IS_COMPUTED</virtualColumnsQuery>
         <identifierQuoteString>"</identifierQuoteString>
+        <explainPrepare></explainPrepare>
+        <explainQuery>explain %1$s</explainQuery>
+        <explainCleanup></explainCleanup>
     </dbms>
-    
+
 </configuration>

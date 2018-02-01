@@ -288,6 +288,10 @@ public class DBMS {
 	private String indexInfoQuery = null;
 	private String identifierQuoteString = "\"";
 
+	private String explainPrepare = null;
+	private String explainQuery = null;
+	private String explainCleanup = null;
+	
 	/**
 	 * @return the virtualColumnsQuery
 	 */
@@ -889,6 +893,30 @@ public class DBMS {
 
 	public void setDisplayName(String displayName) {
 		this.displayName = displayName;
+	}
+
+	public String getExplainPrepare() {
+		return explainPrepare;
+	}
+
+	public void setExplainPrepare(String explainPrepare) {
+		this.explainPrepare = explainPrepare;
+	}
+
+	public String getExplainQuery() {
+		return explainQuery;
+	}
+
+	public void setExplainQuery(String explainQuery) {
+		this.explainQuery = explainQuery;
+	}
+
+	public String getExplainCleanup() {
+		return explainCleanup;
+	}
+
+	public void setExplainCleanup(String explainCleanup) {
+		this.explainCleanup = explainCleanup;
 	}
 
 	/* (non-Javadoc)

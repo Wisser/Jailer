@@ -44,7 +44,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
@@ -152,8 +151,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 0, 0, 16);
         jPanel5.add(historyComboBox, gridBagConstraints);
-        
-        explainButton.setVisible(canExplain());
         
         this.editorPane = new RSyntaxTextAreaWithSQLSyntaxStyle(true, true) {
 			@Override
@@ -307,7 +304,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     }
     
     private boolean canExplain() {
-		return DBMS.ORACLE.equals(SQLConsole.this.metaDataSource.getSession().dbms);
+		return metaDataSource.getSession().dbms.getExplainQuery() != null && !metaDataSource.getSession().dbms.getExplainQuery().isEmpty();
 	}
     
     private AtomicBoolean pending = new AtomicBoolean(false);
@@ -538,6 +535,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         ResultSet resultSet = null;
         final Status localStatus = new Status();
         String sqlStatement = null;
+        String stmtId = null;
         try {
             status.numStatements++;
             localStatus.numStatements++;
@@ -548,15 +546,15 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             sqlStatement = sql.replaceFirst("(?is)(;\\s*)+$", "");
             boolean hasResultSet;
             if (explain) {
-            	// TODO delete old plans
-            	String stmtId = UUID.randomUUID().toString().replaceAll("-", "");
-            	if (stmtId.length() > 30) {
-            		stmtId = stmtId.substring(0,  30);
+            	synchronized (this) {
+            		stmtId = "Jailer" + (nextPlanID++ % 8);
+				}
+            	if (session.dbms.getExplainPrepare() != null && !session.dbms.getExplainPrepare().isEmpty()) {
+                	statement.execute(String.format(session.dbms.getExplainPrepare(), sqlStatement, stmtId));
+                	statement.close();
             	}
-            	statement.execute("explain plan set statement_id = '" + stmtId + "' for " + sqlStatement);
-            	statement.close();
                 statement = session.getConnection().createStatement();
-            	hasResultSet = statement.execute("select * from table(dbms_xplan.display(NULL, '" + stmtId + "'))");
+            	hasResultSet = statement.execute(String.format(session.dbms.getExplainQuery(), sqlStatement, stmtId));
             } else {
             	hasResultSet = statement.execute(sqlStatement);
             }
@@ -730,6 +728,18 @@ public abstract class SQLConsole extends javax.swing.JPanel {
                 status.error = error;
             }
             status.updateView(false);
+        } finally {
+            if (explain && session.dbms.getExplainCleanup() != null && !session.dbms.getExplainCleanup().isEmpty()) {
+            	if (session.dbms.getExplainPrepare() != null) {
+                    try {
+                    	statement = session.getConnection().createStatement();
+						statement.execute(String.format(session.dbms.getExplainCleanup(), sqlStatement, stmtId));
+	                	statement.close();
+					} catch (SQLException e) {
+						// ignore
+					}
+            	}
+            }
         }
     }
 
@@ -871,7 +881,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         this.session = session;
         this.metaDataSource = metaDataSource;
         provider.reset(session, metaDataSource);
-        explainButton.setVisible(canExplain());
+        editorPane.forceCaretEvent();
     }
 
     private class Status {
@@ -1690,6 +1700,8 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     static private ImageIcon cancelIcon;
     static private ImageIcon explainIcon;
 
+    private int nextPlanID = 0;
+    
     static {
         String dir = "/net/sf/jailer/ui/resource";
         
