@@ -108,8 +108,12 @@ public class MetaDataSource {
 				sList.add(quoting.quote(schema));
 			}
 			String defaultSchema = quoting.quote(JDBCMetaDataBasedModelElementFinder.getDefaultSchema(session, session.getSchema()));
-			for (String s: sList) {
-				schemas.add(new MDSchema(s, s.equals(defaultSchema), this));
+			if (sList.isEmpty()) {
+				schemas.add(new MDSchema(defaultSchema, true, this));
+			} else {
+				for (String s: sList) {
+					schemas.add(new MDSchema(s, s.equals(defaultSchema), this));
+				}
 			}
 		}
 	}
