@@ -161,7 +161,7 @@ public class MDTable extends MDObject {
                         String sqlType;
                         sqlType = SqlUtil.SQL_TYPE.get(type);
                         if (sqlType == null) {
-                            sqlType = "? unknown type " + type;
+                            sqlType = resultSet.getString(6);
                         }
                         if (type == Types.NUMERIC || type == Types.DECIMAL || JDBCMetaDataBasedModelElementFinder.TYPES_WITH_LENGTH.contains(sqlType.toUpperCase()) || type == Types.NUMERIC || type == Types.DECIMAL || type == Types.VARCHAR || type == Types.CHAR || type == Types.BINARY || type == Types.VARBINARY) {
                             length = resultSet.getInt(7);
