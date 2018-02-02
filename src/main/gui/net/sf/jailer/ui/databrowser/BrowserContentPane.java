@@ -4489,9 +4489,16 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	public void copyToClipboard() {
 		String nl = System.getProperty("line.separator", "\n");
 		StringBuilder sb = new StringBuilder();
+		int[] selectedColumns = rowsTable.getSelectedColumns();
+		if (rowsTable.getSelectedColumnCount() == 1 && rowsTable.getSelectedRowCount() == 1) {
+			selectedColumns = new int[rowsTable.getColumnCount()];
+			for (int i = 0; i < selectedColumns.length; ++i) {
+				selectedColumns[i] = i;
+			}
+		}
 		for (int row: rowsTable.getSelectedRows()) {
 			boolean f = true;
-			for (int col: rowsTable.getSelectedColumns()) {
+			for (int col: selectedColumns) {
 				Object value = rowsTable.getModel().getValueAt(row, col);
 				if (value instanceof Row) {
 					Object[] values = ((Row) value).values;
