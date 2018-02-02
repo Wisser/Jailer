@@ -1505,6 +1505,9 @@ public abstract class SQLConsole extends javax.swing.JPanel {
     }
 
     private boolean isCommentOnly(String statement) {
+    	if (statement == null) {
+    		return false;
+    	}
         Pattern pattern = Pattern.compile("('([^']*'))|(/\\*.*?\\*/)|(\\-\\-.*?(\n|$))", Pattern.DOTALL);
         Matcher matcher = pattern.matcher(statement);
         boolean result = matcher.find();
@@ -1523,54 +1526,6 @@ public abstract class SQLConsole extends javax.swing.JPanel {
         return sb.toString().trim().isEmpty();
     }
 
-//	private String replaceSemicolonInComments(String sqlBlock, char commentSemicolon, char bsN, char bsR) {
-//		Pattern pattern = Pattern.compile("(')|(/\\*)|(\\*/)|(\\-\\-)|(\\n)|(;(\\s*\\n))", Pattern.DOTALL);
-//		Matcher matcher = pattern.matcher(sqlBlock);
-//		boolean result = matcher.find();
-//		StringBuffer sb = new StringBuffer();
-//		boolean inLiteral = false;
-//		boolean inMLComment = false;
-//		boolean inSLComment = false;
-//		if (result) {
-//			do {
-//				boolean appended = false;
-//				if (matcher.group(1) != null) {
-//					if (!inMLComment && !inSLComment) {
-//						inLiteral = !inLiteral;
-//					}
-//				} else if (matcher.group(2) != null) {
-//					if (!inLiteral && !inSLComment && !inMLComment) {
-//						inMLComment = true;
-//					}
-//				} else if (matcher.group(3) != null) {
-//					if (!inLiteral && !inSLComment && inMLComment) {
-//						inMLComment = false;
-//					}
-//				} else if (matcher.group(4) != null) {
-//					if (!inLiteral && !inMLComment) {
-//						inSLComment = true;
-//					}
-//				} else if (matcher.group(5) != null) {
-//					if (inSLComment && !inLiteral && !inMLComment) {
-//						inSLComment = false;
-//					}
-//				} else if (matcher.group(6) != null) {
-//					if (inSLComment || inMLComment) {
-//						inSLComment = false;
-//						matcher.appendReplacement(sb, Matcher.quoteReplacement(commentSemicolon + (matcher.group(7).replace('\n', bsN).replace('\r', bsR))));
-//						appended = true;
-//					}
-//				}
-//				if (!appended) {
-//					matcher.appendReplacement(sb, "$0");
-//				}
-//				result = matcher.find();
-//			} while (result);
-//		}
-//		matcher.appendTail(sb);
-//		return sb.toString();
-//	}
-    
     private final String HISTORY_FILE = ".history";
     private final String LF = System.getProperty("line.separator", "\n");
     private final JComboBox historyComboBox = new JComboBox() {
@@ -1580,7 +1535,7 @@ public abstract class SQLConsole extends javax.swing.JPanel {
             return new Dimension(Math.min(80, s.width), s.height);
         }
     };
-    
+
     private synchronized void restoreHistory() {
         try {
             File file = Environment.newFile(HISTORY_FILE);

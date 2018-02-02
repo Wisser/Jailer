@@ -235,7 +235,7 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 		while (resultSet.next()) {
 			String tableName = resultSet.getString(3);
 			if (resultSet.getString(4) != null && types.contains(resultSet.getString(4).toUpperCase())) {
-				if (isValidName(tableName)) {
+				if (isValidName(tableName, session)) {
 					tableName = quoting.quote(tableName);
 					if (executionContext.getQualifyNames()) {
 						String schemaName = resultSet.getString(DBMS.MySQL.equals(session.dbms)? 1 : 2);
@@ -554,8 +554,8 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 * @param name a table or column name
 	 * @return <code>true</code> if name is syntactically correct
 	 */
-	private boolean isValidName(String name) {
-		return name != null && !name.contains("$") && !name.contains("/") && !name.contains("=");
+	private boolean isValidName(String name, Session session) {
+		return name != null && (!DBMS.ORACLE.equals(session.dbms) || !name.startsWith("BIN$"));
 	}
 
 	/**
@@ -724,6 +724,32 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 				isVirtual = true;
 			}
 			if (isVirtual == null) {
+				String virtualColumnsQuery = session.dbms.getVirtualColumnsQuery();
+				if (virtualColumnsQuery != null) {
+					@SuppressWarnings("unchecked")
+					Set<Pair<String, String>> virtualColumns = (Set<Pair<String, String>>) session.getSessionProperty(getClass(), "virtualColumns" + schemaName);
+					if (virtualColumns == null) {
+						virtualColumns = new HashSet<Pair<String,String>>();
+							try {
+								session.setSilent(true);
+								final Set<Pair<String, String>> finalVirtualColumns = virtualColumns; 
+								session.executeQuery(virtualColumnsQuery.replace("${SCHEMA}", schemaName), new Session.AbstractResultSetReader() {
+									@Override
+									public void readCurrentRow(ResultSet resultSet) throws SQLException {
+										finalVirtualColumns.add(new Pair<String, String>(resultSet.getString(1), resultSet.getString(2)));
+									}
+								});
+							} catch (Exception e) {
+								// ignore
+							} finally {
+								session.setSilent(false);
+							}
+							session.setSessionProperty(getClass(), "virtualColumns" + schemaName, virtualColumns);
+						}
+					isVirtual = virtualColumns.contains(new Pair<String, String>(tableName, resultSet.getString(4)));
+				}
+			}
+			if (isVirtual == null) {
 				if (!Boolean.FALSE.equals(session.getSessionProperty(getClass(), "JDBC4Supported"))) {
 					try {
 						String virtual = resultSet.getString(24);
@@ -734,32 +760,6 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 						session.setSessionProperty(getClass(), "JDBC4Supported", false);
 					}
 				}
-			}
-			if (isVirtual == null) {
-				@SuppressWarnings("unchecked")
-				Set<Pair<String, String>> virtualColumns = (Set<Pair<String, String>>) session.getSessionProperty(getClass(), "virtualColumns" + schemaName);
-				if (virtualColumns == null) {
-					virtualColumns = new HashSet<Pair<String,String>>();
-					String virtualColumnsQuery = session.dbms.getVirtualColumnsQuery();
-					if (virtualColumnsQuery != null) {
-						try {
-							session.setSilent(true);
-							final Set<Pair<String, String>> finalVirtualColumns = virtualColumns; 
-							session.executeQuery(virtualColumnsQuery.replace("${SCHEMA}", schemaName), new Session.AbstractResultSetReader() {
-								@Override
-								public void readCurrentRow(ResultSet resultSet) throws SQLException {
-									finalVirtualColumns.add(new Pair<String, String>(resultSet.getString(1), resultSet.getString(2)));
-								}
-							});
-						} catch (Exception e) {
-							// ignore
-						} finally {
-							session.setSilent(false);
-						}
-					}
-					session.setSessionProperty(getClass(), "virtualColumns" + schemaName, virtualColumns);
-				}
-				isVirtual = virtualColumns.contains(new Pair<String, String>(tableName, resultSet.getString(4)));
 			}
 			if (isVirtual != null) {
 				column.isVirtual = isVirtual;

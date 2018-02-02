@@ -79,7 +79,13 @@ public class SessionForUI extends Session {
 		});
 		thread.setDaemon(true);
 		thread.start();
-		final Point los = w.getLocationOnScreen();
+		Point p;
+		if (w.isShowing()) {
+			p = w.getLocationOnScreen();
+		} else {
+			p = new Point(0, 0);
+		}
+		final Point los = p;
 		session.connectionDialog.getContentPane().add(session.connectingPanel);
 		session.connectionDialog.pack();
 		session.connectionDialog.setLocation(los.x + w.getWidth() / 2 - session.connectionDialog.getWidth() / 2, los.y + w.getHeight() / 2 - session.connectionDialog.getHeight() / 2);
