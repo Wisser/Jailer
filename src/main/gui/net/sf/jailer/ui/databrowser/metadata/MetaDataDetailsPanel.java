@@ -16,6 +16,7 @@
 package net.sf.jailer.ui.databrowser.metadata;
 
 import java.awt.BorderLayout;
+import java.awt.CardLayout;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
@@ -99,6 +100,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
         		tabbedPane.addTab("DDL", ddlPanel);
         	}
         }
+        ((CardLayout) getLayout()).show(this, "table");
     }
     
     static {
@@ -130,8 +132,16 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 		tableDetailsViews.clear();
 	}
 
+	public void showMetaDataDetails(MDGeneric mdOther, DataModel dataModel2) {
+		setVisible(true);
+        ((CardLayout) getLayout()).show(this, "other");
+    	otherPanel.removeAll();
+    	otherPanel.add(mdOther.getRender());
+	}
+
     public void showMetaDataDetails(final MDTable mdTable, Table table, DataModel dataModel) {
     	setVisible(true);
+        ((CardLayout) getLayout()).show(this, "table");
     	tableDetailsPanel.removeAll();
     	if (table != null) {
     		JComponent view = tableDetailsViews.get(table);
@@ -419,8 +429,9 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         tabbedPane = new javax.swing.JTabbedPane();
         tableDetailsPanel = new javax.swing.JPanel();
+        otherPanel = new javax.swing.JPanel();
 
-        setLayout(new javax.swing.BoxLayout(this, javax.swing.BoxLayout.LINE_AXIS));
+        setLayout(new java.awt.CardLayout());
 
         jPanel1.setLayout(new javax.swing.BoxLayout(jPanel1, javax.swing.BoxLayout.LINE_AXIS));
 
@@ -431,10 +442,14 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 
         jPanel1.add(tabbedPane);
 
-        add(jPanel1);
+        add(jPanel1, "table");
+
+        otherPanel.setLayout(new javax.swing.BoxLayout(otherPanel, javax.swing.BoxLayout.LINE_AXIS));
+        add(otherPanel, "other");
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel otherPanel;
     private javax.swing.JTabbedPane tabbedPane;
     private javax.swing.JPanel tableDetailsPanel;
     // End of variables declaration//GEN-END:variables

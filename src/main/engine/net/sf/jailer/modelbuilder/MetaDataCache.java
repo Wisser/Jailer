@@ -70,6 +70,11 @@ public class MetaDataCache {
 	private Map<String, List<Object[]>> cache;
 
 	/**
+	 * Meta data of chached row set.
+	 */
+	private MDCResultSetMetaData resultSetMetaData;
+	
+	/**
 	 * Reads primary keys.
 	 * 
 	 * @param session
@@ -177,8 +182,15 @@ public class MetaDataCache {
 
 			metaDataCache.cache = new HashMap<String, List<Object[]>>();
 			ResultSetMetaData rsMetaData = rs.getMetaData();
+			int numCol = rsMetaData.getColumnCount();
+			String[] names = new String[numCol];
+			int[] types = new int[numCol];
+			for (int i = 0; i < numCol; ++i) {
+				names[i] = rsMetaData.getColumnName(i + 1);
+				types[i] = rsMetaData.getColumnType(i + 1);
+			}
+			
 			while (rs.next()) {
-				int numCol = rsMetaData.getColumnCount();
 				Object[] row = new Object[numCol];
 				for (int i = 1; i < numCol; ++i) {
 					if (i >= 22 && DBMS.MSSQL.equals(session.dbms)) {
@@ -192,6 +204,7 @@ public class MetaDataCache {
 					}
 				}
 				String table = (String) row[2];
+				
 				List<Object[]> rowList = metaDataCache.cache.get(table);
 				if (rowList == null) {
 					rowList = new LinkedList<Object[]>();
@@ -199,7 +212,7 @@ public class MetaDataCache {
 				}
 				rowList.add(row);
 			}
-
+			metaDataCache.resultSetMetaData = new MDCResultSetMetaData(rsMetaData.getColumnCount(), names, types); 
 			rs.close();
 
 			if (metaDataCache.cache.isEmpty()) {
@@ -222,7 +235,9 @@ public class MetaDataCache {
 			rowList = new ArrayList<Object[]>();
 		}
 
-		return new CachedResultSet(rowList);
+		CachedResultSet result = new CachedResultSet(rowList);
+		result.resultSetMetaData = resultSetMetaData;
+		return result;
 	}
 
 	/**
@@ -403,6 +418,11 @@ public class MetaDataCache {
 
 		public CachedResultSet(List<Object[]> rowList) {
 			this.rowList = rowList;
+		}
+
+		public CachedResultSet(List<Object[]> rowList, int numCol, String[] names, int[] types) {
+			this.rowList = rowList;
+			this.resultSetMetaData = new MDCResultSetMetaData(numCol, names, types);
 		}
 
 		public int getSize() {

@@ -60,6 +60,12 @@
                 <key>CatalogOptions</key>
                 <value>0</value>
             </entry>
+<!--
+            <entry>
+                <key>includeSynonyms</key>
+                <value>true</value>
+            </entry>
+-->
         </jdbcProperties>
         <statisticRenovator>
             <scriptFileName>script/oracle/gatherStatistics.sql</scriptFileName>

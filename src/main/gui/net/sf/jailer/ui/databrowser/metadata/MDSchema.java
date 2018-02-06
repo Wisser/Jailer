@@ -111,7 +111,7 @@ public class MDSchema extends MDObject {
 					Map<String, Runnable> loadJobs = new TreeMap<String, Runnable>();
 					while (rs.next()) {
 						String tableName = metaDataSource.getQuoting().quote(rs.getString(3));
-						final MDTable table = new MDTable(tableName, this, "VIEW".equalsIgnoreCase(rs.getString(4)), "SYNONYM".equalsIgnoreCase(rs.getString(4)));
+						final MDTable table = new MDTable(tableName, this, "VIEW".equalsIgnoreCase(rs.getString(4)), "SYNONYM".equalsIgnoreCase(rs.getString(4)) || "ALIAS".equalsIgnoreCase(rs.getString(4)));
 						tables.add(table);
 						if (loadTableColumns) {
 							loadJobs.put(tableName, new Runnable() {
