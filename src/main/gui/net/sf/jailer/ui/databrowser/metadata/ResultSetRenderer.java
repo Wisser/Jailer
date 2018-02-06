@@ -108,6 +108,7 @@ public class ResultSetRenderer extends javax.swing.JPanel {
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.weightx = 1.0;
         add(jSeparator1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -125,7 +126,7 @@ public class ResultSetRenderer extends javax.swing.JPanel {
                 boolean reload, ExecutionContext executionContext) {
             super(dataModel, table, condition, session, parentRow, parentRows, association, parentFrame, currentClosure,
                     currentClosureRowIDs, limit, selectDistinct, reload, executionContext);
-            noSingleRowDetailsView = true;
+            singleRowDetailsViewTitel = "Details";
             maxColumnWidth = 180;
             rowsTableScrollPane.setWheelScrollingEnabled(true);
             rowsCount.setVisible(false);

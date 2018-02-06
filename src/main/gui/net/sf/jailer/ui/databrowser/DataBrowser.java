@@ -2914,9 +2914,9 @@ public class DataBrowser extends javax.swing.JFrame {
 					}
 
 					@Override
-					protected void onMDOtherSelect(MDGeneric mdOther) {
+					protected void onMDOtherSelect(MDGeneric mdOther, ExecutionContext executionContext) {
 						metaDataDetailsPanel
-							.showMetaDataDetails(mdOther, datamodel.get());
+							.showMetaDataDetails(mdOther, executionContext);
 					}
 		
 					@Override

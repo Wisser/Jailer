@@ -80,7 +80,7 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 	private final JPanel ddlPanel;
 	private final Map<Pair<MetaDataDetails, MDTable>, JComponent> detailsViews = new HashMap<Pair<MetaDataDetails, MDTable>, JComponent>();
 	private final Map<Table, JComponent> tableDetailsViews = new HashMap<Table, JComponent>();
-	
+
     /**
      * Creates new form MetaDataDetailsPanell 
      */
@@ -132,11 +132,11 @@ public abstract class MetaDataDetailsPanel extends javax.swing.JPanel {
 		tableDetailsViews.clear();
 	}
 
-	public void showMetaDataDetails(MDGeneric mdOther, DataModel dataModel2) {
+	public void showMetaDataDetails(MDGeneric mdOther, ExecutionContext executionContext) {
 		setVisible(true);
         ((CardLayout) getLayout()).show(this, "other");
     	otherPanel.removeAll();
-    	otherPanel.add(mdOther.getRender());
+    	otherPanel.add(mdOther.getRender(session, executionContext));
 	}
 
     public void showMetaDataDetails(final MDTable mdTable, Table table, DataModel dataModel) {

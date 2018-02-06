@@ -35,6 +35,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -80,8 +81,13 @@ import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.configuration.DatabaseObjectRenderingDescription;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.datamodel.Table;
+import net.sf.jailer.modelbuilder.JDBCMetaDataBasedModelElementFinder;
+import net.sf.jailer.modelbuilder.MetaDataCache;
+import net.sf.jailer.modelbuilder.MetaDataCache.CachedResultSet;
 import net.sf.jailer.modelbuilder.ModelBuilder;
 import net.sf.jailer.ui.AutoCompletion;
 import net.sf.jailer.ui.JComboBox;
@@ -106,6 +112,26 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private final Object CATEGORY_VIEWS = new String("Views");
     private final Object CATEGORY_TABLES = new String("Tables");
     private final Object CATEGORY_SYNONYMS = new String("Synonyms");
+
+	private List<MDDescriptionBasedGeneric> getGenericDatabaseObjects(MDSchema mdSchema) {
+		List<MDDescriptionBasedGeneric> genericDatabaseObjects = new ArrayList<MDDescriptionBasedGeneric>();
+		genericDatabaseObjects.add(new MDDescriptionBasedGeneric("Functions", metaDataSource, mdSchema, dataModel, 
+				new DatabaseObjectRenderingDescription() {
+					{
+						setIconURL("/net/sf/jailer/ui/resource/functions.png");
+						setDetailsIconURL("/net/sf/jailer/ui/resource/function.png");
+					}
+
+					@Override
+					public CachedResultSet retrieveList(Session session, String schema) throws SQLException {
+						return new MetaDataCache.CachedResultSet(
+								JDBCMetaDataBasedModelElementFinder.getFunctions(session, session.getMetaData(), schema, "%"),
+								null, session, schema, new int[] { 3, 4, 1 }, new String[] { "Name", "Remarks", "Category" });
+					}
+			
+		}));
+		return genericDatabaseObjects;
+	}
 
     private abstract class ExpandingMutableTreeNode extends DefaultMutableTreeNode {
         
@@ -427,6 +453,9 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                     if (uo instanceof MDSchema) {
                     	image = schemaIcon;
                     }
+                    if (uo instanceof MDDescriptionBasedGeneric) {
+                    	image = ((MDDescriptionBasedGeneric) uo).getIcon();
+                    }
                     if (uo instanceof MDTable) {
                         Table table = MetaDataPanel.this.metaDataSource.toTable((MDTable) uo);
                         if (table == null) {
@@ -529,7 +558,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
                                     } else if (uo instanceof MDTable) {
                                         onTableSelect((MDTable) uo);
                                     } else if (uo instanceof MDGeneric) {
-                                        onMDOtherSelect((MDGeneric) uo);
+                                        onMDOtherSelect((MDGeneric) uo, MetaDataPanel.this.executionContext);
                                     }
                                 }
                             }
@@ -704,10 +733,23 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     private DefaultMutableTreeNode root;
     private Map<MDSchema, DefaultMutableTreeNode> treeNodePerSchema = new HashMap<MDSchema, DefaultMutableTreeNode>();
 
-    private void updateTreeModel(MetaDataSource metaDataSource) {
+    private void updateTreeModel(final MetaDataSource metaDataSource) {
         root = new DefaultMutableTreeNode(new MDDatabase(metaDataSource.dataSourceName, metaDataSource, dataModel, executionContext));
         for (final MDSchema schema: metaDataSource.getSchemas()) {
             final DefaultMutableTreeNode schemaChild = new DefaultMutableTreeNode(schema);
+            for (final MDDescriptionBasedGeneric desc: getGenericDatabaseObjects(schema)) {
+                Iterable<Object> leafs = new Iterable<Object>() {
+    				@Override
+    				public Iterator<Object> iterator() {
+    					List<Object> details = new ArrayList<Object>();
+    		        	for (MDDescriptionBasedGeneric detail: desc.getDetails()) {
+    		        		details.add(detail);
+    		        	}
+    		        	return details.iterator();
+    				}
+    			};
+                createCategoryNode(schemaChild, leafs, desc);
+            }
             Iterable<Object> leafs = new Iterable<Object>() {
 				@Override
 				public Iterator<Object> iterator() {
@@ -1136,7 +1178,7 @@ public abstract class MetaDataPanel extends javax.swing.JPanel {
     protected abstract void analyseSchema(String schemaName);
     protected abstract void onTableSelect(MDTable mdTable);
     protected abstract void onSchemaSelect(MDSchema mdSchema);
-	protected abstract void onMDOtherSelect(MDGeneric mdOther);
+	protected abstract void onMDOtherSelect(MDGeneric mdOther, ExecutionContext executionContext);
     protected abstract void openNewTableBrowser();
     protected abstract void updateDataModelView(Table table);
     protected abstract void setCaretPosition(int position);

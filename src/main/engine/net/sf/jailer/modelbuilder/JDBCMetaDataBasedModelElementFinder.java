@@ -517,15 +517,17 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 	 */
 	public static ResultSet getColumns(Session session, DatabaseMetaData metaData, String schemaPattern, String tableNamePattern, String columnNamePattern, boolean withCaching) throws SQLException {
 		if (withCaching) {
-			final String NAME = "getColumns " + schemaPattern;
-			MetaDataCache metaDataCache = (MetaDataCache) session.getSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME);
-			if (metaDataCache == null) {
-				metaDataCache = MetaDataCache.readColumns(session, metaData, schemaPattern);
-				session.setSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME, metaDataCache);
-			}
-			ResultSet resultSet = metaDataCache.forTable(tableNamePattern);
-			if (resultSet != null) {
-				return resultSet;
+			synchronized (session) {
+				final String NAME = "getColumns " + schemaPattern;
+				MetaDataCache metaDataCache = (MetaDataCache) session.getSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME);
+				if (metaDataCache == null) {
+					metaDataCache = MetaDataCache.readColumns(session, metaData, schemaPattern);
+					session.setSessionProperty(JDBCMetaDataBasedModelElementFinder.class, NAME, metaDataCache);
+				}
+				ResultSet resultSet = metaDataCache.forTable(tableNamePattern);
+				if (resultSet != null) {
+					return resultSet;
+				}
 			}
 		}
 		if (DBMS.MySQL.equals(session.dbms)) {
@@ -546,6 +548,17 @@ public class JDBCMetaDataBasedModelElementFinder implements ModelElementFinder {
 			}
 			throw new RuntimeException("Error in getColumns(): catalogs= " + catalogs + ", schemaPattern=" + schemaPattern + ", tableNamePattern=" + tableNamePattern + ", columnNamePattern=" + columnNamePattern, e);
 		}
+	}
+
+	/**
+	 * Calls {@link DatabaseMetaData#getFunctions(String, String, String)}. Uses schemaPattern as catalogPattern on MySQL.
+	 * @param withCaching 
+	 */
+	public static ResultSet getFunctions(Session session, DatabaseMetaData metaData, String schemaPattern, String functionPattern) throws SQLException {
+		if (DBMS.MySQL.equals(session.dbms)) {
+			return metaData.getFunctions(schemaPattern, null, functionPattern);
+		}
+		return metaData.getFunctions(null, schemaPattern, functionPattern);
 	}
 
 	/**

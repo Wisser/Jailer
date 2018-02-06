@@ -425,20 +425,34 @@ public class MetaDataCache {
 			this.resultSetMetaData = new MDCResultSetMetaData(numCol, names, types);
 		}
 
+		public CachedResultSet(List<Object[]> rowList, ResultSetMetaData resultSetMetaData) {
+			this.rowList = rowList;
+			this.resultSetMetaData = resultSetMetaData;
+		}
+
 		public int getSize() {
 			return rowList.size();
 		}
 
+		public List<Object[]> getRowList() {
+			return rowList;
+		}
+
 		public CachedResultSet(ResultSet resultSet, Integer limit, Session session, Object cancellationContext)
+				throws SQLException {
+			this(resultSet, limit, session, cancellationContext, null, null);
+		}
+
+		public CachedResultSet(ResultSet resultSet, Integer limit, Session session, Object cancellationContext, int[] projection, String[] columnNames)
 				throws SQLException {
 			this.rowList = new ArrayList<Object[]>();
 			ResultSetMetaData rmd = resultSet.getMetaData();
 			CellContentConverter cellContentConverter = new CellContentConverter(rmd, session, session.dbms);
-			final int numCol = rmd.getColumnCount();
+			final int numCol = projection == null? rmd.getColumnCount() : projection.length;
 			while (resultSet.next()) {
 				Object[] row = new Object[numCol];
 				for (int i = 1; i <= numCol; ++i) {
-					row[i - 1] = cellContentConverter.getObject(resultSet, i);
+					row[i - 1] = cellContentConverter.getObject(resultSet, projection == null? i - 1 : projection[i - 1]);
 				}
 				rowList.add(row);
 				if (limit != null && rowList.size() > limit) {
@@ -452,8 +466,8 @@ public class MetaDataCache {
 			final String[] names = new String[numCol];
 			final int[] types = new int[numCol];
 			for (int i = 1; i <= numCol; ++i) {
-				names[i - 1] = rmd.getColumnName(i);
-				types[i - 1] = rmd.getColumnType(i);
+				names[i - 1] = columnNames == null? rmd.getColumnName(projection == null? i - 1 : projection[i - 1]) : columnNames[i - 1];
+				types[i - 1] = rmd.getColumnType(projection == null? i - 1 : projection[i - 1]);
 			}
 			resultSetMetaData = new MDCResultSetMetaData(numCol, names, types);
 		}
