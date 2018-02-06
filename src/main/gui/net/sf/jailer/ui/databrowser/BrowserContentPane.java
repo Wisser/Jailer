@@ -3000,6 +3000,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 	 * Show single row in special view?
 	 */
 	protected boolean noSingleRowDetailsView = false;
+	protected String singleRowDetailsViewTitel = "Single Row Details";
 	
 	/**
 	 * Parent having row-limit exceeded.
@@ -3342,7 +3343,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			};
 			singleRowDetailsView.setSortColumns(sortColumnsCheckBox.isSelected());
-	        dtm = new DefaultTableModel(new String[] { "Single Row Details" }, 0) {
+	        dtm = new DefaultTableModel(new String[] { singleRowDetailsViewTitel }, 0) {
 				@Override
 				public boolean isCellEditable(int row, int column) {
 					return false;
@@ -3359,7 +3360,7 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 		}
 
 		adjustRowTableColumnsWidth();
-		
+
 		if (sortColumnsCheckBox.isSelected()) {
 			TableColumnModel cm = rowsTable.getColumnModel();
 			for (int a = 0; a < rowsTable.getColumnCount(); ++a) {

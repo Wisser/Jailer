@@ -18,6 +18,9 @@ package net.sf.jailer.ui.databrowser.metadata;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 
+import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.database.Session;
+
 /**
  * Information about a database object other than schemas or tables.
  * 
@@ -41,10 +44,10 @@ public abstract class MDGeneric extends MDObject {
 	 * 
 	 * @return render of the database object
 	 */
-	public final JComponent getRender() {
+	public final JComponent getRender(Session session, ExecutionContext executionContext) {
 		if (render == null) {
 			try {
-				render = createRender();
+				render = createRender(session, executionContext);
 			} catch (Throwable t) {
 				render = new JLabel("Error: " + t.getMessage());
 			}
@@ -57,6 +60,6 @@ public abstract class MDGeneric extends MDObject {
 	 * 
 	 * @return render of the database object
 	 */
-	public abstract JComponent createRender() throws Exception;
+	public abstract JComponent createRender(Session session, ExecutionContext executionContext) throws Exception;
 
 }

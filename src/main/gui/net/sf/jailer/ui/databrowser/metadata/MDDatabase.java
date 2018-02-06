@@ -24,6 +24,7 @@ import java.util.List;
 import javax.swing.JComponent;
 
 import net.sf.jailer.ExecutionContext;
+import net.sf.jailer.database.Session;
 import net.sf.jailer.datamodel.DataModel;
 import net.sf.jailer.modelbuilder.MetaDataCache.CachedResultSet;
 
@@ -35,7 +36,6 @@ import net.sf.jailer.modelbuilder.MetaDataCache.CachedResultSet;
 public class MDDatabase extends MDGeneric {
 
 	private final DataModel dataModel;
-	private final ExecutionContext executionContext;
 
 	/**
 	 * Constructor.
@@ -45,7 +45,6 @@ public class MDDatabase extends MDGeneric {
 	public MDDatabase(String name, MetaDataSource metaDataSource, DataModel dataModel, ExecutionContext executionContext) {
 		super(name, metaDataSource);
 		this.dataModel = dataModel;
-		this.executionContext = executionContext;
 	}
 
 	/**
@@ -53,7 +52,7 @@ public class MDDatabase extends MDGeneric {
 	 * 
 	 * @return render of the database object
 	 */
-	public JComponent createRender() throws Exception {
+	public JComponent createRender(Session session, ExecutionContext executionContext) throws Exception {
         List<Object[]> rowList = new ArrayList<Object[]>();
         
         DatabaseMetaData md = getMetaDataSource().getSession().getMetaData();
