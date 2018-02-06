@@ -36,7 +36,7 @@ public enum MetaDataDetails {
 	
 	COLUMNS("Columns", 0) {
 		public ResultSet readMetaDataDetails(Session session, MDTable mdTable) throws SQLException {
-			return JDBCMetaDataBasedModelElementFinder.getColumns(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), "%", false);
+			return JDBCMetaDataBasedModelElementFinder.getColumns(session, session.getMetaData(), Quoting.staticUnquote(mdTable.getSchema().getName()), Quoting.staticUnquote(mdTable.getName()), "%", true);
 		}
 		public void adjustRowsTable(JTable rowsTable) {
 			TableColumnModel columnModel = rowsTable.getColumnModel();

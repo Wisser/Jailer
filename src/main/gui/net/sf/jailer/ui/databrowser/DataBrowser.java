@@ -116,6 +116,7 @@ import net.sf.jailer.ui.constraintcheck.ConstraintChecker;
 import net.sf.jailer.ui.databrowser.BrowserContentPane.SqlStatementTable;
 import net.sf.jailer.ui.databrowser.Desktop.LayoutMode;
 import net.sf.jailer.ui.databrowser.Desktop.RowBrowser;
+import net.sf.jailer.ui.databrowser.metadata.MDGeneric;
 import net.sf.jailer.ui.databrowser.metadata.MDSchema;
 import net.sf.jailer.ui.databrowser.metadata.MDTable;
 import net.sf.jailer.ui.databrowser.metadata.MetaDataDetailsPanel;
@@ -2905,11 +2906,17 @@ public class DataBrowser extends javax.swing.JFrame {
 							UIUtil.showException(this, "Error", e);
 						}
 					}
-		
+
 					@Override
 					protected void onTableSelect(MDTable mdTable) {
 						metaDataDetailsPanel
 							.showMetaDataDetails(mdTable, getMetaDataSource(session).toTable(mdTable), datamodel.get());
+					}
+
+					@Override
+					protected void onMDOtherSelect(MDGeneric mdOther) {
+						metaDataDetailsPanel
+							.showMetaDataDetails(mdOther, datamodel.get());
 					}
 		
 					@Override

@@ -817,7 +817,9 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 						} else {
 							((JLabel) render).setFont(highlightedRows.contains(rowSorter.convertRowIndexToModel(row)) ? bold : nonbold);
 							String text = ((JLabel) render).getText();
-							if (text.length() > 50) {
+							if (text.indexOf('\n') >= 0) {
+								((JLabel) render).setToolTipText(UIUtil.toHTML(text, 400));
+							} else if (text.length() > 30) {
 								((JLabel) render).setToolTipText(text);
 							}
 						}
@@ -3518,13 +3520,15 @@ public abstract class BrowserContentPane extends javax.swing.JPanel {
 				}
 			}
 			if (singleRowDetailsView == null) {
-				width = Math.min(width, 400);
+				width = Math.min(width, maxColumnWidth);
 			}
 
 			column.setPreferredWidth(width);
 		}
 	}
 
+	protected int maxColumnWidth = 400;
+	
 	/**
 	 * This method is called from within the constructor to initialize the form.
 	 * WARNING: Do NOT modify this code. The content of this method is always
